@@ -560,6 +560,11 @@ static char *(features[]) =
 #else
 	"-image_cairo",
 #endif
+#ifdef FEAT_IMAGE_GDK
+	"+image_gdk",
+#else
+	"-image_gdk",
+#endif
 #ifdef FEAT_SOUND
 	"+sound",
 #else

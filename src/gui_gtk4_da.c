@@ -80,6 +80,12 @@ struct _VimDrawArea
     // Cairo render node for multi sign indicator for Netbeans. May be NULL
     GskRenderNode *multisign_node;
 #endif
+
+#ifdef FEAT_IMAGE_GDK
+    // Queue of render nodes for images. Images at the end of the queue are
+    // drawn ontop of earlier ones.
+    GQueue *images;
+#endif
 };
 
 #define GET_ROW(da, n) ((da)->cells + (da)->n_cols * (n))
@@ -102,7 +108,10 @@ vim_draw_area_finalize(GObject *obj)
 #ifdef FEAT_SIGN_ICONS
     // vim_draw_area_clear_block() should have removed all the sign icons
     assert(g_queue_is_empty(self->signs));
-    g_queue_free_full(self->signs, (GDestroyNotify)gsk_render_node_unref);
+    g_queue_free(self->signs);
+#endif
+#ifdef FEAT_IMAGE_GDK
+    g_queue_free_full(self->images, (GDestroyNotify)gsk_render_node_unref);
 #endif
 
     G_OBJECT_CLASS(vim_draw_area_parent_class)->finalize(obj);
@@ -126,6 +135,9 @@ vim_draw_area_init(VimDrawArea *self)
 {
 #ifdef FEAT_SIGN_ICONS
     self->signs = g_queue_new();
+#endif
+#ifdef FEAT_IMAGE_GDK
+    self->images = g_queue_new();
 #endif
 }
 
@@ -575,9 +587,15 @@ draw_node_render(DrawNode *dnode, int row, VimDrawArea *da)
 	assert(text_node != NULL);
 
 	if (dnode->dnode_flags & DRAW_NODE_CLIP)
+	{
+	    GskRenderNode *old = text_node;
+
 	    text_node = gsk_clip_node_new(text_node,
 		    &GRAPHENE_RECT_INIT(FILL_X(dnode->start_col), FILL_Y(row),
 			dnode->n_cells * gui.char_width, gui.char_height));
+	    gsk_render_node_unref(old);
+	    assert(text_node != NULL);
+	}
 
 	nodes[n_nodes++] = text_node;
     }
@@ -855,9 +873,12 @@ vim_draw_area_check_bounds(
 	gsk_render_node_get_bounds(s->data, &rect);
 
 	if (graphene_rect_contains_rect(&bounds, &rect))
+	{
 	    // Keep going in case there are multiple sign icons within this
 	    // block.
+	    gsk_render_node_unref(s->data);
 	    g_queue_delete_link(self->signs, s);
+	}
 	s = next;
     }
 #endif
@@ -872,6 +893,8 @@ vim_draw_area_check_bounds(
 	    g_clear_pointer(&self->multisign_node, gsk_render_node_unref);
     }
 #endif
+    // Do not try removing any images, because images are not part of the screen
+    // cells.
 }
 
 /*
@@ -1060,15 +1083,15 @@ vim_draw_area_move_block(
 
 #if defined(FEAT_SIGN_ICONS) || defined(FEAT_NETBEANS_INTG)
     if (row1 > to)
-        clear_rect = GRAPHENE_RECT_INIT(
-            FILL_X(col1), FILL_Y(to),
-            gui.char_width * (col2 - col1 + 1),
-            gui.char_height * (row1 - to));
+	clear_rect = GRAPHENE_RECT_INIT(
+		FILL_X(col1), FILL_Y(to),
+		gui.char_width * (col2 - col1 + 1),
+		gui.char_height * (row1 - to));
     else
-        clear_rect = GRAPHENE_RECT_INIT(
-            FILL_X(col1), FILL_Y(row2 + 1),
-            gui.char_width * (col2 - col1 + 1),
-            gui.char_height * (to - row1));
+	clear_rect = GRAPHENE_RECT_INIT(
+		FILL_X(col1), FILL_Y(row2 + 1),
+		gui.char_width * (col2 - col1 + 1),
+		gui.char_height * (to - row1));
 #endif
 
 #ifdef FEAT_SIGN_ICONS
@@ -1084,6 +1107,7 @@ vim_draw_area_move_block(
 	// Check if icon moved off screen, if so then remove it.
 	if (graphene_rect_contains_rect(&clear_rect, &rect))
 	{
+	    gsk_render_node_unref(s->data);
 	    g_queue_delete_link(self->signs, s);
 	    s = next;
 	    continue;
@@ -1108,7 +1132,10 @@ vim_draw_area_move_block(
 		s->data = new;
 	    }
 	    else
+	    {
+		gsk_render_node_unref(s->data);
 		g_queue_delete_link(self->signs, s);
+	    }
 	}
 	s = next;
     }
@@ -1271,6 +1298,67 @@ vim_draw_area_get_multisign_cairo(VimDrawArea *self, int x, int y, int w, int h)
 }
 #endif
 
+#ifdef FEAT_IMAGE_GDK
+/*
+ * Add an image at the given row and column. (src_x, src_y, draw_w, draw_h)
+ * describe which pixel sub-rect of the source texture should be drawn.
+ */
+    void
+vim_draw_area_add_image(
+	VimDrawArea *self,
+	GdkTexture  *image,
+	int	    row,
+	int	    col,
+	int	    src_x,
+	int	    src_y,
+	int	    draw_w,
+	int	    draw_h)
+{
+    GskRenderNode   *node, *old;
+    int		    w, h;
+    graphene_rect_t clip = GRAPHENE_RECT_INIT(
+	    FILL_X(col) + src_x, FILL_Y(row) + src_y, draw_w, draw_h);
+
+    if (unlikely(self->cells == NULL
+		|| row >= self->n_rows
+		|| col >= self->n_cols))
+	return;
+
+    w = gdk_texture_get_width(image);
+    h = gdk_texture_get_height(image);
+
+    node = gsk_texture_node_new(image,
+	    &GRAPHENE_RECT_INIT(FILL_X(col), FILL_Y(row), w, h));
+    if (node == NULL)
+	return;
+
+    old = node;
+    node = gsk_clip_node_new(node, &clip);
+    gsk_render_node_unref(old);
+
+    g_queue_push_tail(self->images, node);
+}
+
+/*
+ * Remove the render node that contains the given texture if it exists.
+ */
+    void
+vim_draw_area_remove_image(VimDrawArea *self, GdkTexture *image)
+{
+    for (GList *s = self->images->head; s != NULL; s = s->next)
+    {
+	GskRenderNode *node = gsk_clip_node_get_child(s->data);
+
+	if (gsk_texture_node_get_texture(node) == image)
+	{
+	    gsk_render_node_unref(s->data);
+	    g_queue_delete_link(self->images, s);
+	    return;
+	}
+    }
+}
+#endif
+
     static void
 flush_invert_ga(garray_T *invert_ga, int row, int start, int len)
 {
@@ -1367,8 +1455,11 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 	gtk_snapshot_append_color(snapshot, &white, rect);
     }
     gtk_snapshot_pop(snapshot);
-
     ga_clear(&invert_ga);
+
+    // Draw images after any possible inversions
+    for (GList *s = self->images->head; s != NULL; s = s->next)
+	gtk_snapshot_append_node(snapshot, s->data);
 }
 
     static gboolean

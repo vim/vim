@@ -4292,6 +4292,10 @@ struct window_S
     // structs.h does not have to pull in <cairo.h>.
     void	*w_popup_image_surface;
 #  endif
+#  ifdef FEAT_IMAGE_GDK
+    // Cached GdkTexture for the image.
+    void	*w_popup_image_texture;
+#  endif
 # endif
 # if defined(FEAT_TIMERS)
     timer_T	*w_popup_timer;	    // timer for closing popup window

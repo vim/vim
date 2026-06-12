@@ -4516,7 +4516,7 @@ objects/gui_gtk4_cb.o: auto/osdef.h gui_gtk4_cb.c vim.h protodef.h auto/config.h
  beval.h structs.h regexp.h gui.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
  ex_cmds.h spell.h proto.h globals.h errors.h gui_gtk4_cb.h
-objects/gui_gtk4_da.o: auto/osdef.h gui_gtk4_f.c vim.h protodef.h auto/config.h feature.h \
+objects/gui_gtk4_da.o: auto/osdef.h gui_gtk4_da.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
  beval.h structs.h regexp.h gui.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
