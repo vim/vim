@@ -1584,6 +1584,7 @@ f_str2blob(typval_T *argvars, typval_T *rettv)
 	return;
 
     char_u	*to_encoding = NULL;
+    char_u	*to_encoding_raw = NULL;  // Encoding name with endianness preserved for iconv
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	dict_T *d = argvars[1].vval.v_dict;
@@ -1591,50 +1592,144 @@ f_str2blob(typval_T *argvars, typval_T *rettv)
 	{
 	    char_u *enc = dict_get_string(d, "encoding", FALSE);
 	    if (enc != NULL)
-		to_encoding = enc_canonize(enc_skip(enc));
+	    {
+		char_u *enc_skipped = enc_skip(enc);
+		to_encoding = enc_canonize(enc_skipped);
+
+		// For iconv, preserve the endianness suffix by creating a
+		// normalized version with hyphens: "utf16le" -> "utf-16le"
+		to_encoding_raw = normalize_encoding_name(enc_skipped);
+		if (to_encoding_raw == NULL)
+		{
+		    emsg(_(e_out_of_memory));
+		    VIM_CLEAR(to_encoding);
+		    return;
+		}
+	    }
 	}
     }
 
-    FOR_ALL_LIST_ITEMS(list, li)
+    // Special handling for UTF-16/UCS-2/UTF-32/UCS-4 target encodings: join the
+    // list items with a newline and convert the whole string at once, so that
+    // the wide-encoded newline separators and embedded NUL bytes are preserved
+    // (mirrors blob2str()).  convert_string() cannot be used here because it
+    // treats every Unicode encoding as utf-8, leaving the bytes unconverted.
+    int to_prop = 0;
+    if (to_encoding != NULL)
+	to_prop = enc_canon_props(to_encoding);
+    if (to_encoding != NULL && (to_prop & (ENC_2BYTE | ENC_4BYTE | ENC_2WORD)))
     {
-	if (li->li_tv.v_type != VAR_STRING)
-	    continue;
+	garray_T	str_ga;
 
-	string_T    str = {li->li_tv.vval.v_string, 0};
-
-	if (str.string == NULL)
-	    STR_LITERAL_SET(str, "");
-	else
-	    str.length = STRLEN(str.string);
-
-	if (to_encoding != NULL)
+	ga_init2(&str_ga, 1, 256);
+	FOR_ALL_LIST_ITEMS(list, li)
 	{
-	    int		res;
-	    string_T	converted;
+	    char_u *s;
 
-	    res = convert_string(&str, p_enc, to_encoding, &converted);
-	    if (res != OK)
+	    if (li->li_tv.v_type != VAR_STRING)
+		continue;
+
+	    s = li->li_tv.vval.v_string;
+
+	    // Each list string item is separated by a newline in the blob
+	    if (li != list->lv_first)
+		ga_append(&str_ga, NL);
+	    if (s != NULL && *s != NUL)
+	    {
+		int slen = (int)STRLEN(s);
+
+		if (ga_grow(&str_ga, slen) == FAIL)
+		{
+		    ga_clear(&str_ga);
+		    goto done;
+		}
+		mch_memmove((char_u *)str_ga.ga_data + str_ga.ga_len, s,
+								(size_t)slen);
+		str_ga.ga_len += slen;
+	    }
+	}
+
+	if (str_ga.ga_len > 0)
+	{
+	    vimconv_T	vimconv;
+
+	    vimconv.vc_type = CONV_NONE;
+	    if (convert_setup_ext(&vimconv, p_enc, FALSE, to_encoding_raw, FALSE)
+								    == FAIL)
+	    {
+		ga_clear(&str_ga);
+		semsg(_(e_str_encoding_to_failed), to_encoding);
+		goto done;
+	    }
+	    vimconv.vc_fail = TRUE;
+
+	    int		len = str_ga.ga_len;
+	    char_u	*converted = string_convert_ext(&vimconv,
+				    (char_u *)str_ga.ga_data, &len, NULL);
+	    convert_setup(&vimconv, NULL, NULL);
+	    ga_clear(&str_ga);
+
+	    if (converted == NULL)
 	    {
 		semsg(_(e_str_encoding_to_failed), to_encoding);
 		goto done;
 	    }
-	    str.string = converted.string;
-	    str.length = converted.length;
+	    if (len > 0 && ga_grow(&blob->bv_ga, len) == OK)
+	    {
+		mch_memmove((char_u *)blob->bv_ga.ga_data + blob->bv_ga.ga_len,
+						    converted, (size_t)len);
+		blob->bv_ga.ga_len += len;
+	    }
+	    vim_free(converted);
 	}
+	else
+	    ga_clear(&str_ga);
+    }
+    else
+    {
+	FOR_ALL_LIST_ITEMS(list, li)
+	{
+	    if (li->li_tv.v_type != VAR_STRING)
+		continue;
 
-	if (li != list->lv_first)
-	    // Each list string item is separated by a newline in the blob
-	    ga_append(&blob->bv_ga, NL);
+	    string_T	str = {li->li_tv.vval.v_string, 0};
 
-	blob_from_string(str.string, blob);
+	    if (str.string == NULL)
+		STR_LITERAL_SET(str, "");
+	    else
+		str.length = STRLEN(str.string);
 
-	if (to_encoding != NULL)
-	    vim_free(str.string);
+	    if (to_encoding != NULL)
+	    {
+		int	    res;
+		string_T    converted;
+
+		res = convert_string(&str, p_enc, to_encoding, &converted);
+		if (res != OK)
+		{
+		    semsg(_(e_str_encoding_to_failed), to_encoding);
+		    goto done;
+		}
+		str.string = converted.string;
+		str.length = converted.length;
+	    }
+
+	    if (li != list->lv_first)
+		// Each list string item is separated by a newline in the blob
+		ga_append(&blob->bv_ga, NL);
+
+	    blob_from_string(str.string, blob);
+
+	    if (to_encoding != NULL)
+		vim_free(str.string);
+	}
     }
 
 done:
     if (to_encoding != NULL)
 	vim_free(to_encoding);
+    if (to_encoding_raw != NULL)
+	vim_free(to_encoding_raw);
 }
 
 /*
