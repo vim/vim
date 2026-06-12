@@ -1232,8 +1232,7 @@ curs_columns(
      * Compute the number of virtual columns.
      */
 #ifdef FEAT_FOLDING
-    cline_folded = curwin->w_cline_folded
-		    || hasFolding(curwin->w_cursor.lnum, NULL, NULL);
+    cline_folded = curwin->w_cline_folded;
     if (cline_folded)
 	// In a folded line the cursor is always in the first column
 	startcol = curwin->w_virtcol = endcol = curwin->w_leftcol;
