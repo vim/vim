@@ -451,7 +451,8 @@ draw_node_copy(DrawNode *dnode)
 	    dnode->flags, dnode->start_col, dnode->n_cells
 	    );
 
-    if (dnode->dnode_flags & DRAW_NODE_CLIP)
+    // "copy" should never be NULL, so we don't need to check for NULL.
+    if (unlikely(dnode->dnode_flags & DRAW_NODE_CLIP))
 	copy->dnode_flags |= DRAW_NODE_CLIP;
 
     return copy;
@@ -775,7 +776,7 @@ draw_row_set(
 	    // Make a copy for the left halve.
 	    DrawNode *new_left = draw_node_copy(rdnode);
 
-	    if (draw_node_split(new_left,  col2 - rdnode->start_col, TRUE))
+	    if (draw_node_split(new_left,  col2 - rdnode->start_col + 1, TRUE))
 		g_clear_pointer(&new_left, draw_node_unref);
 	    draw_row_fill(drow, rdnode->start_col, col2, new_left);
 	    draw_node_unref(new_left);
@@ -793,7 +794,7 @@ draw_row_set(
 	{
 	    if (draw_node_split(new_dnode, col1 - new_dnode->start_col, FALSE)
 		    || draw_node_split(new_dnode,
-			col2 - new_dnode->start_col, TRUE))
+			col2 - new_dnode->start_col + 1, TRUE))
 		g_clear_pointer(&new_dnode, draw_node_unref);
 
 	    draw_row_fill(drow, col1, col2, new_dnode);
@@ -1179,6 +1180,8 @@ vim_draw_area_move_block(
 	}
     }
 #endif
+    // No need to move images, because they are separate and Vim assumes they
+    // are drawn separately of the cells.
 }
 
 /*
@@ -1439,11 +1442,13 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 	    flush_invert_ga(&invert_ga, r, inv_start, inv_len);
     }
 
+#ifdef FEAT_SIGN_ICONS
     // Order of where the sign icon should be placed shouldn't matter,
     // since caller will add whitespace padding in the region it covers.
     // Probably should put it behind cursor though.
     for (GList *s = self->signs->head; s != NULL; s = s->next)
 	gtk_snapshot_append_node(snapshot, s->data);
+#endif
 
     if (self->cursor_node != NULL)
 	gtk_snapshot_append_node(snapshot, self->cursor_node);
@@ -1457,9 +1462,11 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
     gtk_snapshot_pop(snapshot);
     ga_clear(&invert_ga);
 
+#ifdef FEAT_IMAGE_GDK
     // Draw images after any possible inversions
     for (GList *s = self->images->head; s != NULL; s = s->next)
 	gtk_snapshot_append_node(snapshot, s->data);
+#endif
 }
 
     static gboolean
