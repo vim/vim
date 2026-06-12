@@ -13302,8 +13302,9 @@ hurd			GNU/Hurd version of Vim
 iconv			Can use iconv() for conversion.
 image			Compiled with the popup window "image" attribute.
 			See |popup-image|.
-image_cairo		Compiled with the Cairo image backend (GTK GUI).
+image_cairo		Compiled with the Cairo image backend (GTK2 and GTK3 GUI).
 image_gdi		Compiled with the GDI image backend (Windows GUI).
+image_gdk		Compiled with the GDK image backend (GTK4 GUI).
 image_kitty		Compiled with the kitty graphics protocol image backend
 			(terminal).
 image_sixel		Compiled with the DEC sixel image backend (terminal).
