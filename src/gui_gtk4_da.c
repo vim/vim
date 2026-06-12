@@ -61,14 +61,11 @@ struct _VimDrawArea
     int         n_rows;
     int		n_cols;
 
+    int		resize_count;
+
     // Used for hollow and part style cursors. For the block cursor, that is
     // simply rendered as a cell using vim_draw_area_add_glyphs(). May be NULL.
     GskRenderNode *cursor_node;
-
-    // See vim_draw_area_size_allocate()
-    guint   resize_timeout_id;
-    int	    pending_width;
-    int	    pending_height;
 
 #if defined(FEAT_SIGN_ICONS)
     // Queue of sign icon render nodes. Icons at the end of the queue are drawn
@@ -164,6 +161,7 @@ vim_draw_area_set_size(VimDrawArea *self, int rows, int cols)
     self->n_cols = cols;
     self->cells = g_realloc_n(self->cells, rows * cols, sizeof(DrawCell));
     memset(self->cells, 0, rows * (sizeof(DrawCell) * cols));
+    self->resize_count++;
 }
 
     static void
@@ -1469,45 +1467,36 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 #endif
 }
 
-    static gboolean
-vim_draw_area_size_apply_cb(VimDrawArea *self)
-{
-    self->resize_timeout_id = 0;
-
-    if (updating_screen)
-    {
-	// Wait again
-	self->resize_timeout_id = g_timeout_add(50,
-		(GSourceFunc)vim_draw_area_size_apply_cb, self);
-	return G_SOURCE_REMOVE;
-    }
-
-    gui_resize_shell(self->pending_width, self->pending_height);
-
-    g_object_unref(self);
-    return G_SOURCE_REMOVE;
-}
-
     static void
 vim_draw_area_size_allocate(
 	GtkWidget   *widget,
 	int	    width,
 	int	    height,
-	int	    baseline)
+	int	    baseline UNUSED)
 {
     VimDrawArea *self = VIM_DRAW_AREA(widget);
+    int		old_count = self->resize_count;
 
-    self->pending_width = width;
-    self->pending_height = height;
+    gui_resize_shell(width, height);
 
-    // Don't resize immediately, add a debounce.
-    if (self->resize_timeout_id != 0)
-	g_source_remove(self->resize_timeout_id);
-    else
-	g_object_ref(self);
+    if (old_count == self->resize_count)
+    {
+	// Number of columns or rows hasn't changed. However still re render the
+	// draw nodes at the right edge of the draw area, so that they can
+	// update their background bleed (see draw_node_render()).
+	for (int r = 0; r < self->n_rows; r++)
+	{
+	    DrawCell *dcell = &GET_ROW(self, r)[self->n_cols - 1];
 
-    self->resize_timeout_id = g_timeout_add(100,
-	    (GSourceFunc)vim_draw_area_size_apply_cb, self);
+	    if (dcell->dnode != NULL)
+	    {
+		(void)draw_node_make_dirty(dcell->dnode);
+		draw_node_render(dcell->dnode, r, self);
+	    }
+	}
+    }
+
+    return;
 }
 
 #endif // USE_GTK4_SNAPSHOT
