@@ -1107,8 +1107,9 @@ validate_cursor_col(void)
 	return;
 
 #ifdef FEAT_FOLDING
-    cline_folded = curwin->w_cline_folded
-		    || hasFolding(curwin->w_cursor.lnum, NULL, NULL);
+    cline_folded = (curwin->w_valid & VALID_CHEIGHT)
+	? curwin->w_cline_folded
+	: hasFolding(curwin->w_cursor.lnum, NULL, NULL);
     if (cline_folded)
 	col = curwin->w_leftcol;
     else
