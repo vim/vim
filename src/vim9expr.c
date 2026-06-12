@@ -2860,9 +2860,8 @@ compile_subscript(
 		    return FAIL;
 		}
 		p = *arg;
-		if (eval_isdictc(*p))
-		    while (eval_isnamec(*p))
-			MB_PTR_ADV(p);
+		while (eval_isdictc(*p))
+		    MB_PTR_ADV(p);
 		if (p == *arg)
 		{
 		    semsg(_(e_syntax_error_at_str), *arg);

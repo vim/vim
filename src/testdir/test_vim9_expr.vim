@@ -3156,6 +3156,10 @@ def Test_expr9_dict()
   v9.CheckDefFailure(['var x = ({'], 'E723:', 2)
   v9.CheckScriptFailure(['vim9script', 'var x = ({'], 'E723:', 2)
   v9.CheckDefExecAndScriptFailure(['{}[getftype("file")]'], 'E716: Key not present in Dictionary: ""', 1)
+
+  # invalid dot notation key name
+  v9.CheckDefAndScriptFailure(['var x = { "a#b": 1 }', 'x.a#b'], ['E488:', 'E716:'], 2)
+  v9.CheckDefAndScriptFailure(['var x = { "a:b": 1 }', 'x.a:b'], ['E488:', 'E716:'], 2)
 enddef
 
 def Test_expr9_dict_vim9script()
