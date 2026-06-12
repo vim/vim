@@ -290,7 +290,9 @@ static void on_tab_reordered(GtkNotebook *notebook, gpointer *page, gint idx, gp
 static void mainwin_destroy_cb(GObject *object, gpointer data);
 static gboolean delete_event_cb(GtkWindow *window, gpointer data);
 static void mainwin_fullscreened_cb(GObject *obj, GParamSpec *pspec, gpointer user_data);
+#ifndef USE_GTK4_SNAPSHOT
 static void drawarea_realize_cb(GtkWidget *widget, gpointer data);
+#endif
 static void drawarea_unrealize_cb(GtkWidget *widget, gpointer data);
 #ifndef USE_GTK4_SNAPSHOT
 static void drawarea_resize_cb(GtkDrawingArea *area, int width, int height, gpointer data);
@@ -535,9 +537,9 @@ gui_mch_init(void)
 		     G_CALLBACK(drawarea_resize_cb), NULL);
     g_signal_connect(G_OBJECT(gui.drawarea), "notify::scale-factor",
 		     G_CALLBACK(drawarea_scale_factor_cb), NULL);
-#endif
     g_signal_connect(G_OBJECT(gui.drawarea), "realize",
 		     G_CALLBACK(drawarea_realize_cb), NULL);
+#endif
     g_signal_connect(G_OBJECT(gui.drawarea), "unrealize",
 		     G_CALLBACK(drawarea_unrealize_cb), NULL);
 
@@ -649,9 +651,7 @@ surface_fill_bg(void)
     void
 gui_mch_new_colors(void)
 {
-#ifdef USE_GTK4_SNAPSHOT
-    // TODO
-#else
+#ifndef USE_GTK4_SNAPSHOT
     surface_fill_bg();
 #endif
     if (gui.drawarea != NULL && gtk_widget_get_realized(gui.drawarea))
@@ -2128,6 +2128,7 @@ focus_out_event(GtkEventControllerFocus *controller UNUSED,
     }
 }
 
+#ifndef USE_GTK4_SNAPSHOT
     static void
 drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 {
@@ -2148,16 +2149,13 @@ drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
     if (w <= 0) w = 800;
     if (h <= 0) h = 600;
 
-#ifdef USE_GTK4_SNAPSHOT
-    // TODO
-#else
     if (gui.surface != NULL)
 	cairo_surface_destroy(gui.surface);
     gui.surface = create_backing_surface(w, h);
-#endif
 
     gui_mch_new_colors();
 }
+#endif
 
     static void
 drawarea_unrealize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
@@ -2165,9 +2163,7 @@ drawarea_unrealize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 #ifdef FEAT_XIM
     im_shutdown();
 #endif
-#ifdef USE_GTK4_SNAPSHOT
-    // TODO
-#else
+#ifndef USE_GTK4_SNAPSHOT
     if (gui.surface != NULL)
     {
 	cairo_surface_destroy(gui.surface);

@@ -367,7 +367,7 @@ to use software rendering: >
     $ GSK_RENDERER=cairo gvim
     $ LIBGL_ALWAYS_SOFTWARE=true gvim
 <
-							*gtk4-hwaccel*						
+							*gtk4-hwaccel*
 If Vim is compiled with the configure option "--enable-gtk4-hwaccel" set, then
 the GTK4 GUI will use GtkSnapshot instead of Cairo, allowing for hardware
 accelerated rendering, which is much faster.  Enabling this configure option

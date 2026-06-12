@@ -1473,6 +1473,7 @@ $quote	eval.txt	/*$quote*
 +image	various.txt	/*+image*
 +image_cairo	various.txt	/*+image_cairo*
 +image_gdi	various.txt	/*+image_gdi*
++image_gdk	various.txt	/*+image_gdk*
 +image_kitty	various.txt	/*+image_kitty*
 +image_sixel	various.txt	/*+image_sixel*
 +insert_expand	various.txt	/*+insert_expand*
@@ -8254,6 +8255,7 @@ gt	tabpage.txt	/*gt*
 gtk-css	gui_x11.txt	/*gtk-css*
 gtk-tooltip-colors	gui_x11.txt	/*gtk-tooltip-colors*
 gtk3-slow	gui_x11.txt	/*gtk3-slow*
+gtk4-hwaccel	gui_x11.txt	/*gtk4-hwaccel*
 gtk4-slow	gui_x11.txt	/*gtk4-slow*
 gu	change.txt	/*gu*
 gugu	change.txt	/*gugu*
