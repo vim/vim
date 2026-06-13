@@ -154,6 +154,24 @@ func Test_quoteplus()
   let @+ = quoteplus_saved
 endfunc
 
+" Test that legacy script menu files are sourced when :gui is executed with
+" the :vim9cmd modifier
+func Test_vim9cmd_gui()
+  CheckX11BasedGui
+
+  let lines =<< trim END
+    " Ignore the "failed to create input context" error.
+    call test_ignore_error("E285")
+    vim9cmd gui -f
+    call writefile([!empty(menu_info("Help"))], "XguimenuOK")
+    qa!
+  END
+  call writefile(lines, 'Xguimenuscript', 'D')
+  call system(GetVimCommand() .. ' --noplugin -S Xguimenuscript')
+  call assert_equal(['1'], readfile('XguimenuOK'))
+  call delete('XguimenuOK')
+endfunc
+
 func Test_gui_read_stdin()
   CheckUnix
 
