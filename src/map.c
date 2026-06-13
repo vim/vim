@@ -662,18 +662,24 @@ do_map(
 		{
 		    int	first, last;
 		    int	same = -1;
+		    char_u *p_char;
 
-		    first = vim_iswordp(keys);
+		    p = keys;
+		    p_char = mb_unescape(&p);
+		    if (p_char == NULL)
+			p_char = p++;
+		    first = vim_iswordp(p_char);
 		    last = first;
-		    p = keys + (*mb_ptr2len)(keys);
 		    n = 1;
 		    while (p < keys + len)
 		    {
-			++n;			// nr of (multi-byte) chars
-			last = vim_iswordp(p);	// type of last char
+			++n;			     // nr of (multi-byte) chars
+			p_char = mb_unescape(&p);
+			if (p_char == NULL)
+			    p_char = p++;
+			last = vim_iswordp(p_char);  // type of last char
 			if (same == -1 && last != first)
-			    same = n - 1;	// count of same char type
-			p += (*mb_ptr2len)(p);
+			    same = n - 1;	     // count of same char type
 		    }
 		    if (last && n > 2 && same >= 0 && same < n - 1)
 		    {
