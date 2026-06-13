@@ -30,8 +30,8 @@ void vim_draw_area_set_part_cursor(VimDrawArea *self, int w, int h);
 void vim_draw_area_invert_block(VimDrawArea *self, int row, int col, int nrows, int ncols);
 void vim_draw_area_add_sign(VimDrawArea *self, GdkTexture *sign, int row, int col, int width, int height);
 cairo_t *vim_draw_area_get_multisign_cairo(VimDrawArea *self, int x, int y, int w, int h);
-void vim_draw_area_add_image(VimDrawArea *self, GdkTexture  *image, int row, int col, int src_x, int src_y, int draw_w, int draw_h);
-void vim_draw_area_remove_image(VimDrawArea *self, GdkTexture *image);
+void vim_draw_area_add_image(VimDrawArea *self, GdkTexture  *image, int row, int col, int src_x, int src_y, int draw_w, int draw_h, int zindex, int id);
+void vim_draw_area_remove_image(VimDrawArea *self, int id);
 
 #endif
 

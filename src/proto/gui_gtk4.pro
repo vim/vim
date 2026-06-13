@@ -42,6 +42,7 @@ void gui_gtk4_update_size(void);
 cairo_t *gui_gtk4_get_multisign_context(int x, int y, int w, int h);
 void gui_mch_clear_block(int row1, int col1, int row2, int col2);
 void gui_mch_clear_all(void);
+void gui_gtk4_remove_image(win_T *wp);
 void gui_mch_free_popup_image(win_T *wp);
 bool gui_mch_update_popup_image_pixels(win_T *wp);
 void gui_mch_draw_popup_image(win_T *wp, int row, int col, int src_x, int src_y, int draw_w, int draw_h);

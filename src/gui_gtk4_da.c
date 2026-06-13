@@ -53,6 +53,20 @@ typedef struct
     gboolean	invert; // If this cell is inverted
 } DrawCell;
 
+#ifdef FEAT_IMAGE_GDK
+/*
+ * Struct containing information about an image. This is designed to map well
+ * with how Vim handles the kitty graphics protocol.
+ */
+typedef struct
+{
+    int id;
+    int zindex;
+    GskRenderNode *node; // Cached clip node, which has the texture node as its
+			 // child. May be NULL
+} DrawImage;
+#endif
+
 struct _VimDrawArea
 {
     GtkWidget parent;
@@ -79,8 +93,8 @@ struct _VimDrawArea
 #endif
 
 #ifdef FEAT_IMAGE_GDK
-    // Queue of render nodes for images. Images at the end of the queue are
-    // drawn ontop of earlier ones.
+    // Queue of DrawImage structs. Sorted in ascending order of zindex, so that
+    // images with a higher zindex are rendered over ones with lower zindex.
     GQueue *images;
 #endif
 };
@@ -89,6 +103,9 @@ struct _VimDrawArea
 
 G_DEFINE_TYPE(VimDrawArea, vim_draw_area, GTK_TYPE_WIDGET)
 
+#ifdef FEAT_IMAGE_GDK
+static void draw_image_free(DrawImage *dimg);
+#endif
 static void vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot);
 static void vim_draw_area_size_allocate(GtkWidget *widget, int width, int height, int baseline);
 
@@ -108,7 +125,7 @@ vim_draw_area_finalize(GObject *obj)
     g_queue_free(self->signs);
 #endif
 #ifdef FEAT_IMAGE_GDK
-    g_queue_free_full(self->images, (GDestroyNotify)gsk_render_node_unref);
+    g_queue_free_full(self->images, (GDestroyNotify)draw_image_free);
 #endif
 
     G_OBJECT_CLASS(vim_draw_area_parent_class)->finalize(obj);
@@ -892,8 +909,6 @@ vim_draw_area_check_bounds(
 	    g_clear_pointer(&self->multisign_node, gsk_render_node_unref);
     }
 #endif
-    // Do not try removing any images, because images are not part of the screen
-    // cells.
 }
 
 /*
@@ -1178,8 +1193,6 @@ vim_draw_area_move_block(
 	}
     }
 #endif
-    // No need to move images, because they are separate and Vim assumes they
-    // are drawn separately of the cells.
 }
 
 /*
@@ -1300,9 +1313,51 @@ vim_draw_area_get_multisign_cairo(VimDrawArea *self, int x, int y, int w, int h)
 #endif
 
 #ifdef FEAT_IMAGE_GDK
+
 /*
- * Add an image at the given row and column. (src_x, src_y, draw_w, draw_h)
- * describe which pixel sub-rect of the source texture should be drawn.
+ * Get the draw image with the given id, return NULL if not exists.
+ */
+    static GList *
+vim_draw_area_get_image(VimDrawArea *self, int id)
+{
+    for (GList *s = self->images->head; s != NULL; s = s->next)
+    {
+	DrawImage *sdimg = s->data;
+
+	if (sdimg->id == id)
+	    return s;
+    }
+    return NULL;
+}
+
+/*
+ * Queue the given image to the correct position in the queue using its zindex.
+ */
+    static void
+vim_draw_area_queue_image(VimDrawArea *self, GList *link)
+{
+    DrawImage *dimg = link->data;
+
+    for (GList *s = self->images->head; s != NULL; s = s->next)
+    {
+	DrawImage *sdimg = s->data;
+
+	if (sdimg->zindex >= dimg->zindex)
+	{
+	    g_queue_insert_before_link(self->images, s, link);
+	    return;
+	}
+    }
+    // Queue is empty or image has new highest zindex
+    g_queue_push_tail_link(self->images, link);
+}
+
+/*
+ * Add an image at the given row and column with the specified zindex and id.
+ * (src_x, src_y, draw_w, draw_h) describe which pixel sub-rect of the source
+ * texture should be drawn. If there is an image that has the same id, then it
+ * is re-rendered with the new texture. If zindex of an image changed, then the
+ * queue will be updated accordingly.
  */
     void
 vim_draw_area_add_image(
@@ -1313,12 +1368,15 @@ vim_draw_area_add_image(
 	int	    src_x,
 	int	    src_y,
 	int	    draw_w,
-	int	    draw_h)
+	int	    draw_h,
+	int	    zindex,
+	int	    id)
 {
     GskRenderNode   *node, *old;
     int		    w, h;
-    graphene_rect_t clip = GRAPHENE_RECT_INIT(
-	    FILL_X(col) + src_x, FILL_Y(row) + src_y, draw_w, draw_h);
+    graphene_rect_t clip;
+    GList	    *link;
+    DrawImage	    *dimg;
 
     if (unlikely(self->cells == NULL
 		|| row >= self->n_rows
@@ -1329,34 +1387,69 @@ vim_draw_area_add_image(
     h = gdk_texture_get_height(image);
 
     node = gsk_texture_node_new(image,
-	    &GRAPHENE_RECT_INIT(FILL_X(col), FILL_Y(row), w, h));
-    if (node == NULL)
-	return;
+	    &GRAPHENE_RECT_INIT(FILL_X(col) - src_x, FILL_Y(row) - src_y,
+		w, h));
 
-    old = node;
-    node = gsk_clip_node_new(node, &clip);
-    gsk_render_node_unref(old);
+    if (node != NULL)
+    {
+	graphene_rect_init(&clip, FILL_X(col), FILL_Y(row), draw_w, draw_h);
 
-    g_queue_push_tail(self->images, node);
+	old = node;
+	node = gsk_clip_node_new(node, &clip);
+	gsk_render_node_unref(old);
+    }
+
+    link = vim_draw_area_get_image(self, id);
+    if (link == NULL)
+    {
+	dimg = g_new(DrawImage, 1);
+
+	dimg->id = id;
+	dimg->zindex = zindex;
+	dimg->node = node;
+
+	link = g_list_alloc();
+	link->data = dimg;
+    }
+    else
+    {
+	dimg = link->data;
+
+	gsk_render_node_unref(dimg->node);
+	dimg->node = node;
+
+	if (dimg->zindex == zindex)
+	    return;
+	else
+	{
+	    dimg->zindex = zindex;
+	    g_queue_unlink(self->images, link);
+	}
+    }
+
+    vim_draw_area_queue_image(self, link);
+}
+
+    static void
+draw_image_free(DrawImage *dimg)
+{
+    gsk_render_node_unref(dimg->node);
+    g_free(dimg);
 }
 
 /*
- * Remove the render node that contains the given texture if it exists.
+ * Remove the image with the given id if it exists
  */
     void
-vim_draw_area_remove_image(VimDrawArea *self, GdkTexture *image)
+vim_draw_area_remove_image(VimDrawArea *self, int id)
 {
-    for (GList *s = self->images->head; s != NULL; s = s->next)
-    {
-	GskRenderNode *node = gsk_clip_node_get_child(s->data);
+    GList *link = vim_draw_area_get_image(self, id);
 
-	if (gsk_texture_node_get_texture(node) == image)
-	{
-	    gsk_render_node_unref(s->data);
-	    g_queue_delete_link(self->images, s);
-	    return;
-	}
-    }
+    if (link == NULL)
+	return;
+
+    draw_image_free(link->data);
+    g_queue_delete_link(self->images, link);
 }
 #endif
 
@@ -1463,7 +1556,12 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 #ifdef FEAT_IMAGE_GDK
     // Draw images after any possible inversions
     for (GList *s = self->images->head; s != NULL; s = s->next)
-	gtk_snapshot_append_node(snapshot, s->data);
+    {
+	DrawImage *dimg = s->data;
+
+	if (dimg->node != NULL)
+	    gtk_snapshot_append_node(snapshot, dimg->node);
+    }
 #endif
 }
 

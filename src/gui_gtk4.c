@@ -1481,14 +1481,16 @@ gui_mch_clear_all(void)
 
 #ifdef FEAT_IMAGE_GDK
     void
+gui_gtk4_remove_image(win_T *wp)
+{
+    vim_draw_area_remove_image(VIM_DRAW_AREA(gui.drawarea), wp->w_id);
+}
+
+    void
 gui_mch_free_popup_image(win_T *wp)
 {
     if (wp->w_popup_image_texture != NULL)
-    {
-	vim_draw_area_remove_image(VIM_DRAW_AREA(gui.drawarea),
-		wp->w_popup_image_texture);
 	g_clear_object(&wp->w_popup_image_texture);
-    }
 }
 
 /*
@@ -1557,12 +1559,9 @@ gui_mch_draw_popup_image(
     maybe_set_image_texture(wp, FALSE);
     if (gui.drawarea != NULL)
     {
-	// Must remove the existing image if any.
-	vim_draw_area_remove_image(VIM_DRAW_AREA(gui.drawarea),
-		wp->w_popup_image_texture);
 	vim_draw_area_add_image(VIM_DRAW_AREA(gui.drawarea),
 		wp->w_popup_image_texture, row, col, src_x, src_y,
-		draw_w, draw_h);
+		draw_w, draw_h, wp->w_zindex, wp->w_id);
 
 	gtk_widget_queue_draw(gui.drawarea);
     }

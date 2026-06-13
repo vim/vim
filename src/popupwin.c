@@ -945,6 +945,10 @@ apply_general_options(win_T *wp, dict_T *dict)
 # ifdef FEAT_IMAGE_KITTY
 		popup_image_clear_kitty(wp);
 # endif
+# ifdef FEAT_IMAGE_GDK
+		if (gui.in_use)
+		    gui_gtk4_remove_image(wp);
+# endif
 		VIM_CLEAR(wp->w_popup_image_data);
 		wp->w_popup_image_w = 0;
 		wp->w_popup_image_h = 0;
@@ -2376,6 +2380,10 @@ popup_adjust_position(win_T *wp)
 		    // Kitty placements need to be deleted explicitly before
 		    // the popup goes hidden -- see popup_hide().
 		    popup_image_clear_kitty(wp);
+#endif
+#ifdef FEAT_IMAGE_GDK
+		    if (gui.in_use)
+			gui_gtk4_remove_image(wp);
 #endif
 		    popup_hide_for_textprop(wp);
 		    if (wp->w_winrow + popup_height(wp) >= cmdline_row)
@@ -4245,6 +4253,12 @@ popup_hide(win_T *wp)
     // delete APC before hiding so the image goes away with the popup.
     popup_image_clear_kitty(wp);
 #endif
+#ifdef FEAT_IMAGE_GDK
+    if (gui.in_use)
+	// Same reason as above for kitty. GdkTexture's are retained and
+	// rendered until they are removed.
+	gui_gtk4_remove_image(wp);
+#endif
     wp->w_popup_flags |= POPF_HIDDEN;
     // Do not decrement b_nwindows, we still reference the buffer.
     if (wp->w_winrow + popup_height(wp) >= cmdline_row)
@@ -4444,6 +4458,10 @@ popup_free(win_T *wp)
 #ifdef FEAT_IMAGE_KITTY
     // Remove the kitty placement before win_free_popup() invalidates wp.
     popup_image_clear_kitty(wp);
+#endif
+#ifdef FEAT_IMAGE_GDK
+    if (gui.in_use)
+	gui_gtk4_remove_image(wp);
 #endif
     sign_undefine_by_name(popup_get_sign_name(wp), FALSE);
     wp->w_buffer->b_locked = FALSE;
