@@ -235,7 +235,7 @@ func Test_screenpos_conceallevel_three_multibyte()
 
   call setline(1, "x\u3042Y")
   redraw
-  call assert_equal(#{col: 1, row: 1, endcol: 2, curscol: 2},
+  call assert_equal(#{col: 1, row: 1, endcol: 2, curscol: 1},
 	\ screenpos(win_getid(), 1, 2))
 
   bwipe!

@@ -785,7 +785,7 @@ func Test_conceallevel_three_wrap()
   call setline(1, "X\u3042Y")
   call cursor(1, 2)
   redraw
-  call assert_equal(2, screenpos(0, 1, col('.')).curscol)
+  call assert_equal(1, screenpos(0, 1, col('.')).curscol)
 
   syntax clear test
   call CloseWindow()

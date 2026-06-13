@@ -1571,8 +1571,6 @@ textpos2screenpos(
 
 	    if (concealed_vcol >= 0 && wp->w_p_wrap)
 	    {
-		colnr_T vcol_width = ecol - scol;
-
 		conceal_delta = concealed_vcol - scol;
 		if (conceal_delta != 0
 			&& pos->col < ml_get_buf_len(wp->w_buffer, lnum)
@@ -1581,8 +1579,6 @@ textpos2screenpos(
 		scol += conceal_delta;
 		ccol += conceal_delta;
 		ecol += conceal_delta;
-		if (vcol_width > 0 && ccol == scol)
-		    ccol = ecol;
 	    }
 # endif
 
