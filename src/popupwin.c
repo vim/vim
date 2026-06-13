@@ -7010,6 +7010,10 @@ popup_image_clear_kitty(win_T *wp)
 {
     char_u  *seq;
 
+#  ifdef FEAT_GUI
+    if (gui.in_use)
+	return;
+#  endif
     if (wp == NULL || wp->w_popup_image_data == NULL || wp->w_id <= 0)
 	return;
     if (popup_image_backend() != IMAGE_BACKEND_KITTY)
