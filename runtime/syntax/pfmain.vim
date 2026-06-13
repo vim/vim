@@ -497,6 +497,7 @@ syntax keyword pfmainConf smtp_defer_if_no_mx_address_found
 syntax keyword pfmainConf smtp_delivery_status_filter
 syntax keyword pfmainConf smtp_destination_concurrency_limit
 syntax keyword pfmainConf smtp_destination_recipient_limit
+syntax keyword pfmainConf smtp_destination_rate_delay
 syntax keyword pfmainConf smtp_discard_ehlo_keyword_address_maps
 syntax keyword pfmainConf smtp_discard_ehlo_keywords
 syntax keyword pfmainConf smtp_dns_reply_filter
@@ -1290,6 +1291,7 @@ syntax match pfmainRef "$\<smtp_defer_if_no_mx_address_found\>"
 syntax match pfmainRef "$\<smtp_delivery_status_filter\>"
 syntax match pfmainRef "$\<smtp_destination_concurrency_limit\>"
 syntax match pfmainRef "$\<smtp_destination_recipient_limit\>"
+syntax match pfmainRef "$\<smtp_destination_rate_delay\>"
 syntax match pfmainRef "$\<smtp_discard_ehlo_keyword_address_maps\>"
 syntax match pfmainRef "$\<smtp_discard_ehlo_keywords\>"
 syntax match pfmainRef "$\<smtp_dns_reply_filter\>"
