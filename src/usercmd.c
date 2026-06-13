@@ -24,6 +24,7 @@ typedef struct ucmd
     cmd_addr_T	uc_addr_type;	// The command's address type
     sctx_T	uc_script_ctx;	// SCTX where the command was defined
     int		uc_flags;	// some UC_ flags
+    int		uc_compl_opt;	// completion options (UCC_ flags)
 #ifdef FEAT_EVAL
     char_u	*uc_compl_arg;	// completion argument if any
 #endif
@@ -211,6 +212,7 @@ find_ucmd(
 		    if (xp != NULL)
 		    {
 			xp->xp_arg = uc->uc_compl_arg;
+			xp->xp_complete_opt = uc->uc_compl_opt;
 			xp->xp_script_ctx = uc->uc_script_ctx;
 			xp->xp_script_ctx.sc_lnum += SOURCING_LNUM;
 		    }
@@ -282,6 +284,16 @@ set_context_in_user_cmd(expand_T *xp, char_u *arg_in)
 	    {
 		xp->xp_context = EXPAND_USER_COMPLETE;
 		xp->xp_pattern = p + 1;
+	    }
+	    else if (STRNICMP(arg, "completeopt", p - arg) == 0)
+	    {
+		xp->xp_context = EXPAND_USER_COMPLETEOPT;
+		// xp_pattern points to the last comma-separated item being
+		// typed so that completion replaces only that item.
+		xp->xp_pattern = p + 1;
+		for (char_u *c = p + 1; *c != NUL; ++c)
+		    if (*c == ',')
+			xp->xp_pattern = c + 1;
 	    }
 	    else if (STRNICMP(arg, "nargs", p - arg) == 0)
 	    {
@@ -440,7 +452,7 @@ get_user_cmd_flags(expand_T *xp UNUSED, int idx)
 {
     static char *user_cmd_flags[] = {
 	"addr", "bang", "bar", "buffer", "complete",
-	"count", "nargs", "range", "register", "keepscript"
+	"completeopt", "count", "nargs", "range", "register", "keepscript"
     };
 
     if (idx < 0 || idx >= (int)ARRAY_LENGTH(user_cmd_flags))
@@ -471,6 +483,26 @@ get_user_cmd_complete(expand_T *xp UNUSED, int idx)
     if (idx < 0 || idx >= (int)ARRAY_LENGTH(command_complete_tab))
 	return NULL;
     return command_complete_tab[idx].value.string;
+}
+
+/*
+ * Names of options accepted by -completeopt= for :command.  Keep in sync with
+ * parse_completeopt_arg() below.
+ */
+static char *user_cmd_completeopt_tab[] = {
+    "escape"
+};
+
+/*
+ * Function given to ExpandGeneric() to obtain the list of values for
+ * -completeopt.
+ */
+    char_u *
+get_user_cmd_completeopt(expand_T *xp UNUSED, int idx)
+{
+    if (idx < 0 || idx >= (int)ARRAY_LENGTH(user_cmd_completeopt_tab))
+	return NULL;
+    return (char_u *)user_cmd_completeopt_tab[idx];
 }
 
 /*
@@ -715,6 +747,9 @@ uc_list(char_u *name, size_t name_len)
 			len += (int)uc_compl_arglen;
 		    }
 		}
+		if (p_verbose > 0 && (cmd->uc_compl_opt & UCC_ESCAPE))
+		    len += vim_snprintf((char *)IObuff + len, IOSIZE - len,
+						       " -completeopt=escape");
 #endif
 	    }
 
@@ -912,6 +947,72 @@ parse_compl_arg(
 }
 
 /*
+ * Parse a -completeopt= value.  "value" points to a comma-separated list of
+ * option names; on success the corresponding UCC_ flags are OR'ed into
+ * "*compl_opt".
+ * Returns FAIL on an unknown name.
+ */
+    static int
+parse_completeopt_arg(char_u *value, int vallen, int *compl_opt)
+{
+    char_u  *p = value;
+    char_u  *end = value + vallen;
+    int	    flags = 0;
+
+    if (vallen == 0)
+    {
+	semsg(_(e_argument_required_for_str), "-completeopt");
+	return FAIL;
+    }
+
+    while (p < end)
+    {
+	char_u	*comma;
+	size_t	itemlen;
+	int	matched = FALSE;
+	int	i;
+
+	comma = vim_strchr(p, ',');
+	if (comma == NULL || comma > end)
+	    itemlen = (size_t)(end - p);
+	else
+	    itemlen = (size_t)(comma - p);
+
+	if (itemlen == 0)
+	{
+	    semsg(_(e_invalid_value_for_argument_str), "completeopt");
+	    return FAIL;
+	}
+
+	for (i = 0; i < (int)ARRAY_LENGTH(user_cmd_completeopt_tab); ++i)
+	{
+	    char *name = user_cmd_completeopt_tab[i];
+
+	    if (STRLEN(name) == itemlen
+				   && STRNCMP(p, name, itemlen) == 0)
+	    {
+		if (STRCMP(name, "escape") == 0)
+		    flags |= UCC_ESCAPE;
+		matched = TRUE;
+		break;
+	    }
+	}
+	if (!matched)
+	{
+	    semsg(_(e_invalid_value_for_argument_str), "completeopt");
+	    return FAIL;
+	}
+
+	p += itemlen;
+	if (p < end && *p == ',')
+	    ++p;
+    }
+
+    *compl_opt |= flags;
+    return OK;
+}
+
+/*
  * Scan attributes in the ":command" command.
  * Return FAIL when something is wrong.
  */
@@ -924,6 +1025,7 @@ uc_scan_attr(
     int		*flags,
     int		*complp,
     char_u	**compl_arg,
+    int		*compl_opt,
     cmd_addr_T	*addr_type_arg)
 {
     char_u	*p;
@@ -1054,6 +1156,17 @@ invalid_count:
 								      == FAIL)
 		return FAIL;
 	}
+	else if (STRNICMP(attr, "completeopt", attrlen) == 0)
+	{
+	    if (val == NULL)
+	    {
+		semsg(_(e_argument_required_for_str), "-completeopt");
+		return FAIL;
+	    }
+
+	    if (parse_completeopt_arg(val, (int)vallen, compl_opt) == FAIL)
+		return FAIL;
+	}
 	else if (STRNICMP(attr, "addr", attrlen) == 0)
 	{
 	    *argt |= EX_RANGE;
@@ -1093,6 +1206,7 @@ uc_add_command(
     int		flags,
     int		compl,
     char_u	*compl_arg UNUSED,
+    int		compl_opt,
     cmd_addr_T	addr_type,
     int		force)
 {
@@ -1186,6 +1300,7 @@ uc_add_command(
     cmd->uc_argt = argt;
     cmd->uc_def = def;
     cmd->uc_compl = compl;
+    cmd->uc_compl_opt = compl_opt;
     cmd->uc_script_ctx = current_sctx;
     if (flags & UC_VIM9)
 	cmd->uc_script_ctx.sc_version = SCRIPT_VERSION_VIM9;
@@ -1268,6 +1383,7 @@ ex_command(exarg_T *eap)
     int		flags = 0;
     int		compl = EXPAND_NOTHING;
     char_u	*compl_arg = NULL;
+    int		compl_opt = 0;
     cmd_addr_T	addr_type_arg = ADDR_NONE;
     int		has_attr = (eap->arg[0] == '-');
     int		name_len;
@@ -1280,7 +1396,7 @@ ex_command(exarg_T *eap)
 	++p;
 	end = skiptowhite(p);
 	if (uc_scan_attr(p, end - p, &argt, &def, &flags, &compl,
-					   &compl_arg, &addr_type_arg) == FAIL)
+			       &compl_arg, &compl_opt, &addr_type_arg) == FAIL)
 	    goto theend;
 	p = skipwhite(end);
     }
@@ -1326,6 +1442,13 @@ ex_command(exarg_T *eap)
 		       (char_u *)_(e_complete_used_without_allowing_arguments),
 								   TRUE, TRUE);
     }
+    else if ((compl_opt & UCC_ESCAPE) && (argt & EX_ARGSPACE))
+    {
+	// -nargs=_ disables the argument splitter, so escaping spaces in
+	// inserted matches has no effect.  Reject the combination instead of
+	// silently ignoring it.
+	emsg(_(e_completeopt_escape_cannot_be_used_with_nargs_underscore));
+    }
     else
     {
 	char_u *tofree = NULL;
@@ -1333,7 +1456,7 @@ ex_command(exarg_T *eap)
 	p = may_get_cmd_block(eap, p, &tofree, &flags);
 
 	uc_add_command(name, end - name, p, argt, def, flags, compl, compl_arg,
-						  addr_type_arg, eap->forceit);
+					compl_opt, addr_type_arg, eap->forceit);
 	vim_free(tofree);
 
 	return;  // success
@@ -1823,6 +1946,11 @@ uc_check_code(
 		STRCPY(buf, eap->arg);
 	    break;
 	case 1: // Quote, but don't split
+	{
+	    // For -completeopt=escape give <q-args> the logical value: a
+	    // backslash before a space, tab or backslash is collapsed.
+	    int	unesc = (cmd->uc_compl_opt & UCC_ESCAPE) != 0;
+
 	    result = STRLEN(eap->arg) + 2;
 	    for (p = eap->arg; *p; ++p)
 	    {
@@ -1830,6 +1958,13 @@ uc_check_code(
 		    // DBCS can contain \ in a trail byte, skip the
 		    // double-byte character.
 		    ++p;
+		else if (unesc && *p == '\\'
+				     && (VIM_ISWHITE(p[1]) || p[1] == '\\'))
+		{
+		    if (VIM_ISWHITE(p[1]))
+			--result;
+		    ++p;
+		}
 		else
 		     if (*p == '\\' || *p == '"')
 		    ++result;
@@ -1844,6 +1979,13 @@ uc_check_code(
 			// DBCS can contain \ in a trail byte, copy the
 			// double-byte character to avoid escaping.
 			*buf++ = *p++;
+		    else if (unesc && *p == '\\'
+				     && (VIM_ISWHITE(p[1]) || p[1] == '\\'))
+		    {
+			++p;	// drop the escaping backslash
+			if (*p == '\\')
+			    *buf++ = '\\';	// re-escape for the quotes
+		    }
 		    else
 			 if (*p == '\\' || *p == '"')
 			*buf++ = '\\';
@@ -1853,6 +1995,7 @@ uc_check_code(
 	    }
 
 	    break;
+	}
 	case 2: // Quote and split (<f-args>)
 	    // This is hard, so only do it once, and cache the result
 	    if (*split_buf == NULL)

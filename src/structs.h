@@ -665,6 +665,7 @@ typedef struct expand
     xp_prefix_T	xp_prefix;
 #if defined(FEAT_EVAL)
     char_u	*xp_arg;		// completion function
+    int		xp_complete_opt;	// UCC_ flags for user command
     sctx_T	xp_script_ctx;		// SCTX for completion function
 #endif
     int		xp_backslash;		// one of the XP_BS_ values

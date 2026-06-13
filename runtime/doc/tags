@@ -2525,6 +2525,7 @@ $quote	eval.txt	/*$quote*
 :command-bar	map.txt	/*:command-bar*
 :command-buffer	map.txt	/*:command-buffer*
 :command-complete	map.txt	/*:command-complete*
+:command-completeopt	map.txt	/*:command-completeopt*
 :command-completion	map.txt	/*:command-completion*
 :command-completion-custom	map.txt	/*:command-completion-custom*
 :command-completion-customlist	map.txt	/*:command-completion-customlist*

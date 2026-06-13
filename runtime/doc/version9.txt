@@ -52617,6 +52617,15 @@ when Vim is running in |restricted-mode|.
 
 Using |:cscope| is no longer allowed.
 
+Commands ~
+--------
+- |:command-completion-customlist| can return a list of dictionaries with
+  kind/menu/info/abbr for the popup menu.
+- New argument handling for user commands |:command-nargs| using the "-nars=_"
+  attribute to handle completion of single arguments with spaces as expected.
+- New :command attribute |:command-completeopt| escapes spaces in
+  custom completion matches so they survive as a single argument.
+
 Other ~
 -----
 - The new |xdg.vim| script for full XDG compatibility is included.
@@ -52639,13 +52648,9 @@ Other ~
   'completeopt' option
 - Channel can handle |Blob| messages |channel-open-options|.
 - Added the "u" flag to 'shortmess' to silence undo/redo messages: |shm-u|
-- |:command-completion-customlist| can return a list of dictionaries with
-  kind/menu/info/abbr for the popup menu.
 - |C-indenting| detects comments better.
 - The |package-hlyank| can now optionally highlight the last put region as
   well.
-- New argument handling for user commands |:command-nargs| using the "-nars=_"
-  attribute to handle completion of single arguments with spaces as expected.
 - Support %0{} in 'statusline' to insert the expression result verbatim and
   not drop leading spaces |stl-%0{|.
 - Generated Session and View files are written in Vim9 script, see |:mksession|,

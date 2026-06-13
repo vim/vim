@@ -373,10 +373,10 @@ endfunc
 
 func Test_CmdCompletion()
   call feedkeys(":com -\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"com -addr bang bar buffer complete count keepscript nargs range register', @:)
+  call assert_equal('"com -addr bang bar buffer complete completeopt count keepscript nargs range register', @:)
 
   call feedkeys(":com -nargs=0 -\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"com -nargs=0 -addr bang bar buffer complete count keepscript nargs range register', @:)
+  call assert_equal('"com -nargs=0 -addr bang bar buffer complete completeopt count keepscript nargs range register', @:)
 
   call feedkeys(":com -nargs=\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"com -nargs=* + 0 1 ? _', @:)
@@ -518,6 +518,149 @@ func Test_CmdCompletion()
   delfunc CustCompl
 
   delcom DoCmd
+endfunc
+
+" Test for -completeopt=escape: spaces, tabs and backslashes returned by a
+" customlist/custom completion function are backslash-escaped when inserted
+" into the command line, so the value survives as a single argument.  The
+" ArgLead passed to the function and the matches shown in the popup menu
+" remain unescaped.
+func Test_command_completeopt_escape()
+  let g:EscArgLead = ''
+  func! EscOne(A, L, P)
+    let g:EscArgLead = a:A
+    return ['hello world']
+  endfunc
+  func! EscBs(A, L, P)
+    let g:EscArgLead = a:A
+    return ['foo\bar']
+  endfunc
+  func! EscBoth(A, L, P)
+    let g:EscArgLead = a:A
+    return ['foo bar\baz']
+  endfunc
+  func! EscTab(A, L, P)
+    let g:EscArgLead = a:A
+    return ["foo\tbar"]
+  endfunc
+  func! EscCustom(A, L, P)
+    let g:EscArgLead = a:A
+    return "hello world"
+  endfunc
+  func! EscMulti(A, L, P)
+    let g:EscArgLead = a:A
+    return filter(['one value', 'two values', 'three values'],
+          \       {_, v -> stridx(v, a:A) == 0})
+  endfunc
+
+  " customlist + -completeopt=escape: spaces and backslashes are escaped.
+  com! -nargs=1 -complete=customlist,EscOne -completeopt=escape DoCmd
+        \ let g:EscQargs = <q-args>
+  call feedkeys(":DoCmd \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"DoCmd hello\ world', @:)
+  " <q-args> yields the unescaped value.
+  let g:EscQargs = ''
+  call feedkeys(":DoCmd \<Tab>\<CR>", 'tx')
+  call assert_equal('hello world', g:EscQargs)
+  delcom DoCmd
+
+  com! -nargs=1 -complete=customlist,EscBs -completeopt=escape DoCmd echo <q-args>
+  call feedkeys(":DoCmd \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"DoCmd foo\\bar', @:)
+  delcom DoCmd
+
+  com! -nargs=1 -complete=customlist,EscBoth -completeopt=escape DoCmd echo <q-args>
+  call feedkeys(":DoCmd \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"DoCmd foo\ bar\\baz', @:)
+  delcom DoCmd
+
+  " A tab in a match is escaped like a space (the argument splitter also
+  " splits on tabs) and <q-args> yields the literal tab again.
+  com! -nargs=1 -complete=customlist,EscTab -completeopt=escape DoCmd
+        \ let g:EscQargs = <q-args>
+  call feedkeys(":DoCmd \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"DoCmd foo\\\tbar", @:)
+  " CTRL-A (insert all matches) escapes each match too.
+  call feedkeys(":DoCmd \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"DoCmd foo\\\tbar", @:)
+  let g:EscQargs = ''
+  call feedkeys(":DoCmd \<Tab>\<CR>", 'tx')
+  call assert_equal("foo\tbar", g:EscQargs)
+  let g:EscArgLead = ''
+  call assert_equal(["foo\tbar"], getcompletion("DoCmd foo\\\tb", 'cmdline'))
+  call assert_equal("foo\tb", g:EscArgLead)
+  delcom DoCmd
+  unlet g:EscQargs
+
+  " custom (newline-separated) + -completeopt=escape.
+  com! -nargs=1 -complete=custom,EscCustom -completeopt=escape DoCmd echo <q-args>
+  call feedkeys(":DoCmd \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"DoCmd hello\ world', @:)
+  delcom DoCmd
+
+  " Without -completeopt=escape the literal string is inserted as-is.
+  com! -nargs=1 -complete=customlist,EscOne DoCmd echo <q-args>
+  call feedkeys(":DoCmd \<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"DoCmd hello world', @:)
+  delcom DoCmd
+
+  " getcompletion() returns the unescaped form even with -completeopt=escape,
+  " because the escape only applies at cmdline insertion, not the pum/list.
+  com! -nargs=1 -complete=customlist,EscBoth -completeopt=escape DoCmd echo <q-args>
+  call assert_equal(['foo bar\baz'], getcompletion('DoCmd ', 'cmdline'))
+  delcom DoCmd
+
+  " ArgLead passed to the completion function is unescaped: the user typed
+  " `foo\ b` (logical "foo b"), so the function should see "foo b", not
+  " "foo\ b", and `getcompletion()` should find the "foo bar\baz" match.
+  com! -nargs=1 -complete=customlist,EscBoth -completeopt=escape DoCmd echo <q-args>
+  let g:EscArgLead = ''
+  call assert_equal(['foo bar\baz'], getcompletion('DoCmd foo\ b', 'cmdline'))
+  call assert_equal('foo b', g:EscArgLead)
+  delcom DoCmd
+
+  " Same logic applies to custom (newline-separated): the regex used for
+  " filtering is built from the unescaped pattern, so "hello\ wo" matches
+  " "hello world".
+  com! -nargs=1 -complete=custom,EscCustom -completeopt=escape DoCmd echo <q-args>
+  let g:EscArgLead = ''
+  call assert_equal(['hello world'], getcompletion('DoCmd hello\ wo', 'cmdline'))
+  call assert_equal('hello wo', g:EscArgLead)
+  delcom DoCmd
+
+  " Multi-argument case: with -nargs=+ the argument splitter still runs, so an
+  " escaped match stays a single argument and <f-args> splits the line on the
+  " unescaped spaces.  This is the scenario -nargs=_ cannot express.
+  com! -nargs=+ -complete=customlist,EscMulti -completeopt=escape DoCmd
+        \ let g:EscArgs = [<f-args>]
+  let g:EscArgs = []
+  call feedkeys(":DoCmd one\<Tab> two\<Tab>\<CR>", 'tx')
+  call assert_equal(['one value', 'two values'], g:EscArgs)
+  delcom DoCmd
+  unlet g:EscArgs
+
+  " Tab-completion on the attribute value.
+  call feedkeys(":com -completeopt=esc\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"com -completeopt=escape', @:)
+
+  " Invalid value gives E475; empty value gives E179.
+  call assert_fails('com! -nargs=1 -complete=customlist,EscOne -completeopt=bogus DoCmd :',
+        \ 'E475:')
+  call assert_fails('com! -nargs=1 -complete=customlist,EscOne -completeopt= DoCmd :',
+        \ 'E179:')
+
+  " -completeopt=escape is meaningless with -nargs=_ (the splitter is disabled),
+  " so the combination is rejected at command-definition time.
+  call assert_fails('com! -nargs=_ -complete=customlist,EscOne -completeopt=escape DoCmd :',
+        \ 'E1579:')
+
+  delfunc EscOne
+  delfunc EscBs
+  delfunc EscBoth
+  delfunc EscTab
+  delfunc EscCustom
+  delfunc EscMulti
+  unlet g:EscArgLead
 endfunc
 
 func CallExecute(A, L, P)

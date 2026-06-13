@@ -25,6 +25,8 @@ static int	expand_shellcmd(char_u *filepat, char_u ***matches, int *numMatches, 
 #if defined(FEAT_EVAL)
 static int	ExpandUserDefined(char_u *pat, expand_T *xp, regmatch_T *regmatch, char_u ***matches, int *numMatches);
 static int	ExpandUserList(expand_T *xp, char_u ***matches, int *numMatches);
+static char_u	*apply_user_completeopt_escape(expand_T *xp, char_u *str);
+static char_u	*unescape_user_completeopt_pat(expand_T *xp, char_u *src, int srclen, int *new_lenp);
 #endif
 static int	expand_pattern_in_buf(char_u *pat, int dir, char_u ***matches, int *numMatches);
 
@@ -294,13 +296,24 @@ nextwild(
     else
     {
 	char_u	*tmp;
+	char_u	*pat_src = xp->xp_pattern;
+	int	pat_len = xp->xp_pattern_len;
+#if defined(FEAT_EVAL)
+	char_u	*unesc = unescape_user_completeopt_pat(xp, pat_src, pat_len,
+								  &pat_len);
+	if (unesc != NULL)
+	    pat_src = unesc;
+#endif
 
 	if (cmdline_fuzzy_completion_supported(xp)
 		|| xp->xp_context == EXPAND_PATTERN_IN_BUF)
 	    // Don't modify the search string
-	    tmp = vim_strnsave(xp->xp_pattern, xp->xp_pattern_len);
+	    tmp = vim_strnsave(pat_src, pat_len);
 	else
-	    tmp = addstar(xp->xp_pattern, xp->xp_pattern_len, xp->xp_context);
+	    tmp = addstar(pat_src, pat_len, xp->xp_context);
+#if defined(FEAT_EVAL)
+	vim_free(unesc);
+#endif
 
 	// Translate string into pattern and expand it.
 	if (tmp == NULL)
@@ -805,6 +818,72 @@ win_redr_status_matches(
     vim_free(buf);
 }
 
+#if defined(FEAT_EVAL)
+/*
+ * Apply -completeopt=escape to a string about to be inserted into the command
+ * line as a completion result.  If "str" is non-NULL and the active expansion
+ * context is a customlist/custom user command with UCC_ESCAPE set, free "str"
+ * and return a newly-allocated copy with spaces, tabs and backslashes prefixed
+ * by a backslash.  Otherwise return "str" unchanged.
+ */
+    static char_u *
+apply_user_completeopt_escape(expand_T *xp, char_u *str)
+{
+    char_u  *p;
+
+    if (str == NULL)
+	return NULL;
+    if ((xp->xp_context != EXPAND_USER_DEFINED
+		&& xp->xp_context != EXPAND_USER_LIST)
+	    || !(xp->xp_complete_opt & UCC_ESCAPE))
+	return str;
+    p = vim_strsave_escaped(str, (char_u *)" \t\\");
+    if (p == NULL)
+	return str;
+    vim_free(str);
+    return p;
+}
+
+/*
+ * For -completeopt=escape on a user command, build the "logical" ArgLead by
+ * collapsing a backslash before a space, tab or backslash in the typed text.
+ * The completion function then sees "foo bar" instead of "foo\ bar".
+ * Returns a newly-allocated string and stores its length in "*new_lenp", or
+ * NULL when no unescape is applicable (caller should keep the original).
+ */
+    static char_u *
+unescape_user_completeopt_pat(
+    expand_T	*xp,
+    char_u	*src,
+    int		srclen,
+    int		*new_lenp)
+{
+    char_u  *buf, *p, *d, *end;
+
+    if ((xp->xp_context != EXPAND_USER_DEFINED
+		&& xp->xp_context != EXPAND_USER_LIST)
+	    || !(xp->xp_complete_opt & UCC_ESCAPE))
+	return NULL;
+
+    buf = alloc(srclen + 1);
+    if (buf == NULL)
+	return NULL;
+
+    d = buf;
+    end = src + srclen;
+    for (p = src; p < end; ++p)
+    {
+	if (*p == '\\' && p + 1 < end
+			   && (p[1] == ' ' || p[1] == TAB || p[1] == '\\'))
+	    ++p;
+	*d++ = *p;
+    }
+    *d = NUL;
+    *new_lenp = (int)(d - buf);
+    return buf;
+}
+#endif
+
 /*
  * Get the next or prev cmdline completion match. The index of the match is set
  * in "xp->xp_selected"
@@ -901,7 +980,13 @@ get_next_or_prev_match(int mode, expand_T *xp)
 
     xp->xp_selected = findex;
     // Return the original text or the selected match
-    return vim_strsave(findex == -1 ? xp->xp_orig : xp->xp_files[findex]);
+    if (findex == -1)
+	return vim_strsave(xp->xp_orig);
+#if defined(FEAT_EVAL)
+    return apply_user_completeopt_escape(xp, vim_strsave(xp->xp_files[findex]));
+#else
+    return vim_strsave(xp->xp_files[findex]);
+#endif
 }
 
 /*
@@ -1101,6 +1186,12 @@ ExpandOne(
 {
     char_u	*ss = NULL;
     int		orig_saved = FALSE;
+#if defined(FEAT_EVAL)
+    // ss_is_match is TRUE when ss is derived from xp_files and should be
+    // escaped per -completeopt=escape before being inserted.  WILD_CANCEL
+    // and WILD_APPLY-without-selection return xp_orig unchanged.
+    int		ss_is_match = FALSE;
+#endif
 
     // first handle the case of using an old match
     if (mode == WILD_NEXT || mode == WILD_PREV
@@ -1110,9 +1201,17 @@ ExpandOne(
     if (mode == WILD_CANCEL)
 	ss = vim_strsave(xp->xp_orig ? xp->xp_orig : (char_u *)"");
     else if (mode == WILD_APPLY)
-	ss = vim_strsave(xp->xp_selected == -1
-			    ? (xp->xp_orig ? xp->xp_orig : (char_u *)"")
-			    : xp->xp_files[xp->xp_selected]);
+    {
+	if (xp->xp_selected == -1)
+	    ss = vim_strsave(xp->xp_orig ? xp->xp_orig : (char_u *)"");
+	else
+	{
+	    ss = vim_strsave(xp->xp_files[xp->xp_selected]);
+#if defined(FEAT_EVAL)
+	    ss_is_match = TRUE;
+#endif
+	}
+    }
 
     // free old names
     if (xp->xp_numfiles != -1 && mode != WILD_ALL && mode != WILD_LONGEST)
@@ -1138,6 +1237,10 @@ ExpandOne(
 	orig_saved = TRUE;
 
 	ss = ExpandOne_start(mode, xp, str, options);
+#if defined(FEAT_EVAL)
+	if (ss != NULL)
+	    ss_is_match = TRUE;
+#endif
     }
 
     // Find longest common part
@@ -1145,6 +1248,10 @@ ExpandOne(
     {
 	ss = find_longest_match(xp, options);
 	xp->xp_selected = -1;			// next p_wc gets first one
+#if defined(FEAT_EVAL)
+	if (ss != NULL)
+	    ss_is_match = TRUE;
+#endif
     }
 
     // Concatenate all matching names.  Unless interrupted, this can be slow
@@ -1156,6 +1263,38 @@ ExpandOne(
 	char	*suffix = (options & WILD_USE_NL) ? "\n" : " ";
 	int	n = xp->xp_numfiles - 1;
 	int	i;
+#if defined(FEAT_EVAL)
+	char_u	**files = xp->xp_files;
+	char_u	**escaped = NULL;
+
+	// When -completeopt=escape is set for a user command, escape each
+	// match before joining so the separator spaces stay unescaped.
+	if ((xp->xp_context == EXPAND_USER_DEFINED
+		    || xp->xp_context == EXPAND_USER_LIST)
+		&& (xp->xp_complete_opt & UCC_ESCAPE))
+	{
+	    escaped = ALLOC_MULT(char_u *, xp->xp_numfiles);
+	    if (escaped != NULL)
+	    {
+		for (i = 0; i < xp->xp_numfiles; ++i)
+		{
+		    escaped[i] = vim_strsave_escaped(xp->xp_files[i],
+						       (char_u *)" \t\\");
+		    if (escaped[i] == NULL)
+		    {
+			while (--i >= 0)
+			    vim_free(escaped[i]);
+			VIM_CLEAR(escaped);
+			break;
+		    }
+		}
+		if (escaped != NULL)
+		    files = escaped;
+	    }
+	}
+#else
+	char_u	**files = xp->xp_files;
+#endif
 
 	if (xp->xp_prefix == XP_PREFIX_NO)
 	{
@@ -1169,7 +1308,7 @@ ExpandOne(
 	}
 
 	for (i = 0; i < xp->xp_numfiles; ++i)
-	    ss_size += STRLEN(xp->xp_files[i]) + 1;	// +1 for the suffix
+	    ss_size += STRLEN(files[i]) + 1;		// +1 for the suffix
 	++ss_size;					// +1 for the NUL
 
 	ss = alloc(ss_size);
@@ -1184,10 +1323,18 @@ ExpandOne(
 		    ss_size - ss_len,
 		    "%s%s%s",
 		    (i > 0) ? prefix : "",
-		    (char *)xp->xp_files[i],
+		    (char *)files[i],
 		    (i < n) ? suffix : "");
 	    }
 	}
+#if defined(FEAT_EVAL)
+	if (escaped != NULL)
+	{
+	    for (i = 0; i < xp->xp_numfiles; ++i)
+		vim_free(escaped[i]);
+	    vim_free(escaped);
+	}
+#endif
     }
 
     if (mode == WILD_EXPAND_FREE || mode == WILD_ALL)
@@ -1197,6 +1344,12 @@ ExpandOne(
     if (!orig_saved)
 	vim_free(orig);
 
+#if defined(FEAT_EVAL)
+    // WILD_ALL already escaped its component matches in place, so don't
+    // re-escape the joined string (its separator spaces would break).
+    if (ss_is_match && mode != WILD_ALL)
+	ss = apply_user_completeopt_escape(xp, ss);
+#endif
     return ss;
 }
 
@@ -3053,11 +3206,25 @@ expand_cmdline(
 
     // add star to file name, or convert to regexp if not exp. files.
     xp->xp_pattern_len = (int)(str + col - xp->xp_pattern);
-    if (cmdline_fuzzy_completion_supported(xp))
-	// If fuzzy matching, don't modify the search string
-	file_str = vim_strsave(xp->xp_pattern);
-    else
-	file_str = addstar(xp->xp_pattern, xp->xp_pattern_len, xp->xp_context);
+    {
+	char_u	*pat_src = xp->xp_pattern;
+	int	pat_len = xp->xp_pattern_len;
+#if defined(FEAT_EVAL)
+	char_u	*unesc = unescape_user_completeopt_pat(xp, pat_src, pat_len,
+								  &pat_len);
+	if (unesc != NULL)
+	    pat_src = unesc;
+#endif
+
+	if (cmdline_fuzzy_completion_supported(xp))
+	    // If fuzzy matching, don't modify the search string
+	    file_str = vim_strnsave(pat_src, pat_len);
+	else
+	    file_str = addstar(pat_src, pat_len, xp->xp_context);
+#if defined(FEAT_EVAL)
+	vim_free(unesc);
+#endif
+    }
     if (file_str == NULL)
 	return EXPAND_UNSUCCESSFUL;
 
@@ -3360,6 +3527,7 @@ ExpandOther(
 	{EXPAND_USER_CMD_FLAGS, get_user_cmd_flags, FALSE, TRUE},
 	{EXPAND_USER_NARGS, get_user_cmd_nargs, FALSE, TRUE},
 	{EXPAND_USER_COMPLETE, get_user_cmd_complete, FALSE, TRUE},
+	{EXPAND_USER_COMPLETEOPT, get_user_cmd_completeopt, FALSE, TRUE},
 #ifdef FEAT_EVAL
 	{EXPAND_USER_VARS, get_user_var_name, FALSE, TRUE},
 	{EXPAND_FUNCTIONS, get_function_name, FALSE, TRUE},
@@ -4022,7 +4190,13 @@ call_user_expand_func(
 	ccline->cmdbuff[ccline->cmdlen] = 0;
     }
 
-    pat = vim_strnsave(xp->xp_pattern, xp->xp_pattern_len);
+    {
+	int unesc_len;
+	pat = unescape_user_completeopt_pat(xp, xp->xp_pattern,
+						  xp->xp_pattern_len, &unesc_len);
+	if (pat == NULL)
+	    pat = vim_strnsave(xp->xp_pattern, xp->xp_pattern_len);
+    }
 
     args[0].v_type = VAR_STRING;
     args[0].vval.v_string = pat;
@@ -4783,11 +4957,21 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 	}
     }
 
-    if (cmdline_fuzzy_completion_supported(&xpc))
-	// when fuzzy matching, don't modify the search string
-	pat = vim_strnsave(xpc.xp_pattern, xpc.xp_pattern_len);
-    else
-	pat = addstar(xpc.xp_pattern, xpc.xp_pattern_len, xpc.xp_context);
+    {
+	char_u	*pat_src = xpc.xp_pattern;
+	int	pat_len = xpc.xp_pattern_len;
+	char_u	*unesc = unescape_user_completeopt_pat(&xpc, pat_src, pat_len,
+								  &pat_len);
+	if (unesc != NULL)
+	    pat_src = unesc;
+
+	if (cmdline_fuzzy_completion_supported(&xpc))
+	    // when fuzzy matching, don't modify the search string
+	    pat = vim_strnsave(pat_src, pat_len);
+	else
+	    pat = addstar(pat_src, pat_len, xpc.xp_context);
+	vim_free(unesc);
+    }
 
     if (rettv_list_alloc(rettv) == OK && pat != NULL)
     {
