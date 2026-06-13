@@ -1,4 +1,4 @@
-*various.txt*	For Vim version 9.2.  Last change: 2026 Jun 09
+*various.txt*	For Vim version 9.2.  Last change: 2026 Jun 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -424,8 +424,9 @@ m  *+hangul_input*	Hangul input support |hangul|
    *+iconv*		Compiled with the |iconv()| function
    *+iconv/dyn*		Likewise |iconv-dynamic| |/dyn|
 H  *+image*		popup window image attribute, see |popup-image|
-H  *+image_cairo*	|+image| Cairo backend (GTK GUI)
+H  *+image_cairo*	|+image| Cairo backend (GTK2 and GTK3 GUI)
 H  *+image_gdi*		|+image| GDI backend (Windows GUI)
+H  *+image_gdk*		|+image| GDK backend (GTK4 GUI)
 H  *+image_kitty*	|+image| kitty graphics protocol backend (terminal)
 H  *+image_sixel*	|+image| DEC sixel backend (terminal)
 T  *+insert_expand*	|insert_expand| Insert mode completion

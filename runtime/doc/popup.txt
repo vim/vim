@@ -1,4 +1,4 @@
-*popup.txt*	For Vim version 9.2.  Last change: 2026 Jun 09
+*popup.txt*	For Vim version 9.2.  Last change: 2026 Jun 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1186,6 +1186,8 @@ whichever backend is available at runtime:
 	    |+image_gdi|.
     Cairo   composite onto a cairo_image_surface_t on the GTK GUI
 	    (covers GTK 2 and GTK 3).  |+image_cairo|.
+    GDK	    Use GdkTexture, which uploads the image onto the GPU for faster
+	    rendering (only for GTK 4).	|+image_gdk|
 
 Vim itself does NOT link against libpng, libjpeg, libwebp or any image
 decoder.  Format decoding is left to the caller, who can pipe the file

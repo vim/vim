@@ -3104,21 +3104,25 @@ netbeans_draw_multisign_indicator(int row)
     if (!NETBEANS_OPEN)
 	return;
 
+    x = 0;
+    y = row * gui.char_height + 2;
+
 # if GTK_CHECK_VERSION(3,0,0)
+#  ifdef USE_GTK4_SNAPSHOT
+    cr = gui_gtk4_get_multisign_context(x, y, 5, gui.char_height);
+#  else
     cr = cairo_create(gui.surface);
+#  endif
     cairo_set_source_rgba(cr,
 	    gui.fgcolor->red, gui.fgcolor->green, gui.fgcolor->blue,
 	    gui.fgcolor->alpha);
 # endif
 
-    x = 0;
-    y = row * gui.char_height + 2;
-
     for (i = 0; i < gui.char_height - 3; i++)
 # if GTK_CHECK_VERSION(3,0,0)
 	cairo_rectangle(cr, x+2, y++, 1, 1);
 # else
-	gdk_draw_point(drawable, gui.text_gc, x+2, y++);
+    gdk_draw_point(drawable, gui.text_gc, x+2, y++);
 # endif
 
 # if GTK_CHECK_VERSION(3,0,0)

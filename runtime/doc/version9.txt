@@ -52655,6 +52655,7 @@ Platform specific ~
 -----------------
 - support OpenType font features in 'guifont' for DirectWrite (Win32)
 - Include strptime() fallback for MS-Windows
+- Hardware-accelerated rendering for the GTK4 GUI via |gtk4-hwaccel|.
 
 xxd ~
 ---

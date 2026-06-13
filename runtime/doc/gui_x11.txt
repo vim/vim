@@ -1,4 +1,4 @@
-*gui_x11.txt*	For Vim version 9.2.  Last change: 2026 Jun 07
+*gui_x11.txt*	For Vim version 9.2.  Last change: 2026 Jun 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -366,7 +366,14 @@ to use software rendering: >
 
     $ GSK_RENDERER=cairo gvim
     $ LIBGL_ALWAYS_SOFTWARE=true gvim
-
+<
+							*gtk4-hwaccel*
+If Vim is compiled with the configure option "--enable-gtk4-hwaccel" set, then
+the GTK4 GUI will use GtkSnapshot instead of Cairo, allowing for hardware
+accelerated rendering, which is much faster.  Enabling this configure option
+also makes the GTK4 GUI use |+image_gdk| instead of |+image_cairo| for
+rendering popup window images.  Note that this feature is currently
+experimental.
 
 Tooltip Colors ~
 							*gtk-tooltip-colors*

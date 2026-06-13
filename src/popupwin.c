@@ -945,6 +945,10 @@ apply_general_options(win_T *wp, dict_T *dict)
 # ifdef FEAT_IMAGE_KITTY
 		popup_image_clear_kitty(wp);
 # endif
+# ifdef FEAT_IMAGE_GDK
+		if (gui.in_use)
+		    gui_gtk4_remove_image(wp);
+# endif
 		VIM_CLEAR(wp->w_popup_image_data);
 		wp->w_popup_image_w = 0;
 		wp->w_popup_image_h = 0;
@@ -959,7 +963,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 		wp->w_popup_image_seq_cells_h = 0;
 		wp->w_popup_image_emit_valid = false;
 # endif
-# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO)
+# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO) || defined(FEAT_IMAGE_GDK)
 #  ifdef FEAT_GUI
 		if (gui.in_use)
 		    gui_mch_free_popup_image(wp);
@@ -1021,7 +1025,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 # endif
 		if (wp->w_popup_image_data != NULL)
 		{
-# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO)
+# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO) || defined(FEAT_IMAGE_GDK)
 		    bool updated_in_place = false;
 
 #  ifdef FEAT_GUI
@@ -2385,6 +2389,10 @@ popup_adjust_position(win_T *wp)
 		    // Kitty placements need to be deleted explicitly before
 		    // the popup goes hidden -- see popup_hide().
 		    popup_image_clear_kitty(wp);
+#endif
+#ifdef FEAT_IMAGE_GDK
+		    if (gui.in_use)
+			gui_gtk4_remove_image(wp);
 #endif
 		    popup_hide_for_textprop(wp);
 		    if (wp->w_winrow + popup_height(wp) >= cmdline_row)
@@ -4254,6 +4262,12 @@ popup_hide(win_T *wp)
     // delete APC before hiding so the image goes away with the popup.
     popup_image_clear_kitty(wp);
 #endif
+#ifdef FEAT_IMAGE_GDK
+    if (gui.in_use)
+	// Same reason as above for kitty. GdkTexture's are retained and
+	// rendered until they are removed.
+	gui_gtk4_remove_image(wp);
+#endif
     wp->w_popup_flags |= POPF_HIDDEN;
     // Do not decrement b_nwindows, we still reference the buffer.
     if (wp->w_winrow + popup_height(wp) >= cmdline_row)
@@ -4453,6 +4467,10 @@ popup_free(win_T *wp)
 #ifdef FEAT_IMAGE_KITTY
     // Remove the kitty placement before win_free_popup() invalidates wp.
     popup_image_clear_kitty(wp);
+#endif
+#ifdef FEAT_IMAGE_GDK
+    if (gui.in_use)
+	gui_gtk4_remove_image(wp);
 #endif
     sign_undefine_by_name(popup_get_sign_name(wp), FALSE);
     wp->w_buffer->b_locked = FALSE;
@@ -6689,7 +6707,7 @@ fill_opacity_padding(
 }
 
 #ifdef FEAT_IMAGE
-# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO)
+# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO) || defined(FEAT_IMAGE_GDK)
 /*
  * Apply "clipwindow" cropping to a popup image about to be drawn by the GUI.
  * On entry "*row"/"*col" are the popup's logical content top-left (cell
@@ -6766,7 +6784,8 @@ popup_image_gui_clip(
  * popup intends to draw).
  */
 # if defined(FEAT_IMAGE_SIXEL) || defined(FEAT_IMAGE_KITTY) \
-	|| defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO)
+	|| defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO) \
+	|| defined(FEAT_IMAGE_GDK)
     static void
 popup_invalidate_prev_image_rect(win_T *wp, popup_clip_T *cl)
 {
@@ -6788,7 +6807,8 @@ popup_invalidate_prev_image_rect(win_T *wp, popup_clip_T *cl)
     // the invalidation when nothing about the destination rectangle has
     // changed, so a stationary popup doesn't churn through screen_fill+image
     // re-emit on every redraw cycle.
-#  if defined(FEAT_GUI) && (defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO))
+#  if (defined(FEAT_GUI) && (defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO))) \
+    || defined(FEAT_IMAGE_GDK)
     if (gui.in_use)
     {
 	int src_x, src_y, draw_w, draw_h;
@@ -6806,7 +6826,8 @@ popup_invalidate_prev_image_rect(win_T *wp, popup_clip_T *cl)
     }
 #  endif
 #  if defined(FEAT_IMAGE_SIXEL) || defined(FEAT_IMAGE_KITTY)
-#   if defined(FEAT_GUI) && (defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO))
+#   if defined(FEAT_GUI) && (defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO)) \
+    || defined(FEAT_IMAGE_GDK)
     else
 #   endif
     {
@@ -6871,7 +6892,7 @@ popup_emit_image(win_T *wp)
     row = wp->w_winrow + wp->w_popup_border[0] + wp->w_popup_padding[0];
     col = wp->w_wincol + wp->w_popup_border[3] + wp->w_popup_padding[3];
 
-# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO)
+# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO) || defined(FEAT_IMAGE_GDK)
     if (gui.in_use)
     {
 	int src_x, src_y, draw_w, draw_h;
@@ -7200,7 +7221,8 @@ update_popups(void (*win_update)(win_T *wp))
 	popup_compute_clip(wp, &cl);
 
 #if defined(FEAT_IMAGE) && (defined(FEAT_IMAGE_SIXEL) || defined(FEAT_IMAGE_KITTY) \
-		|| defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO))
+		|| defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO) \
+		|| defined(FEAT_IMAGE_GDK))
 	// Clear ScreenLines under the previous image-emit rectangle so the
 	// body/padding/border draws below actually paint over the cells even
 	// when the desired char+attr matches what was already there.  See the

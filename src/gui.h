@@ -385,7 +385,9 @@ typedef struct Gui
     GdkColor	*spcolor;	    // GDK-styled special color
 # endif
 # if defined(USE_GTK3) || defined(USE_GTK4)
+#  ifndef USE_GTK4_SNAPSHOT
     cairo_surface_t *surface;       // drawarea surface
+#  endif
 # else
     GdkGC	*text_gc;	    // cached GC for normal text
 # endif

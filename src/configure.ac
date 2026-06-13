@@ -2715,6 +2715,19 @@ if test "x$SKIP_GTK4" != "xYES" -a "$enable_gui_canon" != "gtk4"; then
   fi
 fi
 
+if test "x$SKIP_GTK4" != "xYES" -a "$enable_gui_canon" = "gtk4"; then
+  AC_MSG_CHECKING(--enable-gtk4-hwaccel argument)
+  AC_ARG_ENABLE(gtk4-hwaccel,
+	[  --enable-gtk4-hwaccel  Use hardware accelerated rendering backend for GTK4 [default=no]],
+	, enable_gtk4_hwaccel="no")
+  AC_MSG_RESULT($enable_gtk4_hwaccel)
+
+  if test "x$enable_gtk4_hwaccel" = "xyes"; then
+    AC_DEFINE(USE_GTK4_SNAPSHOT)
+  fi
+fi
+
+
 if test "x$SKIP_GTK3" != "xYES" -a "$enable_gui_canon" != "gtk3"; then
   AC_MSG_CHECKING(whether or not to look for GTK+ 3)
   AC_ARG_ENABLE(gtk3-check,
