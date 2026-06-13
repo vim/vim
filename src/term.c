@@ -5274,6 +5274,13 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
 	}
 
+	// foot terminal sends 1;12700;0
+	if (arg[0] == 1 && version == 12700 && arg[2] == 0)
+	{
+	    term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
+	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
+	}
+
 	// GNU screen sends 83;30600;0, 83;40500;0, etc.
 	// 30600/40500 is a version number of GNU screen. DA2 support is added
 	// on 3.6.  DCS string has a special meaning to GNU screen, but xterm
