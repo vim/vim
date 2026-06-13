@@ -83,7 +83,7 @@ jobs:
 
     steps:
       - name: Checkout repository from GitHub
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
 
       - name: Build
         timeout-minutes: 15
@@ -170,7 +170,7 @@ jobs:
       - name: Codecov
         timeout-minutes: 20
         if: matrix.coverage
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           flags: linux,${{ matrix.features }}-${{ matrix.compiler }}-${{ join(matrix.extra, '-') }}
           token: ${{ secrets.CODECOV_TOKEN }}
