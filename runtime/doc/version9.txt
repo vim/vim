@@ -52649,6 +52649,8 @@ Other ~
 - Channel can handle |Blob| messages |channel-open-options|.
 - Added the "u" flag to 'shortmess' to silence undo/redo messages: |shm-u|
 - |C-indenting| detects comments better.
+- The |%| command skips parens inside comments when 'comments' defines
+  C-style "//" or "/*" comments.
 - The |package-hlyank| can now optionally highlight the last put region as
   well.
 - Support %0{} in 'statusline' to insert the expression result verbatim and
