@@ -1055,6 +1055,8 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
     }
     else if (STRCMP(name, (char_u *)"nfa_fail") == 0)
 	nfa_fail_for_testing = val;
+    else if (STRCMP(name, (char_u *)"syn_idlist_cache") == 0)
+	disable_syn_idlist_cache_for_testing = val;
     else if (STRCMP(name, (char_u *)"no_query_mouse") == 0)
 	no_query_mouse_for_testing = val;
     else if (STRCMP(name, (char_u *)"no_wait_return") == 0)
@@ -1081,6 +1083,7 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	disable_redraw_for_testing = FALSE;
 	ignore_redraw_flag_for_testing = FALSE;
 	nfa_fail_for_testing = FALSE;
+	disable_syn_idlist_cache_for_testing = FALSE;
 	no_query_mouse_for_testing = FALSE;
 	ui_delay_for_testing = 0;
 	reset_term_props_on_termresponse = FALSE;
