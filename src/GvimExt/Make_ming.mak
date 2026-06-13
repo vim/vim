@@ -86,8 +86,8 @@ $(DLL): $(OBJ) $(RES) $(DEFFILE)
 			$(LIBS) \
 		-Wl,-Bstatic $(STATIC_LIBS) -Wl,-Bdynamic
 
-gvimext.o: gvimext.cpp
-	$(CXX) $(CXXFLAGS) -DFEAT_GETTEXT -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) -c $? -o $@
+gvimext.o: gvimext.cpp gvimext.h ../version.h
+	$(CXX) $(CXXFLAGS) -DFEAT_GETTEXT -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) -c $< -o $@
 
 $(RES): gvimext_ming.rc
 	$(WINDRES) $(WINDRES_FLAGS) --input-format=rc --output-format=coff -DMING $? -o $@

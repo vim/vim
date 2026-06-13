@@ -409,3 +409,13 @@ echo &channel &inccommand &mousescroll &pumblend &redrawdebug &scrollback
 echo &shada &shadafile &statuscolumn &termpastefilter &termsync &winbar
 echo &winblend
 
+" Dict-key only
+
+echo module.42
+echo module[0].42
+echo module.foo().42
+
+echo module.42life
+echo module[0].42life
+echo module.foo().42life
+

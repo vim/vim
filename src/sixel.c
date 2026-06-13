@@ -598,7 +598,8 @@ sixel_encode(image_rgb_T *img)
 		{
 		    if (x < band_state->xmin[pix])
 			band_state->xmin[pix] = x;
-		    band_state->xmax[pix] = x;
+		    if (x > band_state->xmax[pix])
+			band_state->xmax[pix] = x;
 		}
 		band_state->bits[(size_t)pix * width + x] |= rowmask;
 	    }

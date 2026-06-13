@@ -3554,6 +3554,7 @@ gtk4_get_clipboard(Clipboard_T *cbd, GdkContentProvider **provider)
 typedef struct {
     Clipboard_T *cbd;
     gboolean	done;
+    gboolean	abandoned;	// requester timed out, callback owns "crd"
 } ClipReadData;
 
 /*
@@ -3596,7 +3597,7 @@ clip_read_cb(GdkClipboard *cb, GAsyncResult *result, ClipReadData *crd)
     len = (long)arr->len;
     actual = final = g_byte_array_free(arr, FALSE);
 
-    if (clip_convert_data(&final, &len, &motion_type,
+    if (!crd->abandoned && clip_convert_data(&final, &len, &motion_type,
 	    STRCMP(mime_type, VIM_MIMETYPE_NAME) == 0,
 	    STRCMP(mime_type, VIMENC_MIMETYPE_NAME) == 0, &tofree) == OK)
 	clip_yank_selection(motion_type, final, len, cbd);
@@ -3606,7 +3607,11 @@ clip_read_cb(GdkClipboard *cb, GAsyncResult *result, ClipReadData *crd)
 exit:
     if (in_stream != NULL)
 	g_object_unref(in_stream);
-    crd->done = TRUE;
+    // free "crd" if the requester gave up, else mark the read complete
+    if (crd->abandoned)
+	vim_free(crd);
+    else
+	crd->done = TRUE;
 }
 
 /*
@@ -3623,25 +3628,37 @@ clip_mch_request_selection(Clipboard_T *cbd)
 	NULL
     };
     GdkClipboard	*clipboard;
-    ClipReadData	crd;
+    ClipReadData	*crd;
     time_t		start;
 
     clipboard = gtk4_get_clipboard(cbd, NULL);
     if (clipboard == NULL)
 	return;
 
-    crd.cbd = cbd;
-    crd.done = FALSE;
+    // Heap-allocate: on a timeout this returns before the read completes,
+    // so "crd" must outlive this stack frame.
+    crd = ALLOC_ONE(ClipReadData);
+    if (crd == NULL)
+	return;
+    crd->cbd = cbd;
+    crd->done = FALSE;
+    crd->abandoned = FALSE;
 
     gdk_clipboard_read_async(
 	    clipboard, clip_html ? supported_mimes : mimes_no_html,
-	    G_PRIORITY_HIGH, NULL, (GAsyncReadyCallback)clip_read_cb, &crd);
+	    G_PRIORITY_HIGH, NULL, (GAsyncReadyCallback)clip_read_cb, crd);
 
     // Spin until the async callback fires, with a 3-second wall-clock
     // timeout as a safety net.
     start = time(NULL);
-    while (!crd.done && time(NULL) < start + 3)
+    while (!crd->done && time(NULL) < start + 3)
 	g_main_context_iteration(NULL, TRUE);
+
+    if (crd->done)
+	vim_free(crd);
+    else
+	// timed out: hand ownership to the callback, which frees "crd"
+	crd->abandoned = TRUE;
 }
 
 static int in_clipboard_set = FALSE;

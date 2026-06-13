@@ -2670,6 +2670,8 @@ stop_insert(
 		curwin->w_cursor.col = strip_col;
 		for (;;)
 		{
+		    if (gchar_cursor() == NUL && curwin->w_cursor.col > 0)
+			--curwin->w_cursor.col;
 		    cc = gchar_cursor();
 		    if (!VIM_ISWHITE(cc))
 			break;
