@@ -170,6 +170,74 @@ fail:
 }
 
 /*
+ * Shared tail of the kitty-graphics-support probe (see popup_kitty_probe()
+ * in popupwin.c for the UNIX side and mch_kitty_probe() in os_win32.c for
+ * the Windows console side).  "buf[n]" holds the raw, NUL-terminated bytes
+ * read back from the terminal after sending the `\e_Gi=31...a=q` query
+ * followed by the DA1 (`\e[c`) sentinel.
+ *
+ * Push everything except the kitty (APC \e_G...\e\\) and DA1 (\e[?...c)
+ * response chunks back into the input buffer so user keystrokes typed
+ * during the probe are not swallowed.  Scan the buffer linearly, emitting
+ * any byte that is not inside a recognised response range.
+ *
+ * Returns TRUE when the buffer contains the positive "_Gi=31;OK" reply.
+ */
+    int
+kitty_probe_parse(char *buf, int n)
+{
+    int i = 0;
+    int seg_start = 0;
+
+    while (i < n)
+    {
+	int response_end = -1;
+
+	if (buf[i] == '\033' && i + 1 < n)
+	{
+	    if (buf[i + 1] == '_')
+	    {
+		// Kitty APC reply: scan to terminating ESC '\\'.
+		int j;
+		for (j = i + 2; j + 1 < n; ++j)
+		    if (buf[j] == '\033' && buf[j + 1] == '\\')
+		    {
+			response_end = j + 2;
+			break;
+		    }
+	    }
+	    else if (buf[i + 1] == '[' && i + 2 < n && buf[i + 2] == '?')
+	    {
+		// DA1 reply: ESC [ ? ... c (the '?' distinguishes the
+		// primary device-attributes answer from an arrow key
+		// sequence like ESC [ A that the user might have typed).
+		int j;
+		for (j = i + 3; j < n; ++j)
+		    if (buf[j] == 'c')
+		    {
+			response_end = j + 1;
+			break;
+		    }
+	    }
+	}
+	if (response_end > 0)
+	{
+	    if (i > seg_start)
+		add_to_input_buf((char_u *)(buf + seg_start), i - seg_start);
+	    i = response_end;
+	    seg_start = i;
+	}
+	else
+	    ++i;
+    }
+    if (n > seg_start)
+	add_to_input_buf((char_u *)(buf + seg_start), n - seg_start);
+
+    // A positive kitty reply contains the literal "_Gi=31;OK".
+    return strstr(buf, "_Gi=31;OK") != NULL;
+}
+
+/*
  * Build a kitty "delete image" APC sequence for the placement created
  * by kitty_encode() with the matching `id`.  The caller must
  * vim_free() the returned buffer.  Returns NULL on OOM or id <= 0.

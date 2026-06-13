@@ -1807,62 +1807,9 @@ popup_kitty_probe(void)
     buf[n] = NUL;
     tcsetattr(fd_in, TCSANOW, &old_t);
 
-    // Push everything except the kitty (APC \e_G...\e\\) and DA1 (\e[?...c)
-    // response chunks back into the input buffer so user keystrokes typed
-    // during the probe are not swallowed.  Scan the buffer linearly,
-    // emitting any byte that is not inside a recognised response range.
-    {
-	int i = 0;
-	int seg_start = 0;
-
-	while (i < n)
-	{
-	    int response_end = -1;
-
-	    if (buf[i] == '\033' && i + 1 < n)
-	    {
-		if (buf[i + 1] == '_')
-		{
-		    // Kitty APC reply: scan to terminating ESC '\\'.
-		    int j;
-		    for (j = i + 2; j + 1 < n; ++j)
-			if (buf[j] == '\033' && buf[j + 1] == '\\')
-			{
-			    response_end = j + 2;
-			    break;
-			}
-		}
-		else if (buf[i + 1] == '[' && i + 2 < n && buf[i + 2] == '?')
-		{
-		    // DA1 reply: ESC [ ? ... c (the '?' distinguishes the
-		    // primary device-attributes answer from an arrow key
-		    // sequence like ESC [ A that the user might have typed).
-		    int j;
-		    for (j = i + 3; j < n; ++j)
-			if (buf[j] == 'c')
-			{
-			    response_end = j + 1;
-			    break;
-			}
-		}
-	    }
-	    if (response_end > 0)
-	    {
-		if (i > seg_start)
-		    add_to_input_buf((char_u *)(buf + seg_start),
-							i - seg_start);
-		i = response_end;
-		seg_start = i;
-	    }
-	    else
-		++i;
-	}
-	if (n > seg_start)
-	    add_to_input_buf((char_u *)(buf + seg_start), n - seg_start);
-    }
-
-    // A positive kitty reply contains the literal "_Gi=31;OK".
-    return strstr(buf, "_Gi=31;OK") != NULL;
+    // Filter the probe responses out of the read-back bytes (pushing user
+    // keystrokes back into the input buffer) and check for a positive reply.
+    return kitty_probe_parse(buf, n);
 }
 # endif
 
@@ -1870,8 +1817,9 @@ popup_kitty_probe(void)
  * Pick a terminal image backend.  Cached on first call.  Returns
  * IMAGE_BACKEND_KITTY when the host terminal advertises kitty graphics
  * support via an active `\e_Gi=31...a=q` probe followed by `\e[c`
- * (see popup_kitty_probe), otherwise IMAGE_BACKEND_SIXEL.  The probe
- * works regardless of $TERM, vendor env vars, or terminal name, so it
+ * (see popup_kitty_probe for UNIX, mch_kitty_probe in os_win32.c for the
+ * Windows console), otherwise IMAGE_BACKEND_SIXEL.  The probe works
+ * regardless of $TERM, vendor env vars, or terminal name, so it
  * handles Konsole, WSL-from-Ghostty, ssh, and any future terminal that
  * adopts the protocol.
  */
@@ -1889,6 +1837,11 @@ popup_image_backend(void)
     // Ask the terminal whether it speaks kitty.  Costs one round-trip
     // (~300ms worst case) on first call.
     if (popup_kitty_probe())
+	detected = IMAGE_BACKEND_KITTY;
+# elif defined(FEAT_IMAGE_KITTY) && defined(MSWIN)
+    // Same probe, but reading the reply needs Windows console plumbing
+    // (console handles, VT input mode) that lives in os_win32.c.
+    if (mch_kitty_probe())
 	detected = IMAGE_BACKEND_KITTY;
 # endif
     return detected;
