@@ -4865,7 +4865,7 @@ ex_substitute(exarg_T *eap)
 #ifdef FEAT_PROP_POPUP
 		    if (curbuf->b_has_textprop)
 		    {
-			int bytes_added = sublen - 1 - (regmatch.endpos[0].col
+			int bytes_added = (int)sublen - 1 - (regmatch.endpos[0].col
 						   - regmatch.startpos[0].col);
 
 			// When text properties are changed, need to save for
@@ -4931,7 +4931,7 @@ ex_substitute(exarg_T *eap)
 					continue;
 				    text_props[wi] = text_props[pi];
 				    text_props[wi].tp_col +=
-					regmatch.startpos[0].col + sublen - 1;
+					regmatch.startpos[0].col + (colnr_T)sublen - 1;
 				    text_props[wi].u.tp_text = NULL;
 				    ++wi;
 				}
