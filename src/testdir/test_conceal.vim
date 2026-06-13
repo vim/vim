@@ -915,6 +915,78 @@ func Test_conceallevel_three_cursor_moved_redraw()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_conceallevel_three_open_above_redraw()
+  CheckRunVimInTerminal
+
+  let code =<< trim [CODE]
+    set wrap conceallevel=3 signcolumn=no nonumber
+    execute 'syntax match test /X\+/ conceal cchar=' .. ' '
+    call setline(1, repeat('X', &columns - 3) .. 'YYYY')
+    call cursor(1, 1)
+  [CODE]
+  call writefile(code, 'XTest_conceallevel_three_open_above_redraw', 'D')
+  let buf = RunVimInTerminal('-S XTest_conceallevel_three_open_above_redraw',
+        \ {'rows': 6, 'cols': 80})
+  call WaitForAssert({-> assert_equal(repeat('X', 77) .. 'YYY',
+        \ term_getline(buf, 1))})
+  call assert_equal('Y', term_getline(buf, 2))
+
+  call term_sendkeys(buf, 'O')
+  call WaitForAssert({-> assert_equal('', term_getline(buf, 1))})
+  call assert_equal('YYYY', term_getline(buf, 2))
+  call assert_equal('~' .. repeat(' ', 79), term_getline(buf, 3))
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func s:Run_conceallevel_three_open_above_redraw(name, setup, keys, expected)
+  let code = [
+        \ 'set wrap conceallevel=3 signcolumn=no nonumber',
+        \ 'execute ''syntax match test /X\+/ conceal cchar='' .. '' ''',
+        \ 'call setline(1, repeat("X", &columns - 3) .. "YYYY")',
+        \ ] + a:setup
+  call writefile(code, 'XTest_conceallevel_three_' .. a:name, 'D')
+  let buf = RunVimInTerminal('-S XTest_conceallevel_three_' .. a:name,
+        \ {'rows': 8, 'cols': 80})
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+  call term_sendkeys(buf, a:keys)
+  call WaitForAssert({-> assert_equal(a:expected[0], term_getline(buf, 1))})
+  for i in range(1, len(a:expected) - 1)
+    call assert_equal(a:expected[i], term_getline(buf, i + 1))
+  endfor
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_conceallevel_three_insert_above_redraw()
+  CheckRunVimInTerminal
+
+  call s:Run_conceallevel_three_open_above_redraw('open_above_cocu_n',
+        \ ['set concealcursor=n', 'call cursor(1, 1)'],
+        \ 'O',
+        \ ['', 'YYYY', '~' .. repeat(' ', 79)])
+
+  call s:Run_conceallevel_three_open_above_redraw('open_above_showbreak',
+        \ ['set showbreak=++', 'call cursor(1, 1)'],
+        \ 'O',
+        \ ['', 'YYYY', '~' .. repeat(' ', 79)])
+
+  call s:Run_conceallevel_three_open_above_redraw('open_above_rightleft',
+        \ ['set rightleft', 'call cursor(1, 1)'],
+        \ 'O',
+        \ ['', repeat(' ', 76) .. 'YYYY', repeat(' ', 79) .. '~'])
+
+  call s:Run_conceallevel_three_open_above_redraw('put_above_normal',
+        \ ['call cursor(1, 1)', 'call setreg("a", "NEW", "l")'],
+        \ '"aP',
+        \ ['NEW', 'YYYY', '~' .. repeat(' ', 79)])
+
+  call s:Run_conceallevel_three_open_above_redraw('put_above_ex',
+        \ ['call cursor(1, 1)', 'call setreg("a", "NEW", "l")'],
+        \ ':put! a' .. "\<CR>",
+        \ ['NEW', 'YYYY', '~' .. repeat(' ', 79)])
+endfunc
+
 " Test that line wrapping is correct when double-width chars are concealed.
 func Test_conceal_double_width_wrap()
   CheckScreendump
