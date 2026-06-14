@@ -2685,7 +2685,9 @@ gui_mch_menu_grey(vimmenu_T *menu, int grey)
     void
 gui_mch_menu_hidden(vimmenu_T *menu, int hidden)
 {
-    if (menu->id == 0)
+    // GMenu-based menu items have no real widget, only the (GtkWidget *)1
+    // marker; they cannot be toggled via the widget API.
+    if (menu->id == NULL || menu->id == (GtkWidget *)1)
 	return;
 
     if (hidden)
