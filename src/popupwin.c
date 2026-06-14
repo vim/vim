@@ -2076,8 +2076,9 @@ popup_image_composites_frames(void)
 	// The surface is composed off-screen before it is exposed, so the
 	// repaint cannot flicker there.
 	return true;
-#  else
-	// GDI blits with SRCCOPY: a full replace, no residue.
+#  elif defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_GDK)
+	// GDI blits with SRCCOPY: a full replace, no residue. GDK uses retained
+	// render nodes, so there is no blitting in the first place.
 	return false;
 #  endif
 # endif
@@ -7147,7 +7148,8 @@ popup_images_invalidate(void)
  * here would instead paint a lower zindex image over the cells of a
  * higher zindex popup drawn on top of it.
  */
-# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO)
+# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO) \
+    || defined(FEAT_IMAGE_GDK)
     void
 update_popup_images(void)
 {
