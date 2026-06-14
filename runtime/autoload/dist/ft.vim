@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 May 29
+# Last Change:		2026 Jun 14
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -1498,14 +1498,25 @@ enddef
 
 # Determine if a *.tf file is TF mud client or terraform
 export def FTtf()
-  var numberOfLines = line('$')
-  for i in range(1, numberOfLines)
-    var currentLine = trim(getline(i))
-    var firstCharacter = currentLine[0]
-    if firstCharacter !=? ";" && firstCharacter !=? "/" && firstCharacter !=? ""
-      setf terraform
-      return
+  if exists("g:filetype_tf")
+    exe "setf " .. g:filetype_tf
+    return
+  endif
+
+  var continuation: bool = false
+  for lnum in range(1, min([line("$"), 100]))
+    var line = getline(lnum)
+    # TF supports backslash line continuation, so a continued line may begin
+    # with any character.  Only test the first character of a line that does
+    # not continue a previous one.
+    if !continuation
+      var firstchar = trim(line)[0]
+      if firstchar !=? ";" && firstchar !=? "/" && firstchar !=? ""
+        setf terraform
+        return
+      endif
     endif
+    continuation = line =~ '\\$'
   endfor
   setf tf
 enddef
