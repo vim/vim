@@ -37,10 +37,13 @@ trim_trailing_whitespace = false
 trim_trailing_whitespace = false
 
 #
-# Some custom files do not use tabs
+# Some custom files and git commit message do not use tabs
 #
 [src/sign.c]
 indent_style = space
 
 [src/sound.c]
+indent_style = space
+
+[.git/COMMIT_EDITMSG]
 indent_style = space
