@@ -286,6 +286,8 @@ static gboolean drop_cb(GtkDropTarget *target, const GValue *value, double x, do
 #ifdef FEAT_GUI_TABLINE
 static void on_select_tab(GtkNotebook *notebook, gpointer *page, gint idx, gpointer data);
 static void on_tab_reordered(GtkNotebook *notebook, gpointer *page, gint idx, gpointer data);
+static GMenu *create_tabline_popup_menu(GActionGroup **agroup_store);
+static void tabline_menu_press_event(GtkGestureClick *gesture, int n_press, double x, double y, GtkWidget *popover);
 #endif
 static void mainwin_destroy_cb(GObject *object, gpointer data);
 static gboolean delete_event_cb(GtkWindow *window, gpointer data);
@@ -506,6 +508,32 @@ gui_mch_init(void)
 		     G_CALLBACK(on_select_tab), NULL);
     g_signal_connect(G_OBJECT(gui.tabline), "page-reordered",
 		     G_CALLBACK(on_tab_reordered), NULL);
+
+    // Create right click popup menu for tabline
+    {
+	GtkGesture	*click;
+	GActionGroup	*agroup;
+	GMenu		*menu;
+	GtkWidget	*popover;
+
+	click = gtk_gesture_click_new();
+	menu = create_tabline_popup_menu(&agroup);
+	popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(menu));
+
+	gtk_widget_set_parent(popover, gui.tabline);
+	gtk_widget_insert_action_group(gui.tabline, "tabline", agroup);
+	g_object_unref(agroup);
+
+	gtk_popover_set_has_arrow(GTK_POPOVER(popover), FALSE);
+	gtk_popover_set_position(GTK_POPOVER(popover), GTK_POS_BOTTOM);
+
+	gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(click),
+		GDK_BUTTON_SECONDARY);
+
+	g_signal_connect_object(click, "pressed",
+		G_CALLBACK(tabline_menu_press_event), popover, G_CONNECT_DEFAULT);
+	gtk_widget_add_controller(gui.tabline, GTK_EVENT_CONTROLLER(click));
+    }
 #endif
 
     // The form widget manages absolute positioning of scrollbars and the draw
@@ -2839,6 +2867,78 @@ on_tab_reordered(
 	tabpage_move(idx + 1);
     else
 	tabpage_move(idx);
+}
+
+/*
+ * Handle selecting an item in the tab line popup menu.
+ */
+    static void
+tabline_menu_action_cb(
+	GSimpleAction	*action UNUSED,
+	GVariant	*parameter UNUSED,
+	void		*udata)
+{
+    int cur = gtk_notebook_get_current_page(GTK_NOTEBOOK(gui.tabline));
+    send_tabline_menu_event(cur + 1, GPOINTER_TO_INT(udata));
+}
+
+    static void
+add_tabline_menu_item(
+	GMenu	    *gmenu,
+	GActionMap  *amap,
+	const char  *name,
+	const char  *action,
+	int	    resp)
+{
+    GSimpleAction *act = g_simple_action_new(action, NULL);
+    char detailed[32];
+
+    g_signal_connect(act, "activate", G_CALLBACK(tabline_menu_action_cb),
+	    GINT_TO_POINTER(resp));
+    g_action_map_add_action(amap, G_ACTION(act));
+    g_object_unref(act);
+
+    vim_snprintf(detailed, sizeof(detailed), "tabline.%s", action);
+    g_menu_append(gmenu, name, detailed);
+}
+
+/*
+ * Create a menu for the tab line.
+ */
+    static GMenu *
+create_tabline_popup_menu(GActionGroup **agroup_store)
+{
+    GMenu		*gmenu = g_menu_new();
+    GSimpleActionGroup	*agroup = g_simple_action_group_new();
+
+    add_tabline_menu_item(gmenu, G_ACTION_MAP(agroup),
+	    _("Close tab"), "close-tab", TABLINE_MENU_CLOSE);
+    add_tabline_menu_item(gmenu, G_ACTION_MAP(agroup),
+	    _("New tab"), "new-tab", TABLINE_MENU_NEW);
+    add_tabline_menu_item(gmenu, G_ACTION_MAP(agroup),
+	    _("Open Tab..."), "open-tab", TABLINE_MENU_OPEN);
+
+    *agroup_store = G_ACTION_GROUP(agroup);
+    return gmenu;
+}
+
+    static void
+tabline_menu_press_event(
+	GtkGestureClick *gesture,
+	int		n_press UNUSED,
+	double		x,
+	double		y,
+	GtkWidget	*popover)
+{
+    GdkRectangle rect;
+
+    rect.x = x;
+    rect.y = y;
+    rect.width = 1;
+    rect.height = 1;
+
+    gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
+    gtk_popover_popup(GTK_POPOVER(popover));
 }
 #endif
 
