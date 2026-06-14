@@ -3,11 +3,12 @@ Uninstalling Vim on MS-Windows.
 There are three ways to remove Vim:
 
 1. With the GUI uninstaller.
-   This is only available when Vim was installed with the self-installing
+   This is the only way when Vim was installed with the self-installing
    executable.  This has a minimal number of questions.  It can delete
    everything that was installed.
 
 2. With uninstall.exe.
+   If you used install.exe in the zip package, use this way.
    This removes most installed items, but does not delete the files you
    unpacked.
 

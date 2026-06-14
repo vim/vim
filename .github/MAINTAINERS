@@ -9,7 +9,6 @@
 # So if a pull request only touches javascript files, only these owners
 # will be requested to review.
 
-nsis/lang/russian.nsi					@RestorerZ
 runtime/autoload/beancount.vim				@nathangrigg
 runtime/autoload/beancountcomplete.vim			@nathangrigg
 runtime/autoload/context.vim				@lifepillar

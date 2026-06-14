@@ -205,23 +205,7 @@ MINOR = 2
 # - in this directory:
 #   > make dosbin
 # NSIS self installing exe:
-# - To get NSIS see http://nsis.sourceforge.net
-# - Make sure gvim_ole.exe, vimw32.exe, installw32.exe,
-#   uninstallw32.exe, teew32.exe and xxdw32.exe have been build as mentioned
-#   above.
-# - copy these files (get them from a binary archive or build them):
-#	gvimext.dll in src/GvimExt
-#	gvimext64.dll in src/GvimExt
-#   gvimext64.dll can be obtained from:
-#   https://github.com/vim/vim-win32-installer/releases
-#	It is part of gvim_9.1.*_x64.zip as vim/vim91/GvimExt/gvimext64.dll.
-# - Make sure there is a diff.exe two levels up (get it from a previous Vim
-#   version).  Also put winpty32.dll and winpty-agent.exe there.
-# - go to ../nsis and do:
-#   > nmake.exe -f Make_mvc.mak all
-#    (takes a few minutes).
-#    See nsis/README.txt for details.
-# - Copy gvim##.exe to the dist directory.
+#   See https://github.com/vim/vim-win32-installer
 #
 # 64 bit builds (these are not in the normal distribution, the 32 bit build
 # works just fine on 64 bit systems).
@@ -410,7 +394,7 @@ amisrc: dist prepare
 	mv dist/vim$(VERSION)src.tar.gz dist/vim$(VERSION)src.tgz
 
 # MS-DOS sources
-dossrc: dist dist/$(COMMENT_SRC) license
+dossrc: dist dist/$(COMMENT_SRC)
 	-rm -rf dist/vim$(VERSION)src.zip
 	-rm -rf dist/vim
 	mkdir dist/vim
@@ -427,9 +411,6 @@ dossrc: dist dist/$(COMMENT_SRC) license
 	mv dist/vim/$(VIMRTDIR)/runtime/* dist/vim/$(VIMRTDIR)
 	rmdir dist/vim/$(VIMRTDIR)/runtime
 	cd dist && zip -9 -rD -z vim$(VERSION)src.zip vim <$(COMMENT_SRC)
-
-license:
-	cd nsis && $(MAKE) -f Makefile $@
 
 dosrt: dist dist/$(COMMENT_RT) dosrt_files
 	-rm -rf dist/vim$(VERSION)rt.zip
