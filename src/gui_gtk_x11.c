@@ -814,7 +814,7 @@ scale_factor_event(GtkWidget *widget,
     gtk_window_get_size(GTK_WINDOW(gui.mainwin), &w, &h);
     gui.surface = gdk_window_create_similar_surface(
 	    gtk_widget_get_window(widget),
-	    CAIRO_CONTENT_COLOR_ALPHA,
+	    CAIRO_CONTENT_COLOR,
 	    w, h);
 
     int	    usable_height = h;
@@ -2900,7 +2900,7 @@ drawarea_realize_cb(GtkWidget *widget, gpointer data UNUSED)
 #if GTK_CHECK_VERSION(3,0,0)
     gui.surface = gdk_window_create_similar_surface(
 	    gtk_widget_get_window(widget),
-	    CAIRO_CONTENT_COLOR_ALPHA,
+	    CAIRO_CONTENT_COLOR,
 	    gtk_widget_get_allocated_width(widget),
 	    gtk_widget_get_allocated_height(widget));
 #else
@@ -3035,7 +3035,7 @@ drawarea_configure_event_cb(GtkWidget	      *widget,
 
     gui.surface = gdk_window_create_similar_surface(
 	    gtk_widget_get_window(widget),
-	    CAIRO_CONTENT_COLOR_ALPHA,
+	    CAIRO_CONTENT_COLOR,
 	    event->width, event->height);
 
     gtk_widget_queue_draw(widget);
