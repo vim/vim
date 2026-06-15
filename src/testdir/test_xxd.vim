@@ -838,4 +838,15 @@ func Test_xxd_color_term_unset()
   call delete(outfile)
 endfunc
 
+func Test_xxd_reverse_long_input()
+  " triggered UB in huntype()
+  let input = 'Xxd_reverse_input'
+  call writefile([repeat('1', 515)], input, 'D')
+
+  let out = system(s:xxd_cmd . ' -r ' . input)
+  call assert_true(empty(out))
+  let out = system(s:xxd_cmd . ' -b -r ' . input)
+  call assert_true(empty(out))
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
