@@ -48,15 +48,21 @@ static BalloonEval *current_beval = NULL;
 # ifdef FEAT_GUI_GTK
 static void addEventHandler(GtkWidget *, BalloonEval *);
 static void removeEventHandler(BalloonEval *);
+#  ifdef USE_GTK4
+static gboolean event_cb(GtkEventController *, GdkEvent *, BalloonEval *);
+#  else
 static gint target_event_cb(GtkWidget *, GdkEvent *, gpointer);
 static gint mainwin_event_cb(GtkWidget *, GdkEvent *, gpointer);
+#  endif
 static void pointer_event(BalloonEval *, int, int, unsigned);
 static void key_event(BalloonEval *, unsigned, int);
 static gboolean timeout_cb(gpointer);
-#  if GTK_CHECK_VERSION(3,0,0)
+#  ifndef USE_GTK4
+#   if GTK_CHECK_VERSION(3,0,0)
 static gboolean balloon_draw_event_cb (GtkWidget *, cairo_t *, gpointer);
-#  else
+#   else
 static gint balloon_expose_event_cb (GtkWidget *, GdkEventExpose *, gpointer);
+#   endif
 #  endif
 # else
 static void addEventHandler(Widget, BalloonEval *);
@@ -140,7 +146,7 @@ gui_mch_create_beval_area(
     return beval;
 }
 
-# if defined(FEAT_BEVAL_TIP)
+# if defined(FEAT_BEVAL_TIP) || defined(USE_GTK4)
 /*
  * Destroy a balloon-eval and free its associated memory.
  */
@@ -151,7 +157,11 @@ gui_mch_destroy_beval_area(BalloonEval *beval)
     removeEventHandler(beval);
     // Children will automatically be destroyed
 #  ifdef FEAT_GUI_GTK
+#   ifdef USE_GTK4
+    gtk_widget_unparent(beval->balloonShell);
+#   else
     gtk_widget_destroy(beval->balloonShell);
+#   endif
 #  else
     XtDestroyWidget(beval->balloonShell);
 #  endif
@@ -228,6 +238,14 @@ gui_mch_unpost_balloon(BalloonEval *beval)
     static void
 addEventHandler(GtkWidget *target, BalloonEval *beval)
 {
+#  ifdef USE_GTK4
+    GtkEventController *controller = gtk_event_controller_legacy_new();
+
+    g_signal_connect(controller, "event", G_CALLBACK(event_cb), beval);
+
+    g_object_set_data(G_OBJECT(target), "beval", controller);
+    gtk_widget_add_controller(target, controller);
+#  else
     /*
      * Connect to the generic "event" signal instead of the individual
      * signals for each event type, because the former is emitted earlier.
@@ -252,11 +270,19 @@ addEventHandler(GtkWidget *target, BalloonEval *beval)
 			 G_CALLBACK(mainwin_event_cb),
 			 beval);
     }
+#  endif
 }
 
     static void
 removeEventHandler(BalloonEval *beval)
 {
+#  ifdef USE_GTK4
+    GtkWidget		*target = beval->target;
+    GtkEventController	*controller;
+
+    controller = g_object_get_data(G_OBJECT(target), "beval");
+    gtk_widget_remove_controller(target, controller);
+#  else
     g_signal_handlers_disconnect_by_func(G_OBJECT(beval->target),
 					 FUNC2GENERIC(target_event_cb),
 					 beval);
@@ -268,8 +294,64 @@ removeEventHandler(BalloonEval *beval)
 					     FUNC2GENERIC(mainwin_event_cb),
 					     beval);
     }
+#  endif
 }
 
+#  ifdef USE_GTK4
+    static gboolean
+event_cb(GtkEventController *controller, GdkEvent *event, BalloonEval *beval)
+{
+    int type = gdk_event_get_event_type(event);
+
+    switch (type)
+    {
+	case GDK_ENTER_NOTIFY:
+	case GDK_MOTION_NOTIFY:
+	{
+	    GtkWidget		*root;
+	    graphene_point_t	p;
+	    graphene_point_t	result;
+	    double		x = 0, y = 0;
+
+	    // x and y coords returned by gdk_event_get_position are relative to
+	    // the surface, not the widget, must convert them into widget local
+	    // coordinates.
+	    root = GTK_WIDGET(gtk_widget_get_root(beval->target));
+	    gdk_event_get_position(event, &x, &y);
+	    p.x = x;
+	    p.y = y;
+
+	    if (gtk_widget_compute_point(root, beval->target, &p, &result))
+	    {
+		x = result.x;
+		y = result.y;
+	    }
+
+	    pointer_event(beval, (int)x, (int)y,
+		    gdk_event_get_modifier_state(event));
+	    break;
+	}
+	case GDK_LEAVE_NOTIFY:
+	    if (gdk_crossing_event_get_mode(event) == GDK_CROSSING_NORMAL)
+		cancelBalloon(beval);
+	    break;
+	case GDK_BUTTON_PRESS:
+	case GDK_SCROLL:
+	    cancelBalloon(beval);
+	    break;
+	case GDK_KEY_PRESS:
+	case GDK_KEY_RELEASE:
+	    key_event(beval, gdk_key_event_get_keyval(event),
+		    type == GDK_KEY_PRESS);
+	    break;
+	default:
+	    break;
+    }
+
+    // Always pass through events?
+    return FALSE;
+}
+#  else
     static gint
 target_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
@@ -292,22 +374,22 @@ target_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data)
 		 * GDK_POINTER_MOTION_HINT_MASK is set, thus we cannot obtain
 		 * the coordinates from the GdkEventMotion struct directly.
 		 */
-#  if GTK_CHECK_VERSION(3,0,0)
+#   if GTK_CHECK_VERSION(3,0,0)
 		{
 		    GdkWindow * const win = gtk_widget_get_window(widget);
 		    GdkDisplay * const dpy = gdk_window_get_display(win);
-#   if GTK_CHECK_VERSION(3,20,0)
+#    if GTK_CHECK_VERSION(3,20,0)
 		    GdkSeat * const seat = gdk_display_get_default_seat(dpy);
 		    GdkDevice * const dev = gdk_seat_get_pointer(seat);
-#   else
+#    else
 		    GdkDeviceManager * const mngr = gdk_display_get_device_manager(dpy);
 		    GdkDevice * const dev = gdk_device_manager_get_client_pointer(mngr);
-#   endif
+#    endif
 		    gdk_window_get_device_position(win, dev , &x, &y, &state);
 		}
-#  else
+#   else
 		gdk_window_get_pointer(widget->window, &x, &y, &state);
-#  endif
+#   endif
 		pointer_event(beval, x, y, (unsigned int)state);
 	    }
 	    else
@@ -367,6 +449,7 @@ mainwin_event_cb(GtkWidget *widget UNUSED, GdkEvent *event, gpointer data)
 
     return FALSE; // continue emission
 }
+#  endif
 
     static void
 pointer_event(BalloonEval *beval, int x, int y, unsigned state)
@@ -472,7 +555,8 @@ timeout_cb(gpointer data)
     return FALSE; // don't call me again
 }
 
-#  if GTK_CHECK_VERSION(3,0,0)
+#  ifndef USE_GTK4
+#   if GTK_CHECK_VERSION(3,0,0)
     static gboolean
 balloon_draw_event_cb(GtkWidget *widget,
 		      cairo_t	*cr,
@@ -502,7 +586,7 @@ balloon_draw_event_cb(GtkWidget *widget,
 
     return FALSE;
 }
-#  else
+#   else
     static gint
 balloon_expose_event_cb(GtkWidget *widget,
 			GdkEventExpose *event,
@@ -515,7 +599,8 @@ balloon_expose_event_cb(GtkWidget *widget,
 
     return FALSE; // continue emission
 }
-#  endif // !GTK_CHECK_VERSION(3,0,0)
+#   endif // !GTK_CHECK_VERSION(3,0,0)
+#  endif
 
 # else // !FEAT_GUI_GTK
 
@@ -913,6 +998,39 @@ set_printable_label_text(GtkLabel *label, char_u *text)
 /*
  * Draw a balloon.
  */
+#  ifdef USE_GTK4
+    static void
+drawBalloon(BalloonEval *beval)
+{
+    GdkRectangle    rect;
+    int		    natural_width = 0;
+
+    if (beval->msg == NULL)
+	return;
+
+    set_printable_label_text(GTK_LABEL(beval->balloonLabel), beval->msg);
+
+    rect.x = beval->x;
+    rect.y = beval->y;
+
+    // Make popover appear at the bottom right of the pointer. Also add an
+    // offset (gui.char_width * 3, gui.char_height), so that popover doesn't
+    // block the text. This also prevents the popover from stealing motion
+    // events, making pressing alt (to force show beval) and moving cursor
+    // around feel smooth.
+    gtk_widget_measure(beval->balloonLabel, GTK_ORIENTATION_HORIZONTAL, -1,
+	    NULL, &natural_width, NULL, NULL);
+
+    rect.width = (natural_width > 0 ? natural_width : 1) + gui.char_width * 3;
+    rect.height = gui.char_height;
+
+    gtk_popover_set_pointing_to(GTK_POPOVER(beval->balloonShell), &rect);
+    gtk_popover_popup(GTK_POPOVER(beval->balloonShell));
+
+    beval->showState = ShS_SHOWING;
+    gui_mch_update();
+}
+#  else
     static void
 drawBalloon(BalloonEval *beval)
 {
@@ -930,18 +1048,18 @@ drawBalloon(BalloonEval *beval)
     int		y_offset = EVAL_OFFSET_Y;
     PangoLayout	*layout;
 
-#  if !GTK_CHECK_VERSION(3,22,2)
+#   if !GTK_CHECK_VERSION(3,22,2)
     GdkScreen	*screen;
 
     screen = gtk_widget_get_screen(beval->target);
     gtk_window_set_screen(GTK_WINDOW(beval->balloonShell), screen);
-#  endif
+#   endif
     gui_gtk_get_screen_geom_of_win(beval->target, 0, 0,
 	    &screen_x, &screen_y, &screen_w, &screen_h);
-#  if !GTK_CHECK_VERSION(3,0,0)
+#   if !GTK_CHECK_VERSION(3,0,0)
     gtk_widget_ensure_style(beval->balloonShell);
     gtk_widget_ensure_style(beval->balloonLabel);
-#  endif
+#   endif
 
     set_printable_label_text(GTK_LABEL(beval->balloonLabel), beval->msg);
     /*
@@ -950,11 +1068,11 @@ drawBalloon(BalloonEval *beval)
      * builtin maximum value of about 65 Latin characters.
      */
     layout = gtk_label_get_layout(GTK_LABEL(beval->balloonLabel));
-#  ifdef PANGO_WRAP_WORD_CHAR
+#   ifdef PANGO_WRAP_WORD_CHAR
     pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
-#  else
+#   else
     pango_layout_set_wrap(layout, PANGO_WRAP_WORD);
-#  endif
+#   endif
     pango_layout_set_width(layout,
 	    // try to come up with some reasonable width
 	    PANGO_SCALE * CLAMP(gui.num_cols * gui.char_width,
@@ -962,11 +1080,11 @@ drawBalloon(BalloonEval *beval)
 		MAX(20, screen_w - 20)));
 
     // Calculate the balloon's width and height.
-#  if GTK_CHECK_VERSION(3,0,0)
+#   if GTK_CHECK_VERSION(3,0,0)
     gtk_widget_get_preferred_size(beval->balloonShell, &requisition, NULL);
-#  else
+#   else
     gtk_widget_size_request(beval->balloonShell, &requisition);
-#  endif
+#   endif
 
     // Compute position of the balloon area
     gdk_window_get_origin(gtk_widget_get_window(beval->target), &x, &y);
@@ -986,16 +1104,17 @@ drawBalloon(BalloonEval *beval)
 	    MAX(0, screen_y + screen_h - requisition.height));
 
     // Show the balloon
-#  if GTK_CHECK_VERSION(3,0,0)
+#   if GTK_CHECK_VERSION(3,0,0)
     gtk_window_move(GTK_WINDOW(beval->balloonShell), x, y);
-#  else
+#   else
     gtk_widget_set_uposition(beval->balloonShell, x, y);
-#  endif
+#   endif
     gtk_widget_show(beval->balloonShell);
 
     beval->showState = ShS_SHOWING;
     gui_mch_update();
 }
+#  endif
 
 /*
  * Undraw a balloon.
@@ -1004,7 +1123,11 @@ drawBalloon(BalloonEval *beval)
 undrawBalloon(BalloonEval *beval)
 {
     if (beval->balloonShell != NULL)
+#  ifdef USE_GTK4
+	gtk_popover_popdown(GTK_POPOVER(beval->balloonShell));
+#  else
 	gtk_widget_hide(beval->balloonShell);
+#  endif
     beval->showState = ShS_NEUTRAL;
 }
 
@@ -1023,6 +1146,29 @@ cancelBalloon(BalloonEval *beval)
     beval->showState = ShS_NEUTRAL;
 }
 
+#  ifdef USE_GTK4
+    static void
+createBalloonEvalWindow(BalloonEval *beval)
+{
+    GtkWidget *popover = gtk_popover_new();
+    beval->balloonShell = popover;
+
+    gtk_widget_set_parent(beval->balloonShell, beval->target);
+    gtk_popover_set_has_arrow(GTK_POPOVER(popover), FALSE);
+    gtk_popover_set_position(GTK_POPOVER(popover), GTK_POS_BOTTOM);
+    // Don't make popover grab focus
+    gtk_popover_set_autohide(GTK_POPOVER(popover), FALSE);
+
+    beval->balloonLabel = gtk_label_new(NULL);
+
+    gtk_label_set_wrap(GTK_LABEL(beval->balloonLabel), FALSE);
+    gtk_label_set_justify(GTK_LABEL(beval->balloonLabel), GTK_JUSTIFY_LEFT);
+    gtk_label_set_xalign(GTK_LABEL(beval->balloonLabel), 0.5);
+    gtk_label_set_yalign(GTK_LABEL(beval->balloonLabel), 0.5);
+
+    gtk_popover_set_child(GTK_POPOVER(popover), beval->balloonLabel);
+}
+#  else
     static void
 createBalloonEvalWindow(BalloonEval *beval)
 {
@@ -1034,35 +1180,36 @@ createBalloonEvalWindow(BalloonEval *beval)
     gtk_widget_set_name(beval->balloonShell, "gtk-tooltips");
     gtk_container_set_border_width(GTK_CONTAINER(beval->balloonShell), 4);
 
-#  if GTK_CHECK_VERSION(3,0,0)
+#   if GTK_CHECK_VERSION(3,0,0)
     g_signal_connect(G_OBJECT(beval->balloonShell), "draw",
-		     G_CALLBACK(balloon_draw_event_cb), NULL);
-#  else
+	    G_CALLBACK(balloon_draw_event_cb), NULL);
+#   else
     gtk_signal_connect((GtkObject*)(beval->balloonShell), "expose_event",
-		       GTK_SIGNAL_FUNC(balloon_expose_event_cb), NULL);
-#  endif
+	    GTK_SIGNAL_FUNC(balloon_expose_event_cb), NULL);
+#   endif
     beval->balloonLabel = gtk_label_new(NULL);
 
     gtk_label_set_line_wrap(GTK_LABEL(beval->balloonLabel), FALSE);
     gtk_label_set_justify(GTK_LABEL(beval->balloonLabel), GTK_JUSTIFY_LEFT);
-#  if GTK_CHECK_VERSION(3,16,0)
+#   if GTK_CHECK_VERSION(3,16,0)
     gtk_label_set_xalign(GTK_LABEL(beval->balloonLabel), 0.5);
     gtk_label_set_yalign(GTK_LABEL(beval->balloonLabel), 0.5);
-#  elif GTK_CHECK_VERSION(3,14,0)
+#   elif GTK_CHECK_VERSION(3,14,0)
     GValue align_val = G_VALUE_INIT;
     g_value_init(&align_val, G_TYPE_FLOAT);
     g_value_set_float(&align_val, 0.5);
     g_object_set_property(G_OBJECT(beval->balloonLabel), "xalign", &align_val);
     g_object_set_property(G_OBJECT(beval->balloonLabel), "yalign", &align_val);
     g_value_unset(&align_val);
-#  else
+#   else
     gtk_misc_set_alignment(GTK_MISC(beval->balloonLabel), 0.5f, 0.5f);
-#  endif
+#   endif
     gtk_widget_set_name(beval->balloonLabel, "vim-balloon-label");
     gtk_widget_show(beval->balloonLabel);
 
     gtk_container_add(GTK_CONTAINER(beval->balloonShell), beval->balloonLabel);
 }
+#  endif
 
 # else // !FEAT_GUI_GTK
 
