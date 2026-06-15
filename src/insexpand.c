@@ -187,6 +187,7 @@ static linenr_T	  compl_lnum = 0;           // lnum where the completion start
 static colnr_T	  compl_col = 0;	    // column where the text starts
 					    // that is being completed
 static colnr_T	  compl_ins_end_col = 0;
+static colnr_T	  compl_longest_end_col = 0;  // end of 'longest' inserted text
 static string_T	  compl_orig_text = {NULL, 0};  // text as it was before
 					    // completion started
 static int	  compl_cont_mode = 0;
@@ -1052,6 +1053,33 @@ ins_compl_equal(compl_T *match, char_u *str, int len)
 }
 
 /*
+ * Like ins_compl_equal(), but ignore case in the 'longest'-inserted part of
+ * the leader, so CTRL-N and CTRL-P filter the same way.
+ */
+    static int
+ins_compl_equal_sc(compl_T *match, char_u *str, int len)
+{
+    int	typed = compl_length;
+    int	longest_end = (compl_get_longest && compl_longest_end_col > compl_col)
+			    ? (int)(compl_longest_end_col - compl_col) : typed;
+
+    if ((match->cp_flags & (CP_EQUAL | CP_ICASE)) || longest_end <= typed)
+	return ins_compl_equal(match, str, len);
+
+    if ((int)match->cp_str.length < len)
+	return FALSE;
+
+    for (int i = 0; i < len; ++i)
+    {
+	if (i >= typed && i < longest_end
+		? MB_TOLOWER(match->cp_str.string[i]) != MB_TOLOWER(str[i])
+		: match->cp_str.string[i] != str[i])
+	    return FALSE;
+    }
+    return TRUE;
+}
+
+/*
  * when len is -1 mean use whole length of p otherwise part of p
  */
     static void
@@ -1687,14 +1715,15 @@ ins_compl_build_pum(void)
 
 	leader = get_leader_for_startcol(compl, TRUE);
 
-	// Apply 'smartcase' behavior during normal mode
-	if (ctrl_x_mode_normal() && !p_inf && leader->string
-		&& !ignorecase(leader->string) && !cot_fuzzy())
+	// Apply 'smartcase': judge case from compl_orig_text, not the leader
+	// which 'longest' may fill with uppercase the user never typed.
+	if (ctrl_x_mode_normal() && !p_inf && compl_orig_text.string
+		&& !ignorecase(compl_orig_text.string) && !cot_fuzzy())
 	    compl->cp_flags &= ~CP_ICASE;
 
 	if (!match_at_original_text(compl)
 		&& (leader->string == NULL
-		    || ins_compl_equal(compl, leader->string,
+		    || ins_compl_equal_sc(compl, leader->string,
 			(int)leader->length)
 		    || (cot_fuzzy() && compl->cp_score != FUZZY_SCORE_NONE)))
 	{
@@ -2285,6 +2314,7 @@ ins_compl_clear(void)
     compl_matches = 0;
     compl_selected_item = -1;
     compl_ins_end_col = 0;
+    compl_longest_end_col = 0;
     compl_curr_win = NULL;
     compl_curr_buf = NULL;
     VIM_CLEAR_STRING(compl_pattern);
@@ -4517,6 +4547,7 @@ ins_compl_longest_insert(char_u *prefix)
 {
     ins_compl_delete();
     ins_compl_insert_bytes(prefix + get_compl_len(), -1);
+    compl_longest_end_col = curwin->w_cursor.col;
     ins_redraw(FALSE);
 }
 
@@ -5805,13 +5836,13 @@ find_common_prefix(size_t *prefix_len, int curbuf_only)
 	string_T *leader = get_leader_for_startcol(compl, TRUE);
 
 	// Apply 'smartcase' behavior during normal mode
-	if (ctrl_x_mode_normal() && !p_inf && leader->string
-		&& !ignorecase(leader->string))
+	if (ctrl_x_mode_normal() && !p_inf && compl_orig_text.string
+		&& !ignorecase(compl_orig_text.string))
 	    compl->cp_flags &= ~CP_ICASE;
 
 	if (!match_at_original_text(compl)
 		&& (leader->string == NULL
-		    || ins_compl_equal(compl, leader->string,
+		    || ins_compl_equal_sc(compl, leader->string,
 			(int)leader->length)))
 	{
 	    // Limit number of items from each source if max_items is set.
