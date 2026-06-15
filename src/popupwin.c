@@ -2930,6 +2930,25 @@ popup_adjust_position(win_T *wp)
     // leaving stray decorations behind.
     if (popup_compute_clipwindow_offsets(wp))
     {
+	if ((wp->w_popup_flags & POPF_HIDDEN) == 0)
+	{
+#ifdef FEAT_IMAGE_KITTY
+	    // delete the kitty placement before hiding, like popup_hide()
+	    popup_image_clear_kitty(wp);
+#endif
+#ifdef FEAT_IMAGE_GDK
+	    if (gui.in_use)
+		gui_gtk4_remove_image(wp);
+#endif
+#ifdef FEAT_IMAGE
+	    if (wp->w_popup_image_data != NULL)
+	    {
+		redraw_all_later(UPD_NOT_VALID);
+		status_redraw_all();
+		popup_mask_refresh = TRUE;
+	    }
+#endif
+	}
 	popup_hide_for_textprop(wp);
 	return;
     }
