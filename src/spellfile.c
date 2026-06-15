@@ -642,7 +642,7 @@ tree_count_words(char_u *byts, long byts_len, idx_T *idxs)
 		    ++curi[depth];
 		}
 	    }
-	    else
+	    else if (depth < MAXWLEN - 1)
 	    {
 		// Normal char, go one level deeper to count the words.
 		++depth;
@@ -5742,7 +5742,7 @@ sug_filltree(spellinfo_T *spin, slang_T *slang)
 		    ++curi[depth];
 		}
 	    }
-	    else
+	    else if (depth < MAXWLEN - 1)
 	    {
 		// Normal char, go one level deeper.
 		tword[depth++] = c;
