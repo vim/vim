@@ -3767,7 +3767,7 @@ wl_queue_dirty_area(int x, int y, int width, int height)
     static void
 wl_flush(void)
 {
-    if (!gtk_widget_get_realized(gui.mainwin) || !wl_dirty_rect.active)
+    if (!wl_dirty_rect.active)
 	return;
     int draw_x = wl_dirty_rect.left;
     int draw_y = wl_dirty_rect.top;
