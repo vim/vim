@@ -444,9 +444,9 @@ gui_mch_init_check(void)
 gui_mch_init(void)
 {
     // Allocate GdkRGBA color structs.
-    gui.fgcolor = g_new(GdkRGBA, 1);
-    gui.bgcolor = g_new(GdkRGBA, 1);
-    gui.spcolor = g_new(GdkRGBA, 1);
+    gui.fgcolor = g_new0(GdkRGBA, 1);
+    gui.bgcolor = g_new0(GdkRGBA, 1);
+    gui.spcolor = g_new0(GdkRGBA, 1);
 
     gui.def_norm_pixel = 0x00000000;	// black
     gui.def_back_pixel = 0x00ffffff;	// white
