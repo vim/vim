@@ -6971,7 +6971,7 @@ gui_mch_flush(void)
     if (gui.mainwin != NULL && gtk_widget_get_realized(gui.mainwin))
 #ifdef GDK_WINDOWING_WAYLAND
 	if (gui.is_wayland)
-	    wl_flush();
+	    return wl_flush();
 #endif
 #if GTK_CHECK_VERSION(2,4,0)
 	gdk_display_flush(gtk_widget_get_display(gui.mainwin));
