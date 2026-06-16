@@ -7729,6 +7729,23 @@ func Test_builtin_fullcommand()
 
 endfunc
 
+" Test that temporary directory is re-created after wipeout {{{1
+func Test_delete_temp_dir()
+  " assumes Unix has always flock/dirfd support
+  CheckUnix
+  let a = tempname()
+  let dir = fnamemodify(a, ':h')
+  call delete(dir, 'rf')
+
+  let newdir = fnamemodify(tempname(), ':h')
+  call assert_notequal(dir, newdir)
+  " if the test fails (e.g. because vim has no support for flock/dirfd,
+  " recreate the directory, to prevent followup test failures
+  if dir == newdir
+    call mkdir(dir, '', 0o700)
+  endif
+endfunc
+
 "-------------------------------------------------------------------------------
 " Modelines								    {{{1
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -5370,6 +5370,19 @@ vim_closetempdir(void)
     closedir(vim_tempdir_dp);
     vim_tempdir_dp = NULL;
 }
+
+/*
+ * Return true if the temp directory we created is gone.
+ */
+    static bool
+vim_tempdir_gone(void)
+{
+    stat_T	st;
+
+    if (vim_tempdir_dp == NULL)
+	return false;
+    return fstat(dirfd(vim_tempdir_dp), &st) < 0 || st.st_nlink == 0;
+}
 # endif
 
 /*
@@ -5448,6 +5461,15 @@ vim_tempname(
     int		i;
 # ifndef EEXIST
     stat_T	st;
+# endif
+
+# if defined(UNIX) && defined(HAVE_FLOCK) && defined(HAVE_DIRFD)
+    // if the temp directory is gone, force re-creation of it
+    if (vim_tempdir != NULL && vim_tempdir_gone())
+    {
+	vim_closetempdir();
+	VIM_CLEAR(vim_tempdir);
+    }
 # endif
 
     /*
