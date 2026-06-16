@@ -4367,6 +4367,10 @@ struct window_S
      * buffer, thus w_wrow is relative to w_winrow.
      */
     int		w_wrow, w_wcol;	    // cursor position in window
+#ifdef FEAT_CONCEAL
+    int		w_wcol_conceal_off; // screen cells concealed before w_wcol on
+				    // the cursor's screen line, set by win_line()
+#endif
 
     /*
      * Info about the lines currently in the window is remembered to avoid
