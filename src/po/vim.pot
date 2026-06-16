@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-06-13 19:24+0000\n"
+"POT-Creation-Date: 2026-06-16 19:21+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -956,6 +956,15 @@ msgstr ""
 msgid "_Close"
 msgstr ""
 
+msgid "Close Tab"
+msgstr ""
+
+msgid "New Tab"
+msgstr ""
+
+msgid "Open Tab..."
+msgstr ""
+
 msgid "Direction:"
 msgstr ""
 
@@ -969,9 +978,6 @@ msgid "Close tab"
 msgstr ""
 
 msgid "New tab"
-msgstr ""
-
-msgid "Open Tab..."
 msgstr ""
 
 msgid "Vim: Main window unexpectedly destroyed\n"
