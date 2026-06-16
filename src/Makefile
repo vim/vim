@@ -1241,12 +1241,14 @@ GTK_BUNDLE	=
 ### GTK4 GUI
 GTK4_SRC	= gui.c gui_gtk4.c gui_gtk4_f.c \
 			gui_gtk4_cb.c \
-		  	gui_gtk4_da.c \
+			gui_gtk4_da.c \
+			gui_beval.o \
 			$(GRESOURCE_SRC)
 GTK4_OBJ	= objects/gui.o objects/gui_gtk4.o \
 			objects/gui_gtk4_f.o \
 			objects/gui_gtk4_cb.o \
 			objects/gui_gtk4_da.o \
+			objects/gui_beval.o \
 			$(GRESOURCE_OBJ)
 GTK4_DEFS	= -DFEAT_GUI_GTK $(NARROW_PROTO)
 GTK4_IPATH	= $(GUI_INC_LOC)

@@ -792,6 +792,11 @@ gui_mch_exit(int rc UNUSED)
 	// Must unparent popover menu for tabline or we will get warning
 	gtk_widget_unparent(g_object_get_data(G_OBJECT(gui.tabline), "menu"));
 #endif
+#ifdef FEAT_BEVAL_GUI
+	// Make sure to destroy popover used for balloon eval, or we will get a
+	// warning from GTK that the draw area still has children left.
+	gui_mch_destroy_beval_area(balloonEval);
+#endif
 	gtk_window_destroy(GTK_WINDOW(gui.mainwin));
     }
 }
@@ -4133,37 +4138,6 @@ clip_mch_lose_selection(Clipboard_T *cbd)
 	gdk_clipboard_set_content(clipboard, NULL);
 }
 
-// Balloon eval - use GTK4 tooltip
-    void
-gui_mch_post_balloon(BalloonEval *beval UNUSED, char_u *mesg)
-{
-    if (mesg != NULL && gui.drawarea != NULL)
-    {
-	char_u *text = CONVERT_TO_UTF8(mesg);
-	gtk_widget_set_tooltip_text(gui.drawarea, (const char *)text);
-	CONVERT_TO_UTF8_FREE(text);
-    }
-    else if (gui.drawarea != NULL)
-	gtk_widget_set_tooltip_text(gui.drawarea, NULL);
-}
-
-    BalloonEval *
-gui_mch_create_beval_area(void *target UNUSED, char_u *mesg UNUSED,
-	void (*mesgCB)(BalloonEval *, int) UNUSED, void *clientData UNUSED)
-{
-    return NULL;
-}
-
-    void
-gui_mch_enable_beval_area(BalloonEval *beval UNUSED)
-{
-}
-
-    void
-gui_mch_disable_beval_area(BalloonEval *beval UNUSED)
-{
-}
-
 // GTK4 does not have gtk_main_level/gtk_main_quit.
 // Provide compatibility stubs using a simple flag.
     guint
@@ -5198,7 +5172,8 @@ gui_mch_dialog(
     // mnemonics without <Alt> key, but that behaviour comes from GTK+ 1.2 (from
     // 1999!), so most users probably don't care...
     key_controller = gtk_event_controller_key_new();
-    g_signal_connect(key_controller, "key-pressed", G_CALLBACK(dialog_key_pressed_cb), &done);
+    g_signal_connect(key_controller, "key-pressed",
+	    G_CALLBACK(dialog_key_pressed_cb), &done);
     gtk_widget_add_controller(GTK_WIDGET(win), key_controller);
 
     if (textfield != NULL)
