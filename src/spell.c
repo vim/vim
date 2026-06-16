@@ -4325,7 +4325,7 @@ dump_prefixes(
 			}
 		    }
 		}
-		else
+		else if (depth < MAXWLEN - 1)
 		{
 		    // Normal char, go one level deeper.
 		    prefix[depth++] = c;
