@@ -1072,7 +1072,7 @@ ins_compl_equal_sc(compl_T *match, char_u *str, int len)
     for (int i = 0; i < len; ++i)
     {
 	if (i >= typed && i < longest_end
-		? MB_TOLOWER(match->cp_str.string[i]) != MB_TOLOWER(str[i])
+		? TOLOWER_LOC(match->cp_str.string[i]) != TOLOWER_LOC(str[i])
 		: match->cp_str.string[i] != str[i])
 	    return FALSE;
     }
