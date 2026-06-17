@@ -32,6 +32,14 @@ end
 local oneline = function() end
 local afterOneline = oneline
 
+declare function PluginManager(): PluginManager
+local afterDeclareFunction = true
+
+declare function WithArgs(
+  arg: string
+): boolean
+local afterDeclareFunctionArgs = true
+
 local text = `function(`
 local afterText = text
 

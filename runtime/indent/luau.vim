@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:     Luau
 " Maintainer:   Lopy (@lopi-py)
-" Last Change:  2026 Jun 16
+" Last Change:  2026 Jun 17
 
 " only load this indent file when no other was loaded
 if exists("b:did_indent")
@@ -28,17 +28,17 @@ if exists("*GetLuauIndent")
   finish
 endif
 
-function! GetLuauIndent() abort
+function GetLuauIndent() abort
   let ignorecase_save = &ignorecase
   try
     let &ignorecase = 0
-    return GetLuauIndentIntern()
+    return s:GetLuauIndentIntern()
   finally
     let &ignorecase = ignorecase_save
   endtry
 endfunction
 
-function! s:InDeclareClass(lnum) abort
+function s:InDeclareClass(lnum) abort
   let save_cursor = getcurpos()
   call cursor(a:lnum - 1, 1)
   let lnum = search('^\s*\%(end\>\|declare\s\+class\>\)', 'bcnW')
@@ -46,12 +46,12 @@ function! s:InDeclareClass(lnum) abort
   return lnum > 0 && getline(lnum) =~# '^\s*declare\s\+class\>'
 endfunction
 
-function! s:IsStringOrComment(lnum, col) abort
+function s:IsStringOrComment(lnum, col) abort
   let name = synIDattr(synID(a:lnum, a:col, 1), "name")
   return name =~# '^luau\%(Comment\|.*String\)'
 endfunction
 
-function! s:LineCommentStart(lnum) abort
+function s:LineCommentStart(lnum) abort
   let line = getline(a:lnum)
   let midx = stridx(line, '--')
   while midx != -1
@@ -63,12 +63,12 @@ function! s:LineCommentStart(lnum) abort
   return -1
 endfunction
 
-function! s:IsCode(lnum, col) abort
+function s:IsCode(lnum, col) abort
   let comment = s:LineCommentStart(a:lnum)
   return (comment == -1 || a:col <= comment) && !s:IsStringOrComment(a:lnum, a:col)
 endfunction
 
-function! s:HasBlockCloser(lnum) abort
+function s:HasBlockCloser(lnum) abort
   let line = getline(a:lnum)
   let midx = match(line, '\<\%(end\|until\)\>')
   while midx != -1
@@ -80,7 +80,7 @@ function! s:HasBlockCloser(lnum) abort
   return 0
 endfunction
 
-function! GetLuauIndentIntern() abort
+function s:GetLuauIndentIntern() abort
   " find a non-blank line above the current line
   let prevlnum = prevnonblank(v:lnum - 1)
 
@@ -96,6 +96,7 @@ function! GetLuauIndentIntern() abort
   let stmt = 'if\>\|for\>\|while\>\|repeat\>\|else\>\|elseif\>\|do\>\|then\>'
   let class = 'class\>\s\+\h\|declare\s\+class\>\s\+\h'
   let func = '\%(\%(public\s\+\)\=function\|local\s\+function\|const\s\+function\|type\s\+function\|return\s\+function\)'
+  let declare_func = '^\s*\%(' .. attr .. '\)*declare\s\+function\>'
   let midx = -1
   if prevline =~# '^\s*\%(@\|\%(if\|for\|while\|repeat\|else\|elseif\|do\|then\|class\)\>\|declare\s\+class\>\)'
     let midx = match(prevline, '^\s*\%(' .. attr .. '\)*\%(' .. stmt .. '\|' .. class .. '\)')
@@ -106,7 +107,7 @@ function! GetLuauIndentIntern() abort
     endif
     if midx == -1
       let midx = match(prevline, '\%({\|(\|\[\)\s*\%(--\%([^[].*\)\?\)\?$')
-      if midx == -1 && stridx(prevline, 'function') != -1
+      if midx == -1 && stridx(prevline, 'function') != -1 && prevline !~# declare_func
         let midx = match(prevline, '\<' .. func .. '\>\s*\%(\k\|[.:]\)\{-}\s*\%(<[^>]*>\s*\)\=(')
       endif
     endif
@@ -120,7 +121,7 @@ function! GetLuauIndentIntern() abort
     if par_lnum > 0
       let funline = getline(par_lnum)
       let funidx = match(funline, '\<' .. func .. '\>')
-      if funidx != -1 && funidx < par_col
+      if funidx != -1 && funidx < par_col && funline !~# declare_func
         let midx = match(prevline, ')')
       endif
     endif
