@@ -1,0 +1,32 @@
+# VIM_TEST_SETUP call DeferRenamingTestFileTo('screenrc')
+# VIM_TEST_SETUP hi link screenLiteral Visual
+
+
+
+
+
+
+altscreen	on
+backtick 0  5  5 /usr/bin/true foo bar baz
+backtick 1 60 60 /usr/bin/mawk '{print $1, $2, $3, $4}' /dev/null
+backtick 2 60 60 /usr/bin/mawk '{print $1, $2, $3, $4}' /dev/null
+# NOTE: see `linux-source/fs/proc/proc_misc.c' for details.
+backtick 3 60 60 /usr/bin/mawk '{if($1=="MemTotal:") mt=$2; else if($1=="MemFree:") mf=$2; else if($1=="Buffers:") mb=$2; else if($1=="Cached:") mc=$2; else if($1=="SwapTotal:") st=$2; else if($1=="SwapFree:") {sf=$2; exit 0}}END{p=100/mt; printf("%.1f%%U %.1f%%F %.1f%%B %.1f%%C %.1f%%S", (mt-(mf+mb+mc))*p, mf*p, mb*p, mc*p, (st-sf)*100/st)}' /proc/meminfo
+bind		\041	help
+caption always	"%{= 3}%?%0`%L>%100=%? %-w%{i2}%n %t%{-}%+w%{0}"
+defutf8		on
+escape		``
+hardstatus	on
+hardstatus	alwayslastline "%=%{xFFFFFF}%{#ff0000}|%{#00ffff}%5`%{-}|%{xFFFFFF}%4`%{-}|%{#00ffff}%l%{-}|%{x888888;#000000}%3`%{-}|%{#00ffff}%1`|%2`%{-}|%{#008000}%0c"
+setenv		COLUMNS	${COLUMNS}
+shelltitle	"$ |bash:"
+silencewait	300
+startup_message	off
+vbell		off
+screen -h 0 -t	vim	0 /usr/bin/vim
+screen		1
+screen		2
+screen		3
+scrollback	2048
+select		4
+truecolor	on
