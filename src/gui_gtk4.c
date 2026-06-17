@@ -33,6 +33,9 @@
 #ifdef USE_GTK4_SNAPSHOT
 # include "gui_gtk4_da.h"
 #endif
+#ifdef FEAT_TOOLBAR
+# include "gui_gtk4_tb.h"
+#endif
 
 /*
  * Geometry string parser, replacing XParseGeometry to remove X11 dependency.
@@ -280,6 +283,9 @@ static void enter_notify_event(GtkEventControllerMotion *controller, double x, d
 static gboolean scroll_event(GtkEventControllerScroll *controller, double dx, double dy, gpointer data);
 static void focus_in_event(GtkEventControllerFocus *controller, gpointer data);
 static void focus_out_event(GtkEventControllerFocus *controller, gpointer data);
+#ifdef FEAT_MENU
+static gboolean menubar_popover_closed_hook(GSignalInvocationHint *ihint, guint n_param_values, const GValue *param_values, gpointer data);
+#endif
 #ifdef FEAT_DND
 static gboolean drop_cb(GtkDropTarget *target, const GValue *value, double x, double y, gpointer data);
 #endif
@@ -488,13 +494,28 @@ gui_mch_init(void)
 	gtk_widget_set_visible(gui.menubar, FALSE);
 	gtk_box_append(GTK_BOX(vbox), gui.menubar);
     }
+    // Return keyboard focus to the drawing area when a menubar popover
+    // closes (issue #20274).  GtkPopoverMenuBar owns its popovers
+    // privately, so attach via an emission hook on GtkPopover::closed
+    // and filter for popovers under our menubar inside the callback.
+    {
+	GTypeClass *cls = g_type_class_ref(GTK_TYPE_POPOVER);
+	guint sig_id = g_signal_lookup("closed", GTK_TYPE_POPOVER);
+
+	if (sig_id != 0)
+	    g_signal_add_emission_hook(sig_id, 0,
+		    menubar_popover_closed_hook, NULL, NULL);
+	if (cls != NULL)
+	    g_type_class_unref(cls);
+    }
 #endif
 
 #ifdef FEAT_TOOLBAR
-    gui.toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gui.toolbar = vim_toolbar_new();
     gtk_widget_set_name(gui.toolbar, "vim-toolbar");
     gtk_widget_set_visible(gui.toolbar, FALSE);
     gtk_box_append(GTK_BOX(vbox), gui.toolbar);
+    vim_toolbar_set_style(VIM_TOOLBAR(gui.toolbar), toolbar_flags, tbis_flags);
 #endif
 
 #ifdef FEAT_GUI_TABLINE
@@ -956,7 +977,12 @@ gui_mch_enable_menu(int showit)
 gui_mch_show_toolbar(int showit)
 {
     if (gui.toolbar != NULL)
+    {
 	gtk_widget_set_visible(gui.toolbar, showit);
+	if (showit)
+	    vim_toolbar_set_style(VIM_TOOLBAR(gui.toolbar),
+		    toolbar_flags, tbis_flags);
+    }
 }
 #endif
 
@@ -2181,6 +2207,48 @@ focus_out_event(GtkEventControllerFocus *controller UNUSED,
 	    gui_mch_stop_blink(TRUE);
     }
 }
+
+#ifdef FEAT_MENU
+    static gboolean
+grab_drawarea_focus_idle(gpointer data UNUSED)
+{
+    if (gui.drawarea != NULL && !gtk_widget_has_focus(gui.drawarea))
+	gtk_widget_grab_focus(gui.drawarea);
+    return G_SOURCE_REMOVE;
+}
+
+    static gboolean
+menubar_popover_closed_hook(GSignalInvocationHint *ihint UNUSED,
+	guint n_param_values, const GValue *param_values,
+	gpointer data UNUSED)
+{
+    GObject	*obj;
+    GtkWidget	*popover;
+    GtkWidget	*parent;
+
+    if (n_param_values < 1 || gui.menubar == NULL || gui.drawarea == NULL)
+	return TRUE;
+    obj = g_value_get_object(&param_values[0]);
+    if (!GTK_IS_POPOVER(obj))
+	return TRUE;
+    popover = GTK_WIDGET(obj);
+
+    // Only react to popovers that descend from the menubar.
+    for (parent = gtk_widget_get_parent(popover);
+	    parent != NULL;
+	    parent = gtk_widget_get_parent(parent))
+    {
+	if (parent != gui.menubar)
+	    continue;
+	// Defer the grab to the next main loop iteration; calling it
+	// synchronously while GTK is still completing the popover close
+	// has no effect (issue #20274).
+	g_idle_add(grab_drawarea_focus_idle, NULL);
+	break;
+    }
+    return TRUE;	// keep the emission hook installed
+}
+#endif
 
 #ifndef USE_GTK4_SNAPSHOT
     static void
@@ -4413,7 +4481,7 @@ gui_mch_add_menu(vimmenu_T *menu, int idx UNUSED)
 }
 
     void
-gui_mch_add_menu_item(vimmenu_T *menu, int idx UNUSED)
+gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 {
     vimmenu_T *parent = menu->parent;
 
@@ -4422,32 +4490,32 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx UNUSED)
     {
 	if (menu_is_separator(menu->name))
 	{
-	    GtkWidget *sep = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
-	    gtk_box_append(GTK_BOX(gui.toolbar), sep);
-	    menu->id = sep;
+	    menu->id =
+		vim_toolbar_insert_separator(VIM_TOOLBAR(gui.toolbar), idx);
 	}
 	else
 	{
 	    GtkWidget	*btn;
 	    GtkWidget	*icon;
+	    char_u	*text;
 	    char_u	*tooltip;
 
-	    icon = create_toolbar_icon(menu);
-	    btn = gtk_button_new();
-	    gtk_button_set_child(GTK_BUTTON(btn), icon);
-	    gtk_widget_set_focusable(btn, FALSE);
-	    gtk_widget_add_css_class(btn, "flat");
-
+	    text    = CONVERT_TO_UTF8(menu->dname);
 	    tooltip = CONVERT_TO_UTF8(menu->strings[MENU_INDEX_TIP]);
-	    if (tooltip != NULL && utf_valid_string(tooltip, NULL))
-		gtk_widget_set_tooltip_text(btn, (const gchar *)tooltip);
-	    CONVERT_TO_UTF8_FREE(tooltip);
+	    if (tooltip != NULL && !utf_valid_string(tooltip, NULL))
+		CONVERT_TO_UTF8_FREE(tooltip);
+
+	    icon = create_toolbar_icon(menu);
+	    btn = vim_toolbar_insert_button(VIM_TOOLBAR(gui.toolbar),
+		    icon, (const char *)text, idx);
+	    gtk_widget_set_tooltip_text(btn, (const gchar *)tooltip);
 
 	    g_signal_connect(btn, "clicked",
 		    G_CALLBACK(toolbar_button_clicked_cb), menu);
 
-	    gtk_box_append(GTK_BOX(gui.toolbar), btn);
 	    menu->id = btn;
+	    CONVERT_TO_UTF8_FREE(text);
+	    CONVERT_TO_UTF8_FREE(tooltip);
 	}
 	return;
     }
@@ -4464,7 +4532,8 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx UNUSED)
 	{
 	    // GMenu doesn't have real separators; use a section
 	    GMenu *section = g_menu_new();
-	    g_menu_append_section(parent_menu, NULL, G_MENU_MODEL(section));
+	    g_menu_insert_section(parent_menu, idx, NULL,
+		    G_MENU_MODEL(section));
 	    g_object_unref(section);
 	    menu->id = NULL;
 	}
@@ -4493,7 +4562,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx UNUSED)
 
 	    label = CONVERT_TO_UTF8(menu->dname);
 	    vim_snprintf(detailed, sizeof(detailed), "menu.%s", action_name);
-	    g_menu_append(parent_menu, (const char *)label, detailed);
+	    g_menu_insert(parent_menu, idx, (const char *)label, detailed);
 	    CONVERT_TO_UTF8_FREE(label);
 
 	    menu->id = (GtkWidget *)1;  // non-NULL marker
@@ -4511,8 +4580,17 @@ gui_mch_toggle_tearoffs(int enable UNUSED)
 }
 
     void
-gui_mch_menu_set_tip(vimmenu_T *menu UNUSED)
+gui_mch_menu_set_tip(vimmenu_T *menu)
 {
+    char_u *tooltip;
+
+    if (menu->id == NULL || menu->parent == NULL || gui.toolbar == NULL)
+	return;
+
+    tooltip = CONVERT_TO_UTF8(menu->strings[MENU_INDEX_TIP]);
+    if (tooltip != NULL && utf_valid_string(tooltip, NULL))
+	gtk_widget_set_tooltip_text(menu->id, (const char *)tooltip);
+    CONVERT_TO_UTF8_FREE(tooltip);
 }
 
 /*

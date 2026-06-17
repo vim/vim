@@ -4445,6 +4445,19 @@ term_get_attr(win_T *wp, linenr_T lnum, int col)
 }
 
 /*
+ * Return the screen attribute for the terminal's default color.  Used to tell
+ * whether a line's fill (background) is the default or was set explicitly.
+ */
+    int
+term_get_default_attr(win_T *wp)
+{
+    term_T	*term = wp->w_buffer->b_term;
+    cellattr_T	*cellattr = &term->tl_default_color;
+
+    return cell2attr(term, wp, &cellattr->attrs, &cellattr->fg, &cellattr->bg);
+}
+
+/*
  * Convert a cterm color number 0 - 255 to RGB.
  * This is compatible with xterm.
  */
