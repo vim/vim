@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Jun 13
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Jun 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4044,20 +4044,20 @@ getbufvar({buf}, {varname} [, {def}])			*getbufvar()*
 
 
 getbgcolor()						*getbgcolor()*
-		Returns a |List| describing the current background colour
-		as [red, green, blue], each component in the range 0..255.
+		Returns a |List| describing the current background colour as
+		[red, green, blue], each component in the range 0..255.
 
-		In the GUI (or with 'termguicolors' set) the value comes
-		from the |hl-Normal| highlight group's background.  In a
-		terminal it comes from the OSC 11 response (also available
-		as |v:termrbgresp|).
+		In the GUI (or with 'termguicolors' set) the value comes from
+		the |hl-Normal| highlight group's background.  In a terminal
+		it comes from the OSC 11 response (also available as
+		|v:termrbgresp|).
 		Returns [] when no value is available, e.g. before the
 		terminal has answered the OSC 11 query, or when |hl-Normal|
 		has no background colour set.
 
-		Useful when manually crafting RGB image data and you want
-		to flatten alpha onto the same colour the terminal will
-		actually display behind the image.
+		Useful when manually crafting RGB image data and you want to
+		flatten alpha onto the same colour the terminal will actually
+		display behind the image.
 
 		Return type: list<any>
 
