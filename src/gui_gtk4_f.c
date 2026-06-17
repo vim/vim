@@ -271,11 +271,12 @@ vim_form_measure(
     }
     else
     {
-	// Set minimum width of form widget to 10 columns.
+	// Set minimum width of form widget to 20 columns. Any less and the draw
+	// area seems to glitch out...
 	if (minimum != NULL)
-	    *minimum  = gui.char_width * 10;
+	    *minimum  = gui.char_width * 20;
 	if (natural != NULL)
-	    *natural = gui.char_width * 10;
+	    *natural = gui.char_width * 20;
     }
 
     if (minimum_baseline != NULL)
