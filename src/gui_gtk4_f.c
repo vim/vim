@@ -69,7 +69,7 @@ vim_form_dispose(GObject *obj)
     static void
 vim_form_class_init(VimFormClass *class)
 {
-    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
+    GtkWidgetClass  *widget_class = GTK_WIDGET_CLASS(class);
     GObjectClass    *obj_class = G_OBJECT_CLASS(class);
 
     widget_class->snapshot = vim_form_snapshot;
