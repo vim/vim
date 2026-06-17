@@ -7733,6 +7733,7 @@ endfunc
 func Test_delete_temp_dir()
   " assumes Unix has always flock/dirfd support
   CheckUnix
+  CheckNotMac
   let a = tempname()
   let dir = fnamemodify(a, ':h')
   call delete(dir, 'rf')
