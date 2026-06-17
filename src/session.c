@@ -1333,12 +1333,39 @@ ex_mkrc(exarg_T	*eap)
 	    for (sid = 1; sid <= script_items.ga_len; ++sid)
 	    {
 		si = SCRIPT_ITEM(sid);
+
 		// autoload script paths may be absolute, relative to the
 		// current script or relative to a 'runtimepath' directory
-		if ((si->sn_autoload_prefix || si->sn_import_autoload) &&
-		    (fprintf(fd, "import autoload '%s'", si->sn_name) < 0 ||
-			put_eol(fd) == FAIL))
+		if (si->sn_autoload_prefix || si->sn_import_autoload)
+		{
+		    // Check if conflicts with a previous import
+		    int b_sid = sid - 1;
+		    char_u *name = gettail(si->sn_name);
+
+		    for (; b_sid; --b_sid)
+		    {
+			scriptitem_T *b_si = SCRIPT_ITEM(b_sid);
+
+			// only autoload may conflict
+			if (!b_si->sn_autoload_prefix && !b_si->sn_import_autoload)
+			    continue;
+
+			// compare prefixes if available
+			if (si->sn_autoload_prefix != NULL && b_si->sn_autoload_prefix != NULL
+				&& (0 == STRICMP(si->sn_autoload_prefix, b_si->sn_autoload_prefix)))
+			    break;
+
+			// otherwise compare tails
+			char_u *b_name = gettail(b_si->sn_name);
+			if (0 == STRICMP(name, b_name))
+			    break;
+		    }
+
+		    // import the auto script if there are no conflicts
+		    if (fprintf(fd, "%simport autoload '%s'", b_sid ? "# " : "", si->sn_name) < 0 ||
+			put_eol(fd) == FAIL)
 		    failed = TRUE;
+		}
 	    }
 #endif
 	}
