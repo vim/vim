@@ -3808,6 +3808,11 @@ adjust_text_props_for_delete(
 		uint16_t pc;
 
 		mch_memmove(&pc, text + textlen, PROP_COUNT_SIZE);
+		if (!text_prop_count_valid(pc, (size_t)(line_size - (long)textlen)))
+		{
+		    internal_error("text property count too large");
+		    return;
+		}
 		this_props_len = pc * (int)sizeof(textprop_T);
 	    }
 
@@ -4046,6 +4051,8 @@ theend:
 	mch_memmove(&pc, textprop_save, PROP_COUNT_SIZE);
 	props_data = textprop_save + PROP_COUNT_SIZE;
 	props_bytes = pc * (int)sizeof(textprop_T);
+	if (!text_prop_count_valid(pc, (size_t)textprop_len))
+	    props_bytes = 0;
 
 	// Adjust text properties in the line above and below.
 	if (lnum > 1)

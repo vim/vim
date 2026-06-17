@@ -428,4 +428,63 @@ func Test_multiline_prop_delete_penultimate_line()
   call s:CleanupPropTypes(['1', '2', '3'])
 endfunc
 
+func s:ManipulateUndoBlob(name)
+  " Patch the saved old line in the undo file:
+  "   00 00 00 08 'QQQQQQQQ'  ->  00 00 00 27 'AAAA' NUL count=0xFFFF <32x00>
+  " i.e. textlen 8 text-only  ->  39-byte blob: text "AAAA", NUL, prop_count
+  "   0xFFFF, one zeroed textprop_T(32).  propdata_len becomes 34, count 65535.
+  let blob   = readfile(a:name, 'B')
+  let marker = 0z000000085151515151515151
+  let repl   = 0z000000274141414100FFFF + repeat(0z00, 32)
+  let mlen   = len(marker)
+  let idx    = -1
+  let i      = 0
+  while i <= len(blob) - mlen
+    if blob[i : i + mlen - 1] ==# marker
+      let idx = i
+      break
+    endif
+    let i += 1
+  endwhile
+  call assert_true(idx >= 0, 'saved-line marker not found in undo file')
+
+  let head = idx > 0 ? blob[0 : idx - 1] : 0z
+  call writefile(head + repl + blob[idx + mlen :], a:name)
+
+  exe "rundo" a:name
+endfunc
+
+" A crafted undo file can restore a line whose declared text-property count is
+" far larger than the data, making get_text_props() / consumers read past the
+" line buffer.  Restore such a line and force a consumer; reaching the asserts
+" (no ASan abort / crash) means the count is bounded.
+func Test_textprop_undo_bad_prop_count()
+  CheckFeature persistent_undo
+
+  new
+  call setline(1, ['QQQQQQQQ', 'DECOYLINE'])
+  let &ul = &ul
+  call setline(1, 'BBBB')           " undo step saves old line 1 = "QQQQQQQQ"
+  wundo Xtpundo
+  call s:ManipulateUndoBlob('Xtpundo')
+
+  undo
+
+  " Safety: prove the malicious line was actually restored before the consumer
+  " runs, so the test can't pass vacuously if the patch missed.
+  call assert_equal('AAAA', getline(1))
+
+  " Adding a property anywhere sets b_has_textprop, so get_text_props() will
+  " actually inspect line 1 instead of returning early.
+  call prop_type_add('Xtp', {})
+  call prop_add(2, 1, {'type': 'Xtp', 'length': 1})
+
+  " this caused OOB read, now it triggers internal error
+  call assert_fails('call prop_list(1)', ['E340:', 'corrupted'])
+
+  call prop_type_delete('Xtp')
+  bwipe!
+  call delete('Xtpundo')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
