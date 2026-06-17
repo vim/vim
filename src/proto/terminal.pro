@@ -36,6 +36,7 @@ int term_is_finished(buf_T *buf);
 int term_show_buffer(buf_T *buf);
 void term_change_in_curbuf(void);
 int term_get_attr(win_T *wp, linenr_T lnum, int col);
+int term_get_default_attr(win_T *wp);
 void term_reset_hlfwin(win_T *wp);
 void term_update_hlfwin(win_T *wp);
 void term_update_hlfwin_all(void);
