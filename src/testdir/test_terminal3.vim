@@ -1039,6 +1039,29 @@ func Test_terminal_visual_empty_listchars()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_terminal_normal_mode_colored_empty_line()
+  CheckScreendump
+  CheckRunVimInTerminal
+  CheckUnix
+
+  " Erase lines with a gray background (CSI 100m) using CSI K.  The empty lines
+  " around "old" must stay gray in Terminal-Normal mode too, not only while the
+  " job is running.
+  call writefile(["printf '\\033[100m\\033[K\\nold\\033[K\\n\\033[K\\033[0m\\n'"],
+	\ 'Xterm_colored.sh', 'D')
+  call writefile([':term sh ./Xterm_colored.sh'], 'XtermColored', 'D')
+  let buf = RunVimInTerminal('-S XtermColored', #{rows: 10})
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_terminal_colored_empty_1', {})
+
+  " Enter Terminal-Normal mode: the empty lines must still be gray.
+  call term_sendkeys(buf, "\<C-W>N")
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_terminal_colored_empty_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_terminal_ansi_color_windows_cui()
   if !has('win32') || has('gui_running')
     throw 'Skipped: only for the Windows CUI'

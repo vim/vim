@@ -2875,8 +2875,11 @@ win_line(
 #ifdef FEAT_TERMINAL
 		if (term_show_buffer(wp->w_buffer)
 		    && wlv.vcol == 0
-		    && wlv.win_attr == term_get_attr(wp, lnum, -1))
-		    // reset highlighting attribute
+		    && wlv.win_attr == term_get_attr(wp, lnum, -1)
+		    && wlv.win_attr == term_get_default_attr(wp))
+		    // Reset the attribute for an empty line with the
+		    // default background, so a Visual selection shows;
+		    // keep an explicitly set background color.
 		    wlv.win_attr = 0;
 #endif
 	    }
