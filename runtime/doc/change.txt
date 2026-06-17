@@ -1334,19 +1334,19 @@ and ":put" commands and with CTRL-R.
 		feature}
 							*quote_#* *quote#*
 6. Alternate file register "#
-Contains the name of the alternate file for the current window.  It will
-change how the |CTRL-^| command works.
-This register is writable, mainly to allow for restoring it after a plugin has
-changed it.  It accepts buffer number: >
-    let altbuf = bufnr(@#)
+Contains the |alternate-file| for current window
+This register is writeable and changes which buffer CTRL-^ enters: >
+    let @# = 1
     ...
-    let @# = altbuf
-It will give error |E86| if you pass buffer number and this buffer does not
-exist.
-It can also accept a match with an existing buffer name: >
+    let altbuf = bufnr(@#)
+Throws |E86| when the buffer number does not exist.
+A String is matched against existing buffer names, like |:buffer|: >
     let @# = 'buffer_name'
-Error |E93| if there is more than one buffer matching the given name or |E94|
-if none of buffers matches the given name.
+Patterns using |file-pattern|: >
+    let @# = '*/dir/{foo,bar}*.vim'
+Throws |E93| when more than one buffer matches, or |E94| when none match.
+Clear the register with empty String: >
+    let @# = ''
 
 7. Expression register "=			*quote_=* *quote=* *@=*
 This is not really a register that stores text, but is a way to use an
