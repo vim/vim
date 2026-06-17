@@ -1333,7 +1333,9 @@ ex_mkrc(exarg_T	*eap)
 	    for (sid = 1; sid <= script_items.ga_len; ++sid)
 	    {
 		si = SCRIPT_ITEM(sid);
-		if (si->sn_autoload_prefix &&
+		// autoload script paths may be absolute, relative to the
+		// current script or relative to a 'runtimepath' directory
+		if ((si->sn_autoload_prefix || si->sn_import_autoload) &&
 		    (fprintf(fd, "import autoload '%s'", si->sn_name) < 0 ||
 			put_eol(fd) == FAIL))
 		    failed = TRUE;
