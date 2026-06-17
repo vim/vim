@@ -343,7 +343,10 @@
 #endif
 #ifdef BACKSLASH_IN_FILENAME
 # define PATH_ESC_CHARS ((char_u *)" \t\n*?[{`%#'\"|!<")
-# define BUFFER_ESC_CHARS ((char_u *)" \t\n*?[`%#'\"|!<")
+// '%' and '#' are not escaped for ":buffer": it has no EX_XFILE, so they are
+// not expanded, and escaping them as "\%"/"\#" breaks buffer name matching
+// when '%'/'#' is in 'isfname' (backslash treated as a path separator).
+# define BUFFER_ESC_CHARS ((char_u *)" \t\n*?[`'\"|!<")
 #else
 # ifdef VMS
     // VMS allows a lot of characters in the file name
