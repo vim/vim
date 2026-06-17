@@ -6344,7 +6344,6 @@ a{	motion.txt	/*a{*
 a}	motion.txt	/*a}*
 b	motion.txt	/*b*
 b:	eval.txt	/*b:*
-b:beancount_root	filetype.txt	/*b:beancount_root*
 b:changedtick	eval.txt	/*b:changedtick*
 b:changelog_name	filetype.txt	/*b:changelog_name*
 b:clojure_syntax_keywords	syntax.txt	/*b:clojure_syntax_keywords*
@@ -7823,10 +7822,6 @@ g:ada_space_errors	ft_ada.txt	/*g:ada_space_errors*
 g:ada_standard_types	ft_ada.txt	/*g:ada_standard_types*
 g:ada_with_gnat_project_files	ft_ada.txt	/*g:ada_with_gnat_project_files*
 g:ada_withuse_ordinary	ft_ada.txt	/*g:ada_withuse_ordinary*
-g:beancount_account_completion	filetype.txt	/*g:beancount_account_completion*
-g:beancount_completion_enable	filetype.txt	/*g:beancount_completion_enable*
-g:beancount_detailed_first	filetype.txt	/*g:beancount_detailed_first*
-g:beancount_separator_col	filetype.txt	/*g:beancount_separator_col*
 g:cargo_makeprg_params	ft_rust.txt	/*g:cargo_makeprg_params*
 g:cargo_shell_command_runner	ft_rust.txt	/*g:cargo_shell_command_runner*
 g:clojure_align_multiline_strings	indent.txt	/*g:clojure_align_multiline_strings*
