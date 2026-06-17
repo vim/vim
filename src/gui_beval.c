@@ -281,7 +281,11 @@ removeEventHandler(BalloonEval *beval)
     GtkEventController	*controller;
 
     controller = g_object_get_data(G_OBJECT(target), "beval");
-    gtk_widget_remove_controller(target, controller);
+    if (controller != NULL)
+    {
+	gtk_widget_remove_controller(target, controller);
+	g_object_set_data(G_OBJECT(target), "beval", NULL);
+    }
 #  else
     g_signal_handlers_disconnect_by_func(G_OBJECT(beval->target),
 					 FUNC2GENERIC(target_event_cb),
