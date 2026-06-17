@@ -5443,8 +5443,13 @@ put_key_modifiers_in_typebuf(
     modifiers = may_remove_shift_modifier(modifiers, key);
 
     // Produce modifiers with K_SPECIAL KS_MODIFIER {mod}
-    char_u string[MAX_KEY_CODE_LEN + 1];
+    // worst-case: 3-byte modifier + 4 byte multi-char key + NUL
+    char_u string[MAX_KEY_CODE_LEN + 2];
     int new_slen = modifiers2keycode(modifiers, &key, string);
+
+    // reject overlong key that would overflow string
+    if (key > 0x10FFFF)
+	return -1;
 
     // Add the bytes for the key.
     new_slen += add_key_to_buf(key, string + new_slen);
@@ -5713,7 +5718,9 @@ handle_csi(
 			return -1;
 		    if (!VIM_ISDIGIT(*ap))
 			break;
-		    arg[argc] = arg[argc] * 10 + (*ap - '0');
+		    // avoid overflow
+		    if (arg[argc] <= (INT_MAX - 9) / 10)
+			arg[argc] = arg[argc] * 10 + (*ap - '0');
 		    ++ap;
 		}
 		++argc;
