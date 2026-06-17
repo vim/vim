@@ -1243,12 +1243,14 @@ GTK4_SRC	= gui.c gui_gtk4.c gui_gtk4_f.c \
 			gui_gtk4_cb.c \
 			gui_gtk4_da.c \
 			gui_beval.o \
+			gui_gtk4_tb.c \
 			$(GRESOURCE_SRC)
 GTK4_OBJ	= objects/gui.o objects/gui_gtk4.o \
 			objects/gui_gtk4_f.o \
 			objects/gui_gtk4_cb.o \
 			objects/gui_gtk4_da.o \
 			objects/gui_beval.o \
+			objects/gui_gtk4_tb.o \
 			$(GRESOURCE_OBJ)
 GTK4_DEFS	= -DFEAT_GUI_GTK $(NARROW_PROTO)
 GTK4_IPATH	= $(GUI_INC_LOC)
@@ -1318,7 +1320,7 @@ HAIKUGUI_TESTTARGET = gui
 HAIKUGUI_BUNDLE =
 
 # All GUI files
-ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_gtk4.c gui_gtk4_f.c gui_gtk4_cb.c gui_gtk4_da.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_gtk_x11.c gui_x11.c gui_haiku.cc
+ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_gtk4.c gui_gtk4_f.c gui_gtk4_cb.c gui_gtk4_da.c gui_gtk4_tb.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_gtk_x11.c gui_x11.c gui_haiku.cc
 ALL_GUI_PRO  = proto/gui.pro proto/gui_gtk.pro proto/gui_gtk4.pro proto/gui_motif.pro proto/gui_xmdlg.pro proto/gui_gtk_x11.pro proto/gui_x11.pro proto/gui_w32.pro proto/gui_photon.pro
 
 # }}}
@@ -3416,6 +3418,9 @@ objects/gui_gtk4_cb.o: gui_gtk4_cb.c
 objects/gui_gtk4_da.o: gui_gtk4_da.c
 	$(CCC) -o $@ gui_gtk4_da.c
 
+objects/gui_gtk4_tb.o: gui_gtk4_tb.c
+	$(CCC) -o $@ gui_gtk4_tb.c
+
 
 objects/gui_haiku.o: gui_haiku.cc
 	$(CCC) -o $@ gui_haiku.cc
@@ -4513,7 +4518,7 @@ objects/gui_gtk4.o: auto/osdef.h gui_gtk4.c vim.h protodef.h auto/config.h featu
  structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h gui_gtk4_f.h auto/gui_gtk_gresources.h \
- gui_gtk4_da.h
+ gui_gtk4_cb.h gui_gtk4_da.h gui_gtk4_tb.h
 objects/gui_gtk4_f.o: auto/osdef.h gui_gtk4_f.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
  beval.h structs.h regexp.h gui.h \
@@ -4529,6 +4534,11 @@ objects/gui_gtk4_da.o: auto/osdef.h gui_gtk4_da.c vim.h protodef.h auto/config.h
  beval.h structs.h regexp.h gui.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
  ex_cmds.h spell.h proto.h globals.h errors.h gui_gtk4_da.h
+objects/gui_gtk4_tb.o: auto/osdef.h gui_gtk4_tb.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h gui_gtk4_tb.h
 objects/gui_gtk_f.o: auto/osdef.h gui_gtk_f.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
  beval.h structs.h regexp.h gui.h \
