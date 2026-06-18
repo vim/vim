@@ -1334,9 +1334,11 @@ ex_mkrc(exarg_T	*eap)
 	    {
 		si = SCRIPT_ITEM(sid);
 
-		// autoload script paths may be absolute, relative to the
+		// Autoload script paths may be absolute, relative to the
 		// current script or relative to a 'runtimepath' directory
-		if (si->sn_autoload_prefix || si->sn_import_autoload)
+		// Ignore if missing
+		if ((si->sn_autoload_prefix || si->sn_import_autoload)
+			&& file_is_readable(si->sn_name))
 		{
 		    // Check if conflicts with a previous import
 		    int b_sid = sid - 1;
@@ -1346,8 +1348,9 @@ ex_mkrc(exarg_T	*eap)
 		    {
 			scriptitem_T *b_si = SCRIPT_ITEM(b_sid);
 
-			// only autoload may conflict
-			if (!b_si->sn_autoload_prefix && !b_si->sn_import_autoload)
+			// Only autoload may conflict. Ignore if missing
+			if ((!b_si->sn_autoload_prefix && !b_si->sn_import_autoload)
+				|| !file_is_readable(b_si->sn_name))
 			    continue;
 
 			// compare prefixes if available
