@@ -1598,4 +1598,67 @@ func Test_mksession_localmappings()
 
 endfunc
 
-" vim: shiftwidth=2 sts=2 expandtab
+" Test vim9 script relative auto imports (issue #12641)
+func Test_mksession_vim9_relative_auto_import()
+
+  " Dummy vim9 script
+  let script_sources =<< trim END
+    vim9script
+    import autoload './XAuto.vim'
+    nnoremap dummy-test <ScriptCmd>XAuto.Test()<CR>
+  END
+  call writefile(script_sources, 'XScript.vim')
+  defer delete('XScript.vim')
+
+  let auto_sources =<< trim END
+    vim9script
+    const ref_txt = 'Hello from vim9 dummy relative auto script!'
+    export def Test()
+      if !has("gui_running")
+        exe $"echomsg '{ref_txt}'"
+      endif
+      writefile([ref_txt], 'XDummyOutput')
+    enddef
+  END
+  call writefile(auto_sources, 'XAuto.vim')
+  defer delete('XAuto.vim')
+
+  " Source the script
+  const ref_txt = 'Hello from vim9 dummy relative auto script!'
+  source XScript.vim
+
+  " Execute mapping
+  normal dummy-test
+
+  if !has('gui_running')
+    call assert_match(ref_txt, execute('messages'), 'No vim9 auto script XAuto.Test() execution')
+  endif
+  call assert_true(filereadable('XDummyOutput'), 'Output file was not created by Vim9 auto script')
+  call assert_equal([ref_txt], readfile('XDummyOutput'))
+  call delete('XDummyOutput')
+
+  " Create a session file
+  mksession! XDummySession.vim
+  defer delete('XDummySession.vim')
+  call assert_true(filereadable('XDummySession.vim'), 'Session file was not created')
+
+  " Check the session file mappings are operational
+  let test_sources =<< trim END
+    " Load session
+    source XDummySession.vim
+    " Execute mapping
+    normal dummy-test
+    " on my way
+    cq
+  END
+  call writefile(test_sources, 'XTest.vim', 'D')
+  " spawn a new Vim instance to load the session and execute the mapping
+  call system(GetVimCommand('XTest.vim'))
+  defer delete('XDummyOutput')
+  call assert_true(filereadable('XDummyOutput'),
+        \ 'Expected output file was not created by Vim9 auto script mapping')
+  call assert_equal([ref_txt], readfile('XDummyOutput'))
+
+endfunc
+
+" " vim: shiftwidth=2 sts=2 expandtab
