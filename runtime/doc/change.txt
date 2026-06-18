@@ -1334,7 +1334,7 @@ and ":put" commands and with CTRL-R.
 		feature}
 							*quote_#* *quote#*
 6. Alternate file register "#
-Contains the |alternate-file| for current window
+Contains the |alternate-file| name for current window
 This register is writeable and changes which buffer CTRL-^ enters.
 A String is matched against existing buffer names, like |:buffer|: >
     let @# = 'buffer_name'
