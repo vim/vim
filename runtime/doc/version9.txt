@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Jun 13
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Jun 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52687,6 +52687,7 @@ Changed ~
 - Rewrite the clientserver socketserver backend to use channels and JSON.
 - During |complete()|-triggered completion, CTRL-N and CTRL-P are now subject
   to insert-mode mappings.
+- It is possible to clear the alternate file register |quote#|.
 
 
 							*added-9.3*

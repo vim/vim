@@ -3152,6 +3152,12 @@ write_reg_contents_ex(
 
     if (name == '#')
     {
+	if (len == 0)
+	{
+	  curwin->w_alt_fnum = 0; // clear altfile
+	  return;
+	}
+
 	buf_T	*buf;
 
 	if (VIM_ISDIGIT(*str))
