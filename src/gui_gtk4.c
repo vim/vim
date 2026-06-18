@@ -4666,10 +4666,9 @@ gui_mch_destroy_menu(vimmenu_T *menu)
     // For toolbar buttons and separators, remove from the toolbar box.
     if (menu->id != NULL && menu->id != (GtkWidget *)1)
     {
-	GtkWidget *parent_widget = gtk_widget_get_parent(menu->id);
-
-	if (parent_widget != NULL)
-	    gtk_box_remove(GTK_BOX(parent_widget), menu->id);
+	vim_toolbar_remove(VIM_TOOLBAR(gui.toolbar), menu->id);
+	menu->id = NULL;
+	return;
     }
     menu->id = NULL;
 
