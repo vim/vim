@@ -1395,9 +1395,9 @@ func Test_mksession_vim9_expr_mappings()
   call writefile(test_sources, 'XTest.vim', 'D')
   " spawn a new Vim instance to load the session and execute the mapping
   call system(GetVimCommand('XTest.vim'))
-  defer delete('XDummyOutput')
   call assert_true(filereadable('XDummyOutput'),
         \ 'Expected output file was not created by Vim9 plugin')
+  defer delete('XDummyOutput')
   call assert_equal([ref_txt], readfile('XDummyOutput'))
 
 endfunc
@@ -1461,9 +1461,9 @@ func Test_mksession_legacy_expr_mappings()
   call writefile(test_sources, 'XTest.vim', 'D')
   " spawn a new Vim instance to load the session and execute the mapping
   call system(GetVimCommand('XTest.vim'))
-  defer delete('XDummyOutput')
   call assert_true(filereadable('XDummyOutput'),
         \ 'Expected output file was not created by legacy vim plugin')
+  defer delete('XDummyOutput')
   call assert_equal([ref_txt], readfile('XDummyOutput'))
 
 endfunc
@@ -1607,8 +1607,7 @@ func Test_mksession_vim9_relative_auto_import()
     import autoload './XAuto.vim'
     nnoremap dummy-test <ScriptCmd>XAuto.Test()<CR>
   END
-  call writefile(script_sources, 'XScript.vim')
-  defer delete('XScript.vim')
+  call writefile(script_sources, 'XScript.vim', 'D')
 
   let auto_sources =<< trim END
     vim9script
@@ -1620,8 +1619,7 @@ func Test_mksession_vim9_relative_auto_import()
       writefile([ref_txt], 'XDummyOutput')
     enddef
   END
-  call writefile(auto_sources, 'XAuto.vim')
-  defer delete('XAuto.vim')
+  call writefile(auto_sources, 'XAuto.vim', 'D')
 
   " Source the script
   const ref_txt = 'Hello from vim9 dummy relative auto script!'
@@ -1654,9 +1652,72 @@ func Test_mksession_vim9_relative_auto_import()
   call writefile(test_sources, 'XTest.vim', 'D')
   " spawn a new Vim instance to load the session and execute the mapping
   call system(GetVimCommand('XTest.vim'))
-  defer delete('XDummyOutput')
   call assert_true(filereadable('XDummyOutput'),
         \ 'Expected output file was not created by Vim9 auto script mapping')
+  defer delete('XDummyOutput')
+  call assert_equal([ref_txt], readfile('XDummyOutput'))
+
+endfunc
+
+" Test vim9 script avoid homonimous auto imports
+func Test_mksession_vim9_duplicate_import()
+
+  " Auto script
+  let auto_sources =<< trim END
+    vim9script
+    const ref_txt = 'Hello from a duplicated vim9 script!'
+    export def Test()
+      writefile([ref_txt], 'XDummyOutput')
+    enddef
+  END
+
+  " Dummy vim9 script
+  let script_sources =<< trim END
+    vim9script
+    import autoload './XAuto.vim'
+    nnoremap dummy-test <ScriptCmd>XAuto.Test()<CR>
+  END
+
+  for i in range(1, 5)
+    let dir = $'XDir{i}'
+    call mkdir(dir, 'p')
+    defer delete(dir, 'rf')
+
+    let autofile = dir . '/XAuto.vim'
+    call writefile(auto_sources, autofile, 'D')
+
+    let scriptfile = dir . '/XScript.vim'
+    call writefile(script_sources, scriptfile, 'D')
+    exe "source " . scriptfile
+  endfor
+
+  " Create a session file
+  mksession! XDummySession.vim
+  defer delete('XDummySession.vim')
+  call assert_true(filereadable('XDummySession.vim'), 'Session file was not created')
+
+  " Check there are commented imports in the session file
+  let commented_imports = filter(readfile('XDummySession.vim'),
+  \ {_, v -> v =~ '^# import autoload'})
+  call assert_equal(4, len(commented_imports),
+  \ 'Session file does not contain the expected number of commented imports')
+
+  " Check the session file mappings are operational
+  const ref_txt = 'Hello from a duplicated vim9 script!'
+  let test_sources =<< trim END
+    " Load session
+    source XDummySession.vim
+    " Execute mapping
+    normal dummy-test
+    " on my way
+    cq
+  END
+  call writefile(test_sources, 'XTest.vim', 'D')
+  " spawn a new Vim instance to load the session and execute the mapping
+  call system(GetVimCommand('XTest.vim'))
+  call assert_true(filereadable('XDummyOutput'),
+        \ 'Expected output file was not created by Vim9 auto script mapping')
+  defer delete('XDummyOutput')
   call assert_equal([ref_txt], readfile('XDummyOutput'))
 
 endfunc
