@@ -99,7 +99,7 @@ um_goto_line(unpacked_memline_T *um, linenr_T lnum, int extra_props)
     // New format: [prop_count (uint16)][textprop_T...][vtext...]
     if (propdata_len < PROP_COUNT_SIZE + sizeof(textprop_T))
     {
-	iemsg(e_text_property_info_corrupted);
+	emsg(e_text_property_info_corrupted);
 	um->buf = NULL;
 	return false;
     }
@@ -111,7 +111,7 @@ um_goto_line(unpacked_memline_T *um, linenr_T lnum, int extra_props)
     mch_memmove(&prop_count, count_ptr, PROP_COUNT_SIZE);
     if (!text_prop_count_valid(prop_count, propdata_len))
     {
-	iemsg(e_text_property_info_corrupted);
+	emsg(e_text_property_info_corrupted);
 	um->buf = NULL;
 	return false;
     }
@@ -1237,13 +1237,13 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     // prop_count is never zero.
     if (propdata_len < PROP_COUNT_SIZE + sizeof(textprop_T))
     {
-	iemsg(e_text_property_info_corrupted);
+	emsg(e_text_property_info_corrupted);
 	return 0;
     }
     mch_memmove(&prop_count, text + textlen, PROP_COUNT_SIZE);
     if (!text_prop_count_valid(prop_count, propdata_len))
     {
-	iemsg(e_text_property_info_corrupted);
+	emsg(e_text_property_info_corrupted);
 	return 0;
     }
     *props = text + textlen + PROP_COUNT_SIZE;
