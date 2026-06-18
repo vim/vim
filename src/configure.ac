@@ -2148,10 +2148,6 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 	  RUBY_LIBS="$RUBY_LIBS -L$rubylibdir"
 	fi
 
-	if test "X$librubyarg" != "X"; then
-	  RUBY_LIBS="$librubyarg $RUBY_LIBS"
-	fi
-
 	dnl Here the Ruby LDFLAGS used to be added to LDFLAGS, but that turns
 	dnl out to cause trouble and was removed.
 
@@ -2166,6 +2162,9 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 	  AC_DEFINE(DYNAMIC_RUBY)
 	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby_soname\\\" $RUBY_CFLAGS"
 	  RUBY_LIBS=
+	fi
+	if test "X$librubyarg" != "X"; then
+	  RUBY_LIBS="$librubyarg $RUBY_LIBS"
 	fi
 	if test "X$CLANG_VERSION" != "X" -a "$rubyversion" -ge 30; then
 	  RUBY_CFLAGS="$RUBY_CFLAGS -fdeclspec"
