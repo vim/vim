@@ -255,6 +255,7 @@ runtime/ftplugin/liquid.vim				@tpope
 runtime/ftplugin/logtalk.dict				@pmoura
 runtime/ftplugin/logtalk.vim				@pmoura
 runtime/ftplugin/lua.vim				@dkearns
+runtime/ftplugin/luau.vim				@lopi-py
 runtime/ftplugin/lynx.vim				@dkearns
 runtime/ftplugin/m17ndb.vim				@dseomn
 runtime/ftplugin/m3build.vim				@dkearns
@@ -420,6 +421,7 @@ runtime/indent/less.vim					@genoma
 runtime/indent/liquid.vim				@tpope
 runtime/indent/logtalk.vim				@pmoura
 runtime/indent/lua.vim					@marcuscf
+runtime/indent/luau.vim					@lopi-py
 runtime/indent/m17ndb.vim				@dseomn
 runtime/indent/make.vim					@dkearns
 runtime/indent/meson.vim				@Liambeguin
@@ -609,6 +611,7 @@ runtime/syntax/liquid.vim				@tpope
 runtime/syntax/log.vim					@mao-yining
 runtime/syntax/logtalk.vim				@pmoura
 runtime/syntax/lua.vim					@marcuscf
+runtime/syntax/luau.vim					@lopi-py
 runtime/syntax/lynx.vim					@dkearns
 runtime/syntax/lyrics.vim				@ObserverOfTime
 runtime/syntax/m17ndb.vim				@dseomn

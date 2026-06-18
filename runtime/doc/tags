@@ -7634,6 +7634,7 @@ ft-log-syntax	syntax.txt	/*ft-log-syntax*
 ft-lpc-syntax	syntax.txt	/*ft-lpc-syntax*
 ft-lua-plugin	filetype.txt	/*ft-lua-plugin*
 ft-lua-syntax	syntax.txt	/*ft-lua-syntax*
+ft-luau-plugin	filetype.txt	/*ft-luau-plugin*
 ft-mail-plugin	filetype.txt	/*ft-mail-plugin*
 ft-mail.vim	syntax.txt	/*ft-mail.vim*
 ft-make-syntax	syntax.txt	/*ft-make-syntax*
@@ -7898,6 +7899,7 @@ g:lf_shell_syntax	syntax.txt	/*g:lf_shell_syntax*
 g:lua_folding	filetype.txt	/*g:lua_folding*
 g:lua_subversion	filetype.txt	/*g:lua_subversion*
 g:lua_version	filetype.txt	/*g:lua_version*
+g:luau_folding	filetype.txt	/*g:luau_folding*
 g:markdown_fenced_languages	syntax.txt	/*g:markdown_fenced_languages*
 g:markdown_minlines	syntax.txt	/*g:markdown_minlines*
 g:markdown_syntax_conceal	syntax.txt	/*g:markdown_syntax_conceal*
