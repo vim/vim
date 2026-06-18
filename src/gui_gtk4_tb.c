@@ -35,8 +35,8 @@ struct _VimToolbar
 
 G_DEFINE_TYPE(VimToolbar, vim_toolbar, GTK_TYPE_WIDGET)
 
-    static void vim_toolbar_size_allocate(GtkWidget *widget, int width, int height, int baseline);
-    static void vim_toolbar_measure(GtkWidget *widget, GtkOrientation orientation, int for_size, int *minimum, int *natural, int *minimum_baseline, int *natural_baseline);
+static void vim_toolbar_size_allocate(GtkWidget *widget, int width, int height, int baseline);
+static void vim_toolbar_measure(GtkWidget *widget, GtkOrientation orientation, int for_size, int *minimum, int *natural, int *minimum_baseline, int *natural_baseline);
 
     static void
 vim_toolbar_dispose(GObject *object)
