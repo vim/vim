@@ -479,8 +479,9 @@ func Test_textprop_undo_bad_prop_count()
   call prop_type_add('Xtp', {})
   call prop_add(2, 1, {'type': 'Xtp', 'length': 1})
 
-  " this caused OOB read, now it triggers internal error
-  call assert_fails('call prop_list(1)', ['E340:', 'corrupted'])
+  " this caused OOB read, now it is rejected as a corrupted (untrusted) undo
+  " file with a catchable error instead of an internal error
+  call assert_fails('call prop_list(1)', 'E967:')
 
   call prop_type_delete('Xtp')
   bwipe!
