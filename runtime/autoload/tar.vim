@@ -733,8 +733,10 @@ fun! tar#Extract()
   elseif tarball =~# "\.tlz4$"
    if has("linux")
     let extractcmd= substitute(extractcmd,"-","-I lz4 -","")
+    call system(extractcmd." ".shellescape(tarball)." ".g:tar_secure.shellescape(fname))
+   else
+    call system("lz4 --decompress --stdout -- ".shellescape(tarball)." | ".extractcmd." - ".g:tar_secure.shellescape(fname))
    endif
-   call system(extractcmd." ".shellescape(tarball)." ".g:tar_secure.shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarball} {fname}: failed!")
    else
@@ -744,8 +746,10 @@ fun! tar#Extract()
   elseif tarball =~# "\.tar\.lz4$"
    if has("linux")
     let extractcmd= substitute(extractcmd,"-","-I lz4 -","")
+    call system(extractcmd." ".shellescape(tarball)." ".g:tar_secure.shellescape(fname))
+   else
+    call system("lz4 --decompress --stdout -- ".shellescape(tarball)." | ".extractcmd." - ".g:tar_secure.shellescape(fname))
    endif
-   call system(extractcmd." ".shellescape(tarball)." ".g:tar_secure.shellescape(fname))
    if v:shell_error != 0
     call s:Msg('tar#Extract', 'error', $"{extractcmd} {tarball} {fname}: failed!")
    else
