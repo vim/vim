@@ -1,5 +1,12 @@
 " Test :suspend
 
+let s:test_shell = '/bin/sh'
+let s:test_shell_arg = ''
+if has('sun')
+  let s:test_shell = '/bin/bash'
+  let s:test_shell_arg = ' --norc'
+endif
+
 func CheckSuspended(buf, fileExists)
   call WaitForAssert({-> assert_match('[$#] $', term_getline(a:buf, '.'))})
 
@@ -16,7 +23,7 @@ endfunc
 
 func Test_suspend()
   CheckFeature terminal
-  CheckExecutable /bin/sh
+  call CheckExecutable(s:test_shell)
 
   " Somehow the modifyOtherKeys response may get to the terminal when using
   " Mac OS.  Make t_RK and 'keyprotocol' empty to avoid that.
@@ -24,7 +31,7 @@ func Test_suspend()
 
   call WaitForResponses()
 
-  let buf = term_start('/bin/sh')
+  let buf = term_start(s:test_shell .. s:test_shell_arg)
   " Wait for shell prompt.
   call WaitForAssert({-> assert_match('[$#] $', term_getline(buf, '.'))})
 
@@ -66,7 +73,7 @@ endfunc
 
 func Test_suspend_autocmd()
   CheckFeature terminal
-  CheckExecutable /bin/sh
+  call CheckExecutable(s:test_shell)
 
   " Somehow the modifyOtherKeys response may get to the terminal when using
   " Mac OS.  Make t_RK and 'keyprotocol' empty to avoid that.
@@ -74,7 +81,7 @@ func Test_suspend_autocmd()
 
   call WaitForResponses()
 
-  let buf = term_start('/bin/sh', #{term_rows: 6})
+  let buf = term_start(s:test_shell .. s:test_shell_arg, #{term_rows: 6})
   " Wait for shell prompt.
   call WaitForAssert({-> assert_match('[$#] $', term_getline(buf, '.'))})
 
