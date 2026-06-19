@@ -122,6 +122,11 @@ typedef void (*sighandler_T) SIGPROTOARG;
 # define MAXNAMLEN NAME_MAX	    // for Linux before .99p3
 #endif
 
+#if defined(__sun)
+# undef MAXNAMLEN
+# define MAXNAMLEN 255
+#endif
+
 /*
  * Note: if MAXNAMLEN has the wrong value, you will get error messages
  *	 for not being able to open the swap file.
