@@ -1426,6 +1426,9 @@ gui_update_cursor(
 #endif
     }
     gui.highlight_mask = old_hl_mask;
+#if defined(FEAT_IMAGE_CAIRO) && !GTK_CHECK_VERSION(4,0,0)
+    update_popup_images();
+#endif
 }
 
 #if defined(FEAT_MENU)
