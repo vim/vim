@@ -1355,6 +1355,9 @@ gui_update_cursor(
     if (!gui.in_focus)
     {
 	gui_mch_draw_hollow_cursor(cbg);
+#if defined(FEAT_IMAGE_CAIRO) && !GTK_CHECK_VERSION(4,0,0)
+	update_popup_images();
+#endif
 	return;
     }
 
