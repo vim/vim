@@ -2517,10 +2517,11 @@ findmatchlimit(
 	    }
 	}
 
-	// Track block comment state when FM_SKIPCOMM is set.
+	// Track block comment state when FM_SKIPCOMM is set.  Markers inside a
+	// string are not comments, so skip them while "inquote" is set.
 	// Backward: '/' of end-marker enters comment; '*' of start-marker exits.
 	// Forward:  '/' of start-marker enters comment; '/' of end-marker exits.
-	if (skip_comments && !comment_dir)
+	if (skip_comments && !comment_dir && !inquote)
 	{
 	    if (backwards)
 	    {
