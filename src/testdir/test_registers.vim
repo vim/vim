@@ -51,7 +51,7 @@ func Test_display_registers()
     " these commands work in the sandbox
     let a = execute('sandbox display')
     " When X11 connection is not available, there is a warning W23
-    " filter this out (we could also run the :display comamand twice)
+    " filter this out (we could also run the :display command twice)
     let a = substitute(a, 'W23.*0\n', '', '')
     let b = execute('sandbox registers')
 
@@ -76,6 +76,14 @@ func Test_display_registers()
     let a = execute('registers :')
     call assert_match('^\nType Name Content\n'
           \ .         '  c  ":   ls', a)
+
+    let a = execute('registers %')
+    call assert_match('^\nType Name Content\n'
+          \ .         '  c  "%   file2', a)
+
+    let a = execute('registers #')
+    call assert_match('^\nType Name Content\n'
+          \ .         '  c  "#   file1', a)
 
     bwipe!
 endfunc
