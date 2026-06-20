@@ -1907,14 +1907,15 @@ str2special_save(
     char_u  *str,
     int	    replace_spaces,	// TRUE to replace " " with "<Space>".
 				// used for the lhs of mapping and keytrans().
-    int	    replace_lt)		// TRUE to replace "<" with "<lt>".
+    int	    replace_others)	// TRUE to replace "<" with "<lt>",
+				// "|" with "<Bar>", "\" with "<Bslash>".
 {
     garray_T	ga;
     char_u	*p = str;
 
     ga_init2(&ga, 1, 40);
     while (*p != NUL)
-	ga_concat(&ga, str2special(&p, replace_spaces, replace_lt));
+	ga_concat(&ga, str2special(&p, replace_spaces, replace_others));
     ga_append(&ga, NUL);
     return (char_u *)ga.ga_data;
 }
@@ -1931,7 +1932,8 @@ str2special(
     char_u	**sp,
     int		replace_spaces,	// TRUE to replace " " with "<Space>".
 				// used for the lhs of mapping and keytrans().
-    int		replace_lt)	// TRUE to replace "<" with "<lt>".
+    int		replace_others)	// TRUE to replace "<" with "<lt>",
+				// "|" with "<Bar>", "\" with "<Bslash>".
 {
     int			c;
     static char_u	buf[7];
@@ -1999,7 +2001,7 @@ str2special(
     if (special
 	|| c < ' '
 	|| (replace_spaces && c == ' ')
-	|| (replace_lt && c == '<'))
+	|| (replace_others && (c == '<' || c == '|' || c == '\\')))
 	return get_special_key_name(c, modifiers);
     buf[0] = c;
     buf[1] = NUL;
