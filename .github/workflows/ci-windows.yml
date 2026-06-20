@@ -117,7 +117,7 @@ jobs:
           echo "SODIUM_DIR=${SODIUM_DIR}" >> $GITHUB_ENV
           echo "GETTEXT_PATH=D:\gettext${{ matrix.arch == 'x64' && '64' || '32' }}" >> $GITHUB_ENV
 
-      - uses: msys2/setup-msys2@v2.31.1
+      - uses: msys2/setup-msys2@v2.32.0
         if: matrix.toolchain == 'mingw'
         with:
           update: true
