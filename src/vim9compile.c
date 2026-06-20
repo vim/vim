@@ -1481,7 +1481,7 @@ valid_dest_reg(int name)
 {
     if (name == '@')
        name = '"';
-    if (name == '/' || name == '=' || valid_yank_reg(name, TRUE))
+    if (name == '/' || name == '=' || name == '#' || valid_yank_reg(name, TRUE))
 	return TRUE;
     emsg_invreg(name);
     return FAIL;
