@@ -185,11 +185,11 @@ cairo_popup_image_paint(
     cairo_surface_t *surface = (cairo_surface_t *)wp->w_popup_image_surface;
 
 
-#if !GTK_CHECK_VERSION(3,0,0)
+# if !GTK_CHECK_VERSION(3,0,0)
     cr = gdk_cairo_create((GdkDrawable *)target);
-#else
+# else
     cr = cairo_create((cairo_surface_t *)target);
-#endif
+# endif
     cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
     // Position the source so its (src_x, src_y) pixel lands at (x, y),
     // then clip to the visible (draw_w x draw_h) rectangle.
