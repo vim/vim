@@ -428,14 +428,12 @@ func Test_multiline_prop_delete_penultimate_line()
   call s:CleanupPropTypes(['1', '2', '3'])
 endfunc
 
-func s:ManipulateUndoBlob(name)
-  " Patch the saved old line in the undo file:
-  "   00 00 00 08 'QQQQQQQQ'  ->  00 00 00 27 'AAAA' NUL count=0xFFFF <32x00>
-  " i.e. textlen 8 text-only  ->  39-byte blob: text "AAAA", NUL, prop_count
-  "   0xFFFF, one zeroed textprop_T(32).  propdata_len becomes 34, count 65535.
+func s:ManipulateUndoBlob(name, repl)
+  " Replace the saved old line (00 00 00 08 'QQQQQQQQ') in the undo file with
+  " the crafted "repl" blob, then read it back in.
   let blob   = readfile(a:name, 'B')
   let marker = 0z000000085151515151515151
-  let repl   = 0z000000274141414100FFFF + repeat(0z00, 32)
+  let repl   = a:repl
   let mlen   = len(marker)
   let idx    = -1
   let i      = 0
@@ -466,7 +464,10 @@ func Test_textprop_undo_bad_prop_count()
   let &ul = &ul
   call setline(1, 'BBBB')           " undo step saves old line 1 = "QQQQQQQQ"
   wundo Xtpundo
-  call s:ManipulateUndoBlob('Xtpundo')
+  " 39-byte blob: "AAAA" NUL count=0xFFFF, one zeroed textprop_T(32).
+  " propdata_len becomes 34 while the count claims 65535 properties.
+  call s:ManipulateUndoBlob('Xtpundo', 0z000000274141414100FFFF
+	\ + repeat(0z00, 32))
 
   undo
 
@@ -481,6 +482,51 @@ func Test_textprop_undo_bad_prop_count()
 
   " this caused OOB read, now it is rejected as a corrupted (untrusted) undo
   " file with a catchable error instead of an internal error
+  call assert_fails('call prop_list(1)', 'E967:')
+
+  call prop_type_delete('Xtp')
+  bwipe!
+  call delete('Xtpundo')
+endfunc
+
+" A crafted undo file can restore a line whose virtual-text property declares an
+" out-of-range tp_text_offset.  Turning that offset into a pointer and reading
+" the virtual text would read past the line buffer.  Restore such a line and
+" force a consumer; reaching the asserts (no ASan abort / crash) means the
+" offset is bounded.
+func Test_textprop_undo_bad_vtext_offset()
+  CheckFeature persistent_undo
+
+  new
+  call setline(1, ['QQQQQQQQ', 'DECOYLINE'])
+  let &ul = &ul
+  call setline(1, 'BBBB')           " undo step saves old line 1 = "QQQQQQQQ"
+  wundo Xtpundo
+
+  " One textprop_T for a virtual text prop (tp_id < 0) whose tp_text_offset
+  " (0x00100000) points far past the 34-byte property data.  The count (1) is
+  " valid, so only the offset/length check can reject this.
+  let prop  = 0z01000000          " tp_col = 1
+  let prop += 0z04000000          " tp_len = 4
+  let prop += 0zFFFFFFFF          " tp_id = -1 (virtual text)
+  let prop += 0z00000000          " tp_type = 0
+  let prop += 0z00000000          " tp_flags = 0
+  let prop += 0z00000000          " tp_padleft = 0
+  let prop += 0z00001000          " u.tp_text_offset = 0x00100000
+  let prop += 0z00000000          " union upper bytes
+  call s:ManipulateUndoBlob('Xtpundo', 0z000000274141414100 + 0z0100 + prop)
+
+  undo
+
+  " Safety: prove the malicious line was actually restored before the consumer
+  " runs, so the test can't pass vacuously if the patch missed.
+  call assert_equal('AAAA', getline(1))
+
+  call prop_type_add('Xtp', {})
+  call prop_add(2, 1, {'type': 'Xtp', 'length': 1})
+
+  " this caused OOB read, now it is rejected as a corrupted (untrusted) undo
+  " file with a catchable error
   call assert_fails('call prop_list(1)', 'E967:')
 
   call prop_type_delete('Xtp')
