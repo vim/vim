@@ -2759,7 +2759,7 @@ ex_display(exarg_T *eap)
     }
 
     // display alternate file name
-    if ((arg == NULL || vim_strchr(arg, '%') != NULL) && !got_int)
+    if ((arg == NULL || vim_strchr(arg, '#') != NULL) && !got_int)
     {
 	char_u	    *fname;
 	linenr_T    dummy;
