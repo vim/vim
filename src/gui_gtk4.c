@@ -2851,6 +2851,7 @@ gui_mch_menu_grey(vimmenu_T *menu, int grey)
     if (menu->id == NULL)
 	return;
     gtk_widget_set_sensitive(menu->id, !grey);
+    gui_mch_update();
 }
 
 /*
@@ -2859,6 +2860,8 @@ gui_mch_menu_grey(vimmenu_T *menu, int grey)
     void
 gui_mch_menu_hidden(vimmenu_T *menu, int hidden)
 {
+    if (menu->id == NULL)
+	return;
     gtk_widget_set_visible(menu->id, !hidden);
     gui_mch_update();
 }
