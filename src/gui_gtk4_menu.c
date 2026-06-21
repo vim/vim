@@ -491,6 +491,9 @@ vim_menu_select_active_item(VimMenu *self, gboolean open)
     gtk_widget_set_state_flags(self->active_item,
 	    GTK_STATE_FLAG_SELECTED, FALSE);
 
+    // Make sure to focus item, so that scrolled window knows what to do.
+    gtk_widget_grab_focus(GTK_WIDGET(self->active_item));
+
     if (open && VIM_MENU_ITEM(self->active_item)->submenu != NULL)
     {
 	gtk_popover_popup(GTK_POPOVER(
@@ -510,7 +513,6 @@ vim_menu_set_active_item(VimMenu *self, VimMenuItem *item, gboolean open)
 {
     if (self->active_item == GTK_WIDGET(item))
 	return;
-
 
     if (self->active_item != NULL)
     {
