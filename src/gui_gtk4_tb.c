@@ -35,8 +35,8 @@ struct _VimToolbar
 
 G_DEFINE_TYPE(VimToolbar, vim_toolbar, GTK_TYPE_WIDGET)
 
-    static void vim_toolbar_size_allocate(GtkWidget *widget, int width, int height, int baseline);
-    static void vim_toolbar_measure(GtkWidget *widget, GtkOrientation orientation, int for_size, int *minimum, int *natural, int *minimum_baseline, int *natural_baseline);
+static void vim_toolbar_size_allocate(GtkWidget *widget, int width, int height, int baseline);
+static void vim_toolbar_measure(GtkWidget *widget, GtkOrientation orientation, int for_size, int *minimum, int *natural, int *minimum_baseline, int *natural_baseline);
 
     static void
 vim_toolbar_dispose(GObject *object)
@@ -193,6 +193,19 @@ set_button_style(GtkWidget *btn, int style, int iconsize, gboolean invalidate)
 }
 
 /*
+ * Always close overflow popover when button is clicked.
+ */
+    static void
+button_clicked(GtkWidget *widget UNUSED, VimToolbar *self)
+{
+    gtk_menu_button_popdown(GTK_MENU_BUTTON(self->overflow_btn));
+    // Bring focus to drawarea, popping overflow menu down does not change
+    // focus.
+    gtk_widget_grab_focus(gui.drawarea);
+    gui_mch_flush();
+}
+
+/*
  * Add a new toolbar button at the given index and return the widget. "icon" and
  * "text" may be NULL..
  */
@@ -229,6 +242,9 @@ vim_toolbar_insert_button(
     }
 
     set_button_style(btn, self->style, self->iconsize, TRUE);
+
+    g_signal_connect_object(btn, "clicked",
+	    G_CALLBACK(button_clicked), self, G_CONNECT_DEFAULT);
 
     vim_toolbar_insert(self, btn, idx);
     return btn;
@@ -276,6 +292,18 @@ vim_toolbar_set_style(VimToolbar *self, int style, int iconsize)
 	cur_child = gtk_widget_get_next_sibling(cur_child);
     }
     // Sizes may have changed
+    gtk_widget_queue_allocate(GTK_WIDGET(self));
+}
+
+/*
+ * Remove the item from the toolbar.
+ */
+    void
+vim_toolbar_remove(VimToolbar *self, GtkWidget *item)
+{
+    gtk_box_remove(GTK_BOX(self->strip),item);
+    self->items = g_list_remove(self->items, item);
+    g_object_unref(item);
     gtk_widget_queue_allocate(GTK_WIDGET(self));
 }
 
