@@ -662,13 +662,7 @@ SRC_DOS =	\
 		src/tee/tee.c \
 		src/xxd/Make_ming.mak \
 		src/xxd/Make_mvc.mak \
-		nsis/auxiliary.nsh \
-		nsis/gvim.nsi \
-		nsis/Makefile \
-		nsis/Make_mvc.mak \
 		nsis/README.txt \
-		nsis/lang/*.nsi \
-		nsis/lang/README.txt \
 		uninstall.txt \
 
 # Source files for MS Windows without CR/LF translation (also in the extra archive).
@@ -686,7 +680,6 @@ SRC_DOS_BIN =	\
 		src/xpm/x86/lib-vc14/libXpm.lib \
 		src/xpm/x86/lib/libXpm.a \
 		runtime/bitmaps/vim.ico \
-		nsis/icons.zip \
 
 # Source files for Amiga, DOS, etc. (also in the extra archive).
 SRC_AMI_DOS =	\
