@@ -16,7 +16,7 @@ syn match beanAmount "\v[-+]?[[:digit:].,]+" nextgroup=beanCurrency contained
             \ skipwhite
 syn match beanCurrency "\v\w+" contained
 " Account name: alphanumeric with at least one colon.
-syn match beanAccount "\v[[:alnum:]]+:[-[:alnum:]:]+" contained
+syn match beanAccount "\v[[:alnum:]]+:\S+" contained
 syn match beanTag "\v#[-[:alnum:]]+" contained
 syn match beanLink "\v\^\S+" contained
 " We must require a space after the flag because you can have flags per
