@@ -3895,7 +3895,7 @@ gui_gtk_set_mnemonics(int enable)
 }
 
     static void
-popupmenu_closed_cb(GtkWidget *popover, GtkWidget *old_parent)
+popupmenu_closed_cb(GtkWidget *popover, void *udata UNUSED)
 {
     gtk_widget_unparent(popover);
     if (gui.drawarea != NULL)

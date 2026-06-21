@@ -64,7 +64,6 @@ vim_menu_bar_item_new(const char *text, VimMenu *menu, vimmenu_T *vmenu)
 
     gtk_button_set_label(GTK_BUTTON(item), text);
 
-    assert(item->menu == NULL);
     item->menu = GTK_WIDGET(menu);
     gtk_popover_set_position(GTK_POPOVER(menu), GTK_POS_BOTTOM);
     // Make popover start at top left corner
@@ -210,14 +209,14 @@ vim_menu_bar_item_enter_cb(
 	gtk_widget_set_state_flags(GTK_WIDGET(self),
 		GTK_STATE_FLAG_SELECTED, FALSE);
 
-    // Deselect previous item if the active item changeed.
+    // Deselect previous item if the active item changed.
     if (cur != NULL && cur != GTK_WIDGET(self))
 	gtk_widget_unset_state_flags(cur, GTK_STATE_FLAG_SELECTED);
 }
 
     static void
 vim_menu_bar_item_leave_cb(
-	GtkEventController  *controller UNUSED,
+	GtkEventController  *controller,
 	VimMenuBar	    *menubar)
 {
     VimMenuBarItem *self;
@@ -239,8 +238,9 @@ vim_menu_bar_item_clicked_cb(VimMenuBarItem *self, VimMenuBar *menubar)
     static void
 vim_menu_bar_item_menu_closed_cb(VimMenu *menu UNUSED, VimMenuBar *menubar)
 {
-    gtk_widget_unset_state_flags(GTK_WIDGET(menubar->active_item),
-	    GTK_STATE_FLAG_SELECTED);
+    if (menubar->active_item != NULL)
+	gtk_widget_unset_state_flags(GTK_WIDGET(menubar->active_item),
+		GTK_STATE_FLAG_SELECTED);
     vim_menu_bar_set_active_item(menubar, NULL, FALSE);
 }
 
@@ -547,7 +547,12 @@ vim_menu_move_active_item(VimMenu *self, int dir)
 
     // If there is no currently active item, then just use the first one
     if (widget == NULL)
-	return gtk_widget_get_first_child(self->box);
+    {
+	widget = gtk_widget_get_first_child(self->box);
+	while (widget != NULL && !VIM_IS_MENU_ITEM(widget))
+	    widget = gtk_widget_get_next_sibling(widget);
+	return widget;
+    }
 
     // Could also just use GList functions, but this seems simpler (no
     // difference anyways).
@@ -619,9 +624,9 @@ vim_menu_close_all(VimMenu *self)
 
     static gboolean
 vim_menu_key_pressed_cb(
-	GtkEventController  *controller,
+	GtkEventController  *controller UNUSED,
 	guint		    keyval,
-	guint		    keycode,
+	guint		    keycode UNUSED,
 	GdkModifierType	    state,
 	VimMenu		    *self)
 {
@@ -783,7 +788,7 @@ vim_menu_item_enter_cb(
 }
 
     static void
-vim_menu_item_leave_cb(GtkEventController *controller UNUSED, VimMenu *menu)
+vim_menu_item_leave_cb(GtkEventController *controller, VimMenu *menu)
 {
     VimMenuItem  *self;
 
