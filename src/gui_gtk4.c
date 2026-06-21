@@ -1946,6 +1946,19 @@ key_press_event(GtkEventControllerKey *controller UNUSED,
 	state |= GDK_SHIFT_MASK;
     }
 
+#ifdef FEAT_MENU
+    // If there is a menu and 'wak' is "yes", or 'wak' is "menu" and the key
+    // is a menu shortcut, we ignore everything with the ALT modifier.
+    if ((state & GDK_ALT_MASK)
+	    && gui.menu_is_active
+	    && (*p_wak == 'y'
+		|| (*p_wak == 'm'
+		    && len == 1
+		    && gui_is_menu_shortcut(string[0]))))
+	// Tell GTK we have not handled the key (so it can handle it).
+	return FALSE;
+#endif
+
     // Check for special keys
     if (len == 0 || len == 1)
     {
@@ -3797,10 +3810,84 @@ gui_get_x11_windis(Window *win UNUSED, Display **dis UNUSED)
 }
 
 #if defined(FEAT_MENU)
-    void
-gui_gtk_set_mnemonics(int enable UNUSED)
+/*
+ * Translate Vim's mnemonic tagging to GTK+ style and convert to UTF-8
+ * if necessary.  The caller must vim_free() the returned string.
+ *
+ *	Input	Output
+ *	_	__
+ *	&&	&
+ *	&	_	stripped if use_mnemonic == FALSE
+ *	<Tab>		end of menu label text
+ */
+    static char_u *
+translate_mnemonic_tag(char_u *name, int use_mnemonic)
 {
-    // TODO: implement?
+    char_u  *buf;
+    char_u  *psrc;
+    char_u  *pdest;
+    int	    n_underscores = 0;
+
+    name = CONVERT_TO_UTF8(name);
+    if (name == NULL)
+	return NULL;
+
+    for (psrc = name; *psrc != NUL && *psrc != TAB; ++psrc)
+	if (*psrc == '_')
+	    ++n_underscores;
+
+    buf = alloc(psrc - name + n_underscores + 1);
+    if (buf != NULL)
+    {
+	pdest = buf;
+	for (psrc = name; *psrc != NUL && *psrc != TAB; ++psrc)
+	{
+	    if (*psrc == '_')
+	    {
+		*pdest++ = '_';
+		*pdest++ = '_';
+	    }
+	    else if (*psrc != '&')
+	    {
+		*pdest++ = *psrc;
+	    }
+	    else if (*(psrc + 1) == '&')
+	    {
+		*pdest++ = *psrc++;
+	    }
+	    else if (use_mnemonic)
+	    {
+		*pdest++ = '_';
+	    }
+	}
+	*pdest = NUL;
+    }
+
+    CONVERT_TO_UTF8_FREE(name);
+    return buf;
+}
+
+/*
+ * Enable or disable accelerators for the toplevel menus.
+ */
+    void
+gui_gtk_set_mnemonics(int enable)
+{
+    vimmenu_T	*menu;
+    char_u	*name;
+
+    FOR_ALL_MENUS(menu)
+    {
+	if (menu->id == NULL)
+	    continue;
+
+	name = translate_mnemonic_tag(menu->name, enable);
+	// Don't think the check if necessary but still do it anyways
+	if (VIM_IS_MENU_BAR_ITEM(menu->id))
+	    vim_menu_bar_item_set_text(VIM_MENU_BAR_ITEM(menu->id),
+		    (const char *)name);
+	vim_free(name);
+    }
 }
 
     static void
@@ -4303,63 +4390,6 @@ create_toolbar_icon(vimmenu_T *menu)
     }
 
     return image;
-}
-
-/*
- * Translate Vim's mnemonic tagging to GTK+ style and convert to UTF-8
- * if necessary.  The caller must vim_free() the returned string.
- *
- *	Input	Output
- *	_	__
- *	&&	&
- *	&	_	stripped if use_mnemonic == FALSE
- *	<Tab>		end of menu label text
- */
-    static char_u *
-translate_mnemonic_tag(char_u *name, int use_mnemonic)
-{
-    char_u  *buf;
-    char_u  *psrc;
-    char_u  *pdest;
-    int	    n_underscores = 0;
-
-    name = CONVERT_TO_UTF8(name);
-    if (name == NULL)
-	return NULL;
-
-    for (psrc = name; *psrc != NUL && *psrc != TAB; ++psrc)
-	if (*psrc == '_')
-	    ++n_underscores;
-
-    buf = alloc(psrc - name + n_underscores + 1);
-    if (buf != NULL)
-    {
-	pdest = buf;
-	for (psrc = name; *psrc != NUL && *psrc != TAB; ++psrc)
-	{
-	    if (*psrc == '_')
-	    {
-		*pdest++ = '_';
-		*pdest++ = '_';
-	    }
-	    else if (*psrc != '&')
-	    {
-		*pdest++ = *psrc;
-	    }
-	    else if (*(psrc + 1) == '&')
-	    {
-		*pdest++ = *psrc++;
-	    }
-	    else if (use_mnemonic)
-	    {
-		*pdest++ = '_';
-	    }
-	}
-	*pdest = NUL;
-    }
-
-    CONVERT_TO_UTF8_FREE(name);
-    return buf;
 }
 
     static void

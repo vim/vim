@@ -29,6 +29,7 @@ G_DECLARE_FINAL_TYPE(VimMenuItem, vim_menu_item, VIM, MENU_ITEM, GtkButton)
 G_DECLARE_FINAL_TYPE(VimMenu, vim_menu, VIM, MENU, GtkPopover)
 
 GtkWidget *vim_menu_bar_item_new(const char *text, VimMenu *menu);
+void vim_menu_bar_item_set_text(VimMenuBarItem *self, const char *text);
 
 GtkWidget *vim_menu_bar_new(void);
 void vim_menu_bar_insert_item(VimMenuBar *self, VimMenuBarItem *item, int idx);

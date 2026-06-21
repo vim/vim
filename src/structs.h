@@ -4733,7 +4733,9 @@ struct VimMenu
 #  if defined(GTK_CHECK_VERSION) && !GTK_CHECK_VERSION(3,4,0)
     GtkWidget	*tearoff_handle;
 #  endif
+#  ifndef USE_GTK4
     GtkWidget   *label;		    // Used by "set wak=" code.
+#  endif
 # endif
 # ifdef FEAT_GUI_MOTIF
     int		sensitive;	    // turn button on/off

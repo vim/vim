@@ -72,6 +72,12 @@ vim_menu_bar_item_new(const char *text, VimMenu *menu)
     return GTK_WIDGET(item);
 }
 
+    void
+vim_menu_bar_item_set_text(VimMenuBarItem *self, const char *text)
+{
+    gtk_button_set_label(GTK_BUTTON(self), text);
+}
+
 /*
  * Similar to GtkPopoverMenuBar
  */
