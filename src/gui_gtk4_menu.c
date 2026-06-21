@@ -681,6 +681,13 @@ vim_menu_key_pressed_cb(
 	    // Close all popover menus
 	    vim_menu_close_all(self);
 	    return TRUE;
+	case GDK_KEY_ISO_Enter:
+	case GDK_KEY_3270_Enter:
+	case GDK_KEY_KP_Enter:
+	case GDK_KEY_Return:
+	    if (self->active_item != NULL)
+		g_signal_emit_by_name(self->active_item, "clicked");
+	    return TRUE;
 	default:
 	    break;
     }
@@ -714,9 +721,11 @@ vim_menu_init(VimMenu *self)
 
     gtk_widget_add_css_class(GTK_WIDGET(self), "menu");
 
-
     // Add key controller for basic movement
     controller = gtk_event_controller_key_new();
+    // Make sure we get the key presses first and handle them if possible
+    gtk_event_controller_set_propagation_phase(controller,
+	    GTK_PHASE_CAPTURE);
     g_signal_connect_object(controller, "key-pressed",
 	    G_CALLBACK(vim_menu_key_pressed_cb),
 	    self, G_CONNECT_DEFAULT);
