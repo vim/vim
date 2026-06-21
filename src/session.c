@@ -1355,12 +1355,12 @@ ex_mkrc(exarg_T	*eap)
 
 			// compare prefixes if available
 			if (si->sn_autoload_prefix != NULL && b_si->sn_autoload_prefix != NULL
-				&& (0 == STRICMP(si->sn_autoload_prefix, b_si->sn_autoload_prefix)))
+				&& (STRCMP(si->sn_autoload_prefix, b_si->sn_autoload_prefix) == 0))
 			    break;
 
 			// otherwise compare tails
 			char_u *b_name = gettail(b_si->sn_name);
-			if (0 == STRICMP(name, b_name))
+			if (STRCMP(name, b_name) == 0)
 			    break;
 		    }
 

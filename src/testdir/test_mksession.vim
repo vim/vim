@@ -1395,9 +1395,9 @@ func Test_mksession_vim9_expr_mappings()
   call writefile(test_sources, 'XTest.vim', 'D')
   " spawn a new Vim instance to load the session and execute the mapping
   call system(GetVimCommand('XTest.vim'))
+  defer delete('XDummyOutput')
   call assert_true(filereadable('XDummyOutput'),
         \ 'Expected output file was not created by Vim9 plugin')
-  defer delete('XDummyOutput')
   call assert_equal([ref_txt], readfile('XDummyOutput'))
 
 endfunc
@@ -1461,9 +1461,9 @@ func Test_mksession_legacy_expr_mappings()
   call writefile(test_sources, 'XTest.vim', 'D')
   " spawn a new Vim instance to load the session and execute the mapping
   call system(GetVimCommand('XTest.vim'))
+  defer delete('XDummyOutput')
   call assert_true(filereadable('XDummyOutput'),
         \ 'Expected output file was not created by legacy vim plugin')
-  defer delete('XDummyOutput')
   call assert_equal([ref_txt], readfile('XDummyOutput'))
 
 endfunc
@@ -1722,4 +1722,4 @@ func Test_mksession_vim9_duplicate_import()
 
 endfunc
 
-" " vim: shiftwidth=2 sts=2 expandtab
+" vim: shiftwidth=2 sts=2 expandtab
