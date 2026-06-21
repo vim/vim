@@ -645,7 +645,7 @@ vim_menu_key_pressed_cb(
 	case GDK_KEY_Tab:
 	case GDK_KEY_KP_Tab:
 	case GDK_KEY_ISO_Left_Tab:
-	    // Go to the previous item if any
+	    // Go to the previous or next item if any
 	    widget = vim_menu_move_active_item(self,
 		    (state & GDK_SHIFT_MASK)
 		    || keyval == GDK_KEY_Up

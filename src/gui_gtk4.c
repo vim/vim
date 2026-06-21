@@ -3917,8 +3917,6 @@ gui_gtk_popup_at(vimmenu_T *menu, int x, int y)
 
     popover = vim_menu_copy(VIM_MENU(menu->submenu_id));
     gtk_widget_set_parent(popover, gui.drawarea);
-    // Make sure draw area calls gtK_popover_present()
-    gtk_widget_queue_allocate(gui.drawarea);
 
     rect.x = x;
     rect.y = y;
@@ -4404,7 +4402,6 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 	// leave the drawing area blank while the popover is open.
 	menu->submenu_id = g_object_ref_sink(vim_menu_new());
 	gtk_widget_set_parent(menu->submenu_id, gui.drawarea);
-	gtk_widget_queue_allocate(gui.drawarea);
 	return;
     }
 
@@ -4594,7 +4591,6 @@ show_menubar_popover(void)
     menu = vim_menu_bar_to_menu(VIM_MENU_BAR(gui.menubar));
 
     gtk_widget_set_parent(menu, gui.drawarea);
-    gtk_widget_queue_allocate(gui.drawarea);
     gtk_popover_set_position(GTK_POPOVER(menu), GTK_POS_BOTTOM);
     rect.x = 0;
     rect.y = 0;
