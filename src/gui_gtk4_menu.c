@@ -22,6 +22,8 @@ struct _VimMenuBarItem
 {
     GtkButton parent;
 
+    vimmenu_T *vmenu;
+
     GtkWidget *menu;
 };
 
@@ -56,7 +58,7 @@ vim_menu_bar_item_init(VimMenuBarItem *self)
 }
 
     GtkWidget *
-vim_menu_bar_item_new(const char *text, VimMenu *menu)
+vim_menu_bar_item_new(const char *text, VimMenu *menu, vimmenu_T *vmenu)
 {
     VimMenuBarItem *item = g_object_new(VIM_TYPE_MENU_BAR_ITEM, NULL);
 
@@ -68,6 +70,8 @@ vim_menu_bar_item_new(const char *text, VimMenu *menu)
     // Make popover start at top left corner
     gtk_widget_set_halign(GTK_WIDGET(menu), GTK_ALIGN_START);
     gtk_widget_set_parent(GTK_WIDGET(menu), GTK_WIDGET(item));
+
+    item->vmenu = vmenu;
 
     return GTK_WIDGET(item);
 }
@@ -129,6 +133,32 @@ vim_menu_bar_init(VimMenuBar *self)
 vim_menu_bar_new(void)
 {
     return g_object_new(VIM_TYPE_MENU_BAR, NULL);
+}
+
+/*
+ * Create a VimMenu widget with the menus of the menu bar as its submenus. Note
+ * that it is a deep copy.
+ */
+    GtkWidget *
+vim_menu_bar_to_menu(VimMenuBar *self)
+{
+    GtkWidget	*menu = vim_menu_new();
+    int		i = 0;
+
+    for (GList *l = self->items; l != NULL; l = l->next, i++)
+    {
+	VimMenuBarItem	*baritem = l->data;
+	GtkWidget	*item;
+
+	item = vim_menu_item_new(
+		gtk_button_get_label(GTK_BUTTON(baritem)), baritem->vmenu);
+
+	vim_menu_item_set_submenu(VIM_MENU_ITEM(item),
+		VIM_MENU(vim_menu_copy(VIM_MENU(baritem->menu))));
+
+	vim_menu_insert_item(VIM_MENU(menu), VIM_MENU_ITEM(item), i);
+    }
+    return menu;
 }
 
 /*
@@ -255,6 +285,18 @@ vim_menu_bar_remove(VimMenuBar *self, GtkWidget *item)
 }
 
 /*
+ * Show the given menu in the menubar. If "item" is NULL, then show first menu.
+ */
+    void
+vim_menu_bar_show(VimMenuBar *self, VimMenuBarItem *item)
+{
+    if (item == NULL)
+	item = g_list_nth_data(self->items, 0);
+
+    vim_menu_bar_set_active_item(self, item, TRUE);
+}
+
+/*
  * Menu button that can be used to perform actions, or if there is a submenu,
  * toggle the state of the submenu popover. CSS name is "modelbutton" to make it
  * styled like GtkPopoverMenu
@@ -262,6 +304,8 @@ vim_menu_bar_remove(VimMenuBar *self, GtkWidget *item)
 struct _VimMenuItem
 {
     GtkButton parent;
+
+    vimmenu_T *vmenu;
 
     GtkWidget *label;	    // Displays text for button.
     GtkWidget *aux_widget;  // Either an icon or a label showing the accelerator
@@ -310,10 +354,11 @@ vim_menu_item_init(VimMenuItem *self)
  * Create a new menu item with the given text to display.
  */
     GtkWidget *
-vim_menu_item_new(const char *text)
+vim_menu_item_new(const char *text, vimmenu_T *vmenu)
 {
     VimMenuItem *item = g_object_new(VIM_TYPE_MENU_ITEM, NULL);
 
+    item->vmenu = vmenu;
     item->label = gtk_label_new_with_mnemonic(text);
 
     // Make sure label is on the right and pushes everything to the left
@@ -378,6 +423,26 @@ vim_menu_item_set_submenu(VimMenuItem *self, VimMenu *submenu)
 
     self->submenu = GTK_WIDGET(submenu);
     gtk_widget_set_parent(GTK_WIDGET(submenu), GTK_WIDGET(self));
+}
+
+/*
+ * Create a deep copy of the menu item
+ */
+    static GtkWidget *
+vim_menu_item_copy(VimMenuItem *self)
+{
+    GtkWidget *copy;
+
+    copy = vim_menu_item_new(
+	    gtk_label_get_text(GTK_LABEL(self->label)), self->vmenu);
+
+    if (self->submenu != NULL)
+	vim_menu_item_set_submenu(VIM_MENU_ITEM(copy),
+		VIM_MENU(vim_menu_copy(VIM_MENU(self->submenu))));
+    else if (self->aux_widget != NULL)
+	vim_menu_item_set_accel(VIM_MENU_ITEM(copy),
+		gtk_label_get_text(GTK_LABEL(self->aux_widget)));
+    return copy;
 }
 
 /*
@@ -484,6 +549,8 @@ vim_menu_move_active_item(VimMenu *self, int dir)
     if (widget == NULL)
 	return gtk_widget_get_first_child(self->box);
 
+    // Could also just use GList functions, but this seems simpler (no
+    // difference anyways).
     if (dir > 0)
     {
 	func = gtk_widget_get_next_sibling;
@@ -690,6 +757,7 @@ vim_menu_item_clicked_cb(VimMenuItem *self, VimMenu *menu)
     // Since we set the "cascade-popdown" property to FALSE, we must popdown the
     // toplevel menu/popover, so that all submenus are closed.
     vim_menu_close_all(menu);
+    gui_menu_cb(self->vmenu);
 }
 
     static void
@@ -763,6 +831,35 @@ vim_menu_remove(VimMenu *self, GtkWidget *item)
 {
     self->items = g_list_remove(self->items, item);
     gtk_box_remove(GTK_BOX(self->box), item);
+}
+
+/*
+ * Create a deep copy of the menu
+ */
+    GtkWidget *
+vim_menu_copy(VimMenu *self)
+{
+    GtkWidget	*copy = vim_menu_new();
+    int		i = 0;
+
+    for (GList *l = self->items; l != NULL; l = l->next, i++)
+    {
+	VimMenuItem *item;
+	GtkWidget   *item_copy;
+
+	if (!VIM_IS_MENU_ITEM(l->data))
+	{
+	    assert(GTK_IS_SEPARATOR(l->data));
+	    vim_menu_insert_separator(VIM_MENU(copy), i);
+	    continue;
+	}
+
+	item = l->data;
+	item_copy = vim_menu_item_copy(item);
+
+	vim_menu_insert_item(VIM_MENU(copy), VIM_MENU_ITEM(item_copy), i);
+    }
+    return copy;
 }
 
 #endif // FEAT_MENU

@@ -3894,8 +3894,9 @@ gui_gtk_set_mnemonics(int enable)
 }
 
     static void
-popupmenu_closed_cb(GtkPopover *popover, gpointer data UNUSED)
+popupmenu_closed_cb(GtkWidget *popover, GtkWidget *old_parent)
 {
+    gtk_widget_unparent(popover);
     if (gui.drawarea != NULL)
 	gtk_widget_queue_draw(gui.drawarea);
 }
@@ -3906,11 +3907,24 @@ popupmenu_closed_cb(GtkPopover *popover, gpointer data UNUSED)
     static void
 gui_gtk_popup_at(vimmenu_T *menu, int x, int y)
 {
+    GtkWidget	    *parent;
+    GtkWidget	    *popover;
     GdkRectangle    rect;
     int		    natural_width = 0;
 
     if (menu == NULL || menu->submenu_id == NULL)
 	return;
+
+    // Attach the popover to drawarea's parent rather than to drawarea itself.
+    // GtkDrawingArea is a leaf widget whose snapshot does not iterate children,
+    // and parenting a popover to it has been observed to leave the drawing area
+    // blank while the popover is open.
+    parent = gtk_widget_get_parent(gui.drawarea);
+    if (parent == NULL)
+	parent = gui.drawarea;
+
+    popover = vim_menu_copy(VIM_MENU(menu->submenu_id));
+    gtk_widget_set_parent(popover, parent);
 
     rect.x = x;
     rect.y = y;
@@ -3919,17 +3933,17 @@ gui_gtk_popup_at(vimmenu_T *menu, int x, int y)
     // rectangle. Use the box's natural width so the popover's left edge ends
     // up at the cursor (down-and-to-the-right of the pointer).
     gtk_widget_measure(
-	    gtk_popover_get_child(GTK_POPOVER(menu->submenu_id)),
+	    gtk_popover_get_child(GTK_POPOVER(popover)),
 	    GTK_ORIENTATION_HORIZONTAL, -1,
 	    NULL, &natural_width, NULL, NULL);
 
     rect.width = natural_width > 0 ? natural_width : 1;
     rect.height = 1;
-    gtk_popover_set_pointing_to(GTK_POPOVER(menu->submenu_id), &rect);
+    gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
 
-    g_signal_connect(GTK_POPOVER(menu->submenu_id), "closed",
+    g_signal_connect(GTK_POPOVER(popover), "closed",
 	    G_CALLBACK(popupmenu_closed_cb), NULL);
-    gtk_popover_popup(GTK_POPOVER(menu->submenu_id));
+    gtk_popover_popup(GTK_POPOVER(popover));
 }
 
     void
@@ -4435,7 +4449,8 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
     if (parent != NULL)
     {
 	parent_widget = parent->submenu_id;
-	menu->id = g_object_ref_sink(vim_menu_item_new((const char *)text));
+	menu->id = g_object_ref_sink(vim_menu_item_new((const char *)text,
+		    menu));
 	vim_menu_item_set_submenu(VIM_MENU_ITEM(menu->id),
 		VIM_MENU(menu->submenu_id));
 	vim_menu_insert_item(VIM_MENU(parent_widget),
@@ -4445,7 +4460,8 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
     {
 	parent_widget = gui.menubar;
 	menu->id = g_object_ref_sink(vim_menu_bar_item_new(
-		    (const char *)text, VIM_MENU(menu->submenu_id)));
+		    (const char *)text, VIM_MENU(menu->submenu_id),
+		    menu));
 	vim_menu_bar_insert_item(VIM_MENU_BAR(parent_widget),
 		VIM_MENU_BAR_ITEM(menu->id), idx);
     }
@@ -4517,15 +4533,13 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	    accel_text = CONVERT_TO_UTF8(menu->actext);
 
 	// Add our own reference to the widget
-	menu->id = g_object_ref_sink(vim_menu_item_new((const char *)text));
+	menu->id = g_object_ref_sink(vim_menu_item_new(
+		    (const char *)text, menu));
 	if (accel_text != NULL)
 	    vim_menu_item_set_accel(VIM_MENU_ITEM(menu->id),
 		    (const char *)accel_text);
 	vim_menu_insert_item(VIM_MENU(parent->submenu_id),
 		VIM_MENU_ITEM(menu->id), idx);
-
-	g_signal_connect(menu->id, "clicked",
-		G_CALLBACK(menu_item_clicked_cb), menu);
 
 	vim_free(text);
 	CONVERT_TO_UTF8_FREE(accel_text);
@@ -4566,7 +4580,7 @@ gui_mch_destroy_menu(vimmenu_T *menu)
     // For popup menus, unparent the menu as well
     if (menu->name[0] == ']' || menu_is_popup(menu->name))
 	gtk_widget_unparent(menu->submenu_id);
-    else if (menu_is_menubar(menu->parent->name))
+    else if (menu->parent == NULL)
 	// Remove from menubar
 	vim_menu_bar_remove(VIM_MENU_BAR(gui.menubar), menu->id);
     else
@@ -4589,10 +4603,32 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
     static void
 show_menubar_popover(void)
 {
+    GtkWidget	    *menu;
+    GdkRectangle    rect;
+
     if (gui.menubar == NULL || gui.drawarea == NULL)
 	return;
 
-    // TODO
+    if (gtk_widget_is_visible(gui.menubar))
+    {
+	// If menubar is visible, then just show first menu in menubar, like how
+	// GTK traditionally seems to do it?
+	vim_menu_bar_show(VIM_MENU_BAR(gui.menubar), NULL);
+	return;
+    }
+
+    // Copy and convert the menubar into a menu popover
+    menu = vim_menu_bar_to_menu(VIM_MENU_BAR(gui.menubar));
+
+    gtk_widget_set_parent(menu, gui.drawarea);
+    gtk_popover_set_position(GTK_POPOVER(menu), GTK_POS_BOTTOM);
+    rect.x = 0;
+    rect.y = 0;
+    rect.width = 1;
+    rect.height = 1;
+    gtk_popover_set_pointing_to(GTK_POPOVER(menu), &rect);
+    g_signal_connect(menu, "closed", G_CALLBACK(popupmenu_closed_cb), NULL);
+    gtk_popover_popup(GTK_POPOVER(menu));
 }
 
 /*
