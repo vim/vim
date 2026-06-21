@@ -7035,16 +7035,23 @@ gui_mch_draw_popup_image(
     if (wp->w_popup_image_data == NULL
 	    || wp->w_popup_image_w <= 0 || wp->w_popup_image_h <= 0
 	    || draw_w <= 0 || draw_h <= 0
-	    || gui.surface == NULL)
+# if GTK_CHECK_VERSION(3,0,0)
+	    || gui.surface == NULL
+# endif
+       )
 	return;
 
     x = FILL_X(col);
     y = FILL_Y(row);
+# if GTK_CHECK_VERSION(3,0,0)
     cairo_popup_image_paint(wp, gui.surface, x, y,
-					    src_x, src_y, draw_w, draw_h);
-
+	    src_x, src_y, draw_w, draw_h);
     if (gui.drawarea != NULL)
 	gtk_widget_queue_draw_area(gui.drawarea, x, y, draw_w, draw_h);
+# else
+    cairo_popup_image_paint(wp, gui.drawarea->window, x, y,
+	    src_x, src_y, draw_w, draw_h);
+# endif
 }
 #endif // FEAT_IMAGE_CAIRO
 
