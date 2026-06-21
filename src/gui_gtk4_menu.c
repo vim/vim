@@ -633,16 +633,20 @@ vim_menu_key_pressed_cb(
 	case GDK_KEY_KP_Down:
 	case GDK_KEY_Up:
 	case GDK_KEY_KP_Up:
+	case GDK_KEY_k:
+	case GDK_KEY_j:
 	case GDK_KEY_Tab:
 	case GDK_KEY_KP_Tab:
 	case GDK_KEY_ISO_Left_Tab:
 	    // Go to the previous item if any
 	    widget = vim_menu_move_active_item(self,
 		    (state & GDK_SHIFT_MASK)
-		    || keyval == GDK_KEY_Up ? -1 : 1);
+		    || keyval == GDK_KEY_Up
+		    || keyval == GDK_KEY_k? -1 : 1);
 	    vim_menu_set_active_item(self, VIM_MENU_ITEM(widget), FALSE);
 	    return TRUE;
 	case GDK_KEY_Left:
+	case GDK_KEY_h:
 	    // Go to parent menu (if any). We can do this by just closing the
 	    // popover.
 	    gtk_popover_popdown(GTK_POPOVER(self));
@@ -652,6 +656,7 @@ vim_menu_key_pressed_cb(
 	    vim_menu_reset_parent_prelight(self);
 	    return TRUE;
 	case GDK_KEY_Right:
+	case GDK_KEY_l:
 	    // Open submenu if active item has one
 	    if (self->active_item != NULL
 		    && vim_menu_select_active_item(self, TRUE))
