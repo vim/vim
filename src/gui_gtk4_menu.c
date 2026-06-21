@@ -65,6 +65,8 @@ vim_menu_bar_item_new(const char *text, VimMenu *menu)
     assert(item->menu == NULL);
     item->menu = GTK_WIDGET(menu);
     gtk_popover_set_position(GTK_POPOVER(menu), GTK_POS_BOTTOM);
+    // Make popover start at top left corner
+    gtk_widget_set_halign(GTK_WIDGET(menu), GTK_ALIGN_START);
     gtk_widget_set_parent(GTK_WIDGET(menu), GTK_WIDGET(item));
 
     return GTK_WIDGET(item);
