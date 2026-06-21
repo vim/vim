@@ -97,6 +97,10 @@ struct _VimDrawArea
     // images with a higher zindex are rendered over ones with lower zindex.
     GQueue *images;
 #endif
+
+    // See vim_draw_area_size_allocate()
+    int width;
+    int height;
 };
 
 #define GET_ROW(da, n) ((da)->cells + (da)->n_cols * (n))

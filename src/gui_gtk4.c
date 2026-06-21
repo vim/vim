@@ -3908,7 +3908,6 @@ popupmenu_closed_cb(GtkWidget *popover, GtkWidget *old_parent)
     static void
 gui_gtk_popup_at(vimmenu_T *menu, int x, int y)
 {
-    GtkWidget	    *parent;
     GtkWidget	    *popover;
     GdkRectangle    rect;
     int		    natural_width = 0;
@@ -3916,16 +3915,10 @@ gui_gtk_popup_at(vimmenu_T *menu, int x, int y)
     if (menu == NULL || menu->submenu_id == NULL)
 	return;
 
-    // Attach the popover to drawarea's parent rather than to drawarea itself.
-    // GtkDrawingArea is a leaf widget whose snapshot does not iterate children,
-    // and parenting a popover to it has been observed to leave the drawing area
-    // blank while the popover is open.
-    parent = gtk_widget_get_parent(gui.drawarea);
-    if (parent == NULL)
-	parent = gui.drawarea;
-
     popover = vim_menu_copy(VIM_MENU(menu->submenu_id));
-    gtk_widget_set_parent(popover, parent);
+    gtk_widget_set_parent(popover, gui.drawarea);
+    // Make sure draw area calls gtK_popover_present()
+    gtk_widget_queue_allocate(gui.drawarea);
 
     rect.x = x;
     rect.y = y;
@@ -3961,23 +3954,8 @@ gui_make_popup(char_u *path_name, int mouse_pos)
 	gui_mch_getmouse(&x, &y);
     else
     {
-	// Find the cursor position relative to parent of drawarea
-	GtkWidget *parent = gtk_widget_get_parent(gui.drawarea);
-	graphene_point_t point;
-	if (parent == NULL)
-	    parent = gui.drawarea;
-
-	if (!gtk_widget_compute_point(gui.drawarea, parent,
-		&GRAPHENE_POINT_INIT(0, 0), &point))
-	    x = y = 0;
-	else
-	{
-	    x = point.x;
-	    y = point.y;
-	}
-
-	x += FILL_X(curwin->w_wincol + curwin->w_wcol + 1) + 1;
-	y += FILL_Y(W_WINROW(curwin) + curwin->w_wrow + 1) + 1;
+	x = FILL_X(curwin->w_wincol + curwin->w_wcol + 1) + 1;
+	y = FILL_Y(W_WINROW(curwin) + curwin->w_wrow + 1) + 1;
     }
 
     gui_gtk_popup_at(menu, x, y);
@@ -4425,10 +4403,8 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 	// iterate children, and parenting a popover to it has been observed to
 	// leave the drawing area blank while the popover is open.
 	menu->submenu_id = g_object_ref_sink(vim_menu_new());
-	parent_widget = gtk_widget_get_parent(gui.drawarea);
- 	if (parent_widget == NULL)
- 	    parent_widget = gui.drawarea;
-	gtk_widget_set_parent(menu->submenu_id, parent_widget);
+	gtk_widget_set_parent(menu->submenu_id, gui.drawarea);
+	gtk_widget_queue_allocate(gui.drawarea);
 	return;
     }
 
@@ -4618,6 +4594,7 @@ show_menubar_popover(void)
     menu = vim_menu_bar_to_menu(VIM_MENU_BAR(gui.menubar));
 
     gtk_widget_set_parent(menu, gui.drawarea);
+    gtk_widget_queue_allocate(gui.drawarea);
     gtk_popover_set_position(GTK_POPOVER(menu), GTK_POS_BOTTOM);
     rect.x = 0;
     rect.y = 0;
