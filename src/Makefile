@@ -3287,7 +3287,7 @@ objects/clientserver.o: clientserver.c
 	$(CCC) -o $@ clientserver.c
 
 objects/clipboard.o: clipboard.c $(WAYLAND_SRC)
-	$(CCC) -o $@ clipboard.c
+	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ clipboard.c
 
 objects/cmdexpand.o: cmdexpand.c
 	$(CCC) -o $@ cmdexpand.c
