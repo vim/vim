@@ -815,7 +815,8 @@ gui_mch_exit(int rc UNUSED)
 
 	    FOR_ALL_MENUS(menu)
 	    {
-		if (menu->name[0] == ']' || menu_is_popup(menu->name))
+		if ((menu->name[0] == ']' || menu_is_popup(menu->name))
+			&& menu->submenu_id != NULL)
 		    gtk_widget_unparent(menu->submenu_id);
 	    }
 	}
@@ -4409,12 +4410,6 @@ create_toolbar_icon(vimmenu_T *menu)
     return image;
 }
 
-    static void
-menu_item_clicked_cb(GtkWidget *widget UNUSED, vimmenu_T *menu)
-{
-    gui_menu_cb(menu);
-}
-
     void
 gui_mch_add_menu(vimmenu_T *menu, int idx)
 {
@@ -4429,8 +4424,10 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 	// itself. GtkDrawingArea is a leaf widget whose snapshot does not
 	// iterate children, and parenting a popover to it has been observed to
 	// leave the drawing area blank while the popover is open.
-	menu->submenu_id = vim_menu_new();
+	menu->submenu_id = g_object_ref_sink(vim_menu_new());
 	parent_widget = gtk_widget_get_parent(gui.drawarea);
+ 	if (parent_widget == NULL)
+ 	    parent_widget = gui.drawarea;
 	gtk_widget_set_parent(menu->submenu_id, parent_widget);
 	return;
     }
