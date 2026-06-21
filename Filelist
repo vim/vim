@@ -518,6 +518,8 @@ SRC_UNIX =	\
 		src/gui_gtk4_da.h \
 		src/gui_gtk4_tb.c \
 		src/gui_gtk4_tb.h \
+		src/gui_gtk4_menu.c \
+		src/gui_gtk4_menu.h \
 		src/gui_gtk_res.xml \
 		src/gui_motif.c \
 		src/gui_xmdlg.c \
