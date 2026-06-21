@@ -1150,7 +1150,11 @@ func Test_terminal_composing_unicode()
   endif
 
   enew
-  let buf = term_start(cmd, {'curwin': 1})
+  let term_opts = {'curwin': 1}
+  if has('sun')
+    let term_opts.env = {'LC_ALL': 'C.UTF-8'}
+  endif
+  let buf = term_start(cmd, term_opts)
   let g:job = term_getjob(buf)
   call WaitFor({-> term_getline(buf, 1) !=# ''}, 1000)
 
