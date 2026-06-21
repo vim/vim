@@ -734,8 +734,9 @@ runtime/syntax/wks.vim					@anakin4747
 runtime/syntax/xbl.vim					@dkearns
 runtime/syntax/xcompose.vim				@ObserverOfTime
 runtime/syntax/xml.vim					@chrisbra
+runtime/syntax/xsd.vim					@chrisbra
 runtime/syntax/xs.vim					@petdance
-runtime/syntax/xslt.vim					@Boobies
+runtime/syntax/xslt.vim					@chrisbra
 runtime/syntax/zserio.vim				@dpelle
 runtime/syntax/zsh.vim					@chrisbra
 runtime/tools/preproc_indent.vim			@h-east
