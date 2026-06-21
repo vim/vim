@@ -2517,10 +2517,11 @@ findmatchlimit(
 	    }
 	}
 
-	// Track block comment state when FM_SKIPCOMM is set.
+	// Track block comment state when FM_SKIPCOMM is set.  Markers inside a
+	// string are not comments, so skip them while "inquote" is set.
 	// Backward: '/' of end-marker enters comment; '*' of start-marker exits.
 	// Forward:  '/' of start-marker enters comment; '/' of end-marker exits.
-	if (skip_comments && !comment_dir)
+	if (skip_comments && !comment_dir && !inquote)
 	{
 	    if (backwards)
 	    {
@@ -2831,65 +2832,6 @@ findmatchlimit(
 	return &pos;
     }
     return (pos_T *)NULL;	// never found it
-}
-
-/*
- * Check if line[] contains a / / comment.
- * Return MAXCOL if not, otherwise return the column.
- */
-    int
-check_linecomment(char_u *line)
-{
-    char_u  *p;
-
-    p = line;
-    // skip Lispish one-line comments
-    if (curbuf->b_p_lisp)
-    {
-	if (vim_strchr(p, ';') != NULL) // there may be comments
-	{
-	    int in_str = FALSE;	// inside of string
-
-	    p = line;		// scan from start
-	    while ((p = vim_strpbrk(p, (char_u *)"\";")) != NULL)
-	    {
-		if (*p == '"')
-		{
-		    if (in_str)
-		    {
-			if (*(p - 1) != '\\') // skip escaped quote
-			    in_str = FALSE;
-		    }
-		    else if (p == line || ((p - line) >= 2
-				      // skip #\" form
-				      && *(p - 1) != '\\' && *(p - 2) != '#'))
-			in_str = TRUE;
-		}
-		else if (!in_str && ((p - line) < 2
-				    || (*(p - 1) != '\\' && *(p - 2) != '#'))
-			       && !is_pos_in_string(line, (colnr_T)(p - line)))
-		    break;	// found!
-		++p;
-	    }
-	}
-	else
-	    p = NULL;
-    }
-    else
-	while ((p = vim_strchr(p, '/')) != NULL)
-	{
-	    // Accept a double /, unless it's preceded with * and followed by
-	    // *, because * / / * is an end and start of a C comment.  Only
-	    // accept the position if it is not inside a string.
-	    if (p[1] == '/' && (p == line || p[-1] != '*' || p[2] != '*')
-			       && !is_pos_in_string(line, (colnr_T)(p - line)))
-		break;
-	    ++p;
-	}
-
-    if (p == NULL)
-	return MAXCOL;
-    return (int)(p - line);
 }
 
 /*
@@ -3816,9 +3758,9 @@ search_line:
 		    // compare the first "len" chars from "ptr"
 		    startp = skipwhite(p);
 		    if (p_ic)
-			matched = !MB_STRNICMP(startp, ptr, len);
+			matched = MB_STRNICMP(startp, ptr, len) == 0;
 		    else
-			matched = !STRNCMP(startp, ptr, len);
+			matched = STRNCMP(startp, ptr, len) == 0;
 		    if (matched && define_matched && whole
 						  && vim_iswordc(startp[len]))
 			matched = FALSE;

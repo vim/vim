@@ -18,15 +18,24 @@
 #include <string.h>
 #include <unistd.h>
 
-#define LINELENGTH 2048
+/*
+ * sscanf() needs a literal field width on each "%[", so define the widths
+ * once and derive the buffer sizes (width + 1) and format widths (via STR()).
+ */
+#define STR_(x) #x
+#define STR(x)	STR_(x)
+#define LINEWIDTH  2047
+#define LINELENGTH (LINEWIDTH + 1)
+#define PATHWIDTH  1023
+#define PATHLENGTH (PATHWIDTH + 1)
 
 /* Collector(s) */
 char	       Line[LINELENGTH];
 char	       Line2[LINELENGTH];
 /* Components */
-char	       FileName[1024];
-char	       BasePath[1024];
-char	       CWD[1024];
+char	       FileName[PATHLENGTH];
+char	       BasePath[PATHLENGTH];
+char	       CWD[PATHLENGTH];
 unsigned long  Row;
 unsigned long  Col;
 char	       Severity;
@@ -184,7 +193,7 @@ int main( int argc, char *argv[] )
 	  case COMPILER_GCC:
 	    Severity = 'e';
 #ifdef GOTO_FROM_WHERE_INCLUDED
-	    rv = sscanf( Line, "In file included from %[^:]:%lu:",
+	    rv = sscanf( Line, "In file included from %" STR(PATHWIDTH) "[^:]:%lu:",
 			       FileName, &Row );
 	    if ( rv == 2 )
 	      {
@@ -193,11 +202,11 @@ int main( int argc, char *argv[] )
 	    else
 #endif
 	      {
-		if ((rv = sscanf( Line, "%[^:]:%lu: warning: %[^\n]",
+		if ((rv = sscanf( Line, "%" STR(PATHWIDTH) "[^:]:%lu: warning: %" STR(LINEWIDTH) "[^\n]",
 				   FileName, &Row, Reason ))==3) {
 		 Severity = 'w';
 		} else {
-		rv = sscanf( Line, "%[^:]:%lu: %[^\n]",
+		rv = sscanf( Line, "%" STR(PATHWIDTH) "[^:]:%lu: %" STR(LINEWIDTH) "[^\n]",
 				   FileName, &Row, Reason );
 		}
 		ok = ( rv == 3 );
@@ -205,24 +214,24 @@ int main( int argc, char *argv[] )
 	    Col = (dec_col ? 1 : 0 );
 	    break;
 	  case COMPILER_AIX:
-	    rv = sscanf( Line, "\"%[^\"]\", line %lu.%lu: %*s (%c) %[^\n]",
+	    rv = sscanf( Line, "\"%" STR(PATHWIDTH) "[^\"]\", line %lu.%lu: %*s (%c) %" STR(LINEWIDTH) "[^\n]",
 			       FileName, &Row, &Col, &Severity, Reason );
 	    ok = ( rv == 5 );
 	    break;
 	  case COMPILER_HPUX:
-	    rv = sscanf( Line, "cc: \"%[^\"]\", line %lu: %c%*[^:]: %[^\n]",
+	    rv = sscanf( Line, "cc: \"%" STR(PATHWIDTH) "[^\"]\", line %lu: %c%*[^:]: %" STR(LINEWIDTH) "[^\n]",
 			       FileName, &Row, &Severity, Reason );
 	    ok = ( rv == 4 );
 	    Col = (dec_col ? 1 : 0 );
 	    break;
 	  case COMPILER_SOLARIS:
-	    rv = sscanf( Line, "\"%[^\"]\", line %lu: warning: %[^\n]",
+	    rv = sscanf( Line, "\"%" STR(PATHWIDTH) "[^\"]\", line %lu: warning: %" STR(LINEWIDTH) "[^\n]",
 			       FileName, &Row, Reason );
 	    Severity = 'w';
 	    ok = ( rv == 3 );
 	    if ( rv != 3 )
 	      {
-		rv = sscanf( Line, "\"%[^\"]\", line %lu: %[^\n]",
+		rv = sscanf( Line, "\"%" STR(PATHWIDTH) "[^\"]\", line %lu: %" STR(LINEWIDTH) "[^\n]",
 				   FileName, &Row, Reason );
 		Severity = 'e';
 		ok = ( rv == 3 );
@@ -230,18 +239,18 @@ int main( int argc, char *argv[] )
 	    Col = (dec_col ? 1 : 0 );
 	    break;
 	  case COMPILER_ATT:
-	    rv	 = sscanf( Line, "%c \"%[^\"]\",L%lu/C%lu%*[^:]:%[^\n]",
+	    rv	 = sscanf( Line, "%c \"%" STR(PATHWIDTH) "[^\"]\",L%lu/C%lu%*[^:]:%" STR(LINEWIDTH) "[^\n]",
 				 &Severity, FileName, &Row, &Col, Reason );
 	    ok = ( rv == 5 );
 
 	    if (rv != 5)
-	      { rv   = sscanf( Line, "%c \"%[^\"]\",L%lu/C%lu: %[^\n]",
+	      { rv   = sscanf( Line, "%c \"%" STR(PATHWIDTH) "[^\"]\",L%lu/C%lu: %" STR(LINEWIDTH) "[^\n]",
 				     &Severity, FileName, &Row, &Col, Reason );
 		ok = ( rv == 5 );
 	      }
 
 	    if (rv != 5)
-	      { rv  = sscanf( Line, "%c \"%[^\"]\",L%lu: %[^\n]",
+	      { rv  = sscanf( Line, "%c \"%" STR(PATHWIDTH) "[^\"]\",L%lu: %" STR(LINEWIDTH) "[^\n]",
 				   &Severity, FileName, &Row, Reason );
 		ok = ( rv == 4 );
 		Col = (dec_col ? 1 : 0 );
@@ -273,10 +282,10 @@ int main( int argc, char *argv[] )
 		  }
 		 else
 		  {
-		    rv = sscanf( p+2, "%[^:]: %lu: %[^\n]",
+		    rv = sscanf( p+2, "%" STR(PATHWIDTH) "[^:]: %lu: %" STR(LINEWIDTH) "[^\n]",
 				 FileName, &Row, Reason );
 		    if (rv != 3)
-		      rv = sscanf( p+2, "%[^,], line %lu: %[^\n]",
+		      rv = sscanf( p+2, "%" STR(PATHWIDTH) "[^,], line %lu: %" STR(LINEWIDTH) "[^\n]",
 				   FileName, &Row, Reason );
 		    ok = ( rv == 3 );
 		  }
@@ -307,7 +316,7 @@ int main( int argc, char *argv[] )
 	      p = &Line[1];
 	  else
 	      p = &Line[0];
-	  ok = sscanf( p, "make[%*d]: Entering directory `%[^']",
+	  ok = sscanf( p, "make[%*d]: Entering directory `%" STR(PATHWIDTH) "[^']",
 		       BasePath );
 	  if (verbose)
 	    printf( "[%u]?%s\n", (unsigned)ok, Line );

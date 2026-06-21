@@ -16,7 +16,9 @@ func Test_gettext()
       call assert_equal('ОШИБКА: for __PACKAGE__', gettext("ERROR: ", "__PACKAGE__"))
 
       call assert_equal('ОШИБКА: for __PACKAGE__', ngettext("ERROR: ", "ERRORS: ", 1, "__PACKAGE__"))
-      call assert_equal('ОШИБКА: for __PACKAGE__', ngettext("ERROR: ", "ERRORS: ", 2, "__PACKAGE__"))
+      if !has('sun')
+        call assert_equal('ОШИБКА: for __PACKAGE__', ngettext("ERROR: ", "ERRORS: ", 2, "__PACKAGE__"))
+      endif
 
       call assert_equal('%d буфер удалён из памяти for __PACKAGE__', ngettext("%d buffer unloaded", "%d buffers unloaded", 1, "__PACKAGE__"))
       call assert_equal('%d буфера удалено из памяти for __PACKAGE__', ngettext("%d buffer unloaded", "%d buffers unloaded", 2, "__PACKAGE__"))

@@ -2070,6 +2070,7 @@ popup_image_composites_frames(void)
 {
 # ifdef FEAT_GUI
     if (gui.in_use)
+    {
 #  ifdef FEAT_IMAGE_CAIRO
 	// Cairo paints the image with OPERATOR_OVER onto gui.surface, so
 	// a swapped-in RGBA frame needs the cells repainted underneath.
@@ -2081,6 +2082,7 @@ popup_image_composites_frames(void)
 	// render nodes, so there is no blitting in the first place.
 	return false;
 #  endif
+    }
 # endif
 # ifdef FEAT_IMAGE_SIXEL
     // Sixel P2=1 transparency: unpainted pixels keep their previous

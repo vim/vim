@@ -2455,13 +2455,13 @@ set_context_in_filetype_cmd(expand_T *xp, char_u *arg)
 
     for (;;)
     {
-	if (STRNCMP(p, "plugin", 6) == 0)
+	if (STRNCMP(p, "plugin", 6) == 0 && VIM_ISWHITE(p[6]))
 	{
 	    val |= EXPAND_FILETYPECMD_PLUGIN;
 	    p = skipwhite(p + 6);
 	    continue;
 	}
-	if (STRNCMP(p, "indent", 6) == 0)
+	if (STRNCMP(p, "indent", 6) == 0 && VIM_ISWHITE(p[6]))
 	{
 	    val |= EXPAND_FILETYPECMD_INDENT;
 	    p = skipwhite(p + 6);

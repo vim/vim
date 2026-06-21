@@ -1262,7 +1262,8 @@ crypt_sodium_buffer_decode(
 
     if (sod_st->count == 0)
     {
-	if (crypto_secretstream_xchacha20poly1305_init_pull(&sod_st->state,
+	if (len < crypto_secretstream_xchacha20poly1305_HEADERBYTES ||
+		crypto_secretstream_xchacha20poly1305_init_pull(&sod_st->state,
 						       from, sod_st->key) != 0)
 	{
 	    emsg(_(e_libsodium_decryption_failed_header_incomplete));

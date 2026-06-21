@@ -25,7 +25,7 @@ func Test_termencoding_euc_jp()
 	\ 'set termencoding=utf-8',
 	\ 'scriptencoding utf-8',
 	\ 'exe "normal aE83: バッファを作成できないので、他のを使用します...\<Esc>"',
-	\ 'split Xeuc_jp.txt',
+	\ has('sun') ? 'split ++enc=euc-jp Xeuc_jp.txt' : 'split Xeuc_jp.txt',
 	\ ], 'XTest_tenc_euc_jp', 'D')
   let buf = RunVimInTerminal('-S XTest_tenc_euc_jp', {'rows': 10})
   call VerifyScreenDump(buf, 'Test_tenc_euc_jp_01', {})

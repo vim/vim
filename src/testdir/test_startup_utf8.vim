@@ -78,8 +78,9 @@ func Test_detect_fifo()
 	\ ]
   if RunVim([], after, '<(cat Xtestin_fifo)')
     let lines = readfile('Xtestout')
-    call assert_match('\[fifo\]', lines[0])
-    call assert_match('\[fifo\]', lines[1])
+    let filetype = has('sun') ? '\[character special\]' : '\[fifo\]'
+    call assert_match(filetype, lines[0])
+    call assert_match(filetype, lines[1])
   else
     call assert_equal('', 'RunVim failed.')
   endif

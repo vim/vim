@@ -2759,7 +2759,7 @@ ex_display(exarg_T *eap)
     }
 
     // display alternate file name
-    if ((arg == NULL || vim_strchr(arg, '%') != NULL) && !got_int)
+    if ((arg == NULL || vim_strchr(arg, '#') != NULL) && !got_int)
     {
 	char_u	    *fname;
 	linenr_T    dummy;
@@ -3152,6 +3152,12 @@ write_reg_contents_ex(
 
     if (name == '#')
     {
+	if (len == 0)
+	{
+	  curwin->w_alt_fnum = 0; // clear altfile
+	  return;
+	}
+
 	buf_T	*buf;
 
 	if (VIM_ISDIGIT(*str))

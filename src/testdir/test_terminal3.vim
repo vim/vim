@@ -1062,6 +1062,28 @@ func Test_terminal_normal_mode_colored_empty_line()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_terminal_visual_colored_empty_line()
+  CheckScreendump
+  CheckRunVimInTerminal
+  CheckUnix
+
+  " Empty lines erased with a gray background (CSI 100m, CSI K).  When such a
+  " line is selected in Terminal-Normal mode the Visual highlight must show on
+  " its first cell, while the rest of the line keeps the background color.
+  call writefile(["printf '\\033[100m\\033[K\\nold\\033[K\\n\\033[K\\033[0m\\n'"],
+	\ 'Xterm_colored.sh', 'D')
+  call writefile([':set listchars=', ':term sh ./Xterm_colored.sh'],
+	\ 'XtermColored', 'D')
+  let buf = RunVimInTerminal('-S XtermColored', #{rows: 10})
+  call term_wait(buf)
+
+  call term_sendkeys(buf, "\<C-W>NggVG")
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_terminal_visual_colored_empty', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_terminal_ansi_color_windows_cui()
   if !has('win32') || has('gui_running')
     throw 'Skipped: only for the Windows CUI'

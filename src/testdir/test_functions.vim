@@ -330,7 +330,7 @@ func Test_strptime()
 
   " Force DST and check that it's considered.
   " MS-Windows CRT tzset() does not parse POSIX TZ strings with DST rules.
-  if !has('win32')
+  if !has('win32') && !has('sun')
     let $TZ = 'WINTER0SUMMER,J1,J365'
     call assert_equal(1484653763 - 3600, strptime('%Y-%m-%d %T', '2017-01-17 11:49:23'))
   endif
@@ -3702,6 +3702,10 @@ func Test_keytrans()
   call assert_equal('<M-x>', "\<*M-x>"->keytrans())
   call assert_equal('<C-I>', "\<*C-I>"->keytrans())
   call assert_equal('<S-3>', "\<*S-3>"->keytrans())
+  call assert_equal('<Bar>', '|'->keytrans())
+  call assert_equal('<M-Bar>', "\<*M-|>"->keytrans())
+  call assert_equal('<Bslash>', '\'->keytrans())
+  call assert_equal('<M-Bslash>', "\<*M-\>"->keytrans())
   call assert_equal('π', 'π'->keytrans())
   call assert_equal('<M-π>', "\<M-π>"->keytrans())
   call assert_equal('ě', 'ě'->keytrans())

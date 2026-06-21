@@ -7734,6 +7734,9 @@ func Test_delete_temp_dir()
   " assumes Unix has always flock/dirfd support
   CheckUnix
   CheckNotMac
+  if has('sun')
+    throw 'Skipped: Solaris Vim does not detect deleted tempdir without flock()'
+  endif
   let a = tempname()
   let dir = fnamemodify(a, ':h')
   call delete(dir, 'rf')

@@ -99,7 +99,7 @@ um_goto_line(unpacked_memline_T *um, linenr_T lnum, int extra_props)
     // New format: [prop_count (uint16)][textprop_T...][vtext...]
     if (propdata_len < PROP_COUNT_SIZE + sizeof(textprop_T))
     {
-	iemsg(e_text_property_info_corrupted);
+	emsg(e_text_property_info_corrupted);
 	um->buf = NULL;
 	return false;
     }
@@ -111,12 +111,19 @@ um_goto_line(unpacked_memline_T *um, linenr_T lnum, int extra_props)
     mch_memmove(&prop_count, count_ptr, PROP_COUNT_SIZE);
     if (!text_prop_count_valid(prop_count, propdata_len))
     {
-	iemsg(e_text_property_info_corrupted);
+	emsg(e_text_property_info_corrupted);
 	um->buf = NULL;
 	return false;
     }
     proplen = (int)prop_count;
     props_start = count_ptr + PROP_COUNT_SIZE;
+
+    if (!text_prop_vtext_valid(props_start, proplen, propdata_len))
+    {
+	emsg(e_text_property_info_corrupted);
+	um->buf = NULL;
+	return false;
+    }
 
     um->props = ALLOC_MULT(textprop_T, proplen + extra_props);
     if (um->props == NULL)
@@ -1237,13 +1244,19 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     // prop_count is never zero.
     if (propdata_len < PROP_COUNT_SIZE + sizeof(textprop_T))
     {
-	iemsg(e_text_property_info_corrupted);
+	emsg(e_text_property_info_corrupted);
 	return 0;
     }
     mch_memmove(&prop_count, text + textlen, PROP_COUNT_SIZE);
     if (!text_prop_count_valid(prop_count, propdata_len))
     {
-	iemsg(e_text_property_info_corrupted);
+	emsg(e_text_property_info_corrupted);
+	return 0;
+    }
+    if (!text_prop_vtext_valid(text + textlen + PROP_COUNT_SIZE,
+					   (int)prop_count, propdata_len))
+    {
+	emsg(e_text_property_info_corrupted);
 	return 0;
     }
     *props = text + textlen + PROP_COUNT_SIZE;
@@ -3266,6 +3279,29 @@ text_prop_count_valid(int prop_count, size_t propdata_len)
 	return false;
     return (size_t)prop_count * sizeof(textprop_T)
 		    <= propdata_len - PROP_COUNT_SIZE;
+}
+
+/*
+ * Return true when every virtual text property's offset and length stay within
+ * "propdata_len", so tp_text_offset can be safely turned into a pointer.
+ * "props" may be unaligned.
+ */
+    bool
+text_prop_vtext_valid(char_u *props, int prop_count, size_t propdata_len)
+{
+    for (int i = 0; i < prop_count; ++i)
+    {
+	textprop_T  prop;
+
+	mch_memmove(&prop, props + (size_t)i * sizeof(textprop_T),
+							  sizeof(textprop_T));
+	if (prop.tp_id >= 0 || prop.u.tp_text_offset <= 0)
+	    continue;
+	if (prop.tp_len < 0 || (size_t)prop.u.tp_text_offset
+				+ (size_t)prop.tp_len + 1 > propdata_len)
+	    return false;
+    }
+    return true;
 }
 
 #endif // FEAT_PROP_POPUP
