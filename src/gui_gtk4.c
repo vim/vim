@@ -2227,6 +2227,10 @@ motion_notify_event(GtkEventControllerMotion *controller UNUSED,
 
     prev_mouse_x = x;
     prev_mouse_y = y;
+
+    // Make sure keyboard input goes to the drawing area. Fixes issues with menu
+    // still being focused.
+    gtk_widget_grab_focus(gui.drawarea);
 }
 
     static void
@@ -2237,8 +2241,7 @@ enter_notify_event(GtkEventControllerMotion *controller UNUSED,
     prev_mouse_y = y;
 
     // Make sure keyboard input goes to the drawing area.
-    if (!gtk_widget_has_focus(gui.drawarea))
-	gtk_widget_grab_focus(gui.drawarea);
+    gtk_widget_grab_focus(gui.drawarea);
 }
 
     static gboolean
