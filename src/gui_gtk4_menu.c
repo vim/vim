@@ -464,6 +464,14 @@ struct _VimMenu
     // NULL. Note that item may have submenu but not have it open, when
     // navigating via keyboard.
     GtkWidget *active_item;
+
+    // Used when mouse is hovering over an item and user is navigating with
+    // keyboard. When the scrolled window scrolls down or up, this causes a
+    // mouse enter event, causing the active item to go to the item that the
+    // mouse is hovered on, instead of the next item (from keyboard navigation).
+    gboolean	ignore_hover;
+    double	prev_x;
+    double	prev_y;
 };
 
 G_DEFINE_TYPE(VimMenu, vim_menu, GTK_TYPE_POPOVER)
@@ -653,6 +661,7 @@ vim_menu_key_pressed_cb(
 		    || keyval == GDK_KEY_Up
 		    || keyval == GDK_KEY_k? -1 : 1);
 	    vim_menu_set_active_item(self, VIM_MENU_ITEM(widget), FALSE);
+	    self->ignore_hover = TRUE;
 	    return TRUE;
 	case GDK_KEY_Left:
 	case GDK_KEY_h:
@@ -680,6 +689,7 @@ vim_menu_key_pressed_cb(
 			    gtk_widget_get_first_child(submenu->box)),
 			FALSE);
 	    }
+	    self->ignore_hover = TRUE;
 	    return TRUE;
 	case GDK_KEY_Escape:
 	    // Close all popover menus
@@ -696,6 +706,21 @@ vim_menu_key_pressed_cb(
 	    break;
     }
     return FALSE;
+}
+
+
+    static void
+vim_menu_motion_cb(
+	GtkEventController  *controller UNUSED,
+	double		    x,
+	double		    y,
+	VimMenu		    *self)
+{
+    if (self->prev_x == -1 || self->prev_y == -1 ||
+	    (fabs(self->prev_x - x) > 0.05 && fabs(self->prev_y - y) > 0.05))
+	self->ignore_hover = FALSE;
+    self->prev_x = x;
+    self->prev_y = y;
 }
 
     static void
@@ -748,7 +773,14 @@ vim_menu_init(VimMenu *self)
 	    self, G_CONNECT_DEFAULT);
     gtk_widget_add_controller(GTK_WIDGET(self), controller);
 
+    controller = gtk_event_controller_motion_new();
+    g_signal_connect_object(controller, "motion",
+	    G_CALLBACK(vim_menu_motion_cb), self, G_CONNECT_DEFAULT);
+    gtk_widget_add_controller(GTK_WIDGET(self), controller);
+
     g_signal_connect(self, "closed", G_CALLBACK(vim_menu_closed_cb), NULL);
+
+    self->prev_x = self->prev_y = -1;
 }
 
     GtkWidget *
@@ -808,7 +840,7 @@ vim_menu_item_enter_cb(
 {
     VimMenuItem  *self;
 
-    if (!gtk_event_controller_motion_contains_pointer(
+    if (menu->ignore_hover || !gtk_event_controller_motion_contains_pointer(
 		GTK_EVENT_CONTROLLER_MOTION(controller)))
 	    return;
 
