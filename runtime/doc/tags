@@ -4015,6 +4015,7 @@ $quote	eval.txt	/*$quote*
 ?<CR>	pattern.txt	/*?<CR>*
 ??	eval.txt	/*??*
 @	repeat.txt	/*@*
+@#	change.txt	/*@#*
 @/	change.txt	/*@\/*
 @:	repeat.txt	/*@:*
 @=	change.txt	/*@=*

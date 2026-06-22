@@ -1,4 +1,4 @@
-*change.txt*	For Vim version 9.2.  Last change: 2026 Jun 18
+*change.txt*	For Vim version 9.2.  Last change: 2026 Jun 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1332,10 +1332,11 @@ and ":put" commands and with CTRL-R.
 		the command was executed completely from a mapping.
 		{not available when compiled without the |+cmdline_hist|
 		feature}
-							*quote_#* *quote#*
-6. Alternate file register "#
+
+6. Alternate file register "#			*quote_#* *quote#* *@#*
 Contains the |alternate-file| name for current window
-This register is writeable and changes which buffer CTRL-^ enters.
+This register is writable with `:let` and |setreg()|.  This changes which buffer
+CTRL-^ enters.  You can't yank or delete into this register.
 A String is matched against existing buffer names, like |:buffer|: >
     let @# = 'buffer_name'
 Also supports using buffer number and |file-pattern|.
@@ -1398,11 +1399,12 @@ When writing to this register, nothing happens.  This can be used to delete
 text without affecting the normal registers.  When reading from this register,
 nothing is returned.
 
-10. Last search pattern register	"/		*quote_/* *quote/*
+10. Last search pattern register "/			*quote_/* *quote/*
 Contains the most recent search-pattern.  This is used for "n" and 'hlsearch'.
-It is writable with `:let`, you can change it to have 'hlsearch' highlight
-other matches without actually searching.  You can't yank or delete into this
-register.  The search direction is available in |v:searchforward|.
+This register is writable with `:let` and |setreg()|.  You can change it to have
+'hlsearch' highlight other matches without actually searching.  You can't yank
+or delete into this register.  The search direction is available in
+|v:searchforward|.
 Note that the value is restored when returning from a function
 |function-search-undo|.
 
