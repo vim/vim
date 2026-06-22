@@ -3850,7 +3850,6 @@ gui_gtk_popup_at(vimmenu_T *menu, int x, int y)
 {
     GtkWidget	    *popover;
     GdkRectangle    rect;
-    int		    natural_width = 0;
 
     if (menu == NULL || menu->submenu_id == NULL)
 	return;
@@ -3860,17 +3859,11 @@ gui_gtk_popup_at(vimmenu_T *menu, int x, int y)
 
     rect.x = x;
     rect.y = y;
+    rect.width = rect.height = 1;
 
-    // GtkPopover with GTK_POS_BOTTOM centres horizontally on the pointing-to
-    // rectangle. Use the box's natural width so the popover's left edge ends
-    // up at the cursor (down-and-to-the-right of the pointer).
-    gtk_widget_measure(
-	    gtk_popover_get_child(GTK_POPOVER(popover)),
-	    GTK_ORIENTATION_HORIZONTAL, -1,
-	    NULL, &natural_width, NULL, NULL);
-
-    rect.width = natural_width > 0 ? natural_width : 1;
-    rect.height = 1;
+    // Make sure popover aligns down-and-to-the-right of the pointer.
+    gtk_popover_set_position(GTK_POPOVER(popover), GTK_POS_BOTTOM);
+    gtk_widget_set_halign(popover, GTK_ALIGN_START);
     gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
 
     g_signal_connect(GTK_POPOVER(popover), "closed",
