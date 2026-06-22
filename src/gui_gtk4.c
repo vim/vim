@@ -2129,8 +2129,9 @@ motion_notify_event(GtkEventControllerMotion *controller UNUSED,
 
     // Only unhide if mouse actually moved. GTK seems to send a motion event
     // when switching tabs, causing the cursor to unhide.
-    if (p_mh && fabs(prev_mouse_x - x) > 0.05
-	    && fabs(prev_mouse_y - y) > 0.05)
+    if (p_mh && ((prev_mouse_x == -1 || prev_mouse_y == -1)
+		|| (fabs(prev_mouse_x - x) > 0.05
+		    && fabs(prev_mouse_y - y) > 0.05)))
 	gui_mch_mousehide(FALSE);
 
     prev_mouse_x = x;
@@ -4274,15 +4275,7 @@ mch_set_mouse_shape(int shape)
 	last_shape = shape;
 }
 
-#else // !FEAT_MOUSESHAPE
-
-    void
-mch_set_mouse_shape(int shape UNUSED)
-{
-}
-
 #endif // FEAT_MOUSESHAPE
-
 
 
 /*
@@ -5274,9 +5267,15 @@ gui_mch_dialog(
 
     if (buttons != NULL)
     {
-	GtkWidget   *but_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
+	GtkWidget   *but_box;
 	char	    **buttons_arr; // Note that array is allocated, not strings
 	int	    n_buttons;
+
+	// Check 'v' flag in 'guioptions': vertical button placement.
+	if (vim_strchr(p_go, GO_VERTICAL) != NULL)
+	    but_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
+	else
+	    but_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
 
 	gtk_widget_set_halign(but_box, GTK_ALIGN_CENTER);
 	gtk_box_set_homogeneous(GTK_BOX(but_box), TRUE);
