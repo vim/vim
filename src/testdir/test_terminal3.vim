@@ -1197,7 +1197,7 @@ func Test_terminal_max_combining_chars()
   " somehow doesn't work on MS-Windows
   CheckUnix
   let cmd = "cat samples/terminal_max_combining_chars.txt\<CR>"
-  let buf = Run_shell_in_terminal({'term_rows': 15, 'term_cols': 35})
+  let buf = Run_shell_in_terminal({'term_rows': 15, 'term_cols': 35, 'env': {'HOME': '/nonexisting', 'PS1':''}})
   call TermWait(buf)
   call term_sendkeys(buf, cmd)
   " last char is a space with many combining chars
@@ -1214,6 +1214,8 @@ func Test_term_getpos()
   defer delete('XTest_getpos_result')
 
   let lines =<< trim EOL
+     let $PS1=''
+     let $HOME='/nonexisting'
      term ++curwin sh
   EOL
   call writefile(lines, 'XTest_getpos', 'D')
@@ -1243,8 +1245,8 @@ func Test_term_getpos()
   call WaitForAssert({-> assert_true(filereadable('XTest_getpos_result'))})
   call WaitForAssert({-> assert_equal(2, len(readfile('XTest_getpos_result')))})
   let result = readfile('XTest_getpos_result')
-  " 15 - 1: statusline - 1: for prompt line
-  call assert_equal(13, str2nr(result[1]) - str2nr(result[0]))
+  " 15 - 1: statusline - 1: for prompt line, w$-w0 = 12
+  call assert_equal(12, str2nr(result[1]) - str2nr(result[0]))
   call assert_true(str2nr(result[0]) > 1)
 
   " Regression: line('w0') and line('w$') must not move cursor position
