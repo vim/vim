@@ -1896,6 +1896,15 @@ ins_compl_show_pum(void)
     pum_display(compl_match_array, compl_match_arraysize, cur);
     curwin->w_cursor.col = col;
 
+#ifdef FEAT_CONCEAL
+    // The cursor was temporarily moved to "compl_col" above to position the
+    // menu, so the screen update left w_wcol conceal-corrected for that column
+    // rather than for the real cursor.  Redraw the cursor line so the caret is
+    // positioned correctly when the cursor line has concealed text.
+    if (curwin->w_p_cole > 0 && conceal_cursor_line(curwin))
+	redrawWinline(curwin, curwin->w_cursor.lnum);
+#endif
+
     // After adding leader, set the current match to shown match.
     if (compl_started && compl_curr_match != compl_shown_match)
 	compl_curr_match = compl_shown_match;

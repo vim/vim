@@ -361,6 +361,17 @@ pum_display(
 	{
 	    // w_wcol includes virtual text "above"
 	    int wcol = curwin->w_wcol % curwin->w_width;
+#ifdef FEAT_CONCEAL
+	    // w_wcol does not account for text concealed before the cursor;
+	    // shift by the offset win_line() recorded for the cursor line so the
+	    // menu lines up with the visible text.
+	    if (curwin->w_p_cole > 0 && conceal_cursor_line(curwin))
+	    {
+		wcol -= curwin->w_wcol_conceal_off;
+		if (wcol < 0)
+		    wcol = 0;
+	    }
+#endif
 #ifdef FEAT_RIGHTLEFT
 	    if (pum_rl)
 		cursor_col = curwin->w_wincol + curwin->w_width - wcol - 1;
