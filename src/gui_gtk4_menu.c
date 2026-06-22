@@ -238,6 +238,8 @@ vim_menu_bar_item_menu_closed_cb(VimMenu *menu UNUSED, VimMenuBar *menubar)
 	gtk_widget_unset_state_flags(GTK_WIDGET(menubar->active_item),
 		GTK_STATE_FLAG_SELECTED);
     vim_menu_bar_set_active_item(menubar, NULL, FALSE);
+    // Make sure to focus drawarea
+    gtk_widget_grab_focus(gui.drawarea);
 }
 
 /*
@@ -413,8 +415,6 @@ vim_menu_item_set_submenu(VimMenuItem *self, VimMenu *submenu)
 
     // Add arrow icon pointing to right
     icon = gtk_image_new_from_icon_name("pan-end-symbolic");
-    // Only make the icon sensitive when the submenu popover is open
-    gtk_widget_set_sensitive(icon, FALSE);
     vim_menu_item_set_aux_widget(self, icon);
     gtk_widget_insert_after(self->aux_widget, GTK_WIDGET(self), self->label);
 
@@ -624,8 +624,6 @@ vim_menu_close_all(VimMenu *self)
 	vim_menu_bar_set_active_item(menubar, NULL, TRUE);
     else
 	gtk_popover_popdown(GTK_POPOVER(self));
-    // Make sure to focus drawarea
-    gtk_widget_grab_focus(gui.drawarea);
 }
 
     static gboolean
@@ -703,16 +701,29 @@ vim_menu_key_pressed_cb(
     static void
 vim_menu_init(VimMenu *self)
 {
-    GtkEventController *controller;
+    GtkEventController	*controller;
+    GtkWidget		*stack;
+    GtkWidget		*parent_box;
+
     gtk_popover_set_has_arrow(GTK_POPOVER(self), FALSE);
     gtk_popover_set_autohide(GTK_POPOVER(self), TRUE);
 
     // Do not make child popovers close parent popovers when they are closed.
     gtk_popover_set_cascade_popdown(GTK_POPOVER(self), FALSE);
 
+    stack = gtk_stack_new();
+
+    // "stack" and "parent_box" have no use other than to make the css structure
+    // of the popup menu be exactly like GtkPopoverMenu. This is so that GTK
+    // themes style VimMenu exactly like GtkPopoverMenu.
+    parent_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_stack_add_child(GTK_STACK(stack), parent_box);
+    gtk_stack_set_visible_child(GTK_STACK(stack), parent_box);
+
     self->box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_hexpand(self->box, TRUE);
     gtk_widget_set_vexpand(self->box, TRUE);
+    gtk_box_append(GTK_BOX(parent_box), self->box);
 
     self->scr = gtk_scrolled_window_new();
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(self->scr),
@@ -721,8 +732,8 @@ vim_menu_init(VimMenu *self)
 	    GTK_SCROLLED_WINDOW(self->scr), TRUE);
     gtk_scrolled_window_set_propagate_natural_height(
 	    GTK_SCROLLED_WINDOW(self->scr), TRUE);
-    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(self->scr),
-	    GTK_WIDGET(self->box));
+
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(self->scr), stack);
     gtk_popover_set_child(GTK_POPOVER(self), self->scr);
 
     gtk_widget_add_css_class(GTK_WIDGET(self), "menu");
