@@ -100,12 +100,16 @@ static int	ins_need_undo;		// call u_save() before inserting a
 static int	dont_sync_undo = FALSE;	// CTRL-G U prevents syncing undo for
 					// the next left/right cursor key
 
+// With 'autocompletedelay' set, arm the delay and let the main loop fire
+// Insert-mode autocommands; the popup is shown later on K_COMPLETE_DELAY.
+// Otherwise trigger completion right away.
 #define TRIGGER_AUTOCOMPLETE()			\
     do {					\
 	update_screen(UPD_VALID);  /* Show char (deletion) immediately */ \
 	out_flush();				\
 	ins_compl_enable_autocomplete();	\
-	goto docomplete;			\
+	if (!ins_compl_arm_autocomplete_delay())\
+	    goto docomplete;			\
     } while (0)
 
 #define MAY_TRIGGER_AUTOCOMPLETE(c)				\
@@ -601,7 +605,7 @@ edit(
 	/*
 	 * Get a character for Insert mode.  Ignore K_IGNORE and K_NOP.
 	 */
-	if (c != K_CURSORHOLD)
+	if (c != K_CURSORHOLD && c != K_COMPLETE_DELAY)
 	    lastc = c;		// remember the previous char for CTRL-D
 
 	// After using CTRL-G U the next cursor key will not break undo.
@@ -632,7 +636,10 @@ edit(
 			if (p_hkmap)
 			    c = hkmap(c);		// Hebrew mode mapping
 #endif
-			goto docomplete;
+			// Defer until the delay expires (K_COMPLETE_DELAY), or
+			// trigger now when no delay is in effect.
+			if (!ins_compl_arm_autocomplete_delay())
+			    goto docomplete;
 		    }
 		}
 	    }
@@ -1163,6 +1170,19 @@ doESCkey:
 		dont_sync_undo = MAYBE;
 	    break;
 
+	case K_COMPLETE_DELAY:	// 'autocompletedelay' expired
+	    ins_compl_clear_autocomplete_delay();
+	    if (!ins_compl_has_autocomplete() || char_avail()
+		    || curwin->w_cursor.col == 0)
+		break;
+	    c = char_before_cursor();
+	    if (!vim_isprintc(c))
+		break;
+	    // The completion may have been cleared while waiting, so re-enable
+	    // autocomplete to match a zero delay.
+	    ins_compl_enable_autocomplete();
+	    goto docomplete;
+
 #ifdef FEAT_GUI_MSWIN
 	    // On MS-Windows ignore <M-F4>, we get it when closing the window
 	    // was cancelled.
@@ -1408,6 +1428,7 @@ doESCkey:
 		goto normalchar;
 
 docomplete:
+	    ins_compl_clear_autocomplete_delay();
 	    compl_busy = TRUE;
 #ifdef FEAT_FOLDING
 	    disable_fold_update++;  // don't redraw folds here

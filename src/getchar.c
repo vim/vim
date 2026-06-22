@@ -4195,8 +4195,11 @@ fix_input_buffer(char_u *buf, int len)
 	else
 #endif
 	if (p[0] == NUL || (p[0] == K_SPECIAL
-		    // timeout may generate K_CURSORHOLD
-		    && (i < 2 || p[1] != KS_EXTRA || p[2] != (int)KE_CURSORHOLD)
+		    // timeout may generate K_CURSORHOLD,
+		    // 'autocompletedelay' timeout K_COMPLETE_DELAY
+		    && (i < 2 || p[1] != KS_EXTRA
+			|| (p[2] != (int)KE_CURSORHOLD
+			    && p[2] != (int)KE_COMPLETE_DELAY))
 #if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
 		    // Win32 console passes modifiers
 		    && (
