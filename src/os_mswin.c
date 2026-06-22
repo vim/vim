@@ -2256,16 +2256,14 @@ enumWindowsGetServer(HWND hwnd, LPARAM lparam)
     static BOOL CALLBACK
 enumWindowsGetNames(HWND hwnd, LPARAM lparam)
 {
-    garray_T	*ga = (garray_T *)lparam;
+    list_T	*list = (list_T *)lparam;
     char	server[MAX_PATH];
 
     // Get the title of the window
     if (getVimServerName(hwnd, server, sizeof(server)) == 0)
 	return TRUE;
 
-    // Add the name to the list
-    ga_concat(ga, (char_u *)server);
-    GA_CONCAT_LITERAL(ga, "\n");
+    list_append_string(list, (char_u *)server, -1);
     return TRUE;
 }
 
@@ -2371,17 +2369,17 @@ serverSetName(char_u *name)
     }
 }
 
-    char_u *
+    list_T *
 serverGetVimNames(void)
 {
-    garray_T ga;
+    list_T *list = list_alloc();
 
-    ga_init2(&ga, 1, 100);
+    if (list == NULL)
+	return NULL;
 
-    enum_windows(enumWindowsGetNames, (LPARAM)(&ga));
-    ga_append(&ga, NUL);
+    enum_windows(enumWindowsGetNames, (LPARAM)list);
 
-    return ga.ga_data;
+    return list;
 }
 
     int

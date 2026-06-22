@@ -2815,7 +2815,7 @@ static const funcentry_T global_functions[] =
 			ret_list_number,    f_searchpos},
     {"server2client",	2, 2, FEARG_1,	    arg2_string,
 			ret_number_bool,    f_server2client},
-    {"serverlist",	0, 0, 0,	    NULL,
+    {"serverlist",	0, 1, 0,	    arg1_bool,
 			ret_string,	    f_serverlist},
     {"setbufline",	3, 3, FEARG_3,	    arg3_setbufline,
 			ret_number_bool,    f_setbufline},
