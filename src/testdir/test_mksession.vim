@@ -1598,4 +1598,128 @@ func Test_mksession_localmappings()
 
 endfunc
 
+" Test vim9 script relative auto imports (issue #12641)
+func Test_mksession_vim9_relative_auto_import()
+
+  " Dummy vim9 script
+  let script_sources =<< trim END
+    vim9script
+    import autoload './XAuto.vim'
+    nnoremap dummy-test <ScriptCmd>XAuto.Test()<CR>
+  END
+  call writefile(script_sources, 'XScript.vim', 'D')
+
+  let auto_sources =<< trim END
+    vim9script
+    const ref_txt = 'Hello from vim9 dummy relative auto script!'
+    export def Test()
+      if !has("gui_running")
+        exe $"echomsg '{ref_txt}'"
+      endif
+      writefile([ref_txt], 'XDummyOutput')
+    enddef
+  END
+  call writefile(auto_sources, 'XAuto.vim', 'D')
+
+  " Source the script
+  const ref_txt = 'Hello from vim9 dummy relative auto script!'
+  source XScript.vim
+
+  " Execute mapping
+  normal dummy-test
+
+  if !has('gui_running')
+    call assert_match(ref_txt, execute('messages'), 'No vim9 auto script XAuto.Test() execution')
+  endif
+  call assert_true(filereadable('XDummyOutput'), 'Output file was not created by Vim9 auto script')
+  call assert_equal([ref_txt], readfile('XDummyOutput'))
+  call delete('XDummyOutput')
+
+  " Create a session file
+  mksession! XDummySession.vim
+  defer delete('XDummySession.vim')
+  call assert_true(filereadable('XDummySession.vim'), 'Session file was not created')
+
+  " Check the session file mappings are operational
+  let test_sources =<< trim END
+    " Load session
+    source XDummySession.vim
+    " Execute mapping
+    normal dummy-test
+    " on my way
+    cq
+  END
+  call writefile(test_sources, 'XTest.vim', 'D')
+  " spawn a new Vim instance to load the session and execute the mapping
+  call system(GetVimCommand('XTest.vim'))
+  call assert_true(filereadable('XDummyOutput'),
+        \ 'Expected output file was not created by Vim9 auto script mapping')
+  defer delete('XDummyOutput')
+  call assert_equal([ref_txt], readfile('XDummyOutput'))
+
+endfunc
+
+" Test vim9 script avoid homonimous auto imports
+func Test_mksession_vim9_duplicate_import()
+
+  " Auto script
+  let auto_sources =<< trim END
+    vim9script
+    const ref_txt = 'Hello from a duplicated vim9 script!'
+    export def Test()
+      writefile([ref_txt], 'XDummyOutput')
+    enddef
+  END
+
+  " Dummy vim9 script
+  let script_sources =<< trim END
+    vim9script
+    import autoload './XAuto.vim'
+    nnoremap dummy-test <ScriptCmd>XAuto.Test()<CR>
+  END
+
+  for i in range(1, 5)
+    let dir = $'XDir{i}'
+    call mkdir(dir, 'p')
+    defer delete(dir, 'rf')
+
+    let autofile = dir . '/XAuto.vim'
+    call writefile(auto_sources, autofile, 'D')
+
+    let scriptfile = dir . '/XScript.vim'
+    call writefile(script_sources, scriptfile, 'D')
+    exe "source " . scriptfile
+  endfor
+
+  " Create a session file
+  mksession! XDummySession.vim
+  defer delete('XDummySession.vim')
+  call assert_true(filereadable('XDummySession.vim'), 'Session file was not created')
+
+  " Check there are commented imports in the session file
+  let commented_imports = filter(readfile('XDummySession.vim'),
+  \ {_, v -> v =~ '^# import autoload'})
+  call assert_equal(4, len(commented_imports),
+  \ 'Session file does not contain the expected number of commented imports')
+
+  " Check the session file mappings are operational
+  const ref_txt = 'Hello from a duplicated vim9 script!'
+  let test_sources =<< trim END
+    " Load session
+    source XDummySession.vim
+    " Execute mapping
+    normal dummy-test
+    " on my way
+    cq
+  END
+  call writefile(test_sources, 'XTest.vim', 'D')
+  " spawn a new Vim instance to load the session and execute the mapping
+  call system(GetVimCommand('XTest.vim'))
+  call assert_true(filereadable('XDummyOutput'),
+        \ 'Expected output file was not created by Vim9 auto script mapping')
+  defer delete('XDummyOutput')
+  call assert_equal([ref_txt], readfile('XDummyOutput'))
+
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
