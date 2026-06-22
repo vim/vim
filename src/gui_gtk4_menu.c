@@ -14,6 +14,10 @@
 #include <gtk/gtk.h>
 #include "gui_gtk4_menu.h"
 
+// Note that this may return NULL for popup menus
+#define GET_MENU_BAR(m) VIM_MENU_BAR(gtk_widget_get_ancestor( \
+	    GTK_WIDGET(m), VIM_TYPE_MENU_BAR));
+
 /*
  * Similar as GtkButton but set CSS name to "item" to emulate GtkPopoverMenuBar
  * styling. Always has a submenu.
@@ -237,7 +241,7 @@ vim_menu_bar_item_menu_closed_cb(VimMenu *menu UNUSED, VimMenuBar *menubar)
     if (menubar->active_item != NULL)
 	gtk_widget_unset_state_flags(GTK_WIDGET(menubar->active_item),
 		GTK_STATE_FLAG_SELECTED);
-    vim_menu_bar_set_active_item(menubar, NULL, FALSE);
+    vim_menu_bar_set_active_item(menubar, NULL, TRUE);
     // Make sure to focus drawarea
     gtk_widget_grab_focus(gui.drawarea);
 }
@@ -292,6 +296,49 @@ vim_menu_bar_show(VimMenuBar *self, VimMenuBarItem *item)
 	item = g_list_nth_data(self->items, 0);
 
     vim_menu_bar_set_active_item(self, item, TRUE);
+}
+
+/*
+ * If "dir" is negative, then move to the item previous of currently the active
+ * item. If "dir" is positive, then move to the next item. Return the resulting
+ * item or NULL if there are no suitable ones.
+ */
+    static GtkWidget *
+vim_menu_bar_move_active_item(VimMenuBar *self, int dir)
+{
+    GtkWidget	*(*func)(GtkWidget *);
+    GtkWidget	*(*null_func)(GtkWidget *);
+    GtkWidget	*widget = self->active_item;
+
+    if (widget == NULL)
+	return gtk_widget_get_first_child(GTK_WIDGET(self));
+
+    if (dir > 0)
+    {
+	func = gtk_widget_get_next_sibling;
+	null_func = gtk_widget_get_first_child;
+    }
+    else
+    {
+	func = gtk_widget_get_prev_sibling;
+	null_func = gtk_widget_get_last_child;
+    }
+
+    while (TRUE)
+    {
+	widget = func(widget);
+	if (widget == NULL)
+	{
+	    if (null_func == NULL)
+		break;
+	    widget = null_func(GTK_WIDGET(self));
+	    null_func = NULL;
+	    if (widget == NULL)
+		break;
+	}
+	break;
+    }
+    return widget;
 }
 
 /*
@@ -622,10 +669,7 @@ vim_menu_reset_parent_prelight(VimMenu *self)
     static void
 vim_menu_close_all(VimMenu *self)
 {
-    VimMenuBar *menubar;
-
-    menubar = VIM_MENU_BAR(gtk_widget_get_ancestor(
-		GTK_WIDGET(self), VIM_TYPE_MENU_BAR));
+    VimMenuBar *menubar = GET_MENU_BAR(self);
 
     // Must check if NULL, because popup menus don't have a parent.
     if (menubar != NULL)
@@ -665,6 +709,19 @@ vim_menu_key_pressed_cb(
 	    return TRUE;
 	case GDK_KEY_Left:
 	case GDK_KEY_h:
+	    // Pressing control switches menu bar item.
+	    if (state & GDK_CONTROL_MASK)
+	    {
+		VimMenuBar *menubar = GET_MENU_BAR(self);
+
+		if (menubar != NULL)
+		{
+		    widget = vim_menu_bar_move_active_item(menubar, -1);
+		    vim_menu_bar_set_active_item(menubar,
+			    VIM_MENU_BAR_ITEM(widget), TRUE);
+		}
+		return TRUE;
+	    }
 	    // Go to parent menu (if any). We can do this by just closing the
 	    // popover.
 	    gtk_popover_popdown(GTK_POPOVER(self));
@@ -675,6 +732,18 @@ vim_menu_key_pressed_cb(
 	    return TRUE;
 	case GDK_KEY_Right:
 	case GDK_KEY_l:
+	    if (state & GDK_CONTROL_MASK)
+	    {
+		VimMenuBar *menubar = GET_MENU_BAR(self);
+
+		if (menubar != NULL)
+		{
+		    widget = vim_menu_bar_move_active_item(menubar, 1);
+		    vim_menu_bar_set_active_item(menubar,
+			    VIM_MENU_BAR_ITEM(widget), TRUE);
+		}
+		return TRUE;
+	    }
 	    // Open submenu if active item has one
 	    if (self->active_item != NULL
 		    && vim_menu_select_active_item(self, TRUE))

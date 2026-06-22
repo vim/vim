@@ -782,5 +782,15 @@ Most newer applications will provide their current selection via PRIMARY ("*)
 and use CLIPBOARD ("+) for cut/copy/paste operations.  You thus have access to
 both by choosing to use either of the "* or "+ registers.
 
+							*gtk4-menu-navigation*
+In the GTK 4 GUI, you may also navigate the menu items with these keyboard
+mappings:
+    j <Tab> <Down>	Go to next item
+    k <S-Tab> <Up>	Go to previous item
+    h <Left>		Go to parent submenu
+    l <Right>		Go to current item's submenu
+    CTRL-L <C-Left>	Go to next menu bar item
+    CTRL-H <C-Right>	Go to previous menu bar item
+
 
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:
