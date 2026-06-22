@@ -22,8 +22,6 @@ struct _VimMenuBarItem
 {
     GtkButton parent;
 
-    vimmenu_T *vmenu;
-
     GtkWidget *menu;
 };
 
@@ -58,7 +56,7 @@ vim_menu_bar_item_init(VimMenuBarItem *self)
 }
 
     GtkWidget *
-vim_menu_bar_item_new(const char *text, VimMenu *menu, vimmenu_T *vmenu)
+vim_menu_bar_item_new(const char *text, VimMenu *menu)
 {
     VimMenuBarItem *item = g_object_new(VIM_TYPE_MENU_BAR_ITEM, NULL);
 
@@ -69,8 +67,6 @@ vim_menu_bar_item_new(const char *text, VimMenu *menu, vimmenu_T *vmenu)
     // Make popover start at top left corner
     gtk_widget_set_halign(GTK_WIDGET(menu), GTK_ALIGN_START);
     gtk_widget_set_parent(GTK_WIDGET(menu), GTK_WIDGET(item));
-
-    item->vmenu = vmenu;
 
     return GTK_WIDGET(item);
 }
@@ -150,7 +146,7 @@ vim_menu_bar_to_menu(VimMenuBar *self)
 	GtkWidget	*item;
 
 	item = vim_menu_item_new(
-		gtk_button_get_label(GTK_BUTTON(baritem)), baritem->vmenu);
+		gtk_button_get_label(GTK_BUTTON(baritem)), NULL, NULL);
 
 	vim_menu_item_set_submenu(VIM_MENU_ITEM(item),
 		VIM_MENU(vim_menu_copy(VIM_MENU(baritem->menu))));
@@ -305,13 +301,16 @@ struct _VimMenuItem
 {
     GtkButton parent;
 
-    vimmenu_T *vmenu;
-
     GtkWidget *label;	    // Displays text for button.
     GtkWidget *aux_widget;  // Either an icon or a label showing the accelerator
 			    // text.
 
     GtkWidget *submenu;	    // Submenu popover if any (VimMenu)
+
+    // Callback called when clicked, we store this so that copying a menu item
+    // works properly.
+    VimMenuItemClickedFunc  clicked_cb;
+    void		    *clicked_udata;
 };
 
 G_DEFINE_TYPE(VimMenuItem, vim_menu_item, GTK_TYPE_BUTTON)
@@ -351,14 +350,16 @@ vim_menu_item_init(VimMenuItem *self)
 }
 
 /*
- * Create a new menu item with the given text to display.
+ * Create a new menu item with the given text to display. "func" may be NULL if
+ * not needed.
  */
     GtkWidget *
-vim_menu_item_new(const char *text, vimmenu_T *vmenu)
+vim_menu_item_new(const char *text, VimMenuItemClickedFunc func, void *udata)
 {
     VimMenuItem *item = g_object_new(VIM_TYPE_MENU_ITEM, NULL);
 
-    item->vmenu = vmenu;
+    item->clicked_cb = func;
+    item->clicked_udata = udata;
     item->label = gtk_label_new_with_mnemonic(text);
 
     // Make sure label is on the right and pushes everything to the left
@@ -434,7 +435,8 @@ vim_menu_item_copy(VimMenuItem *self)
     GtkWidget *copy;
 
     copy = vim_menu_item_new(
-	    gtk_label_get_text(GTK_LABEL(self->label)), self->vmenu);
+	    gtk_label_get_text(GTK_LABEL(self->label)),
+	    self->clicked_cb, self->clicked_udata);
 
     if (self->submenu != NULL)
 	vim_menu_item_set_submenu(VIM_MENU_ITEM(copy),
@@ -756,8 +758,10 @@ vim_menu_insert(VimMenu *self, GtkWidget *item, int idx)
 	    gtk_box_insert_child_after(GTK_BOX(self->box), item,
 		    prev->data);
     }
-    else
+    else if (idx == 0)
 	gtk_box_prepend(GTK_BOX(self->box), item);
+    else
+	gtk_box_append(GTK_BOX(self->box), item);
 
     self->items = g_list_insert(self->items, item, idx);
     return item;
@@ -780,7 +784,8 @@ vim_menu_item_clicked_cb(VimMenuItem *self, VimMenu *menu)
     // Since we set the "cascade-popdown" property to FALSE, we must popdown the
     // toplevel menu/popover, so that all submenus are closed.
     vim_menu_close_all(menu);
-    gui_menu_cb(self->vmenu);
+    if (self->clicked_cb != NULL)
+	self->clicked_cb(self, self->clicked_udata);
 }
 
     static void
@@ -815,7 +820,8 @@ vim_menu_item_leave_cb(GtkEventController *controller, VimMenu *menu)
 }
 
 /*
- * Insert the menu item at the given index in the menu.
+ * Insert the menu item at the given index in the menu. If "idx" is negative,
+ * then append the menu item.
  */
     void
 vim_menu_insert_item(VimMenu *self, VimMenuItem *item, int idx)

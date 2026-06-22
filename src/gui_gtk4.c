@@ -290,7 +290,7 @@ static gboolean drop_cb(GtkDropTarget *target, const GValue *value, double x, do
 static void tabline_enter_cb(GtkEventController *controller, double x, double y, void *udata);
 static void on_select_tab(GtkNotebook *notebook, gpointer *page, gint idx, gpointer data);
 static void on_tab_reordered(GtkNotebook *notebook, gpointer *page, gint idx, gpointer data);
-static GMenu *create_tabline_popup_menu(GActionGroup **agroup_store);
+static VimMenu *create_tabline_popup_menu(void);
 static void tabline_menu_press_event(GtkGestureClick *gesture, int n_press, double x, double y, GtkWidget *popover);
 #endif
 static void mainwin_destroy_cb(GObject *object, gpointer data);
@@ -521,28 +521,25 @@ gui_mch_init(void)
     // Create right click popup menu for tabline
     {
 	GtkGesture	*click;
-	GActionGroup	*agroup;
-	GMenu		*menu;
-	GtkWidget	*popover;
+	VimMenu		*menu;
 
 	click = gtk_gesture_click_new();
-	menu = create_tabline_popup_menu(&agroup);
-	popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(menu));
-	g_object_unref(menu);
+	menu = create_tabline_popup_menu();
 
-	gtk_widget_set_parent(popover, gui.tabline);
-	g_object_set_data(G_OBJECT(gui.tabline), "menu", popover);
-	gtk_widget_insert_action_group(gui.tabline, "tabline", agroup);
-	g_object_unref(agroup);
+	gtk_widget_set_parent(GTK_WIDGET(menu), gui.tabline);
+	g_object_set_data(G_OBJECT(gui.tabline), "menu", menu);
 
-	gtk_popover_set_has_arrow(GTK_POPOVER(popover), FALSE);
-	gtk_popover_set_position(GTK_POPOVER(popover), GTK_POS_BOTTOM);
+	gtk_popover_set_has_arrow(GTK_POPOVER(menu), FALSE);
+	gtk_popover_set_position(GTK_POPOVER(menu), GTK_POS_BOTTOM);
+	// Make popover start at top left corner
+	gtk_widget_set_halign(GTK_WIDGET(menu), GTK_ALIGN_START);
 
 	// Listen for anny mouse button
 	gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(click), 0);
 
 	g_signal_connect_object(click, "pressed",
-		G_CALLBACK(tabline_menu_press_event), popover, G_CONNECT_DEFAULT);
+		G_CALLBACK(tabline_menu_press_event),
+		menu, G_CONNECT_DEFAULT);
 	gtk_widget_add_controller(gui.tabline, GTK_EVENT_CONTROLLER(click));
     }
 #endif
@@ -2981,52 +2978,33 @@ on_tab_reordered(
  * Handle selecting an item in the tab line popup menu.
  */
     static void
-tabline_menu_action_cb(
-	GSimpleAction	*action UNUSED,
-	GVariant	*parameter UNUSED,
-	void		*udata)
+tabline_menu_action_cb(VimMenuItem *item, void *udata)
 {
     send_tabline_menu_event(tabpage_hover, GPOINTER_TO_INT(udata));
 }
 
     static void
-add_tabline_menu_item(
-	GMenu	    *gmenu,
-	GActionMap  *amap,
-	const char  *name,
-	const char  *action,
-	int	    resp)
+add_tabline_menu_item(VimMenu *menu, const char *name, int resp)
 {
-    GSimpleAction *act = g_simple_action_new(action, NULL);
-    char detailed[32];
+    VimMenuItem *item = VIM_MENU_ITEM(vim_menu_item_new(name,
+		tabline_menu_action_cb, GINT_TO_POINTER(resp)));
 
-    g_signal_connect(act, "activate", G_CALLBACK(tabline_menu_action_cb),
-	    GINT_TO_POINTER(resp));
-    g_action_map_add_action(amap, G_ACTION(act));
-    g_object_unref(act);
-
-    vim_snprintf(detailed, sizeof(detailed), "tabline.%s", action);
-    g_menu_append(gmenu, name, detailed);
+    vim_menu_insert_item(menu, item, -1);
 }
 
 /*
  * Create a menu for the tab line.
  */
-    static GMenu *
-create_tabline_popup_menu(GActionGroup **agroup_store)
+    static VimMenu *
+create_tabline_popup_menu(void)
 {
-    GMenu		*gmenu = g_menu_new();
-    GSimpleActionGroup	*agroup = g_simple_action_group_new();
+    VimMenu *menu = VIM_MENU(vim_menu_new());
 
-    add_tabline_menu_item(gmenu, G_ACTION_MAP(agroup),
-	    _("Close Tab"), "close-tab", TABLINE_MENU_CLOSE);
-    add_tabline_menu_item(gmenu, G_ACTION_MAP(agroup),
-	    _("New Tab"), "new-tab", TABLINE_MENU_NEW);
-    add_tabline_menu_item(gmenu, G_ACTION_MAP(agroup),
-	    _("Open Tab..."), "open-tab", TABLINE_MENU_OPEN);
+    add_tabline_menu_item(menu, _("Close Tab"), TABLINE_MENU_CLOSE);
+    add_tabline_menu_item(menu, _("New Tab"), TABLINE_MENU_NEW);
+    add_tabline_menu_item(menu, _("Open Tab..."), TABLINE_MENU_OPEN);
 
-    *agroup_store = G_ACTION_GROUP(agroup);
-    return gmenu;
+    return menu;
 }
 
     static void
@@ -4319,6 +4297,12 @@ create_toolbar_icon(vimmenu_T *menu)
     return image;
 }
 
+    static void
+menu_button_clicked_cb(VimMenuItem *item, vimmenu_T *menu)
+{
+    gui_menu_cb(menu);
+}
+
     void
 gui_mch_add_menu(vimmenu_T *menu, int idx)
 {
@@ -4352,8 +4336,9 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
     if (parent != NULL)
     {
 	parent_widget = parent->submenu_id;
-	menu->id = g_object_ref_sink(vim_menu_item_new((const char *)text,
-		    menu));
+	menu->id = g_object_ref_sink(vim_menu_item_new(
+		    (const char *)text, NULL, NULL));
+
 	vim_menu_item_set_submenu(VIM_MENU_ITEM(menu->id),
 		VIM_MENU(menu->submenu_id));
 	vim_menu_insert_item(VIM_MENU(parent_widget),
@@ -4363,8 +4348,8 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
     {
 	parent_widget = gui.menubar;
 	menu->id = g_object_ref_sink(vim_menu_bar_item_new(
-		    (const char *)text, VIM_MENU(menu->submenu_id),
-		    menu));
+		    (const char *)text, VIM_MENU(menu->submenu_id)));
+
 	vim_menu_bar_insert_item(VIM_MENU_BAR(parent_widget),
 		VIM_MENU_BAR_ITEM(menu->id), idx);
     }
@@ -4436,11 +4421,13 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	    accel_text = CONVERT_TO_UTF8(menu->actext);
 
 	// Add our own reference to the widget
-	menu->id = g_object_ref_sink(vim_menu_item_new(
-		    (const char *)text, menu));
+	menu->id = g_object_ref_sink(vim_menu_item_new((const char *)text,
+		    (VimMenuItemClickedFunc)menu_button_clicked_cb, menu));
+
 	if (accel_text != NULL)
 	    vim_menu_item_set_accel(VIM_MENU_ITEM(menu->id),
 		    (const char *)accel_text);
+
 	vim_menu_insert_item(VIM_MENU(parent->submenu_id),
 		VIM_MENU_ITEM(menu->id), idx);
 
