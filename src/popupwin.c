@@ -120,6 +120,11 @@ static void redraw_overlapped_opacity_popups(int winrow, int wincol,
 #ifdef FEAT_IMAGE_KITTY
 static void popup_image_clear_kitty(win_T *wp);
 #endif
+#if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE_CAIRO)
+# if !GTK_CHECK_VERSION(4,0,0)
+static void popup_image_clear_cairo(win_T *wp);
+# endif
+#endif
 #ifdef FEAT_IMAGE
 static bool popup_image_composites_frames(void);
 #endif
@@ -4293,7 +4298,15 @@ popup_hide(win_T *wp)
 	// rendered until they are removed.
 	gui_gtk4_remove_image(wp);
 #endif
+
     wp->w_popup_flags |= POPF_HIDDEN;
+
+#if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE_CAIRO)
+# if !GTK_CHECK_VERSION(4,0,0)
+    popup_image_clear_cairo(wp);
+# endif
+#endif
+
     // Do not decrement b_nwindows, we still reference the buffer.
     if (wp->w_winrow + popup_height(wp) >= cmdline_row)
 	clear_cmdline = TRUE;
@@ -4496,6 +4509,11 @@ popup_free(win_T *wp)
 #ifdef FEAT_IMAGE_GDK
     if (gui.in_use)
 	gui_gtk4_remove_image(wp);
+#endif
+#if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE_CAIRO)
+# if !GTK_CHECK_VERSION(4,0,0)
+    popup_image_clear_cairo(wp);
+# endif
 #endif
     sign_undefine_by_name(popup_get_sign_name(wp), FALSE);
     wp->w_buffer->b_locked = FALSE;
@@ -7100,6 +7118,28 @@ popup_image_clear_kitty(win_T *wp)
 }
 # endif
 
+# if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE_CAIRO)
+#  if !GTK_CHECK_VERSION(4,0,0)
+    static void
+popup_image_clear_cairo(win_T *wp)
+{
+    if (!gui.in_use
+	    || wp->w_popup_image_emit_cells_w <= 0
+	    || wp->w_popup_image_emit_cells_h <= 0)
+	return;
+
+    gui_redraw_block(wp->w_popup_image_emit_row,
+	    wp->w_popup_image_emit_col,
+	    wp->w_popup_image_emit_row + wp->w_popup_image_emit_cells_h - 1,
+	    wp->w_popup_image_emit_col + wp->w_popup_image_emit_cells_w - 1,
+	    GUI_MON_NOCLEAR);
+
+    wp->w_popup_image_emit_cells_w = 0;
+    wp->w_popup_image_emit_cells_h = 0;
+}
+#  endif
+# endif
+
 # if defined(FEAT_IMAGE_SIXEL) || defined(FEAT_IMAGE_KITTY)
 /*
  * Called after the terminal screen has been cleared: kitty deletes
@@ -7148,7 +7188,7 @@ update_popup_images(void)
 }
 # endif
 
-# ifdef FEAT_IMAGE_GDI
+# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO)
     static void
 popup_maybe_emit_image_rect(
 	win_T	*wp,
