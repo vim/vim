@@ -2046,6 +2046,10 @@ modifiers_gdk2mouse(guint state)
 // -1 means no button is pressed (MOUSE_LEFT is 0x00, so can't use 0).
 static int mouse_pressed_button = -1;
 
+static guint motion_repeat_timer = 0;
+static gboolean motion_repeat_offset = FALSE;
+static int mouse_press_x = -1, mouse_press_y = -1;
+
     static void
 button_press_event(GtkGestureClick *gesture, int n_press UNUSED,
 	double x, double y, gpointer data UNUSED)
@@ -2083,6 +2087,9 @@ button_press_event(GtkGestureClick *gesture, int n_press UNUSED,
 	default: return;
     }
 
+    mouse_press_x = (int)x;
+    mouse_press_y = (int)y;
+
     mouse_pressed_button = button;
     vim_modifiers = modifiers_gdk2mouse(state);
     gui_send_mouse_event(button, (int)x, (int)y, repeated_click, vim_modifiers);
@@ -2101,12 +2108,56 @@ button_release_event(GtkGestureClick *gesture, int n_press UNUSED,
     state = gdk_event_get_modifier_state(event);
     vim_modifiers = modifiers_gdk2mouse(state);
 
+    // If we are repeating motion events, then stop
+    if (motion_repeat_timer != 0)
+    {
+	timeout_remove(motion_repeat_timer);
+	motion_repeat_timer = 0;
+    }
+
     mouse_pressed_button = -1;
     gui_send_mouse_event(MOUSE_RELEASE, (int)x, (int)y, FALSE, vim_modifiers);
 }
 
 static double prev_mouse_x = -1.0;
 static double prev_mouse_y = -1.0;
+
+static GdkModifierType cur_state = 0;
+
+    static timeout_cb_type
+mouse_repeat_timer_cb(gpointer data)
+{
+    int x, y;
+
+    if (mouse_pressed_button == -1)
+    {
+	motion_repeat_timer = 0;
+	return G_SOURCE_REMOVE;
+    }
+
+    // If there already is a mouse click in the input buffer, wait another
+    // time (otherwise we would create a backlog of clicks)
+    if (vim_used_in_input_buf() > 10)
+	return G_SOURCE_CONTINUE;
+
+    x = (int)prev_mouse_x;
+    y = (int)prev_mouse_y;
+
+    // Fake a motion event.
+    //
+    // Trick: Pretend the mouse moved to the next character on every other
+    // event, otherwise drag events will be discarded, because they are still in
+    // the same character.
+    if (motion_repeat_offset)
+	x += gui.char_width;
+    motion_repeat_offset = !motion_repeat_offset;
+
+    gui_send_mouse_event(MOUSE_DRAG, x, y, FALSE,
+	    modifiers_gdk2mouse(cur_state));
+
+    // Always continue, when button is released, then this timer is removed.
+    return G_SOURCE_CONTINUE;
+}
 
     static void
 motion_notify_event(GtkEventControllerMotion *controller UNUSED,
@@ -2115,17 +2166,54 @@ motion_notify_event(GtkEventControllerMotion *controller UNUSED,
     if (mouse_pressed_button >= 0)
     {
 	GdkModifierType state;
-	GdkEvent *event;
+	GdkEvent	*event;
+	int		w, h;
 
 	event = gtk_event_controller_get_current_event(
 		GTK_EVENT_CONTROLLER(controller));
+
 	if (event != NULL)
 	{
-	    state = gdk_event_get_modifier_state(event);
+	    cur_state = state = gdk_event_get_modifier_state(event);
 	    gui_send_mouse_event(MOUSE_DRAG, (int)x, (int)y,
 		    FALSE, modifiers_gdk2mouse(state));
 	}
+
+	// Only start repeating motion if pointer is outside of draw area (and
+	// mouse button is being pressed down). Make frequency of motion
+	// repeats depend on how far away the pointer is from the start of the
+	// drag.
+	//
+	w = gtk_widget_get_width(gui.drawarea);
+	h = gtk_widget_get_height(gui.drawarea);
+
+	if (motion_repeat_timer > 0)
+	    timeout_remove(motion_repeat_timer);
+
+	if (x < 0 || y < 0 || x >= w || y >= h)
+	{
+	    int	dx, dy;
+	    int offshoot;
+	    int	delay;
+
+	    dx = x < 0 ? -x + mouse_press_x : x - mouse_press_x;
+	    dy = y < 0 ? -y + mouse_press_y : y - mouse_press_y;
+
+	    offshoot = dx > dy ? dx : dy;
+
+	    if (offshoot > 127)
+		delay = 5;
+	    else
+		delay = (130 * (127 - offshoot)) / 127 + 5;
+
+	    motion_repeat_timer = timeout_add(delay,
+		    mouse_repeat_timer_cb, NULL);
+	}
+	else
+	    motion_repeat_timer = 0;
     }
+    else
+	gui_mouse_moved((int)x, (int)y);
 
     // Only unhide if mouse actually moved. GTK seems to send a motion event
     // when switching tabs, causing the cursor to unhide.
@@ -2139,7 +2227,7 @@ motion_notify_event(GtkEventControllerMotion *controller UNUSED,
 
     static void
 enter_notify_event(GtkEventControllerMotion *controller UNUSED,
-	double x UNUSED, double y UNUSED, gpointer data UNUSED)
+	double x, double y, gpointer data UNUSED)
 {
     prev_mouse_x = x;
     prev_mouse_y = y;
