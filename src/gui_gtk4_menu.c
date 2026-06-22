@@ -622,6 +622,8 @@ vim_menu_close_all(VimMenu *self)
 	vim_menu_bar_set_active_item(menubar, NULL, TRUE);
     else
 	gtk_popover_popdown(GTK_POPOVER(self));
+    // Make sure to focus drawarea
+    gtk_widget_grab_focus(gui.drawarea);
 }
 
     static gboolean
