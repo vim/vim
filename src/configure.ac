@@ -4037,7 +4037,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 
 dnl Check for timer_create. It probably requires the 'rt' library.
 AC_CACHE_CHECK([for timer_create without -lrt], [vim_cv_timer_create], [
-  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([
   #include <time.h>
   ], [
     timer_create(CLOCK_MONOTONIC, NULL, NULL);
@@ -4051,7 +4051,7 @@ if test "x$vim_cv_timer_create" = "xno" ; then
   save_LIBS="$LIBS"
   LIBS="$LIBS -lrt"
   AC_CACHE_CHECK([for timer_create with -lrt], [vim_cv_timer_create_with_lrt], [
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([
     #include <time.h>
     ], [
       timer_create(CLOCK_MONOTONIC, NULL, NULL);
