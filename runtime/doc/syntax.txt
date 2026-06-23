@@ -6616,5 +6616,44 @@ literal text specify the size of that text (in bytes):
 		many places.
 "<\@1<=span"	Matches the same, but only tries one byte before "span".
 
+						*:syntax-prefilter*
+To avoid wasted work Vim uses a "required-byte" prefilter.  When a syntax
+pattern is defined, Vim works out which bytes must appear in any text the
+pattern can match.  Before trying the pattern on a line it checks the line for
+those bytes and skips the pattern when one of them is missing, without running
+the regexp engine at all.  This is why including literal text, as above,
+helps: it gives the prefilter something to key on.
+
+This only makes highlighting faster, it never changes the result.  The
+highlighting is the same whether a pattern is skipped or not.
+
+The prefilter applies only to the patterns of |:syn-match| and |:syn-region|
+items.  It does not affect matching functions such as |match()|, |search()| or
+|substitute()|.
+
+The analysis is deliberately careful: it speeds up only the patterns it can
+analyse with certainty and does nothing for the rest.  Which patterns benefit
+therefore depends on how a pattern is written; two patterns that match the
+same text are not necessarily optimized the same way.  There is no option to
+configure this and nothing to tune.
+
+Because a skipped pattern is not tried, it is not counted in a |:syntime|
+report for the lines where it was skipped, and may be absent from the report
+entirely if it was skipped on every line that was redrawn.
+
+If you suspect the prefilter causes wrong highlighting, you can turn it off to
+check, with |test_override()|: >
+	:call test_override('syn_prefilter', 1)
+	:syntax sync fromstart
+	:redraw!
+<Switch it back on again, together with any other overrides, with: >
+	:call test_override('ALL', 0)
+<If the highlighting changes when the prefilter is off, that is a bug worth
+reporting; the result is meant to be identical either way.
+
+Vim's own test suite guards this in src/testdir/test_syntax.vim: it highlights
+several buffers with the prefilter on and off and checks that the result is
+identical, so an analysis bug that wrongly skips a pattern is caught.
+
 
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

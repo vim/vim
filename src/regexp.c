@@ -676,6 +676,65 @@ skip_regexp_ex(
 }
 
 /*
+ * regpat_get_brace_limits - Parse the "{n,m}" limits of a "\{...}" multi,
+ * starting at "*pp" (just after "\{").  Like the skip_regexp() helpers above
+ * this works on the pattern *syntax* and is independent of any compiled
+ * program, so it can be shared by the regexp engine and by other consumers of
+ * the pattern.
+ *
+ * If the first character is '-', the range is reversed.  A missing minval
+ * defaults to zero, a missing maxval to a very big number.  The values are
+ * normalised the same way the engine uses them.  On success "*pp" is left on
+ * the closing "}" and OK is returned; FAIL is returned when the limits are not
+ * well-formed.
+ */
+    int
+regpat_get_brace_limits(char_u **pp, long *minval, long *maxval)
+{
+    char_u	*p = *pp;
+    int		reverse = FALSE;
+    char_u	*first_char;
+    long	tmp;
+
+    if (*p == '-')
+    {
+	// Starts with '-', so reverse the range later
+	++p;
+	reverse = TRUE;
+    }
+    first_char = p;
+    *minval = getdigits(&p);
+    if (*p == ',')		    // There is a comma
+    {
+	if (vim_isdigit(*++p))
+	    *maxval = getdigits(&p);
+	else
+	    *maxval = MAX_LIMIT;
+    }
+    else if (VIM_ISDIGIT(*first_char))
+	*maxval = *minval;	    // It was \{n} or \{-n}
+    else
+	*maxval = MAX_LIMIT;	    // It was \{} or \{-}
+    if (*p == '\\')
+	++p;			    // Allow either \{...} or \{...\}
+    if (*p != '}')
+	return FAIL;
+
+    /*
+     * Reverse the range if there was a '-', or make sure it is in the right
+     * order otherwise.
+     */
+    if ((!reverse && *minval > *maxval) || (reverse && *minval < *maxval))
+    {
+	tmp = *minval;
+	*minval = *maxval;
+	*maxval = tmp;
+    }
+    *pp = p;			    // left on the "}"
+    return OK;
+}
+
+/*
  * Functions for getting characters from the regexp input.
  */
 static int	prevchr_len;	// byte length of previous char
@@ -1059,53 +1118,15 @@ getoctchrs(void)
 }
 
 /*
- * read_limits - Read two integers to be taken as a minimum and maximum.
- * If the first character is '-', then the range is reversed.
- * Should end with 'end'.  If minval is missing, zero is default, if maxval is
- * missing, a very big number is the default.
+ * read_limits - Read the "{n,m}" limits for the regexp engine, advancing
+ * "regparse" past the closing "}".
  */
     static int
 read_limits(long *minval, long *maxval)
 {
-    int		reverse = FALSE;
-    char_u	*first_char;
-    long	tmp;
-
-    if (*regparse == '-')
-    {
-	// Starts with '-', so reverse the range later
-	regparse++;
-	reverse = TRUE;
-    }
-    first_char = regparse;
-    *minval = getdigits(&regparse);
-    if (*regparse == ',')	    // There is a comma
-    {
-	if (vim_isdigit(*++regparse))
-	    *maxval = getdigits(&regparse);
-	else
-	    *maxval = MAX_LIMIT;
-    }
-    else if (VIM_ISDIGIT(*first_char))
-	*maxval = *minval;	    // It was \{n} or \{-n}
-    else
-	*maxval = MAX_LIMIT;	    // It was \{} or \{-}
-    if (*regparse == '\\')
-	regparse++;	// Allow either \{...} or \{...\}
-    if (*regparse != '}')
+    if (!regpat_get_brace_limits(&regparse, minval, maxval))
 	EMSG2_RET_FAIL(_(e_syntax_error_in_str_curlies),
 						       reg_magic == MAGIC_ALL);
-
-    /*
-     * Reverse the range if there was a '-', or make sure it is in the right
-     * order otherwise.
-     */
-    if ((!reverse && *minval > *maxval) || (reverse && *minval < *maxval))
-    {
-	tmp = *minval;
-	*minval = *maxval;
-	*maxval = tmp;
-    }
     skipchr();		// let's be friends with the lexer again
     return OK;
 }
