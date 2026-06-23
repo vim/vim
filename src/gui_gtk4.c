@@ -5236,6 +5236,13 @@ typedef struct
     gboolean	*done;
 } DialogButtonState;
 
+typedef struct
+{
+    GtkWidget	*win;
+    gboolean	*done;
+    gboolean	no_alt;
+} DialogState;
+
     static void
 dialog_button_clicked_cb(GtkButton *button, DialogButtonState *state)
 {
@@ -5249,13 +5256,16 @@ dialog_key_pressed_cb(
 	guint			keyval,
 	guint			keycode,
 	GdkModifierType		state,
-	gboolean		*done)
+	DialogState		*dstate)
 {
     if (keyval == GDK_KEY_Escape)
     {
-	*done = TRUE;
+	*dstate->done = TRUE;
 	return TRUE;
     }
+
+    if (dstate->no_alt && !(state & gtk_accelerator_get_default_mod_mask()))
+	return gtk_widget_mnemonic_activate(dstate->win, FALSE);
     return FALSE;
 }
 
@@ -5291,6 +5301,7 @@ gui_mch_dialog(
     int			response = -1;
     gboolean		done = FALSE;
     gboolean		win_closed = FALSE;
+    DialogState		state;
 
     utf8_title = CONVERT_TO_UTF8(title);
     if (utf8_title != NULL)
@@ -5333,13 +5344,14 @@ gui_mch_dialog(
     gtk_label_set_max_width_chars(GTK_LABEL(label), 40);
     gtk_box_append(GTK_BOX(message_box), label);
 
-    // Close the dialog when the <Esc> key is pressed. the GTK3 GUI also allows
-    // mnemonics without <Alt> key, but that behaviour comes from GTK+ 1.2 (from
-    // 1999!), so most users probably don't care...
+    // Close the dialog when the <Esc> key is pressed. Also allow using
+    // mnemonics without <Alt> key (if there is no text field).
     key_controller = gtk_event_controller_key_new();
     g_signal_connect(key_controller, "key-pressed",
-	    G_CALLBACK(dialog_key_pressed_cb), &done);
+	    G_CALLBACK(dialog_key_pressed_cb), &state);
     gtk_widget_add_controller(GTK_WIDGET(win), key_controller);
+    state.done = &done;
+    state.win = GTK_WIDGET(win);
 
     if (textfield != NULL)
     {
@@ -5358,6 +5370,30 @@ gui_mch_dialog(
 	// (which is set as the default widget).
 	gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
 	gtk_box_append(GTK_BOX(vertbox), entry);
+	state.no_alt = FALSE;
+    }
+    else
+    {
+	GListModel  *controllers;
+	int	    len;
+
+	// Set all shortcut controllers in the window to not require a modifier
+	// for mnemonics.
+	controllers = gtk_widget_observe_controllers(GTK_WIDGET(win));
+	len  = g_list_model_get_n_items(controllers);
+	for (int i = 0; i < len; i++)
+	{
+	    GtkEventController *controller;
+
+	    controller = g_list_model_get_item(controllers, i);
+            if (GTK_IS_SHORTCUT_CONTROLLER(controller))
+                gtk_shortcut_controller_set_mnemonics_modifiers(
+			GTK_SHORTCUT_CONTROLLER(controller), 0);
+        }
+	g_object_unref(controllers);
+
+	gtk_window_set_mnemonics_visible(win, TRUE);
+	state.no_alt = TRUE;
     }
 
     if (buttons != NULL)
