@@ -16,7 +16,7 @@
 
 // Note that this may return NULL for popup menus
 #define GET_MENU_BAR(m) VIM_MENU_BAR(gtk_widget_get_ancestor( \
-	    GTK_WIDGET(m), VIM_TYPE_MENU_BAR));
+	    GTK_WIDGET(m), VIM_TYPE_MENU_BAR))
 
 /*
  * Similar as GtkButton but set CSS name to "item" to emulate GtkPopoverMenuBar
@@ -356,10 +356,10 @@ struct _VimMenuItem
 
     GtkWidget *submenu;	    // Submenu popover if any (VimMenu)
 
-    // Callback called when clicked, we store this so that copying a menu item
-    // works properly.
-    VimMenuItemClickedFunc  clicked_cb;
-    void		    *clicked_udata;
+    // Callback called when clicked or selected, we store this so that copying a
+    // menu item works properly.
+    VimMenuItemFunc	func;
+    void		*func_udata;
 };
 
 G_DEFINE_TYPE(VimMenuItem, vim_menu_item, GTK_TYPE_BUTTON)
@@ -403,12 +403,12 @@ vim_menu_item_init(VimMenuItem *self)
  * not needed.
  */
     GtkWidget *
-vim_menu_item_new(const char *text, VimMenuItemClickedFunc func, void *udata)
+vim_menu_item_new(const char *text, VimMenuItemFunc func, void *udata)
 {
     VimMenuItem *item = g_object_new(VIM_TYPE_MENU_ITEM, NULL);
 
-    item->clicked_cb = func;
-    item->clicked_udata = udata;
+    item->func = func;
+    item->func_udata = udata;
     item->label = gtk_label_new_with_mnemonic(text);
 
     // Make sure label is on the right and pushes everything to the left
@@ -483,7 +483,7 @@ vim_menu_item_copy(VimMenuItem *self)
 
     copy = vim_menu_item_new(
 	    gtk_label_get_text(GTK_LABEL(self->label)),
-	    self->clicked_cb, self->clicked_udata);
+	    self->func, self->func_udata);
 
     if (self->submenu != NULL)
 	vim_menu_item_set_submenu(VIM_MENU_ITEM(copy),
@@ -545,11 +545,17 @@ vim_menu_class_init(VimMenuClass *class)
     static gboolean
 vim_menu_select_active_item(VimMenu *self, gboolean open)
 {
+    VimMenuItem *item;
+
     gtk_widget_set_state_flags(self->active_item,
 	    GTK_STATE_FLAG_SELECTED, FALSE);
 
     // Make sure to focus item, so that scrolled window knows what to do.
     gtk_widget_grab_focus(GTK_WIDGET(self->active_item));
+
+    item = VIM_MENU_ITEM(self->active_item);
+    if (item->func != NULL)
+	item->func(item, VIM_MENU_ITEM_SELECTED, item->func_udata);
 
     if (open && VIM_MENU_ITEM(self->active_item)->submenu != NULL)
     {
@@ -676,6 +682,9 @@ vim_menu_close_all(VimMenu *self)
 	vim_menu_bar_set_active_item(menubar, NULL, TRUE);
     else
 	gtk_popover_popdown(GTK_POPOVER(self));
+
+    // Grab focus after popup menus without a menubar are closed
+    gtk_widget_grab_focus(gui.drawarea);
 }
 
     static gboolean
@@ -896,8 +905,8 @@ vim_menu_item_clicked_cb(VimMenuItem *self, VimMenu *menu)
     // Since we set the "cascade-popdown" property to FALSE, we must popdown the
     // toplevel menu/popover, so that all submenus are closed.
     vim_menu_close_all(menu);
-    if (self->clicked_cb != NULL)
-	self->clicked_cb(self, self->clicked_udata);
+    if (self->func != NULL)
+	self->func(self, VIM_MENU_ITEM_CLICKED, self->func_udata);
 }
 
     static void

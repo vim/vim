@@ -2981,16 +2981,17 @@ on_tab_reordered(
  * Handle selecting an item in the tab line popup menu.
  */
     static void
-tabline_menu_action_cb(VimMenuItem *item, void *udata)
+tabline_menu_event_cb(VimMenuItem *item, VimMenuItemEvent event, void *udata)
 {
-    send_tabline_menu_event(tabpage_hover, GPOINTER_TO_INT(udata));
+    if (event == VIM_MENU_ITEM_CLICKED)
+	send_tabline_menu_event(tabpage_hover, GPOINTER_TO_INT(udata));
 }
 
     static void
 add_tabline_menu_item(VimMenu *menu, const char *name, int resp)
 {
     VimMenuItem *item = VIM_MENU_ITEM(vim_menu_item_new(name,
-		tabline_menu_action_cb, GINT_TO_POINTER(resp)));
+		tabline_menu_event_cb, GINT_TO_POINTER(resp)));
 
     vim_menu_insert_item(menu, item, -1);
 }
@@ -4301,9 +4302,39 @@ create_toolbar_icon(vimmenu_T *menu)
 }
 
     static void
-menu_button_clicked_cb(VimMenuItem *item, vimmenu_T *menu)
+menu_button_clicked_cb(
+	VimMenuItem	    *item,
+	VimMenuItemEvent    event,
+	vimmenu_T	    *menu)
 {
-    gui_menu_cb(menu);
+    if (event == VIM_MENU_ITEM_CLICKED)
+	gui_menu_cb(menu);
+    else if (event == VIM_MENU_ITEM_SELECTED)
+    {
+	// Show tooltip instantly in cmdline message.
+	char_u		*tooltip;
+	static gboolean did_msg = FALSE;
+
+	if (State & MODE_CMDLINE)
+	    return;
+
+	tooltip = CONVERT_TO_UTF8(menu->strings[MENU_INDEX_TIP]);
+	if (tooltip != NULL && utf_valid_string(tooltip, NULL))
+	{
+	    msg((char *)tooltip);
+	    did_msg = TRUE;
+	    setcursor();
+	    out_flush_cursor(TRUE, FALSE);
+	}
+	else if (did_msg)
+	{
+	    msg("");
+	    did_msg = FALSE;
+	    setcursor();
+	    out_flush_cursor(TRUE, FALSE);
+	}
+	CONVERT_TO_UTF8_FREE(tooltip);
+    }
 }
 
     void
@@ -4425,7 +4456,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 
 	// Add our own reference to the widget
 	menu->id = g_object_ref_sink(vim_menu_item_new((const char *)text,
-		    (VimMenuItemClickedFunc)menu_button_clicked_cb, menu));
+		    (VimMenuItemFunc)menu_button_clicked_cb, menu));
 
 	if (accel_text != NULL)
 	    vim_menu_item_set_accel(VIM_MENU_ITEM(menu->id),
