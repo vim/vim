@@ -836,6 +836,10 @@ scale_factor_event(GtkWidget *widget,
     gui.force_redraw = 1;
     gui_resize_shell(w, usable_height);
     gui_gtk_form_thaw(GTK_FORM(gui.formwin));
+#  ifdef FEAT_IMAGE
+    gui.scale = gtk_widget_get_scale_factor(widget);
+    popup_update_scale();
+#  endif
 
     return TRUE;
 }
@@ -4284,6 +4288,10 @@ gui_mch_init(void)
 	g_signal_connect(gtk_settings, "notify::gtk-xft-dpi",
 			   G_CALLBACK(gtk_settings_xft_dpi_changed_cb), NULL);
     }
+
+#ifdef FEAT_IMAGE
+    gui.scale = gtk_widget_get_scale_factor(gui.formwin);
+#endif
 
     return OK;
 }

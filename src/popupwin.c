@@ -1110,9 +1110,9 @@ apply_general_options(win_T *wp, dict_T *dict)
 			    if (gui.in_use)
 			    {
 				if (gui.char_width > 0)
-				    cx = gui.char_width;
+				    cx = LOG2PHY(gui.char_width);
 				if (gui.char_height > 0)
-				    cy = gui.char_height;
+				    cy = LOG2PHY(gui.char_height);
 			    }
 			    else
 #  endif
@@ -3010,6 +3010,43 @@ popup_adjust_position(win_T *wp)
 	popup_mask_refresh = TRUE;
     }
 }
+
+#if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE)
+/*
+ * Should be called when scale factor changes.
+ */
+    void
+popup_update_scale(void)
+{
+    win_T *wp;
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
+    {
+	// If the popup has an image, recalculate its bounding box in cells
+	if (wp->w_popup_image_data != NULL)
+	{
+	    int cx = 8, cy = 16;
+	    int cw, ch;
+
+	    cx = LOG2PHY(gui.char_width);
+	    cy = LOG2PHY(gui.char_height);
+
+	    // Calculate the new cell width and height
+	    cw = (wp->w_popup_image_w + cx - 1) / cx;
+	    ch = (wp->w_popup_image_h + cy - 1) / cy;
+
+	    // Update the window dimensions to fit the image at the new scale
+	    wp->w_minwidth  = cw;
+	    wp->w_maxwidth  = cw;
+	    wp->w_minheight = ch;
+	    wp->w_maxheight = ch;
+	}
+
+	// Reflow the popup layout with the newly calculated limits
+	popup_adjust_position(wp);
+    }
+    redraw_later(UPD_CLEAR);
+}
+#endif
 
 typedef enum
 {
@@ -6820,9 +6857,13 @@ popup_image_gui_clip(
 	int	*draw_h)
 {
     popup_clip_T    cl;
-    int		    cell_x = gui.char_width > 0 ? gui.char_width : 8;
-    int		    cell_y = gui.char_height > 0 ? gui.char_height : 16;
+    // "gui.char_*" are in logical pixels, must convert to physical first,
+    // because all the other dimensions are in physical pixels.
+    int		    cell_x = LOG2PHY(gui.char_width > 0 ? gui.char_width : 8);
+    int		    cell_y = LOG2PHY(gui.char_height > 0 ? gui.char_height : 16);
     win_T	    *cw;
+    int		    visible_w;
+    int		    visible_h;
 
     popup_compute_clip(wp, &cl);
     *row += cl.clip_top_content;
@@ -6852,6 +6893,18 @@ popup_image_gui_clip(
 	*draw_w = 0;
     if (*draw_h < 0)
 	*draw_h = 0;
+
+    // If image is larger than the actual screen size, then clip it. Maybe best
+    // solution would be to somehow make popup win bigger than the screen size
+    // (as if 'nowrap' is on). However that would require a lot of changes so
+    // just clip the image for now.
+    visible_w = wp->w_width - cl.clip_left_content - cl.clip_right_content;
+    visible_h = wp->w_height - cl.clip_top_content - cl.clip_bot_content;
+
+    if (visible_w > 0)
+	*draw_w = MIN(*draw_w, visible_w * cell_x);
+    if (visible_h > 0)
+	*draw_h = MIN(*draw_h, visible_h * cell_y);
 }
 # endif
 
@@ -7080,12 +7133,12 @@ popup_emit_image(win_T *wp)
     // vim still thinks it is at the image origin, so the relative-move
     // optimisation would otherwise place the cursor on the line just
     // after the image.
-    out_str((char_u *)"\033[?25l");
+    cursor_off();
     term_windgoto(row, col);
     out_str(wp->w_popup_image_seq);
     screen_start();
     setcursor_mayforce(TRUE);
-    out_str((char_u *)"\033[?25h");
+    cursor_on();
     out_flush();
 
     // The sixel bytes just painted over every cell of the emitted rectangle,

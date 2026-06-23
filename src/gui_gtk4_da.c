@@ -1752,7 +1752,8 @@ vim_draw_area_queue_image(VimDrawArea *self, GList *link)
  * (src_x, src_y, draw_w, draw_h) describe which pixel sub-rect of the source
  * texture should be drawn. If there is an image that has the same id, then it
  * is re-rendered with the new texture. If zindex of an image changed, then the
- * queue will be updated accordingly.
+ * queue will be updated accordingly. Note that the dimensions/positions are to
+ * be in physical pixels!!!
  */
     void
 vim_draw_area_add_image(
@@ -1778,12 +1779,16 @@ vim_draw_area_add_image(
 		|| col >= self->n_cols))
 	return;
 
-    w = gdk_texture_get_width(image);
-    h = gdk_texture_get_height(image);
+    w = PHY2LOG(gdk_texture_get_width(image));
+    h = PHY2LOG(gdk_texture_get_height(image));
+    src_x = PHY2LOG((double)src_x);
+    src_y = PHY2LOG((double)src_y);
+    draw_w = PHY2LOG((double)draw_w);
+    draw_h = PHY2LOG((double)draw_h);
 
-    node = gsk_texture_node_new(image,
+    node = gsk_texture_scale_node_new(image,
 	    &GRAPHENE_RECT_INIT(FILL_X(col) - src_x, FILL_Y(row) - src_y,
-		w, h));
+		w, h), GSK_SCALING_FILTER_TRILINEAR);
 
     if (node != NULL)
     {

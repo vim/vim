@@ -300,9 +300,9 @@ static void mainwin_fullscreened_cb(GObject *obj, GParamSpec *pspec, gpointer us
 static void drawarea_realize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_unrealize_cb(GtkWidget *widget, gpointer data);
 #ifndef USE_GTK4_SNAPSHOT
-static void drawarea_scale_factor_cb(GObject *object, GParamSpec *pspec, gpointer data);
 static cairo_surface_t *create_backing_surface(int width, int height);
 #endif
+static void drawarea_scale_factor_cb(GObject *object, GParamSpec *pspec, gpointer data);
 static void clipboard_changed_cb(GdkClipboard *clipboard, gpointer user_data);
 #ifdef FEAT_MENU
 static void show_menubar_popover(void);
@@ -569,14 +569,16 @@ gui_mch_init(void)
     // Set up drawing.
     gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(gui.drawarea),
 	    (GtkDrawingAreaDrawFunc)draw_event, NULL, NULL);
-
-    g_signal_connect(G_OBJECT(gui.drawarea), "notify::scale-factor",
-		     G_CALLBACK(drawarea_scale_factor_cb), NULL);
 #endif
     g_signal_connect(G_OBJECT(gui.drawarea), "realize",
 		     G_CALLBACK(drawarea_realize_cb), NULL);
     g_signal_connect(G_OBJECT(gui.drawarea), "unrealize",
 		     G_CALLBACK(drawarea_unrealize_cb), NULL);
+    g_signal_connect(G_OBJECT(gui.drawarea), "notify::scale-factor",
+		     G_CALLBACK(drawarea_scale_factor_cb), NULL);
+#ifdef FEAT_IMAGE
+    gui.scale = gtk_widget_get_scale_factor(gui.drawarea);
+#endif
 
     // Set up event controllers.
     {
@@ -2408,15 +2410,14 @@ gui_gtk4_resize(int width, int height)
 	}
     }
 }
+#endif
 
     static void
 drawarea_scale_factor_cb(GObject *object UNUSED,
 	GParamSpec *pspec UNUSED, gpointer data UNUSED)
 {
+#ifndef USE_GTK4
     int	w, h;
-
-    if (gui.drawarea == NULL)
-	return;
 
     w = gtk_widget_get_width(gui.drawarea);
     h = gtk_widget_get_height(gui.drawarea);
@@ -2437,8 +2438,12 @@ drawarea_scale_factor_cb(GObject *object UNUSED,
     gtk_widget_queue_draw(gui.drawarea);
     if (gui.in_use)
 	redraw_all_later(UPD_CLEAR);
-}
 #endif
+#if defined(FEAT_IMAGE)
+    gui.scale = gtk_widget_get_scale_factor(gui.drawarea);
+    popup_update_scale();
+#endif
+}
 
 typedef enum
 {
