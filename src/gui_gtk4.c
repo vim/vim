@@ -5525,12 +5525,6 @@ entry_changed_cb(GtkWidget *entry, GtkWidget *dialog)
     }
 }
 
-    static void
-hide_frdp_dialog(GtkWidget *widget UNUSED, void *udata)
-{
-    gtk_widget_set_visible(GTK_WIDGET(udata), FALSE);
-}
-
     static gboolean
 find_key_pressed_cb(
 	GtkEventControllerKey	*controller,
@@ -5547,7 +5541,7 @@ find_key_pressed_cb(
     // the Escape key synthesizes a cancellation action
     if (keyval == GDK_KEY_Escape)
     {
-	gtk_widget_set_visible(frdp->dialog, FALSE);
+	gtk_window_destroy(GTK_WINDOW(frdp->dialog));
 	return TRUE;
     }
 
@@ -5740,8 +5734,8 @@ find_replace_dialog_create(char_u *arg, int do_replace)
     }
 
     btn = gtk_button_new_with_label(_("Close"));
-    g_signal_connect(btn, "clicked",
-	    G_CALLBACK(hide_frdp_dialog), frdp->dialog);
+    g_signal_connect_swapped(btn, "clicked",
+	    G_CALLBACK(gtk_window_destroy), frdp->dialog);
     gtk_box_append(GTK_BOX(hbox), btn);
 
     gtk_window_present(GTK_WINDOW(frdp->dialog));
