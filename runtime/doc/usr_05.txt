@@ -535,6 +535,33 @@ Once the package is loaded, read about it at: >
 
 More information about packages can be found here: |packages|.
 
+------------------------------------------------------------------------------
+Adding the surround package		*surround* *package-surround*
+------------------------------------------------------------------------------
+
+Load the plugin with this command: >
+	packadd surround
+<
+This way you can use the plugin with the default key bindings `ys`, `ds`, `cs`
+in normal and `S` in visual mode to add/remove/change surround of a text with
+various characters or xml tags.
+
+Note that default package mappings override |S| in visual mode, to avoid it,
+turn off default mappings and provide your own instead: >
+
+  let g:surround_mappings = v:false
+  xmap <space>s <Plug>(surround-add)
+  nmap ys <Plug>(surround-add)
+  nmap yss <Plug>(surround-line-add)
+  nmap ds <Plug>(surround-remove)
+  nmap cs <Plug>(surround-change)
+
+
+If you add this line to your vimrc file, then you need to restart Vim to have
+the package loaded.  Once the package is loaded, read about it at: >
+	:h surround.txt
+
+
 ==============================================================================
 *05.6*	Adding a plugin					*add-plugin* *plugin*
 

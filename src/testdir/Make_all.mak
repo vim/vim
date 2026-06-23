@@ -253,6 +253,7 @@ NEW_TESTS = \
 	test_plugin_netrw \
 	test_plugin_python3complete \
 	test_plugin_osc52 \
+	test_plugin_surround \
 	test_plugin_tar \
 	test_plugin_termdebug \
 	test_plugin_tohtml \
@@ -524,6 +525,7 @@ NEW_TESTS_RES = \
 	test_paste.res \
 	test_perl.res \
 	test_plugin_comment.res \
+	test_plugin_surround.res \
 	test_plugin_glvs.res \
 	test_plugin_helpcurwin.res \
 	test_plugin_helptoc.res \
