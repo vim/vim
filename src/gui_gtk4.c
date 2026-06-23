@@ -5048,10 +5048,11 @@ gui_mch_browse(int saving,
 	char_u *initdir,
 	char_u *filter UNUSED)
 {
-    GtkFileDialog	*dlg;
-    FileDialogData	fdd;
-    char_u		dirbuf[MAXPATHL];
-    char_u		*result = NULL;
+    GtkFileDialog   *dlg;
+    FileDialogData  fdd;
+    char_u	    dirbuf[MAXPATHL];
+    char_u	    *result = NULL;
+    GListStore	    *filters;
 
     title = CONVERT_TO_UTF8(title);
 
@@ -5073,6 +5074,48 @@ gui_mch_browse(int saving,
 	gtk_file_dialog_set_initial_folder(dlg, dir);
 	g_object_unref(dir);
     }
+
+    // Add file filters
+    filters = g_list_store_new(GTK_TYPE_FILE_FILTER);
+    if (filter != NULL && *filter != NUL)
+    {
+	int		i = 0;
+	char_u		*patt;
+	char_u		*p = filter;
+	GtkFileFilter	*gfilter;
+
+	gfilter = gtk_file_filter_new();
+	patt = alloc(STRLEN(filter));
+	while (p != NULL && *p != NUL)
+	{
+	    if (*p == '\n' || *p == ';' || *p == '\t')
+	    {
+		STRNCPY(patt, filter, i);
+		patt[i] = '\0';
+		if (*p == '\t')
+		    gtk_file_filter_set_name(gfilter, (gchar *)patt);
+		else
+		{
+		    gtk_file_filter_add_pattern(gfilter, (gchar *)patt);
+		    if (*p == '\n')
+		    {
+			g_list_store_append(filters, gfilter);
+			if (*(p + 1) != NUL)
+			    gfilter = gtk_file_filter_new();
+		    }
+		}
+		filter = ++p;
+		i = 0;
+	    }
+	    else
+	    {
+		p++;
+		i++;
+	    }
+	}
+	vim_free(patt);
+    }
+    gtk_file_dialog_set_filters(dlg, G_LIST_MODEL(filters));
 
     if (saving && dflt != NULL && *dflt != NUL)
 	gtk_file_dialog_set_initial_name(dlg, (const char *)dflt);
