@@ -299,12 +299,9 @@ static void tabline_menu_press_event(GtkGestureClick *gesture, int n_press, doub
 static void mainwin_destroy_cb(GObject *object, gpointer data);
 static gboolean delete_event_cb(GtkWindow *window, gpointer data);
 static void mainwin_fullscreened_cb(GObject *obj, GParamSpec *pspec, gpointer user_data);
-#ifndef USE_GTK4_SNAPSHOT
 static void drawarea_realize_cb(GtkWidget *widget, gpointer data);
-#endif
 static void drawarea_unrealize_cb(GtkWidget *widget, gpointer data);
 #ifndef USE_GTK4_SNAPSHOT
-static void drawarea_resize_cb(GtkDrawingArea *area, int width, int height, gpointer data);
 static void drawarea_scale_factor_cb(GObject *object, GParamSpec *pspec, gpointer data);
 static cairo_surface_t *create_backing_surface(int width, int height);
 #endif
@@ -598,13 +595,11 @@ gui_mch_init(void)
     gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(gui.drawarea),
 	    (GtkDrawingAreaDrawFunc)draw_event, NULL, NULL);
 
-    g_signal_connect(G_OBJECT(gui.drawarea), "resize",
-		     G_CALLBACK(drawarea_resize_cb), NULL);
     g_signal_connect(G_OBJECT(gui.drawarea), "notify::scale-factor",
 		     G_CALLBACK(drawarea_scale_factor_cb), NULL);
+#endif
     g_signal_connect(G_OBJECT(gui.drawarea), "realize",
 		     G_CALLBACK(drawarea_realize_cb), NULL);
-#endif
     g_signal_connect(G_OBJECT(gui.drawarea), "unrealize",
 		     G_CALLBACK(drawarea_unrealize_cb), NULL);
 
@@ -887,10 +882,10 @@ gui_mch_newfont(void)
 {
     int w, h;
 
+    // Do not subtract width and height with menubar, toolbar, etc, because
+    // those are not part of the shell.
     w = gtk_widget_get_width(gui.formwin);
     h = gtk_widget_get_height(gui.formwin);
-    w -= get_menu_tool_width();
-    h -= get_menu_tool_height();
     gui_resize_shell(w, h);
 }
 
@@ -968,7 +963,13 @@ gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
 gui_mch_enable_menu(int showit)
 {
     if (gui.menubar != NULL)
+    {
 	gtk_widget_set_visible(gui.menubar, showit);
+	// Draw area might become blank after this for some reason, queue a
+	// redraw, same for toolbar as well.
+	if (gui.drawarea != NULL)
+	    gtk_widget_queue_draw(gui.drawarea);
+    }
 }
 #endif
 
@@ -982,6 +983,8 @@ gui_mch_show_toolbar(int showit)
 	if (showit)
 	    vim_toolbar_set_style(VIM_TOOLBAR(gui.toolbar),
 		    toolbar_flags, tbis_flags);
+	if (gui.drawarea != NULL)
+	    gtk_widget_queue_draw(gui.drawarea);
     }
 }
 #endif
@@ -2339,10 +2342,10 @@ menubar_popover_closed_hook(GSignalInvocationHint *ihint UNUSED,
 }
 #endif
 
-#ifndef USE_GTK4_SNAPSHOT
     static void
 drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 {
+#ifndef USE_GTK4_SNAPSHOT
     int w, h;
 
     // Use formwin size since drawarea may not have its final size yet
@@ -2363,10 +2366,10 @@ drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
     if (gui.surface != NULL)
 	cairo_surface_destroy(gui.surface);
     gui.surface = create_backing_surface(w, h);
+#endif
 
     gui_mch_new_colors();
 }
-#endif
 
     static void
 drawarea_unrealize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
@@ -2384,42 +2387,8 @@ drawarea_unrealize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 }
 
 #ifndef USE_GTK4_SNAPSHOT
-// Debounced resize: drawarea_resize_cb only resizes the backing surface
-// (preserving old content) and (re)arms a short timeout. The actual
-// gui_resize_shell() runs from drawarea_resize_apply_cb once the user has
-// stopped dragging for ~100 ms, by which time no input is pending and
-// update_screen() will not bail in screenclear()'s wake.
-static guint drawarea_resize_timeout_id = 0;
-static int drawarea_resize_pending_w = 0;
-static int drawarea_resize_pending_h = 0;
-
-    static gboolean
-drawarea_resize_apply_cb(gpointer data UNUSED)
-{
-    int width = drawarea_resize_pending_w;
-    int height = drawarea_resize_pending_h;
-
-    drawarea_resize_timeout_id = 0;
-
-    if (width <= 0 || height <= 0)
-	return G_SOURCE_REMOVE;
-    if (updating_screen)
-    {
-	drawarea_resize_timeout_id = g_timeout_add(50,
-		drawarea_resize_apply_cb, NULL);
-	return G_SOURCE_REMOVE;
-    }
-
-    gui.force_redraw = TRUE;
-    gui_resize_shell(width, height);
-    if (gui.in_use)
-	redraw_all_later(UPD_CLEAR);
-    return G_SOURCE_REMOVE;
-}
-
-    static void
-drawarea_resize_cb(GtkDrawingArea *area UNUSED, int width, int height,
-	gpointer data UNUSED)
+    void
+gui_gtk4_resize(int width, int height)
 {
     cairo_t *cr;
     cairo_surface_t *old_surface;
@@ -2427,9 +2396,6 @@ drawarea_resize_cb(GtkDrawingArea *area UNUSED, int width, int height,
 
     if (width <= 0 || height <= 0)
 	return;
-
-    drawarea_resize_pending_w = width;
-    drawarea_resize_pending_h = height;
 
     // Keep the backing surface in sync with the drawing area so GTK keeps
     // showing the previous frame. Re-creating it preserves the old
@@ -2465,13 +2431,6 @@ drawarea_resize_cb(GtkDrawingArea *area UNUSED, int width, int height,
 	    cairo_destroy(cr);
 	}
     }
-
-    // Debounce: (re)arm the apply timeout, so gui_resize_shell() only
-    // runs once the resize stream settles.
-    if (drawarea_resize_timeout_id != 0)
-	g_source_remove(drawarea_resize_timeout_id);
-    drawarea_resize_timeout_id = g_timeout_add(100,
-	    drawarea_resize_apply_cb, NULL);
 }
 
     static void
@@ -4977,20 +4936,41 @@ gui_mch_update_scrollbar_size(void)
     void
 gui_mch_set_text_area_pos(int x, int y, int w, int h)
 {
+    // "h" may be negative especially when draw area size is smaller than
+    // "gui.char_height".
+    if (w <= 0 || h <= 0)
+	return;
     last_text_area_w = w;
     last_text_area_h = h;
-    // Don't use vim_form_move_resize for drawarea because its
-    // set_size_request would prevent the window from shrinking.
-    // Just update position; the actual allocation is handled by
-    // vim_form_size_allocate which gives drawarea the formwin's full size.
-    vim_form_move(VIM_FORM(gui.formwin), gui.drawarea, x, y);
 
-    // Surface sizing is owned by drawarea_resize_cb; don't recreate it
-    // here. Recreating on every text-area change wiped any preserved
-    // content whenever a sub-cell resize shifted the cell grid, and
-    // update_screen() may bail (char_avail()) during a drag and leave
-    // the fresh surface blank.
+    vim_form_move_resize(VIM_FORM(gui.formwin), gui.drawarea, x, y, w, h);
 }
+
+#ifdef USE_GTK4_SNAPSHOT
+/*
+ * Calculate the number of pixels to bleed background color to. Should be called
+ * after all UI elements are positioned and resized.
+ */
+    void
+gui_gtk_calculate_bleed(int width, int height)
+{
+    gui.bleed_right = width - last_text_area_w;
+    gui.bleed_bot = height - last_text_area_h;
+
+    if (gui.which_scrollbars[SBAR_LEFT])
+	gui.bleed_right -= gui.scrollbar_width;
+    if (gui.which_scrollbars[SBAR_RIGHT])
+	gui.bleed_right -= gui.scrollbar_width;
+    if (gui.which_scrollbars[SBAR_BOTTOM])
+	gui.bleed_bot -= gui.scrollbar_height;
+
+    // Not sure if this can happen, but be safe...
+    if (gui.bleed_right < 0)
+	gui.bleed_right = 0;
+    if (gui.bleed_bot < 0)
+	gui.bleed_bot = 0;
+}
+#endif
 
 /*
  * ============================================================
