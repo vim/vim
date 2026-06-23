@@ -5448,6 +5448,9 @@ typedef struct
     GtkWidget *mcase;	    // Match case check
     GtkWidget *up;	    // Direction up radio
     GtkWidget *down;	    // Direction down radio
+    GtkWidget *find;	    // 'Find Next' action button
+    GtkWidget *replace;	    // 'Replace With' action button
+    GtkWidget *all;	    // 'Replace All' action button
 } SharedFindReplace;
 
 static SharedFindReplace find_widgets = {0};
@@ -5499,6 +5502,65 @@ dialog_destroyed_cb(GtkWidget *widget UNUSED, gpointer data)
 }
 
     static void
+entry_changed_cb(GtkWidget *entry, GtkWidget *dialog)
+{
+    const gchar	*entry_text;
+    gboolean	nonempty;
+
+    entry_text = gtk_editable_get_text(GTK_EDITABLE(entry));
+
+    if (!entry_text)
+	return; // Shouldn't happen
+
+    nonempty = (entry_text[0] != '\0');
+
+    if (dialog == find_widgets.dialog)
+	gtk_widget_set_sensitive(find_widgets.find, nonempty);
+
+    if (dialog == repl_widgets.dialog)
+    {
+	gtk_widget_set_sensitive(repl_widgets.find, nonempty);
+	gtk_widget_set_sensitive(repl_widgets.replace, nonempty);
+	gtk_widget_set_sensitive(repl_widgets.all, nonempty);
+    }
+}
+
+    static void
+hide_frdp_dialog(GtkWidget *widget UNUSED, void *udata)
+{
+    gtk_widget_set_visible(GTK_WIDGET(udata), FALSE);
+}
+
+    static gboolean
+find_key_pressed_cb(
+	GtkEventControllerKey	*controller,
+	guint			keyval,
+	guint			keycode,
+	GdkModifierType		state,
+	SharedFindReplace	*frdp)
+{
+    // If the user is holding one of the key modifiers we will just bail out,
+    // thus preserving the possibility of normal focus traversal.
+    if (state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
+	return FALSE;
+
+    // the Escape key synthesizes a cancellation action
+    if (keyval == GDK_KEY_Escape)
+    {
+	gtk_widget_set_visible(frdp->dialog, FALSE);
+	return TRUE;
+    }
+
+    return FALSE;
+}
+
+    static void
+entry_activate_cb(GtkWidget *widget UNUSED, void *udata)
+{
+    gtk_widget_grab_focus(GTK_WIDGET(udata));
+}
+
+    static void
 find_replace_dialog_create(char_u *arg, int do_replace)
 {
     SharedFindReplace	*frdp;
@@ -5507,6 +5569,7 @@ find_replace_dialog_create(char_u *arg, int do_replace)
     int			mcase = !p_ic;
     GtkWidget		*vertbox, *grid, *hbox, *tmp, *btn;
     gboolean		sensitive;
+    GtkEventController	*key_controller;
 
     frdp = do_replace ? &repl_widgets : &find_widgets;
     entry_text = get_find_dialog_text(arg, &wword, &mcase);
@@ -5519,7 +5582,7 @@ find_replace_dialog_create(char_u *arg, int do_replace)
     }
 
     // If the dialog already exists, just raise it.
-    if (frdp->dialog)
+    if (frdp->dialog != NULL)
     {
 	if (entry_text != NULL)
 	{
@@ -5531,7 +5594,15 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 		    (gboolean)mcase);
 	}
 	gtk_window_present(GTK_WINDOW(frdp->dialog));
+
+	// For :promptfind dialog, always give keyboard focus to 'what' entry.
+	// For :promptrepl dialog, give it to 'with' entry if 'what' has a
+	// non-empty entry; otherwise, to 'what' entry.
 	gtk_widget_grab_focus(frdp->what);
+	if (do_replace && g_utf8_strlen(
+		    gtk_editable_get_text(GTK_EDITABLE(frdp->what)), -1) > 0)
+	    gtk_widget_grab_focus(frdp->with);
+
 	vim_free(entry_text);
 	return;
     }
@@ -5543,7 +5614,7 @@ find_replace_dialog_create(char_u *arg, int do_replace)
     gtk_window_set_destroy_with_parent(GTK_WINDOW(frdp->dialog), TRUE);
     gtk_window_set_title(GTK_WINDOW(frdp->dialog),
 	    do_replace ? _("VIM - Search and Replace...")
-		       : _("VIM - Search..."));
+	    : _("VIM - Search..."));
     gtk_window_set_resizable(GTK_WINDOW(frdp->dialog), FALSE);
 
     g_signal_connect(frdp->dialog, "destroy",
@@ -5572,6 +5643,8 @@ find_replace_dialog_create(char_u *arg, int do_replace)
     sensitive = (entry_text != NULL && entry_text[0] != NUL);
     if (entry_text != NULL)
 	gtk_editable_set_text(GTK_EDITABLE(frdp->what), (char *)entry_text);
+    g_signal_connect(G_OBJECT(frdp->what), "activate",
+	    G_CALLBACK(entry_activate_cb), frdp->what);
     gtk_grid_attach(GTK_GRID(grid), frdp->what, 1, 0, 1, 1);
 
     if (do_replace)
@@ -5584,7 +5657,17 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 	frdp->with = gtk_entry_new();
 	gtk_widget_set_hexpand(frdp->with, TRUE);
 	gtk_grid_attach(GTK_GRID(grid), frdp->with, 1, 1, 1, 1);
+	gtk_entry_set_activates_default(GTK_ENTRY(frdp->with), TRUE);
+
+	// Make the entry activation only change the input focus onto the
+	// with item.
+	gtk_entry_set_activates_default(GTK_ENTRY(frdp->what), FALSE);
+	g_signal_connect(G_OBJECT(frdp->what), "activate",
+		G_CALLBACK(entry_activate_cb), frdp->with);
     }
+    else
+	// Make the entry activation do the search.
+	gtk_entry_set_activates_default(GTK_ENTRY(frdp->what), TRUE);
 
     // Checkboxes
     hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
@@ -5623,6 +5706,18 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 
     btn = gtk_button_new_with_label(_("Find Next"));
     gtk_widget_set_sensitive(btn, sensitive);
+    frdp->find = btn;
+
+    key_controller = gtk_event_controller_key_new();
+    g_signal_connect(key_controller, "key-pressed",
+	    G_CALLBACK(find_key_pressed_cb), frdp);
+    gtk_widget_add_controller(GTK_WIDGET(frdp->dialog), key_controller);
+
+    g_signal_connect(G_OBJECT(frdp->what), "changed",
+	    G_CALLBACK(entry_changed_cb), frdp->dialog);
+
+    // Make it so that when entry is activated, this button will be activated.
+    gtk_window_set_default_widget(GTK_WINDOW(frdp->dialog), btn);
     g_signal_connect(btn, "clicked", G_CALLBACK(find_replace_cb),
 	    GINT_TO_POINTER(do_replace ? FRD_R_FINDNEXT : FRD_FINDNEXT));
     gtk_box_append(GTK_BOX(hbox), btn);
@@ -5630,25 +5725,24 @@ find_replace_dialog_create(char_u *arg, int do_replace)
     if (do_replace)
     {
 	btn = gtk_button_new_with_label(_("Replace"));
+	gtk_widget_set_sensitive(btn, sensitive);
 	g_signal_connect(btn, "clicked", G_CALLBACK(find_replace_cb),
 		GINT_TO_POINTER(FRD_REPLACE));
+	frdp->replace = btn;
 	gtk_box_append(GTK_BOX(hbox), btn);
 
 	btn = gtk_button_new_with_label(_("Replace All"));
+	gtk_widget_set_sensitive(btn, sensitive);
 	g_signal_connect(btn, "clicked", G_CALLBACK(find_replace_cb),
 		GINT_TO_POINTER(FRD_REPLACEALL));
+	frdp->all = btn;
 	gtk_box_append(GTK_BOX(hbox), btn);
     }
 
     btn = gtk_button_new_with_label(_("Close"));
-    g_signal_connect_swapped(btn, "clicked",
-	    G_CALLBACK(gtk_window_destroy), frdp->dialog);
+    g_signal_connect(btn, "clicked",
+	    G_CALLBACK(hide_frdp_dialog), frdp->dialog);
     gtk_box_append(GTK_BOX(hbox), btn);
-
-    // Connect Enter key in entry to Find Next
-    g_signal_connect_swapped(frdp->what, "activate",
-	    G_CALLBACK(find_replace_cb),
-	    GINT_TO_POINTER(do_replace ? FRD_R_FINDNEXT : FRD_FINDNEXT));
 
     gtk_window_present(GTK_WINDOW(frdp->dialog));
     gtk_widget_grab_focus(frdp->what);
