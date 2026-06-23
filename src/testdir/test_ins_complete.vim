@@ -1025,6 +1025,24 @@ func Test_pum_with_preview_win()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_pum_statusline_ruler()
+  CheckScreendump
+
+  " With a status line, the ruler must follow the real cursor column after a
+  " completion inserts text, not stay at the completion start column.
+  let lines =<< trim END
+    call setline(1, 'aa aaa ')
+    set laststatus=2 ruler
+  END
+  call writefile(lines, 'Xstlruler', 'D')
+  let buf = RunVimInTerminal('-S Xstlruler', #{rows: 8, cols: 40})
+  call term_sendkeys(buf, "A\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pum_statusline_ruler_1', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_scrollbar_on_wide_char()
   CheckScreendump
 

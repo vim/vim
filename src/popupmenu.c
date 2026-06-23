@@ -290,8 +290,10 @@ pum_compute_horizontal_placement(int cursor_col)
 pum_display(
 	pumitem_T   *array,
 	int	    size,
-	int	    selected)   // index of initially selected item, -1 if
+	int	    selected,   // index of initially selected item, -1 if
 				// out of range
+	int	    pum_wcol)   // screen column to align the menu to, or -1
+				// to use the cursor column
 {
     int	    cursor_col;
     int	    above_row;
@@ -326,7 +328,7 @@ pum_display(
 	    pum_win_row = curwin->w_wrow + W_WINROW(curwin);
 	pum_win_height = curwin->w_height;
 	pum_win_col = curwin->w_wincol;
-	pum_win_wcol = curwin->w_wcol;
+	pum_win_wcol = pum_wcol >= 0 ? pum_wcol : curwin->w_wcol;
 	pum_win_width = curwin->w_width;
 
 #if defined(FEAT_QUICKFIX)
@@ -359,8 +361,9 @@ pum_display(
 	    cursor_col = cmdline_compl_startcol();
 	else
 	{
-	    // w_wcol includes virtual text "above"
-	    int wcol = curwin->w_wcol % curwin->w_width;
+	    int wcol = pum_wcol >= 0 ? pum_wcol : curwin->w_wcol;
+	    // w_wcol includes virtual text "above".
+	    wcol %= curwin->w_width;
 #ifdef FEAT_CONCEAL
 	    // w_wcol does not account for text concealed before the cursor;
 	    // shift by the offset win_line() recorded for the cursor line so the
@@ -1671,16 +1674,11 @@ pum_may_redraw(void)
     }
     else
     {
-	int wcol = curwin->w_wcol;
-
 	// Window layout changed, recompute the position.
 	// Use the remembered w_wcol value, the cursor may have moved when a
 	// completion was inserted, but we want the menu in the same position.
 	pum_undisplay();
-	curwin->w_wcol = pum_win_wcol;
-	curwin->w_valid |= VALID_WCOL;
-	pum_display(array, len, selected);
-	curwin->w_wcol = wcol;
+	pum_display(array, len, selected, pum_win_wcol);
     }
 }
 

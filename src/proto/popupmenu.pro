@@ -2,7 +2,7 @@
 void pum_set_border(int enable);
 void pum_set_shadow(int enable);
 void pum_set_margin(int enable);
-void pum_display(pumitem_T *array, int size, int selected);
+void pum_display(pumitem_T *array, int size, int selected, int pum_wcol);
 void pum_call_update_screen(void);
 int pum_under_menu(int row, int col, int only_redrawing);
 void pum_opacity_changed(void);
