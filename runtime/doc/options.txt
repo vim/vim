@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Jun 17
+*options.txt*	For Vim version 9.2.  Last change: 2026 Jun 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6458,7 +6458,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  x	<number>	any X11 pointer number (see X11/cursorfont.h)
 
 	The "avail" column contains a 'w' if the shape is available for Win32,
-	x for X11 (including GTK+ 2), g for GTK+ 3.
+	x for X11 (including GTK+ 2), g for GTK+ 3 and GTK 4.
 	Any modes not specified or shapes not available use the normal mouse
 	pointer.
 
