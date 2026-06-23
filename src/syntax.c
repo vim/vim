@@ -3834,9 +3834,22 @@ syn_cmd_list(
 	    msg_puts(_("syncing on C-style comments"));
 	    syn_lines_msg();
 	    syn_match_msg();
-	    return;
 	}
-	else if (!(curwin->w_s->b_syn_sync_flags & SF_MATCH))
+	else if (curwin->w_s->b_syn_sync_flags & SF_MATCH)
+	{
+	    msg_puts_title(_("\n--- Syntax sync items ---"));
+	    if (curwin->w_s->b_syn_sync_minlines > 0
+		|| curwin->w_s->b_syn_sync_maxlines > 0
+		|| curwin->w_s->b_syn_sync_linebreaks > 0)
+	    {
+		msg_puts(_("\nsyncing on items"));
+		syn_lines_msg();
+		syn_match_msg();
+	    }
+	    for (id = 1; id <= highlight_num_groups() && !got_int; ++id)
+		syn_list_one(id, syncing, FALSE);
+	}
+	else
 	{
 	    if (curwin->w_s->b_syn_sync_minlines == 0)
 		msg_puts(_("no syncing"));
@@ -3852,20 +3865,11 @@ syn_cmd_list(
 		}
 		syn_match_msg();
 	    }
-	    return;
 	}
-	msg_puts_title(_("\n--- Syntax sync items ---"));
-	if (curwin->w_s->b_syn_sync_minlines > 0
-		|| curwin->w_s->b_syn_sync_maxlines > 0
-		|| curwin->w_s->b_syn_sync_linebreaks > 0)
-	{
-	    msg_puts(_("\nsyncing on items"));
-	    syn_lines_msg();
-	    syn_match_msg();
-	}
+	return;
     }
-    else
-	msg_puts_title(_("\n--- Syntax items ---"));
+
+    msg_puts_title(_("\n--- Syntax items ---"));
     if (ends_excmd2(eap->cmd, arg))
     {
 	/*
