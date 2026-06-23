@@ -5046,7 +5046,7 @@ gui_mch_browse(int saving,
 	char_u *dflt,
 	char_u *ext UNUSED,
 	char_u *initdir,
-	char_u *filter UNUSED)
+	char_u *filter)
 {
     GtkFileDialog   *dlg;
     FileDialogData  fdd;
@@ -5086,36 +5086,41 @@ gui_mch_browse(int saving,
 
 	gfilter = gtk_file_filter_new();
 	patt = alloc(STRLEN(filter));
-	while (p != NULL && *p != NUL)
+	if (patt != NULL)
 	{
-	    if (*p == '\n' || *p == ';' || *p == '\t')
+	    while (p != NULL && *p != NUL)
 	    {
-		STRNCPY(patt, filter, i);
-		patt[i] = '\0';
-		if (*p == '\t')
-		    gtk_file_filter_set_name(gfilter, (gchar *)patt);
+		if (*p == '\n' || *p == ';' || *p == '\t')
+		{
+		    STRNCPY(patt, filter, i);
+		    patt[i] = '\0';
+		    if (*p == '\t')
+			gtk_file_filter_set_name(gfilter, (gchar *)patt);
+		    else
+		    {
+			gtk_file_filter_add_pattern(gfilter, (gchar *)patt);
+			if (*p == '\n')
+			{
+			    g_list_store_append(filters, gfilter);
+			    g_object_unref(gfilter);
+			    if (*(p + 1) != NUL)
+				gfilter = gtk_file_filter_new();
+			}
+		    }
+		    filter = ++p;
+		    i = 0;
+		}
 		else
 		{
-		    gtk_file_filter_add_pattern(gfilter, (gchar *)patt);
-		    if (*p == '\n')
-		    {
-			g_list_store_append(filters, gfilter);
-			if (*(p + 1) != NUL)
-			    gfilter = gtk_file_filter_new();
-		    }
+		    p++;
+		    i++;
 		}
-		filter = ++p;
-		i = 0;
-	    }
-	    else
-	    {
-		p++;
-		i++;
 	    }
 	}
 	vim_free(patt);
     }
     gtk_file_dialog_set_filters(dlg, G_LIST_MODEL(filters));
+    g_object_unref(filters);
 
     if (saving && dflt != NULL && *dflt != NUL)
 	gtk_file_dialog_set_initial_name(dlg, (const char *)dflt);
