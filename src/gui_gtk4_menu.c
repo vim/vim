@@ -173,18 +173,36 @@ vim_menu_bar_set_active_item(
     // Do nothing if currently active item is "item", or if there is not
     // currently active item. User must click a menu item first for menus to
     // automatically appear on hover. This is unless "force" is TRUE.
+    //
+    // Only make item selected if there is no active item (no submenu open), or
+    // if the item was set as the active item..
     if ((!force && self->active_item == NULL)
 	    || self->active_item == GTK_WIDGET(item))
+    {
+	if (self->active_item == NULL)
+	    gtk_widget_set_state_flags(GTK_WIDGET(item),
+		    GTK_STATE_FLAG_SELECTED, FALSE);
 	return;
+    }
 
     if (self->active_item != NULL)
+    {
+	// Call this before popdown, since "closed" signal may be emitted
+	// immediately.
+	gtk_widget_unset_state_flags(self->active_item,
+		GTK_STATE_FLAG_SELECTED);
 	gtk_popover_popdown(GTK_POPOVER(
 		    VIM_MENU_BAR_ITEM(self->active_item)->menu)
 		);
+    }
 
     self->active_item = GTK_WIDGET(item);
     if (item != NULL)
+    {
 	gtk_popover_popup(GTK_POPOVER(item->menu));
+	gtk_widget_set_state_flags(GTK_WIDGET(item),
+		GTK_STATE_FLAG_SELECTED, FALSE);
+    }
 }
 
     static void
@@ -195,23 +213,9 @@ vim_menu_bar_item_enter_cb(
 	VimMenuBar	    *menubar)
 {
     VimMenuBarItem  *self;
-    GtkWidget	    *cur;
 
     self = VIM_MENU_BAR_ITEM(gtk_event_controller_get_widget(controller));
-    cur = menubar->active_item;
-
     vim_menu_bar_set_active_item(menubar, self, FALSE);
-
-    // Only make item selected if there is no active item (no submenu open), or
-    // if the active item is the item.
-    if (menubar->active_item == NULL
-	    || menubar->active_item == GTK_WIDGET(self))
-	gtk_widget_set_state_flags(GTK_WIDGET(self),
-		GTK_STATE_FLAG_SELECTED, FALSE);
-
-    // Deselect previous item if the active item changed.
-    if (cur != NULL && cur != GTK_WIDGET(self))
-	gtk_widget_unset_state_flags(cur, GTK_STATE_FLAG_SELECTED);
 }
 
     static void
