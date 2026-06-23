@@ -563,9 +563,8 @@ vim_menu_select_active_item(VimMenu *self, gboolean open)
 
     if (open && VIM_MENU_ITEM(self->active_item)->submenu != NULL)
     {
-	gtk_popover_popup(GTK_POPOVER(
-		    VIM_MENU_ITEM(self->active_item)->submenu
-		    ));
+	GtkWidget *submenu = VIM_MENU_ITEM(self->active_item)->submenu;
+	gtk_popover_popup(GTK_POPOVER(submenu));
 	return TRUE;
     }
     return FALSE;
@@ -707,21 +706,17 @@ vim_menu_key_pressed_cb(
 	case GDK_KEY_KP_Down:
 	case GDK_KEY_Up:
 	case GDK_KEY_KP_Up:
-	case GDK_KEY_k:
-	case GDK_KEY_j:
 	case GDK_KEY_Tab:
 	case GDK_KEY_KP_Tab:
 	case GDK_KEY_ISO_Left_Tab:
 	    // Go to the previous or next item if any
 	    widget = vim_menu_move_active_item(self,
 		    (state & GDK_SHIFT_MASK)
-		    || keyval == GDK_KEY_Up
-		    || keyval == GDK_KEY_k? -1 : 1);
+		    || keyval == GDK_KEY_Up ? -1 : 1);
 	    vim_menu_set_active_item(self, VIM_MENU_ITEM(widget), FALSE);
 	    self->ignore_hover = TRUE;
 	    return TRUE;
 	case GDK_KEY_Left:
-	case GDK_KEY_h:
 	    // Pressing control switches menu bar item.
 	    if (state & GDK_CONTROL_MASK)
 	    {
@@ -744,7 +739,6 @@ vim_menu_key_pressed_cb(
 	    vim_menu_reset_parent_prelight(self);
 	    return TRUE;
 	case GDK_KEY_Right:
-	case GDK_KEY_l:
 	    if (state & GDK_CONTROL_MASK)
 	    {
 		VimMenuBar *menubar = GET_MENU_BAR(self);
@@ -806,11 +800,18 @@ vim_menu_motion_cb(
 }
 
     static void
+vim_menu_focus_cb(GtkEventController *controller UNUSED, VimMenu *self)
+{
+    gtk_popover_set_mnemonics_visible(GTK_POPOVER(self), TRUE);
+}
+
+    static void
 vim_menu_init(VimMenu *self)
 {
     GtkEventController	*controller;
     GtkWidget		*stack;
     GtkWidget		*parent_box;
+    GListModel		*controllers;
 
     gtk_popover_set_has_arrow(GTK_POPOVER(self), FALSE);
     gtk_popover_set_autohide(GTK_POPOVER(self), TRUE);
@@ -855,12 +856,30 @@ vim_menu_init(VimMenu *self)
 	    self, G_CONNECT_DEFAULT);
     gtk_widget_add_controller(GTK_WIDGET(self), controller);
 
+    // Show mnemonic underline always
+    controller = gtk_event_controller_focus_new();
+    g_signal_connect_object(controller, "enter",
+	    G_CALLBACK(vim_menu_focus_cb), self, G_CONNECT_DEFAULT);
+    gtk_widget_add_controller(GTK_WIDGET(self), controller);
+
     controller = gtk_event_controller_motion_new();
     g_signal_connect_object(controller, "motion",
 	    G_CALLBACK(vim_menu_motion_cb), self, G_CONNECT_DEFAULT);
     gtk_widget_add_controller(GTK_WIDGET(self), controller);
 
     g_signal_connect(self, "closed", G_CALLBACK(vim_menu_closed_cb), NULL);
+
+    // Set all shortcut controllers in the window to not require a modifier for
+    // mnemonics.
+    controllers = gtk_widget_observe_controllers(GTK_WIDGET(self));
+    for (int i = 0; i < g_list_model_get_n_items(controllers); i++)
+    {
+	controller = g_list_model_get_item(controllers, i);
+	if (GTK_IS_SHORTCUT_CONTROLLER(controller))
+	    gtk_shortcut_controller_set_mnemonics_modifiers(
+		    GTK_SHORTCUT_CONTROLLER(controller), 0);
+    }
+    g_object_unref(controllers);
 
     self->prev_x = self->prev_y = -1;
 }
@@ -924,7 +943,7 @@ vim_menu_item_enter_cb(
 
     if (menu->ignore_hover || !gtk_event_controller_motion_contains_pointer(
 		GTK_EVENT_CONTROLLER_MOTION(controller)))
-	    return;
+	return;
 
     self = VIM_MENU_ITEM(gtk_event_controller_get_widget(controller));
     vim_menu_set_active_item(menu, self, TRUE);
@@ -937,7 +956,7 @@ vim_menu_item_leave_cb(GtkEventController *controller, VimMenu *menu)
 
     if (gtk_event_controller_motion_contains_pointer(
 		GTK_EVENT_CONTROLLER_MOTION(controller)))
-	    return;
+	return;
 
     self = VIM_MENU_ITEM(gtk_event_controller_get_widget(controller));
     if (menu->active_item == GTK_WIDGET(self))

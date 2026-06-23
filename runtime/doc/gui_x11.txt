@@ -785,12 +785,13 @@ both by choosing to use either of the "* or "+ registers.
 							*gtk4-menu-navigation*
 In the GTK 4 GUI, you may also navigate the menu items with these keyboard
 mappings:
-    j <Tab> <Down>	Go to next item
-    k <S-Tab> <Up>	Go to previous item
-    h <Left>		Go to parent submenu
-    l <Right>		Go to current item's submenu
-    CTRL-L <C-Left>	Go to next menu bar item
-    CTRL-H <C-Right>	Go to previous menu bar item
+    key			meaning ~
+    <Tab> <Down>	Go to next item
+    <S-Tab> <Up>	Go to previous item
+    <Left>		Go to parent submenu
+    <Right>		Go to current item's submenu
+    <C-Left>		Go to next menu bar item
+    <C-Right>		Go to previous menu bar item
 
 
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:
