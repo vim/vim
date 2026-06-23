@@ -9865,13 +9865,13 @@ server2client({clientid}, {string})			*server2client()*
 		Return type: |Number|
 
 
-serverlist([{list}])					*serverlist()*
+serverlist([{dict}])					*serverlist()*
 		Return a list of available server names, one per line.
 		When there are no servers or the information is not available
 		an empty string is returned.
 		{only available when compiled with the |+clientserver| feature}
 
-		If {list} is given, then it is a |Dictionary| supporting the
+		If {dict} is given, then it is a |Dictionary| supporting the
 		following options:
 		    key		type		meaning ~
 		    list	|Boolean|	Return a list of strings,

@@ -3600,6 +3600,13 @@ def Test_remote_startserver()
   v9.CheckSourceDefAndScriptFailure(['remote_startserver({})'], ['E1013: Argument 1: type mismatch, expected string but got dict<any>', 'E1174: String required for argument 1'])
 enddef
 
+def Test_remote_serverlist()
+  CheckFeature clientserver
+
+  v9.CheckSourceDefAndScriptFailure(['serverlist("")'], ['E1013: Argument 1: type mismatch, expected dict<any> but got string', 'E1206: Dictionary required for argument 1'])
+  v9.CheckSourceScriptFailure(['vim9script', 'serverlist({list: ""})'], 'E1135: Using a String as a Bool: ""')
+enddef
+
 def Test_remove_literal_list()
   var l: list<number> = [1, 2, 3, 4]
   assert_equal([1, 2], remove(l, 0, 1))

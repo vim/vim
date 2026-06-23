@@ -647,14 +647,14 @@ serverGetVimNames(Display *dpy)
 	    return NULL;
     }
 
+    list = list_alloc();
+    if (list == NULL)
+	return NULL;
+
     /*
      * Read the registry property.
      */
     if (GetRegProp(dpy, &regProp, &numItems, TRUE) == FAIL)
-	return NULL;
-
-    list = list_alloc();
-    if (list == NULL)
 	return NULL;
 
     /*

@@ -1257,10 +1257,10 @@ f_server2client(typval_T *argvars UNUSED, typval_T *rettv)
     void
 f_serverlist(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    list_T  *list;
+    list_T  *list = NULL;
     bool    use_list = false;
 
-    if (in_vim9script() && check_for_opt_dict_arg(argvars, 0) == FAIL)
+    if (check_for_opt_dict_arg(argvars, 0) == FAIL)
 	return;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
@@ -1288,7 +1288,7 @@ f_serverlist(typval_T *argvars UNUSED, typval_T *rettv)
     }
 #  endif
 # endif
-    if (use_list)
+    if (use_list && list != NULL)
     {
 	list->lv_refcount++;
 	rettv->v_type = VAR_LIST;
@@ -1302,7 +1302,7 @@ f_serverlist(typval_T *argvars UNUSED, typval_T *rettv)
 
 	if (list != NULL)
 	{
-	    list_join(&ga, list, (char_u *)"\n", true, false, 0);
+	    list_join(&ga, list, (char_u *)"\n", TRUE, FALSE, 0);
 	    ga_append(&ga, NUL);
 	    list_free(list);
 	}
