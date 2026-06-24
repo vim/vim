@@ -3784,7 +3784,6 @@ $quote	eval.txt	/*$quote*
 :yank	change.txt	/*:yank*
 :z	various.txt	/*:z*
 :z!	various.txt	/*:z!*
-:z#	various.txt	/*:z#*
 :~	change.txt	/*:~*
 ;	motion.txt	/*;*
 <	change.txt	/*<*
@@ -4698,7 +4697,6 @@ E1436	vim9class.txt	/*E1436*
 E1437	eval.txt	/*E1437*
 E1438	vim9.txt	/*E1438*
 E1439	vim9.txt	/*E1439*
-E144	various.txt	/*E144*
 E145	starting.txt	/*E145*
 E146	change.txt	/*E146*
 E147	repeat.txt	/*E147*

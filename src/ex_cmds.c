@@ -3821,6 +3821,7 @@ ex_z(exarg_T *eap)
     linenr_T	start, end, curs, i;
     int		j;
     linenr_T	lnum = eap->line2;
+    long	window = p_window;
 
     // Vi compatible: ":z!" uses display height, without a count uses
     // 'scroll'
@@ -3843,23 +3844,32 @@ ex_z(exarg_T *eap)
 
     if (*x != 0)
     {
-	if (!VIM_ISDIGIT(*x))
-	{
-	    emsg(_(e_non_numeric_argument_to_z));
-	    return;
-	}
-	else
-	{
-	    bigness = atol((char *)x);
+	x = skipwhite(x);
 
-	    // bigness could be < 0 if atol(x) overflows.
-	    if (bigness > 2 * curbuf->b_ml.ml_line_count || bigness < 0)
+	if (VIM_ISDIGIT(*x))
+	{
+	    bigness = getdigits(&x);
+
+	    if (bigness > 2 * curbuf->b_ml.ml_line_count)
 		bigness = 2 * curbuf->b_ml.ml_line_count;
 
-	    p_window = bigness;
+	    window = bigness;
 	    if (*kind == '=')
 		bigness += 2;
 	}
+
+	eap->arg = skipwhite(x);
+	// trailing flags, leading flags are also allowed for backward
+	// compatibility and handled by the general EX_FLAGS parsing
+	get_flags(eap);
+
+	if (*eap->arg != NUL)
+	{
+	    semsg(_(e_trailing_characters_str), eap->arg);
+	    return;
+	}
+
+	p_window = window;
     }
 
     // the number of '-' and '+' multiplies the distance
