@@ -53,7 +53,7 @@ syn iskeyword @,48-57,192-255,-
 " Case sensitive matches
 syn case match
 
-syn keyword cabalConditional	if else
+syn keyword cabalConditional	if elif else
 syn keyword cabalFunction	os arche impl flag
 syn match cabalComment		/--.*$/
 
