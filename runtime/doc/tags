@@ -11012,6 +11012,7 @@ tempfile	change.txt	/*tempfile*
 template	autocmd.txt	/*template*
 tempname()	builtin.txt	/*tempname()*
 term++close	terminal.txt	/*term++close*
+term++noclose	terminal.txt	/*term++noclose*
 term++open	terminal.txt	/*term++open*
 term++shell	terminal.txt	/*term++shell*
 term-dependent-settings	term.txt	/*term-dependent-settings*

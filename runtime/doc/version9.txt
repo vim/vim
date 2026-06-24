@@ -52657,6 +52657,7 @@ Other ~
   not drop leading spaces |stl-%0{|.
 - Generated Session and View files are written in Vim9 script, see |:mksession|,
   |:mkview| and |:mkvimrc|
+- The "term_finish" option of term_start() supports a "noclose" value.
 
 Platform specific ~
 -----------------
