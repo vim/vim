@@ -1270,32 +1270,35 @@ gui_mch_browse(int saving,
 
 	gfilter = gtk_file_filter_new();
 	patt = alloc(STRLEN(filter));
-	while (p != NULL && *p != NUL)
+	if (patt != NULL)
 	{
-	    if (*p == '\n' || *p == ';' || *p == '\t')
+	    while (p != NULL && *p != NUL)
 	    {
-		STRNCPY(patt, filter, i);
-		patt[i] = '\0';
-		if (*p == '\t')
-		    gtk_file_filter_set_name(gfilter, (gchar *)patt);
+		if (*p == '\n' || *p == ';' || *p == '\t')
+		{
+		    STRNCPY(patt, filter, i);
+		    patt[i] = '\0';
+		    if (*p == '\t')
+			gtk_file_filter_set_name(gfilter, (gchar *)patt);
+		    else
+		    {
+			gtk_file_filter_add_pattern(gfilter, (gchar *)patt);
+			if (*p == '\n')
+			{
+			    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(fc),
+				    gfilter);
+			    if (*(p + 1) != NUL)
+				gfilter = gtk_file_filter_new();
+			}
+		    }
+		    filter = ++p;
+		    i = 0;
+		}
 		else
 		{
-		    gtk_file_filter_add_pattern(gfilter, (gchar *)patt);
-		    if (*p == '\n')
-		    {
-			gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(fc),
-								     gfilter);
-			if (*(p + 1) != NUL)
-			    gfilter = gtk_file_filter_new();
-		    }
+		    p++;
+		    i++;
 		}
-		filter = ++p;
-		i = 0;
-	    }
-	    else
-	    {
-		p++;
-		i++;
 	    }
 	}
 	vim_free(patt);
