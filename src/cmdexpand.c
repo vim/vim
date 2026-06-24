@@ -3392,9 +3392,9 @@ get_filetypecmd_arg(expand_T *xp UNUSED, int idx)
     if (idx < 0)
 	return NULL;
 
-    if (filetype_expand_what == EXP_FILETYPECMD_ALL && idx < 4)
+    if (filetype_expand_what == EXP_FILETYPECMD_ALL && idx < 5)
     {
-	char	*opts_all[] = {"indent", "plugin", "on", "off"};
+	char	*opts_all[] = {"detect", "indent", "plugin", "on", "off"};
 	return (char_u *)opts_all[idx];
     }
     if (filetype_expand_what == EXP_FILETYPECMD_PLUGIN && idx < 3)
