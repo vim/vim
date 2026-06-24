@@ -774,6 +774,21 @@ func Test_terminal_finish_open_close()
   call assert_equal('opened the buffer in a window', g:result)
   unlet g:result
   bwipe
+
+  " Test 'noclose" for term_start()
+  let cmd = Get_cat_123_cmd()
+
+  let buf = term_start(cmd, {
+        \ 'term_finish': 'noclose',
+        \ 'hidden': v:true
+        \ })
+
+  call WaitForAssert({-> assert_equal('finished', term_getstatus(buf))})
+
+  let info = getbufinfo(buf)[0]
+  call assert_equal(1, info.hidden)
+  call assert_equal(1, info.listed)
+  call assert_equal(1, info.loaded)
 endfunc
 
 func Test_terminal_cwd()
