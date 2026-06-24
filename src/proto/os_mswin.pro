@@ -48,7 +48,7 @@ char_u *mch_resolve_path(char_u *fname, int reparse_point);
 void win32_set_foreground(void);
 void serverInitMessaging(void);
 void serverSetName(char_u *name);
-char_u *serverGetVimNames(void);
+list_T *serverGetVimNames(void);
 int serverSendReply(char_u *name, char_u *reply);
 int serverSendToVim(char_u *name, char_u *cmd, char_u **result, void *ptarget, int asExpr, int timeout, int silent);
 void serverForeground(char_u *name);

@@ -540,6 +540,43 @@ func Test_clientserver_env_method()
   endtry
 endfunc
 
+" Test if serverlist() can return a list of strings
+func Test_clientserver_serverlist_list()
+  CheckNotGui
+
+  let g:test_is_flaky = 1
+  let cmd = GetVimCommand()
+
+  if cmd == ''
+    throw 'GetVimCommand() failed'
+  endif
+
+  " Don't use channel:2000, because previous tests use that and it may take a
+  " while for the channel to fully close.
+  let actual = cmd .. ' --servername XVIMTEST'
+
+  let job = job_start(actual, {'stoponexit': 'kill', 'out_io': 'null'})
+
+  call WaitForAssert({-> assert_match('XVIMTEST', serverlist())})
+
+  call assert_equal('list<string>', typename(serverlist(#{list: v:true})))
+  call assert_true(serverlist(#{list: v:true})->index('XVIMTEST') != -1)
+
+  if has('win32') || has('gui_running')
+    call job_stop(job, 'kill')
+  else
+    call system(actual .. " --remote-expr 'execute(\"qa!\")'")
+  endif
+  try
+    call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  finally
+    if job_status(job) != 'dead'
+      call assert_report('Server did not exit')
+      call job_stop(job, 'kill')
+    endif
+  endtry
+endfunc
+
 " Uncomment this line to get a debugging log
 " call ch_logfile('channellog', 'w')
 
