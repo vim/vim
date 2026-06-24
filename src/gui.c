@@ -1355,11 +1355,6 @@ gui_update_cursor(
     if (!gui.in_focus)
     {
 	gui_mch_draw_hollow_cursor(cbg);
-#if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE_CAIRO)
-# if !GTK_CHECK_VERSION(4,0,0)
-	update_popup_images();
-# endif
-#endif
 	return;
     }
 
@@ -1428,11 +1423,6 @@ gui_update_cursor(
 #endif
     }
     gui.highlight_mask = old_hl_mask;
-#if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE_CAIRO)
-# if !GTK_CHECK_VERSION(4,0,0)
-    update_popup_images();
-# endif
-#endif
 }
 
 #if defined(FEAT_MENU)
