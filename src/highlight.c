@@ -3581,7 +3581,7 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 		    under_fg_rgb = char_aep->ae_u.cterm.fg_rgb;
 #endif
 		new_en.ae_u.cterm.fg_color = blend_cterm_colors(
-			popup_aep->ae_u.cterm.bg_color, popup_bg_rgb,
+			popup_aep->ae_u.cterm.fg_color, popup_bg_rgb,
 			under_fg, under_fg_rgb, fallback_fg_rgb, blend);
 	    }
 	    // Approximate cterm bg by blending with the underlying bg
@@ -3768,7 +3768,7 @@ hl_pum_blend_attr(int char_attr, int popup_attr, int blend UNUSED)
 		    popup_bg_rgb = popup_aep->ae_u.cterm.bg_rgb;
 #endif
 		    new_en.ae_u.cterm.fg_color = blend_cterm_colors(
-			    popup_aep->ae_u.cterm.bg_color, popup_bg_rgb,
+			    popup_aep->ae_u.cterm.fg_color, popup_bg_rgb,
 			    under_fg, under_fg_rgb, fallback_fg_rgb, blend);
 		}
 		// Approximate cterm bg by blending with the underlying bg
