@@ -5238,7 +5238,7 @@ delete_def_function_contents(dfunc_T *dfunc, int mark_deleted)
     void
 unlink_def_function(ufunc_T *ufunc)
 {
-    if (ufunc->uf_dfunc_idx <= 0)
+    if (ufunc->uf_dfunc_idx <= 0 || def_functions.ga_data == NULL)
 	return;
 
     dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
