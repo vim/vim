@@ -341,8 +341,7 @@ EXTERN char e_file_not_written_writing_is_disabled_by_write_option[]
 	INIT(= N_("E142: File not written: Writing is disabled by 'write' option"));
 EXTERN char e_autocommands_unexpectedly_deleted_new_buffer_str[]
 	INIT(= N_("E143: Autocommands unexpectedly deleted new buffer %s"));
-EXTERN char e_non_numeric_argument_to_z[]
-	INIT(= N_("E144: Non-numeric argument to :z"));
+// E144 unused
 EXTERN char e_shell_commands_and_some_functionality_not_allowed_in_rvim[]
 	INIT(= N_("E145: Shell commands and some functionality not allowed in rvim"));
 EXTERN char e_regular_expressions_cant_be_delimited_by_letters[]
