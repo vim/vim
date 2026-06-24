@@ -1,7 +1,5 @@
 " Test for the surround package
 
-CheckRunVimInTerminal
-
 packadd surround
 
 func Test_basic_surround_add()

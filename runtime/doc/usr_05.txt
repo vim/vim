@@ -536,7 +536,7 @@ Once the package is loaded, read about it at: >
 More information about packages can be found here: |packages|.
 
 ------------------------------------------------------------------------------
-Adding the surround package		*surround* *package-surround*
+Adding the surround package		*surround-install* *package-surround*
 ------------------------------------------------------------------------------
 
 Load the plugin with this command: >
