@@ -1116,11 +1116,14 @@ term_write_session(FILE *fd, win_T *wp, hashtab_T *terminal_bufs)
     // Create the terminal and run the command.  This is not without
     // risk, but let's assume the user only creates a session when this
     // will be OK.
-    if (fprintf(fd, "terminal ++curwin ++cols=%d ++rows=%d ",
-		term->tl_cols, term->tl_rows) < 0)
+    if (fprintf(fd, "exe ':terminal ++curwin"
+		" ++cols=' .. ((&columns * %d + %ld) / %ld)"
+		" .. ' ++rows=' .. ((&lines * %d + %ld) / %ld) ",
+		term->tl_cols, Columns / 2, Columns,
+		term->tl_rows, Rows / 2, Rows) < 0)
 	return FAIL;
 # ifdef MSWIN
-    if (fprintf(fd, "++type=%s ", term->tl_job->jv_tty_type) < 0)
+    if (fprintf(fd, ".. ' ++type=%s' ", term->tl_job->jv_tty_type) < 0)
 	return FAIL;
 # endif
     if (term->tl_command != NULL && fputs((char *)term->tl_command, fd) < 0)
