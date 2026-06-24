@@ -92,6 +92,8 @@ vim_toolbar_init(VimToolbar *self)
     self->overflow_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
     gtk_popover_set_child(GTK_POPOVER(popover), self->overflow_box);
     gtk_popover_set_has_arrow(GTK_POPOVER(popover), FALSE);
+    // Make sure popover aligns to top right of button
+    gtk_widget_set_halign(popover, GTK_ALIGN_END);
 
     gtk_menu_button_set_popover(GTK_MENU_BUTTON(self->overflow_btn), popover);
 }
