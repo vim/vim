@@ -326,3 +326,34 @@ func Test_surround_change()
         \ 'another one ''hello \(this\) world''h',
         \] , result)
 endfunc
+
+func Test_surround_custom_pairs()
+  let lines =<< trim END
+    one "보two" 여보((세요 дважды)) два *четыре*
+    three세 four 여{(보세)}요 «это» всем 'известно'
+    five 요 ‹six› "여보세요" '여보세요' в _целом_ мире
+  END
+
+  enew
+  call setline(1, lines)
+
+  let b:surround_pairs = {
+        \ 'q': ("\n‘", "’"), 'Q': ("\n“", "”"),
+        \ 'w': ("\n‹", "›"), 'W': ("\n«", "»")
+        \}
+
+  exe "normal ysiwq"
+  exe "normal ftcssWf(cssWcsswf*cssQ"
+  exe "normal 2Gf(cs(q"
+  exe "normal WdsW"
+  exe "normal 3Gfscswq"
+  exe "normal f\"cssQf'cssq"
+  exe "normal vipSW"
+
+  let result = getline(1, '$')
+  call assert_equal([
+        \ "«‘one’ «보two» 여보«‹세요 дважды›» два “четыре”",
+        \ "three세 four 여{‘보세’}요 это всем 'известно'",
+        \ "five 요 ‘six’ “여보세요” ‘여보세요’ в _целом_ мире»",
+        \] , result)
+endfunc
