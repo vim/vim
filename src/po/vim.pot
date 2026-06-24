@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-06-22 19:36+0000\n"
+"POT-Creation-Date: 2026-06-24 17:52+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3109,6 +3109,16 @@ msgstr ""
 msgid "syncing on C-style comments"
 msgstr ""
 
+msgid ""
+"\n"
+"--- Syntax sync items ---"
+msgstr ""
+
+msgid ""
+"\n"
+"syncing on items"
+msgstr ""
+
 msgid "no syncing"
 msgstr ""
 
@@ -3119,16 +3129,6 @@ msgid "syncing starts "
 msgstr ""
 
 msgid " lines before top line"
-msgstr ""
-
-msgid ""
-"\n"
-"--- Syntax sync items ---"
-msgstr ""
-
-msgid ""
-"\n"
-"syncing on items"
 msgstr ""
 
 msgid ""
