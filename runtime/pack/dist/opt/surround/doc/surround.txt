@@ -15,20 +15,20 @@ The surround.vim package allows to
 
 It defines the following mappings:
 
-							*surround_o_ys*
+							*o_ys*
 ys{motion}{char}	to surround with {char} for the selected motion
 							*surround_v_S*
 {Visual}S{char}		to surround with {char} the highlighted text.
-							*surround_ds*
+							*ds*
 ds{char}		to delete {char} surrounding text around the cursor.
-							*surround_cs*
+							*cs*
 cs{char1}{char2}	to change {char1} surrounding text around the cursor to
 			{char2}.
 
 Since ys operates on a motion, it can be used with any motion, for example _
 to surround the current line, or ip to surround the current paragraph.
 Default mapping is defined for `ys_`:
-							*surround_yss*
+							*yss*
 yss{char}		to surround current line (same as `ys_{char}`)
 
 
