@@ -2664,9 +2664,9 @@ findmatchlimit(
 		    do_quotes = 1;
 		    if (start_in_quotes == MAYBE)
 		    {
-			// Do we need to use at_start here?
-			inquote = TRUE;
-			start_in_quotes = TRUE;
+			inquote = at_start;
+			if (inquote)
+			    start_in_quotes = TRUE;
 		    }
 		    else if (backwards)
 			inquote = TRUE;
