@@ -174,6 +174,8 @@ vim_form_move_resize(
 	gint	    h)
 {
     gtk_widget_set_size_request(widget, w, h);
+    if (!gtk_widget_get_visible(widget))
+	gtk_widget_queue_resize(widget);
     vim_form_move(self, widget, x, y);
 }
 

@@ -2825,8 +2825,10 @@ gui_mch_draw_menubar(void)
     void
 gui_mch_show_tabline(int showit)
 {
-    if (gui.tabline != NULL)
-	gtk_widget_set_visible(gui.tabline, showit);
+    if (gui.tabline == NULL)
+	return;
+    gtk_widget_set_visible(gui.tabline, showit);
+    gui_mch_update();
 }
 
     int
