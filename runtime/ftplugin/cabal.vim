@@ -9,9 +9,9 @@ if exists('b:did_ftplugin')
 endif
 let b:did_ftplugin = 1
 
-setlocal expandtab tabstop=2 shiftwidth=2
+setlocal expandtab
 setlocal comments=:-- commentstring=--\ %s
 
 compiler cabal
 
-let b:undo_ftplugin = 'compiler make | setlocal com< cms< et< ts< sw<'
+let b:undo_ftplugin = 'compiler make | setlocal com< cms< et<'
