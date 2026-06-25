@@ -490,6 +490,10 @@ typedef struct Gui
     // Used for clipboard functionality in GTK4 GUI
     GdkContentProvider *regular_provider;
     GdkContentProvider *primary_provider;
+
+# ifdef FEAT_DND
+    GtkDropTargetAsync *drop_target;
+# endif
 #endif
 } gui_T;
 
