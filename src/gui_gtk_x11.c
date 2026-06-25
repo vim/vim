@@ -801,6 +801,17 @@ draw_event(GtkWidget *widget UNUSED,
     return FALSE;
 }
 
+/*
+ * On Wayland an alpha-less surface avoids needless alpha compositing; on X11
+ * the ARGB (Render) path is the accelerated one, so keep the alpha there.
+ */
+# ifdef GDK_WINDOWING_WAYLAND
+#  define GUI_GTK_SURFACE_CONTENT \
+	(gui.is_wayland ? CAIRO_CONTENT_COLOR : CAIRO_CONTENT_COLOR_ALPHA)
+# else
+#  define GUI_GTK_SURFACE_CONTENT CAIRO_CONTENT_COLOR_ALPHA
+# endif
+
 # if GTK_CHECK_VERSION(3,10,0)
     static gboolean
 scale_factor_event(GtkWidget *widget,
@@ -814,7 +825,7 @@ scale_factor_event(GtkWidget *widget,
     gtk_window_get_size(GTK_WINDOW(gui.mainwin), &w, &h);
     gui.surface = gdk_window_create_similar_surface(
 	    gtk_widget_get_window(widget),
-	    CAIRO_CONTENT_COLOR,
+	    GUI_GTK_SURFACE_CONTENT,
 	    w, h);
 
     int	    usable_height = h;
@@ -2900,7 +2911,7 @@ drawarea_realize_cb(GtkWidget *widget, gpointer data UNUSED)
 #if GTK_CHECK_VERSION(3,0,0)
     gui.surface = gdk_window_create_similar_surface(
 	    gtk_widget_get_window(widget),
-	    CAIRO_CONTENT_COLOR,
+	    GUI_GTK_SURFACE_CONTENT,
 	    gtk_widget_get_allocated_width(widget),
 	    gtk_widget_get_allocated_height(widget));
 #else
@@ -3035,7 +3046,7 @@ drawarea_configure_event_cb(GtkWidget	      *widget,
 
     gui.surface = gdk_window_create_similar_surface(
 	    gtk_widget_get_window(widget),
-	    CAIRO_CONTENT_COLOR,
+	    GUI_GTK_SURFACE_CONTENT,
 	    event->width, event->height);
 
     gtk_widget_queue_draw(widget);
