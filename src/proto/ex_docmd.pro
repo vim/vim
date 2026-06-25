@@ -29,6 +29,7 @@ cmdidx_T excmd_get_cmdidx(char_u *cmd, int len);
 long excmd_get_argt(cmdidx_T idx);
 char_u *skip_range(char_u *cmd_start, int skip_star, int *ctx);
 linenr_T get_address(exarg_T *eap, char_u **ptr, cmd_addr_T addr_type, int skip, int silent, int to_other_file, int address_count);
+void get_flags(exarg_T *eap);
 void ex_ni(exarg_T *eap);
 int expand_filename(exarg_T *eap, char_u **cmdlinep, char **errormsgp);
 void separate_nextcmd(exarg_T *eap, int keep_backslash);

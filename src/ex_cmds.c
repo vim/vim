@@ -4358,10 +4358,21 @@ ex_substitute(exarg_T *eap)
 	    eap->line2 = curbuf->b_ml.ml_line_count;
     }
 
+    eap->arg = skipwhite(cmd);
+    get_flags(eap);
+    cmd = eap->arg;
+
+    // may be set earlier in the [options] list
+    if (eap->flags & EXFLAG_LIST)
+	subflags.do_list = TRUE;
+    if (eap->flags & EXFLAG_NR)
+	subflags.do_number = TRUE;
+    if (eap->flags & (EXFLAG_PRINT|EXFLAG_NR|EXFLAG_LIST))
+	subflags.do_print = TRUE;
+
     /*
      * check for trailing command or garbage
      */
-    cmd = skipwhite(cmd);
     if (*cmd && *cmd != '"')	    // if not end-of-line or comment
     {
 	set_nextcmd(eap, cmd);

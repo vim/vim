@@ -139,27 +139,82 @@ func Test_substitute_variants()
 endfunc
 
 " Test the l, p, # flags.
+" :[range]s[ubstitute]/{pattern}/{string}/[options] [count] [flags]
 func Test_substitute_flags_lp()
   new
   call setline(1, "abc\tdef\<C-h>ghi")
 
+  " no flags
+  let a = execute('s/a/a/')
+  call assert_equal("", a)
+
+  " [options]
   let a = execute('s/a/a/p')
   call assert_equal("\nabc     def^Hghi", a)
-
   let a = execute('s/a/a/l')
   call assert_equal("\nabc^Idef^Hghi$", a)
-
   let a = execute('s/a/a/#')
   call assert_equal("\n  1 abc     def^Hghi", a)
-
   let a = execute('s/a/a/p#')
   call assert_equal("\n  1 abc     def^Hghi", a)
-
   let a = execute('s/a/a/l#')
   call assert_equal("\n  1 abc^Idef^Hghi$", a)
 
-  let a = execute('s/a/a/')
-  call assert_equal("", a)
+  " [options] before [count]
+  let a = execute('s/a/a/p 1')
+  call assert_equal("\nabc     def^Hghi", a)
+  let a = execute('s/a/a/l 1')
+  call assert_equal("\nabc^Idef^Hghi$", a)
+  let a = execute('s/a/a/# 1')
+  call assert_equal("\n  1 abc     def^Hghi", a)
+  let a = execute('s/a/a/p# 1')
+  call assert_equal("\n  1 abc     def^Hghi", a)
+  let a = execute('s/a/a/l# 1')
+  call assert_equal("\n  1 abc^Idef^Hghi$", a)
+
+  " [flags]
+  let a = execute('s/a/a/ p')
+  call assert_equal("\nabc     def^Hghi", a)
+  let a = execute('s/a/a/ l')
+  call assert_equal("\nabc^Idef^Hghi$", a)
+  let a = execute('s/a/a/ #')
+  call assert_equal("\n  1 abc     def^Hghi", a)
+  let a = execute('s/a/a/ p#')
+  call assert_equal("\n  1 abc     def^Hghi", a)
+  let a = execute('s/a/a/ l#')
+  call assert_equal("\n  1 abc^Idef^Hghi$", a)
+
+  " [flags] after [count]
+  let a = execute('s/a/a/ p')
+  call assert_equal("\nabc     def^Hghi", a)
+  let a = execute('s/a/a/ 1 l')
+  call assert_equal("\nabc^Idef^Hghi$", a)
+  let a = execute('s/a/a/ 1 #')
+  call assert_equal("\n  1 abc     def^Hghi", a)
+  let a = execute('s/a/a/ 1 p#')
+  call assert_equal("\n  1 abc     def^Hghi", a)
+  let a = execute('s/a/a/ 1 l#')
+  call assert_equal("\n  1 abc^Idef^Hghi$", a)
+
+  " mixed [options] and [flags]
+  let a = execute('s/a/a/p #')
+  call assert_equal("\n  1 abc     def^Hghi", a)
+  let a = execute('s/a/a/p l')
+  call assert_equal("\nabc^Idef^Hghi$", a)
+  let a = execute('s/a/a/l #')
+  call assert_equal("\n  1 abc^Idef^Hghi$", a)
+  let a = execute('s/a/a/# l')
+  call assert_equal("\n  1 abc^Idef^Hghi$", a)
+
+  " mixed [options] and [flags] with [count]
+  let a = execute('s/a/a/p 1 #')
+  call assert_equal("\n  1 abc     def^Hghi", a)
+  let a = execute('s/a/a/p 1 l')
+  call assert_equal("\nabc^Idef^Hghi$", a)
+  let a = execute('s/a/a/l 1 #')
+  call assert_equal("\n  1 abc^Idef^Hghi$", a)
+  let a = execute('s/a/a/# 1 l')
+  call assert_equal("\n  1 abc^Idef^Hghi$", a)
 
   bwipe!
 endfunc
