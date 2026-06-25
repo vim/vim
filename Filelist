@@ -874,7 +874,7 @@ RT_ALL =	\
 		runtime/pack/dist/opt/nohlsearch/plugin/nohlsearch.vim \
 		runtime/pack/dist/opt/shellmenu/plugin/shellmenu.vim \
 		runtime/pack/dist/opt/surround/plugin/surround.vim \
-		runtime/pack/dist/opt/surround/doc/surround.txt \
+		runtime/pack/dist/opt/surround/doc/pi_surround.txt \
 		runtime/pack/dist/opt/surround/doc/tags \
 		runtime/pack/dist/opt/surround/autoload/surround.vim \
 		runtime/pack/dist/opt/swapmouse/plugin/swapmouse.vim \
