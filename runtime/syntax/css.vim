@@ -207,6 +207,8 @@ syn match cssBoxProp contained "\<overflow\%(-\%(x\|y\|style\)\)\=\>"
 syn match cssBoxProp contained "\<rotation\%(-point\)\=\>"
 syn keyword cssBoxAttr contained visible hidden scroll auto
 syn match cssBoxAttr contained "\<no-\%(display\|content\)\>"
+syn keyword cssBoxProp contained scrollbar-gutter
+syn keyword cssBoxAttr contained auto stable both-edges
 
 syn keyword cssCascadeProp contained all
 syn keyword cssCascadeAttr contained initial unset revert
