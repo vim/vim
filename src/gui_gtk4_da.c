@@ -140,7 +140,9 @@ vim_draw_area_class_init(VimDrawAreaClass *class)
 
     obj_class->finalize = vim_draw_area_finalize;
 
+    // Add a layout manager so it can handle child popovers
     gtk_widget_class_set_layout_manager_type(widget_class, GTK_TYPE_BIN_LAYOUT);
+
 }
 
     static void

@@ -1062,7 +1062,7 @@ au BufNewFile,BufRead .zshrc,.zshenv,.zlogin,.zlogout,.zcompdump,.zsh_history se
 au BufNewFile,BufRead *.zsh,*.zsh-theme,*.zunit		setf zsh
 
 " Scheme, Supertux configuration, Lips.js history, Guile init file ("racket" patterns are now separate, see above)
-au BufNewFile,BufRead *.scm,*.ss,*.sld,*.stsg,*/supertux2/config,.lips_repl_history,.guile	setf scheme
+au BufNewFile,BufRead *.scm,*.ss,*.sld,*.stwm,*.stl,*.stxt,*.sprite,*.strf,*.satc,*.stcd,*.stf,*.stcp,*.music,*.stsg,*/supertux2/config,supertux2/*/info,.lips_repl_history,.guile	setf scheme
 
 " SiSU
 au BufNewFile,BufRead *.sst.meta,*.-sst.meta,*._sst.meta setf sisu

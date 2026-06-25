@@ -629,9 +629,9 @@ ServerWait(
  * Fetch a list of all the Vim instance names currently registered for the
  * display.
  *
- * Returns a newline separated list in allocated memory or NULL.
+ * Returns a list of strings or NULL on failure.
  */
-    char_u *
+    list_T *
 serverGetVimNames(Display *dpy)
 {
     char_u	*regProp;
@@ -639,13 +639,17 @@ serverGetVimNames(Display *dpy)
     char_u	*p;
     long_u	numItems;
     int_u	w;
-    garray_T	ga;
+    list_T	*list;
 
     if (registryProperty == None)
     {
 	if (SendInit(dpy) < 0)
 	    return NULL;
     }
+
+    list = list_alloc();
+    if (list == NULL)
+	return NULL;
 
     /*
      * Read the registry property.
@@ -656,7 +660,6 @@ serverGetVimNames(Display *dpy)
     /*
      * Scan all of the names out of the property.
      */
-    ga_init2(&ga, 1, 100);
     for (p = regProp; (long_u)(p - regProp) < numItems; p++)
     {
 	entry = p;
@@ -667,18 +670,14 @@ serverGetVimNames(Display *dpy)
 	    w = None;
 	    sscanf((char *)entry, "%x", &w);
 	    if (WindowValid(dpy, (Window)w))
-	    {
-		ga_concat(&ga, p + 1);
-		GA_CONCAT_LITERAL(&ga, "\n");
-	    }
+		list_append_string(list, p + 1, -1);
 	    while (*p != 0)
 		p++;
 	}
     }
     if (regProp != empty_prop)
 	XFree(regProp);
-    ga_append(&ga, NUL);
-    return ga.ga_data;
+    return list;
 }
 
 /////////////////////////////////////////////////////////////

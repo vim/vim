@@ -729,7 +729,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     sass: ['file.sass'],
     sbt: ['file.sbt'],
     scala: ['file.scala', 'file.mill'],
-    scheme: ['file.scm', 'file.ss', 'file.sld', 'file.stsg', 'any/local/share/supertux2/config', '.lips_repl_history', '.guile'],
+    scheme: ['file.scm', 'file.ss', 'file.sld', 'file.stwm', 'file.stl', 'file.stxt', 'file.sprite', 'file.strf', 'file.satc', 'file.stcd', 'file.stf', 'file.stcp', 'file.music', 'file.stsg', 'any/local/share/supertux2/config', 'supertux2/levels/world1/info', '.lips_repl_history', '.guile'],
     scilab: ['file.sci', 'file.sce'],
     screen: ['.screenrc', 'screenrc'],
     scss: ['file.scss'],

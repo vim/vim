@@ -3513,7 +3513,7 @@ spell_soundfold_sal(slang_T *slang, char_u *inword, char_u *res)
 			// no '<' rule used
 			i += k - 1;
 			z = 0;
-			while (*s != NUL && s[1] != NUL && reslen < MAXWLEN)
+			while (*s != NUL && s[1] != NUL && reslen < MAXWLEN - 1)
 			{
 			    if (reslen == 0 || res[reslen - 1] != *s)
 				res[reslen++] = *s;
@@ -3523,7 +3523,7 @@ spell_soundfold_sal(slang_T *slang, char_u *inword, char_u *res)
 			c = *s;
 			if (strstr((char *)pf, "^^") != NULL)
 			{
-			    if (c != NUL)
+			    if (c != NUL && reslen < MAXWLEN - 1)
 				res[reslen++] = c;
 			    STRMOVE(word, word + i + 1);
 			    i = 0;
@@ -3542,7 +3542,7 @@ spell_soundfold_sal(slang_T *slang, char_u *inword, char_u *res)
 
 	if (z0 == 0)
 	{
-	    if (k && !p0 && reslen < MAXWLEN && c != NUL
+	    if (k && !p0 && reslen < MAXWLEN - 1 && c != NUL
 		    && (!slang->sl_collapse || reslen == 0
 						     || res[reslen - 1] != c))
 		// condense only double letters

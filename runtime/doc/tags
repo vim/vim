@@ -8260,6 +8260,7 @@ gtk-css	gui_x11.txt	/*gtk-css*
 gtk-tooltip-colors	gui_x11.txt	/*gtk-tooltip-colors*
 gtk3-slow	gui_x11.txt	/*gtk3-slow*
 gtk4-hwaccel	gui_x11.txt	/*gtk4-hwaccel*
+gtk4-menu-navigation	gui_x11.txt	/*gtk4-menu-navigation*
 gtk4-slow	gui_x11.txt	/*gtk4-slow*
 gu	change.txt	/*gu*
 gugu	change.txt	/*gugu*
@@ -11011,6 +11012,7 @@ tempfile	change.txt	/*tempfile*
 template	autocmd.txt	/*template*
 tempname()	builtin.txt	/*tempname()*
 term++close	terminal.txt	/*term++close*
+term++noclose	terminal.txt	/*term++noclose*
 term++open	terminal.txt	/*term++open*
 term++shell	terminal.txt	/*term++shell*
 term-dependent-settings	term.txt	/*term-dependent-settings*
