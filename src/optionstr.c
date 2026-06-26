@@ -3516,7 +3516,7 @@ expand_set_popupoption(optexpand_T *args, int *numMatches, char_u ***matches,
 	int is_border = xp->xp_pattern - args->oe_set_arg >= border_len &&
 		STRNCMP(xp->xp_pattern - border_len, "border:", border_len) == 0;
 	int is_close = xp->xp_pattern - args->oe_set_arg >= close_len &&
-		STRNCMP(xp->xp_pattern - close_len, "close:", close) == 0;
+		STRNCMP(xp->xp_pattern - close_len, "close:", close_len) == 0;
 	int is_resize = xp->xp_pattern - args->oe_set_arg >= resize_len &&
 		STRNCMP(xp->xp_pattern - resize_len, "resize:", resize_len) == 0;
 	int is_shadow = xp->xp_pattern - args->oe_set_arg >= shadow_len &&
