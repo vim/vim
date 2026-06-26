@@ -7182,10 +7182,6 @@ gui_gtk_surface_copy_rect(int dest_x, int dest_y,
     cairo_t * const cr = cairo_create(gui.surface);
 
 # ifdef GDK_WINDOWING_WAYLAND
-    /*
-       Following optimizations are temporary until all callers are refactored
-       to wayland deferred redraw; .. then it could be removed.
-    */
     static cairo_surface_t *scroll_scratch = NULL;
     static int scratch_w = 0;
     static int scratch_h = 0;
