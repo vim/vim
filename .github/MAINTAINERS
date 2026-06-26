@@ -370,6 +370,7 @@ runtime/indent/basic.vim				@dkearns
 runtime/indent/beancount.vim				@nathangrigg
 runtime/indent/bpftrace.vim				@sgruszka
 runtime/indent/bst.vim					@tpope
+runtime/indent/cabal.vim				@mateoxh
 runtime/indent/cdl.vim					@dkearns
 runtime/indent/chatito.vim				@ObserverOfTime
 runtime/indent/clojure.vim				@axvr
