@@ -7183,44 +7183,34 @@ gui_gtk_surface_copy_rect(int dest_x, int dest_y,
 
 # ifdef GDK_WINDOWING_WAYLAND
     static cairo_surface_t *scroll_scratch = NULL;
-    static int scratch_w = 0;
-    static int scratch_h = 0;
-    int last_row = Rows - 1;
-    int last_row_y = last_row * gui.char_height;
+    static int scratch_w = 0, scratch_h = 0;
+    int last_row = Rows - 1, last_row_y = last_row * gui.char_height;
     bool last_row_overlap = (dest_y + height) > last_row_y;
     if (gui.is_wayland && ( !(State & MODE_CMDLINE) || !last_row_overlap) )
     {
-	/*
-	   scrolling up
-	   */
-	if (dest_y < src_y)
+	if (dest_y < src_y) // scroll up
 	{
 	    cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-	    cairo_set_source_surface(cr, gui.surface,
-		    src_x - dest_x,
+	    cairo_set_source_surface(cr, gui.surface, src_x - dest_x,
 		    dest_y - src_y);
 	    cairo_rectangle(cr, dest_x, dest_y, width, height);
 	    cairo_clip(cr);
 	    cairo_paint(cr);
 	}
 	else
-	{
-	    //  reusing surface when scrolling, only realloc if larger
+	{   //  reuse surface when scrolling, only realloc if larger
 	    if (scroll_scratch == NULL || width > scratch_w || height > scratch_h)
 	    {
 		cairo_surface_destroy(scroll_scratch); // safe even if NULL
 		scroll_scratch = cairo_surface_create_similar(gui.surface,
 			cairo_surface_get_content(gui.surface), width, height);
-		scratch_w = width;
-		scratch_h = height;
+		scratch_w = width, scratch_h = height;
 	    }
-
 	    // capture scroll source region
 	    cairo_t *tcr = cairo_create(scroll_scratch);
 	    cairo_set_source_surface(tcr, gui.surface, -src_x, -src_y);
 	    cairo_paint(tcr);
 	    cairo_destroy(tcr);
-
 	    // reuse scroll source region
 	    cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	    cairo_rectangle(cr, dest_x, dest_y, width, height);
@@ -7240,7 +7230,6 @@ gui_gtk_surface_copy_rect(int dest_x, int dest_y,
 	cairo_pop_group_to_source(cr);
 	cairo_paint(cr);
     }
-
     cairo_destroy(cr);
 }
 #endif
