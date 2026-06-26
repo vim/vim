@@ -663,6 +663,9 @@ func Test_set_completion_string_values()
   call feedkeys(":set completepopup=height:10,align:\<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"set completepopup=height:10,align:item', @:)
   call assert_equal([], getcompletion('set completepopup=bogusname:', 'cmdline'))
+  call assert_equal(['on', 'off'], getcompletion('set completepopup=close:', 'cmdline'))
+  call assert_equal(['on', 'off'], getcompletion('set completepopup=close:o', 'cmdline'))
+  call assert_equal(['off'], getcompletion('set previewpopup=close:of', 'cmdline'))
 
   " opacity: numeric, 0..100 only
   call assert_true(index(getcompletion('set completepopup=', 'cmdline'),
