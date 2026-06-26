@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Jun 18
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Jun 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52664,6 +52664,13 @@ Platform specific ~
 - support OpenType font features in 'guifont' for DirectWrite (Win32)
 - Include strptime() fallback for MS-Windows
 - Hardware-accelerated rendering for the GTK4 GUI via |gtk4-hwaccel|.
+- The NSIS installer has been reworked (Win32): 
+  - Support per-user and per-machine install.
+  - Change the install directory structure.
+  - Replace the batch files with the Vim launchers.
+  - Support adding the Vim directory to PATH.
+  - Support selecting install components from the command line options.
+  - Move the source code to the vim/vim-win32-installer repository.
 
 xxd ~
 ---
