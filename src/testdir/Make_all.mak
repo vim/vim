@@ -252,6 +252,7 @@ NEW_TESTS = \
 	test_plugin_matchit \
 	test_plugin_matchparen \
 	test_plugin_netrw \
+	test_plugin_phpcomplete \
 	test_plugin_python3complete \
 	test_plugin_osc52 \
 	test_plugin_tar \
@@ -533,6 +534,7 @@ NEW_TESTS_RES = \
 	test_plugin_matchit.res \
 	test_plugin_matchparen.res \
 	test_plugin_netrw.res \
+	test_plugin_phpcomplete.res \
 	test_plugin_python3complete.res \
 	test_plugin_osc52.res \
 	test_plugin_tar.res \
