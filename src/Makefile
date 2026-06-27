@@ -1545,6 +1545,7 @@ BASIC_SRC = \
 	gc.c \
 	gui_xim.c \
 	hardcopy.c \
+	hardcopy_pango.c \
 	hashtab.c \
 	help.c \
 	highlight.c \
@@ -1578,7 +1579,6 @@ BASIC_SRC = \
 	auto/pathdef.c \
 	popupmenu.c \
 	popupwin.c \
-	hardcopy_pango.c \
 	profiler.c \
 	pty.c \
 	quickfix.c \
@@ -1732,6 +1732,7 @@ OBJ_COMMON = \
 	objects/gc.o \
 	objects/gui_xim.o \
 	objects/hardcopy.o \
+	objects/hardcopy_pango.o \
 	objects/hashtab.o \
 	objects/help.o \
 	objects/highlight.o \
@@ -1761,7 +1762,6 @@ OBJ_COMMON = \
 	objects/pathdef.o \
 	objects/popupmenu.o \
 	objects/popupwin.o \
-	objects/hardcopy_pango.o \
 	objects/profiler.o \
 	objects/pty.o \
 	objects/quickfix.o \
@@ -1925,6 +1925,7 @@ PROTO_FILES = \
 	proto/gui_gtk_gresources.pro \
 	proto/gui_xim.pro \
 	proto/hardcopy.pro \
+	proto/hardcopy_pango.pro \
 	proto/hashtab.pro \
 	proto/help.pro \
 	proto/highlight.pro \
@@ -1971,7 +1972,6 @@ PROTO_FILES = \
 	proto/os_win32.pro \
 	proto/popupmenu.pro \
 	proto/popupwin.pro \
-	proto/hardcopy_pango.pro \
 	proto/profiler.pro \
 	proto/pty.pro \
 	proto/quickfix.pro \
@@ -3386,6 +3386,9 @@ objects/gc.o: gc.c
 objects/hardcopy.o: hardcopy.c
 	$(CCC) -o $@ hardcopy.c
 
+objects/hardcopy_pango.o: hardcopy_pango.c
+	$(CCC) $(CAIRO_CFLAGS) $(CAIRO_CPPFLAGS) $(PANGO_CFLAGS) $(CAIRO_CFLAGS) -o $@ hardcopy_pango.c
+
 objects/hashtab.o: hashtab.c
 	$(CCC) -o $@ hashtab.c
 
@@ -3602,9 +3605,6 @@ objects/popupmenu.o: popupmenu.c
 
 objects/popupwin.o: popupwin.c
 	$(CCC) -o $@ popupwin.c
-
-objects/hardcopy_pango.o: hardcopy_pango.c
-	$(CCC) $(CAIRO_CFLAGS) $(CAIRO_CPPFLAGS) $(PANGO_CFLAGS) $(CAIRO_CFLAGS) -o $@ hardcopy_pango.c
 
 objects/profiler.o: profiler.c
 	$(CCC) -o $@ profiler.c
@@ -4106,6 +4106,11 @@ objects/hardcopy.o: auto/osdef.h hardcopy.c vim.h protodef.h auto/config.h featu
  structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h version.h
+objects/hardcopy_pango.o: auto/osdef.h hardcopy_pango.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
 objects/hashtab.o: auto/osdef.h hashtab.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  structs.h regexp.h gui.h libvterm/include/vterm.h \
@@ -4267,11 +4272,6 @@ objects/popupmenu.o: auto/osdef.h popupmenu.c vim.h protodef.h auto/config.h fea
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
  ex_cmds.h spell.h proto.h globals.h errors.h
 objects/popupwin.o: auto/osdef.h popupwin.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- ascii.h keymap.h termdefs.h macros.h option.h beval.h \
- structs.h regexp.h gui.h libvterm/include/vterm.h \
- libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
- globals.h errors.h
-objects/hardcopy_pango.o: auto/osdef.h hardcopy_pango.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \

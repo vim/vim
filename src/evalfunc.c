@@ -7566,6 +7566,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"pango",
+#ifdef FEAT_PRINT_PANGO
+		1
+#else
+		0
+#endif
+		},
 	{"printer",
 #ifdef FEAT_PRINTER
 		1
