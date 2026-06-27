@@ -29,7 +29,6 @@ extern long_u	prt_curr_fg;
 extern int	prt_page_count;
 
 # if defined(FEAT_POSTSCRIPT) || defined(FEAT_PRINT_PANGO)
-
 typedef struct
 {
     char	*name;
@@ -41,8 +40,6 @@ typedef struct
 
 extern prt_mediasize_T prt_mediasize[PRT_MEDIASIZE_LEN];
 # endif
-
-void prt_message(char_u *s);
 
 #endif
 

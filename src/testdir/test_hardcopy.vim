@@ -1,5 +1,13 @@
 " Test :hardcopy
 
+func s:HasPostscript()
+  if has('postscript') || has('pango')
+    return
+  endif
+  throw 'Skipped: hardcopy backend does not use postscript'
+endfunc
+command -nargs=0 HasPostscript call s:HasPostscript()
+
 func Test_printoptions()
   edit test_hardcopy.vim
   syn on
@@ -97,7 +105,7 @@ func Test_printmbcharset()
 endfunc
 
 func Test_printexpr()
-  CheckFeature postscript
+  HasPostscript
 
   " Not a very useful printexpr value, but enough to test
   " hardcopy with 'printexpr'.
@@ -136,7 +144,7 @@ func Test_printexpr()
 endfunc
 
 func Test_errors()
-  CheckFeature postscript
+  HasPostscript
 
   edit test_hardcopy.vim
   call assert_fails('hardcopy >', 'E324:')
@@ -150,7 +158,7 @@ func Test_dark_background()
   for bg in ['dark', 'light']
     exe 'set background=' .. bg
 
-    if has('postscript')
+    if has('postscript') || has('pango')
       hardcopy > Xhardcopy_dark_background
       let lines = readfile('Xhardcopy_dark_background')
       call assert_true(len(lines) > 20)
@@ -164,7 +172,7 @@ func Test_dark_background()
 endfun
 
 func Test_empty_buffer()
-  CheckFeature postscript
+  HasPostscript
 
   new
   call assert_equal("\nNo text to be printed", execute('hardcopy'))
@@ -182,7 +190,7 @@ func Test_printheader_parsing()
 endfunc
 
 func Test_fname_with_spaces()
-  CheckFeature postscript
+  HasPostscript
 
   split t\ e\ s\ t.txt
   call setline(1, ['just', 'some', 'text'])
@@ -208,26 +216,32 @@ func Test_illegal_byte()
 endfunc
 
 func Test_printoptions_portrait()
-  CheckFeature postscript
+  HasPostscript
   edit test_hardcopy.vim
   syn on
 
   set printoptions=portrait:y
   1,50hardcopy > Xhardcopy_printoptions_portrait
   let lines = readfile('Xhardcopy_printoptions_portrait')
-  call assert_match('Orientation: Portrait', lines[6])
-  call assert_match('BoundingBox: 59 49 564 800', lines[9])
-  call assert_match('DocumentMedia: A4', lines[10])
-  call assert_match('PageMedia: A4', lines[24])
+
+  call assert_true(match(lines, 'Orientation: Portrait') != -1)
+  if has('postscript')
+    call assert_true(match(lines, 'BoundingBox: 59 49 564 800') != -1)
+  endif
+  call assert_true(match(lines, 'DocumentMedia: A4') != -1)
+  call assert_true(match(lines, 'PageMedia: A4') != -1)
   call delete('Xhardcopy_printoptions')
 
   set printoptions=portrait:n
   1,50hardcopy > Xhardcopy_printoptions_portrait
   let lines = readfile('Xhardcopy_printoptions_portrait')
-  call assert_match('Orientation: Landscape', lines[6])
-  call assert_match('BoundingBox: 59 42 590 756', lines[9])
-  call assert_match('DocumentMedia: A4', lines[10])
-  call assert_match('PageMedia: A4', lines[24])
+
+  call assert_true(match(lines, 'Orientation: Landscape') != -1)
+  if has('postscript')
+    call assert_true(match(lines, 'BoundingBox: 59 42 590 756') != -1)
+  endif
+  call assert_true(match(lines, 'DocumentMedia: A4') != -1)
+  call assert_true(match(lines, 'PageMedia: A4') != -1)
   call delete('Xhardcopy_printoptions')
 
   set printoptions&

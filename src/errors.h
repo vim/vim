@@ -815,7 +815,7 @@ EXTERN char e_line_number_out_of_range_nr_past_the_end[]
 	INIT(= "E322: Line number out of range: %ld past the end");
 EXTERN char e_line_count_wrong_in_block_nr[]
 	INIT(= "E323: Line count wrong in block %ld");
-#ifdef FEAT_POSTSCRIPT
+#if defined(FEAT_POSTSCRIPT) || defined(FEAT_PRINT_PANGO)
 EXTERN char e_cant_open_postscript_output_file[]
 	INIT(= N_("E324: Can't open PostScript output file"));
 #endif

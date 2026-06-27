@@ -278,14 +278,21 @@ mch_print_init(
     pctx.filename = (char_u *)filename;
 
     if (cairo_surface_status(pctx.surface) != CAIRO_STATUS_SUCCESS)
+    {
+	emsg(_(e_cant_open_postscript_output_file));
+	mch_print_cleanup();
 	return FAIL;
+    }
 
     pctx.cr = cairo_create(pctx.surface);
     pctx.text_context = pango_cairo_create_context(pctx.cr);
     pctx.font = get_font(p_pfn);
 
     if (pctx.font == NULL)
+    {
+	mch_print_cleanup();
 	return FAIL;
+    }
 
     pango_context_set_font_description(pctx.text_context, pctx.font);
     // Pango DPI is 96, must adjust
@@ -587,9 +594,6 @@ mch_print_text_out(char_u *textp, int len)
 
 	// Emulate bold by adding an offset
 	// TODO support jobsplit
-	// TODO refactor postscript code in hardcopy.c to different file (so
-	// mch_print_* in proto don't duplicate).
-	// TODO unrelated, fix drawarea assert error with ~/Documents/unicode.txt
 	if ((pctx.draw_flags & PRT_DRAW_BOLD) && !pctx.font_can_bold)
 	{
 	    // An offset of 0.4 seems to work pretty decently with Courier...
