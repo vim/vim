@@ -92,6 +92,11 @@ SRC_ALL =	\
 		src/gui.h \
 		src/gui_beval.c \
 		src/hardcopy.c \
+		src/hardcopy.h \
+		src/hardcopy_pango.c \
+		src/hardcopy_pango.h \
+		src/hardcopy_postscript.c \
+		src/hardcopy_postscript.h \
 		src/hashtab.c \
 		src/help.c \
 		src/highlight.c \
@@ -135,7 +140,6 @@ SRC_ALL =	\
 		src/optionstr.c \
 		src/popupmenu.c \
 		src/popupwin.c \
-		src/print_pango.c \
 		src/profiler.c \
 		src/quickfix.c \
 		src/regexp.c \
@@ -342,7 +346,6 @@ SRC_ALL =	\
 		src/proto/optionstr.pro \
 		src/proto/popupmenu.pro \
 		src/proto/popupwin.pro \
-		src/proto/print_pango.pro \
 		src/proto/profiler.pro \
 		src/proto/quickfix.pro \
 		src/proto/regexp.pro \
