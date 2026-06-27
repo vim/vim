@@ -560,17 +560,7 @@ ex_hardcopy(exarg_T *eap)
     CLEAR_FIELD(settings);
     settings.has_color = TRUE;
 
-#ifdef FEAT_GUI_GTK_PRINT
-    // Use the native GTK print dialog only for interactive printing;
-    // ":hardcopy >file" must fall through to the PostScript writer.
-    if (gui.in_use && *eap->arg != '>')
-    {
-	gui_gtk4_hardcopy(eap);
-	return;
-    }
-#endif
-
-#ifdef FEAT_POSTSCRIPT
+#if defined(FEAT_POSTSCRIPT) || defined(FEAT_PRINT_PANGO)
     if (*eap->arg == '>')
     {
 	char	*errormsg = NULL;
@@ -984,33 +974,6 @@ hardcopy_line(
 # define PRT_PS_DEFAULT_DPI	    (72)    // Default user space resolution
 # define PRT_PS_DEFAULT_FONTSIZE     (10)
 # define PRT_PS_DEFAULT_BUFFER_SIZE  (80)
-
-struct prt_mediasize_S
-{
-    char	*name;
-    float	width;		// width and height in points for portrait
-    float	height;
-};
-
-# define PRT_MEDIASIZE_LEN  ARRAY_LENGTH(prt_mediasize)
-
-static struct prt_mediasize_S prt_mediasize[] =
-{
-    {"A4",		595.0,  842.0},
-    {"letter",		612.0,  792.0},
-    {"10x14",		720.0, 1008.0},
-    {"A3",		842.0, 1191.0},
-    {"A5",		420.0,  595.0},
-    {"B4",		729.0, 1032.0},
-    {"B5",		516.0,  729.0},
-    {"executive",	522.0,  756.0},
-    {"folio",		595.0,  935.0},
-    {"ledger",	       1224.0,  792.0},   // Yes, it is wider than taller!
-    {"legal",		612.0, 1008.0},
-    {"quarto",		610.0,  780.0},
-    {"statement",	396.0,  612.0},
-    {"tabloid",		792.0, 1224.0}
-};
 
 // PS font names, must be in Roman, Bold, Italic, Bold-Italic order
 struct prt_ps_font_S

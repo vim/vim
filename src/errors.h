@@ -915,7 +915,7 @@ EXTERN char e_pattern_uses_more_memory_than_maxmempattern[]
 EXTERN char e_library_call_failed_for_str[]
 	INIT(= N_("E364: Library call failed for \"%s()\""));
 #endif
-#ifdef FEAT_POSTSCRIPT
+#if defined(FEAT_POSTSCRIPT) || defined(FEAT_PRINT_PANGO)
 EXTERN char e_failed_to_print_postscript_file[]
 	INIT(= N_("E365: Failed to print PostScript file"));
 #endif
@@ -1568,7 +1568,7 @@ EXTERN char e_using_special_as_number[]
 EXTERN char e_too_many_signs_defined[]
 	INIT(= N_("E612: Too many signs defined"));
 #endif
-#if defined(MSWIN) && defined(FEAT_PRINTER)
+#if defined(FEAT_PRINTER) && (defined(FEAT_MSWIN) || defined(FEAT_PRINT_PANGO))
 EXTERN char e_unknown_printer_font_str[]
 	INIT(= N_("E613: Unknown printer font: %s"));
 #endif

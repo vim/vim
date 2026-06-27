@@ -502,6 +502,9 @@
 /* Define if GTK4 GUI should use hardware accelerated backend */
 #undef USE_GTK4_SNAPSHOT
 
+/* Define to use Pango and Cairo for hardcopy printing */
+#undef FEAT_PRINT_PANGO
+
 /* Define if we have isinf() */
 #undef HAVE_ISINF
 
