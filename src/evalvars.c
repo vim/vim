@@ -412,7 +412,7 @@ eval_charconvert(
     return OK;
 }
 
-#if defined(FEAT_POSTSCRIPT)
+#if defined(FEAT_POSTSCRIPT) || defined(FEAT_PRINT_PANGO)
     int
 eval_printexpr(char_u *fname, char_u *args)
 {

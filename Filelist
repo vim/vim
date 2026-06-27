@@ -136,6 +136,7 @@ SRC_ALL =	\
 		src/optionstr.c \
 		src/popupmenu.c \
 		src/popupwin.c \
+		src/print_pango.c \
 		src/profiler.c \
 		src/quickfix.c \
 		src/regexp.c \
@@ -342,6 +343,7 @@ SRC_ALL =	\
 		src/proto/optionstr.pro \
 		src/proto/popupmenu.pro \
 		src/proto/popupwin.pro \
+		src/proto/print_pango.pro \
 		src/proto/profiler.pro \
 		src/proto/quickfix.pro \
 		src/proto/regexp.pro \
