@@ -3169,16 +3169,16 @@ AC_SUBST(GRESOURCE_OBJ)
 AC_SUBST(GTK_UPDATE_ICON_CACHE)
 AC_SUBST(UPDATE_DESKTOP_DATABASE)
 
-AC_MSG_CHECKING(--enable-print-pango argument)
-AC_ARG_ENABLE(print-pango,
-	[  --enable-print-pango     Use Pango and Cairo for improved hardcopy printing [default=yes when GTK GUI enabled]],
-	,, enable_print_pango="no")
+AC_MSG_CHECKING(--enable-hardcopy-pango argument)
+AC_ARG_ENABLE(hardcopy-pango,
+	[  --enable-hardcopy-pango     Use Pango and Cairo for improved hardcopy printing [default=yes when GTK GUI enabled]],
+	,, enable_hardcopy_pango="no")
 
 if test "x$GUITYPE" = "xGTK" || test "x$GUITYPE" == "xGTK4"; then
-  enable_print_pango="yes"
+  enable_hardcopy_pango="yes"
   AC_MSG_RESULT([yes, GTK GUI enabled])
 else
-  if test "$enable_print_pango" = "yes"; then
+  if test "$enable_hardcopy_pango" = "yes"; then
     if test "x$have_pango" = "xno" || test "x$have_cairo" = "xno"; then
       AC_MSG_RESULT([no, Pango or Cairo not found])
     else
@@ -3189,7 +3189,7 @@ else
   fi
 fi
 
-if test "$enable_print_pango" = "yes"; then
+if test "$enable_hardcopy_pango" = "yes"; then
   cppflags_save=$CPPFLAGS
   cflags_save=$CFLAGS
 

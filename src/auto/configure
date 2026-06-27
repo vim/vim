@@ -877,7 +877,7 @@ with_gnome_libs
 with_gnome
 enable_icon_cache_update
 enable_desktop_database_update
-enable_print_pango
+enable_hardcopy_pango
 with_motif_lib
 with_tlib
 enable_largefile
@@ -1555,7 +1555,7 @@ Optional Features:
   --disable-gtktest       Do not try to compile and run a test GTK program
   --disable-icon-cache-update        update disabled
   --disable-desktop-database-update  update disabled
-  --enable-print-pango     Use Pango and Cairo for improved hardcopy printing default=yes when GTK GUI enabled
+  --enable-hardcopy-pango     Use Pango and Cairo for improved hardcopy printing default=yes when GTK GUI enabled
   --disable-largefile     omit support for large files
   --disable-canberra      Do not use libcanberra.
   --disable-libsodium      Do not use libsodium.
@@ -11586,21 +11586,21 @@ fi
 
 
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-print-pango argument" >&5
-printf %s "checking --enable-print-pango argument... " >&6; }
-# Check whether --enable-print-pango was given.
-if test ${enable_print_pango+y}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-hardcopy-pango argument" >&5
+printf %s "checking --enable-hardcopy-pango argument... " >&6; }
+# Check whether --enable-hardcopy-pango was given.
+if test ${enable_hardcopy_pango+y}
 then :
-  enableval=$enable_print_pango;
+  enableval=$enable_hardcopy_pango;
 fi
 
 
 if test "x$GUITYPE" = "xGTK" || test "x$GUITYPE" == "xGTK4"; then
-  enable_print_pango="yes"
+  enable_hardcopy_pango="yes"
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes, GTK GUI enabled" >&5
 printf "%s\n" "yes, GTK GUI enabled" >&6; }
 else
-  if test "$enable_print_pango" = "yes"; then
+  if test "$enable_hardcopy_pango" = "yes"; then
     if test "x$have_pango" = "xno" || test "x$have_cairo" = "xno"; then
       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, Pango or Cairo not found" >&5
 printf "%s\n" "no, Pango or Cairo not found" >&6; }
@@ -11614,17 +11614,27 @@ printf "%s\n" "no" >&6; }
   fi
 fi
 
-if test "$enable_print_pango" = "yes"; then
+if test "$enable_hardcopy_pango" = "yes"; then
+  cppflags_save=$CPPFLAGS
+  cflags_save=$CFLAGS
+
   printf "%s\n" "#define FEAT_PRINT_PANGO 1" >>confdefs.h
 
 
+  CPPFLAGS="$CPPFLAGS $PANGO_CPPFLAGS"
+  CFLAGS="$CFLAGS $PANGO_CFLAGS"
 
 
 
 
+  CPPFLAGS="$CPPFLAGS $CAIRO_CPPFLAGS"
+  CFLAGS="$CFLAGS $CAIRO_CFLAGS"
 
 
 
+
+  CPPFLAGS=$cppflags_save
+  CFLAGS=$cflags_save
 fi
 
 

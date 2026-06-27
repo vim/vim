@@ -1578,7 +1578,7 @@ BASIC_SRC = \
 	auto/pathdef.c \
 	popupmenu.c \
 	popupwin.c \
-	print_pango.c \
+	hardcopy_pango.c \
 	profiler.c \
 	pty.c \
 	quickfix.c \
@@ -1761,7 +1761,7 @@ OBJ_COMMON = \
 	objects/pathdef.o \
 	objects/popupmenu.o \
 	objects/popupwin.o \
-	objects/print_pango.o \
+	objects/hardcopy_pango.o \
 	objects/profiler.o \
 	objects/pty.o \
 	objects/quickfix.o \
@@ -1971,7 +1971,7 @@ PROTO_FILES = \
 	proto/os_win32.pro \
 	proto/popupmenu.pro \
 	proto/popupwin.pro \
-	proto/print_pango.pro \
+	proto/hardcopy_pango.pro \
 	proto/profiler.pro \
 	proto/pty.pro \
 	proto/quickfix.pro \
@@ -3603,8 +3603,8 @@ objects/popupmenu.o: popupmenu.c
 objects/popupwin.o: popupwin.c
 	$(CCC) -o $@ popupwin.c
 
-objects/print_pango.o: print_pango.c
-	$(CCC) $(CAIRO_CFLAGS) $(CAIRO_CPPFLAGS) $(PANGO_CFLAGS) $(CAIRO_CFLAGS) -o $@ print_pango.c
+objects/hardcopy_pango.o: hardcopy_pango.c
+	$(CCC) $(CAIRO_CFLAGS) $(CAIRO_CPPFLAGS) $(PANGO_CFLAGS) $(CAIRO_CFLAGS) -o $@ hardcopy_pango.c
 
 objects/profiler.o: profiler.c
 	$(CCC) -o $@ profiler.c
@@ -4271,7 +4271,7 @@ objects/popupwin.o: auto/osdef.h popupwin.c vim.h protodef.h auto/config.h featu
  structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h
-objects/print_pango.o: auto/osdef.h print_pango.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+objects/hardcopy_pango.o: auto/osdef.h hardcopy_pango.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
@@ -4887,7 +4887,7 @@ proto/os_vms.pro: os_vms.c
 proto/os_win32.pro: os_win32.c
 proto/popupmenu.pro: popupmenu.c
 proto/popupwin.pro: popupwin.c
-proto/print_pango.pro: print_pango.c
+proto/hardcopy_pango.pro: hardcopy_pango.c
 proto/profiler.pro: profiler.c
 proto/pty.pro: pty.c
 proto/quickfix.pro: quickfix.c
