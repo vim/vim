@@ -488,6 +488,11 @@ static char *(features[]) =
 # else
 	"-postscript",
 # endif
+# ifdef FEAT_PRINT_PANGO
+	"+pango",
+# else
+	"-pango",
+# endif
 	"+printer",
 #else
 	"-printer",
