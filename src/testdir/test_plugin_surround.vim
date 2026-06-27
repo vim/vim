@@ -17,16 +17,16 @@ func Test_basic_surround_add()
   enew
   call setline(1, lines)
 
-  exe "normal ysiw'"
-  exe "normal j0yst.#"
-  exe "normal fCysis!"
-  exe "normal j0ysiwb"
-  exe "normal fiysiw("
-  exe "normal j.3Wys$*"
-  exe "normal j."
-  exe "normal 6Gftys2Eb"
-  exe "normal 7GWWys2E*"
-  exe "normal 89G3WysE!W."
+  normal ysiw'
+  normal j0yst.#
+  normal fCysis!
+  normal j0ysiwb
+  normal fiysiw(
+  normal j.3Wys$*
+  normal j.
+  normal 6Gftys2Eb
+  normal 7GWWys2E*
+  normal 8G3WysE!W.
   exe "%normal yss`\<CR>"
   let result = getline(1, '$')
   call assert_equal([
@@ -53,11 +53,11 @@ func Test_single_line_surround_add()
   enew
   call setline(1, lines)
 
-  exe "normal yssb."
-  exe "normal jyss{"
-  exe 'normal 2jyss"'
+  normal yssb.
+  normal jyss{
+  normal 2jyss"
   exe "normal jysstp\<CR>"
-  exe "normal 2jyss]"
+  normal 2jyss]
 
   let result = getline(1, '$')
   call assert_equal([
@@ -84,13 +84,13 @@ func Test_visual_line_surround_add()
 
   call setline(1, lines)
 
-  exe "normal vipS}"
-  exe "normal vipS{"
-  exe "normal vipSB"
-  exe "normal vipS)"
-  exe "normal vipS("
-  exe "normal vipSb"
-  exe 'normal 6GVjS"'
+  normal vipS}
+  normal vipS{
+  normal vipSB
+  normal vipS)
+  normal vipS(
+  normal vipSb
+  normal 6GVjS"
   exe "normal 8GVjStp\<CR>"
 
   let result = getline(1, '$')
@@ -128,13 +128,13 @@ func Test_visual_char_surround_add()
   enew
   call setline(1, lines)
 
-  exe "normal visS("
-  exe "normal j0vjf,S["
-  exe "normal veeS$"
-  exe "normal jvjj$SB"
+  normal visS(
+  normal j0vjf,S[
+  normal veeS$
+  normal jvjj$SB
   exe "normal jlvjStp\<CR>"
-  exe "normal 6GWvjWWlSb"
-  exe "normal 8G3WlvWllSb"
+  normal 6GWvjWWlSb
+  normal 8G3WlvWllSb
 
   let result = getline(1, '$')
   call assert_equal([
@@ -216,7 +216,7 @@ func Test_indent_surround_add()
   set ft=c
   setlocal ve&
   call setline(1, lines)
-  exe "normal 4GVjS{."
+  normal 4GVjS{.
 
   let result = getline(1, '$')
   call assert_equal([
@@ -251,18 +251,18 @@ func Test_surround_remove()
   enew
   call setline(1, lines)
 
-  exe "normal fLdss...."
-  exe "normal fddsb"
-  exe 'normal jjfPds"'
-  exe "normal jdst"
-  exe 'normal jj0f"ds"'
-  exe "normal f(dss."
-  exe "normal f*ds*"
-  exe "normal j$ds'"
-  exe "normal F)dss."
-  exe 'normal j0f".W.WW.'
-  exe "normal j0ftdsb"
-  exe 'normal j0ftds"'
+  normal fLdss....
+  normal fddsb
+  normal jjfPds"
+  normal jdst
+  normal jj0f"ds"
+  normal f(dss.
+  normal f*ds*
+  normal j$ds'
+  normal F)dss.
+  normal j0f".W.WW.
+  normal j0ftdsb
+  normal j0ftds"
 
   let result = getline(1, '$')
   call assert_equal([
@@ -297,17 +297,17 @@ func Test_surround_change()
   enew
   call setline(1, lines)
 
-  exe "normal csb}.cs})css>css'"
+  normal csb}.cs})css>css'
   exe "normal fdcsstspan class=\"text\"\<CR>"
-  exe "normal 3GfPcs\"'"
-  exe "normal 4Gfscst\""
-  exe "normal 6Gftcssb"
-  exe "normal f(f)cssBcsb*$cs*_"
-  exe "normal 7Gf(css]$css\""
-  exe "normal 8Gf\"css]f'cssbf_css'"
-  exe "normal 9Gftcss]"
-  exe "normal 10Gftcs\"'"
-  exe "normal 11Gfics)'"
+  normal 3GfPcs"'
+  normal 4Gfscst"
+  normal 6Gftcssb
+  normal f(f)cssBcsb*$cs*_
+  normal 7Gf(css]$css"
+  normal 8Gf"css]f'cssbf_css'
+  normal 9Gftcss]
+  normal 10Gftcs"'
+  normal 11Gfics)'
 
   let result = getline(1, '$')
   call assert_equal([
@@ -340,13 +340,13 @@ func Test_surround_custom_pairs()
         \ 'w': ("\n‹", "›"), 'W': ("\n«", "»")
         \}
 
-  exe "normal ysiwq"
-  exe "normal ftcssWf(cssWcsswf*cssQ"
-  exe "normal 2Gf(cs(q"
-  exe "normal WdsW"
-  exe "normal 3Gfscswq"
-  exe "normal f\"cssQf'cssq"
-  exe "normal vipSW"
+  normal ysiwq
+  normal ftcssWf(cssWcsswf*cssQ
+  normal 2Gf(cs(q
+  normal WdsW
+  normal 3Gfscswq
+  normal f"cssQf'cssq
+  normal vipSW
 
   let result = getline(1, '$')
   call assert_equal([
