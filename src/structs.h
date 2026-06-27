@@ -4831,7 +4831,7 @@ typedef struct
 #endif
     int		user_abort;
     char_u	*jobname;
-#ifdef FEAT_POSTSCRIPT
+#if defined(FEAT_POSTSCRIPT) || defined(FEAT_PRINT_PANGO)
     char_u	*outfile;
     char_u	*arguments;
 #endif
