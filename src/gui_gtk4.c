@@ -2542,10 +2542,7 @@ read_data_input_cb(
 			STRCMP(crd->mime_type, VIMENC_MIMETYPE_NAME) == 0,
 			&tofree) == OK)
 		clip_yank_selection(motion_type, final, len, crd->cbd);
-	    if (tofree != NULL)
-		vim_free(actual);
-	    else
-		g_free(actual);
+	    g_free(actual);
 	    vim_free(tofree);
 	}
 #ifdef FEAT_DND
@@ -2668,6 +2665,9 @@ drop_read_value_cb(GdkDrop *drop, GAsyncResult *result, DropReadData *drd)
     {
 	const char *text = g_value_get_string(value);
 
+	if (text == NULL || *text == NUL)
+	    goto exit;
+
 	drop_read_text(drop, (char_u *)text);
 	success = TRUE;
     }
@@ -2736,10 +2736,10 @@ drop_cb(
     else if (clip_html
 	    && gdk_content_formats_contain_mime_type(formats, "text/html"))
     {
-	static const char *m = "text/html";
+	static const char *m[] = {"text/html", NULL};
 
 	drd = (DropReadData *)read_data_new(READ_DATA_DROP_DATA, sizeof(*drd));
-	gdk_drop_read_async(drop, &m, G_PRIORITY_HIGH,
+	gdk_drop_read_async(drop, m, G_PRIORITY_HIGH,
 		drd->rd.cancel, (GAsyncReadyCallback)drop_read_cb, drd);
     }
     else if (gdk_content_formats_contain_gtype(formats, G_TYPE_STRING))
@@ -2749,7 +2749,9 @@ drop_cb(
 		drd->rd.cancel, (GAsyncReadyCallback)drop_read_value_cb, drd);
     }
 
-    g_clear_pointer(&dnd_cancel, g_cancellable_cancel);
+    if (dnd_cancel != NULL)
+	g_cancellable_cancel(dnd_cancel);
+    g_clear_object(&dnd_cancel);
     g_clear_handle_id(&dnd_timeout_id, timeout_remove);
 
     if (drd != NULL)
