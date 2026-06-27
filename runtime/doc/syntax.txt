@@ -4145,6 +4145,7 @@ Some folding is now supported with when 'foldmethod' is set to "syntax": >
    g:vimsyn_folding == 0 or doesn't exist: no syntax-based folding
    g:vimsyn_folding =~# 'a' : fold augroups
    g:vimsyn_folding =~# 'c' : fold Vim9 classes
+   g:vimsyn_folding =~# 'd' : fold :append, :change and :insert dotdocs
    g:vimsyn_folding =~# 'e' : fold Vim9 enums
    g:vimsyn_folding =~# 'f' : fold functions
    g:vimsyn_folding =~# 'h' : fold let heredocs

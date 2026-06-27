@@ -1,18 +1,24 @@
 " Ex commands
 
 
-" START NOT MATCHED
-:Next
-:Print
-:X
-" END NOT MATCHED
-
 :help
  :help
 : help
- : help # FIXME
+ : help
 
+:&
+:~
 :@
+" :*
+:>
+:<
+:#
+:=
+:!
+
+:Next
+:Print
+:X
 
 :append
     text
@@ -23,24 +29,22 @@
 :all
 :amenu
 :anoremenu
-:args
 :argadd
 :argdedupe
 :argdelete
-:argedit
 :argdo
+:argedit
 :argglobal
 :arglocal
+:args
 :argument
 :ascii
-:autocmd
 :augroup Foo
 :augroup END
 :aunmenu
-:buffer
-:bNext
-:ball
+:autocmd
 :badd
+:ball
 :balt
 :bdelete
 :behave mswin
@@ -50,23 +54,23 @@
 :blast
 :bmodified
 :bnext
+:bNext
 :botright
 :bprevious
-:brewind
 :break
 :breakadd
 :breakdel
 :breaklist
+:brewind
 :browse
 :bufdo
+:buffer
 :buffers
 :bunload
 :bwipeout
 :change
     text
 .
-:cNext
-:cNfile
 :cabbrev
 :cabclear
 :cabove
@@ -84,9 +88,9 @@
 :cclose
 :cd
 :cdo
-:cfdo
 :center
 :cexpr
+:cfdo
 :cfile
 :cfirst
 :cgetbuffer
@@ -104,61 +108,60 @@
 :cmap
 :cmapclear
 :cmenu
-:cnext
 :cnewer
+:cnext
+:cNext
 :cnfile
-:cnoremap
+:cNfile
 :cnoreabbrev
+:cnoremap
 :cnoremenu
-:copy
 :colder
 :colorscheme
-:command
 :comclear
+:command
 :compiler
-:continue
 :confirm
 :const
+:continue
 :copen
-:cprevious
+:copy
 :cpfile
+:cprevious
 :cquit
 :crewind
 :cscope
 :cstag
-:cunmap
 :cunabbrev
+:cunmap
 :cunmenu
 :cwindow
-:delete
 :debug
 :debuggreedy
 :def
 :defcompile
 :defer
 :delcommand
+:delete
 :delfunction
 :delmarks
-:diffupdate
 :diffget
 :diffoff
 :diffpatch
 :diffput
 :diffsplit
 :diffthis
+:diffupdate
 :digraphs
-:display
 :disassemble
+:display
 :djump
-:dl
 :dlist
-:doautocmd
 :doautoall
-:dp
+:doautocmd
 :drop
 :dsearch
 :dsplit
-:edit
 :earlier
 :echo
 :echoconsole
@@ -167,13 +170,14 @@
 :echomsg
 :echon
 :echowindow
+:edit
 :else
 :elseif
 :emenu
 :enddef
-:endif
 :endfor
 :endfunction
+:endif
 :endtry
 :endwhile
 :enew
@@ -186,20 +190,20 @@
 :files
 :filetype
 :filter
-:find
 :final
 :finally
+:find
 :finish
 :first
 :fixdel
 :fold
 :foldclose
-:folddoopen
 :folddoclosed
+:folddoopen
 :foldopen
 :for foo in bar | endfor
 :function
-:global/.../
+:global
 :goto
 :grep
 :grepadd
@@ -211,8 +215,8 @@
 :helpfind
 :helpgrep
 :helptags
-:highlight
 :hide
+:highlight
 :history
 :horizontal
 :insert
@@ -227,32 +231,29 @@
 :imapclear
 :imenu
 :import
-:inoremap
 :inoreabbrev
+:inoremap
 :inoremenu
 :intro
 :isearch
 :isplit
-:iunmap
 :iunabbrev
+:iunmap
 :iunmenu
 :join
 :jumps
 :k
 :keepalt
-:keepmarks
 :keepjumps
+:keepmarks
 :keeppatterns
-:lNext
-:lNfile
-:list
 :labove
-:laddexpr
 :laddbuffer
+:laddexpr
 :laddfile
 :lafter
-:last
 :language
+:last
 :later
 :lbefore
 :lbelow
@@ -263,12 +264,12 @@
 :lclose
 :lcscope
 :ldo
-:lfdo
 :left
 :leftabove
 :legacy
 :let
 :lexpr
+:lfdo
 :lfile
 :lfirst
 :lgetbuffer
@@ -278,15 +279,18 @@
 :lgrepadd
 :lhelpgrep
 :lhistory
+:list
 :ll
 :llast
 :llist
 :lmake
 :lmap
 :lmapclear
-:lnext
 :lnewer
+:lnext
+:lNext
 :lnfile
+:lNfile
 :lnoremap
 " :loadkeymap " disabled - runs until EOF
 :loadview
@@ -294,23 +298,22 @@
 :lockvar
 :lolder
 :lopen
-:lprevious
 :lpfile
+:lprevious
 :lrewind
 :ls
 :ltag
-:lunmap
 :lua
 :luado
 :luafile
+:lunmap
 :lvimgrep
 :lvimgrepadd
 :lwindow
-:move
-:mark
 :make
 :map
 :mapclear
+:mark
 :marks
 :match
 :menu
@@ -319,25 +322,26 @@
 :mkexrc
 :mksession
 :mkspell
-:mkvimrc
 :mkview
+:mkvimrc
 :mode
-:mzscheme
+:move
 :mzfile
+:mzscheme
 :nbclose
 :nbkey
 :nbstart
-:next
 :new
+:next
 :nmap
 :nmapclear
 :nmenu
 :nnoremap
 :nnoremenu
 :noautocmd
-:noremap
 :nohlsearch
 :noreabbrev
+:noremap
 :noremenu
 :normal
 :noswapfile
@@ -345,13 +349,13 @@
 :nunmap
 :nunmenu
 :oldfiles
-:open
 :omap
 :omapclear
 :omenu
 :only
 :onoremap
 :onoremenu
+:open
 :options
 :ounmap
 :ounmenu
@@ -361,47 +365,47 @@
 :pclose
 :pedit
 :perl
-:print
-:profdel
-:profile
-:promptfind
-:promptrepl
 :perldo
 :pop
 :popup
 :ppop
 :preserve
 :previous
+:print
+:profdel
+:profile
+:promptfind
+:promptrepl
 :psearch
 :ptag
-:ptNext
 :ptfirst
 :ptjump
 :ptlast
 :ptnext
+:ptNext
 :ptprevious
 :ptrewind
 :ptselect
 :put
 :pwd
 :py3
-:python3
 :py3do
 :py3file
-:python
 :pydo
 :pyfile
-:pyx
+:python
+:python3
 :pythonx
+:pyx
 :pyxdo
 :pyxfile
+:qall
 :quit
 :quitall
-:qall
 :read
 :recover
-:redo
 :redir
+:redo
 :redraw
 :redrawstatus
 :redrawtabline
@@ -418,23 +422,21 @@
 :rundo
 :runtime
 :rviminfo
-:substitute
-:sNext
+:sall
 :sandbox
 :sargument
-:sall
 :saveas
-:sbuffer
-:sbNext
 :sball
 :sbfirst
 :sblast
 :sbmodified
 :sbnext
+:sbNext
 :sbprevious
 :sbrewind
-:scriptnames
+:sbuffer
 :scriptencoding
+:scriptnames
 :scriptversion
 :scscope
 :set
@@ -444,18 +446,18 @@
 :sfind
 :sfirst
 :shell
-:simalt
 :sign
 :silent
-:sleep
-:sleep!
+:simalt
 :slast
+:sleep
 :smagic
 :smap
 :smapclear
 :smenu
 :smile
 :snext
+:sNext
 :snomagic
 :snoremap
 :snoremenu
@@ -471,26 +473,26 @@
 :split
 :sprevious
 :srewind
-:stop
 :stag
-:startinsert
 :startgreplace
+:startinsert
 :startreplace
-:stopinsert
 :stjump
+:stop
+:stopinsert
 :stselect
+:substitute
 :sunhide
 :sunmap
 :sunmenu
 :suspend
 :sview
 :swapname
+:syncbind
 :syntax
 :syntime
-:syncbind
 :t
-:tNext
-:tabNext
+:tab
 :tabclose
 :tabdo
 :tabedit
@@ -500,11 +502,11 @@
 :tabmove
 :tabnew
 :tabnext
+:tabNext
 :tabonly
 :tabprevious
 :tabrewind
 :tabs
-:tab
 :tag
 :tags
 :tcd
@@ -521,10 +523,11 @@
 :tlmenu
 :tlnoremenu
 :tlunmenu
-:tmapclear
 :tmap
+:tmapclear
 :tmenu
 :tnext
+:tNext
 :tnoremap
 :topleft
 :tprevious
@@ -533,11 +536,10 @@
 :tselect
 :tunmap
 :tunmenu
+:unabbreviate
 :undo
 :undojoin
 :undolist
-:unabbreviate
-:unabbreviate
 :unhide
 :uniq
 :unlet
@@ -546,16 +548,16 @@
 :unmenu
 :unsilent
 :update
-:vglobal/.../
-:version
 :verbose
+:version
 :vertical
+:vglobal
+:view
 :vim9cmd
 :vimgrep
 :vimgrepadd
 :visual
 :viusage
-:view
 :vmap
 :vmapclear
 :vmenu
@@ -565,39 +567,57 @@
 :vsplit
 :vunmap
 :vunmenu
-:windo
-:write
-:wNext
 :wall
 :while
-:winsize
 :wincmd
+:windo
 :winpos
+:winsize
 :wnext
+:wNext
 :wprevious
 :wq
 :wqall
+:write
 :wundo
 :wviminfo
-:xit
 :xall
-:xmapclear
+:xit
 :xmap
+:xmapclear
 :xmenu
-:xrestore
 :xnoremap
 :xnoremenu
+:xrestore
 :xunmap
 :xunmenu
 :yank
 :z
 
 call Foo()|help
-call Foo() | help
 call Foo() |help
 call Foo()| help
+call Foo() | help
 
-" FIXME
+call Foo() |:help
+call Foo() | :help
+call Foo() |: help
+call Foo() | : help
+
+call Foo() | &
+call Foo() | ~
+call Foo() | @
+" call Foo() | :*
+call Foo() | >
+call Foo() | <
+call Foo() | #
+call Foo() | =
+call Foo() | !
+
+call Foo() | Next
+call Foo() | Print
+call Foo() | X
+
 call Foo() | append
     text
 .
@@ -607,23 +627,22 @@ call Foo() | aboveleft
 call Foo() | all
 call Foo() | amenu
 call Foo() | anoremenu
-call Foo() | args
 call Foo() | argadd
 call Foo() | argdedupe
 call Foo() | argdelete
-call Foo() | argedit
 call Foo() | argdo
+call Foo() | argedit
 call Foo() | argglobal
 call Foo() | arglocal
+call Foo() | args
 call Foo() | argument
 call Foo() | ascii
-call Foo() | autocmd
-call Foo() | augroup Foo | augroup END
+call Foo() | augroup Foo
+call Foo() | augroup END
 call Foo() | aunmenu
-call Foo() | buffer
-call Foo() | bNext
-call Foo() | ball
+call Foo() | autocmd
 call Foo() | badd
+call Foo() | ball
 call Foo() | balt
 call Foo() | bdelete
 call Foo() | behave mswin
@@ -633,24 +652,23 @@ call Foo() | bfirst
 call Foo() | blast
 call Foo() | bmodified
 call Foo() | bnext
+call Foo() | bNext
 call Foo() | botright
 call Foo() | bprevious
-call Foo() | brewind
 call Foo() | break
 call Foo() | breakadd
 call Foo() | breakdel
 call Foo() | breaklist
+call Foo() | brewind
 call Foo() | browse
 call Foo() | bufdo
+call Foo() | buffer
 call Foo() | buffers
 call Foo() | bunload
 call Foo() | bwipeout
-" FIXME
 call Foo() | change
     text
 .
-call Foo() | cNext
-call Foo() | cNfile
 call Foo() | cabbrev
 call Foo() | cabclear
 call Foo() | cabove
@@ -668,9 +686,9 @@ call Foo() | cc
 call Foo() | cclose
 call Foo() | cd
 call Foo() | cdo
-call Foo() | cfdo
 call Foo() | center
 call Foo() | cexpr
+call Foo() | cfdo
 call Foo() | cfile
 call Foo() | cfirst
 call Foo() | cgetbuffer
@@ -688,61 +706,60 @@ call Foo() | close
 call Foo() | cmap
 call Foo() | cmapclear
 call Foo() | cmenu
-call Foo() | cnext
 call Foo() | cnewer
+call Foo() | cnext
+call Foo() | cNext
 call Foo() | cnfile
-call Foo() | cnoremap
+call Foo() | cNfile
 call Foo() | cnoreabbrev
+call Foo() | cnoremap
 call Foo() | cnoremenu
-call Foo() | copy
 call Foo() | colder
 call Foo() | colorscheme
-call Foo() | command
 call Foo() | comclear
+call Foo() | command
 call Foo() | compiler
-call Foo() | continue
 call Foo() | confirm
 call Foo() | const
+call Foo() | continue
 call Foo() | copen
-call Foo() | cprevious
+call Foo() | copy
 call Foo() | cpfile
+call Foo() | cprevious
 call Foo() | cquit
 call Foo() | crewind
 call Foo() | cscope
 call Foo() | cstag
-call Foo() | cunmap
 call Foo() | cunabbrev
+call Foo() | cunmap
 call Foo() | cunmenu
 call Foo() | cwindow
-call Foo() | delete
 call Foo() | debug
 call Foo() | debuggreedy
 call Foo() | def
 call Foo() | defcompile
 call Foo() | defer
 call Foo() | delcommand
+call Foo() | delete
 call Foo() | delfunction
 call Foo() | delmarks
-call Foo() | diffupdate
 call Foo() | diffget
 call Foo() | diffoff
 call Foo() | diffpatch
 call Foo() | diffput
 call Foo() | diffsplit
 call Foo() | diffthis
+call Foo() | diffupdate
 call Foo() | digraphs
-call Foo() | display
 call Foo() | disassemble
+call Foo() | display
 call Foo() | djump
-call Foo() | dl
 call Foo() | dlist
-call Foo() | doautocmd
 call Foo() | doautoall
-call Foo() | dp
+call Foo() | doautocmd
 call Foo() | drop
 call Foo() | dsearch
 call Foo() | dsplit
-call Foo() | edit
 call Foo() | earlier
 call Foo() | echo
 call Foo() | echoconsole
@@ -751,13 +768,14 @@ call Foo() | echohl
 call Foo() | echomsg
 call Foo() | echon
 call Foo() | echowindow
+call Foo() | edit
 call Foo() | else
 call Foo() | elseif
 call Foo() | emenu
 call Foo() | enddef
-call Foo() | endif
 call Foo() | endfor
 call Foo() | endfunction
+call Foo() | endif
 call Foo() | endtry
 call Foo() | endwhile
 call Foo() | enew
@@ -770,20 +788,20 @@ call Foo() | file
 call Foo() | files
 call Foo() | filetype
 call Foo() | filter
-call Foo() | find
 call Foo() | final
 call Foo() | finally
+call Foo() | find
 call Foo() | finish
 call Foo() | first
 call Foo() | fixdel
 call Foo() | fold
 call Foo() | foldclose
-call Foo() | folddoopen
 call Foo() | folddoclosed
+call Foo() | folddoopen
 call Foo() | foldopen
 call Foo() | for foo in bar | endfor
 call Foo() | function
-call Foo() | global/.../
+call Foo() | global
 call Foo() | goto
 call Foo() | grep
 call Foo() | grepadd
@@ -795,11 +813,10 @@ call Foo() | helpclose
 call Foo() | helpfind
 call Foo() | helpgrep
 call Foo() | helptags
-call Foo() | highlight
 call Foo() | hide
+call Foo() | highlight
 call Foo() | history
 call Foo() | horizontal
-" FIXME
 call Foo() | insert
     text
 .
@@ -812,32 +829,29 @@ call Foo() | imap
 call Foo() | imapclear
 call Foo() | imenu
 call Foo() | import
-call Foo() | inoremap
 call Foo() | inoreabbrev
+call Foo() | inoremap
 call Foo() | inoremenu
 call Foo() | intro
 call Foo() | isearch
 call Foo() | isplit
-call Foo() | iunmap
 call Foo() | iunabbrev
+call Foo() | iunmap
 call Foo() | iunmenu
 call Foo() | join
 call Foo() | jumps
 call Foo() | k
 call Foo() | keepalt
-call Foo() | keepmarks
 call Foo() | keepjumps
+call Foo() | keepmarks
 call Foo() | keeppatterns
-call Foo() | lNext
-call Foo() | lNfile
-call Foo() | list
 call Foo() | labove
-call Foo() | laddexpr
 call Foo() | laddbuffer
+call Foo() | laddexpr
 call Foo() | laddfile
 call Foo() | lafter
-call Foo() | last
 call Foo() | language
+call Foo() | last
 call Foo() | later
 call Foo() | lbefore
 call Foo() | lbelow
@@ -848,12 +862,12 @@ call Foo() | lchdir
 call Foo() | lclose
 call Foo() | lcscope
 call Foo() | ldo
-call Foo() | lfdo
 call Foo() | left
 call Foo() | leftabove
 call Foo() | legacy
 call Foo() | let
 call Foo() | lexpr
+call Foo() | lfdo
 call Foo() | lfile
 call Foo() | lfirst
 call Foo() | lgetbuffer
@@ -863,39 +877,41 @@ call Foo() | lgrep
 call Foo() | lgrepadd
 call Foo() | lhelpgrep
 call Foo() | lhistory
+call Foo() | list
 call Foo() | ll
 call Foo() | llast
 call Foo() | llist
 call Foo() | lmake
 call Foo() | lmap
 call Foo() | lmapclear
-call Foo() | lnext
 call Foo() | lnewer
+call Foo() | lnext
+call Foo() | lNext
 call Foo() | lnfile
+call Foo() | lNfile
 call Foo() | lnoremap
-" call Foo() | loadkeymap " disabled - runs until EOF
+" :loadkeymap " disabled - runs until EOF
 call Foo() | loadview
 call Foo() | lockmarks
 call Foo() | lockvar
 call Foo() | lolder
 call Foo() | lopen
-call Foo() | lprevious
 call Foo() | lpfile
+call Foo() | lprevious
 call Foo() | lrewind
 call Foo() | ls
 call Foo() | ltag
-call Foo() | lunmap
 call Foo() | lua
 call Foo() | luado
 call Foo() | luafile
+call Foo() | lunmap
 call Foo() | lvimgrep
 call Foo() | lvimgrepadd
 call Foo() | lwindow
-call Foo() | move
-call Foo() | mark
 call Foo() | make
 call Foo() | map
 call Foo() | mapclear
+call Foo() | mark
 call Foo() | marks
 call Foo() | match
 call Foo() | menu
@@ -904,25 +920,26 @@ call Foo() | messages
 call Foo() | mkexrc
 call Foo() | mksession
 call Foo() | mkspell
-call Foo() | mkvimrc
 call Foo() | mkview
+call Foo() | mkvimrc
 call Foo() | mode
-call Foo() | mzscheme
+call Foo() | move
 call Foo() | mzfile
+call Foo() | mzscheme
 call Foo() | nbclose
 call Foo() | nbkey
 call Foo() | nbstart
-call Foo() | next
 call Foo() | new
+call Foo() | next
 call Foo() | nmap
 call Foo() | nmapclear
 call Foo() | nmenu
 call Foo() | nnoremap
 call Foo() | nnoremenu
 call Foo() | noautocmd
-call Foo() | noremap
 call Foo() | nohlsearch
 call Foo() | noreabbrev
+call Foo() | noremap
 call Foo() | noremenu
 call Foo() | normal
 call Foo() | noswapfile
@@ -930,13 +947,13 @@ call Foo() | number
 call Foo() | nunmap
 call Foo() | nunmenu
 call Foo() | oldfiles
-call Foo() | open
 call Foo() | omap
 call Foo() | omapclear
 call Foo() | omenu
 call Foo() | only
 call Foo() | onoremap
 call Foo() | onoremenu
+call Foo() | open
 call Foo() | options
 call Foo() | ounmap
 call Foo() | ounmenu
@@ -946,47 +963,47 @@ call Foo() | packloadall
 call Foo() | pclose
 call Foo() | pedit
 call Foo() | perl
-call Foo() | print
-call Foo() | profdel
-call Foo() | profile
-call Foo() | promptfind
-call Foo() | promptrepl
 call Foo() | perldo
 call Foo() | pop
 call Foo() | popup
 call Foo() | ppop
 call Foo() | preserve
 call Foo() | previous
+call Foo() | print
+call Foo() | profdel
+call Foo() | profile
+call Foo() | promptfind
+call Foo() | promptrepl
 call Foo() | psearch
 call Foo() | ptag
-call Foo() | ptNext
 call Foo() | ptfirst
 call Foo() | ptjump
 call Foo() | ptlast
 call Foo() | ptnext
+call Foo() | ptNext
 call Foo() | ptprevious
 call Foo() | ptrewind
 call Foo() | ptselect
 call Foo() | put
 call Foo() | pwd
 call Foo() | py3
-call Foo() | python3
 call Foo() | py3do
 call Foo() | py3file
-call Foo() | python
 call Foo() | pydo
 call Foo() | pyfile
-call Foo() | pyx
+call Foo() | python
+call Foo() | python3
 call Foo() | pythonx
+call Foo() | pyx
 call Foo() | pyxdo
 call Foo() | pyxfile
+call Foo() | qall
 call Foo() | quit
 call Foo() | quitall
-call Foo() | qall
 call Foo() | read
 call Foo() | recover
-call Foo() | redo
 call Foo() | redir
+call Foo() | redo
 call Foo() | redraw
 call Foo() | redrawstatus
 call Foo() | redrawtabline
@@ -1003,23 +1020,21 @@ call Foo() | rubyfile
 call Foo() | rundo
 call Foo() | runtime
 call Foo() | rviminfo
-call Foo() | substitute
-call Foo() | sNext
+call Foo() | sall
 call Foo() | sandbox
 call Foo() | sargument
-call Foo() | sall
 call Foo() | saveas
-call Foo() | sbuffer
-call Foo() | sbNext
 call Foo() | sball
 call Foo() | sbfirst
 call Foo() | sblast
 call Foo() | sbmodified
 call Foo() | sbnext
+call Foo() | sbNext
 call Foo() | sbprevious
 call Foo() | sbrewind
-call Foo() | scriptnames
+call Foo() | sbuffer
 call Foo() | scriptencoding
+call Foo() | scriptnames
 call Foo() | scriptversion
 call Foo() | scscope
 call Foo() | set
@@ -1029,18 +1044,18 @@ call Foo() | setlocal
 call Foo() | sfind
 call Foo() | sfirst
 call Foo() | shell
-call Foo() | simalt
 call Foo() | sign
 call Foo() | silent
-call Foo() | sleep
-call Foo() | sleep!
+call Foo() | simalt
 call Foo() | slast
+call Foo() | sleep
 call Foo() | smagic
 call Foo() | smap
 call Foo() | smapclear
 call Foo() | smenu
 call Foo() | smile
 call Foo() | snext
+call Foo() | sNext
 call Foo() | snomagic
 call Foo() | snoremap
 call Foo() | snoremenu
@@ -1056,26 +1071,26 @@ call Foo() | spellwrong
 call Foo() | split
 call Foo() | sprevious
 call Foo() | srewind
-call Foo() | stop
 call Foo() | stag
-call Foo() | startinsert
 call Foo() | startgreplace
+call Foo() | startinsert
 call Foo() | startreplace
-call Foo() | stopinsert
 call Foo() | stjump
+call Foo() | stop
+call Foo() | stopinsert
 call Foo() | stselect
+call Foo() | substitute
 call Foo() | sunhide
 call Foo() | sunmap
 call Foo() | sunmenu
 call Foo() | suspend
 call Foo() | sview
 call Foo() | swapname
+call Foo() | syncbind
 call Foo() | syntax
 call Foo() | syntime
-call Foo() | syncbind
 call Foo() | t
-call Foo() | tNext
-call Foo() | tabNext
+call Foo() | tab
 call Foo() | tabclose
 call Foo() | tabdo
 call Foo() | tabedit
@@ -1085,11 +1100,11 @@ call Foo() | tablast
 call Foo() | tabmove
 call Foo() | tabnew
 call Foo() | tabnext
+call Foo() | tabNext
 call Foo() | tabonly
 call Foo() | tabprevious
 call Foo() | tabrewind
 call Foo() | tabs
-call Foo() | tab
 call Foo() | tag
 call Foo() | tags
 call Foo() | tcd
@@ -1106,10 +1121,11 @@ call Foo() | tlast
 call Foo() | tlmenu
 call Foo() | tlnoremenu
 call Foo() | tlunmenu
-call Foo() | tmapclear
 call Foo() | tmap
+call Foo() | tmapclear
 call Foo() | tmenu
 call Foo() | tnext
+call Foo() | tNext
 call Foo() | tnoremap
 call Foo() | topleft
 call Foo() | tprevious
@@ -1118,11 +1134,10 @@ call Foo() | try
 call Foo() | tselect
 call Foo() | tunmap
 call Foo() | tunmenu
+call Foo() | unabbreviate
 call Foo() | undo
 call Foo() | undojoin
 call Foo() | undolist
-call Foo() | unabbreviate
-call Foo() | unabbreviate
 call Foo() | unhide
 call Foo() | uniq
 call Foo() | unlet
@@ -1131,16 +1146,16 @@ call Foo() | unmap
 call Foo() | unmenu
 call Foo() | unsilent
 call Foo() | update
-call Foo() | vglobal/.../
-call Foo() | version
 call Foo() | verbose
+call Foo() | version
 call Foo() | vertical
+call Foo() | vglobal
+call Foo() | view
 call Foo() | vim9cmd
 call Foo() | vimgrep
 call Foo() | vimgrepadd
 call Foo() | visual
 call Foo() | viusage
-call Foo() | view
 call Foo() | vmap
 call Foo() | vmapclear
 call Foo() | vmenu
@@ -1150,33 +1165,32 @@ call Foo() | vnoremenu
 call Foo() | vsplit
 call Foo() | vunmap
 call Foo() | vunmenu
-call Foo() | windo
-call Foo() | write
-call Foo() | wNext
 call Foo() | wall
 call Foo() | while
-call Foo() | winsize
 call Foo() | wincmd
+call Foo() | windo
 call Foo() | winpos
+call Foo() | winsize
 call Foo() | wnext
+call Foo() | wNext
 call Foo() | wprevious
 call Foo() | wq
 call Foo() | wqall
+call Foo() | write
 call Foo() | wundo
 call Foo() | wviminfo
-call Foo() | xit
 call Foo() | xall
-call Foo() | xmapclear
+call Foo() | xit
 call Foo() | xmap
+call Foo() | xmapclear
 call Foo() | xmenu
-call Foo() | xrestore
 call Foo() | xnoremap
 call Foo() | xnoremenu
+call Foo() | xrestore
 call Foo() | xunmap
 call Foo() | xunmenu
 call Foo() | yank
 call Foo() | z
-
 
 " Vim9-script only
 
@@ -1194,17 +1208,48 @@ call Foo() | z
 :type
 :var
 
-Foo() | abstract
-Foo() | class
-Foo() | endclass
-Foo() | endenum
-Foo() | endinterface
-Foo() | enum
-Foo() | export
-Foo() | final
-Foo() | interface
-Foo() | public
-Foo() | static
-Foo() | type
-Foo() | var
+call Foo() | abstract
+call Foo() | class
+call Foo() | endclass
+call Foo() | endenum
+call Foo() | endinterface
+call Foo() | enum
+call Foo() | export
+call Foo() | final
+call Foo() | interface
+call Foo() | public
+call Foo() | static
+call Foo() | type
+call Foo() | var
+
+
+" User commands
+
+Foobar
+Foobar!
+Foobar123
+Foobar123!
+Foo123bar
+Foo123bar!
+
+:Foobar
+:Foobar!
+:Foobar123
+:Foobar123!
+:Foo123bar
+:Foo123bar!
+
+call Foo() | Foobar
+call Foo() | Foobar!
+call Foo() | Foobar123
+call Foo() | Foobar123!
+call Foo() | Foo123bar
+call Foo() | Foo123bar!
+
+call Foo() | :Foobar
+call Foo() | :Foobar!
+call Foo() | :Foobar123
+call Foo() | :Foobar123!
+call Foo() | :Foo123bar
+call Foo() | :Foo123bar!
 

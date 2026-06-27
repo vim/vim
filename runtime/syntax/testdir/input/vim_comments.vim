@@ -53,6 +53,13 @@ echo "TOP"
       \ arg2
 
 
+
+:"comment"
+: "comment"
+:"comment
+: "comment
+
+
 " Issue: #13047
 
 if !exists(":DiffOrig")
