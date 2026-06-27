@@ -702,7 +702,7 @@ runtime/syntax/sshallowedsigners.vim			@fionn
 runtime/syntax/sshauthorizedkeys.vim			@fionn
 runtime/syntax/sshconfig.vim				@Jakuje
 runtime/syntax/sshdconfig.vim				@Jakuje
-runtime/syntax/sshkey.vim				@fionn
+runtime/syntax/sshpublickey.vim				@fionn
 runtime/syntax/sshknownhosts.vim			@fionn
 runtime/syntax/sudoers.vim				@e-kwsm
 runtime/syntax/svn.vim					@hdima

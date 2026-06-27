@@ -15,7 +15,7 @@ syn match sshAuthorizedKeyOptionSeparator "," contained
 syn match sshAuthorizedKeyOptionAssignment "=" contained
 syn match sshAuthorizedKeyOptionValue '"\(\\\"\|[^"]\)*"' contained
 
-runtime! syntax/sshkey.vim
+runtime! syntax/sshpublickey.vim
 
 hi def link sshAuthorizedKeyOptionKeyword Keyword
 hi def link sshAuthorizedKeyOptionSeparator Punctuation

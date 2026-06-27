@@ -1108,7 +1108,7 @@ au BufNewFile,BufRead */etc/ssh/ssh_config.d/*.conf		setf sshconfig
 au BufNewFile,BufRead */etc/ssh/sshd_config.d/*.conf	setf sshdconfig
 
 " OpenSSH public keys, authorized keys, signing keys, host keys
-au BufNewFile,BufRead */.ssh/?*.pub,/etc/ssh/?*.pub               setf sshkey
+au BufNewFile,BufRead */.ssh/?*.pub,/etc/ssh/?*.pub               setf sshpublickey
 au BufNewFile,BufRead */.ssh/authorized_keys                      setf sshauthorizedkeys
 au BufNewFile,BufRead */.ssh/known_hosts,/etc/ssh/ssh_known_hosts setf sshknownhosts
 au BufNewFile,BufRead allowed_signers,*.allowed_signers           setf sshallowedsigners

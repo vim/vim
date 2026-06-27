@@ -18,7 +18,7 @@ syn match sshAllowedSignersOptionSeparator "," contained
 syn match sshAllowedSignersOptionAssignment "=" contained
 syn match sshAllowedSignersOptionValue '"\(\\\"\|[^"]\)*"' contained
 
-runtime! syntax/sshkey.vim
+runtime! syntax/sshpublickey.vim
 
 hi def link sshAllowedSignersPrincipal Identifier
 hi def link sshAllowedSignersPrincipalSeparator Punctuation

@@ -8,7 +8,7 @@ if exists("b:current_syntax")
     finish
 endif
 
-runtime! syntax/sshkey.vim
+runtime! syntax/sshpublickey.vim
 
 syn match sshKnownHostsMarker "^@cert-authority\>" nextgroup=sshKnownHostsHostname,sshKnownHostsHashedHostname skipwhite
 syn match sshKnownHostsMarker "^@revoked\>" nextgroup=sshKnownHostsHostname,sshKnownHostsHashedHostname skipwhite

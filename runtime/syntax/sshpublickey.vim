@@ -27,4 +27,4 @@ hi def link sshKeyType Type
 hi def link sshKeyBase64Encoded String
 hi def link sshKeyComment Comment
 
-let b:current_syntax = "sshkey"
+let b:current_syntax = "sshpublickey"

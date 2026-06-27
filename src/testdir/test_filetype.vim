@@ -794,7 +794,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     sshauthorizedkeys: ['any/.ssh/authorized_keys'],
     sshconfig: ['ssh_config', '/.ssh/config', '/etc/ssh/ssh_config.d/file.conf', 'any/etc/ssh/ssh_config.d/file.conf', 'any/.ssh/config', 'any/.ssh/file.conf'],
     sshdconfig: ['sshd_config', '/etc/ssh/sshd_config.d/file.conf', 'any/etc/ssh/sshd_config.d/file.conf'],
-    sshkey: ['any/.ssh/file.pub', '/etc/ssh/file.pub'],
+    sshpublickey: ['any/.ssh/file.pub', '/etc/ssh/file.pub'],
     sshknownhosts: ['any/.ssh/known_hosts', '/etc/ssh/ssh_known_hosts'],
     st: ['file.st'],
     starlark: ['file.ipd', 'file.sky', 'file.star', 'file.starlark'],
