@@ -1568,7 +1568,7 @@ EXTERN char e_using_special_as_number[]
 EXTERN char e_too_many_signs_defined[]
 	INIT(= N_("E612: Too many signs defined"));
 #endif
-#if defined(FEAT_PRINTER) && (defined(FEAT_MSWIN) || defined(FEAT_PRINT_PANGO))
+#if defined(FEAT_PRINTER) && (defined(MSWIN) || defined(FEAT_PRINT_PANGO))
 EXTERN char e_unknown_printer_font_str[]
 	INIT(= N_("E613: Unknown printer font: %s"));
 #endif

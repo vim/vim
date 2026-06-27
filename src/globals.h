@@ -1856,38 +1856,6 @@ EXTERN option_table_T printer_opts[OPT_PRINT_NUM_OPTIONS]
 # endif
     ;
 
-# if defined(FEAT_POSTSCRIPT) || defined(FEAT_PRINT_PANGO)
-typedef struct 
-{
-    char	*name;
-    double	width; // Width and height in points for portrait
-    double	height;
-} prt_mediasize_T;
-
-#  define PRT_MEDIASIZE_LEN  14
-
-EXTERN prt_mediasize_T prt_mediasize[PRT_MEDIASIZE_LEN]
-#  ifdef DO_INIT
-    = {
-	{"A4",		595.0,  842.0},
-	{"letter",	612.0,  792.0},
-	{"10x14",	720.0, 1008.0},
-	{"A3",		842.0, 1191.0},
-	{"A5",		420.0,  595.0},
-	{"B4",		729.0, 1032.0},
-	{"B5",		516.0,  729.0},
-	{"executive",	522.0,  756.0},
-	{"folio",	595.0,  935.0},
-	{"ledger",	1224.0,  792.0},
-	{"legal",	612.0, 1008.0},
-	{"quarto",	610.0,  780.0},
-	{"statement",	396.0,  612.0},
-	{"tabloid",	792.0, 1224.0}
-    }
-#  endif
-    ;
-# endif
-
 // For prt_get_unit().
 # define PRT_UNIT_NONE	-1
 # define PRT_UNIT_PERC	0
