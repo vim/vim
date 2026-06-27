@@ -121,6 +121,7 @@ typedef struct
     int		ff;		    // seen form feed character
 } prt_pos_T;
 
+#if defined(FEAT_POSTSCRIPT) || defined(FEAT_PRINT_PANGO)
 prt_mediasize_T prt_mediasize[PRT_MEDIASIZE_LEN] = {
     {"A4",		595.0,  842.0},
     {"letter",	612.0,  792.0},
@@ -137,6 +138,7 @@ prt_mediasize_T prt_mediasize[PRT_MEDIASIZE_LEN] = {
     {"statement",	396.0,  612.0},
     {"tabloid",	792.0, 1224.0}
 };
+#endif
 
 static char *parse_list_options(char_u *option_str, option_table_T *table, int table_size);
 
