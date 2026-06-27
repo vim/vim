@@ -1,7 +1,7 @@
 vim9script
 
 # Maintainer: Maxim Kim <habamax@gmail.com>
-# Last Update: 2026-06-22
+# Last Update: 2026-06-27
 
 var base_pairs = {
     'b': ('(', ')'), '(': ('( ', ' )'), ')': ("\n(", ')'),
@@ -200,7 +200,9 @@ def AddSurround(mode: string, pos_start: list<number> = getcharpos("'["), pos_en
     if s_mode == 'char'
         setlocal virtualedit=all
         setcharpos('.', start)
-        if getline('.') =~ '^\s*$'
+        if col('.') == col('$')
+                || getline('.') =~ '^\s*$'
+                || getline('.')[col('.') - 1] =~ '\s'
             s_left = trim(s_left)
         endif
         exe $"noautocmd normal! i{s_tab}{s_left}"
@@ -210,7 +212,7 @@ def AddSurround(mode: string, pos_start: list<number> = getcharpos("'["), pos_en
         endif
         start[2] += strchars(s_left)
         setcharpos('.', end)
-        if getline('.') =~ '^\s*$'
+        if getline('.') =~ '^\s*$' || getline('.')[col('.') - 1] =~ '\s'
             s_right = trim(s_right)
         endif
         if empty(getline(end[1]))

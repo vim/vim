@@ -325,6 +325,24 @@ func Test_surround_change()
         \] , result)
 endfunc
 
+func Test_surround_change2()
+  let lines =<< trim END
+    Lorem ipsum (
+    fermentum pretium).
+  END
+
+  enew
+  call setline(1, lines)
+
+  normal f(cs({cs{[
+
+  let result = getline(1, '$')
+  call assert_equal([
+        \ 'Lorem ipsum [',
+        \ 'fermentum pretium ].'
+        \] , result)
+endfunc
+
 func Test_surround_custom_pairs()
   let lines =<< trim END
     one "보two" 여보((세요 дважды)) два *четыре*
