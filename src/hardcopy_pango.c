@@ -16,6 +16,9 @@
 
 #ifdef FEAT_PRINT_PANGO
 
+#include "hardcopy.h"
+#include "hardcopy_pango.h"
+
 #include <cairo/cairo-ps.h>
 #include <pango/pango.h>
 
@@ -128,12 +131,12 @@ to_device_units(int idx, double physsize, int def_number)
  */
     static void
 get_page_margins(
-    double	width,
-    double	height,
-    double	*left,
-    double	*right,
-    double	*top,
-    double	*bottom)
+	double	width,
+	double	height,
+	double	*left,
+	double	*right,
+	double	*top,
+	double	*bottom)
 {
     *left   = to_device_units(OPT_PRINT_LEFT, width, 10);
     *right  = width - to_device_units(OPT_PRINT_RIGHT, width, 5);
@@ -203,9 +206,9 @@ get_font(char_u *name)
 
     int
 mch_print_init(
-    prt_settings_T  *psettings,
-    char_u	    *jobname,
-    int		    forceit UNUSED)
+	prt_settings_T  *psettings,
+	char_u	    *jobname,
+	int		    forceit UNUSED)
 {
     char_u	*paper_name;
     int		paper_strlen;
@@ -216,12 +219,12 @@ mch_print_init(
 #if defined(FEAT_GUI_GTK) && defined(USE_GTK4)
     if (!forceit)
 	;
-	// TODO
+    // TODO
 #endif
 
     // Get paper type to use
     portrait = (!printer_opts[OPT_PRINT_PORTRAIT].present
-	   || TOLOWER_ASC(printer_opts[OPT_PRINT_PORTRAIT].string[0]) == 'y');
+	    || TOLOWER_ASC(printer_opts[OPT_PRINT_PORTRAIT].string[0]) == 'y');
     pctx.portrait = portrait;
     if (printer_opts[OPT_PRINT_PAPER].present)
     {
@@ -351,8 +354,8 @@ mch_print_init(
     {
 	double  left;
 	double	right;
-	double 	top;
-	double 	bottom;
+	double	top;
+	double	bottom;
 
 	get_page_margins(pctx.page_width, pctx.page_height, &left, &right, &top,
 		&bottom);
@@ -385,7 +388,7 @@ mch_print_init(
 	    psettings->duplex = 0;
 	}
 	else if (STRNICMP(printer_opts[OPT_PRINT_DUPLEX].string, "short", 5)
-									 == 0)
+		== 0)
 	    pctx.tumble = TRUE;
     }
 
@@ -592,8 +595,8 @@ mch_print_text_out(char_u *textp, int len)
 	    // An offset of 0.4 seems to work pretty decently with Courier...
 	    cairo_move_to(pctx.cr, pctx.cur_x + width + 0.4,
 		    pctx.cur_y + pctx.char_ascent);
-            pango_cairo_show_glyph_string(pctx.cr, item->analysis.font, glyphs);
-        }
+	    pango_cairo_show_glyph_string(pctx.cr, item->analysis.font, glyphs);
+	}
 
 	pango_item_free(item);
 	width += o;
@@ -627,15 +630,15 @@ mch_print_text_out(char_u *textp, int len)
 }
 
     void
-mch_print_set_font(int iBold, int iItalic, int iUnderline)
+mch_print_set_font(int bold, int italic, int underline)
 {
     pctx.draw_flags = 0;
 
-    if (iBold)
+    if (bold)
 	pctx.draw_flags |= PRT_DRAW_BOLD;
-    if (iItalic)
+    if (italic)
 	pctx.draw_flags |= PRT_DRAW_ITALIC;
-    if (iUnderline)
+    if (underline)
 	pctx.draw_flags |= PRT_DRAW_UNDERLINE;
 }
 
