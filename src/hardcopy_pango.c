@@ -59,11 +59,9 @@ static struct
     bool duplex;
     bool tumble; // Short edge duplex
 
-    double char_width;
-    double char_height;
-    double line_height;
-    double underline_pos;
-    double underline_thickness;
+    int char_width;
+    int char_ascent;
+    int line_height;
 
     double page_width;
     double page_height;
@@ -330,30 +328,33 @@ mch_print_init(
 
     // Get line height and char width
     {
+	PangoLayout	    *layout;
 	PangoFontMetrics    *metrics;
-	int		    ascent, descent;
+	int		    ascent;
+	int		    descent;
 
-	metrics = pango_context_get_metrics(pctx.text_context, pctx.font, NULL);
+	layout = pango_layout_new(pctx.text_context);
+	pango_layout_set_font_description(layout, pctx.font);
 
-	pctx.char_width =
-	    (double)pango_font_metrics_get_approximate_char_width(metrics)
-	    / PANGO_SCALE;
+	metrics = pango_context_get_metrics(
+		pango_layout_get_context(layout), pctx.font, NULL);
+
+	pctx.char_width = pango_font_metrics_get_approximate_char_width(
+		metrics) / PANGO_SCALE;
 
 	ascent = pango_font_metrics_get_ascent(metrics);
 	descent = pango_font_metrics_get_descent(metrics);
-	pctx.char_height = (double)(ascent + descent) / PANGO_SCALE;
 
-	pctx.line_height = (double)pango_font_metrics_get_height(metrics)
-	    / PANGO_SCALE;
-
-	pctx.underline_pos =
-	    (double)pango_font_metrics_get_underline_position(metrics)
-	    / PANGO_SCALE;
-	pctx.underline_thickness =
-	    (double)pango_font_metrics_get_underline_thickness(metrics)
-	    / PANGO_SCALE;
+	pctx.char_ascent = ascent / PANGO_SCALE;
+	// Don't use pango_font_metrics_get_height(), because that seems to
+	// return a different line height compared to the postscript code in
+	// hardcopy.c
+	pctx.line_height = (ascent + descent) / PANGO_SCALE;
+	pctx.line_height = MAX(pctx.line_height, pctx.char_ascent + 1);
 
 	pango_font_metrics_unref(metrics);
+	g_object_unref(layout);
+
     }
 
     // Calculate margins
@@ -532,14 +533,13 @@ long_to_rgb(long_u c, double *r, double *g, double *b)
     int
 mch_print_text_out(char_u *textp, int len)
 {
-    char_u		*str;
-    PangoLayout		*layout;
     PangoAttrList	*attr_list;
-    int			width_int;
-    double		width;
-    double		start_y;
+    GList		*item_list;
+    PangoGlyphString	*glyphs;
+    char_u		*str;
     double		r, g, b;
-    double		next_x;
+    int			width = 0;
+    int			next_x;
 
     // Always convert to UTF-8, Pango expects that
     if (output_conv.vc_type == CONV_NONE)
@@ -550,11 +550,6 @@ mch_print_text_out(char_u *textp, int len)
     if (str == NULL)
 	return TRUE;
 
-    layout = pango_layout_new(pctx.text_context);
-    pango_layout_set_text(layout, (const char *)textp, len);
-
-    // Set layout attributes. apply for entire layout. "textp" represents a
-    // single character/glyph, so its not really a "string" of text.
     attr_list = pango_attr_list_new();
 
     if ((pctx.draw_flags & PRT_DRAW_BOLD) && pctx.font_can_bold)
@@ -564,48 +559,76 @@ mch_print_text_out(char_u *textp, int len)
 	INSERT_PANGO_ATTR(pango_attr_style_new(PANGO_STYLE_ITALIC),
 		attr_list, 0, len);
 
-    pango_layout_set_attributes(layout, attr_list);
+    item_list = pango_itemize(pctx.text_context,
+	    (const char *)str, 0, len, attr_list, NULL);
     pango_attr_list_unref(attr_list);
 
-    // Get logical width to advance by (and also draw bg color).
-    pango_layout_get_size(layout, &width_int, NULL);
-    width = width_int;
-    width /= PANGO_SCALE;
+    glyphs = pango_glyph_string_new();
 
-    // Draw background color
-    long_to_rgb(pctx.cur_bg, &r, &g, &b);
-    cairo_set_source_rgb(pctx.cr, r, g, b);
-    // Don't start at line bottom of previous line, since we don't want to draw
-    // over any ink. Instead offset by the "line spacing".
-    start_y = pctx.cur_y + (pctx.line_height - pctx.char_height);
-    cairo_rectangle(pctx.cr, pctx.cur_x, start_y, width, pctx.char_height);
-    cairo_fill(pctx.cr);
+    while (item_list != NULL)
+    {
+	PangoItem   *item;
+	int	    o;
 
-    // Set foreground and draw layout text
-    long_to_rgb(pctx.cur_fg, &r, &g, &b);
-    cairo_set_source_rgb(pctx.cr, r, g, b);
-    cairo_move_to(pctx.cr, pctx.cur_x, pctx.cur_y);
-    pango_cairo_show_layout(pctx.cr, layout);
+	item = (PangoItem *)item_list->data;
+	item_list = g_list_delete_link(item_list, item_list);
 
-    // Draw underline last (if needed), use foreground color
+	pango_shape_full((const char *)str + item->offset, item->length,
+		(const char *)str, len, &item->analysis, glyphs);
+
+	o = pango_glyph_string_get_width(glyphs) / PANGO_SCALE;
+
+	// Draw background color
+	long_to_rgb(pctx.cur_bg, &r, &g, &b);
+	cairo_set_source_rgb(pctx.cr, r, g, b);
+	cairo_rectangle(pctx.cr, pctx.cur_x + width,
+		pctx.cur_y, o, pctx.line_height);
+	cairo_fill(pctx.cr);
+
+	// Draw actual text
+	long_to_rgb(pctx.cur_fg, &r, &g, &b);
+	cairo_set_source_rgb(pctx.cr, r, g, b);
+	cairo_move_to(pctx.cr, pctx.cur_x + width,
+		pctx.cur_y + pctx.char_ascent);
+	pango_cairo_show_glyph_string(pctx.cr, item->analysis.font, glyphs);
+
+	// Emulate bold by adding an offset
+	// TODO support jobsplit
+	if ((pctx.draw_flags & PRT_DRAW_BOLD) && !pctx.font_can_bold)
+	{
+	    // An offset of 0.4 seems to work pretty decently with Courier...
+	    cairo_move_to(pctx.cr, pctx.cur_x + width + 0.4,
+		    pctx.cur_y + pctx.char_ascent);
+	    pango_cairo_show_glyph_string(pctx.cr, item->analysis.font, glyphs);
+	}
+
+	pango_item_free(item);
+	width += o;
+    }
+
+    // Draw underline if needed
     if (pctx.draw_flags & PRT_DRAW_UNDERLINE)
     {
-	double baseline = (double)pango_layout_get_baseline(layout) / PANGO_SCALE;
-	double uy = start_y + baseline - pctx.underline_pos;
+	double y = pctx.cur_y + pctx.char_ascent;
 
-	cairo_set_line_width(pctx.cr, pctx.underline_thickness);
-	cairo_move_to(pctx.cr, pctx.cur_x, uy);
-	cairo_line_to(pctx.cr, pctx.cur_x + width, uy);
+	long_to_rgb(pctx.cur_fg, &r, &g, &b);
+	cairo_set_source_rgb(pctx.cr, r, g, b);
+	cairo_set_line_width(pctx.cr, 0.5);
+	cairo_move_to(pctx.cr, pctx.cur_x, y + 0.5);
+	cairo_line_to(pctx.cr, pctx.cur_x + width, y + 0.5);
 	cairo_stroke(pctx.cr);
     }
 
-    g_object_unref(layout);
+    pango_glyph_string_free(glyphs);
+
+    pctx.cur_x += width;
+
+    next_x = pctx.cur_x + pctx.char_width;
+
     if (output_conv.vc_type != CONV_NONE)
 	vim_free(str);
 
-    pctx.cur_x += width;
-    next_x = pctx.cur_x + pctx.char_width;
-
+    // Use elipson when comparing floating point
     return (next_x > pctx.right_margin) &&
 	((next_x - pctx.right_margin) > (pctx.right_margin * 1e-5));
 }
@@ -632,6 +655,8 @@ mch_print_set_bg(long_u bgcol)
     void
 mch_print_set_fg(long_u fgcol)
 {
+    // Probably can just call cairo_set_source_rgba() here but defer it later to
+    // be consistent with bg color.
     pctx.cur_fg = fgcol;
 }
 
