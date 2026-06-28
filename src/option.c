@@ -3498,6 +3498,14 @@ set_option_sctx_idx(int opt_idx, int opt_flags, sctx_T script_ctx)
     if (!(opt_flags & OPT_MODELINE))
 	new_script_ctx.sc_lnum += SOURCING_LNUM;
 
+    // ":legacy" and ":vim9cmd" change the execution context of an option.
+    if (cmdmod.cmod_flags & CMOD_VIM9CMD)
+	new_script_ctx.sc_version = SCRIPT_VERSION_VIM9;
+    if (cmdmod.cmod_flags & CMOD_LEGACY)
+	// It is a bit confusing, but "MAX" is actually the legacy Vim script
+	// version before Vim9.
+	new_script_ctx.sc_version = SCRIPT_VERSION_MAX;
+
     // Remember where the option was set.  For local options need to do that
     // in the buffer or window structure.
     if (both || (opt_flags & OPT_GLOBAL) || (indir & (PV_BUF|PV_WIN)) == 0)
