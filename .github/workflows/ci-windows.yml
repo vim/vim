@@ -193,6 +193,12 @@ jobs:
           )
           goto :eof
 
+      - name: Copy src directory to src2
+        if: matrix.GUI == 'no' || matrix.VIMDLL == 'yes'
+        shell: cmd
+        run: |
+          xcopy src src2\ /E > nul
+
       - name: Build (MSVC)
         if: matrix.toolchain == 'msvc'
         shell: cmd
@@ -306,40 +312,42 @@ jobs:
       #      fi
       #    fi
 
-      - name: Test and show the result of testing gVim
-        if: matrix.GUI == 'yes' || matrix.VIMDLL == 'yes'
-        shell: cmd
-        timeout-minutes: 15
-        run: |
-          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PYTHON3_DIR%;%PATH%;%SODIUM_LIB%
-          call "%VCVARSALL%" %VCARCH%
+      - parallel:
+        # Run gvim tests and vim tests in parallel
 
-          echo %COL_GREEN%Test gVim:%COL_RESET%
-          cd src\testdir
-          if "${{ matrix.GUI }}"=="yes" (
-            nmake -nologo -f Make_mvc.mak VIMPROG=..\gvim || exit 1
-          ) else (
-            @rem Run only tiny tests.
-            nmake -nologo -f Make_mvc.mak tiny VIMPROG=..\gvim  || exit 1
-          )
+        - name: Test and show the result of testing gVim
+          if: matrix.GUI == 'yes' || matrix.VIMDLL == 'yes'
+          shell: cmd
+          timeout-minutes: 15
+          run: |
+            PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PYTHON3_DIR%;%PATH%;%SODIUM_LIB%
+            call "%VCVARSALL%" %VCARCH%
 
-      - name: Test and show the result of testing Vim
-        if: matrix.GUI == 'no' || matrix.VIMDLL == 'yes'
-        shell: cmd
-        timeout-minutes: 15
-        run: |
-          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PYTHON3_DIR%;%PATH%;%SODIUM_LIB%
-          call "%VCVARSALL%" %VCARCH%
+            echo %COL_GREEN%Test gVim:%COL_RESET%
+            cd src\testdir
+            if "${{ matrix.features }}"=="TINY" (
+              @rem Run only tiny tests.
+              nmake -nologo -f Make_mvc.mak tiny VIMPROG=..\gvim  || exit 1
+            ) else (
+              nmake -nologo -f Make_mvc.mak VIMPROG=..\gvim || exit 1
+            )
 
-          echo %COL_GREEN%Test Vim:%COL_RESET%
-          cd src\testdir
-          nmake -nologo -f Make_mvc.mak clean
-          if "${{ matrix.GUI }}"=="no" (
-            nmake -nologo -f Make_mvc.mak VIMPROG=..\vim || exit 1
-          ) else (
-            @rem Run only tiny tests.
-            nmake -nologo -f Make_mvc.mak tiny VIMPROG=..\vim  || exit 1
-          )
+        - name: Test and show the result of testing Vim
+          if: matrix.GUI == 'no' || matrix.VIMDLL == 'yes'
+          shell: cmd
+          timeout-minutes: 15
+          run: |
+            PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PYTHON3_DIR%;%PATH%;%SODIUM_LIB%
+            call "%VCVARSALL%" %VCARCH%
+
+            echo %COL_GREEN%Test Vim:%COL_RESET%
+            cd src2\testdir
+            if "${{ matrix.features }}"=="TINY" (
+              @rem Run only tiny tests.
+              nmake -nologo -f Make_mvc.mak tiny VIMPROG=..\..\src\vim  || exit 1
+            ) else (
+              nmake -nologo -f Make_mvc.mak VIMPROG=..\..\src\vim || exit 1
+            )
 
       - name: Upload failed test artifacts
         if: ${{ !cancelled() }}
