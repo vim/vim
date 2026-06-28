@@ -674,7 +674,7 @@ gui_init(void)
      */
     gui.in_use = true;		// Must be set after menus have been set up
 #if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE)
-    gui.scale = 1; // Default value
+    gui.scale = 1.0; // Default value
 #endif
     if (gui_mch_init() == FAIL)
 	goto error;

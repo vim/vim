@@ -101,8 +101,10 @@ typedef GdkEvent GdkEventKey;	// GTK4: GdkEventKey merged into GdkEvent
 # define Y_2_ROW(y)	(((y) - gui.border_offset) / gui.char_height)
 #endif
 #if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE)
-# define LOG2PHY(l) ((l) * gui.scale) // Logical pixels to physical pixels
-# define PHY2LOG(p) ((p) / gui.scale) // Physical pixels to logical pixels
+// Logical pixels to physical pixels
+# define LOG2PHY(l) (gui.in_use ? (double)(l) * gui.scale : (l))
+ // Physical pixels to logical pixels
+# define PHY2LOG(p) (gui.in_use ? (double)(p) / gui.scale : (p))
 #else
 # define LOG2PHY(l) (l)
 # define PHY2LOG(p) (p)
@@ -420,7 +422,7 @@ typedef struct Gui
     bool	is_wayland;	    // active gdk backend in gtk is wayland
 # endif
 # ifdef FEAT_IMAGE
-    int		scale;		    // Current scaling
+    double	scale;		    // Current scaling (may be fractional)
 # endif
 #endif	// FEAT_GUI_GTK
 
