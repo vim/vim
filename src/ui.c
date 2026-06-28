@@ -301,13 +301,20 @@ inchar_loop(
 		return 0;
 	}
 # endif
-	if (wtime < 0 && did_start_blocking)
+	// When an autocomplete is pending, wake at the sooner of
+	// 'autocompletedelay' and 'updatetime' so the delay does not postpone
+	// CursorHold.  Once CursorHold has fired, only the delay is left.
+	bool delay_pending = ins_compl_autocomplete_pending() && p_acl > 0;
+
+	if (wtime < 0 && did_start_blocking && !delay_pending)
 	    // blocking and already waited for p_ut
 	    wait_time = -1;
 	else
 	{
 	    if (wtime >= 0)
 		wait_time = wtime;
+	    else if (delay_pending)
+		wait_time = did_start_blocking ? p_acl : MIN(p_acl, p_ut);
 	    else
 		// going to block after p_ut
 		wait_time = p_ut;
@@ -324,6 +331,29 @@ inchar_loop(
 		if (wtime >= 0)
 		    // no character available within "wtime"
 		    return 0;
+
+		// The 'autocompletedelay' expired: trigger the popup.  When
+		// 'updatetime' is shorter, fall through to CursorHold instead.
+		if (delay_pending && elapsed_time >= p_acl && maxlen >= 3
+					    && !typebuf_changed(tb_change_cnt))
+		{
+		    if (buf == NULL)
+		    {
+			char_u	ibuf[3];
+
+			ibuf[0] = CSI;
+			ibuf[1] = KS_EXTRA;
+			ibuf[2] = (int)KE_COMPLETE_DELAY;
+			add_to_input_buf(ibuf, 3);
+		    }
+		    else
+		    {
+			buf[0] = K_SPECIAL;
+			buf[1] = KS_EXTRA;
+			buf[2] = (int)KE_COMPLETE_DELAY;
+		    }
+		    return 3;
+		}
 
 		// No character available within 'updatetime'.
 		did_start_blocking = TRUE;
