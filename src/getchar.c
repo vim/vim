@@ -2175,7 +2175,8 @@ vgetc(void)
 #endif
 
 #ifdef FEAT_BEVAL_TERM
-    if (c != K_MOUSEMOVE && c != K_IGNORE && c != K_CURSORHOLD)
+    if (c != K_MOUSEMOVE && c != K_IGNORE && c != K_CURSORHOLD
+	    && c != K_COMPLETE_DELAY)
     {
 	// Don't trigger 'balloonexpr' unless only the mouse was moved.
 	bevalexpr_due_set = FALSE;
