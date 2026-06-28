@@ -699,8 +699,12 @@ runtime/syntax/sqloracle.vim				@chrisbra
 runtime/syntax/squirrel.vim				@zenmatic
 runtime/syntax/srt.vim					@ObserverOfTime
 runtime/syntax/ssa.vim					@ObserverOfTime
+runtime/syntax/sshallowedsigners.vim			@fionn
+runtime/syntax/sshauthorizedkeys.vim			@fionn
 runtime/syntax/sshconfig.vim				@Jakuje
 runtime/syntax/sshdconfig.vim				@Jakuje
+runtime/syntax/sshpublickey.vim				@fionn
+runtime/syntax/sshknownhosts.vim			@fionn
 runtime/syntax/sudoers.vim				@e-kwsm
 runtime/syntax/svn.vim					@hdima
 runtime/syntax/swayconfig.vim				@jamespeapen
