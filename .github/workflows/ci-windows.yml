@@ -325,11 +325,11 @@ jobs:
 
             echo %COL_GREEN%Test gVim:%COL_RESET%
             cd src\testdir
-            if "${{ matrix.GUI }}"=="yes" (
-              nmake -nologo -f Make_mvc.mak VIMPROG=..\gvim || exit 1
-            ) else (
+            if "${{ matrix.features }}"=="TINY" (
               @rem Run only tiny tests.
               nmake -nologo -f Make_mvc.mak tiny VIMPROG=..\gvim  || exit 1
+            ) else (
+              nmake -nologo -f Make_mvc.mak VIMPROG=..\gvim || exit 1
             )
 
         - name: Test and show the result of testing Vim
@@ -342,11 +342,11 @@ jobs:
 
             echo %COL_GREEN%Test Vim:%COL_RESET%
             cd src2\testdir
-            if "${{ matrix.GUI }}"=="no" (
-              nmake -nologo -f Make_mvc.mak VIMPROG=..\..\src\vim || exit 1
-            ) else (
+            if "${{ matrix.features }}"=="TINY" (
               @rem Run only tiny tests.
               nmake -nologo -f Make_mvc.mak tiny VIMPROG=..\..\src\vim  || exit 1
+            ) else (
+              nmake -nologo -f Make_mvc.mak VIMPROG=..\..\src\vim || exit 1
             )
 
       - name: Upload failed test artifacts
