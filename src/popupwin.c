@@ -233,12 +233,25 @@ set_moved_columns(win_T *wp, int flags)
 {
     char_u	*ptr;
     int		len = find_ident_under_cursor(&ptr, flags | FIND_NOERROR);
+    int		mincol;
 
     if (len <= 0)
 	return;
 
-    wp->w_popup_mincol = (int)(ptr - ml_get_curline());
-    wp->w_popup_maxcol = wp->w_popup_mincol + len - 1;
+    // When the cursor is on white space find_ident_under_cursor() skips
+    // forward to the next word, whose range does not cover the cursor column.
+    // Keep the cursor column then, otherwise popup_check_cursor_pos() would
+    // close the popup right away.
+    mincol = (int)(ptr - ml_get_curline());
+    if (curwin->w_cursor.col < mincol)
+    {
+	wp->w_popup_mincol = curwin->w_cursor.col;
+	wp->w_popup_maxcol = curwin->w_cursor.col;
+	return;
+    }
+
+    wp->w_popup_mincol = mincol;
+    wp->w_popup_maxcol = mincol + len - 1;
 }
 
 /*

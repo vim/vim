@@ -2331,6 +2331,20 @@ func Test_popup_moved()
   call assert_equal({}, popup_getpos(winid))
   call popup_clear()
 
+  " On white space find_ident_under_cursor() skips forward to the next word,
+  " whose range does not cover the cursor.  The cursor column must be used so
+  " the popup is not closed right away.
+  exe "normal gg4|"
+  let winid = popup_atcursor('text', {})
+  redraw
+  call assert_equal(1, popup_getpos(winid).visible)
+  call assert_equal([1, 3, 3], popup_getoptions(winid).moved)
+  call feedkeys("i\<Esc>", 'xt')
+  call assert_equal(1, popup_getpos(winid).visible)
+  call feedkeys("$i\<Esc>", 'xt')
+  call assert_equal({}, popup_getpos(winid))
+  call popup_clear()
+
   bwipe!
   call test_override('ALL', 0)
 endfunc
