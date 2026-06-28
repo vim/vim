@@ -97,6 +97,23 @@ def Test_vim9cmd()
   v9.CheckScriptFailure(lines, 'E1017:')
 enddef
 
+def Test_legacy_vim9cmd_exclusive()
+  # Make sure that only one of the "legacy" or "vim9cmd" prefixes is applied.
+
+  # Invalid as vim9syntax.
+  call assert_fails("legacy vim9cmd echo 'a' . 'b'", 'E15:')
+  call assert_fails("legacy vim9cmd legacy vim9cmd echo 'a' . 'b'", 'E15:')
+
+  # Invalid legacy syntax.
+  call assert_fails("vim9cmd legacy echo (x) => x", 'E121:')
+  call assert_fails("vim9cmd legacy vim9cmd legacy echo (x) => x", 'E121:')
+
+  # Validate legacy/vim9 syntax being used.
+  call assert_equal('ab', trim(execute("vim9cmd legacy echo 'a' . 'b'")))
+  call assert_equal('true',
+    execute('legacy vim9cmd echo type((x) => x) == v:t_func')->trim())
+enddef
+
 def Test_defcompile_fails()
   assert_fails('defcompile NotExists', 'E1061:')
   assert_fails('defcompile debug debug Test_defcompile_fails', 'E488:')

@@ -3092,6 +3092,9 @@ parse_command_modifiers(
 				      _(e_legacy_must_be_followed_by_command);
 				return FAIL;
 			    }
+			    // Make sure we do not have both legacy and Vim9
+			    // flags set at the same time.
+			    cmod->cmod_flags &= ~CMOD_VIM9CMD;
 			    cmod->cmod_flags |= CMOD_LEGACY;
 			    continue;
 			}
@@ -3177,6 +3180,9 @@ parse_command_modifiers(
 				      _(e_vim9cmd_must_be_followed_by_command);
 				return FAIL;
 			    }
+			    // Make sure we do not have both legacy and Vim9
+			    // flags set at the same time.
+			    cmod->cmod_flags &= ~CMOD_LEGACY;
 			    cmod->cmod_flags |= CMOD_VIM9CMD;
 			    continue;
 			}
