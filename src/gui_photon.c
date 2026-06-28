@@ -2173,7 +2173,11 @@ gui_mch_draw_string(int row, int col, char_u *s, int len, int flags)
 	// Use a static buffer to avoid large amounts of de/allocations
 	if (utf8_len < len)
 	{
-	    utf8_buffer = realloc(utf8_buffer, len * MB_LEN_MAX);
+	    char *new_buffer = realloc(utf8_buffer, len * MB_LEN_MAX);
+
+	    if (new_buffer == NULL)
+		return;
+	    utf8_buffer = new_buffer;
 	    utf8_len = len;
 	}
 
