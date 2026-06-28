@@ -3024,7 +3024,7 @@ popup_update_scale(void)
 	// If the popup has an image, recalculate its bounding box in cells
 	if (wp->w_popup_image_data != NULL)
 	{
-	    int cx = 8, cy = 16;
+	    int cx, cy;
 	    int cw, ch;
 
 	    cx = LOG2PHY(gui.char_width);
