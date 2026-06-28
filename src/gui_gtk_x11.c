@@ -6969,6 +6969,7 @@ theend:
 gui_mch_flush(void)
 {
     if (gui.mainwin != NULL && gtk_widget_get_realized(gui.mainwin))
+    {
 #ifdef GDK_WINDOWING_WAYLAND
 	if (gui.is_wayland)
 	    return wl_flush();
@@ -6978,6 +6979,7 @@ gui_mch_flush(void)
 #else
 	gdk_display_sync(gtk_widget_get_display(gui.mainwin));
 #endif
+    }
 }
 
 /*
