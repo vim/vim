@@ -2673,8 +2673,8 @@ drop_read_value_cb(GdkDrop *drop, GAsyncResult *result, DropReadData *drd)
     }
 
 exit:
-    read_data_free(&drd->rd);
     gdk_drop_finish(drop, success ? gdk_drop_get_actions(drop) : 0);
+    read_data_free(&drd->rd);
 }
 
     static void
@@ -2684,7 +2684,7 @@ drop_read_cb(GdkDrop *drop, GAsyncResult *result, DropReadData *drd)
     const char	    *m;
 
     in_stream = gdk_drop_read_finish(drop, result, &m, NULL);
-    if (in_stream == NULL)
+    if (in_stream == NULL || STRCMP(m, "text/html") != 0) 
     {
 	read_data_free(&drd->rd);
 	gdk_drop_finish(drop, 0);
