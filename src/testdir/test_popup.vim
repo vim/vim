@@ -2632,7 +2632,7 @@ func Test_popup_opacity_move_after_close()
   call StopVimInTerminal(buf)
 endfunc
 
-" Test pumopt opacity when Pmenu highlighted are cleared
+" Test pumopt opacity when Pmenu highlight groups are cleared
 func Test_pumopt_opacity_pmenu_cleared()
   CheckScreendump
   let lines =<< trim END
