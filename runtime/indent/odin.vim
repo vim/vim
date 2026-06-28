@@ -4,7 +4,7 @@ vim9script
 # Language: Odin
 # Maintainer: Maxim Kim <habamax@gmail.com>
 # Website: https://github.com/habamax/vim-odin
-# Last Change: 2026-06-01
+# Last Change: 2026-06-28
 
 if exists("b:did_indent")
     finish
@@ -18,6 +18,10 @@ setlocal cinoptions=L0,m1,(s,j1,J1,l1,+0,:0,#3
 setlocal cinkeys=0{,0},0),0],!^F,:,o,O
 
 setlocal indentexpr=GetOdinIndent(v:lnum)
+
+def IsCommentOrString(lnum: number, col: number): bool
+    return synIDattr(synID(lnum, col, 1), "name") =~? 'Comment\|String'
+enddef
 
 def PrevLine(lnum: number): number
     var plnum = lnum - 1
@@ -41,7 +45,7 @@ def PrevLine(lnum: number): number
             break
         endif
     endwhile
-    return plnum
+    return max([plnum, 1])
 enddef
 
 def GetOdinIndent(lnum: number): number
@@ -86,7 +90,7 @@ def GetOdinIndent(lnum: number): number
     elseif pline =~ '^\s*}\s*$'
         if line !~ '^\s*}' && line !~ '\<case\>\s*.*:\s*$'
             indent = pindent
-        else
+        elseif !IsCommentOrString(lnum, col('$') - 1)
             indent = pindent - shiftwidth()
         endif
     elseif pline =~ '\S:\s*$'
