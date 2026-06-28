@@ -77,9 +77,7 @@ static struct
 
     char_u draw_flags;
 
-    // Used for generating DSC comments
-#define DSC_BUFSIZE 257
-    char buf[DSC_BUFSIZE];
+    bool dialog;
 } pctx;
 
 /*
@@ -134,10 +132,10 @@ get_page_margins(
 	double	*top,
 	double	*bottom)
 {
-    *left   = to_device_units(OPT_PRINT_LEFT, width, 10);
-    *right  = width - to_device_units(OPT_PRINT_RIGHT, width, 5);
+    *left = to_device_units(OPT_PRINT_LEFT, width, 10);
+    *right = width - to_device_units(OPT_PRINT_RIGHT, width, 5);
 
-    *top    = to_device_units(OPT_PRINT_TOP, height, 5);
+    *top = to_device_units(OPT_PRINT_TOP, height, 5);
     *bottom = height - to_device_units(OPT_PRINT_BOT, height, 5);
 }
 
@@ -203,75 +201,95 @@ get_font(char_u *name)
     int
 mch_print_init(
 	prt_settings_T  *psettings,
-	char_u	    *jobname,
-	int		    forceit UNUSED)
+	char_u		*jobname,
+	int		forceit UNUSED)
 {
     char_u	*paper_name;
-    int		paper_strlen;
-    bool	portrait;
-    int		media;
+    int	    	paper_strlen;
+    bool    	portrait;
+    int	    	media;
     char_u	*filename = NULL;
+    bool	dialog = false;
+
+    cairo_write_func_t write_func = NULL;
 
 #if defined(FEAT_GUI_GTK) && defined(USE_GTK4)
-    if (!forceit)
-	;
-    // TODO
+    if (!forceit && psettings->outfile == NULL)
+    {
+	int ret = gui_gtk4_print_dialog(psettings, jobname,
+		&pctx.page_width, &pctx.page_height, &write_func);
+
+	if (ret == FAIL)
+	    return FAIL;
+	if (ret == OK)
+	    dialog = true;
+    }
 #endif
 
-    // Get paper type to use
-    portrait = (!printer_opts[OPT_PRINT_PORTRAIT].present
-	    || TOLOWER_ASC(printer_opts[OPT_PRINT_PORTRAIT].string[0]) == 'y');
-    pctx.portrait = portrait;
-    if (printer_opts[OPT_PRINT_PAPER].present)
-    {
-	paper_name = printer_opts[OPT_PRINT_PAPER].string;
-	paper_strlen = printer_opts[OPT_PRINT_PAPER].strlen;
-    }
-    else
-    {
-	paper_name = (char_u *)"A4";
-	paper_strlen = 2;
-    }
+    pctx.dialog = dialog;
 
-    // Set width and height using given paper type
-    for (media = 0; media < (int)PRT_MEDIASIZE_LEN; ++media)
-	if ((int)STRLEN(prt_mediasize[media].name) == paper_strlen
-		&& STRNICMP(prt_mediasize[media].name,
-		    paper_name, paper_strlen) == 0)
-	    break;
-    if (media == PRT_MEDIASIZE_LEN)
-	media = 0;
-    pctx.media = media;
-
-    if (portrait)
+    // Let printer handle stuff when using dialog. Not sure if our postscript
+    // DSC comments can intefere with dialog settings...
+    if (!dialog)
     {
-	pctx.page_width = prt_mediasize[media].width;
-	pctx.page_height = prt_mediasize[media].height;
-    }
-    else
-    {
-	pctx.page_width = prt_mediasize[media].height;
-	pctx.page_height = prt_mediasize[media].width;
-    }
-
-    psettings->user_abort = FALSE;
-
-    // If the user didn't specify a file name, use a temp file.
-    if (psettings->outfile == NULL)
-    {
-	filename = vim_tempname('p', TRUE);
-	if (filename == NULL)
+	// Get paper type to use
+        portrait = (!printer_opts[OPT_PRINT_PORTRAIT].present ||
+	     TOLOWER_ASC(printer_opts[OPT_PRINT_PORTRAIT].string[0]) == 'y');
+        pctx.portrait = portrait;
+	if (printer_opts[OPT_PRINT_PAPER].present)
 	{
-	    emsg(_(e_cant_get_temp_file_name));
-	    return FAIL;
+	    paper_name = printer_opts[OPT_PRINT_PAPER].string;
+	    paper_strlen = printer_opts[OPT_PRINT_PAPER].strlen;
 	}
+	else
+	{
+	    paper_name = (char_u *)"A4";
+	    paper_strlen = 2;
+	}
+
+	// Set width and height using given paper type
+	for (media = 0; media < (int)PRT_MEDIASIZE_LEN; ++media)
+	    if ((int)STRLEN(prt_mediasize[media].name) == paper_strlen
+		    && STRNICMP(prt_mediasize[media].name,
+			paper_name, paper_strlen) == 0)
+		break;
+	if (media == PRT_MEDIASIZE_LEN)
+	    media = 0;
+	pctx.media = media;
+
+	if (portrait)
+	{
+	    pctx.page_width = prt_mediasize[media].width;
+	    pctx.page_height = prt_mediasize[media].height;
+	}
+	else
+	{
+	    pctx.page_width = prt_mediasize[media].height;
+	    pctx.page_height = prt_mediasize[media].width;
+	}
+
+	psettings->user_abort = FALSE;
+
+	// If the user didn't specify a file name, use a temp file.
+	if (psettings->outfile == NULL)
+	{
+	    filename = vim_tempname('p', TRUE);
+	    if (filename == NULL)
+	    {
+		emsg(_(e_cant_get_temp_file_name));
+		return FAIL;
+	    }
+	}
+	else
+	    filename = expand_env_save(psettings->outfile);
+
+	pctx.surface = cairo_ps_surface_create((const char *)filename,
+		pctx.page_width, pctx.page_height);
+	pctx.filename = (char_u *)filename;
     }
     else
-	filename = expand_env_save(psettings->outfile);
-
-    pctx.surface = cairo_ps_surface_create((const char *)filename,
-	    pctx.page_width, pctx.page_height);
-    pctx.filename = (char_u *)filename;
+	pctx.surface = cairo_ps_surface_create_for_stream(write_func,
+		NULL, pctx.page_width, pctx.page_height);
 
     if (cairo_surface_status(pctx.surface) != CAIRO_STATUS_SUCCESS)
     {
@@ -351,9 +369,6 @@ mch_print_init(
     psettings->chars_per_line = get_cpl();
     psettings->lines_per_page = get_lpp();
 
-    pctx.collate = (!printer_opts[OPT_PRINT_COLLATE].present
-	    || TOLOWER_ASC(printer_opts[OPT_PRINT_COLLATE].string[0]) == 'y');
-
     // Postscript handles collating pages, don't let Vim handle it. This means
     // we don't need to worry about the "jobsplit" value in 'printoptions'
     psettings->n_collated_copies = 1;
@@ -361,19 +376,25 @@ mch_print_init(
 
     psettings->jobname = jobname;
 
-    pctx.duplex = TRUE;
-    pctx.tumble = FALSE;
-    psettings->duplex = TRUE;
-    if (printer_opts[OPT_PRINT_DUPLEX].present)
+    if (!dialog)
     {
-	if (STRNICMP(printer_opts[OPT_PRINT_DUPLEX].string, "off", 3) == 0)
-	{
-	    pctx.duplex = FALSE;
-	    psettings->duplex = 0;
-	}
-	else if (STRNICMP(printer_opts[OPT_PRINT_DUPLEX].string, "short", 5)
-		== 0)
-	    pctx.tumble = TRUE;
+        pctx.collate = (!printer_opts[OPT_PRINT_COLLATE].present ||
+             TOLOWER_ASC(printer_opts[OPT_PRINT_COLLATE].string[0]) == 'y');
+
+        pctx.duplex = TRUE;
+        pctx.tumble = FALSE;
+        psettings->duplex = TRUE;
+        if (printer_opts[OPT_PRINT_DUPLEX].present)
+        {
+            if (STRNICMP(printer_opts[OPT_PRINT_DUPLEX].string, "off", 3) == 0)
+            {
+                pctx.duplex = FALSE;
+                psettings->duplex = 0;
+            }
+            else if (STRNICMP(printer_opts[OPT_PRINT_DUPLEX].string, "short",
+                              5) == 0)
+                pctx.tumble = TRUE;
+        }
     }
 
     return OK;
@@ -385,12 +406,14 @@ mch_print_init(
     static void
 emit_dsc_comment(char *comment, char *fmt, ...)
 {
-    va_list ap;
-    int	    len = DSC_BUFSIZE;
-    int	    o;
-    char    *s = pctx.buf;
+    static char buf[257];
 
-    o = vim_snprintf(s, DSC_BUFSIZE, "%%%%%s: ", comment);
+    va_list ap;
+    int	    len = sizeof(buf);
+    int	    o;
+    char    *s = buf;
+
+    o = vim_snprintf(s, len, "%%%%%s: ", comment);
 
     if (fmt == NULL)
 	goto exit;
@@ -405,13 +428,20 @@ emit_dsc_comment(char *comment, char *fmt, ...)
     va_end(ap);
 
 exit:
-    cairo_ps_surface_dsc_comment(pctx.surface, pctx.buf);
+    cairo_ps_surface_dsc_comment(pctx.surface, buf);
 }
 
     int
 mch_print_begin(prt_settings_T *psettings)
 {
     char buf[256];
+
+    pctx.cur_x = 0.0;
+    pctx.cur_line = 0;
+    pctx.draw_flags = 0;
+
+    if (pctx.dialog)
+	return TRUE;
 
     // In header section
     emit_dsc_comment("Title", (char *)psettings->jobname);
@@ -437,10 +467,6 @@ mch_print_begin(prt_settings_T *psettings)
     emit_dsc_comment("BeginDefaults", NULL);
     emit_dsc_comment("PageMedia", prt_mediasize[pctx.media].name);
     emit_dsc_comment("EndDefaults", NULL);
-
-    pctx.cur_x = 0.0;
-    pctx.cur_line = 0;
-    pctx.draw_flags = 0;
 
     return TRUE;
 }
@@ -656,6 +682,10 @@ mch_print_cleanup(void)
     g_clear_object(&pctx.text_context);
     g_clear_pointer(&pctx.font, pango_font_description_free);
     g_clear_pointer(&pctx.filename, vim_free);
+#if defined(FEAT_GUI_GTK) && defined(USE_GTK4)
+    if (pctx.dialog)
+	gui_gtk4_print_cleanup();
+#endif
 }
 
 #endif // FEAT_PRINT_PANGO

@@ -5623,4 +5623,176 @@ ex_helpfind(exarg_T *eap UNUSED)
     do_cmdline_cmd((char_u *)"emenu ToolBar.FindHelp");
 }
 
+/*
+ * ============================================================
+ * Native print dialog
+ * ============================================================
+ */
+
+static GtkPrintSettings *print_settings = NULL;
+static GtkPageSetup *page_setup = NULL;
+static GtkPrintSetup *print_setup = NULL;
+static GOutputStream *print_stream = NULL;
+
+    static cairo_status_t
+print_write_func(void *udata UNUSED, const char_u *data, int_u len)
+{
+    size_t written;
+    if (g_output_stream_write_all(
+		print_stream, data, (size_t)len, &written, NULL, NULL))
+    {
+	if ((int_u)written != len)
+	    return CAIRO_STATUS_WRITE_ERROR;
+	return CAIRO_STATUS_SUCCESS;
+    }
+    else
+	return CAIRO_STATUS_WRITE_ERROR;
+}
+
+    static void
+print_stream_cb(
+	GtkPrintDialog	*dialog,
+	GAsyncResult	*result,
+	gboolean	*done)
+{
+    print_stream = gtk_print_dialog_print_finish(dialog, result, NULL);
+    *done = TRUE;
+}
+
+    static void
+print_dialog_cb(GtkPrintDialog *dialog, GAsyncResult *result, gboolean *done)
+{
+    print_setup = gtk_print_dialog_setup_finish(dialog, result, NULL);
+
+    if (print_setup != NULL)
+	gtk_print_dialog_print(dialog, GTK_WINDOW(gui.mainwin),
+		print_setup, NULL, (GAsyncReadyCallback)print_stream_cb, done);
+    else
+	*done = TRUE;
+}
+
+/*
+ * Return OK on success, FAIL on failure (e.g. user cancelled), and MAYBE if not
+ * supported.
+ */
+    int
+gui_gtk4_print_dialog(
+	prt_settings_T	*psettings,
+	char_u		*jobname,
+	double		*page_width,
+	double		*page_height,
+	void		*write_func) // cairo_write_func_t
+{
+#if GTK_CHECK_VERSION(4, 14, 0)
+    GtkPrintDialog  *dialog = gtk_print_dialog_new();
+    gboolean	    done = FALSE;
+
+    gtk_print_dialog_set_title(dialog, (const char *)jobname);
+    gtk_print_dialog_set_modal(dialog, TRUE);
+
+    if (print_settings == NULL)
+    {
+	option_table_T *opt;
+
+	print_settings = gtk_print_settings_new();
+
+	opt = &printer_opts[OPT_PRINT_DUPLEX];
+	if (opt->present)
+	{
+	    if (STRNICMP(opt->string, "off", 3) == 0)
+		gtk_print_settings_set_duplex(print_settings,
+			GTK_PRINT_DUPLEX_SIMPLEX);
+	    else if (STRNICMP(opt->string, "short", 5) == 0)
+		gtk_print_settings_set_duplex(print_settings,
+			GTK_PRINT_DUPLEX_VERTICAL);
+	    else
+		gtk_print_settings_set_duplex(print_settings,
+			GTK_PRINT_DUPLEX_HORIZONTAL);
+	}
+
+	opt = &printer_opts[OPT_PRINT_PORTRAIT];
+	if (opt->present)
+	{
+	    if (*opt->string == 'y')
+		gtk_print_settings_set_orientation(print_settings,
+			GTK_PAGE_ORIENTATION_PORTRAIT);
+	    else
+		gtk_print_settings_set_orientation(print_settings,
+			GTK_PAGE_ORIENTATION_LANDSCAPE);
+	}
+
+	opt = &printer_opts[OPT_PRINT_PAPER];
+	if (opt->present)
+	{
+	    gtk_print_settings_set_paper_size(print_settings,
+		    gtk_paper_size_new((const char *)opt->string));
+	}
+
+	opt = &printer_opts[OPT_PRINT_COLLATE];
+	if (opt->present)
+	{
+	    gtk_print_settings_set_collate(print_settings, TRUE);
+	}
+    }
+
+    if (page_setup == NULL)
+	page_setup = gtk_page_setup_new();
+
+    gtk_print_dialog_set_print_settings(dialog, print_settings);
+    gtk_print_dialog_set_page_setup(dialog, page_setup);
+
+    gtk_print_dialog_setup(dialog, GTK_WINDOW(gui.mainwin), NULL,
+	    (GAsyncReadyCallback)print_dialog_cb, &done);
+
+    while (!done)
+	g_main_context_iteration(NULL, TRUE);
+
+    if (print_setup == NULL || print_stream == NULL)
+    {
+	g_object_unref(dialog);
+	return FAIL;
+    }
+
+    g_clear_object(&print_settings);
+    g_clear_object(&page_setup);
+    print_settings = g_object_ref(
+	    gtk_print_setup_get_print_settings(print_setup));
+    page_setup = g_object_ref(gtk_print_setup_get_page_setup(print_setup));
+
+    {
+	GtkPrintDuplex duplex = gtk_print_settings_get_duplex(print_settings);
+	psettings->duplex = duplex != GTK_PRINT_DUPLEX_SIMPLEX;
+    }
+
+    psettings->has_color = gtk_print_settings_get_use_color(print_settings);
+
+    *page_width = gtk_page_setup_get_paper_width(page_setup,
+	    GTK_UNIT_POINTS);
+    *page_height = gtk_page_setup_get_paper_height(page_setup,
+	    GTK_UNIT_POINTS);
+
+    *((cairo_write_func_t *)write_func) = print_write_func;
+
+    gtk_print_setup_unref(print_setup);
+    g_object_unref(dialog);
+
+    return OK;
+#else
+    return MAYBE;
+#endif
+}
+
+    void
+gui_gtk4_print_cleanup(void)
+{
+#if GTK_CHECK_VERSION(4, 14, 0)
+    if (print_stream != NULL)
+    {
+	g_output_stream_close(print_stream, NULL, NULL);
+	g_object_unref(print_stream);
+	print_stream = NULL;
+    }
+#endif
+}
+
 #endif // FEAT_GUI_GTK
