@@ -677,6 +677,9 @@ edit(
 
 	// Don't want K_CURSORHOLD for the second key, e.g., after CTRL-V.
 	did_cursorhold = TRUE;
+	if (c != K_CURSORHOLD && c != K_COMPLETE_DELAY)
+	    // Don't want delayed autocompletion from the previous key either.
+	    ins_compl_clear_autocomplete_delay();
 
 #ifdef FEAT_RIGHTLEFT
 	if (p_hkmap && KeyTyped)
