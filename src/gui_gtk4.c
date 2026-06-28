@@ -2767,6 +2767,64 @@ gui_mch_forked(void)
 }
 
 /*
+ * Try getting the actual size of the scrollbar, and update gui.scrollbar_width
+ * and gui.scrollbar_height.
+ */
+    static void
+gui_gtk4_update_scrollbar_size(void)
+{
+    win_T	*wp;
+    int		w = -1, h = -1;
+    GtkWidget	*sbar;
+
+    FOR_ALL_WINDOWS(wp)
+    {
+	sbar = wp->w_scrollbars[SBAR_LEFT].id;
+
+	if (sbar == NULL || !gtk_widget_get_visible(sbar)
+		|| (!gui.which_scrollbars[SBAR_LEFT]
+		    && wp->w_scrollbars[SBAR_RIGHT].id != NULL))
+	    sbar = wp->w_scrollbars[SBAR_RIGHT].id;
+
+	if (sbar != NULL && gtk_widget_get_visible(sbar))
+	{
+	    GtkRequisition  min, nat;
+	    int		    sw;
+
+	    // Use preferred size, since widget may not have its size allocated
+	    // yet.
+	    gtk_widget_get_preferred_size(sbar, &min, &nat);
+	    sw = MAX(min.width, nat.width);
+	    if (sw > 0)
+	    {
+		w = sw;
+		break;
+	    }
+	}
+
+    }
+
+    sbar = gui.bottom_sbar.id;
+    if (sbar != NULL && gtk_widget_get_visible(sbar))
+    {
+	GtkRequisition min, nat;
+	int		    sh;
+
+	gtk_widget_get_preferred_size(sbar, &min, &nat);
+	sh = MAX(min.height, nat.height);
+
+	if (sh > 0)
+	    h = sh;
+    }
+
+    if (w != -1)
+	gui.scrollbar_width = w;
+    if (h != -1)
+	gui.scrollbar_height = h;
+}
+
+
+/*
  * ============================================================
  * Scrollbar
  * ============================================================
@@ -2776,7 +2834,14 @@ gui_mch_forked(void)
 gui_mch_enable_scrollbar(scrollbar_T *sb, int flag)
 {
     if (sb->id != NULL)
+    {
+	gboolean was_visible = gtk_widget_get_visible(sb->id);
+
 	gtk_widget_set_visible(sb->id, flag);
+
+	if (!was_visible && flag)
+	    gui_gtk4_update_scrollbar_size();
+    }
 }
 
 #if defined(FEAT_MENU)
@@ -4656,63 +4721,6 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
 	vim_form_remove(VIM_FORM(gui.formwin), sb->id);
 	sb->id = NULL;
     }
-}
-
-/*
- * Try getting the actual size of the scrollbar, and update gui.scrollbar_width
- * and gui.scrollbar_height.
- */
-    void
-gui_mch_update_scrollbar_size(void)
-{
-    win_T	*wp;
-    int		w = -1, h = -1;
-    GtkWidget	*sbar;
-
-    FOR_ALL_WINDOWS(wp)
-    {
-	sbar = wp->w_scrollbars[SBAR_LEFT].id;
-
-	if (sbar == NULL || !gtk_widget_get_visible(sbar)
-		|| (!gui.which_scrollbars[SBAR_LEFT]
-		    && wp->w_scrollbars[SBAR_RIGHT].id != NULL))
-	    sbar = wp->w_scrollbars[SBAR_RIGHT].id;
-
-	if (sbar != NULL && gtk_widget_get_visible(sbar))
-	{
-	    GtkRequisition  min, nat;
-	    int		    sw;
-
-	    // Use preferred size, since widget may not have its size allocated
-	    // yet.
-	    gtk_widget_get_preferred_size(sbar, &min, &nat);
-	    sw = MAX(min.width, nat.width);
-	    if (sw > 0)
-	    {
-		w = sw;
-		break;
-	    }
-	}
-
-    }
-
-    sbar = gui.bottom_sbar.id;
-    if (sbar != NULL && gtk_widget_get_visible(sbar))
-    {
-	GtkRequisition min, nat;
-	int		    sh;
-
-	gtk_widget_get_preferred_size(sbar, &min, &nat);
-	sh = MAX(min.height, nat.height);
-
-	if (sh > 0)
-	    h = sh;
-    }
-
-    if (w != -1)
-	gui.scrollbar_width = w;
-    if (h != -1)
-	gui.scrollbar_height = h;
 }
 
 /*

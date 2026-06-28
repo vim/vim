@@ -102,7 +102,6 @@ int gui_mch_get_scrollbar_xpadding(void);
 int gui_mch_get_scrollbar_ypadding(void);
 void gui_mch_create_scrollbar(scrollbar_T *sb, int orient);
 void gui_mch_destroy_scrollbar(scrollbar_T *sb);
-void gui_mch_update_scrollbar_size(void);
 void gui_mch_set_text_area_pos(int x, int y, int w, int h);
 void gui_gtk_calculate_bleed(int width, int height);
 char_u *gui_mch_browse(int saving, char_u *title, char_u *dflt, char_u *ext, char_u *initdir, char_u *filter);
