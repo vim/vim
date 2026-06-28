@@ -1504,8 +1504,10 @@ cs_insert_filelist(
 	    csinfo = vim_realloc(csinfo, sizeof(csinfo_T)*csinfo_size);
 	    if (csinfo == NULL)
 	    {
-		vim_free(t_csinfo);
-		csinfo_size = 0;
+		// allocation failure, so keep the old infos
+		csinfo = t_csinfo;
+		csinfo_size = i;
+		return -1;
 	    }
 	}
 	if (csinfo == NULL)
