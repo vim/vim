@@ -2250,6 +2250,22 @@ do_one_cmd(
 #endif
 
     /*
+     * ":d[elete]" may be immediately followed by any number of contiguous 'l',
+     * 'p' or '#' flags (not in Vim9 script)
+     */
+    if (!in_vim9script() && ea.cmdidx == CMD_delete)
+	while (vim_strchr((char_u *)"lp#", *p) != NULL)
+	{
+	    if (*p == 'l')
+		ea.flags |= EXFLAG_LIST;
+	    else if (*p == 'p')
+		ea.flags |= EXFLAG_PRINT;
+	    else
+		ea.flags |= EXFLAG_NR;
+	    ++p;
+	}
+
+    /*
      * Skip to start of argument.
      * Don't do this for the ":!" command, because ":!! -l" needs the space.
      */
@@ -3664,7 +3680,6 @@ find_ex_command(
 {
     int		len;
     char_u	*p;
-    int		i;
 #ifndef FEAT_EVAL
     int		vim9 = FALSE;
 #else
@@ -3934,23 +3949,31 @@ find_ex_command(
 	// check for non-alpha command
 	if (p == eap->cmd && vim_strchr((char_u *)"@*!=><&~#}", *p) != NULL)
 	    ++p;
+
 	len = (int)(p - eap->cmd);
-	// The "d" command can directly be followed by 'l' or 'p' flag, when
-	// not in Vim9 script.
-	if (!vim9 && *eap->cmd == 'd' && (p[-1] == 'l' || p[-1] == 'p'))
+
+	// ":d[elete]" may be immediately followed by any number of contiguous
+	// 'l' or 'p' flags (not in Vim9 script)
+	if (!vim9 && *eap->cmd == 'd')
 	{
-	    // Check for ":dl", ":dell", etc. to ":deletel": that's
-	    // :delete with the 'l' flag.  Same for 'p'.
-	    for (i = 0; i < len; ++i)
-		if (eap->cmd[i] != ((char_u *)"delete")[i])
+	    int cmdlen;   // length of d\%[elete]
+	    int matchlen; // length of d\%[elete][lp]*
+
+	    // longest prefix of the name that matches "delete"
+	    for (cmdlen = 0; cmdlen < len; ++cmdlen)
+		if (eap->cmd[cmdlen] != ((char_u *)"delete")[cmdlen])
 		    break;
-	    if (i == len - 1)
+
+	    // the rest of the candidate match must be 'l' or 'p' flags,
+	    // otherwise this is another command like ":dl[ist]"
+	    for (matchlen = cmdlen; matchlen < len; ++matchlen)
+		if (eap->cmd[matchlen] != 'l' && eap->cmd[matchlen] != 'p')
+		    break;
+
+	    if (matchlen == len)
 	    {
-		--len;
-		if (p[-1] == 'l')
-		    eap->flags |= EXFLAG_LIST;
-		else
-		    eap->flags |= EXFLAG_PRINT;
+		len = cmdlen;
+		p = eap->cmd + cmdlen;
 	    }
 	}
 
