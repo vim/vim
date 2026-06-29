@@ -621,12 +621,15 @@ dict_add_dict(dict_T *d, char *key, dict_T *dict)
 	return FAIL;
     item->di_tv.v_type = VAR_DICT;
     item->di_tv.vval.v_dict = dict;
-    ++dict->dv_refcount;
     if (dict_add(d, item) == FAIL)
     {
+	// Detach "dict" so dictitem_free() does not unref it: on failure
+	// ownership stays with the caller.
+	item->di_tv.vval.v_dict = NULL;
 	dictitem_free(item);
 	return FAIL;
     }
+    ++dict->dv_refcount;
     return OK;
 }
 
