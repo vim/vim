@@ -14,44 +14,86 @@
 #include <gtk/gtk.h>
 #include "gui_gtk4_da.h"
 
-#define DRAW_NODE_DIRTY 1   // Draw node is dirty
-#define DRAW_NODE_NOBG 2    // Don't create background node
-#define DRAW_NODE_NOINK 4   // Draw node has no ink
-#define DRAW_NODE_UNDER 8   // Has under decorations (for convenience)
-#define DRAW_NODE_CLIP 16   // Text node should be clipped to draw node bounds.
-
-typedef struct
-{
-    int refcount;
-
-    PangoGlyphInfo  *glyphs;
-    int		    n_glyphs;
-    char_u	    dnode_flags; // DRAW_NODE_* flags
-    GskRenderNode   *node;  // This is either a text node, or a container node
-			    // (if there is more than one node).
-
-    PangoFont	*font;
-    GdkRGBA	fg_color;
-    GdkRGBA	bg_color;
-    GdkRGBA	sp_color;
-    int		flags;	    // DRAW_* flags
-
-    int start_col;
-    int n_cells;
-} DrawNode;
-
-#define END_COL(dn) ((dn)->start_col + (dn)->n_cells - 1)
-#define HAS_INK(r) ((r)->width != 0 || (r)->height != 0)
+#define DRAW_ATTR_DIRTY 1 // Recreate render node on next snapshot vfunc
 
 /*
- * Each cell holds its own reference to a draw node if any. A draw node may span
- * multiple cells, which represents how many cells it takes up on screen.
+ * Represents the visual attributes of a span of cells
  */
 typedef struct
 {
-    DrawNode	*dnode;	// May be NULL
-    gboolean	invert; // If this cell is inverted
+    int		refcount;
+    GdkRGBA	bg_color;
+    GdkRGBA	fg_color;
+    GdkRGBA	sp_color;
+    int		draw_flags; // DRAW_* flags
+} DrawAttr;
+
+/*
+ * Represents a single "character"
+ */
+typedef struct
+{
+    int	    refcount;
+
+    PangoFont	*font;
+    GArray	*glyphs;
+} DrawGlyphs;
+
+/*
+ * Always in contiguous chunks, never separated.
+ */
+typedef struct
+{
+    int		    refcount;
+    GskRenderNode   *node; // May be NULL if nothing to display
+    int		    start_col;
+    int		    n_cells;
+} DrawNode;
+
+#define END_COL(dn) ((dn)->start_col + (dn)->n_cells - 1)
+#define DRAW_NODE_DIRTY(dn) g_clear_pointer(&(dn), draw_node_unref)
+// Convert cell count into pango units
+#define CELLS2PANGO(c) ((c) * gui.char_width * PANGO_SCALE)
+
+#define REMOVE_NODE(dn, dr) \
+    do { \
+	if ((dn) != NULL) \
+	{ \
+	    int start_col_ = (dn)->start_col; \
+	    int end_col_ = END_COL((dn)); \
+	    for (int c_ = start_col_; c_ <= end_col_; c_++) \
+	    DRAW_NODE_DIRTY((dr)[c_].dnode); \
+	} \
+    } while (FALSE)
+
+#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SIGN_ICONS)
+/*
+ * Either represents a sign icon or a netbean multi sign indicator.
+ */
+typedef struct
+{
+    int		    refcount;
+    GdkTexture	    *texture;
+    int		    width;
+    int		    height;
+    GskRenderNode   *node; // Cached or NULL if dirty.
+} DrawSign;
+#endif
+
+#define DRAW_CELL_INVERT 1
+
+typedef struct
+{
+    DrawNode	*dnode;
+    DrawGlyphs	*dglyphs; // If "dattr" is set, then this will always be set.
+    DrawAttr	*dattr;
+#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SIGN_ICONS)
+    DrawSign	*dsign;
+#endif
+    char_u	flags; // DRAW_CELL_* flags
 } DrawCell;
+
+#define GET_ROW(da, n) ((da)->cells + (da)->n_cols * (n))
 
 #ifdef FEAT_IMAGE_GDK
 /*
@@ -71,7 +113,7 @@ struct _VimDrawArea
 {
     GtkWidget parent;
 
-    DrawCell	*cells; // May be NULL, always check!
+    DrawCell	*cells;
     int         n_rows;
     int		n_cols;
 
@@ -81,17 +123,6 @@ struct _VimDrawArea
     // simply rendered as a cell using vim_draw_area_add_glyphs(). May be NULL.
     GskRenderNode *cursor_node;
 
-#if defined(FEAT_SIGN_ICONS)
-    // Queue of sign icon render nodes. Icons at the end of the queue are drawn
-    // ontop of earlier ones.
-    GQueue *signs;
-#endif
-
-#ifdef FEAT_NETBEANS_INTG
-    // Cairo render node for multi sign indicator for Netbeans. May be NULL
-    GskRenderNode *multisign_node;
-#endif
-
 #ifdef FEAT_IMAGE_GDK
     // Queue of DrawImage structs. Sorted in ascending order of zindex, so that
     // images with a higher zindex are rendered over ones with lower zindex.
@@ -99,14 +130,12 @@ struct _VimDrawArea
 #endif
 };
 
-#define GET_ROW(da, n) ((da)->cells + (da)->n_cols * (n))
-
 G_DEFINE_TYPE(VimDrawArea, vim_draw_area, GTK_TYPE_WIDGET)
 
 #ifdef FEAT_IMAGE_GDK
-static void draw_image_free(DrawImage *dimg);
+    static void draw_image_free(DrawImage *dimg);
 #endif
-static void vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot);
+    static void vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot);
 
     static void
 vim_draw_area_finalize(GObject *obj)
@@ -118,11 +147,7 @@ vim_draw_area_finalize(GObject *obj)
     vim_draw_area_clear(self);
 
     g_free(self->cells);
-#ifdef FEAT_SIGN_ICONS
-    // vim_draw_area_clear_block() should have removed all the sign icons
-    assert(g_queue_is_empty(self->signs));
-    g_queue_free(self->signs);
-#endif
+
 #ifdef FEAT_IMAGE_GDK
     g_queue_free_full(self->images, (GDestroyNotify)draw_image_free);
 #endif
@@ -142,15 +167,12 @@ vim_draw_area_class_init(VimDrawAreaClass *class)
 
     // Add a layout manager so it can handle child popovers
     gtk_widget_class_set_layout_manager_type(widget_class, GTK_TYPE_BIN_LAYOUT);
-
 }
 
     static void
 vim_draw_area_init(VimDrawArea *self)
 {
-#ifdef FEAT_SIGN_ICONS
-    self->signs = g_queue_new();
-#endif
+    self->bleed_right = -1;
 #ifdef FEAT_IMAGE_GDK
     self->images = g_queue_new();
 #endif
@@ -175,76 +197,23 @@ vim_draw_area_set_size(VimDrawArea *self, int rows, int cols)
 
     vim_draw_area_clear(self);
 
+    self->cells = g_realloc_n(self->cells, cols * rows, sizeof(DrawCell));
+    memset(self->cells, 0, sizeof(DrawCell) * cols * rows);
+
     self->n_rows = rows;
     self->n_cols = cols;
-    self->cells = g_realloc_n(self->cells, rows * cols, sizeof(DrawCell));
-    memset(self->cells, 0, rows * (sizeof(DrawCell) * cols));
-}
-
-    static void
-node_unref(GskRenderNode *node)
-{
-    if (node != NULL)
-	gsk_render_node_unref(node);
 }
 
 /*
- * Return TRUE if "glyphs" take up space (not entirely whitespace).
+ * Return TRUE if "rgba" is the same as "color".
  */
     static gboolean
-glyphs_has_ink(PangoFont *font, const PangoGlyphInfo *glyphs, int n_glyphs)
+color_rgba_equal(GdkRGBA rgba, guicolor_T color)
 {
-    for (int i = 0; i < n_glyphs; i++)
-    {
-	PangoRectangle glyph_ink;
-
-	pango_font_get_glyph_extents (font, glyphs[i].glyph, &glyph_ink, NULL);
-
-	if (HAS_INK(&glyph_ink))
-	    return TRUE;
-    }
-    return FALSE;
-}
-
-/*
- * Realloc "glyphs" to "n_glyphs" and return the new reallocated pointer.
- */
-    static PangoGlyphInfo *
-glyphs_resize(PangoGlyphInfo *glyphs, int n_glyphs)
-{
-    return g_realloc_n(glyphs, n_glyphs, sizeof(PangoGlyphInfo));
-}
-
-/*
- * Return TRUE if "bg" is the same as the default background color.
- */
-    static gboolean
-color_is_default_bg(const GdkRGBA *bg)
-{
-    guicolor_T bgc = ((guicolor_T)(bg->red * 255) << 16)
-	| ((guicolor_T)(bg->green * 255) << 8)
-	|  (guicolor_T)(bg->blue * 255);
-    return bgc == gui.back_pixel;
-}
-
-/*
- * Convert the given cell offset into an index in the "glyphs" array.
- */
-    static int
-cell_offset_to_glyph(const PangoGlyphInfo *glyphs, int n_glyphs, int cell_offset)
-{
-    int cells_seen = 0;
-
-    for (int i = 0; i < n_glyphs; i++)
-    {
-	const PangoGlyphInfo *glyph = glyphs + i;
-
-	if (cells_seen >= cell_offset)
-	    return i;
-
-	cells_seen += glyph->geometry.width / (gui.char_width * PANGO_SCALE);
-    }
-    return n_glyphs;
+    guicolor_T rgbac = ((guicolor_T)(rgba.red * 255) << 16)
+	| ((guicolor_T)(rgba.green * 255) << 8)
+	|  (guicolor_T)(rgba.blue * 255);
+    return rgbac == color;
 }
 
 /*
@@ -369,54 +338,167 @@ create_under_decor_node(
 }
 
 /*
- * Create a new draw node with a reference count of 1. Note that this may be
- * NULL if creating a new draw node is not necessary.
+ * Return TRUE if "glyphs" has ink (not whitespace).
+ */
+    static gboolean
+glyphs_has_ink(PangoFont *font, const PangoGlyphInfo *glyphs, int n_glyphs)
+{
+    for (int i = 0; i < n_glyphs; i++)
+    {
+	PangoRectangle ink;
+
+	pango_font_get_glyph_extents (font, glyphs[i].glyph, &ink, NULL);
+
+	if (ink.width > 0 && ink.height > 0)
+	    return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * Create a new draw attr that is initially dirty.
+ */
+    static DrawAttr *
+draw_attr_new(
+	const GdkRGBA	*bg_color,
+	const GdkRGBA	*fg_color,
+	const GdkRGBA	*sp_color,
+	int		draw_flags)
+{
+    DrawAttr *dattr = g_new0(DrawAttr, 1);
+
+    dattr->refcount = 1;
+
+    dattr->bg_color = *bg_color;
+    dattr->fg_color = *fg_color;
+    dattr->sp_color = *sp_color;
+    dattr->draw_flags = draw_flags;
+
+    return dattr;
+}
+
+    static DrawAttr *
+draw_attr_ref(DrawAttr *dattr)
+{
+    dattr->refcount++;
+    return dattr;
+}
+
+    static void
+draw_attr_unref(DrawAttr *dattr)
+{
+    if (--dattr->refcount <= 0)
+	g_free(dattr);
+}
+
+/*
+ * Check if "dattr" has the same visual attributes
+ */
+    static gboolean
+draw_attr_match(DrawAttr *a, int draw_flags)
+{
+    if (a == NULL)
+	return FALSE;
+    if (a->draw_flags != draw_flags)
+	return FALSE;
+    if (!gdk_rgba_equal(&a->bg_color, gui.bgcolor)
+	    || !gdk_rgba_equal(&a->fg_color, gui.fgcolor)
+	    || !gdk_rgba_equal(&a->sp_color, gui.spcolor))
+	return FALSE;
+    return TRUE;
+}
+
+/*
+ * Return TRUE if both draw attrs are visually the same
+ */
+    static gboolean
+draw_attr_equal(DrawAttr *a, DrawAttr *b)
+{
+    if (a->draw_flags != b->draw_flags)
+	return FALSE;
+    if (!gdk_rgba_equal(&a->bg_color, &b->bg_color)
+	    || !gdk_rgba_equal(&a->fg_color, &b->fg_color)
+	    || !gdk_rgba_equal(&a->sp_color, &b->sp_color))
+	return FALSE;
+    return TRUE;
+}
+
+/*
+ * Return TRUE if "dattr" can be combined with a blank cell with a draw attr.
+ */
+    static gboolean
+draw_attr_equal_blank(DrawAttr *dattr, DrawAttr *blank)
+{
+    if (!gdk_rgba_equal(&dattr->bg_color, &blank->bg_color))
+	return FALSE;
+    if ((dattr->draw_flags & (DRAW_UNDERC | DRAW_UNDERL | DRAW_STRIKE)) !=
+	    (blank->draw_flags & (DRAW_UNDERC | DRAW_UNDERL | DRAW_STRIKE)))
+	return FALSE;
+    return TRUE;
+}
+
+/*
+ * Return TRUE if "dattr" can be combined with a blank cell without a draw attr.
+ */
+    static gboolean
+draw_attr_blank_compatible(DrawAttr *dattr)
+{
+    if (dattr == NULL)
+	return TRUE;
+    if (!color_rgba_equal(dattr->bg_color, gui.back_pixel))
+	return FALSE;
+    if (dattr->draw_flags & (DRAW_UNDERC | DRAW_UNDERL | DRAW_STRIKE))
+	return FALSE;
+    return TRUE;
+}
+
+    static DrawGlyphs *
+draw_glyphs_new(PangoFont *font)
+{
+    DrawGlyphs *dglyphs = g_new0(DrawGlyphs, 1);
+
+    dglyphs->refcount = 1;
+    dglyphs->font = g_object_ref(font);
+    dglyphs->glyphs = g_array_new(FALSE, TRUE, sizeof(PangoGlyphInfo));
+
+    return dglyphs;
+}
+
+    static DrawGlyphs *
+draw_glyphs_ref(DrawGlyphs *dglyphs)
+{
+    dglyphs->refcount++;
+    return dglyphs;
+}
+
+    static void
+draw_glyphs_unref(DrawGlyphs *dglyphs)
+{
+    if (--dglyphs->refcount <= 0)
+    {
+	g_object_unref(dglyphs->font);
+	g_array_free(dglyphs->glyphs, TRUE);
+	g_free(dglyphs);
+    }
+}
+
+    static void
+draw_glyphs_add(DrawGlyphs *dglyphs, PangoGlyphInfo glyph)
+{
+    g_array_append_val(dglyphs->glyphs, glyph);
+}
+
+/*
+ * Create a new draw node at the given position,
  */
     static DrawNode *
-draw_node_new(
-	PangoFont		*font,
-	const PangoGlyphInfo	*glyphs,
-	int			n_glyphs,
-	const GdkRGBA		*bg_color,
-	const GdkRGBA		*fg_color,
-	const GdkRGBA		*sp_color,
-	int			flags,
-	int			start_col,
-	int			n_cells)
+draw_node_new(int row, int start_col)
 {
-    DrawNode	*dnode;
-    gboolean	has_ink = glyphs_has_ink(font, glyphs, n_glyphs);
-    gboolean	is_def_bg = color_is_default_bg(bg_color);
-    gboolean	has_under = flags & (DRAW_UNDERL | DRAW_UNDERC | DRAW_STRIKE);
-
-    // If there is no ink to be displayed, and the background color is the same
-    // as the default background color (the color that will be displayed behind
-    // everything), then there is no point in creating a new draw node.
-    if (!has_ink && !has_under && (flags & DRAW_TRANSP || is_def_bg))
-	return NULL;
-
-    dnode = g_new0(DrawNode, 1);
+    DrawNode *dnode = g_new0(DrawNode, 1);
 
     dnode->refcount = 1;
-
-    dnode->glyphs = g_memdup2(glyphs, sizeof(PangoGlyphInfo) * n_glyphs);
-    dnode->n_glyphs = n_glyphs;
-    dnode->dnode_flags |= DRAW_NODE_DIRTY;
-    if (is_def_bg || flags & DRAW_TRANSP)
-	dnode->dnode_flags |= DRAW_NODE_NOBG;
-    if (!has_ink)
-	dnode->dnode_flags |= DRAW_NODE_NOINK;
-    if (has_under)
-	dnode->dnode_flags |= DRAW_NODE_UNDER;
-
-    dnode->font = g_object_ref(font);
-    dnode->bg_color = *bg_color;
-    dnode->fg_color = *fg_color;
-    dnode->sp_color = *sp_color;
-    dnode->flags = flags;
-
     dnode->start_col = start_col;
-    dnode->n_cells = n_cells;
+    dnode->n_cells = 1;
 
     return dnode;
 }
@@ -431,435 +513,295 @@ draw_node_ref(DrawNode *dnode)
     static void
 draw_node_unref(DrawNode *dnode)
 {
-    if (dnode != NULL && --dnode->refcount <= 0)
+    if (--dnode->refcount <= 0)
     {
-	g_free(dnode->glyphs);
-	node_unref(dnode->node);
-	g_object_unref(dnode->font);
+	if (dnode->node != NULL)
+	    gsk_render_node_unref(dnode->node);
 	g_free(dnode);
     }
 }
 
-/*
- * Dirty the draw node. This will remove the render node if any, and mark it to
- * have a new render node created for it on the next snapshot vfunc call.
- * Returns TRUE if draw node is not necessary anymore.
- */
-    static gboolean
-draw_node_make_dirty(DrawNode *dnode)
+    static void
+draw_node_add_cell(DrawNode *dnode)
 {
-    int flags = dnode->dnode_flags;
-
-    g_clear_pointer(&dnode->node, gsk_render_node_unref);
-    dnode->dnode_flags |= DRAW_NODE_DIRTY;
-
-    return (flags & DRAW_NODE_NOINK) && !(flags & (DRAW_NODE_UNDER))
-	&& flags & DRAW_NODE_NOBG;
-}
-
-    static DrawNode *
-draw_node_copy(DrawNode *dnode)
-{
-    DrawNode *copy = draw_node_new(
-	    dnode->font, dnode->glyphs, dnode->n_glyphs,
-	    &dnode->bg_color, &dnode->fg_color, &dnode->sp_color,
-	    dnode->flags, dnode->start_col, dnode->n_cells
-	    );
-
-    // "copy" should never be NULL, so we don't need to check for NULL.
-    if (unlikely(dnode->dnode_flags & DRAW_NODE_CLIP))
-	copy->dnode_flags |= DRAW_NODE_CLIP;
-
-    return copy;
+    dnode->n_cells++;
 }
 
 /*
- * Split the draw node at the given cell offset in place (exclusive). If
- * "keep_left" is TRUE, then keep the left halve (discard right halve), and vice
- * versa. This will dirty the draw node.
- *
- * Returns TRUE if the new split draw node is not necessary anymore (see
- * draw_node_new()), otherwise FALSE.
- */
-    static gboolean
-draw_node_split(DrawNode *dnode, int cell_offset, gboolean keep_left)
-{
-    int		glyph_offset;
-    gboolean	split = TRUE;
-    gboolean	clip = FALSE;
-
-    glyph_offset = cell_offset_to_glyph(dnode->glyphs,
-	    dnode->n_glyphs, cell_offset);
-
-    // Some fonts emulate ligatures by having spacer glyphs followed by a glyph
-    // that contains all the ink. If we tried splitting this type of ligature,
-    // then one side will incorrectly be empty.
-    //
-    // To handle this case, always clip the draw node so that the extra ink does
-    // not bleed out. If we are keeping the left side, then do not split,
-    // because we want to keep the glyph with all the ink. If we are keeping the
-    // right side, then we can split because the glyph with the ink will be on
-    // the right side always anyways.
-    for (int i = glyph_offset; i < dnode->n_glyphs; i++)
-    {
-	PangoRectangle ink;
-
-	pango_font_get_glyph_extents(dnode->font, dnode->glyphs[i].glyph,
-		&ink, NULL);
-
-	if (HAS_INK(&ink))
-	{
-	    if (ink.x < 0)
-	    {
-		split = !keep_left;
-		clip = TRUE;
-	    }
-	    break;
-	}
-    }
-
-    if (unlikely(clip))
-	dnode->dnode_flags |= DRAW_NODE_CLIP;
-
-    if (keep_left)
-    {
-	if (likely(split))
-	    dnode->n_glyphs = glyph_offset;
-	dnode->n_cells = cell_offset;
-    }
-    else
-    {
-	if (likely(split))
-	{
-	    // If this results in zero, then glyphs_has_ink() will return FALSE
-	    // so it is fine.
-	    dnode->n_glyphs -= glyph_offset;
-	    // Shift glyphs after offset to beginning
-	    memmove(dnode->glyphs, dnode->glyphs + glyph_offset,
-		    sizeof(PangoGlyphInfo) * dnode->n_glyphs);
-	}
-
-	dnode->n_cells -= cell_offset;
-	dnode->start_col += cell_offset;
-    }
-
-    if (likely(split))
-    {
-	dnode->glyphs = glyphs_resize(dnode->glyphs, dnode->n_glyphs);
-
-	// Recheck if new split glyphs has ink
-	if (glyphs_has_ink(dnode->font, dnode->glyphs, dnode->n_glyphs))
-	    dnode->dnode_flags &= ~DRAW_NODE_NOINK;
-	else
-	    dnode->dnode_flags |= DRAW_NODE_NOINK;
-    }
-
-    return draw_node_make_dirty(dnode);
-}
-
-/*
- * If "dnode" is dirty, create a new render node for it at the given row and
- * store it, then undirty it.
+ * Render the draw node and create the render node. If the glyphs array is
+ * empty, then "font" will not be used. Note that render node may be NULL if
+ * there is no ink/nothing to display.
  */
     static void
-draw_node_render(DrawNode *dnode, int row, VimDrawArea *da)
+draw_node_render(
+	DrawNode    *dnode,
+	int	    row,
+	GArray	    *glyphs,
+	DrawAttr    *dattr,
+	PangoFont   *font,
+	VimDrawArea *da)
 {
-    GskRenderNode	*nodes[3];
+    PangoGlyphString	gstr;
+    GskRenderNode	*node;
+    GskRenderNode	*nodes[4];
     int			n_nodes = 0;
-    GskRenderNode	*decor_node;
 
-    if (!(dnode->dnode_flags & DRAW_NODE_DIRTY))
-	return;
-
-    if (!(dnode->dnode_flags & DRAW_NODE_NOBG))
+    // Don't render background color if its the same as the global color,
+    // reduces number of render nodes.
+    if (!color_rgba_equal(dattr->bg_color, gui.back_pixel))
     {
 	int width = dnode->n_cells * gui.char_width;
 
 	// If this draw node touches the end of the draw area. Bleed its
 	// background to the right if the space the draw area covers is slightly
 	// bigger than its actual visible area (that all cells cover). This just
-	// makes things like status bars look a bit nicer
+	// makes things like status bars look a bit nicer when draw area size is
+	// not an exact multiple of the cell size.
 	//
 	// Don't do this for the bottom, because that will make the cursor in
 	// the cmdline look weird. Instead only bleed downwards when drawing the
 	// global background color (see vim_draw_area_snapshot())
-	if (END_COL(dnode) == da->n_cols - 1)
+	if (END_COL(dnode) + 1 == da->n_cols)
 	    width += gui.bleed_right;
 
-	nodes[n_nodes++] = gsk_color_node_new(&dnode->bg_color,
+	nodes[n_nodes++] = gsk_color_node_new(&dattr->bg_color,
 		&GRAPHENE_RECT_INIT(FILL_X(dnode->start_col), FILL_Y(row),
 		    width, gui.char_height));
     }
 
-    if (!(dnode->dnode_flags & DRAW_NODE_NOINK))
+    if (glyphs->len > 0)
     {
-	GskRenderNode	    *text_node;
-	PangoGlyphString    glyphs_str;
+	// GskTextNode does not use the "log_clusters" array in
+	// PangoGlyphString, so we don't need to set it (or store it).
+	gstr.glyphs = (PangoGlyphInfo *)glyphs->data;
+	gstr.num_glyphs = glyphs->len;
 
-	// gsk_text_node_new() only uses the "glyphs" field, don't need to worry
-	// about the "log_clusters" array.
-	glyphs_str.glyphs = dnode->glyphs;
-	glyphs_str.num_glyphs = dnode->n_glyphs;
-	text_node = gsk_text_node_new(dnode->font, &glyphs_str, &dnode->fg_color,
+	node = gsk_text_node_new(font, &gstr, &dattr->fg_color,
 		&GRAPHENE_POINT_INIT(TEXT_X(dnode->start_col), TEXT_Y(row)));
-	// Should never be NULL since we check beforehand if there is ink.
-	assert(text_node != NULL);
 
-	if (dnode->dnode_flags & DRAW_NODE_CLIP)
+	if (node != NULL)
+	    nodes[n_nodes++] = node;
+
+	// Emulate bold by shifting text by one pixel
+	if (node != NULL && (dattr->draw_flags & DRAW_BOLD)
+		&& !gui.font_can_bold)
 	{
-	    GskRenderNode *old = text_node;
-
-	    text_node = gsk_clip_node_new(text_node,
-		    &GRAPHENE_RECT_INIT(FILL_X(dnode->start_col), FILL_Y(row),
-			dnode->n_cells * gui.char_width, gui.char_height));
-	    gsk_render_node_unref(old);
-	    assert(text_node != NULL);
+	    node = gsk_text_node_new(font, &gstr, &dattr->fg_color,
+		    &GRAPHENE_POINT_INIT(TEXT_X(dnode->start_col) + 1,
+			TEXT_Y(row)));
+	    nodes[n_nodes++] = node;
 	}
-
-	nodes[n_nodes++] = text_node;
     }
 
-    decor_node = create_under_decor_node(row, dnode->start_col, dnode->n_cells,
-	    dnode->flags, &dnode->fg_color, &dnode->sp_color);
-    if (decor_node != NULL)
-	nodes[n_nodes++] = decor_node;
+    node = create_under_decor_node(row, dnode->start_col, dnode->n_cells,
+	    dattr->draw_flags, &dattr->fg_color, &dattr->sp_color);
+    if (node != NULL)
+	nodes[n_nodes++] = node;
 
-    // Should never be zero
-    assert(n_nodes > 0);
 
-    if (likely(n_nodes == 1))
+    if (n_nodes == 1)
 	dnode->node = nodes[0];
-    else
+    else if (n_nodes > 1)
     {
 	dnode->node = gsk_container_node_new(nodes, n_nodes);
 	// gsk_container_node_new() takes its own reference
 	for (int i = 0; i < n_nodes; i++)
 	    gsk_render_node_unref(nodes[i]);
     }
-
-    dnode->dnode_flags &= ~DRAW_NODE_DIRTY;
 }
 
+#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SIGN_ICONS)
 /*
- * Returns true if "dnode" matches "font" + "flags" in terms of
- * color/visual attributes.
+ * Create a new draw sign icon with the given texture.
  */
-    static gboolean
-draw_node_match(DrawNode *dnode, PangoFont *font, int flags)
+    static DrawSign *
+draw_sign_new(GdkTexture *texture, int width, int height)
 {
-    if (dnode->flags != flags)
-	return FALSE;
+    DrawSign *dsign = g_new0(DrawSign, 1);
 
-    if (!(flags & DRAW_TRANSP)
-	    && !gdk_rgba_equal(&dnode->bg_color, gui.bgcolor))
-	return FALSE;
+    dsign->refcount = 1;
+    dsign->texture = g_object_ref(texture);
+    dsign->width = width;
+    dsign->height = height;
 
-    if (!gdk_rgba_equal(&dnode->fg_color, gui.fgcolor))
-	return FALSE;
-
-    // Special color is only used for undercurls
-    if (flags & DRAW_UNDERC && !gdk_rgba_equal(&dnode->sp_color, gui.spcolor))
-	return FALSE;
-
-    // This may not work all the time, but creating two PangoFontDescription
-    // each time to compare equality seems slow...
-    return dnode->font == font;
+    return dsign;
 }
 
-/*
- * Append or prepend the given glyphs to the draw node. If "start" is TRUE, then
- * prepend, otherwise append. This will invalidate the draw node. Note that
- * prepending does not update "start_col" or "n_cells".
- */
+    static DrawSign *
+draw_sign_ref(DrawSign *dsign)
+{
+    dsign->refcount++;
+    return dsign;
+}
+
     static void
-draw_node_extend(
-	DrawNode		*dnode,
-	const PangoGlyphInfo	*glyphs,
-	int			n_glyphs,
-	bool			start)
+draw_sign_unref(DrawSign *dsign)
 {
-    dnode->glyphs = glyphs_resize(dnode->glyphs, dnode->n_glyphs + n_glyphs);
-
-    if (start)
+    if (--dsign->refcount <= 0)
     {
-	// Move the existing glyphs forward first
-	memmove(dnode->glyphs + n_glyphs, dnode->glyphs,
-		dnode->n_glyphs * sizeof(PangoGlyphInfo));
-	memcpy(dnode->glyphs, glyphs, n_glyphs * sizeof(PangoGlyphInfo));
+	if (dsign->node != NULL)
+	    gsk_render_node_unref(dsign->node);
+	g_object_unref(dsign->texture);
+	g_free(dsign);
     }
-    else
-	memcpy(dnode->glyphs + dnode->n_glyphs, glyphs,
-		n_glyphs * sizeof(PangoGlyphInfo));
-
-    dnode->n_glyphs += n_glyphs;
-
-    if (glyphs_has_ink(dnode->font, dnode->glyphs, dnode->n_glyphs))
-	dnode->dnode_flags &= ~DRAW_NODE_NOINK;
-    else
-	dnode->dnode_flags |= DRAW_NODE_NOINK;
-    (void)draw_node_make_dirty(dnode);
 }
 
 /*
- * Set the given cell to the draw node (which may be NULL), adding a new
- * reference to it.
+ * Make the draw sign icon dirty, so that it is rerendered at the correct
+ * position on the next snapshot vfunc.
  */
     static void
-draw_cell_set(DrawCell *dcell, DrawNode *dnode)
+draw_sign_dirty(DrawSign *dsign)
 {
-    draw_node_unref(dcell->dnode);
-    dcell->dnode = dnode == NULL ? NULL : draw_node_ref(dnode);
-    dcell->invert = FALSE;
+    g_clear_pointer(&dsign->node, gsk_render_node_unref);
 }
 
 /*
- * Set the cells between "col1" and "col2" (inclusive) to "dnode" (which may be
- * NULL).
+ * Render the draw sign at the given position if it is dirty.
  */
     static void
-draw_row_fill(DrawCell *drow, int col1, int col2, DrawNode *dnode)
+draw_sign_render(DrawSign *dsign, int start_col, int row)
 {
-    for (int c = col1; c <= col2; c++)
-	draw_cell_set(drow + c, dnode);
+    if (dsign->node != NULL)
+	return;
+
+    dsign->node = gsk_texture_scale_node_new(dsign->texture,
+	    &GRAPHENE_RECT_INIT(FILL_X(start_col), FILL_Y(row),
+		dsign->width, dsign->height),
+	    GSK_SCALING_FILTER_TRILINEAR);
 }
+#endif
 
 /*
- * Same as draw_row_fill(), but also handle truncating/splitting any draw nodes
- * that overlap onto the set region. If "split" is TRUE, then only
- * truncating/splitting is done.
- *
- * If "copy" is TRUE, then "dnode" is ignored and instead any draw nodes in the
- * region that overlap outside of it are copied and clipped in addition to
- * truncating draw nodes outside the region.
+ * Set the cell to the draw node and glyphs (that represents the cell). Make
+ * sure to dirty the overall changed region in the row.
  */
     static void
-draw_row_set(
+draw_cell_set(DrawCell *dcell, DrawGlyphs *dglyphs, DrawAttr *dattr)
+{
+    if (dcell->dattr != NULL)
+	draw_attr_unref(dcell->dattr);
+    dcell->dattr = dattr == NULL ? NULL : draw_attr_ref(dattr);
+
+    if (dcell->dglyphs != dglyphs)
+    {
+	if (dcell->dglyphs != NULL)
+	    draw_glyphs_unref(dcell->dglyphs);
+	dcell->dglyphs = dglyphs == NULL ? NULL : draw_glyphs_ref(dglyphs);
+    }
+
+    g_clear_pointer(&dcell->dsign, draw_sign_unref);
+    dcell->flags &= ~DRAW_CELL_INVERT;
+}
+
+#ifdef FEAT_IMAGE_GDK
+    static void
+draw_image_free(DrawImage *dimg)
+{
+    gsk_render_node_unref(dimg->node);
+    g_free(dimg);
+}
+#endif
+
+/*
+ * Fill the cells between "col1" and "col2" (inclusive) with "dattr" and
+ * "dglyphs".
+ */
+    static void
+draw_row_fill(
 	DrawCell    *drow,
 	int	    col1,
 	int	    col2,
-	DrawNode    *dnode,
-	gboolean    copy,
-	gboolean    split)
+	DrawGlyphs  *dglyphs,
+	DrawAttr    *dattr)
 {
-    DrawNode	*ldnode = drow[col1].dnode;
-    DrawNode	*rdnode = drow[col2].dnode;
-    DrawNode	*new_dnode = NULL;
-
-    if (ldnode != NULL && ldnode == rdnode
-	    && (ldnode->start_col != col1 || END_COL(ldnode) > col2))
+    for (int c = col1; c <= col2; c++)
     {
-	// Region in completely inside a single draw node. Truncate the existing
-	// draw node, and create a new draw node to be used as the right split.
-	if (END_COL(ldnode) > col2)
-	{
-	    rdnode = draw_node_copy(ldnode);
-	    draw_row_fill(drow, col2 + 1, END_COL(rdnode), rdnode);
-	    draw_node_unref(rdnode);
-	}
-	else
-	    // "ldnode" does not extend past "col2", no point in creating a new
-	    // draw node on the right.
-	    rdnode = NULL;
-
-	if (copy)
-	    // Make another copy for the new draw node inside the set region.
-	    // Must fill it in the row after, since "ldnode" may be unreferenced
-	    // fully.
-	    new_dnode = draw_node_copy(ldnode);
+	// If a draw node overlaps onto the filled region, must remove all
+	// instances of it, so that the region it covers is rerendered again.
+	REMOVE_NODE(drow[c].dnode, drow);
+	draw_cell_set(drow + c, dglyphs, dattr);
     }
+}
 
-    if (ldnode != NULL && ldnode->start_col != col1)
+/*
+ * Clear all draw nodes that intercept the given region.
+ */
+    static void
+draw_row_dirty(DrawCell *drow, int col1, int col2)
+{
+    for (int c = col1; c <= col2; c++)
     {
-	if (copy && new_dnode == NULL)
-	{
-	    // Make a copy for the right halve.
-	    DrawNode *new_right = draw_node_copy(ldnode);
-
-	    if (draw_node_split(new_right,  col1 - ldnode->start_col, FALSE))
-		g_clear_pointer(&new_right, draw_node_unref);
-	    draw_row_fill(drow, col1, END_COL(ldnode), new_right);
-	    draw_node_unref(new_right);
-	}
-
-	// Leftmost draw node overlaps onto region, split it and discard right
-	// halve.
-	if (draw_node_split(ldnode, col1 - ldnode->start_col, TRUE))
-	    // Draw node is not necessary anymore, clear it from the row.
-	    draw_row_fill(drow, ldnode->start_col, col1 - 1, NULL);
+	// If a draw node overlaps onto the filled region, must remove all
+	// instances of it, so that the region it covers is rerendered again.
+	REMOVE_NODE(drow[c].dnode, drow);
+	if (drow[c].dsign != NULL)
+	    draw_sign_dirty(drow[c].dsign);
     }
-    if (rdnode != NULL && END_COL(rdnode) > col2)
+}
+
+#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SIGN_ICONS)
+/*
+ * Set "dsign" to cells between "col1" and "col2" (inclusive).
+ */
+    static void
+draw_row_fill_sign(DrawCell *drow, int col1, int col2, DrawSign *dsign)
+{
+    for (int c = col1; c <= col2; c++)
     {
-	if (copy && new_dnode == NULL)
-	{
-	    // Make a copy for the left halve.
-	    DrawNode *new_left = draw_node_copy(rdnode);
-
-	    if (draw_node_split(new_left,  col2 - rdnode->start_col + 1, TRUE))
-		g_clear_pointer(&new_left, draw_node_unref);
-	    draw_row_fill(drow, rdnode->start_col, col2, new_left);
-	    draw_node_unref(new_left);
-	}
-
-	// Rightmost draw node overlaps onto region, split it and discard left
-	// halve.
-	if (draw_node_split(rdnode, col2 - rdnode->start_col + 1, FALSE))
-	    draw_row_fill(drow, col2 + 1, END_COL(rdnode), NULL);
+	if (drow[c].dsign != NULL)
+	    draw_sign_unref(drow[c].dsign);
+	drow[c].dsign = draw_sign_ref(dsign);
     }
+}
+#endif
 
-    if (copy)
+/*
+ * Replace all instances of "target" starting at "col" with "src".
+ */
+    static void
+draw_row_replace_attr(
+	DrawCell    *drow,
+	int	    col,
+	DrawAttr    *target,
+	DrawAttr    *src,
+	VimDrawArea *da)
+{
+    while (col < da->n_cols && drow[col].dattr == target)
     {
-	if (new_dnode != NULL)
-	{
-	    if (draw_node_split(new_dnode, col1 - new_dnode->start_col, FALSE)
-		    || draw_node_split(new_dnode,
-			col2 - new_dnode->start_col + 1, TRUE))
-		g_clear_pointer(&new_dnode, draw_node_unref);
-
-	    draw_row_fill(drow, col1, col2, new_dnode);
-	    draw_node_unref(new_dnode);
-	}
+	REMOVE_NODE(drow[col].dnode, drow);
+	draw_cell_set(drow + col, drow[col].dglyphs, src);
+	col++;
     }
-    else if (!split)
-	draw_row_fill(drow, col1, col2, dnode);
 }
 
 /*
  * Move the cells between "col1" and "col2" from "src" to "dest", overwriting
- * the existing cells. This will handle clipping any draw nodes.
+ * the existing cells.
  */
     static void
-draw_row_move_to(DrawCell *dest_row, DrawCell *src_row, int col1, int col2)
+draw_row_move_to(
+	DrawCell    *dest_row,
+	DrawCell    *src_row,
+	int	    col1,
+	int	    col2,
+	VimDrawArea *da)
 {
     int move_size = (col2 - col1 + 1) * sizeof(DrawCell);
 
-    // Make sure that we free/truncate any draw nodes before we overwrite
-    // them.
-    draw_row_set(dest_row, col1, col2, NULL, FALSE, FALSE);
-
-    // Make sure that draw nodes at the "col1" and "col2" of "src_row" are
-    // clipped so that they all fit in the region being moved.
-    draw_row_set(src_row, col1, col2, NULL, TRUE, FALSE);
-
+    draw_row_fill(dest_row, col1, col2, NULL, NULL);
     memmove(dest_row + col1, src_row + col1, move_size);
+    draw_row_dirty(dest_row, col1, col2);
 
-    // Dirty the moved cells
-    for (int c = col1; c <= col2;)
-	if (dest_row[c].dnode != NULL)
-	{
-	    (void)draw_node_make_dirty(dest_row[c].dnode);
-	    c += dest_row[c].dnode->n_cells;
-	}
-	else
-	    c++;
-
-    // NULL the draw nodes so we don't double unreference.
+    // NULL the draw cells so we don't double unreference.
     memset(src_row + col1, 0, (col2 - col1 + 1) * sizeof(DrawCell));
 }
 
 /*
  * Should be called after modifying draw nodes within the given region.
+ * Shouldn't be called if cells are moved however.
  */
-static void
+    static void
 vim_draw_area_check_bounds(
 	VimDrawArea *self,
 	int	    row1,
@@ -867,13 +809,6 @@ vim_draw_area_check_bounds(
 	int	    col1,
 	int	    col2)
 {
-#if defined(FEAT_SIGN_ICONS) || defined(FEAT_NETBEANS_INTG)
-    graphene_rect_t bounds = GRAPHENE_RECT_INIT(
-	    FILL_X(col1), FILL_Y(row1),
-	    gui.char_width * (col2 - col1 + 1),
-	    gui.char_height * (row2 - row1 + 1));
-#endif
-
     if (self->cursor_node != NULL)
 	// Check if cursor node is within the the updated region. If so, then
 	// remove the render node. This only applies to the part and hollow
@@ -881,45 +816,13 @@ vim_draw_area_check_bounds(
 	if (gui.row >= row1 && gui.row <= row2
 		&& gui.col >= col1 && gui.col <= col2)
 	    g_clear_pointer(&self->cursor_node, gsk_render_node_unref);
-
-#ifdef FEAT_SIGN_ICONS
-    // Clear any sign icons within the modified block if any
-    for (GList *s = self->signs->head; s != NULL;)
-    {
-	GList		*next = s->next;
-	graphene_rect_t rect;
-
-	gsk_render_node_get_bounds(s->data, &rect);
-
-	if (graphene_rect_contains_rect(&bounds, &rect))
-	{
-	    // Keep going in case there are multiple sign icons within this
-	    // block.
-	    gsk_render_node_unref(s->data);
-	    g_queue_delete_link(self->signs, s);
-	}
-	s = next;
-    }
-#endif
-#ifdef FEAT_NETBEANS_INTG
-    // Remove multi sign indicator if it is within the modified region.
-    if (self->multisign_node != NULL)
-    {
-	graphene_rect_t rect;
-
-	gsk_render_node_get_bounds(self->multisign_node, &rect);
-	if (graphene_rect_contains_rect(&bounds, &rect))
-	    g_clear_pointer(&self->multisign_node, gsk_render_node_unref);
-    }
-#endif
 }
 
 /*
- * Add the glyph string starting at column "col" in row "row". This will handle
- * any background colours, fake bold, and under decorations. This does not queue
- * a redraw for the widget.
+ * Add the glyphs to the given position on the draw area. Returns number of
+ * display cells used.
  */
-    void
+    int
 vim_draw_area_add_glyphs(
 	VimDrawArea *self,
 	int row,
@@ -930,78 +833,95 @@ vim_draw_area_add_glyphs(
 	PangoGlyphString *glyphs)
 {
     DrawCell	*drow;
-    DrawNode	*dnode = NULL;
-    int		end_col = col + num_cells - 1;
+    DrawAttr	*dattr;
+    DrawGlyphs	*dglyphs = NULL;
+    gboolean	need_parent = FALSE;
+    int		c = col;
+    int		cells_used = 0;
 
     if (unlikely(self->cells == NULL
 		|| row >= self->n_rows
 		|| col >= self->n_cols
 		|| col + num_cells > self->n_cols))
-	return;
+	return 0;
 
     drow = GET_ROW(self, row);
 
-    draw_row_set(drow, col, end_col, NULL, FALSE, TRUE);
+    // If draw node at the left of the region has same visual attributes, then
+    // expand it instead of creating a new one.
+    if (col > 0 && draw_attr_match(drow[col - 1].dattr, flags))
+	dattr = draw_attr_ref(drow[col - 1].dattr);
+    else
+	dattr = draw_attr_new(gui.bgcolor, gui.fgcolor, gui.spcolor, flags);
 
-    // Check if leftmost draw node (if any) has the same visual
-    // attributes/colours as the glyph string being added. If so, then just
-    // extend that draw node with the new glyphs.
-    if (col > 0)
+    // If draw node at right of the region has same visual attributes, then
+    // replace it with the draw node on its left.
+    if (col + num_cells < self->n_cols
+	    && draw_attr_match(drow[col + num_cells].dattr, flags))
+	draw_row_replace_attr(drow, col + num_cells,
+		drow[col + num_cells].dattr, dattr, self);
+
+    // If there is no ink, then just set the "dglyphs" of each cell to NULL.
+    if (!glyphs_has_ink(font, glyphs->glyphs, glyphs->num_glyphs))
     {
-	DrawNode *ldnode = drow[col - 1].dnode;
-
-	// Don't want to try merging draw nodes that are clipped, because the
-	// glyphs in them may not match one to one with the actual bounds of the
-	// draw node.
-	if (ldnode != NULL && !(ldnode->dnode_flags & DRAW_NODE_CLIP)
-		&& draw_node_match(ldnode, font, flags))
-	{
-	    draw_node_extend(ldnode, glyphs->glyphs, glyphs->num_glyphs, FALSE);
-	    draw_row_fill(drow, col, end_col, ldnode);
-	    ldnode->n_cells += num_cells;
-	    dnode = ldnode;
-	}
+	draw_row_fill(drow, col, col + num_cells - 1, NULL, dattr);
+	cells_used += num_cells;
+	goto exit;
     }
 
-    // Check if we can use the existing draw node on the right. If so, then shift
-    // "rdnode" to the "col", and extend it. If we merged the left draw node, then
-    // instead extend it normally and unreference the right draw node.
-    if (col + num_cells < self->n_cols)
+    // Put glyphs into groups where each group represents a single continuous
+    // "character" (e.g. decomposed and composing characters).
+    for (int i = 0; i < glyphs->num_glyphs && c < self->n_cols; i++)
     {
-	DrawNode *rdnode = drow[col + num_cells].dnode;
+	PangoGlyphInfo	glyph = glyphs->glyphs[i];
+	int		cellcount;
 
-	if (rdnode != NULL && !(rdnode->dnode_flags & DRAW_NODE_CLIP)
-		&& draw_node_match(rdnode, font, flags))
+	cellcount = glyph.geometry.width / (gui.char_width * PANGO_SCALE);
+
+	if (cellcount > 0)
 	{
-	    if (dnode != NULL)
-	    {
-		assert(rdnode->start_col == col + num_cells);
-		draw_node_extend(dnode, rdnode->glyphs, rdnode->n_glyphs, FALSE);
-		dnode->n_cells += rdnode->n_cells;
-		draw_row_fill(drow, rdnode->start_col, END_COL(rdnode), dnode);
-	    }
-	    else
-	    {
-		draw_node_extend(rdnode, glyphs->glyphs, glyphs->num_glyphs, TRUE);
-		draw_row_fill(drow, col, end_col, rdnode);
-		rdnode->start_col = col;
-		rdnode->n_cells += num_cells;
-		dnode = rdnode;
-	    }
+	    if (!need_parent)
+		dglyphs = draw_glyphs_new(font);
+
+	    draw_glyphs_add(dglyphs, glyph);
+
+	    draw_row_fill(drow, c, c + cellcount - 1, dglyphs, dattr);
+	    draw_glyphs_unref(dglyphs);
+	    c += cellcount;
+	    cells_used += cellcount;
+	    need_parent = FALSE;
+	    dglyphs = NULL;
 	}
+	else
+	{
+	    if (dglyphs == NULL)
+	    {
+		// Zero width character before a parent/decomposed character,
+		// allocate a new array and indicate that it should be used when
+		// we reach a decomposed character instead of creating a new
+		// one.
+		dglyphs = draw_glyphs_new(font);
+		need_parent = TRUE;
+	    }
+
+            draw_glyphs_add(dglyphs, glyph);
+        }
     }
 
-    if (dnode != NULL)
-	return;
+    if (need_parent)
+    {
+	// Zero width characters that do not have a parent, just put them in
+	// their own cell.
+	draw_row_fill(drow, c, c, dglyphs, dattr);
+	cells_used++;
+	draw_glyphs_unref(dglyphs);
+    }
 
-    dnode = draw_node_new(
-	    font, glyphs->glyphs, glyphs->num_glyphs, gui.bgcolor,
-	    gui.fgcolor, gui.spcolor, flags, col, num_cells
-	    );
-    draw_row_fill(drow, col, end_col, dnode);
-    draw_node_unref(dnode);
+exit:
+    draw_attr_unref(dattr);
 
     vim_draw_area_check_bounds(self, row, row, col, col + num_cells - 1);
+    return cells_used;
 }
 
 /*
@@ -1023,7 +943,7 @@ vim_draw_area_clear_block(
 	return;
 
     for (int r = row1; r <= row2; r++)
-	draw_row_set(GET_ROW(self, r), col1, col2, NULL, FALSE, FALSE);
+	draw_row_fill(GET_ROW(self, r), col1, col2, NULL, NULL);
 
     vim_draw_area_check_bounds(self, row1, row2, col1, col2);
 }
@@ -1051,15 +971,7 @@ vim_draw_area_move_block(
 	int	    col1,
 	int	    col2)
 {
-
-    int		    offset = row2 - row1;
-#if defined(FEAT_SIGN_ICONS) || defined(FEAT_NETBEANS_INTG)
-    graphene_rect_t bounds = GRAPHENE_RECT_INIT(
-	    FILL_X(col1), FILL_Y(row1),
-	    gui.char_width * (col2 - col1 + 1),
-	    gui.char_height * (row2 - row1 + 1));
-    graphene_rect_t clear_rect;
-#endif
+    int offset = row2 - row1;
 
     if (unlikely(self->cells == NULL
 		|| row1 >= self->n_rows
@@ -1079,7 +991,7 @@ vim_draw_area_move_block(
 	// being shifted upwards.
 	for (int o = 0; o <= offset; o++)
 	    draw_row_move_to(GET_ROW(self, to + o), GET_ROW(self, row1 + o),
-		    col1, col2);
+		    col1, col2, self);
     }
     else
     {
@@ -1092,110 +1004,8 @@ vim_draw_area_move_block(
 		gui_clear_block(row1 + o, col1, row1 + o, col2);
 	    else
 		draw_row_move_to(GET_ROW(self, to + o), GET_ROW(self, row1 + o),
-			col1, col2);
+			col1, col2, self);
     }
-
-    // Do not call vim_draw_area_check_bounds(), because we moved cells, not
-    // modified them.
-
-#if defined(FEAT_SIGN_ICONS) || defined(FEAT_NETBEANS_INTG)
-    if (row1 > to)
-	clear_rect = GRAPHENE_RECT_INIT(
-		FILL_X(col1), FILL_Y(to),
-		gui.char_width * (col2 - col1 + 1),
-		gui.char_height * (row1 - to));
-    else
-	clear_rect = GRAPHENE_RECT_INIT(
-		FILL_X(col1), FILL_Y(row2 + 1),
-		gui.char_width * (col2 - col1 + 1),
-		gui.char_height * (to - row1));
-#endif
-
-#ifdef FEAT_SIGN_ICONS
-    // Move sign icons if they are in the moved region
-    for (GList *s = self->signs->head; s != NULL;)
-    {
-	GList           *next = s->next;
-	GskRenderNode   *node = s->data;
-	graphene_rect_t  rect;
-
-	gsk_render_node_get_bounds(node, &rect);
-
-	// Check if icon moved off screen, if so then remove it.
-	if (graphene_rect_contains_rect(&clear_rect, &rect))
-	{
-	    gsk_render_node_unref(s->data);
-	    g_queue_delete_link(self->signs, s);
-	    s = next;
-	    continue;
-	}
-
-	if (graphene_rect_contains_rect(&bounds, &rect))
-	{
-	    GdkTexture    *texture;
-	    GskRenderNode *new;
-	    float          new_y;
-
-	    texture = gsk_texture_scale_node_get_texture(node);
-	    new_y = graphene_rect_get_y(&rect) - graphene_rect_get_y(&bounds);
-	    new_y += FILL_Y(to);
-
-	    if (new_y >= 0 && new_y < gtk_widget_get_height(GTK_WIDGET(self)))
-	    {
-		rect.origin.y = new_y;
-		new = gsk_texture_scale_node_new(texture, &rect,
-			GSK_SCALING_FILTER_TRILINEAR);
-		gsk_render_node_unref(node);
-		s->data = new;
-	    }
-	    else
-	    {
-		gsk_render_node_unref(s->data);
-		g_queue_delete_link(self->signs, s);
-	    }
-	}
-	s = next;
-    }
-#endif
-#ifdef FEAT_NETBEANS_INTG
-    // Move multisign indicator node if needed
-    if (self->multisign_node != NULL)
-    {
-	graphene_rect_t rect;
-
-	gsk_render_node_get_bounds(self->multisign_node, &rect);
-
-	if (graphene_rect_contains_rect(&clear_rect, &rect))
-	    g_clear_pointer(&self->multisign_node, gsk_render_node_unref);
-	else if (graphene_rect_contains_rect(&bounds, &rect))
-	{
-	    float new_y =
-		graphene_rect_get_y(&rect) - graphene_rect_get_y(&bounds);
-
-	    new_y += FILL_Y(to);
-
-	    if (new_y >= 0 && new_y < gtk_widget_get_height(GTK_WIDGET(self)))
-	    {
-		cairo_surface_t *surface;
-		GskRenderNode   *new;
-		cairo_t         *cr;
-
-		surface = gsk_cairo_node_get_surface(self->multisign_node);
-		rect.origin.y = new_y;
-		new = gsk_cairo_node_new(&rect);
-		cr = gsk_cairo_node_get_draw_context(new);
-		cairo_set_source_surface(cr, surface, 0, 0);
-		cairo_paint(cr);
-		cairo_destroy(cr);
-
-		gsk_render_node_unref(self->multisign_node);
-		self->multisign_node = new;
-	    }
-	    else
-		g_clear_pointer(&self->multisign_node, gsk_render_node_unref);
-	}
-    }
-#endif
 }
 
 /*
@@ -1222,7 +1032,8 @@ vim_draw_area_set_hollow_cursor(VimDrawArea *self)
 		i * gui.char_width, gui.char_height),
 	    0.0f);
 
-    node_unref(self->cursor_node);
+    if (self->cursor_node != NULL)
+	gsk_render_node_unref(self->cursor_node);
     self->cursor_node = gsk_border_node_new(&outline, border, color);
 }
 
@@ -1233,7 +1044,8 @@ vim_draw_area_set_hollow_cursor(VimDrawArea *self)
     void
 vim_draw_area_set_part_cursor(VimDrawArea *self, int w, int h)
 {
-    node_unref(self->cursor_node);
+    if (self->cursor_node != NULL)
+	gsk_render_node_unref(self->cursor_node);
     self->cursor_node = gsk_color_node_new(gui.fgcolor,
 	    &GRAPHENE_RECT_INIT(
 #ifdef FEAT_RIGHTLEFT
@@ -1269,7 +1081,7 @@ vim_draw_area_invert_block(
 	{
 	    DrawCell *dcell = drow + c;
 
-	    dcell->invert = !dcell->invert;
+	    dcell->flags ^= DRAW_CELL_INVERT;
 	}
     }
 }
@@ -1282,41 +1094,31 @@ vim_draw_area_invert_block(
     void
 vim_draw_area_add_sign(
 	VimDrawArea *self,
-	GdkTexture *sign,
-	int row,
-	int col,
-	int width,
-	int height)
+	GdkTexture  *sign,
+	int	    row,
+	int	    col,
+	int	    width,
+	int	    height)
 {
-    GskRenderNode   *node;
+    DrawCell	*drow;
+    DrawSign	*dsign;
+    int		cells;
 
     if (unlikely(self->cells == NULL
 		|| row >= self->n_rows
 		|| col >= self->n_cols))
 	return;
 
-    node = gsk_texture_scale_node_new(sign,
-	    &GRAPHENE_RECT_INIT(FILL_X(col), FILL_Y(row), width, height),
-	    GSK_SCALING_FILTER_TRILINEAR);
-    if (node == NULL)
-	return;
-    g_queue_push_tail(self->signs, node);
-}
-#endif
+    drow = GET_ROW(self, row);
+    dsign = draw_sign_new(sign, width, height);
+    cells = width / gui.char_width;
 
-#ifdef FEAT_NETBEANS_INTG
-    cairo_t *
-vim_draw_area_get_multisign_cairo(VimDrawArea *self, int x, int y, int w, int h)
-{
-    node_unref(self->multisign_node);
-    self->multisign_node = gsk_cairo_node_new(
-	    &GRAPHENE_RECT_INIT( x, y, w, h));
-    return gsk_cairo_node_get_draw_context(self->multisign_node);
+    draw_row_fill_sign(drow, col, col + cells - 1, dsign);
+    draw_sign_unref(dsign);
 }
 #endif
 
 #ifdef FEAT_IMAGE_GDK
-
 /*
  * Get the draw image with the given id, return NULL if not exists.
  */
@@ -1433,13 +1235,6 @@ vim_draw_area_add_image(
     vim_draw_area_queue_image(self, link);
 }
 
-    static void
-draw_image_free(DrawImage *dimg)
-{
-    gsk_render_node_unref(dimg->node);
-    g_free(dimg);
-}
-
 /*
  * Remove the image with the given id if it exists
  */
@@ -1453,6 +1248,53 @@ vim_draw_area_remove_image(VimDrawArea *self, int id)
 
     draw_image_free(link->data);
     g_queue_delete_link(self->images, link);
+}
+#endif
+
+#ifdef FEAT_NETBEANS_INTG
+/*
+ * Add a multi sign indicator at the given position. "surf" should be in ARGB
+ * format.
+ */
+    void
+vim_draw_area_add_multisign(
+	VimDrawArea	*self,
+	cairo_surface_t *surf,
+	int		row,
+	int		col,
+	int		width,
+	int		height)
+{
+    DrawCell	*drow;
+    DrawSign	*dsign;
+    int		cells;
+    GdkTexture	*texture;
+    GBytes	*bytes;
+
+    if (unlikely(self->cells == NULL
+		|| row >= self->n_rows
+		|| col >= self->n_cols))
+	return;
+
+    cairo_surface_flush(surf);
+    bytes = g_bytes_new_with_free_func(cairo_image_surface_get_data(surf),
+	    cairo_image_surface_get_height(surf)
+	    * cairo_image_surface_get_stride(surf),
+	    (GDestroyNotify)cairo_surface_destroy,
+	    cairo_surface_reference(surf));
+
+    texture = gdk_memory_texture_new(cairo_image_surface_get_width(surf),
+	    cairo_image_surface_get_height(surf),
+	    GDK_MEMORY_A8R8G8B8,
+	    bytes, cairo_image_surface_get_stride(surf));
+
+    drow = GET_ROW(self, row);
+    dsign = draw_sign_new(texture, width, height);
+    g_object_unref(texture);
+    cells = width / gui.char_width;
+
+    draw_row_fill_sign(drow, col, col + cells - 1, dsign);
+    draw_sign_unref(dsign);
 }
 #endif
 
@@ -1474,6 +1316,7 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 {
     VimDrawArea		    *self = VIM_DRAW_AREA(widget);
     int			    height, width;
+    GArray		    *glyphs_buf;
     static const GdkRGBA    white = {1, 1, 1, 1};
     garray_T		    invert_ga;
 
@@ -1490,18 +1333,15 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 
     // If number of pixels to bleed has changed, then dirty the nodes at the
     // right edge of the draw area.
-    if (self->bleed_right != gui.bleed_right)
+    if (self->bleed_right == -1 || self->bleed_right != gui.bleed_right)
     {
 	self->bleed_right = gui.bleed_right;
 	for (int r = 0; r < self->n_rows; r++)
 	{
-	    DrawCell *dcell = &GET_ROW(self, r)[self->n_cols - 1];
+	    DrawCell	*drow = GET_ROW(self, r);
+	    DrawCell	*dcell = &drow[self->n_cols - 1];
 
-	    if (dcell->dnode != NULL)
-	    {
-		(void)draw_node_make_dirty(dcell->dnode);
-		draw_node_render(dcell->dnode, r, self);
-	    }
+	    REMOVE_NODE(dcell->dnode, drow);
 	}
     }
 
@@ -1514,52 +1354,161 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
     gtk_snapshot_append_color(snapshot, gui.bgcolor,
 	    &GRAPHENE_RECT_INIT(0, 0, width, height));
 
+    // When creating text nodes, batch individual cells that have the same
+    // DrawNode object.
+    glyphs_buf = g_array_new(FALSE, FALSE, sizeof(PangoGlyphInfo));
+
     for (int r = 0; r < self->n_rows; r++)
     {
 	DrawCell    *drow = GET_ROW(self, r);
 	int	    inv_len = 0;
 	int	    inv_start;
+	DrawNode    *cur_dnode = NULL;
+	PangoFont   *cur_font = NULL;
+	DrawAttr    *cur_dattr = NULL;
+	int	    empty_cells = 0;
 
 	for (int c = 0; c < self->n_cols; c++)
 	{
 	    DrawCell	*dcell = drow + c;
 	    DrawNode	*dnode = dcell->dnode;
+	    DrawAttr	*dattr = dcell->dattr;
+	    DrawGlyphs	*dglyphs = dcell->dglyphs;
 
 	    // Batch inverted cells as single row rectangles.
-	    if (dcell->invert)
+	    if (dcell->flags & DRAW_CELL_INVERT)
 	    {
 		if (inv_len == 0)
 		    inv_start = c;
 		inv_len++;
 	    }
-	    else if (!dcell->invert && inv_len > 0)
+	    else if (!(dcell->flags & DRAW_CELL_INVERT) && inv_len > 0)
 	    {
 		flush_invert_ga(&invert_ga, r, inv_start, inv_len);
 		inv_len = 0;
 	    }
 
-	    if (dnode == NULL)
-		continue;
+#define FLUSH_NODE() \
+	    do { \
+		if (cur_dnode != NULL) \
+		{ \
+		    draw_node_render(cur_dnode, r, glyphs_buf, \
+			    cur_dattr, cur_font, self); \
+		    if (cur_dnode->node != NULL) \
+		    gtk_snapshot_append_node(snapshot, cur_dnode->node); \
+		    cur_dnode = NULL; \
+		    cur_font = NULL; \
+		} \
+		g_array_set_size(glyphs_buf, 0); \
+		cur_dattr = NULL; \
+		empty_cells = 0; \
+	    } while (FALSE)
 
-	    if (dnode->start_col == c)
+	    if (dnode != NULL)
 	    {
-		draw_node_render(dnode, r, self);
-		assert(dnode->node != NULL);
-		gtk_snapshot_append_node(snapshot, dnode->node);
+		FLUSH_NODE();
+
+		if (dnode->node != NULL
+			&& (c == 0 || drow[c - 1].dnode != dnode))
+		    gtk_snapshot_append_node(snapshot, dnode->node);
 	    }
+	    else if (dattr != NULL)
+	    {
+		// Continue using the previous node if:
+		// - If there is ink, draw attrs are exactly the same
+		// - If there is no ink, bg and decor are the same
+		// and font must be the same (unless there is no ink).
+		if (cur_dattr != NULL
+			&& (cur_dattr == dattr
+			    || draw_attr_equal(cur_dattr, dattr)
+			    || (dglyphs == NULL
+				&& draw_attr_equal_blank(cur_dattr, dattr)))
+			&& (dglyphs == NULL || cur_font == dglyphs->font))
+		{
+		    if (cur_font == NULL && dglyphs != NULL)
+			cur_font = dglyphs->font;
+		    draw_node_add_cell(cur_dnode);
+		    dcell->dnode = draw_node_ref(cur_dnode);
+		}
+		else
+		{
+		    // Flush previous draw node if any
+		    FLUSH_NODE();
+
+		    dcell->dnode = cur_dnode = draw_node_new(r, c);
+		    cur_dattr = dattr;
+		    cur_font = dglyphs == NULL ? NULL : dglyphs->font;
+		}
+
+		// Don't want to render double width characters twice.
+		if (dglyphs != NULL
+			&& (c == 0 || drow[c - 1].dglyphs != dglyphs))
+		{
+		    int prev_len = glyphs_buf->len;
+
+		    g_array_append_vals(glyphs_buf, dglyphs->glyphs->data,
+			    dglyphs->glyphs->len);
+
+		    // Inject the accumulated space width into the glyphs that
+		    // have ink.
+		    if (empty_cells > 0)
+		    {
+			if (prev_len > 0)
+			{
+			    // Spaces occurred between valid text: extend
+			    // previous character's advance
+			    PangoGlyphInfo *last = &g_array_index(
+				    glyphs_buf, PangoGlyphInfo,
+				    prev_len - 1);
+			    last->geometry.width += CELLS2PANGO(empty_cells);
+			}
+			else
+			{
+			    // Spaces occurred at the beginning of the DrawNode:
+			    // push the new text right
+			    PangoGlyphInfo *first = &g_array_index(
+				    glyphs_buf, PangoGlyphInfo, prev_len);
+			    first->geometry.x_offset +=
+				CELLS2PANGO(empty_cells);
+			}
+			empty_cells = 0; // Width consumed
+		    }
+		}
+		else if (dglyphs == NULL)
+		    empty_cells++;
+	    }
+	    else if (cur_dnode != NULL
+		    && draw_attr_blank_compatible(cur_dattr))
+	    {
+		draw_node_add_cell(cur_dnode);
+		dcell->dnode = draw_node_ref(cur_dnode);
+		empty_cells++;
+	    }
+	    else
+		FLUSH_NODE();
+
+#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SIGN_ICONS)
+	    // Add sign icon if any, make sure to draw this on top of the text.
+	    // If the sign icon spans multiple cells, make sure to only add it
+	    // once.
+	    if (dcell->dsign != NULL
+		    && (c == 0 || (dcell - 1)->dsign != dcell->dsign))
+	    {
+		draw_sign_render(dcell->dsign, c, r);
+		gtk_snapshot_append_node(snapshot, dcell->dsign->node);
+	    }
+#endif
 	}
+
+	FLUSH_NODE();
+
 	// Flush trailing inverted blocks at end of row loop
 	if (inv_len > 0)
 	    flush_invert_ga(&invert_ga, r, inv_start, inv_len);
+#undef FLUSH_NODE
     }
 
-#ifdef FEAT_SIGN_ICONS
-    // Order of where the sign icon should be placed shouldn't matter,
-    // since caller will add whitespace padding in the region it covers.
-    // Probably should put it behind cursor though.
-    for (GList *s = self->signs->head; s != NULL; s = s->next)
-	gtk_snapshot_append_node(snapshot, s->data);
-#endif
+    g_array_free(glyphs_buf, TRUE);
 
     if (self->cursor_node != NULL)
 	gtk_snapshot_append_node(snapshot, self->cursor_node);
