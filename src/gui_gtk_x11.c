@@ -4462,7 +4462,7 @@ form_configure_event(GtkWidget *widget UNUSED,
 	// too small.  Schedule a corrective resize (now that offsets are
 	// known) so the window actually fits the geometry Vim has just set.
 	if ((mch_csd_height > 0 || mch_csd_width > 0) && gtk_socket_id == 0)
-	    g_idle_add(startup_resize_correction_cb, NULL);
+	    g_idle_add_full(GTK_PRIORITY_RESIZE, startup_resize_correction_cb, NULL, NULL);
     }
     clear_resize_hists();
 #endif
