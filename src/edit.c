@@ -1171,6 +1171,9 @@ doESCkey:
 	    break;
 
 	case K_COMPLETE_DELAY:	// 'autocompletedelay' expired
+	    // If CTRL-G U was used apply it to the next typed key.
+	    if (dont_sync_undo == TRUE)
+		dont_sync_undo = MAYBE;
 	    ins_compl_clear_autocomplete_delay();
 	    if (!ins_compl_has_autocomplete() || char_avail()
 		    || curwin->w_cursor.col == 0)
