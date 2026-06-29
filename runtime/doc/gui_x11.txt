@@ -1,4 +1,4 @@
-*gui_x11.txt*	For Vim version 9.2.  Last change: 2026 Jun 24
+*gui_x11.txt*	For Vim version 9.2.  Last change: 2026 June 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -353,8 +353,12 @@ to the GTK documentation, however little there is, on how to do this.
 See https://www.manpagez.com/html/gtk2/gtk2-2.24.24/gtk2-Resource-Files.php
 for more information.
 							*gtk3-slow*
-If you are using GTK3 and Vim appears to be slow, try setting the environment
-variable $GDK_RENDERING to "image".
+If the GTK3 GUI is slow, try: >
+
+    $ GDK_RENDERING=image gvim
+
+Small font, high resolution, many 'lines' (vertical screen) and UI scaling all
+contribute to a slower redraw.
 
 							*gtk4-slow*
 If the GTK4 GUI is slow, freezes, or does not accept keyboard input right
