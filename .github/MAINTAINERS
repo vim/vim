@@ -350,6 +350,7 @@ runtime/ftplugin/tt2html.vim				@petdance
 runtime/ftplugin/twig.vim				@ribru17
 runtime/ftplugin/typescript.vim				@dkearns
 runtime/ftplugin/typescriptreact.vim			@dkearns
+runtime/ftplugin/typst.vim				@habamax
 runtime/ftplugin/uc.vim					@ribru17
 runtime/ftplugin/unison.vim				@chuwy
 runtime/ftplugin/v.vim					@ribru17
@@ -726,7 +727,7 @@ runtime/syntax/tt2html.vim				@petdance
 runtime/syntax/tt2js.vim				@petdance
 runtime/syntax/typescript.vim				@HerringtonDarkholme @rhysd
 runtime/syntax/typescriptreact.vim			@HerringtonDarkholme @rhysd
-runtime/syntax/typst.vim				@gpanders
+runtime/syntax/typst.vim				@habamax
 runtime/syntax/shared/typescriptcommon.vim		@HerringtonDarkholme @rhysd
 runtime/syntax/unison.vim				@chuwy
 runtime/syntax/vdf.vim					@ObserverOfTime
