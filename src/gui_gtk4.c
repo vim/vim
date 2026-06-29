@@ -284,7 +284,7 @@ static gboolean scroll_event(GtkEventControllerScroll *controller, double dx, do
 static void focus_in_event(GtkEventControllerFocus *controller, gpointer data);
 static void focus_out_event(GtkEventControllerFocus *controller, gpointer data);
 #ifdef FEAT_DND
-static gboolean drop_cb(GtkDropTarget *target, const GValue *value, double x, double y, gpointer data);
+static gboolean drop_cb(GtkDropTargetAsync *target, GdkDrop *drop, double x, double y, void *data);
 #endif
 #ifdef FEAT_GUI_TABLINE
 static void tabline_enter_cb(GtkEventController *controller, double x, double y, void *udata);
@@ -295,6 +295,7 @@ static void tabline_menu_press_event(GtkGestureClick *gesture, int n_press, doub
 #endif
 static void mainwin_destroy_cb(GObject *object, gpointer data);
 static gboolean delete_event_cb(GtkWindow *window, gpointer data);
+static int query_pointer_pos(int *x, int *y, GdkModifierType *state);
 static void mainwin_fullscreened_cb(GObject *obj, GParamSpec *pspec, gpointer user_data);
 static void drawarea_realize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_unrealize_cb(GtkWidget *widget, gpointer data);
@@ -628,14 +629,17 @@ gui_mch_init(void)
     }
 
 #ifdef FEAT_DND
-    // Set up drag-and-drop target for files and text.
+    // Set up drag-and-drop target for files and text. We use async variant so
+    // we can handle html format.
     {
-	GtkDropTarget *drop = gtk_drop_target_new(G_TYPE_INVALID, GDK_ACTION_COPY);
-	GType types[] = { GDK_TYPE_FILE_LIST, G_TYPE_STRING };
-	gtk_drop_target_set_gtypes(drop, types, 2);
-	g_signal_connect(drop, "drop",
+	gui.drop_target = gtk_drop_target_async_new(NULL,
+		GDK_ACTION_COPY | GDK_ACTION_MOVE);
+
+	gui_gtk_set_dnd_targets();
+	g_signal_connect(gui.drop_target, "drop",
 			 G_CALLBACK(drop_cb), NULL);
-	gtk_widget_add_controller(gui.drawarea, GTK_EVENT_CONTROLLER(drop));
+	gtk_widget_add_controller(gui.drawarea,
+		GTK_EVENT_CONTROLLER(gui.drop_target));
     }
 #endif
 
@@ -647,13 +651,13 @@ gui_mch_init(void)
     {
 	GdkDisplay   *display = gtk_widget_get_display(gui.mainwin);
 	GdkClipboard *primary = gdk_display_get_primary_clipboard(display);
-	GdkClipboard *board = gdk_display_get_clipboard(display);
+	GdkClipboard *regular = gdk_display_get_clipboard(display);
 
 	if (primary != NULL)
 	    g_signal_connect(primary, "changed",
 		    G_CALLBACK(clipboard_changed_cb), &clip_star);
-	if (board != NULL)
-	    g_signal_connect(board, "changed",
+	if (regular != NULL)
+	    g_signal_connect(regular, "changed",
 		    G_CALLBACK(clipboard_changed_cb), &clip_plus);
     }
 
@@ -2425,14 +2429,207 @@ drawarea_scale_factor_cb(GObject *object UNUSED,
 }
 #endif
 
+typedef enum
+{
+    READ_DATA_CLIP,	    // Clipboard data
+    READ_DATA_DROP,	    // URI or text DND data
+    READ_DATA_DROP_DATA	    // HTML DND data
+} ReadDataType;
+
+#define READDATA_BUFSIZE 4096
+
+// Used for reading clipboard and DND data.
+typedef struct
+{
+    ReadDataType    type;
+
+    GCancellable    *cancel;
+    GByteArray	    *arr; // NULL when not needed
+    char	    *buf; // NULL when not needed
+} ReadData;
+
+#ifdef FEAT_DND
+typedef struct
+{
+    ReadData	rd;
+    GdkDrop	*drop;
+    int		x;
+    int		y;
+} DropReadData;
+#endif
+
+typedef struct
+{
+    ReadData	rd;
+    Clipboard_T *cbd;
+    char	*mime_type;
+} ClipReadData;
+
+    static ReadData *
+read_data_new(ReadDataType type, size_t sz)
+{
+    ReadData *rd = g_malloc0(sz);
+
+    rd->type = type;
+    rd->cancel = g_cancellable_new();
+
+    if (type == READ_DATA_CLIP || type == READ_DATA_DROP_DATA)
+    {
+	rd->arr = g_byte_array_new();
+	rd->buf = g_malloc(READDATA_BUFSIZE);
+    }
+
+    return rd;
+}
+
+    static void
+read_data_free(ReadData *rd)
+{
+    g_cancellable_cancel(rd->cancel);
+
+    if (rd->type == READ_DATA_CLIP)
+	g_free(((ClipReadData *)rd)->mime_type);
+    else if (rd->type == READ_DATA_DROP || rd->type == READ_DATA_DROP_DATA)
+	g_object_unref(((DropReadData *)rd)->drop);
+    g_object_unref(rd->cancel);
+    if (rd->arr != NULL)
+	g_byte_array_free(rd->arr, TRUE);
+    g_free(rd->buf);
+    g_free(rd);
+}
+
+#ifdef FEAT_DND
+static void drop_read_text(GdkDrop *drop, char_u *text);
+#endif
+
+/*
+ * General purpose callback for reading data from an input stream, either from
+ * clipboard or DND.
+ */
+    static void
+read_data_input_cb(
+	GInputStream	*stream,
+	GAsyncResult	*result,
+	ReadData	*rd)
+{
+    ssize_t r = g_input_stream_read_finish(stream, result, NULL);
+
+    if (r == -1)
+    {
+	// Error occured
+	DropReadData *drd = (DropReadData *)rd;
+
+	if (rd->type == READ_DATA_DROP_DATA)
+	    gdk_drop_finish(drd->drop, 0);
+    }
+    else if (r == 0)
+    {
+	// EOF, don't need to check for READ_DATA_DROP because that uses GType.
+	if (rd->type == READ_DATA_CLIP)
+	{
+	    ClipReadData    *crd = (ClipReadData *)rd;
+	    long	    len;
+	    char_u	    *actual, *final;
+	    int		    motion_type = MAUTO;
+	    char_u	    *tofree = NULL;
+
+	    len = (long)rd->arr->len;
+	    actual = final = g_byte_array_free(rd->arr, FALSE);
+	    rd->arr = NULL;
+
+	    if (clip_convert_data(&final, &len, &motion_type,
+			STRCMP(crd->mime_type, VIM_MIMETYPE_NAME) == 0,
+			STRCMP(crd->mime_type, VIMENC_MIMETYPE_NAME) == 0,
+			&tofree) == OK)
+		clip_yank_selection(motion_type, final, len, crd->cbd);
+	    g_free(actual);
+	    vim_free(tofree);
+	}
+#ifdef FEAT_DND
+	else if (rd->type == READ_DATA_DROP_DATA)
+	{
+	    DropReadData    *drd = (DropReadData *)rd;
+	    char_u	    *str;
+
+	    // Append NUL
+	    g_byte_array_append(rd->arr, (const uint8_t *)"", 1);
+	    str = g_byte_array_free(rd->arr, FALSE);
+	    rd->arr = NULL;
+	    drop_read_text(drd->drop, str);
+	    g_free(str);
+	    gdk_drop_finish(drd->drop, gdk_drop_get_actions(drd->drop));
+	}
+#endif
+    }
+    else
+    {
+	// Continue reading
+	g_byte_array_append(rd->arr, (const uint8_t *)rd->buf, r);
+	g_input_stream_read_async(stream, rd->buf, READDATA_BUFSIZE,
+		G_PRIORITY_HIGH,
+		rd->cancel, (GAsyncReadyCallback)read_data_input_cb, rd);
+	return;
+    }
+
+    read_data_free(rd);
+    g_object_unref(stream);
+}
+
 #ifdef FEAT_DND
 /*
- * Drag-and-drop handler for files and text.
+ * Set up for receiving DND items.
  */
-    static gboolean
-drop_cb(GtkDropTarget *target UNUSED, const GValue *value,
-	double x, double y, gpointer data UNUSED)
+    void
+gui_gtk_set_dnd_targets(void)
 {
+    GdkContentFormatsBuilder *builder = gdk_content_formats_builder_new();
+
+    gdk_content_formats_builder_add_gtype(builder, GDK_TYPE_FILE_LIST);
+    gdk_content_formats_builder_add_gtype(builder, G_TYPE_STRING);
+    if (clip_html)
+	gdk_content_formats_builder_add_mime_type(builder, "text/html");
+
+    gtk_drop_target_async_set_formats(gui.drop_target,
+	    gdk_content_formats_builder_free_to_formats(builder));
+}
+
+/*
+ * Handle textual DND data. Note that this does not finish the drop.
+ */
+    static void
+drop_read_text(GdkDrop *drop, char_u *text)
+{
+    GdkModifierType state;
+    char_u	    dropkey[6] = {
+	CSI,
+	KS_MODIFIER,
+	0,
+	CSI,
+	KS_EXTRA,
+	(char_u)KE_DROP
+    };
+
+    if (text == NULL || *text == NUL || !query_pointer_pos(NULL, NULL, &state))
+	return;
+
+    dnd_yank_drag_data((char_u *)text, (long)STRLEN(text));
+
+    dropkey[2] = modifiers_gdk2vim(state);
+    if (dropkey[2] != 0)
+	add_to_input_buf(dropkey, (int)sizeof(dropkey));
+    else
+	add_to_input_buf(dropkey + 3, (int)(sizeof(dropkey) - 3));
+}
+
+    static void
+drop_read_value_cb(GdkDrop *drop, GAsyncResult *result, DropReadData *drd)
+{
+    const GValue    *value = gdk_drop_read_value_finish(drop, result, NULL);
+    gboolean	    success = FALSE;
+
+    if (value == NULL)
+	goto exit;
+
     if (G_VALUE_HOLDS(value, GDK_TYPE_FILE_LIST))
     {
 	GSList	*files = g_value_get_boxed(value);
@@ -2441,11 +2638,11 @@ drop_cb(GtkDropTarget *target UNUSED, const GValue *value,
 	int	i;
 
 	if (nfiles <= 0)
-	    return FALSE;
+	    goto exit;
 
 	fnames = ALLOC_MULT(char_u *, nfiles);
 	if (fnames == NULL)
-	    return FALSE;
+	    goto exit;
 
 	i = 0;
 	for (GSList *l = files; l != NULL; l = l->next)
@@ -2459,27 +2656,122 @@ drop_cb(GtkDropTarget *target UNUSED, const GValue *value,
 	nfiles = i;
 
 	if (nfiles > 0)
-	    gui_handle_drop((int)x, (int)y, 0, fnames, nfiles);
+	    gui_handle_drop(drd->x, drd->y, 0, fnames, nfiles);
 	else
 	    vim_free(fnames);
-
-	return TRUE;
+	success = TRUE;
     }
     else if (G_VALUE_HOLDS(value, G_TYPE_STRING))
     {
-	const char  *text = g_value_get_string(value);
-	char_u	    dropkey[6] = {CSI, KS_MODIFIER, 0,
-				  CSI, KS_EXTRA, (char_u)KE_DROP};
+	const char *text = g_value_get_string(value);
 
 	if (text == NULL || *text == NUL)
-	    return FALSE;
+	    goto exit;
 
-	dnd_yank_drag_data((char_u *)text, (long)STRLEN(text));
-	add_to_input_buf(dropkey + 3, 3);
+	drop_read_text(drop, (char_u *)text);
+	success = TRUE;
+    }
+
+exit:
+    gdk_drop_finish(drop, success ? gdk_drop_get_actions(drop) : 0);
+    read_data_free(&drd->rd);
+}
+
+    static void
+drop_read_cb(GdkDrop *drop, GAsyncResult *result, DropReadData *drd)
+{
+    GInputStream    *in_stream;
+    const char	    *m;
+
+    in_stream = gdk_drop_read_finish(drop, result, &m, NULL);
+    if (in_stream == NULL || STRCMP(m, "text/html") != 0)
+    {
+	read_data_free(&drd->rd);
+	gdk_drop_finish(drop, 0);
+	return;
+    }
+
+    assert(STRCMP(m, "text/html") == 0);
+
+    // GTK docs says not to use blocking read calls, so do it async.
+    g_input_stream_read_async(in_stream, drd->rd.buf, READDATA_BUFSIZE,
+	    G_PRIORITY_HIGH,
+	    drd->rd.cancel, (GAsyncReadyCallback)read_data_input_cb, drd);
+}
+
+// GCancellable of current DND operation, else NULL.
+static GCancellable *dnd_cancel = NULL;
+static guint dnd_timeout_id = 0;
+
+    static gboolean
+drop_timeout_cb(void *udata UNUSED)
+{
+    g_cancellable_cancel(dnd_cancel);
+    g_clear_object(&dnd_cancel);
+    dnd_timeout_id = 0;
+
+    return G_SOURCE_REMOVE;
+}
+
+/*
+ * Drag-and-drop handler for files and text.
+ */
+    static gboolean
+drop_cb(
+	GtkDropTargetAsync  *target UNUSED,
+	GdkDrop		    *drop,
+	double		    x,
+	double		    y,
+	void		    *udata UNUSED)
+{
+    GdkContentFormats	*formats = gdk_drop_get_formats(drop);
+    DropReadData	*drd = NULL;
+
+    if (gdk_content_formats_contain_gtype(formats, GDK_TYPE_FILE_LIST))
+    {
+	drd = (DropReadData *)read_data_new(READ_DATA_DROP, sizeof(*drd));
+	gdk_drop_read_value_async(drop, GDK_TYPE_FILE_LIST, G_PRIORITY_HIGH,
+		drd->rd.cancel, (GAsyncReadyCallback)drop_read_value_cb, drd);
+    }
+    else if (clip_html
+	    && gdk_content_formats_contain_mime_type(formats, "text/html"))
+    {
+	static const char *m[] = {"text/html", NULL};
+
+	drd = (DropReadData *)read_data_new(READ_DATA_DROP_DATA, sizeof(*drd));
+	gdk_drop_read_async(drop, m, G_PRIORITY_HIGH,
+		drd->rd.cancel, (GAsyncReadyCallback)drop_read_cb, drd);
+    }
+    else if (gdk_content_formats_contain_gtype(formats, G_TYPE_STRING))
+    {
+	drd = (DropReadData *)read_data_new(READ_DATA_DROP, sizeof(*drd));
+	gdk_drop_read_value_async(drop, G_TYPE_STRING, G_PRIORITY_HIGH,
+		drd->rd.cancel, (GAsyncReadyCallback)drop_read_value_cb, drd);
+    }
+
+    if (dnd_cancel != NULL)
+	g_cancellable_cancel(dnd_cancel);
+    g_clear_object(&dnd_cancel);
+    g_clear_handle_id(&dnd_timeout_id, timeout_remove);
+
+    if (drd != NULL)
+    {
+	drd->drop = g_object_ref(drop);
+	drd->x = (int)x;
+	drd->y = (int)y;
+	dnd_cancel = g_object_ref(drd->rd.cancel);
+
+	// Trying to spin the event loop here causes this GTK assertion error:
+	// Gtk:ERROR:../gtk/gtk/gtkdrop.c:70:gtk_drop_begin_event: assertion failed: (self->active == FALSE)
+	//
+	// This shouldn't be an issue, because Vim DND occurs asynchronously in
+	// the first place anyways.
+
+	// Add a 3 second timeout
+	dnd_timeout_id = timeout_add(3000, drop_timeout_cb, NULL);
 
 	return TRUE;
     }
-
     return FALSE;
 }
 #endif
@@ -2670,7 +2962,7 @@ gui_mch_set_foreground(void)
 }
 
     static int
-query_pointer_pos(int *x, int *y)
+query_pointer_pos(int *x, int *y, GdkModifierType *state)
 {
     GtkNative	    *native;
     GdkSurface	    *surface;
@@ -2698,25 +2990,28 @@ query_pointer_pos(int *x, int *y)
     if (pointer == NULL)
 	return FALSE;
 
-    if (!gdk_surface_get_device_position(surface, pointer, &sx, &sy, NULL))
+    if (!gdk_surface_get_device_position(surface, pointer, &sx, &sy, state))
 	return FALSE;
 
-    gtk_native_get_surface_transform(native, &nx, &ny);
-    src.x = (float)(sx - nx);
-    src.y = (float)(sy - ny);
-    if (!gtk_widget_compute_point(GTK_WIDGET(native), gui.drawarea,
-		&src, &dst))
-	return FALSE;
+    if (x != NULL && y != NULL)
+    {
+	gtk_native_get_surface_transform(native, &nx, &ny);
+	src.x = (float)(sx - nx);
+	src.y = (float)(sy - ny);
+	if (!gtk_widget_compute_point(GTK_WIDGET(native), gui.drawarea,
+		    &src, &dst))
+	    return FALSE;
 
-    *x = (int)dst.x;
-    *y = (int)dst.y;
+	*x = (int)dst.x;
+	*y = (int)dst.y;
+    }
     return TRUE;
 }
 
     void
 gui_mch_getmouse(int *x, int *y)
 {
-    if (!query_pointer_pos(x, y))
+    if (!query_pointer_pos(x, y, NULL))
     {
 	*x = 0;
 	*y = 0;
@@ -3995,6 +4290,20 @@ get_menu_tool_height(void)
 }
 
 /*
+ * Update selection targets for regular and primary selections.
+ */
+    void
+gui_gtk_update_selection_formats(Clipboard_T *cbd)
+{
+    // This will call the ref_formats() vfunc of the content provider, see
+    // gui_gtk4_cb.c
+    if (cbd == &clip_plus)
+	gdk_content_provider_content_changed(gui.regular_provider);
+    else
+	gdk_content_provider_content_changed(gui.primary_provider);
+}
+
+/*
  * Get the GdkClipboard and GdkContentProvider for the given Clipboard_T.
  * clip_star (*) uses PRIMARY, clip_plus (+) uses CLIPBOARD.
  */
@@ -4024,67 +4333,27 @@ gtk4_get_clipboard(Clipboard_T *cbd, GdkContentProvider **provider)
     }
 }
 
-typedef struct {
-    Clipboard_T *cbd;
-    gboolean	done;
-    gboolean	abandoned;	// requester timed out, callback owns "crd"
-} ClipReadData;
-
 /*
  * Callback for gdk_clipboard_read_async().
  */
     static void
 clip_read_cb(GdkClipboard *cb, GAsyncResult *result, ClipReadData *crd)
 {
-    Clipboard_T	    *cbd = crd->cbd;
-    GError	    *error = NULL;
     GInputStream    *in_stream;
     const char	    *mime_type;
-    GByteArray	    *arr;
-    static char	    buf[512];
-    ssize_t	    r;
-    char_u	    *actual, *final;
-    long	    len;
-    int		    motion_type = MAUTO;
-    char_u	    *tofree = NULL;
 
-    in_stream = gdk_clipboard_read_finish(cb, result, &mime_type, &error);
+    in_stream = gdk_clipboard_read_finish(cb, result, &mime_type, NULL);
     if (in_stream == NULL)
     {
-	g_error_free(error);
-	goto exit;
+	read_data_free(&crd->rd);
+	return;
     }
 
-    arr = g_byte_array_new();
-
-    while ((r = g_input_stream_read(in_stream, buf, 512, NULL, NULL)) > 0)
-	g_byte_array_append(arr, (uint8_t *)buf, r);
-
-    if (r == -1)
-    {
-	g_byte_array_free(arr, TRUE);
-	goto exit;
-    }
-    assert(r == 0);
-
-    len = (long)arr->len;
-    actual = final = g_byte_array_free(arr, FALSE);
-
-    if (!crd->abandoned && clip_convert_data(&final, &len, &motion_type,
-	    STRCMP(mime_type, VIM_MIMETYPE_NAME) == 0,
-	    STRCMP(mime_type, VIMENC_MIMETYPE_NAME) == 0, &tofree) == OK)
-	clip_yank_selection(motion_type, final, len, cbd);
-    g_free(actual);
-    vim_free(tofree);
-
-exit:
-    if (in_stream != NULL)
-	g_object_unref(in_stream);
-    // free "crd" if the requester gave up, else mark the read complete
-    if (crd->abandoned)
-	vim_free(crd);
-    else
-	crd->done = TRUE;
+    // Not sure if we need to copy the string, but do it anyways.
+    crd->mime_type = g_strdup(mime_type);
+    g_input_stream_read_async(in_stream, crd->rd.buf, READDATA_BUFSIZE,
+	    G_PRIORITY_HIGH,
+	    crd->rd.cancel, (GAsyncReadyCallback)read_data_input_cb, crd);
 }
 
 /*
@@ -4093,45 +4362,45 @@ exit:
     void
 clip_mch_request_selection(Clipboard_T *cbd)
 {
-    static const char	*mimes_no_html[] = {
+    static const char *mimes_no_html[] = {
 	VIMENC_MIMETYPE_NAME,
 	VIM_MIMETYPE_NAME,
 	"text/plain;charset=utf-8",
 	"text/plain",
 	NULL
     };
-    GdkClipboard	*clipboard;
-    ClipReadData	*crd;
-    time_t		start;
+
+    GdkClipboard *clipboard;
+    ClipReadData *crd;
+    GCancellable *cancel;
 
     clipboard = gtk4_get_clipboard(cbd, NULL);
     if (clipboard == NULL)
 	return;
 
-    // Heap-allocate: on a timeout this returns before the read completes,
-    // so "crd" must outlive this stack frame.
-    crd = ALLOC_ONE(ClipReadData);
-    if (crd == NULL)
-	return;
+    crd = (ClipReadData *)read_data_new(READ_DATA_CLIP, sizeof(*crd));
     crd->cbd = cbd;
-    crd->done = FALSE;
-    crd->abandoned = FALSE;
+    cancel = g_object_ref(crd->rd.cancel);
 
     gdk_clipboard_read_async(
 	    clipboard, clip_html ? supported_mimes : mimes_no_html,
-	    G_PRIORITY_HIGH, NULL, (GAsyncReadyCallback)clip_read_cb, crd);
+	    G_PRIORITY_HIGH, crd->rd.cancel,
+	    (GAsyncReadyCallback)clip_read_cb, crd);
 
-    // Spin until the async callback fires, with a 3-second wall-clock
-    // timeout as a safety net.
-    start = time(NULL);
-    while (!crd->done && time(NULL) < start + 3)
-	g_main_context_iteration(NULL, TRUE);
+    {
+	time_t start;
 
-    if (crd->done)
-	vim_free(crd);
-    else
-	// timed out: hand ownership to the callback, which frees "crd"
-	crd->abandoned = TRUE;
+	// Spin until the done receiving data, with a 3-second wall-clock
+	// timeout as a safety net. Use the GCancellable as a way to signal if
+	// done (and also use it to cancel if timed out as well).
+	start = time(NULL);
+	while (!g_cancellable_is_cancelled(cancel)
+		&& time(NULL) < start + 3)
+	    g_main_context_iteration(NULL, TRUE);
+
+	g_cancellable_cancel(cancel);
+	g_object_unref(cancel);
+    }
 }
 
 static int in_clipboard_set = FALSE;
@@ -4468,7 +4737,6 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
     {
 	if (menu_is_separator(menu->name))
 	{
-	    // TODO
 	    menu->id =
 		vim_toolbar_insert_separator(VIM_TOOLBAR(gui.toolbar), idx);
 	}
