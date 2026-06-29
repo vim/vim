@@ -22,10 +22,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: RuVim_0.9020262.280326\n"
+"Project-Id-Version: RuVim_0.9020677.200626\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-03-28 14:52+0300\n"
-"PO-Revision-Date: 2026-03-30 20:47+0300\n"
+"POT-Creation-Date: 2026-06-20 13:01+0300\n"
+"PO-Revision-Date: 2026-06-20 14:36+0300\n"
 "Last-Translator: Restorer, <restorer@mail2k.ru>\n"
 "Language-Team: RuVim, https://github.com/RestorerZ/RuVim\n"
 "Language: ru_RU\n"
@@ -221,26 +221,26 @@ msgstr "%d %%"
 msgid "%3s"
 msgstr "%3s"
 
-# Restorer: выводится в заголовке окна, строке состояния, комндной строке при
-# Restorer: редактировании нескольких файлов
+# Restorer: выводится в заголовке окна, строке состояния, комндной строке
+# Restorer: при редактировании нескольких файлов
 #, c-format
 msgid " (%d of %d)"
 msgstr " (%d из %d)"
 
-# Restorer: выводится в заголовке окна, строке состояния, комндной строке при
-# Restorer: редактировании нескольких файлов
+# Restorer: выводится в заголовке окна, строке состояния, комндной строке
+# Restorer: при редактировании нескольких файлов
 #, c-format
 msgid " ((%d) of %d)"
 msgstr " ((%d) из %d)"
 
-# Restorer: выводится в заголовке окна, строке состояния, комндной строке при
-# Restorer: редактировании нескольких файлов
+# Restorer: выводится в заголовке окна, строке состояния, комндной строке
+# Restorer: при редактировании нескольких файлов
 #, c-format
 msgid " (file %d of %d)"
 msgstr " (файл %d из %d)"
 
-# Restorer: выводится в заголовке окна, строке состояния, комндной строке при
-# Restorer: редактировании нескольких файлов
+# Restorer: выводится в заголовке окна, строке состояния, комндной строке
+# Restorer: при редактировании нескольких файлов
 #, c-format
 msgid " (file (%d) of %d)"
 msgstr " (файл (%d) из %d)"
@@ -350,9 +350,6 @@ msgstr " Сбой передачи. Попытка выполнить локально\n"
 #, c-format
 msgid "%d of %d edited"
 msgstr "отредактировано %d из %d"
-
-msgid "Socket server not online:Send expression failed"
-msgstr "Сбой при отправке выражения. Не подключен сервер сокетов"
 
 msgid "No display: Send expression failed.\n"
 msgstr "Сбой при отправке выражения. Отсутствует подключение\n"
@@ -1321,6 +1318,22 @@ msgstr "Открыть вкладку..."
 msgid "Vim: Main window unexpectedly destroyed\n"
 msgstr "Программа Vim. Непредвиденное закрытие основного окна\n"
 
+# Restorer: пункт контекстного меню на вкладке и панели вкладок GTK4
+msgid "Close Tab"
+msgstr "Закрыть вкладку"
+
+# Restorer: пункт контекстного меню на вкладке и панели вкладок GTK4
+msgid "New Tab"
+msgstr "Новая вкладка"
+
+# Restorer: заголовок группы в окне поиска и замены GTK4
+msgid "Direction:"
+msgstr "Направление"
+
+# Restorer: кнопка в окне поиска и замены GTK4
+msgid "Close"
+msgstr "Закрыть"
+
 # Restorer: наименование кнопки в окне выбора файлов
 # ~!: earlier
 msgid "&Filter"
@@ -2220,8 +2233,10 @@ msgstr "-X\t\t\tЗапуск программы без подключения к X-серверу"
 msgid "-Y\t\t\tDo not connect to Wayland compositor"
 msgstr "-Y\t\t\tЗапуск программы без подключения к Wayland Compositor"
 
-msgid "--clientserver <socket|x11> Backend for clientserver communication"
-msgstr "--clientserver <socket|x11> Тип подключение между клиентом и сервером"
+msgid ""
+"--clientserver <socket|x11|mswin> Backend for clientserver communication"
+msgstr ""
+"--clientserver <socket|x11|mswin> Тип подключение между клиентом и сервером"
 
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr ""
@@ -2537,6 +2552,9 @@ msgid "??? from here until ???END lines may be messed up"
 msgstr ""
 "Строки, которые, возможно, испорчены, помещены между метками ??? и ???END"
 
+msgid "??? block header corrupted"
+msgstr "??? блок заголовка повреждён"
+
 msgid "??? from here until ???END lines may have been inserted/deleted"
 msgstr ""
 "Строки, которые были вставлены или удалены, помещены между метками ??? и ???"
@@ -2790,12 +2808,12 @@ msgstr "Обнаружен файл подкачки \""
 msgid "\" already exists!"
 msgstr "\"!"
 
+msgid "Swap file already exists!"
+msgstr "Обнаружен файл подкачки!"
+
 # Restorer: заголовок окна
 msgid "VIM - ATTENTION"
 msgstr "Внимание"
-
-msgid "Swap file already exists!"
-msgstr "Обнаружен файл подкачки!"
 
 # Restorer: кнопки окно диалога при обнаружении существующего файла подкачки
 msgid ""
@@ -3272,10 +3290,6 @@ msgstr ""
 msgid "XSMP SmcOpenConnection failed: %s"
 msgstr "Функция SmcOpenConnection() вернула ошибку %s"
 
-#, c-format
-msgid "Failed creating socket directory: %s"
-msgstr "Произошёл сбой при создании каталога сокета %s"
-
 # ~!: earlier
 msgid "At line"
 msgstr "на строке"
@@ -3669,6 +3683,10 @@ msgstr " (не найдено)"
 # ~!: earlier
 msgid " (not supported)"
 msgstr " (не поддерживается)"
+
+#, c-format
+msgid "Failed creating socket directory: %s"
+msgstr "Произошёл сбой при создании каталога сокета %s"
 
 # Restorer: шаблоны %s заменяются на язык, кодировка, язык, соответственно
 #, c-format
@@ -4522,6 +4540,12 @@ msgstr ""
 # ~!: earlier
 msgid "without GUI."
 msgstr "без графического интерфейса."
+
+msgid "with GTK4 GUI (hwaccel)."
+msgstr "с графическим интерфейсом GTK4 (hwaccel)."
+
+msgid "with GTK4 GUI."
+msgstr "с графическим интерфейсом GTK4."
 
 msgid "with GTK3 GUI."
 msgstr "с графическим интерфейсом GTK3."
@@ -6546,11 +6570,6 @@ msgstr "E456: Не найден файл описаний PostScript \"%s.ps\""
 msgid "E457: Can't read PostScript resource file \"%s\""
 msgstr "E457: Не удалось считать файл описаний PostScript \"%s\""
 
-msgid "E458: Cannot allocate colormap entry, some colors may be incorrect"
-msgstr ""
-"E458: Не удалось считать запись из палитры. Цвета могут отображаться "
-"некорректно"
-
 msgid "E459: Cannot go back to previous directory"
 msgstr ""
 "E459: У программы Vim отсутствуют права на исполнение в текущем каталоге"
@@ -7263,6 +7282,9 @@ msgstr "E647: Недопустимый идентификатор буфера в команде setDot"
 
 msgid "E648: Invalid buffer identifier in close"
 msgstr "E648: Недопустимый идентификатор буфера в команде close"
+
+msgid "E649: Invalid identifier name in defineAnnoType"
+msgstr "E649: Недопустимый идентификатор наименования в команде defineAnnoType"
 
 msgid "E650: Invalid buffer identifier in defineAnnoType"
 msgstr "E650: Недопустимый идентификатор буфера в команде defineAnnoType"
@@ -8286,10 +8308,11 @@ msgstr "E910: Ожидался тип данных Number, а получен Job"
 msgid "E911: Using a Job as a Float"
 msgstr "E911: Ожидался тип данных Float, а получен Job"
 
-msgid "E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
+msgid ""
+"E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw, nl or blob channel"
 msgstr ""
-"E912: Функции ch_evalexpr() и ch_sendexpr() неприменимы к соединению RAW или "
-"NL"
+"E912: Функции ch_evalexpr() и ch_sendexpr() неприменимы к соединению RAW, NL "
+"или BLOB"
 
 msgid "E913: Using a Channel as a Number"
 msgstr "E913: Ожидался тип данных Number, а получен Channel"
@@ -10148,6 +10171,11 @@ msgstr "E1404: Интерфейсы не поддерживают ключевое слово \"abstract\""
 msgid "E1405: Class \"%s\" cannot be used as a value"
 msgstr "E1405: Не допускается в качестве значения указывать класс \"%s\""
 
+#, c-format
+msgid "E1406: Public and protected member have the same name: %s and _%s"
+msgstr ""
+"E1406: Общий и защищённый член имеют одно и тоже наименование %s и _%s"
+
 msgid "E1407: Cannot use a Typealias as a variable or value"
 msgstr ""
 "E1407: Не допускается в качестве переменной или значения указывать псевдоним "
@@ -10463,7 +10491,7 @@ msgstr "E1545: Недоступен журнал списка результатов"
 msgid "E1546: Cannot switch to a closing buffer"
 msgstr "E1546: Не допускается переключение в закрытый буфер"
 
-msgid "E1547: This version of Vim does support :redrawtabpanel"
+msgid "E1547: This version of Vim does not support :redrawtabpanel"
 msgstr "E1547: Данная версия программы не поддерживает команду :redrawtabpanel"
 
 msgid "E1548: Wayland connection is unavailable"
@@ -10526,24 +10554,25 @@ msgstr ""
 "E1562: Не допускается использовать привязки сравнения при наличии скрытых "
 "буферов в режиме сверки различий"
 
-msgid "E1563: Socket path is too big"
-msgstr "E1563: Маршрут к сокету слишком длинный"
-
-msgid "E1564: Socket name cannot have slashes in it without being a path"
+#, c-format
+msgid "E1564: Socket name '%s' cannot have slashes in it without being a path"
 msgstr ""
-"E1564: В наименовании сокета не должно быть косой черты, если это не маршрут"
+"E1564: В наименовании сокета '%s' не должно быть косой черты, "
+"если это не маршрут"
 
 msgid "E1565: Socket server is not online, call remote_startserver() first"
 msgstr ""
 "E1565: Сервер сокетов не подключен, вызовите функцию remote_startserver()"
 
 #, c-format
-msgid "E1566: Failed connecting to socket %s: %s"
-msgstr "E1566: Произошёл сбой при подключении к сокету %s: %s"
+msgid "E1566: Failed connecting to socket '%s'"
+msgstr "E1566: Произошёл сбой при подключении к сокету '%s'"
 
-msgid "E1567: Cannot start socket server, socket path is unavailable"
+msgid ""
+"E1567: Socket server protocol version mismatch, check what Vim version you "
+"are using"
 msgstr ""
-"E1567: Не удалось запустить сервер сокетов, маршрут к сокету недействителен"
+"E1567: Несоответствие версии протокола Socket server, проверьте версию Vim"
 
 #, c-format
 msgid "E1568: OSC command response timed out: %.*s"
@@ -10576,6 +10605,22 @@ msgstr ""
 
 msgid "E1575: Cannot create pipes"
 msgstr "E1575: Не удалось создать конвейер"
+
+msgid "E1576: Tag file entry must not be a URL"
+msgstr "E1576: В элементе индексного файла не должно быть URL"
+
+#, c-format
+msgid "E1577: Invalid format string, only one \"%s\" is allowed"
+msgstr "E1577: Недопустимый формат строки. Это допустимо \"%s\""
+
+msgid "E1578: Too many postponed prefixes and/or compound flags"
+msgstr ""
+"E1578: Большое количество как отложенных префиксов, так и признаков "
+"составных слов"
+
+msgid "E1579: -completeopt=escape cannot be used with -nargs=_"
+msgstr ""
+"E1579: Команда -completeopt=escape не может применяться с командой -nargs=_"
 
 # Restorer: выводится, например, по команде `CTRL+g`, `g CTRL+g` и т. п.
 msgid "--No lines in buffer--"
@@ -11131,6 +11176,9 @@ msgstr ""
 msgid "file names in a tags file are relative to the tags file"
 msgstr "интерпретировать расположение файлов относительно файла индексов"
 
+msgid "a :tag command cannot access remote files"
+msgstr "команда :tag не может получить доступ к удалённым файлам"
+
 msgid "a :tag command will use the tagstack"
 msgstr "для команды :tag используется стек индексов"
 
@@ -11178,6 +11226,9 @@ msgstr "прокрутка частично отображаемой строки на экране"
 
 msgid "number of screen lines to show around the cursor"
 msgstr "количество контекстных строк для строки с кареткой"
+
+msgid "vertically center cursor even at end of file"
+msgstr "центрировать каретку по вертикали даже в конце файла"
 
 msgid "long lines wrap"
 msgstr "разбивка длинных строк для отображения в пределах окна"
@@ -11793,11 +11844,6 @@ msgstr "Интервал опроса сервера Wayland для чтения или запси данных"
 msgid "Wayland seat to use"
 msgstr "Местоположение, используемое Wayland"
 
-msgid ""
-"Enable wayland focus stealing functionality in order to access the clipboard"
-msgstr ""
-"Включит функцианал Wayland по перехвату фокуса для доступа к буферу обмена"
-
 msgid "\"startsel\" and/or \"stopsel\"; what special keys can do"
 msgstr ""
 "действия, которые могут выполнять специальные клавиши\n"
@@ -11907,6 +11953,9 @@ msgstr "максимальная ширина всплывающего меню при подстановке"
 
 msgid "popup border style"
 msgstr "тип рамки всплывающего окна"
+
+msgid "additional options for the popup menu"
+msgstr "необязательные параметры для всплывающего окна"
 
 msgid "user defined function for Insert mode completion"
 msgstr "пользовательская функция при подстановке в режиме вставки"
@@ -12147,6 +12196,9 @@ msgstr "при считывании файла использовать настройки из режимной строки"
 
 msgid "allow setting expression options from a modeline"
 msgstr "разрешить вычисление выражений в режимной строке"
+
+msgid "only allow safe options to be set from a modeline"
+msgstr "разрешить установку только безопасных параметров в режимной строке"
 
 msgid "number of lines to check for modelines"
 msgstr "количество проверяемых в файле строк на наличие режимной строки"
