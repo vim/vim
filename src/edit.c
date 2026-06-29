@@ -898,6 +898,8 @@ do_intr:
 		break;
 	    }
 doESCkey:
+	    // Drop a pending autocomplete so it does not outlive Insert mode.
+	    ins_compl_clear_autocomplete_delay();
 	    /*
 	     * This is the ONLY return from edit()!
 	     */
@@ -1533,8 +1535,9 @@ normalchar:
 	    break;
 	}   // end of switch (c)
 
-	// If typed something may trigger CursorHoldI again.
-	if (c != K_CURSORHOLD
+	// If typed something may trigger CursorHoldI again; K_COMPLETE_DELAY is
+	// injected, not typed.
+	if (c != K_CURSORHOLD && c != K_COMPLETE_DELAY
 #ifdef FEAT_COMPL_FUNC
 		// but not in CTRL-X mode, a script can't restore the state
 		&& ctrl_x_mode_normal()

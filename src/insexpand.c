@@ -206,6 +206,9 @@ static buf_T	  *compl_curr_buf = NULL;  // buf where completion is active
 // COMPL_FUNC_TIMEOUT_NON_KW_MS). - girish
 static int	  compl_autocomplete = FALSE;	    // whether autocompletion is active
 static bool	  compl_autocomplete_pending = false;
+#ifdef ELAPSED_FUNC
+static elapsed_T  compl_autocomplete_start_tv;	    // when the delay was armed
+#endif
 static int	  compl_timeout_ms = COMPL_INITIAL_TIMEOUT_MS;
 static int	  compl_time_slice_expired = FALSE; // time budget exceeded for current source
 static int	  compl_from_nonkeyword = FALSE;    // completion started from non-keyword
@@ -7398,6 +7401,7 @@ ins_compl_arm_autocomplete_delay(void)
 #ifdef ELAPSED_FUNC
     if (p_acl > 0)
     {
+	ELAPSED_INIT(compl_autocomplete_start_tv);
 	compl_autocomplete_pending = true;
 	return true;
     }
@@ -7421,6 +7425,19 @@ ins_compl_clear_autocomplete_delay(void)
 ins_compl_autocomplete_pending(void)
 {
     return compl_autocomplete_pending;
+}
+
+/*
+ * Return the time in msec since the 'autocompletedelay' was armed.
+ */
+    long
+ins_compl_autocomplete_elapsed(void)
+{
+#ifdef ELAPSED_FUNC
+    return ELAPSED_FUNC(compl_autocomplete_start_tv);
+#else
+    return 0;
+#endif
 }
 
 /*

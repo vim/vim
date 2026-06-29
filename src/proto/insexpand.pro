@@ -79,6 +79,7 @@ void ins_compl_enable_autocomplete(void);
 bool ins_compl_arm_autocomplete_delay(void);
 void ins_compl_clear_autocomplete_delay(void);
 bool ins_compl_autocomplete_pending(void);
+long ins_compl_autocomplete_elapsed(void);
 void free_insexpand_stuff(void);
 void f_preinserted(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */
