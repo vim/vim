@@ -5840,7 +5840,10 @@ f_getchangelist(typval_T *argvars, typval_T *rettv)
 	if ((d = dict_alloc()) == NULL)
 	    return;
 	if (list_append_dict(l, d) == FAIL)
+	{
+	    dict_unref(d);
 	    return;
+	}
 	dict_add_number(d, "lnum", (long)buf->b_changelist[i].lnum);
 	dict_add_number(d, "col", (long)buf->b_changelist[i].col);
 	dict_add_number(d, "coladd", (long)buf->b_changelist[i].coladd);
@@ -6058,7 +6061,10 @@ f_getjumplist(typval_T *argvars, typval_T *rettv)
 	if ((d = dict_alloc()) == NULL)
 	    return;
 	if (list_append_dict(l, d) == FAIL)
+	{
+	    dict_unref(d);
 	    return;
+	}
 	dict_add_number(d, "lnum", (long)wp->w_jumplist[i].fmark.mark.lnum);
 	dict_add_number(d, "col", (long)wp->w_jumplist[i].fmark.mark.col);
 	dict_add_number(d, "coladd", (long)wp->w_jumplist[i].fmark.mark.coladd);
@@ -9498,7 +9504,10 @@ get_matches_in_str(
 	if (d == NULL)
 	    return FAIL;
 	if (list_append_dict(mlist, d) == FAIL)
+	{
+	    dict_unref(d);
 	    return FAIL;
+	}
 
 	if (dict_add_number(d, matchbuf ? "lnum" : "idx", idx) == FAIL)
 	    return FAIL;
@@ -9518,7 +9527,10 @@ get_matches_in_str(
 		return FAIL;
 
 	    if (dict_add_list(d, "submatches", sml) == FAIL)
+	    {
+		list_unref(sml);
 		return FAIL;
+	    }
 
 	    // return a list with the submatches
 	    for (int i = 1; i < NSUBEXP; ++i)
