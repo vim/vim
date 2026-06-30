@@ -889,9 +889,11 @@ makeopens(
 	    // cursor can be set.  This is done again below.
 	    // winminheight and winminwidth need to be set to avoid an error if
 	    // the user has set winheight or winwidth.
-	    if (put_line(fd, "save_winminheight = &winminheight") == FAIL
-		    || put_line(fd, "save_winminwidth = &winminwidth")
-								       == FAIL)
+	    if (!restore_height_width
+		    && (put_line(fd, "save_winminheight = &winminheight")
+									== FAIL
+			|| put_line(fd, "save_winminwidth = &winminwidth")
+								       == FAIL))
 		goto fail;
 	    if (put_line(fd, "set winminheight=0") == FAIL
 		    || put_line(fd, "set winheight=1") == FAIL
