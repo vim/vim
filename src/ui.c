@@ -305,9 +305,9 @@ inchar_loop(
 	// 'autocompletedelay' and 'updatetime' so the delay does not postpone
 	// CursorHold.  Once CursorHold has fired, only the delay is left.
 	// Gate the injection like trigger_cursorhold() so the deferred key
-	// cannot fire while recording or outside Insert mode.
+	// cannot fire while outside Insert mode, but do still fire the key
+	// when recording a register (gotchars_add_byte() will ignore it).
 	bool delay_pending = ins_compl_autocomplete_pending() && p_acl > 0
-		&& reg_recording == 0
 		&& typebuf.tb_len == 0
 		&& !ins_compl_active()
 		&& (get_real_state() & MODE_INSERT) != 0;
