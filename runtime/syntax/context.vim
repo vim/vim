@@ -4,7 +4,7 @@ vim9script
 # Language:           ConTeXt typesetting engine
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
-# Latest Revision:    2026 Jan 10
+# Latest Revision:    2026 Jun 13
 
 if exists("b:current_syntax")
   finish
@@ -60,7 +60,7 @@ syn match   contextSequence   '\\[a-zA-Z]*[@_!?]\+[a-zA-Z@_!?]*' contains=@NoSpe
 
 # Math
 syn match  contextMathCmd '\\m\%(ath\%(ematics\)\=\)\=\>'
-syn region contextInlineMath matchgroup=contextMathDelim start='\$' skip='\\\\\|\\\$' end='\$'
+syn region contextInlineMath matchgroup=contextMathDelim start='[\\]\@1<!\$' skip='\\\\\|\\\$' end='[\\]\@1<!\$'
 syn region contextDisplayMath matchgroup=contextMathDelim start='\$\$' skip='\\\\\|\\\$' end='\$\$' keepend
 syn region contextDisplayMath matchgroup=contextBlockDelim start='\\startformula' end='\\stopformula' contains=TOP
 
@@ -117,27 +117,28 @@ syn match   contextFont       '\\\%(Word\|WORD\|Words\|WORDS\)\>'               
 syn match   contextFont       '\\\%(vi\{1,3}\|ix\|xi\{0,2}\)\>'                 contains=@NoSpell
 syn match   contextFont       '\\\%(tf\|b[si]\|s[cl]\|os\)\%(xx\|[xabcd]\)\=\>' contains=@NoSpell
 
-hi def link contextBlockDelim Keyword
-hi def link contextBuiltin    Keyword
-hi def link contextCommand    Keyword
-hi def link contextComment    Comment
-hi def link contextDelimiter  Delimiter
-hi def link contextDirectLua  Keyword
-hi def link contextEscaped    String
-hi def link contextFont       contextType
-hi def link contextKeyword    Keyword
-hi def link contextInlineMath String
-hi def link contextMagicLine  PreProc
-hi def link contextMathCmd    Identifier
-hi def link contextMathDelim  Delimiter
-hi def link contextOptions    Typedef
-hi def link contextPreProc    PreProc
-hi def link contextSectioning PreProc
-hi def link contextSequence   Identifier
-hi def link contextSpecial    Special
-hi def link contextStyle      contextType
-hi def link contextTodo       Todo
-hi def link contextType       Type
+hi def link contextBlockDelim  Keyword
+hi def link contextBuiltin     Keyword
+hi def link contextCommand     Keyword
+hi def link contextComment     Comment
+hi def link contextDelimiter   Delimiter
+hi def link contextDirectLua   Keyword
+hi def link contextDisplayMath String
+hi def link contextEscaped     String
+hi def link contextFont        contextType
+hi def link contextKeyword     Keyword
+hi def link contextInlineMath  String
+hi def link contextMagicLine   PreProc
+hi def link contextMathCmd     Identifier
+hi def link contextMathDelim   Delimiter
+hi def link contextOptions     Typedef
+hi def link contextPreProc     PreProc
+hi def link contextSectioning  PreProc
+hi def link contextSequence    Identifier
+hi def link contextSpecial     Special
+hi def link contextStyle       contextType
+hi def link contextTodo        Todo
+hi def link contextType        Type
 
 b:current_syntax = 'context'
 

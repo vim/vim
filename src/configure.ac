@@ -2148,10 +2148,6 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 	  RUBY_LIBS="$RUBY_LIBS -L$rubylibdir"
 	fi
 
-	if test "X$librubyarg" != "X"; then
-	  RUBY_LIBS="$librubyarg $RUBY_LIBS"
-	fi
-
 	dnl Here the Ruby LDFLAGS used to be added to LDFLAGS, but that turns
 	dnl out to cause trouble and was removed.
 
@@ -2166,6 +2162,19 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 	  AC_DEFINE(DYNAMIC_RUBY)
 	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby_soname\\\" $RUBY_CFLAGS"
 	  RUBY_LIBS=
+	  dnl For dynamic Ruby keep only the library search path / runpath from
+	  dnl librubyarg so the dlopen()ed library can be found at runtime,
+	  dnl without adding -lruby and thus a hard dependency on the Ruby
+	  dnl library, which would defeat dynamic loading.
+	  for arg in $librubyarg; do
+	    case "$arg" in
+	      -L*|-R*|-Wl,-R*|-Wl,-rpath*) RUBY_LIBS="$RUBY_LIBS $arg" ;;
+	    esac
+	  done
+	  librubyarg=
+	fi
+	if test "X$librubyarg" != "X"; then
+	  RUBY_LIBS="$librubyarg $RUBY_LIBS"
 	fi
 	if test "X$CLANG_VERSION" != "X" -a "$rubyversion" -ge 30; then
 	  RUBY_CFLAGS="$RUBY_CFLAGS -fdeclspec"
@@ -2714,6 +2723,19 @@ if test "x$SKIP_GTK4" != "xYES" -a "$enable_gui_canon" != "gtk4"; then
     SKIP_GTK4=YES
   fi
 fi
+
+if test "x$SKIP_GTK4" != "xYES" -a "$enable_gui_canon" = "gtk4"; then
+  AC_MSG_CHECKING(--enable-gtk4-hwaccel argument)
+  AC_ARG_ENABLE(gtk4-hwaccel,
+	[  --enable-gtk4-hwaccel  Use hardware accelerated rendering backend for GTK4 [default=no]],
+	, enable_gtk4_hwaccel="no")
+  AC_MSG_RESULT($enable_gtk4_hwaccel)
+
+  if test "x$enable_gtk4_hwaccel" = "xyes"; then
+    AC_DEFINE(USE_GTK4_SNAPSHOT)
+  fi
+fi
+
 
 if test "x$SKIP_GTK3" != "xYES" -a "$enable_gui_canon" != "gtk3"; then
   AC_MSG_CHECKING(whether or not to look for GTK+ 3)
@@ -4015,7 +4037,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 
 dnl Check for timer_create. It probably requires the 'rt' library.
 AC_CACHE_CHECK([for timer_create without -lrt], [vim_cv_timer_create], [
-  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([
   #include <time.h>
   ], [
     timer_create(CLOCK_MONOTONIC, NULL, NULL);
@@ -4029,7 +4051,7 @@ if test "x$vim_cv_timer_create" = "xno" ; then
   save_LIBS="$LIBS"
   LIBS="$LIBS -lrt"
   AC_CACHE_CHECK([for timer_create with -lrt], [vim_cv_timer_create_with_lrt], [
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([
     #include <time.h>
     ], [
       timer_create(CLOCK_MONOTONIC, NULL, NULL);

@@ -665,6 +665,7 @@ typedef struct expand
     xp_prefix_T	xp_prefix;
 #if defined(FEAT_EVAL)
     char_u	*xp_arg;		// completion function
+    int		xp_complete_opt;	// UCC_ flags for user command
     sctx_T	xp_script_ctx;		// SCTX for completion function
 #endif
     int		xp_backslash;		// one of the XP_BS_ values
@@ -3193,6 +3194,9 @@ typedef struct {
     int		b_sst_freecount;
     linenr_T	b_sst_check_lnum;
     short_u	b_sst_lasttick;	// last display tick
+
+    // Cache for in_id_list(); see idl_cache_T in syntax.c.
+    void	*b_idlist_cache;
 #endif // FEAT_SYN_HL
 
 #ifdef FEAT_SPELL
@@ -4265,6 +4269,12 @@ struct window_S
     int		w_popup_image_emit_col;
     int		w_popup_image_emit_cells_w;
     int		w_popup_image_emit_cells_h;
+    // TRUE when the pixel buffer was replaced after the last emit.  For
+    // RGBA images the backends that composite onto the previous emit
+    // instead of replacing it (sixel P2=1 transparency, cairo OPERATOR_OVER)
+    // must repaint the cells underneath first, or the old frame stays
+    // visible under the new frame's transparent pixels.
+    bool	w_popup_image_px_dirty;
 #  ifdef FEAT_IMAGE_SIXEL
     char_u	*w_popup_image_seq;	// cached sixel DCS sequence (terminal)
     int		w_popup_image_seq_w;	// pixel width of cached seq
@@ -4274,6 +4284,10 @@ struct window_S
     int		w_popup_image_seq_crop_y; // pixel offset (top) into source
     int		w_popup_image_seq_cells_w; // cell width  spanning seq pixels
     int		w_popup_image_seq_cells_h; // cell height spanning seq pixels
+    int		w_popup_image_seq_zindex;  // zindex encoded into seq (kitty z=)
+    bool	w_popup_image_emit_valid;  // true while the kitty placement
+					   // emitted at w_popup_image_emit_*
+					   // is still on the terminal
 #  endif
 #  ifdef FEAT_IMAGE_GDI
     // Pre-built Windows GUI image cache.  The bitmap is a 32-bit top-down
@@ -4291,6 +4305,10 @@ struct window_S
     // gui.surface by gui_mch_draw_popup_image().  Stored as void* so
     // structs.h does not have to pull in <cairo.h>.
     void	*w_popup_image_surface;
+#  endif
+#  ifdef FEAT_IMAGE_GDK
+    // Cached GdkTexture for the image.
+    void	*w_popup_image_texture;
 #  endif
 # endif
 # if defined(FEAT_TIMERS)
@@ -4349,6 +4367,10 @@ struct window_S
      * buffer, thus w_wrow is relative to w_winrow.
      */
     int		w_wrow, w_wcol;	    // cursor position in window
+#ifdef FEAT_CONCEAL
+    int		w_wcol_conceal_off; // screen cells concealed before w_wcol on
+				    // the cursor's screen line, set by win_line()
+#endif
 
     /*
      * Info about the lines currently in the window is remembered to avoid
@@ -4711,7 +4733,9 @@ struct VimMenu
 #  if defined(GTK_CHECK_VERSION) && !GTK_CHECK_VERSION(3,4,0)
     GtkWidget	*tearoff_handle;
 #  endif
+#  ifndef USE_GTK4
     GtkWidget   *label;		    // Used by "set wak=" code.
+#  endif
 # endif
 # ifdef FEAT_GUI_MOTIF
     int		sensitive;	    // turn button on/off

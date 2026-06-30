@@ -466,13 +466,13 @@ func Test_mksession_terminal_shell()
   let lines = readfile('Xtest_mks.out')
   let term_cmd = ''
   for line in lines
-    if line =~ '^terminal'
+    if line =~ '^exe '':terminal'
       let term_cmd = line
     elseif line =~ 'badd.*' . &shell
       call assert_report('unexpected shell line: ' . line)
     endif
   endfor
-  call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+\s*.*$', term_cmd)
+  call assert_match('exe '':terminal ++curwin ++cols='' \.\. ((&columns \* \d\+ + \d\+) \/ \d\+) \.\. '' ++rows='' \.\. ((&lines \* \d\+ + \d\+) \/ \d\+)\s.*$', term_cmd)
 
   call StopShellInTerminal(bufnr('%'))
   call delete('Xtest_mks.out')
@@ -486,7 +486,7 @@ func Test_mksession_terminal_no_restore_cmdarg()
   let lines = readfile('Xtest_mks.out')
   let term_cmd = ''
   for line in lines
-    if line =~ '^terminal'
+    if line =~ '^exe '':terminal'
       call assert_report('session must not restore terminal')
     endif
   endfor
@@ -503,7 +503,7 @@ func Test_mksession_terminal_no_restore_funcarg()
   let lines = readfile('Xtest_mks.out')
   let term_cmd = ''
   for line in lines
-    if line =~ '^terminal'
+    if line =~ '^exe '':terminal'
       call assert_report('session must not restore terminal')
     endif
   endfor
@@ -521,7 +521,7 @@ func Test_mksession_terminal_no_restore_func()
   let lines = readfile('Xtest_mks.out')
   let term_cmd = ''
   for line in lines
-    if line =~ '^terminal'
+    if line =~ '^exe '':terminal'
       call assert_report('session must not restore terminal')
     endif
   endfor
@@ -539,7 +539,7 @@ func Test_mksession_terminal_no_ssop()
   let lines = readfile('Xtest_mks.out')
   let term_cmd = ''
   for line in lines
-    if line =~ '^terminal'
+    if line =~ '^exe '':terminal'
       call assert_report('session must not restore terminal')
     endif
   endfor
@@ -559,11 +559,11 @@ func Test_mksession_terminal_restore_other()
   let lines = readfile('Xtest_mks.out')
   let term_cmd = ''
   for line in lines
-    if line =~ '^terminal'
+    if line =~ '^exe '':terminal'
       let term_cmd = line
     endif
   endfor
-  call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+.*other', term_cmd)
+  call assert_match('exe '':terminal ++curwin ++cols='' \.\. ((&columns \* \d\+ + \d\+) \/ \d\+) \.\. '' ++rows='' \.\. ((&lines \* \d\+ + \d\+) \/ \d\+).*other', term_cmd)
 
   call StopShellInTerminal(bufnr('%'))
   call delete('Xtest_mks.out')
@@ -584,9 +584,9 @@ func Test_mksession_terminal_shared_windows()
   let found_var = 0
 
   for line in lines
-    if line =~ '^terminal'
+    if line =~ '^exe '':terminal'
       let found_creation = 1
-      call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+', line)
+      call assert_match('exe '':terminal ++curwin ++cols='' \.\. ((&columns \* \d\+ + \d\+) \/ \d\+) \.\. '' ++rows='' \.\. ((&lines \* \d\+ + \d\+) \/ \d\+)', line)
     elseif line =~ $"^var term_buf_{term_buf}: number = bufnr()$"
       let found_var = 1
     elseif line =~ "^execute 'buffer ' . term_buf_" . term_buf . "$"
@@ -1595,6 +1595,130 @@ func Test_mksession_localmappings()
     endif
     call delete(session)
   endfor
+
+endfunc
+
+" Test vim9 script relative auto imports (issue #12641)
+func Test_mksession_vim9_relative_auto_import()
+
+  " Dummy vim9 script
+  let script_sources =<< trim END
+    vim9script
+    import autoload './XAuto.vim'
+    nnoremap dummy-test <ScriptCmd>XAuto.Test()<CR>
+  END
+  call writefile(script_sources, 'XScript.vim', 'D')
+
+  let auto_sources =<< trim END
+    vim9script
+    const ref_txt = 'Hello from vim9 dummy relative auto script!'
+    export def Test()
+      if !has("gui_running")
+        exe $"echomsg '{ref_txt}'"
+      endif
+      writefile([ref_txt], 'XDummyOutput')
+    enddef
+  END
+  call writefile(auto_sources, 'XAuto.vim', 'D')
+
+  " Source the script
+  const ref_txt = 'Hello from vim9 dummy relative auto script!'
+  source XScript.vim
+
+  " Execute mapping
+  normal dummy-test
+
+  if !has('gui_running')
+    call assert_match(ref_txt, execute('messages'), 'No vim9 auto script XAuto.Test() execution')
+  endif
+  call assert_true(filereadable('XDummyOutput'), 'Output file was not created by Vim9 auto script')
+  call assert_equal([ref_txt], readfile('XDummyOutput'))
+  call delete('XDummyOutput')
+
+  " Create a session file
+  mksession! XDummySession.vim
+  defer delete('XDummySession.vim')
+  call assert_true(filereadable('XDummySession.vim'), 'Session file was not created')
+
+  " Check the session file mappings are operational
+  let test_sources =<< trim END
+    " Load session
+    source XDummySession.vim
+    " Execute mapping
+    normal dummy-test
+    " on my way
+    cq
+  END
+  call writefile(test_sources, 'XTest.vim', 'D')
+  " spawn a new Vim instance to load the session and execute the mapping
+  call system(GetVimCommand('XTest.vim'))
+  call assert_true(filereadable('XDummyOutput'),
+        \ 'Expected output file was not created by Vim9 auto script mapping')
+  defer delete('XDummyOutput')
+  call assert_equal([ref_txt], readfile('XDummyOutput'))
+
+endfunc
+
+" Test vim9 script avoid homonimous auto imports
+func Test_mksession_vim9_duplicate_import()
+
+  " Auto script
+  let auto_sources =<< trim END
+    vim9script
+    const ref_txt = 'Hello from a duplicated vim9 script!'
+    export def Test()
+      writefile([ref_txt], 'XDummyOutput')
+    enddef
+  END
+
+  " Dummy vim9 script
+  let script_sources =<< trim END
+    vim9script
+    import autoload './XAuto.vim'
+    nnoremap dummy-test <ScriptCmd>XAuto.Test()<CR>
+  END
+
+  for i in range(1, 5)
+    let dir = $'XDir{i}'
+    call mkdir(dir, 'p')
+    defer delete(dir, 'rf')
+
+    let autofile = dir . '/XAuto.vim'
+    call writefile(auto_sources, autofile, 'D')
+
+    let scriptfile = dir . '/XScript.vim'
+    call writefile(script_sources, scriptfile, 'D')
+    exe "source " . scriptfile
+  endfor
+
+  " Create a session file
+  mksession! XDummySession.vim
+  defer delete('XDummySession.vim')
+  call assert_true(filereadable('XDummySession.vim'), 'Session file was not created')
+
+  " Check there are commented imports in the session file
+  let commented_imports = filter(readfile('XDummySession.vim'),
+  \ {_, v -> v =~ '^# import autoload'})
+  call assert_equal(4, len(commented_imports),
+  \ 'Session file does not contain the expected number of commented imports')
+
+  " Check the session file mappings are operational
+  const ref_txt = 'Hello from a duplicated vim9 script!'
+  let test_sources =<< trim END
+    " Load session
+    source XDummySession.vim
+    " Execute mapping
+    normal dummy-test
+    " on my way
+    cq
+  END
+  call writefile(test_sources, 'XTest.vim', 'D')
+  " spawn a new Vim instance to load the session and execute the mapping
+  call system(GetVimCommand('XTest.vim'))
+  call assert_true(filereadable('XDummyOutput'),
+        \ 'Expected output file was not created by Vim9 auto script mapping')
+  defer delete('XDummyOutput')
+  call assert_equal([ref_txt], readfile('XDummyOutput'))
 
 endfunc
 

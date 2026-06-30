@@ -600,7 +600,7 @@ def StructMembers( # {{{1
         return []
       endif
       execute 'silent! keepjumps noautocmd '
-        .. n .. 'vimgrep ' .. '/\t' .. typename .. '\(\t\|$\)/j '
+        .. n .. 'vimgrep ' .. '/\t' .. escape(typename, '/\') .. '\(\t\|$\)/j '
         .. fnames
 
       qflist = getqflist()

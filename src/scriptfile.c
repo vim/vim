@@ -1806,9 +1806,9 @@ do_source_ext(
     sticky_cmdmod_flags = 0;
 
     save_current_sctx = current_sctx;
-    if (cmdmod.cmod_flags & CMOD_VIM9CMD)
-	// When the ":vim9cmd" command modifier is used, source the script as a
-	// Vim9 script.
+    if ((cmdmod.cmod_flags & CMOD_VIM9CMD) && cookie.source_from_buf)
+	// When the ":vim9cmd" command modifier is used, source buffer lines as
+	// Vim9 script
 	current_sctx.sc_version = SCRIPT_VERSION_VIM9;
     else
 	current_sctx.sc_version = 1;  // default script version

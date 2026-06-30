@@ -1412,7 +1412,10 @@ gui_update_cursor(
 	    --gui.col;
 #endif
 
-#ifndef FEAT_GUI_MSWIN	    // doesn't seem to work for MSWindows
+	// Doesn't seem to work for MSWindows. Not necessary when using
+	// GtkSnapshot, because everything is drawn in order in the snapshot
+	// vfunc.
+#if !defined(FEAT_GUI_MSWIN) && !defined(USE_GTK4_SNAPSHOT)
 	gui.highlight_mask = ScreenAttrs[LineOffset[gui.row] + gui.col];
 	(void)gui_screenchar(LineOffset[gui.row] + gui.col,
 		GUI_MON_TRS_CURSOR | GUI_MON_NOCLEAR,
@@ -1605,8 +1608,20 @@ again:
     gui.num_cols = (pixel_width - gui_get_base_width()) / gui.char_width;
     gui.num_rows = (pixel_height - gui_get_base_height()) / gui.char_height;
 
+#ifdef USE_GTK4_SNAPSHOT
+    gui_gtk4_update_size();
+#endif
+
     gui_position_components(pixel_width);
     gui_reset_scroll_region();
+
+#if defined(FEAT_GUI_GTK) && defined(USE_GTK4) && !defined(USE_GTK4_SNAPSHOT)
+    // We do not resize the draw area via the "resize" signal. This is because
+    // when the window is resized, the form widget is the one that is resized,
+    // so let that call gui_resize_shell() which will allocate the surface and
+    // allocate the drawing area size/position.
+    gui_gtk4_resize(pixel_width, pixel_height);
+#endif
 
     /*
      * At the "more" and ":confirm" prompt there is no redraw, put the cursor
@@ -1630,6 +1645,9 @@ again:
 
     gui_update_scrollbars(TRUE);
     gui_update_cursor(FALSE, TRUE);
+#if defined(FEAT_GUI_GTK) && defined(USE_GTK4_SNAPSHOT)
+    gui_gtk_calculate_bleed(pixel_width, pixel_height);
+#endif
 #if defined(FEAT_XIM) && !defined(FEAT_GUI_GTK)
     xim_set_status_area();
 #endif
@@ -1706,11 +1724,6 @@ gui_set_shellsize(
 
     if (!gui.shell_created)
 	return;
-
-#if defined(FEAT_GUI_GTK) && defined(USE_GTK4)
-    // Get the scrollbar width + height if possible
-    gui_mch_update_scrollbar_size();
-#endif
 
 #if defined(MSWIN) || defined(FEAT_GUI_GTK)
     // If not setting to a user specified size and maximized, calculate the
@@ -1804,6 +1817,10 @@ gui_set_shellsize(
     gui_position_components(width);
     gui_update_scrollbars(TRUE);
     gui_reset_scroll_region();
+
+#if defined(FEAT_GUI_GTK) && defined(USE_GTK4_SNAPSHOT)
+    gui_gtk_calculate_bleed(width, height);
+#endif
 }
 
 /*
@@ -4134,6 +4151,8 @@ gui_drag_scrollbar(scrollbar_T *sb, long value, int still_dragging)
 	// Keep the "dragged_wp" value until after the scrolling, for when the
 	// mouse button is released.  GTK2 doesn't send the button-up event.
 	gui.dragged_wp = NULL;
+	// WinScrolled event
+	gui_focus_change(TRUE);
 #endif
     }
 

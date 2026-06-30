@@ -1025,7 +1025,10 @@ do_autocmd(exarg_T *eap, char_u *arg_in, int forceit)
 	    if (STRNCMP(cmd, "++once", 6) == 0 && VIM_ISWHITE(cmd[6]))
 	    {
 		if (once)
+		{
 		    semsg(_(e_duplicate_argument_str), "++once");
+		    goto err_exit;
+		}
 		once = TRUE;
 		cmd = skipwhite(cmd + 6);
 	    }
@@ -1036,7 +1039,7 @@ do_autocmd(exarg_T *eap, char_u *arg_in, int forceit)
 		if (nested)
 		{
 		    semsg(_(e_duplicate_argument_str), "++nested");
-		    return;
+		    goto err_exit;
 		}
 		nested = TRUE;
 		cmd = skipwhite(cmd + 8);
@@ -1051,12 +1054,12 @@ do_autocmd(exarg_T *eap, char_u *arg_in, int forceit)
 		    // be removed and "nested" accepted as the start of the
 		    // command.
 		    emsg(_(e_invalid_command_nested_did_you_mean_plusplus_nested));
-		    return;
+		    goto err_exit;
 		}
 		if (nested)
 		{
 		    semsg(_(e_duplicate_argument_str), "nested");
-		    return;
+		    goto err_exit;
 		}
 		nested = TRUE;
 		cmd = skipwhite(cmd + 6);
@@ -1075,7 +1078,7 @@ do_autocmd(exarg_T *eap, char_u *arg_in, int forceit)
 
 	    cmd = expand_sfile(cmd);
 	    if (cmd == NULL)	    // some error
-		return;
+		goto err_exit;
 	    cmd_need_free = TRUE;
 	}
     }
@@ -1111,6 +1114,7 @@ do_autocmd(exarg_T *eap, char_u *arg_in, int forceit)
 		break;
     }
 
+err_exit:
     if (cmd_need_free)
 	vim_free(cmd);
     vim_free(tofree);

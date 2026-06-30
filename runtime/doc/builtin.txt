@@ -4044,20 +4044,20 @@ getbufvar({buf}, {varname} [, {def}])			*getbufvar()*
 
 
 getbgcolor()						*getbgcolor()*
-		Returns a |List| describing the current background colour
-		as [red, green, blue], each component in the range 0..255.
+		Returns a |List| describing the current background colour as
+		[red, green, blue], each component in the range 0..255.
 
-		In the GUI (or with 'termguicolors' set) the value comes
-		from the |hl-Normal| highlight group's background.  In a
-		terminal it comes from the OSC 11 response (also available
-		as |v:termrbgresp|).
+		In the GUI (or with 'termguicolors' set) the value comes from
+		the |hl-Normal| highlight group's background.  In a terminal
+		it comes from the OSC 11 response (also available as
+		|v:termrbgresp|).
 		Returns [] when no value is available, e.g. before the
 		terminal has answered the OSC 11 query, or when |hl-Normal|
 		has no background colour set.
 
-		Useful when manually crafting RGB image data and you want
-		to flatten alpha onto the same colour the terminal will
-		actually display behind the image.
+		Useful when manually crafting RGB image data and you want to
+		flatten alpha onto the same colour the terminal will actually
+		display behind the image.
 
 		Return type: list<any>
 
@@ -9869,15 +9869,25 @@ server2client({clientid}, {string})			*server2client()*
 		Return type: |Number|
 
 
-serverlist()						*serverlist()*
+serverlist([{dict}])					*serverlist()*
 		Return a list of available server names, one per line.
 		When there are no servers or the information is not available
-		an empty string is returned.  See also |clientserver|.
+		an empty string is returned.
 		{only available when compiled with the |+clientserver| feature}
+
+		If {dict} is given, then it is a |Dictionary| supporting the
+		following options:
+		    key		type		meaning ~
+		    list	|Boolean|	Return a list of strings,
+						where each string is a server
+						name.
+
+		See also |clientserver|.
+
 		Example: >
 			:echo serverlist()
 <
-		Return type: |String|
+		Return type: |String| or list<string>
 
 
 setbufline({buf}, {lnum}, {text})			*setbufline()*
@@ -13314,8 +13324,9 @@ hurd			GNU/Hurd version of Vim
 iconv			Can use iconv() for conversion.
 image			Compiled with the popup window "image" attribute.
 			See |popup-image|.
-image_cairo		Compiled with the Cairo image backend (GTK GUI).
+image_cairo		Compiled with the Cairo image backend (GTK2 and GTK3 GUI).
 image_gdi		Compiled with the GDI image backend (Windows GUI).
+image_gdk		Compiled with the GDK image backend (GTK4 GUI).
 image_kitty		Compiled with the kitty graphics protocol image backend
 			(terminal).
 image_sixel		Compiled with the DEC sixel image backend (terminal).

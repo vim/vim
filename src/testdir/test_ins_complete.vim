@@ -870,6 +870,104 @@ func Test_pum_stopped_by_timer()
   call StopVimInTerminal(buf)
 endfunc
 
+" The completion popup menu must line up with the start of the completed text
+" on screen, also when there is concealed text before it on the line.
+func Test_pum_position_with_concealed_text()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, ['CONCEALED foobar', 'CONCEALED foo'])
+    syntax match Hidden /CONCEALED / conceal
+    setlocal conceallevel=3 concealcursor=nvic
+    set completeopt=menu,menuone
+  END
+
+  call writefile(lines, 'Xpumconceal', 'D')
+  let buf = RunVimInTerminal('-S Xpumconceal', #{rows: 10})
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "2GA")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<C-X>\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pum_position_with_concealed_text', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+" Same alignment when the concealed text comes from a match and is shown as a
+" replacement character with 'conceallevel' 2.
+func Test_pum_position_with_concealed_match()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, ['XXX foobar', 'XXX foo'])
+    call matchadd('Conceal', 'XXX ', 10, -1, {'conceal': '+'})
+    setlocal conceallevel=2 concealcursor=nvic
+    set completeopt=menu,menuone
+  END
+
+  call writefile(lines, 'Xpumconcealmatch', 'D')
+  let buf = RunVimInTerminal('-S Xpumconcealmatch', #{rows: 10})
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "2GA")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<C-X>\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pum_position_with_concealed_match', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+" The menu lines up with the visible text in a 'rightleft' window too, where
+" the cursor screen column is mirrored.
+func Test_pum_position_with_concealed_rl()
+  CheckScreendump
+  CheckFeature rightleft
+
+  let lines =<< trim END
+    set rightleft
+    call setline(1, ['CONCEALED foobar', 'CONCEALED foo'])
+    syntax match Hidden /CONCEALED / conceal
+    setlocal conceallevel=3 concealcursor=nvic
+    set completeopt=menu,menuone
+  END
+
+  call writefile(lines, 'Xpumconcealrl', 'D')
+  let buf = RunVimInTerminal('-S Xpumconcealrl', #{rows: 10})
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "2GA")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<C-X>\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pum_position_with_concealed_rl', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+" The recorded offset is per screen line, so the menu also lines up when the
+" concealed text and the completion are on a wrapped continuation line.
+func Test_pum_position_with_concealed_wrap()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, ['foobar', 'aaaaaaaaaaaaaaaaaaaa CONCEALED foo'])
+    syntax match Hidden /CONCEALED / conceal
+    setlocal conceallevel=3 concealcursor=nvic
+    set completeopt=menu,menuone
+  END
+
+  call writefile(lines, 'Xpumconcealwrap', 'D')
+  let buf = RunVimInTerminal('-S Xpumconcealwrap', #{rows: 10, cols: 20})
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "2GA")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<C-X>\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pum_position_with_concealed_wrap', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_complete_stopinsert_startinsert()
   nnoremap <F2> <Cmd>startinsert<CR>
   inoremap <F2> <Cmd>stopinsert<CR>
@@ -922,6 +1020,24 @@ func Test_pum_with_preview_win()
   call TermWait(buf, 200)
   call term_sendkeys(buf, "\<C-N>")
   call VerifyScreenDump(buf, 'Test_pum_with_preview_win', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_pum_statusline_ruler()
+  CheckScreendump
+
+  " With a status line, the ruler must follow the real cursor column after a
+  " completion inserts text, not stay at the completion start column.
+  let lines =<< trim END
+    call setline(1, 'aa aaa ')
+    set laststatus=2 ruler
+  END
+  call writefile(lines, 'Xstlruler', 'D')
+  let buf = RunVimInTerminal('-S Xstlruler', #{rows: 8, cols: 40})
+  call term_sendkeys(buf, "A\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pum_statusline_ruler_1', {})
 
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
@@ -5838,10 +5954,12 @@ func Test_autocompletedelay()
   call term_sendkeys(buf, "Sf\<C-N>")
   call VerifyScreenDump(buf, 'Test_autocompletedelay_7', {})
 
-  " After the menu is open, ^N/^P and Up/Down should not delay
+  " After the menu is open, ^N/^P and Up/Down should not delay.
+  " Wait a bit longer than 'autocompletedelay' so the popup is surely shown
+  " before sending CTRL-N, otherwise the keys race with the deferred popup.
   call term_sendkeys(buf, "\<Esc>:set completeopt=menu noruler\<CR>")
   call term_sendkeys(buf, "\<Esc>Sf")
-  sleep 500ms
+  sleep 600ms
   call term_sendkeys(buf, "\<C-N>")
   call VerifyScreenDump(buf, 'Test_autocompletedelay_8', {})
   call term_sendkeys(buf, "\<Down>")
@@ -5856,6 +5974,69 @@ func Test_autocompletedelay()
 
   call term_sendkeys(buf, "\<esc>")
   call StopVimInTerminal(buf)
+endfunc
+
+func Run_test_autocompletedelay_ctrl_g_U(delay1, delay2)
+  new
+  call setline(1, 'foo bar baz')
+  inoremap <buffer> ( ()<C-g>U
+  set autocomplete autocompletedelay=200
+
+  call timer_start(a:delay1, { -> feedkeys('(', 't') })
+  call timer_start(a:delay2, { -> feedkeys("\<Left>a\<Esc>", 't') })
+  call feedkeys('ob', 'tx!')
+  call assert_equal(['foo bar baz', 'b(a)'], getline(1, '$'))
+  undo
+  call assert_equal(['foo bar baz'], getline(1, '$'))
+
+  set autocomplete& autocompletedelay&
+  bwipe!
+endfunc
+
+func Test_autocompletedelay_ctrl_g_U()
+  " '(' typed after 'autocompletedelay' expires
+  call Run_test_autocompletedelay_ctrl_g_U(250, 500)
+  " '(' typed before 'autocompletedelay' expires
+  call Run_test_autocompletedelay_ctrl_g_U(150, 500)
+endfunc
+
+func Run_test_autocompletedelay_ctrl_k(delay1, delay2)
+  new
+  call setline(1, 'foo bar baz')
+  set autocomplete autocompletedelay=200
+
+  call timer_start(a:delay1, { -> feedkeys("\<C-K>", 't') })
+  call timer_start(a:delay2, { -> feedkeys(".,\<Esc>", 't') })
+  call feedkeys('ob', 'tx!')
+  call assert_equal(['foo bar baz', 'b…'], getline(1, '$'))
+
+  set autocomplete& autocompletedelay&
+  bwipe!
+endfunc
+
+func Test_autocompletedelay_ctrl_k()
+  " Ctrl-K typed after 'autocompletedelay' expires
+  call Run_test_autocompletedelay_ctrl_k(250, 500)
+  " Ctrl-K typed before 'autocompletedelay' expires
+  call Run_test_autocompletedelay_ctrl_k(150, 500)
+endfunc
+
+func Test_autocompletedelay_no_record()
+  " The K_COMPLETE_DELAY pseudo key must not be recorded into a register while
+  " recording a macro, like K_CURSORHOLD.
+  new
+  call setline(1, 'foobar')
+  set autocomplete autocompletedelay=100
+
+  let @a = ''
+  " Type a char that arms the delay, idle past 'autocompletedelay' so a
+  " K_COMPLETE_DELAY would be injected, then end Insert mode and stop recording.
+  call timer_start(200, { -> feedkeys("\<Esc>q", 't') })
+  call feedkeys("qaSf", 'tx!')
+  call assert_equal("Sf\<Esc>", @a)
+
+  set autocomplete& autocompletedelay&
+  bwipe!
 endfunc
 
 " Preinsert longest prefix when autocomplete
@@ -6355,6 +6536,94 @@ func Test_mapped_ctrl_n_during_complete_function()
   call assert_equal(['foobar', 1], b:info)
 
   bwipe!
+endfunc
+
+func Test_smartcase_longest()
+  func! GetMatches()
+    let info = complete_info(["matches"])
+    return map(copy(info.matches), {_, v -> v.word})
+  endfunc
+
+  func! TestInner(key)
+    let pr = "\<c-r>=string(GetMatches())\<cr>"
+    let words = ["InputEvent", "inputmap", "INPUT_MAP"]
+
+    new
+    set completeopt=menuone,noselect,longest ignorecase smartcase
+
+    " Lowercase 'inp' all three (case-insensitive).
+    call setline(1, words)
+    exe $"normal! ggOinp{a:key}{pr}"
+    let line = getline(1)
+    call assert_match('\c^input', line, 'inp prefix, key=' .. strtrans(a:key))
+    call assert_equal("['InputEvent', 'inputmap', 'INPUT_MAP']",
+          \ substitute(line, '\c^input', '', ''),
+          \ 'inp matches, key=' .. strtrans(a:key))
+
+    " Uppercase 'I' excludes lowercase 'inputmap'
+    %d
+    call setline(1, words)
+    exe $"normal! ggOI{a:key}{pr}"
+    let line = getline(1)
+    call assert_match('\c^input', line, 'I prefix, key=' .. strtrans(a:key))
+    call assert_equal("['InputEvent', 'INPUT_MAP']",
+          \ substitute(line, '\c^input', '', ''),
+          \ 'I matches, key=' .. strtrans(a:key))
+
+    set ignorecase& smartcase& completeopt&
+    bw!
+  endfunc
+
+  call TestInner("\<c-n>")
+  call TestInner("\<c-p>")
+  call TestInner("\<c-x>\<c-n>")
+  call TestInner("\<c-x>\<c-p>")
+  delfunc GetMatches
+  delfunc TestInner
+endfunc
+
+" Check that calling complete() while filtering Ctrl-N completion doesn't
+" break dot-repeat.
+func Test_call_complete_while_filtering()
+  new
+  setlocal complete=. completeopt=menuone,noselect
+  inoremap <buffer> <F2> <Cmd>call complete(3, ['obar', 'obaz'])<CR>
+  call setline(1, ['foobar', 'foobaz'])
+
+  call feedkeys("Gofo\<C-N>ob\<F2>cd\<Esc>", 'tx')
+  call assert_equal(['foobar', 'foobaz', 'foobcd'], getline(1, '$'))
+  normal! .
+  call assert_equal(['foobar', 'foobaz', 'foobcd', 'foobcd'], getline(1, '$'))
+
+  bwipe!
+endfunc
+
+func Test_complete_check_mapped_typed_key()
+  func SlowComplete(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    call complete_add('foobar')
+    let g:compl_iterations = 0
+    while !complete_check() && g:compl_iterations < 100
+      let g:compl_iterations += 1
+      sleep 5m
+    endwhile
+    return []
+  endfunc
+
+  new
+  setlocal completefunc=SlowComplete
+  setlocal completeopt=menuone,noselect
+  inoremap <buffer> <Space> <Space><Space>
+
+  let g:compl_iterations = -1
+  call feedkeys("Sfoo\<C-X>\<C-U> \<Esc>", 'tx')
+  call assert_inrange(0, 99, g:compl_iterations)
+
+  bwipe!
+  delfunc SlowComplete
+  unlet g:compl_iterations
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable

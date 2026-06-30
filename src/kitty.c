@@ -86,9 +86,11 @@ kitty_b64_append(garray_T *ga, char_u *src, long len)
  * via `m=1`/`m=0` so the per-envelope payload stays under kitty's
  * 4096-byte limit.  When "id" is non-zero it is sent as `i=<id>` so
  * the resulting placement can later be removed via kitty_delete().
+ * "zindex" is sent as `z=<zindex>` so overlapping placements stack in
+ * popup zindex order no matter in which order they were (re)created.
  */
     char_u *
-kitty_encode(image_rgb_T *img, int id)
+kitty_encode(image_rgb_T *img, int id, int zindex)
 {
     garray_T	ga;
     long	pix_bytes;
@@ -125,12 +127,13 @@ kitty_encode(image_rgb_T *img, int id)
 	{
 	    if (id != 0)
 		vim_snprintf((char *)hdr, sizeof(hdr),
-			"\033_Ga=T,f=%d,s=%d,v=%d,i=%d,q=2,m=%d;",
-			fmt, img->width, img->height, id, more ? 1 : 0);
+			"\033_Ga=T,f=%d,s=%d,v=%d,i=%d,z=%d,q=2,m=%d;",
+			fmt, img->width, img->height, id, zindex,
+			more ? 1 : 0);
 	    else
 		vim_snprintf((char *)hdr, sizeof(hdr),
-			"\033_Ga=T,f=%d,s=%d,v=%d,q=2,m=%d;",
-			fmt, img->width, img->height, more ? 1 : 0);
+			"\033_Ga=T,f=%d,s=%d,v=%d,z=%d,q=2,m=%d;",
+			fmt, img->width, img->height, zindex, more ? 1 : 0);
 	    first = FALSE;
 	}
 	else
@@ -167,6 +170,74 @@ kitty_encode(image_rgb_T *img, int id)
 fail:
     ga_clear(&ga);
     return NULL;
+}
+
+/*
+ * Shared tail of the kitty-graphics-support probe (see popup_kitty_probe()
+ * in popupwin.c for the UNIX side and mch_kitty_probe() in os_win32.c for
+ * the Windows console side).  "buf[n]" holds the raw, NUL-terminated bytes
+ * read back from the terminal after sending the `\e_Gi=31...a=q` query
+ * followed by the DA1 (`\e[c`) sentinel.
+ *
+ * Push everything except the kitty (APC \e_G...\e\\) and DA1 (\e[?...c)
+ * response chunks back into the input buffer so user keystrokes typed
+ * during the probe are not swallowed.  Scan the buffer linearly, emitting
+ * any byte that is not inside a recognised response range.
+ *
+ * Returns TRUE when the buffer contains the positive "_Gi=31;OK" reply.
+ */
+    int
+kitty_probe_parse(char *buf, int n)
+{
+    int i = 0;
+    int seg_start = 0;
+
+    while (i < n)
+    {
+	int response_end = -1;
+
+	if (buf[i] == '\033' && i + 1 < n)
+	{
+	    if (buf[i + 1] == '_')
+	    {
+		// Kitty APC reply: scan to terminating ESC '\\'.
+		int j;
+		for (j = i + 2; j + 1 < n; ++j)
+		    if (buf[j] == '\033' && buf[j + 1] == '\\')
+		    {
+			response_end = j + 2;
+			break;
+		    }
+	    }
+	    else if (buf[i + 1] == '[' && i + 2 < n && buf[i + 2] == '?')
+	    {
+		// DA1 reply: ESC [ ? ... c (the '?' distinguishes the
+		// primary device-attributes answer from an arrow key
+		// sequence like ESC [ A that the user might have typed).
+		int j;
+		for (j = i + 3; j < n; ++j)
+		    if (buf[j] == 'c')
+		    {
+			response_end = j + 1;
+			break;
+		    }
+	    }
+	}
+	if (response_end > 0)
+	{
+	    if (i > seg_start)
+		add_to_input_buf((char_u *)(buf + seg_start), i - seg_start);
+	    i = response_end;
+	    seg_start = i;
+	}
+	else
+	    ++i;
+    }
+    if (n > seg_start)
+	add_to_input_buf((char_u *)(buf + seg_start), n - seg_start);
+
+    // A positive kitty reply contains the literal "_Gi=31;OK".
+    return strstr(buf, "_Gi=31;OK") != NULL;
 }
 
 /*

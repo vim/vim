@@ -386,7 +386,8 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported2 & JO2_TERM_FINISH))
 		    break;
 		val = tv_get_string(item);
-		if (STRCMP(val, "open") != 0 && STRCMP(val, "close") != 0)
+		if (STRCMP(val, "open") != 0 && STRCMP(val, "close") != 0
+			&& STRCMP(val, "noclose") != 0)
 		{
 		    semsg(_(e_invalid_value_for_argument_str_str),
 							   "term_finish", val);

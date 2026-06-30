@@ -147,6 +147,76 @@ is_pos_in_string(char_u *line, colnr_T col)
 }
 
 /*
+ * Check if line[] contains a "//" comment, ignoring matches inside strings.
+ * Return MAXCOL if not, otherwise return the column.
+ * The line is scanned once (skipping strings), so this stays linear even on
+ * lines with many slashes (e.g. base64 data).
+ */
+    int
+check_linecomment(char_u *line)
+{
+    char_u  *p;
+
+    p = line;
+    // skip Lispish one-line comments
+    if (curbuf->b_p_lisp)
+    {
+	if (vim_strchr(p, ';') != NULL) // there may be comments
+	{
+	    int in_str = FALSE;	// inside of string
+
+	    p = line;		// scan from start
+	    while ((p = vim_strpbrk(p, (char_u *)"\";")) != NULL)
+	    {
+		if (*p == '"')
+		{
+		    if (in_str)
+		    {
+			if (*(p - 1) != '\\') // skip escaped quote
+			    in_str = FALSE;
+		    }
+		    else if (p == line || ((p - line) >= 2
+				      // skip #\" form
+				      && *(p - 1) != '\\' && *(p - 2) != '#'))
+			in_str = TRUE;
+		}
+		else if (!in_str && ((p - line) < 2
+				    || (*(p - 1) != '\\' && *(p - 2) != '#'))
+			       && !is_pos_in_string(line, (colnr_T)(p - line)))
+		    break;	// found!
+		++p;
+	    }
+	}
+	else
+	    p = NULL;
+    }
+    else
+    {
+	// Scan the line once, skipping over strings, char constants and raw
+	// strings, instead of testing each '/' with is_pos_in_string() (which
+	// rescans from the start, making this quadratic on lines with many
+	// slashes).
+	for ( ; *p != NUL; ++p)
+	{
+	    p = skip_string(p);
+	    if (*p == NUL)
+		break;
+	    // Accept a double /, unless it's preceded with * and followed by
+	    // *, because * / / * is an end and start of a C comment.
+	    if (p[0] == '/' && p[1] == '/'
+				 && (p == line || p[-1] != '*' || p[2] != '*'))
+		break;
+	}
+	if (*p == NUL)
+	    p = NULL;
+    }
+
+    if (p == NULL)
+	return MAXCOL;
+    return (int)(p - line);
+}
+
+/*
  * Find the start of a comment, not knowing if we are in a comment right now.
  * Search starts at w_cursor.lnum and goes backwards.
  * Return NULL when not inside a comment.
@@ -748,7 +818,7 @@ cin_is_compound_init(char_u *s)
     {
 	if (*p == '=')
 	    p = r = cin_skipcomment(p + 1);
-	else if (!STRNCMP(p, "return", 6) && !vim_isIDc(p[6])
+	else if (STRNCMP(p, "return", 6) == 0 && !vim_isIDc(p[6])
 		&& (p == s || (p > s && !vim_isIDc(p[-1]))))
 	    p = r = cin_skipcomment(p + 6);
 	else
@@ -1424,19 +1494,19 @@ cin_is_if_for_while_before_offset(char_u *line, int *poffset)
 	--offset;
 
     offset -= 1;
-    if (!STRNCMP(line + offset, "if", 2))
+    if (STRNCMP(line + offset, "if", 2) == 0)
 	goto probablyFound;
 
     if (offset >= 1)
     {
 	offset -= 1;
-	if (!STRNCMP(line + offset, "for", 3))
+	if (STRNCMP(line + offset, "for", 3) == 0)
 	    goto probablyFound;
 
 	if (offset >= 2)
 	{
 	    offset -= 2;
-	    if (!STRNCMP(line + offset, "while", 5))
+	    if (STRNCMP(line + offset, "while", 5) == 0)
 		goto probablyFound;
 	}
     }

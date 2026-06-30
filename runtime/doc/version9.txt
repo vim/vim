@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Jun 13
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Jun 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52617,6 +52617,15 @@ when Vim is running in |restricted-mode|.
 
 Using |:cscope| is no longer allowed.
 
+Commands ~
+--------
+- |:command-completion-customlist| can return a list of dictionaries with
+  kind/menu/info/abbr for the popup menu.
+- New argument handling for user commands |:command-nargs| using the "-nars=_"
+  attribute to handle completion of single arguments with spaces as expected.
+- New :command attribute |:command-completeopt| escapes spaces in
+  custom completion matches so they survive as a single argument.
+
 Other ~
 -----
 - The new |xdg.vim| script for full XDG compatibility is included.
@@ -52639,22 +52648,29 @@ Other ~
   'completeopt' option
 - Channel can handle |Blob| messages |channel-open-options|.
 - Added the "u" flag to 'shortmess' to silence undo/redo messages: |shm-u|
-- |:command-completion-customlist| can return a list of dictionaries with
-  kind/menu/info/abbr for the popup menu.
 - |C-indenting| detects comments better.
+- The |%| command skips parens inside comments when 'comments' defines
+  C-style "//" or "/*" comments.
 - The |package-hlyank| can now optionally highlight the last put region as
   well.
-- New argument handling for user commands |:command-nargs| using the "-nars=_"
-  attribute to handle completion of single arguments with spaces as expected.
 - Support %0{} in 'statusline' to insert the expression result verbatim and
   not drop leading spaces |stl-%0{|.
 - Generated Session and View files are written in Vim9 script, see |:mksession|,
   |:mkview| and |:mkvimrc|
+- The "term_finish" option of term_start() supports a "noclose" value.
 
 Platform specific ~
 -----------------
 - support OpenType font features in 'guifont' for DirectWrite (Win32)
 - Include strptime() fallback for MS-Windows
+- Hardware-accelerated rendering for the GTK4 GUI via |gtk4-hwaccel|.
+- The NSIS installer has been reworked (Win32): 
+  - Support per-user and per-machine install.
+  - Change the install directory structure.
+  - Replace the batch files with the Vim launchers.
+  - Support adding the Vim directory to PATH.
+  - Support selecting install components from the command line options.
+  - Move the source code to the vim/vim-win32-installer repository.
 
 xxd ~
 ---
@@ -52679,6 +52695,8 @@ Changed ~
 - Rewrite the clientserver socketserver backend to use channels and JSON.
 - During |complete()|-triggered completion, CTRL-N and CTRL-P are now subject
   to insert-mode mappings.
+- It is possible to clear the alternate file register |quote#|.
+- |serverlist()| can return a list of all available server names.
 
 
 							*added-9.3*

@@ -729,7 +729,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     sass: ['file.sass'],
     sbt: ['file.sbt'],
     scala: ['file.scala', 'file.mill'],
-    scheme: ['file.scm', 'file.ss', 'file.sld', 'file.stsg', 'any/local/share/supertux2/config', '.lips_repl_history', '.guile'],
+    scheme: ['file.scm', 'file.ss', 'file.sld', 'file.stwm', 'file.stl', 'file.stxt', 'file.sprite', 'file.strf', 'file.satc', 'file.stcd', 'file.stf', 'file.stcp', 'file.music', 'file.stsg', 'any/local/share/supertux2/config', 'any/supertux2/levels/world1/info', '.lips_repl_history', '.guile'],
     scilab: ['file.sci', 'file.sce'],
     screen: ['.screenrc', 'screenrc'],
     scss: ['file.scss'],
@@ -790,8 +790,12 @@ def s:GetFilenameChecks(): dict<list<string>>
     srec: ['file.s19', 'file.s28', 'file.s37', 'file.mot', 'file.srec'],
     srt: ['file.srt'],
     ssa: ['file.ass', 'file.ssa'],
+    sshallowedsigners: ['any/allowed_signers', 'any/.allowed_signers', 'any/file.allowed_signers'],
+    sshauthorizedkeys: ['any/.ssh/authorized_keys'],
     sshconfig: ['ssh_config', '/.ssh/config', '/etc/ssh/ssh_config.d/file.conf', 'any/etc/ssh/ssh_config.d/file.conf', 'any/.ssh/config', 'any/.ssh/file.conf'],
     sshdconfig: ['sshd_config', '/etc/ssh/sshd_config.d/file.conf', 'any/etc/ssh/sshd_config.d/file.conf'],
+    sshpublickey: ['any/.ssh/file.pub', '/etc/ssh/file.pub'],
+    sshknownhosts: ['any/.ssh/known_hosts', '/etc/ssh/ssh_known_hosts'],
     st: ['file.st'],
     starlark: ['file.ipd', 'file.sky', 'file.star', 'file.starlark'],
     stata: ['file.ado', 'file.do', 'file.imata', 'file.mata'],
@@ -2545,6 +2549,25 @@ func Test_tf_file_v2()
   split Xfile.tf
   call assert_equal('terraform', &filetype)
   bwipe!
+
+  " A backslash continuation line may start with any character
+  let lines =<< trim END
+    /def greet = \
+        plain words that start the continued line
+    ;a comment
+  END
+  call writefile(lines, "Xfile.tf", "D")
+  split Xfile.tf
+  call assert_equal('tf', &filetype)
+  bwipe!
+
+  " The user override wins regardless of content
+  let g:filetype_tf = 'terraform'
+  call writefile([';;; looks like tf'], 'Xfile.tf', 'D')
+  split Xfile.tf
+  call assert_equal('terraform', &filetype)
+  bwipe!
+  unlet g:filetype_tf
 
   filetype off
 endfunc

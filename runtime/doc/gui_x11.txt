@@ -1,4 +1,4 @@
-*gui_x11.txt*	For Vim version 9.2.  Last change: 2026 Jun 07
+*gui_x11.txt*	For Vim version 9.2.  Last change: 2026 June 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -353,8 +353,12 @@ to the GTK documentation, however little there is, on how to do this.
 See https://www.manpagez.com/html/gtk2/gtk2-2.24.24/gtk2-Resource-Files.php
 for more information.
 							*gtk3-slow*
-If you are using GTK3 and Vim appears to be slow, try setting the environment
-variable $GDK_RENDERING to "image".
+If the GTK3 GUI is slow, try: >
+
+    $ GDK_RENDERING=image gvim
+
+Small font, high resolution, many 'lines' (vertical screen) and UI scaling all
+contribute to a slower redraw.
 
 							*gtk4-slow*
 If the GTK4 GUI is slow, freezes, or does not accept keyboard input right
@@ -366,7 +370,14 @@ to use software rendering: >
 
     $ GSK_RENDERER=cairo gvim
     $ LIBGL_ALWAYS_SOFTWARE=true gvim
-
+<
+							*gtk4-hwaccel*
+If Vim is compiled with the configure option "--enable-gtk4-hwaccel" set, then
+the GTK4 GUI will use GtkSnapshot instead of Cairo, allowing for hardware
+accelerated rendering, which is much faster.  Enabling this configure option
+also makes the GTK4 GUI use |+image_gdk| instead of |+image_cairo| for
+rendering popup window images.  Note that this feature is currently
+experimental.
 
 Tooltip Colors ~
 							*gtk-tooltip-colors*
@@ -774,6 +785,17 @@ CLIPBOARD, thus the "+ doesn't work with xterm.
 Most newer applications will provide their current selection via PRIMARY ("*)
 and use CLIPBOARD ("+) for cut/copy/paste operations.  You thus have access to
 both by choosing to use either of the "* or "+ registers.
+
+							*gtk4-menu-navigation*
+In the GTK 4 GUI, you may also navigate the menu items with these keyboard
+mappings:
+    key			meaning ~
+    <Tab> <Down>	Go to next item
+    <S-Tab> <Up>	Go to previous item
+    <Left>		Go to parent submenu
+    <Right>		Go to current item's submenu
+    <C-Left>		Go to next menu bar item
+    <C-Right>		Go to previous menu bar item
 
 
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

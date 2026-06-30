@@ -76,6 +76,7 @@
  * 25.03.2026  Fix color output issues
  * 26.04.2026  Use unsigned long for printing offsets
  * 31.05.2026  Colorize binary output
+ * 15.06.2026  Fix UB in huntype()
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@gmail.com)
  *
@@ -156,7 +157,7 @@ extern void perror __P((char *));
 # endif
 #endif
 
-char version[] = "xxd 2026-05-31 by Juergen Weigert et al.";
+char version[] = "xxd 2026-06-16 by Juergen Weigert et al.";
 #ifdef WIN32
 char osver[] = " (Win32)";
 #else
@@ -445,7 +446,8 @@ huntype(
 	  bt = parse_bin_digit(c);
 	  if (bt != -1)
 	    {
-	      b = ((b << 1) | bt);
+	      /* shift via unsigned to avoid signed overflow on bad input */
+	      b = (int)(((unsigned)b << 1) | (unsigned)bt);
 	      ++bcnt;
 	    }
 	}
@@ -461,7 +463,7 @@ huntype(
 		  p = 0;
 		  continue;
 		}
-	      want_off = (want_off << 4) | n1;
+	      want_off = (long)(((unsigned long)want_off << 4) | (unsigned)n1);
 	    }
 	  else /* HEX_BITS */
 	    {
@@ -471,7 +473,7 @@ huntype(
 		  bcnt = 0;
 		  continue;
 		}
-	      want_off = (want_off << 4) | n1;
+	      want_off = (long)(((unsigned long)want_off << 4) | (unsigned)n1);
 	    }
 	  continue;
 	}
@@ -607,9 +609,7 @@ xxdline(FILE *fp, char *l, char *colors, int nz)
     {
       strcpy(z, l);
       if (colors)
-	{
 	  memcpy(z_colors, colors, strlen(z));
-	}
     }
 
   if (nz || !zero_seen++)

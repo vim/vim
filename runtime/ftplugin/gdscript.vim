@@ -5,6 +5,7 @@ vim9script
 # Maintainer: Maxim Kim <habamax@gmail.com>
 # Website: https://github.com/habamax/vim-gdscript
 # Last Change: 2024 Jul 14
+#              2026 Jun 27 by Vim Project (normalize recommended style guard)
 
 if exists("b:did_ftplugin") | finish | endif
 
@@ -23,7 +24,7 @@ setlocal commentstring=#\ %s
 setlocal foldignore=
 setlocal foldexpr=GDScriptFoldLevel()
 
-if get(g:, 'gdscript_recommended_style', 1)
+if get(g:, 'gdscript_recommended_style', get(g:, 'filetype_recommended_style', 1))
     setlocal noexpandtab tabstop=4 softtabstop=0 shiftwidth=0
     b:undo_ftplugin ..= ' | setlocal expandtab< tabstop< softtabstop< shiftwidth<'
 endif

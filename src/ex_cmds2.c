@@ -478,7 +478,11 @@ ex_listdo(exarg_T *eap)
     buf_T	*buf = curbuf;
     int		next_fnum = 0;
 
-    if (curwin->w_p_wfb)
+    // ":windo" and ":tabdo" only visit existing windows/tabpages, they don't
+    // change the current window's buffer, so they can't escape a 'winfixbuf'
+    // window (which would create a split).
+    if (curwin->w_p_wfb && eap->cmdidx != CMD_windo &&
+	    eap->cmdidx != CMD_tabdo)
     {
 	if ((eap->cmdidx == CMD_ldo || eap->cmdidx == CMD_lfdo) &&
 		!eap->forceit)

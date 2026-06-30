@@ -1,7 +1,7 @@
 " vimball.vim : construct a file containing both paths and files
 " Maintainer: This runtime file is looking for a new maintainer.
 " Original Author:	Charles E. Campbell
-" Date:			May 20, 2026
+" Date:			Jun 29, 2026
 " Version:	37 (with modifications from the Vim Project)
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
 " Copyright: (c) 2004-2011 by Charles E. Campbell
@@ -431,7 +431,7 @@ fun! vimball#Decompress(fname,...)
     call vimball#ShowMesg(s:WARNING,"(vimball#Decompress) gunzip may have failed with <".a:fname.">")
    endif
    let fname= substitute(a:fname,'\.gz$','','')
-   exe "e ".escape(fname,' \')
+   exe "e ".fnameescape(fname)
    if a:0 == 0| call vimball#ShowMesg(s:USAGE,"Source this file to extract it! (:so %)") | endif
 
   elseif expand("%") =~ '.*\.gz' && executable("gzip")
@@ -441,7 +441,7 @@ fun! vimball#Decompress(fname,...)
     call vimball#ShowMesg(s:WARNING,'(vimball#Decompress) "gzip -d" may have failed with <'.a:fname.">")
    endif
    let fname= substitute(a:fname,'\.gz$','','')
-   exe "e ".escape(fname,' \')
+   exe "e ".fnameescape(fname)
    if a:0 == 0| call vimball#ShowMesg(s:USAGE,"Source this file to extract it! (:so %)") | endif
 
   elseif expand("%") =~ '.*\.bz2' && executable("bunzip2")
@@ -451,7 +451,7 @@ fun! vimball#Decompress(fname,...)
     call vimball#ShowMesg(s:WARNING,"(vimball#Decompress) bunzip2 may have failed with <".a:fname.">")
    endif
    let fname= substitute(a:fname,'\.bz2$','','')
-   exe "e ".escape(fname,' \')
+   exe "e ".fnameescape(fname)
    if a:0 == 0| call vimball#ShowMesg(s:USAGE,"Source this file to extract it! (:so %)") | endif
 
   elseif expand("%") =~ '.*\.bz2' && executable("bzip2")
@@ -461,7 +461,7 @@ fun! vimball#Decompress(fname,...)
     call vimball#ShowMesg(s:WARNING,'(vimball#Decompress) "bzip2 -d" may have failed with <'.a:fname.">")
    endif
    let fname= substitute(a:fname,'\.bz2$','','')
-   exe "e ".escape(fname,' \')
+   exe "e ".fnameescape(fname)
    if a:0 == 0| call vimball#ShowMesg(s:USAGE,"Source this file to extract it! (:so %)") | endif
 
   elseif expand("%") =~ '.*\.bz3' && executable("bunzip3")
@@ -471,7 +471,7 @@ fun! vimball#Decompress(fname,...)
     call vimball#ShowMesg(s:WARNING,"(vimball#Decompress) bunzip3 may have failed with <".a:fname.">")
    endif
    let fname= substitute(a:fname,'\.bz3$','','')
-   exe "e ".escape(fname,' \')
+   exe "e ".fnameescape(fname)
    if a:0 == 0| call vimball#ShowMesg(s:USAGE,"Source this file to extract it! (:so %)") | endif
 
   elseif expand("%") =~ '.*\.bz3' && executable("bzip3")
@@ -481,7 +481,7 @@ fun! vimball#Decompress(fname,...)
     call vimball#ShowMesg(s:WARNING,'(vimball#Decompress) "bzip3 -d" may have failed with <'.a:fname.">")
    endif
    let fname= substitute(a:fname,'\.bz3$','','')
-   exe "e ".escape(fname,' \')
+   exe "e ".fnameescape(fname)
    if a:0 == 0| call vimball#ShowMesg(s:USAGE,"Source this file to extract it! (:so %)") | endif
 
   elseif expand("%") =~ '.*\.zip' && executable("unzip")
@@ -491,7 +491,7 @@ fun! vimball#Decompress(fname,...)
     call vimball#ShowMesg(s:WARNING,"(vimball#Decompress) unzip may have failed with <".a:fname.">")
    endif
    let fname= substitute(a:fname,'\.zip$','','')
-   exe "e ".escape(fname,' \')
+   exe "e ".fnameescape(fname)
    if a:0 == 0| call vimball#ShowMesg(s:USAGE,"Source this file to extract it! (:so %)") | endif
   endif
 

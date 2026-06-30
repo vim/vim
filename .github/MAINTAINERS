@@ -9,7 +9,8 @@
 # So if a pull request only touches javascript files, only these owners
 # will be requested to review.
 
-nsis/lang/russian.nsi					@RestorerZ
+runtime/autoload/beancount.vim				@nathangrigg
+runtime/autoload/beancountcomplete.vim			@nathangrigg
 runtime/autoload/context.vim				@lifepillar
 runtime/autoload/freebasic.vim				@dkearns
 runtime/autoload/hare.vim				@selenebun
@@ -50,6 +51,7 @@ runtime/colors/wildcharm.vim				@habamax @romainl @neutaaaaan
 runtime/colors/zaibatsu.vim				@habamax @romainl @neutaaaaan
 runtime/colors/zellner.vim				@habamax @romainl @neutaaaaan
 runtime/compiler/bash.vim				@Konfekt
+runtime/compiler/bean_check.vim				@nathangrigg
 runtime/compiler/biome.vim				@Konfekt
 runtime/compiler/cabal.vim				@mateoxh
 runtime/compiler/checkstyle.vim				@dkearns
@@ -143,6 +145,7 @@ runtime/ftplugin/asy.vim				@avidseeker
 runtime/ftplugin/autohotkey.vim				@telemachus
 runtime/ftplugin/awk.vim				@dkearns
 runtime/ftplugin/basic.vim				@dkearns
+runtime/ftplugin/beancount.vim				@nathangrigg
 runtime/ftplugin/bicep.vim				@scottmckendry
 runtime/ftplugin/bicep-params.vim			@scottmckendry
 runtime/ftplugin/brighterscript.vim			@ribru17
@@ -251,6 +254,7 @@ runtime/ftplugin/liquid.vim				@tpope
 runtime/ftplugin/logtalk.dict				@pmoura
 runtime/ftplugin/logtalk.vim				@pmoura
 runtime/ftplugin/lua.vim				@dkearns
+runtime/ftplugin/luau.vim				@lopi-py
 runtime/ftplugin/lynx.vim				@dkearns
 runtime/ftplugin/m17ndb.vim				@dseomn
 runtime/ftplugin/m3build.vim				@dkearns
@@ -363,8 +367,10 @@ runtime/import/dist/vimhighlight.vim			@lacygoill
 runtime/indent/arduino.vim				@k-takata
 runtime/indent/astro.vim				@wuelnerdotexe
 runtime/indent/basic.vim				@dkearns
+runtime/indent/beancount.vim				@nathangrigg
 runtime/indent/bpftrace.vim				@sgruszka
 runtime/indent/bst.vim					@tpope
+runtime/indent/cabal.vim				@mateoxh
 runtime/indent/cdl.vim					@dkearns
 runtime/indent/chatito.vim				@ObserverOfTime
 runtime/indent/clojure.vim				@axvr
@@ -415,6 +421,7 @@ runtime/indent/less.vim					@genoma
 runtime/indent/liquid.vim				@tpope
 runtime/indent/logtalk.vim				@pmoura
 runtime/indent/lua.vim					@marcuscf
+runtime/indent/luau.vim					@lopi-py
 runtime/indent/m17ndb.vim				@dseomn
 runtime/indent/make.vim					@dkearns
 runtime/indent/meson.vim				@Liambeguin
@@ -491,6 +498,7 @@ runtime/syntax/asy.vim					@avidseeker
 runtime/syntax/autohotkey.vim				@mmikeww
 runtime/syntax/awk.vim					@dkearns
 runtime/syntax/basic.vim				@dkearns
+runtime/syntax/beancount.vim				@nathangrigg
 runtime/syntax/bpftrace.vim				@sgruszka
 runtime/syntax/bst.vim					@tpope
 runtime/syntax/bzl.vim					@dbarnett
@@ -603,6 +611,7 @@ runtime/syntax/liquid.vim				@tpope
 runtime/syntax/log.vim					@mao-yining
 runtime/syntax/logtalk.vim				@pmoura
 runtime/syntax/lua.vim					@marcuscf
+runtime/syntax/luau.vim					@lopi-py
 runtime/syntax/lynx.vim					@dkearns
 runtime/syntax/lyrics.vim				@ObserverOfTime
 runtime/syntax/m17ndb.vim				@dseomn
@@ -690,8 +699,12 @@ runtime/syntax/sqloracle.vim				@chrisbra
 runtime/syntax/squirrel.vim				@zenmatic
 runtime/syntax/srt.vim					@ObserverOfTime
 runtime/syntax/ssa.vim					@ObserverOfTime
+runtime/syntax/sshallowedsigners.vim			@fionn
+runtime/syntax/sshauthorizedkeys.vim			@fionn
 runtime/syntax/sshconfig.vim				@Jakuje
 runtime/syntax/sshdconfig.vim				@Jakuje
+runtime/syntax/sshpublickey.vim				@fionn
+runtime/syntax/sshknownhosts.vim			@fionn
 runtime/syntax/sudoers.vim				@e-kwsm
 runtime/syntax/svn.vim					@hdima
 runtime/syntax/swayconfig.vim				@jamespeapen
@@ -725,8 +738,9 @@ runtime/syntax/wks.vim					@anakin4747
 runtime/syntax/xbl.vim					@dkearns
 runtime/syntax/xcompose.vim				@ObserverOfTime
 runtime/syntax/xml.vim					@chrisbra
+runtime/syntax/xsd.vim					@chrisbra
 runtime/syntax/xs.vim					@petdance
-runtime/syntax/xslt.vim					@Boobies
+runtime/syntax/xslt.vim					@chrisbra
 runtime/syntax/zserio.vim				@dpelle
 runtime/syntax/zsh.vim					@chrisbra
 runtime/tools/preproc_indent.vim			@h-east

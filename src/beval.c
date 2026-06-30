@@ -335,6 +335,8 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 	    recursive = FALSE;
 	    return;
 	}
+	else
+	    vim_free(text);
     }
 # endif
 # ifdef FEAT_NETBEANS_INTG

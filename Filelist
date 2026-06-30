@@ -14,6 +14,7 @@ SRC_ALL =	\
 		.github/workflows/ci-windows.yml \
 		.github/workflows/ci.yml \
 		.github/workflows/codeql-analysis.yml \
+		.github/workflows/coverity.yml \
 		.github/workflows/link-check.yml \
 		.github/actions/build_vim_on_linux/action.yml \
 		.github/actions/test_artifacts/action.yml \
@@ -513,6 +514,12 @@ SRC_UNIX =	\
 		src/gui_gtk4_f.h \
 		src/gui_gtk4_cb.c \
 		src/gui_gtk4_cb.h \
+		src/gui_gtk4_da.c \
+		src/gui_gtk4_da.h \
+		src/gui_gtk4_tb.c \
+		src/gui_gtk4_tb.h \
+		src/gui_gtk4_menu.c \
+		src/gui_gtk4_menu.h \
 		src/gui_gtk_res.xml \
 		src/gui_motif.c \
 		src/gui_xmdlg.c \
@@ -658,13 +665,7 @@ SRC_DOS =	\
 		src/tee/tee.c \
 		src/xxd/Make_ming.mak \
 		src/xxd/Make_mvc.mak \
-		nsis/auxiliary.nsh \
-		nsis/gvim.nsi \
-		nsis/Makefile \
-		nsis/Make_mvc.mak \
 		nsis/README.txt \
-		nsis/lang/*.nsi \
-		nsis/lang/README.txt \
 		uninstall.txt \
 
 # Source files for MS Windows without CR/LF translation (also in the extra archive).
@@ -682,7 +683,6 @@ SRC_DOS_BIN =	\
 		src/xpm/x86/lib-vc14/libXpm.lib \
 		src/xpm/x86/lib/libXpm.a \
 		runtime/bitmaps/vim.ico \
-		nsis/icons.zip \
 
 # Source files for Amiga, DOS, etc. (also in the extra archive).
 SRC_AMI_DOS =	\

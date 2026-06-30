@@ -491,4 +491,28 @@ func Test_crypt_off_by_one()
   bwipe!
 endfunc
 
+func Test_crypt_sodium_short_body()
+  CheckFeature sodium
+  " A VimCrypt~04! file with a complete 36-byte header (12 magic + 16 salt +
+  " 8 seed) but a body shorter than one secretstream header (24 bytes) used to
+  " underflow the body length and crash with a wild out-of-bounds read in
+  " crypto_secretstream_xchacha20poly1305_pull().  It must now fail cleanly.
+  " Bytes: "VimCrypt~04!" + 16 salt + 8 seed + 8-byte body = 44 bytes.
+  call writefile(0z56696D43727970747E303421
+        \ + 0zA0A1A2A3A4A5A6A7A8A9AAABACADAEAF
+        \ + 0zB0B1B2B3B4B5B6B7
+        \ + 0z0000000000000000, 'Xtest_sodium_short')
+
+  let v:errmsg = ''
+  try
+  call feedkeys(":split Xtest_sodium_short\<CR>foobar\<CR>", "xt")
+  catch /^Vim\%((\S\+)\)\=:E1198:/
+    " no-op
+  endtry
+
+  bwipe!
+  call delete('Xtest_sodium_short')
+  set key=
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -5274,6 +5274,13 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
 	}
 
+	// foot terminal sends 1;12700;0
+	if (arg[0] == 1 && version == 12700 && arg[2] == 0)
+	{
+	    term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
+	    term_props[TPR_DECRQM].tpr_status = TPR_YES;
+	}
+
 	// GNU screen sends 83;30600;0, 83;40500;0, etc.
 	// 30600/40500 is a version number of GNU screen. DA2 support is added
 	// on 3.6.  DCS string has a special meaning to GNU screen, but xterm
@@ -5436,8 +5443,13 @@ put_key_modifiers_in_typebuf(
     modifiers = may_remove_shift_modifier(modifiers, key);
 
     // Produce modifiers with K_SPECIAL KS_MODIFIER {mod}
-    char_u string[MAX_KEY_CODE_LEN + 1];
+    // worst-case: 3-byte modifier + 4 byte multi-char key + NUL
+    char_u string[MAX_KEY_CODE_LEN + 2];
     int new_slen = modifiers2keycode(modifiers, &key, string);
+
+    // reject overlong key that would overflow string
+    if (key > 0x10FFFF)
+	return -1;
 
     // Add the bytes for the key.
     new_slen += add_key_to_buf(key, string + new_slen);
@@ -5706,7 +5718,9 @@ handle_csi(
 			return -1;
 		    if (!VIM_ISDIGIT(*ap))
 			break;
-		    arg[argc] = arg[argc] * 10 + (*ap - '0');
+		    // avoid overflow
+		    if (arg[argc] <= (INT_MAX - 9) / 10)
+			arg[argc] = arg[argc] * 10 + (*ap - '0');
 		    ++ap;
 		}
 		++argc;

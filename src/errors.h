@@ -2287,8 +2287,8 @@ EXTERN char e_line_count_changed_unexpectedly[]
 #ifdef FEAT_EVAL
 EXTERN char e_uniq_compare_function_failed[]
 	INIT(= N_("E882: Uniq compare function failed"));
-EXTERN char e_search_pattern_and_expression_register_may_not_contain_two_or_more_lines[]
-	INIT(= N_("E883: Search pattern and expression register may not contain two or more lines"));
+EXTERN char e_register_char_cannot_contain_multiple_lines[]
+	INIT(= N_("E883: Register '%c' cannot contain multiple lines"));
 EXTERN char e_function_name_cannot_contain_colon_str[]
 	INIT(= N_("E884: Function name cannot contain a colon: %s"));
 #endif
@@ -3816,3 +3816,5 @@ EXTERN char e_invalid_format_string_single_percent_s[]
 EXTERN char e_too_many_postponed_prefixes_spell[]
 	INIT(= N_("E1578: Too many postponed prefixes and/or compound flags"));
 #endif
+EXTERN char e_completeopt_escape_cannot_be_used_with_nargs_underscore[]
+	INIT(= N_("E1579: -completeopt=escape cannot be used with -nargs=_"));

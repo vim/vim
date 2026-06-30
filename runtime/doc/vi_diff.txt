@@ -1,4 +1,4 @@
-*vi_diff.txt*	For Vim version 9.2.  Last change: 2026 Mar 08
+*vi_diff.txt*	For Vim version 9.2.  Last change: 2026 Jun 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1388,6 +1388,7 @@ macOS:				| fully supported up until v10.6 (?)
 MS-Windows 7, 8, 10, 11:	| fully supported
 OpenVMS:			| supported
 QNX:				| still supported (?)
+Solaris:			| supported (on maintained versions)
 UNIX:				| supported (on maintained versions)
 zOS/OS390:			| still supported (?)
 

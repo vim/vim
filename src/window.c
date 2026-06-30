@@ -6217,7 +6217,8 @@ win_free_popup(win_T *win)
 #  ifdef FEAT_IMAGE_SIXEL
     vim_free(win->w_popup_image_seq);
 #  endif
-#  if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO)
+#  if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO) \
+    || defined(FEAT_IMAGE_GDK)
     gui_mch_free_popup_image(win);
 #  endif
 # endif

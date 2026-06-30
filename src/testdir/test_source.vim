@@ -635,6 +635,22 @@ func Test_source_buffer_vim9()
   %bw!
 endfunc
 
+" Test that the modifier does not override the script type when sourcing files
+" with :vim9cmd and :legacy
+func Test_source_file_ignores_modifiers()
+  let lines = ["let g:legacy_sourced = 42"]
+  call writefile(lines, 'Xsourcelegacy', 'D')
+  vim9cmd source Xsourcelegacy
+  call assert_equal(42, g:legacy_sourced)
+  unlet g:legacy_sourced
+
+  let lines = ["vim9script", "g:vim9_sourced = 42"]
+  call writefile(lines, 'Xsourcevim9', 'D')
+  legacy source Xsourcevim9
+  call assert_equal(42, g:vim9_sourced)
+  unlet g:vim9_sourced
+endfunc
+
 func Test_source_buffer_long_line()
   " This was reading past the end of the line.
   new

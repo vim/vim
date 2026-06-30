@@ -1,4 +1,4 @@
-*motion.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*motion.txt*	For Vim version 9.2.  Last change: 2026 Jun 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1294,9 +1294,13 @@ remembered.
 			quotes).  Note that this works fine for C, but not for
 			Perl, where single quotes are used for strings.
 
-			Nothing special is done for matches in comments.  You
-			can either use the matchit plugin |matchit-install| or
-			put quotes around matches.
+			When in addition 'comments' defines C-style "//" or
+			"/*" comments, parens and braces inside such comments
+			are skipped, like the |=| operator does.  This does
+			not happen when the cursor is inside a comment, so a
+			match inside that comment can still be found.
+			Otherwise you can use the matchit plugin
+			|matchit-install| or put quotes around matches.
 
 			No count is allowed, {count}% jumps to a line {count}
 			percentage down the file |N%|.  Using '%' on

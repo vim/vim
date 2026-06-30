@@ -660,20 +660,26 @@ do_map(
 		// vi-compatible way.
 		if (has_mbyte)
 		{
-		    int	first, last;
-		    int	same = -1;
+		    int		first, last;
+		    int		same = -1;
+		    char_u	keys_unescaped[MAXMAPLEN + 1];
+		    size_t	keys_unescaped_len;
 
-		    first = vim_iswordp(keys);
+		    mch_memmove(keys_unescaped, keys, (size_t)(len + 1));
+		    keys_unescaped_len = vim_unescape_csi(keys_unescaped);
+		    p = keys_unescaped;
+
+		    first = vim_iswordp(p);
 		    last = first;
-		    p = keys + (*mb_ptr2len)(keys);
+		    MB_PTR_ADV(p);
 		    n = 1;
-		    while (p < keys + len)
+		    while (p < keys_unescaped + keys_unescaped_len)
 		    {
 			++n;			// nr of (multi-byte) chars
 			last = vim_iswordp(p);	// type of last char
 			if (same == -1 && last != first)
 			    same = n - 1;	// count of same char type
-			p += (*mb_ptr2len)(p);
+			MB_PTR_ADV(p);
 		    }
 		    if (last && n > 2 && same >= 0 && same < n - 1)
 		    {
@@ -1548,7 +1554,7 @@ ExpandMappings(
 
 	while (ptr2 < ptr3)
 	{
-	    if (STRCMP(*ptr1, *ptr2))
+	    if (STRCMP(*ptr1, *ptr2) != 0)
 		*++ptr1 = *ptr2++;
 	    else
 	    {
@@ -1681,15 +1687,14 @@ check_abbr(
 		if (qe != NULL)
 		{
 		    q = qe;
-		    vim_unescape_csi(q);
-		    qlen = (int)STRLEN(q);
+		    qlen = (int)vim_unescape_csi(q);
 		}
 	    }
 
 	    // find entries with right mode and keys
 	    match =    (mp->m_mode & State)
 		    && qlen == len
-		    && !STRNCMP(q, ptr, (size_t)len);
+		    && STRNCMP(q, ptr, (size_t)len) == 0;
 	    if (q != mp->m_keys)
 		vim_free(q);
 	    if (match)
@@ -1902,8 +1907,9 @@ vim_strsave_escape_csi(char_u *p)
 /*
  * Remove escaping from CSI and K_SPECIAL characters.  Reverse of
  * vim_strsave_escape_csi().  Works in-place.
+ * Returns the number of bytes in the unescaped string.
  */
-    void
+    size_t
 vim_unescape_csi(char_u *p)
 {
     char_u	*s = p, *d = p;
@@ -1925,6 +1931,7 @@ vim_unescape_csi(char_u *p)
 	    *d++ = *s++;
     }
     *d = NUL;
+    return (size_t)(d - p);
 }
 
 /*

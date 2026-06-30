@@ -225,16 +225,21 @@ socketserver_cleanup(void)
 /*
  * List available sockets that can be connected to, only in common directories
  * that Vim knows about. Vim instances with custom socket paths will not be
- * detected. Returns a newline separated string on success and NULL on failure.
+ * detected. Returns a list of strings (with reference count not set) on success
+ * and NULL on failure.
  */
-    char_u *
+    list_T *
 socketserver_list(void)
 {
+    list_T *list = list_alloc();
+
+    if (list == NULL)
+	return NULL;
+
 # ifdef MSWIN
     // Only support addresses on Windows
-    return vim_strsave((char_u *)"");
+    return list;
 # else
-    garray_T	    str;
     string_T	    buf;
     string_T	    path;
     DIR		    *dirp;
@@ -254,8 +259,6 @@ socketserver_list(void)
     }
     buf.length = 0;
     path.length = 0;
-
-    ga_init2(&str, 1, 100);
 
     for (size_t i = 0 ; i < ARRAY_LENGTH(known_dirs); i++)
     {
@@ -285,9 +288,8 @@ socketserver_list(void)
 	    buf.length = vim_snprintf_safelen((char *)buf.string, MAXPATHL,
 		    "%s/%s", path.string, dp->d_name);
 
-	    ga_concat_len(&str, (char_u *)dp->d_name,
+	    list_append_string(list, (char_u *)dp->d_name,
 		    buf.length - (path.length + 1));
-	    ga_append(&str, '\n');
 	}
 
 	closedir(dirp);
@@ -298,9 +300,7 @@ socketserver_list(void)
     vim_free(path.string);
     vim_free(buf.string);
 
-    ga_append(&str, NUL);
-
-    return str.ga_data;
+    return list;
 # endif
 }
 

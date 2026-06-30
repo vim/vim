@@ -281,6 +281,7 @@ enum key_extra
     , KE_ESC = 107		// used for K_ESC
     , KE_WILD = 108		// triggers wildmode completion
     , KE_OSC = 109		// finished OSC sequence
+    , KE_COMPLETE_DELAY = 110	// 'autocompletedelay' expired
 };
 
 /*
@@ -489,6 +490,7 @@ enum key_extra
 #define K_FOCUSLOST	TERMCAP2KEY(KS_EXTRA, KE_FOCUSLOST)
 
 #define K_CURSORHOLD	TERMCAP2KEY(KS_EXTRA, KE_CURSORHOLD)
+#define K_COMPLETE_DELAY TERMCAP2KEY(KS_EXTRA, KE_COMPLETE_DELAY)
 
 #define K_COMMAND	TERMCAP2KEY(KS_EXTRA, KE_COMMAND)
 #define K_SCRIPT_COMMAND TERMCAP2KEY(KS_EXTRA, KE_SCRIPT_COMMAND)

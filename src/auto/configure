@@ -862,6 +862,7 @@ enable_gui
 enable_gtk2_check
 enable_gnome_check
 enable_gtk4_check
+enable_gtk4_hwaccel
 enable_gtk3_check
 enable_motif_check
 enable_gtktest
@@ -1541,6 +1542,7 @@ Optional Features:
   --enable-gtk2-check     If auto-select GUI, check for GTK+ 2 default=yes
   --enable-gnome-check    If GTK GUI, check for GNOME default=no
   --enable-gtk4-check     If auto-select GUI, check for GTK 4 default=yes
+  --enable-gtk4-hwaccel  Use hardware accelerated rendering backend for GTK4 default=no
   --enable-gtk3-check     If auto-select GUI, check for GTK+ 3 default=yes
   --enable-motif-check    If auto-select GUI, check for Motif default=yes
   --disable-gtktest       Do not try to compile and run a test GTK program
@@ -8597,10 +8599,6 @@ printf "%s\n" "$rubyhdrdir" >&6; }
 	  RUBY_LIBS="$RUBY_LIBS -L$rubylibdir"
 	fi
 
-	if test "X$librubyarg" != "X"; then
-	  RUBY_LIBS="$librubyarg $RUBY_LIBS"
-	fi
-
 
 	RUBY_SRC="if_ruby.c"
 	RUBY_OBJ="objects/if_ruby.o"
@@ -8615,6 +8613,15 @@ printf "%s\n" "$rubyhdrdir" >&6; }
 
 	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby_soname\\\" $RUBY_CFLAGS"
 	  RUBY_LIBS=
+	  	  	  	  	  for arg in $librubyarg; do
+	    case "$arg" in
+	      -L*|-R*|-Wl,-R*|-Wl,-rpath*) RUBY_LIBS="$RUBY_LIBS $arg" ;;
+	    esac
+	  done
+	  librubyarg=
+	fi
+	if test "X$librubyarg" != "X"; then
+	  RUBY_LIBS="$librubyarg $RUBY_LIBS"
 	fi
 	if test "X$CLANG_VERSION" != "X" -a "$rubyversion" -ge 30; then
 	  RUBY_CFLAGS="$RUBY_CFLAGS -fdeclspec"
@@ -10603,6 +10610,28 @@ printf "%s\n" "$enable_gtk4_check" >&6; }
     SKIP_GTK4=YES
   fi
 fi
+
+if test "x$SKIP_GTK4" != "xYES" -a "$enable_gui_canon" = "gtk4"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-gtk4-hwaccel argument" >&5
+printf %s "checking --enable-gtk4-hwaccel argument... " >&6; }
+  # Check whether --enable-gtk4-hwaccel was given.
+if test ${enable_gtk4_hwaccel+y}
+then :
+  enableval=$enable_gtk4_hwaccel;
+else case e in #(
+  e) enable_gtk4_hwaccel="no" ;;
+esac
+fi
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enable_gtk4_hwaccel" >&5
+printf "%s\n" "$enable_gtk4_hwaccel" >&6; }
+
+  if test "x$enable_gtk4_hwaccel" = "xyes"; then
+    printf "%s\n" "#define USE_GTK4_SNAPSHOT 1" >>confdefs.h
+
+  fi
+fi
+
 
 if test "x$SKIP_GTK3" != "xYES" -a "$enable_gui_canon" != "gtk3"; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether or not to look for GTK+ 3" >&5
@@ -15049,7 +15078,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_compile "$LINENO"
+if ac_fn_c_try_link "$LINENO"
 then :
   vim_cv_timer_create=yes
 else case e in #(
@@ -15057,7 +15086,8 @@ else case e in #(
    ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext ;;
 esac
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vim_cv_timer_create" >&5
@@ -15088,7 +15118,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_compile "$LINENO"
+if ac_fn_c_try_link "$LINENO"
 then :
   vim_cv_timer_create_with_lrt=yes
 else case e in #(
@@ -15096,7 +15126,8 @@ else case e in #(
      ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext ;;
 esac
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vim_cv_timer_create_with_lrt" >&5

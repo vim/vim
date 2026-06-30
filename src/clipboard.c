@@ -2574,72 +2574,6 @@ clip_reset_wayland(void)
     return OK;
 }
 
-/*
- * If "vim" is TRUE, then get the motion type. If "vimenc" is TRUE, then get the
- * motion type and also convert "*buf". "buf" and "len_store" will be updated to
- * reflect the actual contents, but should be set beforehand with the initial
- * contents. Returns OK on success and FAIL on failure.
- */
-    int
-clip_convert_data(
-	char_u	**buf,
-	long	*len_store,
-	int	*motion,
-	bool	vim,
-	bool	vimenc,
-	char_u	**tofree)
-{
-    char_u  *final = *buf;
-    char_u  *enc;
-    long    len = *len_store;
-
-    if (vim && len >= 2)
-    {
-	*motion = *final++;
-	len--;
-    }
-    else if (vimenc && len >= 3)
-    {
-	vimconv_T   conv;
-	int	    convlen;
-
-	// First byte is motion type
-	*motion = *final++;
-	len--;
-
-	// Get encoding of selection
-	enc = final;
-
-	// Skip the encoding type including null terminator in final text
-	final = memchr(final, NUL, len);
-	if (final == NULL)
-	    return FAIL;
-	final++; // Skip NUL
-
-	// Subtract pointers to get length of encoding;
-	len -= final - enc;
-
-	conv.vc_type = CONV_NONE;
-	convert_setup(&conv, enc, p_enc);
-	if (conv.vc_type != CONV_NONE)
-	{
-	   char_u *tmp;
-
-	   convlen = len;
-	   tmp = string_convert(&conv, final, &convlen);
-	   len = convlen;
-	   if (tmp != NULL)
-	   {
-		final = tmp;
-		*tofree = final;
-	   }
-	   convert_setup(&conv, NULL, NULL);
-	}
-    }
-    *buf = final;
-    *len_store = len;
-    return OK;
-}
 
 /*
  * Read data from a file descriptor and write it to the given clipboard.
@@ -3359,12 +3293,19 @@ did_set_clipboard(optset_T *args UNUSED)
 	vim_regfree(clip_exclude_prog);
 	clip_exclude_prog = new_exclude_prog;
 # endif
-# if defined(FEAT_GUI_GTK) && !defined(USE_GTK4)
+# if defined(FEAT_GUI_GTK)
 	if (gui.in_use)
 	{
+#  ifdef USE_GTK4
+	    gui_gtk_update_selection_formats(&clip_plus);
+	    gui_gtk_update_selection_formats(&clip_star);
+#  else
 	    gui_gtk_set_selection_targets((GdkAtom)GDK_SELECTION_PRIMARY);
 	    gui_gtk_set_selection_targets((GdkAtom)clip_plus.gtk_sel_atom);
+#  endif
+#  ifdef FEAT_DND
 	    gui_gtk_set_dnd_targets();
+#  endif
 	}
 # endif
     }
@@ -3790,3 +3731,74 @@ dec_clip_provider(void)
 }
 
 #endif // FEAT_CLIPBOARD_PROVIDER
+
+#if defined(FEAT_WAYLAND_CLIPBOARD) || (defined(FEAT_GUI_GTK) && defined(USE_GTK4))
+/*
+ * If "vim" is TRUE, then get the motion type. If "vimenc" is TRUE, then get the
+ * motion type and also convert "*buf". "buf" and "len_store" will be updated to
+ * reflect the actual contents, but should be set beforehand with the initial
+ * contents. Note that if "*tofree" is not NULL, use vim_free() on "*buf",
+ * otherwise use the free func for which "*buf" was allocated with. In both
+ * cases use vim_free() on "*tofree". Returns OK on success and FAIL on failure.
+ */
+    int
+clip_convert_data(
+	char_u	**buf,
+	long	*len_store,
+	int	*motion,
+	bool	vim,
+	bool	vimenc,
+	char_u	**tofree)
+{
+    char_u  *final = *buf;
+    char_u  *enc;
+    long    len = *len_store;
+
+    if (vim && len >= 2)
+    {
+	*motion = *final++;
+	len--;
+    }
+    else if (vimenc && len >= 3)
+    {
+	vimconv_T   conv;
+	int	    convlen;
+
+	// First byte is motion type
+	*motion = *final++;
+	len--;
+
+	// Get encoding of selection
+	enc = final;
+
+	// Skip the encoding type including null terminator in final text
+	final = memchr(final, NUL, len);
+	if (final == NULL)
+	    return FAIL;
+	final++; // Skip NUL
+
+	// Subtract pointers to get length of encoding;
+	len -= final - enc;
+
+	conv.vc_type = CONV_NONE;
+	convert_setup(&conv, enc, p_enc);
+	if (conv.vc_type != CONV_NONE)
+	{
+	   char_u *tmp;
+
+	   convlen = len;
+	   tmp = string_convert(&conv, final, &convlen);
+	   len = convlen;
+	   if (tmp != NULL)
+	   {
+		final = tmp;
+		*tofree = final;
+	   }
+	   convert_setup(&conv, NULL, NULL);
+	}
+    }
+    *buf = final;
+    *len_store = len;
+    return OK;
+}
+#endif

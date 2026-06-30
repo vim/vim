@@ -130,7 +130,7 @@ can be translated:
 - Menus, see [runtime/lang/README.txt][2]
 - Vim tutor, see [runtime/tutor/README.txt][3]
 - Manual pages, see [runtime/doc/\*.1][4] for examples
-- Installer, see [nsis/lang/README.txt][5]
+- Installer, see [nsis/lang/README.txt][5] in the [vim-win32-installer][20] repository
 
 The help files can be translated and made available separately.
 See https://www.vim.org/translations.php for examples.
@@ -157,7 +157,7 @@ mailing list. For other questions you can join [`#vim`][19], use the
 [2]: https://github.com/vim/vim/blob/master/runtime/lang/README.txt
 [3]: https://github.com/vim/vim/blob/master/runtime/tutor/README.txt
 [4]: https://github.com/vim/vim/blob/master/runtime/doc/vim.1
-[5]: https://github.com/vim/vim/blob/master/nsis/lang/README.txt
+[5]: https://github.com/vim/vim-win32-installer/blob/master/nsis/lang/README.txt
 [6]: https://github.com/vim/vim/discussions/13087
 [7]: https://github.com/vim/vim/blob/master/runtime/doc/develop.txt
 [8]: https://vi.stackexchange.com
@@ -172,3 +172,4 @@ mailing list. For other questions you can join [`#vim`][19], use the
 [17]: https://github.com/vim/vim/issues
 [18]: https://github.com/vim/vim/blob/master/src/testdir/test_codestyle.vim
 [19]: https://web.libera.chat/#vim
+[20]: https://github.com/vim/vim-win32-installer

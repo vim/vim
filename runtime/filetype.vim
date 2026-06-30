@@ -1062,7 +1062,7 @@ au BufNewFile,BufRead .zshrc,.zshenv,.zlogin,.zlogout,.zcompdump,.zsh_history se
 au BufNewFile,BufRead *.zsh,*.zsh-theme,*.zunit		setf zsh
 
 " Scheme, Supertux configuration, Lips.js history, Guile init file ("racket" patterns are now separate, see above)
-au BufNewFile,BufRead *.scm,*.ss,*.sld,*.stsg,*/supertux2/config,.lips_repl_history,.guile	setf scheme
+au BufNewFile,BufRead *.scm,*.ss,*.sld,*.stwm,*.stl,*.stxt,*.sprite,*.strf,*.satc,*.stcd,*.stf,*.stcp,*.music,*.stsg,*/supertux2/config,*/supertux2/*/info,.lips_repl_history,.guile	setf scheme
 
 " SiSU
 au BufNewFile,BufRead *.sst.meta,*.-sst.meta,*._sst.meta setf sisu
@@ -1106,6 +1106,12 @@ au BufNewFile,BufRead */etc/ssh/ssh_config.d/*.conf		setf sshconfig
 
 " OpenSSH server configuration
 au BufNewFile,BufRead */etc/ssh/sshd_config.d/*.conf	setf sshdconfig
+
+" OpenSSH public keys, authorized keys, signing keys, host keys
+au BufNewFile,BufRead */.ssh/?*.pub,/etc/ssh/?*.pub               setf sshpublickey
+au BufNewFile,BufRead */.ssh/authorized_keys                      setf sshauthorizedkeys
+au BufNewFile,BufRead */.ssh/known_hosts,/etc/ssh/ssh_known_hosts setf sshknownhosts
+au BufNewFile,BufRead allowed_signers,*.allowed_signers           setf sshallowedsigners
 
 " OpenVPN configuration
 au BufNewFile,BufRead */openvpn/*/*.conf	setf openvpn

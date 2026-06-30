@@ -9,6 +9,7 @@ char_u *get_user_cmd_addr_type(expand_T *xp, int idx);
 char_u *get_user_cmd_flags(expand_T *xp, int idx);
 char_u *get_user_cmd_nargs(expand_T *xp, int idx);
 char_u *get_user_cmd_complete(expand_T *xp, int idx);
+char_u *get_user_cmd_completeopt(expand_T *xp, int idx);
 char_u *cmdcomplete_type_to_str(int expand, char_u *compl_arg);
 int cmdcomplete_str_to_type(char_u *complete_str);
 char *uc_fun_cmd(void);

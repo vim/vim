@@ -31,8 +31,6 @@ src/if_ole.*		OLE automation interface, for MS Windows.
 
 src/GvimExt/*		DLL for the "Edit with Vim" context menu entry
 
-nsis/*			NSIS script to build the self-installing MS-Windows exe
-
 runtime/doc/*.man	Preprocessed manual pages.
 
 runtime/macros/file_select.vim	Vim script to browse directories (Unix only).

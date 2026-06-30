@@ -598,24 +598,33 @@ cmdsrv_main(
 	}
 	else if (STRICMP(argv[i], "--serverlist") == 0)
 	{
+	    list_T	*list = NULL;
+	    garray_T	ga;
+
 # ifdef MSWIN
 	    if (clientserver_method == CLIENTSERVER_METHOD_MSWIN)
 		// Win32 always works?
-		res = serverGetVimNames();
+		list = serverGetVimNames();
 # endif
 # ifdef FEAT_SOCKETSERVER
 	    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
-#  ifdef MSWIN
-		res = vim_strsave((char_u *)"");
-#  else
-		res = socketserver_list();
-#  endif
+		list = socketserver_list();
 # endif
 # ifdef FEAT_X11
 	    if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
 		    xterm_dpy != NULL)
-		res = serverGetVimNames(xterm_dpy);
+		list = serverGetVimNames(xterm_dpy);
 # endif
+
+	    ga_init2(&ga, 1, 80);
+	    if (list != NULL)
+	    {
+		list_join(&ga, list, (char_u *)"\n", TRUE, FALSE, 0);
+		ga_append(&ga, NUL);
+		list_free(list);
+	    }
+	    res = ga.ga_data;
+
 	    if (did_emsg)
 		mch_errmsg("\n");
 	}
@@ -1176,6 +1185,8 @@ f_remote_startserver(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     }
 
     char_u *server = tv_get_string_chk(&argvars[0]);
+    if (server == NULL)
+	return;
 #  ifdef MSWIN
     if (clientserver_method == CLIENTSERVER_METHOD_MSWIN)
 	serverSetName(server);
@@ -1248,32 +1259,59 @@ f_server2client(typval_T *argvars UNUSED, typval_T *rettv)
     void
 f_serverlist(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    char_u	*r = NULL;
+    list_T  *list = NULL;
+    bool    use_list = false;
+
+    if (check_for_opt_dict_arg(argvars, 0) == FAIL)
+	return;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	dict_T *d = argvars[0].vval.v_dict;
+
+	use_list = dict_get_bool(d, "list", false);
+    }
 
 # ifdef FEAT_CLIENTSERVER
 #  ifdef MSWIN
     if (clientserver_method == CLIENTSERVER_METHOD_MSWIN)
-	r = serverGetVimNames();
+	list = serverGetVimNames();
 #  endif
 #  ifdef FEAT_SOCKETSERVER
     if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
-#   ifdef MSWIN
-	r = vim_strsave((char_u *)"");
-#   else
-	r = socketserver_list();
-#   endif
+	list = socketserver_list();
 #  endif
 #  ifdef FEAT_X11
     if (clientserver_method == CLIENTSERVER_METHOD_X11)
     {
-    make_connection();
-    if (X_DISPLAY != NULL)
-	r = serverGetVimNames(X_DISPLAY);
+	make_connection();
+	if (X_DISPLAY != NULL)
+	    list = serverGetVimNames(X_DISPLAY);
     }
 #  endif
 # endif
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = r;
+    if (use_list && list != NULL)
+    {
+	list->lv_refcount++;
+	rettv->v_type = VAR_LIST;
+	rettv->vval.v_list = list;
+    }
+    else
+    {
+	garray_T ga;
+
+	ga_init2(&ga, 1, 80);
+
+	if (list != NULL)
+	{
+	    list_join(&ga, list, (char_u *)"\n", TRUE, FALSE, 0);
+	    ga_append(&ga, NUL);
+	    list_free(list);
+	}
+
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = (char_u *)ga.ga_data;
+    }
 }
 #endif
 

@@ -28,6 +28,9 @@ typedef GdkEvent GdkEventKey;	// GTK4: GdkEventKey merged into GdkEvent
 # endif
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wstrict-prototypes"
+# if !defined(USE_GTK3) && !defined(USE_GTK4)
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+# endif
 # include <gtk/gtk.h>
 # pragma GCC diagnostic pop
 #endif
@@ -273,6 +276,10 @@ typedef struct Gui
 #ifdef FEAT_DIRECTX
     bool	directx_enabled;    // DirectX (DirectWrite) rendering active
 #endif
+#if defined(FEAT_GUI_GTK) && defined(USE_GTK4_SNAPSHOT)
+    int		bleed_right;	    // Number of pixels to bleed bg color right
+    int		bleed_bot;	    // Number of pixels to bleed bg color down
+#endif
 
 #ifdef FEAT_MENU
 # ifndef FEAT_GUI_GTK
@@ -385,7 +392,9 @@ typedef struct Gui
     GdkColor	*spcolor;	    // GDK-styled special color
 # endif
 # if defined(USE_GTK3) || defined(USE_GTK4)
+#  ifndef USE_GTK4_SNAPSHOT
     cairo_surface_t *surface;       // drawarea surface
+#  endif
 # else
     GdkGC	*text_gc;	    // cached GC for normal text
 # endif
@@ -481,6 +490,10 @@ typedef struct Gui
     // Used for clipboard functionality in GTK4 GUI
     GdkContentProvider *regular_provider;
     GdkContentProvider *primary_provider;
+
+# ifdef FEAT_DND
+    GtkDropTargetAsync *drop_target;
+# endif
 #endif
 } gui_T;
 

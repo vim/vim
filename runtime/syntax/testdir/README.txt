@@ -26,9 +26,12 @@ Creating a syntax plugin test
 -----------------------------
 
 Create a source file in the language you want to test in the "input"
-directory.  Use the filetype name as the base and a file name extension
+directory.  Use the filetype name as the base and a filename extension
 matching the filetype.  Let's use Java as an example.  The file would then be
-"input/java.java".
+"input/java.java".  As another example, consider Gitignore.  Since there is no
+established filename extension for this filetype, use the filetype name for
+its base AND filename extension, "input/gitignore.gitignore", as the first
+step.
 
 Make sure to include some interesting constructs with plenty of complicated
 highlighting.  Optionally, pre-configure the testing environment by including
@@ -47,6 +50,10 @@ Continuing the Java example:
 	// VIM_TEST_SETUP let g:java_space_errors = 1
 	// VIM_TEST_SETUP let g:java_minlines = 5
 	class Test { }
+
+Continuing the Gitignore example, give the file a valid name as the last step:
+
+	# VIM_TEST_SETUP call DeferRenamingTestFileTo('.gitignore')
 
 As an alternative, setup commands can be included in an external Vim script
 file in the "input/setup" directory.  This script file must have the same base
