@@ -721,14 +721,12 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
 #ifdef FEAT_CONCEAL
     if (plines_win_has_conceal(wp, lnum))
     {
-	long measure_column = column == MAXCOL ? MAXCOL : column + 1;
-
-	cts.cts_vcol = (int)plines_win_col_conceal(wp, lnum, measure_column,
+	cts.cts_vcol = (int)plines_win_col_conceal(wp, lnum, column,
 						 &vcol_off_co, &concealed);
 	line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 	cts.cts_line = line;
 	cts.cts_ptr = line;
-	while (*cts.cts_ptr != NUL && cts.cts_ptr - line < measure_column)
+	while (*cts.cts_ptr != NUL && cts.cts_ptr - line < column)
 	    MB_PTR_ADV(cts.cts_ptr);
     }
     else

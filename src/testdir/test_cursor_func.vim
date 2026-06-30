@@ -222,7 +222,7 @@ func Test_screenpos_conceallevel_three_multibyte()
   new
   setlocal wrap conceallevel=3 concealcursor=nvic
   call setline(1, "x\u00e9Y")
-  call matchadd('Conceal', 'x', 10, -1, #{conceal: ''})
+  let matchid = matchadd('Conceal', 'x', 10, -1, #{conceal: ''})
   redraw
 
   call assert_equal(#{col: 2, row: 1, endcol: 2, curscol: 2},
@@ -238,6 +238,27 @@ func Test_screenpos_conceallevel_three_multibyte()
   call assert_equal(#{col: 1, row: 1, endcol: 2, curscol: 1},
 	\ screenpos(win_getid(), 1, 2))
 
+  call matchdelete(matchid)
+  bwipe!
+endfunc
+
+func Test_screenpos_conceallevel_three_tab_wrap()
+  CheckFeature conceal
+
+  botright vertical new
+  vertical resize 4
+  setlocal wrap conceallevel=3 concealcursor=nvic tabstop=8 signcolumn=no
+  setlocal nonumber
+  call setline(1, "x\tY")
+  let matchid = matchadd('Conceal', 'x', 10, -1, #{conceal: ''})
+  redraw
+
+  let pos = screenpos(win_getid(), 1, 2)
+  call assert_equal(2, pos.row)
+  call assert_equal(6, pos.endcol - pos.col)
+  call assert_equal(pos.endcol, pos.curscol)
+
+  call matchdelete(matchid)
   bwipe!
 endfunc
 
