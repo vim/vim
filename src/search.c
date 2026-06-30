@@ -1788,6 +1788,7 @@ search_for_exact_line(
     linenr_T	start = 0;
     char_u	*ptr;
     char_u	*p;
+    int		compl_len = ins_compl_len();
 
     if (buf->b_ml.ml_line_count == 0)
 	return FAIL;
@@ -1839,8 +1840,8 @@ search_for_exact_line(
 	}
 	else if (*p != NUL)	// ignore empty lines
 	{	// expanding lines or words
-	    if ((p_ic ? MB_STRNICMP(p, pat, ins_compl_len())
-				   : STRNCMP(p, pat, ins_compl_len())) == 0)
+	    if ((p_ic ? MB_STRNICMP(p, pat, compl_len)
+				   : STRNCMP(p, pat, compl_len)) == 0)
 		return OK;
 	}
     }
@@ -3005,8 +3006,8 @@ is_zero_width(
 	    if (nmatched != 0)
 		break;
 	} while (regmatch.regprog != NULL
-		&& direction == FORWARD ? regmatch.startpos[0].col < pos.col
-				      : regmatch.startpos[0].col > pos.col);
+		&& (direction == FORWARD ? regmatch.startpos[0].col < pos.col
+				      : regmatch.startpos[0].col > pos.col));
 
 	if (called_emsg == called_emsg_before)
 	{
