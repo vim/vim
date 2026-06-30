@@ -301,20 +301,43 @@ inchar_loop(
 		return 0;
 	}
 # endif
-	if (wtime < 0 && did_start_blocking)
+	// When an autocomplete is pending, wake at the sooner of
+	// 'autocompletedelay' and 'updatetime' so the delay does not postpone
+	// CursorHold.  Once CursorHold has fired, only the delay is left.
+	// Gate the injection like trigger_cursorhold() so the deferred key
+	// cannot fire while recording or outside Insert mode.
+	bool delay_pending = ins_compl_autocomplete_pending() && p_acl > 0
+		&& reg_recording == 0
+		&& typebuf.tb_len == 0
+		&& !ins_compl_active()
+		&& (get_real_state() & MODE_INSERT) != 0;
+	// Measure the delay from when it was armed (the keystroke), so a
+	// CursorHold returning in between does not push the popup back.
+	long acl_elapsed = delay_pending ? ins_compl_autocomplete_elapsed() : 0;
+
+	if (wtime < 0 && did_start_blocking && !delay_pending)
 	    // blocking and already waited for p_ut
 	    wait_time = -1;
 	else
 	{
-	    if (wtime >= 0)
-		wait_time = wtime;
-	    else
-		// going to block after p_ut
-		wait_time = p_ut;
 # ifdef ELAPSED_FUNC
 	    elapsed_time = ELAPSED_FUNC(start_tv);
 # endif
-	    wait_time -= elapsed_time;
+	    if (wtime >= 0)
+		wait_time = wtime - elapsed_time;
+	    else if (delay_pending)
+	    {
+		long delay_left = p_acl - acl_elapsed;
+		long ut_left = p_ut - elapsed_time;
+
+		if (did_start_blocking)
+		    wait_time = delay_left;
+		else
+		    wait_time = MIN(delay_left, ut_left);
+	    }
+	    else
+		// going to block after p_ut
+		wait_time = p_ut - elapsed_time;
 
 	    // If the waiting time is now zero or less, we timed out.  However,
 	    // loop at least once to check for characters and events.  Matters
@@ -324,6 +347,29 @@ inchar_loop(
 		if (wtime >= 0)
 		    // no character available within "wtime"
 		    return 0;
+
+		// The 'autocompletedelay' expired: trigger the popup.  When
+		// 'updatetime' is shorter, fall through to CursorHold instead.
+		if (delay_pending && acl_elapsed >= p_acl && maxlen >= 3
+					    && !typebuf_changed(tb_change_cnt))
+		{
+		    if (buf == NULL)
+		    {
+			char_u	ibuf[3];
+
+			ibuf[0] = CSI;
+			ibuf[1] = KS_EXTRA;
+			ibuf[2] = (int)KE_COMPLETE_DELAY;
+			add_to_input_buf(ibuf, 3);
+		    }
+		    else
+		    {
+			buf[0] = K_SPECIAL;
+			buf[1] = KS_EXTRA;
+			buf[2] = (int)KE_COMPLETE_DELAY;
+		    }
+		    return 3;
+		}
 
 		// No character available within 'updatetime'.
 		did_start_blocking = TRUE;

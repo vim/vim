@@ -205,6 +205,10 @@ static buf_T	  *compl_curr_buf = NULL;  // buf where completion is active
 // longer fixed timeout is used (COMPL_FUNC_TIMEOUT_MS or
 // COMPL_FUNC_TIMEOUT_NON_KW_MS). - girish
 static int	  compl_autocomplete = FALSE;	    // whether autocompletion is active
+static bool	  compl_autocomplete_pending = false;
+#ifdef ELAPSED_FUNC
+static elapsed_T  compl_autocomplete_start_tv;	    // when the delay was armed
+#endif
 static int	  compl_timeout_ms = COMPL_INITIAL_TIMEOUT_MS;
 static int	  compl_time_slice_expired = FALSE; // time budget exceeded for current source
 static int	  compl_from_nonkeyword = FALSE;    // completion started from non-keyword
@@ -2609,7 +2613,9 @@ ins_compl_new_leader(void)
 
     compl_enter_selects = !compl_used_match && compl_selected_item != -1;
 
-    // Show the popup menu with a different set of matches.
+    // Show the popup menu with a different set of matches.  With
+    // 'autocompletedelay' the menu is already visible here, so update it
+    // immediately rather than re-arming the delay, like a zero delay does.
     if (!compl_interrupted)
 	show_pum(save_w_wrow, save_w_leftcol);
 
@@ -6405,9 +6411,10 @@ ins_compl_check_keys(int frequency, int in_compl_func)
 	    c = safe_vgetc();
 	    if (c != K_IGNORE)
 	    {
-		// Don't interrupt completion when the character wasn't typed,
-		// e.g., when doing @q to replay keys.
-		if (c != Ctrl_R && KeyTyped)
+		// Typed keys that get mapped lose KeyTyped. Still let
+		// complete_check() interrupt, except during @r replay.
+		if (c != Ctrl_R && (KeyTyped
+			    || (in_compl_func && reg_executing == 0)))
 		    compl_interrupted = TRUE;
 
 		vungetc(c);
@@ -7295,13 +7302,6 @@ ins_complete(int c, int enable_pum)
     int		save_w_leftcol;
     int		insert_match;
     int		no_matches_found;
-#ifdef ELAPSED_FUNC
-    elapsed_T	compl_start_tv = {0}; // Time when match collection starts
-    int		disable_ac_delay;
-
-    disable_ac_delay = compl_started && ctrl_x_mode_normal()
-	&& (c == Ctrl_N || c == Ctrl_P || c == Ctrl_R || ins_compl_pum_key(c));
-#endif
 
     compl_direction = ins_compl_key2dir(c);
     insert_match = ins_compl_use_match(c);
@@ -7314,10 +7314,6 @@ ins_complete(int c, int enable_pum)
     else if (insert_match && stop_arrow() == FAIL)
 	return FAIL;
 
-#ifdef ELAPSED_FUNC
-    if (compl_autocomplete && p_acl > 0 && !disable_ac_delay)
-	ELAPSED_INIT(compl_start_tv);
-#endif
     compl_curr_win = curwin;
     compl_curr_buf = curwin->w_buffer;
     compl_shown_match = compl_curr_match;
@@ -7373,34 +7369,6 @@ ins_complete(int c, int enable_pum)
     if (!shortmess(SHM_COMPLETIONMENU) && !compl_autocomplete)
 	ins_compl_show_statusmsg();
 
-    // Wait for the autocompletion delay to expire
-#ifdef ELAPSED_FUNC
-    if (compl_autocomplete && p_acl > 0 && !disable_ac_delay
-	    && !no_matches_found && ELAPSED_FUNC(compl_start_tv) < p_acl)
-    {
-	cursor_on();
-	setcursor();
-	out_flush_cursor(FALSE, FALSE);
-	do
-	{
-	    if (char_avail())
-	    {
-		if (ins_compl_preinsert_effect()
-			&& ins_compl_win_active(curwin))
-		{
-		    ins_compl_delete(); // Remove pre-inserted text
-		    compl_ins_end_col = compl_col;
-		}
-		ins_compl_restart();
-		compl_interrupted = TRUE;
-		break;
-	    }
-	    else
-		ui_delay(2L, TRUE);
-	} while (ELAPSED_FUNC(compl_start_tv) < p_acl);
-    }
-#endif
-
     // Show the popup menu, unless we got interrupted.
     if (enable_pum && !compl_interrupted)
 	show_pum(save_w_wrow, save_w_leftcol);
@@ -7420,6 +7388,55 @@ ins_compl_enable_autocomplete(void)
 #ifdef ELAPSED_FUNC
     compl_autocomplete = TRUE;
     compl_get_longest = FALSE;
+#endif
+}
+
+/*
+ * Arm the 'autocompletedelay' timer when the delay is in effect.
+ * Return true when the popup should be deferred, false to trigger it now.
+ */
+    bool
+ins_compl_arm_autocomplete_delay(void)
+{
+#ifdef ELAPSED_FUNC
+    if (p_acl > 0)
+    {
+	ELAPSED_INIT(compl_autocomplete_start_tv);
+	compl_autocomplete_pending = true;
+	return true;
+    }
+#endif
+    return false;
+}
+
+/*
+ * Clear the pending 'autocompletedelay' state.
+ */
+    void
+ins_compl_clear_autocomplete_delay(void)
+{
+    compl_autocomplete_pending = false;
+}
+
+/*
+ * Return true while waiting for 'autocompletedelay' to expire.
+ */
+    bool
+ins_compl_autocomplete_pending(void)
+{
+    return compl_autocomplete_pending;
+}
+
+/*
+ * Return the time in msec since the 'autocompletedelay' was armed.
+ */
+    long
+ins_compl_autocomplete_elapsed(void)
+{
+#ifdef ELAPSED_FUNC
+    return ELAPSED_FUNC(compl_autocomplete_start_tv);
+#else
+    return 0;
 #endif
 }
 

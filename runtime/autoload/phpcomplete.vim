@@ -2082,7 +2082,8 @@ function! phpcomplete#GetClassContentsStructure(file_path, file_lines, class_nam
 	let result = []
 	let popup_id = popup_create(a:file_lines, {'hidden': v:true})
 
-	call win_execute(popup_id, 'call search(''\c\(class\|interface\|trait\)\_s\+'.a:class_name.'\(\>\|$\)'')')
+	call win_execute(popup_id, 'call search('
+		\ . string('\c\(class\|interface\|trait\)\_s\+' . a:class_name . '\(\>\|$\)') . ')')
 	call win_execute(popup_id, "let cfline = line('.')")
 	call win_execute(popup_id, "call search('{')")
 	call win_execute(popup_id, "let endline = line('.')")

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-06-24 17:52+0000\n"
+"POT-Creation-Date: 2026-06-27 08:41+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1976,6 +1976,9 @@ msgid "???ILLEGAL BLOCK NUMBER"
 msgstr ""
 
 msgid "???BLOCK MISSING"
+msgstr ""
+
+msgid "??? BLOCK PAGE COUNT MISMATCH"
 msgstr ""
 
 msgid "??? from here until ???END lines may be messed up"

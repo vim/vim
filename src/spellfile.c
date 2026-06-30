@@ -1178,8 +1178,6 @@ read_sofo_section(FILE *fd, slang_T *slang)
     char_u	*from, *to;
     int		res;
 
-    slang->sl_sofo = TRUE;
-
     // <sofofromlen> <sofofrom>
     from = read_cnt_string(fd, 2, &cnt);
     if (cnt < 0)
@@ -1433,6 +1431,7 @@ set_sofo(slang_T *lp, char_u *from, char_u *to)
 	    return SP_OTHERERROR;
 	vim_memset(gap->ga_data, 0, sizeof(int *) * 256);
 	gap->ga_len = 256;
+	lp->sl_sofo = TRUE;
 
 	// First count the number of items for each list.  Temporarily use
 	// sl_sal_first[] for this.
@@ -1489,6 +1488,7 @@ set_sofo(slang_T *lp, char_u *from, char_u *to)
 	for (i = 0; to[i] != NUL; ++i)
 	    lp->sl_sal_first[from[i]] = to[i];
 	lp->sl_sal.ga_len = 1;		// indicates we have soundfolding
+	lp->sl_sofo = TRUE;
     }
 
     return 0;

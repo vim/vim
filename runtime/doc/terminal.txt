@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.2.  Last change: 2026 Jun 24
+*terminal.txt*	For Vim version 9.2.  Last change: 2026 Jun 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -232,7 +232,7 @@ Command syntax ~
 			keys in the terminal window.  For MS-Windows see the
 			++eof argument below.
 
-					    *term++close* *term++noclose* *term++open*
+				    *term++close* *term++noclose* *term++open*
 			Supported [options] are:
 			++close		The terminal window will close
 					automatically when the job terminates.
@@ -1001,7 +1001,7 @@ term_start({cmd} [, {options}])			*term_start()*
 				     terminal window, see |term_setkill()|
 		   "term_finish"     What to do when the job is finished:
 					"close": close any windows
-					"noclose": window will not be opened
+					"noclose": window will not be closed
 					"open": open window if needed
 				     Note that "open" can be interruptive.
 				     See |term++close|, |term++noclose| and

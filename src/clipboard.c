@@ -3293,12 +3293,19 @@ did_set_clipboard(optset_T *args UNUSED)
 	vim_regfree(clip_exclude_prog);
 	clip_exclude_prog = new_exclude_prog;
 # endif
-# if defined(FEAT_GUI_GTK) && !defined(USE_GTK4)
+# if defined(FEAT_GUI_GTK)
 	if (gui.in_use)
 	{
+#  ifdef USE_GTK4
+	    gui_gtk_update_selection_formats(&clip_plus);
+	    gui_gtk_update_selection_formats(&clip_star);
+#  else
 	    gui_gtk_set_selection_targets((GdkAtom)GDK_SELECTION_PRIMARY);
 	    gui_gtk_set_selection_targets((GdkAtom)clip_plus.gtk_sel_atom);
+#  endif
+#  ifdef FEAT_DND
 	    gui_gtk_set_dnd_targets();
+#  endif
 	}
 # endif
     }
@@ -3730,7 +3737,9 @@ dec_clip_provider(void)
  * If "vim" is TRUE, then get the motion type. If "vimenc" is TRUE, then get the
  * motion type and also convert "*buf". "buf" and "len_store" will be updated to
  * reflect the actual contents, but should be set beforehand with the initial
- * contents. Returns OK on success and FAIL on failure.
+ * contents. Note that if "*tofree" is not NULL, use vim_free() on "*buf",
+ * otherwise use the free func for which "*buf" was allocated with. In both
+ * cases use vim_free() on "*tofree". Returns OK on success and FAIL on failure.
  */
     int
 clip_convert_data(

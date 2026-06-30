@@ -243,6 +243,7 @@ NEW_TESTS = \
 	test_partial \
 	test_paste \
 	test_perl \
+	test_plugin_ccomplete \
 	test_plugin_comment \
 	test_plugin_glvs \
 	test_plugin_helpcurwin \
@@ -251,6 +252,7 @@ NEW_TESTS = \
 	test_plugin_matchit \
 	test_plugin_matchparen \
 	test_plugin_netrw \
+	test_plugin_phpcomplete \
 	test_plugin_python3complete \
 	test_plugin_osc52 \
 	test_plugin_tar \
@@ -523,6 +525,7 @@ NEW_TESTS_RES = \
 	test_partial.res \
 	test_paste.res \
 	test_perl.res \
+	test_plugin_ccomplete.res \
 	test_plugin_comment.res \
 	test_plugin_glvs.res \
 	test_plugin_helpcurwin.res \
@@ -531,6 +534,7 @@ NEW_TESTS_RES = \
 	test_plugin_matchit.res \
 	test_plugin_matchparen.res \
 	test_plugin_netrw.res \
+	test_plugin_phpcomplete.res \
 	test_plugin_python3complete.res \
 	test_plugin_osc52.res \
 	test_plugin_tar.res \

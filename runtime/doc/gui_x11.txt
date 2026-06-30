@@ -1,4 +1,4 @@
-*gui_x11.txt*	For Vim version 9.2.  Last change: 2026 June 25
+*gui_x11.txt*	For Vim version 9.2.  Last change: 2026 June 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar

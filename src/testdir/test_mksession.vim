@@ -466,13 +466,13 @@ func Test_mksession_terminal_shell()
   let lines = readfile('Xtest_mks.out')
   let term_cmd = ''
   for line in lines
-    if line =~ '^terminal'
+    if line =~ '^exe '':terminal'
       let term_cmd = line
     elseif line =~ 'badd.*' . &shell
       call assert_report('unexpected shell line: ' . line)
     endif
   endfor
-  call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+\s*.*$', term_cmd)
+  call assert_match('exe '':terminal ++curwin ++cols='' \.\. ((&columns \* \d\+ + \d\+) \/ \d\+) \.\. '' ++rows='' \.\. ((&lines \* \d\+ + \d\+) \/ \d\+)\s.*$', term_cmd)
 
   call StopShellInTerminal(bufnr('%'))
   call delete('Xtest_mks.out')
@@ -486,7 +486,7 @@ func Test_mksession_terminal_no_restore_cmdarg()
   let lines = readfile('Xtest_mks.out')
   let term_cmd = ''
   for line in lines
-    if line =~ '^terminal'
+    if line =~ '^exe '':terminal'
       call assert_report('session must not restore terminal')
     endif
   endfor
@@ -503,7 +503,7 @@ func Test_mksession_terminal_no_restore_funcarg()
   let lines = readfile('Xtest_mks.out')
   let term_cmd = ''
   for line in lines
-    if line =~ '^terminal'
+    if line =~ '^exe '':terminal'
       call assert_report('session must not restore terminal')
     endif
   endfor
@@ -521,7 +521,7 @@ func Test_mksession_terminal_no_restore_func()
   let lines = readfile('Xtest_mks.out')
   let term_cmd = ''
   for line in lines
-    if line =~ '^terminal'
+    if line =~ '^exe '':terminal'
       call assert_report('session must not restore terminal')
     endif
   endfor
@@ -539,7 +539,7 @@ func Test_mksession_terminal_no_ssop()
   let lines = readfile('Xtest_mks.out')
   let term_cmd = ''
   for line in lines
-    if line =~ '^terminal'
+    if line =~ '^exe '':terminal'
       call assert_report('session must not restore terminal')
     endif
   endfor
@@ -559,11 +559,11 @@ func Test_mksession_terminal_restore_other()
   let lines = readfile('Xtest_mks.out')
   let term_cmd = ''
   for line in lines
-    if line =~ '^terminal'
+    if line =~ '^exe '':terminal'
       let term_cmd = line
     endif
   endfor
-  call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+.*other', term_cmd)
+  call assert_match('exe '':terminal ++curwin ++cols='' \.\. ((&columns \* \d\+ + \d\+) \/ \d\+) \.\. '' ++rows='' \.\. ((&lines \* \d\+ + \d\+) \/ \d\+).*other', term_cmd)
 
   call StopShellInTerminal(bufnr('%'))
   call delete('Xtest_mks.out')
@@ -584,9 +584,9 @@ func Test_mksession_terminal_shared_windows()
   let found_var = 0
 
   for line in lines
-    if line =~ '^terminal'
+    if line =~ '^exe '':terminal'
       let found_creation = 1
-      call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+', line)
+      call assert_match('exe '':terminal ++curwin ++cols='' \.\. ((&columns \* \d\+ + \d\+) \/ \d\+) \.\. '' ++rows='' \.\. ((&lines \* \d\+ + \d\+) \/ \d\+)', line)
     elseif line =~ $"^var term_buf_{term_buf}: number = bufnr()$"
       let found_var = 1
     elseif line =~ "^execute 'buffer ' . term_buf_" . term_buf . "$"

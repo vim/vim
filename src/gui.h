@@ -28,6 +28,9 @@ typedef GdkEvent GdkEventKey;	// GTK4: GdkEventKey merged into GdkEvent
 # endif
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wstrict-prototypes"
+# if !defined(USE_GTK3) && !defined(USE_GTK4)
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+# endif
 # include <gtk/gtk.h>
 # pragma GCC diagnostic pop
 #endif
@@ -487,6 +490,10 @@ typedef struct Gui
     // Used for clipboard functionality in GTK4 GUI
     GdkContentProvider *regular_provider;
     GdkContentProvider *primary_provider;
+
+# ifdef FEAT_DND
+    GtkDropTargetAsync *drop_target;
+# endif
 #endif
 } gui_T;
 
