@@ -5587,9 +5587,19 @@ findoption(char_u *arg)
     // letter.  There are 26 letters, plus the first "t_" option.
     if (quick_tab[1] == 0)
     {
+	// Make sure we do not leave any entries uninitialized, even if we have
+	// no options that start with a particular letter.
+	int last_opt_idx;
+	for (last_opt_idx = 0; options[last_opt_idx].fullname != NULL;
+		last_opt_idx++)
+	    ;
+	for (int tab_idx = 1; tab_idx < 27; tab_idx++)
+	    quick_tab[tab_idx] = last_opt_idx;
+
 	p = options[0].fullname;
-	for (opt_idx = 1; (s = options[opt_idx].fullname) != NULL; opt_idx++)
+	for (opt_idx = 1; opt_idx < last_opt_idx; opt_idx++)
 	{
+	    s = options[opt_idx].fullname;
 	    if (s[0] != p[0])
 	    {
 		if (s[0] == 't' && s[1] == '_')
