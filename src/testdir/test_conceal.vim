@@ -789,6 +789,83 @@ func Test_conceallevel_three_wrap()
 
   syntax clear test
   call CloseWindow()
+  call NewWindow(6, 30)
+  setlocal wrap linebreak conceallevel=3 concealcursor=n signcolumn=no
+        \ nonumber showbreak=++
+  syntax match test /<[^>]*>/ conceal
+
+  call setline(1, 'alpha beta 日本語<hidden-target> followed words')
+  call setline(2, 'alpha beta narrow text<hidden-target> after')
+  call setline(3, 'alpha beta 日本語 text<hidden-target> after the wrap point')
+  redraw
+  call assert_equal([
+        \ 'alpha beta 日本語 followed    ',
+        \ '++words                       ',
+        \ 'alpha beta narrow text after  ',
+        \ 'alpha beta 日本語 text after  ',
+        \ '++the wrap point              ',
+        \ '~                             ',
+        \ ], ScreenLines([1, 6], winwidth(0)))
+
+  setlocal showbreak=
+  call setline(1, 'alpha <hidden-target> second concealed link with text after')
+  call setline(2, 'plain after')
+  call setline(3, '')
+  redraw
+  call assert_equal([
+        \ 'alpha  second concealed link  ',
+        \ 'with text after               ',
+        \ 'plain after                   ',
+        \ ], ScreenLines([1, 3], winwidth(0)))
+
+  call CloseWindow()
+  call NewWindow(4, 21)
+  setlocal wrap linebreak conceallevel=3 concealcursor=n signcolumn=no
+        \ nonumber showbreak=
+  syntax clear test
+  syntax match test /\[/ conceal
+  call setline(1, 'aaaa bbbb cccc [second concealed')
+  redraw
+  call assert_equal([
+        \ 'aaaa bbbb cccc      ',
+        \ 'second concealed    ',
+        \ '~                   ',
+        \ ], ScreenLines([1, 3], winwidth(0)))
+
+  call CloseWindow()
+  call NewWindow(7, 37)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+        \ signcolumn=no number showbreak=
+  syntax clear test
+  syntax match test /\[/ conceal
+  syntax match test /\](https:[^)]*)/ conceal
+  call setline(1, 'This paragraph has bold text before 日本語, italic text before コンシール, and a [concealed link title 日本語](https://example.invalid/a/very/long/path/that/should-be-hidden-by-markdown-conceal) followed by enough words to wrap several times in a narrow window.')
+  redraw
+  call assert_equal([
+        \ '  1 This paragraph has bold text      ',
+        \ '    before 日本語, italic text        ',
+        \ '    before コンシール, and a          ',
+        \ '    concealed link title 日本語       ',
+        \ '    followed by enough words to wrap  ',
+        \ '    several times in a narrow window. ',
+        \ '~                                    ',
+        \ ], ScreenLines([1, 7], winwidth(0)))
+
+  call CloseWindow()
+  call NewWindow(4, 30)
+  setlocal wrap linebreak conceallevel=3 concealcursor=n signcolumn=no
+        \ nonumber showbreak=
+  syntax clear test
+  syntax region test start=/`/ end=/`/ concealends
+  highlight test ctermfg=Red guifg=Red
+  call setline(1, 'aaaa bbbb cccc dddd eeee ffff`:set columns=60`')
+  redraw
+  call assert_equal(':', screenstring(1, 30))
+  call assert_equal('s', screenstring(2, 1))
+  call assert_equal(screenattr(2, 1), screenattr(1, 30))
+
+  syntax clear test
+  call CloseWindow()
 endfunc
 
 func Test_conceallevel_three_wrap_single_char_syntax()
