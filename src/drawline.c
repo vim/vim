@@ -3184,7 +3184,12 @@ win_line(
 		    chartabsize_T cts;
 
 
-		    colnr_T init_colnr = wlv.vcol;
+		    colnr_T init_colnr =
+# ifdef FEAT_CONCEAL
+			VCOL_HLC;
+# else
+			wlv.vcol;
+# endif
 # ifdef FEAT_PROP_POPUP
 		    init_colnr -= vcol_first_char;
 # endif
