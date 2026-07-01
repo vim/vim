@@ -6846,7 +6846,7 @@ popup_image_gui_clip(
 popup_invalidate_prev_image_rect(win_T *wp, popup_clip_T *cl)
 {
     int old_row, old_col, old_cells_w, old_cells_h;
-    int new_row, new_col, new_cells_w, new_cells_h;
+    int new_row = 0, new_col = 0, new_cells_w = 0, new_cells_h = 0;
     int rr;
 
 #  if !(defined(FEAT_IMAGE_SIXEL) || defined(FEAT_IMAGE_KITTY))
