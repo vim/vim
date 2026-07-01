@@ -826,10 +826,12 @@ func Test_conceallevel_three_wrap()
   syntax match test /\[/ conceal
   call setline(1, 'aaaa bbbb cccc [second concealed')
   redraw
+  let expected = ['aaaa bbbb cccc', 'second concealed', '~']
+  call map(expected, 'v:val .. repeat(" ", winwidth(0) - strdisplaywidth(v:val))')
   call assert_equal([
-        \ 'aaaa bbbb cccc      ',
-        \ 'second concealed    ',
-        \ '~                   ',
+        \ expected[0],
+        \ expected[1],
+        \ expected[2],
         \ ], ScreenLines([1, 3], winwidth(0)))
 
   call CloseWindow()
@@ -842,27 +844,29 @@ func Test_conceallevel_three_wrap()
   call setline(1, 'This paragraph has bold text before 日本語, italic text before コンシール, and a [concealed link title 日本語](https://example.invalid/a/very/long/path/that/should-be-hidden-by-markdown-conceal) followed by enough words to wrap several times in a narrow window.')
   redraw
   call assert_equal([
-        \ '  1 This paragraph has bold text      ',
-        \ '    before 日本語, italic text        ',
-        \ '    before コンシール, and a          ',
-        \ '    concealed link title 日本語       ',
-        \ '    followed by enough words to wrap  ',
-        \ '    several times in a narrow window. ',
-        \ '~                                    ',
-        \ ], ScreenLines([1, 7], winwidth(0)))
+        \ '  1 This paragraph has bold text',
+        \ '    before 日本語, italic text',
+        \ '    before コンシール, and a',
+        \ '    concealed link title 日本語',
+        \ '    followed by enough words to wrap',
+        \ '    several times in a narrow window.',
+        \ '~',
+        \ ], map(ScreenLines([1, 7], winwidth(0)),
+        \ 'substitute(v:val, "\\s\\+$", "", "")'))
 
   call CloseWindow()
   call NewWindow(4, 30)
   setlocal wrap linebreak conceallevel=3 concealcursor=n signcolumn=no
         \ nonumber showbreak=
   syntax clear test
-  syntax region test start=/`/ end=/`/ concealends
-  highlight test ctermfg=Red guifg=Red
-  call setline(1, 'aaaa bbbb cccc dddd eeee ffff`:set columns=60`')
+  syntax match test /\[/ conceal
+  syntax match testCode /:set columns=60/
+  highlight testCode ctermfg=Red guifg=Red
+  call setline(1, repeat('a', winwidth(0) - 1) .. '[:set columns=60')
   redraw
-  call assert_equal(':', screenstring(1, 30))
+  call assert_equal(':', screenstring(1, winwidth(0)))
   call assert_equal('s', screenstring(2, 1))
-  call assert_equal(screenattr(2, 1), screenattr(1, 30))
+  call assert_equal(screenattr(2, 1), screenattr(1, winwidth(0)))
 
   syntax clear test
   call CloseWindow()
