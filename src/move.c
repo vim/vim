@@ -1564,16 +1564,17 @@ textpos2screenpos(
 	{
 	    getvcol(wp, pos, &scol, &ccol, &ecol, 0);
 # ifdef FEAT_CONCEAL
-	    long concealed_vcol;
-	    long conceal_delta = 0;
+	    long concealed_vcol = -1;
 	    int conceal_tab_wrap = FALSE;
 
-	    concealed_vcol = plines_win_col_conceal_vcol(wp, lnum,
+	    if (wp->w_p_wrap)
+		concealed_vcol = plines_win_col_conceal_vcol(wp, lnum,
 								pos->col);
 
-	    if (concealed_vcol >= 0 && wp->w_p_wrap)
+	    if (concealed_vcol >= 0)
 	    {
-		conceal_delta = concealed_vcol - scol;
+		long conceal_delta = concealed_vcol - scol;
+
 		if (conceal_delta != 0
 			&& pos->col < ml_get_buf_len(wp->w_buffer, lnum)
 			&& ml_get_buf(wp->w_buffer, lnum, FALSE)[pos->col] == TAB)
