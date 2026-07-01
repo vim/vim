@@ -1076,8 +1076,7 @@ endfunc
 
 " Test for mksession without options restores winminheight
 func Test_mksession_winminheight()
-  set winheight=10 winwidth=10 winminheight& winminwidth&
-  defer execute('set winheight& winwidth&')
+  set winheight& winwidth& winminheight& winminwidth&
   set sessionoptions-=options
   defer execute('set sessionoptions&')
   split
@@ -1097,8 +1096,8 @@ func Test_mksession_winminheight()
   mksession! Xtest_mks.out
   tabclose | tabclose | close
   call assert_equal(1, tabpagenr('$'))
-  set winminheight=2 winminwidth=2
-  defer execute('set winminheight& winminwidth&')
+  set winheight=2 winminheight=2 winwidth=2 winminwidth=2
+  defer execute('set winheight& winwidth& winminheight& winminwidth&')
   source Xtest_mks.out
   call assert_equal(3, tabpagenr('$'))
   call assert_equal([2, 2], [&winminheight, &winminwidth])
