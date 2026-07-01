@@ -89,15 +89,15 @@ if has('win32unix')
 # Windows
 elseif has('win32')
   os_viewer = '' # Use :!start
+# MacOS
+elseif has('osx')
+  os_viewer = 'open'
 # WSL
 elseif executable('explorer.exe')
   os_viewer = 'explorer.exe'
 # Linux / BSD
 elseif executable('xdg-open')
   os_viewer = 'xdg-open'
-# MacOS
-elseif executable('open')
-  os_viewer = 'open'
 endif
 
 def Viewer(): string
