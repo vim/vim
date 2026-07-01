@@ -686,6 +686,7 @@ runtime/syntax/salt.vim					@gpanders
 runtime/syntax/sass.vim					@tpope
 runtime/syntax/scala.vim				@derekwyatt
 runtime/syntax/scheme.vim				@evhan
+runtime/syntax/screen.vim				@zzzyxwvut
 runtime/syntax/scss.vim					@tpope
 runtime/syntax/sed.vim					@dkearns
 runtime/syntax/sgf.vim					@lykahb
