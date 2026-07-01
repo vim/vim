@@ -3293,7 +3293,7 @@ win_line(
 
 		    colnr_T init_colnr =
 # ifdef FEAT_CONCEAL
-			VCOL_HLC;
+			wp->w_p_cole == 3 ? VCOL_HLC : wlv.vcol;
 # else
 			wlv.vcol;
 # endif
