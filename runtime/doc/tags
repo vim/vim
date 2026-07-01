@@ -8055,6 +8055,7 @@ g:typst_conceal	filetype.txt	/*g:typst_conceal*
 g:typst_embedded_languages	syntax.txt	/*g:typst_embedded_languages*
 g:typst_folding	filetype.txt	/*g:typst_folding*
 g:typst_foldnested	filetype.txt	/*g:typst_foldnested*
+g:typst_recommended_style	filetype.txt	/*g:typst_recommended_style*
 g:var	eval.txt	/*g:var*
 g:vim_indent	indent.txt	/*g:vim_indent*
 g:vim_indent_cont	indent.txt	/*g:vim_indent_cont*
