@@ -363,12 +363,12 @@ EOF
         return
       endif
       let pkgsrc = DebGetPkgSrcName(line('.'))
-      let listbugs_output = system('apt-listbugs -s ' . shellescape(g:debchangelog_listbugs_severities) . ' list ' . shellescape(pkgsrc) . ' | grep "^ #" 2> /dev/null')
+      let listbugs_output = system('apt-listbugs -s ' . shellescape(g:debchangelog_listbugs_severities) . ' list ' . shellescape(pkgsrc) . ' | grep -e "^ #" -e "^ *b[0-9]* - #" 2> /dev/null')
       let bug_lines = split(listbugs_output, '\n')
     endif
     let completions = []
     for line in bug_lines
-      let parts = matchlist(line, '^\s*\(#\S\+\)\s*-\s*\(.*\)$')
+      let parts = matchlist(line, '^\%(\s*b\d\+\s*-\)\=\s*\(#\S\+\)\s*-\s*\(.*\)$')
       " filter only those which match a:base:
       if parts[1] !~ '^' . a:base
         continue
