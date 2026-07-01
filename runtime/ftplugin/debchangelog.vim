@@ -358,12 +358,12 @@ except ImportError:
     vim.command('echoerr \'python-launchpadlib >= 1.5.4 needs to be installed to use Launchpad bug completion\'')
 EOF
     else
-      if ! filereadable('/usr/sbin/apt-listbugs')
+      if ! executable('apt-listbugs')
         echoerr 'apt-listbugs not found, you should install it to use Closes bug completion'
         return
       endif
       let pkgsrc = DebGetPkgSrcName(line('.'))
-      let listbugs_output = system('/usr/sbin/apt-listbugs -s ' . shellescape(g:debchangelog_listbugs_severities) . ' list ' . shellescape(pkgsrc) . ' | grep "^ #" 2> /dev/null')
+      let listbugs_output = system('apt-listbugs -s ' . shellescape(g:debchangelog_listbugs_severities) . ' list ' . shellescape(pkgsrc) . ' | grep "^ #" 2> /dev/null')
       let bug_lines = split(listbugs_output, '\n')
     endif
     let completions = []
