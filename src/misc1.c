@@ -635,6 +635,67 @@ plines_win_col_conceal_vcol(win_T *wp, linenr_T lnum, long column)
 	return -1;
     return plines_win_col_conceal(wp, lnum, column, NULL, NULL);
 }
+
+/*
+ * Return TRUE if byte "column" in line "lnum" is concealed for window "wp".
+ */
+    bool
+plines_win_col_concealed(win_T *wp, linenr_T lnum, long column)
+{
+    bool    concealed = false;
+
+    if (!plines_win_may_conceal(wp, lnum))
+	return false;
+    (void)plines_win_col_conceal(wp, lnum, column, NULL, &concealed);
+    return concealed;
+}
+
+/*
+ * Set "pos" to the first non-concealed byte at or after displayed virtual
+ * column "wantcol" in line "lnum".
+ */
+    int
+plines_win_col_conceal_advance(win_T *wp, linenr_T lnum, long wantcol,
+							       pos_T *pos)
+{
+    char_u	*line;
+    char_u	*ptr;
+    long	prev_vcol = 0;
+    long	vcol;
+    bool	concealed = false;
+    colnr_T	last_col = 0;
+
+    if (!plines_win_may_conceal(wp, lnum))
+	return FAIL;
+
+    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+    for (ptr = line; *ptr != NUL; MB_PTR_ADV(ptr))
+    {
+	colnr_T col = (colnr_T)(ptr - line);
+
+	vcol = plines_win_col_conceal(wp, lnum, col, NULL, &concealed);
+	if (concealed)
+	    continue;
+	if (vcol >= wantcol)
+	{
+	    pos->lnum = lnum;
+	    pos->col = col;
+	    pos->coladd = 0;
+	    return OK;
+	}
+	prev_vcol = vcol;
+	last_col = col;
+    }
+
+    if (prev_vcol <= wantcol)
+    {
+	pos->lnum = lnum;
+	pos->col = last_col;
+	pos->coladd = 0;
+	return OK;
+    }
+    return FAIL;
+}
 #endif
 
 /*
