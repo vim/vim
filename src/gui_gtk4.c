@@ -5899,322 +5899,176 @@ ex_helpfind(exarg_T *eap UNUSED)
     do_cmdline_cmd((char_u *)"emenu ToolBar.FindHelp");
 }
 
-
 /*
  * ============================================================
- * Printing with GtkPrintOperation
+ * Native print dialog
  * ============================================================
  */
-#ifdef FEAT_GUI_GTK_PRINT
 
-typedef struct
+static GtkPrintSettings *print_settings = NULL;
+static GtkPageSetup *page_setup = NULL;
+static GtkPrintSetup *print_setup = NULL;
+static GOutputStream *print_stream = NULL;
+
+    static cairo_status_t
+print_write_func(void *udata UNUSED, const char_u *data, int_u len)
 {
-    linenr_T	first_line;	// first line to print (from range)
-    linenr_T	last_line;	// last line to print (from range)
-    int		n_pages;	// total number of pages
-    int		lines_per_page;	// lines that fit on one page
-    PangoFontDescription *font_desc;
-    int		do_syntax;	// whether to use syntax highlighting
-    double	line_height;	// line height in points
-    double	char_width;	// character width in points
-} print_data_T;
-
-/*
- * "begin-print" signal handler.
- * Calculate pagination based on page size and font metrics.
- */
-    static void
-print_begin_cb(
-    GtkPrintOperation	*op,
-    GtkPrintContext	*context,
-    gpointer		user_data)
-{
-    print_data_T    *pd = (print_data_T *)user_data;
-    PangoLayout	    *layout;
-    PangoFontMetrics *metrics;
-    double	    page_height;
-    int		    total_lines;
-
-    page_height = gtk_print_context_get_height(context);
-
-    // Create a PangoLayout to measure font metrics on the print surface.
-    layout = gtk_print_context_create_pango_layout(context);
-    pango_layout_set_font_description(layout, pd->font_desc);
-
-    metrics = pango_context_get_metrics(
-	    pango_layout_get_context(layout),
-	    pd->font_desc, NULL);
-
-    pd->line_height = (double)(pango_font_metrics_get_ascent(metrics)
-	    + pango_font_metrics_get_descent(metrics)) / PANGO_SCALE;
-    pd->char_width = (double)pango_font_metrics_get_approximate_char_width(
-	    metrics) / PANGO_SCALE;
-
-    pango_font_metrics_unref(metrics);
-    g_object_unref(layout);
-
-    if (pd->line_height <= 0)
-	pd->line_height = 12.0;
-
-    pd->lines_per_page = (int)(page_height / pd->line_height);
-    if (pd->lines_per_page <= 0)
-	pd->lines_per_page = 1;
-
-    total_lines = (int)(pd->last_line - pd->first_line + 1);
-    pd->n_pages = (total_lines + pd->lines_per_page - 1) / pd->lines_per_page;
-    if (pd->n_pages <= 0)
-	pd->n_pages = 1;
-
-    gtk_print_operation_set_n_pages(op, pd->n_pages);
-}
-
-/*
- * "draw-page" signal handler.
- * Render one page of buffer text with optional syntax highlighting.
- */
-    static void
-print_draw_page_cb(
-    GtkPrintOperation	*op UNUSED,
-    GtkPrintContext	*context,
-    int			page_nr,
-    gpointer		user_data)
-{
-    print_data_T    *pd = (print_data_T *)user_data;
-    cairo_t	    *cr;
-    linenr_T	    lnum;
-    linenr_T	    first;
-    linenr_T	    last;
-    double	    y;
-
-    cr = gtk_print_context_get_cairo_context(context);
-
-    first = pd->first_line + (linenr_T)page_nr * pd->lines_per_page;
-    last = first + pd->lines_per_page - 1;
-    if (last > pd->last_line)
-	last = pd->last_line;
-
-    y = 0;
-
-    for (lnum = first; lnum <= last; ++lnum)
+    size_t written;
+    if (g_output_stream_write_all(
+		print_stream, data, (size_t)len, &written, NULL, NULL))
     {
-	char_u		*line;
-	PangoLayout	*layout;
-	PangoAttrList	*attr_list;
-
-	line = ml_get(lnum);
-	layout = gtk_print_context_create_pango_layout(context);
-	pango_layout_set_font_description(layout, pd->font_desc);
-
-	attr_list = pango_attr_list_new();
-
-# ifdef FEAT_SYN_HL
-	if (pd->do_syntax && syntax_present(curwin))
-	{
-	    colnr_T	col;
-	    int		prev_syn_id = -1;
-	    int		attr_start = 0;
-	    long_u	prev_fg = 0;
-	    int		prev_bold = FALSE;
-	    int		prev_italic = FALSE;
-	    int		len = (int)STRLEN(line);
-
-	    for (col = 0; col < len; )
-	    {
-		int	    id;
-		int	    outputlen;
-		long_u	    fg_color;
-		int	    is_bold;
-		int	    is_italic;
-
-		if (has_mbyte)
-		{
-		    outputlen = (*mb_ptr2len)(line + col);
-		    if (outputlen < 1)
-			outputlen = 1;
-		}
-		else
-		    outputlen = 1;
-
-		id = syn_get_id(curwin, lnum, col, 1, NULL, FALSE);
-		if (id > 0)
-		    id = syn_get_final_id(id);
-		else
-		    id = 0;
-		// syn_get_id may invalidate the line pointer.
-		line = ml_get(lnum);
-
-		fg_color = highlight_gui_color_rgb(id, TRUE);
-		is_bold = (highlight_has_attr(id, HL_BOLD, 'g') != NULL);
-		is_italic = (highlight_has_attr(id, HL_ITALIC, 'g') != NULL);
-
-		// When attributes change, flush the previous run.
-		if (id != prev_syn_id && col > 0)
-		{
-		    if (prev_fg != 0 && prev_fg != (long_u)0xffffffL)
-		    {
-			PangoAttribute *a = pango_attr_foreground_new(
-				(guint16)(((prev_fg >> 16) & 0xff) * 257),
-				(guint16)(((prev_fg >> 8) & 0xff) * 257),
-				(guint16)((prev_fg & 0xff) * 257));
-			a->start_index = attr_start;
-			a->end_index = col;
-			pango_attr_list_insert(attr_list, a);
-		    }
-		    if (prev_bold)
-		    {
-			PangoAttribute *a = pango_attr_weight_new(
-				PANGO_WEIGHT_BOLD);
-			a->start_index = attr_start;
-			a->end_index = col;
-			pango_attr_list_insert(attr_list, a);
-		    }
-		    if (prev_italic)
-		    {
-			PangoAttribute *a = pango_attr_style_new(
-				PANGO_STYLE_ITALIC);
-			a->start_index = attr_start;
-			a->end_index = col;
-			pango_attr_list_insert(attr_list, a);
-		    }
-		    attr_start = col;
-		}
-
-		prev_syn_id = id;
-		prev_fg = fg_color;
-		prev_bold = is_bold;
-		prev_italic = is_italic;
-
-		col += outputlen;
-	    }
-
-	    // Flush the last run.
-	    if (attr_start < len)
-	    {
-		if (prev_fg != 0 && prev_fg != (long_u)0xffffffL)
-		{
-		    PangoAttribute *a = pango_attr_foreground_new(
-			    (guint16)(((prev_fg >> 16) & 0xff) * 257),
-			    (guint16)(((prev_fg >> 8) & 0xff) * 257),
-			    (guint16)((prev_fg & 0xff) * 257));
-		    a->start_index = attr_start;
-		    a->end_index = len;
-		    pango_attr_list_insert(attr_list, a);
-		}
-		if (prev_bold)
-		{
-		    PangoAttribute *a = pango_attr_weight_new(
-			    PANGO_WEIGHT_BOLD);
-		    a->start_index = attr_start;
-		    a->end_index = len;
-		    pango_attr_list_insert(attr_list, a);
-		}
-		if (prev_italic)
-		{
-		    PangoAttribute *a = pango_attr_style_new(
-			    PANGO_STYLE_ITALIC);
-		    a->start_index = attr_start;
-		    a->end_index = len;
-		    pango_attr_list_insert(attr_list, a);
-		}
-	    }
-	}
-# endif // FEAT_SYN_HL
-
-	pango_layout_set_attributes(layout, attr_list);
-
-	// Expand tabs. Use a tab array matching Vim's tabstop.
-	{
-	    PangoTabArray *tabs;
-	    int tab_width = (int)(curbuf->b_p_ts * pd->char_width);
-
-	    if (tab_width <= 0)
-		tab_width = (int)(8 * pd->char_width);
-	    tabs = pango_tab_array_new(1, TRUE);
-	    pango_tab_array_set_tab(tabs, 0, PANGO_TAB_LEFT, tab_width);
-	    pango_layout_set_tabs(layout, tabs);
-	    pango_tab_array_free(tabs);
-	}
-
-	pango_layout_set_text(layout, (const char *)line, -1);
-
-	cairo_move_to(cr, 0, y);
-	pango_cairo_show_layout(cr, layout);
-
-	pango_attr_list_unref(attr_list);
-	g_object_unref(layout);
-
-	y += pd->line_height;
+	if ((int_u)written != len)
+	    return CAIRO_STATUS_WRITE_ERROR;
+	return CAIRO_STATUS_SUCCESS;
     }
+    else
+	return CAIRO_STATUS_WRITE_ERROR;
+}
+
+    static void
+print_stream_cb(
+	GtkPrintDialog	*dialog,
+	GAsyncResult	*result,
+	gboolean	*done)
+{
+    print_stream = gtk_print_dialog_print_finish(dialog, result, NULL);
+    *done = TRUE;
+}
+
+    static void
+print_dialog_cb(GtkPrintDialog *dialog, GAsyncResult *result, gboolean *done)
+{
+    print_setup = gtk_print_dialog_setup_finish(dialog, result, NULL);
+
+    if (print_setup != NULL)
+	gtk_print_dialog_print(dialog, GTK_WINDOW(gui.mainwin),
+		print_setup, NULL, (GAsyncReadyCallback)print_stream_cb, done);
+    else
+	*done = TRUE;
 }
 
 /*
- * Main entry point for GTK4 native printing.
- * Called from ex_hardcopy() when running in a GTK4 GUI.
+ * Return OK on success, FAIL on failure (e.g. user cancelled), and MAYBE if not
+ * supported.
  */
+    int
+gui_gtk4_print_dialog(
+	prt_settings_T	*psettings,
+	char_u		*jobname,
+	double		*page_width,
+	double		*page_height,
+	void		*write_func) // cairo_write_func_t
+{
+#if GTK_CHECK_VERSION(4, 14, 0)
+    GtkPrintDialog  *dialog = gtk_print_dialog_new();
+    gboolean	    done = FALSE;
+
+    gtk_print_dialog_set_title(dialog, (const char *)jobname);
+    gtk_print_dialog_set_modal(dialog, TRUE);
+
+    if (print_settings == NULL)
+    {
+	option_table_T *opt;
+
+	print_settings = gtk_print_settings_new();
+
+	opt = &printer_opts[OPT_PRINT_DUPLEX];
+	if (opt->present)
+	{
+	    if (STRNICMP(opt->string, "off", 3) == 0)
+		gtk_print_settings_set_duplex(print_settings,
+			GTK_PRINT_DUPLEX_SIMPLEX);
+	    else if (STRNICMP(opt->string, "short", 5) == 0)
+		gtk_print_settings_set_duplex(print_settings,
+			GTK_PRINT_DUPLEX_VERTICAL);
+	    else
+		gtk_print_settings_set_duplex(print_settings,
+			GTK_PRINT_DUPLEX_HORIZONTAL);
+	}
+
+	opt = &printer_opts[OPT_PRINT_PORTRAIT];
+	if (opt->present)
+	{
+	    if (*opt->string == 'y')
+		gtk_print_settings_set_orientation(print_settings,
+			GTK_PAGE_ORIENTATION_PORTRAIT);
+	    else
+		gtk_print_settings_set_orientation(print_settings,
+			GTK_PAGE_ORIENTATION_LANDSCAPE);
+	}
+
+	opt = &printer_opts[OPT_PRINT_PAPER];
+	if (opt->present)
+	{
+	    gtk_print_settings_set_paper_size(print_settings,
+		    gtk_paper_size_new((const char *)opt->string));
+	}
+
+	opt = &printer_opts[OPT_PRINT_COLLATE];
+	if (opt->present)
+	{
+	    gtk_print_settings_set_collate(print_settings, TRUE);
+	}
+    }
+
+    if (page_setup == NULL)
+	page_setup = gtk_page_setup_new();
+
+    gtk_print_dialog_set_print_settings(dialog, print_settings);
+    gtk_print_dialog_set_page_setup(dialog, page_setup);
+
+    gtk_print_dialog_setup(dialog, GTK_WINDOW(gui.mainwin), NULL,
+	    (GAsyncReadyCallback)print_dialog_cb, &done);
+
+    while (!done)
+	g_main_context_iteration(NULL, TRUE);
+
+    if (print_setup == NULL || print_stream == NULL)
+    {
+	g_object_unref(dialog);
+	return FAIL;
+    }
+
+    g_clear_object(&print_settings);
+    g_clear_object(&page_setup);
+    print_settings = g_object_ref(
+	    gtk_print_setup_get_print_settings(print_setup));
+    page_setup = g_object_ref(gtk_print_setup_get_page_setup(print_setup));
+
+    {
+	GtkPrintDuplex duplex = gtk_print_settings_get_duplex(print_settings);
+	psettings->duplex = duplex != GTK_PRINT_DUPLEX_SIMPLEX;
+    }
+
+    psettings->has_color = gtk_print_settings_get_use_color(print_settings);
+
+    *page_width = gtk_page_setup_get_paper_width(page_setup,
+	    GTK_UNIT_POINTS);
+    *page_height = gtk_page_setup_get_paper_height(page_setup,
+	    GTK_UNIT_POINTS);
+
+    *((cairo_write_func_t *)write_func) = print_write_func;
+
+    gtk_print_setup_unref(print_setup);
+    g_object_unref(dialog);
+
+    return OK;
+#else
+    return MAYBE;
+#endif
+}
+
     void
-gui_gtk4_hardcopy(exarg_T *eap)
+gui_gtk4_print_cleanup(void)
 {
-    GtkPrintOperation	*op;
-    GtkPrintOperationResult res;
-    print_data_T	pd;
-    char_u		*font_name;
-
-    static GtkPrintSettings *settings = NULL;
-
-    CLEAR_FIELD(pd);
-    pd.first_line = eap->line1;
-    pd.last_line = eap->line2;
-
-    // Use 'printfont' if set, otherwise fall back to 'guifont'.
-    font_name = *p_pfn != NUL ? p_pfn : p_guifont;
-    if (font_name == NULL || *font_name == NUL)
-	font_name = (char_u *)"Monospace 10";
-
-    pd.font_desc = pango_font_description_from_string((const char *)font_name);
-    if (pd.font_desc == NULL)
+#if GTK_CHECK_VERSION(4, 14, 0)
+    if (print_stream != NULL)
     {
-	semsg(_(e_unknown_font_str), font_name);
-	return;
+	g_output_stream_close(print_stream, NULL, NULL);
+	g_object_unref(print_stream);
+	print_stream = NULL;
     }
-
-    // Ensure the font description has a size (default 10pt if missing).
-    if (pango_font_description_get_size(pd.font_desc) == 0)
-	pango_font_description_set_size(pd.font_desc, 10 * PANGO_SCALE);
-
-# ifdef FEAT_SYN_HL
-    pd.do_syntax = syntax_present(curwin);
-# endif
-
-    op = gtk_print_operation_new();
-
-    if (settings != NULL)
-	gtk_print_operation_set_print_settings(op, settings);
-
-    gtk_print_operation_set_job_name(op,
-	    curbuf->b_fname != NULL
-		? (const char *)curbuf->b_fname : "Vim");
-    gtk_print_operation_set_show_progress(op, TRUE);
-    gtk_print_operation_set_unit(op, GTK_UNIT_POINTS);
-
-    g_signal_connect(op, "begin-print", G_CALLBACK(print_begin_cb), &pd);
-    g_signal_connect(op, "draw-page", G_CALLBACK(print_draw_page_cb), &pd);
-
-    res = gtk_print_operation_run(op,
-	    GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
-	    GTK_WINDOW(gui.mainwin), NULL);
-
-    if (res == GTK_PRINT_OPERATION_RESULT_APPLY)
-    {
-	if (settings != NULL)
-	    g_object_unref(settings);
-	settings = g_object_ref(
-		gtk_print_operation_get_print_settings(op));
-    }
-
-    g_object_unref(op);
-    pango_font_description_free(pd.font_desc);
+#endif
 }
-
-#endif // FEAT_GUI_GTK_PRINT
 
 #endif // FEAT_GUI_GTK

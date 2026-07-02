@@ -291,17 +291,13 @@
 	&& !defined(AMIGA)
 # define FEAT_PRINTER
 #endif
-#if defined(FEAT_PRINTER) && ((defined(MSWIN) && defined(MSWINPS)) \
-	|| (!defined(MSWIN) && defined(FEAT_EVAL)))
+#if defined(FEAT_PRINTER) && !defined(FEAT_PRINT_PANGO) \
+    && ((defined(MSWIN) && defined(MSWINPS)) \
+	    || (!defined(MSWIN) && defined(FEAT_EVAL)))
 # define FEAT_POSTSCRIPT
 #endif
-
-/*
- * +gtk_print		Native GTK print dialog for :hardcopy (GTK4).
- *			Uses GtkPrintOperation + Pango/Cairo instead of PostScript.
- */
-#if defined(FEAT_PRINTER) && defined(FEAT_GUI_GTK) && defined(USE_GTK4)
-# define FEAT_GUI_GTK_PRINT
+#if !defined(FEAT_PRINTER) && defined(FEAT_PRINT_PANGO)
+# undef FEAT_PRINT_PANGO
 #endif
 
 /*
