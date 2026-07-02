@@ -300,9 +300,9 @@ static void mainwin_fullscreened_cb(GObject *obj, GParamSpec *pspec, gpointer us
 static void drawarea_realize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_unrealize_cb(GtkWidget *widget, gpointer data);
 #ifndef USE_GTK4_SNAPSHOT
-static void drawarea_scale_factor_cb(GObject *object, GParamSpec *pspec, gpointer data);
 static cairo_surface_t *create_backing_surface(int width, int height);
 #endif
+static void scale_factor_cb(GdkSurface *surface, GParamSpec *pspec, void *udata);
 static void clipboard_changed_cb(GdkClipboard *clipboard, gpointer user_data);
 #ifdef FEAT_MENU
 static void show_menubar_popover(void);
@@ -569,9 +569,6 @@ gui_mch_init(void)
     // Set up drawing.
     gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(gui.drawarea),
 	    (GtkDrawingAreaDrawFunc)draw_event, NULL, NULL);
-
-    g_signal_connect(G_OBJECT(gui.drawarea), "notify::scale-factor",
-		     G_CALLBACK(drawarea_scale_factor_cb), NULL);
 #endif
     g_signal_connect(G_OBJECT(gui.drawarea), "realize",
 		     G_CALLBACK(drawarea_realize_cb), NULL);
@@ -2332,6 +2329,15 @@ drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 	cairo_surface_destroy(gui.surface);
     gui.surface = create_backing_surface(w, h);
 #endif
+    {
+	// Use GdkSurface, as that handles fractional scale values.
+	GdkSurface *surface = gtk_native_get_surface(
+		gtk_widget_get_native(gui.drawarea));
+
+	gui.scale = gdk_surface_get_scale(surface);
+	g_signal_connect(G_OBJECT(surface), "notify::scale",
+		G_CALLBACK(scale_factor_cb), NULL);
+    }
 
     gui_mch_new_colors();
 }
@@ -2397,15 +2403,15 @@ gui_gtk4_resize(int width, int height)
 	}
     }
 }
+#endif
 
     static void
-drawarea_scale_factor_cb(GObject *object UNUSED,
-	GParamSpec *pspec UNUSED, gpointer data UNUSED)
+scale_factor_cb(GdkSurface  *surface,
+	GParamSpec	    *pspec UNUSED,
+	void		    *udata UNUSED)
 {
+#ifndef USE_GTK4_SNAPSHOT
     int	w, h;
-
-    if (gui.drawarea == NULL)
-	return;
 
     w = gtk_widget_get_width(gui.drawarea);
     h = gtk_widget_get_height(gui.drawarea);
@@ -2426,8 +2432,12 @@ drawarea_scale_factor_cb(GObject *object UNUSED,
     gtk_widget_queue_draw(gui.drawarea);
     if (gui.in_use)
 	redraw_all_later(UPD_CLEAR);
-}
 #endif
+#if defined(FEAT_IMAGE)
+    gui.scale = gdk_surface_get_scale(surface);
+    popup_update_scale();
+#endif
+}
 
 typedef enum
 {

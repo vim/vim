@@ -11,6 +11,7 @@ int popup_left_extra(win_T *wp);
 int popup_height(win_T *wp);
 int popup_width(win_T *wp);
 int popup_extra_width(win_T *wp);
+void popup_update_scale(void);
 int parse_previewpopup(win_T *wp);
 int parse_completepopup(win_T *wp);
 void popup_set_wantpos_cursor(win_T *wp, int width, dict_T *d);
