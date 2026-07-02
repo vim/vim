@@ -1131,6 +1131,7 @@ did_set_ambiwidth(optset_T *args UNUSED)
     return check_chars_options();
 }
 
+#if defined(FEAT_TABPANEL) || defined(FEAT_DIFF) || defined(FEAT_PROP_POPUP)
     static bool
 completing_value_for_subopt(optexpand_T *args, char *name_suffix)
 {
@@ -1140,6 +1141,7 @@ completing_value_for_subopt(optexpand_T *args, char *name_suffix)
     return colon - args->oe_set_arg >= len
 	   && STRNCMP(colon - len, name_suffix, len) == 0;
 }
+#endif
 
     int
 expand_set_ambiwidth(optexpand_T *args, int *numMatches, char_u ***matches)
