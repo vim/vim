@@ -5605,7 +5605,7 @@ highlight_get_info(int hl_idx, int resolve_link)
 {
     dict_T	*dict;
     hl_group_T	*sgp;
-    dict_T	*attr_dict;
+    dict_T	*attr_dict = NULL;
     int		hlgid;
 
     dict = dict_alloc();
@@ -5635,8 +5635,11 @@ highlight_get_info(int hl_idx, int resolve_link)
     {
 	attr_dict = highlight_get_attr_dict(sgp->sg_term);
 	if (attr_dict != NULL)
+	{
 	    if (dict_add_dict(dict, "term", attr_dict) == FAIL)
 		goto error;
+	    attr_dict = NULL;
+	}
     }
     if (sgp->sg_start != NULL)
 	if (dict_add_string(dict, "start", sgp->sg_start) == FAIL)
@@ -5648,8 +5651,11 @@ highlight_get_info(int hl_idx, int resolve_link)
     {
 	attr_dict = highlight_get_attr_dict(sgp->sg_cterm);
 	if (attr_dict != NULL)
+	{
 	    if (dict_add_dict(dict, "cterm", attr_dict) == FAIL)
 		goto error;
+	    attr_dict = NULL;
+	}
     }
     if (sgp->sg_cterm_fg != 0)
 	if (dict_add_string(dict, "ctermfg",
@@ -5671,8 +5677,11 @@ highlight_get_info(int hl_idx, int resolve_link)
     {
 	attr_dict = highlight_get_attr_dict(sgp->sg_gui);
 	if (attr_dict != NULL)
+	{
 	    if (dict_add_dict(dict, "gui", attr_dict) == FAIL)
 		goto error;
+	    attr_dict = NULL;
+	}
     }
     if (sgp->sg_gui_fg_name != NULL)
 	if (dict_add_string(dict, "guifg",
@@ -5709,7 +5718,8 @@ highlight_get_info(int hl_idx, int resolve_link)
     return dict;
 
 error:
-    vim_free(dict);
+    dict_unref(attr_dict);
+    dict_unref(dict);
     return NULL;
 }
 
