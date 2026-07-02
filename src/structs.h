@@ -1646,6 +1646,14 @@ typedef struct {
 #define TYPECHK_NUMBER_OK	0x1	// number is accepted for a float
 #define TYPECHK_TUPLE_OK	0x2	// tuple is accepted for a list
 
+/*
+ * Context used when resolving a type.
+ */
+typedef struct {
+    class_T	*trc_class;
+    ufunc_T	*trc_fp;
+} type_resolve_ctx_T;
+
 typedef enum {
     VIM_ACCESS_PRIVATE,	// read/write only inside the class
     VIM_ACCESS_READ,	// read everywhere, write only inside the class
@@ -1692,6 +1700,7 @@ struct itf2class_S {
 #define CLASS_EXTENDED	    0x2	    // another class extends this one
 #define CLASS_ABSTRACT	    0x4	    // abstract class
 #define CLASS_ENUM	    0x8	    // enum
+#define CLASS_GENERIC	    0x10    // generic class
 
 // "class_T": used for v_class of typval of VAR_CLASS
 // Also used for an interface (class_flags has CLASS_INTERFACE).
@@ -1738,10 +1747,18 @@ struct class_S
     garray_T	class_type_list;	// used for type pointers
     type_T	class_type;		// type used for the class
     type_T	class_object_type;	// same as class_type but VAR_OBJECT
+
+    // for a generic class
+    int		class_generic_argcount;// type argument count
+    generic_T	*class_generic_args;   // generic types
+    type_T	*class_generic_param_types; // list of allocated generic types
+    garray_T	class_generic_arg_types; // list of allocated type arguments
+    hashtab_T	class_generic_table;	// generic class table
 };
 
 #define IS_INTERFACE(cl)	((cl)->class_flags & CLASS_INTERFACE)
 #define IS_ENUM(cl)		((cl)->class_flags & CLASS_ENUM)
+#define IS_GENERIC_CLASS(cl)	((cl)->class_flags & CLASS_GENERIC)
 
 // Used for v_object of typval of VAR_OBJECT.
 // The member variables follow in an array of typval_T.
