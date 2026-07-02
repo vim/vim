@@ -53,6 +53,8 @@ typedef struct syn_pattern
     int		 sp_cchar;		// conceal substitute character
 #endif
     int		 sp_ic;			// ignore-case flag for sp_prog
+    bool	 sp_filter_active;	// true when sp_req is usable
+    char_u	 sp_req[32];		// bitset: bytes that must occur in line
     int		 sp_sync_idx;		// sync item index (syncing only)
     int		 sp_line_id;		// ID of last line where tried
     int		 sp_startcol;		// next match in sp_line_id line
@@ -76,6 +78,11 @@ typedef struct syn_pattern
 #define SPTYPE_END	3	// match a regexp, end of item
 #define SPTYPE_SKIP	4	// match a regexp, skip within item
 
+// Required-byte prefilter: a 256-bit set (32 bytes) used to cheaply reject
+// syntax patterns that provably cannot match anywhere in the current line,
+// avoiding a full syn_regexec() call.  See syn_compute_required_bytes().
+#define SYN_BSET_SIZE	32
+#define SYN_BSET_ADD(set, b)	((set)[((b) & 0xff) >> 3] |= (1 << ((b) & 7)))
 
 #define SYN_ITEMS(buf)	((synpat_T *)((buf)->b_syn_patterns.ga_data))
 
@@ -343,9 +350,14 @@ static int syn_check_cluster(char_u *pp, int len);
 static int syn_add_cluster(char_u *name);
 static void init_syn_patterns(void);
 static char_u *get_syn_pattern(char_u *arg, synpat_T *ci);
+static void syn_compute_required_bytes(synpat_T *ci);
+static bool syn_line_cannot_match(synpat_T *spp);
 static int get_id_list(char_u **arg, int keylen, short **list, int skip);
 static void syn_combine_list(short **clstr1, short **clstr2, int list_op);
 static void idl_cache_clear(synblock_T *block);
+
+// Bitset of bytes present in the current line, for the required-byte prefilter.
+static char_u current_line_bset[SYN_BSET_SIZE];
 
 /*
  * Start the syntax recognition for a line.  This function is normally called
@@ -901,6 +913,11 @@ syn_start_line(void)
 {
     current_finished = FALSE;
     current_col = 0;
+
+    // Build the byte set of this line for the required-byte prefilter.
+    CLEAR_FIELD(current_line_bset);
+    for (char_u *p = syn_getcurline(); *p != NUL; ++p)
+	SYN_BSET_ADD(current_line_bset, *p);
 
     /*
      * Need to update the end of a start/skip/end that continues from the
@@ -1958,6 +1975,17 @@ syn_current_attr(
 				    && spp->sp_startcol >= next_match_col)
 				continue;
 			    spp->sp_line_id = current_line_id;
+
+			    // Required-byte prefilter.  Can be disabled with
+			    // test_override('syn_prefilter', 1) to verify it
+			    // does not change the result.
+			    if (spp->sp_filter_active
+				    && !disable_syn_prefilter_for_testing
+				    && syn_line_cannot_match(spp))
+			    {
+				spp->sp_startcol = MAXCOL;
+				continue;
+			    }
 
 			    lc_col = current_col - spp->sp_offsets[SPO_LC_OFF];
 			    if (lc_col < 0)
@@ -5629,6 +5657,413 @@ init_syn_patterns(void)
     curwin->w_s->b_syn_patterns.ga_growsize = 10;
 }
 
+    static void
+syn_bset_or(char_u *dst, char_u *src)
+{
+    for (int i = 0; i < SYN_BSET_SIZE; ++i)
+	dst[i] |= src[i];
+}
+
+    static void
+syn_bset_and(char_u *dst, char_u *src)
+{
+    for (int i = 0; i < SYN_BSET_SIZE; ++i)
+	dst[i] &= src[i];
+}
+
+/*
+ * Recursive-descent analysis of a syntax pattern (magic mode) to derive a
+ * required-byte prefilter.  syn_fa_T holds "req", the bytes mandatory in every
+ * match (intersection across branches, union along a concatenation), and
+ * "bail", set when an unsupported construct is found.
+ *
+ * The filter must only speed things up, never change the highlighting: a byte
+ * is added to req only when it must literally occur, and any construct that is
+ * not obviously sound bails out so the pattern is always tried.  When in doubt,
+ * bail.
+ */
+#define SYN_FA_MAXDEPTH 10
+
+typedef struct
+{
+    char_u	req[SYN_BSET_SIZE];
+    bool	bail;
+} syn_fa_T;
+
+static char_u *syn_fa_alt(char_u *p, int ic, int depth, syn_fa_T *out);
+static char_u *syn_fa_concat(char_u *p, int ic, int depth, syn_fa_T *out);
+
+/*
+ * Add the literal character at "p" (single or multibyte) to the required-byte
+ * set and return its byte length.  Under ignore case a different-case form may
+ * match instead, so the bytes are only required when the character has no case
+ * variants.
+ */
+    static int
+syn_fa_add_literal(char_u *p, int ic, syn_fa_T *out)
+{
+    int		len = (*mb_ptr2len)(p);
+    bool	add;
+
+    if (!ic)
+	add = true;
+    else if (len == 1)
+	add = TOUPPER_LOC(*p) == TOLOWER_LOC(*p);
+    else if (enc_utf8)
+    {
+	int	c = utf_ptr2char(p);
+
+	add = utf_fold(c) == c;
+    }
+    else
+	add = false;		// DBCS + ignore case: invariance unknown
+    if (add)
+	for (int i = 0; i < len; ++i)
+	    SYN_BSET_ADD(out->req, p[i]);
+    return len;
+}
+
+/*
+ * Parse one atom (without its trailing quantifier) starting at "p".
+ */
+    static char_u *
+syn_fa_atom(char_u *p, int ic, int depth, syn_fa_T *out)
+{
+    CLEAR_FIELD(out->req);
+    out->bail = false;
+
+    // group: \(...\) or \%(...\)
+    if (*p == '\\' && (p[1] == '(' || (p[1] == '%' && p[2] == '(')))
+    {
+	if (depth >= SYN_FA_MAXDEPTH)
+	{
+	    out->bail = true;
+	    return p;
+	}
+	p += (p[1] == '%') ? 3 : 2;
+	p = syn_fa_alt(p, ic, depth + 1, out);
+	if (out->bail)
+	    return p;
+	if (*p == '\\' && p[1] == ')')
+	    return p + 2;
+	out->bail = true;		// malformed
+	return p;
+    }
+    // other \%... constructs: not supported
+    if (*p == '\\' && p[1] == '%')
+    {
+	out->bail = true;
+	return p;
+    }
+
+    // zero-width anchors: no byte required
+    if (*p == '^' || *p == '$')
+	return p + 1;
+    if (*p == '\\' && (p[1] == '<' || p[1] == '>'))
+	return p + 2;
+    if (*p == '\\' && p[1] == 'z' && (p[2] == 's' || p[2] == 'e'))
+	return p + 3;
+
+    // any character: no specific byte required
+    if (*p == '.' || *p == '~')
+	return p + 1;
+
+    // bracket [...]: matches one of a set, no single byte required
+    if (*p == '[')
+    {
+	char_u	*q = p + 1;
+
+	if (*q == '^')
+	    ++q;
+	if (*q == ']')
+	    ++q;
+	while (*q != NUL && *q != ']')
+	{
+	    if (*q == '[' && (q[1] == ':' || q[1] == '.' || q[1] == '='))
+	    {
+		out->bail = true;
+		return p;
+	    }
+	    // backslash escapes inside [...] are too varied to model soundly
+	    if (*q == '\\')
+	    {
+		out->bail = true;
+		return p;
+	    }
+	    if (*q >= 0x80)
+	    {
+		out->bail = true;
+		return p;
+	    }
+	    if (q[1] == '-' && q[2] != NUL && q[2] != ']')
+	    {
+		int	c1 = *q;
+		int	c2 = q[2];
+
+		if (c2 == '\\' || c2 >= 0x80 || c2 < c1)
+		{
+		    out->bail = true;
+		    return p;
+		}
+		q += 3;
+	    }
+	    else
+		++q;
+	}
+	if (*q != ']')
+	{
+	    out->bail = true;
+	    return p;
+	}
+	return q + 1;
+    }
+
+    // backslash escape: class, control char, operator or literal punctuation
+    if (*p == '\\' && p[1] != NUL)
+    {
+	int	c = p[1];
+	int	lit;
+
+	switch (c)
+	{
+	    case '(': case ')': case '|': case '&': case '@':
+	    case '{': case '%': case 'z': case 'n': case '_':
+	    case 'v': case 'm': case 'M':
+	    case 'Z':
+	    case '1': case '2': case '3': case '4': case '5':
+	    case '6': case '7': case '8': case '9':
+		// operators, flags, \n, \_x, backrefs: not modeled
+		out->bail = true;
+		return p;
+	    case 'c': case 'C':
+		// case toggle: zero-width, already applied to "ic" globally
+		return p + 2;
+	    case 'V':
+		// very nomagic: every following byte is literal until the next
+		// backslash.  A "\|", "\&" or "\)" there is a branch/group
+		// boundary handled by the caller; any other escape introduces
+		// constructs not modeled here, so bail.
+		{
+		    char_u  *q = p + 2;
+
+		    while (*q != NUL && *q != '\\')
+			q += syn_fa_add_literal(q, ic, out);
+		    if (*q == '\\'
+			    && q[1] != '|' && q[1] != '&' && q[1] != ')')
+		    {
+			out->bail = true;
+			return p;
+		    }
+		    return q;
+		}
+	    case 't': lit = TAB; break;
+	    case 'r': lit = CAR; break;
+	    case 'e': lit = ESC; break;
+	    case 'b': lit = BS; break;
+	    default:
+		// character classes (\d \s \w ...): a byte is required here,
+		// but the exact set is not modeled, so add nothing
+		if (vim_strchr((char_u *)"adfhiklopsuwxADFHIKLOPSUWX", c)
+								       != NULL)
+		{
+		    return p + 2;
+		}
+		// other alphanumeric escapes are reserved for special use; bail
+		if (ASCII_ISALPHA(c) || VIM_ISDIGIT(c))
+		{
+		    out->bail = true;
+		    return p;
+		}
+		lit = c;		// escaped literal punctuation
+		break;
+	}
+	if (!ic || TOUPPER_LOC(lit) == TOLOWER_LOC(lit))
+	    SYN_BSET_ADD(out->req, lit);
+	return p + 2;
+    }
+
+    // a plain or multibyte literal: all of its bytes are required
+    return p + syn_fa_add_literal(p, ic, out);
+}
+
+/*
+ * Parse a concatenation of atoms until "\|", "\&", "\)" or end of pattern.
+ */
+    static char_u *
+syn_fa_concat(char_u *p, int ic, int depth, syn_fa_T *out)
+{
+    CLEAR_FIELD(out->req);
+    out->bail = false;
+
+    while (*p != NUL
+	    && !(*p == '\\' && (p[1] == '|' || p[1] == '&' || p[1] == ')')))
+    {
+	syn_fa_T    item;
+	bool	    optional = false;
+
+	p = syn_fa_atom(p, ic, depth, &item);
+	if (item.bail)
+	{
+	    out->bail = true;
+	    return p;
+	}
+
+	if (*p == '\\' && p[1] == '@')
+	{
+	    out->bail = true;		// look-around assertion
+	    return p;
+	}
+	if (*p == '*')
+	{
+	    optional = true;
+	    ++p;
+	}
+	else if (*p == '\\' && (p[1] == '=' || p[1] == '?'))
+	{
+	    optional = true;
+	    p += 2;
+	}
+	else if (*p == '\\' && p[1] == '+')
+	    p += 2;			// one or more: still mandatory
+	else if (*p == '\\' && p[1] == '{')
+	{
+	    char_u  *q = p + 2;
+	    long    lo, hi;
+
+	    // \{n,m} repeat: reuse the shared pattern-grammar parser so the
+	    // same normalisation (defaults and reversal) applies.  The atom is
+	    // optional when it can occur zero times, i.e. the smaller bound
+	    // is zero; otherwise it is mandatory like "\+".
+	    if (!regpat_get_brace_limits(&q, &lo, &hi))
+	    {
+		out->bail = true;	// malformed
+		return p;
+	    }
+	    p = q + 1;			// past the "}"
+	    if ((lo < hi ? lo : hi) == 0)
+		optional = true;
+	}
+
+	// a mandatory atom: its required bytes must occur
+	if (!optional)
+	    syn_bset_or(out->req, item.req);
+    }
+
+    return p;
+}
+
+/*
+ * Parse an alternation of branches separated by "\|".
+ */
+    static char_u *
+syn_fa_alt(char_u *p, int ic, int depth, syn_fa_T *out)
+{
+    syn_fa_T	branch;
+    bool	first = true;
+
+    CLEAR_FIELD(out->req);
+    out->bail = false;
+
+    for (;;)
+    {
+	p = syn_fa_concat(p, ic, depth, &branch);
+	if (branch.bail)
+	{
+	    out->bail = true;
+	    return p;
+	}
+	if (first)
+	{
+	    mch_memmove(out->req, branch.req, SYN_BSET_SIZE);
+	    first = false;
+	}
+	else
+	    syn_bset_and(out->req, branch.req);	// required bytes: intersection
+	if (*p == '\\' && p[1] == '|')
+	{
+	    p += 2;
+	    continue;
+	}
+	if (*p == '\\' && p[1] == '&')
+	{
+	    out->bail = true;		// "\&" concat operator: not supported
+	    return p;
+	}
+	break;
+    }
+    return p;
+}
+
+/*
+ * Analyze "ci->sp_pattern" and store a conservative required-byte prefilter in
+ * sp_req.  On any unsupported construct the analysis bails out, leaving
+ * sp_filter_active false so the pattern is always tried.
+ */
+    static void
+syn_compute_required_bytes(synpat_T *ci)
+{
+    syn_fa_T	res;
+    bool	have_req = false;
+
+    ci->sp_filter_active = false;
+    CLEAR_FIELD(ci->sp_req);
+
+    if (ci->sp_pattern == NULL || *ci->sp_pattern == NUL)
+	return;
+
+    // "\c" / "\C" anywhere force case (in)sensitivity for the whole pattern;
+    // "\c" wins over "\C", matching how the engine resolves the flags.  Scan
+    // by escape pairs so an escaped backslash is not mistaken for a toggle.
+    int		ic = ci->sp_ic;
+    bool	saw_ci = false, saw_cs = false;
+    for (char_u *s = ci->sp_pattern; *s != NUL; )
+	if (s[0] == '\\' && s[1] != NUL)
+	{
+	    if (s[1] == 'c')
+		saw_ci = true;
+	    else if (s[1] == 'C')
+		saw_cs = true;
+	    s += 2;
+	}
+	else
+	    s += (*mb_ptr2len)(s);	// skip a whole char (DBCS 0x5C safe)
+    if (saw_ci)
+	ic = TRUE;
+    else if (saw_cs)
+	ic = FALSE;
+
+    (void)syn_fa_alt(ci->sp_pattern, ic, 0, &res);
+    if (res.bail)
+	return;
+
+    for (int i = 0; i < SYN_BSET_SIZE; ++i)
+	if (res.req[i])
+	{
+	    have_req = true;
+	    break;
+	}
+    if (!have_req)
+	return;
+
+    mch_memmove(ci->sp_req, res.req, SYN_BSET_SIZE);
+    ci->sp_filter_active = true;
+}
+
+/*
+ * Return true when "spp" provably cannot match anywhere in the current line,
+ * based on the required-byte prefilter and current_line_bset.
+ */
+    static bool
+syn_line_cannot_match(synpat_T *spp)
+{
+    // A byte that must occur is absent from the line: cannot match.
+    for (int i = 0; i < SYN_BSET_SIZE; ++i)
+	if (spp->sp_req[i] & ~current_line_bset[i])
+	    return true;
+
+    return false;
+}
+
 /*
  * Get one pattern for a ":syntax match" or ":syntax region" command.
  * Stores the pattern and program in a synpat_T.
@@ -5665,6 +6100,7 @@ get_syn_pattern(char_u *arg, synpat_T *ci)
     if (ci->sp_prog == NULL)
 	return NULL;
     ci->sp_ic = curwin->w_s->b_syn_ic;
+    syn_compute_required_bytes(ci);
 #ifdef FEAT_PROFILE
     syn_clear_time(&ci->sp_time);
 #endif
