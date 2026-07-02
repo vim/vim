@@ -1930,7 +1930,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    // {[expr]: value} uses an evaluated key.
 	    *arg = skipwhite(*arg + 1);
 	    if (compile_expr0(arg, cctx) == FAIL)
-		return FAIL;
+		goto failret;
 	    isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
 	    if (isn->isn_type == ISN_PUSHNR)
 	    {
@@ -1944,12 +1944,12 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    if (isn->isn_type == ISN_PUSHS)
 		key = isn->isn_arg.string;
 	    else if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
-		return FAIL;
+		goto failret;
 	    *arg = skipwhite(*arg);
 	    if (**arg != ']')
 	    {
 		emsg(_(e_missing_matching_bracket_after_dict_key));
-		return FAIL;
+		goto failret;
 	    }
 	    ++*arg;
 	}
@@ -1960,9 +1960,9 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    // {name: value} use "name" as a literal key
 	    key = get_literal_key(arg);
 	    if (key == NULL)
-		return FAIL;
+		goto failret;
 	    if (generate_PUSHS(cctx, &key) == FAIL)
-		return FAIL;
+		goto failret;
 	}
 
 	// Check for duplicate keys, if using string keys.
@@ -1990,13 +1990,13 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 		semsg(_(e_no_white_space_allowed_before_str_str), ":", *arg);
 	    else
 		semsg(_(e_missing_colon_in_dictionary_str), *arg);
-	    return FAIL;
+	    goto failret;
 	}
 	whitep = *arg + 1;
 	if (!IS_WHITE_OR_NUL(*whitep))
 	{
 	    semsg(_(e_white_space_required_after_str_str), ":", *arg);
-	    return FAIL;
+	    goto failret;
 	}
 
 	if (may_get_next_line(whitep, arg, cctx) == FAIL)
@@ -2006,7 +2006,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	}
 
 	if (compile_expr0_ext(arg, cctx, &is_const) == FAIL)
-	    return FAIL;
+	    goto failret;
 	if (!is_const)
 	    is_all_const = FALSE;
 	++count;
@@ -2027,13 +2027,13 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	if (IS_WHITE_OR_NUL(*whitep))
 	{
 	    semsg(_(e_no_white_space_allowed_before_str_str), ",", whitep);
-	    return FAIL;
+	    goto failret;
 	}
 	whitep = *arg + 1;
 	if (!IS_WHITE_OR_NUL(*whitep))
 	{
 	    semsg(_(e_white_space_required_after_str_str), ",", *arg);
-	    return FAIL;
+	    goto failret;
 	}
 	*arg = skipwhite(whitep);
     }
