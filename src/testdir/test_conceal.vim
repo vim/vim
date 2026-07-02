@@ -964,6 +964,26 @@ func Test_conceallevel_three_wrap_virtual_text()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_popup()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, ['aaaa XXXXXXXXXX bbbb', 'second line'])
+    syntax match test /X\+/ conceal
+    let g:winid = popup_create(bufnr(), #{
+          \ line: 3, col: 5, maxwidth: 30, wrap: v:true,
+          \ border: [],
+          \ })
+    call win_execute(g:winid, 'setlocal conceallevel=3 concealcursor=n')
+    call win_execute(g:winid, 'syntax match test /X\+/ conceal')
+  END
+  call writefile(lines, 'XpopupConceal', 'D')
+  let buf = RunVimInTerminal('-S XpopupConceal', #{rows: 12, cols: 50})
+  call VerifyScreenDump(buf, 'Test_conceallevel_three_popup_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_conceallevel_three_cursor_moved_redraw()
   CheckRunVimInTerminal
 
