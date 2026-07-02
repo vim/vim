@@ -5315,6 +5315,43 @@ func Test_popup_opacity_settext_no_leftover()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_opacity_terminal_move_no_leftover()
+  CheckScreendump
+  CheckFeature terminal
+  CheckUnix
+
+  " A semi-transparent popup over a terminal used to leave the old popup
+  " cells behind when it moved.
+  let lines =<< trim END
+    set shell=/bin/sh noruler
+    unlet $PROMPT_COMMAND
+    let $PS1 = 'vim> '
+    terminal ++curwin
+    call popup_create('ABC',
+        \ #{line: 5, col: 10, highlight: 'None', opacity: 30})
+    func MoveIt()
+      let id = popup_list()[0]
+      call popup_settext(id, 'XYZ')
+      call popup_setoptions(id, #{col: popup_getpos(id).col + 3})
+    endfunc
+  END
+  call writefile(lines, 'XtestPopupOpacityTermMove', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacityTermMove',
+	\ #{rows: 12, wait_for_ruler: 0})
+  call WaitForAssert({-> assert_match('ABC', term_getline(buf, 5))})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_term_move_1', {})
+
+  " Move the popup and change its text: the old "ABC" cells must be cleared.
+  call term_sendkeys(buf, "\<C-W>:call MoveIt()\<CR>")
+  call WaitForAssert({-> assert_match('XYZ', term_getline(buf, 5))})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_term_move_2', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<C-W>:qa!\<CR>")
+  call WaitForAssert({-> assert_equal("finished", term_getstatus(buf))})
+  exe buf .. 'bwipe!'
+endfunc
+
 func Test_popup_opacity_terminal_no_freeze()
   CheckFeature terminal
   CheckUnix

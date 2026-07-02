@@ -6132,7 +6132,7 @@ redraw_win_under_opacity_popup(win_T *wp)
 	// Check across the full width of the popup to find all underlying
 	// windows (e.g., when the popup spans a vertical split).
 	for (col = wp->w_wincol;
-		       col < wp->w_wincol + width && col < screen_Columns; ++col)
+		col < wp->w_wincol + width && col < screen_Columns; ++col)
 	{
 	    int	    line_cp = r;
 	    int	    col_cp = col;
@@ -6146,10 +6146,21 @@ redraw_win_under_opacity_popup(win_T *wp)
 		{
 		    linenr_T lnum;
 
-		    (void)mouse_comp_pos(twp, &line_cp, &col_cp, &lnum, NULL);
-		    // Called from inside update_screen(); raising must_redraw
-		    // would loop the outer redraw indefinitely.
-		    redraw_win_range_now(twp, lnum, lnum);
+#ifdef FEAT_TERMINAL
+		    // A terminal only repaints vterm-damaged rows; force a
+		    // full repaint so the opacity blend sees the true
+		    // background, not stale blended cells.
+		    if (term_do_update_window(twp))
+			twp->w_redr_type = UPD_NOT_VALID;
+		    else
+#endif
+		    {
+			(void)mouse_comp_pos(twp, &line_cp, &col_cp, &lnum,
+									NULL);
+			// Called from inside update_screen(); raising
+			// must_redraw would loop the outer redraw indefinitely.
+			redraw_win_range_now(twp, lnum, lnum);
+		    }
 		}
 		else if (line_cp == twp->w_height)
 		    // Status bar line: mark for redraw to prevent
