@@ -1142,6 +1142,113 @@ apply_cursorline_highlight(
 }
 #endif
 
+#if defined(FEAT_LINEBREAK) && defined(FEAT_CONCEAL) && defined(FEAT_SYN_HL)
+/*
+ * Return the visible width of the non-break run starting at "ptr", when
+ * syntax concealment hides characters for 'conceallevel' 3.  Return -1 when
+ * the regular linebreak calculation should be used.
+ */
+    static int
+lbr_conceal_width(
+	win_T		*wp,
+	linenr_T	lnum,
+	char_u		*line,
+	char_u		*ptr,
+	colnr_T		start_vcol,
+	colnr_T		restore_col,
+	int		screen_extra,
+	int		*segment_widthp,
+	bool		*concealedp,
+	bool		*followed_by_breakp)
+{
+    char_u	*p = ptr;
+    int		width = 0;
+    int		segment_width = 0;
+    bool	seen_visible = false;
+    bool	segment_done = false;
+    int		save_did_emsg = did_emsg;
+
+    *segment_widthp = 0;
+    *concealedp = false;
+    *followed_by_breakp = false;
+    did_emsg = FALSE;
+
+    while (*p != NUL)
+    {
+	colnr_T	col = (colnr_T)(p - line);
+	int	flags;
+	int	seqnr;
+	int	char_width;
+
+	if (*p == TAB)
+	{
+	    width = -1;
+	    break;
+	}
+
+	(void)syn_get_id(wp, lnum, col, FALSE, NULL, FALSE);
+	flags = get_syntax_info(&seqnr);
+	if (did_emsg)
+	{
+	    width = -1;
+	    break;
+	}
+
+	if (VIM_ISBREAK((int)*p))
+	{
+	    if (flags & HL_CONCEAL)
+	    {
+		*concealedp = true;
+		MB_PTR_ADV(p);
+		continue;
+	    }
+	    break;
+	}
+
+	if (flags & HL_CONCEAL)
+	{
+	    *concealedp = true;
+	    if (seen_visible)
+	    {
+		segment_done = true;
+		break;
+	    }
+	    MB_PTR_ADV(p);
+	    continue;
+	}
+
+	char_width = win_chartabsize(wp, p, start_vcol + width);
+	if (char_width <= 0)
+	{
+	    width = -1;
+	    break;
+	}
+	width += char_width;
+	if (width > screen_extra && !*concealedp)
+	    break;
+	if (!segment_done)
+	{
+	    segment_width += char_width;
+	    seen_visible = true;
+	}
+	MB_PTR_ADV(p);
+    }
+
+    *followed_by_breakp = VIM_ISBREAK((int)*p);
+    (void)syn_get_id(wp, lnum, restore_col, FALSE, NULL, FALSE);
+    if (did_emsg)
+    {
+	wp->w_s->b_syn_error = TRUE;
+	width = -1;
+    }
+    else
+	did_emsg = save_did_emsg;
+
+    *segment_widthp = segment_width;
+    return width;
+}
+#endif
+
 /*
  * Display line "lnum" of window "wp" on the screen.
  * Start at row "startrow", stop when "endrow" is reached.
@@ -1307,6 +1414,9 @@ win_line(
     int		is_concealing	= FALSE;
     int		did_wcol	= FALSE;
     int		old_boguscols   = 0;
+# if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
+    bool	lbr_seen_conceal = false;
+# endif
 # define VCOL_HLC (wlv.vcol - wlv.vcol_off_co - wlv.vcol_off_tp)
 # define FIX_FOR_BOGUSCOLS \
     { \
@@ -3172,11 +3282,23 @@ win_line(
 		if ( wp->w_p_lbr && !wlv.need_lbr && c != NUL &&
 			!VIM_ISBREAK((int)*ptr))
 		    wlv.need_lbr = TRUE;
+# if defined(FEAT_CONCEAL) && defined(FEAT_SYN_HL)
+		if (wp->w_p_cole == 3 && wlv.vcol_off_co > 0)
+		    lbr_seen_conceal = true;
+# endif
 #endif
 #ifdef FEAT_LINEBREAK
 		// Found last space before word: check for line break.
+		bool lbr_next_is_break = VIM_ISBREAK((int)*ptr);
+# if defined(FEAT_CONCEAL) && defined(FEAT_SYN_HL)
+		bool lbr_next_may_conceal = wp->w_p_cole == 3
+						 && has_syntax && c != TAB;
+# else
+		bool lbr_next_may_conceal = false;
+# endif
 		if (wp->w_p_lbr && c0 == c && wlv.need_lbr
-				  && VIM_ISBREAK(c) && !VIM_ISBREAK((int)*ptr))
+			&& VIM_ISBREAK(c)
+			&& (!lbr_next_is_break || lbr_next_may_conceal))
 		{
 		    int	    mb_off = has_mbyte ? (*mb_head_off)(line, ptr - 1)
 									   : 0;
@@ -3184,7 +3306,12 @@ win_line(
 		    chartabsize_T cts;
 
 
-		    colnr_T init_colnr = wlv.vcol;
+		    colnr_T init_colnr =
+# ifdef FEAT_CONCEAL
+			wp->w_p_cole == 3 ? VCOL_HLC : wlv.vcol;
+# else
+			wlv.vcol;
+# endif
 # ifdef FEAT_PROP_POPUP
 		    init_colnr -= vcol_first_char;
 # endif
@@ -3197,6 +3324,97 @@ win_line(
 		    // TODO: consider using "tailp" here
 		    wlv.n_extra = win_lbr_chartabsize(&cts, NULL, NULL) - 1;
 		    clear_chartabsize_arg(&cts);
+
+# if defined(FEAT_CONCEAL) && defined(FEAT_SYN_HL)
+		    if (wp->w_p_cole == 3 && has_syntax && c != TAB
+			    && (wlv.vcol_off_co > 0 || lbr_seen_conceal
+				|| lbr_next_is_break))
+		    {
+			bool	concealed = false;
+			bool	followed_by_break = false;
+			int	screen_extra = wp->w_width - wlv.col - 1;
+			int	plain_width = 0;
+			bool	need_lbr_conceal = false;
+			int	segment_width = 0;
+			int	visible_width;
+
+			if (screen_extra >= 0)
+			{
+			    char_u *q = ptr;
+
+			    while (*q != NUL && !VIM_ISBREAK((int)*q))
+			    {
+				if (*q == TAB)
+				{
+				    plain_width = -1;
+				    break;
+				}
+				plain_width += win_chartabsize(wp, q,
+						wlv.col + 1 + plain_width);
+				if (plain_width > screen_extra)
+				{
+				    need_lbr_conceal = true;
+				    break;
+				}
+				MB_PTR_ADV(q);
+			    }
+			    if (plain_width == screen_extra
+				    && VIM_ISBREAK((int)*q))
+				need_lbr_conceal = true;
+			    if (!need_lbr_conceal && lbr_next_is_break)
+				need_lbr_conceal = true;
+			}
+
+			if (!need_lbr_conceal && wlv.n_extra > 0)
+			    wlv.n_extra = 0;
+
+			if (screen_extra >= 0 && need_lbr_conceal)
+			    visible_width = lbr_conceal_width(wp, lnum,
+				    line, ptr, VCOL_HLC + 1, (colnr_T)(p - line),
+				    screen_extra, &segment_width, &concealed,
+				    &followed_by_break);
+			else
+			    visible_width = -1;
+
+			if (lbr_next_is_break && !concealed)
+			{
+			    visible_width = -1;
+			    wlv.n_extra = 0;
+			}
+
+			if (visible_width >= 0
+				&& need_lbr_conceal
+				&& (concealed || wlv.vcol_off_co > 0
+				    || lbr_seen_conceal))
+			{
+			    int fit_width = concealed
+					    ? segment_width : visible_width;
+			    bool use_plain_attr = false;
+
+			    if (concealed || wlv.vcol_off_co > 0)
+				lbr_seen_conceal = true;
+			    if (concealed && (fit_width < screen_extra
+					|| (fit_width == screen_extra
+					    && !followed_by_break)))
+				wlv.n_extra = 0;
+			    else if (screen_extra != wlv.n_extra)
+			    {
+				wlv.n_extra = screen_extra;
+				use_plain_attr = wlv.n_extra > 0;
+			    }
+			    else if (wlv.n_extra > 0)
+				use_plain_attr = true;
+
+			    if (use_plain_attr && wlv.n_extra > 0)
+			    {
+				saved_attr2 = wlv.char_attr;
+				wlv.extra_attr = wlv.win_attr;
+				n_attr = wlv.n_extra;
+				wlv.n_attr_skip = 1;
+			    }
+			}
+		    }
+# endif
 
 		    if (on_last_col && c != TAB)
 			// Do not continue search/match highlighting over the
@@ -3722,6 +3940,10 @@ win_line(
 				    && vim_strchr(wp->w_p_cocu, 'v') == NULL))
 	    {
 		int syntax_conceal = (syntax_flags & HL_CONCEAL) != 0;
+# if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
+		if (wp->w_p_cole == 3)
+		    lbr_seen_conceal = true;
+# endif
 		wlv.char_attr = conceal_attr;
 		if (((prev_syntax_id != syntax_seqnr && syntax_conceal)
 			    || has_match_conc > 1)
@@ -4249,6 +4471,10 @@ win_line(
 
 	    --skip_cells;
 	    ++wlv.vcol_off_co;
+# if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
+	    if (wp->w_p_cole == 3)
+		lbr_seen_conceal = true;
+# endif
 	    if (concealed_wide)
 	    {
 		// When a double-width char is concealed,
@@ -4260,7 +4486,7 @@ win_line(
 	    if (wlv.n_extra > 0)
 		wlv.vcol_off_co += wlv.n_extra;
 
-	    if (wp->w_p_wrap)
+	    if (wp->w_p_wrap && wp->w_p_cole != 3)
 	    {
 		// Special voodoo required if 'wrap' is on.
 		//
@@ -4357,7 +4583,6 @@ win_line(
 		    n_attr = 0;
 		}
 	    }
-
 	}
 #endif // FEAT_CONCEAL
 	else

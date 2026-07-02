@@ -6361,7 +6361,8 @@ nv_g_cmd(cmdarg_T *cap)
 n_opencmd(cmdarg_T *cap)
 {
 #ifdef FEAT_CONCEAL
-    linenr_T	oldline = curwin->w_cursor.lnum;
+    linenr_T	oldline;
+    linenr_T	redraw_line;
 #endif
 
     if (checkclearopq(cap->oap))
@@ -6377,6 +6378,9 @@ n_opencmd(cmdarg_T *cap)
 	(void)hasFolding(curwin->w_cursor.lnum,
 		NULL, &curwin->w_cursor.lnum);
 #endif
+#ifdef FEAT_CONCEAL
+    oldline = curwin->w_cursor.lnum;
+#endif
     // trigger TextChangedI for the 'o/O' command
     curbuf->b_last_changedtick_i = CHANGEDTICK(curbuf);
     if (u_save((linenr_T)(curwin->w_cursor.lnum -
@@ -6389,8 +6393,11 @@ n_opencmd(cmdarg_T *cap)
 		0, NULL) == OK)
     {
 #ifdef FEAT_CONCEAL
-	if (curwin->w_p_cole > 0 && oldline != curwin->w_cursor.lnum)
-	    redrawWinline(curwin, oldline);
+	redraw_line = oldline + (cap->cmdchar == 'O' ? 1 : 0);
+	if (curwin->w_p_cole > 0
+		&& redraw_line != curwin->w_cursor.lnum
+		&& redraw_line <= curbuf->b_ml.ml_line_count)
+	    redrawWinline(curwin, redraw_line);
 #endif
 #ifdef FEAT_SYN_HL
 	if (curwin->w_p_cul)

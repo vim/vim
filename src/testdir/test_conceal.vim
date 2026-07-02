@@ -656,6 +656,468 @@ func Test_conceal_double_width()
   call Run_test_conceal_double_width(0)
 endfunc
 
+func Test_conceallevel_three_wrap()
+  call NewWindow(6, 80)
+  setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+  syntax match test /X\+/ conceal
+
+  call setline(1, ['', repeat('X', winwidth(0) - 3) .. 'YYYY', 'after'])
+  call cursor(1, 1)
+  call assert_equal([
+        \ repeat(' ', winwidth(0)),
+        \ 'YYYY' .. repeat(' ', winwidth(0) - 4),
+        \ 'after' .. repeat(' ', winwidth(0) - 5),
+        \ ], ScreenLines([1, 3], winwidth(0)))
+
+  call setline(1, repeat('X', winwidth(0) - 3) .. 'YYYY')
+  call setline(2, 'after')
+  call cursor(1, 1)
+  call assert_equal([
+        \ 'YYYY' .. repeat(' ', winwidth(0) - 4),
+        \ 'after' .. repeat(' ', winwidth(0) - 5),
+        \ ], ScreenLines([1, 2], winwidth(0)))
+
+  call setline(1, repeat('X', winwidth(0) - 3) .. "\tY")
+  call setline(2, 'after')
+  call cursor(2, 1)
+  call assert_equal(3, screenpos(0, 2, 1).row)
+
+  let matchid = matchadd('Search', 'Y\nafter')
+  redraw
+  call assert_equal(3, screenpos(0, 2, 1).row)
+  call matchdelete(matchid)
+
+  call setline(1, repeat('X', winwidth(0) - 4) .. 'YYYY' .. "\tZ")
+  call cursor(1, winwidth(0) + 1)
+  call assert_equal(2, screenpos(0, 1, col('.')).row)
+
+  call setline(1, 'hello, world ' .. repeat('X', winwidth(0) + 5)
+        \ .. 'YYYY hello, world')
+  call deletebufline(bufnr(), 2, '$')
+  call cursor(1, winwidth(0) + 1)
+  redraw
+  call assert_equal(1, screenpos(0, 1, col('.')).row)
+  call feedkeys("o\<Esc>", 'tx')
+  redraw
+  call assert_equal(2, screenpos(0, 2, 1).row)
+  call assert_equal([
+        \ 'hello, world YYYY hello, world'
+        \ .. repeat(' ', winwidth(0) - 30),
+        \ repeat(' ', winwidth(0)),
+        \ '~' .. repeat(' ', winwidth(0) - 1),
+        \ ], ScreenLines([1, 3], winwidth(0)))
+  call deletebufline(bufnr(), 2, '$')
+
+  setlocal linebreak showbreak=++
+  call setline(1, repeat('X', winwidth(0)) .. repeat('Y', winwidth(0) - 1))
+  call setline(2, 'after')
+  call cursor(2, 1)
+  call assert_equal(2, screenpos(0, 2, 1).row)
+  setlocal nolinebreak showbreak=
+
+  call CloseWindow()
+  call NewWindow(6, 4)
+  setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber showbreak=++
+  syntax match test /X\+/ conceal
+  call setline(1, repeat('X', winwidth(0) * 2 + 3)
+        \ .. repeat('Y', winwidth(0) + 1))
+  call setline(2, 'after')
+  call cursor(2, 1)
+  call assert_equal(3, screenpos(0, 2, 1).row)
+
+  call setline(1, "X\tY")
+  call setline(2, 'after')
+  call cursor(2, 1)
+  call assert_equal(2, screenpos(0, 2, 1).row)
+
+  syntax clear test
+  syntax match test /\t/ conceal
+  call setline(1, "abc\tY")
+  call setline(2, 'after')
+  call cursor(1, 4)
+  redraw
+  call assert_equal(2, screenpos(0, 2, 1).row)
+
+  setlocal showbreak=
+  call CloseWindow()
+  call NewWindow(6, 80)
+  setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+  syntax match test /X\+/ conceal
+  call setline(2, 'after')
+
+  call setline(1, repeat('X', winwidth(0) - 3) .. 'YYYY')
+  call cursor(1, 1)
+  call feedkeys("i" .. repeat("\<ScrollWheelRight>", 5) .. "\<Esc>", 'tx')
+  redraw
+  call assert_equal([
+        \ 'YYYY' .. repeat(' ', winwidth(0) - 4),
+        \ 'after' .. repeat(' ', winwidth(0) - 5),
+        \ ], ScreenLines([1, 2], winwidth(0)))
+
+  call feedkeys("\<Esc>", 'tx')
+  redraw
+  call assert_equal([
+        \ 'YYYY' .. repeat(' ', winwidth(0) - 4),
+        \ 'after' .. repeat(' ', winwidth(0) - 5),
+        \ ], ScreenLines([1, 2], winwidth(0)))
+
+  if has('folding')
+    setlocal foldmethod=manual foldenable foldlevel=0
+    call setline(1, repeat('A', winwidth(0) * 2) .. 'X folded text')
+    call setline(2, 'inside')
+    call setline(3, 'after')
+    1,2fold
+    call cursor(1, 1)
+    normal! zM
+    call cursor(1, winwidth(0) * 2 + 1)
+    redraw!
+    call assert_equal([1, 1], [winline(), wincol()])
+    normal! zE
+    setlocal foldmethod& foldenable& foldlevel&
+  endif
+
+  call setline(1, "X\tY")
+  call setline(2, 'after')
+  call cursor(1, 2)
+  redraw
+  call assert_equal(7, screenpos(0, 1, col('.')).curscol)
+
+  call setline(1, "X\u3042Y")
+  call cursor(1, 2)
+  redraw
+  call assert_equal(1, screenpos(0, 1, col('.')).curscol)
+
+  syntax clear test
+  call CloseWindow()
+  call NewWindow(6, 30)
+  setlocal wrap linebreak conceallevel=3 concealcursor=n signcolumn=no
+        \ nonumber showbreak=++
+  syntax match test /<[^>]*>/ conceal
+
+  call setline(1, 'alpha beta 日本語<hidden-target> followed words')
+  call setline(2, 'alpha beta narrow text<hidden-target> after')
+  call setline(3, 'alpha beta 日本語 text<hidden-target> after the wrap point')
+  redraw
+  call assert_equal([
+        \ 'alpha beta 日本語 followed    ',
+        \ '++words                       ',
+        \ 'alpha beta narrow text after  ',
+        \ 'alpha beta 日本語 text after  ',
+        \ '++the wrap point              ',
+        \ '~                             ',
+        \ ], ScreenLines([1, 6], winwidth(0)))
+
+  setlocal showbreak=
+  call setline(1, 'alpha <hidden-target> second concealed link with text after')
+  call setline(2, 'plain after')
+  call setline(3, '')
+  redraw
+  call assert_equal([
+        \ 'alpha  second concealed link  ',
+        \ 'with text after               ',
+        \ 'plain after                   ',
+        \ ], ScreenLines([1, 3], winwidth(0)))
+
+  call CloseWindow()
+  call NewWindow(4, 21)
+  setlocal wrap linebreak conceallevel=3 concealcursor=n signcolumn=no
+        \ nonumber showbreak=
+  syntax clear test
+  syntax match test /\[/ conceal
+  call setline(1, 'aaaa bbbb cccc [second concealed')
+  redraw
+  let expected = ['aaaa bbbb cccc', 'second concealed', '~']
+  call map(expected, 'v:val .. repeat(" ", winwidth(0) - strdisplaywidth(v:val))')
+  call assert_equal([
+        \ expected[0],
+        \ expected[1],
+        \ expected[2],
+        \ ], ScreenLines([1, 3], winwidth(0)))
+
+  call CloseWindow()
+  call NewWindow(7, 37)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+        \ signcolumn=no number showbreak=
+  syntax clear test
+  syntax match test /\[/ conceal
+  syntax match test /\](https:[^)]*)/ conceal
+  call setline(1, 'This paragraph has bold text before 日本語, italic text before コンシール, and a [concealed link title 日本語](https://example.invalid/a/very/long/path/that/should-be-hidden-by-markdown-conceal) followed by enough words to wrap several times in a narrow window.')
+  redraw
+  call assert_equal([
+        \ '  1 This paragraph has bold text',
+        \ '    before 日本語, italic text',
+        \ '    before コンシール, and a',
+        \ '    concealed link title 日本語',
+        \ '    followed by enough words to wrap',
+        \ '    several times in a narrow window.',
+        \ '~',
+        \ ], map(ScreenLines([1, 7], winwidth(0)),
+        \ 'substitute(v:val, "\\s\\+$", "", "")'))
+
+  call CloseWindow()
+  call NewWindow(4, 30)
+  setlocal wrap linebreak conceallevel=3 concealcursor=n signcolumn=no
+        \ nonumber showbreak=
+  syntax clear test
+  syntax match test /\[/ conceal
+  syntax match testCode /:set columns=60/
+  highlight testCode ctermfg=Red guifg=Red
+  call setline(1, repeat('a', winwidth(0) - 1) .. '[:set columns=60')
+  redraw
+  call assert_equal(':', screenstring(1, winwidth(0)))
+  call assert_equal('s', screenstring(2, 1))
+  call assert_equal(screenattr(2, 1), screenattr(1, winwidth(0)))
+
+  call CloseWindow()
+  call NewWindow(4, 12)
+  setlocal wrap linebreak conceallevel=3 concealcursor=n signcolumn=no
+        \ nonumber showbreak=
+  syntax clear test
+  syntax region test matchgroup=test start=/\*/ end=/\*/ concealends
+  call setline(1, 'aaaa bbbb *italic words')
+  redraw
+  call assert_equal([
+        \ 'aaaa bbbb   ',
+        \ 'italic words ',
+        \ '~           ',
+        \ ], ScreenLines([1, 3], winwidth(0)))
+
+  call CloseWindow()
+  call NewWindow(5, 49)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+        \ signcolumn=no number showbreak=
+  syntax clear test
+  syntax region testItalic matchgroup=test start=/\*/ end=/\*/ concealends
+  call setline(1, 'This paragraph has bold text before 日本語, *italic text before コンシール*, and trailing words.')
+  redraw
+  call assert_equal([
+        \ '  1 This paragraph has bold text before 日本語,',
+        \ '    italic text before コンシール, and trailing',
+        \ '    words.',
+        \ '~',
+        \ ], map(ScreenLines([1, 4], winwidth(0)),
+        \ 'substitute(v:val, "\\s\\+$", "", "")'))
+
+  syntax clear test
+  call CloseWindow()
+endfunc
+
+func Test_conceallevel_three_wrap_single_char_syntax()
+  call NewWindow(6, 80)
+  setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+  syntax match test /X/ conceal
+
+  call setline(1, repeat('X', winwidth(0) - 3) .. 'YYYY')
+  call setline(2, 'after')
+  call cursor(2, 1)
+  call assert_equal([
+        \ 'YYYY' .. repeat(' ', winwidth(0) - 4),
+        \ 'after' .. repeat(' ', winwidth(0) - 5),
+        \ ], ScreenLines([1, 2], winwidth(0)))
+  call assert_equal(2, screenpos(0, 2, 1).row)
+
+  syntax clear test
+  call CloseWindow()
+endfunc
+
+func Test_conceallevel_three_wrap_matchadd_multiline()
+  call NewWindow(6, 4)
+  setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+
+  let matchid = matchadd('Conceal', 'x\nXXXXX', 10, -1, #{conceal: ''})
+  call setline(1, ['x', 'XXXXXYY', 'after'])
+  call cursor(3, 1)
+  redraw
+  call assert_equal(3, screenpos(0, 3, 1).row)
+  call matchdelete(matchid)
+
+  syntax match test /Z/ conceal
+  call setline(1, 'abcdEZ')
+  call deletebufline(bufnr(), 2, '$')
+  call cursor(1, 5)
+  redraw
+  call assert_equal(2, winline())
+
+  syntax clear test
+  call CloseWindow()
+endfunc
+
+func Test_conceallevel_three_wrap_visible_screenpos()
+  call NewWindow(6, 10)
+  setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+  syntax match test /X\+/ conceal
+
+  call setline(1, repeat('X', 5) .. repeat('Y', 15))
+  redraw
+  call assert_equal(#{col: 5, row: 2, endcol: 5, curscol: 5},
+        \ screenpos(0, 1, 20))
+
+  syntax clear test
+  call CloseWindow()
+endfunc
+
+func Test_conceallevel_three_wrap_virtual_text()
+  CheckFeature textprop
+
+  call NewWindow(6, 80)
+  setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+  syntax match test /X\+/ conceal
+  call prop_type_add('test', #{highlight: 'Search'})
+
+  call setline(1, [repeat('X', 10), 'after'])
+  call prop_add(1, col([1, '$']),
+        \ #{type: 'test', text: repeat('V', winwidth(0) + 1)})
+  call cursor(2, 1)
+  call assert_equal(3, screenpos(0, 2, 1).row)
+
+  call prop_clear(1)
+  call setline(1, [repeat('X', 10), 'after'])
+  call prop_add(1, 1, #{type: 'test', text: repeat('V', winwidth(0) + 1)})
+  call cursor(2, 1)
+  call assert_equal(3, screenpos(0, 2, 1).row)
+
+  setlocal showbreak=++
+  call prop_clear(1)
+  call setline(1, [repeat('X', 10), 'after'])
+  call prop_add(1, 1, #{type: 'test', text: repeat('V', winwidth(0) * 2 - 1)})
+  call cursor(2, 1)
+  call assert_equal(4, screenpos(0, 2, 1).row)
+
+  call prop_clear(1)
+  call setline(1, [repeat('X', winwidth(0) * 2 + 3) .. 'Y', 'after'])
+  call prop_add(1, col([1, '$']), #{type: 'test', text: 'V'})
+  call cursor(2, 1)
+  call assert_equal(2, screenpos(0, 2, 1).row)
+
+  call prop_type_delete('test')
+  syntax clear test
+  call CloseWindow()
+endfunc
+
+func Test_conceallevel_three_popup()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, ['aaaa XXXXXXXXXX bbbb', 'second line'])
+    syntax match test /X\+/ conceal
+    let g:winid = popup_create(bufnr(), #{
+          \ line: 3, col: 5, maxwidth: 30, wrap: v:true,
+          \ border: [],
+          \ })
+    call win_execute(g:winid, 'setlocal conceallevel=3 concealcursor=n')
+    call win_execute(g:winid, 'syntax match test /X\+/ conceal')
+  END
+  call writefile(lines, 'XpopupConceal', 'D')
+  let buf = RunVimInTerminal('-S XpopupConceal', #{rows: 12, cols: 50})
+  call VerifyScreenDump(buf, 'Test_conceallevel_three_popup_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_conceallevel_three_cursor_moved_redraw()
+  CheckRunVimInTerminal
+
+  let code =<< trim [CODE]
+    set wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+    syntax match test /X\+/ conceal
+    call setline(1, ['', repeat('X', &columns - 3) .. 'YYYY', 'after'])
+    call cursor(1, 1)
+  [CODE]
+  call writefile(code, 'XTest_conceallevel_three_cursor_moved_redraw', 'D')
+  let buf = RunVimInTerminal('-S XTest_conceallevel_three_cursor_moved_redraw',
+        \ {'rows': 6, 'cols': 80})
+  call WaitForAssert({-> assert_equal('YYYY', term_getline(buf, 2))})
+  call term_sendkeys(buf, 'j')
+  call WaitForAssert({-> assert_equal('YYYY', term_getline(buf, 2))})
+  call assert_equal('after', term_getline(buf, 3))
+  call term_sendkeys(buf, 'k')
+  call WaitForAssert({-> assert_equal('YYYY', term_getline(buf, 2))})
+
+  call term_sendkeys(buf, ":set concealcursor=\<CR>")
+  call term_sendkeys(buf, 'j')
+  call WaitForAssert({-> assert_equal(repeat('X', 77) .. 'YYY',
+        \ term_getline(buf, 2))})
+  call assert_equal('Y', term_getline(buf, 3))
+  call assert_equal('after', term_getline(buf, 4))
+  call term_sendkeys(buf, 'k')
+  call WaitForAssert({-> assert_equal('YYYY', term_getline(buf, 2))})
+  call assert_equal('after', term_getline(buf, 3))
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_conceallevel_three_open_above_redraw()
+  CheckRunVimInTerminal
+
+  let code =<< trim [CODE]
+    set wrap conceallevel=3 signcolumn=no nonumber
+    execute 'syntax match test /X\+/ conceal cchar=' .. ' '
+    call setline(1, repeat('X', &columns - 3) .. 'YYYY')
+    call cursor(1, 1)
+  [CODE]
+  call writefile(code, 'XTest_conceallevel_three_open_above_redraw', 'D')
+  let buf = RunVimInTerminal('-S XTest_conceallevel_three_open_above_redraw',
+        \ {'rows': 6, 'cols': 80})
+  call WaitForAssert({-> assert_equal(repeat('X', 77) .. 'YYY',
+        \ term_getline(buf, 1))})
+  call assert_equal('Y', term_getline(buf, 2))
+
+  call term_sendkeys(buf, 'O')
+  call WaitForAssert({-> assert_equal('', term_getline(buf, 1))})
+  call assert_equal('YYYY', term_getline(buf, 2))
+  call assert_equal('~' .. repeat(' ', 79), term_getline(buf, 3))
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func s:Run_conceallevel_three_open_above_redraw(name, setup, keys, expected)
+  let code = [
+        \ 'set wrap conceallevel=3 signcolumn=no nonumber',
+        \ 'execute ''syntax match test /X\+/ conceal cchar='' .. '' ''',
+        \ 'call setline(1, repeat("X", &columns - 3) .. "YYYY")',
+        \ ] + a:setup
+  call writefile(code, 'XTest_conceallevel_three_' .. a:name, 'D')
+  let buf = RunVimInTerminal('-S XTest_conceallevel_three_' .. a:name,
+        \ {'rows': 8, 'cols': 80})
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+  call term_sendkeys(buf, a:keys)
+  call WaitForAssert({-> assert_equal(a:expected[0], term_getline(buf, 1))})
+  for i in range(1, len(a:expected) - 1)
+    call assert_equal(a:expected[i], term_getline(buf, i + 1))
+  endfor
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_conceallevel_three_insert_above_redraw()
+  CheckRunVimInTerminal
+
+  call s:Run_conceallevel_three_open_above_redraw('open_above_cocu_n',
+        \ ['set concealcursor=n', 'call cursor(1, 1)'],
+        \ 'O',
+        \ ['', 'YYYY', '~' .. repeat(' ', 79)])
+
+  call s:Run_conceallevel_three_open_above_redraw('open_above_showbreak',
+        \ ['set showbreak=++', 'call cursor(1, 1)'],
+        \ 'O',
+        \ ['', 'YYYY', '~' .. repeat(' ', 79)])
+
+  call s:Run_conceallevel_three_open_above_redraw('open_above_rightleft',
+        \ ['set rightleft', 'call cursor(1, 1)'],
+        \ 'O',
+        \ ['', repeat(' ', 76) .. 'YYYY', repeat(' ', 79) .. '~'])
+
+  call s:Run_conceallevel_three_open_above_redraw('put_above_normal',
+        \ ['call cursor(1, 1)', 'call setreg("a", "NEW", "l")'],
+        \ '"aP',
+        \ ['NEW', 'YYYY', '~' .. repeat(' ', 79)])
+
+  call s:Run_conceallevel_three_open_above_redraw('put_above_ex',
+        \ ['call cursor(1, 1)', 'call setreg("a", "NEW", "l")'],
+        \ ':put! a' .. "\<CR>",
+        \ ['NEW', 'YYYY', '~' .. repeat(' ', 79)])
+endfunc
+
 " Test that line wrapping is correct when double-width chars are concealed.
 func Test_conceal_double_width_wrap()
   CheckScreendump

@@ -395,6 +395,248 @@ plines_win_nofill(
     return lines;
 }
 
+#if defined(FEAT_CONCEAL)
+    static bool
+plines_win_may_conceal(win_T *wp, linenr_T lnum)
+{
+    if (wp->w_p_cole != 3)
+	return false;
+    if (wp == curwin && lnum == wp->w_cursor.lnum
+						&& !conceal_cursor_line(wp))
+	return false;
+    if (VIsual_active && wp->w_buffer == curwin->w_buffer
+				    && vim_strchr(wp->w_p_cocu, 'v') == NULL)
+    {
+	pos_T	*top, *bot;
+
+	if (LTOREQ_POS(curwin->w_cursor, VIsual))
+	{
+	    top = &curwin->w_cursor;
+	    bot = &VIsual;
+	}
+	else
+	{
+	    top = &VIsual;
+	    bot = &curwin->w_cursor;
+	}
+	if (lnum >= top->lnum && lnum <= bot->lnum)
+	    return false;
+    }
+
+    return true;
+}
+
+/*
+ * Return the screen width of line "lnum" up to "column" while taking
+ * zero-width 'conceallevel' 3 text into account.  When "vcol_off_cop" is not
+ * NULL, store the concealed screen width before "column" in it.
+ * When "concealedp" is not NULL, store whether the character at "column" is
+ * concealed in it.
+ * When "column" is MAXCOL, count the whole line.
+ */
+    static long
+plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
+				long *vcol_off_cop, bool *concealedp)
+{
+    char_u	*line;
+    char_u	*ptr;
+    long	vcol = 0;
+    long	vcol_off_co = 0;
+    chartabsize_T cts;
+    bool	check_concealed = concealedp != NULL && column != MAXCOL;
+    bool	full_line = column == MAXCOL;
+# ifdef FEAT_PROP_POPUP
+    bool	with_trailing = full_line;
+# endif
+# ifdef FEAT_SYN_HL
+    int		has_syntax = syntax_present(wp) && !wp->w_s->b_syn_error
+#  ifdef SYN_TIME_LIMIT
+						&& !wp->w_s->b_syn_slow
+#  endif
+						;
+# endif
+# ifdef FEAT_SEARCH_EXTRA
+    int		search_attr = 0;
+    int		has_match_conc = 0;
+    int		match_conc = 0;
+    int		on_last_col = FALSE;
+# endif
+
+    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+    ptr = line;
+    init_chartabsize_arg(&cts, wp, lnum, 0, line, ptr);
+# ifdef FEAT_PROP_POPUP
+    cts.cts_with_trailing = with_trailing;
+# endif
+
+# ifdef FEAT_SYN_HL
+    if (has_syntax)
+	syntax_start(wp, lnum);
+# endif
+# ifdef FEAT_SEARCH_EXTRA
+    init_search_hl(wp, &screen_search_hl);
+    prepare_search_hl(wp, &screen_search_hl, lnum);
+    (void)prepare_search_hl_line(wp, lnum, 0, &line, &screen_search_hl,
+							     &search_attr);
+    ptr = line;
+    cts.cts_line = line;
+    cts.cts_ptr = ptr;
+# endif
+
+    while (*ptr != NUL && (column == MAXCOL || ptr - line < column))
+    {
+	colnr_T	col = (colnr_T)(ptr - line);
+	bool	is_concealing = false;
+
+# ifdef FEAT_SEARCH_EXTRA
+	has_match_conc = 0;
+	match_conc = 0;
+	search_attr = update_search_hl(wp, lnum, col, &line, &screen_search_hl,
+		&has_match_conc, &match_conc, FALSE, FALSE, &on_last_col);
+	ptr = line + col;	// "line" may have been changed
+	cts.cts_line = line;
+# endif
+# ifdef FEAT_SYN_HL
+	if (has_syntax)
+	{
+	    int	    syntax_seqnr;
+
+	    if (full_line)
+		(void)get_syntax_attr(col, NULL, FALSE);
+	    else
+		(void)syn_get_id(wp, lnum, col, FALSE, NULL, TRUE);
+	    ptr = ml_get_buf(wp->w_buffer, lnum, FALSE) + col;
+	    line = ptr - col;
+	    cts.cts_line = line;
+	    if (*ptr != NUL && (get_syntax_info(&syntax_seqnr) & HL_CONCEAL))
+		is_concealing = true;
+	}
+# endif
+# ifdef FEAT_SEARCH_EXTRA
+	if (has_match_conc > 0)
+	    is_concealing = true;
+# endif
+	if (!is_concealing)
+	{
+	    int charsize;
+
+	    cts.cts_ptr = ptr;
+	    cts.cts_vcol = *ptr == TAB
+				    ? (int)(vcol + vcol_off_co) : (int)vcol;
+	    charsize = win_lbr_chartabsize(&cts, NULL, NULL);
+	    if (*ptr == TAB && vcol_off_co > 0)
+	    {
+# ifdef FEAT_LINEBREAK
+		if (vcol == 0 && *get_showbreak_value(wp) != NUL)
+		    charsize = wp->w_width - win_col_off(wp) - (int)vcol - 1;
+		else
+# endif
+		charsize += vcol_off_co;
+		vcol_off_co = 0;
+	    }
+	    vcol += charsize;
+	}
+# ifdef FEAT_PROP_POPUP
+	else if (cts.cts_has_prop_with_text)
+	{
+	    int charsize;
+	    int head = 0;
+
+	    cts.cts_ptr = ptr;
+	    cts.cts_vcol = (int)(vcol + vcol_off_co);
+	    charsize = win_lbr_chartabsize(&cts, &head, NULL);
+	    if (cts.cts_cur_text_width > 0)
+	    {
+		vcol += cts.cts_cur_text_width + head;
+		vcol_off_co += charsize - cts.cts_cur_text_width - head;
+	    }
+	    else
+		vcol_off_co += win_chartabsize(wp, ptr, vcol + vcol_off_co);
+	}
+# endif
+	else
+	{
+	    cts.cts_ptr = ptr;
+	    cts.cts_vcol = (int)(vcol + vcol_off_co);
+	    vcol_off_co += win_chartabsize(wp, ptr, vcol + vcol_off_co);
+	}
+	if (vcol > MAXCOL)
+	{
+	    vcol = MAXCOL;
+	    break;
+	}
+	if (vcol_off_co > MAXCOL - vcol)
+	    vcol_off_co = MAXCOL - vcol;
+	MB_PTR_ADV(ptr);
+    }
+
+    if (concealedp != NULL)
+	*concealedp = false;
+    if (check_concealed && *ptr != NUL)
+    {
+	colnr_T	col = (colnr_T)(ptr - line);
+
+# ifdef FEAT_SEARCH_EXTRA
+	has_match_conc = 0;
+	match_conc = 0;
+	search_attr = update_search_hl(wp, lnum, col, &line, &screen_search_hl,
+		&has_match_conc, &match_conc, FALSE, FALSE, &on_last_col);
+	ptr = line + col;	// "line" may have been changed
+# endif
+# ifdef FEAT_SYN_HL
+	if (has_syntax)
+	{
+	    int	    syntax_seqnr;
+
+	    (void)syn_get_id(wp, lnum, col, FALSE, NULL, TRUE);
+	    ptr = ml_get_buf(wp->w_buffer, lnum, FALSE) + col;
+	    line = ptr - col;
+	    if (*ptr != NUL && (get_syntax_info(&syntax_seqnr) & HL_CONCEAL))
+		*concealedp = true;
+	}
+# endif
+# ifdef FEAT_SEARCH_EXTRA
+	if (has_match_conc > 0)
+	    *concealedp = true;
+# endif
+    }
+
+# ifdef FEAT_PROP_POPUP
+    // check for a virtual text at the end of a line or on an empty line
+    if (with_trailing && cts.cts_has_prop_with_text && *ptr == NUL)
+    {
+	int head = 0;
+
+	cts.cts_ptr = ptr;
+	cts.cts_vcol = (int)vcol;
+	(void)win_lbr_chartabsize(&cts, &head, NULL);
+	vcol += cts.cts_cur_text_width + head;
+	if (ptr == line && cts.cts_prop_lines > 0)
+	    ++vcol;
+	if (vcol > MAXCOL)
+	    vcol = MAXCOL;
+    }
+# endif
+
+    clear_chartabsize_arg(&cts);
+    if (vcol_off_cop != NULL)
+	*vcol_off_cop = vcol_off_co;
+    return vcol;
+}
+
+/*
+ * Return the displayed virtual column up to "column" while taking zero-width
+ * 'conceallevel' 3 text into account, or -1 when conceal is not active.
+ */
+    long
+plines_win_col_conceal_vcol(win_T *wp, linenr_T lnum, long column)
+{
+    if (!plines_win_may_conceal(wp, lnum))
+	return -1;
+    return plines_win_col_conceal(wp, lnum, column, NULL, NULL);
+}
+#endif
+
 /*
  * Return number of window lines physical line "lnum" will occupy in window
  * "wp".  Does not care about folding, 'wrap' or 'diff'.
@@ -415,9 +657,16 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
 #endif
 	    )
 	return 1; // be quick for an empty line
-    win_linetabsize_cts(&cts, (colnr_T)MAXCOL);
+#ifdef FEAT_CONCEAL
+    if (plines_win_may_conceal(wp, lnum))
+	col = plines_win_col_conceal(wp, lnum, MAXCOL, NULL, NULL);
+    else
+#endif
+    {
+	win_linetabsize_cts(&cts, (colnr_T)MAXCOL);
+	col = (int)cts.cts_vcol;
+    }
     clear_chartabsize_arg(&cts);
-    col = (int)cts.cts_vcol;
 
     // If list mode is on, then the '$' at the end of the line may take up one
     // extra column.
@@ -449,6 +698,10 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     int		width;
     char_u	*line;
     chartabsize_T cts;
+#ifdef FEAT_CONCEAL
+    long	vcol_off_co = 0;
+    bool	concealed = false;
+#endif
 
 #ifdef FEAT_DIFF
     // Check for filler lines above this buffer line.  When folded the result
@@ -465,11 +718,24 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 
     init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
-    while (*cts.cts_ptr != NUL && --column >= 0)
+#ifdef FEAT_CONCEAL
+    if (plines_win_may_conceal(wp, lnum))
     {
-	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL, NULL);
-	MB_PTR_ADV(cts.cts_ptr);
+	cts.cts_vcol = (int)plines_win_col_conceal(wp, lnum, column,
+						 &vcol_off_co, &concealed);
+	line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+	cts.cts_line = line;
+	cts.cts_ptr = line;
+	while (*cts.cts_ptr != NUL && cts.cts_ptr - line < column)
+	    MB_PTR_ADV(cts.cts_ptr);
     }
+    else
+#endif
+	while (*cts.cts_ptr != NUL && --column >= 0)
+	{
+	    cts.cts_vcol += win_lbr_chartabsize(&cts, NULL, NULL);
+	    MB_PTR_ADV(cts.cts_ptr);
+	}
 
     /*
      * If *cts.cts_ptr is a TAB, and the TAB is not displayed as ^I, and we're
@@ -480,8 +746,19 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
      */
     col = cts.cts_vcol;
     if (*cts.cts_ptr == TAB && (State & MODE_NORMAL)
-				    && (!wp->w_p_list || wp->w_lcs_chars.tab1))
+				    && (!wp->w_p_list || wp->w_lcs_chars.tab1)
+#ifdef FEAT_CONCEAL
+				    && !concealed
+#endif
+				    )
+    {
+#ifdef FEAT_CONCEAL
+	cts.cts_vcol += (int)vcol_off_co;
+	col += win_lbr_chartabsize(&cts, NULL, NULL) + vcol_off_co - 1;
+#else
 	col += win_lbr_chartabsize(&cts, NULL, NULL) - 1;
+#endif
+    }
     clear_chartabsize_arg(&cts);
 
     /*
@@ -2954,4 +3231,3 @@ trim_to_int(vimlong_T x)
 {
     return x > INT_MAX ? INT_MAX : x < INT_MIN ? INT_MIN : x;
 }
-
