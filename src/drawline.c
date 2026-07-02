@@ -1158,21 +1158,19 @@ lbr_conceal_width(
 	colnr_T		restore_col,
 	int		screen_extra,
 	int		*segment_widthp,
-	int		*concealedp,
-	int		*double_boundaryp,
-	int		*followed_by_breakp)
+	bool		*concealedp,
+	bool		*followed_by_breakp)
 {
     char_u	*p = ptr;
     int		width = 0;
     int		segment_width = 0;
-    int		seen_visible = FALSE;
-    int		segment_done = FALSE;
+    bool	seen_visible = false;
+    bool	segment_done = false;
     int		save_did_emsg = did_emsg;
 
     *segment_widthp = 0;
-    *concealedp = FALSE;
-    *double_boundaryp = FALSE;
-    *followed_by_breakp = FALSE;
+    *concealedp = false;
+    *followed_by_breakp = false;
     did_emsg = FALSE;
 
     while (*p != NUL && !VIM_ISBREAK((int)*p))
@@ -1198,10 +1196,10 @@ lbr_conceal_width(
 
 	if (flags & HL_CONCEAL)
 	{
-	    *concealedp = TRUE;
+	    *concealedp = true;
 	    if (seen_visible)
 	    {
-		segment_done = TRUE;
+		segment_done = true;
 		break;
 	    }
 	    MB_PTR_ADV(p);
@@ -1214,15 +1212,13 @@ lbr_conceal_width(
 	    width = -1;
 	    break;
 	}
-	if (char_width >= 2 && width + char_width >= screen_extra)
-	    *double_boundaryp = TRUE;
 	width += char_width;
 	if (width > screen_extra && !*concealedp)
 	    break;
 	if (!segment_done)
 	{
 	    segment_width += char_width;
-	    seen_visible = TRUE;
+	    seen_visible = true;
 	}
 	MB_PTR_ADV(p);
     }
@@ -1408,7 +1404,7 @@ win_line(
     int		did_wcol	= FALSE;
     int		old_boguscols   = 0;
 # if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
-    int		lbr_seen_conceal = FALSE;
+    bool	lbr_seen_conceal = false;
 # endif
 # define VCOL_HLC (wlv.vcol - wlv.vcol_off_co - wlv.vcol_off_tp)
 # define FIX_FOR_BOGUSCOLS \
@@ -3277,7 +3273,7 @@ win_line(
 		    wlv.need_lbr = TRUE;
 # if defined(FEAT_CONCEAL) && defined(FEAT_SYN_HL)
 		if (wp->w_p_cole == 3 && wlv.vcol_off_co > 0)
-		    lbr_seen_conceal = TRUE;
+		    lbr_seen_conceal = true;
 # endif
 #endif
 #ifdef FEAT_LINEBREAK
@@ -3314,12 +3310,11 @@ win_line(
 		    if (wp->w_p_cole == 3 && has_syntax && c != TAB
 			    && (wlv.vcol_off_co > 0 || lbr_seen_conceal))
 		    {
-			int	concealed = FALSE;
-			int	double_boundary = FALSE;
-			int	followed_by_break = FALSE;
+			bool	concealed = false;
+			bool	followed_by_break = false;
 			int	screen_extra = wp->w_width - wlv.col - 1;
 			int	plain_width = 0;
-			int	need_lbr_conceal = FALSE;
+			bool	need_lbr_conceal = false;
 			int	segment_width = 0;
 			int	visible_width;
 
@@ -3338,14 +3333,14 @@ win_line(
 						wlv.col + 1 + plain_width);
 				if (plain_width > screen_extra)
 				{
-				    need_lbr_conceal = TRUE;
+				    need_lbr_conceal = true;
 				    break;
 				}
 				MB_PTR_ADV(q);
 			    }
 			    if (plain_width == screen_extra
 				    && VIM_ISBREAK((int)*q))
-				need_lbr_conceal = TRUE;
+				need_lbr_conceal = true;
 			}
 
 			if (!need_lbr_conceal && wlv.n_extra > 0)
@@ -3355,7 +3350,7 @@ win_line(
 			    visible_width = lbr_conceal_width(wp, lnum,
 				    line, ptr, VCOL_HLC + 1, (colnr_T)(p - line),
 				    screen_extra, &segment_width, &concealed,
-				    &double_boundary, &followed_by_break);
+				    &followed_by_break);
 			else
 			    visible_width = -1;
 
@@ -3366,10 +3361,10 @@ win_line(
 			{
 			    int fit_width = concealed
 					    ? segment_width : visible_width;
-			    int use_plain_attr = FALSE;
+			    bool use_plain_attr = false;
 
 			    if (concealed || wlv.vcol_off_co > 0)
-				lbr_seen_conceal = TRUE;
+				lbr_seen_conceal = true;
 			    if (concealed && (fit_width < screen_extra
 					|| (fit_width == screen_extra
 					    && !followed_by_break)))
@@ -3380,7 +3375,7 @@ win_line(
 				use_plain_attr = wlv.n_extra > 0;
 			    }
 			    else if (wlv.n_extra > 0)
-				use_plain_attr = TRUE;
+				use_plain_attr = true;
 
 			    if (use_plain_attr && wlv.n_extra > 0)
 			    {
@@ -3919,7 +3914,7 @@ win_line(
 		int syntax_conceal = (syntax_flags & HL_CONCEAL) != 0;
 # if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
 		if (wp->w_p_cole == 3)
-		    lbr_seen_conceal = TRUE;
+		    lbr_seen_conceal = true;
 # endif
 		wlv.char_attr = conceal_attr;
 		if (((prev_syntax_id != syntax_seqnr && syntax_conceal)
@@ -4450,7 +4445,7 @@ win_line(
 	    ++wlv.vcol_off_co;
 # if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
 	    if (wp->w_p_cole == 3)
-		lbr_seen_conceal = TRUE;
+		lbr_seen_conceal = true;
 # endif
 	    if (concealed_wide)
 	    {

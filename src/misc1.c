@@ -397,7 +397,7 @@ plines_win_nofill(
 
 #if defined(FEAT_CONCEAL)
     static bool
-plines_win_has_conceal(win_T *wp, linenr_T lnum)
+plines_win_may_conceal(win_T *wp, linenr_T lnum)
 {
     if (wp->w_p_cole != 3)
 	return false;
@@ -436,17 +436,17 @@ plines_win_has_conceal(win_T *wp, linenr_T lnum)
  */
     static long
 plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
-				long *vcol_off_cop, int *concealedp)
+				long *vcol_off_cop, bool *concealedp)
 {
     char_u	*line;
     char_u	*ptr;
     long	vcol = 0;
     long	vcol_off_co = 0;
     chartabsize_T cts;
-    int		check_concealed = concealedp != NULL && column != MAXCOL;
-    int		full_line = column == MAXCOL;
+    bool	check_concealed = concealedp != NULL && column != MAXCOL;
+    bool	full_line = column == MAXCOL;
 # ifdef FEAT_PROP_POPUP
-    int		with_trailing = full_line;
+    bool	with_trailing = full_line;
 # endif
 # ifdef FEAT_SYN_HL
     int		has_syntax = syntax_present(wp) && !wp->w_s->b_syn_error
@@ -486,7 +486,7 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
     while (*ptr != NUL && (column == MAXCOL || ptr - line < column))
     {
 	colnr_T	col = (colnr_T)(ptr - line);
-	int	is_concealing = FALSE;
+	bool	is_concealing = false;
 
 # ifdef FEAT_SEARCH_EXTRA
 	has_match_conc = 0;
@@ -509,12 +509,12 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	    line = ptr - col;
 	    cts.cts_line = line;
 	    if (*ptr != NUL && (get_syntax_info(&syntax_seqnr) & HL_CONCEAL))
-		is_concealing = TRUE;
+		is_concealing = true;
 	}
 # endif
 # ifdef FEAT_SEARCH_EXTRA
 	if (has_match_conc > 0)
-	    is_concealing = TRUE;
+	    is_concealing = true;
 # endif
 	if (!is_concealing)
 	{
@@ -571,7 +571,7 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
     }
 
     if (concealedp != NULL)
-	*concealedp = FALSE;
+	*concealedp = false;
     if (check_concealed && *ptr != NUL)
     {
 	colnr_T	col = (colnr_T)(ptr - line);
@@ -592,12 +592,12 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	    ptr = ml_get_buf(wp->w_buffer, lnum, FALSE) + col;
 	    line = ptr - col;
 	    if (*ptr != NUL && (get_syntax_info(&syntax_seqnr) & HL_CONCEAL))
-		*concealedp = TRUE;
+		*concealedp = true;
 	}
 # endif
 # ifdef FEAT_SEARCH_EXTRA
 	if (has_match_conc > 0)
-	    *concealedp = TRUE;
+	    *concealedp = true;
 # endif
     }
 
@@ -631,7 +631,7 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
     long
 plines_win_col_conceal_vcol(win_T *wp, linenr_T lnum, long column)
 {
-    if (!plines_win_has_conceal(wp, lnum))
+    if (!plines_win_may_conceal(wp, lnum))
 	return -1;
     return plines_win_col_conceal(wp, lnum, column, NULL, NULL);
 }
@@ -658,7 +658,7 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
 	    )
 	return 1; // be quick for an empty line
 #ifdef FEAT_CONCEAL
-    if (plines_win_has_conceal(wp, lnum))
+    if (plines_win_may_conceal(wp, lnum))
 	col = plines_win_col_conceal(wp, lnum, MAXCOL, NULL, NULL);
     else
 #endif
@@ -700,7 +700,7 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     chartabsize_T cts;
 #ifdef FEAT_CONCEAL
     long	vcol_off_co = 0;
-    int		concealed = FALSE;
+    bool	concealed = false;
 #endif
 
 #ifdef FEAT_DIFF
@@ -719,7 +719,7 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
 
     init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
 #ifdef FEAT_CONCEAL
-    if (plines_win_has_conceal(wp, lnum))
+    if (plines_win_may_conceal(wp, lnum))
     {
 	cts.cts_vcol = (int)plines_win_col_conceal(wp, lnum, column,
 						 &vcol_off_co, &concealed);
