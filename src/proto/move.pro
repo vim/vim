@@ -29,6 +29,7 @@ void validate_virtcol(void);
 void validate_virtcol_win(win_T *wp);
 void validate_cheight(void);
 void validate_cursor_col(void);
+int update_conceal_cursor_screenpos(win_T *wp);
 int win_col_off(win_T *wp);
 int curwin_col_off(void);
 int win_col_off2(win_T *wp);

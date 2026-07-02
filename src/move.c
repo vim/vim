@@ -1106,6 +1106,28 @@ validate_cursor_col(void)
     if (curwin->w_valid & VALID_WCOL)
 	return;
 
+#if defined(FEAT_CONCEAL) && (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP))
+    if (curwin->w_p_wrap && curwin->w_p_cole == 3
+	    && plines_win_col_conceal_vcol(curwin,
+			      curwin->w_cursor.lnum, curwin->w_cursor.col) >= 0)
+    {
+	int row;
+	int scol;
+	int ccol;
+	int ecol;
+
+	textpos2screenpos(curwin, &curwin->w_cursor, &row, &scol, &ccol,
+									&ecol);
+	if (row > 0 && ccol > 0)
+	{
+	    curwin->w_wrow = row - W_WINROW(curwin) - 1;
+	    curwin->w_wcol = ccol - curwin->w_wincol - 1;
+	    curwin->w_valid |= VALID_WCOL;
+	    return;
+	}
+    }
+#endif
+
 #ifdef FEAT_FOLDING
     cline_folded = (curwin->w_valid & VALID_CHEIGHT)
 	? curwin->w_cline_folded
@@ -1139,6 +1161,41 @@ validate_cursor_col(void)
     curwin->w_flags &= ~WFLAG_WCOL_OFF_ADDED;
 #endif
 }
+
+#if defined(FEAT_CONCEAL) && (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP))
+/*
+ * Update w_wrow and w_wcol from the actual screen position for a concealed
+ * wrapped cursor line.  Return OK if the cached position was updated.
+ */
+    int
+update_conceal_cursor_screenpos(win_T *wp)
+{
+    int row;
+    int scol;
+    int ccol;
+    int ecol;
+
+    if (!wp->w_p_wrap || wp->w_p_cole != 3)
+	return FAIL;
+    if (plines_win_col_conceal_vcol(wp, wp->w_cursor.lnum,
+						 wp->w_cursor.col) < 0)
+    {
+	wp->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
+	return FAIL;
+    }
+    textpos2screenpos(wp, &wp->w_cursor, &row, &scol, &ccol, &ecol);
+    if (row <= 0 || ccol <= 0)
+    {
+	wp->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
+	return FAIL;
+    }
+    wp->w_wrow = row - W_WINROW(wp) - 1;
+    wp->w_wcol = ccol - wp->w_wincol - 1;
+    wp->w_valid |= VALID_WROW|VALID_WCOL;
+    wp->w_valid &= ~VALID_VIRTCOL;
+    return OK;
+}
+#endif
 
 /*
  * Compute offset of a window, occupied by absolute or relative line number,

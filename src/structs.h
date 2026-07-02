@@ -4321,6 +4321,8 @@ struct window_S
 				    // w_wcol
 # define WFLAG_WROW_OFF_ADDED	2   // popup border and padding were added to
 				    // w_wrow
+# define WFLAG_CONCEAL_WCOL	4   // w_wrow and w_wcol were computed from
+				    // concealed screen lines
 #endif
 
     /*
@@ -4370,6 +4372,8 @@ struct window_S
 #ifdef FEAT_CONCEAL
     int		w_wcol_conceal_off; // screen cells concealed before w_wcol on
 				    // the cursor's screen line, set by win_line()
+    pos_T	w_conceal_wcol_pos; // position "w_wcol" was computed for
+    int		w_conceal_wcol_width; // window width "w_wcol" was computed for
 #endif
 
     /*

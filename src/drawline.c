@@ -1412,7 +1412,11 @@ win_line(
     int		prev_syntax_id	= 0;
     int		conceal_attr	= HL_ATTR(HLF_CONCEAL);
     int		is_concealing	= FALSE;
-    int		did_wcol	= FALSE;
+    int		did_wcol	= in_curline
+				    && (wp->w_flags & WFLAG_CONCEAL_WCOL) != 0
+				    && wp->w_conceal_wcol_width == wp->w_width
+				    && EQUAL_POS(wp->w_conceal_wcol_pos,
+								wp->w_cursor);
     int		old_boguscols   = 0;
 # if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
     bool	lbr_seen_conceal = false;
@@ -1430,6 +1434,9 @@ win_line(
 #else
 # define VCOL_HLC (wlv.vcol - wlv.vcol_off_tp)
 #endif
+
+    if (in_curline)
+	wp->w_flags &= ~WFLAG_CONCEAL_WCOL;
 
     if (startrow > endrow)		// past the end already!
 	return startrow;
@@ -4027,6 +4034,9 @@ win_line(
 	// need to correct the cursor column, so do that at end of line.
 	if (!did_wcol && wlv.draw_state == WL_LINE
 		&& in_curline && conceal_cursor_line(wp)
+		&& !(wp->w_p_wrap && wp->w_p_cole == 3
+		    && (wp->w_valid & (VALID_WCOL|VALID_WROW))
+						== (VALID_WCOL|VALID_WROW))
 		&& (wlv.vcol + skip_cells >= wp->w_virtcol || c == NUL))
 	{
 # ifdef FEAT_RIGHTLEFT
