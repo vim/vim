@@ -2463,4 +2463,12 @@ func Test_tuple_multi_assign_in_for_loop_from_import()
   call v9.CheckSourceScriptSuccess(lines)
 endfunc
 
+" Memory allocation failure while collecting the rest of a tuple in an unpack
+func Test_tuple_unpack_memory_fail()
+  let t = ('1', '2', '3')
+  call test_alloc_fail(GetAllocId('tuple_append'), 0, 0)
+  call assert_fails('let [a; rest] = t', 'E342:')
+  unlet t
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
