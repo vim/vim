@@ -1439,11 +1439,16 @@ gui_gtk4_update_size(void)
 }
 
 # ifdef FEAT_NETBEANS_INTG
-    cairo_t *
-gui_gtk4_get_multisign_context(int x, int y, int w, int h)
+    void
+gui_gtk4_add_multisign(
+	cairo_surface_t *surf,
+	int		row,
+	int		col,
+	int		width,
+	int		height)
 {
-    return vim_draw_area_get_multisign_cairo(
-	    VIM_DRAW_AREA(gui.drawarea), x, y, w, h);
+    vim_draw_area_add_multisign(VIM_DRAW_AREA(gui.drawarea), surf, row, col,
+	    width, height);
 }
 # endif
 #else // USE_GTK4_SNAPSHOT
@@ -3757,6 +3762,7 @@ gui_gtk_draw_string_ext(
     int			i;
 #ifdef USE_GTK4_SNAPSHOT
     gboolean		s_alloced = FALSE;
+    int			cells_used = 0;
 #else
     GdkRectangle	area;
     cairo_t		*cr;
@@ -3805,8 +3811,9 @@ gui_gtk_draw_string_ext(
 	}
 
 #ifdef USE_GTK4_SNAPSHOT
-	vim_draw_area_add_glyphs(VIM_DRAW_AREA(gui.drawarea), row, col, len,
-		flags, gui.ascii_font, glyphs);
+	cells_used +=
+	    vim_draw_area_add_glyphs(VIM_DRAW_AREA(gui.drawarea), row, col, len,
+		    flags, gui.ascii_font, glyphs);
 #else
 	draw_glyph_string(row, col, len, flags, gui.ascii_font, glyphs, cr);
 #endif
@@ -3928,7 +3935,7 @@ not_ascii:;
 	    }
 
 #ifdef USE_GTK4_SNAPSHOT
-	    vim_draw_area_add_glyphs(VIM_DRAW_AREA(gui.drawarea),
+	    cells_used += vim_draw_area_add_glyphs(VIM_DRAW_AREA(gui.drawarea),
 		    row, col + column_offset, item_cells,
 		    flags, item->analysis.font, glyphs);
 #else
@@ -3955,11 +3962,14 @@ skipitall:
 
     pango_glyph_string_free(glyphs);
 
-
     if (gui.drawarea != NULL)
 	gtk_widget_queue_draw(gui.drawarea);
 
+#ifdef USE_GTK4_SNAPSHOT
+    return cells_used;
+#else
     return column_offset;
+#endif
 }
 
 /*

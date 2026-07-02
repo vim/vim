@@ -39,7 +39,7 @@ void gui_mch_set_bg_color(guicolor_T color);
 void gui_mch_set_sp_color(guicolor_T color);
 guicolor_T gui_mch_get_rgb(guicolor_T pixel);
 void gui_gtk4_update_size(void);
-cairo_t *gui_gtk4_get_multisign_context(int x, int y, int w, int h);
+void gui_gtk4_add_multisign(cairo_surface_t *surf, int row, int col, int width, int height);
 void gui_mch_clear_block(int row1, int col1, int row2, int col2);
 void gui_mch_clear_all(void);
 void gui_gtk4_remove_image(win_T *wp);
