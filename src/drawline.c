@@ -1144,6 +1144,48 @@ apply_cursorline_highlight(
 
 #if defined(FEAT_LINEBREAK) && defined(FEAT_CONCEAL) && defined(FEAT_SYN_HL)
 /*
+ * Return TRUE when "ptr" points at concealed break characters followed by a
+ * visible non-break character.
+ */
+    static bool
+lbr_conceal_next_is_nonbreak(
+	win_T		*wp,
+	linenr_T	lnum,
+	char_u		*line,
+	char_u		*ptr,
+	colnr_T		restore_col)
+{
+    char_u	*p = ptr;
+    int		save_did_emsg = did_emsg;
+    bool	retval = false;
+
+    did_emsg = FALSE;
+    while (*p != NUL && VIM_ISBREAK((int)*p))
+    {
+	colnr_T	col = (colnr_T)(p - line);
+	int	flags;
+	int	seqnr;
+
+	(void)syn_get_id(wp, lnum, col, FALSE, NULL, TRUE);
+	flags = get_syntax_info(&seqnr);
+	if (did_emsg || !(flags & HL_CONCEAL))
+	    break;
+	MB_PTR_ADV(p);
+    }
+
+    if (!did_emsg)
+	retval = *p != NUL && !VIM_ISBREAK((int)*p);
+
+    (void)syn_get_id(wp, lnum, restore_col, FALSE, NULL, TRUE);
+    if (did_emsg)
+	wp->w_s->b_syn_error = TRUE;
+    else
+	did_emsg = save_did_emsg;
+
+    return retval;
+}
+
+/*
  * Return the visible width of the non-break run starting at "ptr", when
  * syntax concealment hides characters for 'conceallevel' 3.  Return -1 when
  * the regular linebreak calculation should be used.
@@ -1173,7 +1215,7 @@ lbr_conceal_width(
     *followed_by_breakp = false;
     did_emsg = FALSE;
 
-    while (*p != NUL && !VIM_ISBREAK((int)*p))
+    while (*p != NUL)
     {
 	colnr_T	col = (colnr_T)(p - line);
 	int	flags;
@@ -1186,11 +1228,22 @@ lbr_conceal_width(
 	    break;
 	}
 
-	(void)syn_get_id(wp, lnum, col, FALSE, NULL, FALSE);
+	(void)syn_get_id(wp, lnum, col, FALSE, NULL, TRUE);
 	flags = get_syntax_info(&seqnr);
 	if (did_emsg)
 	{
 	    width = -1;
+	    break;
+	}
+
+	if (VIM_ISBREAK((int)*p))
+	{
+	    if (flags & HL_CONCEAL)
+	    {
+		*concealedp = true;
+		MB_PTR_ADV(p);
+		continue;
+	    }
 	    break;
 	}
 
@@ -1224,7 +1277,7 @@ lbr_conceal_width(
     }
 
     *followed_by_breakp = VIM_ISBREAK((int)*p);
-    (void)syn_get_id(wp, lnum, restore_col, FALSE, NULL, FALSE);
+    (void)syn_get_id(wp, lnum, restore_col, FALSE, NULL, TRUE);
     if (did_emsg)
     {
 	wp->w_s->b_syn_error = TRUE;
@@ -3278,8 +3331,17 @@ win_line(
 #endif
 #ifdef FEAT_LINEBREAK
 		// Found last space before word: check for line break.
+		bool lbr_next_is_nonbreak = !VIM_ISBREAK((int)*ptr);
+
+# if defined(FEAT_CONCEAL) && defined(FEAT_SYN_HL)
+		if (!lbr_next_is_nonbreak && wp->w_p_lbr && c0 == c
+			&& wlv.need_lbr && VIM_ISBREAK(c)
+			&& wp->w_p_cole == 3 && has_syntax)
+		    lbr_next_is_nonbreak = lbr_conceal_next_is_nonbreak(wp,
+			    lnum, line, ptr, (colnr_T)(ptr - line));
+# endif
 		if (wp->w_p_lbr && c0 == c && wlv.need_lbr
-				  && VIM_ISBREAK(c) && !VIM_ISBREAK((int)*ptr))
+				  && VIM_ISBREAK(c) && lbr_next_is_nonbreak)
 		{
 		    int	    mb_off = has_mbyte ? (*mb_head_off)(line, ptr - 1)
 									   : 0;
@@ -3340,6 +3402,9 @@ win_line(
 			    }
 			    if (plain_width == screen_extra
 				    && VIM_ISBREAK((int)*q))
+				need_lbr_conceal = true;
+			    if (!need_lbr_conceal && VIM_ISBREAK((int)*ptr)
+				    && lbr_next_is_nonbreak)
 				need_lbr_conceal = true;
 			}
 

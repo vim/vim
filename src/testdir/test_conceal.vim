@@ -868,6 +868,36 @@ func Test_conceallevel_three_wrap()
   call assert_equal('s', screenstring(2, 1))
   call assert_equal(screenattr(2, 1), screenattr(1, winwidth(0)))
 
+  call CloseWindow()
+  call NewWindow(4, 12)
+  setlocal wrap linebreak conceallevel=3 concealcursor=n signcolumn=no
+        \ nonumber showbreak=
+  syntax clear test
+  syntax region test matchgroup=test start=/\*/ end=/\*/ concealends
+  call setline(1, 'aaaa bbbb *italic words')
+  redraw
+  call assert_equal([
+        \ 'aaaa bbbb   ',
+        \ 'italic words ',
+        \ '~           ',
+        \ ], ScreenLines([1, 3], winwidth(0)))
+
+  call CloseWindow()
+  call NewWindow(5, 49)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+        \ signcolumn=no number showbreak=
+  syntax clear test
+  syntax region testItalic matchgroup=test start=/\*/ end=/\*/ concealends
+  call setline(1, 'This paragraph has bold text before 日本語, *italic text before コンシール*, and trailing words.')
+  redraw
+  call assert_equal([
+        \ '  1 This paragraph has bold text before 日本語,',
+        \ '    italic text before コンシール, and trailing',
+        \ '    words.',
+        \ '~',
+        \ ], map(ScreenLines([1, 4], winwidth(0)),
+        \ 'substitute(v:val, "\\s\\+$", "", "")'))
+
   syntax clear test
   call CloseWindow()
 endfunc
