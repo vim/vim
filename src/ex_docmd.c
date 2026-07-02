@@ -5394,6 +5394,13 @@ separate_nextcmd(exarg_T *eap, int keep_backslash)
 	}
 #endif
 
+	// Text after the bar is the first line of input text
+	else if (*p == '|'
+		    && (eap->cmdidx == CMD_append
+			|| eap->cmdidx == CMD_change
+			|| eap->cmdidx == CMD_insert))
+	    return;
+
 	// Check for '"'/'#': start of comment or '|': next command
 	// :@" and :*" do not start a comment!
 	// :redir @" doesn't either.
@@ -5408,10 +5415,7 @@ separate_nextcmd(exarg_T *eap, int keep_backslash)
 		    && vim9script
 		    && !(eap->argt & EX_NOTRLCOM)
 		    && p > eap->cmd && VIM_ISWHITE(p[-1]))
-		|| (*p == '|'
-		    && eap->cmdidx != CMD_append
-		    && eap->cmdidx != CMD_change
-		    && eap->cmdidx != CMD_insert)
+		|| *p == '|'
 		|| *p == '\n')
 	{
 	    /*
