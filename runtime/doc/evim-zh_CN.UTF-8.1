@@ -1,0 +1,53 @@
+.TH EVIM 1 "2024 August 12"
+.SH 名称
+evim \- 简易 Vim ，使用 Vim 编辑文件并设置为无模式编辑
+.SH 概述
+.br
+.B evim
+[选项] [文件 ..]
+.br
+.B eview
+.SH 描述
+.B eVim
+启动
+.B Vim
+并设置选项，使其行为类似于无模式编辑器。
+这仍然是 Vim ，但作为点击式编辑器使用。
+体验很像在 MS-Windows 上使用记事本。
+.B eVim
+将始终在 GUI 中运行，以启用菜单和工具栏。
+.PP
+仅适用于那些确实无法以正常方式使用 Vim 的人。
+编辑效率会低得多。
+.PP
+.B eview
+功能相同，但以只读模式启动。其工作方式与 evim \-R 相同。
+.PP
+有关 Vim 、选项等的详细信息，请参见 vim(1)。
+.PP
+选项 'insertmode' 被开启，以便能够直接输入文本。
+.br
+设置相应映射，使复制和粘贴使用类似 MS-Windows 的快捷键。
+CTRL-X 剪切文本，CTRL-C 复制文本，CTRL-V 粘贴文本。
+使用 CTRL-Q 可用于执行 CTRL-V 的原生功能。
+.SH 选项
+参见 vim(1)。
+.SH 文件
+.TP 15
+/usr/local/share/vim/vim??/evim.vim
+用于初始化 eVim 的脚本。
+.br
+.I vim??
+是短版本号，如 vim91 代表
+.B Vim 9.1
+.SH 别名
+也被称为 “傻瓜版Vim”。
+使用 evim 时，你应该拿一块手帕，
+在每个角上打一个结，然后戴在头上。
+.SH 另见
+vim(1)
+.SH 作者
+绝大多数
+.B Vim
+代码由 Bram Moolenaar 完成，并得到了众多人士的大力协助。
+参见 “帮助” 菜单中的 “致谢”。

@@ -134,6 +134,11 @@ runtime/doc/vimtutor-ru.1				@RestorerZ
 runtime/doc/vimtutor-ru.UTF-8.1				@RestorerZ
 runtime/doc/xxd-ru.1					@RestorerZ
 runtime/doc/xxd-ru.UTF-8.1				@RestorerZ
+runtime/doc/evim-zh_CN.UTF-8.1				@mao-yining
+runtime/doc/vim-zh_CN.UTF-8.1				@mao-yining
+runtime/doc/vimdiff-zh_CN.UTF-8.1			@mao-yining
+runtime/doc/vimtutor-zh_CN.UTF-8.1			@mao-yining
+runtime/doc/xxd-zh_CN.UTF-8.1				@mao-yining
 runtime/ftplugin/abaqus.vim				@costerwi
 runtime/ftplugin/abnf.vim				@A4-Tacks
 runtime/ftplugin/algol68.vim				@dkearns
