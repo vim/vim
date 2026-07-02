@@ -878,7 +878,7 @@ func Test_conceallevel_three_wrap()
   redraw
   call assert_equal([
         \ 'aaaa bbbb   ',
-        \ 'italic words ',
+        \ 'italic words',
         \ '~           ',
         \ ], ScreenLines([1, 3], winwidth(0)))
 

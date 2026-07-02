@@ -2333,11 +2333,316 @@ find_decl(
  *
  * Return OK if able to move cursor, FAIL otherwise.
  */
+#ifdef FEAT_CONCEAL
+    static int nv_screenline_conceal_current_pos(int *rowp, int *colp);
+#endif
+
+#ifdef FEAT_CONCEAL
+# define NV_SCREENLINE_FIRSTCOL	(-1)
+# define NV_SCREENLINE_LASTCOL	MAXCOL
+
+    static void
+nv_screenline_conceal_clear(void)
+{
+    curwin->w_flags &= ~WFLAG_CONCEAL_WCOL;
+}
+
+    static bool
+nv_screenline_byte_hidden(linenr_T lnum, colnr_T col)
+{
+    return plines_win_col_concealed(curwin, lnum, col);
+}
+
+    static int
+nv_screenline_conceal_current_pos(int *rowp, int *colp)
+{
+    linenr_T	lnum = curwin->w_cursor.lnum;
+    char_u	*line;
+    char_u	*p;
+    pos_T	pos;
+    int		row;
+    int		scol;
+    int		ccol;
+    int		ecol;
+    int		len;
+
+    if (curwin->w_width <= 0)
+	return FAIL;
+
+    pos = curwin->w_cursor;
+    pos.coladd = 0;
+    textpos2screenpos(curwin, &pos, &row, &scol, &ccol, &ecol);
+    if (row > 0 && ccol > 0)
+    {
+	*rowp = row;
+	*colp = ccol;
+	return OK;
+    }
+
+    // If the cursor is on a hidden byte, use the next visible byte on the
+    // same line as the closest drawn position.
+    line = ml_get_buf(curwin->w_buffer, lnum, FALSE);
+    len = (int)ml_get_len(lnum);
+    if (curwin->w_cursor.col > len)
+	return FAIL;
+    for (p = line + curwin->w_cursor.col; *p != NUL; MB_PTR_ADV(p))
+    {
+	colnr_T byte_col = (colnr_T)(p - line);
+
+	if (nv_screenline_byte_hidden(lnum, byte_col))
+	    continue;
+
+	pos.lnum = lnum;
+	pos.col = byte_col;
+	pos.coladd = 0;
+	textpos2screenpos(curwin, &pos, &row, &scol, &ccol, &ecol);
+	if (row > 0 && ccol > 0)
+	{
+	    *rowp = row;
+	    *colp = ccol;
+	    return OK;
+	}
+    }
+
+    return FAIL;
+}
+
+    static int
+nv_screenline_conceal_last_row(int *rowp)
+{
+    linenr_T	lnum = curwin->w_cursor.lnum;
+    char_u	*line;
+    char_u	*p;
+    pos_T	pos;
+    int		row;
+    int		scol;
+    int		ccol;
+    int		ecol;
+    int		last_row = 0;
+
+    if (curwin->w_width <= 0)
+	return FAIL;
+
+    line = ml_get_buf(curwin->w_buffer, lnum, FALSE);
+
+    for (p = line; *p != NUL; MB_PTR_ADV(p))
+    {
+	colnr_T byte_col = (colnr_T)(p - line);
+
+	if (nv_screenline_byte_hidden(lnum, byte_col))
+	    continue;
+
+	pos.lnum = lnum;
+	pos.col = byte_col;
+	pos.coladd = 0;
+	textpos2screenpos(curwin, &pos, &row, &scol, &ccol, &ecol);
+	if (row > last_row)
+	    last_row = row;
+    }
+
+    if (last_row <= 0)
+	return FAIL;
+    *rowp = last_row;
+    return OK;
+}
+
+    static int
+nv_screenline_conceal_pos(int target_row, int target_col, pos_T *target_pos)
+{
+    linenr_T	lnum = curwin->w_cursor.lnum;
+    char_u	*line;
+    char_u	*p;
+    pos_T	pos;
+    int		row;
+    int		scol;
+    int		ccol;
+    int		ecol;
+    int		best_col = -1;
+    int		best_under_col = -1;
+    int		best_under_dist = MAXCOL;
+
+    if (curwin->w_width <= 0)
+	return FAIL;
+
+    line = ml_get_buf(curwin->w_buffer, lnum, FALSE);
+
+    for (p = line; *p != NUL; MB_PTR_ADV(p))
+    {
+	int	dist_to_target;
+	colnr_T byte_col = (colnr_T)(p - line);
+
+	if (nv_screenline_byte_hidden(lnum, byte_col))
+	    continue;
+
+	pos.lnum = lnum;
+	pos.col = byte_col;
+	pos.coladd = 0;
+	textpos2screenpos(curwin, &pos, &row, &scol, &ccol, &ecol);
+
+	if (row != target_row || ccol <= 0)
+	    continue;
+
+	if (target_col == NV_SCREENLINE_FIRSTCOL)
+	{
+	    best_col = byte_col;
+	    break;
+	}
+	if (target_col == NV_SCREENLINE_LASTCOL)
+	{
+	    best_col = byte_col;
+	}
+	else if (ecol >= target_col)
+	{
+	    best_col = byte_col;
+	    break;
+	}
+	else
+	{
+	    dist_to_target = target_col - ccol;
+	    if (dist_to_target < best_under_dist)
+	    {
+		best_under_dist = dist_to_target;
+		best_under_col = byte_col;
+	    }
+	}
+    }
+
+    if (best_col < 0)
+	best_col = best_under_col;
+    if (best_col < 0)
+	return FAIL;
+
+    target_pos->lnum = lnum;
+    target_pos->col = best_col;
+    target_pos->coladd = 0;
+    return OK;
+}
+
+    static int
+nv_screengo_conceal_same_line(int dir, long dist)
+{
+    pos_T	target_pos;
+    int		target_row;
+    int		target_col;
+    int		target_rel;
+    int		row;
+    int		text_col;
+    int		scol;
+    int		ccol;
+    int		ecol;
+
+    if (curwin->w_p_cole != 3 || !curwin->w_p_wrap)
+	return FAIL;
+
+    if (curwin->w_width <= 0)
+	return FAIL;
+    if ((curwin->w_valid & (VALID_WROW|VALID_WCOL))
+						== (VALID_WROW|VALID_WCOL))
+    {
+	row = W_WINROW(curwin) + curwin->w_wrow + 1;
+	ccol = curwin->w_wincol + curwin->w_wcol + 1;
+    }
+    else if (nv_screenline_conceal_current_pos(&row, &ccol) == FAIL)
+	textpos2screenpos(curwin, &curwin->w_cursor, &row, &scol, &ccol, &ecol);
+    if (row <= 0 || ccol <= 0)
+	return FAIL;
+    target_row = row + (dir == FORWARD ? (int)dist : -(int)dist);
+    if (target_row <= 0)
+	return FAIL;
+
+    text_col = curwin->w_wincol + win_col_off(curwin) + 1;
+    target_col = ccol;
+    target_rel = target_col - text_col;
+    if (target_rel < 0)
+	target_rel = 0;
+
+    if (nv_screenline_conceal_pos(target_row, target_col, &target_pos) == FAIL)
+    {
+	if (dir == FORWARD)
+	{
+	    if (curwin->w_cursor.lnum >= curwin->w_buffer->b_ml.ml_line_count)
+		return FAIL;
+	    cursor_down_inner(curwin, 1);
+	}
+	else
+	{
+	    if (curwin->w_cursor.lnum <= 1)
+		return FAIL;
+	    cursor_up_inner(curwin, 1);
+	}
+
+	text_col = curwin->w_wincol + win_col_off(curwin) + 1;
+	target_col = text_col + target_rel;
+	if (plines_win_col_conceal_vcol(curwin,
+			curwin->w_cursor.lnum, MAXCOL) >= 0)
+	{
+	    if (dir == BACKWARD)
+	    {
+		if (nv_screenline_conceal_last_row(&target_row) == FAIL)
+		    return FAIL;
+	    }
+	    else
+	    {
+		target_pos.lnum = curwin->w_cursor.lnum;
+		target_pos.col = 0;
+		target_pos.coladd = 0;
+		textpos2screenpos(curwin, &target_pos, &target_row, &scol,
+							      &ccol, &ecol);
+	    }
+	    if (target_row <= 0
+		    || nv_screenline_conceal_pos(target_row, target_col,
+							&target_pos) == FAIL)
+	    {
+		curwin->w_curswant = target_rel;
+		coladvance(curwin->w_curswant);
+	    }
+	    else
+		curwin->w_cursor = target_pos;
+	}
+	else
+	{
+	    curwin->w_curswant = target_rel;
+	    coladvance(curwin->w_curswant);
+	}
+	curwin->w_curswant = target_rel;
+	curwin->w_set_curswant = false;
+	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT
+						       |VALID_CROW|VALID_VIRTCOL);
+	if (nv_screenline_conceal_current_pos(&row, &ccol) == FAIL)
+	    textpos2screenpos(curwin, &curwin->w_cursor, &row, &scol, &ccol,
+									&ecol);
+	return OK;
+    }
+
+    curwin->w_cursor = target_pos;
+    curwin->w_curswant = target_rel;
+    curwin->w_set_curswant = false;
+    curwin->w_wrow = target_row - W_WINROW(curwin) - 1;
+    curwin->w_wcol = target_col - curwin->w_wincol - 1;
+    curwin->w_conceal_wcol_pos = curwin->w_cursor;
+    curwin->w_conceal_wcol_width = curwin->w_width;
+    curwin->w_flags |= WFLAG_CONCEAL_WCOL;
+    curwin->w_valid_cursor = curwin->w_cursor;
+    curwin->w_valid_leftcol = curwin->w_leftcol;
+    curwin->w_valid_skipcol = curwin->w_skipcol;
+    curwin->w_valid &= ~(VALID_CHEIGHT|VALID_CROW|VALID_VIRTCOL);
+    curwin->w_valid |= VALID_WROW|VALID_WCOL;
+    return OK;
+}
+#endif
+
     int
 nv_screengo(oparg_T *oap, int dir, long dist)
 {
 
     int		linelen = linetabsize_no_outer(curwin, curwin->w_cursor.lnum);
+#ifdef FEAT_CONCEAL
+    long	conceal_linelen;
+    bool	use_conceal_vcol = false;
+    bool	did_conceal_coladvance = false;
+    linenr_T	start_lnum = curwin->w_cursor.lnum;
+    int		start_screen_col = 0;
+#endif
 
     int		retval = OK;
     int		atend = FALSE;
@@ -2350,12 +2655,38 @@ nv_screengo(oparg_T *oap, int dir, long dist)
     oap->motion_type = MCHAR;
     oap->inclusive = (curwin->w_curswant == MAXCOL);
 
+#ifdef FEAT_CONCEAL
+    nv_screenline_conceal_clear();
+#endif
+
     col_off1 = curwin_col_off();
     col_off2 = col_off1 - curwin_col_off2();
     width1 = curwin->w_width - col_off1;
     width2 = curwin->w_width - col_off2;
     if (width2 == 0)
 	width2 = 1; // avoid divide by zero
+#ifdef FEAT_CONCEAL
+    conceal_linelen = plines_win_col_conceal_vcol(curwin,
+					 curwin->w_cursor.lnum, MAXCOL);
+    if (conceal_linelen >= 0)
+    {
+	linelen = (int)conceal_linelen;
+	use_conceal_vcol = true;
+    }
+    if (nv_screenline_conceal_current_pos(&n, &start_screen_col) == FAIL)
+    {
+	int row;
+	int scol;
+	int ecol;
+
+	textpos2screenpos(curwin, &curwin->w_cursor, &row, &scol,
+						&start_screen_col, &ecol);
+    }
+#endif
+#ifdef FEAT_CONCEAL
+    if (nv_screengo_conceal_same_line(dir, dist) == OK)
+	return OK;
+#endif
 
     if (curwin->w_width != 0)
     {
@@ -2409,6 +2740,15 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 		cursor_up_inner(curwin, 1);
 
 		linelen = linetabsize_no_outer(curwin, curwin->w_cursor.lnum);
+#ifdef FEAT_CONCEAL
+		if (use_conceal_vcol)
+		{
+		    conceal_linelen = plines_win_col_conceal_vcol(curwin,
+					 curwin->w_cursor.lnum, MAXCOL);
+		    if (conceal_linelen >= 0)
+			linelen = (int)conceal_linelen;
+		}
+#endif
 		if (linelen > width1)
 		    curwin->w_curswant += (((linelen - width1 - 1) / width2)
 								+ 1) * width2;
@@ -2446,6 +2786,15 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 		if (curwin->w_curswant >= width1)
 		    curwin->w_curswant -= width2;
 		linelen = linetabsize_no_outer(curwin, curwin->w_cursor.lnum);
+#ifdef FEAT_CONCEAL
+		if (use_conceal_vcol)
+		{
+		    conceal_linelen = plines_win_col_conceal_vcol(curwin,
+					 curwin->w_cursor.lnum, MAXCOL);
+		    if (conceal_linelen >= 0)
+			linelen = (int)conceal_linelen;
+		}
+#endif
 	    }
 	}
       }
@@ -2453,10 +2802,23 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 
     if (virtual_active() && atend)
 	coladvance(MAXCOL);
+#ifdef FEAT_CONCEAL
+    else if (use_conceal_vcol
+	    && plines_win_col_conceal_advance(curwin, curwin->w_cursor.lnum,
+			    curwin->w_curswant, &curwin->w_cursor) == OK)
+    {
+	did_conceal_coladvance = true;
+	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT
+					       |VALID_CROW|VALID_VIRTCOL);
+    }
+#endif
     else
 	coladvance(curwin->w_curswant);
-
-    if (curwin->w_cursor.col > 0 && curwin->w_p_wrap)
+    if (curwin->w_cursor.col > 0 && curwin->w_p_wrap
+#ifdef FEAT_CONCEAL
+	    && !did_conceal_coladvance
+#endif
+	    )
     {
 	colnr_T virtcol;
 	int	c;
@@ -2484,6 +2846,39 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 						      > (colnr_T)width2 / 2)))
 	    --curwin->w_cursor.col;
     }
+#ifdef FEAT_CONCEAL
+    if (curwin->w_cursor.lnum != start_lnum && curwin->w_p_cole == 3
+	    && start_screen_col > 0
+	    && plines_win_col_conceal_vcol(curwin,
+			      curwin->w_cursor.lnum, MAXCOL) >= 0)
+    {
+	pos_T	target_pos;
+	int	target_row = 0;
+
+	if (dir == BACKWARD)
+	    (void)nv_screenline_conceal_last_row(&target_row);
+	else
+	{
+	    int scol;
+	    int ccol;
+	    int ecol;
+
+	    target_pos.lnum = curwin->w_cursor.lnum;
+	    target_pos.col = 0;
+	    target_pos.coladd = 0;
+	    textpos2screenpos(curwin, &target_pos, &target_row, &scol,
+							      &ccol, &ecol);
+	}
+	if (target_row > 0
+		&& nv_screenline_conceal_pos(target_row, start_screen_col,
+							&target_pos) == OK)
+	{
+	    curwin->w_cursor = target_pos;
+	    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT
+					       |VALID_CROW|VALID_VIRTCOL);
+	}
+    }
+#endif
 
     if (atend)
 	curwin->w_curswant = MAXCOL;	    // stick in the last column
@@ -5809,8 +6204,47 @@ nv_g_home_m_cmd(cmdarg_T *cap)
     if (cap->nchar == '^')
 	flag = TRUE;
 
+#ifdef FEAT_CONCEAL
+    nv_screenline_conceal_clear();
+#endif
+
     cap->oap->motion_type = MCHAR;
     cap->oap->inclusive = FALSE;
+#ifdef FEAT_CONCEAL
+    if (curwin->w_p_cole == 3 && curwin->w_p_wrap && curwin->w_width != 0)
+    {
+	pos_T	target_pos;
+	int	row;
+	int	ccol;
+	int	target_col = NV_SCREENLINE_FIRSTCOL;
+
+	if (nv_screenline_conceal_current_pos(&row, &ccol) == OK)
+	{
+	    if (cap->nchar == 'm')
+		target_col = curwin->w_wincol + win_col_off(curwin) + 1
+				  + (curwin->w_width - curwin_col_off()) / 2;
+	    if (nv_screenline_conceal_pos(row, target_col, &target_pos) == OK)
+	    {
+		curwin->w_cursor = target_pos;
+		curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT
+						       |VALID_CROW|VALID_VIRTCOL);
+		if (flag)
+		{
+		    do
+			i = gchar_cursor();
+		    while (VIM_ISWHITE(i) && oneright() == OK);
+		    curwin->w_valid &= ~VALID_WCOL;
+		}
+# if defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP)
+		(void)update_conceal_cursor_screenpos(curwin);
+# endif
+		curwin->w_set_curswant = true;
+		adjust_skipcol();
+		return;
+	    }
+	}
+    }
+#endif
     if (curwin->w_p_wrap && curwin->w_width != 0)
     {
 	int	width1 = curwin->w_width - curwin_col_off();
@@ -5912,8 +6346,42 @@ nv_g_dollar_cmd(cmdarg_T *cap)
     if (cap->nchar == K_END || cap->nchar == K_KEND)
 	flag = TRUE;
 
+#ifdef FEAT_CONCEAL
+    nv_screenline_conceal_clear();
+#endif
+
     oap->motion_type = MCHAR;
     oap->inclusive = TRUE;
+#ifdef FEAT_CONCEAL
+    if (curwin->w_p_cole == 3 && curwin->w_p_wrap && curwin->w_width != 0
+	    && cap->count1 == 1)
+    {
+	pos_T	target_pos;
+	int	row;
+	int	ccol;
+
+	if (nv_screenline_conceal_current_pos(&row, &ccol) == OK
+		&& nv_screenline_conceal_pos(row, NV_SCREENLINE_LASTCOL,
+							&target_pos) == OK)
+	{
+	    curwin->w_cursor = target_pos;
+	    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT
+						       |VALID_CROW|VALID_VIRTCOL);
+	    update_curswant_force();
+	    if (flag)
+	    {
+		do
+		    i = gchar_cursor();
+		while (IS_WHITE_OR_NUL(i) && oneleft() == OK);
+		curwin->w_valid &= ~VALID_WCOL;
+	    }
+# if defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP)
+	    (void)update_conceal_cursor_screenpos(curwin);
+# endif
+	    return;
+	}
+    }
+#endif
     if (curwin->w_p_wrap && curwin->w_width != 0)
     {
 	curwin->w_curswant = MAXCOL;    // so we stay at the end
@@ -5946,7 +6414,7 @@ nv_g_dollar_cmd(cmdarg_T *cap)
 #ifdef FEAT_PROP_POPUP
 			- curwin->w_virtcol_first_char
 #endif
-						> (colnr_T)i)
+					    > (colnr_T)i)
 		    --curwin->w_cursor.col;
 	    }
 	}
