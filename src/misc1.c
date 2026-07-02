@@ -396,14 +396,14 @@ plines_win_nofill(
 }
 
 #if defined(FEAT_CONCEAL)
-    static int
+    static bool
 plines_win_has_conceal(win_T *wp, linenr_T lnum)
 {
     if (wp->w_p_cole != 3)
-	return FALSE;
+	return false;
     if (wp == curwin && lnum == wp->w_cursor.lnum
 						&& !conceal_cursor_line(wp))
-	return FALSE;
+	return false;
     if (VIsual_active && wp->w_buffer == curwin->w_buffer
 				    && vim_strchr(wp->w_p_cocu, 'v') == NULL)
     {
@@ -420,10 +420,10 @@ plines_win_has_conceal(win_T *wp, linenr_T lnum)
 	    bot = &curwin->w_cursor;
 	}
 	if (lnum >= top->lnum && lnum <= bot->lnum)
-	    return FALSE;
+	    return false;
     }
 
-    return TRUE;
+    return true;
 }
 
 /*
