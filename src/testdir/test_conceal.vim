@@ -856,6 +856,17 @@ func Test_conceallevel_three_wrap()
   call assert_equal(5, screenpos(0, 1,
         \ stridx(getline(1), 'followed') + 1).row)
 
+  syntax match test /\*\*/ conceal
+  syntax match test /\*/ conceal
+  call setline(1, 'This paragraph has **bold text before 日本語**, *italic text before コンシール*, and a [concealed link title 日本語](https://example.invalid/a/very/long/path/that/should-be-hidden-by-markdown-conceal) followed by enough words to wrap several times in a narrow window.')
+  redraw
+  call cursor(1, 1)
+  normal! gjgjl
+  call assert_equal(stridx(getline(1), ', and a') + 3, col('.'))
+  syntax clear test
+  syntax match test /\[/ conceal
+  syntax match test /\](https:[^)]*)/ conceal
+
   call cursor(1, 1)
   for i in range(1, 220)
     let before = [winline(), wincol()]

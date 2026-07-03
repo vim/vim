@@ -28,6 +28,82 @@
 // All user names (for ~user completion as done by shell).
 static garray_T	ga_users;
 
+#if defined(FEAT_LINEBREAK) && defined(FEAT_CONCEAL) && defined(FEAT_SYN_HL)
+/*
+ * Return TRUE when the visible non-break run starting at "ptr" fits in
+ * "screen_extra" cells after concealed bytes are ignored.
+ */
+    static bool
+plines_lbr_conceal_fits(
+	win_T		*wp,
+	linenr_T	lnum,
+	char_u		*line,
+	char_u		*ptr,
+	int		start_col,
+	int		screen_extra)
+{
+    char_u	*p = ptr;
+    int		width = 0;
+    bool	seen_visible = false;
+    bool	seen_conceal = false;
+    bool	fits = false;
+    int		save_did_emsg = did_emsg;
+
+    did_emsg = FALSE;
+    while (*p != NUL)
+    {
+	colnr_T	col = (colnr_T)(p - line);
+	int	flags;
+	int	seqnr;
+	int	char_width;
+
+	if (*p == TAB)
+	    break;
+
+	(void)syn_get_id(wp, lnum, col, FALSE, NULL, FALSE);
+	flags = get_syntax_info(&seqnr);
+	if (did_emsg)
+	    break;
+
+	if (VIM_ISBREAK((int)*p))
+	{
+	    if (flags & HL_CONCEAL)
+	    {
+		seen_conceal = true;
+		MB_PTR_ADV(p);
+		continue;
+	    }
+	    break;
+	}
+
+	if (flags & HL_CONCEAL)
+	{
+	    seen_conceal = true;
+	    MB_PTR_ADV(p);
+	    continue;
+	}
+
+	char_width = win_chartabsize(wp, p, start_col + width);
+	if (char_width <= 0)
+	    break;
+	width += char_width;
+	if (width > screen_extra)
+	    break;
+	seen_visible = true;
+	MB_PTR_ADV(p);
+    }
+
+    if (did_emsg)
+	wp->w_s->b_syn_error = TRUE;
+    else
+    {
+	did_emsg = save_did_emsg;
+	fits = seen_visible && seen_conceal && width <= screen_extra;
+    }
+    return fits;
+}
+#endif
+
 /*
  * get_leader_len() returns the length in bytes of the prefix of the given
  * string which introduces a comment.  If this string is not a comment then
@@ -524,6 +600,29 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	    cts.cts_vcol = *ptr == TAB
 				    ? (int)(vcol + vcol_off_co) : (int)vcol;
 	    charsize = win_lbr_chartabsize(&cts, NULL, NULL);
+# if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
+	    if (wp->w_p_lbr && wp->w_p_wrap && wp->w_p_cole == 3
+		    && has_syntax && charsize > 1
+		    && VIM_ISBREAK((int)*ptr))
+	    {
+		char_u	*next = ptr;
+		int	char_width = win_chartabsize(wp, ptr, vcol);
+		long	screen_col = vcol + win_col_off(wp);
+		int	width = wp->w_width - win_col_off(wp)
+						  + win_col_off2(wp);
+
+		if (width > 0 && screen_col >= wp->w_width)
+		    screen_col -= ((screen_col - wp->w_width) / width + 1)
+								     * width;
+		MB_PTR_ADV(next);
+		if (screen_col >= 0 && screen_col < wp->w_width
+			&& char_width > 0
+			&& plines_lbr_conceal_fits(wp, lnum, line, next,
+			    (int)screen_col + char_width,
+			    wp->w_width - (int)screen_col - char_width))
+		    charsize = char_width;
+	    }
+# endif
 	    if (*ptr == TAB && vcol_off_co > 0)
 	    {
 # ifdef FEAT_LINEBREAK
