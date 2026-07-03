@@ -907,6 +907,12 @@ func Test_conceallevel_three_wrap()
         \ col('.'))
   call assert_equal(5, winline())
 
+  call cursor(1, stridx(getline(1), '漢字かな') + strlen('漢字か') + 1)
+  normal! gk
+  call assert_equal(stridx(getline(1), '**bold') + strlen('**b') + 1,
+        \ col('.'))
+  call assert_equal(4, winline())
+
   syntax clear test
   syntax match test /\[/ conceal
   syntax match test /\](https:[^)]*)/ conceal

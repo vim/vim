@@ -2532,9 +2532,7 @@ nv_screenline_conceal_pos(int target_row, int target_col, pos_T *target_pos)
 	pos.col = byte_col;
 	pos.coladd = 0;
 # ifdef FEAT_LINEBREAK
-	if (curwin->w_p_lbr && nv_screenline_byte_hidden(lnum, byte_col))
-	    seen_conceal = true;
-	if (curwin->w_p_lbr && seen_conceal)
+	if (curwin->w_p_lbr)
 	{
 	    row = line_start_row + plines_win_col(curwin, lnum, byte_col) - 1;
 	    vcol = plines_win_col_conceal_vcol(curwin, lnum, byte_col);
@@ -2545,6 +2543,10 @@ nv_screenline_conceal_pos(int target_row, int target_col, pos_T *target_pos)
 		start_row = row;
 		start_vcol = vcol;
 	    }
+	    if (nv_screenline_byte_hidden(lnum, byte_col))
+		seen_conceal = true;
+	    if (!seen_conceal)
+		goto use_textpos;
 	    display_col = text_col + (int)(vcol - start_vcol);
 
 	    if (row != target_row)
@@ -2580,6 +2582,7 @@ nv_screenline_conceal_pos(int target_row, int target_col, pos_T *target_pos)
 	}
 	else
 # endif
+use_textpos:
 	textpos2screenpos(curwin, &pos, &row, &scol, &ccol, &ecol);
 
 	if (row != target_row || ccol <= 0)
