@@ -885,6 +885,21 @@ func Test_conceallevel_three_wrap()
   normal! gj
   call assert_equal(stridx(getline(1), 'later') + 1, col('.'))
   call assert_equal(2, winline())
+
+  call CloseWindow()
+  call NewWindow(7, 42)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+        \ signcolumn=no number showbreak=
+  syntax clear test
+  syntax match test /\[/ conceal
+  syntax match test /\](https:[^)]*)/ conceal
+  syntax match test /\*\*/ conceal
+  call setline(1, 'This paragraph puts the wide text later: ordinary words ordinary words ordinary words ordinary words ordinary words **bold marker hidden here** then 漢字かな交じり文 and a [second concealed link with 東京都 text](https://example.invalid/hidden-target) after the wrap point.')
+  redraw
+  call cursor(1, stridx(getline(1), 'ordinary words **') + 1)
+  normal! gj
+  call assert_equal(stridx(getline(1), '** then') + 1, col('.'))
+  call assert_equal(5, winline())
   syntax clear test
   syntax match test /\[/ conceal
   syntax match test /\](https:[^)]*)/ conceal

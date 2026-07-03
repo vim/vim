@@ -2483,6 +2483,9 @@ nv_screenline_conceal_pos(int target_row, int target_col, pos_T *target_pos)
     int		best_col = -1;
     int		best_under_col = -1;
     int		best_under_dist = MAXCOL;
+    pos_T	save_cursor;
+    int		save_valid;
+    int		validated_col;
 
     if (curwin->w_width <= 0)
 	return FAIL;
@@ -2494,9 +2497,6 @@ nv_screenline_conceal_pos(int target_row, int target_col, pos_T *target_pos)
 	int	dist_to_target;
 	colnr_T byte_col = (colnr_T)(p - line);
 
-	if (nv_screenline_byte_hidden(lnum, byte_col))
-	    continue;
-
 	pos.lnum = lnum;
 	pos.col = byte_col;
 	pos.coladd = 0;
@@ -2504,6 +2504,26 @@ nv_screenline_conceal_pos(int target_row, int target_col, pos_T *target_pos)
 
 	if (row != target_row || ccol <= 0)
 	    continue;
+
+	if (nv_screenline_byte_hidden(lnum, byte_col))
+	{
+	    save_cursor = curwin->w_cursor;
+	    save_valid = curwin->w_valid;
+	    curwin->w_cursor = pos;
+	    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT
+						       |VALID_CROW|VALID_VIRTCOL);
+	    validate_cursor();
+	    validated_col = curwin->w_wincol + curwin->w_wcol + 1;
+	    curwin->w_cursor = save_cursor;
+	    curwin->w_valid = save_valid & ~(VALID_WROW|VALID_WCOL
+					|VALID_CHEIGHT|VALID_CROW|VALID_VIRTCOL);
+	    if (validated_col == target_col)
+	    {
+		best_col = byte_col;
+		break;
+	    }
+	    continue;
+	}
 
 	if (target_col == NV_SCREENLINE_FIRSTCOL)
 	{
