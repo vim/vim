@@ -1761,15 +1761,15 @@ vim_draw_area_add_image(
 	GdkTexture  *image,
 	int	    row,
 	int	    col,
-	int	    src_x,
-	int	    src_y,
-	int	    draw_w,
-	int	    draw_h,
+	double	    src_x,
+	double	    src_y,
+	double	    draw_w,
+	double	    draw_h,
 	int	    zindex,
 	int	    id)
 {
     GskRenderNode   *node, *old;
-    int		    w, h;
+    double	    w, h;
     graphene_rect_t clip;
     GList	    *link;
     DrawImage	    *dimg;
@@ -1781,10 +1781,10 @@ vim_draw_area_add_image(
 
     w = PHY2LOG(gdk_texture_get_width(image));
     h = PHY2LOG(gdk_texture_get_height(image));
-    src_x = PHY2LOG((double)src_x);
-    src_y = PHY2LOG((double)src_y);
-    draw_w = PHY2LOG((double)draw_w);
-    draw_h = PHY2LOG((double)draw_h);
+    src_x = PHY2LOG(src_x);
+    src_y = PHY2LOG(src_y);
+    draw_w = PHY2LOG(draw_w);
+    draw_h = PHY2LOG(draw_h);
 
     node = gsk_texture_scale_node_new(image,
 	    &GRAPHENE_RECT_INIT(FILL_X(col) - src_x, FILL_Y(row) - src_y,

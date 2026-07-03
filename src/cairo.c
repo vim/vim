@@ -173,10 +173,10 @@ cairo_popup_image_paint(
 	void	*target,
 	int	 x,
 	int	 y,
-	int	 src_x,
-	int	 src_y,
-	int	 draw_w,
-	int	 draw_h)
+	double	 src_x,
+	double	 src_y,
+	double	 draw_w,
+	double	 draw_h)
 {
     cairo_t *cr;
 
@@ -186,10 +186,10 @@ cairo_popup_image_paint(
 	return;
     cairo_surface_t *surface = (cairo_surface_t *)wp->w_popup_image_surface;
 
-    src_x = PHY2LOG((double)src_x);
-    src_y = PHY2LOG((double)src_y);
-    draw_w = PHY2LOG((double)draw_w);
-    draw_h = PHY2LOG((double)draw_h);
+    src_x = PHY2LOG(src_x);
+    src_y = PHY2LOG(src_y);
+    draw_w = PHY2LOG(draw_w);
+    draw_h = PHY2LOG(draw_h);
 
 # if !GTK_CHECK_VERSION(3,0,0)
     cr = gdk_cairo_create((GdkDrawable *)target);
