@@ -1,0 +1,7 @@
+- t*he*re
+- * there might * * be* *spaces bold *
+- _ there might _ _ be_ _spaces in italic _
+- This shouldn't **be bold and italic**.
+- This should *_be bold and italic_*.
+- This should _*be bold and italic too *_.
+- This shouldn't __be italic__
