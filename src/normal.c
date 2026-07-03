@@ -2392,6 +2392,18 @@ nv_screenline_conceal_current_pos(int *rowp, int *colp)
     if (curwin->w_width <= 0)
 	return FAIL;
 
+# ifdef FEAT_LINEBREAK
+    if (curwin->w_p_lbr
+	    && curwin->w_cursor.col > 0
+	    && (curwin->w_valid & (VALID_WROW|VALID_WCOL))
+						== (VALID_WROW|VALID_WCOL))
+    {
+	*rowp = W_WINROW(curwin) + curwin->w_wrow + 1;
+	*colp = curwin->w_wincol + curwin->w_wcol + 1;
+	return OK;
+    }
+# endif
+
     pos = curwin->w_cursor;
     pos.coladd = 0;
     textpos2screenpos(curwin, &pos, &row, &scol, &ccol, &ecol);
@@ -2475,14 +2487,21 @@ nv_screenline_conceal_pos(int target_row, int target_col, pos_T *target_pos)
     linenr_T	lnum = curwin->w_cursor.lnum;
     char_u	*line;
     char_u	*p;
+    long	start_vcol = 0;
+    long	vcol;
     pos_T	pos;
     int		row;
     int		scol;
     int		ccol;
     int		ecol;
+    int		display_col;
     int		best_col = -1;
     int		best_under_col = -1;
     int		best_under_dist = MAXCOL;
+    int		start_row = 0;
+    int		line_start_row = 0;
+    int		text_col;
+    bool	seen_conceal = false;
     pos_T	save_cursor;
     int		save_valid;
     int		validated_col;
@@ -2491,6 +2510,18 @@ nv_screenline_conceal_pos(int target_row, int target_col, pos_T *target_pos)
 	return FAIL;
 
     line = ml_get_buf(curwin->w_buffer, lnum, FALSE);
+    text_col = curwin->w_wincol + win_col_off(curwin) + 1;
+# ifdef FEAT_LINEBREAK
+    if (curwin->w_p_lbr)
+    {
+	pos.lnum = lnum;
+	pos.col = 0;
+	pos.coladd = 0;
+	textpos2screenpos(curwin, &pos, &line_start_row, &scol, &ccol, &ecol);
+	if (line_start_row <= 0)
+	    return FAIL;
+    }
+# endif
 
     for (p = line; *p != NUL; MB_PTR_ADV(p))
     {
@@ -2500,6 +2531,55 @@ nv_screenline_conceal_pos(int target_row, int target_col, pos_T *target_pos)
 	pos.lnum = lnum;
 	pos.col = byte_col;
 	pos.coladd = 0;
+# ifdef FEAT_LINEBREAK
+	if (curwin->w_p_lbr && nv_screenline_byte_hidden(lnum, byte_col))
+	    seen_conceal = true;
+	if (curwin->w_p_lbr && seen_conceal)
+	{
+	    row = line_start_row + plines_win_col(curwin, lnum, byte_col) - 1;
+	    vcol = plines_win_col_conceal_vcol(curwin, lnum, byte_col);
+	    if (vcol < 0)
+		return FAIL;
+	    if (start_row != row)
+	    {
+		start_row = row;
+		start_vcol = vcol;
+	    }
+	    display_col = text_col + (int)(vcol - start_vcol);
+
+	    if (row != target_row)
+		continue;
+
+	    if (target_col == NV_SCREENLINE_FIRSTCOL
+		    || target_col <= text_col + 1)
+	    {
+		best_col = byte_col;
+		break;
+	    }
+	    if (target_col == NV_SCREENLINE_LASTCOL)
+	    {
+		if (!nv_screenline_byte_hidden(lnum, byte_col))
+		    best_col = byte_col;
+		continue;
+	    }
+	    if (display_col >= target_col)
+	    {
+		best_col = byte_col;
+		break;
+	    }
+	    if (!nv_screenline_byte_hidden(lnum, byte_col))
+	    {
+		dist_to_target = target_col - display_col;
+		if (dist_to_target < best_under_dist)
+		{
+		    best_under_dist = dist_to_target;
+		    best_under_col = byte_col;
+		}
+	    }
+	    continue;
+	}
+	else
+# endif
 	textpos2screenpos(curwin, &pos, &row, &scol, &ccol, &ecol);
 
 	if (row != target_row || ccol <= 0)

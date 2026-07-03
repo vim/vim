@@ -900,6 +900,13 @@ func Test_conceallevel_three_wrap()
   normal! gj
   call assert_equal(stridx(getline(1), '** then') + 1, col('.'))
   call assert_equal(5, winline())
+
+  call cursor(1, stridx(getline(1), 'ordinary words **bold marker') + 9)
+  normal! gj
+  call assert_equal(stridx(getline(1), '** then') + strlen('** then'),
+        \ col('.'))
+  call assert_equal(5, winline())
+
   syntax clear test
   syntax match test /\[/ conceal
   syntax match test /\](https:[^)]*)/ conceal

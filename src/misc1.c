@@ -79,6 +79,8 @@ plines_lbr_conceal_fits(
 	if (flags & HL_CONCEAL)
 	{
 	    seen_conceal = true;
+	    if (seen_visible)
+		break;
 	    MB_PTR_ADV(p);
 	    continue;
 	}
@@ -98,7 +100,7 @@ plines_lbr_conceal_fits(
     else
     {
 	did_emsg = save_did_emsg;
-	fits = seen_visible && seen_conceal && width <= screen_extra;
+	fits = seen_visible && seen_conceal && width < screen_extra;
     }
     return fits;
 }
