@@ -2383,9 +2383,9 @@ nv_screenline_conceal_current_pos(int *rowp, int *colp)
     char_u	*line;
     char_u	*p;
     pos_T	pos;
-    int		row;
+    int		row = 0;
     int		scol;
-    int		ccol;
+    int		ccol = 0;
     int		ecol;
     int		len;
 
@@ -2559,13 +2559,14 @@ nv_screengo_conceal_same_line(int dir, long dist)
 
     if (curwin->w_width <= 0)
 	return FAIL;
-    if ((curwin->w_valid & (VALID_WROW|VALID_WCOL))
+    if (nv_screenline_conceal_current_pos(&row, &ccol) == FAIL
+	    && (curwin->w_valid & (VALID_WROW|VALID_WCOL))
 						== (VALID_WROW|VALID_WCOL))
     {
 	row = W_WINROW(curwin) + curwin->w_wrow + 1;
 	ccol = curwin->w_wincol + curwin->w_wcol + 1;
     }
-    else if (nv_screenline_conceal_current_pos(&row, &ccol) == FAIL)
+    else if (row <= 0 || ccol <= 0)
 	textpos2screenpos(curwin, &curwin->w_cursor, &row, &scol, &ccol, &ecol);
     if (row <= 0 || ccol <= 0)
 	return FAIL;
@@ -2646,16 +2647,11 @@ nv_screengo_conceal_same_line(int dir, long dist)
     curwin->w_cursor = target_pos;
     curwin->w_curswant = target_rel;
     curwin->w_set_curswant = false;
-    curwin->w_wrow = target_row - W_WINROW(curwin) - 1;
-    curwin->w_wcol = target_col - curwin->w_wincol - 1;
-    curwin->w_conceal_wcol_pos = curwin->w_cursor;
-    curwin->w_conceal_wcol_width = curwin->w_width;
-    curwin->w_flags |= WFLAG_CONCEAL_WCOL;
     curwin->w_valid_cursor = curwin->w_cursor;
     curwin->w_valid_leftcol = curwin->w_leftcol;
     curwin->w_valid_skipcol = curwin->w_skipcol;
-    curwin->w_valid &= ~(VALID_CHEIGHT|VALID_CROW|VALID_VIRTCOL);
-    curwin->w_valid |= VALID_WROW|VALID_WCOL;
+    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT
+						       |VALID_CROW|VALID_VIRTCOL);
     return OK;
 }
 #endif
