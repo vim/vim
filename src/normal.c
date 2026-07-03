@@ -2350,7 +2350,49 @@ nv_screenline_conceal_clear(void)
     static bool
 nv_screenline_byte_hidden(linenr_T lnum, colnr_T col)
 {
-    return plines_win_col_concealed(curwin, lnum, col);
+    bool	hidden = plines_win_col_concealed(curwin, lnum, col);
+# ifdef FEAT_SYN_HL
+    int		save_did_emsg;
+    int		syntax_seqnr;
+
+    if (hidden || !syntax_present(curwin) || curwin->w_s->b_syn_error
+#  ifdef SYN_TIME_LIMIT
+					       || curwin->w_s->b_syn_slow
+#  endif
+       )
+	return hidden;
+
+    save_did_emsg = did_emsg;
+    did_emsg = FALSE;
+    (void)syn_get_id(curwin, lnum, col, FALSE, NULL, FALSE);
+    if (!did_emsg && (get_syntax_info(&syntax_seqnr) & HL_CONCEAL))
+	hidden = true;
+    did_emsg = save_did_emsg;
+# endif
+    return hidden;
+}
+
+    static int
+nv_screenline_skip_hidden(int dir)
+{
+    linenr_T	lnum = curwin->w_cursor.lnum;
+
+    if (curwin->w_p_cole != 3 || !curwin->w_p_wrap)
+	return OK;
+    while (nv_screenline_byte_hidden(lnum, curwin->w_cursor.col))
+    {
+	if (dir == FORWARD)
+	{
+	    if (oneright() == FAIL || curwin->w_cursor.lnum != lnum)
+		return FAIL;
+	}
+	else
+	{
+	    if (oneleft() == FAIL || curwin->w_cursor.lnum != lnum)
+		return FAIL;
+	}
+    }
+    return OK;
 }
 
     static int
@@ -4303,6 +4345,10 @@ nv_right(cmdarg_T *cap)
 		    ++curwin->w_cursor.col;
 	    }
 	}
+#ifdef FEAT_CONCEAL
+	else if (nv_screenline_skip_hidden(FORWARD) == FAIL)
+	    break;
+#endif
     }
 #ifdef FEAT_FOLDING
     if (n != cap->count1 && (fdo_flags & FDO_HOR) && KeyTyped
@@ -4378,6 +4424,10 @@ nv_left(cmdarg_T *cap)
 		beep_flush();
 	    break;
 	}
+#ifdef FEAT_CONCEAL
+	else if (nv_screenline_skip_hidden(BACKWARD) == FAIL)
+	    break;
+#endif
     }
 #ifdef FEAT_FOLDING
     if (n != cap->count1 && (fdo_flags & FDO_HOR) && KeyTyped

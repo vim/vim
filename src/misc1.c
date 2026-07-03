@@ -504,7 +504,7 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	    if (full_line)
 		(void)get_syntax_attr(col, NULL, FALSE);
 	    else
-		(void)syn_get_id(wp, lnum, col, FALSE, NULL, TRUE);
+		(void)syn_get_id(wp, lnum, col, FALSE, NULL, FALSE);
 	    ptr = ml_get_buf(wp->w_buffer, lnum, FALSE) + col;
 	    line = ptr - col;
 	    cts.cts_line = line;
@@ -588,7 +588,7 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	{
 	    int	    syntax_seqnr;
 
-	    (void)syn_get_id(wp, lnum, col, FALSE, NULL, TRUE);
+	    (void)syn_get_id(wp, lnum, col, FALSE, NULL, FALSE);
 	    ptr = ml_get_buf(wp->w_buffer, lnum, FALSE) + col;
 	    line = ptr - col;
 	    if (*ptr != NUL && (get_syntax_info(&syntax_seqnr) & HL_CONCEAL))

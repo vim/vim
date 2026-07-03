@@ -853,6 +853,29 @@ func Test_conceallevel_three_wrap()
         \ '~',
         \ ], map(ScreenLines([1, 7], winwidth(0)),
         \ 'substitute(v:val, "\\s\\+$", "", "")'))
+  call assert_equal(5, screenpos(0, 1,
+        \ stridx(getline(1), 'followed') + 1).row)
+
+  call cursor(1, 1)
+  for i in range(1, 220)
+    let before = [winline(), wincol()]
+    normal! l
+    let after = [winline(), wincol()]
+    call assert_true(after[0] > before[0]
+          \ || (after[0] == before[0] && after[1] >= before[1]),
+          \ printf('l moved cursor backwards from %s to %s',
+          \ string(before), string(after)))
+  endfor
+
+  for i in range(1, 220)
+    let before = [winline(), wincol()]
+    normal! h
+    let after = [winline(), wincol()]
+    call assert_true(after[0] < before[0]
+          \ || (after[0] == before[0] && after[1] <= before[1]),
+          \ printf('h moved cursor forwards from %s to %s',
+          \ string(before), string(after)))
+  endfor
 
   call CloseWindow()
   call NewWindow(4, 30)
