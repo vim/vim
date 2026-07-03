@@ -2602,7 +2602,13 @@ nv_screengo_conceal_same_line(int dir, long dist)
 	    if (dir == BACKWARD)
 	    {
 		if (nv_screenline_conceal_last_row(&target_row) == FAIL)
-		    return FAIL;
+		{
+		    if (ml_get_len(curwin->w_cursor.lnum) != 0)
+			return FAIL;
+		    target_pos.lnum = curwin->w_cursor.lnum;
+		    target_pos.col = 0;
+		    target_pos.coladd = 0;
+		}
 	    }
 	    else
 	    {
