@@ -2152,6 +2152,8 @@ win_line(
 #endif
 #ifdef FEAT_CONCEAL
 	int	did_decrement_ptr = FALSE;
+	char_u	*cursor_ptr = NULL;
+	char_u	*cursor_ptr_end = NULL;
 #endif
 
 	// Skip this quickly when working on the text.
@@ -2975,6 +2977,10 @@ win_line(
 	    int		c0;
 #endif
 	    char_u	*prev_ptr = ptr;
+
+#ifdef FEAT_CONCEAL
+	    cursor_ptr = prev_ptr;
+#endif
 
 	    // Get a character from the line itself.
 	    c = *ptr;
@@ -4028,16 +4034,22 @@ win_line(
 	}
 
 #ifdef FEAT_CONCEAL
+	cursor_ptr_end = ptr;
+
 	// In the cursor line and we may be concealing characters: correct
 	// the cursor column when we reach its position.
 	// With 'virtualedit' we may never reach cursor position, but we still
 	// need to correct the cursor column, so do that at end of line.
+	bool cursor_on_char = wp->w_p_wrap && wp->w_p_cole == 3
+		    && cursor_ptr != NULL
+		    && cursor_ptr_end > cursor_ptr
+		    && wp->w_cursor.col >= (colnr_T)(cursor_ptr - line)
+		    && wp->w_cursor.col < (colnr_T)(cursor_ptr_end - line);
 	if (!did_wcol && wlv.draw_state == WL_LINE
 		&& in_curline && conceal_cursor_line(wp)
-		&& !(wp->w_p_wrap && wp->w_p_cole == 3
-		    && (wp->w_valid & (VALID_WCOL|VALID_WROW))
-						== (VALID_WCOL|VALID_WROW))
-		&& (wlv.vcol + skip_cells >= wp->w_virtcol || c == NUL))
+		&& (wp->w_p_wrap && wp->w_p_cole == 3
+		    ? cursor_on_char || c == NUL
+		    : wlv.vcol + skip_cells >= wp->w_virtcol || c == NUL))
 	{
 # ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
@@ -4049,7 +4061,8 @@ win_line(
 	    // pum_display() can line the menu up with the visible text;
 	    // "skip_cells" is the concealed cell at the cursor not yet counted.
 	    wp->w_wcol_conceal_off = wlv.vcol_off_co + skip_cells;
-	    if (wlv.vcol + skip_cells < wp->w_virtcol)
+	    if (!(wp->w_p_wrap && wp->w_p_cole == 3 && cursor_on_char)
+		    && wlv.vcol + skip_cells < wp->w_virtcol)
 		// Cursor beyond end of the line with 'virtualedit'.
 		wp->w_wcol += wp->w_virtcol - wlv.vcol - skip_cells;
 	    wp->w_wrow = wlv.row;
