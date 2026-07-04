@@ -2341,10 +2341,30 @@ find_decl(
 # define NV_SCREENLINE_FIRSTCOL	(-1)
 # define NV_SCREENLINE_LASTCOL	MAXCOL
 
+typedef struct
+{
+    colnr_T	col;
+    int		row;
+    int		ccol;
+    int		ecol;
+} nv_screenline_cell_T;
+
+typedef struct
+{
+    linenr_T	lnum;
+    garray_T	cells;
+} nv_screenline_map_T;
+
     static void
 nv_screenline_conceal_clear(void)
 {
     curwin->w_flags &= ~WFLAG_CONCEAL_WCOL;
+}
+
+    static bool
+nv_screenline_conceal_active(void)
+{
+    return curwin->w_p_cole == 3 && curwin->w_p_wrap && curwin->w_width > 0;
 }
 
     static bool
@@ -2353,329 +2373,334 @@ nv_screenline_byte_hidden(linenr_T lnum, colnr_T col)
     return plines_win_col_concealed(curwin, lnum, col);
 }
 
-    static int
-nv_screenline_skip_hidden(int dir)
+    static void
+nv_screenline_map_init(nv_screenline_map_T *map)
 {
-    linenr_T	lnum = curwin->w_cursor.lnum;
+    map->lnum = 0;
+    ga_init2(&map->cells, sizeof(nv_screenline_cell_T), 32);
+}
 
-    if (curwin->w_p_cole != 3 || !curwin->w_p_wrap)
-	return OK;
-    while (nv_screenline_byte_hidden(lnum, curwin->w_cursor.col))
+    static void
+nv_screenline_map_clear(nv_screenline_map_T *map)
+{
+    ga_clear(&map->cells);
+}
+
+    static nv_screenline_cell_T *
+nv_screenline_map_cells(nv_screenline_map_T *map)
+{
+    return (nv_screenline_cell_T *)map->cells.ga_data;
+}
+
+    static int
+nv_screenline_map_build(nv_screenline_map_T *map, linenr_T lnum)
+{
+    char_u	*line;
+    char_u	*p;
+
+    if (!nv_screenline_conceal_active())
+	return FAIL;
+
+    nv_screenline_map_init(map);
+    map->lnum = lnum;
+    line = ml_get_buf(curwin->w_buffer, lnum, FALSE);
+    for (p = line; *p != NUL; MB_PTR_ADV(p))
     {
-	if (dir == FORWARD)
+	colnr_T		    byte_col = (colnr_T)(p - line);
+	pos_T		    pos;
+	int		    row;
+	int		    scol;
+	int		    ccol;
+	int		    ecol;
+	nv_screenline_cell_T *cell;
+
+	if (nv_screenline_byte_hidden(lnum, byte_col))
+	    continue;
+
+	pos.lnum = lnum;
+	pos.col = byte_col;
+	pos.coladd = 0;
+	textpos2screenpos(curwin, &pos, &row, &scol, &ccol, &ecol);
+	if (row <= 0 || ccol <= 0)
+	    continue;
+
+	if (ga_grow(&map->cells, 1) == FAIL)
 	{
-	    if (oneright() == FAIL || curwin->w_cursor.lnum != lnum)
-		return FAIL;
+	    nv_screenline_map_clear(map);
+	    return FAIL;
+	}
+	cell = &nv_screenline_map_cells(map)[map->cells.ga_len++];
+	cell->col = byte_col;
+	cell->row = row;
+	cell->ccol = ccol;
+	cell->ecol = ecol;
+    }
+
+    if (map->cells.ga_len == 0)
+    {
+	nv_screenline_map_clear(map);
+	return FAIL;
+    }
+    return OK;
+}
+
+    static int
+nv_screenline_map_current(
+	nv_screenline_map_T	*map,
+	colnr_T			col,
+	int			*rowp,
+	int			*colp)
+{
+    nv_screenline_cell_T	*cells = nv_screenline_map_cells(map);
+    nv_screenline_cell_T	*before = NULL;
+    nv_screenline_cell_T	*after = NULL;
+    int				i;
+
+    for (i = 0; i < map->cells.ga_len; ++i)
+    {
+	if (cells[i].col == col)
+	{
+	    *rowp = cells[i].row;
+	    *colp = cells[i].ccol;
+	    return OK;
+	}
+	if (cells[i].col < col)
+	    before = &cells[i];
+	else if (after == NULL)
+	    after = &cells[i];
+    }
+
+    // A cursor can temporarily be on a hidden byte.  Anchor it to the next
+    // drawn byte when possible, otherwise to the previous drawn byte.
+    if (after != NULL)
+    {
+	*rowp = after->row;
+	*colp = after->ccol;
+	return OK;
+    }
+    if (before != NULL)
+    {
+	*rowp = before->row;
+	*colp = before->ccol;
+	return OK;
+    }
+    return FAIL;
+}
+
+    static int
+nv_screenline_map_first_row(nv_screenline_map_T *map)
+{
+    return nv_screenline_map_cells(map)[0].row;
+}
+
+    static int
+nv_screenline_map_last_row(nv_screenline_map_T *map)
+{
+    return nv_screenline_map_cells(map)[map->cells.ga_len - 1].row;
+}
+
+    static int
+nv_screenline_map_has_row(nv_screenline_map_T *map, int row)
+{
+    int i;
+
+    for (i = 0; i < map->cells.ga_len; ++i)
+	if (nv_screenline_map_cells(map)[i].row == row)
+	    return TRUE;
+    return FALSE;
+}
+
+    static int
+nv_screenline_map_pos(
+	nv_screenline_map_T	*map,
+	int			target_row,
+	int			target_col,
+	pos_T			*target_pos)
+{
+    nv_screenline_cell_T	*cells = nv_screenline_map_cells(map);
+    nv_screenline_cell_T	*first = NULL;
+    nv_screenline_cell_T	*last = NULL;
+    nv_screenline_cell_T	*best_under = NULL;
+    nv_screenline_cell_T	*best_over = NULL;
+    int				best_under_dist = MAXCOL;
+    int				best_over_dist = MAXCOL;
+    int				i;
+
+    for (i = 0; i < map->cells.ga_len; ++i)
+    {
+	int under_dist;
+	int over_dist;
+
+	if (cells[i].row != target_row)
+	    continue;
+	if (first == NULL)
+	    first = &cells[i];
+	last = &cells[i];
+
+	if (target_col == NV_SCREENLINE_FIRSTCOL)
+	    break;
+	if (target_col == NV_SCREENLINE_LASTCOL)
+	    continue;
+
+	if (target_col >= cells[i].ccol && target_col <= cells[i].ecol)
+	{
+	    target_pos->lnum = map->lnum;
+	    target_pos->col = cells[i].col;
+	    target_pos->coladd = 0;
+	    return OK;
+	}
+	if (cells[i].ccol < target_col)
+	{
+	    under_dist = target_col - cells[i].ccol;
+	    if (under_dist < best_under_dist)
+	    {
+		best_under_dist = under_dist;
+		best_under = &cells[i];
+	    }
 	}
 	else
 	{
-	    if (oneleft() == FAIL || curwin->w_cursor.lnum != lnum)
-		return FAIL;
+	    over_dist = cells[i].ccol - target_col;
+	    if (over_dist < best_over_dist)
+	    {
+		best_over_dist = over_dist;
+		best_over = &cells[i];
+	    }
 	}
     }
+
+    if (first == NULL)
+	return FAIL;
+    if (target_col == NV_SCREENLINE_FIRSTCOL)
+	last = first;
+    else if (target_col != NV_SCREENLINE_LASTCOL)
+    {
+	if (best_under == NULL)
+	    last = best_over;
+	else if (best_over == NULL)
+	    last = best_under;
+	else
+	    last = best_under_dist <= best_over_dist ? best_under : best_over;
+    }
+    if (last == NULL)
+	return FAIL;
+
+    target_pos->lnum = map->lnum;
+    target_pos->col = last->col;
+    target_pos->coladd = 0;
+    return OK;
+}
+
+    static int
+nv_screenline_map_neighbor(
+	nv_screenline_map_T	*map,
+	colnr_T			col,
+	int			dir,
+	pos_T			*target_pos)
+{
+    nv_screenline_cell_T	*cells = nv_screenline_map_cells(map);
+    int				i;
+
+    if (dir == FORWARD)
+    {
+	for (i = 0; i < map->cells.ga_len; ++i)
+	    if (cells[i].col > col)
+	    {
+		target_pos->lnum = map->lnum;
+		target_pos->col = cells[i].col;
+		target_pos->coladd = 0;
+		return OK;
+	    }
+    }
+    else
+    {
+	for (i = map->cells.ga_len - 1; i >= 0; --i)
+	    if (cells[i].col < col)
+	    {
+		target_pos->lnum = map->lnum;
+		target_pos->col = cells[i].col;
+		target_pos->coladd = 0;
+		return OK;
+	    }
+    }
+    return FAIL;
+}
+
+    static int
+nv_screenline_conceal_horiz(int dir)
+{
+    nv_screenline_map_T map;
+    pos_T	target_pos;
+    colnr_T	col = curwin->w_cursor.col;
+    int		retval;
+
+    if (!nv_screenline_conceal_active())
+	return FAIL;
+    if (nv_screenline_map_build(&map, curwin->w_cursor.lnum) == FAIL)
+	return FAIL;
+    retval = nv_screenline_map_neighbor(&map, col, dir, &target_pos);
+    nv_screenline_map_clear(&map);
+    if (retval == FAIL)
+	return FAIL;
+
+    curwin->w_cursor = target_pos;
+    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT
+					       |VALID_CROW|VALID_VIRTCOL);
     return OK;
 }
 
     static int
 nv_screenline_conceal_current_pos(int *rowp, int *colp)
 {
-    linenr_T	lnum = curwin->w_cursor.lnum;
-    char_u	*line;
-    char_u	*p;
-    pos_T	pos;
-    int		row = 0;
-    int		scol;
-    int		ccol = 0;
-    int		ecol;
-    int		len;
+    nv_screenline_map_T map;
+    int			retval;
 
-    if (curwin->w_width <= 0)
+    if (nv_screenline_map_build(&map, curwin->w_cursor.lnum) == FAIL)
 	return FAIL;
-
-# ifdef FEAT_LINEBREAK
-    if (curwin->w_p_lbr
-	    && curwin->w_cursor.col > 0
-	    && (curwin->w_valid & (VALID_WROW|VALID_WCOL))
-						== (VALID_WROW|VALID_WCOL))
-    {
-	*rowp = W_WINROW(curwin) + curwin->w_wrow + 1;
-	*colp = curwin->w_wincol + curwin->w_wcol + 1;
-	return OK;
-    }
-# endif
-
-    pos = curwin->w_cursor;
-    pos.coladd = 0;
-    textpos2screenpos(curwin, &pos, &row, &scol, &ccol, &ecol);
-    if (row > 0 && ccol > 0)
-    {
-	*rowp = row;
-	*colp = ccol;
-	return OK;
-    }
-
-    // If the cursor is on a hidden byte, use the next visible byte on the
-    // same line as the closest drawn position.
-    line = ml_get_buf(curwin->w_buffer, lnum, FALSE);
-    len = (int)ml_get_len(lnum);
-    if (curwin->w_cursor.col > len)
-	return FAIL;
-    for (p = line + curwin->w_cursor.col; *p != NUL; MB_PTR_ADV(p))
-    {
-	colnr_T byte_col = (colnr_T)(p - line);
-
-	if (nv_screenline_byte_hidden(lnum, byte_col))
-	    continue;
-
-	pos.lnum = lnum;
-	pos.col = byte_col;
-	pos.coladd = 0;
-	textpos2screenpos(curwin, &pos, &row, &scol, &ccol, &ecol);
-	if (row > 0 && ccol > 0)
-	{
-	    *rowp = row;
-	    *colp = ccol;
-	    return OK;
-	}
-    }
-
-    return FAIL;
-}
-
-    static int
-nv_screenline_conceal_last_row(int *rowp)
-{
-    linenr_T	lnum = curwin->w_cursor.lnum;
-    char_u	*line;
-    char_u	*p;
-    pos_T	pos;
-    int		row;
-    int		scol;
-    int		ccol;
-    int		ecol;
-    int		last_row = 0;
-
-    if (curwin->w_width <= 0)
-	return FAIL;
-
-    line = ml_get_buf(curwin->w_buffer, lnum, FALSE);
-
-    for (p = line; *p != NUL; MB_PTR_ADV(p))
-    {
-	colnr_T byte_col = (colnr_T)(p - line);
-
-	if (nv_screenline_byte_hidden(lnum, byte_col))
-	    continue;
-
-	pos.lnum = lnum;
-	pos.col = byte_col;
-	pos.coladd = 0;
-	textpos2screenpos(curwin, &pos, &row, &scol, &ccol, &ecol);
-	if (row > last_row)
-	    last_row = row;
-    }
-
-    if (last_row <= 0)
-	return FAIL;
-    *rowp = last_row;
-    return OK;
+    retval = nv_screenline_map_current(&map, curwin->w_cursor.col,
+								rowp, colp);
+    nv_screenline_map_clear(&map);
+    return retval;
 }
 
     static int
 nv_screenline_conceal_pos(int target_row, int target_col, pos_T *target_pos)
 {
-    linenr_T	lnum = curwin->w_cursor.lnum;
-    char_u	*line;
-    char_u	*p;
-    long	start_vcol = 0;
-    long	vcol;
-    pos_T	pos;
-    int		row;
-    int		scol;
-    int		ccol;
-    int		ecol;
-    int		display_col;
-    int		best_col = -1;
-    int		best_under_col = -1;
-    int		best_under_dist = MAXCOL;
-    int		start_row = 0;
-    int		line_start_row = 0;
-    int		text_col;
-    bool	seen_conceal = false;
-    pos_T	save_cursor;
-    int		save_valid;
-    int		validated_col;
+    nv_screenline_map_T map;
+    int			retval;
 
-    if (curwin->w_width <= 0)
+    if (nv_screenline_map_build(&map, curwin->w_cursor.lnum) == FAIL)
 	return FAIL;
-
-    line = ml_get_buf(curwin->w_buffer, lnum, FALSE);
-    text_col = curwin->w_wincol + win_col_off(curwin) + 1;
-# ifdef FEAT_LINEBREAK
-    if (curwin->w_p_lbr)
-    {
-	pos.lnum = lnum;
-	pos.col = 0;
-	pos.coladd = 0;
-	textpos2screenpos(curwin, &pos, &line_start_row, &scol, &ccol, &ecol);
-	if (line_start_row <= 0)
-	    return FAIL;
-    }
-# endif
-
-    for (p = line; *p != NUL; MB_PTR_ADV(p))
-    {
-	int	dist_to_target;
-	colnr_T byte_col = (colnr_T)(p - line);
-
-	pos.lnum = lnum;
-	pos.col = byte_col;
-	pos.coladd = 0;
-# ifdef FEAT_LINEBREAK
-	if (curwin->w_p_lbr)
-	{
-	    row = line_start_row + plines_win_col(curwin, lnum, byte_col) - 1;
-	    vcol = plines_win_col_conceal_vcol(curwin, lnum, byte_col);
-	    if (vcol < 0)
-		return FAIL;
-	    if (start_row != row)
-	    {
-		start_row = row;
-		start_vcol = vcol;
-	    }
-	    if (nv_screenline_byte_hidden(lnum, byte_col))
-		seen_conceal = true;
-	    if (!seen_conceal)
-		goto use_textpos;
-	    display_col = text_col + (int)(vcol - start_vcol);
-
-	    if (row != target_row)
-		continue;
-
-	    if (target_col == NV_SCREENLINE_FIRSTCOL
-		    || target_col <= text_col + 1)
-	    {
-		best_col = byte_col;
-		break;
-	    }
-	    if (target_col == NV_SCREENLINE_LASTCOL)
-	    {
-		if (!nv_screenline_byte_hidden(lnum, byte_col))
-		    best_col = byte_col;
-		continue;
-	    }
-	    if (display_col >= target_col)
-	    {
-		best_col = byte_col;
-		break;
-	    }
-	    if (!nv_screenline_byte_hidden(lnum, byte_col))
-	    {
-		dist_to_target = target_col - display_col;
-		if (dist_to_target < best_under_dist)
-		{
-		    best_under_dist = dist_to_target;
-		    best_under_col = byte_col;
-		}
-	    }
-	    continue;
-	}
-	else
-# endif
-use_textpos:
-	textpos2screenpos(curwin, &pos, &row, &scol, &ccol, &ecol);
-
-	if (row != target_row || ccol <= 0)
-	    continue;
-
-	if (nv_screenline_byte_hidden(lnum, byte_col))
-	{
-	    save_cursor = curwin->w_cursor;
-	    save_valid = curwin->w_valid;
-	    curwin->w_cursor = pos;
-	    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT
-						       |VALID_CROW|VALID_VIRTCOL);
-	    validate_cursor();
-	    validated_col = curwin->w_wincol + curwin->w_wcol + 1;
-	    curwin->w_cursor = save_cursor;
-	    curwin->w_valid = save_valid & ~(VALID_WROW|VALID_WCOL
-					|VALID_CHEIGHT|VALID_CROW|VALID_VIRTCOL);
-	    if (validated_col == target_col)
-	    {
-		best_col = byte_col;
-		break;
-	    }
-	    continue;
-	}
-
-	if (target_col == NV_SCREENLINE_FIRSTCOL)
-	{
-	    best_col = byte_col;
-	    break;
-	}
-	if (target_col == NV_SCREENLINE_LASTCOL)
-	{
-	    best_col = byte_col;
-	}
-	else if (ecol >= target_col)
-	{
-	    best_col = byte_col;
-	    break;
-	}
-	else
-	{
-	    dist_to_target = target_col - ccol;
-	    if (dist_to_target < best_under_dist)
-	    {
-		best_under_dist = dist_to_target;
-		best_under_col = byte_col;
-	    }
-	}
-    }
-
-    if (best_col < 0)
-	best_col = best_under_col;
-    if (best_col < 0)
-	return FAIL;
-
-    target_pos->lnum = lnum;
-    target_pos->col = best_col;
-    target_pos->coladd = 0;
-    return OK;
+    retval = nv_screenline_map_pos(&map, target_row, target_col, target_pos);
+    nv_screenline_map_clear(&map);
+    return retval;
 }
 
     static int
-nv_screengo_conceal_same_line(int dir, long dist)
+nv_screengo_conceal(int dir, long dist)
 {
+    nv_screenline_map_T map;
     pos_T	target_pos;
+    linenr_T	lnum;
     int		target_row;
     int		target_col;
     int		target_rel;
     int		row;
     int		text_col;
-    int		scol;
     int		ccol;
-    int		ecol;
 
-    if (curwin->w_p_cole != 3 || !curwin->w_p_wrap)
+    if (!nv_screenline_conceal_active())
 	return FAIL;
 
-    if (curwin->w_width <= 0)
+    lnum = curwin->w_cursor.lnum;
+    if (nv_screenline_map_build(&map, lnum) == FAIL)
 	return FAIL;
-    if (nv_screenline_conceal_current_pos(&row, &ccol) == FAIL
-	    && (curwin->w_valid & (VALID_WROW|VALID_WCOL))
-						== (VALID_WROW|VALID_WCOL))
+    if (nv_screenline_map_current(&map, curwin->w_cursor.col, &row,
+								&ccol) == FAIL)
     {
-	row = W_WINROW(curwin) + curwin->w_wrow + 1;
-	ccol = curwin->w_wincol + curwin->w_wcol + 1;
+	nv_screenline_map_clear(&map);
+	return FAIL;
     }
-    else if (row <= 0 || ccol <= 0)
-	textpos2screenpos(curwin, &curwin->w_cursor, &row, &scol, &ccol, &ecol);
-    if (row <= 0 || ccol <= 0)
-	return FAIL;
-    target_row = row + (dir == FORWARD ? (int)dist : -(int)dist);
-    if (target_row <= 0)
-	return FAIL;
 
     text_col = curwin->w_wincol + win_col_off(curwin) + 1;
     target_col = ccol;
@@ -2683,69 +2708,48 @@ nv_screengo_conceal_same_line(int dir, long dist)
     if (target_rel < 0)
 	target_rel = 0;
 
-    if (nv_screenline_conceal_pos(target_row, target_col, &target_pos) == FAIL)
+    while (dist-- > 0)
     {
 	if (dir == FORWARD)
 	{
-	    if (curwin->w_cursor.lnum >= curwin->w_buffer->b_ml.ml_line_count)
-		return FAIL;
-	    cursor_down_inner(curwin, 1);
+	    if (nv_screenline_map_has_row(&map, row + 1))
+		++row;
+	    else
+	    {
+		nv_screenline_map_clear(&map);
+		if (lnum >= curwin->w_buffer->b_ml.ml_line_count)
+		    return FAIL;
+		++lnum;
+		if (nv_screenline_map_build(&map, lnum) == FAIL)
+		    return FAIL;
+		row = nv_screenline_map_first_row(&map);
+	    }
 	}
 	else
 	{
-	    if (curwin->w_cursor.lnum <= 1)
-		return FAIL;
-	    cursor_up_inner(curwin, 1);
-	}
-
-	text_col = curwin->w_wincol + win_col_off(curwin) + 1;
-	target_col = text_col + target_rel;
-	if (plines_win_col_conceal_vcol(curwin,
-			curwin->w_cursor.lnum, MAXCOL) >= 0)
-	{
-	    if (dir == BACKWARD)
-	    {
-		if (nv_screenline_conceal_last_row(&target_row) == FAIL)
-		{
-		    if (ml_get_len(curwin->w_cursor.lnum) != 0)
-			return FAIL;
-		    target_pos.lnum = curwin->w_cursor.lnum;
-		    target_pos.col = 0;
-		    target_pos.coladd = 0;
-		}
-	    }
+	    if (nv_screenline_map_has_row(&map, row - 1))
+		--row;
 	    else
 	    {
-		target_pos.lnum = curwin->w_cursor.lnum;
-		target_pos.col = 0;
-		target_pos.coladd = 0;
-		textpos2screenpos(curwin, &target_pos, &target_row, &scol,
-							      &ccol, &ecol);
+		nv_screenline_map_clear(&map);
+		if (lnum <= 1)
+		    return FAIL;
+		--lnum;
+		if (nv_screenline_map_build(&map, lnum) == FAIL)
+		    return FAIL;
+		row = nv_screenline_map_last_row(&map);
 	    }
-	    if (target_row <= 0
-		    || nv_screenline_conceal_pos(target_row, target_col,
-							&target_pos) == FAIL)
-	    {
-		curwin->w_curswant = target_rel;
-		coladvance(curwin->w_curswant);
-	    }
-	    else
-		curwin->w_cursor = target_pos;
 	}
-	else
-	{
-	    curwin->w_curswant = target_rel;
-	    coladvance(curwin->w_curswant);
-	}
-	curwin->w_curswant = target_rel;
-	curwin->w_set_curswant = false;
-	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT
-						       |VALID_CROW|VALID_VIRTCOL);
-	if (nv_screenline_conceal_current_pos(&row, &ccol) == FAIL)
-	    textpos2screenpos(curwin, &curwin->w_cursor, &row, &scol, &ccol,
-									&ecol);
-	return OK;
     }
+
+    target_row = row;
+    if (nv_screenline_map_pos(&map, target_row, target_col,
+							&target_pos) == FAIL)
+    {
+	nv_screenline_map_clear(&map);
+	return FAIL;
+    }
+    nv_screenline_map_clear(&map);
 
     curwin->w_cursor = target_pos;
     curwin->w_curswant = target_rel;
@@ -2764,14 +2768,6 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 {
 
     int		linelen = linetabsize_no_outer(curwin, curwin->w_cursor.lnum);
-#ifdef FEAT_CONCEAL
-    long	conceal_linelen;
-    bool	use_conceal_vcol = false;
-    bool	did_conceal_coladvance = false;
-    linenr_T	start_lnum = curwin->w_cursor.lnum;
-    int		start_screen_col = 0;
-#endif
-
     int		retval = OK;
     int		atend = FALSE;
     int		n;
@@ -2794,25 +2790,7 @@ nv_screengo(oparg_T *oap, int dir, long dist)
     if (width2 == 0)
 	width2 = 1; // avoid divide by zero
 #ifdef FEAT_CONCEAL
-    conceal_linelen = plines_win_col_conceal_vcol(curwin,
-					 curwin->w_cursor.lnum, MAXCOL);
-    if (conceal_linelen >= 0)
-    {
-	linelen = (int)conceal_linelen;
-	use_conceal_vcol = true;
-    }
-    if (nv_screenline_conceal_current_pos(&n, &start_screen_col) == FAIL)
-    {
-	int row;
-	int scol;
-	int ecol;
-
-	textpos2screenpos(curwin, &curwin->w_cursor, &row, &scol,
-						&start_screen_col, &ecol);
-    }
-#endif
-#ifdef FEAT_CONCEAL
-    if (nv_screengo_conceal_same_line(dir, dist) == OK)
+    if (nv_screengo_conceal(dir, dist) == OK)
 	return OK;
 #endif
 
@@ -2868,15 +2846,6 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 		cursor_up_inner(curwin, 1);
 
 		linelen = linetabsize_no_outer(curwin, curwin->w_cursor.lnum);
-#ifdef FEAT_CONCEAL
-		if (use_conceal_vcol)
-		{
-		    conceal_linelen = plines_win_col_conceal_vcol(curwin,
-					 curwin->w_cursor.lnum, MAXCOL);
-		    if (conceal_linelen >= 0)
-			linelen = (int)conceal_linelen;
-		}
-#endif
 		if (linelen > width1)
 		    curwin->w_curswant += (((linelen - width1 - 1) / width2)
 								+ 1) * width2;
@@ -2914,15 +2883,6 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 		if (curwin->w_curswant >= width1)
 		    curwin->w_curswant -= width2;
 		linelen = linetabsize_no_outer(curwin, curwin->w_cursor.lnum);
-#ifdef FEAT_CONCEAL
-		if (use_conceal_vcol)
-		{
-		    conceal_linelen = plines_win_col_conceal_vcol(curwin,
-					 curwin->w_cursor.lnum, MAXCOL);
-		    if (conceal_linelen >= 0)
-			linelen = (int)conceal_linelen;
-		}
-#endif
 	    }
 	}
       }
@@ -2930,22 +2890,9 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 
     if (virtual_active() && atend)
 	coladvance(MAXCOL);
-#ifdef FEAT_CONCEAL
-    else if (use_conceal_vcol
-	    && plines_win_col_conceal_advance(curwin, curwin->w_cursor.lnum,
-			    curwin->w_curswant, &curwin->w_cursor) == OK)
-    {
-	did_conceal_coladvance = true;
-	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT
-					       |VALID_CROW|VALID_VIRTCOL);
-    }
-#endif
     else
 	coladvance(curwin->w_curswant);
     if (curwin->w_cursor.col > 0 && curwin->w_p_wrap
-#ifdef FEAT_CONCEAL
-	    && !did_conceal_coladvance
-#endif
 	    )
     {
 	colnr_T virtcol;
@@ -2974,39 +2921,6 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 						      > (colnr_T)width2 / 2)))
 	    --curwin->w_cursor.col;
     }
-#ifdef FEAT_CONCEAL
-    if (curwin->w_cursor.lnum != start_lnum && curwin->w_p_cole == 3
-	    && start_screen_col > 0
-	    && plines_win_col_conceal_vcol(curwin,
-			      curwin->w_cursor.lnum, MAXCOL) >= 0)
-    {
-	pos_T	target_pos;
-	int	target_row = 0;
-
-	if (dir == BACKWARD)
-	    (void)nv_screenline_conceal_last_row(&target_row);
-	else
-	{
-	    int scol;
-	    int ccol;
-	    int ecol;
-
-	    target_pos.lnum = curwin->w_cursor.lnum;
-	    target_pos.col = 0;
-	    target_pos.coladd = 0;
-	    textpos2screenpos(curwin, &target_pos, &target_row, &scol,
-							      &ccol, &ecol);
-	}
-	if (target_row > 0
-		&& nv_screenline_conceal_pos(target_row, start_screen_col,
-							&target_pos) == OK)
-	{
-	    curwin->w_cursor = target_pos;
-	    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT
-					       |VALID_CROW|VALID_VIRTCOL);
-	}
-    }
-#endif
 
     if (atend)
 	curwin->w_curswant = MAXCOL;	    // stick in the last column
@@ -4373,6 +4287,11 @@ nv_right(cmdarg_T *cap)
 
     for (n = cap->count1; n > 0; --n)
     {
+#ifdef FEAT_CONCEAL
+	if (!past_line && cap->oap->op_type == OP_NOP
+		&& nv_screenline_conceal_horiz(FORWARD) == OK)
+	    continue;
+#endif
 	if ((!past_line && oneright() == FAIL)
 		|| (past_line && *ml_get_cursor() == NUL)
 		)
@@ -4431,10 +4350,6 @@ nv_right(cmdarg_T *cap)
 		    ++curwin->w_cursor.col;
 	    }
 	}
-#ifdef FEAT_CONCEAL
-	else if (nv_screenline_skip_hidden(FORWARD) == FAIL)
-	    break;
-#endif
     }
 #ifdef FEAT_FOLDING
     if (n != cap->count1 && (fdo_flags & FDO_HOR) && KeyTyped
@@ -4466,6 +4381,11 @@ nv_left(cmdarg_T *cap)
     cap->oap->inclusive = FALSE;
     for (n = cap->count1; n > 0; --n)
     {
+#ifdef FEAT_CONCEAL
+	if (cap->oap->op_type == OP_NOP
+		&& nv_screenline_conceal_horiz(BACKWARD) == OK)
+	    continue;
+#endif
 	if (oneleft() == FAIL)
 	{
 	    // <BS> and <Del> wrap to previous line if 'whichwrap' has 'b'.
@@ -4510,10 +4430,6 @@ nv_left(cmdarg_T *cap)
 		beep_flush();
 	    break;
 	}
-#ifdef FEAT_CONCEAL
-	else if (nv_screenline_skip_hidden(BACKWARD) == FAIL)
-	    break;
-#endif
     }
 #ifdef FEAT_FOLDING
     if (n != cap->count1 && (fdo_flags & FDO_HOR) && KeyTyped

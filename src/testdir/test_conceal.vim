@@ -868,6 +868,9 @@ func Test_conceallevel_three_wrap()
   call setline(1, 'This paragraph has **bold text before 日本語**, *italic text before コンシール*, and a [concealed link title 日本語](https://example.invalid/a/very/long/path/that/should-be-hidden-by-markdown-conceal) followed by enough words to wrap several times in a narrow window.')
   redraw
   call cursor(1, 1)
+  normal! g$
+  call assert_equal(1, winline())
+  call cursor(1, 1)
   normal! gjgjl
   call assert_equal(stridx(getline(1), ', and a') + 3, col('.'))
 
@@ -937,6 +940,36 @@ func Test_conceallevel_three_wrap()
           \ printf('h moved cursor forwards from %s to %s',
           \ string(before), string(after)))
   endfor
+
+  call CloseWindow()
+  call NewWindow(6, 40)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+        \ signcolumn=no nonumber showbreak=
+  syntax clear test
+  syntax region testCode matchgroup=test start=/`/ end=/`/ concealends
+  call setline(1, 'The inline code `printf("日本語 %s", value)` should hide its backticks when Markdown conceal is active, while this escaped marker \# should display as a literal hash and not make following wrapped text appear one cell early or late.')
+  redraw
+  call cursor(1, 1)
+  normal! g$
+  call assert_equal(1, winline())
+  call cursor(1, stridx(getline(1), 'printf') + 1)
+  normal! g$
+  call assert_equal(1, winline())
+
+  call CloseWindow()
+  call NewWindow(6, 42)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+        \ signcolumn=no nonumber showbreak=
+  syntax clear test
+  syntax match test /\[/ conceal
+  syntax match test /\](https:[^)]*)/ conceal
+  syntax region testCode matchgroup=test start=/`/ end=/`/ concealends
+  call setline(1, '- A dash list item should use Markdown list formatting, and this item intentionally contains **strong text**, `inline code`, [a link with 日本語](https://example.invalid/list), and enough trailing prose to wrap with breakindent.')
+  redraw
+  call cursor(1, stridx(getline(1), '[a link') + 1)
+  let row = winline()
+  normal! g$
+  call assert_equal(row, winline())
 
   call CloseWindow()
   call NewWindow(4, 30)
