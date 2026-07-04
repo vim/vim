@@ -2664,6 +2664,18 @@ nv_screenline_map_build(nv_screenline_map_T *map, linenr_T lnum, bool allow_plai
 }
 
     static bool
+nv_screenline_plain_map_needed(linenr_T lnum)
+{
+    char_u	*line = ml_get_buf(curwin->w_buffer, lnum, FALSE);
+    char_u	*p;
+
+    for (p = line; *p != NUL; MB_PTR_ADV(p))
+	if (has_mbyte && MB_BYTE2LEN(*p) > 1)
+	    return true;
+    return false;
+}
+
+    static bool
 nv_screenline_all_concealed(linenr_T lnum)
 {
     char_u	*line = ml_get_buf(curwin->w_buffer, lnum, FALSE);
@@ -2936,9 +2948,11 @@ nv_screengo_conceal(int dir, long dist)
 
     lnum = curwin->w_cursor.lnum;
     text_col = curwin->w_wincol + win_col_off(curwin) + 1;
-    if (nv_screenline_map_build(&map, lnum, false) == FAIL)
+    if (nv_screenline_map_build(&map, lnum, false) == FAIL
+	    && (!nv_screenline_plain_map_needed(lnum)
+		|| nv_screenline_map_build(&map, lnum, true) == FAIL))
     {
-	if (ml_get_len(lnum) != 0)
+	if (ml_get_len(lnum) != 0 && !nv_screenline_all_concealed(lnum))
 	    return FAIL;
 	have_map = false;
 	row = 0;
