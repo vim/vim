@@ -2602,6 +2602,7 @@ nv_screenline_map_build(nv_screenline_map_T *map, linenr_T lnum, bool allow_plai
 	int		    scol;
 	int		    ccol;
 	int		    ecol;
+	int		    cells;
 	nv_screenline_cell_T *cell;
 	nv_screenline_row_T  *rowp;
 
@@ -2617,6 +2618,9 @@ nv_screenline_map_build(nv_screenline_map_T *map, linenr_T lnum, bool allow_plai
 	textpos2screenpos(curwin, &pos, &screen_row, &scol, &ccol, &ecol);
 	if (screen_row <= 0 || ccol <= 0)
 	    continue;
+	cells = *p == TAB ? ecol - ccol + 1 : (*mb_ptr2cells)(p);
+	if (cells > 0 && ecol >= ccol + cells)
+	    ecol = ccol + cells - 1;
 
 	if (ga_grow(&map->cells, 1) == FAIL)
 	{
@@ -2716,7 +2720,21 @@ nv_screenline_map_current(
     }
 
     // A cursor can temporarily be on a hidden byte.  Anchor it to the next
-    // drawn byte when possible, otherwise to the previous drawn byte.
+    // or previous drawn byte, whichever is nearest in the buffer.
+    if (before != NULL && after != NULL)
+    {
+	if (col - before->col <= after->col - col)
+	{
+	    *rowp = before->row;
+	    *colp = before->ccol;
+	}
+	else
+	{
+	    *rowp = after->row;
+	    *colp = after->ccol;
+	}
+	return OK;
+    }
     if (after != NULL)
     {
 	*rowp = after->row;
@@ -2800,7 +2818,7 @@ nv_screenline_map_pos(
 	}
 	if (cells[i].ccol < target_col)
 	{
-	    under_dist = target_col - cells[i].ccol;
+	    under_dist = target_col - cells[i].ecol;
 	    if (under_dist < best_under_dist)
 	    {
 		best_under_dist = under_dist;
