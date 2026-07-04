@@ -26,6 +26,7 @@
 #include <cairo/cairo-ps.h>
 #include <cairo/cairo-pdf.h>
 #include <pango/pango.h>
+#include <pango/pangocairo.h>
 
 #define PRINT_DPI 72.0
 
@@ -289,7 +290,7 @@ mch_print_init(
 
 	if (printer_opts[OPT_PRINT_FORMAT].present)
 	{
-	    for (int i = 0; i < ARRAY_LENGTH(print_formats); i++)
+	    for (int i = 0; i < (int)ARRAY_LENGTH(print_formats); i++)
 		if (STRNCMP(printer_opts[OPT_PRINT_FORMAT].string,
 			    print_formats[i],
 			    printer_opts[OPT_PRINT_FORMAT].strlen) == 0)
@@ -509,16 +510,23 @@ mch_print_begin(prt_settings_T *psettings)
     }
     else if (pctx.format == PRT_FORMAT_PDF)
     {
-	char_u *str = CONVERT_TO_UTF8((char_u *)user);
+	char_u *str = (char_u *)user;
+
+	if (output_conv.vc_type != CONV_NONE)
+	    str = string_convert(&output_conv, str, NULL);
 
 	cairo_pdf_surface_set_metadata(pctx.surface,
 		CAIRO_PDF_METADATA_AUTHOR, (char *)str);
-	CONVERT_TO_UTF8_FREE(str);
+	if (output_conv.vc_type != CONV_NONE)
+	    vim_free(str);
 
-	str = CONVERT_TO_UTF8(psettings->jobname);
+	str = psettings->jobname;
+	if (output_conv.vc_type != CONV_NONE)
+	    str = string_convert(&output_conv, str, NULL);
 	cairo_pdf_surface_set_metadata(pctx.surface,
 		CAIRO_PDF_METADATA_TITLE, (char *)str);
-	CONVERT_TO_UTF8_FREE(str);
+	if (output_conv.vc_type != CONV_NONE)
+	    vim_free(str);
 
 	cairo_pdf_surface_set_metadata(pctx.surface,
 		CAIRO_PDF_METADATA_CREATOR, VIM_VERSION_LONG);

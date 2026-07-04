@@ -198,7 +198,8 @@ output.  It has the same format as the 'guifont' option, except that only one
 font may be named, and the special "guifont=*" syntax is not available.
 
 In the Win32 GUI version this specifies a font name with its extra attributes,
-as with the 'guifont' option.
+as with the 'guifont' option.  When |+pango| is enabled, the format is the
+same as 'guifont' for the GTK GUI (e.g. "Courier New 10").
 
 For other systems, only ":h11" is recognized, where "11" is the point size of
 the font.  When omitted, the point size is 10.

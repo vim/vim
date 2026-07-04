@@ -3388,7 +3388,7 @@ objects/hardcopy.o: hardcopy.c
 	$(CCC) -o $@ hardcopy.c
 
 objects/hardcopy_pango.o: hardcopy_pango.c
-	$(CCC) $(CAIRO_CFLAGS) $(CAIRO_CPPFLAGS) $(PANGO_CFLAGS) $(CAIRO_CFLAGS) -o $@ hardcopy_pango.c
+	$(CCC) $(CAIRO_CFLAGS) $(CAIRO_CPPFLAGS) $(PANGO_CFLAGS) $(PANGO_CPPFLAGS) -o $@ hardcopy_pango.c
 
 objects/hardcopy_postscript.o: hardcopy_postscript.c
 	$(CCC) -o $@ hardcopy_postscript.c
