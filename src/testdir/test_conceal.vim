@@ -899,6 +899,27 @@ func Test_conceallevel_three_wrap()
   call assert_equal(1, line('.'))
   call assert_equal(stridx(getline(1), 'several times') + 1, col('.'))
 
+  call cursor(1, 1)
+  for i in range(1, 220)
+    let before = [winline(), wincol()]
+    normal! l
+    let after = [winline(), wincol()]
+    call assert_true(after[0] > before[0]
+          \ || (after[0] == before[0] && after[1] >= before[1]),
+          \ printf('l moved cursor backwards from %s to %s',
+          \ string(before), string(after)))
+  endfor
+
+  for i in range(1, 220)
+    let before = [winline(), wincol()]
+    normal! h
+    let after = [winline(), wincol()]
+    call assert_true(after[0] < before[0]
+          \ || (after[0] == before[0] && after[1] <= before[1]),
+          \ printf('h moved cursor forwards from %s to %s',
+          \ string(before), string(after)))
+  endfor
+
   call CloseWindow()
   call NewWindow(7, 40)
   setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
@@ -927,6 +948,12 @@ func Test_conceallevel_three_wrap()
   call cursor(1, stridx(getline(1), 'ordinary words **') + 1)
   normal! gj
   call assert_equal(stridx(getline(1), 'here**') + 1, col('.'))
+  call assert_equal(5, winline())
+
+  call cursor(1, stridx(getline(1), 'ordinary words **bold') + 1)
+  normal! gj
+  call assert_equal(stridx(getline(1), 'hidden here') + strlen('hid') + 1,
+        \ col('.'))
   call assert_equal(5, winline())
 
   call cursor(1, stridx(getline(1), 'ordinary words **bold marker') + 9)
@@ -995,6 +1022,25 @@ func Test_conceallevel_three_wrap()
   let row = winline()
   normal! g$
   call assert_equal(row, winline())
+  for startcol in [
+        \ stridx(getline(1), 'strong text') + strlen('strong t') + 1,
+        \ stridx(getline(1), 'inline code') + strlen('inline') + 1,
+        \ stridx(getline(1), 'a link with') + strlen('a link with ') + 1,
+        \ ]
+    call cursor(1, startcol)
+    redraw
+    let before = [winline(), wincol()]
+    normal! gj
+    redraw
+    call assert_equal(before[0] + 1, winline(),
+          \ printf('gj moved %d rows from list col %d',
+          \ winline() - before[0], startcol))
+    normal! gk
+    redraw
+    call assert_equal(before, [winline(), wincol()],
+          \ printf('gj/gk changed visual position from list col %d',
+          \ startcol))
+  endfor
 
   call CloseWindow()
   call NewWindow(4, 30)
