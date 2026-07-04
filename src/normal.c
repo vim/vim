@@ -2351,8 +2351,18 @@ typedef struct
 
 typedef struct
 {
+    int		row;
+    int		first_idx;
+    int		last_idx;
+} nv_screenline_row_T;
+
+typedef struct
+{
     linenr_T	lnum;
     garray_T	cells;
+    garray_T	rows;
+    bool	borrowed;
+    bool	has_conceal;
 } nv_screenline_map_T;
 
 typedef struct
@@ -2379,6 +2389,7 @@ typedef struct
     hash_T	lcs_hash;
     hash_T	global_lcs_hash;
     hash_T	cocu_hash;
+    bool	has_conceal;
 # ifdef FEAT_SYN_HL
     int		syn_patterns_len;
     int		syn_conceal;
@@ -2411,13 +2422,30 @@ nv_screenline_byte_hidden(linenr_T lnum, colnr_T col)
 nv_screenline_map_init(nv_screenline_map_T *map)
 {
     map->lnum = 0;
+    map->borrowed = false;
+    map->has_conceal = false;
     ga_init2(&map->cells, sizeof(nv_screenline_cell_T), 32);
+    ga_init2(&map->rows, sizeof(nv_screenline_row_T), 8);
 }
 
     static void
 nv_screenline_map_clear(nv_screenline_map_T *map)
 {
-    ga_clear(&map->cells);
+    if (!map->borrowed)
+    {
+	ga_clear(&map->cells);
+	ga_clear(&map->rows);
+    }
+    else
+    {
+	map->cells.ga_data = NULL;
+	map->cells.ga_len = 0;
+	map->cells.ga_maxlen = 0;
+	map->rows.ga_data = NULL;
+	map->rows.ga_len = 0;
+	map->rows.ga_maxlen = 0;
+	map->borrowed = false;
+    }
 }
 
     static nv_screenline_cell_T *
@@ -2426,11 +2454,18 @@ nv_screenline_map_cells(nv_screenline_map_T *map)
     return (nv_screenline_cell_T *)map->cells.ga_data;
 }
 
+    static nv_screenline_row_T *
+nv_screenline_map_rows(nv_screenline_map_T *map)
+{
+    return (nv_screenline_row_T *)map->rows.ga_data;
+}
+
     static int
 nv_screenline_map_copy(nv_screenline_map_T *to, nv_screenline_map_T *from)
 {
     nv_screenline_map_init(to);
     to->lnum = from->lnum;
+    to->has_conceal = from->has_conceal;
     if (ga_grow(&to->cells, from->cells.ga_len) == FAIL)
     {
 	nv_screenline_map_clear(to);
@@ -2440,6 +2475,15 @@ nv_screenline_map_copy(nv_screenline_map_T *to, nv_screenline_map_T *from)
 	mch_memmove(to->cells.ga_data, from->cells.ga_data,
 		     sizeof(nv_screenline_cell_T) * from->cells.ga_len);
     to->cells.ga_len = from->cells.ga_len;
+    if (ga_grow(&to->rows, from->rows.ga_len) == FAIL)
+    {
+	nv_screenline_map_clear(to);
+	return FAIL;
+    }
+    if (from->rows.ga_len > 0)
+	mch_memmove(to->rows.ga_data, from->rows.ga_data,
+		     sizeof(nv_screenline_row_T) * from->rows.ga_len);
+    to->rows.ga_len = from->rows.ga_len;
     return OK;
 }
 
@@ -2487,6 +2531,7 @@ nv_screenline_cache_store(nv_screenline_map_T *map)
 	nv_screenline_cache_init = true;
     }
     ga_clear(&nv_screenline_cache_map.cells);
+    ga_clear(&nv_screenline_cache_map.rows);
     if (nv_screenline_map_copy(&nv_screenline_cache_map, map) == FAIL)
     {
 	nv_screenline_cache.valid = false;
@@ -2514,6 +2559,7 @@ nv_screenline_cache_store(nv_screenline_map_T *map)
     nv_screenline_cache.lcs_hash = hash_hash(curwin->w_p_lcs);
     nv_screenline_cache.global_lcs_hash = hash_hash(p_lcs);
     nv_screenline_cache.cocu_hash = hash_hash(curwin->w_p_cocu);
+    nv_screenline_cache.has_conceal = map->has_conceal;
 # ifdef FEAT_SYN_HL
     nv_screenline_cache.syn_patterns_len = curwin->w_s->b_syn_patterns.ga_len;
     nv_screenline_cache.syn_conceal = curwin->w_s->b_syn_conceal;
@@ -2521,16 +2567,29 @@ nv_screenline_cache_store(nv_screenline_map_T *map)
 }
 
     static int
-nv_screenline_map_build(nv_screenline_map_T *map, linenr_T lnum)
+nv_screenline_map_build(nv_screenline_map_T *map, linenr_T lnum, bool allow_plain)
 {
     char_u	*line;
     char_u	*p;
+    bool	has_conceal = false;
 
     if (!nv_screenline_conceal_active())
 	return FAIL;
 
     if (nv_screenline_cache_valid(lnum))
-	return nv_screenline_map_copy(map, &nv_screenline_cache_map);
+    {
+	if (!allow_plain && !nv_screenline_cache.has_conceal)
+	    return FAIL;
+	nv_screenline_map_init(map);
+	map->lnum = nv_screenline_cache_map.lnum;
+	map->has_conceal = nv_screenline_cache_map.has_conceal;
+	ga_clear(&map->cells);
+	ga_clear(&map->rows);
+	map->cells = nv_screenline_cache_map.cells;
+	map->rows = nv_screenline_cache_map.rows;
+	map->borrowed = true;
+	return OK;
+    }
 
     nv_screenline_map_init(map);
     map->lnum = lnum;
@@ -2544,9 +2603,13 @@ nv_screenline_map_build(nv_screenline_map_T *map, linenr_T lnum)
 	int		    ccol;
 	int		    ecol;
 	nv_screenline_cell_T *cell;
+	nv_screenline_row_T  *rowp;
 
 	if (nv_screenline_byte_hidden(lnum, byte_col))
+	{
+	    has_conceal = true;
 	    continue;
+	}
 
 	pos.lnum = lnum;
 	pos.col = byte_col;
@@ -2565,6 +2628,30 @@ nv_screenline_map_build(nv_screenline_map_T *map, linenr_T lnum)
 	cell->row = screen_row;
 	cell->ccol = ccol;
 	cell->ecol = ecol;
+
+	if (map->rows.ga_len == 0
+		|| nv_screenline_map_rows(map)[map->rows.ga_len - 1].row
+							       != screen_row)
+	{
+	    if (ga_grow(&map->rows, 1) == FAIL)
+	    {
+		nv_screenline_map_clear(map);
+		return FAIL;
+	    }
+	    rowp = &nv_screenline_map_rows(map)[map->rows.ga_len++];
+	    rowp->row = screen_row;
+	    rowp->first_idx = map->cells.ga_len - 1;
+	}
+	else
+	    rowp = &nv_screenline_map_rows(map)[map->rows.ga_len - 1];
+	rowp->last_idx = map->cells.ga_len - 1;
+    }
+
+    map->has_conceal = has_conceal;
+    if (!allow_plain && !has_conceal)
+    {
+	nv_screenline_map_clear(map);
+	return FAIL;
     }
 
     if (map->cells.ga_len == 0)
@@ -2648,10 +2735,11 @@ nv_screenline_map_last_row(nv_screenline_map_T *map)
     static int
 nv_screenline_map_has_row(nv_screenline_map_T *map, int row)
 {
+    nv_screenline_row_T *rows = nv_screenline_map_rows(map);
     int i;
 
-    for (i = 0; i < map->cells.ga_len; ++i)
-	if (nv_screenline_map_cells(map)[i].row == row)
+    for (i = 0; i < map->rows.ga_len; ++i)
+	if (rows[i].row == row)
 	    return TRUE;
     return FALSE;
 }
@@ -2664,29 +2752,32 @@ nv_screenline_map_pos(
 	pos_T			*target_pos)
 {
     nv_screenline_cell_T	*cells = nv_screenline_map_cells(map);
-    nv_screenline_cell_T	*first = NULL;
     nv_screenline_cell_T	*last = NULL;
     nv_screenline_cell_T	*best_under = NULL;
     nv_screenline_cell_T	*best_over = NULL;
+    nv_screenline_row_T		*rowp = NULL;
+    nv_screenline_row_T		*rows = nv_screenline_map_rows(map);
     int				best_under_dist = MAXCOL;
     int				best_over_dist = MAXCOL;
     int				i;
 
-    for (i = 0; i < map->cells.ga_len; ++i)
+    for (i = 0; i < map->rows.ga_len; ++i)
+	if (rows[i].row == target_row)
+	{
+	    rowp = &rows[i];
+	    break;
+	}
+    if (rowp == NULL)
+	return FAIL;
+    if (target_col == NV_SCREENLINE_FIRSTCOL)
+	last = &cells[rowp->first_idx];
+    else if (target_col == NV_SCREENLINE_LASTCOL)
+	last = &cells[rowp->last_idx];
+
+    for (i = rowp->first_idx; last == NULL && i <= rowp->last_idx; ++i)
     {
 	int under_dist;
 	int over_dist;
-
-	if (cells[i].row != target_row)
-	    continue;
-	if (first == NULL)
-	    first = &cells[i];
-	last = &cells[i];
-
-	if (target_col == NV_SCREENLINE_FIRSTCOL)
-	    break;
-	if (target_col == NV_SCREENLINE_LASTCOL)
-	    continue;
 
 	if (target_col >= cells[i].ccol && target_col <= cells[i].ecol)
 	{
@@ -2715,11 +2806,7 @@ nv_screenline_map_pos(
 	}
     }
 
-    if (first == NULL)
-	return FAIL;
-    if (target_col == NV_SCREENLINE_FIRSTCOL)
-	last = first;
-    else if (target_col != NV_SCREENLINE_LASTCOL)
+    if (last == NULL)
     {
 	if (best_under == NULL)
 	    last = best_over;
@@ -2809,7 +2896,7 @@ nv_screenline_conceal_current_pos(int *rowp, int *colp)
     nv_screenline_map_T map;
     int			retval;
 
-    if (nv_screenline_map_build(&map, curwin->w_cursor.lnum) == FAIL)
+    if (nv_screenline_map_build(&map, curwin->w_cursor.lnum, false) == FAIL)
 	return FAIL;
     retval = nv_screenline_map_current(&map, curwin->w_cursor.col,
 								rowp, colp);
@@ -2823,7 +2910,7 @@ nv_screenline_conceal_pos(int target_row, int target_col, pos_T *target_pos)
     nv_screenline_map_T map;
     int			retval;
 
-    if (nv_screenline_map_build(&map, curwin->w_cursor.lnum) == FAIL)
+    if (nv_screenline_map_build(&map, curwin->w_cursor.lnum, false) == FAIL)
 	return FAIL;
     retval = nv_screenline_map_pos(&map, target_row, target_col, target_pos);
     nv_screenline_map_clear(&map);
@@ -2849,7 +2936,7 @@ nv_screengo_conceal(int dir, long dist)
 
     lnum = curwin->w_cursor.lnum;
     text_col = curwin->w_wincol + win_col_off(curwin) + 1;
-    if (nv_screenline_map_build(&map, lnum) == FAIL)
+    if (nv_screenline_map_build(&map, lnum, false) == FAIL)
     {
 	if (ml_get_len(lnum) != 0)
 	    return FAIL;
@@ -2888,7 +2975,7 @@ nv_screengo_conceal(int dir, long dist)
 		if (lnum >= curwin->w_buffer->b_ml.ml_line_count)
 		    return FAIL;
 		++lnum;
-		if (nv_screenline_map_build(&map, lnum) == FAIL)
+		if (nv_screenline_map_build(&map, lnum, true) == FAIL)
 		{
 		    if (ml_get_len(lnum) != 0
 			    && !nv_screenline_all_concealed(lnum))
@@ -2916,7 +3003,7 @@ nv_screengo_conceal(int dir, long dist)
 		if (lnum <= 1)
 		    return FAIL;
 		--lnum;
-		if (nv_screenline_map_build(&map, lnum) == FAIL)
+		if (nv_screenline_map_build(&map, lnum, true) == FAIL)
 		{
 		    if (ml_get_len(lnum) != 0
 			    && !nv_screenline_all_concealed(lnum))
