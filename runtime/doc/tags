@@ -1514,6 +1514,7 @@ $quote	eval.txt	/*$quote*
 +num64	various.txt	/*+num64*
 +ole	various.txt	/*+ole*
 +packages	various.txt	/*+packages*
++pango	various.txt	/*+pango*
 +path_extra	various.txt	/*+path_extra*
 +perl	various.txt	/*+perl*
 +perl/dyn	various.txt	/*+perl\/dyn*
@@ -8262,6 +8263,7 @@ gtk-tooltip-colors	gui_x11.txt	/*gtk-tooltip-colors*
 gtk3-slow	gui_x11.txt	/*gtk3-slow*
 gtk4-hwaccel	gui_x11.txt	/*gtk4-hwaccel*
 gtk4-menu-navigation	gui_x11.txt	/*gtk4-menu-navigation*
+gtk4-print	print.txt	/*gtk4-print*
 gtk4-slow	gui_x11.txt	/*gtk4-slow*
 gu	change.txt	/*gu*
 gugu	change.txt	/*gugu*
@@ -9717,6 +9719,7 @@ page-up	intro.txt	/*page-up*
 page_down	intro.txt	/*page_down*
 page_up	intro.txt	/*page_up*
 pager	message.txt	/*pager*
+pango-printing	print.txt	/*pango-printing*
 papp.vim	syntax.txt	/*papp.vim*
 paragraph	motion.txt	/*paragraph*
 partial	builtin.txt	/*partial*

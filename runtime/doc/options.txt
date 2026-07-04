@@ -6894,7 +6894,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'printexpr' 'pexpr'	string	(default: see below)
 			global
 			{only available when compiled with the |+printer|
-			and |+postscript| features}
+			and |+postscript| or |+pango| features}
 	Expression used to print the PostScript produced with |:hardcopy|.
 	See |pexpr-option|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
