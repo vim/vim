@@ -58,6 +58,7 @@ endfunc
 " "no_clean" - if non-zero then remove "--clean" from the command
 " "cmd"  - run any other command, e.g. "xxd" (used in xxd test)
 " "env"  - additional environment variables, e.g. $TERM variable
+" "tcolor"  - terminal color number (256 by default)
 func RunVimInTerminal(arguments, options)
   " If Vim doesn't exit a swap file remains, causing other tests to fail.
   " Remove it here.
@@ -76,8 +77,11 @@ func RunVimInTerminal(arguments, options)
   split
   vsplit
 
-  " Always do this with 256 colors and a light background.
-  set t_Co=256 background=light
+  " Always do this with light background.
+  set background=light
+  " and 256 colors by default
+  let tcolors = get(a:options, 'tcolors', 256)
+  let &t_Co=tcolors
   hi Normal ctermfg=NONE ctermbg=NONE
 
   " Make the window 20 lines high and 75 columns, unless told otherwise or
