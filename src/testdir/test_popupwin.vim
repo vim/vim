@@ -5831,6 +5831,27 @@ func Test_popup_opacity_attr()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_opacity_lowcolor()
+  CheckScreendump
+
+  let lines =<< trim END
+  call setline(1, repeat(['under under under'], 10))
+  call popup_create('Popup Popup', #{
+        \ line: 2, col: 3,
+        \ border: [1, 1, 1, 1],
+        \ padding: [1, 1, 1 ,1],
+        \ minwidth: 20,
+        \ minheight: 2,
+        \ opacity: 70,
+        \ })
+  END
+  call writefile(lines, 'XtestPopupOpacityLowcolor', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacityLowcolor', #{rows: 12, cols: 60, tcolors: 16})
+  call VerifyScreenDump(buf, 'Test_popup_opacity_lowcolor', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_popup_image_update()
   CheckFeature image
 
