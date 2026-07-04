@@ -2373,6 +2373,12 @@ typedef struct
     int		linebreak;
     int		breakindent;
     int		list;
+    hash_T	showbreak_hash;
+    hash_T	breakat_hash;
+    hash_T	briopt_hash;
+    hash_T	lcs_hash;
+    hash_T	global_lcs_hash;
+    hash_T	cocu_hash;
 # ifdef FEAT_SYN_HL
     int		syn_patterns_len;
     int		syn_conceal;
@@ -2457,6 +2463,13 @@ nv_screenline_cache_valid(linenr_T lnum)
 	&& nv_screenline_cache.linebreak == curwin->w_p_lbr
 	&& nv_screenline_cache.breakindent == curwin->w_p_bri
 	&& nv_screenline_cache.list == curwin->w_p_list
+	&& nv_screenline_cache.showbreak_hash
+					== hash_hash(get_showbreak_value(curwin))
+	&& nv_screenline_cache.breakat_hash == hash_hash(p_breakat)
+	&& nv_screenline_cache.briopt_hash == hash_hash(curwin->w_p_briopt)
+	&& nv_screenline_cache.lcs_hash == hash_hash(curwin->w_p_lcs)
+	&& nv_screenline_cache.global_lcs_hash == hash_hash(p_lcs)
+	&& nv_screenline_cache.cocu_hash == hash_hash(curwin->w_p_cocu)
 # ifdef FEAT_SYN_HL
 	&& nv_screenline_cache.syn_patterns_len
 					== curwin->w_s->b_syn_patterns.ga_len
@@ -2495,6 +2508,12 @@ nv_screenline_cache_store(nv_screenline_map_T *map)
     nv_screenline_cache.linebreak = curwin->w_p_lbr;
     nv_screenline_cache.breakindent = curwin->w_p_bri;
     nv_screenline_cache.list = curwin->w_p_list;
+    nv_screenline_cache.showbreak_hash = hash_hash(get_showbreak_value(curwin));
+    nv_screenline_cache.breakat_hash = hash_hash(p_breakat);
+    nv_screenline_cache.briopt_hash = hash_hash(curwin->w_p_briopt);
+    nv_screenline_cache.lcs_hash = hash_hash(curwin->w_p_lcs);
+    nv_screenline_cache.global_lcs_hash = hash_hash(p_lcs);
+    nv_screenline_cache.cocu_hash = hash_hash(curwin->w_p_cocu);
 # ifdef FEAT_SYN_HL
     nv_screenline_cache.syn_patterns_len = curwin->w_s->b_syn_patterns.ga_len;
     nv_screenline_cache.syn_conceal = curwin->w_s->b_syn_conceal;
@@ -2520,7 +2539,7 @@ nv_screenline_map_build(nv_screenline_map_T *map, linenr_T lnum)
     {
 	colnr_T		    byte_col = (colnr_T)(p - line);
 	pos_T		    pos;
-	int		    row;
+	int		    screen_row;
 	int		    scol;
 	int		    ccol;
 	int		    ecol;
@@ -2532,8 +2551,8 @@ nv_screenline_map_build(nv_screenline_map_T *map, linenr_T lnum)
 	pos.lnum = lnum;
 	pos.col = byte_col;
 	pos.coladd = 0;
-	textpos2screenpos(curwin, &pos, &row, &scol, &ccol, &ecol);
-	if (row <= 0 || ccol <= 0)
+	textpos2screenpos(curwin, &pos, &screen_row, &scol, &ccol, &ecol);
+	if (screen_row <= 0 || ccol <= 0)
 	    continue;
 
 	if (ga_grow(&map->cells, 1) == FAIL)
@@ -2543,7 +2562,7 @@ nv_screenline_map_build(nv_screenline_map_T *map, linenr_T lnum)
 	}
 	cell = &nv_screenline_map_cells(map)[map->cells.ga_len++];
 	cell->col = byte_col;
-	cell->row = row;
+	cell->row = screen_row;
 	cell->ccol = ccol;
 	cell->ecol = ecol;
     }
@@ -2705,36 +2724,49 @@ nv_screenline_map_pos(
 }
 
     static int
-nv_screenline_map_neighbor(
-	nv_screenline_map_T	*map,
-	colnr_T			col,
-	int			dir,
-	pos_T			*target_pos)
+nv_screenline_visible_neighbor(
+	linenr_T	lnum,
+	colnr_T		col,
+	int		dir,
+	pos_T		*target_pos)
 {
-    nv_screenline_cell_T	*cells = nv_screenline_map_cells(map);
-    int				i;
+    char_u	*line = ml_get_buf(curwin->w_buffer, lnum, FALSE);
+    char_u	*p;
+    colnr_T	prev = -1;
 
     if (dir == FORWARD)
     {
-	for (i = 0; i < map->cells.ga_len; ++i)
-	    if (cells[i].col > col)
+	for (p = line; *p != NUL; MB_PTR_ADV(p))
+	{
+	    colnr_T byte_col = (colnr_T)(p - line);
+
+	    if (byte_col > col && !nv_screenline_byte_hidden(lnum, byte_col))
 	    {
-		target_pos->lnum = map->lnum;
-		target_pos->col = cells[i].col;
+		target_pos->lnum = lnum;
+		target_pos->col = byte_col;
 		target_pos->coladd = 0;
 		return OK;
 	    }
+	}
     }
     else
     {
-	for (i = map->cells.ga_len - 1; i >= 0; --i)
-	    if (cells[i].col < col)
-	    {
-		target_pos->lnum = map->lnum;
-		target_pos->col = cells[i].col;
-		target_pos->coladd = 0;
-		return OK;
-	    }
+	for (p = line; *p != NUL; MB_PTR_ADV(p))
+	{
+	    colnr_T byte_col = (colnr_T)(p - line);
+
+	    if (byte_col >= col)
+		break;
+	    if (!nv_screenline_byte_hidden(lnum, byte_col))
+		prev = byte_col;
+	}
+	if (prev >= 0)
+	{
+	    target_pos->lnum = lnum;
+	    target_pos->col = prev;
+	    target_pos->coladd = 0;
+	    return OK;
+	}
     }
     return FAIL;
 }
@@ -2742,18 +2774,13 @@ nv_screenline_map_neighbor(
     static int
 nv_screenline_conceal_horiz(int dir)
 {
-    nv_screenline_map_T map;
     pos_T	target_pos;
     colnr_T	col = curwin->w_cursor.col;
-    int		retval;
 
     if (!nv_screenline_conceal_active())
 	return FAIL;
-    if (nv_screenline_map_build(&map, curwin->w_cursor.lnum) == FAIL)
-	return FAIL;
-    retval = nv_screenline_map_neighbor(&map, col, dir, &target_pos);
-    nv_screenline_map_clear(&map);
-    if (retval == FAIL)
+    if (nv_screenline_visible_neighbor(curwin->w_cursor.lnum, col, dir,
+							&target_pos) == FAIL)
 	return FAIL;
 
     curwin->w_cursor = target_pos;

@@ -1023,6 +1023,90 @@ func Test_conceallevel_three_wrap()
         \ ], map(ScreenLines([1, 4], winwidth(0)),
         \ 'substitute(v:val, "\\s\\+$", "", "")'))
 
+  for width in [41, 50]
+    call CloseWindow()
+    call NewWindow(12, width)
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+          \ signcolumn=no number showbreak=
+    syntax clear test
+    syntax match test /\[/ conceal
+    syntax match test /\](https:[^)]*)/ conceal
+    syntax match test /\*\*/ conceal
+    syntax match test /\*/ conceal
+
+    call setline(1, 'This paragraph has **bold text before 日本語**, *italic text before コンシール*, and a [concealed link title 日本語](https://example.invalid/a/very/long/path/that/should-be-hidden-by-markdown-conceal) followed by enough words to wrap several times in a narrow window.')
+    redraw
+    for startcol in [38, 45, 90, 97, 219]
+      call cursor(1, startcol)
+      redraw
+      let before = [winline(), wincol()]
+      normal! gj
+      redraw
+      call assert_equal(before[0] + 1, winline(),
+            \ printf('gj moved %d rows from width %d col %d',
+            \ winline() - before[0], width, startcol))
+      normal! gk
+      redraw
+      call assert_equal(before, [winline(), wincol()],
+            \ printf('gj/gk changed visual position from width %d col %d',
+            \ width, startcol))
+
+      call cursor(1, startcol)
+      redraw
+      let before_row = winline()
+      normal! g0
+      redraw
+      call assert_equal(before_row, winline(),
+            \ printf('g0 changed screen row from width %d col %d',
+            \ width, startcol))
+
+      call cursor(1, startcol)
+      redraw
+      let before_row = winline()
+      normal! g$
+      redraw
+      call assert_equal(before_row, winline(),
+            \ printf('g$ changed screen row from width %d col %d',
+            \ width, startcol))
+    endfor
+
+    call setline(1, 'This paragraph puts the wide text later: ordinary words ordinary words ordinary words ordinary words ordinary words **bold marker hidden here** then 漢字かな交じり文 and a [second concealed link with 東京都 text](https://example.invalid/hidden-target) after the wrap point.')
+    redraw
+    for startcol in [111, 115, 175, 219]
+      call cursor(1, startcol)
+      redraw
+      let before = [winline(), wincol()]
+      normal! gj
+      redraw
+      call assert_equal(before[0] + 1, winline(),
+            \ printf('gj moved %d rows from width %d col %d',
+            \ winline() - before[0], width, startcol))
+      normal! gk
+      redraw
+      call assert_equal(before, [winline(), wincol()],
+            \ printf('gj/gk changed visual position from width %d col %d',
+            \ width, startcol))
+
+      call cursor(1, startcol)
+      redraw
+      let before_row = winline()
+      normal! g0
+      redraw
+      call assert_equal(before_row, winline(),
+            \ printf('g0 changed screen row from width %d col %d',
+            \ width, startcol))
+
+      call cursor(1, startcol)
+      redraw
+      let before_row = winline()
+      normal! g$
+      redraw
+      call assert_equal(before_row, winline(),
+            \ printf('g$ changed screen row from width %d col %d',
+            \ width, startcol))
+    endfor
+  endfor
+
   syntax clear test
   call CloseWindow()
 endfunc
