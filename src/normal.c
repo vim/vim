@@ -2689,19 +2689,18 @@ nv_screenline_map_build(
 	return FAIL;
     }
 
-    map->has_conceal = has_conceal;
-    if (!allow_plain && !has_conceal)
-    {
-	nv_screenline_map_clear(map);
-	return FAIL;
-    }
-
     if (map->cells.ga_len == 0)
     {
 	nv_screenline_map_clear(map);
 	return FAIL;
     }
+    map->has_conceal = has_conceal;
     nv_screenline_cache_store(map);
+    if (!allow_plain && !has_conceal)
+    {
+	nv_screenline_map_clear(map);
+	return FAIL;
+    }
     return OK;
 }
 
@@ -2908,7 +2907,16 @@ nv_screenline_visible_neighbor(
     int				idx = -1;
 
     if (nv_screenline_map_build(&map, lnum, false) == FAIL)
-	return FAIL;
+    {
+	if (nv_screenline_cache_valid(lnum) && !nv_screenline_cache.has_conceal)
+	{
+	    if (nv_screenline_map_build(&map, lnum, true) == FAIL)
+		return FAIL;
+	}
+	else if (!nv_screenline_plain_map_needed(lnum)
+		|| nv_screenline_map_build(&map, lnum, true) == FAIL)
+	    return FAIL;
+    }
     cells = nv_screenline_map_cells(&map);
     low = 0;
     high = map.cells.ga_len - 1;
