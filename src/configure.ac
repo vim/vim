@@ -2484,15 +2484,19 @@ fi
 
 AC_MSG_CHECKING(for cairo)
 have_cairo="no"
-if "$PKG_CONFIG" --exists 'cairo'; then
-  have_cairo="yes"
-  AC_MSG_RESULT([yes])
+if "$PKG_CONFIG" --exists 'cairo-ps'; then
+  if "$PKG_CONFIG" --exists 'cairo-pdf'; then
+    have_cairo="yes"
+    AC_MSG_RESULT([yes])
 
-  CAIRO_CFLAGS=`$PKG_CONFIG --cflags-only-other cairo `
-  CAIRO_CPPFLAGS=`$PKG_CONFIG --cflags-only-I cairo`
-  CAIRO_LIBS=`$PKG_CONFIG --libs cairo`
+    CAIRO_CFLAGS=`$PKG_CONFIG --cflags-only-other cairo-ps cairo-pdf`
+    CAIRO_CPPFLAGS=`$PKG_CONFIG --cflags-only-I cairo-ps cairo-pdf`
+    CAIRO_LIBS=`$PKG_CONFIG --libs cairo-ps cairo-pdf`
+  else
+    AC_MSG_RESULT(no, pdf backend not enabled)
+  fi
 else
-  AC_MSG_RESULT(no)
+  AC_MSG_RESULT(no, postscript backend not enabled)
 fi
 
 AC_MSG_CHECKING(for pango)
