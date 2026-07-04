@@ -585,10 +585,7 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	{
 	    int	    syntax_seqnr;
 
-	    if (full_line)
-		(void)get_syntax_attr(col, NULL, FALSE);
-	    else
-		(void)syn_get_id(wp, lnum, col, FALSE, NULL, FALSE);
+	    (void)syn_get_id(wp, lnum, col, FALSE, NULL, FALSE);
 	    ptr = ml_get_buf(wp->w_buffer, lnum, FALSE) + col;
 	    line = ptr - col;
 	    cts.cts_line = line;

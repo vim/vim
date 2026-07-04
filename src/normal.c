@@ -2598,6 +2598,14 @@ nv_screenline_map_add_cell(
 	screen_col -= rowoff * width;
 	row += rowoff;
     }
+    if (map->rows.ga_len > 0)
+    {
+	nv_screenline_row_T *prev_row =
+			    &nv_screenline_map_rows(map)[map->rows.ga_len - 1];
+
+	if (row > prev_row->row + 1)
+	    row = prev_row->row + 1;
+    }
     screen_col -= curwin->w_leftcol;
     if (screen_col < 0 || screen_col >= curwin->w_width
 	    || row < 0 || row >= curwin->w_height)
