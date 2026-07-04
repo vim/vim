@@ -5,6 +5,7 @@ int plines(linenr_T lnum);
 int plines_win(win_T *wp, linenr_T lnum, int limit_winheight);
 int plines_nofill(linenr_T lnum);
 int plines_win_nofill(win_T *wp, linenr_T lnum, int limit_winheight);
+int plines_win_col_conceal_iter(win_T *wp, linenr_T lnum, conceal_vcol_cb_T vcol_cb, void *vcol_cb_ctx, bool *has_concealp);
 long plines_win_col_conceal_vcol(win_T *wp, linenr_T lnum, long column);
 bool plines_win_col_concealed(win_T *wp, linenr_T lnum, long column);
 int plines_win_col_conceal_advance(win_T *wp, linenr_T lnum, long wantcol, pos_T *pos);

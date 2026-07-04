@@ -518,7 +518,9 @@ plines_win_may_conceal(win_T *wp, linenr_T lnum)
  */
     static long
 plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
-				long *vcol_off_cop, bool *concealedp)
+				long *vcol_off_cop, bool *concealedp,
+				conceal_vcol_cb_T vcol_cb, void *vcol_cb_ctx,
+				bool *has_concealp)
 {
     char_u	*line;
     char_u	*ptr;
@@ -601,11 +603,15 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	if (!is_concealing)
 	{
 	    int charsize;
+	    int cells;
 
 	    cts.cts_ptr = ptr;
 	    cts.cts_vcol = *ptr == TAB
 				    ? (int)(vcol + vcol_off_co) : (int)vcol;
 	    charsize = win_lbr_chartabsize(&cts, NULL, NULL);
+	    cells = *ptr == TAB
+			? win_chartabsize(wp, ptr, vcol + vcol_off_co)
+			: (*mb_ptr2cells)(ptr);
 # if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
 	    if (wp->w_p_lbr && wp->w_p_wrap && wp->w_p_cole == 3
 		    && has_syntax && VIM_ISBREAK((int)*ptr))
@@ -644,6 +650,13 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 		    charsize = wp->w_width - (int)screen_col;
 	    }
 # endif
+	    if (vcol_cb != NULL && cells > 0
+		    && vcol_cb((colnr_T)(ptr - line), vcol, cells,
+						       vcol_cb_ctx) == FAIL)
+	    {
+		clear_chartabsize_arg(&cts);
+		return -1;
+	    }
 	    if (*ptr == TAB && vcol_off_co > 0)
 	    {
 # ifdef FEAT_LINEBREAK
@@ -662,6 +675,8 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	    int charsize;
 	    int head = 0;
 
+	    if (has_concealp != NULL)
+		*has_concealp = true;
 	    cts.cts_ptr = ptr;
 	    cts.cts_vcol = (int)(vcol + vcol_off_co);
 	    charsize = win_lbr_chartabsize(&cts, &head, NULL);
@@ -676,6 +691,8 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 # endif
 	else
 	{
+	    if (has_concealp != NULL)
+		*has_concealp = true;
 	    cts.cts_ptr = ptr;
 	    cts.cts_vcol = (int)(vcol + vcol_off_co);
 	    vcol_off_co += win_chartabsize(wp, ptr, vcol + vcol_off_co);
@@ -744,6 +761,23 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
     return vcol;
 }
 
+    int
+plines_win_col_conceal_iter(win_T *wp, linenr_T lnum,
+		conceal_vcol_cb_T vcol_cb, void *vcol_cb_ctx,
+		bool *has_concealp)
+{
+    long	vcol;
+
+    if (!plines_win_may_conceal(wp, lnum))
+	return FAIL;
+
+    if (has_concealp != NULL)
+	*has_concealp = false;
+    vcol = plines_win_col_conceal(wp, lnum, MAXCOL, NULL, NULL,
+					  vcol_cb, vcol_cb_ctx, has_concealp);
+    return vcol < 0 ? FAIL : OK;
+}
+
 /*
  * Return the displayed virtual column up to "column" while taking zero-width
  * 'conceallevel' 3 text into account, or -1 when conceal is not active.
@@ -753,7 +787,8 @@ plines_win_col_conceal_vcol(win_T *wp, linenr_T lnum, long column)
 {
     if (!plines_win_may_conceal(wp, lnum))
 	return -1;
-    return plines_win_col_conceal(wp, lnum, column, NULL, NULL);
+    return plines_win_col_conceal(wp, lnum, column, NULL, NULL,
+						      NULL, NULL, NULL);
 }
 
 /*
@@ -766,7 +801,8 @@ plines_win_col_concealed(win_T *wp, linenr_T lnum, long column)
 
     if (!plines_win_may_conceal(wp, lnum))
 	return false;
-    (void)plines_win_col_conceal(wp, lnum, column, NULL, &concealed);
+    (void)plines_win_col_conceal(wp, lnum, column, NULL, &concealed,
+						      NULL, NULL, NULL);
     return concealed;
 }
 
@@ -793,7 +829,8 @@ plines_win_col_conceal_advance(win_T *wp, linenr_T lnum, long wantcol,
     {
 	colnr_T col = (colnr_T)(ptr - line);
 
-	vcol = plines_win_col_conceal(wp, lnum, col, NULL, &concealed);
+	vcol = plines_win_col_conceal(wp, lnum, col, NULL, &concealed,
+						      NULL, NULL, NULL);
 	if (concealed)
 	    continue;
 	if (vcol >= wantcol)
@@ -840,7 +877,8 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
 	return 1; // be quick for an empty line
 #ifdef FEAT_CONCEAL
     if (plines_win_may_conceal(wp, lnum))
-	col = plines_win_col_conceal(wp, lnum, MAXCOL, NULL, NULL);
+	col = plines_win_col_conceal(wp, lnum, MAXCOL, NULL, NULL,
+						      NULL, NULL, NULL);
     else
 #endif
     {
@@ -903,7 +941,8 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     if (plines_win_may_conceal(wp, lnum))
     {
 	cts.cts_vcol = (int)plines_win_col_conceal(wp, lnum, column,
-						 &vcol_off_co, &concealed);
+				     &vcol_off_co, &concealed, NULL, NULL,
+				     NULL);
 	line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 	cts.cts_line = line;
 	cts.cts_ptr = line;
