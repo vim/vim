@@ -8680,6 +8680,7 @@ function s:NetrwLocalRename(path) range
             endif
 
             NetrwKeepj norm! 0
+            let reset_ssl = 0
             if exists('+shellslash') && !&ssl
                 let reset_ssl = 1
                 set ssl
