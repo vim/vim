@@ -206,6 +206,7 @@ runtime/ftplugin/gitcommit.vim				@tpope
 runtime/ftplugin/gitconfig.vim				@tpope
 runtime/ftplugin/gitignore.vim				@ObserverOfTime
 runtime/ftplugin/gitrebase.vim				@tpope
+runtime/ftplugin/gitrevlist.vim				@fionn
 runtime/ftplugin/gitsendemail.vim			@tpope
 runtime/ftplugin/gleam.vim				@kirillmorozov
 runtime/ftplugin/go.vim					@dbarnett

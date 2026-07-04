@@ -3264,6 +3264,8 @@ const ft_from_name = {
   "TAG_EDITMSG": "gitcommit",
   "NOTES_EDITMSG": "gitcommit",
   "EDIT_DESCRIPTION": "gitcommit",
+  # Git revision list
+  ".git-blame-ignore-revs": "gitrevlist",
   # gnash(1) configuration files
   "gnashrc": "gnash",
   ".gnashrc": "gnash",
