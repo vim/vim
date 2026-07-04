@@ -6374,11 +6374,17 @@ spell_add_word(
 
     if (what == SPELL_ADD_BAD || undo)
     {
+	garray_T	ga;
+
 	// When the word appears as good word we need to remove that one,
 	// since its flags sort before the one with WF_BANNED.
-	fd = mch_fopen((char *)fname, "r");
+	ga_init2(&ga, sizeof(long), 10);
+	fd = mch_fopen((char *)fname, READBIN);
 	if (fd != NULL)
 	{
+	    char_u	*fbuf = NULL;
+	    long	fsize = 0;
+
 	    while (!vim_fgets(line, MAXWLEN * 2, fd))
 	    {
 		fpos = fpos_next;
@@ -6390,33 +6396,60 @@ spell_add_word(
 			&& STRNCMP(word, line, len) == 0
 			&& (line[len] == '/' || line[len] < ' '))
 		{
-		    // Found duplicate word.  Remove it by writing a '#' at
-		    // the start of the line.  Mixing reading and writing
-		    // doesn't work for all systems, close the file first.
-		    fclose(fd);
-		    fd = mch_fopen((char *)fname, "r+");
-		    if (fd == NULL)
+		    // Remember the start of the line so it can be commented
+		    // out below by inserting a '#', keeping the whole word.
+		    if (ga_grow(&ga, 1) == FAIL)
 			break;
-		    if (fseek(fd, fpos, SEEK_SET) == 0)
-		    {
-			fputc('#', fd);
-			if (undo)
-			{
-			    home_replace(NULL, fname, NameBuff, MAXPATHL, TRUE);
-			    smsg(_("Word '%.*s' removed from %s"),
-							 len, word, NameBuff);
-			}
-		    }
-		    if (fseek(fd, fpos_next, SEEK_SET) != 0)
-		    {
-			PERROR(_("Seek error in spellfile"));
-			break;
-		    }
+		    ((long *)ga.ga_data)[ga.ga_len++] = fpos;
 		}
 	    }
-	    if (fd != NULL)
-		fclose(fd);
+
+	    // Rewrite the file with a '#' inserted at the start of each
+	    // remembered line.  Overwriting the first character in place
+	    // would lose it and the line cannot be grown in place.
+	    if (ga.ga_len > 0
+		    && fseek(fd, 0L, SEEK_END) == 0
+		    && (fsize = ftell(fd)) > 0
+		    && fseek(fd, 0L, SEEK_SET) == 0)
+	    {
+		fbuf = alloc((size_t)fsize);
+		if (fbuf != NULL
+			&& fread(fbuf, 1, (size_t)fsize, fd) < (size_t)fsize)
+		    VIM_CLEAR(fbuf);
+	    }
+	    fclose(fd);
+
+	    if (fbuf != NULL)
+	    {
+		FILE	*wfd = mch_fopen((char *)fname, WRITEBIN);
+
+		if (wfd == NULL)
+		    semsg(_(e_cant_open_file_str), fname);
+		else
+		{
+		    long	prev = 0;
+
+		    for (i = 0; i < ga.ga_len; ++i)
+		    {
+			long	off = ((long *)ga.ga_data)[i];
+
+			fwrite(fbuf + prev, 1, (size_t)(off - prev), wfd);
+			fputc('#', wfd);
+			prev = off;
+		    }
+		    fwrite(fbuf + prev, 1, (size_t)(fsize - prev), wfd);
+		    fclose(wfd);
+		    if (undo)
+		    {
+			home_replace(NULL, fname, NameBuff, MAXPATHL, TRUE);
+			smsg(_("Word '%.*s' removed from %s"),
+			     len, word, NameBuff);
+		    }
+		}
+		vim_free(fbuf);
+	    }
 	}
+	ga_clear(&ga);
     }
 
     if (!undo)

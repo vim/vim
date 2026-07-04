@@ -41,18 +41,18 @@ func Test_spell_normal()
   norm! ]s
   call assert_equal('2 goood', getline('.'))
   let cnt=readfile('./Xspellfile.add')
-  call assert_equal('#oood', cnt[0])
+  call assert_equal('#goood', cnt[0])
   call assert_equal('goood/!', cnt[1])
 
   " Test for :spellrare
   spellrare rare
   let cnt=readfile('./Xspellfile.add')
-  call assert_equal(['#oood', 'goood/!', 'rare/?'], cnt)
+  call assert_equal(['#goood', 'goood/!', 'rare/?'], cnt)
 
   " Make sure :spellundo works for rare words.
   spellundo rare
   let cnt=readfile('./Xspellfile.add')
-  call assert_equal(['#oood', 'goood/!', '#are/?'], cnt)
+  call assert_equal(['#goood', 'goood/!', '#rare/?'], cnt)
 
   " Test for zg in visual mode
   let a=execute('unsilent :norm! V$zg')
@@ -80,36 +80,36 @@ func Test_spell_normal()
   let a=execute('unsilent norm! V$zW')
   call assert_match("Word '2 goood' added to .*", a)
   let cnt=readfile(fname)
-  call assert_equal('# goood', cnt[0])
+  call assert_equal('#2 goood', cnt[0])
   call assert_equal('2 goood/!', cnt[1])
 
   " Test for zuW
   let a=execute('unsilent norm! V$zuW')
   call assert_match("Word '2 goood' removed from .*", a)
   let cnt=readfile(fname)
-  call assert_equal('# goood', cnt[0])
-  call assert_equal('# goood/!', cnt[1])
+  call assert_equal('#2 goood', cnt[0])
+  call assert_equal('#2 goood/!', cnt[1])
 
   " Test for zuG
   let a=execute('unsilent norm! $zG')
   call assert_match("Word 'goood' added to .*", a)
   let cnt=readfile(fname)
-  call assert_equal('# goood', cnt[0])
-  call assert_equal('# goood/!', cnt[1])
+  call assert_equal('#2 goood', cnt[0])
+  call assert_equal('#2 goood/!', cnt[1])
   call assert_equal('goood', cnt[2])
   let a=execute('unsilent norm! $zuG')
   let cnt=readfile(fname)
   call assert_match("Word 'goood' removed from .*", a)
-  call assert_equal('# goood', cnt[0])
-  call assert_equal('# goood/!', cnt[1])
-  call assert_equal('#oood', cnt[2])
+  call assert_equal('#2 goood', cnt[0])
+  call assert_equal('#2 goood/!', cnt[1])
+  call assert_equal('#goood', cnt[2])
   " word not found in wordlist
   let a=execute('unsilent norm! V$zuG')
   let cnt=readfile(fname)
   call assert_match("", a)
-  call assert_equal('# goood', cnt[0])
-  call assert_equal('# goood/!', cnt[1])
-  call assert_equal('#oood', cnt[2])
+  call assert_equal('#2 goood', cnt[0])
+  call assert_equal('#2 goood/!', cnt[1])
+  call assert_equal('#goood', cnt[2])
 
   " Test for zug
   call delete('./Xspellfile.add')
@@ -120,12 +120,12 @@ func Test_spell_normal()
   let a=execute('unsilent norm! $zug')
   call assert_match("Word 'goood' removed from \./Xspellfile.add", a)
   let cnt=readfile('./Xspellfile.add')
-  call assert_equal('#oood', cnt[0])
+  call assert_equal('#goood', cnt[0])
   " word not in wordlist
   let a=execute('unsilent norm! V$zug')
   call assert_match('', a)
   let cnt=readfile('./Xspellfile.add')
-  call assert_equal('#oood', cnt[0])
+  call assert_equal('#goood', cnt[0])
 
   " Test for zuw
   call delete('./Xspellfile.add')
@@ -136,12 +136,12 @@ func Test_spell_normal()
   let a=execute('unsilent norm! Vzuw')
   call assert_match("Word '2 goood' removed from \./Xspellfile.add", a)
   let cnt=readfile('./Xspellfile.add')
-  call assert_equal('# goood/!', cnt[0])
+  call assert_equal('#2 goood/!', cnt[0])
   " word not in wordlist
   let a=execute('unsilent norm! $zug')
   call assert_match('', a)
   let cnt=readfile('./Xspellfile.add')
-  call assert_equal('# goood/!', cnt[0])
+  call assert_equal('#2 goood/!', cnt[0])
 
   " add second entry to spellfile setting
   set spellfile=./Xspellfile.add,./Xspellfile2.add
@@ -156,11 +156,11 @@ func Test_spell_normal()
   let temp = execute(':spe!0/0')
   call assert_match('Invalid region', temp)
   let spellfile = matchstr(temp, 'Invalid region nr in \zs.*\ze line \d: 0')
-  call assert_equal(['# goood', '# goood/!', '#oood', '0/0'], readfile(spellfile))
+  call assert_equal(['#2 goood', '#2 goood/!', '#goood', '0/0'], readfile(spellfile))
 
   " Test for :spellrare!
   :spellrare! raare
-  call assert_equal(['# goood', '# goood/!', '#oood', '0/0', 'raare/?'], readfile(spellfile))
+  call assert_equal(['#2 goood', '#2 goood/!', '#goood', '0/0', 'raare/?'], readfile(spellfile))
   call delete(spellfile)
 
   " clean up
@@ -178,6 +178,29 @@ func Test_spell_normal()
 
   set spellfile= spell& spelllang&
   bw!
+endfunc
+
+" Undo of adding a word to 'spellfile' keeps the whole word in the comment
+" line instead of overwriting the first character (neovim/neovim#20609).
+func Test_spell_undo_keeps_word()
+  set spellfile=./Xspellundo.add
+
+  " The reported case: add a word, undo it, the word is kept after the '#'.
+  spellgood fooee
+  spellundo fooee
+  call assert_equal(['#fooee'], readfile('./Xspellundo.add'))
+
+  " A word in the middle of the file: first character kept, neighbours intact.
+  call delete('./Xspellundo.add')
+  spellgood oneword
+  spellgood twoword
+  spellgood threeword
+  spellundo twoword
+  call assert_equal(['oneword', '#twoword', 'threeword'], readfile('./Xspellundo.add'))
+
+  call delete('./Xspellundo.add')
+  call delete('./Xspellundo.add.spl')
+  set spellfile=
 endfunc
 
 " Spell file content test. Write 'content' to the spell file prefixed by the
