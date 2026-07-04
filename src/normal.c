@@ -2576,6 +2576,20 @@ nv_screenline_map_build(nv_screenline_map_T *map, linenr_T lnum)
     return OK;
 }
 
+    static bool
+nv_screenline_all_concealed(linenr_T lnum)
+{
+    char_u	*line = ml_get_buf(curwin->w_buffer, lnum, FALSE);
+    char_u	*p;
+
+    if (*line == NUL)
+	return false;
+    for (p = line; *p != NUL; MB_PTR_ADV(p))
+	if (!nv_screenline_byte_hidden(lnum, (colnr_T)(p - line)))
+	    return false;
+    return true;
+}
+
     static int
 nv_screenline_map_current(
 	nv_screenline_map_T	*map,
@@ -2876,7 +2890,8 @@ nv_screengo_conceal(int dir, long dist)
 		++lnum;
 		if (nv_screenline_map_build(&map, lnum) == FAIL)
 		{
-		    if (ml_get_len(lnum) != 0)
+		    if (ml_get_len(lnum) != 0
+			    && !nv_screenline_all_concealed(lnum))
 			return FAIL;
 		    row = 0;
 		}
@@ -2903,7 +2918,8 @@ nv_screengo_conceal(int dir, long dist)
 		--lnum;
 		if (nv_screenline_map_build(&map, lnum) == FAIL)
 		{
-		    if (ml_get_len(lnum) != 0)
+		    if (ml_get_len(lnum) != 0
+			    && !nv_screenline_all_concealed(lnum))
 			return FAIL;
 		    row = 0;
 		}

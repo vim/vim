@@ -787,6 +787,23 @@ func Test_conceallevel_three_wrap()
   redraw
   call assert_equal(1, screenpos(0, 1, col('.')).curscol)
 
+  call CloseWindow()
+  call NewWindow(6, 20)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+        \ signcolumn=no nonumber showbreak=
+  syntax clear test
+  syntax match test /X\+/ conceal
+
+  call setline(1, ['one two three four five six seven', 'XXX', 'after'])
+  call cursor(1, strlen(getline(1)))
+  redraw
+  normal! gj
+  call assert_equal(2, line('.'))
+  call cursor(3, 1)
+  redraw
+  normal! gk
+  call assert_equal(2, line('.'))
+
   syntax clear test
   call CloseWindow()
   call NewWindow(6, 30)
