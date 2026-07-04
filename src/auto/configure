@@ -9303,14 +9303,14 @@ fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pango" >&5
 printf %s "checking for pango... " >&6; }
 have_pango="no"
-if "$PKG_CONFIG" --exists 'pango'; then
+if "$PKG_CONFIG" --exists 'pango' && "$PKG_CONFIG" --exists 'pangocairo'; then
   have_pango="yes"
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
-  PANGO_CFLAGS=`$PKG_CONFIG --cflags-only-other pango `
-  PANGO_CPPFLAGS=`$PKG_CONFIG --cflags-only-I pango`
-  PANGO_LIBS=`$PKG_CONFIG --libs pango`
+  PANGO_CFLAGS=`$PKG_CONFIG --cflags-only-other pango pangocairo`
+  PANGO_CPPFLAGS=`$PKG_CONFIG --cflags-only-I pango pangocairo`
+  PANGO_LIBS=`$PKG_CONFIG --libs pango pangocairo`
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
@@ -11600,22 +11600,22 @@ then :
 fi
 
 
-if test "x$GUITYPE" = "xGTK" || test "x$GUITYPE" == "xGTK4"; then
-  enable_hardcopy_pango="yes"
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes, GTK GUI enabled" >&5
-printf "%s\n" "yes, GTK GUI enabled" >&6; }
-else
-  if test "$enable_hardcopy_pango" = "yes"; then
-    if test "x$have_pango" = "xno" || test "x$have_cairo" = "xno"; then
-      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, Pango or Cairo not found" >&5
+if test "x$have_pango" = "xno" || test "x$have_cairo" = "xno"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, Pango or Cairo not found" >&5
 printf "%s\n" "no, Pango or Cairo not found" >&6; }
-    else
+else
+  if test "x$GUITYPE" = "xGTK" || test "x$GUITYPE" == "xGTK4"; then
+    enable_hardcopy_pango="yes"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes, GTK GUI enabled" >&5
+printf "%s\n" "yes, GTK GUI enabled" >&6; }
+  else
+    if test "$enable_hardcopy_pango" = "yes"; then
       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-    fi
-  else
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+    else
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
+    fi
   fi
 fi
 
