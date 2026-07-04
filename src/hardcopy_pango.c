@@ -9,6 +9,10 @@
 
 /*
  * See https://www.cairographics.org/documentation/using_the_postscript_surface/
+ * for information about Cairo's postscript backend.
+ *
+ * Related:
+ * https://www.cairographics.org/manual/cairo-PDF-Surfaces.html#cairo-pdf-surface-set-size
  */
 
 #include "vim.h"
@@ -20,6 +24,7 @@
 #include "hardcopy_pango.h"
 
 #include <cairo/cairo-ps.h>
+#include <cairo/cairo-pdf.h>
 #include <pango/pango.h>
 
 #define PRINT_DPI 72.0
@@ -31,13 +36,19 @@
 #define GET_Y(l) (pctx.top_margin + (l) * pctx.char_height)
 #define GET_TEXT_Y(l) (GET_Y(l) + pctx.char_ascent)
 
+typedef enum
+{
+    PRT_FORMAT_PS,  // Postscript
+    PRT_FORMAT_PDF, // PDF
+} prt_format_T;
+
 /*
  * Global state for printing
  */
 static struct
 {
-    // Cairo surface to draw on (postscript backend). Note that surface is
-    // scaled in points (1/72 of an inch).
+    // Cairo surface to draw on. Note that surface is scaled in points (1/72 of
+    // an inch), for all formats.
     cairo_surface_t *surface;
     cairo_t	    *cr;
     PangoContext    *text_context;
@@ -51,6 +62,8 @@ static struct
     bool collate;
     bool duplex;
     bool tumble; // Short edge duplex
+
+    prt_format_T format;
 
     double char_width;
     double char_ascent;
@@ -79,6 +92,11 @@ static struct
 
     bool dialog;
 } pctx;
+
+static const char *print_formats[] = {
+    [PRT_FORMAT_PS] = "postscript",
+    [PRT_FORMAT_PDF] = "pdf",
+};
 
 /*
  * Convert the margin specified in "idx" to device units. "physsize" is the size
@@ -214,7 +232,7 @@ mch_print_init(
     cairo_write_func_t write_func = NULL;
 
 #if defined(FEAT_GUI_GTK) && defined(USE_GTK4)
-    if (!forceit && psettings->outfile == NULL)
+    if (gui.in_use && !forceit && psettings->outfile == NULL)
     {
 	int ret = gui_gtk4_print_dialog(psettings, jobname,
 		&pctx.page_width, &pctx.page_height, &write_func);
@@ -227,9 +245,10 @@ mch_print_init(
 #endif
 
     pctx.dialog = dialog;
+    pctx.format = PRT_FORMAT_PS;
 
     // Let printer handle stuff when using dialog. Not sure if our postscript
-    // DSC comments can intefere with dialog settings...
+    // DSC comments can intefere with dialog settings, but don't add them...
     if (!dialog)
     {
 	// Get paper type to use
@@ -268,6 +287,18 @@ mch_print_init(
 	    pctx.page_height = prt_mediasize[media].width;
 	}
 
+	if (printer_opts[OPT_PRINT_FORMAT].present)
+	{
+	    for (int i = 0; i < ARRAY_LENGTH(print_formats); i++)
+		if (STRNCMP(printer_opts[OPT_PRINT_FORMAT].string,
+			    print_formats[i],
+			    printer_opts[OPT_PRINT_FORMAT].strlen) == 0)
+		{
+		    pctx.format = i;
+		    break;
+		}
+	}
+
 	psettings->user_abort = FALSE;
 
 	// If the user didn't specify a file name, use a temp file.
@@ -283,8 +314,13 @@ mch_print_init(
 	else
 	    filename = expand_env_save(psettings->outfile);
 
-	pctx.surface = cairo_ps_surface_create((const char *)filename,
-		pctx.page_width, pctx.page_height);
+	if (pctx.format == PRT_FORMAT_PS)
+	    pctx.surface = cairo_ps_surface_create((const char *)filename,
+		    pctx.page_width, pctx.page_height);
+	else
+	    pctx.surface = cairo_pdf_surface_create((const char *)filename,
+		    pctx.page_width, pctx.page_height);
+
 	pctx.filename = (char_u *)filename;
     }
     else
@@ -434,7 +470,7 @@ exit:
     int
 mch_print_begin(prt_settings_T *psettings)
 {
-    char buf[256];
+    char user[256];
 
     pctx.cur_x = 0.0;
     pctx.cur_line = 0;
@@ -443,30 +479,50 @@ mch_print_begin(prt_settings_T *psettings)
     if (pctx.dialog)
 	return TRUE;
 
-    // In header section
-    emit_dsc_comment("Title", (char *)psettings->jobname);
-    if (!get_user_name((char_u *)buf, sizeof(buf)))
-	STRCPY(buf, "Unknown");
-    emit_dsc_comment("For", buf);
-    emit_dsc_comment("Orientation", pctx.portrait ? "Portrait" : "Landscape");
-    emit_dsc_comment("PageOrder", "Ascend");
+    if (!get_user_name((char_u *)user, sizeof(user)))
+	STRCPY(user, "Unknown");
 
-    emit_dsc_comment("DocumentMedia",
-	    "%s %.2lf %.2lf 0 () ()",
-	    prt_mediasize[pctx.media].name,
-	    prt_mediasize[pctx.media].width,
-	    prt_mediasize[pctx.media].height);
+    if (pctx.format == PRT_FORMAT_PS)
+    {
+	emit_dsc_comment("Title", (char *)psettings->jobname);
+	emit_dsc_comment("For", user);
+	emit_dsc_comment("Orientation",
+		pctx.portrait ? "Portrait" : "Landscape");
+	emit_dsc_comment("PageOrder", "Ascend");
 
-    emit_dsc_comment("Requirements", "%s%s %s %s",
-	    pctx.duplex ? "duplex" : "",
-	    pctx.tumble ? "(tumble)" : "",
-	    pctx.collate ? "collate" : "",
-	    psettings->do_syntax ? "color" : "");
+	emit_dsc_comment("DocumentMedia",
+		"%s %.2lf %.2lf 0 () ()",
+		prt_mediasize[pctx.media].name,
+		prt_mediasize[pctx.media].width,
+		prt_mediasize[pctx.media].height);
 
-    // In defaults section (defaults for every page)
-    emit_dsc_comment("BeginDefaults", NULL);
-    emit_dsc_comment("PageMedia", prt_mediasize[pctx.media].name);
-    emit_dsc_comment("EndDefaults", NULL);
+	emit_dsc_comment("Requirements", "%s%s %s %s",
+		pctx.duplex ? "duplex" : "",
+		pctx.tumble ? "(tumble)" : "",
+		pctx.collate ? "collate" : "",
+		psettings->do_syntax ? "color" : "");
+
+	// In defaults section (defaults for every page)
+	emit_dsc_comment("BeginDefaults", NULL);
+	emit_dsc_comment("PageMedia", prt_mediasize[pctx.media].name);
+	emit_dsc_comment("EndDefaults", NULL);
+    }
+    else if (pctx.format == PRT_FORMAT_PDF)
+    {
+	char_u *str = CONVERT_TO_UTF8((char_u *)user);
+
+	cairo_pdf_surface_set_metadata(pctx.surface,
+		CAIRO_PDF_METADATA_AUTHOR, (char *)str);
+	CONVERT_TO_UTF8_FREE(str);
+
+	str = CONVERT_TO_UTF8(psettings->jobname);
+	cairo_pdf_surface_set_metadata(pctx.surface,
+		CAIRO_PDF_METADATA_TITLE, (char *)str);
+	CONVERT_TO_UTF8_FREE(str);
+
+	cairo_pdf_surface_set_metadata(pctx.surface,
+		CAIRO_PDF_METADATA_CREATOR, VIM_VERSION_LONG);
+    }
 
     return TRUE;
 }
