@@ -2801,68 +2801,109 @@ nv_screengo_conceal(int dir, long dist)
     int		row;
     int		text_col;
     int		ccol;
+    bool	have_map = true;
 
     if (!nv_screenline_conceal_active())
 	return FAIL;
 
     lnum = curwin->w_cursor.lnum;
+    text_col = curwin->w_wincol + win_col_off(curwin) + 1;
     if (nv_screenline_map_build(&map, lnum) == FAIL)
-	return FAIL;
-    if (nv_screenline_map_current(&map, curwin->w_cursor.col, &row,
+    {
+	if (ml_get_len(lnum) != 0)
+	    return FAIL;
+	have_map = false;
+	row = 0;
+	target_rel = curwin->w_curswant == MAXCOL ? 0 : curwin->w_curswant;
+	target_col = text_col + target_rel;
+    }
+    else if (nv_screenline_map_current(&map, curwin->w_cursor.col, &row,
 								&ccol) == FAIL)
     {
 	nv_screenline_map_clear(&map);
 	return FAIL;
     }
-
-    text_col = curwin->w_wincol + win_col_off(curwin) + 1;
-    target_col = ccol;
-    target_rel = target_col - text_col;
-    if (target_rel < 0)
-	target_rel = 0;
+    else
+    {
+	target_col = ccol;
+	target_rel = target_col - text_col;
+	if (target_rel < 0)
+	    target_rel = 0;
+    }
 
     while (dist-- > 0)
     {
 	if (dir == FORWARD)
 	{
-	    if (nv_screenline_map_has_row(&map, row + 1))
+	    if (have_map && nv_screenline_map_has_row(&map, row + 1))
 		++row;
 	    else
 	    {
-		nv_screenline_map_clear(&map);
+		if (have_map)
+		{
+		    nv_screenline_map_clear(&map);
+		    have_map = false;
+		}
 		if (lnum >= curwin->w_buffer->b_ml.ml_line_count)
 		    return FAIL;
 		++lnum;
 		if (nv_screenline_map_build(&map, lnum) == FAIL)
-		    return FAIL;
-		row = nv_screenline_map_first_row(&map);
+		{
+		    if (ml_get_len(lnum) != 0)
+			return FAIL;
+		    row = 0;
+		}
+		else
+		{
+		    have_map = true;
+		    row = nv_screenline_map_first_row(&map);
+		}
 	    }
 	}
 	else
 	{
-	    if (nv_screenline_map_has_row(&map, row - 1))
+	    if (have_map && nv_screenline_map_has_row(&map, row - 1))
 		--row;
 	    else
 	    {
-		nv_screenline_map_clear(&map);
+		if (have_map)
+		{
+		    nv_screenline_map_clear(&map);
+		    have_map = false;
+		}
 		if (lnum <= 1)
 		    return FAIL;
 		--lnum;
 		if (nv_screenline_map_build(&map, lnum) == FAIL)
-		    return FAIL;
-		row = nv_screenline_map_last_row(&map);
+		{
+		    if (ml_get_len(lnum) != 0)
+			return FAIL;
+		    row = 0;
+		}
+		else
+		{
+		    have_map = true;
+		    row = nv_screenline_map_last_row(&map);
+		}
 	    }
 	}
     }
 
     target_row = row;
-    if (nv_screenline_map_pos(&map, target_row, target_col,
+    if (!have_map)
+    {
+	target_pos.lnum = lnum;
+	target_pos.col = 0;
+	target_pos.coladd = 0;
+    }
+    else if (nv_screenline_map_pos(&map, target_row, target_col,
 							&target_pos) == FAIL)
     {
 	nv_screenline_map_clear(&map);
 	return FAIL;
     }
-    nv_screenline_map_clear(&map);
+    if (have_map)
+	nv_screenline_map_clear(&map);
 
     curwin->w_cursor = target_pos;
     curwin->w_curswant = target_rel;

@@ -873,6 +873,14 @@ func Test_conceallevel_three_wrap()
   call cursor(1, 1)
   normal! gjgjl
   call assert_equal(stridx(getline(1), ', and a') + 3, col('.'))
+  call setline(2, '')
+  call cursor(1, stridx(getline(1), 'several times') + 1)
+  normal! gj
+  call assert_equal(2, line('.'))
+  call assert_equal(1, col('.'))
+  normal! gk
+  call assert_equal(1, line('.'))
+  call assert_equal(stridx(getline(1), 'several times') + 1, col('.'))
 
   call CloseWindow()
   call NewWindow(7, 40)
@@ -901,7 +909,7 @@ func Test_conceallevel_three_wrap()
   redraw
   call cursor(1, stridx(getline(1), 'ordinary words **') + 1)
   normal! gj
-  call assert_equal(stridx(getline(1), '** then') + 1, col('.'))
+  call assert_equal(stridx(getline(1), 'here**') + 1, col('.'))
   call assert_equal(5, winline())
 
   call cursor(1, stridx(getline(1), 'ordinary words **bold marker') + 9)
