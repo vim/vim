@@ -4948,9 +4948,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	restored if possible |X11|.  See |X11-icon| for changing the icon on
 	X11.
 	For MS-Windows the icon can be changed, see |windows-icon|.
-	NOTE: Some terminals treat the icon text as an alias for the window
-	title.  On those, setting the icon text may also change the terminal
-	window title; see 'title'.
+	NOTE: In GNU screen inside xterm, setting or restoring the window title and
+	icon may update the legacy X11 WM_NAME and WM_ICON_NAME properties
+	differently from _NET_WM_NAME and _NET_WM_ICON_NAME.  The visible title
+	depends on which property is used by the window manager.
 
 						*'iconstring'*
 'iconstring'		string	(default "")
@@ -9638,9 +9639,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	then the WINDOWID environment variable should be inherited and the
 	title of the window should change back to what it should be after
 	exiting Vim.
-	NOTE: Some terminals treat the icon text as an alias for the window
-	title (see 'icon').  On those, the interaction between 'title' and
-	'icon' depend on the specific behavior of the terminal.
+	NOTE: When Vim runs in GNU screen inside xterm, 'title' and 'icon' may
+	update the legacy X11 WM_NAME and WM_ICON_NAME properties differently from
+	_NET_WM_NAME and _NET_WM_ICON_NAME.  The visible title depends on which
+	property is used by the window manager.
 
 								*'titlelen'*
 'titlelen'		number	(default 85)
