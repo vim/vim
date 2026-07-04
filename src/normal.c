@@ -2355,6 +2355,34 @@ typedef struct
     garray_T	cells;
 } nv_screenline_map_T;
 
+typedef struct
+{
+    bool	valid;
+    win_T	*wp;
+    buf_T	*buf;
+    linenr_T	lnum;
+    linenr_T	topline;
+    colnr_T	leftcol;
+    colnr_T	skipcol;
+    varnumber_T	changedtick;
+    int		width;
+    int		height;
+    int		wincol;
+    int		col_off;
+    int		col_off2;
+    int		linebreak;
+    int		breakindent;
+    int		list;
+# ifdef FEAT_SYN_HL
+    int		syn_patterns_len;
+    int		syn_conceal;
+# endif
+} nv_screenline_cache_T;
+
+static nv_screenline_map_T nv_screenline_cache_map;
+static nv_screenline_cache_T nv_screenline_cache;
+static bool nv_screenline_cache_init = false;
+
     static void
 nv_screenline_conceal_clear(void)
 {
@@ -2393,6 +2421,87 @@ nv_screenline_map_cells(nv_screenline_map_T *map)
 }
 
     static int
+nv_screenline_map_copy(nv_screenline_map_T *to, nv_screenline_map_T *from)
+{
+    nv_screenline_map_init(to);
+    to->lnum = from->lnum;
+    if (ga_grow(&to->cells, from->cells.ga_len) == FAIL)
+    {
+	nv_screenline_map_clear(to);
+	return FAIL;
+    }
+    if (from->cells.ga_len > 0)
+	mch_memmove(to->cells.ga_data, from->cells.ga_data,
+		     sizeof(nv_screenline_cell_T) * from->cells.ga_len);
+    to->cells.ga_len = from->cells.ga_len;
+    return OK;
+}
+
+    static int
+nv_screenline_cache_valid(linenr_T lnum)
+{
+    return nv_screenline_cache_init
+	&& nv_screenline_cache.valid
+	&& nv_screenline_cache.wp == curwin
+	&& nv_screenline_cache.buf == curbuf
+	&& nv_screenline_cache.lnum == lnum
+	&& nv_screenline_cache.topline == curwin->w_topline
+	&& nv_screenline_cache.leftcol == curwin->w_leftcol
+	&& nv_screenline_cache.skipcol == curwin->w_skipcol
+	&& nv_screenline_cache.changedtick == CHANGEDTICK(curbuf)
+	&& nv_screenline_cache.width == curwin->w_width
+	&& nv_screenline_cache.height == curwin->w_height
+	&& nv_screenline_cache.wincol == curwin->w_wincol
+	&& nv_screenline_cache.col_off == curwin_col_off()
+	&& nv_screenline_cache.col_off2 == curwin_col_off2()
+	&& nv_screenline_cache.linebreak == curwin->w_p_lbr
+	&& nv_screenline_cache.breakindent == curwin->w_p_bri
+	&& nv_screenline_cache.list == curwin->w_p_list
+# ifdef FEAT_SYN_HL
+	&& nv_screenline_cache.syn_patterns_len
+					== curwin->w_s->b_syn_patterns.ga_len
+	&& nv_screenline_cache.syn_conceal == curwin->w_s->b_syn_conceal
+# endif
+	;
+}
+
+    static void
+nv_screenline_cache_store(nv_screenline_map_T *map)
+{
+    if (!nv_screenline_cache_init)
+    {
+	nv_screenline_map_init(&nv_screenline_cache_map);
+	nv_screenline_cache_init = true;
+    }
+    ga_clear(&nv_screenline_cache_map.cells);
+    if (nv_screenline_map_copy(&nv_screenline_cache_map, map) == FAIL)
+    {
+	nv_screenline_cache.valid = false;
+	return;
+    }
+    nv_screenline_cache.valid = true;
+    nv_screenline_cache.wp = curwin;
+    nv_screenline_cache.buf = curbuf;
+    nv_screenline_cache.lnum = map->lnum;
+    nv_screenline_cache.topline = curwin->w_topline;
+    nv_screenline_cache.leftcol = curwin->w_leftcol;
+    nv_screenline_cache.skipcol = curwin->w_skipcol;
+    nv_screenline_cache.changedtick = CHANGEDTICK(curbuf);
+    nv_screenline_cache.width = curwin->w_width;
+    nv_screenline_cache.height = curwin->w_height;
+    nv_screenline_cache.wincol = curwin->w_wincol;
+    nv_screenline_cache.col_off = curwin_col_off();
+    nv_screenline_cache.col_off2 = curwin_col_off2();
+    nv_screenline_cache.linebreak = curwin->w_p_lbr;
+    nv_screenline_cache.breakindent = curwin->w_p_bri;
+    nv_screenline_cache.list = curwin->w_p_list;
+# ifdef FEAT_SYN_HL
+    nv_screenline_cache.syn_patterns_len = curwin->w_s->b_syn_patterns.ga_len;
+    nv_screenline_cache.syn_conceal = curwin->w_s->b_syn_conceal;
+# endif
+}
+
+    static int
 nv_screenline_map_build(nv_screenline_map_T *map, linenr_T lnum)
 {
     char_u	*line;
@@ -2400,6 +2509,9 @@ nv_screenline_map_build(nv_screenline_map_T *map, linenr_T lnum)
 
     if (!nv_screenline_conceal_active())
 	return FAIL;
+
+    if (nv_screenline_cache_valid(lnum))
+	return nv_screenline_map_copy(map, &nv_screenline_cache_map);
 
     nv_screenline_map_init(map);
     map->lnum = lnum;
@@ -2441,6 +2553,7 @@ nv_screenline_map_build(nv_screenline_map_T *map, linenr_T lnum)
 	nv_screenline_map_clear(map);
 	return FAIL;
     }
+    nv_screenline_cache_store(map);
     return OK;
 }
 
