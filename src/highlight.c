@@ -589,6 +589,16 @@ init_highlight(
     for (i = 0; pp[i] != NULL; ++i)
 	do_highlight((char_u *)pp[i], reset, TRUE);
 
+    // It is hard to read "transparent" diff colors in environments where
+    // number of colors are limited.
+    // Make sure foreground color is set, so that diff colors are not clashing
+    // with syntax colors.
+    if (t_colors <= 256)
+    {
+	do_highlight((char_u *)"DiffAdd ctermfg=black", FALSE, TRUE);
+	do_highlight((char_u *)"DiffChange ctermfg=black", FALSE, TRUE);
+	do_highlight((char_u *)"DiffText ctermfg=black", FALSE, TRUE);
+    }
     // Reverse looks ugly, but grey may not work for less than 8 colors.  Thus
     // let it depend on the number of colors available.
     if (t_colors < 8)
