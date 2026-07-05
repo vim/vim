@@ -2398,8 +2398,41 @@ typedef struct
 # endif
 } nv_screenline_cache_T;
 
+typedef struct
+{
+    bool	valid;
+    win_T	*wp;
+    buf_T	*buf;
+    linenr_T	lnum;
+    linenr_T	topline;
+    colnr_T	leftcol;
+    colnr_T	skipcol;
+    varnumber_T	changedtick;
+    pos_T	cursor;
+    int		base_row;
+    int		width;
+    int		height;
+    int		wincol;
+    int		col_off;
+    int		col_off2;
+    int		linebreak;
+    int		breakindent;
+    int		list;
+    hash_T	showbreak_hash;
+    hash_T	breakat_hash;
+    hash_T	briopt_hash;
+    hash_T	lcs_hash;
+    hash_T	global_lcs_hash;
+    hash_T	cocu_hash;
+# ifdef FEAT_SYN_HL
+    int		syn_patterns_len;
+    int		syn_conceal;
+# endif
+} nv_screenline_base_cache_T;
+
 static nv_screenline_map_T nv_screenline_cache_map;
 static nv_screenline_cache_T nv_screenline_cache;
+static nv_screenline_base_cache_T nv_screenline_base_cache;
 static bool nv_screenline_cache_init = false;
 static win_T *nv_screenline_curswant_wp = NULL;
 static buf_T *nv_screenline_curswant_buf = NULL;
@@ -2605,6 +2638,104 @@ nv_screenline_cache_store(nv_screenline_map_T *map, bool include_offscreen)
 # endif
 }
 
+    static bool
+nv_screenline_base_cache_valid(void)
+{
+    return nv_screenline_base_cache.valid
+	&& nv_screenline_base_cache.wp == curwin
+	&& nv_screenline_base_cache.buf == curbuf
+	&& nv_screenline_base_cache.topline == curwin->w_topline
+	&& nv_screenline_base_cache.leftcol == curwin->w_leftcol
+	&& nv_screenline_base_cache.skipcol == curwin->w_skipcol
+	&& nv_screenline_base_cache.changedtick == CHANGEDTICK(curbuf)
+	&& EQUAL_POS(nv_screenline_base_cache.cursor, curwin->w_cursor)
+	&& nv_screenline_base_cache.width == curwin->w_width
+	&& nv_screenline_base_cache.height == curwin->w_height
+	&& nv_screenline_base_cache.wincol == curwin->w_wincol
+	&& nv_screenline_base_cache.col_off == curwin_col_off()
+	&& nv_screenline_base_cache.col_off2 == curwin_col_off2()
+	&& nv_screenline_base_cache.linebreak == curwin->w_p_lbr
+	&& nv_screenline_base_cache.breakindent == curwin->w_p_bri
+	&& nv_screenline_base_cache.list == curwin->w_p_list
+	&& nv_screenline_base_cache.showbreak_hash
+					== hash_hash(get_showbreak_value(curwin))
+	&& nv_screenline_base_cache.breakat_hash == hash_hash(p_breakat)
+	&& nv_screenline_base_cache.briopt_hash == hash_hash(curwin->w_p_briopt)
+	&& nv_screenline_base_cache.lcs_hash == hash_hash(curwin->w_p_lcs)
+	&& nv_screenline_base_cache.global_lcs_hash == hash_hash(p_lcs)
+	&& nv_screenline_base_cache.cocu_hash == hash_hash(curwin->w_p_cocu)
+# ifdef FEAT_SYN_HL
+	&& nv_screenline_base_cache.syn_patterns_len
+					== curwin->w_s->b_syn_patterns.ga_len
+	&& nv_screenline_base_cache.syn_conceal == curwin->w_s->b_syn_conceal
+# endif
+	;
+}
+
+    static void
+nv_screenline_base_cache_store(linenr_T lnum, int base_row)
+{
+    nv_screenline_base_cache.valid = true;
+    nv_screenline_base_cache.wp = curwin;
+    nv_screenline_base_cache.buf = curbuf;
+    nv_screenline_base_cache.lnum = lnum;
+    nv_screenline_base_cache.topline = curwin->w_topline;
+    nv_screenline_base_cache.leftcol = curwin->w_leftcol;
+    nv_screenline_base_cache.skipcol = curwin->w_skipcol;
+    nv_screenline_base_cache.changedtick = CHANGEDTICK(curbuf);
+    nv_screenline_base_cache.cursor = curwin->w_cursor;
+    nv_screenline_base_cache.base_row = base_row;
+    nv_screenline_base_cache.width = curwin->w_width;
+    nv_screenline_base_cache.height = curwin->w_height;
+    nv_screenline_base_cache.wincol = curwin->w_wincol;
+    nv_screenline_base_cache.col_off = curwin_col_off();
+    nv_screenline_base_cache.col_off2 = curwin_col_off2();
+    nv_screenline_base_cache.linebreak = curwin->w_p_lbr;
+    nv_screenline_base_cache.breakindent = curwin->w_p_bri;
+    nv_screenline_base_cache.list = curwin->w_p_list;
+    nv_screenline_base_cache.showbreak_hash =
+					    hash_hash(get_showbreak_value(curwin));
+    nv_screenline_base_cache.breakat_hash = hash_hash(p_breakat);
+    nv_screenline_base_cache.briopt_hash = hash_hash(curwin->w_p_briopt);
+    nv_screenline_base_cache.lcs_hash = hash_hash(curwin->w_p_lcs);
+    nv_screenline_base_cache.global_lcs_hash = hash_hash(p_lcs);
+    nv_screenline_base_cache.cocu_hash = hash_hash(curwin->w_p_cocu);
+# ifdef FEAT_SYN_HL
+    nv_screenline_base_cache.syn_patterns_len =
+					    curwin->w_s->b_syn_patterns.ga_len;
+    nv_screenline_base_cache.syn_conceal = curwin->w_s->b_syn_conceal;
+# endif
+}
+
+    static int
+nv_screenline_base_row_seq(linenr_T lnum, int *rowp)
+{
+# ifdef FEAT_DIFF
+    if (curwin->w_p_diff)
+	return FAIL;
+# endif
+# ifdef FEAT_FOLDING
+    if (hasAnyFolding(curwin))
+	return FAIL;
+# endif
+    if (!nv_screenline_base_cache_valid())
+	return FAIL;
+
+    if (lnum == nv_screenline_base_cache.lnum)
+	*rowp = nv_screenline_base_cache.base_row;
+    else if (lnum == nv_screenline_base_cache.lnum + 1)
+	*rowp = nv_screenline_base_cache.base_row
+		  + plines_win(curwin, nv_screenline_base_cache.lnum, FALSE);
+    else if (lnum + 1 == nv_screenline_base_cache.lnum)
+	*rowp = nv_screenline_base_cache.base_row
+		  - plines_win(curwin, lnum, FALSE);
+    else
+	return FAIL;
+
+    nv_screenline_base_cache_store(lnum, *rowp);
+    return OK;
+}
+
     static int
 nv_screenline_cached_base_row(win_T *wp, linenr_T lnum, int *rowp)
 {
@@ -2776,6 +2907,8 @@ nv_screenline_map_build(
     ctx.include_offscreen = include_offscreen;
     if (nv_screenline_cached_base_row(curwin, lnum, &ctx.base_row) == OK)
 	got_cached_base_row = true;
+    else if (nv_screenline_base_row_seq(lnum, &ctx.base_row) == OK)
+	got_cached_base_row = true;
     else if (include_offscreen
 	    && curwin->w_skipcol == 0
 # ifdef FEAT_DIFF
@@ -2801,6 +2934,8 @@ nv_screenline_map_build(
 	ctx.base_row += lnum == curwin->w_topline ? curwin->w_topfill
 					: diff_check_fill(curwin, lnum);
 # endif
+    if (!shift_above_top)
+	nv_screenline_base_cache_store(lnum, ctx.base_row);
     ctx.win_col_off = win_col_off(curwin);
     ctx.win_col_off2 = win_col_off2(curwin);
     if (plines_win_col_conceal_iter(curwin, lnum,
