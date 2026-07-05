@@ -5793,6 +5793,7 @@ file_pat_to_reg_pat(
     int		i;
     int		nested = 0;
     int		add_dollar = TRUE;
+    int		brace_is_filename = (vim_isfilec('{') || vim_isfilec('}'));
 
     if (allow_dirs != NULL)
 	*allow_dirs = FALSE;
@@ -5937,11 +5938,21 @@ file_pat_to_reg_pat(
 		break;
 #endif
 	    case '{':
+		if (brace_is_filename)
+		{
+		    reg_pat[i++] = '{';
+		    break;
+		}
 		reg_pat[i++] = '\\';
 		reg_pat[i++] = '(';
 		nested++;
 		break;
 	    case '}':
+		if (brace_is_filename)
+		{
+		    reg_pat[i++] = '}';
+		    break;
+		}
 		reg_pat[i++] = '\\';
 		reg_pat[i++] = ')';
 		--nested;

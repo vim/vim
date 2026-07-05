@@ -5380,6 +5380,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 				comma, plus <Tab>.
 	See |option-backslash| about including spaces and backslashes.
 
+	If including '{' or '}', |E219| and |E220| won't be thrown.
+
 						*'isident'* *'isi'*
 'isident' 'isi'		string	(default for Win32:
 					   "@,48-57,_,128-167,224-235"
