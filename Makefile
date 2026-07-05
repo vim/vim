@@ -30,8 +30,8 @@ first:
 	@echo "If there are problems, cd to the src directory and run make there"
 	cd src && $(MAKE) $@
 
-tags:
-	$(MAKE) -C src/ -f Make_tags.mak tags
+tags notags:
+	$(MAKE) -C src/ -f Make_tags.mak $@
 
 # Some make programs use the last target for the $@ default; put the other
 # targets separately to always let $@ expand to "first" by default.

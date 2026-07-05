@@ -2205,7 +2205,7 @@ notags:
 
 # Configure sets portable TAGPRG, else modern ctags is used.
 # You can ignore error messages for missing files.
-tags TAGS:
+tags TAGS: notags
 	$(MAKE) -f Make_tags.mak tags
 
 # Build the cscope database.
