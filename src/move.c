@@ -668,6 +668,9 @@ check_cursor_moved(win_T *wp)
 	wp->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL
 				      |VALID_CHEIGHT|VALID_CROW|VALID_TOPLINE
 				      |VALID_BOTLINE|VALID_BOTLINE_AP);
+#ifdef FEAT_CONCEAL
+	wp->w_flags &= ~(WFLAG_CONCEAL_WCOL|WFLAG_CONCEAL_NO_REDRAW);
+#endif
 	wp->w_valid_cursor = wp->w_cursor;
 	wp->w_valid_leftcol = wp->w_leftcol;
 	wp->w_valid_skipcol = wp->w_skipcol;
@@ -677,6 +680,9 @@ check_cursor_moved(win_T *wp)
 	wp->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL
 				      |VALID_CHEIGHT|VALID_CROW
 				      |VALID_BOTLINE|VALID_BOTLINE_AP);
+#ifdef FEAT_CONCEAL
+	wp->w_flags &= ~(WFLAG_CONCEAL_WCOL|WFLAG_CONCEAL_NO_REDRAW);
+#endif
 	wp->w_valid_cursor = wp->w_cursor;
 	wp->w_valid_leftcol = wp->w_leftcol;
 	wp->w_valid_skipcol = wp->w_skipcol;
@@ -686,6 +692,9 @@ check_cursor_moved(win_T *wp)
 	     || wp->w_cursor.coladd != wp->w_valid_cursor.coladd)
     {
 	wp->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
+#ifdef FEAT_CONCEAL
+	wp->w_flags &= ~(WFLAG_CONCEAL_WCOL|WFLAG_CONCEAL_NO_REDRAW);
+#endif
 	wp->w_valid_cursor.col = wp->w_cursor.col;
 	wp->w_valid_leftcol = wp->w_leftcol;
 	wp->w_valid_cursor.coladd = wp->w_cursor.coladd;
