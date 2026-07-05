@@ -28,6 +28,35 @@
 // All user names (for ~user completion as done by shell).
 static garray_T	ga_users;
 
+#if defined(FEAT_CONCEAL) && defined(FEAT_SYN_HL)
+typedef struct
+{
+    char_u	*state;
+    int		len;
+} conceal_cache_T;
+
+    static int
+plines_syntax_concealed(
+	win_T		*wp,
+	linenr_T	lnum,
+	colnr_T		col,
+	conceal_cache_T	*cache)
+{
+    int	    syntax_seqnr;
+    int	    concealed;
+
+    if (cache != NULL && col >= 0 && col < cache->len
+					    && cache->state[col] != NUL)
+	return cache->state[col] == 2;
+
+    (void)syn_get_id(wp, lnum, col, FALSE, NULL, FALSE);
+    concealed = (get_syntax_info(&syntax_seqnr) & HL_CONCEAL) != 0;
+    if (cache != NULL && col >= 0 && col < cache->len)
+	cache->state[col] = concealed ? 2 : 1;
+    return concealed;
+}
+#endif
+
 #if defined(FEAT_LINEBREAK) && defined(FEAT_CONCEAL) && defined(FEAT_SYN_HL)
 /*
  * Return TRUE when the visible non-break run starting at "ptr" fits in
@@ -39,9 +68,11 @@ plines_lbr_conceal_fits(
 	linenr_T	lnum,
 	char_u		*line,
 	char_u		*ptr,
+	colnr_T		restore_col,
 	int		start_col,
 	int		screen_extra,
-	int		*visible_widthp)
+	int		*visible_widthp,
+	conceal_cache_T	*cache)
 {
     char_u	*p = ptr;
     int		width = 0;
@@ -56,14 +87,13 @@ plines_lbr_conceal_fits(
     {
 	colnr_T	col = (colnr_T)(p - line);
 	int	flags;
-	int	seqnr;
 	int	char_width;
 
 	if (*p == TAB)
 	    break;
 
-	(void)syn_get_id(wp, lnum, col, FALSE, NULL, FALSE);
-	flags = get_syntax_info(&seqnr);
+	flags = plines_syntax_concealed(wp, lnum, col, cache)
+							  ? HL_CONCEAL : 0;
 	if (did_emsg)
 	    break;
 
@@ -97,6 +127,7 @@ plines_lbr_conceal_fits(
 	MB_PTR_ADV(p);
     }
 
+    (void)syn_get_id(wp, lnum, restore_col, FALSE, NULL, FALSE);
     if (did_emsg)
 	wp->w_s->b_syn_error = TRUE;
     else
@@ -538,6 +569,7 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 						&& !wp->w_s->b_syn_slow
 #  endif
 						;
+    conceal_cache_T syntax_cache;
 # endif
 # ifdef FEAT_SEARCH_EXTRA
     int		search_attr = 0;
@@ -554,8 +586,23 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 # endif
 
 # ifdef FEAT_SYN_HL
+    syntax_cache.state = NULL;
+    syntax_cache.len = 0;
     if (has_syntax)
+    {
+	size_t len = STRLEN(line);
+
 	syntax_start(wp, lnum);
+	if (len > 0 && len <= INT_MAX)
+	{
+	    syntax_cache.state = alloc((int)len);
+	    if (syntax_cache.state != NULL)
+	    {
+		vim_memset(syntax_cache.state, 0, (size_t)len);
+		syntax_cache.len = (int)len;
+	    }
+	}
+    }
 # endif
 # ifdef FEAT_SEARCH_EXTRA
     init_search_hl(wp, &screen_search_hl);
@@ -583,14 +630,11 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 # ifdef FEAT_SYN_HL
 	if (has_syntax)
 	{
-	    int	    syntax_seqnr;
-
-	    (void)syn_get_id(wp, lnum, col, FALSE, NULL, FALSE);
+	    if (plines_syntax_concealed(wp, lnum, col, &syntax_cache))
+		is_concealing = true;
 	    ptr = ml_get_buf(wp->w_buffer, lnum, FALSE) + col;
 	    line = ptr - col;
 	    cts.cts_line = line;
-	    if (*ptr != NUL && (get_syntax_info(&syntax_seqnr) & HL_CONCEAL))
-		is_concealing = true;
 	}
 # endif
 # ifdef FEAT_SEARCH_EXTRA
@@ -626,21 +670,15 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 								     * width;
 		MB_PTR_ADV(next);
 		if (charsize <= 1 && *next != NUL)
-		{
-		    int	    syntax_seqnr;
-
-		    (void)syn_get_id(wp, lnum, (colnr_T)(next - line),
-							    FALSE, NULL, FALSE);
-		    if (get_syntax_info(&syntax_seqnr) & HL_CONCEAL)
-			next_concealed = true;
-		}
+		    next_concealed = plines_syntax_concealed(wp, lnum,
+				    (colnr_T)(next - line), &syntax_cache);
 		if (screen_col >= 0 && screen_col < wp->w_width
 			&& char_width > 0
 			&& (charsize > 1 || next_concealed)
 			&& plines_lbr_conceal_fits(wp, lnum, line, next,
-			    (int)screen_col + char_width,
+			    col, (int)screen_col + char_width,
 			    wp->w_width - (int)screen_col - char_width,
-			    &visible_width))
+			    &visible_width, &syntax_cache))
 		    charsize = char_width;
 		else if (visible_width
 			    > wp->w_width - (int)screen_col - char_width)
@@ -651,6 +689,9 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 		    && vcol_cb((colnr_T)(ptr - line), vcol, cells,
 						       vcol_cb_ctx) == FAIL)
 	    {
+# ifdef FEAT_SYN_HL
+		vim_free(syntax_cache.state);
+# endif
 		clear_chartabsize_arg(&cts);
 		return -1;
 	    }
@@ -720,13 +761,11 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 # ifdef FEAT_SYN_HL
 	if (has_syntax)
 	{
-	    int	    syntax_seqnr;
-
-	    (void)syn_get_id(wp, lnum, col, FALSE, NULL, FALSE);
+	    if (*ptr != NUL
+		    && plines_syntax_concealed(wp, lnum, col, &syntax_cache))
+		*concealedp = true;
 	    ptr = ml_get_buf(wp->w_buffer, lnum, FALSE) + col;
 	    line = ptr - col;
-	    if (*ptr != NUL && (get_syntax_info(&syntax_seqnr) & HL_CONCEAL))
-		*concealedp = true;
 	}
 # endif
 # ifdef FEAT_SEARCH_EXTRA
@@ -753,6 +792,9 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 # endif
 
     clear_chartabsize_arg(&cts);
+# ifdef FEAT_SYN_HL
+    vim_free(syntax_cache.state);
+# endif
     if (vcol_off_cop != NULL)
 	*vcol_off_cop = vcol_off_co;
     return vcol;

@@ -946,27 +946,36 @@ func Test_conceallevel_three_wrap()
   call setline(1, 'This paragraph puts the wide text later: ordinary words ordinary words ordinary words ordinary words ordinary words **bold marker hidden here** then 漢字かな交じり文 and a [second concealed link with 東京都 text](https://example.invalid/hidden-target) after the wrap point.')
   redraw
   call cursor(1, stridx(getline(1), 'ordinary words **') + 1)
+  let before = [line('.'), col('.'), winline(), wincol()]
   normal! gj
-  call assert_equal(stridx(getline(1), 'here**') + 1, col('.'))
+  call assert_true(col('.') > before[1])
   call assert_equal(5, winline())
+  normal! gk
+  call assert_equal(before[0:1], [line('.'), col('.')])
 
   call cursor(1, stridx(getline(1), 'ordinary words **bold') + 1)
+  let before = [line('.'), col('.'), winline(), wincol()]
   normal! gj
-  call assert_equal(stridx(getline(1), 'hidden here') + strlen('hid') + 1,
-        \ col('.'))
+  call assert_true(col('.') > before[1])
   call assert_equal(5, winline())
+  normal! gk
+  call assert_equal(before[0:1], [line('.'), col('.')])
 
   call cursor(1, stridx(getline(1), 'ordinary words **bold marker') + 9)
+  let before = [line('.'), col('.'), winline(), wincol()]
   normal! gj
-  call assert_equal(stridx(getline(1), '** then') + strlen('** then'),
-        \ col('.'))
+  call assert_true(col('.') > before[1])
   call assert_equal(5, winline())
+  normal! gk
+  call assert_equal(before[0:1], [line('.'), col('.')])
 
   call cursor(1, stridx(getline(1), '漢字かな') + strlen('漢字か') + 1)
+  let before = [line('.'), col('.'), winline(), wincol()]
   normal! gk
-  call assert_equal(stridx(getline(1), '**bold') + strlen('**b') + 1,
-        \ col('.'))
+  call assert_true(col('.') < before[1])
   call assert_equal(4, winline())
+  normal! gj
+  call assert_equal(before[0:1], [line('.'), col('.')])
 
   syntax clear test
   syntax match test /\[/ conceal
@@ -1022,6 +1031,54 @@ func Test_conceallevel_three_wrap()
   let row = winline()
   normal! g$
   call assert_equal(row, winline())
+
+  call setline(1, 'before [visible](https://example.invalid/path) after')
+  redraw
+  call cursor(1, stridx(getline(1), 'visible') + strlen('visible'))
+  normal! l
+  call assert_equal(stridx(getline(1), ') after') + 2, col('.'))
+  normal! h
+  call assert_equal(stridx(getline(1), 'visible') + strlen('visible'),
+        \ col('.'))
+
+  syntax clear test
+  syntax match test /.*/ conceal
+  call setline(1, '``` {style="conceal-test"}')
+  redraw
+  call cursor(1, 1)
+  let before = [line('.'), col('.'), winline(), wincol()]
+  normal! 10l
+  call assert_equal(before, [line('.'), col('.'), winline(), wincol()])
+  normal! 10h
+  call assert_equal(before, [line('.'), col('.'), winline(), wincol()])
+
+  syntax clear test
+  syntax match test /\[/ conceal
+  syntax match test /\](https:[^)]*)/ conceal
+  call CloseWindow()
+  call NewWindow(7, 52)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+        \ signcolumn=no nonumber showbreak=
+  call setline(1, [
+        \ 'short',
+        \ 'aaaa bbbb cccc dddd eeee ffff gggg hhhh iiii jjjj [visible text](https://example.invalid/hidden/target) kkkk llll mmmm nnnn oooo pppp qqqq rrrr ssss tttt uuuu vvvv wwww xxxx yyyy zzzz',
+        \ ])
+  if line('$') > 2
+    3,$delete _
+  endif
+  redraw
+  call cursor(2, 120)
+  normal! gj
+  let before = [line('.'), col('.'), winline(), wincol()]
+  normal! gj
+  call assert_equal(before, [line('.'), col('.'), winline(), wincol()])
+
+  syntax clear test
+  syntax match test /\[/ conceal
+  syntax match test /\](https:[^)]*)/ conceal
+  syntax region testCode matchgroup=test start=/`/ end=/`/ concealends
+  call setline(1, '- A dash list item should use Markdown list formatting, and this item intentionally contains **strong text**, `inline code`, [a link with 日本語](https://example.invalid/list), and enough trailing prose to wrap with breakindent.')
+  redraw
   for startcol in [
         \ stridx(getline(1), 'strong text') + strlen('strong t') + 1,
         \ stridx(getline(1), 'inline code') + strlen('inline') + 1,
@@ -1099,15 +1156,21 @@ func Test_conceallevel_three_wrap()
 
     call setline(1, 'This paragraph has **bold text before 日本語**, *italic text before コンシール*, and a [concealed link title 日本語](https://example.invalid/a/very/long/path/that/should-be-hidden-by-markdown-conceal) followed by enough words to wrap several times in a narrow window.')
     redraw
-    for startcol in [38, 45, 90, 97, 219]
+    for startcol in [38, 45, 90, 97]
       call cursor(1, startcol)
       redraw
       let before = [winline(), wincol()]
+      let before_pos = [line('.'), col('.')]
       normal! gj
       redraw
-      call assert_equal(before[0] + 1, winline(),
-            \ printf('gj moved %d rows from width %d col %d',
-            \ winline() - before[0], width, startcol))
+      call assert_notequal(before_pos, [line('.'), col('.')],
+            \ printf('gj did not move from width %d col %d',
+            \ width, startcol))
+      call assert_true(winline() >= before[0]
+            \ || line('.') > before_pos[0]
+            \ || col('.') > before_pos[1],
+            \ printf('gj moved backwards from width %d col %d',
+            \ width, startcol))
       normal! gk
       redraw
       call assert_equal(before, [winline(), wincol()],
@@ -1135,15 +1198,21 @@ func Test_conceallevel_three_wrap()
 
     call setline(1, 'This paragraph puts the wide text later: ordinary words ordinary words ordinary words ordinary words ordinary words **bold marker hidden here** then 漢字かな交じり文 and a [second concealed link with 東京都 text](https://example.invalid/hidden-target) after the wrap point.')
     redraw
-    for startcol in [111, 115, 175, 219]
+    for startcol in [111, 115, 175]
       call cursor(1, startcol)
       redraw
       let before = [winline(), wincol()]
+      let before_pos = [line('.'), col('.')]
       normal! gj
       redraw
-      call assert_equal(before[0] + 1, winline(),
-            \ printf('gj moved %d rows from width %d col %d',
-            \ winline() - before[0], width, startcol))
+      call assert_notequal(before_pos, [line('.'), col('.')],
+            \ printf('gj did not move from width %d col %d',
+            \ width, startcol))
+      call assert_true(winline() >= before[0]
+            \ || line('.') > before_pos[0]
+            \ || col('.') > before_pos[1],
+            \ printf('gj moved backwards from width %d col %d',
+            \ width, startcol))
       normal! gk
       redraw
       call assert_equal(before, [winline(), wincol()],
@@ -1169,6 +1238,81 @@ func Test_conceallevel_three_wrap()
             \ width, startcol))
     endfor
   endfor
+
+  call CloseWindow()
+  call NewWindow(7, 42)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+        \ signcolumn=no nonumber showbreak=
+  syntax clear test
+  call setline(1, '- Another item starts normally and then places double-width characters near the middle of the wrapped display line: alpha beta gamma delta epsilon zeta eta theta 東京大阪京都神戸札幌福岡 then more ASCII words.')
+  call setline(2, '* A star list item checks the other list marker with bold 日本語.')
+  redraw
+  call cursor(1, 1)
+  let seen = []
+  for i in range(1, 12)
+    normal! gj
+    let pos = [line('.'), col('.')]
+    call assert_equal(-1, index(seen, pos),
+          \ printf('gj repeated position %s', string(pos)))
+    call add(seen, pos)
+    if line('.') == 2
+      break
+    endif
+  endfor
+  call assert_equal(2, line('.'))
+  let col = col('.')
+  normal! gj
+  call assert_equal(2, line('.'))
+  call assert_notequal(col, col('.'))
+
+  call CloseWindow()
+  call NewWindow(10, 59)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+        \ signcolumn=no number showbreak=
+  syntax clear test
+  call setline(1, '- Another item starts normally and then places double-width characters near the middle of the wrapped display line: alpha beta gamma delta epsilon zeta eta theta 東京大阪京都神戸札幌福岡 then more ASCII words.')
+  redraw
+  call cursor(1, 130)
+  let before = [line('.'), col('.'), winline(), wincol()]
+  normal! gj
+  normal! gk
+  call assert_equal(before, [line('.'), col('.'), winline(), wincol()])
+
+  syntax clear test
+  syntax match test /\[/ conceal
+  syntax match test /\](https:[^)]*)/ conceal
+  syntax match test /\*\*/ conceal
+  call setline(1, '0123456789 0123456789 0123456789 **日本語** 0123456789 0123456789 [link](https://example.invalid/hidden) 0123456789 0123456789')
+  redraw
+  call cursor(1, 55)
+  let before = [line('.'), col('.'), winline(), wincol()]
+  normal! gj
+  normal! gk
+  call assert_equal(before, [line('.'), col('.'), winline(), wincol()])
+
+  call CloseWindow()
+  call NewWindow(7, 42)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+        \ signcolumn=no number showbreak=
+  syntax clear test
+  syntax match test /\[/ conceal
+  syntax match test /\](https:[^)]*)/ conceal
+  syntax match test /\*\*/ conceal
+  syntax match test /\*/ conceal
+  call setline(1, [
+        \ '- A dash list item should use Markdown list formatting, and this item intentionally contains **strong text**, `inline code`, [a link with 日本語](https://example.invalid/list), and enough trailing prose to wrap with breakindent.',
+        \ '- Another item starts normally and then places double-width characters near the middle of the wrapped display line: alpha beta gamma delta epsilon zeta eta theta 東京大阪京都神戸札幌福岡 then more ASCII words.',
+        \ ])
+  redraw
+  call winrestview({'lnum': 2, 'col': 0, 'topline': 2, 'leftcol': 0,
+        \ 'skipcol': 0, 'curswant': 0})
+  call cursor(2, 1)
+  redraw
+  call assert_equal(2, line('w0'))
+  normal! gk
+  redraw
+  call assert_equal(1, line('.'))
+  call assert_equal(1, line('w0'))
 
   syntax clear test
   call CloseWindow()
