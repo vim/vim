@@ -2575,6 +2575,45 @@ nv_screenline_cache_store(nv_screenline_map_T *map)
 }
 
     static int
+nv_screenline_cached_base_row(win_T *wp, linenr_T lnum, int *rowp)
+{
+    int	    i;
+    int	    row = 0;
+
+    if (wp->w_lines_valid <= 0
+	    || wp->w_lines[0].wl_lnum != wp->w_topline
+	    || wp->w_skipcol != 0)
+	return FAIL;
+# ifdef FEAT_DIFF
+    if (wp->w_p_diff)
+	return FAIL;
+# endif
+
+    for (i = 0; i < wp->w_lines_valid; ++i)
+    {
+	wline_T *wlp = &wp->w_lines[i];
+
+	if (!wlp->wl_valid)
+	    return FAIL;
+	if (wlp->wl_lnum == lnum)
+	{
+	    *rowp = row;
+	    return OK;
+	}
+	if (wlp->wl_lnum > lnum)
+	    return FAIL;
+# ifdef FEAT_FOLDING
+	if (wlp->wl_folded && lnum <= wlp->wl_lastlnum)
+	    return FAIL;
+# endif
+	row += wlp->wl_size;
+	if (row >= wp->w_height)
+	    return FAIL;
+    }
+    return FAIL;
+}
+
+    static int
 nv_screenline_map_add_cell(
 	colnr_T		col,
 	long		vcol,
@@ -2644,6 +2683,7 @@ nv_screenline_map_build(
 {
     bool	has_conceal = false;
     nv_screenline_buildctx_T ctx;
+    bool	got_cached_base_row = false;
 
     if (!nv_screenline_conceal_active())
 	return FAIL;
@@ -2666,18 +2706,24 @@ nv_screenline_map_build(
     nv_screenline_map_init(map);
     map->lnum = lnum;
     ctx.map = map;
-    ctx.base_row = plines_m_win(curwin, curwin->w_topline, lnum - 1,
-								     INT_MAX);
-    if (curwin->w_skipcol != 0)
+    if (nv_screenline_cached_base_row(curwin, lnum, &ctx.base_row) == OK)
+	got_cached_base_row = true;
+    else
     {
-	int width = curwin->w_width - win_col_off(curwin);
-	int width2 = width + win_col_off2(curwin);
+	ctx.base_row = plines_m_win(curwin, curwin->w_topline, lnum - 1,
+								     INT_MAX);
+	if (curwin->w_skipcol != 0)
+	{
+	    int width = curwin->w_width - win_col_off(curwin);
+	    int width2 = width + win_col_off2(curwin);
 
-	if (curwin->w_skipcol >= width && width2 > 0)
-	    ctx.base_row -= (curwin->w_skipcol - width) / width2 + 1;
+	    if (curwin->w_skipcol >= width && width2 > 0)
+		ctx.base_row -= (curwin->w_skipcol - width) / width2 + 1;
+	}
     }
 # ifdef FEAT_DIFF
-    ctx.base_row += lnum == curwin->w_topline ? curwin->w_topfill
+    if (!got_cached_base_row)
+	ctx.base_row += lnum == curwin->w_topline ? curwin->w_topfill
 					: diff_check_fill(curwin, lnum);
 # endif
     ctx.win_col_off = win_col_off(curwin);

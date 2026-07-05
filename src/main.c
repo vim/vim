@@ -1453,7 +1453,10 @@ main_loop(
 			|| conceal_cursor_line(curwin)
 			|| need_cursor_line_redraw)
 		    && (conceal_old_cursor_line != conceal_new_cursor_line
-			|| (curwin->w_flags & WFLAG_CONCEAL_NO_REDRAW) == 0))
+			|| (curwin->w_flags & WFLAG_CONCEAL_NO_REDRAW) == 0)
+		    && (conceal_old_cursor_line == conceal_new_cursor_line
+			|| !conceal_cursor_line(curwin)
+			|| need_cursor_line_redraw))
 	    {
 		if (conceal_old_cursor_line != conceal_new_cursor_line
 			&& conceal_old_cursor_line != 0
@@ -1464,6 +1467,7 @@ main_loop(
 		curwin->w_valid &= ~VALID_CROW;
 		need_cursor_line_redraw = FALSE;
 	    }
+	    conceal_update_lines = FALSE;
 	    curwin->w_flags &= ~WFLAG_CONCEAL_NO_REDRAW;
 #endif
 
