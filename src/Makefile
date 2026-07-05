@@ -2203,7 +2203,7 @@ proto/gui_gtk_gresources.pro: auto/gui_gtk_gresources.c
 notags:
 	$(MAKE) -f Make_tags.mak notags
 
-# Note: tags is made for the currently configured version.
+# Configure sets portable TAGPRG, else modern ctags is used.
 # You can ignore error messages for missing files.
 tags TAGS:
 	$(MAKE) -f Make_tags.mak tags
