@@ -4323,6 +4323,8 @@ struct window_S
 				    // w_wrow
 # define WFLAG_CONCEAL_WCOL	4   // w_wrow and w_wcol were computed from
 				    // concealed screen lines
+# define WFLAG_CONCEAL_NO_REDRAW 8  // same-line conceal redraw can be
+				    // skipped
 #endif
 
     /*

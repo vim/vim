@@ -2411,7 +2411,7 @@ typedef struct
     static void
 nv_screenline_conceal_clear(void)
 {
-    curwin->w_flags &= ~WFLAG_CONCEAL_WCOL;
+    curwin->w_flags &= ~(WFLAG_CONCEAL_WCOL|WFLAG_CONCEAL_NO_REDRAW);
 }
 
     static bool
@@ -2898,7 +2898,8 @@ nv_screenline_visible_neighbor(
 	int		dir,
 	pos_T		*target_pos,
 	int		*rowp,
-	int		*ccolp)
+	int		*ccolp,
+	bool		*has_concealp)
 {
     nv_screenline_map_T		map;
     nv_screenline_cell_T	*cells;
@@ -2953,6 +2954,7 @@ nv_screenline_visible_neighbor(
 	target_pos->coladd = 0;
 	*rowp = cells[idx].row;
 	*ccolp = cells[idx].ccol;
+	*has_concealp = map.has_conceal;
 	nv_screenline_map_clear(&map);
 	return OK;
     }
@@ -2967,11 +2969,12 @@ nv_screenline_conceal_horiz(int dir)
     colnr_T	col = curwin->w_cursor.col;
     int		row;
     int		ccol;
+    bool	has_conceal = false;
 
     if (!nv_screenline_conceal_active())
 	return FAIL;
     if (nv_screenline_visible_neighbor(curwin->w_cursor.lnum, col, dir,
-					    &target_pos, &row, &ccol) == FAIL)
+			&target_pos, &row, &ccol, &has_conceal) == FAIL)
 	return FAIL;
 
     curwin->w_cursor = target_pos;
@@ -2983,6 +2986,8 @@ nv_screenline_conceal_horiz(int dir)
     curwin->w_valid_leftcol = curwin->w_leftcol;
     curwin->w_valid_skipcol = curwin->w_skipcol;
     curwin->w_flags |= WFLAG_CONCEAL_WCOL;
+    if (!has_conceal || conceal_cursor_line(curwin))
+	curwin->w_flags |= WFLAG_CONCEAL_NO_REDRAW;
     return OK;
 }
 
