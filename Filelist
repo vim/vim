@@ -34,6 +34,7 @@ SRC_ALL =	\
 		ci/ddebs.list \
 		ci/pinned-pkgs \
 		src/Make_all.mak \
+		src/Make_tags.mak \
 		src/README.md \
 		src/alloc.c \
 		src/alloc.h \
