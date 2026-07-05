@@ -512,6 +512,7 @@ func Test_clientserver_env_method()
   " Don't use channel:2000, because previous tests use that and it may take a
   " while for the channel to fully close.
   let actual = cmd .. ' --servername channel:4000'
+  let save_vim_clientserver = $VIM_CLIENTSERVER
   let $VIM_CLIENTSERVER = 'socket'
 
   let job = job_start(actual, {'stoponexit': 'kill', 'out_io': 'null'})
@@ -528,7 +529,11 @@ func Test_clientserver_env_method()
   else
     call system(actual .. " --remote-expr 'execute(\"qa!\")'")
   endif
-  unlet $VIM_CLIENTSERVER
+  if save_vim_clientserver == ''
+    unlet $VIM_CLIENTSERVER
+  else
+    let $VIM_CLIENTSERVER = save_vim_clientserver
+  endif
 
   try
     call WaitForAssert({-> assert_equal("dead", job_status(job))})
@@ -573,6 +578,50 @@ func Test_clientserver_serverlist_list()
     if job_status(job) != 'dead'
       call assert_report('Server did not exit')
       call job_stop(job, 'kill')
+    endif
+  endtry
+endfunc
+
+func Test_clientserver_serverlist_without_x11()
+  CheckNotGui
+  CheckFeature x11
+
+  let cmd = GetVimCommand()
+  if cmd == ''
+    throw 'GetVimCommand() failed'
+  endif
+
+  " This test verifies that serverlist() fails with error E240 when a
+  " connection to X11 cannot be established. It must be executed with the
+  " CLIENTSERVER backend set to x11 and in a state where the X11 server is
+  " unreachable.
+  "
+  " To achieve this, the `VIM_CLIENTSERVER` and `DISPLAY` environment
+  " variables must be unset before running Vim as a child process. Within the
+  " child process, `assert_fails()` and `v:errors` are used to confirm that
+  " E240 occurred; if E240 is raised as expected, `v:errors` remains empty,
+  " whereas if the call succeeds or a different error occurs, `v:errors` will
+  " contain one or more errors.
+
+  call writefile([
+        \ "call assert_fails('let x = serverlist()', 'E240:')",
+        \ "execute 'cq! ' .. len(v:errors)"
+        \ ], 'Xtest', 'D')
+
+  let save_vim_clientserver = $VIM_CLIENTSERVER
+  unlet $VIM_CLIENTSERVER
+  let save_display = $DISPLAY
+  unlet $DISPLAY
+
+  try
+    call system(cmd .. ' -S Xtest')
+    call assert_equal(0, v:shell_error)
+  finally
+    if save_display != ''
+      let $DISPLAY = save_display
+    endif
+    if save_vim_clientserver != ''
+      let $VIM_CLIENTSERVER = save_vim_clientserver
     endif
   endtry
 endfunc
