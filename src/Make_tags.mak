@@ -4,7 +4,7 @@
 
 include Make_all.mak
 
-# Override with `make TAGPRG='...'`
+# Override with `make TAGPRG='...' tags`
 TAGPRG ?= ctags -I INIT+,INIT2+,INIT3+,INIT4+,INIT5+ --fields=+S -f tags
 
 notags:
