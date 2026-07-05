@@ -1287,6 +1287,8 @@ f_serverlist(typval_T *argvars UNUSED, typval_T *rettv)
 	make_connection();
 	if (X_DISPLAY != NULL)
 	    list = serverGetVimNames(X_DISPLAY);
+	else
+	    list = list_alloc();
     }
 #  endif
 # endif
