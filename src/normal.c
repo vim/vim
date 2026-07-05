@@ -3273,7 +3273,14 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
 		    have_map = false;
 		}
 		if (lnum >= curwin->w_buffer->b_ml.ml_line_count)
-		    return OK;
+		{
+		    if (nv_screenline_map_build(&map, lnum, true, true) == OK)
+		    {
+			have_map = true;
+			row = nv_screenline_map_last_row(&map);
+		    }
+		    break;
+		}
 		++lnum;
 		if (nv_screenline_map_build(&map, lnum, true, true) == FAIL)
 		{
@@ -3301,7 +3308,14 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
 		    have_map = false;
 		}
 		if (lnum <= 1)
-		    return OK;
+		{
+		    if (nv_screenline_map_build(&map, lnum, true, true) == OK)
+		    {
+			have_map = true;
+			row = nv_screenline_map_first_row(&map);
+		    }
+		    break;
+		}
 		--lnum;
 		if (nv_screenline_map_build(&map, lnum, true, true) == FAIL)
 		{
