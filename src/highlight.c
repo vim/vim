@@ -279,8 +279,8 @@ static char *(highlight_init_both[]) = {
 	 "VisualNOS term=underline,bold cterm=underline,bold gui=underline,bold"),
 #endif
 #ifdef FEAT_DIFF
-    CENT("DiffText term=reverse cterm=bold ctermbg=Red",
-	 "DiffText term=reverse cterm=bold ctermbg=Red gui=bold guibg=Red"),
+    CENT("DiffText term=reverse cterm=bold ctermbg=Red ctermfg=Black",
+	 "DiffText term=reverse cterm=bold ctermbg=Red ctermfg=Black gui=bold guibg=Red"),
     "default link DiffTextAdd DiffText",
 #endif
     CENT("PmenuSbar ctermbg=Grey",
@@ -375,10 +375,10 @@ static char *(highlight_init_light[]) = {
     CENT("Visual ctermbg=Grey ctermfg=Black",
 	 "Visual ctermbg=Grey ctermfg=Black guibg=LightGrey guifg=Black"),
 #ifdef FEAT_DIFF
-    CENT("DiffAdd term=bold ctermbg=LightBlue",
-	 "DiffAdd term=bold ctermbg=LightBlue guibg=LightBlue"),
-    CENT("DiffChange term=bold ctermbg=LightMagenta",
-	 "DiffChange term=bold ctermbg=LightMagenta guibg=LightMagenta"),
+    CENT("DiffAdd term=bold ctermbg=LightBlue ctermfg=Black",
+	 "DiffAdd term=bold ctermbg=LightBlue ctermfg=Black guibg=LightBlue"),
+    CENT("DiffChange term=bold ctermbg=LightMagenta ctermfg=Black",
+	 "DiffChange term=bold ctermbg=LightMagenta ctermfg=Black guibg=LightMagenta"),
     CENT("DiffDelete term=bold ctermfg=Blue ctermbg=LightCyan",
 	 "DiffDelete term=bold ctermfg=Blue ctermbg=LightCyan gui=bold guifg=Blue guibg=LightCyan"),
 #endif
@@ -589,16 +589,6 @@ init_highlight(
     for (i = 0; pp[i] != NULL; ++i)
 	do_highlight((char_u *)pp[i], reset, TRUE);
 
-    // It is hard to read "transparent" diff colors in environments where
-    // number of colors are limited.
-    // Make sure foreground color is set, so that diff colors are not clashing
-    // with syntax colors.
-    if (t_colors <= 256)
-    {
-	do_highlight((char_u *)"DiffAdd ctermfg=black", FALSE, TRUE);
-	do_highlight((char_u *)"DiffChange ctermfg=black", FALSE, TRUE);
-	do_highlight((char_u *)"DiffText ctermfg=black", FALSE, TRUE);
-    }
     // Reverse looks ugly, but grey may not work for less than 8 colors.  Thus
     // let it depend on the number of colors available.
     if (t_colors < 8)
