@@ -1314,6 +1314,36 @@ func Test_conceallevel_three_wrap()
   call assert_equal(1, line('.'))
   call assert_equal(1, line('w0'))
 
+  call CloseWindow()
+  call NewWindow(7, 59)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+        \ signcolumn=no nonumber showbreak= scrolloff=0
+  syntax clear test
+  syntax region testCode matchgroup=test start=/`/ end=/`/ concealends
+  syntax region testHtml matchgroup=test start=/<code>/ end=/<\/code>/ concealends
+  syntax region testPre matchgroup=test start=/<pre>/ end=/<\/pre>/ concealends
+  call setline(1, [
+        \ 'The inline code `printf("日本語 %s", value)` should hide its backticks when Markdown conceal is active, while this escaped marker \# should display as a literal hash and not make following wrapped text appear one cell early or late.',
+        \ '',
+        \ 'Here is an HTML code tag: <code>wide_value = "日本語コンシール"</code> and a pre tag: <pre>alpha beta 日本語 gamma delta</pre> followed by enough plain text to make the line wrap after the concealed tag boundaries.',
+        \ ])
+  redraw
+  call cursor(3, stridx(getline(3), 'alpha beta') + 1)
+  normal! zt
+  redraw
+  normal! gk
+  call assert_equal(3, line('.'))
+  normal! gk
+  call assert_equal(2, line('.'))
+  call assert_equal(2, line('w0'))
+  call assert_equal(repeat(' ', winwidth(0)),
+        \ ScreenLines([1, 1], winwidth(0))[0])
+  normal! gk
+  call assert_equal(1, line('.'))
+  call assert_equal(1, line('w0'))
+  call assert_match('^The inline code printf',
+        \ ScreenLines([1, 1], winwidth(0))[0])
+
   syntax clear test
   call CloseWindow()
 endfunc

@@ -3208,6 +3208,8 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
     int		row;
     int		text_col;
     int		ccol;
+    linenr_T	old_topline;
+    int		old_skipcol;
     bool	have_map = true;
 
     if (!nv_screenline_conceal_active())
@@ -3336,12 +3338,16 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
     curwin->w_valid_skipcol = curwin->w_skipcol;
     curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT
 							       |VALID_CROW|VALID_VIRTCOL);
+    old_topline = curwin->w_topline;
+    old_skipcol = curwin->w_skipcol;
     if (target_row > W_WINROW(curwin) + curwin->w_height)
 	scroll_cursor_bot(0, FALSE);
     else if (target_row < W_WINROW(curwin) + 1)
 	scroll_cursor_top(0, FALSE);
     else
 	update_topline();
+    if (curwin->w_topline != old_topline || curwin->w_skipcol != old_skipcol)
+	redraw_later(UPD_NOT_VALID);
     curs_columns(TRUE);
     adjust_skipcol();
     return OK;
