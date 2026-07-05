@@ -2939,7 +2939,8 @@ nv_screenline_map_pos(
 	nv_screenline_map_T	*map,
 	int			target_row,
 	int			target_col,
-	pos_T			*target_pos)
+	pos_T			*target_pos,
+	int			*ccolp)
 {
     nv_screenline_cell_T	*cells = nv_screenline_map_cells(map);
     nv_screenline_cell_T	*last = NULL;
@@ -2974,6 +2975,8 @@ nv_screenline_map_pos(
 	    target_pos->lnum = map->lnum;
 	    target_pos->col = cells[i].col;
 	    target_pos->coladd = 0;
+	    if (ccolp != NULL)
+		*ccolp = cells[i].ccol;
 	    return OK;
 	}
 	if (cells[i].ccol < target_col)
@@ -3011,6 +3014,8 @@ nv_screenline_map_pos(
     target_pos->lnum = map->lnum;
     target_pos->col = last->col;
     target_pos->coladd = 0;
+    if (ccolp != NULL)
+	*ccolp = last->ccol;
     return OK;
 }
 
@@ -3191,7 +3196,8 @@ nv_screenline_conceal_pos(int target_row, int target_col, pos_T *target_pos)
     if (nv_screenline_map_build(&map, curwin->w_cursor.lnum,
 							 false, false) == FAIL)
 	return FAIL;
-    retval = nv_screenline_map_pos(&map, target_row, target_col, target_pos);
+    retval = nv_screenline_map_pos(&map, target_row, target_col, target_pos,
+								   NULL);
     nv_screenline_map_clear(&map);
     return retval;
 }
@@ -3208,6 +3214,7 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
     int		row;
     int		text_col;
     int		ccol;
+    int		target_ccol = 0;
     linenr_T	old_topline;
     int		old_skipcol;
     bool	have_map = true;
@@ -3321,7 +3328,7 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
 	(void)getvpos(&target_pos, (colnr_T)target_rel);
     }
     else if (nv_screenline_map_pos(&map, target_row, target_col,
-							&target_pos) == FAIL)
+					    &target_pos, &target_ccol) == FAIL)
     {
 	nv_screenline_map_clear(&map);
 	return FAIL;
@@ -3350,6 +3357,26 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
 	redraw_later(UPD_NOT_VALID);
     curs_columns(TRUE);
     adjust_skipcol();
+    if (target_ccol > 0
+	    && curwin->w_topline == old_topline
+	    && curwin->w_skipcol == old_skipcol)
+    {
+	curwin->w_wrow = target_row - W_WINROW(curwin) - 1;
+	curwin->w_wcol = target_ccol - curwin->w_wincol - 1;
+	curwin->w_valid |= VALID_WROW|VALID_WCOL;
+	curwin->w_valid &= ~VALID_VIRTCOL;
+	curwin->w_conceal_wcol_pos = curwin->w_cursor;
+	curwin->w_conceal_wcol_width = curwin->w_width;
+	curwin->w_flags |= WFLAG_CONCEAL_WCOL;
+    }
+# if defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP)
+    else if (update_conceal_cursor_screenpos(curwin) == OK)
+    {
+	curwin->w_conceal_wcol_pos = curwin->w_cursor;
+	curwin->w_conceal_wcol_width = curwin->w_width;
+	curwin->w_flags |= WFLAG_CONCEAL_WCOL;
+    }
+# endif
     return OK;
 }
 #endif
