@@ -134,6 +134,11 @@ runtime/doc/vimtutor-ru.1				@RestorerZ
 runtime/doc/vimtutor-ru.UTF-8.1				@RestorerZ
 runtime/doc/xxd-ru.1					@RestorerZ
 runtime/doc/xxd-ru.UTF-8.1				@RestorerZ
+runtime/doc/evim-zh_CN.UTF-8.1				@mao-yining
+runtime/doc/vim-zh_CN.UTF-8.1				@mao-yining
+runtime/doc/vimdiff-zh_CN.UTF-8.1			@mao-yining
+runtime/doc/vimtutor-zh_CN.UTF-8.1			@mao-yining
+runtime/doc/xxd-zh_CN.UTF-8.1				@mao-yining
 runtime/ftplugin/abaqus.vim				@costerwi
 runtime/ftplugin/abnf.vim				@A4-Tacks
 runtime/ftplugin/algol68.vim				@dkearns
@@ -350,6 +355,7 @@ runtime/ftplugin/tt2html.vim				@petdance
 runtime/ftplugin/twig.vim				@ribru17
 runtime/ftplugin/typescript.vim				@dkearns
 runtime/ftplugin/typescriptreact.vim			@dkearns
+runtime/ftplugin/typst.vim				@habamax
 runtime/ftplugin/uc.vim					@ribru17
 runtime/ftplugin/unison.vim				@chuwy
 runtime/ftplugin/v.vim					@ribru17
@@ -685,6 +691,7 @@ runtime/syntax/salt.vim					@gpanders
 runtime/syntax/sass.vim					@tpope
 runtime/syntax/scala.vim				@derekwyatt
 runtime/syntax/scheme.vim				@evhan
+runtime/syntax/screen.vim				@zzzyxwvut
 runtime/syntax/scss.vim					@tpope
 runtime/syntax/sed.vim					@dkearns
 runtime/syntax/sgf.vim					@lykahb
@@ -726,7 +733,7 @@ runtime/syntax/tt2html.vim				@petdance
 runtime/syntax/tt2js.vim				@petdance
 runtime/syntax/typescript.vim				@HerringtonDarkholme @rhysd
 runtime/syntax/typescriptreact.vim			@HerringtonDarkholme @rhysd
-runtime/syntax/typst.vim				@gpanders
+runtime/syntax/typst.vim				@habamax
 runtime/syntax/shared/typescriptcommon.vim		@HerringtonDarkholme @rhysd
 runtime/syntax/unison.vim				@chuwy
 runtime/syntax/vdf.vim					@ObserverOfTime

@@ -6841,8 +6841,8 @@ gui_mch_update(void)
 	{
 	    int prio = 0;
 	    g_main_context_prepare(NULL, &prio);
-	    // peek internal scheduling of redraw, honors 'lazyredraw'
-	    if (prio == GDK_PRIORITY_REDRAW && redrawing())
+	    // peek internal scheduling of redraw
+	    if (prio == GDK_PRIORITY_REDRAW)
 		gui_may_flush(); // prepares redraw: g_main_context_iteration
 	}
 #endif

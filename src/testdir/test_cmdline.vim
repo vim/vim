@@ -3601,7 +3601,7 @@ endfunc
 func Test_fuzzy_completion_bufname_fullpath()
   CheckUnix
   set wildoptions&
-  call mkdir('Xcmd/Xstate/Xfile.js', 'pR')
+  call mkdir('Xcmd/Xstate', 'pR')
   edit Xcmd/Xstate/Xfile.js
   cd Xcmd/Xstate
   enew

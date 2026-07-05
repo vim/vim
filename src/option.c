@@ -3498,6 +3498,14 @@ set_option_sctx_idx(int opt_idx, int opt_flags, sctx_T script_ctx)
     if (!(opt_flags & OPT_MODELINE))
 	new_script_ctx.sc_lnum += SOURCING_LNUM;
 
+    // ":legacy" and ":vim9cmd" change the execution context of an option.
+    if (cmdmod.cmod_flags & CMOD_VIM9CMD)
+	new_script_ctx.sc_version = SCRIPT_VERSION_VIM9;
+    if (cmdmod.cmod_flags & CMOD_LEGACY)
+	// It is a bit confusing, but "MAX" is actually the legacy Vim script
+	// version before Vim9.
+	new_script_ctx.sc_version = SCRIPT_VERSION_MAX;
+
     // Remember where the option was set.  For local options need to do that
     // in the buffer or window structure.
     if (both || (opt_flags & OPT_GLOBAL) || (indir & (PV_BUF|PV_WIN)) == 0)
@@ -5587,9 +5595,19 @@ findoption(char_u *arg)
     // letter.  There are 26 letters, plus the first "t_" option.
     if (quick_tab[1] == 0)
     {
+	// Make sure we do not leave any entries uninitialized, even if we have
+	// no options that start with a particular letter.
+	int last_opt_idx;
+	for (last_opt_idx = 0; options[last_opt_idx].fullname != NULL;
+		last_opt_idx++)
+	    ;
+	for (int tab_idx = 1; tab_idx < 27; tab_idx++)
+	    quick_tab[tab_idx] = last_opt_idx;
+
 	p = options[0].fullname;
-	for (opt_idx = 1; (s = options[opt_idx].fullname) != NULL; opt_idx++)
+	for (opt_idx = 1; opt_idx < last_opt_idx; opt_idx++)
 	{
+	    s = options[opt_idx].fullname;
 	    if (s[0] != p[0])
 	    {
 		if (s[0] == 't' && s[1] == '_')

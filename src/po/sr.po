@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-04-29 19:49+0000\n"
-"PO-Revision-Date: 2026-05-01 10:09+0400\n"
+"POT-Creation-Date: 2026-06-27 08:41+0000\n"
+"PO-Revision-Date: 2026-07-02 15:14+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -261,9 +261,6 @@ msgstr ": Слање није успело. Покушава се локално
 #, c-format
 msgid "%d of %d edited"
 msgstr "%d од %d уређено"
-
-msgid "Socket server not online:Send expression failed"
-msgstr "Сокет сервер није на мрежи: Није успело слање израза"
 
 msgid "No display: Send expression failed.\n"
 msgstr "Нема приказа: Није успело слање израза.\n"
@@ -979,6 +976,21 @@ msgstr "Замени све"
 msgid "_Close"
 msgstr "_Затвори"
 
+msgid "Close Tab"
+msgstr "Затвори картицу"
+
+msgid "New Tab"
+msgstr "Нова картица"
+
+msgid "Open Tab..."
+msgstr "Отвори картицу..."
+
+msgid "Direction:"
+msgstr "Смер:"
+
+msgid "Close"
+msgstr "Затвори"
+
 msgid "Vim: Received \"die\" request from session manager\n"
 msgstr "Vim: Примљен је „die” захтев од менаџера сесије\n"
 
@@ -987,9 +999,6 @@ msgstr "Затвори картицу"
 
 msgid "New tab"
 msgstr "Нова картица"
-
-msgid "Open Tab..."
-msgstr "Отвори картицу..."
 
 msgid "Vim: Main window unexpectedly destroyed\n"
 msgstr "Vim: Главни прозор је неочекивано уништен\n"
@@ -1760,9 +1769,10 @@ msgstr "-X\t\t\tНе повезуј се на X сервер"
 msgid "-Y\t\t\tDo not connect to Wayland compositor"
 msgstr "-X\t\t\tНе повезуј се на Wayland композитор"
 
-msgid "--clientserver <socket|x11> Backend for clientserver communication"
+msgid ""
+"--clientserver <socket|x11|mswin> Backend for clientserver communication"
 msgstr ""
-"--clientserver <socket|x11> Позадински механизам за clientserver комуникацију"
+"--clientserver <socket|x11|mswin> Позадински механизам за clientserver комуникацију"
 
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr "--remote <фајлови>\tУређуј <фајлови> у Vim серверу ако је могуће"
@@ -2044,8 +2054,14 @@ msgstr "???НЕИСПРАВАН БРОЈ БЛОКА"
 msgid "???BLOCK MISSING"
 msgstr "???НЕДОСТАЈЕ БЛОК"
 
+msgid "??? BLOCK PAGE COUNT MISMATCH"
+msgstr "??? НЕ ПОДУДАРА СЕ БРОЈ СТРАНИЦА БЛОКА"
+
 msgid "??? from here until ???END lines may be messed up"
 msgstr "??? одавде па до ???КРАЈ линије су можда забрљане"
+
+msgid "??? block header corrupted"
+msgstr "??? заглавље блока је покварено"
 
 msgid "??? from here until ???END lines may have been inserted/deleted"
 msgstr "??? одавде па до ???КРАЈ линије су можда уметане/брисане"
@@ -2259,11 +2275,11 @@ msgstr "Привремени фајл „"
 msgid "\" already exists!"
 msgstr "” већ постоји!"
 
-msgid "VIM - ATTENTION"
-msgstr "VIM - ПАЖЊА"
-
 msgid "Swap file already exists!"
 msgstr "Привремени фајл већ постоји!"
+
+msgid "VIM - ATTENTION"
+msgstr "VIM - ПАЖЊА"
 
 msgid ""
 "&Open Read-Only\n"
@@ -2671,10 +2687,6 @@ msgstr "XSMP ICE надгледање везе није успело"
 msgid "XSMP SmcOpenConnection failed: %s"
 msgstr "XSMP SmcOpenConnection није успело: %s"
 
-#, c-format
-msgid "Failed creating socket directory: %s"
-msgstr "Не може да се креира сокет директоријум: %s"
-
 msgid "At line"
 msgstr "На линији"
 
@@ -2954,6 +2966,10 @@ msgstr " (НИЈЕ ПРОНАЂЕНО)"
 
 msgid " (not supported)"
 msgstr " (није подржано)"
+
+#, c-format
+msgid "Failed creating socket directory: %s"
+msgstr "Не може да се креира сокет директоријум: %s"
 
 #, c-format
 msgid "Warning: Cannot find word list \"%s_%s.spl\" or \"%s_ascii.spl\""
@@ -3256,18 +3272,6 @@ msgstr "синтаксна iskeyword није постављена"
 msgid "syncing on C-style comments"
 msgstr "синхронизација на коментарима C-стила"
 
-msgid "no syncing"
-msgstr "без синхронизације"
-
-msgid "syncing starts at the first line"
-msgstr "синхронизација почиње од прве линије"
-
-msgid "syncing starts "
-msgstr "синхронизација почиње "
-
-msgid " lines before top line"
-msgstr " линија пре линије на врху"
-
 msgid ""
 "\n"
 "--- Syntax sync items ---"
@@ -3281,6 +3285,18 @@ msgid ""
 msgstr ""
 "\n"
 "синхро на ставкама"
+
+msgid "no syncing"
+msgstr "без синхронизације"
+
+msgid "syncing starts at the first line"
+msgstr "синхронизација почиње од прве линије"
+
+msgid "syncing starts "
+msgstr "синхронизација почиње "
+
+msgid " lines before top line"
+msgstr " линија пре линије на врху"
 
 msgid ""
 "\n"
@@ -3655,6 +3671,12 @@ msgstr ""
 
 msgid "without GUI."
 msgstr "без ГКИ."
+
+msgid "with GTK4 GUI (hwaccel)."
+msgstr "са GTK4 ГКИ (хдвубрз)."
+
+msgid "with GTK4 GUI."
+msgstr "са GTK4 ГКИ."
 
 msgid "with GTK3 GUI."
 msgstr "са GTK3 ГКИ."
@@ -6937,12 +6959,9 @@ msgstr "E881: Број линија се неочекивано променио
 msgid "E882: Uniq compare function failed"
 msgstr "E882: Uniq функција поређења није успела"
 
-msgid ""
-"E883: Search pattern and expression register may not contain two or more "
-"lines"
-msgstr ""
-"E883: Шаблон претраге и регистар за израз не смеју да садрже две или више "
-"линија"
+#, c-format
+msgid "E883: Register '%c' cannot contain multiple lines"
+msgstr "E883: Регистар ’%c’ не може да садржи више линија"
 
 #, c-format
 msgid "E884: Function name cannot contain a colon: %s"
@@ -8801,6 +8820,10 @@ msgstr "E1404: Abstract не може да се користи у интерфе
 msgid "E1405: Class \"%s\" cannot be used as a value"
 msgstr "E1405: Класа „%s” не може да се користи као вредност"
 
+#, c-format
+msgid "E1406: Public and protected member have the same name: %s and _%s"
+msgstr "E1406: Јавни и заштићени члан имају исто име: %s и _%s"
+
 msgid "E1407: Cannot use a Typealias as a variable or value"
 msgstr "E1407: Алијас типа не може да се користи као променљива или вредност"
 
@@ -9157,22 +9180,24 @@ msgstr "E1561: Дуплирано име променљиве типа: %s"
 msgid "E1562: Diff anchors cannot be used with hidden diff windows"
 msgstr "E1562: Diff не могу да се користе са скривеним diff прозорима"
 
-msgid "E1563: Socket path is too big"
-msgstr "E1563: Путања до сокета је сувише дугачка"
-
-msgid "E1564: Socket name cannot have slashes in it without being a path"
-msgstr "E1564: Име сокета не сме да са садржи косе црте осим ако није путања"
+#, c-format
+msgid "E1564: Socket name '%s' cannot have slashes in it without being a path"
+msgstr "E1564: Име сокета ’%s’ не сме да са садржи косе црте осим ако није путања"
 
 msgid "E1565: Socket server is not online, call remote_startserver() first"
 msgstr ""
 "E1565: Сокет сервер није на мрежи, најпре позовите remote_startserver()"
 
 #, c-format
-msgid "E1566: Failed connecting to socket %s: %s"
-msgstr "E1566: Није успело повезивање на сокет: %s: %s"
+msgid "E1566: Failed connecting to socket '%s'"
+msgstr "E1566: Није успело повезивање на сокет ’%s’"
 
-msgid "E1567: Cannot start socket server, socket path is unavailable"
-msgstr "E1567: Не може да се покрене сокет сервер, није доступна путања сокета"
+msgid ""
+"E1567: Socket server protocol version mismatch, check what Vim version you "
+"are using"
+msgstr ""
+"E1567: Не подудара се верзија протокола сокет сервера, проверите коју Vim "
+"верзију користите"
 
 #, c-format
 msgid "E1568: OSC command response timed out: %.*s"
@@ -9198,13 +9223,24 @@ msgid "E1573: Cannot listen on port"
 msgstr "E1573: Не може да се слуша на порту"
 
 msgid "E1574: gethostbyname(): cannot resolve hostname in channel_listen()"
-msgstr "E1574: gethostbyname(): не може да се разреши име хоста у channel_listen()"
+msgstr ""
+"E1574: gethostbyname(): не може да се разреши име хоста у channel_listen()"
 
 msgid "E1575: Cannot create pipes"
 msgstr "E1575: Не могу да се креирају токови података"
 
 msgid "E1576: Tag file entry must not be a URL"
 msgstr "E1576: Ставка у фајлу ознака не сме да буде URL"
+
+#, c-format
+msgid "E1577: Invalid format string, only one \"%s\" is allowed"
+msgstr "E1577: Неисправан стринг формата, дозвољено је само једно „%s”"
+
+msgid "E1578: Too many postponed prefixes and/or compound flags"
+msgstr "E1578: Превише закашњених префикса и/или индикатора сложеница"
+
+msgid "E1579: -completeopt=escape cannot be used with -nargs=_"
+msgstr "E1579: -completeopt=escape не може да се користи са -nargs=_"
 
 msgid "--No lines in buffer--"
 msgstr "--У баферу нема линија--"
@@ -9720,6 +9756,9 @@ msgstr ""
 
 msgid "file names in a tags file are relative to the tags file"
 msgstr "имена фајлова у фајлу ознака су релативна у односу на фајл ознака"
+
+msgid "a :tag command cannot access remote files"
+msgstr ":tag не може да приступи удаљеним фајловима"
 
 msgid "a :tag command will use the tagstack"
 msgstr "Команда :tag ће да користи стек ознака"

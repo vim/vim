@@ -1838,7 +1838,10 @@ sign_getlist(char_u *name, list_T *retlist)
             return;
 
         if (list_append_dict(retlist, dict) == FAIL)
+        {
+            dict_unref(dict);
             return;
+        }
 
         sign_getinfo(sp, dict);
 

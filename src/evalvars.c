@@ -1363,7 +1363,11 @@ ex_let_vars(
 
 		    copy_tv(TUPLE_ITEM(tuple, idx), &new_tv);
 		    if (tuple_append_tv(new_tuple, &new_tv) == FAIL)
+		    {
+			clear_tv(&new_tv);
+			tuple_unref(new_tuple);
 			return FAIL;
+		    }
 		    idx++;
 		}
 

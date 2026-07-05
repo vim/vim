@@ -683,7 +683,7 @@ func Test_popup_drag_termwin()
 	set shell=/bin/sh noruler
 	unlet $PROMPT_COMMAND
 	let $PS1 = 'vim> '
-        terminal ++rows=4
+	terminal ++rows=4
 	$wincmd w
 	let winid = popup_create(['1111', '2222'], #{
 	      \ drag: 1,
@@ -3031,18 +3031,18 @@ func Test_popupwin_terminal_buffer()
   " open help window to test that :help below fails
   help
 
-  let termbuf = term_start(&shell, #{hidden: 1})
+  let env =  {'HOME': '/nonexisting', 'PS1':''}
+  let termbuf = term_start(&shell, #{hidden: 1, env: env})
   let winid = popup_create(termbuf, #{minwidth: 40, minheight: 10, border: []})
   " Wait for shell to start
   call WaitForAssert({-> assert_equal("run", job_status(term_getjob(termbuf)))})
-  " Wait for a prompt (see border char first, then space after prompt)
-  call WaitForAssert({ -> assert_equal(' ', screenstring(screenrow(), screencol() - 1))})
+  call WaitForAssert({-> assert_equal('', term_getline(termbuf, '.'))})
 
   " When typing a character, the cursor is after it.
   call feedkeys("x", 'xt')
   call term_wait(termbuf)
   redraw
-  call WaitForAssert({ -> assert_equal('x', screenstring(screenrow(), screencol() - 1))})
+  call WaitForAssert({-> assert_equal('x', term_getline(termbuf, '.'))})
   call feedkeys("\<BS>", 'xt')
 
   " Check this doesn't crash
@@ -5315,24 +5315,62 @@ func Test_popup_opacity_settext_no_leftover()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_opacity_terminal_move_no_leftover()
+  CheckScreendump
+  CheckFeature terminal
+  CheckUnix
+
+  " A semi-transparent popup over a terminal used to leave the old popup
+  " cells behind when it moved.
+  let lines =<< trim END
+    set shell=/bin/sh noruler
+    unlet $PROMPT_COMMAND
+    let $PS1 = 'vim> '
+    terminal ++curwin
+    call popup_create('ABC',
+        \ #{line: 5, col: 10, highlight: 'None', opacity: 30})
+    func MoveIt()
+      let id = popup_list()[0]
+      call popup_settext(id, 'XYZ')
+      call popup_setoptions(id, #{col: popup_getpos(id).col + 3})
+    endfunc
+  END
+  call writefile(lines, 'XtestPopupOpacityTermMove', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacityTermMove',
+	\ #{rows: 12, wait_for_ruler: 0})
+  call WaitForAssert({-> assert_match('ABC', term_getline(buf, 5))})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_term_move_1', {})
+
+  " Move the popup and change its text: the old "ABC" cells must be cleared.
+  call term_sendkeys(buf, "\<C-W>:call MoveIt()\<CR>")
+  call WaitForAssert({-> assert_match('XYZ', term_getline(buf, 5))})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_term_move_2', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<C-W>:qa!\<CR>")
+  call WaitForAssert({-> assert_equal("finished", term_getstatus(buf))})
+  exe buf .. 'bwipe!'
+endfunc
+
 func Test_popup_opacity_terminal_no_freeze()
   CheckFeature terminal
   CheckUnix
   let g:test_is_flaky = 1
 
   let origwin = win_getid()
-  let termbuf = term_start(&shell, #{hidden: 1})
+  let env =  {'HOME': '/nonexisting', 'PS1':''}
+  let termbuf = term_start(&shell, #{hidden: 1, env: env})
   let winid = popup_create(termbuf, #{minwidth: 40, minheight: 10,
         \ border: [1, 1, 1, 1], opacity: 10})
   call WaitForAssert({-> assert_equal("run", job_status(term_getjob(termbuf)))})
-  call WaitForAssert({-> assert_equal(' ', screenstring(screenrow(), screencol() - 1))})
+  call WaitForAssert({-> assert_equal('', term_getline(termbuf, '.'))})
 
   " Before the fix typing froze Vim: redraw under an opacity popup raised
   " must_redraw every cycle, trapping terminal_loop in its redraw loop.
   call feedkeys('x', 'xt')
   call term_wait(termbuf)
   redraw
-  call WaitForAssert({-> assert_equal('x', screenstring(screenrow(), screencol() - 1))})
+  call WaitForAssert({-> assert_equal('x', term_getline(termbuf, '.'))})
 
   call feedkeys("\<BS>", 'xt')
   call feedkeys("exit\<CR>", 'xt')

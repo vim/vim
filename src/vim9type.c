@@ -147,6 +147,8 @@ alloc_type(type_T *type)
 	return type;
 
     ret = ALLOC_ONE(type_T);
+    if (ret == NULL)
+	return NULL;
     *ret = *type;
 
     if (ret->tt_member != NULL)
@@ -2720,13 +2722,16 @@ type_name_func(type_T *type, char **tofree)
 	STRCPY((char *)ga.ga_data + ga.ga_len, ")");
     else
     {
-	char *ret_free;
+	char *ret_free = NULL;
 	char *ret_name = type_name(type->tt_member, &ret_free);
 	int  len;
 
 	len = (int)STRLEN(ret_name) + 4;
 	if (ga_grow(&ga, len) == FAIL)
+	{
+	    vim_free(ret_free);
 	    goto failed;
+	}
 	STRCPY((char *)ga.ga_data + ga.ga_len, "): ");
 	STRCPY((char *)ga.ga_data + ga.ga_len + 3, ret_name);
 	vim_free(ret_free);

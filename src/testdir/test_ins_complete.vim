@@ -5947,7 +5947,7 @@ func Test_autocompletedelay()
   call term_sendkeys(buf, "\<BS>")
   call VerifyScreenDump(buf, 'Test_autocompletedelay_5', {})
   sleep 500m
-  call VerifyScreenDump(buf, 'Test_autocompletedelay_6', {})
+  call VerifyScreenDump(buf, 'Test_autocompletedelay_5', {})
 
   " During delay wait, user can open menu using CTRL_N completion
   call term_sendkeys(buf, "\<Esc>:set completeopt=menuone\<CR>")
@@ -6031,9 +6031,19 @@ func Test_autocompletedelay_no_record()
   let @a = ''
   " Type a char that arms the delay, idle past 'autocompletedelay' so a
   " K_COMPLETE_DELAY would be injected, then end Insert mode and stop recording.
-  call timer_start(200, { -> feedkeys("\<Esc>q", 't') })
+  call timer_start(300, { -> feedkeys("\<Esc>q", 't') })
   call feedkeys("qaSf", 'tx!')
   call assert_equal("Sf\<Esc>", @a)
+
+  " Delayed autocompletion still works when recording.
+  if !has('win32') " FIXME: does not work on Windows
+    call setline(1, 'foobar foofoo')
+    call timer_start(300, { -> feedkeys("\<Down>\<C-Y>\<Esc>q", 't') })
+    call feedkeys("qaof", 'tx!')
+    call assert_equal('foobar', getline('.'))
+    " XXX: This doesn't produce the same result when replaying.
+    call assert_equal("of\<Down>\<C-Y>\<Esc>", @a)
+  endif
 
   set autocomplete& autocompletedelay&
   bwipe!
@@ -6339,8 +6349,6 @@ func Test_autocompletedelay_longest_preinsert()
 
   " Preinsert
   call term_sendkeys(buf, "\<Esc>:set completeopt& completeopt+=preinsert\<CR>")
-
-  " Show preinserted text right away but display popup later
   call term_sendkeys(buf, "\<Esc>Sau")
   sleep 100m
   call VerifyScreenDump(buf, 'Test_autocompletedelay_preinsert_1', {})
