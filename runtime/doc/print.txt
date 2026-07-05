@@ -742,8 +742,7 @@ using Cairo.  Additionally, PDF files can be emitted as well, see the
 
 When using the GTK GUI, |+pango| is always enabled and used.  On terminal
 builds of Vim, "--enable-print-pango" must be passed to the configure options.
-The linked Cairo library must have the Postscript, PDF, PNG, and SVG backends
-enabled.
+The linked Cairo library must have the Postscript and PDF backends enabled.
 
 							*gtk4-print*
 When using the GTK4 GUI, |:hardcopy| will use a native graphical print dialog,
