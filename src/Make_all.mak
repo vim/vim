@@ -1,5 +1,5 @@
 #
-# Common Makefile, defines the list of tests to run and other things.
+# Common Makefile - shared platform independent
 #
 
 # Argument for running ctags.
@@ -8,7 +8,7 @@ TAGS_FILES = \
 	*.cc \
 	*.cpp \
 	*.h \
-	auto/*.c \
+	$(wildcard auto/*.c) \
 	libvterm/src/*.c \
 	libvterm/src/*.h \
 	libvterm/include/*.h \
