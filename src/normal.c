@@ -2451,6 +2451,8 @@ typedef struct
     static void
 nv_screenline_conceal_clear(void)
 {
+    if ((curwin->w_flags & WFLAG_CONCEAL_WCOL) != 0)
+	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
     curwin->w_flags &= ~(WFLAG_CONCEAL_WCOL|WFLAG_CONCEAL_NO_REDRAW);
 }
 
@@ -2789,6 +2791,29 @@ nv_screenline_skipcol_rows(win_T *wp)
     return 0;
 }
 
+    static colnr_T
+nv_screenline_skipcol_for_rows(int rows)
+{
+    int	    width1;
+    int	    width2;
+    colnr_T skipcol = 0;
+
+    if (rows <= 0)
+	return 0;
+
+    width1 = curwin->w_width - curwin_col_off();
+    if (width1 <= 0)
+	return 0;
+    width2 = width1 + curwin_col_off2();
+    if (width2 <= 0)
+	return 0;
+
+    skipcol = width1;
+    if (rows > 1)
+	skipcol += width2 * (rows - 1);
+    return skipcol;
+}
+
     static int
 nv_screenline_map_add_drawline_cell(
 	colnr_T		col,
@@ -2861,6 +2886,8 @@ nv_screenline_map_build(
     nv_screenline_buildctx_T ctx;
     bool	got_cached_base_row = false;
     bool	shift_above_top = false;
+    colnr_T	save_skipcol = 0;
+    bool	reset_skipcol_for_map = false;
 
     if (!nv_screenline_conceal_active())
 	return FAIL;
@@ -2916,13 +2943,23 @@ nv_screenline_map_build(
 # endif
     if (!shift_above_top)
 	nv_screenline_base_cache_store(lnum, ctx.base_row);
+    if (curwin->w_skipcol > 0 && lnum != curwin->w_topline)
+    {
+	save_skipcol = curwin->w_skipcol;
+	curwin->w_skipcol = 0;
+	reset_skipcol_for_map = true;
+    }
     if (win_line_conceal_screenline_iter(curwin, lnum,
 		    nv_screenline_map_add_drawline_cell, &ctx,
-		    &has_conceal) == FAIL)
+		    &has_conceal, NULL) == FAIL)
     {
+	if (reset_skipcol_for_map)
+	    curwin->w_skipcol = save_skipcol;
 	nv_screenline_map_clear(map);
 	return FAIL;
     }
+    if (reset_skipcol_for_map)
+	curwin->w_skipcol = save_skipcol;
 
     if (map->cells.ga_len == 0)
     {
@@ -3212,6 +3249,7 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
     linenr_T	old_topline;
     int		old_skipcol;
     bool	have_map = true;
+    colnr_T	target_skipcol = 0;
 
     if (!nv_screenline_conceal_active())
 	return FAIL;
@@ -3328,6 +3366,10 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
     }
 
     target_row = row;
+    if (have_map && dir == BACKWARD && target_row < W_WINROW(curwin) + 1)
+	target_skipcol = nv_screenline_skipcol_for_rows(
+		    target_row - nv_screenline_map_first_row(&map));
+
     if (!have_map)
     {
 	target_pos.lnum = lnum;
@@ -3348,9 +3390,6 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
     curwin->w_curswant = target_rel;
     curwin->w_set_curswant = false;
     nv_screenline_curswant_store(target_rel);
-    curwin->w_valid_cursor = curwin->w_cursor;
-    curwin->w_valid_leftcol = curwin->w_leftcol;
-    curwin->w_valid_skipcol = curwin->w_skipcol;
     curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT
 							       |VALID_CROW|VALID_VIRTCOL);
     old_topline = curwin->w_topline;
@@ -3365,6 +3404,16 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
 	redraw_later(UPD_NOT_VALID);
     curs_columns(TRUE);
     adjust_skipcol();
+    if (target_skipcol > 0
+	    && curwin->w_topline == curwin->w_cursor.lnum
+	    && curwin->w_skipcol != target_skipcol)
+    {
+	curwin->w_skipcol = target_skipcol;
+	curwin->w_valid_skipcol = curwin->w_skipcol;
+	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CROW|VALID_CHEIGHT
+							       |VALID_VIRTCOL);
+	redraw_later(UPD_NOT_VALID);
+    }
     if (target_ccol > 0
 	    && curwin->w_topline == old_topline
 	    && curwin->w_skipcol == old_skipcol)
@@ -5071,6 +5120,10 @@ nv_up(cmdarg_T *cap)
 	return;
     }
 
+#ifdef FEAT_CONCEAL
+    nv_screenline_conceal_clear();
+#endif
+
     cap->oap->motion_type = MLINE;
     if (cursor_up(cap->count1, cap->oap->op_type == OP_NOP) == FAIL)
 	clearopbeep(cap->oap);
@@ -5114,6 +5167,10 @@ nv_down(cmdarg_T *cap)
 	else
 #endif
 	{
+#ifdef FEAT_CONCEAL
+	    nv_screenline_conceal_clear();
+#endif
+
 	    cap->oap->motion_type = MLINE;
 	    if (cursor_down(cap->count1, cap->oap->op_type == OP_NOP) == FAIL)
 		clearopbeep(cap->oap);

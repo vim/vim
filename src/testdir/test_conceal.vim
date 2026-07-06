@@ -1433,6 +1433,41 @@ func Test_conceallevel_three_wrap_visible_screenpos()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_wrap_number_line_height()
+  call NewWindow(12, 42)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+  setlocal number signcolumn=no
+  syntax region test matchgroup=test start=/`/ end=/`/ concealends
+
+  call setline(1, [
+        \ 'top',
+        \ '',
+        \ 'aaaaaaaaaa bbbbbbbbbb cccccccccc dddddddddd `日本語` eeeeeeeeee ffffffffff gggggggggg hhhhhhhhhh iiiiiiiiii',
+        \ '',
+        \ 'Plain comparison line without Markdown conceal but with wide text near the same area: 0123456789 0123456789 0123456789 日本語 0123456789 0123456789 0123456789.'])
+  redraw
+
+  let row_l3 = screenpos(0, 3, 1).row
+  let row_l4 = screenpos(0, 4, 1).row
+  let row_l5 = screenpos(0, 5, 1).row
+  call assert_equal(row_l3 + 4, row_l4)
+  call assert_equal(row_l4 + 1, row_l5)
+
+  call cursor(5, 1)
+  redraw
+  normal! k
+  redraw
+  call assert_equal([4, 1], [line('.'), col('.')])
+  call assert_equal(row_l4, screenpos(0, line('.'), col('.')).row)
+  normal! j
+  redraw
+  call assert_equal([5, 1], [line('.'), col('.')])
+  call assert_equal(row_l5, screenpos(0, line('.'), col('.')).row)
+
+  syntax clear test
+  call CloseWindow()
+endfunc
+
 func Test_conceallevel_three_wrap_virtual_text()
   CheckFeature textprop
 

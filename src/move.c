@@ -572,6 +572,9 @@ update_topline(void)
 	if (curwin->w_cursor.lnum == curwin->w_topline)
 	    validate_cursor();
     }
+    else if (!curwin->w_p_sms && curwin->w_skipcol != 0
+	    && curwin->w_cursor.lnum != curwin->w_topline)
+	reset_skipcol();
 
     *so_ptr = save_so;
 }
@@ -1693,7 +1696,7 @@ conceal_textpos2screenpos(
     ctx.before_col = -1;
     ctx.after_col = -1;
     if (win_line_conceal_screenline_iter(wp, pos->lnum,
-		conceal_screenpos_store, &ctx, &has_conceal) == FAIL
+		conceal_screenpos_store, &ctx, &has_conceal, NULL) == FAIL
 	    || !has_conceal)
 	return FAIL;
 

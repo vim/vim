@@ -559,6 +559,34 @@ plines_win_may_conceal(win_T *wp, linenr_T lnum)
     return true;
 }
 
+    static int
+plines_conceal_height_cb(
+	colnr_T		col UNUSED,
+	colnr_T		end_col UNUSED,
+	int		row UNUSED,
+	int		start_col UNUSED,
+	int		cursor_col UNUSED,
+	int		cells UNUSED,
+	void		*ctx UNUSED)
+{
+    return OK;
+}
+
+    static int
+plines_win_conceal_height(win_T *wp, linenr_T lnum)
+{
+    bool    has_conceal = false;
+    int	    rows = 0;
+
+    if (!plines_win_may_conceal(wp, lnum))
+	return 0;
+    if (win_line_conceal_screenline_iter(wp, lnum,
+		    plines_conceal_height_cb, NULL, &has_conceal, &rows) == FAIL
+	    || !has_conceal)
+	return 0;
+    return rows;
+}
+
 /*
  * Return the screen width of line "lnum" up to "column" while taking
  * zero-width 'conceallevel' 3 text into account.  When "vcol_off_cop" is not
@@ -987,6 +1015,16 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
 	    )
 	return 1; // be quick for an empty line
 #ifdef FEAT_CONCEAL
+    if (wp->w_p_cole == 3)
+    {
+	int conceal_height = plines_win_conceal_height(wp, lnum);
+
+	if (conceal_height > 0)
+	{
+	    clear_chartabsize_arg(&cts);
+	    return conceal_height;
+	}
+    }
     if (plines_win_may_conceal(wp, lnum))
 	col = plines_win_col_conceal(wp, lnum, MAXCOL, NULL, NULL,
 						      NULL, NULL, NULL);

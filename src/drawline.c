@@ -4943,7 +4943,8 @@ win_line_conceal_screenline_iter(
     linenr_T		lnum,
     conceal_screenline_cb_T cb,
     void		*cb_ctx,
-    bool		*has_concealp)
+    bool		*has_concealp,
+    int			*rowsp)
 {
     conceal_screenline_cb_T save_cb = drawline_screenline_cb;
     void		    *save_ctx = drawline_screenline_ctx;
@@ -4973,6 +4974,8 @@ win_line_conceal_screenline_iter(
     failed = drawline_screenline_failed;
     if (has_concealp != NULL)
 	*has_concealp = drawline_screenline_has_conceal;
+    if (rowsp != NULL)
+	*rowsp = row;
 
     drawline_screenline_cb = save_cb;
     drawline_screenline_ctx = save_ctx;
