@@ -3167,159 +3167,6 @@ nv_screenline_map_pos(
 }
 
     static int
-nv_screenline_visible_neighbor(
-	linenr_T	lnum,
-	colnr_T		col,
-	int		dir,
-	pos_T		*target_pos,
-	int		*rowp,
-	int		*ccolp,
-	bool		*has_concealp)
-{
-    nv_screenline_map_T		map;
-    nv_screenline_cell_T	*cells;
-    nv_screenline_cell_T	*current = NULL;
-    nv_screenline_cell_T	*best = NULL;
-    int				best_row_delta = MAXCOL;
-    int				best_col_delta = MAXCOL;
-    int				cur_row = 0;
-    int				cur_ccol = 0;
-    int				cur_ecol = 0;
-    int				i;
-
-    if (nv_screenline_map_build(&map, lnum, false, false) == FAIL)
-    {
-	if (nv_screenline_cache_valid(lnum, false)
-		&& !nv_screenline_cache.has_conceal)
-	{
-	    if (nv_screenline_map_build(&map, lnum, true, false) == FAIL)
-		return FAIL;
-	}
-	else if (!nv_screenline_plain_map_needed(lnum)
-		|| nv_screenline_map_build(&map, lnum, true, false) == FAIL)
-	    return FAIL;
-    }
-    cells = nv_screenline_map_cells(&map);
-
-    for (i = 0; i < map.cells.ga_len; ++i)
-	if (cells[i].col <= col && col <= cells[i].end_col)
-	{
-	    current = &cells[i];
-	    break;
-	}
-    if (current == NULL && nv_screenline_map_current(&map, col, rowp,
-							       ccolp) == OK)
-	for (i = 0; i < map.cells.ga_len; ++i)
-	    if (cells[i].row == *rowp && cells[i].ccol <= *ccolp
-						   && cells[i].ecol >= *ccolp)
-	    {
-		current = &cells[i];
-		break;
-	    }
-    if (current != NULL)
-    {
-	cur_row = current->row;
-	cur_ccol = current->ccol;
-	cur_ecol = current->ecol;
-    }
-
-    if (cur_row > 0 && cur_ccol > 0)
-	for (i = 0; i < map.cells.ga_len; ++i)
-	{
-	    int row_delta;
-	    int col_delta;
-
-	    if (dir == FORWARD)
-	    {
-		if (cells[i].row < cur_row
-			|| (cells[i].row == cur_row
-						 && cells[i].ccol <= cur_ecol))
-		    continue;
-		row_delta = cells[i].row - cur_row;
-		col_delta = row_delta == 0
-				       ? cells[i].ccol - cur_ecol
-				       : cells[i].ccol;
-	    }
-	    else
-	    {
-		if (cells[i].row > cur_row
-			|| (cells[i].row == cur_row
-						 && cells[i].ecol >= cur_ccol))
-		    continue;
-		row_delta = cur_row - cells[i].row;
-		col_delta = row_delta == 0
-				       ? cur_ccol - cells[i].ecol
-				       : curwin->w_wincol + curwin->w_width
-								- cells[i].ccol;
-	    }
-	    if (best == NULL || row_delta < best_row_delta
-		    || (row_delta == best_row_delta
-			&& col_delta < best_col_delta))
-	    {
-		best = &cells[i];
-		best_row_delta = row_delta;
-		best_col_delta = col_delta;
-	    }
-	}
-
-    if (best == NULL)
-	for (i = 0; i < map.cells.ga_len; ++i)
-	    if ((dir == FORWARD
-			&& cells[i].col > (current == NULL
-						  ? col : current->end_col))
-		    || (dir == BACKWARD
-			&& cells[i].end_col < (current == NULL
-						  ? col : current->col)))
-	    {
-		best = &cells[i];
-		if (dir == FORWARD)
-		    break;
-	    }
-    if (best != NULL)
-    {
-	target_pos->lnum = lnum;
-	target_pos->col = best->col;
-	target_pos->coladd = 0;
-	*rowp = best->row;
-	*ccolp = best->ccol;
-	*has_concealp = map.has_conceal;
-	nv_screenline_map_clear(&map);
-	return OK;
-    }
-
-    nv_screenline_map_clear(&map);
-    return FAIL;
-}
-
-    static int
-nv_screenline_conceal_horiz(int dir)
-{
-    pos_T	target_pos;
-    colnr_T	col = curwin->w_cursor.col;
-    int		row;
-    int		ccol;
-    bool	has_conceal = false;
-
-    if (!nv_screenline_conceal_active())
-	return FAIL;
-    if (nv_screenline_visible_neighbor(curwin->w_cursor.lnum, col, dir,
-			&target_pos, &row, &ccol, &has_conceal) == FAIL)
-    {
-	if (nv_screenline_all_concealed(curwin->w_cursor.lnum))
-	    return OK;
-	return FAIL;
-    }
-
-    curwin->w_cursor = target_pos;
-    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
-    curwin->w_set_curswant = true;
-    curwin->w_flags |= WFLAG_CONCEAL_WCOL;
-    if (!has_conceal || conceal_cursor_line(curwin))
-	curwin->w_flags |= WFLAG_CONCEAL_NO_REDRAW;
-    return OK;
-}
-
-    static int
 nv_screenline_conceal_current_pos(int *rowp, int *colp)
 {
     nv_screenline_map_T map;
@@ -5089,11 +4936,6 @@ nv_right(cmdarg_T *cap)
 
     for (n = cap->count1; n > 0; --n)
     {
-#ifdef FEAT_CONCEAL
-	if (!past_line && cap->oap->op_type == OP_NOP
-		&& nv_screenline_conceal_horiz(FORWARD) == OK)
-	    continue;
-#endif
 	if ((!past_line && oneright() == FAIL)
 		|| (past_line && *ml_get_cursor() == NUL)
 		)
@@ -5183,11 +5025,6 @@ nv_left(cmdarg_T *cap)
     cap->oap->inclusive = FALSE;
     for (n = cap->count1; n > 0; --n)
     {
-#ifdef FEAT_CONCEAL
-	if (cap->oap->op_type == OP_NOP
-		&& nv_screenline_conceal_horiz(BACKWARD) == OK)
-	    continue;
-#endif
 	if (oneleft() == FAIL)
 	{
 	    // <BS> and <Del> wrap to previous line if 'whichwrap' has 'b'.

@@ -899,26 +899,22 @@ func Test_conceallevel_three_wrap()
   call assert_equal(1, line('.'))
   call assert_equal(stridx(getline(1), 'several times') + 1, col('.'))
 
-  call cursor(1, 1)
-  for i in range(1, 220)
-    let before = [winline(), wincol()]
-    normal! l
-    let after = [winline(), wincol()]
-    call assert_true(after[0] > before[0]
-          \ || (after[0] == before[0] && after[1] >= before[1]),
-          \ printf('l moved cursor backwards from %s to %s',
-          \ string(before), string(after)))
-  endfor
+  let line = getline(1)
+  let start_col = stridx(line, '日本語](https') + 1
+  call cursor(1, start_col)
+  normal! l
+  call assert_equal(start_col + strlen('日'), col('.'))
+  normal! h
+  call assert_equal(start_col, col('.'))
 
-  for i in range(1, 220)
-    let before = [winline(), wincol()]
-    normal! h
-    let after = [winline(), wincol()]
-    call assert_true(after[0] < before[0]
-          \ || (after[0] == before[0] && after[1] <= before[1]),
-          \ printf('h moved cursor forwards from %s to %s',
-          \ string(before), string(after)))
-  endfor
+  let start_col = stridx(line, '](https:') + 1
+  call cursor(1, start_col)
+  normal! l
+  call assert_equal(start_col + 1, col('.'))
+  normal! 5l
+  call assert_equal(start_col + 6, col('.'))
+  normal! h
+  call assert_equal(start_col + 5, col('.'))
 
   call CloseWindow()
   call NewWindow(7, 40)
@@ -981,26 +977,22 @@ func Test_conceallevel_three_wrap()
   syntax match test /\[/ conceal
   syntax match test /\](https:[^)]*)/ conceal
 
-  call cursor(1, 1)
-  for i in range(1, 220)
-    let before = [winline(), wincol()]
-    normal! l
-    let after = [winline(), wincol()]
-    call assert_true(after[0] > before[0]
-          \ || (after[0] == before[0] && after[1] >= before[1]),
-          \ printf('l moved cursor backwards from %s to %s',
-          \ string(before), string(after)))
-  endfor
+  let line = getline(1)
+  let start_col = stridx(line, '東京都 text](https') + 1
+  call cursor(1, start_col)
+  normal! l
+  call assert_equal(start_col + strlen('東'), col('.'))
+  normal! h
+  call assert_equal(start_col, col('.'))
 
-  for i in range(1, 220)
-    let before = [winline(), wincol()]
-    normal! h
-    let after = [winline(), wincol()]
-    call assert_true(after[0] < before[0]
-          \ || (after[0] == before[0] && after[1] <= before[1]),
-          \ printf('h moved cursor forwards from %s to %s',
-          \ string(before), string(after)))
-  endfor
+  let start_col = stridx(line, '](https:') + 1
+  call cursor(1, start_col)
+  normal! l
+  call assert_equal(start_col + 1, col('.'))
+  normal! 5l
+  call assert_equal(start_col + 6, col('.'))
+  normal! h
+  call assert_equal(start_col + 5, col('.'))
 
   call CloseWindow()
   call NewWindow(6, 40)
@@ -1036,7 +1028,7 @@ func Test_conceallevel_three_wrap()
   redraw
   call cursor(1, stridx(getline(1), 'visible') + strlen('visible'))
   normal! l
-  call assert_equal(stridx(getline(1), ') after') + 2, col('.'))
+  call assert_equal(stridx(getline(1), '](https:') + 1, col('.'))
   normal! h
   call assert_equal(stridx(getline(1), 'visible') + strlen('visible'),
         \ col('.'))
@@ -1046,11 +1038,10 @@ func Test_conceallevel_three_wrap()
   call setline(1, '``` {style="conceal-test"}')
   redraw
   call cursor(1, 1)
-  let before = [line('.'), col('.'), winline(), wincol()]
   normal! 10l
-  call assert_equal(before, [line('.'), col('.'), winline(), wincol()])
+  call assert_equal(11, col('.'))
   normal! 10h
-  call assert_equal(before, [line('.'), col('.'), winline(), wincol()])
+  call assert_equal(1, col('.'))
 
   syntax clear test
   syntax match test /\[/ conceal
