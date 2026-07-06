@@ -3335,7 +3335,11 @@ nv_screenline_conceal_current_pos(int *rowp, int *colp)
 }
 
     static int
-nv_screenline_conceal_pos(int target_row, int target_col, pos_T *target_pos)
+nv_screenline_conceal_pos(
+	int	target_row,
+	int	target_col,
+	pos_T	*target_pos,
+	int	*ccolp)
 {
     nv_screenline_map_T map;
     int			retval;
@@ -3344,9 +3348,26 @@ nv_screenline_conceal_pos(int target_row, int target_col, pos_T *target_pos)
 							 false, false) == FAIL)
 	return FAIL;
     retval = nv_screenline_map_pos(&map, target_row, target_col, target_pos,
-								   NULL);
+								 ccolp);
     nv_screenline_map_clear(&map);
     return retval;
+}
+
+    static void
+nv_screenline_conceal_set_wcol(int row, int ccol)
+{
+    if (row <= 0 || ccol <= 0)
+	return;
+    curwin->w_wrow = row - W_WINROW(curwin) - 1;
+    curwin->w_wcol = ccol - curwin->w_wincol - 1;
+    curwin->w_valid |= VALID_WROW|VALID_WCOL;
+    curwin->w_valid &= ~VALID_VIRTCOL;
+    curwin->w_valid_cursor = curwin->w_cursor;
+    curwin->w_valid_leftcol = curwin->w_leftcol;
+    curwin->w_valid_skipcol = curwin->w_skipcol;
+    curwin->w_conceal_wcol_pos = curwin->w_cursor;
+    curwin->w_conceal_wcol_width = curwin->w_width;
+    curwin->w_flags |= WFLAG_CONCEAL_WCOL;
 }
 
     static int
@@ -7049,6 +7070,7 @@ nv_g_home_m_cmd(cmdarg_T *cap)
 	pos_T	target_pos;
 	int	row;
 	int	ccol;
+	int	target_ccol = 0;
 	int	target_col = NV_SCREENLINE_FIRSTCOL;
 
 	if (nv_screenline_conceal_current_pos(&row, &ccol) == OK)
@@ -7056,7 +7078,8 @@ nv_g_home_m_cmd(cmdarg_T *cap)
 	    if (cap->nchar == 'm')
 		target_col = curwin->w_wincol + win_col_off(curwin) + 1
 				  + (curwin->w_width - curwin_col_off()) / 2;
-	    if (nv_screenline_conceal_pos(row, target_col, &target_pos) == OK)
+	    if (nv_screenline_conceal_pos(row, target_col, &target_pos,
+							&target_ccol) == OK)
 	    {
 		curwin->w_cursor = target_pos;
 		curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT
@@ -7068,11 +7091,14 @@ nv_g_home_m_cmd(cmdarg_T *cap)
 		    while (VIM_ISWHITE(i) && oneright() == OK);
 		    curwin->w_valid &= ~VALID_WCOL;
 		}
-# if defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP)
-		(void)update_conceal_cursor_screenpos(curwin);
-# endif
 		curwin->w_set_curswant = true;
 		adjust_skipcol();
+# if defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP)
+		if (!flag && target_ccol > 0)
+		    nv_screenline_conceal_set_wcol(row, target_ccol);
+		else
+		    (void)update_conceal_cursor_screenpos(curwin);
+# endif
 		return;
 	    }
 	}
@@ -7192,10 +7218,11 @@ nv_g_dollar_cmd(cmdarg_T *cap)
 	pos_T	target_pos;
 	int	row;
 	int	ccol;
+	int	target_ccol = 0;
 
 	if (nv_screenline_conceal_current_pos(&row, &ccol) == OK
 		&& nv_screenline_conceal_pos(row, NV_SCREENLINE_LASTCOL,
-							&target_pos) == OK)
+						&target_pos, &target_ccol) == OK)
 	{
 	    curwin->w_cursor = target_pos;
 	    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT
@@ -7208,8 +7235,11 @@ nv_g_dollar_cmd(cmdarg_T *cap)
 		while (IS_WHITE_OR_NUL(i) && oneleft() == OK);
 		curwin->w_valid &= ~VALID_WCOL;
 	    }
+	    if (!flag && target_ccol > 0)
+		nv_screenline_conceal_set_wcol(row, target_ccol);
 # if defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP)
-	    (void)update_conceal_cursor_screenpos(curwin);
+	    else
+		(void)update_conceal_cursor_screenpos(curwin);
 # endif
 	    return;
 	}
