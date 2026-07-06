@@ -3058,15 +3058,30 @@ nv_screenline_map_last_row(nv_screenline_map_T *map)
 }
 
     static int
-nv_screenline_map_has_row(nv_screenline_map_T *map, int row)
+nv_screenline_map_row_idx(nv_screenline_map_T *map, int row)
 {
     nv_screenline_row_T *rows = nv_screenline_map_rows(map);
-    int i;
+    int low = 0;
+    int high = map->rows.ga_len - 1;
 
-    for (i = 0; i < map->rows.ga_len; ++i)
-	if (rows[i].row == row)
-	    return TRUE;
-    return FALSE;
+    while (low <= high)
+    {
+	int mid = (low + high) / 2;
+
+	if (rows[mid].row == row)
+	    return mid;
+	if (rows[mid].row < row)
+	    low = mid + 1;
+	else
+	    high = mid - 1;
+    }
+    return -1;
+}
+
+    static int
+nv_screenline_map_has_row(nv_screenline_map_T *map, int row)
+{
+    return nv_screenline_map_row_idx(map, row) >= 0;
 }
 
     static int
@@ -3086,15 +3101,12 @@ nv_screenline_map_pos(
     int				best_under_dist = MAXCOL;
     int				best_over_dist = MAXCOL;
     int				i;
+    int				row_idx;
 
-    for (i = 0; i < map->rows.ga_len; ++i)
-	if (rows[i].row == target_row)
-	{
-	    rowp = &rows[i];
-	    break;
-	}
-    if (rowp == NULL)
+    row_idx = nv_screenline_map_row_idx(map, target_row);
+    if (row_idx < 0)
 	return FAIL;
+    rowp = &rows[row_idx];
     if (target_col == NV_SCREENLINE_FIRSTCOL)
 	last = &cells[rowp->first_idx];
     else if (target_col == NV_SCREENLINE_LASTCOL)
