@@ -2879,9 +2879,6 @@ oneright(void)
 	if (curwin->w_p_wrap && curwin->w_p_cole == 3)
 	    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
 #endif
-#if defined(FEAT_CONCEAL) && (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP))
-	update_conceal_cursor_screenpos(curwin);
-#endif
 	return OK;
     }
 
@@ -2904,9 +2901,6 @@ oneright(void)
 #ifdef FEAT_CONCEAL
     if (curwin->w_p_wrap && curwin->w_p_cole == 3)
 	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
-#endif
-#if defined(FEAT_CONCEAL) && (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP))
-    update_conceal_cursor_screenpos(curwin);
 #endif
     adjust_skipcol();
     return OK;
@@ -2959,9 +2953,6 @@ oneleft(void)
 	if (curwin->w_p_wrap && curwin->w_p_cole == 3)
 	    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
 #endif
-#if defined(FEAT_CONCEAL) && (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP))
-	update_conceal_cursor_screenpos(curwin);
-#endif
 	adjust_skipcol();
 	return OK;
     }
@@ -2979,9 +2970,6 @@ oneleft(void)
 #ifdef FEAT_CONCEAL
     if (curwin->w_p_wrap && curwin->w_p_cole == 3)
 	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
-#endif
-#if defined(FEAT_CONCEAL) && (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP))
-    update_conceal_cursor_screenpos(curwin);
 #endif
     adjust_skipcol();
     return OK;

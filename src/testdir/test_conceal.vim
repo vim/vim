@@ -1147,7 +1147,13 @@ func Test_conceallevel_three_wrap()
 
     call setline(1, 'This paragraph has **bold text before 日本語**, *italic text before コンシール*, and a [concealed link title 日本語](https://example.invalid/a/very/long/path/that/should-be-hidden-by-markdown-conceal) followed by enough words to wrap several times in a narrow window.')
     redraw
-    for startcol in [38, 45, 90, 97]
+    let startcols = [
+          \ stridx(getline(1), '日本語') + 1,
+          \ stridx(getline(1), ', *italic') + 1,
+          \ stridx(getline(1), 'concealed link title') + 1,
+          \ stridx(getline(1), '日本語](https') + 1,
+          \ ]
+    for startcol in startcols
       call cursor(1, startcol)
       redraw
       let before = [winline(), wincol()]
@@ -1255,6 +1261,40 @@ func Test_conceallevel_three_wrap()
   normal! gj
   call assert_equal(2, line('.'))
   call assert_notequal(col, col('.'))
+
+  call CloseWindow()
+  call NewWindow(10, 37)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+        \ signcolumn=no number showbreak=
+  syntax clear test
+  syntax match test /\[/ conceal
+  syntax match test /\](https:[^)]*)/ conceal
+  syntax match test /\*\*/ conceal
+  syntax region testCode matchgroup=test start=/`/ end=/`/ concealends
+  call setline(1, '- A dash list item should use Markdown list formatting, and this item intentionally contains **strong text**, `inline code`, [a link with 日本語](https://example.invalid/list), and enough trailing prose to wrap with breakindent.')
+  redraw
+  call cursor(1, stridx(getline(1), 'inline code') + 1)
+  normal! g$
+  call assert_equal(stridx(getline(1), 'inline code') + strlen('inline code'),
+        \ col('.'))
+  call cursor(1, stridx(getline(1), 'a link with') + 1)
+  normal! g$
+  call assert_equal(stridx(getline(1), 'and enough')
+        \ + strlen('and enough') + 1,
+        \ col('.'))
+  call cursor(1, stridx(getline(1), 'trailing prose') + 1)
+  normal! g$
+  call assert_equal(stridx(getline(1), 'wrap with')
+        \ + strlen('wrap with') + 1,
+        \ col('.'))
+  let sp = screenpos(0, line('.'), col('.'))
+  call assert_equal(get(sp, 'curscol', -1), wincol())
+
+  call cursor(1, stridx(getline(1), 'breakindent.') + 1)
+  normal! g$
+  call assert_equal(strlen(getline(1)), col('.'))
+  let sp = screenpos(0, line('.'), col('.'))
+  call assert_equal(get(sp, 'curscol', -1), wincol())
 
   call CloseWindow()
   call NewWindow(10, 59)

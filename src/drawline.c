@@ -99,6 +99,16 @@ margin_columns_win(win_T *wp, int *left_col, int *right_col)
 # define LINE_ATTR
 #endif
 
+#ifdef FEAT_CONCEAL
+static conceal_screenline_cb_T drawline_screenline_cb = NULL;
+static void *drawline_screenline_ctx = NULL;
+static bool drawline_screenline_has_conceal = false;
+static bool drawline_screenline_failed = false;
+# define DRAWLINE_COLLECTING (drawline_screenline_cb != NULL)
+#else
+# define DRAWLINE_COLLECTING false
+#endif
+
 // structure with variables passed between win_line() and other functions
 typedef struct {
     int		draw_state;	// what to draw next
@@ -868,6 +878,11 @@ text_prop_no_showbreak(textprop_T *tp)
     static void
 wlv_screen_line(win_T *wp, winlinevars_T *wlv, int clear_end)
 {
+#ifdef FEAT_CONCEAL
+    if (DRAWLINE_COLLECTING)
+	return;
+#endif
+
     if (wlv->row == 0 && wp->w_skipcol > 0
 #if defined(FEAT_LINEBREAK)
 	    // do not overwrite the 'showbreak' text with "<<<"
@@ -915,6 +930,15 @@ wlv_screen_line(win_T *wp, winlinevars_T *wlv, int clear_end)
     static void
 draw_screen_line(win_T *wp, winlinevars_T *wlv)
 {
+#ifdef FEAT_CONCEAL
+    if (DRAWLINE_COLLECTING)
+    {
+	++wlv->row;
+	++wlv->screen_row;
+	return;
+    }
+#endif
+
 #ifdef FEAT_SYN_HL
     long	v;
     int		wcol;
@@ -4047,6 +4071,7 @@ win_line(
 		    && wp->w_cursor.col < (colnr_T)(cursor_ptr_end - line);
 	if (!did_wcol && wlv.draw_state == WL_LINE
 		&& in_curline && conceal_cursor_line(wp)
+		&& !DRAWLINE_COLLECTING
 		&& (wp->w_p_wrap && wp->w_p_cole == 3
 		    ? cursor_on_char || c == NUL
 		    : wlv.vcol + skip_cells >= wp->w_virtcol || c == NUL))
@@ -4246,9 +4271,12 @@ win_line(
 		else
 		{
 		    // Add a blank character to highlight.
-		    ScreenLines[wlv.off] = ' ';
-		    if (enc_utf8)
-			ScreenLinesUC[wlv.off] = 0;
+		    if (!DRAWLINE_COLLECTING)
+		    {
+			ScreenLines[wlv.off] = ' ';
+			if (enc_utf8)
+			    ScreenLinesUC[wlv.off] = 0;
+		    }
 		}
 #ifdef FEAT_SEARCH_EXTRA
 		if (area_attr == 0)
@@ -4259,8 +4287,11 @@ win_line(
 					   (long)(ptr - line), &wlv.char_attr);
 		}
 #endif
-		ScreenAttrs[wlv.off] = wlv.char_attr;
-		ScreenCols[wlv.off] = wlv.vcol;
+		if (!DRAWLINE_COLLECTING)
+		{
+		    ScreenAttrs[wlv.off] = wlv.char_attr;
+		    ScreenCols[wlv.off] = wlv.vcol;
+		}
 #ifdef FEAT_RIGHTLEFT
 		if (wp->w_p_rl)
 		{
@@ -4295,7 +4326,7 @@ win_line(
 
 		// Update w_cline_height and w_cline_folded if the cursor line
 		// was updated (saves a call to plines() later).
-		if (in_curline)
+		if (in_curline && !DRAWLINE_COLLECTING)
 		{
 		    curwin->w_cline_row = startrow;
 		    curwin->w_cline_height = wlv.row - startrow;
@@ -4396,69 +4427,114 @@ win_line(
 		--wlv.col;
 	    }
 #endif
-	    ScreenLines[wlv.off] = c;
-	    if (enc_dbcs == DBCS_JPNU)
+#ifdef FEAT_CONCEAL
+	    if (DRAWLINE_COLLECTING && wlv.draw_state == WL_LINE
+		    && cursor_ptr != NULL && cursor_ptr_end > cursor_ptr
+		    && !is_concealing
+		    && (!did_decrement_ptr || *cursor_ptr == TAB) && c != NUL)
 	    {
-		if ((mb_c & 0xff00) == 0x8e00)
-		    ScreenLines[wlv.off] = 0x8e;
-		ScreenLines2[wlv.off] = mb_c & 0xff;
-	    }
-	    else if (enc_utf8)
-	    {
-		if (mb_utf8)
-		{
-		    int i;
+		int cells = has_mbyte ? (*mb_char2cells)(mb_c) : 1;
+		int cursor_col = wlv.col;
 
-		    ScreenLinesUC[wlv.off] = mb_c;
-		    if ((c & 0xff) == 0)
-			ScreenLines[wlv.off] = 0x80;   // avoid storing zero
-		    for (i = 0; i < Screen_mco; ++i)
+		if (*cursor_ptr == TAB)
+		{
+		    cells = wlv.n_extra > 0 ? wlv.n_extra : 1;
+		    cursor_col = wlv.col + cells - 1;
+		}
+		else if (!vim_isprintc(*cursor_ptr))
+		{
+		    cells += wlv.n_extra;
+		}
+
+		if (cells > 0
+			&& drawline_screenline_cb(
+			    (colnr_T)(cursor_ptr - line),
+			    (colnr_T)(cursor_ptr_end - line) - 1,
+			    wlv.row, wlv.col, cursor_col, cells,
+			    drawline_screenline_ctx) == FAIL)
+		{
+		    drawline_screenline_failed = true;
+		    break;
+		}
+	    }
+#endif
+	    if (!DRAWLINE_COLLECTING)
+	    {
+		ScreenLines[wlv.off] = c;
+		if (enc_dbcs == DBCS_JPNU)
+		{
+		    if ((mb_c & 0xff00) == 0x8e00)
+			ScreenLines[wlv.off] = 0x8e;
+		    ScreenLines2[wlv.off] = mb_c & 0xff;
+		}
+		else if (enc_utf8)
+		{
+		    if (mb_utf8)
 		    {
-			ScreenLinesC[i][wlv.off] = u8cc[i];
-			if (u8cc[i] == 0)
-			    break;
+			int i;
+
+			ScreenLinesUC[wlv.off] = mb_c;
+			if ((c & 0xff) == 0)
+			    ScreenLines[wlv.off] = 0x80; // avoid storing zero
+			for (i = 0; i < Screen_mco; ++i)
+			{
+			    ScreenLinesC[i][wlv.off] = u8cc[i];
+			    if (u8cc[i] == 0)
+				break;
+			}
 		    }
+		    else
+			ScreenLinesUC[wlv.off] = 0;
+		}
+		if (multi_attr)
+		{
+		    ScreenAttrs[wlv.off] = multi_attr;
+		    multi_attr = 0;
 		}
 		else
-		    ScreenLinesUC[wlv.off] = 0;
-	    }
-	    if (multi_attr)
-	    {
-		ScreenAttrs[wlv.off] = multi_attr;
-		multi_attr = 0;
-	    }
-	    else
-		ScreenAttrs[wlv.off] = wlv.char_attr;
-
-	    if (wlv.draw_state > WL_NR
-#ifdef FEAT_DIFF
-		    && wlv.filler_todo <= 0
-#endif
-		    )
-		ScreenCols[wlv.off] = wlv.vcol;
-	    else
-		ScreenCols[wlv.off] = -1;
-
-	    if (has_mbyte && (*mb_char2cells)(mb_c) > 1)
-	    {
-		// Need to fill two screen columns.
-		++wlv.off;
-		++wlv.col;
-		if (enc_utf8)
-		    // UTF-8: Put a 0 in the second screen char.
-		    ScreenLines[wlv.off] = 0;
-		else
-		    // DBCS: Put second byte in the second screen char.
-		    ScreenLines[wlv.off] = mb_c & 0xff;
+		    ScreenAttrs[wlv.off] = wlv.char_attr;
 
 		if (wlv.draw_state > WL_NR
 #ifdef FEAT_DIFF
 			&& wlv.filler_todo <= 0
 #endif
 			)
-		    ScreenCols[wlv.off] = ++wlv.vcol;
+		    ScreenCols[wlv.off] = wlv.vcol;
 		else
 		    ScreenCols[wlv.off] = -1;
+	    }
+	    else if (multi_attr)
+		multi_attr = 0;
+
+	    if (has_mbyte && (*mb_char2cells)(mb_c) > 1)
+	    {
+		// Need to fill two screen columns.
+		++wlv.off;
+		++wlv.col;
+		if (!DRAWLINE_COLLECTING)
+		{
+		    if (enc_utf8)
+			// UTF-8: Put a 0 in the second screen char.
+			ScreenLines[wlv.off] = 0;
+		    else
+			// DBCS: Put second byte in the second screen char.
+			ScreenLines[wlv.off] = mb_c & 0xff;
+
+		    if (wlv.draw_state > WL_NR
+#ifdef FEAT_DIFF
+			    && wlv.filler_todo <= 0
+#endif
+			    )
+			ScreenCols[wlv.off] = ++wlv.vcol;
+		    else
+			ScreenCols[wlv.off] = -1;
+		}
+		else if (wlv.draw_state > WL_NR
+#ifdef FEAT_DIFF
+			&& wlv.filler_todo <= 0
+#endif
+			)
+		    ++wlv.vcol;
 
 		// When "wlv.tocol" is halfway a character, set it to the end
 		// of the character, otherwise highlighting won't stop.
@@ -4492,6 +4568,8 @@ win_line(
 	{
 	    int concealed_wide = has_mbyte && (*mb_char2cells)(mb_c) > 1;
 
+	    if (DRAWLINE_COLLECTING)
+		drawline_screenline_has_conceal = true;
 	    --skip_cells;
 	    ++wlv.vcol_off_co;
 # if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
@@ -4758,7 +4836,8 @@ win_line(
 		break;
 	    }
 
-	    if (screen_cur_row == wlv.screen_row - 1
+	    if (!DRAWLINE_COLLECTING
+		    && screen_cur_row == wlv.screen_row - 1
 #ifdef FEAT_DIFF
 		     && wlv.filler_todo <= 0
 #endif
@@ -4852,3 +4931,53 @@ win_line(
     vim_free(wlv.saved_p_extra_free);
     return wlv.row;
 }
+
+#ifdef FEAT_CONCEAL
+/*
+ * Iterate over the visible buffer cells for "lnum" as win_line() lays them out.
+ * The callback receives row and column values relative to a synthetic row zero.
+ */
+    int
+win_line_conceal_screenline_iter(
+    win_T		*wp,
+    linenr_T		lnum,
+    conceal_screenline_cb_T cb,
+    void		*cb_ctx,
+    bool		*has_concealp)
+{
+    conceal_screenline_cb_T save_cb = drawline_screenline_cb;
+    void		    *save_ctx = drawline_screenline_ctx;
+    bool		    save_has_conceal = drawline_screenline_has_conceal;
+    bool		    save_failed = drawline_screenline_failed;
+    spellvars_T		    spv;
+    int			    row;
+    bool		    failed;
+
+    if (cb == NULL || drawline_screenline_cb != NULL)
+	return FAIL;
+
+    CLEAR_FIELD(spv);
+# ifdef FEAT_SPELL
+    if (spell_check_window(wp))
+    {
+	spv.spv_has_spell = TRUE;
+	spv.spv_unchanged = FALSE;
+    }
+# endif
+
+    drawline_screenline_cb = cb;
+    drawline_screenline_ctx = cb_ctx;
+    drawline_screenline_has_conceal = false;
+    drawline_screenline_failed = false;
+    row = win_line(wp, lnum, 0, INT_MAX, 0, &spv);
+    failed = drawline_screenline_failed;
+    if (has_concealp != NULL)
+	*has_concealp = drawline_screenline_has_conceal;
+
+    drawline_screenline_cb = save_cb;
+    drawline_screenline_ctx = save_ctx;
+    drawline_screenline_has_conceal = save_has_conceal;
+    drawline_screenline_failed = save_failed;
+    return row < 0 || failed ? FAIL : OK;
+}
+#endif

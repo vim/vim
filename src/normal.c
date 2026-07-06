@@ -2444,8 +2444,6 @@ typedef struct
 {
     nv_screenline_map_T	*map;
     int			base_row;
-    int			win_col_off;
-    int			win_col_off2;
     char_u		*line;
     bool		include_offscreen;
 } nv_screenline_buildctx_T;
@@ -2792,9 +2790,12 @@ nv_screenline_skipcol_rows(win_T *wp)
 }
 
     static int
-nv_screenline_map_add_cell(
+nv_screenline_map_add_drawline_cell(
 	colnr_T		col,
-	long		vcol,
+	colnr_T		end_col,
+	int		row,
+	int		start_col,
+	int		cursor_col,
 	int		cells,
 	void		*ctx_arg)
 {
@@ -2802,45 +2803,24 @@ nv_screenline_map_add_cell(
     nv_screenline_map_T		*map = ctx->map;
     nv_screenline_cell_T	*cell;
     nv_screenline_row_T		*rowp;
-    int				len;
-    long			screen_col = vcol + ctx->win_col_off;
-    int				width = curwin->w_width - ctx->win_col_off
-						      + ctx->win_col_off2;
-    int				row = ctx->base_row;
-    int				ccol;
 
-    if (curwin->w_p_wrap && screen_col >= curwin->w_width && width > 0)
-    {
-	int rowoff = ((screen_col - curwin->w_width) / width + 1);
-
-	screen_col -= rowoff * width;
-	row += rowoff;
-    }
-    if (map->rows.ga_len > 0)
-    {
-	nv_screenline_row_T *prev_row =
-			    &nv_screenline_map_rows(map)[map->rows.ga_len - 1];
-
-	if (row > prev_row->row + 1)
-	    row = prev_row->row + 1;
-    }
-    screen_col -= curwin->w_leftcol;
-    if (screen_col < 0 || screen_col >= curwin->w_width
+    row += ctx->base_row;
+    if (cursor_col < 0 || cursor_col >= curwin->w_width
 	    || (!ctx->include_offscreen
 		&& (row < 0 || row >= curwin->w_height)))
 	return OK;
 
     row += W_WINROW(curwin) + 1;
-    ccol = (int)screen_col + curwin->w_wincol + 1;
+    start_col += curwin->w_wincol + 1;
+    cursor_col += curwin->w_wincol + 1;
     if (ga_grow(&map->cells, 1) == FAIL)
 	return FAIL;
     cell = &nv_screenline_map_cells(map)[map->cells.ga_len++];
     cell->col = col;
-    len = ctx->line[col] == NUL ? 1 : (*mb_ptr2len)(ctx->line + col);
-    cell->end_col = col + len - 1;
+    cell->end_col = end_col;
     cell->row = row;
-    cell->ccol = ccol;
-    cell->ecol = ccol + cells - 1;
+    cell->ccol = cursor_col;
+    cell->ecol = start_col + cells - 1;
 
     if (map->rows.ga_len == 0
 	    || nv_screenline_map_rows(map)[map->rows.ga_len - 1].row != row)
@@ -2936,10 +2916,9 @@ nv_screenline_map_build(
 # endif
     if (!shift_above_top)
 	nv_screenline_base_cache_store(lnum, ctx.base_row);
-    ctx.win_col_off = win_col_off(curwin);
-    ctx.win_col_off2 = win_col_off2(curwin);
-    if (plines_win_col_conceal_iter(curwin, lnum,
-		nv_screenline_map_add_cell, &ctx, &has_conceal) == FAIL)
+    if (win_line_conceal_screenline_iter(curwin, lnum,
+		    nv_screenline_map_add_drawline_cell, &ctx,
+		    &has_conceal) == FAIL)
     {
 	nv_screenline_map_clear(map);
 	return FAIL;

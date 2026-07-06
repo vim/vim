@@ -59,11 +59,11 @@ plines_syntax_concealed(
 
 #if defined(FEAT_LINEBREAK) && defined(FEAT_CONCEAL) && defined(FEAT_SYN_HL)
 /*
- * Return TRUE when the visible non-break run starting at "ptr" fits in
- * "screen_extra" cells after concealed bytes are ignored.
+ * Measure the visible non-break run starting at "ptr" after concealed bytes
+ * are ignored.  This mirrors the linebreak/conceal lookahead in win_line().
  */
     static bool
-plines_lbr_conceal_fits(
+plines_lbr_conceal_width(
 	win_T		*wp,
 	linenr_T	lnum,
 	char_u		*line,
@@ -72,16 +72,25 @@ plines_lbr_conceal_fits(
 	int		start_col,
 	int		screen_extra,
 	int		*visible_widthp,
+	int		*segment_widthp,
+	bool		*concealedp,
+	bool		*followed_by_breakp,
+	bool		*conceal_before_visiblep,
 	conceal_cache_T	*cache)
 {
     char_u	*p = ptr;
     int		width = 0;
+    int		segment_width = 0;
     bool	seen_visible = false;
-    bool	seen_conceal = false;
-    bool	fits = false;
+    bool	segment_done = false;
+    bool	conceal_before_visible = false;
     int		save_did_emsg = did_emsg;
 
-    *visible_widthp = 0;
+    *visible_widthp = -1;
+    *segment_widthp = 0;
+    *concealedp = false;
+    *followed_by_breakp = false;
+    *conceal_before_visiblep = false;
     did_emsg = FALSE;
     while (*p != NUL)
     {
@@ -101,7 +110,7 @@ plines_lbr_conceal_fits(
 	{
 	    if (flags & HL_CONCEAL)
 	    {
-		seen_conceal = true;
+		*concealedp = true;
 		MB_PTR_ADV(p);
 		continue;
 	    }
@@ -110,9 +119,14 @@ plines_lbr_conceal_fits(
 
 	if (flags & HL_CONCEAL)
 	{
-	    seen_conceal = true;
+	    *concealedp = true;
+	    if (!seen_visible)
+		conceal_before_visible = true;
 	    if (seen_visible)
+	    {
+		segment_done = true;
 		break;
+	    }
 	    MB_PTR_ADV(p);
 	    continue;
 	}
@@ -121,23 +135,29 @@ plines_lbr_conceal_fits(
 	if (char_width <= 0)
 	    break;
 	width += char_width;
-	if (width > screen_extra)
+	if (width > screen_extra && !*concealedp)
 	    break;
-	seen_visible = true;
+	if (!segment_done)
+	{
+	    segment_width += char_width;
+	    seen_visible = true;
+	}
 	MB_PTR_ADV(p);
     }
 
+    *followed_by_breakp = VIM_ISBREAK((int)*p);
     (void)syn_get_id(wp, lnum, restore_col, FALSE, NULL, FALSE);
     if (did_emsg)
 	wp->w_s->b_syn_error = TRUE;
     else
     {
 	did_emsg = save_did_emsg;
-	if (seen_visible && seen_conceal)
+	if (seen_visible)
 	    *visible_widthp = width;
-	fits = seen_visible && seen_conceal && width <= screen_extra;
+	*segment_widthp = segment_width;
+	*conceal_before_visiblep = conceal_before_visible;
     }
-    return fits;
+    return *visible_widthp >= 0;
 }
 #endif
 
@@ -560,6 +580,9 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
     chartabsize_T cts;
     bool	check_concealed = concealedp != NULL && column != MAXCOL;
     bool	full_line = column == MAXCOL;
+# if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
+    bool	lbr_seen_conceal = false;
+# endif
 # ifdef FEAT_PROP_POPUP
     bool	with_trailing = full_line;
 # endif
@@ -646,10 +669,12 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	    int charsize;
 	    int cells;
 
+	    int tail = 0;
+
 	    cts.cts_ptr = ptr;
 	    cts.cts_vcol = *ptr == TAB
 				    ? (int)(vcol + vcol_off_co) : (int)vcol;
-	    charsize = win_lbr_chartabsize(&cts, NULL, NULL);
+	    charsize = win_lbr_chartabsize(&cts, NULL, &tail);
 	    cells = *ptr == TAB
 			? win_chartabsize(wp, ptr, vcol + vcol_off_co)
 			: (*mb_ptr2cells)(ptr);
@@ -660,10 +685,17 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 		char_u	*next = ptr;
 		int	char_width = win_chartabsize(wp, ptr, vcol);
 		int	visible_width = 0;
+		bool	conceal_before_visible = false;
+		bool	fits = false;
 		bool	next_concealed = false;
+		bool	concealed = false;
+		bool	followed_by_break = false;
 		long	screen_col = vcol + win_col_off(wp);
 		int	width = wp->w_width - win_col_off(wp)
 						  + win_col_off2(wp);
+		int	screen_extra;
+		int	base_extra;
+		int	segment_width = 0;
 
 		if (width > 0 && screen_col >= wp->w_width)
 		    screen_col -= ((screen_col - wp->w_width) / width + 1)
@@ -672,16 +704,53 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 		if (charsize <= 1 && *next != NUL)
 		    next_concealed = plines_syntax_concealed(wp, lnum,
 				    (colnr_T)(next - line), &syntax_cache);
+		base_extra = wp->w_width - (int)screen_col - char_width;
+		screen_extra = base_extra;
 		if (screen_col >= 0 && screen_col < wp->w_width
 			&& char_width > 0
-			&& (charsize > 1 || next_concealed)
-			&& plines_lbr_conceal_fits(wp, lnum, line, next,
-			    col, (int)screen_col + char_width,
-			    wp->w_width - (int)screen_col - char_width,
-			    &visible_width, &syntax_cache))
+			&& (tail > 0 || charsize > char_width
+							|| next_concealed))
+		{
+		    int fit_width;
+
+		    fits = plines_lbr_conceal_width(wp, lnum, line, next,
+			    col, (int)screen_col + char_width, screen_extra,
+			    &visible_width, &segment_width, &concealed,
+			    &followed_by_break, &conceal_before_visible,
+			    &syntax_cache);
+		    fit_width = concealed ? segment_width : visible_width;
+		    fits = fits && concealed
+			    && (fit_width < screen_extra
+				|| (fit_width == screen_extra
+						    && !followed_by_break));
+		}
+		if (!fits && !conceal_before_visible && tail > 0
+			&& screen_col >= 0 && screen_col < wp->w_width
+			&& char_width > 0)
+		{
+		    int fit_width;
+
+		    screen_extra = base_extra + tail;
+		    fits = plines_lbr_conceal_width(wp, lnum, line, next,
+			    col, (int)screen_col + char_width, screen_extra,
+			    &visible_width, &segment_width, &concealed,
+			    &followed_by_break, &conceal_before_visible,
+			    &syntax_cache);
+		    fit_width = concealed ? segment_width : visible_width;
+		    fits = fits && concealed
+			    && (fit_width < screen_extra
+				|| (fit_width == screen_extra
+						    && !followed_by_break));
+		}
+		if (fits)
+		{
 		    charsize = char_width;
-		else if (visible_width
-			    > wp->w_width - (int)screen_col - char_width)
+		    lbr_seen_conceal = true;
+		}
+		else if (lbr_seen_conceal && visible_width >= 0
+			&& visible_width <= base_extra + 2)
+		    charsize = char_width;
+		else if (visible_width > base_extra)
 		    charsize = wp->w_width - (int)screen_col;
 	    }
 # endif
@@ -731,6 +800,9 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	{
 	    if (has_concealp != NULL)
 		*has_concealp = true;
+# if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
+	    lbr_seen_conceal = true;
+# endif
 	    cts.cts_ptr = ptr;
 	    cts.cts_vcol = (int)(vcol + vcol_off_co);
 	    vcol_off_co += win_chartabsize(wp, ptr, vcol + vcol_off_co);
