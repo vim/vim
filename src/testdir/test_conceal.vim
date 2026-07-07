@@ -1029,6 +1029,47 @@ func Test_conceallevel_three_mouse_extend_after_conceal()
   set mouse& mousemodel&
 endfunc
 
+func Test_conceallevel_three_mouse_extend_rightleft()
+  CheckFeature rightleft
+
+  call NewWindow(10, 40)
+  set mouse=a mousemodel=extend
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+        \ signcolumn=no nonumber rightleft
+  syntax match Hidden /HIDDEN / conceal
+
+  let line = repeat('a', 42)
+        \ .. ' HIDDEN target words after hidden text to force wrapping'
+        \ .. ' and mapping checks'
+  call setline(1, line)
+  redraw!
+
+  let start_col = 10
+  let target_col = stridx(line, 'target') + 4
+  let start = screenpos(0, 1, start_col)
+  let target = screenpos(0, 1, target_col)
+  let [winrow, wincol] = win_screenpos(0)
+  call assert_equal(1, start.row - winrow + 1)
+  call assert_equal(31, start.curscol - wincol + 1)
+  call assert_equal(2, target.row - winrow + 1)
+  call assert_equal(34, target.curscol - wincol + 1)
+
+  call test_setmouse(start.row, start.curscol)
+  call feedkeys("\<LeftMouse>", 'tx')
+  call test_setmouse(target.row, target.curscol)
+  call feedkeys("\<RightMouse>", 'tx')
+  redraw
+
+  call assert_equal(target_col, col('.'))
+  normal! y
+  call assert_equal(strpart(line, start_col - 1, target_col - start_col + 1),
+        \ @")
+
+  syntax clear Hidden
+  call CloseWindow()
+  set mouse& mousemodel&
+endfunc
+
 func Test_conceallevel_three_multiple_clicks_after_conceal()
   call NewWindow(10, 40)
   set mouse=a
