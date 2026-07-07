@@ -881,6 +881,138 @@ func Test_conceallevel_three_multiple_clicks_after_conceal()
   set mouse&
 endfunc
 
+func Test_conceallevel_three_operator_pending_screenline()
+  call NewWindow(10, 40)
+  setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+  syntax match Hidden /HIDDEN / conceal
+
+  let line = repeat('a', 42)
+        \ .. ' HIDDEN target words after hidden text to force wrapping'
+        \ .. ' and mapping checks'
+  let target_col = stridx(line, 'target') + 1
+
+  call setline(1, line)
+  redraw!
+  normal! ygj
+  call assert_equal('v', getregtype('"'))
+  call assert_equal([strpart(line, 0, 40)], getreg('"', 1, 1))
+
+  call setline(1, line)
+  call cursor(1, 1)
+  redraw!
+  normal! dgj
+  call assert_equal([strpart(line, 0, 40)], getreg('"', 1, 1))
+  call assert_equal(strpart(line, 40), getline(1))
+
+  call setline(1, line)
+  call cursor(1, target_col)
+  redraw!
+  normal! ygk
+  call assert_equal(4, col('.'))
+  call assert_equal([strpart(line, 3, target_col - 4)], getreg('"', 1, 1))
+
+  call setline(1, line)
+  call cursor(1, 1)
+  redraw!
+  normal! yg$
+  call assert_equal([strpart(line, 0, 40)], getreg('"', 1, 1))
+
+  call setline(1, line)
+  call cursor(1, target_col)
+  redraw!
+  normal! dg$
+  call assert_equal([strpart(line, target_col - 1, 37)], getreg('"', 1, 1))
+  call assert_equal(strpart(line, 0, target_col - 1)
+        \ .. strpart(line, target_col + 36), getline(1))
+
+  call setline(1, line)
+  call cursor(1, target_col)
+  redraw!
+  normal! yg0
+  call assert_equal(41, col('.'))
+  call assert_equal([strpart(line, 40, target_col - 41)], getreg('"', 1, 1))
+
+  let g:conceallevel_three_op_types = []
+  func! ConceallevelThreeScreenlineOp(type) abort
+    call add(g:conceallevel_three_op_types, a:type)
+    normal! `[v`]y
+  endfunc
+  set operatorfunc=ConceallevelThreeScreenlineOp
+  call setline(1, line)
+  call cursor(1, 1)
+  redraw!
+  normal! g@gj
+  call assert_equal(['char'], g:conceallevel_three_op_types)
+  call assert_equal([strpart(line, 0, 40)], getreg('"', 1, 1))
+  set operatorfunc&
+  delfunc ConceallevelThreeScreenlineOp
+  unlet g:conceallevel_three_op_types
+
+  call setline(1, line)
+  call cursor(1, 1)
+  redraw!
+  normal! dgj
+  normal! .
+  call assert_equal([strpart(line, 40, 47)], getreg('"', 1, 1))
+  call assert_equal(strpart(line, 87), getline(1))
+
+  syntax clear Hidden
+  call CloseWindow()
+endfunc
+
+func Test_conceallevel_three_screenline_counts()
+  call NewWindow(10, 40)
+  setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+  syntax match Hidden /HIDDEN / conceal
+
+  let line = repeat('a', 42)
+        \ .. ' HIDDEN target words after hidden text to force wrapping'
+        \ .. ' and mapping checks'
+  call setline(1, [line, 'second line', 'third line'])
+  redraw!
+  let [winrow, wincol] = win_screenpos(0)
+
+  normal! 2gj
+  let pos = screenpos(0, line('.'), col('.'))
+  call assert_equal([3, 1], [pos.row - winrow + 1, pos.curscol - wincol + 1])
+
+  call cursor(3, 1)
+  redraw!
+  normal! 3gk
+  let pos = screenpos(0, line('.'), col('.'))
+  call assert_equal(1, line('.'))
+  call assert_equal([2, 1], [pos.row - winrow + 1, pos.curscol - wincol + 1])
+
+  call cursor(1, 1)
+  redraw!
+  normal! 2g$
+  let pos = screenpos(0, line('.'), col('.'))
+  call assert_equal([2, 1], [pos.row - winrow + 1, pos.curscol - wincol + 1])
+
+  normal! g0
+  let pos = screenpos(0, line('.'), col('.'))
+  call assert_equal([2, 1], [pos.row - winrow + 1, pos.curscol - wincol + 1])
+
+  normal! g$
+  let pos = screenpos(0, line('.'), col('.'))
+  call assert_equal([2, 40], [pos.row - winrow + 1, pos.curscol - wincol + 1])
+
+  call cursor(1, stridx(line, 'target') + 1)
+  redraw!
+  normal! g^
+  let pos = screenpos(0, line('.'), col('.'))
+  call assert_equal([2, 1], [pos.row - winrow + 1, pos.curscol - wincol + 1])
+
+  call cursor(1, 1)
+  redraw!
+  normal! gm
+  let pos = screenpos(0, line('.'), col('.'))
+  call assert_equal([1, 21], [pos.row - winrow + 1, pos.curscol - wincol + 1])
+
+  syntax clear Hidden
+  call CloseWindow()
+endfunc
+
 func Test_conceallevel_three_visual_drag_after_double_width()
   call NewWindow(12, 42)
   set mouse=a
