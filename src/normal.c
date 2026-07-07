@@ -2828,11 +2828,23 @@ nv_screenline_map_add_drawline_cell(
     nv_screenline_map_T		*map = ctx->map;
     nv_screenline_cell_T	*cell;
     nv_screenline_row_T		*rowp;
+    int				width;
+    int				rowoff = 0;
 
     row += ctx->base_row;
-    if (cursor_col < 0 || cursor_col >= curwin->w_width
-	    || (!ctx->include_offscreen
-		&& (row < 0 || row >= curwin->w_height)))
+    if (cursor_col < 0)
+	return OK;
+
+    width = curwin->w_width - win_col_off(curwin) + win_col_off2(curwin);
+    if (width > 0 && cursor_col >= curwin->w_width)
+    {
+	rowoff = (cursor_col - curwin->w_width) / width + 1;
+	row += rowoff;
+	start_col -= rowoff * width;
+	cursor_col -= rowoff * width;
+    }
+
+    if (!ctx->include_offscreen && (row < 0 || row >= curwin->w_height))
 	return OK;
 
     row += W_WINROW(curwin) + 1;
@@ -3366,7 +3378,9 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
     }
 
     target_row = row;
-    if (have_map && dir == BACKWARD && target_row < W_WINROW(curwin) + 1)
+    if (curwin->w_p_sms
+	    && have_map && dir == BACKWARD
+	    && target_row < W_WINROW(curwin) + 1)
 	target_skipcol = nv_screenline_skipcol_for_rows(
 		    target_row - nv_screenline_map_first_row(&map));
 

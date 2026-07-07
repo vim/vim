@@ -1854,6 +1854,14 @@ ins_compl_show_pum(void)
     int		i;
     int		cur = -1;
     colnr_T	col;
+    int		pum_wcol;
+#if defined(FEAT_CONCEAL) && (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP))
+    pos_T	pos;
+    int		row;
+    int		scol;
+    int		ccol;
+    int		ecol;
+#endif
 
     if (!pum_wanted() || !pum_enough_matches())
 	return;
@@ -1898,7 +1906,29 @@ ins_compl_show_pum(void)
     col = curwin->w_cursor.col;
     curwin->w_cursor.col = compl_col;
     validate_cursor_col();
-    int pum_wcol = curwin->w_wcol;
+    pum_wcol = curwin->w_wcol;
+#if defined(FEAT_CONCEAL) && (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP))
+    if (curwin->w_p_cole == 3 && conceal_cursor_line(curwin)
+	    && (curwin->w_p_wrap
+# ifdef FEAT_RIGHTLEFT
+		|| curwin->w_p_rl
+# endif
+		))
+    {
+	pos = curwin->w_cursor;
+	textpos2screenpos(curwin, &pos, &row, &scol, &ccol, &ecol);
+	ccol -= curwin->w_wincol + 1;
+	if (ccol >= 0 && ccol < curwin->w_width)
+	{
+# ifdef FEAT_RIGHTLEFT
+	    if (curwin->w_p_rl)
+		pum_wcol = curwin->w_width - ccol - 1;
+	    else
+# endif
+		pum_wcol = ccol;
+	}
+    }
+#endif
     curwin->w_cursor.col = col;
     validate_cursor_col();
     compl_selected_item = cur;

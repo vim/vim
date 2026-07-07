@@ -3700,6 +3700,10 @@ win_line(
 #ifdef FEAT_CONCEAL
 		    {
 			int vc_saved = wlv.vcol_off_co;
+			bool limit_tab_for_showbreak = wp->w_p_wrap
+					    && *get_showbreak_value(wp) != NUL
+					    && wlv.vcol_off_co > 0
+					    && VCOL_HLC == 0;
 
 			// Tab alignment should be identical regardless of
 			// 'conceallevel' value. So tab compensates of all
@@ -3707,7 +3711,25 @@ win_line(
 			// vcol_off_co and boguscols accumulated so far in the
 			// line. Note that the tab can be longer than
 			// 'tabstop' when there are concealed characters.
-			FIX_FOR_BOGUSCOLS;
+			if (limit_tab_for_showbreak)
+			{
+			    // Keep the wrapped height in sync with
+			    // plines_win_col_conceal(): when the tab follows
+			    // only concealed text on a line with 'showbreak',
+			    // it must stop at the right edge instead of
+			    // creating a blank wrapped row.
+			    wlv.n_extra = wp->w_width - win_col_off(wp)
+							 - (int)VCOL_HLC - 2;
+			    if (wlv.n_extra < 0)
+				wlv.n_extra = 0;
+			    wlv.vcol -= wlv.vcol_off_co;
+			    wlv.vcol_off_co = 0;
+			    wlv.col -= wlv.boguscols;
+			    old_boguscols = wlv.boguscols;
+			    wlv.boguscols = 0;
+			}
+			else
+			    FIX_FOR_BOGUSCOLS;
 
 			// Make sure, the highlighting for the tab char will be
 			// correctly set further below (effectively reverts the

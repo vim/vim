@@ -1635,10 +1635,21 @@ conceal_screenpos_store(
     int			    scol;
     int			    ccol;
     int			    ecol;
+    int			    width;
+    int			    rowoff = 0;
 
     row += ctx->base_row;
-    if (cursor_col < 0 || cursor_col >= ctx->wp->w_width
-	    || row < 0 || row >= ctx->wp->w_height)
+    if (cursor_col < 0)
+	return OK;
+
+    width = ctx->wp->w_width - win_col_off(ctx->wp) + win_col_off2(ctx->wp);
+    if (width > 0 && cursor_col >= ctx->wp->w_width)
+    {
+	rowoff = (cursor_col - ctx->wp->w_width) / width + 1;
+	row += rowoff;
+    }
+
+    if (row < 0 || row >= ctx->wp->w_height)
 	return OK;
 
     row += W_WINROW(ctx->wp) + 1;
