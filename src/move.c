@@ -1574,7 +1574,9 @@ curs_columns(
     if (prev_skipcol != curwin->w_skipcol)
 	redraw_later(UPD_SOME_VALID);
 
+#ifdef FEAT_CONCEAL
 columns_done:
+#endif
 #ifdef FEAT_SYN_HL
     redraw_for_cursorcolumn(curwin);
 #endif

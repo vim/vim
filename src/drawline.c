@@ -1459,8 +1459,10 @@ win_line(
 # define VCOL_HLC (wlv.vcol - wlv.vcol_off_tp)
 #endif
 
+#ifdef FEAT_CONCEAL
     if (in_curline)
 	wp->w_flags &= ~WFLAG_CONCEAL_WCOL;
+#endif
 
     if (startrow > endrow)		// past the end already!
 	return startrow;
@@ -3326,7 +3328,8 @@ win_line(
 #endif
 #ifdef FEAT_LINEBREAK
 		// Found last space before word: check for line break.
-		bool lbr_next_is_break = VIM_ISBREAK((int)*ptr);
+		bool lbr_next_is_break = c != NUL
+					   && VIM_ISBREAK((int)*ptr);
 # if defined(FEAT_CONCEAL) && defined(FEAT_SYN_HL)
 		bool lbr_next_may_conceal = wp->w_p_cole == 3
 						 && has_syntax && c != TAB;
