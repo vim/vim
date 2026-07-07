@@ -630,6 +630,40 @@ func Test_conceallevel_three_getmousepos_after_conceal()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_getmousepos_rightleft_after_conceal()
+  CheckFeature rightleft
+
+  call NewWindow(10, 40)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+        \ signcolumn=no nonumber rightleft
+  syntax match Hidden /HIDDEN / conceal
+
+  let line = repeat('a', 42)
+        \ .. ' HIDDEN target words after hidden text to force wrapping'
+        \ .. ' and mapping checks'
+  call setline(1, line)
+  redraw!
+
+  let target_col = stridx(line, 'target') + 1
+  let pos = screenpos(0, 1, target_col)
+  let [winrow, wincol] = win_screenpos(0)
+  call assert_equal(2, pos.row - winrow + 1)
+  call assert_equal(37, pos.col - wincol + 1)
+  call assert_equal(37, pos.curscol - wincol + 1)
+  call assert_equal(37, pos.endcol - wincol + 1)
+
+  call test_setmouse(pos.row, pos.curscol)
+  let mousepos = getmousepos()
+  call assert_equal(1, mousepos.line)
+  call assert_equal(target_col, mousepos.column)
+  call assert_equal(0, mousepos.coladd)
+  call assert_equal(2, mousepos.winrow)
+  call assert_equal(37, mousepos.wincol)
+
+  syntax clear Hidden
+  call CloseWindow()
+endfunc
+
 func Test_conceallevel_three_popup_getmousepos_after_conceal()
   call NewWindow(10, 60)
 
@@ -697,6 +731,48 @@ func Test_conceallevel_three_wrapped_mouse_click_rightleft()
   call test_setmouse(pos.row, pos.curscol)
   call feedkeys("\<LeftMouse>", "tx")
   call assert_equal(target_col, col('.'))
+
+  syntax clear Hidden
+  call CloseWindow()
+  set mouse&
+endfunc
+
+func Test_conceallevel_three_visual_drag_rightleft()
+  CheckFeature rightleft
+
+  call NewWindow(10, 40)
+  set mouse=a
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+        \ signcolumn=no nonumber rightleft
+  syntax match Hidden /HIDDEN / conceal
+
+  let line = repeat('a', 42)
+        \ .. ' HIDDEN target words after hidden text to force wrapping'
+        \ .. ' and mapping checks'
+  call setline(1, line)
+  redraw!
+
+  let start_col = 10
+  let target_col = stridx(line, 'target') + 4
+  let start = screenpos(0, 1, start_col)
+  let target = screenpos(0, 1, target_col)
+  let [winrow, wincol] = win_screenpos(0)
+  call assert_equal(1, start.row - winrow + 1)
+  call assert_equal(31, start.curscol - wincol + 1)
+  call assert_equal(2, target.row - winrow + 1)
+  call assert_equal(34, target.curscol - wincol + 1)
+
+  call test_setmouse(start.row, start.curscol)
+  call feedkeys("\<LeftMouse>", "tx")
+  call test_setmouse(target.row, target.curscol)
+  call feedkeys("\<LeftDrag>", "tx")
+  redraw
+
+  call assert_equal(target_col, col('.'))
+  let selected_attr = screenattr(target.row, target.curscol + 1)
+  call assert_notequal(0, selected_attr)
+  call assert_equal(selected_attr, screenattr(target.row, target.curscol + 2))
+  call assert_notequal(selected_attr, screenattr(target.row, target.curscol))
 
   syntax clear Hidden
   call CloseWindow()
