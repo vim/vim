@@ -1110,7 +1110,7 @@ validate_cursor_col(void)
     colnr_T col;
     int     width;
 #ifdef FEAT_FOLDING
-    int	    cline_folded;
+    bool    cline_folded;
 #endif
 
     validate_virtcol();
@@ -1268,7 +1268,7 @@ curs_columns(
     long	siso = get_sidescrolloff_value();
     int		did_sub_skipcol = FALSE;
 #ifdef FEAT_FOLDING
-    int		cline_folded;
+    bool	cline_folded;
 #endif
 #ifdef FEAT_CONCEAL
     long	concealed_vcol = -1;
@@ -1304,9 +1304,9 @@ curs_columns(
 				  &startcol, &(curwin->w_virtcol), &endcol, 0);
 #ifdef FEAT_CONCEAL
 # ifdef FEAT_FOLDING
-    if (curwin->w_p_wrap && !cline_folded)
+    if (curwin->w_p_wrap && curwin->w_p_cole == 3 && !cline_folded)
 # else
-    if (curwin->w_p_wrap)
+    if (curwin->w_p_wrap && curwin->w_p_cole == 3)
 # endif
 	concealed_vcol = plines_win_col_conceal_vcol(curwin,
 				   curwin->w_cursor.lnum, curwin->w_cursor.col);
@@ -1828,7 +1828,7 @@ textpos2screenpos(
 	    long concealed_vcol = -1;
 	    bool conceal_tab_wrap = false;
 
-	    if (wp->w_p_wrap)
+	    if (wp->w_p_wrap && wp->w_p_cole == 3)
 		concealed_vcol = plines_win_col_conceal_vcol(wp, lnum,
 								pos->col);
 

@@ -2557,7 +2557,7 @@ nv_screenline_map_copy(nv_screenline_map_T *to, nv_screenline_map_T *from)
     return OK;
 }
 
-    static int
+    static bool
 nv_screenline_cache_valid(linenr_T lnum, bool include_offscreen)
 {
     return nv_screenline_cache_init
@@ -3106,7 +3106,7 @@ nv_screenline_map_row_idx(nv_screenline_map_T *map, int row)
     return -1;
 }
 
-    static int
+    static bool
 nv_screenline_map_has_row(nv_screenline_map_T *map, int row)
 {
     return nv_screenline_map_row_idx(map, row) >= 0;
