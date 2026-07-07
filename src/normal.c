@@ -2384,11 +2384,15 @@ typedef struct
     int		linebreak;
     int		breakindent;
     int		list;
+    long	tabstop;
+    int		rightleft;
+    int		ambiwidth;
     hash_T	showbreak_hash;
     hash_T	breakat_hash;
     hash_T	briopt_hash;
     hash_T	lcs_hash;
     hash_T	global_lcs_hash;
+    hash_T	vts_hash;
     hash_T	cocu_hash;
     bool	has_conceal;
     bool	include_offscreen;
@@ -2418,11 +2422,15 @@ typedef struct
     int		linebreak;
     int		breakindent;
     int		list;
+    long	tabstop;
+    int		rightleft;
+    int		ambiwidth;
     hash_T	showbreak_hash;
     hash_T	breakat_hash;
     hash_T	briopt_hash;
     hash_T	lcs_hash;
     hash_T	global_lcs_hash;
+    hash_T	vts_hash;
     hash_T	cocu_hash;
 # ifdef FEAT_SYN_HL
     int		syn_patterns_len;
@@ -2439,6 +2447,10 @@ static buf_T *nv_screenline_curswant_buf = NULL;
 static varnumber_T nv_screenline_curswant_tick = 0;
 static pos_T nv_screenline_curswant_pos;
 static int nv_screenline_curswant = 0;
+static long nv_screenline_curswant_tabstop = 0;
+static int nv_screenline_curswant_rightleft = 0;
+static int nv_screenline_curswant_ambiwidth = 0;
+static hash_T nv_screenline_curswant_vts_hash = 0;
 
 typedef struct
 {
@@ -2456,6 +2468,18 @@ nv_screenline_conceal_clear(void)
     curwin->w_flags &= ~(WFLAG_CONCEAL_WCOL|WFLAG_CONCEAL_NO_REDRAW);
 }
 
+    static hash_T
+nv_screenline_vts_hash(void)
+{
+    return curbuf->b_p_vts == NULL ? 0 : hash_hash(curbuf->b_p_vts);
+}
+
+    static int
+nv_screenline_ambiwidth(void)
+{
+    return p_ambw == NULL ? 0 : *p_ambw;
+}
+
     static bool
 nv_screenline_curswant_valid(void)
 {
@@ -2463,6 +2487,10 @@ nv_screenline_curswant_valid(void)
 	&& nv_screenline_curswant_buf == curbuf
 	&& nv_screenline_curswant_tick == CHANGEDTICK(curbuf)
 	&& EQUAL_POS(nv_screenline_curswant_pos, curwin->w_cursor)
+	&& nv_screenline_curswant_tabstop == curbuf->b_p_ts
+	&& nv_screenline_curswant_rightleft == curwin->w_p_rl
+	&& nv_screenline_curswant_ambiwidth == nv_screenline_ambiwidth()
+	&& nv_screenline_curswant_vts_hash == nv_screenline_vts_hash()
 	&& !curwin->w_set_curswant;
 }
 
@@ -2474,6 +2502,10 @@ nv_screenline_curswant_store(int curswant)
     nv_screenline_curswant_tick = CHANGEDTICK(curbuf);
     nv_screenline_curswant_pos = curwin->w_cursor;
     nv_screenline_curswant = curswant;
+    nv_screenline_curswant_tabstop = curbuf->b_p_ts;
+    nv_screenline_curswant_rightleft = curwin->w_p_rl;
+    nv_screenline_curswant_ambiwidth = nv_screenline_ambiwidth();
+    nv_screenline_curswant_vts_hash = nv_screenline_vts_hash();
 }
 
     static bool
@@ -2577,12 +2609,16 @@ nv_screenline_cache_valid(linenr_T lnum, bool include_offscreen)
 	&& nv_screenline_cache.linebreak == curwin->w_p_lbr
 	&& nv_screenline_cache.breakindent == curwin->w_p_bri
 	&& nv_screenline_cache.list == curwin->w_p_list
+	&& nv_screenline_cache.tabstop == curbuf->b_p_ts
+	&& nv_screenline_cache.rightleft == curwin->w_p_rl
+	&& nv_screenline_cache.ambiwidth == nv_screenline_ambiwidth()
 	&& nv_screenline_cache.showbreak_hash
 					== hash_hash(get_showbreak_value(curwin))
 	&& nv_screenline_cache.breakat_hash == hash_hash(p_breakat)
 	&& nv_screenline_cache.briopt_hash == hash_hash(curwin->w_p_briopt)
 	&& nv_screenline_cache.lcs_hash == hash_hash(curwin->w_p_lcs)
 	&& nv_screenline_cache.global_lcs_hash == hash_hash(p_lcs)
+	&& nv_screenline_cache.vts_hash == nv_screenline_vts_hash()
 	&& nv_screenline_cache.cocu_hash == hash_hash(curwin->w_p_cocu)
 	&& nv_screenline_cache.include_offscreen == include_offscreen
 # ifdef FEAT_SYN_HL
@@ -2624,11 +2660,15 @@ nv_screenline_cache_store(nv_screenline_map_T *map, bool include_offscreen)
     nv_screenline_cache.linebreak = curwin->w_p_lbr;
     nv_screenline_cache.breakindent = curwin->w_p_bri;
     nv_screenline_cache.list = curwin->w_p_list;
+    nv_screenline_cache.tabstop = curbuf->b_p_ts;
+    nv_screenline_cache.rightleft = curwin->w_p_rl;
+    nv_screenline_cache.ambiwidth = nv_screenline_ambiwidth();
     nv_screenline_cache.showbreak_hash = hash_hash(get_showbreak_value(curwin));
     nv_screenline_cache.breakat_hash = hash_hash(p_breakat);
     nv_screenline_cache.briopt_hash = hash_hash(curwin->w_p_briopt);
     nv_screenline_cache.lcs_hash = hash_hash(curwin->w_p_lcs);
     nv_screenline_cache.global_lcs_hash = hash_hash(p_lcs);
+    nv_screenline_cache.vts_hash = nv_screenline_vts_hash();
     nv_screenline_cache.cocu_hash = hash_hash(curwin->w_p_cocu);
     nv_screenline_cache.has_conceal = map->has_conceal;
     nv_screenline_cache.include_offscreen = include_offscreen;
@@ -2657,12 +2697,16 @@ nv_screenline_base_cache_valid(void)
 	&& nv_screenline_base_cache.linebreak == curwin->w_p_lbr
 	&& nv_screenline_base_cache.breakindent == curwin->w_p_bri
 	&& nv_screenline_base_cache.list == curwin->w_p_list
+	&& nv_screenline_base_cache.tabstop == curbuf->b_p_ts
+	&& nv_screenline_base_cache.rightleft == curwin->w_p_rl
+	&& nv_screenline_base_cache.ambiwidth == nv_screenline_ambiwidth()
 	&& nv_screenline_base_cache.showbreak_hash
 					== hash_hash(get_showbreak_value(curwin))
 	&& nv_screenline_base_cache.breakat_hash == hash_hash(p_breakat)
 	&& nv_screenline_base_cache.briopt_hash == hash_hash(curwin->w_p_briopt)
 	&& nv_screenline_base_cache.lcs_hash == hash_hash(curwin->w_p_lcs)
 	&& nv_screenline_base_cache.global_lcs_hash == hash_hash(p_lcs)
+	&& nv_screenline_base_cache.vts_hash == nv_screenline_vts_hash()
 	&& nv_screenline_base_cache.cocu_hash == hash_hash(curwin->w_p_cocu)
 # ifdef FEAT_SYN_HL
 	&& nv_screenline_base_cache.syn_patterns_len
@@ -2693,12 +2737,16 @@ nv_screenline_base_cache_store(linenr_T lnum, int base_row)
     nv_screenline_base_cache.linebreak = curwin->w_p_lbr;
     nv_screenline_base_cache.breakindent = curwin->w_p_bri;
     nv_screenline_base_cache.list = curwin->w_p_list;
+    nv_screenline_base_cache.tabstop = curbuf->b_p_ts;
+    nv_screenline_base_cache.rightleft = curwin->w_p_rl;
+    nv_screenline_base_cache.ambiwidth = nv_screenline_ambiwidth();
     nv_screenline_base_cache.showbreak_hash =
 					    hash_hash(get_showbreak_value(curwin));
     nv_screenline_base_cache.breakat_hash = hash_hash(p_breakat);
     nv_screenline_base_cache.briopt_hash = hash_hash(curwin->w_p_briopt);
     nv_screenline_base_cache.lcs_hash = hash_hash(curwin->w_p_lcs);
     nv_screenline_base_cache.global_lcs_hash = hash_hash(p_lcs);
+    nv_screenline_base_cache.vts_hash = nv_screenline_vts_hash();
     nv_screenline_base_cache.cocu_hash = hash_hash(curwin->w_p_cocu);
 # ifdef FEAT_SYN_HL
     nv_screenline_base_cache.syn_patterns_len =

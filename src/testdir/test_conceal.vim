@@ -1163,6 +1163,20 @@ func s:ConceallevelThreeCursorCell(bufcol) abort
   return cell
 endfunc
 
+func s:ConceallevelThreeScreenlineMoveCell(bufcol) abort
+  call cursor(1, a:bufcol)
+  redraw!
+  normal! gk
+
+  let [win_row, win_col] = win_screenpos(0)
+  let pos = screenpos(0, line('.'), col('.'))
+  call assert_true(pos.row > 0)
+
+  let cell = [pos.row - win_row + 1, pos.curscol - win_col + 1]
+  call assert_equal(cell, [winline(), wincol()])
+  return cell
+endfunc
+
 func Test_conceallevel_three_option_invalidation()
   call NewWindow(10, 40)
   setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
@@ -1204,6 +1218,72 @@ func Test_conceallevel_three_option_invalidation()
 
   syntax clear Hidden
   call CloseWindow()
+endfunc
+
+func Test_conceallevel_three_screenline_option_invalidation()
+  let save_ambiwidth = &ambiwidth
+
+  call NewWindow(10, 40)
+  try
+    setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+    syntax match Hidden /HIDDEN / conceal
+
+    let line = 'a' .. "\t" .. ' HIDDEN target words after hidden text'
+    call setline(1, line)
+    let target_col = stridx(line, 'target') + 1
+    setlocal tabstop=8
+    call assert_equal([1, 10],
+          \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+
+    setlocal tabstop=4
+    call assert_equal([1, 6],
+          \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+
+    setlocal tabstop=8
+    call assert_equal([1, 10],
+          \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+
+    if has('multi_byte')
+      let line = 'a' .. repeat('·', 20)
+            \ .. ' HIDDEN target words after hidden text'
+      call setline(1, line)
+      let target_col = stridx(line, 'target') + 1
+      set ambiwidth=single
+      call assert_equal([1, 23],
+            \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+
+      set ambiwidth=double
+      call assert_equal([1, 4],
+            \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+
+      set ambiwidth=single
+      call assert_equal([1, 23],
+            \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+    endif
+
+    if has('rightleft')
+      let line = repeat('a', 42)
+            \ .. ' HIDDEN target words after hidden text to force wrapping'
+            \ .. ' and mapping checks'
+      call setline(1, line)
+      let target_col = stridx(line, 'target') + 1
+      setlocal norightleft
+      call assert_equal([1, 4],
+            \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+
+      setlocal rightleft
+      call assert_equal([1, 37],
+            \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+
+      setlocal norightleft
+      call assert_equal([1, 4],
+            \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+    endif
+  finally
+    execute 'set ambiwidth=' .. save_ambiwidth
+    syntax clear Hidden
+    call CloseWindow()
+  endtry
 endfunc
 
 func Test_conceallevel_three_split_window_options()
