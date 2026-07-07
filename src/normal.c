@@ -3498,6 +3498,75 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
 # endif
     return OK;
 }
+
+/*
+ * Move a blockwise Visual selection vertically by a drawn virtual column when
+ * wrapped 'conceallevel' 3 text hides bytes before the cursor.
+ */
+    static int
+nv_visual_block_conceal_vert(cmdarg_T *cap, int dir)
+{
+    linenr_T	lnum;
+    long	wantcol;
+    pos_T	target_pos;
+    colnr_T	save_curswant = curwin->w_curswant;
+
+    if (!VIsual_active || VIsual_mode != Ctrl_V || cap->arg
+	    || !nv_screenline_conceal_active())
+	return NOTDONE;
+
+    wantcol = plines_win_col_conceal_vcol(curwin, curwin->w_cursor.lnum,
+						    curwin->w_cursor.col);
+    if (wantcol < 0)
+	return NOTDONE;
+    nv_screenline_conceal_clear();
+
+    if (dir == FORWARD)
+    {
+	linenr_T    line_count = curwin->w_buffer->b_ml.ml_line_count;
+
+	lnum = curwin->w_cursor.lnum;
+# ifdef FEAT_FOLDING
+	hasFoldingWin(curwin, lnum, NULL, &lnum, TRUE, NULL);
+# endif
+	if (cap->count1 > 0
+		&& (lnum >= line_count
+		    || (lnum + cap->count1 > line_count
+			&& vim_strchr(p_cpo, CPO_MINUS) != NULL)))
+	    return FAIL;
+	cursor_down_inner(curwin, cap->count1);
+    }
+    else
+    {
+	lnum = curwin->w_cursor.lnum;
+	if (cap->count1 > 0
+		&& (lnum <= 1
+		    || (cap->count1 >= lnum
+			&& vim_strchr(p_cpo, CPO_MINUS) != NULL)))
+	    return FAIL;
+	cursor_up_inner(curwin, cap->count1);
+    }
+
+    if (plines_win_col_conceal_advance(curwin, curwin->w_cursor.lnum,
+						    wantcol, &target_pos) == OK)
+    {
+	curwin->w_cursor = target_pos;
+	curwin->w_curswant = wantcol > MAXCOL ? MAXCOL : (colnr_T)wantcol;
+    }
+    else
+    {
+	curwin->w_curswant = save_curswant;
+	coladvance(curwin->w_curswant);
+    }
+    curwin->w_set_curswant = false;
+    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT|VALID_CROW
+							       |VALID_VIRTCOL);
+
+    if (cap->oap->op_type == OP_NOP)
+	update_topline();
+    adjust_skipcol();
+    return OK;
+}
 #endif
 
     int
@@ -5182,11 +5251,19 @@ nv_up(cmdarg_T *cap)
 	return;
     }
 
+    cap->oap->motion_type = MLINE;
 #ifdef FEAT_CONCEAL
+    int conceal_moved = nv_visual_block_conceal_vert(cap, BACKWARD);
+
+    if (conceal_moved != NOTDONE)
+    {
+	if (conceal_moved == FAIL)
+	    clearopbeep(cap->oap);
+	return;
+    }
     nv_screenline_conceal_clear();
 #endif
 
-    cap->oap->motion_type = MLINE;
     if (cursor_up(cap->count1, cap->oap->op_type == OP_NOP) == FAIL)
 	clearopbeep(cap->oap);
     else if (cap->arg)
@@ -5229,11 +5306,19 @@ nv_down(cmdarg_T *cap)
 	else
 #endif
 	{
+	    cap->oap->motion_type = MLINE;
 #ifdef FEAT_CONCEAL
+	    int conceal_moved = nv_visual_block_conceal_vert(cap, FORWARD);
+
+	    if (conceal_moved != NOTDONE)
+	    {
+		if (conceal_moved == FAIL)
+		    clearopbeep(cap->oap);
+		return;
+	    }
 	    nv_screenline_conceal_clear();
 #endif
 
-	    cap->oap->motion_type = MLINE;
 	    if (cursor_down(cap->count1, cap->oap->op_type == OP_NOP) == FAIL)
 		clearopbeep(cap->oap);
 	    else if (cap->arg)

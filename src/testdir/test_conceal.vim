@@ -811,6 +811,188 @@ func Test_conceallevel_three_visual_linewise_concealcursor_v()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_visual_block_after_conceal()
+  call NewWindow(10, 40)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+        \ signcolumn=no nonumber showbreak=
+  syntax match Hidden /HIDDEN / conceal
+
+  let line1 = repeat('a', 42)
+        \ .. ' HIDDEN target words after hidden text to force wrapping'
+  let line2 = repeat('a', 42)
+        \ .. ' target words after visible text to force wrapping'
+  call setline(1, [line1, line2])
+  redraw!
+
+  let start_col = stridx(line1, 'target') + 1
+  let target_col = stridx(line2, 'target') + 1
+  call cursor(1, start_col)
+  call feedkeys("\<C-V>lj", 'tx')
+  redraw
+
+  call assert_equal(target_col + 1, col('.'))
+  let start = screenpos(0, 1, start_col)
+  let target = screenpos(0, 2, target_col)
+  call assert_true(start.row > 0)
+  call assert_true(target.row > 0)
+
+  let selected_attr = screenattr(start.row, start.curscol)
+  call assert_notequal(0, selected_attr)
+  call assert_equal(selected_attr, screenattr(start.row, start.curscol + 1))
+  call assert_equal(selected_attr, screenattr(target.row, target.curscol))
+  call assert_notequal(selected_attr, screenattr(target.row, target.curscol + 2))
+
+  call feedkeys("\<Esc>", 'tx')
+  syntax clear Hidden
+  call CloseWindow()
+endfunc
+
+func Test_conceallevel_three_visual_block_stops_after_conceal()
+  call NewWindow(10, 59)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+        \ signcolumn=no nonumber showbreak=
+  syntax region Hidden matchgroup=Hidden start=/`/ end=/`/ concealends
+
+  let line = 'The inline code `printf("日本語 %s", value)` should hide its'
+        \ .. ' backticks when Markdown conceal is active, while trailing'
+        \ .. ' text wraps.'
+  call setline(1, [
+        \ repeat('x', 30),
+        \ line,
+        \ repeat('x', 30),
+        \ ])
+  redraw!
+
+  call cursor(1, 1)
+  execute "normal! \<C-V>24l2j"
+  redraw
+
+  call assert_equal([3, 25], [line('.'), col('.')])
+  let selected_attr = screenattr(1, 1)
+  call assert_notequal(0, selected_attr)
+  call assert_equal(selected_attr, screenattr(2, 1))
+  call assert_equal(selected_attr, screenattr(2, 24))
+  call assert_equal(selected_attr, screenattr(2, 26))
+  call assert_notequal(selected_attr, screenattr(2, 27))
+  call assert_notequal(selected_attr, screenattr(2, 59))
+
+  call feedkeys("\<Esc>", 'tx')
+  syntax clear Hidden
+  call CloseWindow()
+endfunc
+
+func Test_conceallevel_three_visual_block_boundary_redraw()
+  for width in [52, 60, 80, 120]
+    call NewWindow(10, width)
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no number showbreak=
+    syntax match Hidden /\[/ conceal
+    syntax match Hidden /\](https:[^)]*)/ conceal
+    syntax match Hidden /\*\*/ conceal
+
+    let line = '0123456789 0123456789 0123456789 **日本語**'
+          \ .. ' 0123456789 0123456789'
+          \ .. ' [link](https://example.invalid/hidden)'
+          \ .. ' 0123456789 0123456789'
+    call setline(1, repeat(['short filler'], 4) + [line, 'after'])
+    redraw!
+
+    call cursor(1, 1)
+    execute "normal! \<C-V>4j"
+    for _ in range(1, 70)
+      redraw
+      let startrow = screenpos(0, 5, 1).row
+      let afterrow = screenpos(0, 6, 1).row
+      let rows = []
+      for row in range(startrow, afterrow - 1)
+        call add(rows, join(map(range(1, winwidth(0)),
+              \ 'screenstring(row, v:val)'), ''))
+      endfor
+      let text = join(rows, ' ')
+      call assert_match('0123456789.*日本語.*link.*0123456789', text)
+      normal! l
+    endfor
+
+    call feedkeys("\<Esc>", 'tx')
+    syntax clear Hidden
+    call CloseWindow()
+  endfor
+endfunc
+
+func Test_conceallevel_three_visual_block_restarts_after_concealed_cursor()
+  call NewWindow(6, 80)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+        \ signcolumn=no nonumber showbreak=
+  syntax match Hidden /\[/ conceal
+  syntax match Hidden /\](https:[^)]*)/ conceal
+
+  let line = 'prefix [link](https://example.invalid/hidden)'
+        \ .. ' suffix words after concealed target'
+  call setline(1, [repeat('x', 70), line])
+  redraw!
+
+  call cursor(1, 45)
+  execute "normal! \<C-V>j20h"
+  redraw
+
+  call assert_match('https://', strpart(line, col('.') - 1))
+  let anchor = screenpos(0, 1, 45)
+  let suffix = screenpos(0, 2, stridx(line, 'suffix') + 1)
+  call assert_true(anchor.row > 0)
+  call assert_true(suffix.row > 0)
+
+  let selected_attr = screenattr(anchor.row, anchor.curscol)
+  call assert_notequal(0, selected_attr)
+  call assert_equal(selected_attr, screenattr(suffix.row, suffix.curscol))
+
+  call feedkeys("\<Esc>", 'tx')
+  syntax clear Hidden
+  call CloseWindow()
+endfunc
+
+func Test_conceallevel_three_visual_block_boundary_line_33()
+  let save_lines = &lines
+  let save_columns = &columns
+  try
+    set lines=45 columns=160
+    call NewWindow(40, 140)
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no number showbreak=
+    syntax match Hidden /\[/ conceal
+    syntax match Hidden /\](https:[^)]*)/ conceal
+    syntax match Hidden /\*\*/ conceal
+
+    let line = '0123456789 0123456789 0123456789 **日本語**'
+          \ .. ' 0123456789 0123456789'
+          \ .. ' [link](https://example.invalid/hidden)'
+          \ .. ' 0123456789 0123456789'
+    call setline(1, repeat(['short filler'], 32) + [line, 'after'])
+    redraw!
+
+    call cursor(1, 1)
+    execute "normal! \<C-V>32j"
+    for _ in range(1, 90)
+      redraw
+      let startrow = screenpos(0, 33, 1).row
+      let afterrow = screenpos(0, 34, 1).row
+      let rows = []
+      for row in range(startrow, afterrow - 1)
+        call add(rows, join(map(range(1, winwidth(0)),
+              \ 'screenstring(row, v:val)'), ''))
+      endfor
+      let text = join(rows, ' ')
+      call assert_match('0123456789.*日本語.*link.*0123456789', text)
+      normal! l
+    endfor
+  finally
+    call feedkeys("\<Esc>", 'tx')
+    syntax clear Hidden
+    call CloseWindow()
+    let &columns = save_columns
+    let &lines = save_lines
+  endtry
+endfunc
+
 func Test_conceallevel_three_mouse_extend_after_conceal()
   call NewWindow(10, 40)
   set mouse=a mousemodel=extend

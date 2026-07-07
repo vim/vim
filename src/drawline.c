@@ -1315,6 +1315,11 @@ win_line(
 
     int		c = 0;			// init for GCC
     long	vcol_prev = -1;		// "wlv.vcol" of previous character
+    long	area_vcol = -1;		// vcol used for highlighting
+    long	area_vcol_prev = -1;	// previous highlighting vcol
+#ifdef FEAT_CONCEAL
+    long	vcol_hlc_prev = -1;	// VCOL_HLC of previous character
+#endif
     char_u	*line;			// current line
     char_u	*ptr;			// current position in "line"
     int		in_curline = wp == curwin && lnum == curwin->w_cursor.lnum;
@@ -1340,6 +1345,7 @@ win_line(
 					// to be added to wlv.vcol later
     int		fromcol_prev = -2;	// start of inverting after cursor
     int		noinvcur = FALSE;	// don't invert the cursor
+    colnr_T	noinvcur_vcol = 0;	// virtual column for "noinvcur"
     int		lnum_in_visual_area = FALSE;
     pos_T	pos;
     long	v;
@@ -1354,6 +1360,7 @@ win_line(
     bool	visual_conceal_active = false;
     pos_T	*visual_conceal_top = NULL;
     pos_T	*visual_conceal_bot = NULL;
+    bool	visual_block_conceal = false;
 #endif
     int		search_attr = 0;	// attributes desired by 'hlsearch' or
 					// ComplMatchIns
@@ -1578,6 +1585,9 @@ win_line(
 		visual_conceal_top = top;
 		visual_conceal_bot = bot;
 	    }
+	    if (lnum_in_visual_area && wp->w_p_wrap && wp->w_p_cole == 3
+		    && VIsual_mode == Ctrl_V)
+		visual_block_conceal = true;
 #endif
 	    if (VIsual_mode == Ctrl_V)
 	    {
@@ -1637,7 +1647,29 @@ win_line(
 		    && !gui.in_use
 #endif
 		    )
+	    {
 		noinvcur = TRUE;
+		noinvcur_vcol = wp->w_virtcol;
+#ifdef FEAT_CONCEAL
+		if (visual_block_conceal)
+		{
+		    long concealed_vcol = plines_win_col_conceal_vcol(wp, lnum,
+								wp->w_cursor.col);
+
+		    if (concealed_vcol >= 0)
+			noinvcur_vcol = (colnr_T)concealed_vcol;
+# ifdef FEAT_SYN_HL
+		    // Need to restart syntax highlighting for this line.
+		    if (has_syntax)
+			syntax_start(wp, lnum);
+# endif
+# ifdef FEAT_SEARCH_EXTRA
+		    init_search_hl(wp, &screen_search_hl);
+		    prepare_search_hl(wp, &screen_search_hl, lnum);
+# endif
+		}
+#endif
+	    }
 
 	    // if inverting in this line set area_highlighting
 	    if (wlv.fromcol >= 0
@@ -2153,16 +2185,16 @@ win_line(
     {
 	if (noinvcur)
 	{
-	    if ((colnr_T)wlv.fromcol == wp->w_virtcol)
+	    if ((colnr_T)wlv.fromcol == noinvcur_vcol)
 	    {
 		// highlighting starts at cursor, let it start just after the
 		// cursor
 		fromcol_prev = wlv.fromcol;
 		wlv.fromcol = -1;
 	    }
-	    else if ((colnr_T)wlv.fromcol < wp->w_virtcol)
+	    else if ((colnr_T)wlv.fromcol < noinvcur_vcol)
 		// restart highlighting after the cursor
-		fromcol_prev = wp->w_virtcol;
+		fromcol_prev = noinvcur_vcol;
 	}
 	if (wlv.fromcol >= wlv.tocol)
 	    wlv.fromcol = -1;
@@ -2694,20 +2726,52 @@ win_line(
 		wlv.extra_for_textprop ? &saved_area_attr :
 #endif
 							    &area_attr;
+	    area_vcol = wlv.vcol;
+	    area_vcol_prev = vcol_prev;
+#ifdef FEAT_CONCEAL
+	    if (visual_block_conceal)
+	    {
+		area_vcol = VCOL_HLC;
+		area_vcol_prev = vcol_hlc_prev;
+	    }
+#endif
+	    bool area_start = area_vcol == wlv.fromcol
+		|| (has_mbyte && area_vcol + 1 == wlv.fromcol
+		    && ((wlv.n_extra == 0 && (*mb_ptr2cells)(ptr) > 1)
+			|| (wlv.n_extra > 0 && wlv.p_extra != NULL
+			    && (*mb_ptr2cells)(wlv.p_extra) > 1)))
+		|| ((int)area_vcol_prev == fromcol_prev
+		    && area_vcol_prev < area_vcol	// not at margin
+		    && area_vcol < wlv.tocol);
+	    bool area_stop = area_vcol == wlv.tocol;
+	    bool cursor_stop = noinvcur
+				&& (colnr_T)area_vcol == noinvcur_vcol;
+#ifdef FEAT_CONCEAL
+	    if (visual_block_conceal)
+	    {
+		if (area_vcol_prev < area_vcol && area_vcol < wlv.tocol)
+		{
+		    if (wlv.fromcol >= 0 && area_vcol_prev < wlv.fromcol
+			    && area_vcol > wlv.fromcol)
+			area_start = true;
+		    if (fromcol_prev >= 0
+			    && area_vcol_prev < (long)fromcol_prev
+			    && area_vcol > (long)fromcol_prev)
+			area_start = true;
+		}
+		if (area_vcol_prev <= wlv.tocol && area_vcol > wlv.tocol)
+		    area_stop = true;
+		if (noinvcur && area_vcol_prev <= (long)noinvcur_vcol
+			&& area_vcol > (long)noinvcur_vcol)
+		    cursor_stop = true;
+	    }
+#endif
 
 	    // handle Visual or match highlighting in this line
-	    if (wlv.vcol == wlv.fromcol
-		    || (has_mbyte && wlv.vcol + 1 == wlv.fromcol
-			&& ((wlv.n_extra == 0 && (*mb_ptr2cells)(ptr) > 1)
-			    || (wlv.n_extra > 0 && wlv.p_extra != NULL
-				&& (*mb_ptr2cells)(wlv.p_extra) > 1)))
-		    || ((int)vcol_prev == fromcol_prev
-			&& vcol_prev < wlv.vcol	// not at margin
-			&& wlv.vcol < wlv.tocol))
+	    if (area_start)
 		*area_attr_p = vi_attr;		// start highlighting
 	    else if (*area_attr_p != 0
-		    && (wlv.vcol == wlv.tocol
-			|| (noinvcur && (colnr_T)wlv.vcol == wp->w_virtcol)))
+		    && (area_stop || cursor_stop))
 		*area_attr_p = 0;		// stop highlighting
 
 	    if (wlv.n_extra == 0)
@@ -2876,9 +2940,9 @@ win_line(
 	    }
 	    else if (wlv.line_attr != 0
 		    && ((wlv.fromcol == -10 && wlv.tocol == MAXCOL)
-			      || wlv.vcol < wlv.fromcol
-			      || vcol_prev < fromcol_prev
-			      || wlv.vcol >= wlv.tocol))
+			      || area_vcol < wlv.fromcol
+			      || area_vcol_prev < fromcol_prev
+			      || area_vcol >= wlv.tocol))
 	    {
 		// Use wlv.line_attr when not in the Visual or 'incsearch' area
 		// (area_attr may be 0 when "noinvcur" is set).
@@ -3935,7 +3999,7 @@ win_line(
 			     || VIsual_mode == 'v')
 			 && virtual_active()
 			 && wlv.tocol != MAXCOL
-			 && wlv.vcol < wlv.tocol
+			 && area_vcol < wlv.tocol
 			 && (
 #ifdef FEAT_RIGHTLEFT
 			    wp->w_p_rl ? (wlv.col >= 0) :
@@ -4037,7 +4101,7 @@ win_line(
 #ifdef FEAT_CONCEAL
 	    if (   wp->w_p_cole > 0
 		&& (wp != curwin || lnum != wp->w_cursor.lnum
-						    || conceal_cursor_line(wp))
+							    || conceal_cursor_line(wp))
 		&& ((syntax_flags & HL_CONCEAL) != 0 || has_match_conc > 0)
 		&& !(lnum_in_visual_area
 				    && vim_strchr(wp->w_p_cocu, 'v') == NULL))
@@ -4291,7 +4355,7 @@ win_line(
 	    // char on the screen, just overwrite that one (tricky!)  Not
 	    // needed when a '$' was displayed for 'list'.
 	    if (wp->w_lcs_chars.eol == lcs_eol_one
-		    && ((area_attr != 0 && wlv.vcol == wlv.fromcol
+		    && ((area_attr != 0 && area_vcol == wlv.fromcol
 			    && (VIsual_mode != Ctrl_V
 				|| lnum == VIsual.lnum
 				|| lnum == curwin->w_cursor.lnum)
@@ -4478,7 +4542,12 @@ win_line(
 #endif
 
 	if (wlv.draw_state == WL_LINE)
+	{
 	    vcol_prev = wlv.vcol;
+#ifdef FEAT_CONCEAL
+	    vcol_hlc_prev = VCOL_HLC;
+#endif
+	}
 
 	// Store character to be displayed.
 	// Skip characters that are left of the screen for 'nowrap'.
