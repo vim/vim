@@ -1935,11 +1935,13 @@ typedef struct
     int		row;
     int		col;
     colnr_T	buf_col;
+    colnr_T	coladd;
     bool	found;
 } mouse_conceal_col_T;
 
 /*
- * Store the buffer column for the visible cell at the clicked window position.
+ * Store the buffer column for the visible cell at the requested window
+ * position.
  */
     static int
 mouse_conceal_col_store(
@@ -1971,14 +1973,15 @@ mouse_conceal_col_store(
 	    && ctx->col < start_col + cells)
     {
 	ctx->buf_col = col;
+	ctx->coladd = ctx->col - start_col;
 	ctx->found = true;
     }
     return OK;
 }
 
 /*
- * Use the same cell positions as win_line() for mouse clicks in a line with
- * zero-width concealed text.
+ * Use the same cell positions as win_line() in a line with zero-width
+ * concealed text.
  */
     static bool
 mouse_conceal_col(
@@ -1986,17 +1989,14 @@ mouse_conceal_col(
 	linenr_T	lnum,
 	int		row,
 	int		col,
-	colnr_T		*colp)
+	colnr_T		*colp,
+	colnr_T		*coladdp)
 {
     mouse_conceal_col_T ctx;
     bool		has_conceal = false;
 
     if (wp->w_p_cole != 3)
 	return false;
-# ifdef FEAT_RIGHTLEFT
-    if (wp->w_p_rl)
-	return false;
-# endif
 
     CLEAR_FIELD(ctx);
     ctx.wp = wp;
@@ -2009,6 +2009,8 @@ mouse_conceal_col(
 	return false;
 
     *colp = ctx.buf_col;
+    if (coladdp != NULL)
+	*coladdp = ctx.coladd;
     return true;
 }
 #endif
@@ -2522,7 +2524,7 @@ retnomove:
 #ifdef FEAT_CONCEAL
     if (!mouse_past_bottom
 	    && mouse_conceal_col(curwin, curwin->w_cursor.lnum,
-						 row, screen_col, &conceal_col))
+					 row, screen_col, &conceal_col, NULL))
 	use_conceal_col = true;
 #endif
 
@@ -3739,8 +3741,18 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 	    col -= left_off;
 	    if (row >= 0 && row < wp->w_height && col >= 0 && col < wp->w_width)
 	    {
+# ifdef FEAT_CONCEAL
+		int screen_col = col;
+		bool use_conceal_col;
+# endif
+
 		(void)mouse_comp_pos(wp, &row, &col, &lnum, NULL);
-		col = vcol2col(wp, lnum, col, &coladd);
+# ifdef FEAT_CONCEAL
+		use_conceal_col = mouse_conceal_col(wp, lnum, row,
+						  screen_col, &col, &coladd);
+		if (!use_conceal_col)
+# endif
+		    col = vcol2col(wp, lnum, col, &coladd);
 		column = col + 1;
 	    }
 	}

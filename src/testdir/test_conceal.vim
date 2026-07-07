@@ -604,6 +604,60 @@ func Test_conceallevel_three_wrapped_mouse_click_after_concealends()
   set mouse&
 endfunc
 
+func Test_conceallevel_three_getmousepos_after_conceal()
+  call NewWindow(10, 40)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+        \ signcolumn=no nonumber
+  syntax match Hidden /HIDDEN / conceal
+
+  let line = repeat('a', 24)
+        \ .. ' HIDDEN target words after hidden text to force wrapping'
+        \ .. ' and mapping checks'
+  call setline(1, line)
+  redraw!
+
+  let target_col = stridx(line, 'target') + 1
+  let pos = screenpos(0, 1, target_col)
+  call assert_true(pos.row > 0)
+
+  call test_setmouse(pos.row, pos.curscol)
+  let mousepos = getmousepos()
+  call assert_equal(1, mousepos.line)
+  call assert_equal(target_col, mousepos.column)
+  call assert_equal(0, mousepos.coladd)
+
+  syntax clear Hidden
+  call CloseWindow()
+endfunc
+
+func Test_conceallevel_three_wrapped_mouse_click_rightleft()
+  CheckFeature rightleft
+
+  call NewWindow(10, 40)
+  set mouse=a
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+        \ signcolumn=no nonumber rightleft
+  syntax match Hidden /HIDDEN / conceal
+
+  let line = repeat('a', 24)
+        \ .. ' HIDDEN target words after hidden text to force wrapping'
+        \ .. ' and mapping checks'
+  call setline(1, line)
+  redraw!
+
+  let target_col = stridx(line, 'target') + 1
+  let pos = screenpos(0, 1, target_col)
+  call assert_true(pos.row > 0)
+
+  call test_setmouse(pos.row, pos.curscol)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal(target_col, col('.'))
+
+  syntax clear Hidden
+  call CloseWindow()
+  set mouse&
+endfunc
+
 func Test_conceallevel_three_visual_drag_after_double_width()
   call NewWindow(12, 42)
   set mouse=a
