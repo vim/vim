@@ -671,7 +671,7 @@ func Test_conceallevel_three_visual_drag_into_concealed_marker()
   let selected_attr = screenattr(target.row, target.curscol - 1)
   call assert_notequal(0, selected_attr)
   call assert_equal(selected_attr, screenattr(target.row, target.curscol - 2))
-  call assert_notequal(selected_attr, screenattr(target.row, target.curscol))
+  call assert_notequal(selected_attr, screenattr(target.row, target.curscol + 1))
 
   syntax clear test
   syntax clear testCode
