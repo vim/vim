@@ -1928,6 +1928,91 @@ reset_dragwin(void)
     dragwin = NULL;
 }
 
+#ifdef FEAT_CONCEAL
+typedef struct
+{
+    win_T	*wp;
+    int		row;
+    int		col;
+    colnr_T	buf_col;
+    bool	found;
+} mouse_conceal_col_T;
+
+/*
+ * Store the buffer column for the visible cell at the clicked window position.
+ */
+    static int
+mouse_conceal_col_store(
+	colnr_T		col,
+	colnr_T		end_col UNUSED,
+	int		row,
+	int		start_col,
+	int		cursor_col,
+	int		cells,
+	void		*ctx_arg)
+{
+    mouse_conceal_col_T *ctx = (mouse_conceal_col_T *)ctx_arg;
+    int			width;
+    int			rowoff = 0;
+
+    if (ctx->found || cursor_col < 0 || cells <= 0)
+	return OK;
+
+    width = ctx->wp->w_width - win_col_off(ctx->wp) + win_col_off2(ctx->wp);
+    if (width > 0 && cursor_col >= ctx->wp->w_width)
+    {
+	rowoff = (cursor_col - ctx->wp->w_width) / width + 1;
+	row += rowoff;
+	start_col -= rowoff * width;
+    }
+
+    if (row == ctx->row
+	    && start_col <= ctx->col
+	    && ctx->col < start_col + cells)
+    {
+	ctx->buf_col = col;
+	ctx->found = true;
+    }
+    return OK;
+}
+
+/*
+ * Use the same cell positions as win_line() for mouse clicks in a line with
+ * zero-width concealed text.
+ */
+    static bool
+mouse_conceal_col(
+	win_T		*wp,
+	linenr_T	lnum,
+	int		row,
+	int		col,
+	colnr_T		*colp)
+{
+    mouse_conceal_col_T ctx;
+    bool		has_conceal = false;
+
+    if (wp->w_p_cole != 3)
+	return false;
+# ifdef FEAT_RIGHTLEFT
+    if (wp->w_p_rl)
+	return false;
+# endif
+
+    CLEAR_FIELD(ctx);
+    ctx.wp = wp;
+    ctx.row = row;
+    ctx.col = col;
+    if (win_line_conceal_screenline_iter(wp, lnum,
+		    mouse_conceal_col_store, &ctx, &has_conceal, NULL) == FAIL
+	    || !has_conceal
+	    || !ctx.found)
+	return false;
+
+    *colp = ctx.buf_col;
+    return true;
+}
+#endif
+
 /*
  * Move the cursor to the specified row and column on the screen.
  * Change current window if necessary.	Returns an integer with the
@@ -1980,6 +2065,11 @@ jump_to_mouse(
     int		row = mouse_row;
     int		col = mouse_col;
     colnr_T	col_from_screen = -1;
+#ifdef FEAT_CONCEAL
+    colnr_T	conceal_col = 0;
+    int		screen_col = 0;
+    bool	use_conceal_col = false;
+#endif
 #ifdef FEAT_FOLDING
     int		mouse_char = ' ';
 #endif
@@ -2422,9 +2512,19 @@ retnomove:
 	mouse_char = ' ';
 #endif
 
+#ifdef FEAT_CONCEAL
+    screen_col = col;
+#endif
     // compute the position in the buffer line from the posn on the screen
     if (mouse_comp_pos(curwin, &row, &col, &curwin->w_cursor.lnum, NULL))
 	mouse_past_bottom = TRUE;
+
+#ifdef FEAT_CONCEAL
+    if (!mouse_past_bottom
+	    && mouse_conceal_col(curwin, curwin->w_cursor.lnum,
+						 row, screen_col, &conceal_col))
+	use_conceal_col = true;
+#endif
 
     // Start Visual mode before coladvance(), for when 'sel' != "old"
     if ((flags & MOUSE_MAY_VIS) && !VIsual_active)
@@ -2440,23 +2540,41 @@ retnomove:
 	    redraw_cmdline = TRUE;	// show visual mode later
     }
 
-    if (col_from_screen >= 0)
+    if (col_from_screen >= 0
+#ifdef FEAT_CONCEAL
+	    && !use_conceal_col
+#endif
+       )
     {
 	// Use the virtual column from ScreenCols[], it is accurate also after
 	// concealed characters.
 	col = col_from_screen;
     }
 
-    curwin->w_curswant = col;
-    curwin->w_set_curswant = false;	// May still have been TRUE
-    if (coladvance(col) == FAIL)	// Mouse click beyond end of line
+#ifdef FEAT_CONCEAL
+    if (use_conceal_col)
     {
+	curwin->w_cursor.col = conceal_col;
+	curwin->w_cursor.coladd = 0;
+	curwin->w_curswant = col;
+	curwin->w_set_curswant = false;	// May still have been TRUE
 	if (inclusive != NULL)
-	    *inclusive = TRUE;
-	mouse_past_eol = TRUE;
+	    *inclusive = FALSE;
     }
-    else if (inclusive != NULL)
-	*inclusive = FALSE;
+    else
+#endif
+    {
+	curwin->w_curswant = col;
+	curwin->w_set_curswant = false;	// May still have been TRUE
+	if (coladvance(col) == FAIL)	// Mouse click beyond end of line
+	{
+	    if (inclusive != NULL)
+		*inclusive = TRUE;
+	    mouse_past_eol = TRUE;
+	}
+	else if (inclusive != NULL)
+	    *inclusive = FALSE;
+    }
 
     count = IN_BUFFER;
     if (curwin != old_curwin || curwin->w_cursor.lnum != old_cursor.lnum

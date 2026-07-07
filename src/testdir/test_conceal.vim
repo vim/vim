@@ -554,6 +554,56 @@ func Test_conceal_mouse_click()
   set mouse&
 endfunc
 
+func Test_conceallevel_three_wrapped_mouse_click()
+  call NewWindow(10, 80)
+  set mouse=a
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nc
+  syntax region testCode matchgroup=testTick start=/`/ end=/`/ concealends
+
+  let line = 'The inline code `printf("日本語 %s", value)` should hide its backticks when Markdown conceal is active, while this escaped marker \# should display as a literal hash and not make following wrapped text appear one cell early or late.'
+  call setline(1, line)
+  redraw
+
+  let target_col = stridx(line, 'its') + 1
+  let pos = screenpos(0, 1, target_col)
+  call assert_true(pos.row > 0)
+
+  setlocal cursorline
+  call test_setmouse(pos.row, pos.curscol)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal([0, 1, target_col, 0, pos.col], getcurpos())
+
+  syntax clear testCode
+  call CloseWindow()
+  set mouse&
+endfunc
+
+func Test_conceallevel_three_wrapped_mouse_click_after_concealends()
+  call NewWindow(7, 59)
+  set mouse=a
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nc
+        \ signcolumn=no nonumber showbreak= scrolloff=0
+  syntax region testHtml matchgroup=test start=/<code>/ end=/<\/code>/ concealends
+  syntax region testPre matchgroup=test start=/<pre>/ end=/<\/pre>/ concealends
+
+  let line = 'Here is an HTML code tag: <code>wide_value = "日本語コンシール"</code> and a pre tag: <pre>alpha beta 日本語 gamma delta</pre> followed by enough plain text to make the line wrap after the concealed tag boundaries.'
+  call setline(1, line)
+  redraw
+
+  let target_col = stridx(line, 'alpha beta') + 1
+  let pos = screenpos(0, 1, target_col)
+  call assert_true(pos.row > 0)
+
+  call test_setmouse(pos.row, pos.curscol)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal(target_col, col('.'))
+
+  syntax clear testHtml
+  syntax clear testPre
+  call CloseWindow()
+  set mouse&
+endfunc
+
 " Test that cursor is drawn at the correct column when it is after end of the
 " line with 'virtualedit' and concealing.
 func Run_test_conceal_virtualedit_after_eol(wrap)
