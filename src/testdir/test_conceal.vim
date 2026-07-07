@@ -1013,6 +1013,143 @@ func Test_conceallevel_three_screenline_counts()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_scroll_commands()
+  call NewWindow(5, 40)
+  setlocal wrap smoothscroll conceallevel=3 concealcursor=nvic
+        \ signcolumn=no nonumber scrolloff=0 scroll=3
+  syntax match Hidden /HIDDEN / conceal
+
+  let line = repeat('a', 42) .. ' HIDDEN ' .. repeat('b', 240)
+  call setline(1, [line, 'second line', 'third line'])
+  call cursor(1, 1)
+  redraw!
+
+  execute "normal! \<C-E>"
+  call assert_equal([1, 81, 1, 40],
+        \ [line('.'), col('.'), winsaveview().topline, winsaveview().skipcol])
+  execute "normal! \<C-E>"
+  call assert_equal([1, 121, 1, 80],
+        \ [line('.'), col('.'), winsaveview().topline, winsaveview().skipcol])
+  execute "normal! \<C-Y>"
+  call assert_equal([1, 121, 1, 40],
+        \ [line('.'), col('.'), winsaveview().topline, winsaveview().skipcol])
+
+  call winrestview({'lnum': 1, 'col': 0, 'topline': 1, 'leftcol': 0,
+        \ 'skipcol': 0, 'curswant': 0})
+  call cursor(1, 1)
+  execute "normal! \<C-D>"
+  call assert_equal([1, 121, 1, 80],
+        \ [line('.'), col('.'), winsaveview().topline, winsaveview().skipcol])
+  execute "normal! \<C-D>"
+  call assert_equal([1, 241, 1, 200],
+        \ [line('.'), col('.'), winsaveview().topline, winsaveview().skipcol])
+  execute "normal! \<C-U>"
+  call assert_equal([1, 121, 1, 80],
+        \ [line('.'), col('.'), winsaveview().topline, winsaveview().skipcol])
+
+  call winrestview({'lnum': 1, 'col': 0, 'topline': 1, 'leftcol': 0,
+        \ 'skipcol': 0, 'curswant': 0})
+  call cursor(1, 1)
+  execute "normal! \<C-F>"
+  call assert_equal([1, 241, 1, 200],
+        \ [line('.'), col('.'), winsaveview().topline, winsaveview().skipcol])
+  execute "normal! \<C-B>"
+  call assert_equal([1, 128, 1, 0],
+        \ [line('.'), col('.'), winsaveview().topline, winsaveview().skipcol])
+
+  let target_col = stridx(line, 'bbbb') + 120
+  call winrestview({'lnum': 1, 'col': target_col - 1, 'topline': 1,
+        \ 'leftcol': 0, 'skipcol': 80, 'curswant': target_col - 1})
+  call cursor(1, target_col)
+  redraw!
+  let saved = winsaveview()
+  call assert_equal([1, target_col, 1, 80, 3, 10],
+        \ [line('.'), col('.'), saved.topline, saved.skipcol,
+        \ winline(), wincol()])
+  call cursor(3, 1)
+  normal! zt
+  call winrestview(saved)
+  redraw!
+  call assert_equal([1, target_col, 1, 80, 3, 10],
+        \ [line('.'), col('.'), winsaveview().topline,
+        \ winsaveview().skipcol, winline(), wincol()])
+
+  syntax clear Hidden
+  call CloseWindow()
+
+  call NewWindow(7, 40)
+  setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+        \ scrolloff=0 scrolljump=1
+  syntax match Hidden /HIDDEN / conceal
+
+  let line = repeat('a', 42)
+        \ .. ' HIDDEN target words after hidden text to force wrapping'
+        \ .. ' and mapping checks'
+  let target_col = stridx(line, 'target') + 1
+  call setline(1, ['one', 'two', 'three', line, 'five', 'six', 'seven',
+        \ 'eight', 'nine', 'ten', 'eleven'])
+
+  let expected = #{zt: [2, 4], zz: [4, 4], zb: [5, 4]}
+  for cmd in ['zt', 'zz', 'zb']
+    call cursor(4, target_col)
+    execute 'normal! ' .. cmd
+    redraw!
+    call assert_equal([4, target_col] + expected[cmd],
+          \ [line('.'), col('.'), winline(), wincol()])
+  endfor
+
+  setlocal scrolloff=2 scrolljump=2
+  call cursor(1, 1)
+  normal! zt
+  normal! 5j
+  call assert_equal([6, 1, 4, 5],
+        \ [line('.'), col('.'), winsaveview().topline, winline()])
+  normal! 2k
+  call assert_equal([4, 1, 2, 3],
+        \ [line('.'), col('.'), winsaveview().topline, winline()])
+
+  syntax clear Hidden
+  call CloseWindow()
+endfunc
+
+func Test_conceallevel_three_scroll_wheel()
+  call NewWindow(5, 40)
+  set mouse=a
+  setlocal wrap smoothscroll conceallevel=3 concealcursor=nvic
+        \ signcolumn=no nonumber scrolloff=0 scroll=3
+  syntax match Hidden /HIDDEN / conceal
+
+  let line = repeat('a', 42) .. ' HIDDEN ' .. repeat('b', 240)
+  let target_col = stridx(line, 'bbbb') + 120
+  call setline(1, [line, 'second line', 'third line'])
+  call winrestview({'lnum': 1, 'col': target_col - 1, 'topline': 1,
+        \ 'leftcol': 0, 'skipcol': 80, 'curswant': target_col - 1})
+  call cursor(1, target_col)
+  redraw!
+
+  call feedkeys("\<ScrollWheelDown>", 'xt')
+  call assert_equal([1, target_col, 1, 160, 1, 3],
+        \ [line('.'), col('.'), winsaveview().topline,
+        \ winsaveview().skipcol, winline(), wincol()])
+  call feedkeys("\<ScrollWheelUp>", 'xt')
+  call assert_equal([1, target_col, 1, 80, 3, 3],
+        \ [line('.'), col('.'), winsaveview().topline,
+        \ winsaveview().skipcol, winline(), wincol()])
+
+  call winrestview({'lnum': 1, 'col': 0, 'topline': 1, 'leftcol': 0,
+        \ 'skipcol': 0, 'curswant': 0})
+  call cursor(1, 1)
+  call feedkeys("v\<ScrollWheelDown>", 'xt')
+  call assert_equal([1, 121, 1, 80, 1, 34],
+        \ [line('.'), col('.'), winsaveview().topline,
+        \ winsaveview().skipcol, winline(), wincol()])
+  call feedkeys("\<Esc>", 'tx')
+
+  syntax clear Hidden
+  call CloseWindow()
+  set mouse&
+endfunc
+
 func Test_conceallevel_three_visual_drag_after_double_width()
   call NewWindow(12, 42)
   set mouse=a
