@@ -1273,6 +1273,24 @@ lbr_conceal_width(
 }
 #endif
 
+#ifdef FEAT_CONCEAL
+    static bool
+drawline_visual_cell_selected(
+	linenr_T	lnum,
+	colnr_T		col,
+	colnr_T		end_col,
+	pos_T		*top,
+	pos_T		*bot)
+{
+    if (top == NULL || bot == NULL || lnum < top->lnum || lnum > bot->lnum)
+	return false;
+    if (lnum == top->lnum && end_col < top->col)
+	return false;
+    return lnum != bot->lnum || (*p_sel == 'e' ? col < bot->col
+						       : col <= bot->col);
+}
+#endif
+
 /*
  * Display line "lnum" of window "wp" on the screen.
  * Start at row "startrow", stop when "endrow" is reached.
@@ -1332,6 +1350,11 @@ win_line(
     int		vi_attr = 0;		// attributes for Visual and incsearch
 					// highlighting
     int		area_attr = 0;		// attributes desired by highlighting
+#ifdef FEAT_CONCEAL
+    bool	visual_conceal_active = false;
+    pos_T	*visual_conceal_top = NULL;
+    pos_T	*visual_conceal_bot = NULL;
+#endif
     int		search_attr = 0;	// attributes desired by 'hlsearch' or
 					// ComplMatchIns
 #ifdef FEAT_SYN_HL
@@ -1546,6 +1569,16 @@ win_line(
 		bot = &curwin->w_cursor;
 	    }
 	    lnum_in_visual_area = (lnum >= top->lnum && lnum <= bot->lnum);
+#ifdef FEAT_CONCEAL
+	    if (lnum_in_visual_area && wp->w_p_wrap && wp->w_p_cole == 3
+		    && VIsual_mode != Ctrl_V && VIsual_mode != 'V'
+		    && vim_strchr(wp->w_p_cocu, 'v') != NULL)
+	    {
+		visual_conceal_active = true;
+		visual_conceal_top = top;
+		visual_conceal_bot = bot;
+	    }
+#endif
 	    if (VIsual_mode == Ctrl_V)
 	    {
 		// block mode
@@ -1593,6 +1626,10 @@ win_line(
 		    }
 		}
 	    }
+#ifdef FEAT_CONCEAL
+	    if (visual_conceal_active)
+		wlv.fromcol = -1;
+#endif
 
 	    // Check if the character under the cursor should not be inverted
 	    if (!highlight_match && in_curline
@@ -1603,7 +1640,11 @@ win_line(
 		noinvcur = TRUE;
 
 	    // if inverting in this line set area_highlighting
-	    if (wlv.fromcol >= 0)
+	    if (wlv.fromcol >= 0
+#ifdef FEAT_CONCEAL
+		    || visual_conceal_active
+#endif
+	       )
 	    {
 		area_highlighting = TRUE;
 		vi_attr = HL_ATTR(HLF_V);
@@ -4481,6 +4522,23 @@ win_line(
 		    drawline_screenline_failed = true;
 		    break;
 		}
+	    }
+	    if (visual_conceal_active && wlv.draw_state == WL_LINE
+		    && cursor_ptr != NULL && cursor_ptr_end > cursor_ptr
+		    && !is_concealing && c != NUL
+		    && drawline_visual_cell_selected(lnum,
+			(colnr_T)(cursor_ptr - line),
+			(colnr_T)(cursor_ptr_end - line) - 1,
+			visual_conceal_top, visual_conceal_bot)
+		    && !(noinvcur && lnum == wp->w_cursor.lnum
+			&& (colnr_T)(cursor_ptr - line) <= wp->w_cursor.col
+			&& wp->w_cursor.col
+			    <= (colnr_T)(cursor_ptr_end - line) - 1))
+	    {
+		if (wlv.line_attr != 0)
+		    wlv.char_attr = hl_combine_attr(wlv.line_attr, vi_attr);
+		else
+		    wlv.char_attr = vi_attr;
 	    }
 #endif
 	    if (!DRAWLINE_COLLECTING)

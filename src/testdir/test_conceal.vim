@@ -604,6 +604,81 @@ func Test_conceallevel_three_wrapped_mouse_click_after_concealends()
   set mouse&
 endfunc
 
+func Test_conceallevel_three_visual_drag_after_double_width()
+  call NewWindow(12, 42)
+  set mouse=a
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+        \ number signcolumn=no
+  syntax region test matchgroup=test start=/`/ end=/`/ concealends
+
+  let line = 'aaaaaaaaaa bbbbbbbbbb cccccccccc dddddddddd `日本語` eeeeeeeeee ffffffffff gggggggggg hhhhhhhhhh iiiiiiiiii'
+  call setline(1, line)
+  redraw
+
+  let start_col = stridx(line, 'cccccccccc') + 1
+  let start = screenpos(0, 1, start_col)
+  let target_col = stridx(line, 'gggggggggg') + 4
+  let target = screenpos(0, 1, target_col)
+  call assert_true(start.row > 0)
+  call assert_true(target.row > 0)
+
+  call test_setmouse(start.row, start.curscol)
+  call feedkeys("\<LeftMouse>", "tx")
+  call test_setmouse(target.row, target.curscol)
+  call feedkeys("\<LeftDrag>", "tx")
+  redraw
+
+  call assert_equal(target_col, col('.'))
+  let selected_attr = screenattr(target.row, target.curscol - 2)
+  call assert_notequal(0, selected_attr)
+  call assert_equal(selected_attr, screenattr(target.row, target.curscol - 1))
+  call assert_notequal(selected_attr, screenattr(target.row, target.curscol + 1))
+
+  syntax clear test
+  call CloseWindow()
+  set mouse&
+endfunc
+
+func Test_conceallevel_three_visual_drag_into_concealed_marker()
+  call NewWindow(10, 37)
+  set mouse=a
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+        \ signcolumn=no number showbreak=
+  syntax clear test
+  syntax match test /\[/ conceal
+  syntax match test /\](https:[^)]*)/ conceal
+  syntax match test /\*\*/ conceal
+  syntax region testCode matchgroup=test start=/`/ end=/`/ concealends
+
+  let line = '- A dash list item should use Markdown list formatting, and this item intentionally contains **strong text**, `inline code`, [a link with 日本語](https://example.invalid/list), and enough trailing prose to wrap with breakindent.'
+  call setline(1, line)
+  redraw
+
+  let start_col = stridx(line, 'intentionally') + 1
+  let start = screenpos(0, 1, start_col)
+  let target_col = stridx(line, 'strong text') + 4
+  let target = screenpos(0, 1, target_col)
+  call assert_true(start.row > 0)
+  call assert_true(target.row > 0)
+
+  call test_setmouse(start.row, start.curscol)
+  call feedkeys("\<LeftMouse>", "tx")
+  call test_setmouse(target.row, target.curscol)
+  call feedkeys("\<LeftDrag>", "tx")
+  redraw
+
+  call assert_equal(target_col, col('.'))
+  let selected_attr = screenattr(target.row, target.curscol - 1)
+  call assert_notequal(0, selected_attr)
+  call assert_equal(selected_attr, screenattr(target.row, target.curscol - 2))
+  call assert_notequal(selected_attr, screenattr(target.row, target.curscol))
+
+  syntax clear test
+  syntax clear testCode
+  call CloseWindow()
+  set mouse&
+endfunc
+
 " Test that cursor is drawn at the correct column when it is after end of the
 " line with 'virtualedit' and concealing.
 func Run_test_conceal_virtualedit_after_eol(wrap)
