@@ -248,6 +248,7 @@ static int nfa_re_flags; // re_flags passed to nfa_regcomp()
 static int *post_start;  // holds the postfix form of r.e.
 static int *post_end;
 static int *post_ptr;
+static int nfa_reg_parse_depth;	// nesting depth in nfa_reg()
 
 // Set when the pattern should use the NFA engine.
 // E.g. [[:upper:]] only allows 8bit characters for BT engine,
@@ -310,6 +311,7 @@ nfa_regcomp_start(
     wants_nfa = FALSE;
     rex.nfa_has_zend = FALSE;
     rex.nfa_has_backref = FALSE;
+    nfa_reg_parse_depth = 0;
 
     // shared with BT engine
     regcomp_start(expr, re_flags);
@@ -2516,6 +2518,7 @@ nfa_reg(
     int		paren)	// REG_NOPAREN, REG_PAREN, REG_NPAREN or REG_ZPAREN
 {
     int		parno = 0;
+    int		status = FAIL;
 
     if (paren == REG_PAREN)
     {
@@ -2533,14 +2536,18 @@ nfa_reg(
     }
 #endif
 
+    if (nfa_reg_parse_depth >= REG_MAX_PAREN_DEPTH)
+	EMSG_RET_FAIL(_(e_command_too_complex));
+    ++nfa_reg_parse_depth;
+
     if (nfa_regbranch() == FAIL)
-	return FAIL;	    // cascaded error
+	goto theend;	    // cascaded error
 
     while (peekchr() == Magic('|'))
     {
 	skipchr();
 	if (nfa_regbranch() == FAIL)
-	    return FAIL;    // cascaded error
+	    goto theend;    // cascaded error
 	EMIT(NFA_OR);
     }
 
@@ -2548,17 +2555,23 @@ nfa_reg(
     if (paren != REG_NOPAREN && getchr() != Magic(')'))
     {
 	if (paren == REG_NPAREN)
-	    EMSG2_RET_FAIL(_(e_unmatched_str_percent_open),
-						       reg_magic == MAGIC_ALL);
+	    semsg(_(e_unmatched_str_percent_open),
+				       reg_magic == MAGIC_ALL ? "" : "\\");
 	else
-	    EMSG2_RET_FAIL(_(e_unmatched_str_open), reg_magic == MAGIC_ALL);
+	    semsg(_(e_unmatched_str_open),
+				       reg_magic == MAGIC_ALL ? "" : "\\");
+	rc_did_emsg = TRUE;
+	goto theend;
     }
     else if (paren == REG_NOPAREN && peekchr() != NUL)
     {
 	if (peekchr() == Magic(')'))
-	    EMSG2_RET_FAIL(_(e_unmatched_str_close), reg_magic == MAGIC_ALL);
+	    semsg(_(e_unmatched_str_close),
+				       reg_magic == MAGIC_ALL ? "" : "\\");
 	else
-	    EMSG_RET_FAIL(_(e_nfa_regexp_proper_termination_error));
+	    emsg(_(e_nfa_regexp_proper_termination_error));
+	rc_did_emsg = TRUE;
+	goto theend;
     }
     /*
      * Here we set the flag allowing back references to this set of
@@ -2574,7 +2587,11 @@ nfa_reg(
 	EMIT(NFA_ZOPEN + parno);
 #endif
 
-    return OK;
+    status = OK;
+
+theend:
+    --nfa_reg_parse_depth;
+    return status;
 }
 
 #ifdef DEBUG
