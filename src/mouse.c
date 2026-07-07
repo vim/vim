@@ -1983,7 +1983,7 @@ mouse_conceal_col_store(
  * Use the same cell positions as win_line() in a line with zero-width
  * concealed text.
  */
-    static bool
+    bool
 mouse_conceal_col(
 	win_T		*wp,
 	linenr_T	lnum,

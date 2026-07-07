@@ -298,21 +298,31 @@ set_mousemoved_columns(win_T *wp, int flags)
     char_u	*text;
     int		col;
     pos_T	pos;
-    colnr_T	mcol;
+    int		row;
+    int		scol;
+    int		ccol;
+    int		ecol;
 
     if (find_word_under_cursor(mouse_row, mouse_col, TRUE, flags,
 				  &textwp, &pos.lnum, &text, NULL, &col) != OK)
 	return;
 
-    // convert text column to mouse column
+    // Convert text columns to screen columns.
     pos.col = col;
     pos.coladd = 0;
-    getvcol(textwp, &pos, &mcol, NULL, NULL, 0);
-    wp->w_popup_mouse_mincol = mcol;
+    textpos2screenpos(textwp, &pos, &row, &scol, &ccol, &ecol);
+    if (row <= 0 || scol <= 0)
+    {
+	vim_free(text);
+	return;
+    }
+    wp->w_popup_mouse_row = row - 1;
+    wp->w_popup_mouse_mincol = scol - 1;
 
     pos.col = col + (colnr_T)STRLEN(text) - 1;
-    getvcol(textwp, &pos, NULL, NULL, &mcol, 0);
-    wp->w_popup_mouse_maxcol = mcol;
+    textpos2screenpos(textwp, &pos, &row, &scol, &ccol, &ecol);
+    if (row == wp->w_popup_mouse_row + 1 && ecol > 0)
+	wp->w_popup_mouse_maxcol = ecol - 1;
     vim_free(text);
 }
 
