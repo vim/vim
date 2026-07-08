@@ -709,6 +709,66 @@ func Test_conceallevel_three_popup_getmousepos_after_conceal()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_popup_scrollbar_getmousepos()
+  call NewWindow(10, 70)
+
+  let target_line = repeat('a', 28)
+        \ .. ' HIDDEN ' .. repeat('b', 24)
+        \ .. ' target words after hidden text to force wrapping'
+        \ .. ' and mapping checks'
+  let lines = [
+        \ 'top filler',
+        \ target_line,
+        \ 'middle filler one',
+        \ 'middle filler two',
+        \ 'middle filler three',
+        \ 'middle filler four',
+        \ 'middle filler five',
+        \ 'bottom filler',
+        \]
+  call setline(1, lines)
+  let winid = popup_create(bufnr(), #{
+        \ line: 2, col: 5, minwidth: 36, maxwidth: 36,
+        \ minheight: 5, maxheight: 5, scrollbar: v:true,
+        \ border: [], padding: [1, 2, 1, 2], wrap: v:true,
+        \ })
+  call win_execute(winid, 'setlocal wrap linebreak breakindent conceallevel=3'
+        \ .. ' concealcursor=nvic signcolumn=no nonumber')
+  call win_execute(winid, 'syntax match Hidden /HIDDEN / conceal')
+  redraw!
+
+  let target_col = stridx(target_line, 'target') + 1
+  let pos = screenpos(winid, 2, target_col)
+  call assert_true(pos.row > 0)
+
+  let poppos = popup_getpos(winid)
+  call assert_equal(1, poppos.scrollbar)
+  call assert_true(poppos.core_height < len(lines))
+
+  " Add border/padding offsets to click the popup's drawn text cell.
+  let mouse_row = pos.row + poppos.core_line - poppos.line
+  let mouse_col = pos.curscol + poppos.core_col - poppos.col
+  call assert_true(mouse_row >= poppos.core_line)
+  call assert_true(mouse_row < poppos.core_line + poppos.core_height)
+  call assert_true(mouse_col >= poppos.core_col)
+  call assert_true(mouse_col < poppos.core_col + poppos.core_width)
+
+  call test_setmouse(mouse_row, mouse_col)
+  let mousepos = getmousepos()
+  call assert_equal(winid, mousepos.winid)
+  call assert_equal(mouse_row, mousepos.screenrow)
+  call assert_equal(mouse_col, mousepos.screencol)
+  call assert_equal(mouse_row - poppos.line + 1, mousepos.winrow)
+  call assert_equal(mouse_col - poppos.col + 1, mousepos.wincol)
+  call assert_equal(2, mousepos.line)
+  call assert_equal(target_col, mousepos.column)
+  call assert_equal(0, mousepos.coladd)
+
+  call popup_close(winid)
+  syntax clear Hidden
+  call CloseWindow()
+endfunc
+
 func Test_conceallevel_three_wrapped_mouse_click_rightleft()
   CheckFeature rightleft
 
