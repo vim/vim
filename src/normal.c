@@ -2471,7 +2471,21 @@ nv_screenline_conceal_clear(void)
     static hash_T
 nv_screenline_vts_hash(void)
 {
+# ifdef FEAT_VARTABS
     return curbuf->b_p_vts == NULL ? 0 : hash_hash(curbuf->b_p_vts);
+# else
+    return 0;
+# endif
+}
+
+    static int
+nv_screenline_rightleft(void)
+{
+# ifdef FEAT_RIGHTLEFT
+    return curwin->w_p_rl;
+# else
+    return 0;
+# endif
 }
 
     static int
@@ -2488,7 +2502,7 @@ nv_screenline_curswant_valid(void)
 	&& nv_screenline_curswant_tick == CHANGEDTICK(curbuf)
 	&& EQUAL_POS(nv_screenline_curswant_pos, curwin->w_cursor)
 	&& nv_screenline_curswant_tabstop == curbuf->b_p_ts
-	&& nv_screenline_curswant_rightleft == curwin->w_p_rl
+	&& nv_screenline_curswant_rightleft == nv_screenline_rightleft()
 	&& nv_screenline_curswant_ambiwidth == nv_screenline_ambiwidth()
 	&& nv_screenline_curswant_vts_hash == nv_screenline_vts_hash()
 	&& !curwin->w_set_curswant;
@@ -2503,7 +2517,7 @@ nv_screenline_curswant_store(int curswant)
     nv_screenline_curswant_pos = curwin->w_cursor;
     nv_screenline_curswant = curswant;
     nv_screenline_curswant_tabstop = curbuf->b_p_ts;
-    nv_screenline_curswant_rightleft = curwin->w_p_rl;
+    nv_screenline_curswant_rightleft = nv_screenline_rightleft();
     nv_screenline_curswant_ambiwidth = nv_screenline_ambiwidth();
     nv_screenline_curswant_vts_hash = nv_screenline_vts_hash();
 }
@@ -2610,7 +2624,7 @@ nv_screenline_cache_valid(linenr_T lnum, bool include_offscreen)
 	&& nv_screenline_cache.breakindent == curwin->w_p_bri
 	&& nv_screenline_cache.list == curwin->w_p_list
 	&& nv_screenline_cache.tabstop == curbuf->b_p_ts
-	&& nv_screenline_cache.rightleft == curwin->w_p_rl
+	&& nv_screenline_cache.rightleft == nv_screenline_rightleft()
 	&& nv_screenline_cache.ambiwidth == nv_screenline_ambiwidth()
 	&& nv_screenline_cache.showbreak_hash
 					== hash_hash(get_showbreak_value(curwin))
@@ -2661,7 +2675,7 @@ nv_screenline_cache_store(nv_screenline_map_T *map, bool include_offscreen)
     nv_screenline_cache.breakindent = curwin->w_p_bri;
     nv_screenline_cache.list = curwin->w_p_list;
     nv_screenline_cache.tabstop = curbuf->b_p_ts;
-    nv_screenline_cache.rightleft = curwin->w_p_rl;
+    nv_screenline_cache.rightleft = nv_screenline_rightleft();
     nv_screenline_cache.ambiwidth = nv_screenline_ambiwidth();
     nv_screenline_cache.showbreak_hash = hash_hash(get_showbreak_value(curwin));
     nv_screenline_cache.breakat_hash = hash_hash(p_breakat);
@@ -2698,7 +2712,7 @@ nv_screenline_base_cache_valid(void)
 	&& nv_screenline_base_cache.breakindent == curwin->w_p_bri
 	&& nv_screenline_base_cache.list == curwin->w_p_list
 	&& nv_screenline_base_cache.tabstop == curbuf->b_p_ts
-	&& nv_screenline_base_cache.rightleft == curwin->w_p_rl
+	&& nv_screenline_base_cache.rightleft == nv_screenline_rightleft()
 	&& nv_screenline_base_cache.ambiwidth == nv_screenline_ambiwidth()
 	&& nv_screenline_base_cache.showbreak_hash
 					== hash_hash(get_showbreak_value(curwin))
@@ -2738,7 +2752,7 @@ nv_screenline_base_cache_store(linenr_T lnum, int base_row)
     nv_screenline_base_cache.breakindent = curwin->w_p_bri;
     nv_screenline_base_cache.list = curwin->w_p_list;
     nv_screenline_base_cache.tabstop = curbuf->b_p_ts;
-    nv_screenline_base_cache.rightleft = curwin->w_p_rl;
+    nv_screenline_base_cache.rightleft = nv_screenline_rightleft();
     nv_screenline_base_cache.ambiwidth = nv_screenline_ambiwidth();
     nv_screenline_base_cache.showbreak_hash =
 					    hash_hash(get_showbreak_value(curwin));

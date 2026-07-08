@@ -2921,10 +2921,12 @@ func Test_conceallevel_three_insert_above_redraw()
         \ 'O',
         \ ['', 'YYYY', '~' .. repeat(' ', 79)])
 
-  call s:Run_conceallevel_three_open_above_redraw('open_above_rightleft',
-        \ ['set rightleft', 'call cursor(1, 1)'],
-        \ 'O',
-        \ ['', repeat(' ', 76) .. 'YYYY', repeat(' ', 79) .. '~'])
+  if has('rightleft')
+    call s:Run_conceallevel_three_open_above_redraw('open_above_rightleft',
+          \ ['set rightleft', 'call cursor(1, 1)'],
+          \ 'O',
+          \ ['', repeat(' ', 76) .. 'YYYY', repeat(' ', 79) .. '~'])
+  endif
 
   call s:Run_conceallevel_three_open_above_redraw('put_above_normal',
         \ ['call cursor(1, 1)', 'call setreg("a", "NEW", "l")'],

@@ -59,15 +59,15 @@ plines_syntax_concealed(
 
 #if defined(FEAT_LINEBREAK) && defined(FEAT_CONCEAL) && defined(FEAT_SYN_HL)
 /*
- * Measure the visible non-break run starting at "ptr" after concealed bytes
- * are ignored.  This mirrors the linebreak/conceal lookahead in win_line().
+ * Measure the visible non-break run starting at byte column "start_byte_col"
+ * after concealed bytes are ignored.  This mirrors the linebreak/conceal
+ * lookahead in win_line().
  */
     static bool
 plines_lbr_conceal_width(
 	win_T		*wp,
 	linenr_T	lnum,
-	char_u		*line,
-	char_u		*ptr,
+	colnr_T		start_byte_col,
 	colnr_T		restore_col,
 	int		start_col,
 	int		screen_extra,
@@ -78,7 +78,7 @@ plines_lbr_conceal_width(
 	bool		*conceal_before_visiblep,
 	conceal_cache_T	*cache)
 {
-    char_u	*p = ptr;
+    colnr_T	col = start_byte_col;
     int		width = 0;
     int		segment_width = 0;
     bool	seen_visible = false;
@@ -92,26 +92,36 @@ plines_lbr_conceal_width(
     *followed_by_breakp = false;
     *conceal_before_visiblep = false;
     did_emsg = FALSE;
-    while (*p != NUL)
+    for (;;)
     {
-	colnr_T	col = (colnr_T)(p - line);
+	char_u	*line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+	char_u	*p = line + col;
+	int	char_len;
 	int	flags;
 	int	char_width;
 
+	if (*p == NUL)
+	    break;
 	if (*p == TAB)
 	    break;
 
 	flags = plines_syntax_concealed(wp, lnum, col, cache)
-							  ? HL_CONCEAL : 0;
+								  ? HL_CONCEAL : 0;
 	if (did_emsg)
 	    break;
+
+	line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+	p = line + col;
+	if (*p == NUL)
+	    break;
+	char_len = mb_ptr2len(p);
 
 	if (VIM_ISBREAK((int)*p))
 	{
 	    if (flags & HL_CONCEAL)
 	    {
 		*concealedp = true;
-		MB_PTR_ADV(p);
+		col += char_len;
 		continue;
 	    }
 	    break;
@@ -127,7 +137,7 @@ plines_lbr_conceal_width(
 		segment_done = true;
 		break;
 	    }
-	    MB_PTR_ADV(p);
+	    col += char_len;
 	    continue;
 	}
 
@@ -142,10 +152,11 @@ plines_lbr_conceal_width(
 	    segment_width += char_width;
 	    seen_visible = true;
 	}
-	MB_PTR_ADV(p);
+	col += char_len;
     }
 
-    *followed_by_breakp = VIM_ISBREAK((int)*p);
+    *followed_by_breakp = VIM_ISBREAK((int)*(ml_get_buf(wp->w_buffer, lnum,
+							    FALSE) + col));
     (void)syn_get_id(wp, lnum, restore_col, FALSE, NULL, FALSE);
     if (did_emsg)
 	wp->w_s->b_syn_error = TRUE;
@@ -644,6 +655,10 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	size_t len = STRLEN(line);
 
 	syntax_start(wp, lnum);
+	line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+	ptr = line;
+	cts.cts_line = line;
+	cts.cts_ptr = ptr;
 	if (len > 0 && len <= INT_MAX)
 	{
 	    syntax_cache.state = alloc((int)len);
@@ -711,6 +726,7 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 		    && has_syntax && VIM_ISBREAK((int)*ptr))
 	    {
 		char_u	*next = ptr;
+		colnr_T	next_col;
 		int	char_width = win_chartabsize(wp, ptr, vcol);
 		int	visible_width = 0;
 		bool	conceal_before_visible = false;
@@ -727,11 +743,12 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 
 		if (width > 0 && screen_col >= wp->w_width)
 		    screen_col -= ((screen_col - wp->w_width) / width + 1)
-								     * width;
+									     * width;
 		MB_PTR_ADV(next);
+		next_col = (colnr_T)(next - line);
 		if (charsize <= 1 && *next != NUL)
 		    next_concealed = plines_syntax_concealed(wp, lnum,
-				    (colnr_T)(next - line), &syntax_cache);
+							next_col, &syntax_cache);
 		base_extra = wp->w_width - (int)screen_col - char_width;
 		screen_extra = base_extra;
 		if (screen_col >= 0 && screen_col < wp->w_width
@@ -741,11 +758,11 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 		{
 		    int fit_width;
 
-		    fits = plines_lbr_conceal_width(wp, lnum, line, next,
-			    col, (int)screen_col + char_width, screen_extra,
-			    &visible_width, &segment_width, &concealed,
-			    &followed_by_break, &conceal_before_visible,
-			    &syntax_cache);
+		    fits = plines_lbr_conceal_width(wp, lnum, next_col,
+				    col, (int)screen_col + char_width, screen_extra,
+				    &visible_width, &segment_width, &concealed,
+				    &followed_by_break, &conceal_before_visible,
+				    &syntax_cache);
 		    fit_width = concealed ? segment_width : visible_width;
 		    fits = fits && concealed
 			    && (fit_width < screen_extra
@@ -759,11 +776,11 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 		    int fit_width;
 
 		    screen_extra = base_extra + tail;
-		    fits = plines_lbr_conceal_width(wp, lnum, line, next,
-			    col, (int)screen_col + char_width, screen_extra,
-			    &visible_width, &segment_width, &concealed,
-			    &followed_by_break, &conceal_before_visible,
-			    &syntax_cache);
+		    fits = plines_lbr_conceal_width(wp, lnum, next_col,
+				    col, (int)screen_col + char_width, screen_extra,
+				    &visible_width, &segment_width, &concealed,
+				    &followed_by_break, &conceal_before_visible,
+				    &syntax_cache);
 		    fit_width = concealed ? segment_width : visible_width;
 		    fits = fits && concealed
 			    && (fit_width < screen_extra
@@ -780,6 +797,9 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 		    charsize = char_width;
 		else if (visible_width > base_extra)
 		    charsize = wp->w_width - (int)screen_col;
+		ptr = ml_get_buf(wp->w_buffer, lnum, FALSE) + col;
+		line = ptr - col;
+		cts.cts_line = line;
 	    }
 # endif
 	    if (vcol_cb != NULL && cells > 0
@@ -953,25 +973,32 @@ plines_win_col_concealed(win_T *wp, linenr_T lnum, long column)
 plines_win_col_conceal_advance(win_T *wp, linenr_T lnum, long wantcol,
 							       pos_T *pos)
 {
-    char_u	*line;
-    char_u	*ptr;
     long	prev_vcol = 0;
     long	vcol;
     bool	concealed = false;
     colnr_T	last_col = 0;
+    colnr_T	col = 0;
 
     if (!plines_win_may_conceal(wp, lnum))
 	return FAIL;
 
-    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
-    for (ptr = line; *ptr != NUL; MB_PTR_ADV(ptr))
+    for (;;)
     {
-	colnr_T col = (colnr_T)(ptr - line);
+	char_u	    *line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+	char_u	    *ptr = line + col;
+	colnr_T	    next_col;
+
+	if (*ptr == NUL)
+	    break;
+	next_col = col + mb_ptr2len(ptr);
 
 	vcol = plines_win_col_conceal(wp, lnum, col, NULL, &concealed,
-						      NULL, NULL, NULL);
+							      NULL, NULL, NULL);
 	if (concealed)
+	{
+	    col = next_col;
 	    continue;
+	}
 	if (vcol >= wantcol)
 	{
 	    pos->lnum = lnum;
@@ -981,6 +1008,7 @@ plines_win_col_conceal_advance(win_T *wp, linenr_T lnum, long wantcol,
 	}
 	prev_vcol = vcol;
 	last_col = col;
+	col = next_col;
     }
 
     if (prev_vcol <= wantcol)
