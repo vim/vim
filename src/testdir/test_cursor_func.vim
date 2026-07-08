@@ -647,6 +647,23 @@ func Test_virtcol2col()
   call assert_equal(0, virtcol2col(0, 1, 1))
   call assert_equal(0, virtcol2col(0, 1, 2))
 
+  if has('conceal')
+    " virtcol2col() maps virtual columns, which ignore conceal.
+    setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+    let line = repeat('a', 24) .. ' HIDDEN target after hidden text'
+    call setline(1, line)
+    let matchid = matchadd('Conceal', 'HIDDEN ', 10, -1, #{conceal: ''})
+    redraw!
+    let target_col = stridx(line, 'target') + 1
+    let pos = screenpos(0, 1, target_col)
+    call assert_true(pos.curscol > 0)
+    call assert_true(pos.curscol < target_col)
+    call assert_equal(target_col, virtcol2col(0, 1, target_col))
+    call assert_equal(pos.curscol, virtcol2col(0, 1, pos.curscol))
+    call matchdelete(matchid)
+    setlocal wrap& conceallevel& concealcursor& signcolumn& number&
+  endif
+
   let w = winwidth(0)
   call setline(2, repeat('a', w + 2))
   let win_nosbr = win_getid()

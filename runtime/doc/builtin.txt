@@ -12648,6 +12648,9 @@ virtcol2col({winid}, {lnum}, {col})			*virtcol2col()*
 		The result is a Number, which is the byte index of the
 		character in window {winid} at buffer line {lnum} and virtual
 		column {col}.
+		Like |virtcol()|, |conceal| is ignored.  The {col} argument is
+		a virtual column in the unconcealed line, not a drawn screen
+		cell.
 
 		If buffer line {lnum} is an empty line, 0 is returned.
 
