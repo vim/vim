@@ -1839,6 +1839,64 @@ func Test_conceallevel_three_fold_open_close()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_foldcolumn_mouse_click()
+  CheckFeature folding
+
+  let save_mouse = &mouse
+
+  try
+    call NewWindow(8, 40)
+    set mouse=a
+    setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+          \ foldcolumn=1 foldmethod=manual foldenable foldlevel=99
+    setlocal fillchars=foldopen:-,foldclose:+,foldsep:\|
+    syntax match Hidden /HIDDEN / conceal
+
+    let line = 'HIDDEN target words after hidden text to force wrapping'
+          \ .. ' and mapping checks'
+    let target_col = stridx(line, 'target') + 1
+    call setline(1, ['before', line, 'inside fold', 'after'])
+    2,3fold
+    normal! zR
+    call cursor(2, target_col)
+    redraw!
+
+    let [win_row, win_col] = win_screenpos(0)
+    let pos = screenpos(0, 2, target_col)
+    call assert_true(pos.row > 0)
+    call assert_equal(win_col + 1, pos.curscol)
+    call assert_equal('-', screenstring(pos.row, win_col))
+
+    call test_setmouse(pos.row, pos.curscol)
+    call feedkeys("\<LeftMouse>", 'tx')
+    call assert_equal([-1, 2, target_col],
+          \ [foldclosed(2), line('.'), col('.')])
+
+    call test_setmouse(pos.row, win_col)
+    call feedkeys("\<LeftMouse>", 'tx')
+    redraw!
+    call assert_equal([2, 3], [foldclosed(2), foldclosedend(2)])
+    call assert_equal('+', screenstring(pos.row, win_col))
+
+    call test_setmouse(pos.row, win_col)
+    call feedkeys("\<LeftMouse>", 'tx')
+    redraw!
+    call assert_equal(-1, foldclosed(2))
+
+    let pos = screenpos(0, 2, target_col)
+    call assert_true(pos.row > 0)
+    call assert_equal(win_col + 1, pos.curscol)
+    call test_setmouse(pos.row, pos.curscol)
+    call feedkeys("\<LeftMouse>", 'tx')
+    call assert_equal([-1, 2, target_col],
+          \ [foldclosed(2), line('.'), col('.')])
+  finally
+    let &mouse = save_mouse
+    silent! syntax clear Hidden
+    call CloseWindow()
+  endtry
+endfunc
+
 func Test_conceallevel_three_split_window_options()
   call NewWindow(10, 40)
   setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
