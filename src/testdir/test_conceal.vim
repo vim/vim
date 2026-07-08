@@ -1583,6 +1583,37 @@ func Test_conceallevel_three_screenline_option_invalidation()
   endtry
 endfunc
 
+func Test_conceallevel_three_screenline_list_invalidation()
+  call NewWindow(10, 40)
+  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+        \ signcolumn=no nonumber listchars=tab:>-,eol:$
+  syntax match Hidden /HIDDEN / conceal
+
+  let line = 'a' .. "\t" .. ' HIDDEN target words after hidden text'
+  call setline(1, line)
+  let target_col = stridx(line, 'target') + 1
+
+  setlocal nolist
+  call assert_equal([1, 10],
+        \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+  let nolist_line = ScreenLines(1, 40)[0]
+
+  setlocal list
+  call assert_equal([1, 10],
+        \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+  let list_line = ScreenLines(1, 40)[0]
+  call assert_match('^a>------ target words after hidden text', list_line)
+  call assert_true(stridx(list_line, '$') >= 0)
+  call assert_notequal(nolist_line, list_line)
+
+  setlocal nolist
+  call assert_equal([1, 10],
+        \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+
+  syntax clear Hidden
+  call CloseWindow()
+endfunc
+
 func Test_conceallevel_three_split_window_options()
   call NewWindow(10, 40)
   setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
