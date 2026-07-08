@@ -1853,6 +1853,33 @@ func Test_conceallevel_three_non_utf8_encoding_screenpos()
   endfor
 endfunc
 
+func Test_conceallevel_three_hidden_tab_showbreak_vartabstop()
+  CheckFeature vartabs
+
+  call NewWindow(10, 40)
+  try
+    setlocal wrap linebreak showbreak=++ conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    syntax match Hidden /\tHIDDEN / conceal
+
+    let line = repeat('a', 40) .. "\tHIDDEN target words after hidden text"
+    call setline(1, line)
+    let target_col = stridx(line, 'target') + 1
+
+    setlocal tabstop=3 vartabstop=
+    call assert_equal([2, 3], s:ConceallevelThreeCursorCell(target_col))
+
+    setlocal tabstop=8 vartabstop=5,11,17
+    call assert_equal([2, 3], s:ConceallevelThreeCursorCell(target_col))
+
+    setlocal tabstop=4 vartabstop=9,13
+    call assert_equal([2, 3], s:ConceallevelThreeCursorCell(target_col))
+  finally
+    syntax clear Hidden
+    call CloseWindow()
+  endtry
+endfunc
+
 func Test_conceallevel_three_screenline_list_invalidation()
   call NewWindow(10, 40)
   setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
