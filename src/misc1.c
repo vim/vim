@@ -540,6 +540,261 @@ plines_win_nofill(
 }
 
 #if defined(FEAT_CONCEAL)
+# define PLINES_CONCEAL_HEIGHT_CACHE_SIZE 64
+
+typedef struct
+{
+    bool	valid;
+# ifdef FEAT_SYN_HL
+    disptick_T	display_tick;
+# endif
+    win_T	*wp;
+    buf_T	*buf;
+    linenr_T	lnum;
+    linenr_T	topline;
+    colnr_T	leftcol;
+    colnr_T	skipcol;
+    varnumber_T	changedtick;
+    pos_T	cursor;
+    pos_T	visual;
+    int		visual_active;
+    int		visual_mode;
+    int		state;
+    int		width;
+    int		win_height;
+    int		col_off;
+    int		col_off2;
+    int		linebreak;
+    int		breakindent;
+    int		list;
+    int		wrap;
+# ifdef FEAT_DIFF
+    int		diff;
+    int		topfill;
+    int		botfill;
+# endif
+    long	tabstop;
+    int		rightleft;
+    int		ambiwidth;
+    hash_T	showbreak_hash;
+    hash_T	breakat_hash;
+    hash_T	briopt_hash;
+    hash_T	lcs_hash;
+    hash_T	global_lcs_hash;
+    hash_T	vts_hash;
+    hash_T	cocu_hash;
+# ifdef FEAT_SEARCH_EXTRA
+    matchitem_T	*match_head;
+    int		match_count;
+    hash_T	match_hash;
+# endif
+# ifdef FEAT_SYN_HL
+    int		syn_patterns_len;
+    int		syn_conceal;
+# endif
+    int		height;
+} plines_conceal_height_cache_T;
+
+static plines_conceal_height_cache_T
+	plines_conceal_height_cache[PLINES_CONCEAL_HEIGHT_CACHE_SIZE];
+static int plines_conceal_height_cache_next = 0;
+
+    static hash_T
+plines_conceal_vts_hash(win_T *wp)
+{
+# ifdef FEAT_VARTABS
+    return wp->w_buffer->b_p_vts == NULL
+			? 0 : hash_hash(wp->w_buffer->b_p_vts);
+# else
+    return 0;
+# endif
+}
+
+    static int
+plines_conceal_rightleft(win_T *wp)
+{
+# ifdef FEAT_RIGHTLEFT
+    return wp->w_p_rl;
+# else
+    return 0;
+# endif
+}
+
+    static int
+plines_conceal_ambiwidth(void)
+{
+    return p_ambw == NULL ? 0 : *p_ambw;
+}
+
+# ifdef FEAT_SEARCH_EXTRA
+    static hash_T
+plines_conceal_match_hash(win_T *wp, int *countp)
+{
+    hash_T	    hash = 0;
+    matchitem_T	    *cur;
+
+    *countp = 0;
+    for (cur = wp->w_match_head; cur != NULL; cur = cur->mit_next)
+    {
+	++*countp;
+	hash = hash * 101 + (hash_T)cur->mit_id;
+	hash = hash * 101 + (hash_T)cur->mit_priority;
+	hash = hash * 101 + (hash_T)cur->mit_hlg_id;
+	hash = hash * 101 + (hash_T)cur->mit_conceal_char;
+	if (cur->mit_pattern != NULL)
+	    hash += hash_hash(cur->mit_pattern);
+	hash = hash * 101 + (hash_T)cur->mit_pos_count;
+	hash = hash * 101 + (hash_T)cur->mit_toplnum;
+	hash = hash * 101 + (hash_T)cur->mit_botlnum;
+    }
+    return hash;
+}
+# endif
+
+    static void
+plines_conceal_height_cache_key(
+	win_T				*wp,
+	linenr_T			lnum,
+	plines_conceal_height_cache_T	*key)
+{
+    CLEAR_POINTER(key);
+    key->valid = true;
+# ifdef FEAT_SYN_HL
+    key->display_tick = display_tick;
+# endif
+    key->wp = wp;
+    key->buf = wp->w_buffer;
+    key->lnum = lnum;
+    key->topline = wp->w_topline;
+    key->leftcol = wp->w_leftcol;
+    key->skipcol = wp->w_skipcol;
+    key->changedtick = CHANGEDTICK(wp->w_buffer);
+    key->cursor = wp->w_cursor;
+    key->visual = VIsual;
+    key->visual_active = VIsual_active;
+    key->visual_mode = VIsual_mode;
+    key->state = State;
+    key->width = wp->w_width;
+    key->win_height = wp->w_height;
+    key->col_off = win_col_off(wp);
+    key->col_off2 = win_col_off2(wp);
+    key->linebreak = wp->w_p_lbr;
+    key->breakindent = wp->w_p_bri;
+    key->list = wp->w_p_list;
+    key->wrap = wp->w_p_wrap;
+# ifdef FEAT_DIFF
+    key->diff = wp->w_p_diff;
+    key->topfill = wp->w_topfill;
+    key->botfill = wp->w_botfill;
+# endif
+    key->tabstop = wp->w_buffer->b_p_ts;
+    key->rightleft = plines_conceal_rightleft(wp);
+    key->ambiwidth = plines_conceal_ambiwidth();
+    key->showbreak_hash = hash_hash(get_showbreak_value(wp));
+    key->breakat_hash = hash_hash(p_breakat);
+    key->briopt_hash = hash_hash(wp->w_p_briopt);
+    key->lcs_hash = hash_hash(wp->w_p_lcs);
+    key->global_lcs_hash = hash_hash(p_lcs);
+    key->vts_hash = plines_conceal_vts_hash(wp);
+    key->cocu_hash = hash_hash(wp->w_p_cocu);
+# ifdef FEAT_SEARCH_EXTRA
+    key->match_head = wp->w_match_head;
+    key->match_hash = plines_conceal_match_hash(wp, &key->match_count);
+# endif
+# ifdef FEAT_SYN_HL
+    key->syn_patterns_len = wp->w_s->b_syn_patterns.ga_len;
+    key->syn_conceal = wp->w_s->b_syn_conceal;
+# endif
+}
+
+    static bool
+plines_conceal_height_cache_equal(
+	plines_conceal_height_cache_T *cache,
+	plines_conceal_height_cache_T *key)
+{
+    return cache->valid
+# ifdef FEAT_SYN_HL
+	&& cache->display_tick == key->display_tick
+# endif
+	&& cache->wp == key->wp
+	&& cache->buf == key->buf
+	&& cache->lnum == key->lnum
+	&& cache->topline == key->topline
+	&& cache->leftcol == key->leftcol
+	&& cache->skipcol == key->skipcol
+	&& cache->changedtick == key->changedtick
+	&& EQUAL_POS(cache->cursor, key->cursor)
+	&& EQUAL_POS(cache->visual, key->visual)
+	&& cache->visual_active == key->visual_active
+	&& cache->visual_mode == key->visual_mode
+	&& cache->state == key->state
+	&& cache->width == key->width
+	&& cache->win_height == key->win_height
+	&& cache->col_off == key->col_off
+	&& cache->col_off2 == key->col_off2
+	&& cache->linebreak == key->linebreak
+	&& cache->breakindent == key->breakindent
+	&& cache->list == key->list
+	&& cache->wrap == key->wrap
+# ifdef FEAT_DIFF
+	&& cache->diff == key->diff
+	&& cache->topfill == key->topfill
+	&& cache->botfill == key->botfill
+# endif
+	&& cache->tabstop == key->tabstop
+	&& cache->rightleft == key->rightleft
+	&& cache->ambiwidth == key->ambiwidth
+	&& cache->showbreak_hash == key->showbreak_hash
+	&& cache->breakat_hash == key->breakat_hash
+	&& cache->briopt_hash == key->briopt_hash
+	&& cache->lcs_hash == key->lcs_hash
+	&& cache->global_lcs_hash == key->global_lcs_hash
+	&& cache->vts_hash == key->vts_hash
+	&& cache->cocu_hash == key->cocu_hash
+# ifdef FEAT_SEARCH_EXTRA
+	&& cache->match_head == key->match_head
+	&& cache->match_count == key->match_count
+	&& cache->match_hash == key->match_hash
+# endif
+# ifdef FEAT_SYN_HL
+	&& cache->syn_patterns_len == key->syn_patterns_len
+	&& cache->syn_conceal == key->syn_conceal
+# endif
+	;
+}
+
+    static bool
+plines_conceal_height_cache_get(
+	plines_conceal_height_cache_T	*key,
+	int				*heightp)
+{
+    int i;
+
+    for (i = 0; i < PLINES_CONCEAL_HEIGHT_CACHE_SIZE; ++i)
+	if (plines_conceal_height_cache_equal(
+				       &plines_conceal_height_cache[i], key))
+	{
+	    *heightp = plines_conceal_height_cache[i].height;
+	    return true;
+	}
+    return false;
+}
+
+    static void
+plines_conceal_height_cache_store(
+	plines_conceal_height_cache_T	*key,
+	int				height)
+{
+    plines_conceal_height_cache_T *cache =
+	    &plines_conceal_height_cache[plines_conceal_height_cache_next];
+
+    *cache = *key;
+    cache->height = height;
+    plines_conceal_height_cache_next =
+	(plines_conceal_height_cache_next + 1)
+				      % PLINES_CONCEAL_HEIGHT_CACHE_SIZE;
+}
+
     static bool
 plines_win_may_conceal(win_T *wp, linenr_T lnum)
 {
@@ -590,17 +845,33 @@ plines_conceal_height_cb(
     static int
 plines_win_conceal_height(win_T *wp, linenr_T lnum)
 {
-    bool    has_conceal = false;
-    int	    rows = 0;
+    bool				has_conceal = false;
+    bool				cacheable = true;
+    int					height;
+    int					rows = 0;
+    plines_conceal_height_cache_T	key;
 
     if (!plines_win_may_conceal(wp, lnum))
 	return 0;
+# ifdef FEAT_PROP_POPUP
+    // Text property changes do not update b:changedtick, but can change the
+    // drawn height.
+    cacheable = !wp->w_buffer->b_has_textprop;
+# endif
+    if (cacheable)
+    {
+	plines_conceal_height_cache_key(wp, lnum, &key);
+	if (plines_conceal_height_cache_get(&key, &height))
+	    return height;
+    }
     if (win_line_conceal_screenline_iter(wp, lnum,
 		    plines_conceal_height_cb, NULL, &has_conceal,
 		    &rows) == FAIL)
 	return -1;
     if (!has_conceal)
-	return 0;
+	rows = 0;
+    if (cacheable)
+	plines_conceal_height_cache_store(&key, rows);
     return rows;
 }
 
