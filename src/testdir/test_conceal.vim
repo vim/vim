@@ -1786,6 +1786,59 @@ func Test_conceallevel_three_diff_scrollbind_cursorbind()
   endtry
 endfunc
 
+func Test_conceallevel_three_fold_open_close()
+  CheckFeature folding
+
+  call NewWindow(8, 40)
+  setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+        \ foldcolumn=0 foldmethod=manual foldenable foldlevel=99
+  syntax match Hidden /HIDDEN / conceal
+
+  let line = repeat('a', 42)
+        \ .. ' HIDDEN target words after hidden text to force wrapping'
+        \ .. ' and mapping checks'
+  let target_col = stridx(line, 'target') + 1
+  call setline(1, ['before', line, 'inside fold', 'after'])
+  2,3fold
+  2foldopen
+
+  call cursor(2, target_col)
+  redraw!
+  let [win_row, win_col] = win_screenpos(0)
+  let pos = screenpos(0, 2, target_col)
+  call assert_true(pos.row > 0)
+  call assert_equal([winline(), wincol()],
+        \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+  let open_cell = [winline(), wincol()]
+  let open_after_row = screenpos(0, 4, 1).row - win_row + 1
+  call assert_true(open_cell[0] < open_after_row)
+
+  2foldclose
+  redraw!
+  call assert_equal(2, foldclosed(2))
+  call assert_equal(3, foldclosedend(2))
+  let pos = screenpos(0, 2, target_col)
+  call assert_true(pos.row > 0)
+  call assert_equal([winline(), wincol()],
+        \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+  call assert_equal(1, wincol())
+  let closed_after_row = screenpos(0, 4, 1).row - win_row + 1
+  call assert_true(closed_after_row < open_after_row)
+
+  2foldopen
+  call cursor(2, target_col)
+  redraw!
+  let pos = screenpos(0, 2, target_col)
+  call assert_true(pos.row > 0)
+  call assert_equal(open_cell, [winline(), wincol()])
+  call assert_equal(open_cell,
+        \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+  call assert_equal(open_after_row, screenpos(0, 4, 1).row - win_row + 1)
+
+  syntax clear Hidden
+  call CloseWindow()
+endfunc
+
 func Test_conceallevel_three_split_window_options()
   call NewWindow(10, 40)
   setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
