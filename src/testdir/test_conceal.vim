@@ -1614,6 +1614,55 @@ func Test_conceallevel_three_screenline_list_invalidation()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_tabpage_screenline_state()
+  let save_lines = &lines
+  let save_columns = &columns
+
+  try
+    set lines=20 columns=40
+    tabnew
+    setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+          \ showbreak=
+    syntax match Hidden /HIDDEN / conceal
+
+    let line = repeat('a', 42)
+          \ .. ' HIDDEN target words after hidden text to force wrapping'
+          \ .. ' and mapping checks'
+    call setline(1, line)
+    let target_col = stridx(line, 'target') + 1
+    let plain_tab = tabpagenr()
+    let plain_buf = bufnr()
+
+    call assert_equal([1, 4],
+          \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+
+    tab split
+    let lbr_tab = tabpagenr()
+    call assert_equal(plain_buf, bufnr())
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber showbreak=++
+    call assert_equal([1, 6],
+          \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+
+    execute 'tabnext ' .. plain_tab
+    call assert_equal(plain_buf, bufnr())
+    call assert_equal([1, 4],
+          \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+
+    execute 'tabnext ' .. lbr_tab
+    call assert_equal(plain_buf, bufnr())
+    call assert_equal([1, 6],
+          \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+  finally
+    silent! syntax clear Hidden
+    silent! tabonly!
+    silent! only!
+    silent! enew!
+    let &columns = save_columns
+    let &lines = save_lines
+  endtry
+endfunc
+
 func Test_conceallevel_three_split_window_options()
   call NewWindow(10, 40)
   setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
