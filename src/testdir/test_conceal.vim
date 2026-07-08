@@ -2399,6 +2399,66 @@ func Test_conceallevel_three_edit_commands_hidden_width()
   endtry
 endfunc
 
+func Test_conceallevel_three_dot_repeat_hidden_delimiters()
+  let save_reg = getreg('"')
+  let save_regtype = getregtype('"')
+
+  call NewWindow(8, 40)
+  try
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    syntax region Code matchgroup=HiddenMarker start=/`/ end=/`/
+          \ concealends
+
+    let prefix = repeat('a', 42)
+    let line = prefix .. ' target alpha target beta'
+    call setline(1, line)
+    let first_target_col = stridx(getline(1), 'target alpha') + 1
+    let alpha_col = stridx(getline(1), 'alpha') + 1
+    let second_target_col = stridx(getline(1), 'target beta') + 1
+    let beta_col = stridx(getline(1), 'beta') + 1
+
+    let first_target_cell = s:ConceallevelThreeCursorCell(first_target_col)
+    call assert_true(first_target_cell[0] > 1)
+    let alpha_cell = s:ConceallevelThreeCursorCell(alpha_col)
+    let second_target_cell = s:ConceallevelThreeCursorCell(second_target_col)
+    let beta_cell = s:ConceallevelThreeCursorCell(beta_col)
+
+    call cursor(1, first_target_col)
+    execute "normal! ciw`target`\<Esc>"
+    call assert_equal(prefix .. ' `target` alpha target beta', getline(1))
+    let first_target_col = stridx(getline(1), 'target` alpha') + 1
+    let alpha_col = stridx(getline(1), 'alpha') + 1
+    let second_target_col = stridx(getline(1), 'target beta') + 1
+    let beta_col = stridx(getline(1), 'beta') + 1
+    call assert_equal(first_target_cell,
+          \ s:ConceallevelThreeCursorCell(first_target_col))
+    call assert_equal(alpha_cell, s:ConceallevelThreeCursorCell(alpha_col))
+    call assert_equal(second_target_cell,
+          \ s:ConceallevelThreeCursorCell(second_target_col))
+    call assert_equal(beta_cell, s:ConceallevelThreeCursorCell(beta_col))
+
+    call cursor(1, second_target_col)
+    normal! .
+    call assert_equal(prefix .. ' `target` alpha `target` beta',
+          \ getline(1))
+    let first_target_col = stridx(getline(1), 'target` alpha') + 1
+    let alpha_col = stridx(getline(1), 'alpha') + 1
+    let second_target_col = stridx(getline(1), 'target` beta') + 1
+    let beta_col = stridx(getline(1), 'beta') + 1
+    call assert_equal(first_target_cell,
+          \ s:ConceallevelThreeCursorCell(first_target_col))
+    call assert_equal(alpha_cell, s:ConceallevelThreeCursorCell(alpha_col))
+    call assert_equal(second_target_cell,
+          \ s:ConceallevelThreeCursorCell(second_target_col))
+    call assert_equal(beta_cell, s:ConceallevelThreeCursorCell(beta_col))
+  finally
+    call setreg('"', save_reg, save_regtype)
+    silent! syntax clear Code
+    call CloseWindow()
+  endtry
+endfunc
+
 func s:TermTextAttrs(buf, text, occurrence) abort
   let seen = 0
   let rows = term_getsize(a:buf)[0] - 1
