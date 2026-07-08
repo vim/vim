@@ -769,6 +769,54 @@ func Test_conceallevel_three_popup_scrollbar_getmousepos()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_popup_rightleft_narrow_getmousepos()
+  CheckFeature rightleft
+
+  call NewWindow(10, 70)
+
+  let line = repeat('a', 22)
+        \ .. ' HIDDEN target words after hidden text to force wrapping'
+        \ .. ' and mapping checks'
+  call setline(1, line)
+  let winid = popup_create(bufnr(), #{
+        \ line: 2, col: 8, minwidth: 26, maxwidth: 26, minheight: 5,
+        \ border: [], padding: [1, 2, 1, 2], wrap: v:true,
+        \ })
+  call win_execute(winid, 'setlocal rightleft wrap linebreak breakindent'
+        \ .. ' conceallevel=3 concealcursor=nvic signcolumn=no nonumber')
+  call win_execute(winid, 'syntax match Hidden /HIDDEN / conceal')
+  redraw!
+
+  let target_col = stridx(line, 'target') + 1
+  let pos = screenpos(winid, 1, target_col)
+  call assert_true(pos.row > 0)
+
+  let poppos = popup_getpos(winid)
+  call assert_true(poppos.core_width <= 26)
+
+  " Add border/padding offsets to click the popup's drawn text cell.
+  let mouse_row = pos.row + poppos.core_line - poppos.line
+  let mouse_col = pos.curscol + poppos.core_col - poppos.col
+  call assert_true(mouse_row > poppos.core_line)
+  call assert_true(mouse_col >= poppos.core_col)
+  call assert_true(mouse_col < poppos.core_col + poppos.core_width)
+
+  call test_setmouse(mouse_row, mouse_col)
+  let mousepos = getmousepos()
+  call assert_equal(winid, mousepos.winid)
+  call assert_equal(mouse_row, mousepos.screenrow)
+  call assert_equal(mouse_col, mousepos.screencol)
+  call assert_equal(mouse_row - poppos.line + 1, mousepos.winrow)
+  call assert_equal(mouse_col - poppos.col + 1, mousepos.wincol)
+  call assert_equal(1, mousepos.line)
+  call assert_equal(target_col, mousepos.column)
+  call assert_equal(0, mousepos.coladd)
+
+  call popup_close(winid)
+  syntax clear Hidden
+  call CloseWindow()
+endfunc
+
 func Test_conceallevel_three_wrapped_mouse_click_rightleft()
   CheckFeature rightleft
 
