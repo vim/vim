@@ -600,7 +600,7 @@ static plines_conceal_height_cache_T
 static int plines_conceal_height_cache_next = 0;
 
     static hash_T
-plines_conceal_vts_hash(win_T *wp)
+plines_conceal_vts_hash(win_T *wp UNUSED)
 {
 # ifdef FEAT_VARTABS
     return wp->w_buffer->b_p_vts == NULL
@@ -611,7 +611,7 @@ plines_conceal_vts_hash(win_T *wp)
 }
 
     static int
-plines_conceal_rightleft(win_T *wp)
+plines_conceal_rightleft(win_T *wp UNUSED)
 {
 # ifdef FEAT_RIGHTLEFT
     return wp->w_p_rl;
@@ -841,9 +841,11 @@ plines_conceal_height_cb(
 /*
  * Return the exact drawn height of "lnum" when it has concealed text, zero
  * when there is no concealment, or -1 when the drawn height cannot be checked.
+ * Set "drawn_line" when win_line() was used, which may invalidate pointers
+ * returned by ml_get_buf().
  */
     static int
-plines_win_conceal_height(win_T *wp, linenr_T lnum)
+plines_win_conceal_height(win_T *wp, linenr_T lnum, bool *drawn_line)
 {
     bool				has_conceal = false;
     bool				cacheable = true;
@@ -851,6 +853,7 @@ plines_win_conceal_height(win_T *wp, linenr_T lnum)
     int					rows = 0;
     plines_conceal_height_cache_T	key;
 
+    *drawn_line = false;
     if (!plines_win_may_conceal(wp, lnum))
 	return 0;
 # ifdef FEAT_PROP_POPUP
@@ -864,6 +867,7 @@ plines_win_conceal_height(win_T *wp, linenr_T lnum)
 	if (plines_conceal_height_cache_get(&key, &height))
 	    return height;
     }
+    *drawn_line = true;
     if (win_line_conceal_screenline_iter(wp, lnum,
 		    plines_conceal_height_cb, NULL, &has_conceal,
 		    &rows) == FAIL)
@@ -1325,12 +1329,19 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
 #ifdef FEAT_CONCEAL
     if (wp->w_p_cole == 3)
     {
-	int conceal_height = plines_win_conceal_height(wp, lnum);
+	bool drawn_line = false;
+	int conceal_height = plines_win_conceal_height(wp, lnum, &drawn_line);
 
 	if (conceal_height > 0)
 	{
 	    clear_chartabsize_arg(&cts);
 	    return conceal_height;
+	}
+	if (drawn_line)
+	{
+	    clear_chartabsize_arg(&cts);
+	    s = ml_get_buf(wp->w_buffer, lnum, FALSE);
+	    init_chartabsize_arg(&cts, wp, lnum, 0, s, s);
 	}
 	if (conceal_height == 0)
 	    no_conceal = true;
