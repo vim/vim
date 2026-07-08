@@ -3524,14 +3524,18 @@ nv_visual_block_conceal_vert(cmdarg_T *cap, int dir)
     long	wantcol;
     pos_T	target_pos;
     colnr_T	save_curswant = curwin->w_curswant;
+    colnr_T	virtcol;
 
     if (!VIsual_active || VIsual_mode != Ctrl_V || cap->arg
 	    || !nv_screenline_conceal_active())
 	return NOTDONE;
 
     wantcol = plines_win_col_conceal_vcol(curwin, curwin->w_cursor.lnum,
-						    curwin->w_cursor.col);
+							    curwin->w_cursor.col);
     if (wantcol < 0)
+	return NOTDONE;
+    getvvcol(curwin, &curwin->w_cursor, NULL, &virtcol, NULL, 0);
+    if (wantcol == (long)virtcol)
 	return NOTDONE;
     nv_screenline_conceal_clear();
 

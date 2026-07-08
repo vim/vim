@@ -932,7 +932,7 @@ func Test_conceallevel_three_visual_block_restarts_after_concealed_cursor()
   redraw!
 
   call cursor(1, 45)
-  execute "normal! \<C-V>j20h"
+  execute "normal! \<C-V>j30h"
   redraw
 
   call assert_match('https://', strpart(line, col('.') - 1))
