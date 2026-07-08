@@ -1763,6 +1763,39 @@ func Test_conceallevel_three_emoji_width_screenpos()
   endtry
 endfunc
 
+func Test_conceallevel_three_custom_cell_width_screenpos()
+  if !has('multi_byte') || &encoding !=# 'utf-8'
+    return
+  endif
+
+  call NewWindow(10, 40)
+  try
+    setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+    syntax match Hidden /HIDDEN / conceal
+
+    let width_char = nr2char(0x279c)
+    let prefix = repeat(width_char, 41)
+    let line = prefix .. ' HIDDEN target words after hidden text'
+    call setline(1, line)
+    let target_col = stridx(line, 'target') + 1
+
+    call setcellwidths([[0x279c, 0x279c, 1]])
+    call assert_equal(41, strdisplaywidth(prefix))
+    call assert_equal([2, 3], s:ConceallevelThreeCursorCell(target_col))
+
+    call setcellwidths([[0x279c, 0x279c, 2]])
+    call assert_equal(82, strdisplaywidth(prefix))
+    call assert_equal([3, 4], s:ConceallevelThreeCursorCell(target_col))
+
+    call setcellwidths([[0x279c, 0x279c, 1]])
+    call assert_equal([2, 3], s:ConceallevelThreeCursorCell(target_col))
+  finally
+    call setcellwidths([])
+    syntax clear Hidden
+    call CloseWindow()
+  endtry
+endfunc
+
 func Test_conceallevel_three_screenline_list_invalidation()
   call NewWindow(10, 40)
   setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
