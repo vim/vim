@@ -1728,6 +1728,41 @@ func Test_conceallevel_three_combining_marks_screenpos()
   endtry
 endfunc
 
+func Test_conceallevel_three_emoji_width_screenpos()
+  if !has('multi_byte') || &encoding !=# 'utf-8'
+    return
+  endif
+
+  let save_emoji = &emoji
+
+  call NewWindow(10, 40)
+  try
+    setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+    syntax match Hidden /HIDDEN / conceal
+
+    let emoji_char = nr2char(0x1f321)
+    let prefix = repeat(emoji_char, 41)
+    let line = prefix .. ' HIDDEN target words after hidden text'
+    call setline(1, line)
+    let target_col = stridx(line, 'target') + 1
+
+    set emoji
+    call assert_equal(82, strdisplaywidth(prefix))
+    call assert_equal([3, 4], s:ConceallevelThreeCursorCell(target_col))
+
+    set noemoji
+    call assert_equal(41, strdisplaywidth(prefix))
+    call assert_equal([2, 3], s:ConceallevelThreeCursorCell(target_col))
+
+    set emoji
+    call assert_equal([3, 4], s:ConceallevelThreeCursorCell(target_col))
+  finally
+    let &emoji = save_emoji
+    syntax clear Hidden
+    call CloseWindow()
+  endtry
+endfunc
+
 func Test_conceallevel_three_screenline_list_invalidation()
   call NewWindow(10, 40)
   setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
