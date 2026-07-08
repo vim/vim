@@ -2039,6 +2039,85 @@ func Test_conceallevel_three_search_hidden_delimiters()
   endtry
 endfunc
 
+func s:TermTextAttrs(buf, text, occurrence) abort
+  let seen = 0
+  let rows = term_getsize(a:buf)[0] - 1
+  for row in range(1, rows)
+    let cells = term_scrape(a:buf, row)
+    let line = join(map(copy(cells), 'v:val.chars'), '')
+    let start = 0
+    while 1
+      let idx = stridx(line, a:text, start)
+      if idx < 0
+        break
+      endif
+      let seen += 1
+      if seen == a:occurrence
+        let attrs = map(copy(cells[idx : idx + strlen(a:text) - 1]),
+              \ 'v:val.attr')
+        return #{row: row, col: idx + 1, attrs: attrs}
+      endif
+      let start = idx + strlen(a:text)
+    endwhile
+  endfor
+
+  call assert_report('did not find "' .. a:text .. '" occurrence '
+        \ .. a:occurrence)
+  return #{row: 0, col: 0, attrs: []}
+endfunc
+
+func Test_conceallevel_three_incsearch_hlsearch()
+  CheckRunVimInTerminal
+  CheckNotGui
+
+  let code =<< trim [CODE]
+    set incsearch hlsearch scrolloff=0
+    set wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    highlight Search ctermfg=0 ctermbg=11
+    highlight IncSearch ctermfg=15 ctermbg=9
+    syntax region Code matchgroup=Tick start=/`/ end=/`/ concealends
+    let line1 = repeat('a', 42) .. ' `target` alpha'
+    let line2 = repeat('b', 42) .. ' `target` beta'
+    call setline(1, [line1, line2])
+    call cursor(1, 1)
+  [CODE]
+  call writefile(code, 'XTest_conceallevel_three_incsearch_hlsearch', 'D')
+
+  let buf = 0
+  try
+    let buf = RunVimInTerminal(
+          \ '-S XTest_conceallevel_three_incsearch_hlsearch',
+          \ #{rows: 8, cols: 40})
+    call TermWait(buf, 100)
+
+    call term_sendkeys(buf, '/`target`')
+    call TermWait(buf, 100)
+    let normal_attr = term_scrape(buf, 1)[0].attr
+    let inc_match = s:TermTextAttrs(buf, 'target', 1)
+    let search_match = s:TermTextAttrs(buf, 'target', 2)
+    call assert_equal(repeat([inc_match.attrs[0]], 6), inc_match.attrs)
+    call assert_equal(repeat([search_match.attrs[0]], 6),
+          \ search_match.attrs)
+    call assert_notequal(normal_attr, inc_match.attrs[0])
+    call assert_notequal(normal_attr, search_match.attrs[0])
+    call assert_notequal(inc_match.attrs[0], search_match.attrs[0])
+
+    call term_sendkeys(buf, "\<CR>")
+    call TermWait(buf, 100)
+    let first_hl = s:TermTextAttrs(buf, 'target', 1)
+    let second_hl = s:TermTextAttrs(buf, 'target', 2)
+    call assert_equal(repeat([first_hl.attrs[0]], 6), first_hl.attrs)
+    call assert_equal(repeat([second_hl.attrs[0]], 6), second_hl.attrs)
+    call assert_notequal(normal_attr, first_hl.attrs[0])
+    call assert_equal(first_hl.attrs[0], second_hl.attrs[0])
+  finally
+    if buf > 0
+      call StopVimInTerminal(buf)
+    endif
+  endtry
+endfunc
+
 func Test_conceallevel_three_split_window_options()
   call NewWindow(10, 40)
   setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
