@@ -1448,6 +1448,70 @@ func Test_gui_mouse_conceallevel_three_modeless_selection()
   endtry
 endfunc
 
+func Test_gui_mousefocus_conceallevel_three()
+  CheckFeature conceal
+
+  let save_mouse = &mouse
+  let save_mousefocus = &mousefocus
+  let save_columns = &columns
+  let save_lines = &lines
+
+  call test_override('no_query_mouse', 1)
+  set columns=40 lines=14 mouse=a mousefocus
+  new
+  let target_buf = bufnr()
+  try
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    syntax match Hidden /HIDDEN / conceal
+
+    let line = repeat('a', 42)
+          \ .. ' HIDDEN target words after hidden text to force wrapping'
+          \ .. ' and mapping checks'
+    call setline(1, line)
+    let target_win = win_getid()
+
+    belowright new
+    let other_buf = bufnr()
+    call setline(1, 'other window')
+    let other_win = win_getid()
+
+    redraw!
+    let target_col = stridx(line, 'target') + 1
+    let target = screenpos(target_win, 1, target_col)
+    call assert_true(target.row > 0)
+    let [target_winrow, _] = win_screenpos(target_win)
+    let focus_row = target_winrow + winheight(target_win)
+    call assert_equal(other_win, win_getid())
+
+    " This is the non-mappable focus event used by 'mousefocus'.
+    call test_setmouse(focus_row, 1)
+    call feedkeys("\<LeftMouseNM>\<LeftReleaseNM>", 'tx')
+    call assert_equal(target_win, win_getid())
+
+    call test_setmouse(target.row, target.curscol)
+    let mousepos = getmousepos()
+    call assert_equal(target_win, mousepos.winid)
+    call assert_equal(1, mousepos.line)
+    call assert_equal(target_col, mousepos.column)
+  finally
+    if exists('target_win') && win_id2win(target_win) > 0
+      call win_execute(target_win, 'syntax clear Hidden')
+    endif
+    if exists('other_buf')
+      exe 'silent! bwipe! ' .. other_buf
+    endif
+    if exists('target_buf')
+      exe 'silent! bwipe! ' .. target_buf
+    endif
+    let &columns = save_columns
+    let &lines = save_lines
+    let &mousefocus = save_mousefocus
+    let &mouse = save_mouse
+    call test_override('no_query_mouse', 0)
+  endtry
+endfunc
+
 " Test invalid parameters for test_gui_event()
 func Test_gui_event_mouse_fails()
   call test_override('no_query_mouse', 1)
