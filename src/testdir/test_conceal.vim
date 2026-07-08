@@ -2317,6 +2317,88 @@ func Test_conceallevel_three_same_line_hidden_width_edits()
   endtry
 endfunc
 
+func Test_conceallevel_three_edit_commands_hidden_width()
+  let save_reg = getreg('"')
+  let save_regtype = getregtype('"')
+
+  call NewWindow(8, 40)
+  try
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber noautoindent textwidth=80
+          \ formatoptions=tcq formatexpr= formatprg=
+    syntax match Hidden /[XY]\+/ conceal
+
+    let prefix = repeat('a', 42)
+    let base = prefix .. ' XXXX target after'
+    call setline(1, base)
+    let target_col = stridx(getline(1), 'target') + 1
+    let target_cell = s:ConceallevelThreeCursorCell(target_col)
+    call assert_true(target_cell[0] > 1)
+
+    call setline(1, base)
+    call cursor(1, stridx(getline(1), 'XXXX') + 1)
+    normal! x
+    call assert_equal(prefix .. ' XXX target after', getline(1))
+    let target_col = stridx(getline(1), 'target') + 1
+    call assert_equal(target_cell, s:ConceallevelThreeCursorCell(target_col))
+
+    call setline(1, base)
+    call cursor(1, stridx(getline(1), 'XXXX') + 3)
+    normal! X
+    call assert_equal(prefix .. ' XXX target after', getline(1))
+    let target_col = stridx(getline(1), 'target') + 1
+    call assert_equal(target_cell, s:ConceallevelThreeCursorCell(target_col))
+
+    call setline(1, base)
+    call cursor(1, stridx(getline(1), 'XXXX') + 1)
+    execute "normal! sYYYY\<Esc>"
+    call assert_equal(prefix .. ' YYYYXXX target after', getline(1))
+    let target_col = stridx(getline(1), 'target') + 1
+    call assert_equal(target_cell, s:ConceallevelThreeCursorCell(target_col))
+
+    call setline(1, base)
+    call cursor(1, stridx(getline(1), 'XXXX') + 1)
+    normal! rY
+    call assert_equal(prefix .. ' YXXX target after', getline(1))
+    let target_col = stridx(getline(1), 'target') + 1
+    call assert_equal(target_cell, s:ConceallevelThreeCursorCell(target_col))
+
+    call setline(1, base)
+    call cursor(1, stridx(getline(1), 'XXXX') + 1)
+    execute "normal! cwYYYYYY\<Esc>"
+    call assert_equal(prefix .. ' YYYYYY target after', getline(1))
+    let target_col = stridx(getline(1), 'target') + 1
+    call assert_equal(target_cell, s:ConceallevelThreeCursorCell(target_col))
+
+    call setline(1, base)
+    call cursor(1, 1)
+    execute "normal! cc" .. prefix .. " YYYY target after\<Esc>"
+    call assert_equal(prefix .. ' YYYY target after', getline(1))
+    let target_col = stridx(getline(1), 'target') + 1
+    call assert_equal(target_cell, s:ConceallevelThreeCursorCell(target_col))
+
+    call setline(1, [prefix .. ' YYYY', 'target after'])
+    call cursor(1, 1)
+    normal! J
+    call assert_equal(prefix .. ' YYYY target after', getline(1))
+    call assert_equal(1, line('$'))
+    let target_col = stridx(getline(1), 'target') + 1
+    call assert_equal(target_cell, s:ConceallevelThreeCursorCell(target_col))
+
+    call setline(1, [prefix .. ' YYYY', 'target after'])
+    call cursor(1, 1)
+    normal! gqj
+    call assert_equal(prefix .. ' YYYY target after', getline(1))
+    call assert_equal(1, line('$'))
+    let target_col = stridx(getline(1), 'target') + 1
+    call assert_equal(target_cell, s:ConceallevelThreeCursorCell(target_col))
+  finally
+    call setreg('"', save_reg, save_regtype)
+    silent! syntax clear Hidden
+    call CloseWindow()
+  endtry
+endfunc
+
 func s:TermTextAttrs(buf, text, occurrence) abort
   let seen = 0
   let rows = term_getsize(a:buf)[0] - 1
