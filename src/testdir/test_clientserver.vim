@@ -557,10 +557,9 @@ func Test_clientserver_serverlist_list()
 
   let job = job_start(actual, {'stoponexit': 'kill', 'out_io': 'null'})
 
-  call WaitForAssert({-> assert_match('XVIMTEST', serverlist())})
-
   call assert_equal('list<string>', typename(serverlist(#{list: v:true})))
-  call assert_true(serverlist(#{list: v:true})->index('XVIMTEST') != -1)
+  call WaitForAssert({-> assert_true(
+        \ serverlist(#{list: v:true})->index('XVIMTEST') != -1)})
 
   if has('win32') || has('gui_running')
     call job_stop(job, 'kill')

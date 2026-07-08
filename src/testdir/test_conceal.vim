@@ -1617,12 +1617,14 @@ func Test_conceallevel_three_screenline_list_invalidation()
 endfunc
 
 func Test_conceallevel_three_tabpage_screenline_state()
-  let save_lines = &lines
-  let save_columns = &columns
-
   try
-    set lines=20 columns=40
     tabnew
+    botright vertical new
+    wincmd p
+    vertical resize 40
+    set winfixwidth
+    call assert_equal(40, winwidth(0))
+
     setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
           \ showbreak=
     syntax match Hidden /HIDDEN / conceal
@@ -1639,6 +1641,12 @@ func Test_conceallevel_three_tabpage_screenline_state()
           \ s:ConceallevelThreeScreenlineMoveCell(target_col))
 
     tab split
+    botright vertical new
+    wincmd p
+    vertical resize 40
+    set winfixwidth
+    call assert_equal(40, winwidth(0))
+
     let lbr_tab = tabpagenr()
     call assert_equal(plain_buf, bufnr())
     setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
@@ -1660,8 +1668,6 @@ func Test_conceallevel_three_tabpage_screenline_state()
     silent! tabonly!
     silent! only!
     silent! enew!
-    let &columns = save_columns
-    let &lines = save_lines
   endtry
 endfunc
 
