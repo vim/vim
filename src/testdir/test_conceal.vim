@@ -2459,6 +2459,67 @@ func Test_conceallevel_three_dot_repeat_hidden_delimiters()
   endtry
 endfunc
 
+func Test_conceallevel_three_complete_anchor_hidden_edit()
+  CheckRunVimInTerminal
+  CheckNotGui
+
+  let code =<< trim [CODE]
+    set completeopt=menu,menuone,noinsert,noselect
+    set completefunc=CompleteForConceal
+    set wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    syntax match Hidden /X\+/ conceal
+    call setline(1, repeat('a', 18) .. ' XX fo')
+
+    func CompleteForConceal(findstart, base) abort
+      if a:findstart
+        return col('.') - 2
+      endif
+      return ['foobar', 'foobaz', 'foozap', 'fooqux', 'foozip']
+    endfunc
+
+    func AddHiddenBeforeComplete() abort
+      let cur = getcurpos()
+      call setline('.', substitute(getline('.'), 'XX fo', 'XXXX fo', ''))
+      call cursor(cur[1], cur[2] + 2)
+      call writefile([getline('.')],
+            \ 'XTest_conceallevel_three_complete_anchor_hidden_edit_state')
+      redraw
+    endfunc
+
+    inoremap <F5> <Cmd>call AddHiddenBeforeComplete()<CR>
+  [CODE]
+  call writefile(code, 'XTest_conceallevel_three_complete_anchor_hidden_edit',
+        \ 'D')
+
+  let buf = 0
+  try
+    let buf = RunVimInTerminal(
+          \ '-S XTest_conceallevel_three_complete_anchor_hidden_edit',
+          \ #{rows: 8, cols: 30})
+    call TermWait(buf, 100)
+
+    call term_sendkeys(buf, "A\<C-X>\<C-U>")
+    call TermWait(buf, 100)
+    let before = s:TermTextAttrs(buf, 'foobar', 1)
+    call assert_true(before.row > 0)
+
+    call term_sendkeys(buf, "\<F5>")
+    call TermWait(buf, 100)
+    let after = s:TermTextAttrs(buf, 'foobar', 1)
+    call assert_equal(before.row, after.row)
+    call assert_equal(before.col, after.col)
+    call assert_equal([repeat('a', 18) .. ' XXXX fo'],
+          \ readfile('XTest_conceallevel_three_complete_anchor_hidden_edit_state'))
+  finally
+    if buf > 0
+      call term_sendkeys(buf, "\<Esc>")
+      call StopVimInTerminal(buf)
+    endif
+    call delete('XTest_conceallevel_three_complete_anchor_hidden_edit_state')
+  endtry
+endfunc
+
 func s:TermTextAttrs(buf, text, occurrence) abort
   let seen = 0
   let rows = term_getsize(a:buf)[0] - 1
