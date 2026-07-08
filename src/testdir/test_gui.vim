@@ -1450,6 +1450,7 @@ endfunc
 
 func Test_gui_mousefocus_conceallevel_three()
   CheckFeature conceal
+  CheckNotMSWindows
 
   let save_mouse = &mouse
   let save_mousefocus = &mousefocus
