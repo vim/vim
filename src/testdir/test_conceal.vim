@@ -1796,6 +1796,63 @@ func Test_conceallevel_three_custom_cell_width_screenpos()
   endtry
 endfunc
 
+func Test_conceallevel_three_non_utf8_encoding_screenpos()
+  let after =<< trim [CODE]
+    scriptencoding utf-8
+    source util/view_util.vim
+
+    func CheckConcealedTarget(prefix) abort
+      call NewWindow(10, 40)
+      try
+        setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+        syntax match Hidden /HIDDEN / conceal
+
+        let line = a:prefix .. ' HIDDEN target words after hidden text'
+        call setline(1, line)
+        let target_col = stridx(line, 'target') + 1
+
+        call assert_equal(42, strdisplaywidth(a:prefix), &encoding)
+        call cursor(1, target_col)
+        redraw!
+
+        let [win_row, win_col] = win_screenpos(0)
+        let pos = screenpos(0, 1, target_col)
+        call assert_true(pos.row > 0, &encoding)
+
+        let cell = [pos.row - win_row + 1, pos.curscol - win_col + 1]
+        call assert_equal([2, 4], cell, &encoding)
+        call assert_equal(cell, [winline(), wincol()], &encoding)
+      finally
+        syntax clear Hidden
+        call CloseWindow()
+      endtry
+    endfunc
+
+    if &encoding ==# 'latin1'
+      call CheckConcealedTarget(repeat(nr2char(0xe9), 42))
+    else
+      call CheckConcealedTarget(repeat('口', 21))
+    endif
+    call writefile(v:errors, 'Xresult')
+    qall!
+  [CODE]
+
+  let encodings = ['latin1']
+  if has('multi_byte')
+    let encodings += ['cp932', 'cp936', 'cp949', 'cp950']
+    if !has('win32')
+      let encodings += ['euc-jp']
+    endif
+  endif
+  for enc in encodings
+    let msg = 'enc=' .. enc
+    if RunVim([], after, $'--clean --cmd "set encoding={enc}"')
+      call assert_equal([], readfile('Xresult'), msg)
+    endif
+    call delete('Xresult')
+  endfor
+endfunc
+
 func Test_conceallevel_three_screenline_list_invalidation()
   call NewWindow(10, 40)
   setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
