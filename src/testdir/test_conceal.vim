@@ -2039,6 +2039,65 @@ func Test_conceallevel_three_search_hidden_delimiters()
   endtry
 endfunc
 
+func Test_conceallevel_three_gn_gN_visual_selection()
+  let save_search = @/
+  let save_wrapscan = &wrapscan
+  let save_reg = getreg('"')
+  let save_regtype = getregtype('"')
+
+  call NewWindow(8, 40)
+  try
+    set wrapscan
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    syntax region Code matchgroup=Tick start=/`/ end=/`/ concealends
+
+    let line1 = repeat('a', 42) .. ' `target` alpha'
+    let line2 = repeat('b', 42) .. ' `target` beta'
+    call setline(1, [line1, line2])
+    let tick1 = stridx(line1, '`target`') + 1
+    let tick2 = stridx(line2, '`target`') + 1
+    let word1 = stridx(line1, 'target') + 1
+    let word2 = stridx(line2, 'target') + 1
+    let match_len = strlen('`target`')
+    let @/ = '`target`'
+    redraw!
+    let [win_row, win_col] = win_screenpos(0)
+
+    call cursor(1, 1)
+    normal! 0gny
+    call assert_equal('`target`', @")
+    call assert_equal([0, 1, tick1, 0], getpos("'<"))
+    call assert_equal([0, 1, tick1 + match_len - 1, 0], getpos("'>"))
+    call cursor(1, word1)
+    redraw!
+    let pos = screenpos(0, line('.'), col('.'))
+    call assert_true(pos.row > 0)
+    call assert_true(pos.row - win_row + 1 > 1)
+    call assert_equal([winline(), wincol()],
+          \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+
+    call cursor(2, strlen(line2))
+    normal! gNy
+    call assert_equal('`target`', @")
+    call assert_equal([0, 2, tick2, 0], getpos("'<"))
+    call assert_equal([0, 2, tick2 + match_len - 1, 0], getpos("'>"))
+    call cursor(2, word2)
+    redraw!
+    let pos = screenpos(0, line('.'), col('.'))
+    call assert_true(pos.row > 0)
+    call assert_true(pos.row - win_row + 1 > 1)
+    call assert_equal([winline(), wincol()],
+          \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+  finally
+    call setreg('"', save_reg, save_regtype)
+    let @/ = save_search
+    let &wrapscan = save_wrapscan
+    silent! syntax clear Code
+    call CloseWindow()
+  endtry
+endfunc
+
 func s:TermTextAttrs(buf, text, occurrence) abort
   let seen = 0
   let rows = term_getsize(a:buf)[0] - 1
