@@ -1,7 +1,7 @@
 " Creator:    Charles E Campbell
 " Previous Maintainer: Luca Saccarola <github.e41mv@aleeas.com>
 " Maintainer: This runtime file is looking for a new maintainer.
-" Last Change: 2026 Jul 01
+" Last Change: 2026 Jul 08
 " Copyright:  Copyright (C) 2016 Charles E. Campbell {{{1
 "             Permission is hereby granted to use and distribute this code,
 "             with or without modifications, provided that this copyright
@@ -572,6 +572,9 @@ function netrw#Explore(indx,dosplit,style,...)
 
   if starpat == 0 && a:indx >= 0
     " [Explore Hexplore Vexplore Sexplore] [dirname]
+    if dirname == ""
+      let dirname= curfiledir
+    endif
     if dirname =~# '^scp://' || dirname =~ '^ftp://'
       call netrw#Nread(2,dirname)
     else
