@@ -1501,6 +1501,12 @@ func MouseWasMoved()
   call add(g:eventlist, #{row: pos.screenrow, col: pos.screencol})
 endfunc
 
+func MouseMoveConcealWasMoved()
+  let pos = getmousepos()
+  call add(g:eventlist, #{line: pos.line, column: pos.column,
+        \ screenrow: pos.screenrow, screencol: pos.screencol})
+endfunc
+
 func Test_gui_mouse_move_event()
   let args = #{move: 1, button: 0, multiclick: 0, modifiers: 0}
 
@@ -1565,6 +1571,63 @@ func Test_gui_mouse_move_event()
   unlet g:eventlist
   unmap <MouseMove>
   set mousemev&
+endfunc
+
+func Test_gui_mouse_move_event_conceallevel_three()
+  CheckFeature conceal
+
+  let save_mouse = &mouse
+  let save_mousemev = &mousemev
+  let save_columns = &columns
+  let save_lines = &lines
+
+  call test_override('no_query_mouse', 1)
+  set columns=40 lines=12 mouse=a mousemev
+  new
+  try
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    syntax match Hidden /HIDDEN / conceal
+
+    let line = repeat('a', 42)
+          \ .. ' HIDDEN target words after hidden text to force wrapping'
+          \ .. ' and mapping checks'
+    call setline(1, line)
+    redraw!
+
+    let target_col = stridx(line, 'target') + 1
+    let target = screenpos(0, 1, target_col)
+    call assert_true(target.row > 0)
+
+    let g:eventlist = []
+    nnoremap <special> <silent> <MouseMove>
+          \ :call MouseMoveConcealWasMoved()<CR>
+    let args = #{move: 1, button: 0, multiclick: 0, modifiers: 0,
+          \ cell: v:true}
+    call PrepareForMouseEvent(args)
+
+    call extend(args, #{row: target.row, col: target.curscol})
+    call test_gui_event('mouse', args)
+    call feedkeys('', 'Lx!')
+
+    " FIXME: on MS-Windows we can get a stray event first.
+    if has('win32') && len(g:eventlist) > 1
+      let g:eventlist = g:eventlist[-1 :]
+    endif
+
+    call assert_equal([#{line: 1, column: target_col,
+          \ screenrow: target.row, screencol: target.curscol}], g:eventlist)
+  finally
+    syntax clear Hidden
+    bwipe!
+    silent! unmap <MouseMove>
+    unlet! g:eventlist
+    let &columns = save_columns
+    let &lines = save_lines
+    let &mousemev = save_mousemev
+    let &mouse = save_mouse
+    call test_override('no_query_mouse', 0)
+  endtry
 endfunc
 
 " Test for 'guitablabel' and 'guitabtooltip' options
