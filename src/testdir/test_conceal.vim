@@ -1623,6 +1623,42 @@ func Test_conceallevel_three_split_window_options()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_split_window_wrap_options()
+  call NewWindow(10, 40)
+  setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+  syntax match Hidden /HIDDEN / conceal
+
+  let line = repeat('a', 42)
+        \ .. ' HIDDEN target words after hidden text to force wrapping'
+        \ .. ' and mapping checks'
+  call setline(1, line)
+  let target_col = stridx(line, 'target') + 1
+  let wrapped_win = win_getid()
+
+  let wrapped_cell = s:ConceallevelThreeCursorCell(target_col)
+  call assert_equal([2, 4], wrapped_cell)
+
+  let other_wins = filter(win_findbuf(bufnr()), 'v:val != wrapped_win')
+  call assert_true(!empty(other_wins))
+  let nowrap_win = other_wins[0]
+  call assert_true(win_gotoid(nowrap_win))
+  call assert_equal(winbufnr(wrapped_win), bufnr())
+
+  setlocal nowrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+  let nowrap_cell = s:ConceallevelThreeCursorCell(target_col)
+  call assert_equal(1, nowrap_cell[0])
+  call assert_notequal(wrapped_cell, nowrap_cell)
+
+  call assert_true(win_gotoid(wrapped_win))
+  call assert_equal(wrapped_cell, s:ConceallevelThreeCursorCell(target_col))
+
+  call assert_true(win_gotoid(nowrap_win))
+  call assert_equal(nowrap_cell, s:ConceallevelThreeCursorCell(target_col))
+
+  syntax clear Hidden
+  call CloseWindow()
+endfunc
+
 func Test_conceallevel_three_visual_drag_after_double_width()
   call NewWindow(12, 42)
   set mouse=a

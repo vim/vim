@@ -1687,7 +1687,7 @@ conceal_screenpos_store(
 }
 
 /*
- * Use the same cell positions as win_line() for 'wrap' and 'conceallevel' 3.
+ * Use the same cell positions as win_line() for 'conceallevel' 3.
  */
     static int
 conceal_textpos2screenpos(
@@ -1818,7 +1818,7 @@ textpos2screenpos(
 # endif
 	{
 # ifdef FEAT_CONCEAL
-	    if (wp->w_p_wrap && wp->w_p_cole == 3
+	    if (wp->w_p_cole == 3
 		    && conceal_textpos2screenpos(wp, pos, row, rowp, scolp,
 						       ccolp, ecolp) == OK)
 		return;
