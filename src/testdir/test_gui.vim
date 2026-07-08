@@ -1314,6 +1314,65 @@ func Test_gui_mouse_event()
   set mousemodel&
 endfunc
 
+func Test_gui_mouse_conceallevel_three_selection()
+  CheckFeature conceal
+
+  " Low level input isn't 100% reliable.
+  let g:test_is_flaky = 1
+
+  let save_mouse = &mouse
+  let save_mousemodel = &mousemodel
+  let save_columns = &columns
+  let save_lines = &lines
+
+  call test_override('no_query_mouse', 1)
+  set columns=40 lines=12
+  new
+  try
+    set mouse=a mousemodel=extend
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    syntax match Hidden /HIDDEN / conceal
+
+    let line = repeat('a', 42)
+          \ .. ' HIDDEN target words after hidden text to force wrapping'
+          \ .. ' and mapping checks'
+    call setline(1, line)
+    call cursor(1, 1)
+    redraw!
+
+    let start_col = 10
+    let target_col = stridx(line, 'target') + 4
+    let start = screenpos(0, 1, start_col)
+    let target = screenpos(0, 1, target_col)
+    call assert_true(start.row > 0)
+    call assert_true(target.row > start.row)
+
+    let @" = ''
+    let args = #{button: 0, row: start.row, col: start.curscol,
+          \ multiclick: 0, modifiers: 0}
+    call test_gui_event('mouse', args)
+    let args = #{button: 0x43, row: target.row, col: target.curscol,
+          \ multiclick: 0, modifiers: 0}
+    call test_gui_event('mouse', args)
+    let args.button = 0x3
+    call test_gui_event('mouse', args)
+
+    call feedkeys("y", 'Lx!')
+    call assert_equal(strpart(line, start_col - 1,
+          \ target_col - start_col + 1), @")
+  finally
+    call feedkeys("\<Esc>", 'Lx!')
+    syntax clear Hidden
+    bwipe!
+    let &columns = save_columns
+    let &lines = save_lines
+    let &mouse = save_mouse
+    let &mousemodel = save_mousemodel
+    call test_override('no_query_mouse', 0)
+  endtry
+endfunc
+
 " Test invalid parameters for test_gui_event()
 func Test_gui_event_mouse_fails()
   call test_override('no_query_mouse', 1)
