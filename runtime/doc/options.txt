@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Jul 03
+*options.txt*	For Vim version 9.2.  Last change: 2026 Jul 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1357,6 +1357,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	v:beval_lnum	line number
 	v:beval_col	column number (byte index)
 	v:beval_text	word under or after the mouse pointer
+
+	For zero-width text concealed by 'conceallevel' set to 3, v:beval_col
+	and v:beval_text use the character at the drawn screen cell, when
+	|conceal| is active for the window and line.  This respects rules such
+	as 'concealcursor' and Visual mode.
 
 	Instead of showing a balloon, which is limited to plain text, consider
 	using a popup window, see |popup_beval_example|.  A popup window can
