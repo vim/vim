@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Jun 30
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Jul 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4852,6 +4852,12 @@ getmousepos()						*getmousepos()*
 
 		When the position is after the text then "column" is the
 		length of the text in bytes plus one.
+
+		For zero-width text concealed by 'conceallevel' set to 3,
+		"column" uses the buffer byte index for the character at the
+		drawn screen cell, when |conceal| is active for the window and
+		line.  This respects rules such as 'concealcursor' and Visual
+		mode.
 
 		If the mouse is over a popup window then that window is used.
 
