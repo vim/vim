@@ -3,6 +3,7 @@
 CheckFeature conceal
 
 source util/screendump.vim
+source util/mouse.vim
 
 func Test_conceal_two_windows()
   CheckScreendump
@@ -602,6 +603,55 @@ func Test_conceallevel_three_wrapped_mouse_click_after_concealends()
   syntax clear testPre
   call CloseWindow()
   set mouse&
+endfunc
+
+func Test_conceallevel_three_terminal_mouse_protocols()
+  CheckNotGui
+  CheckUnix
+
+  let save_mouse = &mouse
+  let save_mousetime = &mousetime
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+
+  call test_override('no_query_mouse', 1)
+  call NewWindow(10, 40)
+  try
+    set mouse=a mousetime=0 term=xterm
+    call WaitForResponses()
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    syntax match Hidden /HIDDEN / conceal
+
+    let line = repeat('a', 42)
+          \ .. ' HIDDEN target words after hidden text to force wrapping'
+          \ .. ' and mapping checks'
+    call setline(1, line)
+    redraw!
+
+    let target_col = stridx(line, 'target') + 1
+    let target = screenpos(0, 1, target_col)
+    call assert_true(target.row > 0)
+
+    for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec + g:Ttymouse_netterm
+      let msg = 'ttymouse=' .. ttymouse_val
+      exe 'set ttymouse=' .. ttymouse_val
+      call cursor(1, 1)
+      redraw!
+
+      call MouseLeftClick(target.row, target.curscol)
+      call MouseLeftRelease(target.row, target.curscol)
+      call assert_equal(target_col, col('.'), msg)
+    endfor
+  finally
+    syntax clear Hidden
+    call CloseWindow()
+    let &ttymouse = save_ttymouse
+    let &term = save_term
+    let &mousetime = save_mousetime
+    let &mouse = save_mouse
+    call test_override('no_query_mouse', 0)
+  endtry
 endfunc
 
 func Test_conceallevel_three_getmousepos_after_conceal()
