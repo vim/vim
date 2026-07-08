@@ -1959,6 +1959,86 @@ func Test_conceallevel_three_closed_fold_screenline_motion()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_search_hidden_delimiters()
+  let save_wrapscan = &wrapscan
+
+  call NewWindow(8, 40)
+  try
+    set wrapscan
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    syntax region Code matchgroup=Tick start=/`/ end=/`/ concealends
+
+    let line1 = repeat('a', 42) .. ' `target` one two three'
+    let line2 = repeat('b', 42) .. ' `target` four five six'
+    let line3 = repeat('c', 42) .. ' target bare word'
+    call setline(1, [line1, line2, line3])
+
+    let tick1 = stridx(line1, '`target`') + 1
+    let tick2 = stridx(line2, '`target`') + 1
+    let word1 = stridx(line1, 'target') + 1
+    let word2 = stridx(line2, 'target') + 1
+    let bare = stridx(line3, 'target') + 1
+    redraw!
+    let [win_row, win_col] = win_screenpos(0)
+
+    call cursor(1, 1)
+    call feedkeys("/`target\<CR>", 'tx')
+    redraw!
+    call assert_equal([1, tick1], [line('.'), col('.')])
+    let pos = screenpos(0, line('.'), col('.'))
+    call assert_true(pos.row > 0)
+    call assert_equal([winline(), wincol()],
+          \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+
+    normal! n
+    redraw!
+    call assert_equal([2, tick2], [line('.'), col('.')])
+    let pos = screenpos(0, line('.'), col('.'))
+    call assert_true(pos.row > 0)
+    call assert_equal([winline(), wincol()],
+          \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+
+    normal! N
+    redraw!
+    call assert_equal([1, tick1], [line('.'), col('.')])
+    let pos = screenpos(0, line('.'), col('.'))
+    call assert_true(pos.row > 0)
+    call assert_equal([winline(), wincol()],
+          \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+
+    call cursor(3, bare)
+    call feedkeys("?target`\<CR>", 'tx')
+    redraw!
+    call assert_equal([2, word2], [line('.'), col('.')])
+    let pos = screenpos(0, line('.'), col('.'))
+    call assert_true(pos.row > 0)
+    call assert_equal([winline(), wincol()],
+          \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+
+    call cursor(1, word1)
+    normal! *
+    redraw!
+    call assert_equal([2, word2], [line('.'), col('.')])
+    let pos = screenpos(0, line('.'), col('.'))
+    call assert_true(pos.row > 0)
+    call assert_equal([winline(), wincol()],
+          \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+
+    normal! #
+    redraw!
+    call assert_equal([1, word1], [line('.'), col('.')])
+    let pos = screenpos(0, line('.'), col('.'))
+    call assert_true(pos.row > 0)
+    call assert_equal([winline(), wincol()],
+          \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+  finally
+    let &wrapscan = save_wrapscan
+    silent! syntax clear Code
+    call CloseWindow()
+  endtry
+endfunc
+
 func Test_conceallevel_three_split_window_options()
   call NewWindow(10, 40)
   setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
