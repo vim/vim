@@ -1791,6 +1791,9 @@ textpos2screenpos(
 	colnr_T	    col;
 	int	    width;
 	linenr_T    lnum = pos->lnum;
+# ifdef FEAT_CONCEAL
+	int	    row_without_filler;
+# endif
 # ifdef FEAT_FOLDING
 	int	    is_folded;
 
@@ -1800,6 +1803,9 @@ textpos2screenpos(
 	// "row" should be the screen line where line "lnum" begins, which can
 	// be negative if "lnum" is "w_topline" and "w_skipcol" is non-zero.
 	row -= adjust_plines_for_skipcol(wp);
+# ifdef FEAT_CONCEAL
+	row_without_filler = row;
+# endif
 
 # ifdef FEAT_DIFF
 	// Add filler lines above this buffer line.
@@ -1819,8 +1825,8 @@ textpos2screenpos(
 	{
 # ifdef FEAT_CONCEAL
 	    if (wp->w_p_cole == 3
-		    && conceal_textpos2screenpos(wp, pos, row, rowp, scolp,
-						       ccolp, ecolp) == OK)
+		    && conceal_textpos2screenpos(wp, pos, row_without_filler,
+					   rowp, scolp, ccolp, ecolp) == OK)
 		return;
 # endif
 	    getvcol(wp, pos, &scol, &ccol, &ecol, 0);

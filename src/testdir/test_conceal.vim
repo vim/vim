@@ -1663,6 +1663,53 @@ func Test_conceallevel_three_tabpage_screenline_state()
   endtry
 endfunc
 
+func Test_conceallevel_three_diff_filler_screenpos()
+  CheckFeature diff
+
+  let save_diffopt = &diffopt
+  let save_lines = &lines
+  let save_columns = &columns
+
+  try
+    set lines=20 columns=80 diffopt=internal,filler
+    tabnew
+    setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+    let line = repeat('a', 42)
+          \ .. ' HIDDEN target words after hidden text to force wrapping'
+          \ .. ' and mapping checks'
+    call setline(1, ['common', 'insert one', 'insert two', line, 'after'])
+
+    vnew
+    setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+    call setline(1, ['common', line, 'after'])
+    let filler_win = win_getid()
+
+    windo syntax match Hidden /HIDDEN / conceal
+    windo diffthis
+    call assert_true(win_gotoid(filler_win))
+
+    let target_col = stridx(line, 'target') + 1
+    call assert_equal(2, diff_filler(2))
+    call cursor(2, target_col)
+    redraw!
+
+    let [win_row, win_col] = win_screenpos(0)
+    let pos = screenpos(0, 2, target_col)
+    call assert_true(pos.row > 0)
+    call assert_equal([winline(), wincol()],
+          \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+  finally
+    silent! windo diffoff!
+    silent! windo syntax clear Hidden
+    silent! tabonly!
+    silent! only!
+    silent! enew!
+    let &diffopt = save_diffopt
+    let &columns = save_columns
+    let &lines = save_lines
+  endtry
+endfunc
+
 func Test_conceallevel_three_split_window_options()
   call NewWindow(10, 40)
   setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
