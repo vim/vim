@@ -2200,6 +2200,59 @@ func Test_conceallevel_three_word_motions_text_objects()
   endtry
 endfunc
 
+func Test_conceallevel_three_matchadd_overlap_delete()
+  call NewWindow(8, 40)
+  try
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+          \ signcolumn=no nonumber
+
+    let line = repeat('a', 42) .. ' HIDDEN target after'
+    call setline(1, line)
+    let hidden_col = stridx(line, ' HIDDEN ') + 1
+    let target_col = stridx(line, 'target') + 1
+    let hidden_pat = '\%1l\%' .. hidden_col .. 'c HIDDEN '
+    let high_pat = '\%1l\%' .. (hidden_col + 1) .. 'cHIDDEN'
+
+    let hidden_id = matchadd('Conceal', hidden_pat, 10, -1,
+          \ #{conceal: ''})
+    call cursor(1, target_col)
+    redraw!
+    let [win_row, win_col] = win_screenpos(0)
+    let pos = screenpos(0, line('.'), col('.'))
+    call assert_true(pos.row > 0)
+    let hidden_cell = [pos.row - win_row + 1, pos.curscol - win_col + 1]
+    call assert_equal(hidden_cell, [winline(), wincol()])
+    call assert_true(hidden_cell[0] > 1)
+
+    let high_id = matchadd('Search', high_pat, 20)
+    redraw!
+    let pos = screenpos(0, line('.'), col('.'))
+    call assert_true(pos.row > 0)
+    let overlap_cell = [pos.row - win_row + 1, pos.curscol - win_col + 1]
+    call assert_equal(overlap_cell, [winline(), wincol()])
+    call assert_true(overlap_cell[1] > hidden_cell[1])
+
+    call matchdelete(high_id)
+    redraw!
+    let pos = screenpos(0, line('.'), col('.'))
+    call assert_true(pos.row > 0)
+    call assert_equal(hidden_cell,
+          \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+    call assert_equal(hidden_cell, [winline(), wincol()])
+
+    call matchdelete(hidden_id)
+    redraw!
+    let pos = screenpos(0, line('.'), col('.'))
+    call assert_true(pos.row > 0)
+    let visible_cell = [pos.row - win_row + 1, pos.curscol - win_col + 1]
+    call assert_equal(visible_cell, [winline(), wincol()])
+    call assert_true(visible_cell[1] > overlap_cell[1])
+  finally
+    call clearmatches()
+    call CloseWindow()
+  endtry
+endfunc
+
 func s:TermTextAttrs(buf, text, occurrence) abort
   let seen = 0
   let rows = term_getsize(a:buf)[0] - 1
