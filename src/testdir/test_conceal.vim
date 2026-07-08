@@ -1897,6 +1897,68 @@ func Test_conceallevel_three_foldcolumn_mouse_click()
   endtry
 endfunc
 
+func Test_conceallevel_three_closed_fold_screenline_motion()
+  CheckFeature folding
+
+  call NewWindow(8, 40)
+  setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+        \ foldcolumn=0 foldmethod=manual foldenable foldlevel=0
+  syntax match Hidden /HIDDEN / conceal
+
+  let line = repeat('a', 38)
+        \ .. ' HIDDEN target words after hidden text to force wrapping'
+        \ .. ' and mapping checks'
+  call setline(1, ['fold start', 'fold inside', line, 'after'])
+  1,2fold
+  normal! zM
+  call cursor(1, 1)
+  redraw!
+
+  call assert_equal(1, foldclosed(line('.')))
+  call assert_equal([1, 1], [winline(), wincol()])
+  let [win_row, win_col] = win_screenpos(0)
+
+  normal! gj
+  redraw!
+  call assert_equal([3, 1], [line('.'), col('.')])
+  let pos = screenpos(0, line('.'), col('.'))
+  call assert_true(pos.row > 0)
+  call assert_equal([winline(), wincol()],
+        \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+  let first_row_cell = [winline(), wincol()]
+
+  normal! gj
+  redraw!
+  call assert_equal(3, line('.'))
+  call assert_true(col('.') > 1)
+  let pos = screenpos(0, line('.'), col('.'))
+  call assert_true(pos.row > 0)
+  call assert_equal([winline(), wincol()],
+        \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+  call assert_true(winline() > first_row_cell[0])
+
+  normal! gk
+  redraw!
+  call assert_equal([3, 1], [line('.'), col('.')])
+  call assert_equal(first_row_cell, [winline(), wincol()])
+  let pos = screenpos(0, line('.'), col('.'))
+  call assert_true(pos.row > 0)
+  call assert_equal(first_row_cell,
+        \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+
+  normal! gk
+  redraw!
+  call assert_equal(1, foldclosed(line('.')))
+  call assert_equal([1, 1], [winline(), wincol()])
+  let pos = screenpos(0, line('.'), col('.'))
+  call assert_true(pos.row > 0)
+  call assert_equal([winline(), wincol()],
+        \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+
+  syntax clear Hidden
+  call CloseWindow()
+endfunc
+
 func Test_conceallevel_three_split_window_options()
   call NewWindow(10, 40)
   setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
