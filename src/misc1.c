@@ -583,6 +583,10 @@ plines_conceal_height_cb(
     return OK;
 }
 
+/*
+ * Return the exact drawn height of "lnum" when it has concealed text, zero
+ * when there is no concealment, or -1 when the drawn height cannot be checked.
+ */
     static int
 plines_win_conceal_height(win_T *wp, linenr_T lnum)
 {
@@ -592,8 +596,10 @@ plines_win_conceal_height(win_T *wp, linenr_T lnum)
     if (!plines_win_may_conceal(wp, lnum))
 	return 0;
     if (win_line_conceal_screenline_iter(wp, lnum,
-		    plines_conceal_height_cb, NULL, &has_conceal, &rows) == FAIL
-	    || !has_conceal)
+		    plines_conceal_height_cb, NULL, &has_conceal,
+		    &rows) == FAIL)
+	return -1;
+    if (!has_conceal)
 	return 0;
     return rows;
 }
@@ -1033,6 +1039,9 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
     long	col;
     int		width;
     chartabsize_T cts;
+#ifdef FEAT_CONCEAL
+    bool	no_conceal = false;
+#endif
 
     s = ml_get_buf(wp->w_buffer, lnum, FALSE);
     init_chartabsize_arg(&cts, wp, lnum, 0, s, s);
@@ -1052,8 +1061,10 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
 	    clear_chartabsize_arg(&cts);
 	    return conceal_height;
 	}
+	if (conceal_height == 0)
+	    no_conceal = true;
     }
-    if (plines_win_may_conceal(wp, lnum))
+    if (!no_conceal && plines_win_may_conceal(wp, lnum))
 	col = plines_win_col_conceal(wp, lnum, MAXCOL, NULL, NULL,
 						      NULL, NULL, NULL);
     else
