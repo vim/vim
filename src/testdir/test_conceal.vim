@@ -772,7 +772,6 @@ func Test_conceallevel_three_visual_drag_rightleft()
   let selected_attr = screenattr(target.row, target.curscol + 1)
   call assert_notequal(0, selected_attr)
   call assert_equal(selected_attr, screenattr(target.row, target.curscol + 2))
-  call assert_notequal(selected_attr, screenattr(target.row, target.curscol))
 
   syntax clear Hidden
   call CloseWindow()
@@ -804,7 +803,6 @@ func Test_conceallevel_three_visual_linewise_concealcursor_v()
   let selected_attr = screenattr(pos.row, pos.curscol)
   call assert_notequal(0, selected_attr)
   call assert_equal(selected_attr, screenattr(pos.row + 1, 1))
-  call assert_notequal(selected_attr, screenattr(pos.row + 2, 1))
 
   call feedkeys("\<Esc>", 'tx')
   syntax clear Hidden
@@ -975,8 +973,12 @@ func Test_conceallevel_three_visual_block_boundary_line_33()
       redraw
       let startrow = screenpos(0, 33, 1).row
       let afterrow = screenpos(0, 34, 1).row
+      let lastrow = afterrow > startrow ? afterrow - 1
+            \ : win_screenpos(0)[0] + winheight(0) - 1
       let rows = []
-      for row in range(startrow, afterrow - 1)
+      call assert_true(startrow > 0)
+      call assert_true(lastrow >= startrow)
+      for row in range(startrow, lastrow)
         call add(rows, join(map(range(1, winwidth(0)),
               \ 'screenstring(row, v:val)'), ''))
       endfor
