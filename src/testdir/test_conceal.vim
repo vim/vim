@@ -2253,6 +2253,70 @@ func Test_conceallevel_three_matchadd_overlap_delete()
   endtry
 endfunc
 
+func Test_conceallevel_three_same_line_hidden_width_edits()
+  let save_reg = getreg('"')
+  let save_regtype = getregtype('"')
+
+  call NewWindow(8, 40)
+  try
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    syntax match Hidden /X\+/ conceal
+
+    let line = repeat('a', 42) .. ' XXXX target after'
+    call setline(1, line)
+    let hidden_col = stridx(getline(1), 'XXXX') + 1
+    let target_col = stridx(getline(1), 'target') + 1
+    let target_cell = s:ConceallevelThreeCursorCell(target_col)
+    call assert_true(target_cell[0] > 1)
+
+    call cursor(1, hidden_col)
+    execute "normal! iXX\<Esc>"
+    call assert_match('XXXXXX target', getline(1))
+    let target_col = stridx(getline(1), 'target') + 1
+    call assert_equal(target_cell, s:ConceallevelThreeCursorCell(target_col))
+
+    call cursor(1, hidden_col)
+    normal! 2x
+    call assert_match('XXXX target', getline(1))
+    let target_col = stridx(getline(1), 'target') + 1
+    call assert_equal(target_cell, s:ConceallevelThreeCursorCell(target_col))
+
+    call cursor(1, hidden_col)
+    execute "normal! cwXXXXXXXX\<Esc>"
+    call assert_match('XXXXXXXX target', getline(1))
+    let target_col = stridx(getline(1), 'target') + 1
+    call assert_equal(target_cell, s:ConceallevelThreeCursorCell(target_col))
+
+    s/XXXXXXXX/XXX/
+    call assert_match('XXX target', getline(1))
+    let target_col = stridx(getline(1), 'target') + 1
+    call assert_equal(target_cell, s:ConceallevelThreeCursorCell(target_col))
+
+    call cursor(1, hidden_col + 2)
+    call setreg('"', 'XXXXX', 'v')
+    normal! p
+    call assert_match('XXXXXXXX target', getline(1))
+    let pasted_line = getline(1)
+    let target_col = stridx(getline(1), 'target') + 1
+    call assert_equal(target_cell, s:ConceallevelThreeCursorCell(target_col))
+
+    undo
+    call assert_match('XXX target', getline(1))
+    let target_col = stridx(getline(1), 'target') + 1
+    call assert_equal(target_cell, s:ConceallevelThreeCursorCell(target_col))
+
+    redo
+    call assert_equal(pasted_line, getline(1))
+    let target_col = stridx(getline(1), 'target') + 1
+    call assert_equal(target_cell, s:ConceallevelThreeCursorCell(target_col))
+  finally
+    call setreg('"', save_reg, save_regtype)
+    silent! syntax clear Hidden
+    call CloseWindow()
+  endtry
+endfunc
+
 func s:TermTextAttrs(buf, text, occurrence) abort
   let seen = 0
   let rows = term_getsize(a:buf)[0] - 1
