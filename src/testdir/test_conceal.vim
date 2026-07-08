@@ -2459,6 +2459,99 @@ func Test_conceallevel_three_dot_repeat_hidden_delimiters()
   endtry
 endfunc
 
+func Test_conceallevel_three_completeopt_popup_placement()
+  CheckRunVimInTerminal
+  CheckNotGui
+  CheckFeature textprop
+
+  let code =<< trim [CODE]
+    set completefunc=CompleteForConceal
+    set wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    syntax match Hidden /X\+/ conceal
+
+    func CompleteForConceal(findstart, base) abort
+      if a:findstart
+        return col('.') - 2
+      endif
+      return [
+            \ #{word: 'foobar', menu: 'one', info: 'info foobar'},
+            \ #{word: 'foobaz', menu: 'two', info: 'info foobaz'},
+            \ #{word: 'foozap', menu: 'three', info: 'info foozap'},
+            \ #{word: 'fooqux', menu: 'four', info: 'info fooqux'},
+            \]
+    endfunc
+
+    func SetupCompleteCase(opt) abort
+      silent! pclose
+      let &completeopt = a:opt
+      %delete _
+      call setline(1, repeat('a', 40) .. ' XX fo')
+      call cursor(1, strlen(getline(1)) + 1)
+      redraw
+    endfunc
+
+    func WriteCompleteState() abort
+      let info = complete_info(['pum_visible', 'selected'])
+      call writefile([string(info.pum_visible), string(info.selected)],
+            \ 'XTest_conceallevel_three_completeopt_popup_placement_state')
+    endfunc
+
+    inoremap <F6> <Cmd>call WriteCompleteState()<CR>
+  [CODE]
+  call writefile(code, 'XTest_conceallevel_three_completeopt_popup_placement',
+        \ 'D')
+
+  let cases = [
+        \ #{opt: 'menu,menuone,noinsert,noselect',
+        \   key: "\<C-N>", selected: 0, item: 'foobaz'},
+        \ #{opt: 'menu,menuone,popup,noinsert,noselect',
+        \   key: "\<C-N>", selected: 0, item: 'foobaz'},
+        \ #{opt: 'menu,preview',
+        \   key: "\<C-N>", selected: 1, item: 'foozap'},
+        \ #{opt: 'menu,menuone,popup',
+        \   key: "\<C-N>", selected: 1, item: 'foozap'},
+        \]
+
+  let buf = 0
+  try
+    let buf = RunVimInTerminal(
+          \ '-S XTest_conceallevel_three_completeopt_popup_placement',
+          \ #{rows: 12, cols: 34})
+    call TermWait(buf, 100)
+
+    for case in cases
+      call term_sendkeys(buf, "\<Esc>:call SetupCompleteCase('"
+            \ .. case.opt .. "')\<CR>")
+      call TermWait(buf, 100)
+      call term_sendkeys(buf, "A\<C-X>\<C-U>")
+      call TermWait(buf, 100)
+
+      let before = s:TermTextAttrs(buf, case.item, 1)
+      call assert_true(before.row > 0, case.opt)
+
+      call term_sendkeys(buf, case.key)
+      call TermWait(buf, 100)
+      let after = s:TermTextAttrs(buf, case.item, 1)
+      call assert_equal(before.row, after.row, case.opt)
+      call assert_equal(before.col, after.col, case.opt)
+
+      call term_sendkeys(buf, "\<F6>")
+      call TermWait(buf, 100)
+      call assert_equal(['1', string(case.selected)],
+            \ readfile(
+            \ 'XTest_conceallevel_three_completeopt_popup_placement_state'),
+            \ case.opt)
+    endfor
+  finally
+    if buf > 0
+      call term_sendkeys(buf, "\<Esc>")
+      call StopVimInTerminal(buf)
+    endif
+    call delete('XTest_conceallevel_three_completeopt_popup_placement_state')
+  endtry
+endfunc
+
 func Test_conceallevel_three_complete_anchor_hidden_edit()
   CheckRunVimInTerminal
   CheckNotGui
