@@ -1693,6 +1693,41 @@ func Test_conceallevel_three_screenline_option_invalidation()
   endtry
 endfunc
 
+func Test_conceallevel_three_combining_marks_screenpos()
+  if !has('multi_byte') || &encoding !=# 'utf-8'
+    return
+  endif
+
+  call NewWindow(10, 40)
+  try
+    setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+    syntax match Hidden /HIDDEN / conceal
+
+    let plain_prefix = repeat('e', 42)
+    let composed_prefix = repeat("e\u0301\u0308", 42)
+    let suffix = ' HIDDEN target words after hidden text to force wrapping'
+    call assert_equal(strdisplaywidth(plain_prefix),
+          \ strdisplaywidth(composed_prefix))
+    call assert_true(strlen(plain_prefix) < strlen(composed_prefix))
+
+    let line = composed_prefix .. suffix
+    call setline(1, line)
+    let composed_col = stridx(line, 'target') + 1
+    let composed_cell = s:ConceallevelThreeCursorCell(composed_col)
+
+    let line = plain_prefix .. suffix
+    call setline(1, line)
+    let plain_col = stridx(line, 'target') + 1
+    let plain_cell = s:ConceallevelThreeCursorCell(plain_col)
+
+    call assert_equal(plain_cell, composed_cell)
+    call assert_equal([2, 4], composed_cell)
+  finally
+    syntax clear Hidden
+    call CloseWindow()
+  endtry
+endfunc
+
 func Test_conceallevel_three_screenline_list_invalidation()
   call NewWindow(10, 40)
   setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
