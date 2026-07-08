@@ -1718,6 +1718,74 @@ func Test_conceallevel_three_diff_filler_screenpos()
   endtry
 endfunc
 
+func Test_conceallevel_three_diff_scrollbind_cursorbind()
+  CheckFeature diff
+
+  let save_diffopt = &diffopt
+  let save_lines = &lines
+  let save_columns = &columns
+
+  try
+    set lines=20 columns=80 diffopt=internal,filler,foldcolumn:0
+    tabnew
+    setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+    let line = repeat('a', 42)
+          \ .. ' HIDDEN target words after hidden text to force wrapping'
+          \ .. ' and mapping checks'
+    call setline(1, ['common', 'insert one', 'insert two', line, 'after',
+          \ 'insert three', line, 'tail'])
+    let left_win = win_getid()
+
+    vnew
+    setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+    call setline(1, ['common', line, 'after', line, 'tail'])
+    let right_win = win_getid()
+
+    windo syntax match Hidden /HIDDEN / conceal
+    windo diffthis
+    windo setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no
+          \ nonumber scrollbind cursorbind nofoldenable
+
+    let target_col = stridx(line, 'target') + 1
+    for [right_lnum, left_lnum] in [[2, 4], [4, 7]]
+      call assert_true(win_gotoid(right_win))
+      call cursor(right_lnum, target_col)
+      normal! l
+      normal! zt
+      redraw!
+
+      call assert_equal([right_lnum, target_col + 1],
+            \ [line('.'), col('.')])
+      call assert_equal(right_lnum, line('w0'))
+      let [win_row, win_col] = win_screenpos(0)
+      let pos = screenpos(0, line('.'), col('.'))
+      call assert_true(pos.row > 0)
+      call assert_equal([winline(), wincol()],
+            \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+
+      call assert_true(win_gotoid(left_win))
+      redraw!
+      call assert_equal([left_lnum, target_col + 1],
+            \ [line('.'), col('.')])
+      call assert_equal(left_lnum, line('w0'))
+      let [win_row, win_col] = win_screenpos(0)
+      let pos = screenpos(0, line('.'), col('.'))
+      call assert_true(pos.row > 0)
+      call assert_equal([winline(), wincol()],
+            \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+    endfor
+  finally
+    silent! windo diffoff!
+    silent! windo syntax clear Hidden
+    silent! tabonly!
+    silent! only!
+    silent! enew!
+    let &diffopt = save_diffopt
+    let &columns = save_columns
+    let &lines = save_lines
+  endtry
+endfunc
+
 func Test_conceallevel_three_split_window_options()
   call NewWindow(10, 40)
   setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
