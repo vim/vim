@@ -1880,6 +1880,57 @@ func Test_conceallevel_three_hidden_tab_showbreak_vartabstop()
   endtry
 endfunc
 
+func Test_conceallevel_three_listchars_screenpos()
+  if !has('multi_byte') || &encoding !=# 'utf-8'
+    return
+  endif
+
+  call NewWindow(10, 40)
+  try
+    setlocal wrap list listchars=tab:>-,trail:<,nbsp:=,eol:$
+          \ conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+          \ tabstop=8
+    syntax match Hidden /HIDDEN / conceal
+
+    let nbsp = nr2char(0xa0)
+    let line = repeat('a', 34) .. "\t" .. nbsp .. ' HIDDEN target  '
+    call setline(1, line)
+    let target_col = stridx(line, 'target') + 1
+    let trail_col = strlen(line) - 1
+
+    call assert_equal([2, 3], s:ConceallevelThreeCursorCell(target_col))
+    call assert_equal([2, 9], s:ConceallevelThreeCursorCell(trail_col))
+    call assert_equal([repeat('a', 34) .. '>-----',
+          \ '= target<<$                             '],
+          \ ScreenLines([1, 2], 40))
+
+    setlocal nolist
+    call assert_equal([2, 3], s:ConceallevelThreeCursorCell(target_col))
+    call assert_equal([2, 9], s:ConceallevelThreeCursorCell(trail_col))
+  finally
+    syntax clear Hidden
+    call CloseWindow()
+  endtry
+
+  call NewWindow(10, 20)
+  try
+    setlocal nowrap list listchars=extends:>,precedes:<,eol:$
+          \ conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+    syntax match Hidden /HIDDEN / conceal
+
+    let line = repeat('a', 24) .. ' HIDDEN target words after hidden text '
+          \ .. repeat('b', 20)
+    call setline(1, line)
+    let target_col = stridx(line, 'target') + 1
+
+    call assert_equal([1, 4], s:ConceallevelThreeCursorCell(target_col))
+    call assert_equal(['<a target words aft>'], ScreenLines(1, 20))
+  finally
+    syntax clear Hidden
+    call CloseWindow()
+  endtry
+endfunc
+
 func Test_conceallevel_three_screenline_list_invalidation()
   call NewWindow(10, 40)
   setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
