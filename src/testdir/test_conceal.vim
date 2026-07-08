@@ -2098,6 +2098,108 @@ func Test_conceallevel_three_gn_gN_visual_selection()
   endtry
 endfunc
 
+func Test_conceallevel_three_word_motions_text_objects()
+  let save_reg = getreg('"')
+  let save_regtype = getregtype('"')
+
+  call NewWindow(8, 40)
+  try
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    syntax region Code matchgroup=HiddenMarker start=/`/ end=/`/
+          \ concealends
+    syntax region Emphasis matchgroup=HiddenMarker start=/\*/ end=/\*/
+          \ concealends
+
+    let line1 = repeat('a', 42) .. ' `target` alpha'
+    let line2 = repeat('b', 42) .. ' *focus* beta'
+    call setline(1, [line1, line2])
+    let tick1 = stridx(line1, '`target`') + 1
+    let word1 = stridx(line1, 'target') + 1
+    let word1_end = word1 + strlen('target') - 1
+    let star2 = stridx(line2, '*focus*') + 1
+    let word2 = stridx(line2, 'focus') + 1
+    let word2_end = word2 + strlen('focus') - 1
+
+    for [lnum, first_col, word_col, word_end] in [
+          \ [1, tick1, word1, word1_end],
+          \ [2, star2, word2, word2_end],
+          \]
+      call cursor(lnum, 1)
+      normal! w
+      redraw!
+      call assert_equal([lnum, first_col], [line('.'), col('.')])
+      let [win_row, win_col] = win_screenpos(0)
+      let pos = screenpos(0, line('.'), col('.'))
+      call assert_true(pos.row > 0)
+      call assert_true(pos.row - win_row + 1 > 1)
+      call assert_equal([winline(), wincol()],
+            \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+
+      normal! w
+      redraw!
+      call assert_equal([lnum, word_col], [line('.'), col('.')])
+      let pos = screenpos(0, line('.'), col('.'))
+      call assert_true(pos.row > 0)
+      call assert_true(pos.row - win_row + 1 > 1)
+      call assert_equal([winline(), wincol()],
+            \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+
+      normal! e
+      redraw!
+      call assert_equal([lnum, word_end], [line('.'), col('.')])
+      let pos = screenpos(0, line('.'), col('.'))
+      call assert_true(pos.row > 0)
+      call assert_true(pos.row - win_row + 1 > 1)
+      call assert_equal([winline(), wincol()],
+            \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+
+      normal! b
+      redraw!
+      call assert_equal([lnum, word_col], [line('.'), col('.')])
+      let pos = screenpos(0, line('.'), col('.'))
+      call assert_true(pos.row > 0)
+      call assert_true(pos.row - win_row + 1 > 1)
+      call assert_equal([winline(), wincol()],
+            \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+
+      normal! ge
+      redraw!
+      call assert_equal([lnum, first_col], [line('.'), col('.')])
+      let pos = screenpos(0, line('.'), col('.'))
+      call assert_true(pos.row > 0)
+      call assert_true(pos.row - win_row + 1 > 1)
+      call assert_equal([winline(), wincol()],
+            \ [pos.row - win_row + 1, pos.curscol - win_col + 1])
+    endfor
+
+    call cursor(1, word1)
+    normal! yiw
+    call assert_equal('target', @")
+    normal! yaw
+    call assert_equal('target', @")
+    normal! yiW
+    call assert_equal('`target`', @")
+    normal! yaW
+    call assert_equal('`target` ', @")
+
+    call cursor(2, word2)
+    normal! yiw
+    call assert_equal('focus', @")
+    normal! yaw
+    call assert_equal('focus', @")
+    normal! yiW
+    call assert_equal('*focus*', @")
+    normal! yaW
+    call assert_equal('*focus* ', @")
+  finally
+    call setreg('"', save_reg, save_regtype)
+    silent! syntax clear Code
+    silent! syntax clear Emphasis
+    call CloseWindow()
+  endtry
+endfunc
+
 func s:TermTextAttrs(buf, text, occurrence) abort
   let seen = 0
   let rows = term_getsize(a:buf)[0] - 1
