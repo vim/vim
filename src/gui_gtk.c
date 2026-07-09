@@ -1410,7 +1410,7 @@ gui_mch_browsedir(
 
 #if defined(FEAT_GUI_DIALOG)
 
-# ifdef USE_OVERLAY_DIALOG
+# ifdef HAVE_GTK3_OVERLAY_DIALOG
 #  define OVERLAY_DIALOG "vim-overlay"
 #  define OVERLAY_DIALOG_SELECTED "selected"
 
@@ -1929,7 +1929,7 @@ split_button_translation(const char *message)
     return buttons;
 }
 
-# ifndef USE_OVERLAY_DIALOG
+# ifndef HAVE_GTK3_OVERLAY_DIALOG
     static int
 button_equal(const char *a, const char *b)
 {
@@ -2104,7 +2104,7 @@ gui_mch_dialog(int	type,	    // type of dialog
 	       int	ex_cmd UNUSED)
 {
     int		response;
-# ifdef USE_OVERLAY_DIALOG
+# ifdef HAVE_GTK3_OVERLAY_DIALOG
     {
 	GtkWidget	*box;
 	static OverlayDialog overlay_dialog;

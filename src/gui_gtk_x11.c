@@ -1220,7 +1220,7 @@ key_press_event(GtkWidget *widget UNUSED,
     gui.event_time = event->time;
     key_sym = event->keyval;
     state = event->state;
-#ifdef USE_OVERLAY_DIALOG
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
     if (gui.dialog_textentry_active)
 	return FALSE;
 #endif
@@ -1403,7 +1403,7 @@ key_release_event(GtkWidget *widget UNUSED,
 		  GdkEventKey *event UNUSED,
 		  gpointer data UNUSED)
 {
-# ifdef USE_OVERLAY_DIALOG
+# ifdef HAVE_GTK3_OVERLAY_DIALOG
     if (gui.dialog_textentry_active)
 	return FALSE;
 # endif
@@ -4163,7 +4163,7 @@ gui_mch_init(void)
     gtk_widget_set_events(gui.drawarea, event_mask);
     gtk_widget_show(gui.drawarea);
     gui_gtk_form_put(GTK_FORM(gui.formwin), gui.drawarea, 0, 0);
-#ifdef USE_OVERLAY_DIALOG
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
     // TODO: gui_mch_new_colors for changing from dark to light theme
     GtkCssProvider *gtk_css;
 
