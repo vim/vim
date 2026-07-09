@@ -1403,10 +1403,10 @@ key_release_event(GtkWidget *widget UNUSED,
 		  GdkEventKey *event UNUSED,
 		  gpointer data UNUSED)
 {
-#ifdef USE_OVERLAY_DIALOG
+# ifdef USE_OVERLAY_DIALOG
     if (gui.dialog_textentry_active)
 	return FALSE;
-#endif
+# endif
 # if defined(FEAT_XIM)
     gui.event_time = event->time;
     /*
