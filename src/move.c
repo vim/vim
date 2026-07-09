@@ -1715,12 +1715,12 @@ conceal_textpos2screenpos(
 	return FAIL;
 
     use_screenline = has_conceal;
-# ifdef FEAT_RIGHTLEFT
+#  ifdef FEAT_RIGHTLEFT
     // In a rightleft line the requested cell may be found before win_line()
     // reaches a later concealed span and sets "has_conceal".
     if (wp->w_p_rl && ctx.found)
 	use_screenline = true;
-# endif
+#  endif
     if (!use_screenline)
 	return FAIL;
 
