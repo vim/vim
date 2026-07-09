@@ -4583,15 +4583,20 @@ win_line(
 		    cells += wlv.n_extra;
 		}
 
-		if (cells > 0
-			&& drawline_screenline_cb(
+		if (cells > 0)
+		{
+		    int cb_ret = drawline_screenline_cb(
 			    (colnr_T)(cursor_ptr - line),
 			    (colnr_T)(cursor_ptr_end - line) - 1,
 			    wlv.row, wlv.col, cursor_col, cells,
-			    drawline_screenline_ctx) == FAIL)
-		{
-		    drawline_screenline_failed = true;
-		    break;
+			    drawline_screenline_ctx);
+
+		    if (cb_ret != OK)
+		    {
+			if (cb_ret == FAIL)
+			    drawline_screenline_failed = true;
+			break;
+		    }
 		}
 	    }
 	    if (visual_conceal_active && wlv.draw_state == WL_LINE
@@ -5090,6 +5095,8 @@ win_line(
 /*
  * Iterate over the visible buffer cells for "lnum" as win_line() lays them out.
  * The callback receives row and column values relative to a synthetic row zero.
+ * A callback may return NOTDONE to stop early without making iteration fail;
+ * then "rowsp" does not describe the full line height.
  * When "cb" is NULL, only collect whether the line has concealment and how
  * many rows it occupies.
  */

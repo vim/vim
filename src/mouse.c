@@ -1975,6 +1975,7 @@ mouse_conceal_col_store(
 	ctx->buf_col = col;
 	ctx->coladd = ctx->col - start_col;
 	ctx->found = true;
+	return NOTDONE;
     }
     return OK;
 }

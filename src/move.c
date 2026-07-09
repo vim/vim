@@ -1665,7 +1665,7 @@ conceal_screenpos_store(
 	ctx->ccol = ccol;
 	ctx->ecol = ecol;
 	ctx->found = true;
-	return OK;
+	return NOTDONE;
     }
     if (end_col < ctx->pos->col)
     {
@@ -1682,6 +1682,7 @@ conceal_screenpos_store(
 	ctx->after_scol = scol;
 	ctx->after_ccol = ccol;
 	ctx->after_ecol = ecol;
+	return NOTDONE;
     }
     return OK;
 }
