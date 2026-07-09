@@ -1226,7 +1226,7 @@ plines_win_col_conceal_vcol(win_T *wp, linenr_T lnum, long column)
     bool
 plines_win_col_concealed(win_T *wp, linenr_T lnum, long column)
 {
-    bool    concealed = false;
+    bool	concealed = false;
 
     if (!plines_win_may_conceal(wp, lnum))
 	return false;
