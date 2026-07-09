@@ -542,14 +542,10 @@ endfunc
 
 " Test if serverlist() can return a list of strings
 func Test_clientserver_serverlist_list()
-  if v:servername == ''
-    eval 'MYSELF'->remote_startserver()
-  endif
-  let name = v:servername
+  let servers = serverlist(#{list: v:true})
 
-  call assert_equal('list<string>', typename(serverlist(#{list: v:true})))
-  call WaitForAssert({-> assert_true(
-        \ serverlist(#{list: v:true})->index(name) != -1)})
+  call assert_equal('list<string>', typename(servers))
+  call assert_equal(serverlist(), join(servers, "\n"))
 endfunc
 
 " Uncomment this line to get a debugging log
