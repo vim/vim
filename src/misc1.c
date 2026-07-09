@@ -551,6 +551,7 @@ typedef struct
     win_T	*wp;
     buf_T	*buf;
     linenr_T	lnum;
+    colnr_T	line_len;
     linenr_T	topline;
     colnr_T	leftcol;
     colnr_T	skipcol;
@@ -665,6 +666,7 @@ plines_conceal_height_cache_key(
     key->wp = wp;
     key->buf = wp->w_buffer;
     key->lnum = lnum;
+    key->line_len = ml_get_buf_len(wp->w_buffer, lnum);
     key->topline = wp->w_topline;
     key->leftcol = wp->w_leftcol;
     key->skipcol = wp->w_skipcol;
@@ -719,6 +721,7 @@ plines_conceal_height_cache_equal(
 	&& cache->wp == key->wp
 	&& cache->buf == key->buf
 	&& cache->lnum == key->lnum
+	&& cache->line_len == key->line_len
 	&& cache->topline == key->topline
 	&& cache->leftcol == key->leftcol
 	&& cache->skipcol == key->skipcol
