@@ -4162,129 +4162,154 @@ endfunc
 
 func Test_conceallevel_three_wrap_single_char_syntax()
   call NewWindow(6, 80)
-  setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
-  syntax match test /X/ conceal
+  try
+    setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+    syntax match test /X/ conceal
 
-  call setline(1, repeat('X', winwidth(0) - 3) .. 'YYYY')
-  call setline(2, 'after')
-  call cursor(2, 1)
-  call assert_equal([
-        \ 'YYYY' .. repeat(' ', winwidth(0) - 4),
-        \ 'after' .. repeat(' ', winwidth(0) - 5),
-        \ ], ScreenLines([1, 2], winwidth(0)))
-  call assert_equal(2, screenpos(0, 2, 1).row)
+    call setline(1, repeat('X', winwidth(0) - 3) .. 'YYYY')
+    call setline(2, 'after')
+    call cursor(2, 1)
+    call assert_equal([
+          \ 'YYYY' .. repeat(' ', winwidth(0) - 4),
+          \ 'after' .. repeat(' ', winwidth(0) - 5),
+          \ ], ScreenLines([1, 2], winwidth(0)))
+    call assert_equal(2, screenpos(0, 2, 1).row)
 
-  syntax clear test
-  call CloseWindow()
+  finally
+    syntax clear test
+    call CloseWindow()
+  endtry
 endfunc
 
 func Test_conceallevel_three_wrap_matchadd_multiline()
+  let matchid = -1
   call NewWindow(6, 4)
-  setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+  try
+    setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
 
-  let matchid = matchadd('Conceal', 'x\nXXXXX', 10, -1, #{conceal: ''})
-  call setline(1, ['x', 'XXXXXYY', 'after'])
-  call cursor(3, 1)
-  redraw
-  call assert_equal(3, screenpos(0, 3, 1).row)
-  call matchdelete(matchid)
+    let matchid = matchadd('Conceal', 'x\nXXXXX', 10, -1, #{conceal: ''})
+    call setline(1, ['x', 'XXXXXYY', 'after'])
+    call cursor(3, 1)
+    redraw
+    call assert_equal(3, screenpos(0, 3, 1).row)
+    call matchdelete(matchid)
+    let matchid = -1
 
-  syntax match test /Z/ conceal
-  call setline(1, 'abcdEZ')
-  call deletebufline(bufnr(), 2, '$')
-  call cursor(1, 5)
-  redraw
-  call assert_equal(2, winline())
+    syntax match test /Z/ conceal
+    call setline(1, 'abcdEZ')
+    call deletebufline(bufnr(), 2, '$')
+    call cursor(1, 5)
+    redraw
+    call assert_equal(2, winline())
 
-  syntax clear test
-  call CloseWindow()
+  finally
+    if matchid > 0
+      silent! call matchdelete(matchid)
+    endif
+    syntax clear test
+    call CloseWindow()
+  endtry
 endfunc
 
 func Test_conceallevel_three_wrap_visible_screenpos()
   call NewWindow(6, 10)
-  setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
-  syntax match test /X\+/ conceal
+  try
+    setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+    syntax match test /X\+/ conceal
 
-  call setline(1, repeat('X', 5) .. repeat('Y', 15))
-  redraw
-  call assert_equal(#{col: 5, row: 2, endcol: 5, curscol: 5},
-        \ screenpos(0, 1, 20))
+    call setline(1, repeat('X', 5) .. repeat('Y', 15))
+    redraw
+    call assert_equal(#{col: 5, row: 2, endcol: 5, curscol: 5},
+          \ screenpos(0, 1, 20))
 
-  syntax clear test
-  call CloseWindow()
+  finally
+    syntax clear test
+    call CloseWindow()
+  endtry
 endfunc
 
 func Test_conceallevel_three_wrap_number_line_height()
   call NewWindow(12, 42)
-  setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
-  setlocal number signcolumn=no
-  syntax region test matchgroup=test start=/`/ end=/`/ concealends
+  try
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+    setlocal number signcolumn=no
+    syntax region test matchgroup=test start=/`/ end=/`/ concealends
 
-  call setline(1, [
-        \ 'top',
-        \ '',
-        \ 'aaaaaaaaaa bbbbbbbbbb cccccccccc dddddddddd `日本語` eeeeeeeeee ffffffffff gggggggggg hhhhhhhhhh iiiiiiiiii',
-        \ '',
-        \ 'Plain comparison line without Markdown conceal but with wide text near the same area: 0123456789 0123456789 0123456789 日本語 0123456789 0123456789 0123456789.'])
-  redraw
+    call setline(1, [
+          \ 'top',
+          \ '',
+          \ 'aaaaaaaaaa bbbbbbbbbb cccccccccc dddddddddd `日本語` eeeeeeeeee ffffffffff gggggggggg hhhhhhhhhh iiiiiiiiii',
+          \ '',
+          \ 'Plain comparison line without Markdown conceal but with wide text near the same area: 0123456789 0123456789 0123456789 日本語 0123456789 0123456789 0123456789.'])
+    redraw
 
-  let row_l3 = screenpos(0, 3, 1).row
-  let row_l4 = screenpos(0, 4, 1).row
-  let row_l5 = screenpos(0, 5, 1).row
-  call assert_equal(row_l3 + 4, row_l4)
-  call assert_equal(row_l4 + 1, row_l5)
+    let row_l3 = screenpos(0, 3, 1).row
+    let row_l4 = screenpos(0, 4, 1).row
+    let row_l5 = screenpos(0, 5, 1).row
+    call assert_equal(row_l3 + 4, row_l4)
+    call assert_equal(row_l4 + 1, row_l5)
 
-  call cursor(5, 1)
-  redraw
-  normal! k
-  redraw
-  call assert_equal([4, 1], [line('.'), col('.')])
-  call assert_equal(row_l4, screenpos(0, line('.'), col('.')).row)
-  normal! j
-  redraw
-  call assert_equal([5, 1], [line('.'), col('.')])
-  call assert_equal(row_l5, screenpos(0, line('.'), col('.')).row)
+    call cursor(5, 1)
+    redraw
+    normal! k
+    redraw
+    call assert_equal([4, 1], [line('.'), col('.')])
+    call assert_equal(row_l4, screenpos(0, line('.'), col('.')).row)
+    normal! j
+    redraw
+    call assert_equal([5, 1], [line('.'), col('.')])
+    call assert_equal(row_l5, screenpos(0, line('.'), col('.')).row)
 
-  syntax clear test
-  call CloseWindow()
+  finally
+    syntax clear test
+    call CloseWindow()
+  endtry
 endfunc
 
 func Test_conceallevel_three_wrap_virtual_text()
   CheckFeature textprop
 
+  let did_add_prop_type = v:false
   call NewWindow(6, 80)
-  setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
-  syntax match test /X\+/ conceal
-  call prop_type_add('test', #{highlight: 'Search'})
+  try
+    setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+    syntax match test /X\+/ conceal
+    call prop_type_add('test', #{highlight: 'Search'})
+    let did_add_prop_type = v:true
 
-  call setline(1, [repeat('X', 10), 'after'])
-  call prop_add(1, col([1, '$']),
-        \ #{type: 'test', text: repeat('V', winwidth(0) + 1)})
-  call cursor(2, 1)
-  call assert_equal(3, screenpos(0, 2, 1).row)
+    call setline(1, [repeat('X', 10), 'after'])
+    call prop_add(1, col([1, '$']),
+          \ #{type: 'test', text: repeat('V', winwidth(0) + 1)})
+    call cursor(2, 1)
+    call assert_equal(3, screenpos(0, 2, 1).row)
 
-  call prop_clear(1)
-  call setline(1, [repeat('X', 10), 'after'])
-  call prop_add(1, 1, #{type: 'test', text: repeat('V', winwidth(0) + 1)})
-  call cursor(2, 1)
-  call assert_equal(3, screenpos(0, 2, 1).row)
+    call prop_clear(1)
+    call setline(1, [repeat('X', 10), 'after'])
+    call prop_add(1, 1, #{type: 'test', text: repeat('V', winwidth(0) + 1)})
+    call cursor(2, 1)
+    call assert_equal(3, screenpos(0, 2, 1).row)
 
-  setlocal showbreak=++
-  call prop_clear(1)
-  call setline(1, [repeat('X', 10), 'after'])
-  call prop_add(1, 1, #{type: 'test', text: repeat('V', winwidth(0) * 2 - 1)})
-  call cursor(2, 1)
-  call assert_equal(4, screenpos(0, 2, 1).row)
+    setlocal showbreak=++
+    call prop_clear(1)
+    call setline(1, [repeat('X', 10), 'after'])
+    call prop_add(1, 1, #{type: 'test', text: repeat('V', winwidth(0) * 2 - 1)})
+    call cursor(2, 1)
+    call assert_equal(4, screenpos(0, 2, 1).row)
 
-  call prop_clear(1)
-  call setline(1, [repeat('X', winwidth(0) * 2 + 3) .. 'Y', 'after'])
-  call prop_add(1, col([1, '$']), #{type: 'test', text: 'V'})
-  call cursor(2, 1)
-  call assert_equal(2, screenpos(0, 2, 1).row)
+    call prop_clear(1)
+    call setline(1, [repeat('X', winwidth(0) * 2 + 3) .. 'Y', 'after'])
+    call prop_add(1, col([1, '$']), #{type: 'test', text: 'V'})
+    call cursor(2, 1)
+    call assert_equal(2, screenpos(0, 2, 1).row)
 
-  call prop_type_delete('test')
-  syntax clear test
-  call CloseWindow()
+  finally
+    call prop_clear(1)
+    if did_add_prop_type
+      call prop_type_delete('test')
+    endif
+    syntax clear test
+    call CloseWindow()
+  endtry
 endfunc
 
 func Test_conceallevel_three_popup()
@@ -4302,9 +4327,11 @@ func Test_conceallevel_three_popup()
   END
   call writefile(lines, 'XpopupConceal', 'D')
   let buf = RunVimInTerminal('-S XpopupConceal', #{rows: 12, cols: 50})
-  call VerifyScreenDump(buf, 'Test_conceallevel_three_popup_1', {})
-
-  call StopVimInTerminal(buf)
+  try
+    call VerifyScreenDump(buf, 'Test_conceallevel_three_popup_1', {})
+  finally
+    call StopVimInTerminal(buf)
+  endtry
 endfunc
 
 func Test_conceallevel_three_cursor_moved_redraw()
@@ -4319,24 +4346,27 @@ func Test_conceallevel_three_cursor_moved_redraw()
   call writefile(code, 'XTest_conceallevel_three_cursor_moved_redraw', 'D')
   let buf = RunVimInTerminal('-S XTest_conceallevel_three_cursor_moved_redraw',
         \ {'rows': 6, 'cols': 80})
-  call WaitForAssert({-> assert_equal('YYYY', term_getline(buf, 2))})
-  call term_sendkeys(buf, 'j')
-  call WaitForAssert({-> assert_equal('YYYY', term_getline(buf, 2))})
-  call assert_equal('after', term_getline(buf, 3))
-  call term_sendkeys(buf, 'k')
-  call WaitForAssert({-> assert_equal('YYYY', term_getline(buf, 2))})
+  try
+    call WaitForAssert({-> assert_equal('YYYY', term_getline(buf, 2))})
+    call term_sendkeys(buf, 'j')
+    call WaitForAssert({-> assert_equal('YYYY', term_getline(buf, 2))})
+    call assert_equal('after', term_getline(buf, 3))
+    call term_sendkeys(buf, 'k')
+    call WaitForAssert({-> assert_equal('YYYY', term_getline(buf, 2))})
 
-  call term_sendkeys(buf, ":set concealcursor=\<CR>")
-  call term_sendkeys(buf, 'j')
-  call WaitForAssert({-> assert_equal(repeat('X', 77) .. 'YYY',
-        \ term_getline(buf, 2))})
-  call assert_equal('Y', term_getline(buf, 3))
-  call assert_equal('after', term_getline(buf, 4))
-  call term_sendkeys(buf, 'k')
-  call WaitForAssert({-> assert_equal('YYYY', term_getline(buf, 2))})
-  call assert_equal('after', term_getline(buf, 3))
+    call term_sendkeys(buf, ":set concealcursor=\<CR>")
+    call term_sendkeys(buf, 'j')
+    call WaitForAssert({-> assert_equal(repeat('X', 77) .. 'YYY',
+          \ term_getline(buf, 2))})
+    call assert_equal('Y', term_getline(buf, 3))
+    call assert_equal('after', term_getline(buf, 4))
+    call term_sendkeys(buf, 'k')
+    call WaitForAssert({-> assert_equal('YYYY', term_getline(buf, 2))})
+    call assert_equal('after', term_getline(buf, 3))
 
-  call StopVimInTerminal(buf)
+  finally
+    call StopVimInTerminal(buf)
+  endtry
 endfunc
 
 func Test_conceallevel_three_open_above_redraw()
@@ -4351,16 +4381,19 @@ func Test_conceallevel_three_open_above_redraw()
   call writefile(code, 'XTest_conceallevel_three_open_above_redraw', 'D')
   let buf = RunVimInTerminal('-S XTest_conceallevel_three_open_above_redraw',
         \ {'rows': 6, 'cols': 80})
-  call WaitForAssert({-> assert_equal(repeat('X', 77) .. 'YYY',
-        \ term_getline(buf, 1))})
-  call assert_equal('Y', term_getline(buf, 2))
+  try
+    call WaitForAssert({-> assert_equal(repeat('X', 77) .. 'YYY',
+          \ term_getline(buf, 1))})
+    call assert_equal('Y', term_getline(buf, 2))
 
-  call term_sendkeys(buf, 'O')
-  call WaitForAssert({-> assert_equal('', term_getline(buf, 1))})
-  call assert_equal('YYYY', term_getline(buf, 2))
-  call assert_equal('~' .. repeat(' ', 79), term_getline(buf, 3))
+    call term_sendkeys(buf, 'O')
+    call WaitForAssert({-> assert_equal('', term_getline(buf, 1))})
+    call assert_equal('YYYY', term_getline(buf, 2))
+    call assert_equal('~' .. repeat(' ', 79), term_getline(buf, 3))
 
-  call StopVimInTerminal(buf)
+  finally
+    call StopVimInTerminal(buf)
+  endtry
 endfunc
 
 func s:Run_conceallevel_three_open_above_redraw(name, setup, keys, expected)
@@ -4372,14 +4405,17 @@ func s:Run_conceallevel_three_open_above_redraw(name, setup, keys, expected)
   call writefile(code, 'XTest_conceallevel_three_' .. a:name, 'D')
   let buf = RunVimInTerminal('-S XTest_conceallevel_three_' .. a:name,
         \ {'rows': 8, 'cols': 80})
-  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
-  call term_sendkeys(buf, a:keys)
-  call WaitForAssert({-> assert_equal(a:expected[0], term_getline(buf, 1))})
-  for i in range(1, len(a:expected) - 1)
-    call assert_equal(a:expected[i], term_getline(buf, i + 1))
-  endfor
+  try
+    call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+    call term_sendkeys(buf, a:keys)
+    call WaitForAssert({-> assert_equal(a:expected[0], term_getline(buf, 1))})
+    for i in range(1, len(a:expected) - 1)
+      call assert_equal(a:expected[i], term_getline(buf, i + 1))
+    endfor
 
-  call StopVimInTerminal(buf)
+  finally
+    call StopVimInTerminal(buf)
+  endtry
 endfunc
 
 func Test_conceallevel_three_insert_above_redraw()
@@ -4425,16 +4461,18 @@ func Test_conceal_double_width_wrap()
   [CODE]
   call writefile(code, 'XTest_conceal_double_width_wrap', 'D')
   let buf = RunVimInTerminal('-S XTest_conceal_double_width_wrap', {'rows': 4, 'cols': 20})
-  call VerifyScreenDump(buf, 'Test_conceal_double_width_wrap_1', {})
-  call term_sendkeys(buf, "gM")
-  call VerifyScreenDump(buf, 'Test_conceal_double_width_wrap_2', {})
-  call term_sendkeys(buf, ":set conceallevel=3\<CR>")
-  call VerifyScreenDump(buf, 'Test_conceal_double_width_wrap_3', {})
-  call term_sendkeys(buf, "$")
-  call VerifyScreenDump(buf, 'Test_conceal_double_width_wrap_4', {})
+  try
+    call VerifyScreenDump(buf, 'Test_conceal_double_width_wrap_1', {})
+    call term_sendkeys(buf, "gM")
+    call VerifyScreenDump(buf, 'Test_conceal_double_width_wrap_2', {})
+    call term_sendkeys(buf, ":set conceallevel=3\<CR>")
+    call VerifyScreenDump(buf, 'Test_conceal_double_width_wrap_3', {})
+    call term_sendkeys(buf, "$")
+    call VerifyScreenDump(buf, 'Test_conceal_double_width_wrap_4', {})
 
-  " clean up
-  call StopVimInTerminal(buf)
+  finally
+    call StopVimInTerminal(buf)
+  endtry
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
