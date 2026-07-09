@@ -261,8 +261,9 @@ func Test_screenpos_conceallevel_three_tab_wrap()
     let matchid = matchadd('Conceal', 'x', 10, -1, #{conceal: ''})
     redraw
 
+    let [winrow, _] = win_screenpos(win_getid())
     let pos = screenpos(win_getid(), 1, 2)
-    call assert_equal(2, pos.row)
+    call assert_equal(winrow + 1, pos.row)
     call assert_equal(6, pos.endcol - pos.col)
     call assert_equal(pos.endcol, pos.curscol)
 
