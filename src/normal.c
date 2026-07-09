@@ -3089,21 +3089,29 @@ nv_screenline_map_current(
     nv_screenline_cell_T	*cells = nv_screenline_map_cells(map);
     nv_screenline_cell_T	*before = NULL;
     nv_screenline_cell_T	*after = NULL;
-    int				i;
+    int				low = 0;
+    int				high = map->cells.ga_len - 1;
 
-    for (i = 0; i < map->cells.ga_len; ++i)
+    while (low <= high)
     {
-	if (cells[i].col <= col && col <= cells[i].end_col)
+	int mid = (low + high) / 2;
+
+	if (cells[mid].col <= col && col <= cells[mid].end_col)
 	{
-	    *rowp = cells[i].row;
-	    *colp = cells[i].ccol;
+	    *rowp = cells[mid].row;
+	    *colp = cells[mid].ccol;
 	    return OK;
 	}
-	if (cells[i].end_col < col)
-	    before = &cells[i];
-	else if (cells[i].col > col && after == NULL)
-	    after = &cells[i];
+	if (cells[mid].end_col < col)
+	    low = mid + 1;
+	else
+	    high = mid - 1;
     }
+
+    if (high >= 0)
+	before = &cells[high];
+    if (low < map->cells.ga_len)
+	after = &cells[low];
 
     // A cursor can temporarily be on a hidden byte.  Anchor it to the next
     // or previous drawn byte, whichever is nearest in the buffer.
@@ -3325,6 +3333,7 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
     int		old_skipcol;
     bool	have_map = true;
     bool	allow_plain;
+    bool	used_target_wcol = false;
     colnr_T	target_skipcol = 0;
 
     if (!nv_screenline_conceal_active())
@@ -3484,8 +3493,27 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
 	update_topline();
     if (curwin->w_topline != old_topline || curwin->w_skipcol != old_skipcol)
 	redraw_later(UPD_NOT_VALID);
-    curs_columns(TRUE);
-    adjust_skipcol();
+    // The map lookup already found the concealed screen position.  Reuse it
+    // when the viewport did not move; curs_columns() would scan the line again.
+    if (target_ccol > 0
+	    && curwin->w_topline == old_topline
+	    && curwin->w_skipcol == old_skipcol)
+    {
+	validate_virtcol();
+	adjust_skipcol();
+	if (curwin->w_topline == old_topline
+		&& curwin->w_skipcol == old_skipcol)
+	{
+	    nv_screenline_conceal_set_wcol(target_row, target_ccol);
+	    curwin->w_valid |= VALID_VIRTCOL;
+	    used_target_wcol = true;
+	}
+    }
+    if (!used_target_wcol)
+    {
+	curs_columns(TRUE);
+	adjust_skipcol();
+    }
     if (target_skipcol > 0
 	    && curwin->w_topline == curwin->w_cursor.lnum
 	    && curwin->w_skipcol != target_skipcol)
@@ -3495,21 +3523,14 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
 	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_CROW|VALID_CHEIGHT
 							       |VALID_VIRTCOL);
 	redraw_later(UPD_NOT_VALID);
+	used_target_wcol = false;
     }
-    if (target_ccol > 0
+    if (!used_target_wcol && target_ccol > 0
 	    && curwin->w_topline == old_topline
 	    && curwin->w_skipcol == old_skipcol)
-    {
-	curwin->w_wrow = target_row - W_WINROW(curwin) - 1;
-	curwin->w_wcol = target_ccol - curwin->w_wincol - 1;
-	curwin->w_valid |= VALID_WROW|VALID_WCOL;
-	curwin->w_valid &= ~VALID_VIRTCOL;
-	curwin->w_conceal_wcol_pos = curwin->w_cursor;
-	curwin->w_conceal_wcol_width = curwin->w_width;
-	curwin->w_flags |= WFLAG_CONCEAL_WCOL;
-    }
+	nv_screenline_conceal_set_wcol(target_row, target_ccol);
 # if defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP)
-    else if (update_conceal_cursor_screenpos(curwin) == OK)
+    else if (!used_target_wcol && update_conceal_cursor_screenpos(curwin) == OK)
     {
 	curwin->w_conceal_wcol_pos = curwin->w_cursor;
 	curwin->w_conceal_wcol_width = curwin->w_width;
