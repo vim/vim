@@ -100,11 +100,12 @@ margin_columns_win(win_T *wp, int *left_col, int *right_col)
 #endif
 
 #ifdef FEAT_CONCEAL
+static bool drawline_screenline_collect = false;
 static conceal_screenline_cb_T drawline_screenline_cb = NULL;
 static void *drawline_screenline_ctx = NULL;
 static bool drawline_screenline_has_conceal = false;
 static bool drawline_screenline_failed = false;
-# define DRAWLINE_COLLECTING (drawline_screenline_cb != NULL)
+# define DRAWLINE_COLLECTING drawline_screenline_collect
 #else
 # define DRAWLINE_COLLECTING false
 #endif
@@ -4563,7 +4564,8 @@ win_line(
 	    }
 #endif
 #ifdef FEAT_CONCEAL
-	    if (DRAWLINE_COLLECTING && wlv.draw_state == WL_LINE
+	    if (DRAWLINE_COLLECTING && drawline_screenline_cb != NULL
+		    && wlv.draw_state == WL_LINE
 		    && cursor_ptr != NULL && cursor_ptr_end > cursor_ptr
 		    && !is_concealing
 		    && (!did_decrement_ptr || *cursor_ptr == TAB) && c != NUL)
@@ -5088,6 +5090,8 @@ win_line(
 /*
  * Iterate over the visible buffer cells for "lnum" as win_line() lays them out.
  * The callback receives row and column values relative to a synthetic row zero.
+ * When "cb" is NULL, only collect whether the line has concealment and how
+ * many rows it occupies.
  */
     int
 win_line_conceal_screenline_iter(
@@ -5098,6 +5102,7 @@ win_line_conceal_screenline_iter(
     bool		*has_concealp,
     int			*rowsp)
 {
+    bool		    save_collect = drawline_screenline_collect;
     conceal_screenline_cb_T save_cb = drawline_screenline_cb;
     void		    *save_ctx = drawline_screenline_ctx;
     bool		    save_has_conceal = drawline_screenline_has_conceal;
@@ -5106,7 +5111,7 @@ win_line_conceal_screenline_iter(
     int			    row;
     bool		    failed;
 
-    if (cb == NULL || drawline_screenline_cb != NULL)
+    if (drawline_screenline_collect)
 	return FAIL;
 
     CLEAR_FIELD(spv);
@@ -5118,6 +5123,7 @@ win_line_conceal_screenline_iter(
     }
 # endif
 
+    drawline_screenline_collect = true;
     drawline_screenline_cb = cb;
     drawline_screenline_ctx = cb_ctx;
     drawline_screenline_has_conceal = false;
@@ -5129,6 +5135,7 @@ win_line_conceal_screenline_iter(
     if (rowsp != NULL)
 	*rowsp = row;
 
+    drawline_screenline_collect = save_collect;
     drawline_screenline_cb = save_cb;
     drawline_screenline_ctx = save_ctx;
     drawline_screenline_has_conceal = save_has_conceal;

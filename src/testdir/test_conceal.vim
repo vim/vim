@@ -1470,6 +1470,33 @@ func Test_conceallevel_three_screenline_counts()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_plain_wrapped_gk_after_blank()
+  call NewWindow(10, 64)
+  setlocal wrap linebreak breakindent smoothscroll conceallevel=3
+        \ concealcursor=n signcolumn=no number showbreak= scrolloff=0
+
+  call setline(1, [
+        \ 'before',
+        \ 'Onboarding does not end at 90 days. Continue learning, contribute to our standards, mentor future hires, and build systems that move Kepler forward. Welcome to the team!',
+        \ '',
+        \ 'after',
+        \ ])
+  redraw!
+
+  let long_row = screenpos(0, 2, 1).row
+  let blank_row = screenpos(0, 3, 1).row
+  call assert_true(blank_row - long_row >= 3)
+
+  call cursor(4, 1)
+  redraw!
+  normal! gkgkgk
+  redraw!
+  call assert_equal(2, line('.'))
+  call assert_equal(blank_row - 2, screenpos(0, line('.'), col('.')).row)
+
+  call CloseWindow()
+endfunc
+
 func Test_conceallevel_three_scroll_commands()
   call NewWindow(5, 40)
   setlocal wrap smoothscroll conceallevel=3 concealcursor=nvic

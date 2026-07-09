@@ -825,19 +825,6 @@ plines_win_may_conceal(win_T *wp, linenr_T lnum)
     return true;
 }
 
-    static int
-plines_conceal_height_cb(
-	colnr_T		col UNUSED,
-	colnr_T		end_col UNUSED,
-	int		row UNUSED,
-	int		start_col UNUSED,
-	int		cursor_col UNUSED,
-	int		cells UNUSED,
-	void		*ctx UNUSED)
-{
-    return OK;
-}
-
 /*
  * Return the exact drawn height of "lnum" when it has concealed text, zero
  * when there is no concealment, or -1 when the drawn height cannot be checked.
@@ -869,8 +856,7 @@ plines_win_conceal_height(win_T *wp, linenr_T lnum, bool *drawn_line)
     }
     *drawn_line = true;
     if (win_line_conceal_screenline_iter(wp, lnum,
-		    plines_conceal_height_cb, NULL, &has_conceal,
-		    &rows) == FAIL)
+		    NULL, NULL, &has_conceal, &rows) == FAIL)
 	return -1;
     if (!has_conceal)
 	rows = 0;

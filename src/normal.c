@@ -3323,6 +3323,7 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
     linenr_T	old_topline;
     int		old_skipcol;
     bool	have_map = true;
+    bool	allow_plain;
     colnr_T	target_skipcol = 0;
 
     if (!nv_screenline_conceal_active())
@@ -3330,8 +3331,12 @@ nv_screengo_conceal(int dir, long dist, bool use_curswant)
 
     lnum = curwin->w_cursor.lnum;
     text_col = curwin->w_wincol + win_col_off(curwin) + 1;
+    // After a conceal-aware screenline move, w_curswant stores the visible
+    // target column, not the legacy row-offset column.  Keep using a map for
+    // plain wrapped lines while that target is valid.
+    allow_plain = use_curswant || nv_screenline_plain_map_needed(lnum);
     if (nv_screenline_map_build(&map, lnum, false, true) == FAIL
-	    && (!nv_screenline_plain_map_needed(lnum)
+	    && (!allow_plain
 		|| nv_screenline_map_build(&map, lnum, true, true) == FAIL))
     {
 	if (ml_get_len(lnum) != 0 && !nv_screenline_all_concealed(lnum))
