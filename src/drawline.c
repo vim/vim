@@ -4720,7 +4720,7 @@ win_line(
 #ifdef FEAT_CONCEAL
 	else if (wp->w_p_cole > 0 && is_concealing)
 	{
-	    int concealed_wide = has_mbyte && (*mb_char2cells)(mb_c) > 1;
+	    bool concealed_wide = has_mbyte && (*mb_char2cells)(mb_c) > 1;
 
 	    if (DRAWLINE_COLLECTING)
 		drawline_screenline_has_conceal = true;
@@ -4758,9 +4758,9 @@ win_line(
 		// For popup windows with fixed width, don't advance col
 		// to allow full text to be displayed.
 # ifdef FEAT_PROP_POPUP
-		int adjust_col = !WIN_IS_POPUP(wp);
+		bool adjust_col = !WIN_IS_POPUP(wp);
 # else
-		int adjust_col = TRUE;
+		bool adjust_col = true;
 # endif
 		if (wlv.n_extra > 0)
 		{

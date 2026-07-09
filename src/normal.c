@@ -2891,7 +2891,6 @@ nv_screenline_map_add_drawline_cell(
     nv_screenline_cell_T	*cell;
     nv_screenline_row_T		*rowp;
     int				width;
-    int				rowoff = 0;
 
     row += ctx->base_row;
     if (cursor_col < 0)
@@ -2900,10 +2899,12 @@ nv_screenline_map_add_drawline_cell(
     width = curwin->w_width - win_col_off(curwin) + win_col_off2(curwin);
     if (width > 0 && cursor_col >= curwin->w_width)
     {
-	rowoff = (cursor_col - curwin->w_width) / width + 1;
+	int rowoff = (cursor_col - curwin->w_width) / width + 1;
+	long coloff = (long)rowoff * width;
+
 	row += rowoff;
-	start_col -= rowoff * width;
-	cursor_col -= rowoff * width;
+	start_col -= coloff;
+	cursor_col -= coloff;
     }
 
     if (!ctx->include_offscreen && (row < 0 || row >= curwin->w_height))
