@@ -1702,6 +1702,7 @@ conceal_textpos2screenpos(
 {
     conceal_screenpos_ctx_T ctx;
     bool		    has_conceal = false;
+    bool		    use_screenline;
 
     CLEAR_FIELD(ctx);
     ctx.wp = wp;
@@ -1710,8 +1711,17 @@ conceal_textpos2screenpos(
     ctx.before_col = -1;
     ctx.after_col = -1;
     if (win_line_conceal_screenline_iter(wp, pos->lnum,
-		conceal_screenpos_store, &ctx, &has_conceal, NULL) == FAIL
-	    || !has_conceal)
+		conceal_screenpos_store, &ctx, &has_conceal, NULL) == FAIL)
+	return FAIL;
+
+    use_screenline = has_conceal;
+# ifdef FEAT_RIGHTLEFT
+    // In a rightleft line the requested cell may be found before win_line()
+    // reaches a later concealed span and sets "has_conceal".
+    if (wp->w_p_rl && ctx.found)
+	use_screenline = true;
+# endif
+    if (!use_screenline)
 	return FAIL;
 
     if (!ctx.found)
