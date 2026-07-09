@@ -1303,13 +1303,6 @@ curs_columns(
 	getvvcol(curwin, &curwin->w_cursor,
 				  &startcol, &(curwin->w_virtcol), &endcol, 0);
 #ifdef FEAT_CONCEAL
-# ifdef FEAT_FOLDING
-    if (curwin->w_p_wrap && curwin->w_p_cole == 3 && !cline_folded)
-# else
-    if (curwin->w_p_wrap && curwin->w_p_cole == 3)
-# endif
-	concealed_vcol = plines_win_col_conceal_vcol(curwin,
-				   curwin->w_cursor.lnum, curwin->w_cursor.col);
 # if defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP)
 #  ifdef FEAT_FOLDING
     if (curwin->w_p_wrap && curwin->w_p_cole == 3 && !cline_folded)
@@ -1332,6 +1325,13 @@ curs_columns(
 	}
     }
 # endif
+# ifdef FEAT_FOLDING
+    if (curwin->w_p_wrap && curwin->w_p_cole == 3 && !cline_folded)
+# else
+    if (curwin->w_p_wrap && curwin->w_p_cole == 3)
+# endif
+	concealed_vcol = plines_win_col_conceal_vcol(curwin,
+				   curwin->w_cursor.lnum, curwin->w_cursor.col);
 #endif
 
     // remove '$' from change command when cursor moves onto it
