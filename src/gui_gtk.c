@@ -1410,9 +1410,9 @@ gui_mch_browsedir(
 
 #if defined(FEAT_GUI_DIALOG)
 
-#ifdef USE_OVERLAY_DIALOG
-#define OVERLAY_DIALOG "vim-overlay"
-#define OVERLAY_DIALOG_SELECTED "selected"
+# ifdef USE_OVERLAY_DIALOG
+#  define OVERLAY_DIALOG "vim-overlay"
+#  define OVERLAY_DIALOG_SELECTED "selected"
 
 typedef struct
 {
@@ -1805,7 +1805,7 @@ overlay_dialog_run(OverlayDialog *dlg)
 
     return dlg->response;
 }
-#else
+# else
     static GtkWidget *
 create_message_dialog(int type, char_u *title, char_u *message)
 {
@@ -1841,7 +1841,7 @@ create_message_dialog(int type, char_u *title, char_u *message)
 
     return dialog;
 }
-#endif
+# endif
 
 /*
  * Split up button_string into individual button labels by inserting
@@ -1929,7 +1929,7 @@ split_button_translation(const char *message)
     return buttons;
 }
 
-#ifndef USE_OVERLAY_DIALOG
+# ifndef USE_OVERLAY_DIALOG
     static int
 button_equal(const char *a, const char *b)
 {
@@ -1967,11 +1967,11 @@ dialog_add_buttons(GtkDialog *dialog, char_u *button_string)
     // Check 'v' flag in 'guioptions': vertical button placement.
     if (vim_strchr(p_go, GO_VERTICAL) != NULL)
     {
-# if GTK_CHECK_VERSION(3,0,0)
+#  if GTK_CHECK_VERSION(3,0,0)
 	// Add GTK+ 3 code if necessary.
 	// N.B. GTK+ 3 doesn't allow you to access vbox and action_area via
 	// the C API.
-# else
+#  else
 	GtkWidget	*vbutton_box;
 
 	vbutton_box = gtk_vbutton_box_new();
@@ -1980,7 +1980,7 @@ dialog_add_buttons(GtkDialog *dialog, char_u *button_string)
 						 vbutton_box, TRUE, FALSE, 0);
 	// Overrule the "action_area" value, hopefully this works...
 	GTK_DIALOG(dialog)->action_area = vbutton_box;
-# endif
+#  endif
     }
 
     /*
@@ -2015,7 +2015,7 @@ dialog_add_buttons(GtkDialog *dialog, char_u *button_string)
 	 */
 	if (ok != NULL && ync != NULL) // almost impossible to fail
 	{
-# if GTK_CHECK_VERSION(3,10,0)
+#  if GTK_CHECK_VERSION(3,10,0)
 	    if	    (button_equal(label, ok[0]))    label = _("OK");
 	    else if (button_equal(label, ync[0]))   label = _("Yes");
 	    else if (button_equal(label, ync[1]))   label = _("No");
@@ -2024,7 +2024,7 @@ dialog_add_buttons(GtkDialog *dialog, char_u *button_string)
 	    else if (button_equal(label, "Yes"))    label = _("Yes");
 	    else if (button_equal(label, "No"))     label = _("No");
 	    else if (button_equal(label, "Cancel")) label = _("Cancel");
-# else
+#  else
 	    if	    (button_equal(label, ok[0]))    label = GTK_STOCK_OK;
 	    else if (button_equal(label, ync[0]))   label = GTK_STOCK_YES;
 	    else if (button_equal(label, ync[1]))   label = GTK_STOCK_NO;
@@ -2033,7 +2033,7 @@ dialog_add_buttons(GtkDialog *dialog, char_u *button_string)
 	    else if (button_equal(label, "Yes"))    label = GTK_STOCK_YES;
 	    else if (button_equal(label, "No"))     label = GTK_STOCK_NO;
 	    else if (button_equal(label, "Cancel")) label = GTK_STOCK_CANCEL;
-# endif
+#  endif
 	}
 	label8 = CONVERT_TO_UTF8((char_u *)label);
 	gtk_dialog_add_button(dialog, (const gchar *)label8, idx);
@@ -2092,7 +2092,7 @@ dialog_key_press_event_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 
     return FALSE; // continue emission
 }
-#endif
+# endif
 
     int
 gui_mch_dialog(int	type,	    // type of dialog
@@ -2104,7 +2104,7 @@ gui_mch_dialog(int	type,	    // type of dialog
 	       int	ex_cmd UNUSED)
 {
     int		response;
-#ifdef USE_OVERLAY_DIALOG
+# ifdef USE_OVERLAY_DIALOG
     {
 	GtkWidget	*box;
 	static OverlayDialog overlay_dialog;
@@ -2139,7 +2139,7 @@ gui_mch_dialog(int	type,	    // type of dialog
 
 	return response;
     }
-#else
+# else
     GtkWidget	*dialog;
     GtkWidget	*entry = NULL;
     char_u	*text;
@@ -2165,32 +2165,32 @@ gui_mch_dialog(int	type,	    // type of dialog
 	gtk_entry_set_text(GTK_ENTRY(entry), (const char *)text);
 	CONVERT_TO_UTF8_FREE(text);
 
-# if GTK_CHECK_VERSION(3,14,0)
+#  if GTK_CHECK_VERSION(3,14,0)
 	gtk_widget_set_halign(GTK_WIDGET(entry), GTK_ALIGN_CENTER);
 	gtk_widget_set_valign(GTK_WIDGET(entry), GTK_ALIGN_CENTER);
 	gtk_widget_set_hexpand(GTK_WIDGET(entry), TRUE);
 	gtk_widget_set_vexpand(GTK_WIDGET(entry), TRUE);
 
 	alignment = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-# else
+#  else
 	alignment = gtk_alignment_new((float)0.5, (float)0.5,
 						      (float)1.0, (float)1.0);
-# endif
+#  endif
 	gtk_container_add(GTK_CONTAINER(alignment), entry);
 	gtk_container_set_border_width(GTK_CONTAINER(alignment), 5);
 	gtk_widget_show(alignment);
 
-# if GTK_CHECK_VERSION(3,0,0)
+#  if GTK_CHECK_VERSION(3,0,0)
 	{
 	    GtkWidget * const vbox
 		= gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	    gtk_box_pack_start(GTK_BOX(vbox),
 		    alignment, TRUE, FALSE, 0);
 	}
-# else
+#  else
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
 			   alignment, TRUE, FALSE, 0);
-# endif
+#  endif
 	dialoginfo.noalt = FALSE;
     }
     else
@@ -2233,7 +2233,7 @@ gui_mch_dialog(int	type,	    // type of dialog
     }
 
     return response > 0 ? response : 0;
-#endif
+# endif
 }
 
 #endif // FEAT_GUI_DIALOG
