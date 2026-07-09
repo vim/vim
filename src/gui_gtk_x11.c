@@ -1220,7 +1220,10 @@ key_press_event(GtkWidget *widget UNUSED,
     gui.event_time = event->time;
     key_sym = event->keyval;
     state = event->state;
-
+#ifdef USE_OVERLAY_DIALOG
+    if (gui.dialog_textentry_active)
+	return FALSE;
+#endif
 #ifdef FEAT_XIM
     if (xim_queue_key_press_event(event, TRUE))
 	return TRUE;
@@ -1400,6 +1403,10 @@ key_release_event(GtkWidget *widget UNUSED,
 		  GdkEventKey *event UNUSED,
 		  gpointer data UNUSED)
 {
+#ifdef USE_OVERLAY_DIALOG
+    if (gui.dialog_textentry_active)
+	return FALSE;
+#endif
 # if defined(FEAT_XIM)
     gui.event_time = event->time;
     /*
@@ -4154,12 +4161,44 @@ gui_mch_init(void)
     event_mask |= GDK_SCROLL_MASK;
 #endif
     gtk_widget_set_events(gui.drawarea, event_mask);
-
     gtk_widget_show(gui.drawarea);
     gui_gtk_form_put(GTK_FORM(gui.formwin), gui.drawarea, 0, 0);
+#ifdef USE_OVERLAY_DIALOG
+    // TODO: gui_mch_new_colors for changing from dark to light theme
+    GtkCssProvider *gtk_css;
+
+    gui.dialog_overlay = gtk_overlay_new();
+    gtk_css = gtk_css_provider_new();
+    gtk_container_add(GTK_CONTAINER(gui.dialog_overlay), gui.formwin);
+    gtk_widget_show(gui.formwin);
+    gtk_widget_show(gui.dialog_overlay);
+    gtk_box_pack_start(GTK_BOX(vbox), gui.dialog_overlay, TRUE, TRUE, 0);
+    gtk_css_provider_load_from_data(gtk_css,
+	    ".vim-overlay {"
+	    "  background-color: @theme_bg_color;"
+	    "}"
+	    ".vim-overlay .entry,"
+	    ".vim-overlay entry {"
+	    "  background-color: @theme_base_color;"
+	    "  color: @theme_text_color;"
+	    "}"
+	    ".vim-overlay entry.selected,"
+	    ".vim-overlay .entry.selected {"
+	    "  box-shadow: inset 0 0 0 1px @theme_selected_bg_color;"
+	    "}"
+	    ".vim-overlay button.selected {"
+	    "  box-shadow: inset 0 0 0 1px @theme_selected_bg_color;"
+	    "}",
+	    -1, NULL);
+    gtk_style_context_add_provider_for_screen(
+	    gdk_screen_get_default(),
+	    GTK_STYLE_PROVIDER(gtk_css),
+	    GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    g_object_unref(gtk_css);
+#else
     gtk_widget_show(gui.formwin);
     gtk_box_pack_start(GTK_BOX(vbox), gui.formwin, TRUE, TRUE, 0);
-
+#endif
     // For GtkSockets, key-presses must go to the focus widget (drawarea)
     // and not the window.
     g_signal_connect((gtk_socket_id == 0) ? G_OBJECT(gui.mainwin)

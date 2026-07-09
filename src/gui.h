@@ -159,6 +159,10 @@ typedef GdkEvent GdkEventKey;	// GTK4: GdkEventKey merged into GdkEvent
 				// is no console input possible
 #endif
 
+#if defined(USE_GTK3) && GTK_CHECK_VERSION(3,2,0)
+# define USE_OVERLAY_DIALOG
+#endif
+
 typedef struct GuiScrollbar
 {
     long	ident;		// Unique identifier for each scrollbar
@@ -414,6 +418,11 @@ typedef struct Gui
     guint32	event_time;
 # ifdef GDK_WINDOWING_WAYLAND
     bool	is_wayland;	    // active gdk backend in gtk is wayland
+# endif
+# ifdef USE_OVERLAY_DIALOG
+    GtkWidget *dialog_overlay;
+    bool	dialog_active; // "do not open another dialog"
+    bool	dialog_textentry_active; // key input
 # endif
 #endif	// FEAT_GUI_GTK
 

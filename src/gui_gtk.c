@@ -101,6 +101,7 @@ typedef int GtkWidget;
 static void entry_activate_cb(GtkWidget *widget, gpointer data);
 static void entry_changed_cb(GtkWidget *entry, GtkWidget *dialog);
 static void find_replace_cb(GtkWidget *widget, gpointer data);
+static char ** split_button_string(char_u *button_string, int *n_buttons);
 #if defined(FEAT_BROWSE)
 static void recent_func_log_func(
 	const gchar *log_domain,
@@ -1409,6 +1410,402 @@ gui_mch_browsedir(
 
 #if defined(FEAT_GUI_DIALOG)
 
+#ifdef USE_OVERLAY_DIALOG
+#define OVERLAY_DIALOG "vim-overlay"
+#define OVERLAY_DIALOG_SELECTED "selected"
+
+typedef struct
+{
+    GtkWidget *root; // overlay encapsulating child and event box
+    GMainLoop *loop;
+    GtkWidget *actions; // buttons container
+    GPtrArray *buttons;
+    int response;
+    int sel;
+    GtkWidget *textentry;
+} OverlayDialog;
+
+static void overlay_dialog_focus_button(OverlayDialog *dlg, int idx);
+
+    static void
+overlay_dialog_clear_selected_button(OverlayDialog *dlg)
+{
+    GtkWidget *button;
+
+    if (dlg->sel < 0 || dlg->sel >= (int)dlg->buttons->len)
+	return;
+
+    button = g_ptr_array_index(dlg->buttons, dlg->sel);
+    gtk_style_context_remove_class(gtk_widget_get_style_context(button),
+	    OVERLAY_DIALOG_SELECTED);
+}
+
+    static bool
+overlay_dialog_cancel(OverlayDialog *dlg)
+{
+    dlg->response = 0;
+    if (dlg->loop != NULL)
+	g_main_loop_quit(dlg->loop);
+
+    return true;
+}
+
+    static gboolean
+overlay_key_is_cancel(GdkEventKey *event)
+{
+    return event->keyval == GDK_KEY_Escape
+	|| ((event->state & GDK_CONTROL_MASK) != 0
+		&& (event->keyval == GDK_KEY_c || event->keyval == GDK_KEY_C));
+}
+    static void
+overlay_dialog_activate_current(OverlayDialog *dlg)
+{
+    if (dlg->buttons->len == 0)
+	return;
+    if (dlg->sel < 0 || dlg->sel >= (int)dlg->buttons->len)
+	dlg->sel = 0;
+    gtk_button_clicked(GTK_BUTTON(g_ptr_array_index(dlg->buttons,
+		    dlg->sel)));
+}
+
+    static void
+overlay_textentry_activate_cb(GtkWidget *widget UNUSED, gpointer data)
+{
+    overlay_dialog_activate_current((OverlayDialog *)data);
+}
+
+    static void
+overlay_dialog_focus_textentry(OverlayDialog *dlg)
+{
+    overlay_dialog_clear_selected_button(dlg);
+
+    if (dlg->textentry == NULL)
+	return;
+
+    dlg->sel = -1;
+    gtk_style_context_add_class(gtk_widget_get_style_context(dlg->textentry),
+	    OVERLAY_DIALOG_SELECTED);
+    gtk_widget_grab_focus(dlg->textentry);
+    gtk_editable_select_region(GTK_EDITABLE(dlg->textentry), -1, -1);
+}
+
+    static gboolean
+overlay_textentry_key_press_cb(
+	GtkWidget	*widget UNUSED,
+	GdkEventKey	*event,
+	gpointer	data)
+{
+    OverlayDialog *dlg = (OverlayDialog *)data;
+
+    if (overlay_key_is_cancel(event))
+    {
+	overlay_dialog_cancel(dlg);
+	return true;
+    }
+
+    if (event->keyval == GDK_KEY_ISO_Left_Tab
+	    || (event->keyval == GDK_KEY_Tab
+		&& (event->state & GDK_SHIFT_MASK) != 0))
+    {
+	overlay_dialog_focus_button(dlg, dlg->buttons->len - 1);
+	return true;
+    }
+
+    if (event->keyval == GDK_KEY_Tab)
+    {
+	overlay_dialog_focus_button(dlg, 0);
+	return true;
+    }
+
+    return false;
+}
+
+    static gboolean
+overlay_key_press_cb(GtkWidget *widget UNUSED, GdkEventKey *event, gpointer data)
+{
+    OverlayDialog *dlg = (OverlayDialog *)data;
+
+    if (overlay_key_is_cancel(event))
+    {
+	overlay_dialog_cancel(dlg);
+	return true;
+    }
+
+    if (event->keyval == GDK_KEY_Return
+	    || event->keyval == GDK_KEY_KP_Enter
+	    || event->keyval == GDK_KEY_space)
+    {
+	overlay_dialog_activate_current(dlg);
+	return true;
+    }
+
+    if (event->keyval == GDK_KEY_ISO_Left_Tab
+	    || (event->keyval == GDK_KEY_Tab
+		&& (event->state & GDK_SHIFT_MASK) != 0))
+    {
+	if (dlg->textentry != NULL && dlg->sel <= 0)
+	    overlay_dialog_focus_textentry(dlg);
+	else
+	    overlay_dialog_focus_button(dlg, dlg->sel - 1);
+
+	return true;
+    }
+
+    if (event->keyval == GDK_KEY_Tab)
+    {
+	if (dlg->textentry != NULL
+		&& dlg->sel >= (int)dlg->buttons->len - 1)
+	    overlay_dialog_focus_textentry(dlg);
+	else
+	    overlay_dialog_focus_button(dlg, dlg->sel + 1);
+
+	return true;
+    }
+
+    return false;
+}
+
+    static void
+overlay_response_cb(GtkWidget *widget UNUSED, gpointer data)
+{
+    OverlayDialog *dlg = (OverlayDialog *)data;
+
+    dlg->response = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),
+		"vim-response"));
+
+    if (dlg->loop != NULL)
+	g_main_loop_quit(dlg->loop);
+}
+
+    static void
+overlay_dialog_focus_button(OverlayDialog *dlg, int idx)
+{
+    GtkWidget *button;
+
+    if (dlg->buttons->len == 0)
+	return;
+
+    if (idx < 0)
+	idx = dlg->buttons->len - 1;
+    if (idx >= (int)dlg->buttons->len)
+	idx = 0;
+
+    if (dlg->textentry != NULL)
+    {
+	gtk_editable_select_region(GTK_EDITABLE(dlg->textentry), 0, 0);
+	gtk_style_context_remove_class(
+		gtk_widget_get_style_context(dlg->textentry),
+		OVERLAY_DIALOG_SELECTED);
+    }
+
+    overlay_dialog_clear_selected_button(dlg);
+    dlg->sel = idx;
+    button = g_ptr_array_index(dlg->buttons, dlg->sel);
+    gtk_widget_grab_focus(button);
+    gtk_window_set_focus(GTK_WINDOW(gui.mainwin), button);
+    gtk_style_context_add_class(gtk_widget_get_style_context(button),
+	    OVERLAY_DIALOG_SELECTED);
+}
+
+    static GtkWidget *
+create_overlay_dialog(
+	int type,
+	char_u *title,
+	char_u *message,
+	char_u *textfield,
+	OverlayDialog *dlg)
+{
+    GtkWidget *frame;
+    GtkWidget *vbox;
+    GtkWidget *label;
+    GtkWidget *image;
+    GtkWidget *hbox;
+    GtkWidget *eventbox;
+    const char *icon_name;
+
+    switch (type)
+    {
+	case VIM_ERROR:	    icon_name = "dialog-error";	break;
+	case VIM_WARNING:   icon_name = "dialog-warning";	break;
+	case VIM_QUESTION:  icon_name = "dialog-question";	break;
+	default:	    icon_name = "dialog-information";	break;
+    }
+
+    CLEAR_POINTER(dlg);
+    dlg->buttons = g_ptr_array_new();
+    dlg->response = -1;
+    dlg->sel = -1;
+
+    frame = gtk_frame_new(NULL);
+    gtk_style_context_add_class(gtk_widget_get_style_context(frame),
+	    OVERLAY_DIALOG);
+    gtk_widget_set_halign(frame, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(frame, GTK_ALIGN_CENTER);
+
+    eventbox = gtk_event_box_new();
+    gtk_event_box_set_visible_window(GTK_EVENT_BOX(eventbox), false);
+    gtk_widget_set_halign(eventbox, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(eventbox, GTK_ALIGN_FILL);
+    gtk_container_add(GTK_CONTAINER(eventbox), frame);
+
+    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 12);
+    gtk_container_set_border_width(GTK_CONTAINER(vbox), 16);
+    gtk_container_add(GTK_CONTAINER(frame), vbox);
+
+    if (title != NULL)
+    {
+	GtkWidget *title_label;
+
+	title = CONVERT_TO_UTF8(title);
+	title_label = gtk_label_new((const char *)title);
+	gtk_widget_set_halign(title_label, GTK_ALIGN_START);
+	gtk_style_context_add_class(
+		gtk_widget_get_style_context(title_label), "title");
+	gtk_box_pack_start(GTK_BOX(vbox), title_label, false, false, 0);
+	CONVERT_TO_UTF8_FREE(title);
+    }
+
+    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, true, true, 0);
+
+    image = gtk_image_new_from_icon_name(icon_name, GTK_ICON_SIZE_DIALOG);
+    gtk_box_pack_start(GTK_BOX(hbox), image, false, false, 0);
+
+    message = CONVERT_TO_UTF8(message);
+    label = gtk_label_new((const char *)message);
+    gtk_label_set_line_wrap(GTK_LABEL(label), true);
+    gtk_widget_set_halign(label, GTK_ALIGN_START);
+    gtk_box_pack_start(GTK_BOX(hbox), label, true, true, 0);
+    CONVERT_TO_UTF8_FREE(message);
+
+    if (textfield != NULL)
+    {
+	char_u *entry_text;
+	dlg->textentry = gtk_entry_new();
+	gtk_widget_set_can_focus(dlg->textentry, true);
+	g_signal_connect(dlg->textentry, "activate",
+		G_CALLBACK(overlay_textentry_activate_cb), dlg);
+	g_signal_connect(dlg->textentry, "key-press-event",
+		G_CALLBACK(overlay_textentry_key_press_cb), dlg);
+	entry_text = CONVERT_TO_UTF8(textfield);
+	gtk_entry_set_text(GTK_ENTRY(dlg->textentry),
+		(const char *)entry_text);
+	CONVERT_TO_UTF8_FREE(entry_text);
+	gtk_box_pack_start(GTK_BOX(vbox), dlg->textentry, FALSE, FALSE, 0);
+    }
+
+    dlg->actions = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
+    gtk_widget_set_halign(dlg->actions, GTK_ALIGN_END);
+    gtk_box_pack_start(GTK_BOX(vbox), dlg->actions, FALSE, FALSE, 0);
+
+    dlg->root = eventbox;
+    return dlg->root;
+}
+
+static char **split_button_translation(const char *message);
+
+    static void
+overlay_dialog_add_buttons(
+	OverlayDialog	*dlg,
+	char_u		*buttons,
+	int		def_but)
+{
+    char	**button_array;
+    int		i;
+
+    if (buttons == NULL)
+	return;
+
+    button_array = split_button_translation((const char *)buttons);
+
+    for (i = 0; button_array[i] != NULL; ++i)
+    {
+	GtkWidget *button;
+	char_u *button_text;
+
+	button_text = CONVERT_TO_UTF8((char_u *)button_array[i]);
+	button = gtk_button_new_with_mnemonic((const char *)button_text);
+	CONVERT_TO_UTF8_FREE(button_text);
+
+	gtk_widget_set_can_focus(button, true);
+	gtk_widget_set_can_default(button, true);
+
+	g_signal_connect(button, "key-press-event",
+		G_CALLBACK(overlay_key_press_cb), dlg);
+	g_object_set_data(G_OBJECT(button), "vim-response",
+		GINT_TO_POINTER(i + 1));
+	g_signal_connect(button, "clicked",
+		G_CALLBACK(overlay_response_cb), dlg);
+
+	gtk_box_pack_start(GTK_BOX(dlg->actions), button, FALSE, FALSE, 0);
+	g_ptr_array_add(dlg->buttons, button);
+
+	if (dlg->sel < 0 || i + 1 == def_but)
+	    dlg->sel = i;
+    }
+    vim_free(button_array[0]);
+    vim_free(button_array);
+}
+
+    static int
+overlay_dialog_run(OverlayDialog *dlg)
+{
+    gulong mainwin_key_handler = 0;
+    gulong drawarea_key_handler = 0;
+    gulong box_key_handler = 0;
+    gtk_widget_show_all(dlg->root);
+    gtk_grab_add(dlg->root);
+    gui.dialog_active = true;
+
+    if (dlg->textentry != NULL)
+    {
+	gui.dialog_textentry_active = true;
+	overlay_dialog_focus_textentry(dlg);
+    }
+    else
+    {
+	overlay_dialog_focus_button(dlg, dlg->sel);
+	mainwin_key_handler = g_signal_connect(
+		G_OBJECT(gui.mainwin),
+		"key-press-event",
+		G_CALLBACK(overlay_key_press_cb),
+		dlg);
+	drawarea_key_handler = g_signal_connect(
+		G_OBJECT(gui.drawarea),
+		"key-press-event",
+		G_CALLBACK(overlay_key_press_cb),
+		dlg);
+	box_key_handler = g_signal_connect(
+		G_OBJECT(dlg->root),
+		"key-press-event",
+		G_CALLBACK(overlay_key_press_cb),
+		dlg);
+    }
+
+    dlg->loop = g_main_loop_new(NULL, false);
+    g_main_loop_run(dlg->loop);
+    g_main_loop_unref(dlg->loop);
+    dlg->loop = NULL;
+
+    if (dlg->textentry != NULL)
+	gui.dialog_textentry_active = false;
+
+    gui.dialog_active = false;
+
+    if (mainwin_key_handler != 0)
+    {
+	g_signal_handler_disconnect(G_OBJECT(dlg->root), box_key_handler);
+	g_signal_handler_disconnect(G_OBJECT(gui.drawarea),
+		drawarea_key_handler);
+	g_signal_handler_disconnect(G_OBJECT(gui.mainwin), mainwin_key_handler);
+    }
+
+    gtk_grab_remove(dlg->root);
+    g_ptr_array_free(dlg->buttons, false);
+
+    return dlg->response;
+}
+#else
     static GtkWidget *
 create_message_dialog(int type, char_u *title, char_u *message)
 {
@@ -1444,6 +1841,7 @@ create_message_dialog(int type, char_u *title, char_u *message)
 
     return dialog;
 }
+#endif
 
 /*
  * Split up button_string into individual button labels by inserting
@@ -1531,6 +1929,7 @@ split_button_translation(const char *message)
     return buttons;
 }
 
+#ifndef USE_OVERLAY_DIALOG
     static int
 button_equal(const char *a, const char *b)
 {
@@ -1693,6 +2092,7 @@ dialog_key_press_event_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 
     return FALSE; // continue emission
 }
+#endif
 
     int
 gui_mch_dialog(int	type,	    // type of dialog
@@ -1703,10 +2103,46 @@ gui_mch_dialog(int	type,	    // type of dialog
 	       char_u	*textfield, // text for textfield or NULL
 	       int	ex_cmd UNUSED)
 {
+    int		response;
+#ifdef USE_OVERLAY_DIALOG
+    {
+	GtkWidget	*box;
+	static OverlayDialog overlay_dialog;
+
+	if (gui.dialog_active)
+	    return 0;
+
+	box = create_overlay_dialog(type, title, message, textfield,
+		&overlay_dialog);
+
+	gtk_overlay_add_overlay(GTK_OVERLAY(gui.dialog_overlay), box);
+	gtk_overlay_set_overlay_pass_through(
+		GTK_OVERLAY(gui.dialog_overlay), box, FALSE);
+
+	overlay_dialog_add_buttons(&overlay_dialog, buttons, def_but);
+	response = overlay_dialog_run(&overlay_dialog);
+
+	if (textfield != NULL && overlay_dialog.textentry != NULL && response > 0)
+	{
+	    const char *entry_text;
+	    char_u *text;
+
+	    entry_text = gtk_entry_get_text(GTK_ENTRY(overlay_dialog.textentry));
+	    text = CONVERT_FROM_UTF8((char_u *)entry_text);
+	    vim_strncpy(IObuff, text, IOSIZE - 1);
+	    CONVERT_FROM_UTF8_FREE(text);
+	}
+
+	if (overlay_dialog.root != NULL)
+	    gtk_container_remove(GTK_CONTAINER(gui.dialog_overlay),
+		    overlay_dialog.root);
+
+	return response;
+    }
+#else
     GtkWidget	*dialog;
     GtkWidget	*entry = NULL;
     char_u	*text;
-    int		response;
     DialogInfo  dialoginfo;
 
     dialog = create_message_dialog(type, title, message);
@@ -1797,6 +2233,7 @@ gui_mch_dialog(int	type,	    // type of dialog
     }
 
     return response > 0 ? response : 0;
+#endif
 }
 
 #endif // FEAT_GUI_DIALOG
