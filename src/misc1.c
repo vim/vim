@@ -545,9 +545,6 @@ plines_win_nofill(
 typedef struct
 {
     bool	valid;
-# ifdef FEAT_SYN_HL
-    disptick_T	display_tick;
-# endif
     win_T	*wp;
     buf_T	*buf;
     linenr_T	lnum;
@@ -652,30 +649,59 @@ plines_conceal_match_hash(win_T *wp, int *countp)
 }
 # endif
 
+    static bool
+plines_conceal_line_in_visual(win_T *wp, linenr_T lnum)
+{
+    pos_T	*top;
+    pos_T	*bot;
+
+    if (!VIsual_active || wp->w_buffer != curwin->w_buffer)
+	return false;
+
+    if (LTOREQ_POS(curwin->w_cursor, VIsual))
+    {
+	top = &curwin->w_cursor;
+	bot = &VIsual;
+    }
+    else
+    {
+	top = &VIsual;
+	bot = &curwin->w_cursor;
+    }
+    return lnum >= top->lnum && lnum <= bot->lnum;
+}
+
     static void
 plines_conceal_height_cache_key(
 	win_T				*wp,
 	linenr_T			lnum,
 	plines_conceal_height_cache_T	*key)
 {
+    bool is_topline = lnum == wp->w_topline;
+    bool is_cursor_line = lnum == wp->w_cursor.lnum;
+    bool is_visual_line = plines_conceal_line_in_visual(wp, lnum);
+
     CLEAR_POINTER(key);
     key->valid = true;
-# ifdef FEAT_SYN_HL
-    key->display_tick = display_tick;
-# endif
     key->wp = wp;
     key->buf = wp->w_buffer;
     key->lnum = lnum;
     key->line_len = ml_get_buf_len(wp->w_buffer, lnum);
-    key->topline = wp->w_topline;
+    // Cursor, Visual and skipcol only change the drawn height for the line
+    // they directly affect.  Normalize them for other lines so scrolling can
+    // reuse cached concealed heights across redraws.
+    key->topline = is_topline ? wp->w_topline : 0;
     key->leftcol = wp->w_leftcol;
-    key->skipcol = wp->w_skipcol;
+    key->skipcol = is_topline ? wp->w_skipcol : 0;
     key->changedtick = CHANGEDTICK(wp->w_buffer);
-    key->cursor = wp->w_cursor;
-    key->visual = VIsual;
-    key->visual_active = VIsual_active;
-    key->visual_mode = VIsual_mode;
-    key->state = State;
+    if (is_cursor_line || is_visual_line)
+    {
+	key->cursor = wp->w_cursor;
+	key->visual = VIsual;
+	key->visual_active = VIsual_active;
+	key->visual_mode = VIsual_mode;
+	key->state = State;
+    }
     key->width = wp->w_width;
     key->win_height = wp->w_height;
     key->col_off = win_col_off(wp);
@@ -715,9 +741,6 @@ plines_conceal_height_cache_equal(
 	plines_conceal_height_cache_T *key)
 {
     return cache->valid
-# ifdef FEAT_SYN_HL
-	&& cache->display_tick == key->display_tick
-# endif
 	&& cache->wp == key->wp
 	&& cache->buf == key->buf
 	&& cache->lnum == key->lnum

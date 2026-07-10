@@ -90,6 +90,23 @@ conceal_cursor_line(win_T *wp)
  * "conceal_cursor_line()" before the change.
  * "
  */
+    static int
+conceal_cursor_wcol_valid(void)
+{
+    // Keep the older validation path for directly typed keys so key-repeat
+    // paging can redraw at the usual cadence.
+    if (KeyTyped)
+	return FALSE;
+
+    return (curwin->w_flags & WFLAG_CONCEAL_WCOL) != 0
+	&& (curwin->w_valid & (VALID_WROW|VALID_WCOL))
+						   == (VALID_WROW|VALID_WCOL)
+	&& EQUAL_POS(curwin->w_conceal_wcol_pos, curwin->w_cursor)
+	&& curwin->w_conceal_wcol_width == curwin->w_width
+	&& curwin->w_valid_leftcol == curwin->w_leftcol
+	&& curwin->w_valid_skipcol == curwin->w_skipcol;
+}
+
     void
 conceal_check_cursor_line(int was_concealed)
 {
@@ -101,7 +118,8 @@ conceal_check_cursor_line(int was_concealed)
     need_cursor_line_redraw = TRUE;
     // Need to recompute cursor column, e.g., when starting Visual mode
     // without concealing.
-    curs_columns(TRUE);
+    if (!conceal_cursor_wcol_valid())
+	curs_columns(TRUE);
 
     // When concealing now w_wcol will be computed wrong, keep the previous
     // value, it will be updated in win_line().

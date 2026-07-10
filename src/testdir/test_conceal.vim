@@ -4266,6 +4266,113 @@ func Test_conceallevel_three_wrap_number_line_height()
   endtry
 endfunc
 
+func s:TerminalConcealMotionState(buf, statefile) abort
+  let termcursor = term_getcursor(a:buf)[0:1]
+  let expr = "[line('.'), col('.'), virtcol('.'), winline(), wincol(),"
+        \ .. " screenpos(0, line('.'), col('.'))]"
+  call delete(a:statefile)
+  call term_sendkeys(a:buf,
+        \ "\<Esc>:\<C-U>call writefile([string(" .. expr .. ")], "
+        \ .. string(a:statefile) .. ")\<CR>")
+  call TermWait(a:buf, 100)
+  call WaitForAssert({-> assert_true(filereadable(a:statefile))})
+  let state = eval(readfile(a:statefile)[0])
+  return [state[0], state[1], state[2], state[3], state[4],
+        \ termcursor[0], termcursor[1], state[5].col, state[5].row,
+        \ state[5].curscol]
+endfunc
+
+func Test_conceallevel_three_terminal_linebreak_screenline_motion()
+  CheckRunVimInTerminal
+
+  let code =<< trim [CODE]
+    set number wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+    set showbreak= noshowcmd scrolloff=0 sidescrolloff=0 signcolumn=no
+    syntax enable
+    highlight test ctermfg=Red guifg=Red
+    syntax match test /\[/ conceal
+    syntax match test /\](https:[^)]*)/ conceal
+    syntax match test /\*\*/ conceal
+    syntax match test /\*/ conceal
+    syntax region testCode matchgroup=test start=/`/ end=/`/ concealends
+    call setline(1, [
+          \ '# Markdown Conceal Wrapping Check',
+          \ '',
+          \ 'This file is for manual testing of wrapped screen lines with Markdown conceal and double-width characters. Use a narrow terminal or try `:set columns=40`, `:set columns=52`, and `:set columns=60`.',
+          \ '',
+          \ '## Emphasis, Links, and Wide Characters',
+          \ '',
+          \ 'This paragraph has **bold text before 日本語**, *italic text before コンシール*, and a [concealed link title 日本語](https://example.invalid/a/very/long/path/that/should-be-hidden-by-markdown-conceal) followed by enough words to wrap several times in a narrow window.',
+          \ '',
+          \ 'This paragraph puts the wide text later: ordinary words ordinary words ordinary words ordinary words ordinary words **bold marker hidden here** then 漢字かな交じり文 and a [second concealed link with 東京都 text](https://example.invalid/hidden-target) after the wrap point.',
+          \ '',
+          \ '## Lists',
+          \ '',
+          \ '- A dash list item should use Markdown list formatting, and this item intentionally contains **strong text**, `inline code`, [a link with 日本語](https://example.invalid/list), and enough trailing prose to wrap with breakindent.',
+          \ '- Another item starts normally and then places double-width characters near the middle of the wrapped display line: alpha beta gamma delta epsilon zeta eta theta 東京大阪京都神戸札幌福岡 then more ASCII words.',
+          \ '* A star list item checks the other list marker with **bold 日本語**, *italic 日本語*, ~~struck 日本語~~, and a long link [visible title](https://example.invalid/star-list-target).',
+          \ '+ A plus list item checks the third list marker and keeps adding text after 漢字 so that screen wrapping must account for both conceal and East Asian width.',
+          \ '',
+          \ '## Inline Code, Escapes, and HTML',
+          \ '',
+          \ 'The inline code `printf("日本語 %s", value)` should hide its backticks when Markdown conceal is active, while this escaped marker \# should display as a literal hash and not make following wrapped text appear one cell early or late.',
+          \ '',
+          \ 'Here is an HTML code tag: <code>wide_value = "日本語コンシール"</code> and a pre tag: <pre>alpha beta 日本語 gamma delta</pre> followed by enough plain text to make the line wrap after the concealed tag boundaries.',
+          \ '',
+          \ '## Fenced Code',
+          \ '',
+          \ '``` {style="conceal-test"}',
+          \ '// Fence markers may be concealed by plugins; this long comment keeps double-width text near a wrap boundary: alpha beta gamma delta 日本語 epsilon zeta eta theta iota kappa lambda.',
+          \ 'const message = "The string contains 日本語 and markdown-looking **markers** that should not be treated as emphasis inside the code block.";',
+          \ '```',
+          \ '',
+          \ '## Boundary Stress Lines',
+          \ '',
+          \ '0123456789 0123456789 0123456789 **日本語** 0123456789 0123456789 [link](https://example.invalid/hidden) 0123456789 0123456789',
+          \ '',
+          \ 'aaaaaaaaaa bbbbbbbbbb cccccccccc dddddddddd `日本語` eeeeeeeeee ffffffffff gggggggggg hhhhhhhhhh iiiiiiiiii',
+          \ '',
+          \ 'Plain comparison line without Markdown conceal but with wide text near the same area: 0123456789 0123456789 0123456789 日本語 0123456789 0123456789 0123456789.'])
+  [CODE]
+  call writefile(code,
+        \ 'XTest_conceallevel_three_terminal_linebreak_screenline_motion',
+        \ 'D')
+  let statefile =
+        \ 'XTest_conceallevel_three_terminal_linebreak_screenline_motion_state'
+  let buf = 0
+  try
+    let buf = RunVimInTerminal(
+          \ '-S XTest_conceallevel_three_terminal_linebreak_screenline_motion',
+          \ #{rows: 20, cols: 42, wait_for_ruler: 0})
+    call TermWait(buf, 300)
+
+    let keys = [":20\<CR>", 'gj', 'gj', 'gj', 'gk', 'gk', 'gj', 'g$', 'g0']
+    let expected = [
+          \ [20, 1, 1, 4, 5, 4, 5, 5, 4, 5],
+          \ [20, 41, 39, 5, 5, 5, 5, 5, 5, 5],
+          \ [20, 80, 82, 6, 5, 6, 5, 5, 6, 5],
+          \ [20, 114, 121, 7, 5, 7, 5, 5, 7, 5],
+          \ [20, 80, 82, 6, 5, 6, 5, 5, 6, 5],
+          \ [20, 41, 39, 5, 5, 5, 5, 5, 5, 5],
+          \ [20, 80, 82, 6, 5, 6, 5, 5, 6, 5],
+          \ [20, 113, 120, 6, 38, 6, 38, 38, 6, 38],
+          \ [20, 80, 82, 6, 5, 6, 5, 5, 6, 5],
+          \ ]
+    for i in range(len(keys))
+      call term_sendkeys(buf, keys[i])
+      call TermWait(buf, 150)
+      call assert_equal(expected[i],
+            \ s:TerminalConcealMotionState(buf, statefile), keys[i])
+    endfor
+
+  finally
+    if buf > 0
+      call StopVimInTerminal(buf)
+    endif
+    call delete(statefile)
+  endtry
+endfunc
+
 func Test_conceallevel_three_wrap_virtual_text()
   CheckFeature textprop
 

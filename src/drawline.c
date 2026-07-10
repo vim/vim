@@ -1196,6 +1196,8 @@ lbr_conceal_width(
     *segment_widthp = 0;
     *concealedp = false;
     *followed_by_breakp = false;
+    if (KeyTyped && char_avail())
+	return -1;
     did_emsg = FALSE;
 
     while (*p != NUL)
