@@ -1270,7 +1270,7 @@ add_llist_tags(
 	    continue;
 	if (list_append_dict(list, dict) == FAIL)
 	{
-	    vim_free(dict);
+	    dict_unref(dict);
 	    continue;
 	}
 
