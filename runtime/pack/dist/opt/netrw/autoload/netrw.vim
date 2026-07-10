@@ -3936,7 +3936,7 @@ function s:NetrwBrowseChgDir(islocal, newdir, cursor, ...)
                             let curwin= winnr()
                             exe "NetrwKeepj keepalt ".winnr("$")."wincmd w"
                             vs
-                            exe "NetrwKeepj keepalt ".g:netrw_chgwin."wincmd ".curwin
+                            exe "NetrwKeepj keepalt ".curwin."wincmd w"
                         endif
                         exe "NetrwKeepj keepalt ".g:netrw_chgwin."wincmd w"
                     endif
