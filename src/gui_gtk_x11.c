@@ -3745,54 +3745,6 @@ gui_gtk_set_dnd_targets(void)
 		      GDK_ACTION_COPY | GDK_ACTION_MOVE);
 }
 
-#ifdef GDK_WINDOWING_WAYLAND
-static struct {
-    int left;
-    int top;
-    int right;
-    int bottom;
-    bool active;
-} wl_dirty_rect = {0, 0, 0, 0, false};
-
-    static void
-wl_queue_dirty_area(int x, int y, int width, int height)
-{
-    if (!wl_dirty_rect.active)
-    {
-	wl_dirty_rect.left = x;
-	wl_dirty_rect.top = y;
-	wl_dirty_rect.right = x + width;
-	wl_dirty_rect.bottom = y + height;
-	wl_dirty_rect.active = true;
-    }
-    else
-    {
-	// Expand to append further changes
-	if (x < wl_dirty_rect.left)   wl_dirty_rect.left = x;
-	if (y < wl_dirty_rect.top)    wl_dirty_rect.top = y;
-	if (x + width > wl_dirty_rect.right)  wl_dirty_rect.right = x + width;
-	if (y + height > wl_dirty_rect.bottom) wl_dirty_rect.bottom = y + height;
-    }
-}
-
-    static void
-wl_flush(void)
-{
-    if (!wl_dirty_rect.active)
-	return;
-    int draw_x = wl_dirty_rect.left;
-    int draw_y = wl_dirty_rect.top;
-    int draw_w = wl_dirty_rect.right - wl_dirty_rect.left;
-    int draw_h = wl_dirty_rect.bottom - wl_dirty_rect.top;
-
-    if (draw_w > 0 && draw_h > 0)
-    {
-	gtk_widget_queue_draw_area(gui.drawarea, draw_x, draw_y, draw_w, draw_h);
-    }
-    wl_dirty_rect.active = false;
-}
-#endif
-
 /*
  * Initialize the GUI.	Create all the windows, set up all the callbacks etc.
  * Returns OK for success, FAIL when the GUI can't be started.
@@ -6269,20 +6221,39 @@ gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
     return len_sum;
 }
 
+#if GTK_CHECK_VERSION(3,0,0)
+static struct {
+    int left;
+    int top;
+    int right;
+    int bottom;
+    bool active;
+} dirty_rect = {0, 0, 0, 0, false};
+
     static void
-queue_draw_area(
-	int	x,
-	int	y,
-	int	width,
-	int	height)
+queue_draw_area(int x, int y, int width, int height)
 {
-#ifdef GDK_WINDOWING_WAYLAND
-    if (gui.is_wayland)
-	wl_queue_dirty_area(x, y, width, height);
+    if (width <= 0 || height <= 0 || gui.drawarea == NULL)
+	return;
+    if (!dirty_rect.active)
+    {
+	dirty_rect.left = x;
+	dirty_rect.top = y;
+	dirty_rect.right = x + width;
+	dirty_rect.bottom = y + height;
+	dirty_rect.active = true;
+	return;
+    }
     else
-#endif
-	gtk_widget_queue_draw_area(gui.drawarea, x, y, width, height);
+    {
+	// Expand to append further changes
+	if (x < dirty_rect.left) dirty_rect.left = x;
+	if (y < dirty_rect.top) dirty_rect.top = y;
+	if (x + width > dirty_rect.right) dirty_rect.right = x + width;
+	if (y + height > dirty_rect.bottom) dirty_rect.bottom = y + height;
+    }
 }
+#endif
 
     int
 gui_gtk_draw_string_ext(
@@ -6680,8 +6651,7 @@ gui_mch_invert_rectangle(int r, int c, int nr, int nc)
 
     cairo_destroy(cr);
 
-    queue_draw_area(rect.x, rect.y,
-	    rect.width, rect.height);
+    queue_draw_area(rect.x, rect.y, rect.width, rect.height);
 #else
     GdkGCValues values;
     GdkGC *invert_gc;
@@ -6834,17 +6804,14 @@ gui_mch_update(void)
 {
     int cnt = 0;	// prevent endless loop
     while (g_main_context_pending(NULL) && !vim_is_input_buf_full()
-								&& ++cnt < 100)
+	    && ++cnt < 100)
     {
-#ifdef GDK_WINDOWING_WAYLAND
-	if (gui.is_wayland)
-	{
-	    int prio = 0;
-	    g_main_context_prepare(NULL, &prio);
-	    // peek internal scheduling of redraw
-	    if (prio == GDK_PRIORITY_REDRAW)
-		gui_may_flush(); // prepares redraw: g_main_context_iteration
-	}
+#if GTK_CHECK_VERSION(3,0,0)
+	int prio = 0;
+	g_main_context_prepare(NULL, &prio);
+	// peek internal scheduling of redraw
+	if (prio == GDK_PRIORITY_REDRAW)
+	    gui_may_flush(); // prepares redraw: g_main_context_iteration
 #endif
 	g_main_context_iteration(NULL, TRUE);
     }
@@ -6979,18 +6946,21 @@ theend:
     void
 gui_mch_flush(void)
 {
-    if (gui.mainwin != NULL && gtk_widget_get_realized(gui.mainwin))
-    {
-#ifdef GDK_WINDOWING_WAYLAND
-	if (gui.is_wayland)
-	    return wl_flush();
-#endif
+    if (gui.mainwin == NULL || !gtk_widget_get_realized(gui.mainwin))
+	return;
 #if GTK_CHECK_VERSION(2,4,0)
-	gdk_display_flush(gtk_widget_get_display(gui.mainwin));
+       gdk_display_flush(gtk_widget_get_display(gui.mainwin));
+       return;
 #else
-	gdk_display_sync(gtk_widget_get_display(gui.mainwin));
-#endif
+    if (dirty_rect.active && gui.drawarea != NULL)
+    {
+	dirty_rect.active = false;
+	gtk_widget_queue_draw_area(gui.drawarea, dirty_rect.left,
+		dirty_rect.top, (dirty_rect.right - dirty_rect.left),
+		(dirty_rect.bottom - dirty_rect.top));
     }
+    gdk_display_sync(gtk_widget_get_display(gui.mainwin));
+#endif
 }
 
 /*
@@ -7042,8 +7012,7 @@ gui_mch_clear_block(int row1arg, int col1arg, int row2arg, int col2arg)
 	cairo_fill(cr);
 	cairo_destroy(cr);
 
-	queue_draw_area(
-		rect.x, rect.y, rect.width, rect.height);
+	queue_draw_area(rect.x, rect.y, rect.width, rect.height);
     }
 #else // !GTK_CHECK_VERSION(3,0,0)
     gdk_gc_set_foreground(gui.text_gc, &color);
@@ -7079,8 +7048,7 @@ gui_gtk_window_clear(GdkWindow *win)
     cairo_fill(cr);
     cairo_destroy(cr);
 
-    queue_draw_area(
-	    rect.x, rect.y, rect.width, rect.height);
+    queue_draw_area(rect.x, rect.y, rect.width, rect.height);
 }
 #else
 # define gui_gtk_window_clear(win)  gdk_window_clear(win)
@@ -7138,8 +7106,7 @@ gui_mch_draw_popup_image(
 # if GTK_CHECK_VERSION(3,0,0)
     cairo_popup_image_paint(wp, gui.surface, x, y,
 	    src_x, src_y, draw_w, draw_h);
-    if (gui.drawarea != NULL)
-	queue_draw_area(x, y, draw_w, draw_h);
+    queue_draw_area(x, y, draw_w, draw_h);
 # else
     cairo_popup_image_paint(wp, gui.drawarea->window, x, y,
 	    src_x, src_y, draw_w, draw_h);
