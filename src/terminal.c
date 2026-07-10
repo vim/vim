@@ -6435,7 +6435,8 @@ f_term_getcursor(typval_T *argvars, typval_T *rettv)
 	    ? !term->tl_cursor_blink : term->tl_cursor_blink);
     dict_add_number(d, "shape", term->tl_cursor_shape);
     dict_add_string(d, "color", cursor_color_get(term->tl_cursor_color));
-    list_append_dict(l, d);
+    if (list_append_dict(l, d) == FAIL)
+	dict_unref(d);
 }
 
 /*
@@ -6846,7 +6847,11 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 	dcell = dict_alloc();
 	if (dcell == NULL)
 	    break;
-	list_append_dict(l, dcell);
+	if (list_append_dict(l, dcell) == FAIL)
+	{
+	    dict_unref(dcell);
+	    break;
+	}
 
 	dict_add_string_len(dcell, "chars", mbs, (int)mbslen);
 

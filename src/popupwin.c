@@ -5344,7 +5344,11 @@ get_padding_border(dict_T *dict, int *array, char *name)
     if (list == NULL)
 	return;
 
-    dict_add_list(dict, name, list);
+    if (dict_add_list(dict, name, list) == FAIL)
+    {
+	list_unref(list);
+	return;
+    }
     if (array[0] != 1 || array[1] != 1 || array[2] != 1 || array[3] != 1)
 	for (i = 0; i < 4; ++i)
 	    list_append_number(list, array[i]);
@@ -5371,7 +5375,11 @@ get_borderhighlight(dict_T *dict, win_T *wp)
     if (list == NULL)
 	return;
 
-    dict_add_list(dict, "borderhighlight", list);
+    if (dict_add_list(dict, "borderhighlight", list) == FAIL)
+    {
+	list_unref(list);
+	return;
+    }
     // When all highlights are NULL (cleared to empty list), return empty list.
     if (i == 4)
 	return;
@@ -5400,7 +5408,11 @@ get_borderchars(dict_T *dict, win_T *wp)
     if (list == NULL)
 	return;
 
-    dict_add_list(dict, "borderchars", list);
+    if (dict_add_list(dict, "borderchars", list) == FAIL)
+    {
+	list_unref(list);
+	return;
+    }
     for (i = 0; i < 8; ++i)
     {
 	len = mb_char2bytes(wp->w_border_char[i], buf);
@@ -5419,16 +5431,24 @@ get_moved_list(dict_T *dict, win_T *wp)
     list = list_alloc();
     if (list != NULL)
     {
-	dict_add_list(dict, "moved", list);
-	list_append_number(list, wp->w_popup_lnum);
-	list_append_number(list, wp->w_popup_mincol);
-	list_append_number(list, wp->w_popup_maxcol);
+	if (dict_add_list(dict, "moved", list) == FAIL)
+	    list_unref(list);
+	else
+	{
+	    list_append_number(list, wp->w_popup_lnum);
+	    list_append_number(list, wp->w_popup_mincol);
+	    list_append_number(list, wp->w_popup_maxcol);
+	}
     }
     list = list_alloc();
     if (list == NULL)
 	return;
 
-    dict_add_list(dict, "mousemoved", list);
+    if (dict_add_list(dict, "mousemoved", list) == FAIL)
+    {
+	list_unref(list);
+	return;
+    }
     list_append_number(list, wp->w_popup_mouse_row);
     list_append_number(list, wp->w_popup_mouse_mincol);
     list_append_number(list, wp->w_popup_mouse_maxcol);

@@ -5140,7 +5140,8 @@ f_diff(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    if (hunk_dict == NULL)
 		goto done;
 
-	    list_append_dict(l, hunk_dict);
+	    if (list_append_dict(l, hunk_dict) == FAIL)
+		dict_unref(hunk_dict);
 	}
     }
     else
