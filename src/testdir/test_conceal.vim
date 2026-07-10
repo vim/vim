@@ -4346,7 +4346,7 @@ func Test_conceallevel_three_terminal_linebreak_screenline_motion()
           \ #{rows: 20, cols: 42, wait_for_ruler: 0})
     call TermWait(buf, 300)
 
-    let keys = [":20\<CR>", 'gj', 'gj', 'gj', 'gk', 'gk', 'gj', 'g$', 'g0']
+    let keys = ['20G', 'gj', 'gj', 'gj', 'gk', 'gk', 'gj', 'g$', 'g0']
     let expected = [
           \ [20, 1, 1, 4, 5, 4, 5, 5, 4, 5],
           \ [20, 41, 39, 5, 5, 5, 5, 5, 5, 5],
