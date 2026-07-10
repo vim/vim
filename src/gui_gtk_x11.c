@@ -6959,7 +6959,6 @@ gui_mch_flush(void)
 		dirty_rect.top, (dirty_rect.right - dirty_rect.left),
 		(dirty_rect.bottom - dirty_rect.top));
     }
-    gdk_display_sync(gtk_widget_get_display(gui.mainwin));
 #endif
 }
 
