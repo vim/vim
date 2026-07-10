@@ -1470,6 +1470,121 @@ func Test_conceallevel_three_screenline_counts()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_counted_gj_keeps_cursor_visible()
+  call NewWindow(5, 40)
+  setlocal wrap nolinebreak nobreakindent nosmoothscroll conceallevel=3
+        \ concealcursor=nvic signcolumn=no nonumber showbreak= scrolloff=0
+
+  let matchid = matchadd('Conceal', 'HIDDEN\d\+ ', 10, -1,
+        \ #{conceal: ''})
+  let segment = 'aa HIDDEN123 ' .. "\t" .. 'あ bb '
+  try
+    let longline = repeat(segment, 2400)
+    call setline(1, longline)
+    call append(1, longline)
+    redraw!
+
+    normal! 30gj
+    call assert_equal([winheight(0), 1], [winline(), wincol()])
+    call assert_true(winsaveview().skipcol > 0)
+    let scrolled_view = winsaveview()
+    let scrolled_pos = getpos('.')
+    call setline(1, getline(1) .. 'x')
+    call setline(1, longline)
+    call setpos('.', scrolled_pos)
+    call winrestview(scrolled_view)
+    redraw!
+    normal! 30gk
+    call assert_equal([1, 1, 0],
+          \ [winline(), col('.'), winsaveview().skipcol])
+
+    execute 'normal! ' .. repeat('gj', 30)
+    call assert_equal([winheight(0), 1], [winline(), wincol()])
+    call assert_true(winsaveview().skipcol > 0)
+    execute 'normal! ' .. repeat('gk', 30)
+    call assert_equal([1, 1, 0],
+          \ [winline(), col('.'), winsaveview().skipcol])
+
+    normal! 300gj
+    normal! 300gj
+    let target_col = col('.')
+    call assert_equal([winheight(0), 1], [winline(), wincol()])
+    call assert_true(winsaveview().skipcol > 0)
+    normal! g$
+    call assert_true(col('.') > target_col)
+    normal! g0
+    call assert_equal([target_col, winheight(0), 1],
+          \ [col('.'), winline(), wincol()])
+    normal! 600gk
+    call assert_equal([1, 1, 0],
+          \ [winline(), col('.'), winsaveview().skipcol])
+
+    execute 'normal! ' .. repeat('gj', 30)
+    normal! g0
+    let g0_col = col('.')
+    normal! j
+    call assert_equal([2, g0_col], [line('.'), col('.')])
+    normal! k
+    call assert_equal([1, g0_col], [line('.'), col('.')])
+
+    normal! gg0
+    redraw!
+    execute 'normal! ' .. repeat('gj', 30)
+    normal! g$
+    let gdollar_col = col('.')
+    normal! j
+    call assert_equal([2, gdollar_col], [line('.'), col('.')])
+    normal! k
+    call assert_equal([1, gdollar_col], [line('.'), col('.')])
+
+  finally
+    call matchdelete(matchid)
+    call CloseWindow()
+  endtry
+endfunc
+
+func Test_conceallevel_three_smoothscroll_cache_invalidation()
+  call NewWindow(5, 40)
+  setlocal wrap nolinebreak nobreakindent nosmoothscroll conceallevel=3
+        \ concealcursor=nvic signcolumn=no nonumber showbreak= scrolloff=0
+
+  let matchid = matchadd('Conceal', 'HIDDEN\d\+ ', 10, -1,
+        \ #{conceal: ''})
+  let segment = 'aa HIDDEN123 ' .. "\t" .. 'あ bb '
+  let longline = repeat(segment, 2400)
+  try
+    call setline(1, longline)
+    redraw!
+    normal! 30gj
+    call setline(1, longline .. 'x')
+    call setline(1, longline)
+    setlocal smoothscroll
+    normal! gj
+
+    setlocal nosmoothscroll
+    let start_pos = getpos('.')
+    let start_view = winsaveview()
+    normal! gj
+    let cached_result = [col('.'), virtcol('.'), winline(), wincol(),
+          \ winsaveview().skipcol]
+
+    call setpos('.', start_pos)
+    call winrestview(start_view)
+    call setline(1, longline .. 'x')
+    call setline(1, longline)
+    call setpos('.', start_pos)
+    call winrestview(start_view)
+    redraw!
+    normal! gj
+    call assert_equal(cached_result,
+          \ [col('.'), virtcol('.'), winline(), wincol(),
+          \ winsaveview().skipcol])
+  finally
+    call matchdelete(matchid)
+    call CloseWindow()
+  endtry
+endfunc
+
 func Test_conceallevel_three_plain_wrapped_gk_after_blank()
   call NewWindow(10, 64)
   setlocal wrap linebreak breakindent smoothscroll conceallevel=3
