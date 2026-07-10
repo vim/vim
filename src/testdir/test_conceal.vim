@@ -4360,7 +4360,8 @@ func Test_conceallevel_three_terminal_linebreak_screenline_motion()
           \ ]
     for i in range(len(keys))
       call term_sendkeys(buf, keys[i])
-      call TermWait(buf, 150)
+      call WaitForAssert({-> assert_equal(expected[i][5:6],
+            \ term_getcursor(buf)[0:1])})
       call assert_equal(expected[i],
             \ s:TerminalConcealMotionState(buf, statefile), keys[i])
     endfor
