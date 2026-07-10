@@ -5137,6 +5137,10 @@ win_line_conceal_screenline_iter(
     drawline_screenline_ctx = cb_ctx;
     drawline_screenline_has_conceal = false;
     drawline_screenline_failed = false;
+# ifdef FEAT_SEARCH_EXTRA
+    init_search_hl(wp, &screen_search_hl);
+    prepare_search_hl(wp, &screen_search_hl, lnum);
+# endif
     row = win_line(wp, lnum, 0, INT_MAX, 0, &spv);
     failed = drawline_screenline_failed;
     if (has_concealp != NULL)
