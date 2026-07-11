@@ -53,7 +53,8 @@
 # include <gnome.h>
 # include "version.h"
 // missing prototype in bonobo-dock-item.h
-extern void bonobo_dock_item_set_behavior(BonoboDockItem *dock_item, BonoboDockItemBehavior beh);
+extern void bonobo_dock_item_set_behavior(BonoboDockItem *dock_item,
+	BonoboDockItemBehavior beh);
 #endif
 
 #if defined(FEAT_GUI_GTK)
