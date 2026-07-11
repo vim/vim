@@ -3008,36 +3008,6 @@ drawarea_configure_event_cb(GtkWidget	      *widget,
     static int cur_height = 0;
 
     g_return_val_if_fail(event
-	    && event->width >= 1 && event->height >= 1, TRUE);
-
-# if GTK_CHECK_VERSION(3,22,2) && !GTK_CHECK_VERSION(3,22,4)
-    // As of 3.22.2, GdkWindows have started distributing configure events to
-    // their "native" children (https://git.gnome.org/browse/gtk+/commit/?h=gtk-3-22&id=12579fe71b3b8f79eb9c1b80e429443bcc437dd0).
-    //
-    // As can be seen from the implementation of move_native_children() and
-    // configure_native_child() in gdkwindow.c, those functions actually
-    // propagate configure events to every child, failing to distinguish
-    // "native" one from non-native one.
-    //
-    // Naturally, configure events propagated to here like that are fallacious
-    // and, as a matter of fact, they trigger a geometric collapse of
-    // gui.drawarea in fullscreen and maximized modes.
-    //
-    // To filter out such nuisance events, we are making use of the fact that
-    // the field send_event of such GdkEventConfigures is set to FALSE in
-    // configure_native_child().
-    //
-    // Obviously, this is a terrible hack making GVim depend on GTK's
-    // implementation details.  Therefore, watch out any relevant internal
-    // changes happening in GTK in the feature (sigh).
-    //
-    // Follow-up
-    // After a few weeks later, the GdkWindow change mentioned above was
-    // reverted (https://git.gnome.org/browse/gtk+/commit/?h=gtk-3-22&id=f70039cb9603a02d2369fec4038abf40a1711155).
-    // The corresponding official release is 3.22.4.
-    if (event->send_event == FALSE)
-	return TRUE;
-# endif
 
     if (event->width == cur_width && event->height == cur_height)
 	return TRUE;
@@ -4433,31 +4403,6 @@ form_configure_event(GtkWidget *widget UNUSED,
     }
     clear_resize_hists();
 #endif
-
-#if GTK_CHECK_VERSION(3,22,2) && !GTK_CHECK_VERSION(3,22,4)
-    // As of 3.22.2, GdkWindows have started distributing configure events to
-    // their "native" children (https://git.gnome.org/browse/gtk+/commit/?h=gtk-3-22&id=12579fe71b3b8f79eb9c1b80e429443bcc437dd0).
-    //
-    // As can be seen from the implementation of move_native_children() and
-    // configure_native_child() in gdkwindow.c, those functions actually
-    // propagate configure events to every child, failing to distinguish
-    // "native" one from non-native one.
-    //
-    // Naturally, configure events propagated to here like that are fallacious
-    // and, as a matter of fact, they trigger a geometric collapse of
-    // gui.formwin.
-    //
-    // To filter out such fallacious events, check if the given event is the
-    // one that was sent out to the right place. Ignore it if not.
-    //
-    // Follow-up
-    // After a few weeks later, the GdkWindow change mentioned above was
-    // reverted (https://git.gnome.org/browse/gtk+/commit/?h=gtk-3-22&id=f70039cb9603a02d2369fec4038abf40a1711155).
-    // The corresponding official release is 3.22.4.
-    if (event->window != gtk_widget_get_window(gui.formwin))
-	return TRUE;
-#endif
-
     // When in a GtkPlug, we can't guarantee valid heights (as a round
     // no. of char-heights), so we have to manually sanitise them.
     // Widths seem to sort themselves out, don't ask me why.
