@@ -79,6 +79,8 @@ typedef struct syn_pattern
 
 #define SYN_ITEMS(buf)	((synpat_T *)((buf)->b_syn_patterns.ga_data))
 
+static unsigned long syntax_change_tick = 0;
+
 #define NONE_IDX	(-2)	// value of sp_sync_idx for "NONE"
 
 /*
@@ -1051,6 +1053,7 @@ syn_stack_free_all(synblock_T *block)
     win_T	*wp;
 #endif
 
+    block->b_syn_change_tick = ++syntax_change_tick;
     syn_stack_free_block(block);
 
 #ifdef FEAT_FOLDING
@@ -3476,6 +3479,7 @@ syn_cmd_iskeyword(exarg_T *eap, int syncing UNUSED)
 	    curwin->w_s->b_syn_isk = curbuf->b_p_isk;
 	    curbuf->b_p_isk = save_isk;
 	}
+	curwin->w_s->b_syn_change_tick = ++syntax_change_tick;
     }
     redraw_win_later(curwin, UPD_NOT_VALID);
 }
@@ -6584,18 +6588,45 @@ syntax_present(win_T *win)
 	    || win->w_s->b_keywtab_ic.ht_used > 0);
 }
 
-    bool
-syntax_has_cursor_pattern(win_T *wp)
+    static bool
+syntax_pattern_has_dynamic_atom(char_u *pattern)
 {
-    int i;
+    char *cursor = (char *)pattern;
 
-    for (i = 0; i < wp->w_s->b_syn_patterns.ga_len; ++i)
-	if (SYN_ITEMS(wp->w_s)[i].sp_pattern != NULL
-		&& strstr((char *)SYN_ITEMS(wp->w_s)[i].sp_pattern,
-								"%#") != NULL)
-	    return true;
-    return wp->w_s->b_syn_linecont_pat != NULL
-	&& strstr((char *)wp->w_s->b_syn_linecont_pat, "%#") != NULL;
+    while ((cursor = strstr(cursor, "%#")) != NULL && cursor[2] == '=')
+	cursor += 2;
+    return cursor != NULL || strstr((char *)pattern, "%V") != NULL
+				   || strstr((char *)pattern, "%'") != NULL
+				   || strstr((char *)pattern, "%<'") != NULL
+				   || strstr((char *)pattern, "%>'") != NULL;
+}
+
+    bool
+syntax_has_dynamic_pattern(win_T *wp)
+{
+    synblock_T	*block = wp->w_s;
+    bool	found = false;
+    int		i;
+
+    if (block->b_syn_dynamic_valid
+	    && block->b_syn_dynamic_tick == block->b_syn_change_tick)
+	return block->b_syn_has_dynamic_pattern;
+
+    for (i = 0; i < block->b_syn_patterns.ga_len; ++i)
+	if (SYN_ITEMS(block)[i].sp_pattern != NULL
+		&& syntax_pattern_has_dynamic_atom(
+					SYN_ITEMS(block)[i].sp_pattern))
+	{
+	    found = true;
+	    break;
+	}
+    if (!found && block->b_syn_linecont_pat != NULL)
+	found = syntax_pattern_has_dynamic_atom(block->b_syn_linecont_pat);
+
+    block->b_syn_dynamic_tick = block->b_syn_change_tick;
+    block->b_syn_has_dynamic_pattern = found;
+    block->b_syn_dynamic_valid = true;
+    return found;
 }
 
 

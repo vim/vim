@@ -18,6 +18,7 @@ static int win_nolbr_chartabsize(chartabsize_T *cts, int *headp);
 static unsigned nr2hex(unsigned c);
 
 static int    chartab_initialized = FALSE;
+static unsigned long chartab_generation = 0;
 
 // b_chartab[] is an array of 32 bytes, each bit representing one of the
 // characters 0-255.
@@ -70,6 +71,12 @@ init_chartab(void)
     return buf_init_chartab(curbuf, TRUE);
 }
 
+    unsigned long
+get_chartab_generation(void)
+{
+    return chartab_generation;
+}
+
     int
 buf_init_chartab(
     buf_T	*buf,
@@ -81,6 +88,7 @@ buf_init_chartab(
 
     if (global)
     {
+	++chartab_generation;
 	/*
 	 * Set the default size for printable characters:
 	 * From <Space> to '~' is 1 (printable), others are 2 (not printable).
@@ -119,6 +127,7 @@ buf_init_chartab(
      * Init word char flags all to FALSE
      */
     CLEAR_FIELD(buf->b_chartab);
+    ++buf->b_chartab_change_tick;
     if (enc_dbcs != 0)
 	for (c = 0; c < 256; ++c)
 	{

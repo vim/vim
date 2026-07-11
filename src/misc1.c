@@ -547,12 +547,17 @@ typedef struct
     bool	valid;
     win_T	*wp;
     buf_T	*buf;
+    int		win_id;
+    int		buf_fnum;
     linenr_T	lnum;
     colnr_T	line_len;
     linenr_T	topline;
     colnr_T	leftcol;
     colnr_T	skipcol;
     varnumber_T	changedtick;
+# ifdef FEAT_PROP_POPUP
+    unsigned long textprop_change_tick;
+# endif
     pos_T	cursor;
     pos_T	visual;
     int		visual_active;
@@ -574,6 +579,7 @@ typedef struct
     long	tabstop;
     int		rightleft;
     int		ambiwidth;
+    hash_T	width_state_hash;
     hash_T	showbreak_hash;
     hash_T	breakat_hash;
     hash_T	briopt_hash;
@@ -582,13 +588,18 @@ typedef struct
     hash_T	vts_hash;
     hash_T	cocu_hash;
 # ifdef FEAT_SEARCH_EXTRA
-    matchitem_T	*match_head;
-    int		match_count;
-    hash_T	match_hash;
+    unsigned long match_change_tick;
 # endif
 # ifdef FEAT_SYN_HL
+    synblock_T	*syn_block;
+    int		syn_error;
+#  ifdef FEAT_RELTIME
+    int		syn_slow;
+#  endif
+    hash_T	syn_option_hash;
     int		syn_patterns_len;
     int		syn_conceal;
+    unsigned long syn_change_tick;
 # endif
     int		height;
 } plines_conceal_height_cache_T;
@@ -624,27 +635,26 @@ plines_conceal_ambiwidth(void)
     return p_ambw == NULL ? 0 : *p_ambw;
 }
 
-# ifdef FEAT_SEARCH_EXTRA
     static hash_T
-plines_conceal_match_hash(win_T *wp, int *countp)
+plines_conceal_width_state_hash(void)
 {
-    hash_T	    hash = 0;
-    matchitem_T	    *cur;
+    hash_T hash = (hash_T)get_chartab_generation();
 
-    *countp = 0;
-    for (cur = wp->w_match_head; cur != NULL; cur = cur->mit_next)
-    {
-	++*countp;
-	hash = hash * 101 + (hash_T)cur->mit_id;
-	hash = hash * 101 + (hash_T)cur->mit_priority;
-	hash = hash * 101 + (hash_T)cur->mit_hlg_id;
-	hash = hash * 101 + (hash_T)cur->mit_conceal_char;
-	if (cur->mit_pattern != NULL)
-	    hash += hash_hash(cur->mit_pattern);
-	hash = hash * 101 + (hash_T)cur->mit_pos_count;
-	hash = hash * 101 + (hash_T)cur->mit_toplnum;
-	hash = hash * 101 + (hash_T)cur->mit_botlnum;
-    }
+    hash = hash * 101 + (p_emoji != NULL);
+    hash = hash * 101 + (hash_T)get_cellwidths_generation();
+    return hash;
+}
+
+# ifdef FEAT_SYN_HL
+    hash_T
+conceal_syntax_option_hash(win_T *wp)
+{
+    hash_T hash = (hash_T)wp->w_buffer->b_p_smc;
+
+    if (wp->w_s->b_syn_isk == empty_option)
+	hash = hash * 101 + (hash_T)wp->w_buffer->b_chartab_change_tick;
+    else
+	hash = hash * 101 + (hash_T)wp->w_s->b_syn_change_tick;
     return hash;
 }
 # endif
@@ -685,6 +695,8 @@ plines_conceal_height_cache_key(
     key->valid = true;
     key->wp = wp;
     key->buf = wp->w_buffer;
+    key->win_id = wp->w_id;
+    key->buf_fnum = wp->w_buffer->b_fnum;
     key->lnum = lnum;
     key->line_len = ml_get_buf_len(wp->w_buffer, lnum);
     // Cursor, Visual and skipcol only change the drawn height for the line
@@ -694,6 +706,9 @@ plines_conceal_height_cache_key(
     key->leftcol = wp->w_leftcol;
     key->skipcol = is_topline ? wp->w_skipcol : 0;
     key->changedtick = CHANGEDTICK(wp->w_buffer);
+# ifdef FEAT_PROP_POPUP
+    key->textprop_change_tick = wp->w_buffer->b_textprop_change_tick;
+# endif
     if (is_cursor_line || is_visual_line)
     {
 	key->cursor = wp->w_cursor;
@@ -718,6 +733,7 @@ plines_conceal_height_cache_key(
     key->tabstop = wp->w_buffer->b_p_ts;
     key->rightleft = plines_conceal_rightleft(wp);
     key->ambiwidth = plines_conceal_ambiwidth();
+    key->width_state_hash = plines_conceal_width_state_hash();
     key->showbreak_hash = hash_hash(get_showbreak_value(wp));
     key->breakat_hash = hash_hash(p_breakat);
     key->briopt_hash = hash_hash(wp->w_p_briopt);
@@ -726,12 +742,18 @@ plines_conceal_height_cache_key(
     key->vts_hash = plines_conceal_vts_hash(wp);
     key->cocu_hash = hash_hash(wp->w_p_cocu);
 # ifdef FEAT_SEARCH_EXTRA
-    key->match_head = wp->w_match_head;
-    key->match_hash = plines_conceal_match_hash(wp, &key->match_count);
+    key->match_change_tick = wp->w_match_change_tick;
 # endif
 # ifdef FEAT_SYN_HL
+    key->syn_block = wp->w_s;
+    key->syn_error = wp->w_s->b_syn_error;
+#  ifdef FEAT_RELTIME
+    key->syn_slow = wp->w_s->b_syn_slow;
+#  endif
+    key->syn_option_hash = conceal_syntax_option_hash(wp);
     key->syn_patterns_len = wp->w_s->b_syn_patterns.ga_len;
     key->syn_conceal = wp->w_s->b_syn_conceal;
+    key->syn_change_tick = wp->w_s->b_syn_change_tick;
 # endif
 }
 
@@ -745,10 +767,17 @@ plines_conceal_height_cache_equal(
 	&& cache->buf == key->buf
 	&& cache->lnum == key->lnum
 	&& cache->line_len == key->line_len
+	// Most entries belong to another line in the same window.  Compare the
+	// line before the lifetime IDs so those common misses stay cheap.
+	&& cache->win_id == key->win_id
+	&& cache->buf_fnum == key->buf_fnum
 	&& cache->topline == key->topline
 	&& cache->leftcol == key->leftcol
 	&& cache->skipcol == key->skipcol
 	&& cache->changedtick == key->changedtick
+# ifdef FEAT_PROP_POPUP
+	&& cache->textprop_change_tick == key->textprop_change_tick
+# endif
 	&& EQUAL_POS(cache->cursor, key->cursor)
 	&& EQUAL_POS(cache->visual, key->visual)
 	&& cache->visual_active == key->visual_active
@@ -770,6 +799,7 @@ plines_conceal_height_cache_equal(
 	&& cache->tabstop == key->tabstop
 	&& cache->rightleft == key->rightleft
 	&& cache->ambiwidth == key->ambiwidth
+	&& cache->width_state_hash == key->width_state_hash
 	&& cache->showbreak_hash == key->showbreak_hash
 	&& cache->breakat_hash == key->breakat_hash
 	&& cache->briopt_hash == key->briopt_hash
@@ -778,13 +808,18 @@ plines_conceal_height_cache_equal(
 	&& cache->vts_hash == key->vts_hash
 	&& cache->cocu_hash == key->cocu_hash
 # ifdef FEAT_SEARCH_EXTRA
-	&& cache->match_head == key->match_head
-	&& cache->match_count == key->match_count
-	&& cache->match_hash == key->match_hash
+	&& cache->match_change_tick == key->match_change_tick
 # endif
 # ifdef FEAT_SYN_HL
+	&& cache->syn_block == key->syn_block
+	&& cache->syn_error == key->syn_error
+#  ifdef FEAT_RELTIME
+	&& cache->syn_slow == key->syn_slow
+#  endif
+	&& cache->syn_option_hash == key->syn_option_hash
 	&& cache->syn_patterns_len == key->syn_patterns_len
 	&& cache->syn_conceal == key->syn_conceal
+	&& cache->syn_change_tick == key->syn_change_tick
 # endif
 	;
 }
@@ -821,7 +856,7 @@ plines_conceal_height_cache_store(
 				      % PLINES_CONCEAL_HEIGHT_CACHE_SIZE;
 }
 
-    static bool
+    bool
 plines_win_may_conceal(win_T *wp, linenr_T lnum)
 {
     if (wp->w_p_cole != 3)
@@ -851,6 +886,53 @@ plines_win_may_conceal(win_T *wp, linenr_T lnum)
     return true;
 }
 
+    bool
+conceal_has_dynamic_pattern(win_T *wp)
+{
+# ifdef FEAT_SEARCH_EXTRA
+    if (!wp->w_match_dynamic_valid
+	    || wp->w_match_dynamic_tick != wp->w_match_change_tick)
+    {
+	matchitem_T *item;
+
+	wp->w_match_has_dynamic_pattern = false;
+	for (item = wp->w_match_head; item != NULL; item = item->mit_next)
+	    if (item->mit_pattern != NULL)
+	    {
+		char *pattern = (char *)item->mit_pattern;
+		char *cursor = pattern;
+
+		while ((cursor = strstr(cursor, "%#")) != NULL
+							&& cursor[2] == '=')
+		    cursor += 2;
+		if (cursor != NULL || strstr(pattern, "%V") != NULL
+					|| strstr(pattern, "%'") != NULL
+					|| strstr(pattern, "%<'") != NULL
+					|| strstr(pattern, "%>'") != NULL)
+		{
+		    wp->w_match_has_dynamic_pattern = true;
+		    break;
+		}
+	    }
+	wp->w_match_dynamic_tick = wp->w_match_change_tick;
+	wp->w_match_dynamic_valid = true;
+    }
+    if (wp->w_match_has_dynamic_pattern)
+	return true;
+# endif
+# ifdef FEAT_SYN_HL
+    if (wp->w_s->b_syn_dynamic_valid
+	    && wp->w_s->b_syn_dynamic_tick == wp->w_s->b_syn_change_tick)
+    {
+	if (wp->w_s->b_syn_has_dynamic_pattern)
+	    return true;
+    }
+    else if (syntax_has_dynamic_pattern(wp))
+	return true;
+# endif
+    return false;
+}
+
 /*
  * Return the exact drawn height of "lnum" when it has concealed text, zero
  * when there is no concealment, or -1 when the drawn height cannot be checked.
@@ -861,7 +943,7 @@ plines_win_may_conceal(win_T *wp, linenr_T lnum)
 plines_win_conceal_height(win_T *wp, linenr_T lnum, bool *drawn_line)
 {
     bool				has_conceal = false;
-    bool				cacheable = true;
+    bool				cacheable;
     int					height;
     int					rows = 0;
     plines_conceal_height_cache_T	key;
@@ -869,11 +951,7 @@ plines_win_conceal_height(win_T *wp, linenr_T lnum, bool *drawn_line)
     *drawn_line = false;
     if (!plines_win_may_conceal(wp, lnum))
 	return 0;
-# ifdef FEAT_PROP_POPUP
-    // Text property changes do not update b:changedtick, but can change the
-    // drawn height.
-    cacheable = !wp->w_buffer->b_has_textprop;
-# endif
+    cacheable = !conceal_has_dynamic_pattern(wp);
     if (cacheable)
     {
 	plines_conceal_height_cache_key(wp, lnum, &key);

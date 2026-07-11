@@ -1885,6 +1885,305 @@ func Test_conceallevel_three_screenline_option_invalidation()
   endtry
 endfunc
 
+func Test_conceallevel_three_syntax_match_cache_invalidation()
+  call NewWindow(8, 20)
+  try
+    setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+    let text = repeat('X ', 31)
+    call setline(1, [text, 'after'])
+    call cursor(2, 1)
+    redraw!
+    call assert_equal(5, screenpos(0, 2, 1).row)
+
+    " Concealed keywords are not stored in b_syn_patterns.
+    syntax keyword Hidden X conceal
+    redraw!
+    call assert_equal(3, screenpos(0, 2, 1).row)
+
+    call cursor(1, 2)
+    normal! gj
+    call assert_equal([1, 42, 2, 1],
+          \ [line('.'), col('.'), winline(), wincol()])
+
+    " Replacing a pattern can leave the pattern count unchanged.
+    syntax clear Hidden
+    syntax match Hidden /X/ conceal
+    call cursor(2, 1)
+    redraw!
+    call assert_equal(3, screenpos(0, 2, 1).row)
+
+    syntax clear Hidden
+    syntax match Hidden /Z/ conceal
+    redraw!
+    call assert_equal(5, screenpos(0, 2, 1).row)
+  finally
+    syntax clear Hidden
+    call CloseWindow()
+  endtry
+endfunc
+
+func Test_conceallevel_three_syntax_option_cache_invalidation()
+  call NewWindow(10, 20)
+  try
+    setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+
+    syntax match Hidden /X/ conceal
+    call setline(1, [repeat('a', 60) .. repeat('X', 60), 'after'])
+    setlocal synmaxcol=0
+    call cursor(2, 1)
+    redraw!
+    let before = screenpos(0, 2, 1).row
+
+    setlocal synmaxcol=50
+    redraw!
+    let changed = screenpos(0, 2, 1).row
+    let saved = getline(1)
+    call setline(1, saved .. 'x')
+    call setline(1, saved)
+    redraw!
+    let fresh = screenpos(0, 2, 1).row
+    call assert_notequal(before, fresh)
+    call assert_equal(fresh, changed)
+
+    syntax clear Hidden
+    setlocal synmaxcol=0 iskeyword-=.
+    syntax keyword Hidden foo conceal
+    call setline(1, [repeat('foo.', 30), 'after'])
+    call cursor(2, 1)
+    redraw!
+    let before = screenpos(0, 2, 1).row
+
+    setlocal iskeyword+=.
+    redraw!
+    let changed = screenpos(0, 2, 1).row
+    let saved = getline(1)
+    call setline(1, saved .. 'x')
+    call setline(1, saved)
+    redraw!
+    let fresh = screenpos(0, 2, 1).row
+    call assert_notequal(before, fresh)
+    call assert_equal(fresh, changed)
+
+    setlocal iskeyword-=.
+    call cursor(1, 4)
+    normal! gj
+    normal! gk
+    call assert_equal(4, col('.'))
+    let before = [line('.'), col('.'), winline(), wincol()]
+
+    setlocal iskeyword+=.
+    call cursor(1, 4)
+    normal! gj
+    redraw!
+    let changed = [line('.'), col('.'), winline(), wincol()]
+
+    let saved = getline(1)
+    call setline(1, saved .. 'x')
+    call setline(1, saved)
+    call cursor(1, 4)
+    normal! gj
+    redraw!
+    let fresh = [line('.'), col('.'), winline(), wincol()]
+    call assert_notequal(before, fresh)
+    call assert_equal(fresh, changed)
+
+    " 'lisp' changes the buffer keyword table without changing 'iskeyword'.
+    syntax clear Hidden
+    setlocal nolisp
+    syntax keyword Hidden foo-foo conceal
+    call setline(1, [repeat('foo-foo ', 20), 'after'])
+    call cursor(2, 1)
+    redraw!
+    let before = screenpos(0, 2, 1).row
+
+    setlocal lisp
+    redraw!
+    let changed = screenpos(0, 2, 1).row
+    let saved = getline(1)
+    call setline(1, saved .. 'x')
+    call setline(1, saved)
+    redraw!
+    let fresh = screenpos(0, 2, 1).row
+    call assert_notequal(before, fresh)
+    call assert_equal(fresh, changed)
+  finally
+    syntax clear Hidden
+    call CloseWindow()
+  endtry
+endfunc
+
+func Test_conceallevel_three_dynamic_visibility_cache_invalidation()
+  let matchid = -1
+
+  call NewWindow(10, 20)
+  try
+    setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+    let text = repeat('X', 12) .. 'abcde' .. repeat('Y', 12)
+          \ .. 'qrstuvwxyzabcdefghijklmnopqrstuv'
+    call setline(1, text)
+    syntax match Hidden /Y\+/ conceal
+
+    call cursor(1, 13)
+    normal! gj
+    call assert_equal(45, col('.'))
+
+    " Visual mode reveals the whole selected line when 'concealcursor' does
+    " not contain "v".  Do not reuse its concealed Normal-mode map.
+    call cursor(1, 13)
+    normal! v
+    redraw!
+    normal! gj
+    call assert_equal([33, 2, 13], [col('.'), winline(), wincol()])
+    execute "normal! \<Esc>"
+
+    syntax clear Hidden
+    call setline(1, repeat('X ', 31))
+    call cursor(1, 2)
+    normal! gj
+    normal! gk
+
+    let matchid = matchadd('Conceal', 'X', 10, -1, #{conceal: ''})
+    call cursor(1, 2)
+    normal! gj
+    call assert_equal([42, 2, 1], [col('.'), winline(), wincol()])
+
+    call matchdelete(matchid)
+    let matchid = -1
+    syntax match Hidden /\%<'mX/ conceal
+    call setline(1, [repeat('X', 160), 'after'])
+    call setpos("'m", [0, 1, 161, 0])
+    call cursor(2, 1)
+    redraw!
+    call assert_equal(2, screenpos(0, 2, 1).row)
+
+    " Ordered mark atoms change without updating b:changedtick.
+    call setpos("'m", [0, 1, 2, 0])
+    redraw!
+    call assert_equal(9, screenpos(0, 2, 1).row)
+
+    syntax clear Hidden
+    call setpos("'m", [0, 1, 161, 0])
+    let matchid = matchadd('Conceal', '\%<''mX', 10, -1,
+          \ #{conceal: ''})
+    redraw!
+    call assert_equal(2, screenpos(0, 2, 1).row)
+
+    call setpos("'m", [0, 1, 2, 0])
+    redraw!
+    call assert_equal(9, screenpos(0, 2, 1).row)
+  finally
+    if matchid > 0
+      silent! call matchdelete(matchid)
+    endif
+    syntax clear Hidden
+    call CloseWindow()
+  endtry
+endfunc
+
+func Test_conceallevel_three_textprop_map_cache_invalidation()
+  CheckFeature textprop
+
+  let global_type = 'ConcealCacheText'
+  let local_type = 'ConcealCacheLocalText'
+
+  call NewWindow(8, 20)
+  try
+    setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+    syntax match Hidden /^X/ conceal
+    call prop_type_add(global_type, {})
+    call setline(1, ['X' .. repeat('a', 50), 'after'])
+
+    call cursor(1, 2)
+    normal! gj
+    call assert_equal([22, 2, 1], [col('.'), winline(), wincol()])
+    normal! gk
+    redraw!
+    let base_row = screenpos(0, 2, 1).row
+
+    let propid = prop_add(1, 2,
+          \ #{type: global_type, text: repeat('V', 10)})
+    call cursor(1, 2)
+    normal! gj
+    call assert_equal([22, 2, 11], [col('.'), winline(), wincol()])
+
+    call assert_equal(1, prop_remove(#{id: propid}))
+    call cursor(1, 2)
+    normal! gj
+    call assert_equal([22, 2, 1], [col('.'), winline(), wincol()])
+
+    call prop_add(1, 0,
+          \ #{type: global_type, text: 'above', text_align: 'above'})
+    redraw!
+    call assert_equal(base_row + 1, screenpos(0, 2, 1).row)
+    call prop_clear(1)
+    redraw!
+    call assert_equal(base_row, screenpos(0, 2, 1).row)
+
+    call prop_add(1, 2,
+          \ #{type: global_type, text: repeat('V', 10)})
+    call cursor(1, 2)
+    normal! gj
+    call assert_equal([22, 2, 11], [col('.'), winline(), wincol()])
+    call prop_type_delete(global_type)
+    call cursor(1, 2)
+    normal! gj
+    call assert_equal([22, 2, 1], [col('.'), winline(), wincol()])
+
+    call prop_type_add(local_type, #{bufnr: bufnr()})
+    call prop_add(1, 2,
+          \ #{type: local_type, text: repeat('V', 10)})
+    call cursor(1, 2)
+    normal! gj
+    call assert_equal([22, 2, 11], [col('.'), winline(), wincol()])
+    call prop_type_delete(local_type, #{bufnr: bufnr()})
+    call cursor(1, 2)
+    normal! gj
+    call assert_equal([22, 2, 1], [col('.'), winline(), wincol()])
+  finally
+    silent! call prop_clear(1)
+    silent! call prop_type_delete(global_type)
+    silent! call prop_type_delete(local_type, #{bufnr: bufnr()})
+    syntax clear Hidden
+    call CloseWindow()
+  endtry
+endfunc
+
+func Test_conceallevel_three_display_width_cache_invalidation()
+  let save_display = &display
+
+  call NewWindow(10, 20)
+  try
+    setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+    syntax match Hidden /HIDDEN\|X/ conceal
+
+    set display=
+    call setline(1, ['X' .. repeat(nr2char(1), 21), 'after'])
+    call cursor(2, 1)
+    redraw!
+    call assert_equal(4, screenpos(0, 2, 1).row)
+
+    set display=uhex
+    redraw!
+    call assert_equal(6, screenpos(0, 2, 1).row)
+
+    call setline(1, repeat(nr2char(1), 30) .. ' HIDDEN tail')
+    call deletebufline(bufnr(), 2, '$')
+    set display=
+    call cursor(1, 1)
+    normal! gj
+    call assert_equal(11, col('.'))
+
+    call cursor(1, 1)
+    set display=uhex
+    normal! gj
+    call assert_equal(6, col('.'))
+  finally
+    let &display = save_display
+    syntax clear Hidden
+    call CloseWindow()
+  endtry
+endfunc
+
 func Test_conceallevel_three_combining_marks_screenpos()
   if !has('multi_byte') || &encoding !=# 'utf-8'
     return
@@ -1948,6 +2247,16 @@ func Test_conceallevel_three_emoji_width_screenpos()
 
     set emoji
     call assert_equal([3, 4], s:ConceallevelThreeCursorCell(target_col))
+
+    call setline(1, ['HIDDEN ' .. repeat(emoji_char, 21), 'after'])
+    call cursor(2, 1)
+    set noemoji
+    redraw!
+    call assert_equal(2, screenpos(0, 2, 1).row)
+
+    set emoji
+    redraw!
+    call assert_equal(3, screenpos(0, 2, 1).row)
   finally
     let &emoji = save_emoji
     syntax clear Hidden
@@ -1981,6 +2290,16 @@ func Test_conceallevel_three_custom_cell_width_screenpos()
 
     call setcellwidths([[0x279c, 0x279c, 1]])
     call assert_equal([2, 3], s:ConceallevelThreeCursorCell(target_col))
+
+    call setline(1, ['HIDDEN ' .. repeat(width_char, 21), 'after'])
+    call cursor(2, 1)
+    call setcellwidths([[0x279c, 0x279c, 1]])
+    redraw!
+    call assert_equal(2, screenpos(0, 2, 1).row)
+
+    call setcellwidths([[0x279c, 0x279c, 2]])
+    redraw!
+    call assert_equal(3, screenpos(0, 2, 1).row)
   finally
     call setcellwidths([])
     syntax clear Hidden
@@ -2449,6 +2768,14 @@ func Test_conceallevel_three_closed_fold_screenline_motion()
   call setline(1, ['fold start', 'fold inside', line, 'after'])
   1,2fold
   normal! zM
+
+  " A fresh move from below the fold must land on its displayed first line,
+  " not on a hidden buffer line inside it.
+  call cursor(3, 1)
+  redraw!
+  normal! gk
+  call assert_equal([1, 1], [line('.'), col('.')])
+
   call cursor(1, 1)
   redraw!
 
