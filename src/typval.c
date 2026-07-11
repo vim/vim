@@ -114,9 +114,11 @@ free_tv(typval_T *varp)
 
 /*
  * Free the memory for a variable value and set the value to NULL or 0.
+ * Full implementation for all types; the inline clear_tv() in inline_funcs.h
+ * fast-paths scalars and must stay in sync with this for them.
  */
     void
-clear_tv(typval_T *varp)
+clear_tv_inner(typval_T *varp)
 {
     if (varp == NULL)
 	return;
@@ -1354,9 +1356,11 @@ tv_check_lock(typval_T *tv, char_u *name, int use_gettext)
  * Does not make a copy of a list, blob or dict but copies the reference!
  * It is OK for "from" and "to" to point to the same item.  This is used to
  * make a copy later.
+ * Full implementation for all types; the inline copy_tv() in inline_funcs.h
+ * fast-paths scalars and must stay in sync with this for them.
  */
     int
-copy_tv(typval_T *from, typval_T *to)
+copy_tv_inner(typval_T *from, typval_T *to)
 {
     int		ret = OK;
 

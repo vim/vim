@@ -2543,6 +2543,9 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 
 #include "proto.h"	    // function prototypes
 
+// Shared inline functions; must come after proto.h (declares the *_inner fallbacks).
+#include "inline_funcs.h"
+
 // This has to go after the include of proto.h, as proto/gui.pro declares
 // functions of these names. The declarations would break if the defines had
 // been seen at that stage.  But it must be before globals.h, where error_ga

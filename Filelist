@@ -96,6 +96,7 @@ SRC_ALL =	\
 		src/help.c \
 		src/highlight.c \
 		src/indent.c \
+		src/inline_funcs.h \
 		src/insexpand.c \
 		src/job.c \
 		src/json.c \
