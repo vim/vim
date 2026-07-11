@@ -2767,9 +2767,8 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 	    icons = g_list_prepend(icons, pixbuf_new_from_png_data(vim48x48_png, vim48x48_png_len));
 
 	    gtk_window_set_icon_list(GTK_WINDOW(gui.mainwin), icons);
-
-	    // TODO: is this type cast OK?
-	    g_list_foreach(icons, (GFunc)(void *)&g_object_unref, NULL);
+	    for (item = icons; item != NULL; iem = item->next)
+		g_object_unref(item->data);
 	    g_list_free(icons);
 	}
     }
