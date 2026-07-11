@@ -778,6 +778,7 @@ draw_event(GtkWidget *widget UNUSED,
 				// for GTK+ 3, may induce other draw events.
 
     cairo_set_source_surface(cr, gui.surface, 0, 0);
+    cairo_paint(cr);
 
     {
 	cairo_rectangle_list_t *list = NULL;
