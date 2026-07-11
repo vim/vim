@@ -2761,6 +2761,7 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 	     * Add an icon to the main window. For fun and convenience of the user.
 	     */
 	    GList *icons = NULL;
+	    GList *item = NULL;
 
 	    icons = g_list_prepend(icons,
 		    pixbuf_new_from_png_data(vim16x16_png, vim16x16_png_len));
@@ -2770,7 +2771,7 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 		    pixbuf_new_from_png_data(vim48x48_png, vim48x48_png_len));
 
 	    gtk_window_set_icon_list(GTK_WINDOW(gui.mainwin), icons);
-	    for (item = icons; item != NULL; iem = item->next)
+	    for (item = icons; item != NULL; item = item->next)
 		g_object_unref(item->data);
 	    g_list_free(icons);
 	}
@@ -5347,8 +5348,9 @@ ascii_glyph_table_init(void)
 	}
     }
 
-    // TODO: is this type cast OK?
-    g_list_foreach(item_list, (GFunc)(void *)&pango_item_free, NULL);
+    GList *item;
+    for (item = item_list; item != NULL; item = item->next)
+	pango_item_free(item->data);
     g_list_free(item_list);
     pango_attr_list_unref(attr_list);
 }
