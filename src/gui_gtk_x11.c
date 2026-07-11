@@ -3008,6 +3008,7 @@ drawarea_configure_event_cb(GtkWidget	      *widget,
     static int cur_height = 0;
 
     g_return_val_if_fail(event
+	    && event->width >= 1 && event->height >= 1, TRUE);
 
     if (event->width == cur_width && event->height == cur_height)
 	return TRUE;

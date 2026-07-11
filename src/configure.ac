@@ -2797,6 +2797,14 @@ dnl something like that.
 	       sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
 	     gtk_micro_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
 	       sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
+
+       AS_IF([test "x$SKIP_GTK3" != 'xYES' \
+              -a "$gtk_major_version" = 3 \
+              -a "$gtk_minor_version" = 22 \
+              -a "$gtk_micro_version" -ge 2 \
+              -a "$gtk_micro_version" -lt 4],
+       [AC_MSG_FAILURE([GTK versions 3.22.2 and 3.22.3 are not supported])])
+
 	     AC_MSG_RESULT([yes; found version $gtk_major_version.$gtk_minor_version.$gtk_micro_version])
 	   ],
 	   [
@@ -2838,7 +2846,12 @@ dnl something like that.
 # include <stdlib.h>
 # include <stddef.h>
 #endif
-
+#if GTK_MAJOR_VERSION == 3 \
+	&& GTK_MINOR_VERSION == 22 \
+	&& GTK_MICRO_VERSION >= 2 \
+	&& GTK_MICRO_VERSION < 4
+# error GTK version 3.22.2 and 3.22.3 are not supported
+#endif
 int
 main ()
 {
@@ -3051,7 +3064,7 @@ if test -z "$SKIP_GTK2"; then
   if test "x$PKG_CONFIG" != "xno"; then
     dnl First try finding version 2.2.0 or later.  The 2.0.x series has
     dnl problems (bold fonts, --remote doesn't work).
-    AM_PATH_GTK(2.2.0,
+    AM_PATH_GTK(2.4.0,
 		[GUI_LIB_LOC="$GTK_LIBDIR"
 		 GTK_LIBNAME="$GTK_LIBS"
 		 GUI_INC_LOC="$GTK_CPPFLAGS"])
