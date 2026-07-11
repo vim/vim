@@ -425,12 +425,40 @@ pum_under_menu(int row, int col, int only_redrawing)
 						+ (pum_shadow ? 2 : 0);
     int	extra_above = pum_border;
     int	extra_below = pum_border + (pum_shadow ? 1 : 0);
+    int	top = pum_row - extra_above;
+    int	bot = pum_row + pum_height + extra_below;
+    int	left = pum_col - 1 - extra_left;
+    int	right = pum_col + pum_width + pum_scrollbar + extra_right;
 
-    return (!only_redrawing || pum_will_redraw)
-	    && row >= pum_row - extra_above
-	    && row < pum_row + pum_height + extra_below
-	    && col >= pum_col - 1 - extra_left
-	    && col < pum_col + pum_width + pum_scrollbar + extra_right;
+    if (!((!only_redrawing || pum_will_redraw)
+	    && row >= top && row < bot && col >= left && col < right))
+	return FALSE;
+
+    if (pum_shadow)
+    {
+	// The shadow recolors the cells underneath.  When the menu will be
+	// redrawn, leave the shadow cells unprotected so the window refreshes
+	// them first, clearing stale content left by a larger menu.
+	if (only_redrawing)
+	{
+	    if (col >= right - 2 || row == bot - 1)
+		return FALSE;
+	}
+	else
+	{
+	    // Menu stays as-is: exclude only the corner cells the shadow never
+	    // draws.
+	    int	    right_margin, left_margin, left_padding;
+
+	    compute_margins(&right_margin, &left_margin, &left_padding);
+	    if (row == top && col >= right - 2)
+		return FALSE;
+	    if (row == bot - 1 && col < pum_col + 2 - left_padding - pum_border
+		    - left_margin)
+		return FALSE;
+	}
+    }
+    return TRUE;
 }
 
 /*
