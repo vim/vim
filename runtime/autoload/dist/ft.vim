@@ -3338,6 +3338,7 @@ const ft_from_name = {
   "meson.options": "meson",
   "meson_options.txt": "meson",
   # msmtp
+  "msmtprc": "msmtp",
   ".msmtprc": "msmtp",
   # Mrxvtrc
   "mrxvtrc": "mrxvtrc",
