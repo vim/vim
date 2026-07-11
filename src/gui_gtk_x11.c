@@ -6204,36 +6204,25 @@ gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
 }
 
 #if GTK_CHECK_VERSION(3,0,0)
-static struct {
-    int left;
-    int top;
-    int right;
-    int bottom;
-    bool active;
-} dirty_rect = {0, 0, 0, 0, false};
+static cairo_region_t *dirty_region = NULL;
 
     static void
 queue_draw_area(int x, int y, int width, int height)
 {
+    cairo_rectangle_int_t rect;
+
     if (width <= 0 || height <= 0 || gui.drawarea == NULL)
 	return;
-    if (!dirty_rect.active)
-    {
-	dirty_rect.left = x;
-	dirty_rect.top = y;
-	dirty_rect.right = x + width;
-	dirty_rect.bottom = y + height;
-	dirty_rect.active = true;
-	return;
-    }
+
+    rect.x = x;
+    rect.y = y;
+    rect.width = width;
+    rect.height = height;
+
+    if (dirty_region == NULL)
+	dirty_region = cairo_region_create_rectangle(&rect);
     else
-    {
-	// Expand to append further changes
-	if (x < dirty_rect.left) dirty_rect.left = x;
-	if (y < dirty_rect.top) dirty_rect.top = y;
-	if (x + width > dirty_rect.right) dirty_rect.right = x + width;
-	if (y + height > dirty_rect.bottom) dirty_rect.bottom = y + height;
-    }
+	cairo_region_union_rectangle(dirty_region, &rect);
 }
 #endif
 
@@ -6489,8 +6478,8 @@ skipitall:
 
 #if GTK_CHECK_VERSION(3,0,0)
     cairo_destroy(cr);
-    queue_draw_area(area.x, area.y,
-	    area.width, area.height);
+    queue_draw_area(FILL_X(col), FILL_Y(row),
+	    column_offset * gui.char_width + 1, gui.char_height);
 #else
     gdk_gc_set_clip_rectangle(gui.text_gc, NULL);
 #endif
@@ -6933,15 +6922,13 @@ gui_mch_flush(void)
 #if GTK_CHECK_VERSION(2,4,0)
        gdk_display_flush(gtk_widget_get_display(gui.mainwin));
        return;
-#else
-    if (dirty_rect.active && gui.drawarea != NULL)
-    {
-	dirty_rect.active = false;
-	gtk_widget_queue_draw_area(gui.drawarea, dirty_rect.left,
-		dirty_rect.top, (dirty_rect.right - dirty_rect.left),
-		(dirty_rect.bottom - dirty_rect.top));
-    }
 #endif
+    if (dirty_region != NULL && gui.drawarea != NULL)
+    {
+	gtk_widget_queue_draw_region(gui.drawarea, dirty_region);
+	cairo_region_destroy(dirty_region);
+	dirty_region = NULL;
+    }
 }
 
 /*
