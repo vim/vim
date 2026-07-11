@@ -4625,15 +4625,15 @@ func Test_conceallevel_three_queued_horizontal_redraw()
           \ map(range(1, 7), 'term_getline(buf, v:val)'))})
 
     for [motion, col, cursor] in [['l', 1, [3, 2]], ['h', 3, [3, 1]]]
-      call term_sendkeys(buf, ":call cursor(3, " .. col .. ")\<CR>"
-            \ .. repeat("\<C-L>", 3))
-      call WaitForAssert({-> assert_equal(expected,
-            \ map(range(1, 7), 'term_getline(buf, v:val)'))})
-      call term_sendkeys(buf, motion .. 'g')
-      call TermWait(buf, 150)
+      " Queue the motion inside Vim so that char_avail() reliably sees the
+      " following character.  A PTY may deliver separately written or even
+      " adjacent characters one at a time.
+      call term_sendkeys(buf, ":call cursor(3, " .. col .. ")"
+            \ .. " | call feedkeys('" .. motion .. "g', 't')\<CR>")
+      call WaitForAssert({-> assert_equal(cursor,
+            \ term_getcursor(buf)[0:1])})
       call assert_equal(expected,
             \ map(range(1, 7), 'term_getline(buf, v:val)'), motion)
-      call assert_equal(cursor, term_getcursor(buf)[0:1], motion)
       call term_sendkeys(buf, "\<Esc>")
       call TermWait(buf, 50)
     endfor
