@@ -6584,6 +6584,20 @@ syntax_present(win_T *win)
 	    || win->w_s->b_keywtab_ic.ht_used > 0);
 }
 
+    bool
+syntax_has_cursor_pattern(win_T *wp)
+{
+    int i;
+
+    for (i = 0; i < wp->w_s->b_syn_patterns.ga_len; ++i)
+	if (SYN_ITEMS(wp->w_s)[i].sp_pattern != NULL
+		&& strstr((char *)SYN_ITEMS(wp->w_s)[i].sp_pattern,
+								"%#") != NULL)
+	    return true;
+    return wp->w_s->b_syn_linecont_pat != NULL
+	&& strstr((char *)wp->w_s->b_syn_linecont_pat, "%#") != NULL;
+}
+
 
 static enum
 {

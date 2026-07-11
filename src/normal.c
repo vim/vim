@@ -914,6 +914,9 @@ normal_cmd(
     }
 
     State = MODE_NORMAL;
+#ifdef FEAT_CONCEAL
+    curwin->w_flags &= ~WFLAG_CONCEAL_NO_REDRAW;
+#endif
 
     if (ca.nchar == ESC || ca.extra_char == ESC)
     {
@@ -5373,6 +5376,81 @@ nv_scroll(cmdarg_T *cap)
     beginline(BL_SOL | BL_FIX);
 }
 
+#if defined(FEAT_CONCEAL) \
+	&& (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP))
+    static bool
+nv_horiz_cursor_pattern(void)
+{
+# ifdef FEAT_SEARCH_EXTRA
+    matchitem_T *item;
+
+    for (item = curwin->w_match_head; item != NULL; item = item->mit_next)
+	if (item->mit_pattern != NULL
+		&& strstr((char *)item->mit_pattern, "%#") != NULL)
+	    return true;
+# endif
+# ifdef FEAT_SYN_HL
+    if (syntax_has_cursor_pattern(curwin))
+	return true;
+# endif
+    return false;
+}
+
+    static void
+nv_horiz_conceal_no_redraw(cmdarg_T *cap, linenr_T old_lnum, long n)
+{
+    if (cap->count1 != 1 || n != 0
+	    || (cap->cmdchar != 'h' && cap->cmdchar != 'l')
+	    || !KeyTyped || !char_avail()
+	    || old_lnum != curwin->w_cursor.lnum
+	    || cap->oap->op_type != OP_NOP || VIsual_active || virtual_active()
+	    || restart_edit != 0 || restart_VIsual_select != 0
+	    || !curwin->w_p_wrap || curwin->w_p_cole != 3)
+	return;
+    if (!conceal_cursor_line(curwin))
+	return;
+    if (need_cursor_line_redraw || has_cursormoved()
+	    || nv_horiz_cursor_pattern())
+	goto redraw;
+# ifdef FEAT_DIFF
+    if (curwin->w_p_diff)
+	goto redraw;
+# endif
+# ifdef FEAT_FOLDING
+    if (hasAnyFolding(curwin))
+	goto redraw;
+# endif
+# ifdef FEAT_SEARCH_EXTRA
+    if (highlight_match || (p_hls && !no_hlsearch))
+	goto redraw;
+# endif
+# ifdef FEAT_PROP_POPUP
+    if (popup_visible || curbuf->b_has_textprop)
+	goto redraw;
+# endif
+# ifdef FEAT_SYN_HL
+    if (curwin->w_p_cuc
+	    || (curwin->w_p_cul
+			&& (curwin->w_p_culopt_flags & CULOPT_SCRLINE)))
+	goto redraw;
+# endif
+    // Locate the cursor exactly before suppressing the current-line redraw.
+    if (update_conceal_cursor_screenpos(curwin) == FAIL
+	    || curwin->w_wrow < 0 || curwin->w_wrow >= curwin->w_height
+	    || curwin->w_wcol < 0 || curwin->w_wcol >= curwin->w_width)
+	goto redraw;
+
+    curwin->w_valid_cursor = curwin->w_cursor;
+    curwin->w_valid_leftcol = curwin->w_leftcol;
+    curwin->w_valid_skipcol = curwin->w_skipcol;
+    curwin->w_flags |= WFLAG_CONCEAL_NO_REDRAW;
+    return;
+
+redraw:
+    need_cursor_line_redraw = TRUE;
+}
+#endif
+
 /*
  * Cursor right commands.
  */
@@ -5381,6 +5459,10 @@ nv_right(cmdarg_T *cap)
 {
     long	n;
     int		past_line;
+#if defined(FEAT_CONCEAL) \
+	&& (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP))
+    linenr_T	old_lnum = curwin->w_cursor.lnum;
+#endif
 
     if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
     {
@@ -5466,6 +5548,10 @@ nv_right(cmdarg_T *cap)
 					       && cap->oap->op_type == OP_NOP)
 	foldOpenCursor();
 #endif
+#if defined(FEAT_CONCEAL) \
+	&& (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP))
+    nv_horiz_conceal_no_redraw(cap, old_lnum, n);
+#endif
 }
 
 /*
@@ -5477,6 +5563,10 @@ nv_right(cmdarg_T *cap)
 nv_left(cmdarg_T *cap)
 {
     long	n;
+#if defined(FEAT_CONCEAL) \
+	&& (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP))
+    linenr_T	old_lnum = curwin->w_cursor.lnum;
+#endif
 
     if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
     {
@@ -5540,6 +5630,10 @@ nv_left(cmdarg_T *cap)
     if (n != cap->count1 && (fdo_flags & FDO_HOR) && KeyTyped
 					       && cap->oap->op_type == OP_NOP)
 	foldOpenCursor();
+#endif
+#if defined(FEAT_CONCEAL) \
+	&& (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP))
+    nv_horiz_conceal_no_redraw(cap, old_lnum, n);
 #endif
 }
 

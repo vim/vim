@@ -4592,6 +4592,58 @@ func Test_conceallevel_three_cursor_moved_redraw()
   endtry
 endfunc
 
+func Test_conceallevel_three_queued_horizontal_redraw()
+  CheckRunVimInTerminal
+
+  let code =<< trim [CODE]
+    set wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+    set showbreak=+\  noshowcmd scrolloff=0 signcolumn=no
+    let line = 'a`a`a`a`' .. repeat('a', &columns - 15)
+          \ .. ' b`b`' .. repeat('b', &columns - 10) .. ' cccccc'
+    call setline(1, [repeat('x', &columns), '', line,
+          \ 'BELOW ONE', 'BELOW TWO'])
+    syntax region CodeSpan matchgroup=Delimiter start=/\z(`\+\)/
+          \ end=/\z1/ concealends
+    call cursor(3, 1)
+    redraw!
+  [CODE]
+  let script = 'XTest_conceallevel_three_queued_horizontal_redraw'
+  call writefile(code, script, 'D')
+
+  let expected = [repeat('x', 75), '',
+        \ repeat('a', 64) .. ' ' .. repeat('b', 10),
+        \ '+ ' .. repeat('b', 57) .. ' cccccc',
+        \ 'BELOW ONE', 'BELOW TWO', '~' .. repeat(' ', 74)]
+
+  let buf = 0
+  try
+    let buf = RunVimInTerminal('-S ' .. script,
+          \ #{rows: 8, cols: 75, wait_for_ruler: 0})
+    call TermWait(buf, 100)
+    call term_sendkeys(buf, repeat("\<C-L>", 3))
+    call WaitForAssert({-> assert_equal(expected,
+          \ map(range(1, 7), 'term_getline(buf, v:val)'))})
+
+    for [motion, col, cursor] in [['l', 1, [3, 2]], ['h', 3, [3, 1]]]
+      call term_sendkeys(buf, ":call cursor(3, " .. col .. ")\<CR>"
+            \ .. repeat("\<C-L>", 3))
+      call WaitForAssert({-> assert_equal(expected,
+            \ map(range(1, 7), 'term_getline(buf, v:val)'))})
+      call term_sendkeys(buf, motion .. 'g')
+      call TermWait(buf, 150)
+      call assert_equal(expected,
+            \ map(range(1, 7), 'term_getline(buf, v:val)'), motion)
+      call assert_equal(cursor, term_getcursor(buf)[0:1], motion)
+      call term_sendkeys(buf, "\<Esc>")
+      call TermWait(buf, 50)
+    endfor
+  finally
+    if buf > 0
+      call StopVimInTerminal(buf)
+    endif
+  endtry
+endfunc
+
 func Test_conceallevel_three_open_above_redraw()
   CheckRunVimInTerminal
 
