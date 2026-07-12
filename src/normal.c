@@ -2639,7 +2639,7 @@ nv_screenline_map_clear(nv_screenline_map_T *map)
     map->borrowed = false;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+# if defined(EXITFREE) || defined(PROTO)
     void
 free_nv_screenline_cache(void)
 {
@@ -2652,7 +2652,7 @@ free_nv_screenline_cache(void)
     CLEAR_FIELD(nv_screenline_cache);
     CLEAR_FIELD(nv_screenline_base_cache);
 }
-#endif
+# endif
 
     static nv_screenline_cell_T *
 nv_screenline_map_cells(nv_screenline_map_T *map)

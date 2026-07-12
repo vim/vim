@@ -1711,18 +1711,18 @@ conceal_screenpos_store(
 	ctx->ccol = ccol;
 	ctx->ecol = ecol;
 	ctx->found = true;
-# ifdef FEAT_RIGHTLEFT
+#  ifdef FEAT_RIGHTLEFT
 	// Conceal later in the buffer line shifts earlier cells in a rightleft
 	// line, so keep collecting until the whole line has been checked.
 	if (ctx->wp->w_p_rl)
 	    return OK;
-# endif
+#  endif
 	return NOTDONE;
     }
-# ifdef FEAT_RIGHTLEFT
+#  ifdef FEAT_RIGHTLEFT
     if (ctx->wp->w_p_rl && ctx->found)
 	return OK;
-# endif
+#  endif
     if (end_col < ctx->pos->col)
     {
 	ctx->before_col = col;
