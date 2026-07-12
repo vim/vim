@@ -1961,7 +1961,8 @@ mouse_conceal_col_store(
 	return OK;
 
     width = ctx->wp->w_width - win_col_off(ctx->wp) + win_col_off2(ctx->wp);
-    if (width > 0 && cursor_col >= ctx->wp->w_width)
+    if (ctx->wp->w_p_wrap && width > 0
+					   && cursor_col >= ctx->wp->w_width)
     {
 	rowoff = (cursor_col - ctx->wp->w_width) / width + 1;
 	row += rowoff;
@@ -1996,14 +1997,14 @@ mouse_conceal_col(
     mouse_conceal_col_T ctx;
     bool		has_conceal = false;
 
-    if (wp->w_p_cole != 3)
+    if (!plines_win_may_conceal(wp, lnum))
 	return false;
 
     CLEAR_FIELD(ctx);
     ctx.wp = wp;
     ctx.row = row;
     ctx.col = col;
-    if (win_line_conceal_screenline_iter(wp, lnum,
+    if (win_line_conceal_iter(wp, lnum,
 		    mouse_conceal_col_store, &ctx, &has_conceal, NULL) == FAIL
 	    || !has_conceal
 	    || !ctx.found)

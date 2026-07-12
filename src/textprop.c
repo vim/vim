@@ -17,6 +17,7 @@
 
 static void um_store_changes(unpacked_memline_T *um);
 static unsigned long text_prop_change_tick = 0;
+static unsigned long text_prop_type_change_tick = 0;
 
 /*
  * Text property changes do not update b:changedtick.  Keep a separate tick so
@@ -37,13 +38,18 @@ text_prop_type_changed(buf_T *buf)
     if (buf != NULL)
 	text_prop_changed(buf);
     else
-    {
-	buf_T		*bp;
-	unsigned long	tick = ++text_prop_change_tick;
+	++text_prop_type_change_tick;
+}
 
-	FOR_ALL_BUFFERS(bp)
-	    bp->b_textprop_change_tick = tick;
-    }
+/*
+ * Return the state that affects text-property screen geometry for "buf".
+ */
+    hash_T
+text_prop_state_hash(buf_T *buf)
+{
+    hash_T hash = (hash_T)buf->b_textprop_change_tick;
+
+    return hash * 101 + (hash_T)text_prop_type_change_tick;
 }
 
 /*

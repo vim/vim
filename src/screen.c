@@ -103,6 +103,7 @@ conceal_cursor_wcol_valid(void)
 						   == (VALID_WROW|VALID_WCOL)
 	&& EQUAL_POS(curwin->w_conceal_wcol_pos, curwin->w_cursor)
 	&& curwin->w_conceal_wcol_width == curwin->w_width
+	&& curwin->w_conceal_wcol_state == conceal_wcol_state_hash(curwin)
 	&& curwin->w_valid_leftcol == curwin->w_leftcol
 	&& curwin->w_valid_skipcol == curwin->w_skipcol;
 }

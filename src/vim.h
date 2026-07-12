@@ -2525,6 +2525,7 @@ typedef char *(*opt_did_set_cb_T)(optset_T *args);
  */
 typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***matches);
 
+// Return OK to continue, NOTDONE to stop, or FAIL on error.
 typedef int (*conceal_vcol_cb_T)(colnr_T col, long vcol, int cells, void *ctx);
 // Return OK to continue, NOTDONE to stop, or FAIL on error.
 typedef int (*conceal_screenline_cb_T)(colnr_T col, colnr_T end_col, int row,

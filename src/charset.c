@@ -127,7 +127,9 @@ buf_init_chartab(
      * Init word char flags all to FALSE
      */
     CLEAR_FIELD(buf->b_chartab);
+#ifdef FEAT_CONCEAL
     ++buf->b_chartab_change_tick;
+#endif
     if (enc_dbcs != 0)
 	for (c = 0; c < 256; ++c)
 	{

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Jul 08
+*options.txt*	For Vim version 9.2.  Last change: 2026 Jul 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1361,7 +1361,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	For zero-width text concealed by 'conceallevel' set to 3, v:beval_col
 	and v:beval_text use the character at the drawn screen cell, when
 	|conceal| is active for the window and line.  This respects rules such
-	as 'concealcursor' and Visual mode.
+	as 'concealcursor' and Visual mode.  Inline virtual text has no buffer
+	byte and may resolve to adjacent buffer text.
 
 	Instead of showing a balloon, which is limited to plain text, consider
 	using a popup window, see |popup_beval_example|.  A popup window can

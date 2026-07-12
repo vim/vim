@@ -668,9 +668,13 @@ func Test_conceallevel_three_getmousepos_after_conceal()
 
   let target_col = stridx(line, 'target') + 1
   let pos = screenpos(0, 1, target_col)
-  call assert_true(pos.row > 0)
+  let [winrow, wincol] = win_screenpos(0)
+  call assert_equal([1, 26],
+        \ [pos.row - winrow + 1, pos.curscol - wincol + 1])
 
-  call test_setmouse(pos.row, pos.curscol)
+  " Use the independently expected cell, not the forward screenpos() result,
+  " to verify the reverse mouse mapping.
+  call test_setmouse(winrow, wincol + 25)
   let mousepos = getmousepos()
   call assert_equal(1, mousepos.line)
   call assert_equal(target_col, mousepos.column)
@@ -1749,24 +1753,7 @@ func Test_conceallevel_three_scroll_wheel()
   set mouse&
 endfunc
 
-func s:ConceallevelThreeCursorCell(bufcol) abort
-  call cursor(1, a:bufcol)
-  redraw!
-
-  let [win_row, win_col] = win_screenpos(0)
-  let pos = screenpos(0, 1, a:bufcol)
-  call assert_true(pos.row > 0)
-
-  let cell = [pos.row - win_row + 1, pos.curscol - win_col + 1]
-  call assert_equal(cell, [winline(), wincol()])
-  return cell
-endfunc
-
-func s:ConceallevelThreeScreenlineMoveCell(bufcol) abort
-  call cursor(1, a:bufcol)
-  redraw!
-  normal! gk
-
+func s:CurrentScreenCell() abort
   let [win_row, win_col] = win_screenpos(0)
   let pos = screenpos(0, line('.'), col('.'))
   call assert_true(pos.row > 0)
@@ -1774,6 +1761,27 @@ func s:ConceallevelThreeScreenlineMoveCell(bufcol) abort
   let cell = [pos.row - win_row + 1, pos.curscol - win_col + 1]
   call assert_equal(cell, [winline(), wincol()])
   return cell
+endfunc
+
+func s:FileEndsWith(file, line) abort
+  return filereadable(a:file) && readfile(a:file)[-1 : ] == [a:line]
+endfunc
+
+func s:FileEquals(file, lines) abort
+  return filereadable(a:file) && readfile(a:file) == a:lines
+endfunc
+
+func s:ConceallevelThreeCursorCell(bufcol) abort
+  call cursor(1, a:bufcol)
+  redraw!
+  return s:CurrentScreenCell()
+endfunc
+
+func s:ConceallevelThreeScreenlineMoveCell(bufcol) abort
+  call cursor(1, a:bufcol)
+  redraw!
+  normal! gk
+  return s:CurrentScreenCell()
 endfunc
 
 func Test_conceallevel_three_option_invalidation()
@@ -1905,6 +1913,16 @@ func Test_conceallevel_three_syntax_match_cache_invalidation()
     call assert_equal([1, 42, 2, 1],
           \ [line('.'), col('.'), winline(), wincol()])
 
+    " Exercise the case-insensitive keyword table as well.
+    syntax clear Hidden
+    syntax case ignore
+    syntax keyword Hidden x conceal
+    call cursor(1, 2)
+    normal! gj
+    call assert_equal([1, 42, 2, 1],
+          \ [line('.'), col('.'), winline(), wincol()])
+    syntax case match
+
     " Replacing a pattern can leave the pattern count unchanged.
     syntax clear Hidden
     syntax match Hidden /X/ conceal
@@ -1916,7 +1934,36 @@ func Test_conceallevel_three_syntax_match_cache_invalidation()
     syntax match Hidden /Z/ conceal
     redraw!
     call assert_equal(5, screenpos(0, 2, 1).row)
+
+    " A syntax replacement with the same pattern count must invalidate both
+    " the rendered-cell map and a cursor position saved by a previous motion.
+    vertical resize 12
+    call setline(1, 'XXXXabcdefghYYYYijklmnop')
+    syntax clear Hidden
+    syntax match Hidden /XXXX/ conceal
+    call cursor(1, 5)
+    normal! gj
+    call assert_equal([17, 2, 1], [col('.'), winline(), wincol()])
+
+    syntax clear Hidden
+    syntax match Hidden /YYY/ conceal
+    redraw!
+    let [winrow, wincol] = win_screenpos(0)
+    let pos = screenpos(0, line('.'), col('.'))
+    call assert_equal([2, 2],
+          \ [pos.row - winrow + 1, pos.curscol - wincol + 1])
+    call assert_equal([2, 2], [winline(), wincol()])
+    call cursor(1, 5)
+    normal! gj
+    call assert_equal(20, col('.'))
+
+    call cursor(1, 5)
+    syntax clear Hidden
+    syntax match Hidden /YYYY/ conceal
+    normal! gj
+    call assert_equal(21, col('.'))
   finally
+    syntax case match
     syntax clear Hidden
     call CloseWindow()
   endtry
@@ -2085,8 +2132,10 @@ func Test_conceallevel_three_textprop_map_cache_invalidation()
 
   let global_type = 'ConcealCacheText'
   let local_type = 'ConcealCacheLocalText'
+  let scratch_buf = -1
 
   call NewWindow(8, 20)
+  let conceal_buf = bufnr()
   try
     setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
     syntax match Hidden /^X/ conceal
@@ -2124,7 +2173,13 @@ func Test_conceallevel_three_textprop_map_cache_invalidation()
     call cursor(1, 2)
     normal! gj
     call assert_equal([22, 2, 11], [col('.'), winline(), wincol()])
+
+    " A global type change must invalidate the cached state without walking
+    " every buffer, including when the affected buffer is not current.
+    hide enew
+    let scratch_buf = bufnr()
     call prop_type_delete(global_type)
+    execute 'buffer ' .. conceal_buf
     call cursor(1, 2)
     normal! gj
     call assert_equal([22, 2, 1], [col('.'), winline(), wincol()])
@@ -2143,6 +2198,9 @@ func Test_conceallevel_three_textprop_map_cache_invalidation()
     silent! call prop_clear(1)
     silent! call prop_type_delete(global_type)
     silent! call prop_type_delete(local_type, #{bufnr: bufnr()})
+    if scratch_buf > 0 && bufexists(scratch_buf)
+      execute 'bwipe! ' .. scratch_buf
+    endif
     syntax clear Hidden
     call CloseWindow()
   endtry
@@ -3400,12 +3458,12 @@ func Test_conceallevel_three_completeopt_popup_placement()
       call assert_equal(before.row, after.row, case.opt)
       call assert_equal(before.col, after.col, case.opt)
 
+      call delete(
+            \ 'XTest_conceallevel_three_completeopt_popup_placement_state')
       call term_sendkeys(buf, "\<F6>")
-      call TermWait(buf, 100)
-      call assert_equal(['1', string(case.selected)],
-            \ readfile(
-            \ 'XTest_conceallevel_three_completeopt_popup_placement_state'),
-            \ case.opt)
+      call WaitForAssert({-> assert_true(s:FileEquals(
+            \ 'XTest_conceallevel_three_completeopt_popup_placement_state',
+            \ ['1', string(case.selected)]), case.opt)})
     endfor
   finally
     if buf > 0
@@ -3447,7 +3505,7 @@ func Test_conceallevel_three_complete_anchor_width_cases()
       redraw
       let anchor_col = stridx(getline(1), 'fo') + 1
       let pos = screenpos(0, 1, anchor_col)
-      call writefile([string(pos.row), string(pos.col)],
+      call writefile([string(pos.row), string(pos.col), 'done'],
             \ 'XTest_conceallevel_three_complete_anchor_width_cases_state')
     endfunc
   [CODE]
@@ -3462,11 +3520,15 @@ func Test_conceallevel_three_complete_anchor_width_cases()
     call TermWait(buf, 100)
 
     for name in ['delimiters', 'tab', 'doublewidth']
+      call delete(
+            \ 'XTest_conceallevel_three_complete_anchor_width_cases_state')
       call term_sendkeys(buf, "\<Esc>:call SetupCompleteAnchorCase('"
             \ .. name .. "')\<CR>")
-      call TermWait(buf, 100)
+      call WaitForAssert({-> assert_true(s:FileEndsWith(
+            \ 'XTest_conceallevel_three_complete_anchor_width_cases_state',
+            \ 'done'))})
       let anchor = map(readfile(
-            \ 'XTest_conceallevel_three_complete_anchor_width_cases_state'),
+            \ 'XTest_conceallevel_three_complete_anchor_width_cases_state')[:1],
             \ 'str2nr(v:val)')
       call assert_true(anchor[0] > 0, name)
 
@@ -3509,9 +3571,9 @@ func Test_conceallevel_three_complete_anchor_hidden_edit()
       let cur = getcurpos()
       call setline('.', substitute(getline('.'), 'XX fo', 'XXXX fo', ''))
       call cursor(cur[1], cur[2] + 2)
+      redraw
       call writefile([getline('.')],
             \ 'XTest_conceallevel_three_complete_anchor_hidden_edit_state')
-      redraw
     endfunc
 
     inoremap <F5> <Cmd>call AddHiddenBeforeComplete()<CR>
@@ -3531,13 +3593,15 @@ func Test_conceallevel_three_complete_anchor_hidden_edit()
     let before = s:TermTextAttrs(buf, 'foobar', 1)
     call assert_true(before.row > 0)
 
+    call delete('XTest_conceallevel_three_complete_anchor_hidden_edit_state')
     call term_sendkeys(buf, "\<F5>")
-    call TermWait(buf, 100)
+    let expected = [repeat('a', 18) .. ' XXXX fo']
+    call WaitForAssert({-> assert_true(s:FileEquals(
+          \ 'XTest_conceallevel_three_complete_anchor_hidden_edit_state',
+          \ expected))})
     let after = s:TermTextAttrs(buf, 'foobar', 1)
     call assert_equal(before.row, after.row)
     call assert_equal(before.col, after.col)
-    call assert_equal([repeat('a', 18) .. ' XXXX fo'],
-          \ readfile('XTest_conceallevel_three_complete_anchor_hidden_edit_state'))
   finally
     if buf > 0
       call term_sendkeys(buf, "\<Esc>")
@@ -4653,6 +4717,43 @@ func Test_conceallevel_three_wrap_matchadd_multiline()
   endtry
 endfunc
 
+func Test_conceallevel_three_wrap_matchaddpos()
+  let matchid = -1
+  call NewWindow(6, 4)
+  try
+    setlocal wrap conceallevel=3 concealcursor=n signcolumn=no nonumber
+
+    call setline(1, repeat('X ', 12))
+    let positions = map(range(12), {_, i -> [1, i * 2 + 1]})
+
+    " Prime the no-source path before adding a position-only match.
+    call cursor(1, 2)
+    normal! gj
+    call assert_equal([1, 6, 2, 1],
+          \ [line('.'), col('.'), winline(), wincol()])
+
+    let matchid = matchaddpos('Conceal', positions, 10, -1,
+          \ #{conceal: ''})
+    call cursor(1, 2)
+    normal! gj
+    call assert_equal([1, 10, 2, 1],
+          \ [line('.'), col('.'), winline(), wincol()])
+
+    call matchdelete(matchid)
+    let matchid = -1
+    call cursor(1, 2)
+    normal! gj
+    call assert_equal([1, 6, 2, 1],
+          \ [line('.'), col('.'), winline(), wincol()])
+
+  finally
+    if matchid > 0
+      silent! call matchdelete(matchid)
+    endif
+    call CloseWindow()
+  endtry
+endfunc
+
 func Test_conceallevel_three_wrap_visible_screenpos()
   call NewWindow(6, 10)
   try
@@ -4663,6 +4764,20 @@ func Test_conceallevel_three_wrap_visible_screenpos()
     redraw
     call assert_equal(#{col: 5, row: 2, endcol: 5, curscol: 5},
           \ screenpos(0, 1, 20))
+
+    call setline(1, repeat('X', 5) .. repeat('Y', 95))
+    redraw
+    let offscreen = #{col: 0, row: 0, endcol: 0, curscol: 0}
+    call assert_equal(offscreen, screenpos(0, 1, 100))
+
+    " Also reject the nearest visible cell when the requested byte itself is
+    " concealed beyond the bottom of the window.
+    call setline(1, repeat('Y', 95) .. repeat('X', 5))
+    redraw
+    call assert_equal(offscreen, screenpos(0, 1, 100))
+
+    setlocal nowrap
+    call assert_equal(offscreen, screenpos(0, 1, 100))
 
   finally
     syntax clear test
@@ -4714,14 +4829,75 @@ func s:TerminalConcealMotionState(buf, statefile) abort
         \ .. " screenpos(0, line('.'), col('.'))]"
   call delete(a:statefile)
   call term_sendkeys(a:buf,
-        \ "\<Esc>:\<C-U>call writefile([string(" .. expr .. ")], "
+        \ "\<Esc>:\<C-U>call writefile([string(" .. expr .. "), 'done'], "
         \ .. string(a:statefile) .. ")\<CR>")
-  call TermWait(a:buf, 100)
-  call WaitForAssert({-> assert_true(filereadable(a:statefile))})
+  call WaitForAssert({-> assert_true(s:FileEndsWith(a:statefile, 'done'))})
   let state = eval(readfile(a:statefile)[0])
   return [state[0], state[1], state[2], state[3], state[4],
         \ termcursor[0], termcursor[1], state[5].col, state[5].row,
         \ state[5].curscol]
+endfunc
+
+func Test_conceallevel_three_queued_screenline_motion()
+  call NewWindow(10, 20)
+  try
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=n
+          \ signcolumn=no nonumber
+    syntax match Hidden /X/ conceal
+    call setline(1, repeat('X ', 100))
+    call cursor(1, 2)
+    redraw!
+
+    call feedkeys('gjgjgjgkgk', 'xt')
+    redraw!
+    call assert_equal([1, 42, 2, 1],
+          \ [line('.'), col('.'), winline(), wincol()])
+
+  finally
+    syntax clear Hidden
+    call CloseWindow()
+  endtry
+endfunc
+
+func Test_conceallevel_three_queued_scroll_motion()
+  call NewWindow(10, 50)
+  try
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber scrolloff=0
+    syntax match Hidden /{{[^}]*}}/ conceal
+    let body = repeat('alpha beta gamma delta ', 3)
+          \ .. '{{hidden words hidden words}} '
+          \ .. repeat('epsilon zeta eta theta ', 3)
+    call setline(1, map(range(1, 80),
+          \ {_, n -> printf('%03d %s', n, body)}))
+
+    call cursor(1, 1)
+    redraw!
+    for _ in range(1, 15)
+      execute "normal! \<C-D>"
+    endfor
+    for _ in range(1, 7)
+      execute "normal! \<C-U>"
+    endfor
+    redraw!
+    let pos = screenpos(0, line('.'), col('.'))
+    let expected = [line('.'), col('.'), winsaveview().topline,
+          \ winsaveview().skipcol, winline(), wincol(), pos.row, pos.curscol]
+
+    call winrestview(#{lnum: 1, col: 0, topline: 1, leftcol: 0,
+          \ skipcol: 0, curswant: 0})
+    call cursor(1, 1)
+    redraw!
+    call feedkeys(repeat("\<C-D>", 15) .. repeat("\<C-U>", 7), 'xt')
+    redraw!
+    let pos = screenpos(0, line('.'), col('.'))
+    call assert_equal(expected,
+          \ [line('.'), col('.'), winsaveview().topline,
+          \ winsaveview().skipcol, winline(), wincol(), pos.row, pos.curscol])
+  finally
+    syntax clear Hidden
+    call CloseWindow()
+  endtry
 endfunc
 
 func Test_conceallevel_three_terminal_linebreak_screenline_motion()

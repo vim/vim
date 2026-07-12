@@ -10,6 +10,8 @@ void reset_synblock(win_T *wp);
 void ex_syntax(exarg_T *eap);
 void ex_ownsyntax(exarg_T *eap);
 int syntax_present(win_T *win);
+bool syntax_has_conceal(win_T *wp);
+bool conceal_pattern_is_dynamic(char_u *pattern);
 bool syntax_has_dynamic_pattern(win_T *wp);
 void reset_expand_highlight(void);
 void set_context_in_echohl_cmd(expand_T *xp, char_u *arg);

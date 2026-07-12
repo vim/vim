@@ -539,6 +539,26 @@ plines_win_nofill(
     return lines;
 }
 
+/*
+ * Return the wrapped height of a line whose displayed width is "col".
+ */
+    static int
+plines_win_col_height(win_T *wp, long col)
+{
+    int width;
+
+    if (wp->w_p_list && wp->w_lcs_chars.eol != NUL)
+	++col;
+    width = wp->w_width - win_col_off(wp);
+    if (width <= 0)
+	return 32000;
+    if (col <= width)
+	return 1;
+    col -= width;
+    width += win_col_off2(wp);
+    return (col + (width - 1)) / width + 1;
+}
+
 #if defined(FEAT_CONCEAL)
 # define PLINES_CONCEAL_HEIGHT_CACHE_SIZE 64
 
@@ -556,7 +576,7 @@ typedef struct
     colnr_T	skipcol;
     varnumber_T	changedtick;
 # ifdef FEAT_PROP_POPUP
-    unsigned long textprop_change_tick;
+    hash_T	textprop_state_hash;
 # endif
     pos_T	cursor;
     pos_T	visual;
@@ -596,10 +616,7 @@ typedef struct
 #  ifdef FEAT_RELTIME
     int		syn_slow;
 #  endif
-    hash_T	syn_option_hash;
-    int		syn_patterns_len;
-    int		syn_conceal;
-    unsigned long syn_change_tick;
+    hash_T	syn_state_hash;
 # endif
     int		height;
 } plines_conceal_height_cache_T;
@@ -608,8 +625,8 @@ static plines_conceal_height_cache_T
 	plines_conceal_height_cache[PLINES_CONCEAL_HEIGHT_CACHE_SIZE];
 static int plines_conceal_height_cache_next = 0;
 
-    static hash_T
-plines_conceal_vts_hash(win_T *wp UNUSED)
+    hash_T
+conceal_vts_hash(win_T *wp UNUSED)
 {
 # ifdef FEAT_VARTABS
     return wp->w_buffer->b_p_vts == NULL
@@ -619,8 +636,8 @@ plines_conceal_vts_hash(win_T *wp UNUSED)
 # endif
 }
 
-    static int
-plines_conceal_rightleft(win_T *wp UNUSED)
+    int
+conceal_rightleft(win_T *wp UNUSED)
 {
 # ifdef FEAT_RIGHTLEFT
     return wp->w_p_rl;
@@ -629,14 +646,14 @@ plines_conceal_rightleft(win_T *wp UNUSED)
 # endif
 }
 
-    static int
-plines_conceal_ambiwidth(void)
+    int
+conceal_ambiwidth(void)
 {
     return p_ambw == NULL ? 0 : *p_ambw;
 }
 
-    static hash_T
-plines_conceal_width_state_hash(void)
+    hash_T
+conceal_width_state_hash(void)
 {
     hash_T hash = (hash_T)get_chartab_generation();
 
@@ -647,17 +664,37 @@ plines_conceal_width_state_hash(void)
 
 # ifdef FEAT_SYN_HL
     hash_T
-conceal_syntax_option_hash(win_T *wp)
+conceal_syntax_state_hash(win_T *wp)
 {
     hash_T hash = (hash_T)wp->w_buffer->b_p_smc;
 
+    hash = hash * 101 + (hash_T)wp->w_s->b_syn_change_tick;
     if (wp->w_s->b_syn_isk == empty_option)
 	hash = hash * 101 + (hash_T)wp->w_buffer->b_chartab_change_tick;
-    else
-	hash = hash * 101 + (hash_T)wp->w_s->b_syn_change_tick;
     return hash;
 }
 # endif
+
+/*
+ * Return the mutable state that can make a conceal-aware cursor position
+ * stale without moving the cursor or changing the window width.
+ */
+    hash_T
+conceal_wcol_state_hash(win_T *wp)
+{
+    hash_T hash = (hash_T)CHANGEDTICK(wp->w_buffer);
+
+# ifdef FEAT_PROP_POPUP
+    hash = hash * 101 + text_prop_state_hash(wp->w_buffer);
+# endif
+# ifdef FEAT_SEARCH_EXTRA
+    hash = hash * 101 + (hash_T)wp->w_match_change_tick;
+# endif
+# ifdef FEAT_SYN_HL
+    hash = hash * 101 + conceal_syntax_state_hash(wp);
+# endif
+    return hash;
+}
 
     static bool
 plines_conceal_line_in_visual(win_T *wp, linenr_T lnum)
@@ -707,7 +744,7 @@ plines_conceal_height_cache_key(
     key->skipcol = is_topline ? wp->w_skipcol : 0;
     key->changedtick = CHANGEDTICK(wp->w_buffer);
 # ifdef FEAT_PROP_POPUP
-    key->textprop_change_tick = wp->w_buffer->b_textprop_change_tick;
+    key->textprop_state_hash = text_prop_state_hash(wp->w_buffer);
 # endif
     if (is_cursor_line || is_visual_line)
     {
@@ -731,15 +768,15 @@ plines_conceal_height_cache_key(
     key->botfill = wp->w_botfill;
 # endif
     key->tabstop = wp->w_buffer->b_p_ts;
-    key->rightleft = plines_conceal_rightleft(wp);
-    key->ambiwidth = plines_conceal_ambiwidth();
-    key->width_state_hash = plines_conceal_width_state_hash();
+    key->rightleft = conceal_rightleft(wp);
+    key->ambiwidth = conceal_ambiwidth();
+    key->width_state_hash = conceal_width_state_hash();
     key->showbreak_hash = hash_hash(get_showbreak_value(wp));
     key->breakat_hash = hash_hash(p_breakat);
     key->briopt_hash = hash_hash(wp->w_p_briopt);
     key->lcs_hash = hash_hash(wp->w_p_lcs);
     key->global_lcs_hash = hash_hash(p_lcs);
-    key->vts_hash = plines_conceal_vts_hash(wp);
+    key->vts_hash = conceal_vts_hash(wp);
     key->cocu_hash = hash_hash(wp->w_p_cocu);
 # ifdef FEAT_SEARCH_EXTRA
     key->match_change_tick = wp->w_match_change_tick;
@@ -750,15 +787,12 @@ plines_conceal_height_cache_key(
 #  ifdef FEAT_RELTIME
     key->syn_slow = wp->w_s->b_syn_slow;
 #  endif
-    key->syn_option_hash = conceal_syntax_option_hash(wp);
-    key->syn_patterns_len = wp->w_s->b_syn_patterns.ga_len;
-    key->syn_conceal = wp->w_s->b_syn_conceal;
-    key->syn_change_tick = wp->w_s->b_syn_change_tick;
+    key->syn_state_hash = conceal_syntax_state_hash(wp);
 # endif
 }
 
     static bool
-plines_conceal_height_cache_equal(
+conceal_height_cache_equal(
 	plines_conceal_height_cache_T *cache,
 	plines_conceal_height_cache_T *key)
 {
@@ -776,7 +810,7 @@ plines_conceal_height_cache_equal(
 	&& cache->skipcol == key->skipcol
 	&& cache->changedtick == key->changedtick
 # ifdef FEAT_PROP_POPUP
-	&& cache->textprop_change_tick == key->textprop_change_tick
+	&& cache->textprop_state_hash == key->textprop_state_hash
 # endif
 	&& EQUAL_POS(cache->cursor, key->cursor)
 	&& EQUAL_POS(cache->visual, key->visual)
@@ -816,23 +850,20 @@ plines_conceal_height_cache_equal(
 #  ifdef FEAT_RELTIME
 	&& cache->syn_slow == key->syn_slow
 #  endif
-	&& cache->syn_option_hash == key->syn_option_hash
-	&& cache->syn_patterns_len == key->syn_patterns_len
-	&& cache->syn_conceal == key->syn_conceal
-	&& cache->syn_change_tick == key->syn_change_tick
+	&& cache->syn_state_hash == key->syn_state_hash
 # endif
 	;
 }
 
     static bool
-plines_conceal_height_cache_get(
+conceal_height_cache_get(
 	plines_conceal_height_cache_T	*key,
 	int				*heightp)
 {
     int i;
 
     for (i = 0; i < PLINES_CONCEAL_HEIGHT_CACHE_SIZE; ++i)
-	if (plines_conceal_height_cache_equal(
+	if (conceal_height_cache_equal(
 				       &plines_conceal_height_cache[i], key))
 	{
 	    *heightp = plines_conceal_height_cache[i].height;
@@ -842,7 +873,7 @@ plines_conceal_height_cache_get(
 }
 
     static void
-plines_conceal_height_cache_store(
+conceal_height_cache_store(
 	plines_conceal_height_cache_T	*key,
 	int				height)
 {
@@ -861,73 +892,105 @@ plines_win_may_conceal(win_T *wp, linenr_T lnum)
 {
     if (wp->w_p_cole != 3)
 	return false;
+    if (!conceal_layout_may_change(wp))
+	return false;
     if (wp == curwin && lnum == wp->w_cursor.lnum
 						&& !conceal_cursor_line(wp))
 	return false;
     if (VIsual_active && wp->w_buffer == curwin->w_buffer
-				    && vim_strchr(wp->w_p_cocu, 'v') == NULL)
-    {
-	pos_T	*top, *bot;
-
-	if (LTOREQ_POS(curwin->w_cursor, VIsual))
-	{
-	    top = &curwin->w_cursor;
-	    bot = &VIsual;
-	}
-	else
-	{
-	    top = &VIsual;
-	    bot = &curwin->w_cursor;
-	}
-	if (lnum >= top->lnum && lnum <= bot->lnum)
-	    return false;
-    }
+	    && vim_strchr(wp->w_p_cocu, 'v') == NULL
+	    && plines_conceal_line_in_visual(wp, lnum))
+	return false;
 
     return true;
+}
+
+# ifdef FEAT_SEARCH_EXTRA
+    static void
+conceal_update_match_cache(win_T *wp)
+{
+    matchitem_T *item;
+    int conceal_id;
+
+    if (wp->w_match_dynamic_valid
+	    && wp->w_match_dynamic_tick == wp->w_match_change_tick)
+	return;
+
+    conceal_id = syn_name2id((char_u *)"Conceal");
+    wp->w_match_has_conceal = false;
+    wp->w_match_has_dynamic_pattern = false;
+    for (item = wp->w_match_head; item != NULL; item = item->mit_next)
+	if (item->mit_hlg_id == conceal_id)
+	{
+	    wp->w_match_has_conceal = true;
+	    if (item->mit_pattern != NULL
+			    && conceal_pattern_is_dynamic(item->mit_pattern))
+		wp->w_match_has_dynamic_pattern = true;
+	}
+    wp->w_match_dynamic_tick = wp->w_match_change_tick;
+    wp->w_match_dynamic_valid = true;
+}
+# endif
+
+    bool
+conceal_match_may_conceal(win_T *wp UNUSED)
+{
+# ifdef FEAT_SEARCH_EXTRA
+    conceal_update_match_cache(wp);
+    return wp->w_match_has_conceal;
+# else
+    return false;
+# endif
+}
+
+    bool
+conceal_layout_may_change(win_T *wp)
+{
+# ifdef FEAT_SEARCH_EXTRA
+    if (conceal_match_may_conceal(wp))
+	return true;
+# endif
+# ifdef FEAT_SYN_HL
+    if (syntax_has_conceal(wp))
+	return true;
+# endif
+    return false;
 }
 
     bool
 conceal_has_dynamic_pattern(win_T *wp)
 {
 # ifdef FEAT_SEARCH_EXTRA
-    if (!wp->w_match_dynamic_valid
-	    || wp->w_match_dynamic_tick != wp->w_match_change_tick)
-    {
-	matchitem_T *item;
-
-	wp->w_match_has_dynamic_pattern = false;
-	for (item = wp->w_match_head; item != NULL; item = item->mit_next)
-	    if (item->mit_pattern != NULL)
-	    {
-		char *pattern = (char *)item->mit_pattern;
-		char *cursor = pattern;
-
-		while ((cursor = strstr(cursor, "%#")) != NULL
-							&& cursor[2] == '=')
-		    cursor += 2;
-		if (cursor != NULL || strstr(pattern, "%V") != NULL
-					|| strstr(pattern, "%'") != NULL
-					|| strstr(pattern, "%<'") != NULL
-					|| strstr(pattern, "%>'") != NULL)
-		{
-		    wp->w_match_has_dynamic_pattern = true;
-		    break;
-		}
-	    }
-	wp->w_match_dynamic_tick = wp->w_match_change_tick;
-	wp->w_match_dynamic_valid = true;
-    }
+    conceal_update_match_cache(wp);
     if (wp->w_match_has_dynamic_pattern)
 	return true;
 # endif
 # ifdef FEAT_SYN_HL
-    if (wp->w_s->b_syn_dynamic_valid
-	    && wp->w_s->b_syn_dynamic_tick == wp->w_s->b_syn_change_tick)
-    {
-	if (wp->w_s->b_syn_has_dynamic_pattern)
-	    return true;
-    }
-    else if (syntax_has_dynamic_pattern(wp))
+    if (syntax_has_dynamic_pattern(wp))
+	return true;
+# endif
+    return false;
+}
+
+/*
+ * Return whether measuring concealed width alone may differ from win_line().
+ */
+    static bool
+conceal_height_needs_draw(win_T *wp, linenr_T lnum)
+{
+    if (wp->w_p_lbr || wp->w_p_bri || *get_showbreak_value(wp) != NUL
+				|| (lnum == wp->w_topline && wp->w_skipcol > 0))
+	return true;
+# ifdef FEAT_PROP_POPUP
+    if (wp->w_buffer->b_has_textprop)
+	return true;
+# endif
+# ifdef FEAT_RIGHTLEFT
+    if (wp->w_p_rl)
+	return true;
+# endif
+# ifdef FEAT_DIFF
+    if (wp->w_p_diff)
 	return true;
 # endif
     return false;
@@ -936,11 +999,22 @@ conceal_has_dynamic_pattern(win_T *wp)
 /*
  * Return the exact drawn height of "lnum" when it has concealed text, zero
  * when there is no concealment, or -1 when the drawn height cannot be checked.
- * Set "drawn_line" when win_line() was used, which may invalidate pointers
- * returned by ml_get_buf().
+ * Set "line_scanned" when syntax or drawing was used, which may invalidate
+ * pointers returned by ml_get_buf().  When a lightweight scan proves there is
+ * no concealment, return its measured width in "colp".
  */
+    static long
+plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
+				long *vcol_off_cop, bool *concealedp,
+				conceal_vcol_cb_T vcol_cb, void *vcol_cb_ctx,
+				bool *has_concealp);
+
     static int
-plines_win_conceal_height(win_T *wp, linenr_T lnum, bool *drawn_line)
+plines_win_conceal_height(
+	win_T		*wp,
+	linenr_T	lnum,
+	bool		*line_scanned,
+	long		*colp)
 {
     bool				has_conceal = false;
     bool				cacheable;
@@ -948,24 +1022,40 @@ plines_win_conceal_height(win_T *wp, linenr_T lnum, bool *drawn_line)
     int					rows = 0;
     plines_conceal_height_cache_T	key;
 
-    *drawn_line = false;
+    *line_scanned = false;
+    *colp = -1;
     if (!plines_win_may_conceal(wp, lnum))
 	return 0;
     cacheable = !conceal_has_dynamic_pattern(wp);
     if (cacheable)
     {
 	plines_conceal_height_cache_key(wp, lnum, &key);
-	if (plines_conceal_height_cache_get(&key, &height))
+	if (conceal_height_cache_get(&key, &height))
 	    return height;
     }
-    *drawn_line = true;
-    if (win_line_conceal_screenline_iter(wp, lnum,
+    *line_scanned = true;
+    if (conceal_height_needs_draw(wp, lnum))
+    {
+	if (win_line_conceal_iter(wp, lnum,
 		    NULL, NULL, &has_conceal, &rows) == FAIL)
-	return -1;
+	    return -1;
+	if (!has_conceal)
+	    rows = 0;
+	if (cacheable)
+	    conceal_height_cache_store(&key, rows);
+	return rows;
+    }
+    *colp = plines_win_col_conceal(wp, lnum, MAXCOL, NULL, NULL,
+						 NULL, NULL, &has_conceal);
     if (!has_conceal)
-	rows = 0;
+    {
+	if (cacheable)
+	    conceal_height_cache_store(&key, 0);
+	return 0;
+    }
+    rows = plines_win_col_height(wp, *colp);
     if (cacheable)
-	plines_conceal_height_cache_store(&key, rows);
+	conceal_height_cache_store(&key, rows);
     return rows;
 }
 
@@ -997,7 +1087,8 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
     bool	with_trailing = full_line;
 # endif
 # ifdef FEAT_SYN_HL
-    bool	has_syntax = syntax_present(wp) && !wp->w_s->b_syn_error
+    bool	has_syntax = syntax_has_conceal(wp) && syntax_present(wp)
+						    && !wp->w_s->b_syn_error
 #  ifdef SYN_TIME_LIMIT
 						&& !wp->w_s->b_syn_slow
 #  endif
@@ -1005,6 +1096,7 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
     conceal_cache_T syntax_cache;
 # endif
 # ifdef FEAT_SEARCH_EXTRA
+    bool	has_match_conceal;
     int		search_attr = 0;
     int		has_match_conc = 0;
     int		match_conc = 0;
@@ -1023,32 +1115,38 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
     syntax_cache.len = 0;
     if (has_syntax)
     {
+#  ifdef FEAT_LINEBREAK
 	size_t len = STRLEN(line);
+#  endif
 
 	syntax_start(wp, lnum);
 	line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 	ptr = line;
 	cts.cts_line = line;
 	cts.cts_ptr = ptr;
-	if (len > 0 && len <= INT_MAX)
+#  ifdef FEAT_LINEBREAK
+	// Only linebreak lookahead revisits syntax columns during one scan.
+	if (wp->w_p_lbr && len > 0 && len <= INT_MAX)
 	{
-	    syntax_cache.state = alloc((int)len);
+	    syntax_cache.state = alloc_clear(len);
 	    if (syntax_cache.state != NULL)
-	    {
-		vim_memset(syntax_cache.state, 0, (size_t)len);
 		syntax_cache.len = (int)len;
-	    }
 	}
+#  endif
     }
 # endif
 # ifdef FEAT_SEARCH_EXTRA
-    init_search_hl(wp, &screen_search_hl);
-    prepare_search_hl(wp, &screen_search_hl, lnum);
-    (void)prepare_search_hl_line(wp, lnum, 0, &line, &screen_search_hl,
-							     &search_attr);
-    ptr = line;
-    cts.cts_line = line;
-    cts.cts_ptr = ptr;
+    has_match_conceal = conceal_match_may_conceal(wp);
+    if (has_match_conceal)
+    {
+	init_search_hl(wp, &screen_search_hl);
+	prepare_search_hl(wp, &screen_search_hl, lnum);
+	(void)prepare_search_hl_line(wp, lnum, 0, &line,
+					      &screen_search_hl, &search_attr);
+	ptr = line;
+	cts.cts_line = line;
+	cts.cts_ptr = ptr;
+    }
 # endif
 
     while (*ptr != NUL && (column == MAXCOL || ptr - line < column))
@@ -1057,12 +1155,16 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	bool	is_concealing = false;
 
 # ifdef FEAT_SEARCH_EXTRA
-	has_match_conc = 0;
-	match_conc = 0;
-	search_attr = update_search_hl(wp, lnum, col, &line, &screen_search_hl,
-		&has_match_conc, &match_conc, FALSE, FALSE, &on_last_col);
-	ptr = line + col;	// "line" may have been changed
-	cts.cts_line = line;
+	if (has_match_conceal)
+	{
+	    has_match_conc = 0;
+	    match_conc = 0;
+	    search_attr = update_search_hl(wp, lnum, col, &line,
+		    &screen_search_hl, &has_match_conc, &match_conc,
+		    FALSE, FALSE, &on_last_col);
+	    ptr = line + col;	// "line" may have been changed
+	    cts.cts_line = line;
+	}
 # endif
 # ifdef FEAT_SYN_HL
 	if (has_syntax)
@@ -1173,15 +1275,21 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 		cts.cts_line = line;
 	    }
 # endif
-	    if (vcol_cb != NULL && cells > 0
-		    && vcol_cb((colnr_T)(ptr - line), vcol, cells,
-						       vcol_cb_ctx) == FAIL)
+	    if (vcol_cb != NULL)
 	    {
+		int cb_ret = vcol_cb((colnr_T)(ptr - line), vcol, cells,
+							       vcol_cb_ctx);
+
+		if (cb_ret != OK)
+		{
+		    if (cb_ret == NOTDONE)
+			break;
 # ifdef FEAT_SYN_HL
-		vim_free(syntax_cache.state);
+		    vim_free(syntax_cache.state);
 # endif
-		clear_chartabsize_arg(&cts);
-		return -1;
+		    clear_chartabsize_arg(&cts);
+		    return -1;
+		}
 	    }
 	    if (*ptr == TAB && vcol_off_co > 0)
 	    {
@@ -1243,11 +1351,15 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	colnr_T	col = (colnr_T)(ptr - line);
 
 # ifdef FEAT_SEARCH_EXTRA
-	has_match_conc = 0;
-	match_conc = 0;
-	search_attr = update_search_hl(wp, lnum, col, &line, &screen_search_hl,
-		&has_match_conc, &match_conc, FALSE, FALSE, &on_last_col);
-	ptr = line + col;	// "line" may have been changed
+	if (has_match_conceal)
+	{
+	    has_match_conc = 0;
+	    match_conc = 0;
+	    search_attr = update_search_hl(wp, lnum, col, &line,
+		    &screen_search_hl, &has_match_conc, &match_conc,
+		    FALSE, FALSE, &on_last_col);
+	    ptr = line + col;	// "line" may have been changed
+	}
 # endif
 # ifdef FEAT_SYN_HL
 	if (has_syntax)
@@ -1340,56 +1452,53 @@ plines_win_col_concealed(win_T *wp, linenr_T lnum, long column)
  * Set "pos" to the first non-concealed byte at or after displayed virtual
  * column "wantcol" in line "lnum".
  */
+typedef struct
+{
+    long	wantcol;
+    colnr_T	col;
+    colnr_T	last_col;
+    bool	found;
+    bool	saw_visible;
+} conceal_advance_T;
+
+    static int
+conceal_advance_cb(
+	colnr_T col,
+	long vcol,
+	int cells UNUSED,
+	void *ctx_arg)
+{
+    conceal_advance_T *ctx = (conceal_advance_T *)ctx_arg;
+
+    ctx->saw_visible = true;
+    ctx->last_col = col;
+    if (vcol < ctx->wantcol)
+	return OK;
+    ctx->col = col;
+    ctx->found = true;
+    return NOTDONE;
+}
+
     int
 plines_win_col_conceal_advance(win_T *wp, linenr_T lnum, long wantcol,
 							       pos_T *pos)
 {
-    long	prev_vcol = 0;
-    long	vcol;
-    bool	concealed = false;
-    colnr_T	last_col = 0;
-    colnr_T	col = 0;
+    conceal_advance_T ctx;
 
     if (!plines_win_may_conceal(wp, lnum))
 	return FAIL;
 
-    for (;;)
-    {
-	char_u	    *line = ml_get_buf(wp->w_buffer, lnum, FALSE);
-	char_u	    *ptr = line + col;
-	colnr_T	    next_col;
+    CLEAR_FIELD(ctx);
+    ctx.wantcol = wantcol;
+    if (plines_win_col_conceal_iter(wp, lnum, conceal_advance_cb, &ctx,
+								NULL) == FAIL
+	    || (!ctx.found && !ctx.saw_visible && wantcol < 0))
+	return FAIL;
 
-	if (*ptr == NUL)
-	    break;
-	next_col = col + mb_ptr2len(ptr);
-
-	vcol = plines_win_col_conceal(wp, lnum, col, NULL, &concealed,
-							      NULL, NULL, NULL);
-	if (concealed)
-	{
-	    col = next_col;
-	    continue;
-	}
-	if (vcol >= wantcol)
-	{
-	    pos->lnum = lnum;
-	    pos->col = col;
-	    pos->coladd = 0;
-	    return OK;
-	}
-	prev_vcol = vcol;
-	last_col = col;
-	col = next_col;
-    }
-
-    if (prev_vcol <= wantcol)
-    {
-	pos->lnum = lnum;
-	pos->col = last_col;
-	pos->coladd = 0;
-	return OK;
-    }
-    return FAIL;
+    pos->lnum = lnum;
+    pos->col = ctx.found ? ctx.col : ctx.last_col;
+    pos->coladd = 0;
+    return OK;
 }
 #endif
 
@@ -1402,10 +1511,10 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
 {
     char_u	*s;
     long	col;
-    int		width;
     chartabsize_T cts;
 #ifdef FEAT_CONCEAL
     bool	no_conceal = false;
+    long	measured_col = -1;
 #endif
 
     s = ml_get_buf(wp->w_buffer, lnum, FALSE);
@@ -1419,15 +1528,16 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
 #ifdef FEAT_CONCEAL
     if (wp->w_p_cole == 3)
     {
-	bool drawn_line = false;
-	int conceal_height = plines_win_conceal_height(wp, lnum, &drawn_line);
+	bool line_scanned = false;
+	int conceal_height = plines_win_conceal_height(wp, lnum,
+						&line_scanned, &measured_col);
 
 	if (conceal_height > 0)
 	{
 	    clear_chartabsize_arg(&cts);
 	    return conceal_height;
 	}
-	if (drawn_line)
+	if (line_scanned)
 	{
 	    clear_chartabsize_arg(&cts);
 	    s = ml_get_buf(wp->w_buffer, lnum, FALSE);
@@ -1436,7 +1546,9 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
 	if (conceal_height == 0)
 	    no_conceal = true;
     }
-    if (!no_conceal && plines_win_may_conceal(wp, lnum))
+    if (measured_col >= 0)
+	col = measured_col;
+    else if (!no_conceal && plines_win_may_conceal(wp, lnum))
 	col = plines_win_col_conceal(wp, lnum, MAXCOL, NULL, NULL,
 						      NULL, NULL, NULL);
     else
@@ -1447,22 +1559,7 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
     }
     clear_chartabsize_arg(&cts);
 
-    // If list mode is on, then the '$' at the end of the line may take up one
-    // extra column.
-    if (wp->w_p_list && wp->w_lcs_chars.eol != NUL)
-	col += 1;
-
-    /*
-     * Add column offset for 'number', 'relativenumber' and 'foldcolumn'.
-     */
-    width = wp->w_width - win_col_off(wp);
-    if (width <= 0)
-	return 32000;
-    if (col <= width)
-	return 1;
-    col -= width;
-    width += win_col_off2(wp);
-    return (col + (width - 1)) / width + 1;
+    return plines_win_col_height(wp, col);
 }
 
 /*

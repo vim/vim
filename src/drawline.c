@@ -100,14 +100,28 @@ margin_columns_win(win_T *wp, int *left_col, int *right_col)
 #endif
 
 #ifdef FEAT_CONCEAL
-static bool drawline_screenline_collect = false;
-static conceal_screenline_cb_T drawline_screenline_cb = NULL;
-static void *drawline_screenline_ctx = NULL;
-static bool drawline_screenline_has_conceal = false;
-static bool drawline_screenline_failed = false;
-# define DRAWLINE_COLLECTING drawline_screenline_collect
+typedef struct
+{
+    conceal_screenline_cb_T cb;
+    void	*cb_ctx;
+    bool	has_conceal;
+    bool	failed;
+# ifdef FEAT_SEARCH_EXTRA
+    bool	use_search_hl;
+# endif
+} drawline_conceal_iter_T;
+
+static drawline_conceal_iter_T *drawline_conceal_iter = NULL;
+# define DRAWLINE_COLLECTING (drawline_conceal_iter != NULL)
+# ifdef FEAT_SEARCH_EXTRA
+#  define DRAWLINE_SEARCH_HL \
+	(!DRAWLINE_COLLECTING || drawline_conceal_iter->use_search_hl)
+# endif
 #else
 # define DRAWLINE_COLLECTING false
+# ifdef FEAT_SEARCH_EXTRA
+#  define DRAWLINE_SEARCH_HL true
+# endif
 #endif
 
 // structure with variables passed between win_line() and other functions
@@ -1196,7 +1210,8 @@ lbr_conceal_width(
     *segment_widthp = 0;
     *concealedp = false;
     *followed_by_breakp = false;
-    if (lnum != wp->w_cursor.lnum && KeyTyped && char_avail())
+    if (!DRAWLINE_COLLECTING && lnum != wp->w_cursor.lnum
+						&& KeyTyped && char_avail())
 	return -1;
     did_emsg = FALSE;
 
@@ -1470,10 +1485,12 @@ win_line(
     int		conceal_attr	= HL_ATTR(HLF_CONCEAL);
     int		is_concealing	= FALSE;
     int		did_wcol	= in_curline
-				    && (wp->w_flags & WFLAG_CONCEAL_WCOL) != 0
-				    && wp->w_conceal_wcol_width == wp->w_width
-				    && EQUAL_POS(wp->w_conceal_wcol_pos,
-								wp->w_cursor);
+			    && (wp->w_flags & WFLAG_CONCEAL_WCOL) != 0
+			    && wp->w_conceal_wcol_width == wp->w_width
+			    && EQUAL_POS(wp->w_conceal_wcol_pos,
+							wp->w_cursor)
+			    && wp->w_conceal_wcol_state
+						== conceal_wcol_state_hash(wp);
     int		old_boguscols   = 0;
 # if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
     bool	lbr_seen_conceal = false;
@@ -1493,7 +1510,7 @@ win_line(
 #endif
 
 #ifdef FEAT_CONCEAL
-    if (in_curline)
+    if (in_curline && !DRAWLINE_COLLECTING)
 	wp->w_flags &= ~WFLAG_CONCEAL_WCOL;
 #endif
 
@@ -1667,8 +1684,11 @@ win_line(
 			syntax_start(wp, lnum);
 # endif
 # ifdef FEAT_SEARCH_EXTRA
-		    init_search_hl(wp, &screen_search_hl);
-		    prepare_search_hl(wp, &screen_search_hl, lnum);
+		    if (DRAWLINE_SEARCH_HL)
+		    {
+			init_search_hl(wp, &screen_search_hl);
+			prepare_search_hl(wp, &screen_search_hl, lnum);
+		    }
 # endif
 		}
 #endif
@@ -2204,7 +2224,7 @@ win_line(
     }
 
 #ifdef FEAT_SEARCH_EXTRA
-    if (number_only == 0)
+    if (number_only == 0 && DRAWLINE_SEARCH_HL)
     {
 	v = (long)(ptr - line);
 	area_highlighting |= prepare_search_hl_line(wp, lnum, (colnr_T)v,
@@ -2780,20 +2800,26 @@ win_line(
 	    if (wlv.n_extra == 0)
 	    {
 #ifdef FEAT_SEARCH_EXTRA
-		// Check for start/end of 'hlsearch' and other matches.
-		// After end, check for start/end of next match.
-		// When another match, have to check for start again.
-		v = (long)(ptr - line);
-		search_attr = update_search_hl(wp, lnum, (colnr_T)v, &line,
-				      &screen_search_hl, &has_match_conc,
-				      &match_conc, did_line_attr, lcs_eol_one,
-				      &on_last_col);
-		ptr = line + v;  // "line" may have been changed
+		if (DRAWLINE_SEARCH_HL)
+		{
+		    // Check for start/end of 'hlsearch' and other matches.
+		    // After end, check for start/end of next match.
+		    // When another match, have to check for start again.
+		    v = (long)(ptr - line);
+		    search_attr = update_search_hl(wp, lnum, (colnr_T)v,
+					&line, &screen_search_hl,
+					&has_match_conc, &match_conc,
+					did_line_attr, lcs_eol_one,
+					&on_last_col);
+		    ptr = line + v;  // "line" may have been changed
 
-		// Do not allow a conceal over EOL otherwise EOL will be missed
-		// and bad things happen.
-		if (*ptr == NUL)
-		    has_match_conc = 0;
+		    // Do not allow a conceal over EOL otherwise EOL will be
+		    // missed and bad things happen.
+		    if (*ptr == NUL)
+			has_match_conc = 0;
+		}
+		else
+		    search_attr = 0;
 #else
 		search_attr = 0;
 #endif
@@ -4350,8 +4376,10 @@ win_line(
 #ifdef FEAT_SEARCH_EXTRA
 	    // flag to indicate whether prevcol equals startcol of search_hl or
 	    // one of the matches
-	    int prevcol_hl_flag = get_prevcol_hl_flag(wp, &screen_search_hl,
-					      (long)(ptr - line) - (c == NUL));
+	    int prevcol_hl_flag = DRAWLINE_SEARCH_HL
+		? get_prevcol_hl_flag(wp, &screen_search_hl,
+					      (long)(ptr - line) - (c == NUL))
+		: FALSE;
 #endif
 	    // Invert at least one char, used for Visual and empty line or
 	    // highlight match at end of line. If it's beyond the last
@@ -4566,7 +4594,7 @@ win_line(
 	    }
 #endif
 #ifdef FEAT_CONCEAL
-	    if (DRAWLINE_COLLECTING && drawline_screenline_cb != NULL
+	    if (DRAWLINE_COLLECTING && drawline_conceal_iter->cb != NULL
 		    && wlv.draw_state == WL_LINE
 		    && cursor_ptr != NULL && cursor_ptr_end > cursor_ptr
 		    && !is_concealing
@@ -4587,16 +4615,16 @@ win_line(
 
 		if (cells > 0)
 		{
-		    int cb_ret = drawline_screenline_cb(
+		    int cb_ret = drawline_conceal_iter->cb(
 			    (colnr_T)(cursor_ptr - line),
 			    (colnr_T)(cursor_ptr_end - line) - 1,
 			    wlv.row, wlv.col, cursor_col, cells,
-			    drawline_screenline_ctx);
+			    drawline_conceal_iter->cb_ctx);
 
 		    if (cb_ret != OK)
 		    {
 			if (cb_ret == FAIL)
-			    drawline_screenline_failed = true;
+			    drawline_conceal_iter->failed = true;
 			break;
 		    }
 		}
@@ -4730,7 +4758,7 @@ win_line(
 	    bool concealed_wide = has_mbyte && (*mb_char2cells)(mb_c) > 1;
 
 	    if (DRAWLINE_COLLECTING)
-		drawline_screenline_has_conceal = true;
+		drawline_conceal_iter->has_conceal = true;
 	    --skip_cells;
 	    ++wlv.vcol_off_co;
 # if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
@@ -4985,6 +5013,13 @@ win_line(
 #endif
 		    )
 	    {
+#ifdef FEAT_CONCEAL
+		if (DRAWLINE_COLLECTING)
+		{
+		    drawline_conceal_iter->failed = true;
+		    break;
+		}
+#endif
 		win_draw_end(wp, '@', ' ', TRUE, wlv.row, wp->w_height, HLF_AT);
 		draw_vsep_win(wp, wlv.row);
 		wlv.row = endrow;
@@ -5103,7 +5138,7 @@ win_line(
  * many rows it occupies.
  */
     int
-win_line_conceal_screenline_iter(
+win_line_conceal_iter(
     win_T		*wp,
     linenr_T		lnum,
     conceal_screenline_cb_T cb,
@@ -5111,48 +5146,35 @@ win_line_conceal_screenline_iter(
     bool		*has_concealp,
     int			*rowsp)
 {
-    bool		    save_collect = drawline_screenline_collect;
-    conceal_screenline_cb_T save_cb = drawline_screenline_cb;
-    void		    *save_ctx = drawline_screenline_ctx;
-    bool		    save_has_conceal = drawline_screenline_has_conceal;
-    bool		    save_failed = drawline_screenline_failed;
-    spellvars_T		    spv;
-    int			    row;
-    bool		    failed;
+    drawline_conceal_iter_T iter;
+    spellvars_T		spv;
+    int			row;
 
-    if (drawline_screenline_collect)
+    if (DRAWLINE_COLLECTING)
 	return FAIL;
 
+    CLEAR_FIELD(iter);
     CLEAR_FIELD(spv);
-# ifdef FEAT_SPELL
-    if (spell_check_window(wp))
+    iter.cb = cb;
+    iter.cb_ctx = cb_ctx;
+# ifdef FEAT_SEARCH_EXTRA
+    iter.use_search_hl = conceal_match_may_conceal(wp);
+# endif
+    drawline_conceal_iter = &iter;
+# ifdef FEAT_SEARCH_EXTRA
+    if (iter.use_search_hl)
     {
-	spv.spv_has_spell = TRUE;
-	spv.spv_unchanged = FALSE;
+	init_search_hl(wp, &screen_search_hl);
+	prepare_search_hl(wp, &screen_search_hl, lnum);
     }
 # endif
-
-    drawline_screenline_collect = true;
-    drawline_screenline_cb = cb;
-    drawline_screenline_ctx = cb_ctx;
-    drawline_screenline_has_conceal = false;
-    drawline_screenline_failed = false;
-# ifdef FEAT_SEARCH_EXTRA
-    init_search_hl(wp, &screen_search_hl);
-    prepare_search_hl(wp, &screen_search_hl, lnum);
-# endif
     row = win_line(wp, lnum, 0, INT_MAX, 0, &spv);
-    failed = drawline_screenline_failed;
     if (has_concealp != NULL)
-	*has_concealp = drawline_screenline_has_conceal;
+	*has_concealp = iter.has_conceal;
     if (rowsp != NULL)
 	*rowsp = row;
 
-    drawline_screenline_collect = save_collect;
-    drawline_screenline_cb = save_cb;
-    drawline_screenline_ctx = save_ctx;
-    drawline_screenline_has_conceal = save_has_conceal;
-    drawline_screenline_failed = save_failed;
-    return row < 0 || failed ? FAIL : OK;
+    drawline_conceal_iter = NULL;
+    return row < 0 || iter.failed ? FAIL : OK;
 }
 #endif

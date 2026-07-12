@@ -1,4 +1,5 @@
 /* textprop.c */
+hash_T text_prop_state_hash(buf_T *buf);
 unpacked_memline_T um_open(buf_T *buf);
 bool um_goto_line(unpacked_memline_T *um, linenr_T lnum, int extra_props);
 unpacked_memline_T um_open_at(buf_T *buf, linenr_T lnum, int extra_props);

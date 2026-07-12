@@ -2855,6 +2855,16 @@ beginline(int flags)
  * Return OK when successful, FAIL when we hit a line of file boundary.
  */
 
+    static void
+invalidate_conceal_cursor_pos(void)
+{
+#ifdef FEAT_CONCEAL
+    if (curwin->w_p_wrap
+	    && plines_win_may_conceal(curwin, curwin->w_cursor.lnum))
+	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
+#endif
+}
+
     int
 oneright(void)
 {
@@ -2875,10 +2885,7 @@ oneright(void)
 	if (prevpos.col == curwin->w_cursor.col
 		&& prevpos.coladd == curwin->w_cursor.coladd)
 	    return FAIL;
-#ifdef FEAT_CONCEAL
-	if (curwin->w_p_wrap && curwin->w_p_cole == 3)
-	    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
-#endif
+	invalidate_conceal_cursor_pos();
 	return OK;
     }
 
@@ -2898,10 +2905,7 @@ oneright(void)
     curwin->w_cursor.col += l;
 
     curwin->w_set_curswant = true;
-#ifdef FEAT_CONCEAL
-    if (curwin->w_p_wrap && curwin->w_p_cole == 3)
-	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
-#endif
+    invalidate_conceal_cursor_pos();
     adjust_skipcol();
     return OK;
 }
@@ -2949,10 +2953,7 @@ oneleft(void)
 	}
 
 	curwin->w_set_curswant = true;
-#ifdef FEAT_CONCEAL
-	if (curwin->w_p_wrap && curwin->w_p_cole == 3)
-	    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
-#endif
+	invalidate_conceal_cursor_pos();
 	adjust_skipcol();
 	return OK;
     }
@@ -2967,10 +2968,7 @@ oneleft(void)
     // character, move to its first byte
     if (has_mbyte)
 	mb_adjust_cursor();
-#ifdef FEAT_CONCEAL
-    if (curwin->w_p_wrap && curwin->w_p_cole == 3)
-	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
-#endif
+    invalidate_conceal_cursor_pos();
     adjust_skipcol();
     return OK;
 }

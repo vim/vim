@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Jul 08
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Jul 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4857,7 +4857,8 @@ getmousepos()						*getmousepos()*
 		"column" uses the buffer byte index for the character at the
 		drawn screen cell, when |conceal| is active for the window and
 		line.  This respects rules such as 'concealcursor' and Visual
-		mode.
+		mode.  Inline virtual text supplied by a text property has no
+		corresponding buffer byte and may map to adjacent buffer text.
 
 		If the mouse is over a popup window then that window is used.
 
@@ -9423,13 +9424,17 @@ screenpos({winid}, {lnum}, {col})			*screenpos()*
 		The "curscol" value is where the cursor would be placed.  For
 		a Tab it would be the same as "endcol", while for a double
 		width character it would be the same as "col".
-		For wrapped lines, zero-width text concealed by 'conceallevel'
-		set to 3 is taken into account when |conceal| is active for the
-		window and line.  This respects rules such as 'concealcursor'
-		and Visual mode.  In other cases |conceal| is ignored and the
-		column numbers are as if 'conceallevel' is zero.  You can set
-		the cursor to the right position and use |screencol()| to get
-		the value with |conceal| taken into account.
+		Zero-width text concealed by 'conceallevel' set to 3 is taken
+		into account when |conceal| is active for the window and line.
+		This respects rules such as 'concealcursor' and Visual mode.
+		In other cases |conceal| is ignored and the column numbers
+		are as if 'conceallevel' is zero.  You can set the cursor to
+		the right position and use |screencol()| to get the value
+		with |conceal| taken into account.
+		When {col} is inside zero-width concealed text, the
+		position of the nearest drawn buffer character is returned.
+		The preceding character wins a tie, except that a concealed
+		Tab crossing a wrap boundary uses the following character.
 		If the position is in a closed fold the screen position of the
 		first character is returned, {col} is not used.
 		Returns an empty Dict if {winid} is invalid.

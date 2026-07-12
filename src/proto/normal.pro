@@ -22,6 +22,7 @@ void pop_showcmd(void);
 void do_check_scrollbind(int check);
 void check_scrollbind(linenr_T topline_diff, long leftcol_diff);
 int find_decl(char_u *ptr, int len, int locally, int thisblock, int flags_arg);
+void free_nv_screenline_cache(void);
 int nv_screengo(oparg_T *oap, int dir, long dist);
 void nv_scroll_line(cmdarg_T *cap);
 void handle_tabmenu(void);

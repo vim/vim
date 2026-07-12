@@ -3678,7 +3678,7 @@ redrawWinline(
 #ifdef FEAT_CONCEAL
     // With zero-width concealed text, redrawing one wrapped line may change
     // how many screen rows it occupies.
-    if (wp->w_p_wrap && wp->w_p_cole == 3)
+    if (wp->w_p_wrap && plines_win_may_conceal(wp, lnum))
 	wp->w_lines_valid = 0;
 #endif
     redraw_win_range_later(wp, lnum, lnum);

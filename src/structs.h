@@ -3153,6 +3153,11 @@ typedef struct {
     unsigned long b_syn_dynamic_tick;	// tick of cached dynamic-pattern flag
     bool	b_syn_dynamic_valid;
     bool	b_syn_has_dynamic_pattern;
+# ifdef FEAT_CONCEAL
+    unsigned long b_syn_conceal_tick;	// tick of cached conceal-item flag
+    bool	b_syn_conceal_valid;
+    bool	b_syn_has_conceal_item;
+# endif
     garray_T	b_syn_clusters;		// table for syntax clusters
     int		b_spell_cluster_id;	// @Spell cluster ID or 0
     int		b_nospell_cluster_id;	// @NoSpell cluster ID or 0
@@ -3339,7 +3344,9 @@ struct file_buffer
      * 32 bytes of 8 bits: 1 bit per character 0-255.
      */
     char_u	b_chartab[32];
+#ifdef FEAT_CONCEAL
     unsigned long b_chartab_change_tick; // incremented when b_chartab changes
+#endif
 
     // Table used for mappings local to a buffer.
     mapblock_T	*(b_maphash[256]);
@@ -4382,6 +4389,7 @@ struct window_S
 				    // the cursor's screen line, set by win_line()
     pos_T	w_conceal_wcol_pos; // position "w_wcol" was computed for
     int		w_conceal_wcol_width; // window width "w_wcol" was computed for
+    hash_T	w_conceal_wcol_state; // layout state used for "w_wcol"
 #endif
 
     /*
@@ -4505,6 +4513,7 @@ struct window_S
     unsigned long w_match_dynamic_tick;	// tick of cached dynamic flag
     bool	w_match_dynamic_valid;
     bool	w_match_has_dynamic_pattern;
+    bool	w_match_has_conceal;
 #endif
 
     /*

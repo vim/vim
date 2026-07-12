@@ -298,31 +298,91 @@ set_mousemoved_columns(win_T *wp, int flags)
     char_u	*text;
     int		col;
     pos_T	pos;
-    int		row;
-    int		scol;
+    colnr_T	mcol;
+#ifdef FEAT_CONCEAL
+    int		start_row;
+    int		start_scol;
+    int		start_ecol;
+    int		end_row;
+    int		end_scol;
+    int		end_ecol;
     int		ccol;
-    int		ecol;
+    int		start_conceal = FAIL;
+    int		end_conceal = FAIL;
+#endif
 
     if (find_word_under_cursor(mouse_row, mouse_col, TRUE, flags,
 				  &textwp, &pos.lnum, &text, NULL, &col) != OK)
 	return;
 
-    // Convert text columns to screen columns.
     pos.col = col;
     pos.coladd = 0;
-    textpos2screenpos(textwp, &pos, &row, &scol, &ccol, &ecol);
-    if (row <= 0 || scol <= 0)
+#ifdef FEAT_CONCEAL
+    if (plines_win_may_conceal(textwp, pos.lnum))
     {
-	vim_free(text);
-	return;
+	start_conceal = textpos2screenpos(textwp, &pos, &start_row,
+					     &start_scol, &ccol, &start_ecol);
+	pos.col = col + (colnr_T)STRLEN(text) - 1;
+	end_conceal = textpos2screenpos(textwp, &pos, &end_row, &end_scol,
+						       &ccol, &end_ecol);
     }
-    wp->w_popup_mouse_row = row - 1;
-    wp->w_popup_mouse_mincol = scol - 1;
+    if (start_conceal == OK || end_conceal == OK)
+    {
+	// Convert concealed text columns to their drawn screen columns.
+	if (start_row <= 0 || start_scol <= 0)
+	{
+	    vim_free(text);
+	    return;
+	}
 
-    pos.col = col + (colnr_T)STRLEN(text) - 1;
-    textpos2screenpos(textwp, &pos, &row, &scol, &ccol, &ecol);
-    if (row == wp->w_popup_mouse_row + 1 && ecol > 0)
-	wp->w_popup_mouse_maxcol = ecol - 1;
+	if (end_row <= 0 || end_scol <= 0
+		|| mouse_row + 1 < start_row || mouse_row + 1 > end_row)
+	{
+	    vim_free(text);
+	    return;
+	}
+
+	if (start_row == end_row)
+	{
+	    wp->w_popup_mouse_mincol = MIN(start_scol, end_scol) - 1;
+	    wp->w_popup_mouse_maxcol = MAX(start_ecol, end_ecol) - 1;
+	}
+	else
+	{
+	    int left = textwp->w_wincol;
+	    int right = left + textwp->w_width - 1;
+
+# ifdef FEAT_RIGHTLEFT
+	    if (textwp->w_p_rl)
+	    {
+		wp->w_popup_mouse_mincol = mouse_row + 1 == end_row
+						       ? end_scol - 1 : left;
+		wp->w_popup_mouse_maxcol = mouse_row + 1 == start_row
+						      ? start_ecol - 1 : right;
+	    }
+	    else
+# endif
+	    {
+		wp->w_popup_mouse_mincol = mouse_row + 1 == start_row
+						     ? start_scol - 1 : left;
+		wp->w_popup_mouse_maxcol = mouse_row + 1 == end_row
+						       ? end_ecol - 1 : right;
+	    }
+	}
+    }
+    else
+#endif
+    {
+	// Preserve the legacy virtual-column path when conceal does not affect
+	// the line.
+	pos.col = col;
+	getvcol(textwp, &pos, &mcol, NULL, NULL, 0);
+	wp->w_popup_mouse_mincol = mcol;
+
+	pos.col = col + (colnr_T)STRLEN(text) - 1;
+	getvcol(textwp, &pos, NULL, NULL, &mcol, 0);
+	wp->w_popup_mouse_maxcol = mcol;
+    }
     vim_free(text);
 }
 

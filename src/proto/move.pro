@@ -35,7 +35,7 @@ int curwin_col_off(void);
 int win_col_off2(win_T *wp);
 int curwin_col_off2(void);
 void curs_columns(int may_scroll);
-void textpos2screenpos(win_T *wp, pos_T *pos, int *rowp, int *scolp, int *ccolp, int *ecolp);
+int textpos2screenpos(win_T *wp, pos_T *pos, int *rowp, int *scolp, int *ccolp, int *ecolp);
 void f_screenpos(typval_T *argvars, typval_T *rettv);
 void f_virtcol2col(typval_T *argvars, typval_T *rettv);
 void scroll_redraw(int up, long count);
