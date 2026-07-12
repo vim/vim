@@ -6919,7 +6919,7 @@ gui_mch_flush(void)
 {
     if (gui.mainwin == NULL || !gtk_widget_get_realized(gui.mainwin))
 	return;
-#if GTK_CHECK_VERSION(2,4,0)
+#if !GTK_CHECK_VERSION(3,0,0)
        gdk_display_flush(gtk_widget_get_display(gui.mainwin));
        return;
 #endif
