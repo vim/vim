@@ -4044,7 +4044,7 @@ typedef struct
     int		    len;	// max nr of states in "t"
     int		    id;		// ID of the list
     int		    has_pim;	// TRUE when any state has a PIM
-    int		    first_idx;	// index of the first in sequnce active element in "t"
+    int		    first_idx;	// index of the first in sequence active element in "t"
     int		    last_idx;	// index of the last in sequence active element in "t"
 } nfa_list_T;
 
