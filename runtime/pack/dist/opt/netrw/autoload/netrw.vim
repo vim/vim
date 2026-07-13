@@ -571,6 +571,9 @@ function netrw#Explore(indx,dosplit,style,...)
   endif
 
   if starpat == 0 && a:indx >= 0
+    if dirname == ""
+      let dirname= curfiledir
+    endif
     " [Explore Hexplore Vexplore Sexplore] [dirname]
     if dirname =~# '^scp://' || dirname =~ '^ftp://'
       call netrw#Nread(2,dirname)
