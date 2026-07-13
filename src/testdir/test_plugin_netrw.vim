@@ -908,7 +908,7 @@ func Test_netrw_open_no_dir_arg()
   call writefile([], dir . '/foo')
   exe 'edit ' . dir . '/foo'
   Explore
-  call assert_equal(dir, b:netrw_curdir)
+  call assert_equal(fnamemodify(dir, ':p'), fnamemodify(b:netrw_curdir, ':p'))
   bw!
 endfunc
 
