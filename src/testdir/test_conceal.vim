@@ -1007,6 +1007,55 @@ func Test_conceallevel_three_visual_block_after_conceal()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_visual_block_multicell_target()
+  let save_virtualedit = &virtualedit
+  call NewWindow(6, 40)
+  try
+    setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+          \ tabstop=8
+    syntax match Hidden /HIDDEN / conceal
+
+    set virtualedit=block
+    call setline(1, ['HIDDEN abcdX', "\tY"])
+    call cursor(1, 12)
+    redraw!
+    execute "normal! \<C-V>j"
+    call assert_equal([2, 1, 4], getcurpos()[1:3])
+    call assert_equal(5, virtcol('.'))
+    execute "normal! \<Esc>"
+
+    set virtualedit=
+    call cursor(1, 12)
+    redraw!
+    execute "normal! \<C-V>j"
+    call assert_equal([2, 1, 0], getcurpos()[1:3])
+    execute "normal! \<Esc>"
+
+    if has('multi_byte') && &encoding ==# 'utf-8'
+      set virtualedit=block
+      call setline(1, ['HIDDEN abcX', 'ab日Z'])
+      call cursor(1, 11)
+      redraw!
+      execute "normal! \<C-V>j"
+      call assert_equal([2, 3, 0], getcurpos()[1:3])
+      call assert_equal(4, virtcol('.'))
+      execute "normal! \<Esc>"
+
+      call setline(1, ['HIDDEN aX', '日Z'])
+      call cursor(1, 9)
+      redraw!
+      execute "normal! \<C-V>j"
+      call assert_equal([2, 1, 0], getcurpos()[1:3])
+      call assert_equal(2, virtcol('.'))
+    endif
+  finally
+    execute "normal! \<Esc>"
+    syntax clear Hidden
+    let &virtualedit = save_virtualedit
+    call CloseWindow()
+  endtry
+endfunc
+
 func Test_conceallevel_three_visual_block_stops_after_conceal()
   call NewWindow(10, 59)
   setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic

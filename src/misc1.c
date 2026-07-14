@@ -1449,14 +1449,15 @@ plines_win_col_concealed(win_T *wp, linenr_T lnum, long column)
 }
 
 /*
- * Set "pos" to the first non-concealed byte at or after displayed virtual
- * column "wantcol" in line "lnum".
+ * Set "pos" to the non-concealed byte covering displayed virtual column
+ * "wantcol", or the first one after it, in line "lnum".
  */
 typedef struct
 {
     long	wantcol;
     colnr_T	col;
     colnr_T	last_col;
+    colnr_T	coladd;
     bool	found;
     bool	saw_visible;
 } conceal_advance_T;
@@ -1465,16 +1466,20 @@ typedef struct
 conceal_advance_cb(
 	colnr_T col,
 	long vcol,
-	int cells UNUSED,
+	int cells,
 	void *ctx_arg)
 {
     conceal_advance_T *ctx = (conceal_advance_T *)ctx_arg;
 
     ctx->saw_visible = true;
     ctx->last_col = col;
-    if (vcol < ctx->wantcol)
+
+    if (vcol < ctx->wantcol
+		&& (cells <= 0 || ctx->wantcol - vcol >= cells))
 	return OK;
     ctx->col = col;
+    if (vcol < ctx->wantcol)
+	ctx->coladd = (colnr_T)(ctx->wantcol - vcol);
     ctx->found = true;
     return NOTDONE;
 }
@@ -1497,7 +1502,17 @@ plines_win_col_conceal_advance(win_T *wp, linenr_T lnum, long wantcol,
 
     pos->lnum = lnum;
     pos->col = ctx.found ? ctx.col : ctx.last_col;
-    pos->coladd = 0;
+    pos->coladd = ctx.found && virtual_active() ? ctx.coladd : 0;
+
+    // coladvance2() reaches the last byte of a multi-byte character before
+    // mb_adjustpos() moves it to the first byte and normalizes "coladd".
+    // Do the same here, also when the character starts in byte column zero.
+    if (has_mbyte && pos->coladd > 0)
+    {
+	pos->col += mb_ptr2len(ml_get_buf(wp->w_buffer, lnum, FALSE)
+							     + pos->col) - 1;
+	mb_adjustpos(wp->w_buffer, pos);
+    }
     return OK;
 }
 #endif
