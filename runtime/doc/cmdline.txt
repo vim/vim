@@ -1430,14 +1430,13 @@ file picker: >
 	set findfunc=Find
 	func Find(arg, _)
 	  if empty(s:filescache)
-	    let s:filescache = globpath('.', '**', 1, 1)
+	    autocmd CmdlineLeave : ++once let s:filescache = []
+	    let s:filescache = expand('**', 1, 1)
 	    call filter(s:filescache, '!isdirectory(v:val)')
-	    call map(s:filescache, "fnamemodify(v:val, ':.')")
 	  endif
-	  return a:arg == '' ? s:filescache : matchfuzzy(s:filescache, a:arg)
+	  return empty(a:arg) ? s:filescache : matchfuzzy(s:filescache, a:arg)
 	endfunc
 	let s:filescache = []
-	autocmd CmdlineEnter : let s:filescache = []
 
 The `:Grep` command searches for lines matching a pattern and updates the
 results dynamically as you type (triggered after two characters; note: needs
