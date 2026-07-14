@@ -1008,6 +1008,7 @@ func Test_conceallevel_three_visual_block_after_conceal()
 endfunc
 
 func Test_conceallevel_three_visual_block_multicell_target()
+  let save_display = &display
   let save_virtualedit = &virtualedit
   call NewWindow(6, 40)
   try
@@ -1015,6 +1016,7 @@ func Test_conceallevel_three_visual_block_multicell_target()
           \ tabstop=8
     syntax match Hidden /HIDDEN / conceal
 
+    set display=
     set virtualedit=block
     call setline(1, ['HIDDEN abcdX', "\tY"])
     call cursor(1, 12)
@@ -1026,6 +1028,22 @@ func Test_conceallevel_three_visual_block_multicell_target()
 
     set virtualedit=
     call cursor(1, 12)
+    redraw!
+    execute "normal! \<C-V>j"
+    call assert_equal([2, 1, 0], getcurpos()[1:3])
+    execute "normal! \<Esc>"
+
+    set virtualedit=block
+    call setline(1, ['HIDDEN bX', nr2char(1) .. 'Z'])
+    call cursor(1, 9)
+    redraw!
+    execute "normal! \<C-V>j"
+    call assert_equal([2, 1, 1], getcurpos()[1:3])
+    call assert_equal(2, virtcol('.'))
+    execute "normal! \<Esc>"
+
+    set virtualedit=
+    call cursor(1, 9)
     redraw!
     execute "normal! \<C-V>j"
     call assert_equal([2, 1, 0], getcurpos()[1:3])
@@ -1051,6 +1069,7 @@ func Test_conceallevel_three_visual_block_multicell_target()
   finally
     execute "normal! \<Esc>"
     syntax clear Hidden
+    let &display = save_display
     let &virtualedit = save_virtualedit
     call CloseWindow()
   endtry

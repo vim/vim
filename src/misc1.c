@@ -1183,17 +1183,12 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 	if (!is_concealing)
 	{
 	    int charsize;
-	    int cells;
-
 	    int tail = 0;
 
 	    cts.cts_ptr = ptr;
 	    cts.cts_vcol = *ptr == TAB
 				    ? (int)(vcol + vcol_off_co) : (int)vcol;
 	    charsize = win_lbr_chartabsize(&cts, NULL, &tail);
-	    cells = *ptr == TAB
-			? win_chartabsize(wp, ptr, vcol + vcol_off_co)
-			: (*mb_ptr2cells)(ptr);
 # if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
 	    if (wp->w_p_lbr && wp->w_p_wrap && wp->w_p_cole == 3
 		    && has_syntax && VIM_ISBREAK((int)*ptr))
@@ -1277,7 +1272,7 @@ plines_win_col_conceal(win_T *wp, linenr_T lnum, long column,
 # endif
 	    if (vcol_cb != NULL)
 	    {
-		int cb_ret = vcol_cb((colnr_T)(ptr - line), vcol, cells,
+		int cb_ret = vcol_cb((colnr_T)(ptr - line), vcol, charsize,
 							       vcol_cb_ctx);
 
 		if (cb_ret != OK)
