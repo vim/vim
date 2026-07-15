@@ -5872,6 +5872,27 @@ func Test_VimResized_and_window_width_not_equalized()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_WinResized_on_shell_resize()
+  CheckRunVimInTerminal
+
+  " A shell (terminal/GUI) resize changes window sizes, so WinResized must
+  " trigger from the resize alone, not only on the next typed command.
+  let lines =<< trim END
+    autocmd WinResized * call writefile(['x'], 'XwinResized', 'a')
+  END
+  call writefile(lines, 'XTest_WinResized_shell', 'D')
+  let buf = RunVimInTerminal('-S XTest_WinResized_shell', {'rows': 10, 'cols': 30})
+  call TermWait(buf)
+  call delete('XwinResized')
+
+  " Resize the terminal (SIGWINCH); do not send any key to the inner Vim.
+  call term_setsize(buf, 15, 40)
+  call WaitForAssert({-> assert_true(filereadable('XwinResized'))})
+
+  call StopVimInTerminal(buf)
+  call delete('XwinResized')
+endfunc
+
 func Test_win_tabclose_autocmd()
 
   defer CleanUpTestAuGroup()

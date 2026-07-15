@@ -3531,6 +3531,9 @@ give_up:
     if (starting == 0 && ++retry_count <= 3)
     {
 	apply_autocmds(EVENT_VIMRESIZED, NULL, NULL, FALSE, curbuf);
+	// A shell resize also changes window sizes; trigger WinResized (and
+	// WinScrolled) now instead of waiting for the next command.
+	may_trigger_win_scrolled_resized();
 	// In rare cases, autocommands may have altered Rows or Columns,
 	// jump back to check if we need to allocate the screen again.
 	goto retry;
