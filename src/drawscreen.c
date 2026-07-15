@@ -657,7 +657,9 @@ borrow_stl_vsep_hl(void)
     win_T   *left = NULL;
     win_T   *right = NULL;
 
-    if (!redrawing())
+    // In silent Ex mode the screen is not allocated, so LineOffset and
+    // ScreenAttrs are NULL; there is nothing to borrow.
+    if (!redrawing() || ScreenLines == NULL)
 	return;
 
     FOR_ALL_WINDOWS(left)

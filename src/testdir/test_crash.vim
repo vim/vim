@@ -83,6 +83,11 @@ func Test_crash1()
   call delete('Xerr')
   call delete('@')
 
+  let file = 'crash/poc_borrow_stl_vsep_hl'
+  let args = printf(cmn_args, vim, file)
+  call s:RunCommandAndWait(buf, args ..
+    \ '  && echo "crash 11: [OK]" >> X_crash1_result.txt')
+
   " clean up
   exe buf .. "bw!"
 
@@ -99,6 +104,7 @@ func Test_crash1()
       \ 'crash 8: [OK]',
       \ 'crash 9: [OK]',
       \ 'crash 10: [OK]',
+      \ 'crash 11: [OK]',
       \ ]
 
   call assert_equal(expected, getline(1, '$'))
