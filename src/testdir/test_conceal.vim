@@ -1007,6 +1007,36 @@ func Test_conceallevel_three_visual_block_after_conceal()
   call CloseWindow()
 endfunc
 
+func Test_conceallevel_three_visual_block_to_concealed_line()
+  call NewWindow(6, 40)
+  setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+  syntax match Hidden /HIDDEN / conceal
+
+  call setline(1, ['abcdX', 'HIDDEN abcdX'])
+  call cursor(1, 5)
+  redraw!
+  execute "normal! \<C-V>j"
+  call assert_equal([2, 12, 0], getcurpos()[1:3])
+  execute "normal! \<Esc>"
+
+  call setline(1, ['0123456789X', 'abcde', 'HIDDEN 0123456789X'])
+  call cursor(1, 11)
+  redraw!
+  execute "normal! \<C-V>jj"
+  call assert_equal([3, 18, 0], getcurpos()[1:3])
+  execute "normal! \<Esc>"
+
+  call setline(1, ['HIDDEN abcdX', 'abcdX'])
+  call cursor(2, 5)
+  redraw!
+  execute "normal! \<C-V>k"
+  call assert_equal([1, 12, 0], getcurpos()[1:3])
+
+  execute "normal! \<Esc>"
+  syntax clear Hidden
+  call CloseWindow()
+endfunc
+
 func Test_conceallevel_three_visual_block_multicell_target()
   let save_display = &display
   let save_virtualedit = &virtualedit
@@ -1160,7 +1190,10 @@ func Test_conceallevel_three_visual_block_restarts_after_concealed_cursor()
   redraw!
 
   call cursor(1, 45)
-  execute "normal! \<C-V>j30h"
+  execute "normal! \<C-V>j"
+  let hidden_col = stridx(line, 'https://') + 1
+  call assert_true(col('.') > hidden_col)
+  execute 'normal! ' .. (col('.') - hidden_col) .. 'h'
   redraw
 
   call assert_match('https://', strpart(line, col('.') - 1))
@@ -1537,6 +1570,29 @@ func Test_conceallevel_three_screenline_counts()
   normal! gm
   let pos = screenpos(0, line('.'), col('.'))
   call assert_equal([1, 21], [pos.row - winrow + 1, pos.curscol - wincol + 1])
+
+  syntax clear Hidden
+  call CloseWindow()
+endfunc
+
+func Test_conceallevel_three_screenline_to_concealed_line()
+  call NewWindow(6, 40)
+  setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+  syntax match Hidden /HIDDEN / conceal
+
+  call setline(1, ['abcdX', 'HIDDEN abcdX'])
+  call cursor(1, 5)
+  redraw!
+  normal! gj
+  call assert_equal([2, 12, 2, 5],
+        \ [line('.'), col('.'), winline(), wincol()])
+
+  call setline(1, ['HIDDEN abcdX', 'abcdX'])
+  call cursor(2, 5)
+  redraw!
+  normal! gk
+  call assert_equal([1, 12, 1, 5],
+        \ [line('.'), col('.'), winline(), wincol()])
 
   syntax clear Hidden
   call CloseWindow()

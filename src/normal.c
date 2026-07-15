@@ -3693,6 +3693,7 @@ nv_screengo_conceal(
     int		old_skipcol;
     bool	have_map = true;
     bool	allow_plain;
+    bool	map_needed;
     bool	used_target_wcol = false;
     bool	used_direct_view = false;
     colnr_T	target_skipcol = 0;
@@ -3741,17 +3742,22 @@ nv_screengo_conceal(
     // visible target column, not the legacy row-offset column.  Keep using a
     // map for plain wrapped lines while that target is valid.
     allow_plain = use_curswant || nv_screenline_plain_map_needed(lnum);
+    map_needed = allow_plain;
     map_result = nv_screenline_map_build(&map, lnum, false, true,
 							map_max_row);
-    if (map_result != OK && allow_plain)
+    if (map_result != OK && (allow_plain || map_result == NOTDONE))
 	map_result = nv_screenline_map_build(&map, lnum, true, true,
 							map_max_row);
     if (map_result != OK)
     {
 	if (map_result == NOTDONE)
 	    return FAIL;
-	if (ml_get_len(lnum) != 0 && !nv_screenline_all_concealed(lnum))
-	    return FAIL;
+	if (ml_get_len(lnum) != 0)
+	{
+	    if (!nv_screenline_all_concealed(lnum))
+		return FAIL;
+	    map_needed = true;
+	}
 	have_map = false;
 	row = 0;
 	target_rel = use_curswant ? nv_screenline_curswant
@@ -3761,6 +3767,7 @@ nv_screengo_conceal(
     }
     else
     {
+	map_needed = map_needed || map.has_conceal;
 	if (nv_screenline_map_current(&map, curwin->w_cursor.col, &row,
 							&ccol) == FAIL
 		&& map_max_row != INT_MAX)
@@ -3768,11 +3775,12 @@ nv_screengo_conceal(
 	    nv_screenline_map_clear(&map);
 	    map_result = nv_screenline_map_build(&map, lnum, false, true,
 							   INT_MAX);
-	    if (map_result != OK && allow_plain)
+	    if (map_result != OK && (allow_plain || map_result == NOTDONE))
 		map_result = nv_screenline_map_build(&map, lnum, true, true,
 							   INT_MAX);
 	    if (map_result != OK)
 		return FAIL;
+	    map_needed = map_needed || map.has_conceal;
 	}
 	if (nv_screenline_map_current(&map, curwin->w_cursor.col, &row,
 							&ccol) == FAIL)
@@ -3818,6 +3826,7 @@ nv_screengo_conceal(
 		    if (nv_screenline_map_build(&map, lnum, true, true,
 							       INT_MAX) == OK)
 		    {
+			map_needed = map_needed || map.has_conceal;
 			have_map = true;
 			row = nv_screenline_map_last_row(&map);
 		    }
@@ -3838,12 +3847,13 @@ nv_screengo_conceal(
 							       INT_MAX) == FAIL)
 		{
 		    if (ml_get_len(lnum) != 0
-			    && !nv_screenline_all_concealed(lnum))
-			have_map = false;
+			    && nv_screenline_all_concealed(lnum))
+			map_needed = true;
 		    row = 0;
 		}
 		else
 		{
+		    map_needed = map_needed || map.has_conceal;
 		    have_map = true;
 		    row = nv_screenline_map_first_row(&map);
 		}
@@ -3865,6 +3875,7 @@ nv_screengo_conceal(
 		    if (nv_screenline_map_build(&map, lnum, true, true,
 							       INT_MAX) == OK)
 		    {
+			map_needed = map_needed || map.has_conceal;
 			have_map = true;
 			row = nv_screenline_map_first_row(&map);
 		    }
@@ -3885,17 +3896,25 @@ nv_screengo_conceal(
 							       INT_MAX) == FAIL)
 		{
 		    if (ml_get_len(lnum) != 0
-			    && !nv_screenline_all_concealed(lnum))
-			have_map = false;
+			    && nv_screenline_all_concealed(lnum))
+			map_needed = true;
 		    row = 0;
 		}
 		else
 		{
+		    map_needed = map_needed || map.has_conceal;
 		    have_map = true;
 		    row = nv_screenline_map_last_row(&map);
 		}
 	    }
 	}
+    }
+
+    if (!map_needed)
+    {
+	if (have_map)
+	    nv_screenline_map_clear(&map);
+	return FAIL;
     }
 
     target_row = row;
@@ -4054,7 +4073,11 @@ nv_screengo_conceal(
 nv_visual_block_conceal_vert(cmdarg_T *cap, int dir)
 {
     linenr_T	lnum;
+    linenr_T	start_lnum;
     long	wantcol;
+    int		advance_result;
+    bool	plain_source;
+    pos_T	plain_pos;
     pos_T	target_pos;
     colnr_T	save_curswant = curwin->w_curswant;
     colnr_T	virtcol;
@@ -4068,8 +4091,12 @@ nv_visual_block_conceal_vert(cmdarg_T *cap, int dir)
     if (wantcol < 0)
 	return NOTDONE;
     getvvcol(curwin, &curwin->w_cursor, NULL, &virtcol, NULL, 0);
-    if (wantcol == (long)virtcol)
-	return NOTDONE;
+    plain_source = wantcol == (long)virtcol;
+    // Keep the desired column when a preceding vertical move stopped on a
+    // short plain line.
+    if (plain_source)
+	wantcol = save_curswant;
+    start_lnum = curwin->w_cursor.lnum;
     nv_screenline_conceal_clear();
 
     if (dir == FORWARD)
@@ -4097,9 +4124,22 @@ nv_visual_block_conceal_vert(cmdarg_T *cap, int dir)
 	    return FAIL;
 	cursor_up_inner(curwin, cap->count1);
     }
+    advance_result = plines_win_col_conceal_advance(curwin,
+			 curwin->w_cursor.lnum, wantcol, &target_pos);
+    if (plain_source)
+    {
+	plain_pos.lnum = curwin->w_cursor.lnum;
+	plain_pos.col = 0;
+	plain_pos.coladd = 0;
+	(void)getvpos(&plain_pos, (colnr_T)wantcol);
+	if (advance_result != OK || EQUAL_POS(target_pos, plain_pos))
+	{
+	    curwin->w_cursor.lnum = start_lnum;
+	    return NOTDONE;
+	}
+    }
 
-    if (plines_win_col_conceal_advance(curwin, curwin->w_cursor.lnum,
-						    wantcol, &target_pos) == OK)
+    if (advance_result == OK)
     {
 	curwin->w_cursor = target_pos;
 	curwin->w_curswant = wantcol > MAXCOL ? MAXCOL : (colnr_T)wantcol;
