@@ -1605,7 +1605,6 @@ may_clear_cmdline(void)
  */
 
 static char_u	old_showcmd_buf[SHOWCMD_BUFLEN];  // For push_showcmd()
-static int	showcmd_is_clear = TRUE;
 static int	showcmd_visual = FALSE;
 
 static void display_showcmd(void);
@@ -1739,7 +1738,7 @@ add_to_showcmd(int c)
 	K_RIGHTMOUSE, K_RIGHTDRAG, K_RIGHTRELEASE,
 	K_MOUSEDOWN, K_MOUSEUP, K_MOUSELEFT, K_MOUSERIGHT,
 	K_X1MOUSE, K_X1DRAG, K_X1RELEASE, K_X2MOUSE, K_X2DRAG, K_X2RELEASE,
-	K_CURSORHOLD,
+	K_CURSORHOLD, K_COMMAND, K_SCRIPT_COMMAND,
 	0
     };
 

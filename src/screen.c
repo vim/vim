@@ -1676,6 +1676,9 @@ win_redr_custom(
     }
     ewp->w_p_crb = p_crb_save;
 
+    if (p_sc && STRCMP(opt_name, p_sloc) == 0)
+	showcmd_is_clear = (showcmd_buf[0] == NUL);
+
     // Note: In the loop, build_stl_str_hl_mline() may replace stl_tmp with
     // a newly allocated buffer (when "%!" evaluation occurs), freeing the
     // original "stl" internally.  After the loop, stl_tmp must be freed
@@ -5303,6 +5306,7 @@ draw_tabline(void)
 	    if (width > 0)
 		screen_puts_len(showcmd_buf, width, 0, (int)Columns
 			    - width - (tabcount > 1) * 2, attr_nosel);
+	    showcmd_is_clear = (showcmd_buf[0] == NUL);
 	}
 
 	// Put an "X" for closing the current tab if there are several.
