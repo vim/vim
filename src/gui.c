@@ -483,6 +483,7 @@ gui_init_check(void)
     result = OK;
 #else
 # ifdef FEAT_GUI_GTK
+    gui.is_x11 = false;
 #  ifdef GDK_WINDOWING_WAYLAND
     gui.is_wayland = false;
 #  endif

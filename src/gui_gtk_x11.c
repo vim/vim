@@ -4136,6 +4136,7 @@ gui_mch_init(void)
 #if GTK_CHECK_VERSION(3,4,0)
     if (GDK_IS_X11_DISPLAY(gdk_display_get_default()))
     {
+	gui.is_x11 = true;
 	// for X11, if we were using smooth scroll events, we
 	// would get an scroll without deltas on the very first user scroll* and
 	// get both "unsmooth" scroll and smooth scroll events after

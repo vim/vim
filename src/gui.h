@@ -412,6 +412,7 @@ typedef struct Gui
     char_u	*browse_fname;	    // file name from filedlg
 
     guint32	event_time;
+    bool	is_x11;	            // active gdk backend in gtk is x11
 # ifdef GDK_WINDOWING_WAYLAND
     bool	is_wayland;	    // active gdk backend in gtk is wayland
 # endif
