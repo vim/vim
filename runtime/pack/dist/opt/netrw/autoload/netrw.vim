@@ -8683,6 +8683,8 @@ function s:NetrwLocalRename(path) range
             if exists('+shellslash') && !&ssl
                 let reset_ssl = 1
                 set ssl
+            else
+                let reset_ssl = 0
             endif
             " Consistently use / as directory separator
             let oldname= netrw#fs#ComposePath(a:path,curword)
