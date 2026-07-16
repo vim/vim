@@ -1080,7 +1080,12 @@ focus_in_event(GtkWidget *widget,
 	       GdkEventFocus *event UNUSED,
 	       gpointer data UNUSED)
 {
-    gui_focus_change(TRUE);
+#ifdef FEAT_GUI_DIALOG
+    if (gui.is_x11 && gui.dialog_focus_pending > 0)
+	--gui.dialog_focus_pending;
+    else
+#endif
+	gui_focus_change(TRUE);
 
     if (blink_state == BLINK_NONE)
 	gui_mch_start_blink();
