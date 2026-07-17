@@ -281,7 +281,7 @@ au BufNewFile,BufRead *.cpy
 
 " Dockerfile; Podman uses the same syntax with name Containerfile
 " Also see Dockerfile.* below.
-au BufNewFile,BufRead Containerfile,Dockerfile,dockerfile,*.[dD]ockerfile	setf dockerfile
+au BufNewFile,BufRead Containerfile,Dockerfile,dockerfile,*.[dD]ockerfile,*.[cC]ontainerfile	setf dockerfile
 
 " Enlightenment configuration files
 au BufNewFile,BufRead *enlightenment/*.cfg	setf c
