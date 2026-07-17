@@ -1105,7 +1105,7 @@ nfa_emit_equi_class(int c)
 		    EMIT2(0x12f) EMIT2(0x1d0) EMIT2(0x209)
 		    EMIT2(0x20b) EMIT2(0x268) EMIT2(0x1d96)
 		    EMIT2(0x1e2d) EMIT2(0x1e2f) EMIT2(0x1ec9)
-		    EMIT2(0x1ecb) EMIT2(0x1ecb)
+		    EMIT2(0x1ecb)
 		    return OK;
 
 	    case 'j': case 0x135: case 0x1f0: case 0x249:
