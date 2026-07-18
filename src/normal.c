@@ -5579,13 +5579,12 @@ nv_visual(cmdarg_T *cap)
 	    }
 	    else if (VIsual_mode == Ctrl_V)
 	    {
-		// Update curswant on the original line, that is where "col" is
-		// valid.
-		linenr_T lnum = curwin->w_cursor.lnum;
-		curwin->w_cursor.lnum = VIsual.lnum;
+		// Update curswant at the original cursor position.
+		pos_T tmp_cursor = curwin->w_cursor;
+		curwin->w_cursor = VIsual;
 		update_curswant_force();
 		curwin->w_curswant += resel_VIsual_vcol * cap->count0 - 1;
-		curwin->w_cursor.lnum = lnum;
+		curwin->w_cursor = tmp_cursor;
 		if (*p_sel == 'e')
 		    ++curwin->w_curswant;
 		coladvance(curwin->w_curswant);
