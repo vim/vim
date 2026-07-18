@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Jun 14
+# Last Change:		2026 Jul 18
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -1860,6 +1860,11 @@ const ft_from_ext = {
   "cairo": "cairo",
   # Cap'n Proto
   "capnp": "capnp",
+  # Dockerfile
+  "containerfile": "dockerfile",
+  "Containerfile": "dockerfile",
+  "dockerfile": "dockerfile",
+  "Dockerfile": "dockerfile",
   # Common Package Specification
   "cps": "json",
   # C#
