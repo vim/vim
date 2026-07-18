@@ -4319,7 +4319,10 @@ compile_def_function_body(
 	    {
 		line = vim_strsave(line);
 		if (ga_add_string(lines_to_free, line) == FAIL)
+		{
+		    vim_free(line);
 		    return FAIL;
+		}
 	    }
 	}
 
