@@ -235,6 +235,7 @@ runtime/ftplugin/java.vim				@zzzyxwvut
 runtime/ftplugin/javacc.vim				@ribru17
 runtime/ftplugin/javascript.vim				@dkearns
 runtime/ftplugin/javascriptreact.vim			@dkearns
+runtime/ftplugin/jinja.vim				@HiPhish
 runtime/ftplugin/jjdescription.vim			@gpanders
 runtime/ftplugin/jq.vim					@vito-c
 runtime/ftplugin/json.vim				@dbarnett
