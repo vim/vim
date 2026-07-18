@@ -4450,7 +4450,12 @@ get_tags(list_T *list, char_u *pat, char_u *buf_fname)
 	    break;
 	}
 	if (list_append_dict(list, dict) == FAIL)
+	{
 	    ret = FAIL;
+	    dict_unref(dict);
+	    vim_free(matches[i]);
+	    continue;
+	}
 
 	full_fname = tag_full_fname(&tp);
 	if (add_tag_field(dict, "name", tp.tagname, tp.tagname_end) == FAIL
@@ -4564,7 +4569,11 @@ get_tagstack(win_T *wp, dict_T *retdict)
     {
 	if ((d = dict_alloc_id(aid_tagstack_details)) == NULL)
 	    return;
-	list_append_dict(l, d);
+	if (list_append_dict(l, d) == FAIL)
+	{
+	    dict_unref(d);
+	    return;
+	}
 
 	get_tag_details(&wp->w_tagstack[i], d);
     }
