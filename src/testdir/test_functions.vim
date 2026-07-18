@@ -4738,6 +4738,24 @@ func Test_wincol()
     set rightleft&
   endif
 
+  " With 'rightleft' the cursor is on the leftmost cell of a double-wide
+  " character, so wincol() is one less than where the character starts.
+  call setline(1, "あいうえお")
+
+  norm! 0
+  call assert_equal([1, 1], [winline(), wincol()])
+  norm! l
+  call assert_equal([1, 3], [winline(), wincol()])
+
+  if has('rightleft')
+    set rightleft
+    norm! 0
+    call assert_equal([1, win_width - 1], [winline(), wincol()])
+    norm! l
+    call assert_equal([1, win_width - 3], [winline(), wincol()])
+    set rightleft&
+  endif
+
   set ff& mouse&
   bw!
 endfunc

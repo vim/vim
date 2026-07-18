@@ -4038,6 +4038,19 @@ setcursor(void)
     setcursor_mayforce(FALSE);
 }
 
+#ifdef FEAT_RIGHTLEFT
+/*
+ * Return the number of screen cells used by the character under the cursor
+ * in the current window.
+ */
+    int
+cursor_screen_cells(void)
+{
+    return has_mbyte && (*mb_ptr2cells)(ml_get_cursor()) == 2
+				  && vim_isprintc(gchar_cursor()) ? 2 : 1;
+}
+#endif
+
 /*
  * Set cursor to its position in the current window.
  * When "force" is TRUE also when not redrawing.
@@ -4054,9 +4067,7 @@ setcursor_mayforce(int force)
 		// With 'rightleft' set and the cursor on a double-wide
 		// character, position it on the leftmost column.
 		curwin->w_p_rl ? ((int)curwin->w_width - curwin->w_wcol
-		    - ((has_mbyte
-			   && (*mb_ptr2cells)(ml_get_cursor()) == 2
-			   && vim_isprintc(gchar_cursor())) ? 2 : 1)) :
+					    - cursor_screen_cells()) :
 #endif
 					    curwin->w_wcol));
     }

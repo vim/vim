@@ -1129,7 +1129,7 @@ f_wincol(typval_T *argvars UNUSED, typval_T *rettv)
     int col = curwin->w_wcol + 1;
 # ifdef FEAT_RIGHTLEFT
     if (curwin->w_p_rl)
-	col = curwin->w_width - col + 1;
+	col = curwin->w_width - curwin->w_wcol - cursor_screen_cells() + 1;
 # endif
     rettv->vval.v_number = col;
 }
