@@ -1,6 +1,7 @@
 " Tests for various functions.
 
 source util/screendump.vim
+source util/view_util.vim
 import './util/vim9.vim' as v9
 
 " Must be done first, since the alternate buffer must be unset.
@@ -4703,6 +4704,42 @@ func Test_vim9_def_defer_fc_sandbox()
 
   call assert_fails('call g:BadDefer()', 'E48:')
   delfunction g:BadDefer
+endfunc
+
+" Test wincol() counts in screen cells from left side of the window
+func Test_wincol()
+  enew!
+  set ff=unix mouse=a
+
+  let win_width = 30
+  call NewWindow(20, win_width)
+
+  call setline(1, "the quick brown fox jump")
+
+  norm! 0
+  call assert_equal([1, 1], [winline(), wincol()])
+
+  call test_setmouse(1, 10)
+  call feedkeys("\<LeftMouse>\<Ignore>", "xt")
+  call assert_equal([1, 10], [winline(), wincol()])
+
+  if has('rightleft')
+    norm! 0
+    call assert_equal([1, 1], [winline(), wincol()])
+
+    set rightleft
+    " cursor is still at column 1, but in screen cells it is at the distance of window width:
+    call assert_equal([1, win_width], [winline(), wincol()])
+
+    " test_setmouse() works in screen coordinates, which is not affected by 'rightleft':
+    call test_setmouse(1, 10)
+    call feedkeys("\<LeftMouse>\<Ignore>", "xt")
+    call assert_equal([1, 10], [winline(), wincol()])
+    set rightleft&
+  endif
+
+  set ff& mouse&
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

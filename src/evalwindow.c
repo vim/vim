@@ -1126,7 +1126,12 @@ f_winbufnr(typval_T *argvars, typval_T *rettv)
 f_wincol(typval_T *argvars UNUSED, typval_T *rettv)
 {
     validate_cursor();
-    rettv->vval.v_number = curwin->w_wcol + 1;
+    int col = curwin->w_wcol + 1;
+# ifdef FEAT_RIGHTLEFT
+    if (curwin->w_p_rl)
+	col = curwin->w_width - col + 1;
+# endif
+    rettv->vval.v_number = col;
 }
 
 /*
