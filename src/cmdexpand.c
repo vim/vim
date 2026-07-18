@@ -3346,7 +3346,9 @@ expand_files_and_dirs(
     if (free_pat)
 	vim_free(pat);
 #ifdef BACKSLASH_IN_FILENAME
-    if (p_csl[0] != NUL && (options & WILD_IGNORE_COMPLETESLASH) == 0)
+    if (p_csl[0] != NUL
+	    && (options & WILD_IGNORE_COMPLETESLASH) == 0
+	    && xp->xp_context != EXPAND_FINDFUNC)
     {
 	int j;
 
