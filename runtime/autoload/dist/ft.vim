@@ -1969,6 +1969,8 @@ const ft_from_ext = {
   # CUDA Compute Unified Device Architecture
   "cu": "cuda",
   "cuh": "cuda",
+  # HIP Heterogeneous-compute Interface for Portability
+  "hip": "hip",
   # Cue
   "cue": "cue",
   # DAX
