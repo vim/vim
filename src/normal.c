@@ -1605,6 +1605,7 @@ may_clear_cmdline(void)
  */
 
 static char_u	old_showcmd_buf[SHOWCMD_BUFLEN];  // For push_showcmd()
+static int	showcmd_is_clear = TRUE;
 static int	showcmd_visual = FALSE;
 
 static void display_showcmd(void);
@@ -1833,12 +1834,18 @@ pop_showcmd(void)
     display_showcmd();
 }
 
+    void
+showcmd_set_clear_state(void)
+{
+    showcmd_is_clear = (showcmd_buf[0] == NUL);
+}
+
     static void
 display_showcmd(void)
 {
     int	    len = vim_strsize(showcmd_buf);
 
-    showcmd_is_clear = (len == 0);
+    showcmd_set_clear_state();
     cursor_off();
 
     if (*p_sloc == 's')
