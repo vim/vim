@@ -1076,8 +1076,7 @@ endfunc
 
 " Test for mksession without options restores winminheight
 func Test_mksession_winminheight()
-  set winheight=10 winwidth=10 winminheight& winminwidth&
-  defer execute('set winheight& winwidth&')
+  set winheight& winwidth& winminheight& winminwidth&
   set sessionoptions-=options
   defer execute('set sessionoptions&')
   split
@@ -1097,8 +1096,8 @@ func Test_mksession_winminheight()
   mksession! Xtest_mks.out
   tabclose | tabclose | close
   call assert_equal(1, tabpagenr('$'))
-  set winminheight=2 winminwidth=2
-  defer execute('set winminheight& winminwidth&')
+  set winheight=2 winminheight=2 winwidth=2 winminwidth=2
+  defer execute('set winheight& winwidth& winminheight& winminwidth&')
   source Xtest_mks.out
   call assert_equal(3, tabpagenr('$'))
   call assert_equal([2, 2], [&winminheight, &winminwidth])
@@ -1761,6 +1760,21 @@ func Test_mksession_vim9_duplicate_import()
   defer delete('XDummyOutput')
   call assert_equal([ref_txt], readfile('XDummyOutput'))
 
+endfunc
+
+" 'winminwidth' restore must not fail when the session's saved 'winwidth' is
+" smaller than the sourcing context's 'winminwidth'.
+func Test_mksession_winminwidth()
+  set winminheight& winminwidth& winheight=2 winwidth=1 sessionoptions-=options
+  split
+  mksession! Xtest_mks.out
+  defer delete('Xtest_mks.out')
+  only
+  set winheight=2 winminheight=2 winwidth=2 winminwidth=2
+  defer execute('set winheight& winwidth& winminheight& winminwidth& sessionoptions&')
+  source Xtest_mks.out
+  call assert_equal([2, 2], [&winminheight, &winminwidth])
+  only
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
