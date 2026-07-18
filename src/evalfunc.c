@@ -10569,7 +10569,8 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
     list = (list_T *)get_reg_contents(regname, GREG_EXPR_SRC | GREG_LIST);
     if (list == NULL)
 	return;
-    (void)dict_add_list(dict, "regcontents", list);
+    if (dict_add_list(dict, "regcontents", list) == FAIL)
+	list_unref(list);
 
     switch (get_reg_type(regname, &reglen))
     {
