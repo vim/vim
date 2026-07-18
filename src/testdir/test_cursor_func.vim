@@ -216,6 +216,44 @@ func Test_screenpos()
   call assert_equal(#{col: 1, row: 1, endcol: 1, curscol: 1}, screenpos(0, 1, -v:maxcol))
 endfunc
 
+func Test_screenpos_rightleft()
+  CheckFeature rightleft
+
+  rightbelow new
+  call setline(1, ["aあb", "\tx"])
+  setlocal rightleft
+  redraw
+  let winid = win_getid()
+  let [winrow, wincol] = win_screenpos(winid)
+  let width = winwidth(winid)
+
+  " "col" and "endcol" stay reading-order columns, while "curscol" is the
+  " screen column where the cursor lands, counted from the left.
+  call assert_equal({'row': winrow,
+	\ 'col': wincol + 0,
+	\ 'curscol': wincol + width - 1,
+	\ 'endcol': wincol + 0}, screenpos(winid, 1, 1))
+
+  " A double-wide character: the cursor is on its leftmost cell.
+  call assert_equal({'row': winrow,
+	\ 'col': wincol + 1,
+	\ 'curscol': wincol + width - 3,
+	\ 'endcol': wincol + 2}, screenpos(winid, 1, 2))
+
+  call assert_equal({'row': winrow,
+	\ 'col': wincol + 3,
+	\ 'curscol': wincol + width - 4,
+	\ 'endcol': wincol + 3}, screenpos(winid, 1, 5))
+
+  " A Tab: the cursor is on its last cell in reading order.
+  call assert_equal({'row': winrow + 1,
+	\ 'col': wincol + 0,
+	\ 'curscol': wincol + width - 8,
+	\ 'endcol': wincol + 7}, screenpos(winid, 2, 1))
+
+  bwipe!
+endfunc
+
 func Test_screenpos_fold()
   CheckFeature folding
 
