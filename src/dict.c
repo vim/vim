@@ -1335,9 +1335,6 @@ dict_extend_func(
 	emsg(_(e_cannot_extend_null_dict));
 	return;
     }
-    d2 = argvars[1].vval.v_dict;
-    if (d2 == NULL)
-	return;
 
     if (!is_new && value_check_lock(d1->dv_lock, arg_errmsg, TRUE))
 	return;
@@ -1348,6 +1345,10 @@ dict_extend_func(
 	if (d1 == NULL)
 	    return;
     }
+
+    d2 = argvars[1].vval.v_dict;
+    if (d2 == NULL)
+	goto theend;
 
     // Check the third argument.
     if (argvars[2].v_type != VAR_UNKNOWN)
@@ -1384,6 +1385,7 @@ dict_extend_func(
     }
     dict_extend(d1, d2, action, func_name);
 
+theend:
     if (is_new)
     {
 	rettv->v_type = VAR_DICT;
