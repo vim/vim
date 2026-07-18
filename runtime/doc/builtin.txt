@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Jun 24
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Jul 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -9416,6 +9416,10 @@ screenpos({winid}, {lnum}, {col})			*screenpos()*
 		The "curscol" value is where the cursor would be placed.  For
 		a Tab it would be the same as "endcol", while for a double
 		width character it would be the same as "col".
+		With 'rightleft' set, "col" and "endcol" are still counted
+		from the start of the line, while "curscol" is the actual
+		screen column, thus counted from the left side of the
+		window.
 		The |conceal| feature is ignored here, the column numbers are
 		as if 'conceallevel' is zero.  You can set the cursor to the
 		right position and use |screencol()| to get the value with
