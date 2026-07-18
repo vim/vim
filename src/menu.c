@@ -2862,7 +2862,11 @@ menuitem_getinfo(char_u *menu_name, vimmenu_T *menu, int modes, dict_T *dict)
 	if (l == NULL)
 	    return FAIL;
 
-	dict_add_list(dict, "submenus", l);
+	if (dict_add_list(dict, "submenus", l) == FAIL)
+	{
+	    list_unref(l);
+	    return FAIL;
+	}
 	// get all the children.  Skip PopUp[nvoci].
 	for (topmenu = menu; topmenu != NULL; topmenu = topmenu->next)
 	    if (!menu_is_hidden(topmenu->dname))
@@ -2950,7 +2954,11 @@ menuitem_getinfo(char_u *menu_name, vimmenu_T *menu, int modes, dict_T *dict)
 	if (l == NULL)
 	    return FAIL;
 
-	dict_add_list(dict, "submenus", l);
+	if (dict_add_list(dict, "submenus", l) == FAIL)
+	{
+	    list_unref(l);
+	    return FAIL;
+	}
 	child = menu->children;
 	while (child)
 	{
