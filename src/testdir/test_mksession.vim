@@ -613,6 +613,32 @@ func Test_mksession_terminal_shared_windows()
   call delete('Xtest_mks.out')
 endfunc
 
+func Test_mksession_terminal_shell_command()
+  CheckFeature terminal
+
+  set sessionoptions+=terminal
+  terminal
+  let term_buf = bufnr()
+  eval term_buf->term_setrestore('echo HELLO_WORLD')
+  mksession! Xtest_mks.out
+
+  call StopShellInTerminal(term_buf)
+
+  source Xtest_mks.out
+
+  let restored_buf = bufnr()
+  call assert_equal('terminal', getbufvar(restored_buf, '&buftype'))
+  call WaitForAssert({-> assert_match(
+        \ 'HELLO_WORLD',
+        \ term_getline(restored_buf, 1))})
+  call WaitForAssert({-> assert_match(
+        \ 'finished',
+        \ term_getstatus(restored_buf))})
+
+  bwipe!
+  call delete('Xtest_mks.out')
+endfunc
+
 func Test_mkview_terminal_windows()
   CheckFeature terminal
 
