@@ -284,7 +284,7 @@ get_framelayout(frame_T *fr, list_T *l, int outer)
 	    return;
 	if (list_append_list(l, fr_list) == FAIL)
 	{
-	    vim_free(fr_list);
+	    list_free(fr_list);
 	    return;
 	}
     }
@@ -309,7 +309,7 @@ get_framelayout(frame_T *fr, list_T *l, int outer)
 	    return;
 	if (list_append_list(fr_list, win_list) == FAIL)
 	{
-	    vim_free(win_list);
+	    list_free(win_list);
 	    return;
 	}
 
