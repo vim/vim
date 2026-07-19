@@ -1564,6 +1564,12 @@ overlay_key_press_cb(GtkWidget *widget UNUSED, GdkEventKey *event, gpointer data
 	return true;
     }
 
+    if (dlg->textentry == NULL
+	    && (event->state & gtk_accelerator_get_default_mod_mask()) == 0)
+	return gtk_window_mnemonic_activate(
+		GTK_WINDOW(gui.mainwin), event->keyval,
+		gtk_window_get_mnemonic_modifier(GTK_WINDOW(gui.mainwin)));
+
     return false;
 }
 
@@ -1755,6 +1761,7 @@ overlay_dialog_run(OverlayDialog *dlg)
     gulong mainwin_key_handler = 0;
     gulong drawarea_key_handler = 0;
     gulong box_key_handler = 0;
+    gtk_window_set_mnemonics_visible(GTK_WINDOW(gui.mainwin), true);
     gtk_widget_show_all(dlg->root);
     gtk_grab_add(dlg->root);
     gui.dialog_active = true;
