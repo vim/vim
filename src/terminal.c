@@ -1126,8 +1126,18 @@ term_write_session(FILE *fd, win_T *wp, hashtab_T *terminal_bufs)
     if (fprintf(fd, ".. ' ++type=%s' ", term->tl_job->jv_tty_type) < 0)
 	return FAIL;
 # endif
-    if (term->tl_command != NULL && fputs((char *)term->tl_command, fd) < 0)
-	return FAIL;
+    if (term->tl_command != NULL)
+    {
+	char_u *quoted_command = string_quote(term->tl_command, FALSE);
+	if (quoted_command == NULL)
+	    return FAIL;
+
+	int ret = fputs(".. ' ' .. ", fd) < 0
+		    || fputs((char *)quoted_command, fd) < 0;
+	vim_free(quoted_command);
+	if (ret)
+	    return FAIL;
+    }
     if (put_eol(fd) != OK)
 	return FAIL;
 
