@@ -1547,6 +1547,7 @@ find_tagfunc_tags(
 	    }
 	    if (STRCMP(dict_key, "cmd") == 0)
 	    {
+		len += 2; // for ':' and '|'
 		res_cmd = tv->vval.v_string;
 		continue;
 	    }
@@ -1596,8 +1597,11 @@ find_tagfunc_tags(
 	    p += STRLEN(p);
 
 	    *p++ = TAB;
+	    *p++ = ':';
 	    STRCPY(p, res_cmd);
 	    p += STRLEN(p);
+	    *p++ = '|';
+	    *p = NUL;
 
 	    if (has_extra)
 	    {
@@ -3612,6 +3616,8 @@ parse_match(
     p = tagp->command;
     if (find_extra(&p) == OK)
     {
+	if (*tagp->command == ':') // from tagfunc's cmd
+	    ++tagp->command;
 	if (p > tagp->command && p[-1] == '|')
 	    tagp->command_end = p - 1;  // drop trailing bar
 	else
@@ -3781,7 +3787,10 @@ jumpto_tag(
 	    str++;
 	if (find_extra(&str) == OK)
 	{
-	    pbuf_end = str;
+	    if (str[-1] == '|')
+		pbuf_end = str - 1;  // drop trailing bar
+	    else
+		pbuf_end = str;
 	    *pbuf_end = NUL;
 	}
     }

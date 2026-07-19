@@ -456,4 +456,42 @@ func Test_tagfunc_deletes_lines()
   set tagfunc=
 endfunc
 
+" Test for tagfunc with special characters in cmd
+func Test_tagfunc_cmd_special()
+  let s:mytags = [
+          \ {'name': 'a', 'filename': 'Xtest', 'cmd': 'call cursor(3, 5)', 'kind': 'f', 'static': 0},
+          \ {'name': 'a', 'filename': 'Xtest', 'cmd': '3', 'kind': 'f', 'static': 0},
+          \ {'name': 'a', 'filename': 'Xtest', 'cmd': 'normal 3G4|', 'kind': 'f', 'static': 0},
+          \ {'name': 'a', 'filename': 'Xtest', 'cmd': '/pattern/', 'kind': 'f', 'static': 0},
+          \ {'name': 'a', 'filename': 'Xtest', 'cmd': '/pattern', 'kind': 'f', 'static': 0},
+          \ ]
+  func MyTagFunc(pat, flags, info)
+    return s:mytags
+  endfunc
+  set tagfunc=MyTagFunc
+  call assert_equal(s:mytags, taglist('a'))
+  set tagfunc&
+  unlet s:mytags
+  delfunc MyTagFunc
+endfunc
+
+" A tagfunc 'cmd' ending in '|' must execute verbatim on a tag jump.  The
+" ':'/'|' wrapping adds an extra bar that :normal consumes, so the cursor
+" ends at column 1 instead of the intended column 4.
+func Test_tagfunc_cmd_jump_trailing_bar()
+  call writefile(['line one', 'line two', 'abcdefghij'], 'Xtagcmd', 'D')
+  func MyTagFunc(pat, flags, info)
+    return [{'name': 'a', 'filename': 'Xtagcmd', 'cmd': 'normal 3G4|', 'kind': 'f'}]
+  endfunc
+  set tagfunc=MyTagFunc
+
+  enew
+  tag a
+  call assert_equal([3, 4], [line('.'), col('.')])
+
+  bw!
+  set tagfunc=
+  delfunc MyTagFunc
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
