@@ -641,7 +641,7 @@ endfunc
 
 " Plain :terminal stores no command (tl_command == NULL), so nothing is
 " written after the ':terminal ++curwin ...' line.  Restoring must still
-" produce a running shell terminal.  
+" produce a running shell terminal.
 func Test_mksession_terminal_default_restore()
   CheckFeature terminal
 
