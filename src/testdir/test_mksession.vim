@@ -639,6 +639,28 @@ func Test_mksession_terminal_shell_command()
   call delete('Xtest_mks.out')
 endfunc
 
+" Plain :terminal stores no command (tl_command == NULL), so nothing is
+" written after the ':terminal ++curwin ...' line.  Restoring must still
+" produce a running shell terminal.  
+func Test_mksession_terminal_default_restore()
+  CheckFeature terminal
+
+  terminal
+  let term_buf = bufnr()
+  mksession! Xtest_mks.out
+  call StopShellInTerminal(term_buf)
+  %bwipe!
+
+  source Xtest_mks.out
+  let restored = bufnr()
+  call assert_equal('terminal', getbufvar(restored, '&buftype'))
+  call WaitForAssert({-> assert_match('running', term_getstatus(restored))})
+  call StopShellInTerminal(restored)
+
+  %bwipe!
+  call delete('Xtest_mks.out')
+endfunc
+
 func Test_mkview_terminal_windows()
   CheckFeature terminal
 
