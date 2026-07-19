@@ -1035,7 +1035,8 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 		    list_append_number(l, (varnumber_T)llpos->len);
 		}
 		sprintf(buf, "pos%d", i + 1);
-		dict_add_list(dict, buf, l);
+		if (dict_add_list(dict, buf, l) == FAIL)
+		    list_unref(l);
 	    }
 	}
 	else
@@ -1056,7 +1057,8 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    dict_add_string_len(dict, "conceal", (char_u *)&buf, buflen);
 	}
 #  endif
-	list_append_dict(rettv->vval.v_list, dict);
+	if (list_append_dict(rettv->vval.v_list, dict) == FAIL)
+	    dict_unref(dict);
 	cur = cur->mit_next;
     }
 # endif

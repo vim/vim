@@ -1860,8 +1860,8 @@ get_buffer_signs(buf_T *buf, list_T *l)
     FOR_ALL_SIGNS_IN_BUF(buf, sign)
     {
         dict_T *d = sign_get_info(sign);
-        if (d != NULL)
-            list_append_dict(l, d);
+        if (d != NULL && list_append_dict(l, d) == FAIL)
+            dict_unref(d);
     }
 }
 
@@ -1879,7 +1879,11 @@ sign_get_placed_in_buf(buf_T *buf,
     if (d == NULL)
         return;
 
-    list_append_dict(retlist, d);
+    if (list_append_dict(retlist, d) == FAIL)
+    {
+        dict_unref(d);
+        return;
+    }
 
     dict_add_number(d, "bufnr", (long)buf->b_fnum);
 
@@ -1887,7 +1891,11 @@ sign_get_placed_in_buf(buf_T *buf,
     if (l == NULL)
         return;
 
-    dict_add_list(d, "signs", l);
+    if (dict_add_list(d, "signs", l) == FAIL)
+    {
+        list_unref(l);
+        return;
+    }
 
     sign_entry_T *sign = NULL;
     FOR_ALL_SIGNS_IN_BUF(buf, sign)
@@ -1901,8 +1909,8 @@ sign_get_placed_in_buf(buf_T *buf,
             (lnum == sign->se_lnum && sign_id == sign->se_id))
         {
             dict_T *sdict = sign_get_info(sign);
-            if (sdict != NULL)
-                list_append_dict(l, sdict);
+            if (sdict != NULL && list_append_dict(l, sdict) == FAIL)
+                dict_unref(sdict);
         }
     }
 }

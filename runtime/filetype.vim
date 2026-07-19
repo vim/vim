@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2026 Jun 03
+" Last Change:		2026 Jul 18
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If the filetype can be detected from extension or file name(the final path component),
@@ -281,7 +281,7 @@ au BufNewFile,BufRead *.cpy
 
 " Dockerfile; Podman uses the same syntax with name Containerfile
 " Also see Dockerfile.* below.
-au BufNewFile,BufRead Containerfile,Dockerfile,dockerfile,*.[dD]ockerfile	setf dockerfile
+au BufNewFile,BufRead Containerfile,Dockerfile,dockerfile	setf dockerfile
 
 " Enlightenment configuration files
 au BufNewFile,BufRead *enlightenment/*.cfg	setf c

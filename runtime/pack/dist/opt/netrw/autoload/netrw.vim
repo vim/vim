@@ -1,7 +1,7 @@
 " Creator:    Charles E Campbell
 " Previous Maintainer: Luca Saccarola <github.e41mv@aleeas.com>
 " Maintainer: This runtime file is looking for a new maintainer.
-" Last Change: 2026 Jul 08
+" Last Change: 2026 Jul 18
 " Copyright:  Copyright (C) 2016 Charles E. Campbell {{{1
 "             Permission is hereby granted to use and distribute this code,
 "             with or without modifications, provided that this copyright
@@ -571,6 +571,9 @@ function netrw#Explore(indx,dosplit,style,...)
   endif
 
   if starpat == 0 && a:indx >= 0
+    if dirname == ""
+      let dirname= curfiledir
+    endif
     " [Explore Hexplore Vexplore Sexplore] [dirname]
     if dirname == ""
       let dirname= curfiledir
@@ -8683,6 +8686,7 @@ function s:NetrwLocalRename(path) range
             endif
 
             NetrwKeepj norm! 0
+            let reset_ssl = 0
             if exists('+shellslash') && !&ssl
                 let reset_ssl = 1
                 set ssl

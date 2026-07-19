@@ -3014,9 +3014,7 @@ list_extend_func(
 	emsg(_(e_cannot_extend_null_list));
 	return;
     }
-    l2 = argvars[1].vval.v_list;
-    if ((is_new || !value_check_lock(l1->lv_lock, arg_errmsg, TRUE))
-								 && l2 != NULL)
+    if (is_new || !value_check_lock(l1->lv_lock, arg_errmsg, TRUE))
     {
 	if (is_new)
 	{
@@ -3024,6 +3022,10 @@ list_extend_func(
 	    if (l1 == NULL)
 		return;
 	}
+
+	l2 = argvars[1].vval.v_list;
+	if (l2 == NULL)
+	    goto theend;
 
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
@@ -3049,6 +3051,7 @@ list_extend_func(
 	    goto cleanup;
 	list_extend(l1, l2, item);
 
+theend:
 	if (is_new)
 	{
 	    rettv->v_type = VAR_LIST;

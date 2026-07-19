@@ -975,9 +975,12 @@ makeopens(
     if (put_line(fd, "endif") == FAIL)
 	goto fail;
 
-    // Re-apply 'winheight' and 'winwidth'.
-    if (fprintf(fd, "set winheight=%ld winwidth=%ld",
-			       p_wh, p_wiw) < 0 || put_eol(fd) == FAIL)
+    // Re-apply 'winheight' and 'winwidth', but honor 'winminheight' and
+    // 'winminwidth' settings we saved from the original user context.
+    if (fprintf(fd, "&winheight = max([%ld, save_winminheight])", p_wh) < 0
+	    || put_eol(fd) == FAIL
+	    || fprintf(fd, "&winwidth = max([%ld, save_winminwidth])", p_wiw) < 0
+	    || put_eol(fd) == FAIL)
 	goto fail;
 
     // Restore 'shortmess'.

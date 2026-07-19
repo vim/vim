@@ -7830,10 +7830,9 @@ frame_find_global_stlh_rec(frame_T *frp, int h)
 	win_T  *wp = frp->fr_win;
 
 	// Only consider windows with a status line that use global stlo.
-	// Exclude windows at minimum height (w_height <= p_wmh): they can
-	// only afford 1 status line row anyway, and should not constrain
-	// the global stlh for larger windows (e.g. after CTRL-W__).
-	if (wp->w_height > p_wmh && wp->w_status_height > 0
+	// Every such window constrains the global height (best effort): the
+	// result is the largest height that still fits every window.
+	if (wp->w_height > 0 && wp->w_status_height > 0
 		&& *wp->w_p_stlo == NUL)
 	{
 	    int win_free_height = frp->fr_height - WINBAR_HEIGHT(wp);

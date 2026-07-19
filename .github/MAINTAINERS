@@ -235,6 +235,7 @@ runtime/ftplugin/java.vim				@zzzyxwvut
 runtime/ftplugin/javacc.vim				@ribru17
 runtime/ftplugin/javascript.vim				@dkearns
 runtime/ftplugin/javascriptreact.vim			@dkearns
+runtime/ftplugin/jinja.vim				@HiPhish
 runtime/ftplugin/jjdescription.vim			@gpanders
 runtime/ftplugin/jq.vim					@vito-c
 runtime/ftplugin/json.vim				@dbarnett
@@ -584,6 +585,7 @@ runtime/syntax/hcl.vim					@gpanders
 runtime/syntax/help.vim					@dkearns
 runtime/syntax/help_ru.vim				@RestorerZ
 runtime/syntax/hgcommit.vim				@k-takata
+runtime/syntax/hip.vim					@Young-TW
 runtime/syntax/hitest.vim				@lacygoill
 runtime/syntax/hog.vim					@wtfbbqhax
 runtime/syntax/hollywood.vim				@sodero

@@ -1134,7 +1134,8 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
     for (n = 0; n < reg->y_size; n++)
 	list_append_string(list, reg->y_array[n].string, (int)reg->y_array[n].length);
     list->lv_lock = VAR_FIXED;
-    (void)dict_add_list(v_event, "regcontents", list);
+    if (dict_add_list(v_event, "regcontents", list) == FAIL)
+	list_unref(list);
 
     // register name or empty string for unnamed operation
     buf[0] = (char_u)oap->regname;
@@ -1229,7 +1230,8 @@ put_do_autocmd(
     }
 
     list->lv_lock = VAR_FIXED;
-    (void)dict_add_list(v_event, "regcontents", list);
+    if (dict_add_list(v_event, "regcontents", list) == FAIL)
+	list_unref(list);
 
     // register name or empty string for unnamed operation
     buf[0] = (char_u)regname;

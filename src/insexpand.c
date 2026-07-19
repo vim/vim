@@ -4176,6 +4176,8 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 		return;
 	    ret = dict_add_list(retdict, (has_matches && !has_items)
 						? "matches" : "items", li);
+	    if (ret == FAIL)
+		list_unref(li);
 	}
 	if (ret == OK && what_flag & CI_WHAT_SELECTED)
 	    if (compl_curr_match != NULL && compl_curr_match->cp_number == -1)
@@ -4196,7 +4198,10 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 			    return;
 			ret = list_append_dict(li, di);
 			if (ret != OK)
+			{
+			    dict_unref(di);
 			    return;
+			}
 			fill_complete_info_dict(di, match, has_matches && has_items);
 		    }
 		    if (compl_curr_match != NULL
@@ -4219,6 +4224,8 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 		return;
 	    fill_complete_info_dict(di, compl_curr_match, FALSE);
 	    ret = dict_add_dict(retdict, "completed", di);
+	    if (ret == FAIL)
+		dict_unref(di);
 	}
     }
 }

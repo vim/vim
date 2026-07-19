@@ -3377,6 +3377,7 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 		tv1->vval.v_string = alloc(len1 + STRLEN(s2) + 1);
 		if (tv1->vval.v_string == NULL)
 		{
+		    vim_free(s1);
 		    clear_ppconst(ppconst);
 		    return FAIL;
 		}

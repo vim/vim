@@ -3997,7 +3997,7 @@ call_func(
 	// could be changed or deleted in the called function.
 	name = len > 0 ? vim_strnsave(funcname, len) : vim_strsave(funcname);
 	if (name == NULL)
-	    return ret;
+	    goto theend;
 
 	fname = fname_trans_sid(name, fname_buf, &tofree, &error);
     }

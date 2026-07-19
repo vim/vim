@@ -5768,8 +5768,8 @@ f_hlget(typval_T *argvars, typval_T *rettv)
 	if (hlarg == NULL || STRICMP(hlarg, HL_TABLE()[i].sg_name) == 0)
 	{
 	    dict = highlight_get_info(i, resolve_link);
-	    if (dict != NULL)
-		list_append_dict(list, dict);
+	    if (dict != NULL && list_append_dict(list, dict) == FAIL)
+		dict_unref(dict);
 	}
     }
 }
