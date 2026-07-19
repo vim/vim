@@ -1221,8 +1221,8 @@ key_press_event(GtkWidget *widget UNUSED,
     key_sym = event->keyval;
     state = event->state;
 #ifdef HAVE_GTK3_OVERLAY_DIALOG
-    if (gui.dialog_active)
-	return gui.dialog_textentry_active ? false : true;
+    if (gui.dialog_textentry_active)
+	return FALSE;
 #endif
 #ifdef FEAT_XIM
     if (xim_queue_key_press_event(event, TRUE))
@@ -3477,8 +3477,7 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
 		int x2, y2;
 		gui_gtk_get_pointer(gui.mainwin, &x2, &y2, NULL);
 		gtk_menu_popup_at_rect(GTK_MENU(widget),
-			gtk_widget_get_window(gui.mainwin),
-			&(GdkRectangle){x2, y2, 1, 1},
+			gtk_widget_get_window(gui.mainwin), &(GdkRectangle){x2, y2, 1, 1},
 			GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST, NULL);
 	    }
 	    else
@@ -4125,7 +4124,6 @@ gui_mch_init(void)
 #endif
 
 #ifdef GDK_WINDOWING_WAYLAND
-    // TODO: if GTK_CHECK_VERSION(....)
     GdkDisplay *d = gdk_display_get_default();
     if (GDK_IS_WAYLAND_DISPLAY(d))
 	gui.is_wayland = true;

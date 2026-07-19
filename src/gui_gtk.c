@@ -1541,7 +1541,8 @@ overlay_key_press_cb(GtkWidget *widget UNUSED, GdkEventKey *event, gpointer data
 
     if (event->keyval == GDK_KEY_ISO_Left_Tab
 	    || (event->keyval == GDK_KEY_Tab
-		&& (event->state & GDK_SHIFT_MASK) != 0))
+		&& (event->state & GDK_SHIFT_MASK) != 0)
+	    || (event->keyval == GDK_KEY_Left))
     {
 	if (dlg->textentry != NULL && dlg->sel <= 0)
 	    overlay_dialog_focus_textentry(dlg);
@@ -1551,7 +1552,8 @@ overlay_key_press_cb(GtkWidget *widget UNUSED, GdkEventKey *event, gpointer data
 	return true;
     }
 
-    if (event->keyval == GDK_KEY_Tab)
+    if (event->keyval == GDK_KEY_Tab
+	|| (event->keyval == GDK_KEY_Right))
     {
 	if (dlg->textentry != NULL
 		&& dlg->sel >= (int)dlg->buttons->len - 1)
