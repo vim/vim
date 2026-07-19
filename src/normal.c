@@ -1739,7 +1739,7 @@ add_to_showcmd(int c)
 	K_RIGHTMOUSE, K_RIGHTDRAG, K_RIGHTRELEASE,
 	K_MOUSEDOWN, K_MOUSEUP, K_MOUSELEFT, K_MOUSERIGHT,
 	K_X1MOUSE, K_X1DRAG, K_X1RELEASE, K_X2MOUSE, K_X2DRAG, K_X2RELEASE,
-	K_CURSORHOLD,
+	K_CURSORHOLD, K_COMMAND, K_SCRIPT_COMMAND,
 	0
     };
 
@@ -1834,12 +1834,18 @@ pop_showcmd(void)
     display_showcmd();
 }
 
+    void
+showcmd_update_clear_state(void)
+{
+    showcmd_is_clear = (showcmd_buf[0] == NUL);
+}
+
     static void
 display_showcmd(void)
 {
     int	    len = vim_strsize(showcmd_buf);
 
-    showcmd_is_clear = (len == 0);
+    showcmd_update_clear_state();
     cursor_off();
 
     if (*p_sloc == 's')

@@ -620,6 +620,7 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	    if (width > 0)
 		screen_puts_len(showcmd_buf, width, row,
 				wp->w_wincol + this_ru_col - width - 1, attr);
+	    showcmd_update_clear_state();
 	}
     }
 
