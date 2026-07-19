@@ -3,6 +3,7 @@
 
 CheckFeature textprop
 
+source util/view_util.vim
 source util/screendump.vim
 import './util/vim9.vim' as v9
 
@@ -4991,4 +4992,39 @@ func Test_prop_find_floating_vtext()
     call prop_type_delete(tn)
   endfor
 endfunc
+
+func Test_textprop_below_truncated_with_ellipsis()
+  enew!
+  set ff=unix
+
+  let visible_width = 20
+  call NewWindow(5, visible_width)
+
+  call setline(1, ['foo'])
+
+  call prop_type_add('virtual_text_prop', #{highlight: 'ErrorMsg', bufnr: bufnr()})
+
+  let virtual_text = 'some long virtual text'
+  call prop_add(1, 0, #{
+    \ type: 'virtual_text_prop',
+    \ text: virtual_text,
+    \ text_align: 'below',
+    \})
+
+  " virtual text should be trimmed with '…':
+  let expected_lines = [
+    \'foo                 ',
+    \'some long virtual t…',
+    \'~                   ',
+  \]
+  let actual_lines = ScreenLines([1, expected_lines->len()], visible_width)
+  call assert_equal(expected_lines, actual_lines)
+
+  call prop_clear(1)
+  call prop_type_delete('virtual_text_prop', #{bufnr: bufnr()})
+  only!
+  enew!
+  set ff&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
