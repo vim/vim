@@ -1454,7 +1454,7 @@ overlay_dialog_cancel(OverlayDialog *dlg)
 overlay_key_is_cancel(GdkEventKey *event)
 {
     return event->keyval == GDK_KEY_Escape
-	|| ((event->state & GDK_CONTROL_MASK) != 0
+	|| (!gui.dialog_textentry_active && (event->state & GDK_CONTROL_MASK) != 0
 		&& (event->keyval == GDK_KEY_c || event->keyval == GDK_KEY_C));
 }
     static void
