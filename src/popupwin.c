@@ -120,10 +120,19 @@ static void redraw_overlapped_opacity_popups(int winrow, int wincol,
 #ifdef FEAT_IMAGE_KITTY
 static void popup_image_clear_kitty(win_T *wp);
 #endif
+// GDI and cairo paint the image straight into the window, so the area has to
+// be redrawn when the popup goes away.  GTK4 keeps a list of images to render
+// instead, there gui_gtk4_remove_image() does the job.
+#ifdef FEAT_IMAGE_GDI
+# define POPUP_IMAGE_CLEAR_GUI
+#endif
 #if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE_CAIRO)
 # if !GTK_CHECK_VERSION(4,0,0)
-static void popup_image_clear_cairo(win_T *wp);
+#  define POPUP_IMAGE_CLEAR_GUI
 # endif
+#endif
+#ifdef POPUP_IMAGE_CLEAR_GUI
+static void popup_image_clear_gui(win_T *wp);
 #endif
 #ifdef FEAT_IMAGE
 static bool popup_image_composites_frames(void);
@@ -4314,10 +4323,8 @@ popup_hide(win_T *wp)
 
     wp->w_popup_flags |= POPF_HIDDEN;
 
-#if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE_CAIRO)
-# if !GTK_CHECK_VERSION(4,0,0)
-    popup_image_clear_cairo(wp);
-# endif
+#ifdef POPUP_IMAGE_CLEAR_GUI
+    popup_image_clear_gui(wp);
 #endif
 
     // Do not decrement b_nwindows, we still reference the buffer.
@@ -4523,10 +4530,8 @@ popup_free(win_T *wp)
     if (gui.in_use)
 	gui_gtk4_remove_image(wp);
 #endif
-#if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE_CAIRO)
-# if !GTK_CHECK_VERSION(4,0,0)
-    popup_image_clear_cairo(wp);
-# endif
+#ifdef POPUP_IMAGE_CLEAR_GUI
+    popup_image_clear_gui(wp);
 #endif
     sign_undefine_by_name(popup_get_sign_name(wp), FALSE);
     wp->w_buffer->b_locked = FALSE;
@@ -7162,10 +7167,12 @@ popup_image_clear_kitty(win_T *wp)
 }
 # endif
 
-# if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE_CAIRO)
-#  if !GTK_CHECK_VERSION(4,0,0)
+# ifdef POPUP_IMAGE_CLEAR_GUI
+/*
+ * Redraw the area the image of "wp" was drawn in, the popup goes away.
+ */
     static void
-popup_image_clear_cairo(win_T *wp)
+popup_image_clear_gui(win_T *wp)
 {
     if (!gui.in_use
 	    || wp->w_popup_image_emit_cells_w <= 0
@@ -7181,7 +7188,6 @@ popup_image_clear_cairo(win_T *wp)
     wp->w_popup_image_emit_cells_w = 0;
     wp->w_popup_image_emit_cells_h = 0;
 }
-#  endif
 # endif
 
 # if defined(FEAT_IMAGE_SIXEL) || defined(FEAT_IMAGE_KITTY)
@@ -7245,7 +7251,10 @@ popup_maybe_emit_image_rect(
     int img_left, img_top, img_right, img_bottom;
     int src_x, src_y, draw_w, draw_h;
 
-    if (!gui.in_use || wp->w_popup_image_data == NULL
+    // This is called for every popup, also the hidden ones: the cursor undraw
+    // and WM_PAINT paths do not go through find_next_popup().
+    if (!gui.in_use || (wp->w_popup_flags & POPF_HIDDEN)
+	    || wp->w_popup_image_data == NULL
 	    || wp->w_popup_image_w <= 0 || wp->w_popup_image_h <= 0)
 	return;
 
