@@ -552,12 +552,13 @@ dict_add_func(dict_T *d, char *key, ufunc_T *fp)
 	return FAIL;
     item->di_tv.v_type = VAR_FUNC;
     item->di_tv.vval.v_string = vim_strnsave(fp->uf_name, fp->uf_namelen);
+    // Reference before dict_add() so dictitem_free()'s unref stays balanced on failure.
+    func_ref(item->di_tv.vval.v_string);
     if (dict_add(d, item) == FAIL)
     {
 	dictitem_free(item);
 	return FAIL;
     }
-    func_ref(item->di_tv.vval.v_string);
     return OK;
 }
 
