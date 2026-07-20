@@ -4285,9 +4285,9 @@ gui_mch_init(void)
     if (gtk_socket_id == 0)
     {
 	g_signal_connect(G_OBJECT(gui.mainwin), "focus-out-event",
-			 G_CALLBACK(focus_out_event), NULL);
-	g_signal_connect(G_OBJECT(gui.mainwin), "focus-in-event",
-			 G_CALLBACK(focus_in_event), NULL);
+		G_CALLBACK(focus_out_event), NULL);
+	g_signal_connect_after(G_OBJECT(gui.mainwin), "focus-in-event",
+		G_CALLBACK(focus_in_event), NULL);
     }
     else
     {
