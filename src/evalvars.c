@@ -3911,6 +3911,35 @@ delete_var(hashtab_T *ht, hashitem_T *hi)
 }
 
 /*
+ * Delete the exported variables of a reloaded Vim9 autoload script.  They live
+ * in the global namespace with the autoload prefix (e.g. "foo#bar") and are
+ * recreated when the script body runs again.
+ */
+    void
+delete_autoload_export_vars(char_u *prefix)
+{
+    if (prefix == NULL)
+	return;
+    size_t  prefixlen = STRLEN(prefix);
+
+    hash_lock(&globvarht);
+    int	todo = (int)globvarht.ht_used;
+
+    for (hashitem_T *hi = globvarht.ht_array; todo > 0; ++hi)
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    dictitem_T	*di = HI2DI(hi);
+
+	    --todo;
+	    // Keep a class or enum: existing objects still refer to it.
+	    if (di->di_tv.v_type != VAR_CLASS
+		    && STRNCMP(di->di_key, prefix, prefixlen) == 0)
+		delete_var(&globvarht, hi);
+	}
+    hash_unlock(&globvarht);
+}
+
+/*
  * List the value of one internal variable.
  */
     static void

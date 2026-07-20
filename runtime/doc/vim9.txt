@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.2.  Last change: 2026 May 21
+*vim9.txt*	For Vim version 9.2.  Last change: 2026 Jul 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -403,6 +403,13 @@ When loading a Vim9 script a second time all existing script-local functions
 and variables are deleted, thus you start with a clean slate.  This is useful
 if you are developing a plugin and want to try a new version.  If you renamed
 something you don't have to worry about the old name still hanging around.
+
+The exported functions and variables of an autoload script live in the global
+namespace with the autoload prefix.  When such a script is sourced again they
+are likewise given a clean slate, so an autoload script can be sourced more
+than once.  A class or enum is an exception: it cannot be redefined this way
+and |E1041| is given, because objects created from the previous definition
+would keep referring to it.  Restart Vim to load a changed class or enum.
 
 If you do want to keep items, use: >
 	vim9script noclear
