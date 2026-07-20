@@ -408,6 +408,9 @@ static int	nextchr;	// used for ungetchr()
 #define REG_ZPAREN	2	// \z(\)
 #define REG_NPAREN	3	// \%(\)
 
+// Limit recursive parsing of nested regexp atoms to avoid using up the C stack.
+#define REG_MAX_PAREN_DEPTH	1000
+
 typedef struct
 {
     char_u	*regparse;
