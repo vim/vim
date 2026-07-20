@@ -3,6 +3,7 @@
 #
 
 include Make_all.mak
+-include auto/config.mk
 
 # Override with `make TAGPRG='...' tags`
 TAGPRG ?= ctags -I INIT+,INIT2+,INIT3+,INIT4+,INIT5+ --fields=+S -f tags
