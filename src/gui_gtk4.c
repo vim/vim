@@ -2582,15 +2582,17 @@ read_data_input_cb(
     void
 gui_gtk_set_dnd_targets(void)
 {
-    GdkContentFormatsBuilder *builder = gdk_content_formats_builder_new();
+    GdkContentFormatsBuilder	*builder = gdk_content_formats_builder_new();
+    GdkContentFormats		*formats;
 
     gdk_content_formats_builder_add_gtype(builder, GDK_TYPE_FILE_LIST);
     gdk_content_formats_builder_add_gtype(builder, G_TYPE_STRING);
     if (clip_html)
 	gdk_content_formats_builder_add_mime_type(builder, "text/html");
 
-    gtk_drop_target_async_set_formats(gui.drop_target,
-	    gdk_content_formats_builder_free_to_formats(builder));
+    formats = gdk_content_formats_builder_free_to_formats(builder);
+    gtk_drop_target_async_set_formats(gui.drop_target, formats);
+    gdk_content_formats_unref(formats);
 }
 
 /*
