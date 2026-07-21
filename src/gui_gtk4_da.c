@@ -308,7 +308,7 @@ rgba_is_transparent(const uint32_t *buf, int n_pixels)
     // Could also compare 2 pixels at once using a 64 bit integer, but not sure
     // if that might cause alignment issues...
     for (int i = 0; i < n_pixels; i++)
-	if ((buf[i] & 0xFF000000U) != 0)
+	if (buf[i] != 0)
 	    return FALSE;
     return TRUE;
 }
@@ -646,16 +646,20 @@ draw_glyphs_same(DrawGlyphs *a, DrawGlyphs *b)
     if (a->n_glyphs != b->n_glyphs || a->font != b->font)
 	return FALSE;
     for (int i = 0; i < a->n_glyphs; i++)
-	if (a->glyphs[i].glyph != b->glyphs[i].glyph)
+	if (a->glyphs[i].glyph != b->glyphs[i].glyph
+		|| a->glyphs[i].geometry.width != b->glyphs[i].geometry.width
+		|| a->glyphs[i].geometry.x_offset != b->glyphs[i].geometry.x_offset
+		|| a->glyphs[i].geometry.y_offset != b->glyphs[i].geometry.y_offset
+		|| a->glyphs[i].attr.is_cluster_start != b->glyphs[i].attr.is_cluster_start)
 	    return FALSE;
     return TRUE;
 }
 
 /*
  * Convert the buffer for the given layer to a texture node, scaled up to the
- * correct size. "off" is the offset in the buffer to start from, and "bleed" is
- * TRUE, then expand the buffer by 1 cell (clipped by draw area width), using
- * the color of the rightmost cell.
+ * correct size. "off" is the pixel offset in the buffer to start from, and
+ * "bleed" is TRUE, then expand the buffer by 1 cell (clipped by draw area
+ * width), using the color of the rightmost cell.
  */
     static GskRenderNode *
 draw_layer_get_texture(
@@ -673,11 +677,11 @@ draw_layer_get_texture(
     {
 	GByteArray *arr = g_byte_array_new();
 
-	g_byte_array_append(arr, (uint8_t *)dlayer->buf + off,
+	g_byte_array_append(arr, (uint8_t *)(dlayer->buf + off),
 		sizeof(uint32_t) * da->n_cols);
 	g_byte_array_append(arr,
 		(uint8_t *)(dlayer->buf + off + (da->n_cols - 1)),
-		sizeof(uint32_t));
+		sizeof(uint32_t)); // Add bleed using last pixel of buffer
 	bytes = g_byte_array_free_to_bytes(arr);
     }
     else
@@ -1044,7 +1048,9 @@ draw_row_render_text(DrawRow *drow, VimDrawArea *da)
 	    if (snode != NULL)
 		g_ptr_array_add(nodes, snode);
 	    // Skip the cells the draw sign covers.
-	    c += w;
+	    c += w - 1; // Subtract one because we increment by one in the for
+			// loop
+	    continue;
 	}
 	else if (dglyphs->font != cur_font || cur_fg != dglyphs->fg_color)
 	{
