@@ -1450,13 +1450,6 @@ overlay_dialog_cancel(OverlayDialog *dlg)
     return true;
 }
 
-    static gboolean
-overlay_key_is_cancel(GdkEventKey *event)
-{
-    return event->keyval == GDK_KEY_Escape
-	|| (!gui.dialog_textentry_active && (event->state & GDK_CONTROL_MASK) != 0
-		&& (event->keyval == GDK_KEY_c || event->keyval == GDK_KEY_C));
-}
     static void
 overlay_dialog_activate_current(OverlayDialog *dlg)
 {
@@ -1491,33 +1484,43 @@ overlay_dialog_focus_textentry(OverlayDialog *dlg)
 
     static gboolean
 overlay_textentry_key_press_cb(
-	GtkWidget	*widget UNUSED,
-	GdkEventKey	*event,
-	gpointer	data)
+       GtkWidget	*widget UNUSED,
+       GdkEventKey	*event,
+       gpointer		data)
 {
     OverlayDialog *dlg = (OverlayDialog *)data;
 
-    if (overlay_key_is_cancel(event))
+    switch (event->keyval)
     {
-	overlay_dialog_cancel(dlg);
-	return true;
-    }
+	case GDK_KEY_Escape:
+	    return overlay_dialog_cancel(dlg);
 
-    if (event->keyval == GDK_KEY_ISO_Left_Tab
-	    || (event->keyval == GDK_KEY_Tab
-		&& (event->state & GDK_SHIFT_MASK) != 0))
-    {
-	overlay_dialog_focus_button(dlg, dlg->buttons->len - 1);
-	return true;
-    }
+	case GDK_KEY_ISO_Left_Tab:
+	case GDK_KEY_3270_BackTab:
+	    overlay_dialog_focus_button(dlg, dlg->buttons->len - 1);
+	    return true;
 
-    if (event->keyval == GDK_KEY_Tab)
-    {
-	overlay_dialog_focus_button(dlg, 0);
-	return true;
-    }
+	case GDK_KEY_Tab:
+	    overlay_dialog_focus_button(dlg,
+		    (event->state & GDK_SHIFT_MASK) != 0
+			? dlg->buttons->len - 1 : 0);
+	    return true;
 
-    return false;
+	default:
+	    return false;
+    }
+}
+
+    static void
+overlay_dialog_focus_relative(OverlayDialog *dlg, int offset)
+{
+    int idx = dlg->sel + offset;
+
+    if (dlg->textentry != NULL
+	    && (idx < 0 || idx >= (int)dlg->buttons->len))
+	overlay_dialog_focus_textentry(dlg);
+    else
+	overlay_dialog_focus_button(dlg, idx);
 }
 
     static gboolean
@@ -1525,43 +1528,43 @@ overlay_key_press_cb(GtkWidget *widget UNUSED, GdkEventKey *event, gpointer data
 {
     OverlayDialog *dlg = (OverlayDialog *)data;
 
-    if (overlay_key_is_cancel(event))
+    if (dlg->textentry != NULL && gtk_widget_has_focus(dlg->textentry))
+	return false;
+
+    switch (event->keyval)
     {
-	overlay_dialog_cancel(dlg);
-	return true;
-    }
+	case GDK_KEY_Escape:
+	    return overlay_dialog_cancel(dlg);
 
-    if (event->keyval == GDK_KEY_Return
-	    || event->keyval == GDK_KEY_KP_Enter
-	    || event->keyval == GDK_KEY_space)
-    {
-	overlay_dialog_activate_current(dlg);
-	return true;
-    }
+	case GDK_KEY_c:
+	case GDK_KEY_C:
+	    if ((event->state & GDK_CONTROL_MASK) != 0)
+		return overlay_dialog_cancel(dlg);
+	    break;
 
-    if (event->keyval == GDK_KEY_ISO_Left_Tab
-	    || (event->keyval == GDK_KEY_Tab
-		&& (event->state & GDK_SHIFT_MASK) != 0)
-	    || (event->keyval == GDK_KEY_Left))
-    {
-	if (dlg->textentry != NULL && dlg->sel <= 0)
-	    overlay_dialog_focus_textentry(dlg);
-	else
-	    overlay_dialog_focus_button(dlg, dlg->sel - 1);
+	case GDK_KEY_Return:
+	case GDK_KEY_KP_Enter:
+	case GDK_KEY_space:
+	    overlay_dialog_activate_current(dlg);
+	    return true;
 
-	return true;
-    }
+	case GDK_KEY_ISO_Left_Tab:
+	case GDK_KEY_3270_BackTab:
+	case GDK_KEY_Left:
+	    overlay_dialog_focus_relative(dlg, -1);
+	    return true;
 
-    if (event->keyval == GDK_KEY_Tab
-	|| (event->keyval == GDK_KEY_Right))
-    {
-	if (dlg->textentry != NULL
-		&& dlg->sel >= (int)dlg->buttons->len - 1)
-	    overlay_dialog_focus_textentry(dlg);
-	else
-	    overlay_dialog_focus_button(dlg, dlg->sel + 1);
+	case GDK_KEY_Tab:
+	    overlay_dialog_focus_relative(dlg,
+		    (event->state & GDK_SHIFT_MASK) != 0 ? -1 : 1);
+	    return true;
 
-	return true;
+	case GDK_KEY_Right:
+	    overlay_dialog_focus_relative(dlg, 1);
+	    return true;
+
+	default:
+	    break;
     }
 
     if (dlg->textentry == NULL
@@ -1758,56 +1761,46 @@ overlay_dialog_add_buttons(
     static int
 overlay_dialog_run(OverlayDialog *dlg)
 {
-    gulong mainwin_key_handler = 0;
-    gulong drawarea_key_handler = 0;
-    gulong box_key_handler = 0;
+    gulong mainwin_key_handler;
+    gulong drawarea_key_handler;
+    gulong box_key_handler;
     gtk_window_set_mnemonics_visible(GTK_WINDOW(gui.mainwin), true);
     gtk_widget_show_all(dlg->root);
     gtk_grab_add(dlg->root);
     gui.dialog_active = true;
 
     if (dlg->textentry != NULL)
-    {
-	gui.dialog_textentry_active = true;
 	overlay_dialog_focus_textentry(dlg);
-    }
     else
-    {
 	overlay_dialog_focus_button(dlg, dlg->sel);
-	mainwin_key_handler = g_signal_connect(
-		G_OBJECT(gui.mainwin),
-		"key-press-event",
-		G_CALLBACK(overlay_key_press_cb),
-		dlg);
-	drawarea_key_handler = g_signal_connect(
-		G_OBJECT(gui.drawarea),
-		"key-press-event",
-		G_CALLBACK(overlay_key_press_cb),
-		dlg);
-	box_key_handler = g_signal_connect(
-		G_OBJECT(dlg->root),
-		"key-press-event",
-		G_CALLBACK(overlay_key_press_cb),
-		dlg);
-    }
+
+    mainwin_key_handler = g_signal_connect(
+	    G_OBJECT(gui.mainwin),
+	    "key-press-event",
+	    G_CALLBACK(overlay_key_press_cb),
+	    dlg);
+    drawarea_key_handler = g_signal_connect(
+	    G_OBJECT(gui.drawarea),
+	    "key-press-event",
+	    G_CALLBACK(overlay_key_press_cb),
+	    dlg);
+    box_key_handler = g_signal_connect(
+	    G_OBJECT(dlg->root),
+	    "key-press-event",
+	    G_CALLBACK(overlay_key_press_cb),
+	    dlg);
 
     dlg->loop = g_main_loop_new(NULL, false);
     g_main_loop_run(dlg->loop);
     g_main_loop_unref(dlg->loop);
     dlg->loop = NULL;
 
-    if (dlg->textentry != NULL)
-	gui.dialog_textentry_active = false;
-
     gui.dialog_active = false;
 
-    if (mainwin_key_handler != 0)
-    {
-	g_signal_handler_disconnect(G_OBJECT(dlg->root), box_key_handler);
-	g_signal_handler_disconnect(G_OBJECT(gui.drawarea),
-		drawarea_key_handler);
-	g_signal_handler_disconnect(G_OBJECT(gui.mainwin), mainwin_key_handler);
-    }
+    g_signal_handler_disconnect(G_OBJECT(dlg->root), box_key_handler);
+    g_signal_handler_disconnect(G_OBJECT(gui.drawarea),
+	    drawarea_key_handler);
+    g_signal_handler_disconnect(G_OBJECT(gui.mainwin), mainwin_key_handler);
 
     gtk_grab_remove(dlg->root);
     g_ptr_array_free(dlg->buttons, false);
