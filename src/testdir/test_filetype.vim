@@ -560,7 +560,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     mplayerconf: ['mplayer.conf', '/.mplayer/config', 'any/.mplayer/config'],
     mrxvtrc: ['mrxvtrc', '.mrxvtrc'],
     msidl: ['file.odl', 'file.mof'],
-    msmtp: ['.msmtprc'],
+    msmtp: ['msmtprc', '.msmtprc'],
     msql: ['file.msql'],
     mss: ['file.mss'],
     mupad: ['file.mu'],
