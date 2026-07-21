@@ -4844,7 +4844,8 @@ gui_mch_destroy_menu(vimmenu_T *menu)
     else if (menu->parent == NULL)
 	// Remove from menubar
 	vim_menu_bar_remove(VIM_MENU_BAR(gui.menubar), menu->id);
-    else
+    // "menu->id" is NULL for window toolbar
+    else if (menu->id != NULL)
 	// Remove from parent menu
 	vim_menu_remove(VIM_MENU(menu->parent->submenu_id), menu->id);
 
