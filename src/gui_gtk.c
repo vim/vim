@@ -1415,6 +1415,7 @@ gui_mch_browsedir(
 typedef struct
 {
     GtkWidget *root; // overlay encapsulating child and event box
+    GtkWidget *frame;
     GMainLoop *loop;
     GtkWidget *actions; // buttons container
     GPtrArray *buttons;
@@ -1423,7 +1424,56 @@ typedef struct
     GtkWidget *textentry;
 } OverlayDialog;
 
+static GtkWidget *overlay_dialog_flash_widget = NULL;
+static guint overlay_flash_timer = 0;
+
 static void overlay_dialog_focus_button(OverlayDialog *dlg, int idx);
+
+    static gboolean
+overlay_dialog_flash_timeout_cb(gpointer data)
+{
+    GtkWidget *frame = (GtkWidget *)data;
+
+    gtk_style_context_remove_class(
+	    gtk_widget_get_style_context(frame), "flash");
+    overlay_flash_timer = 0;
+    return G_SOURCE_REMOVE;
+}
+
+    void
+gui_gtk_flash_dialog(int msec)
+{
+    if (overlay_dialog_flash_widget == NULL)
+	return;
+
+    if (overlay_flash_timer != 0)
+	g_source_remove(overlay_flash_timer);
+
+    gtk_style_context_add_class(
+	    gtk_widget_get_style_context(overlay_dialog_flash_widget), "flash");
+    overlay_flash_timer = g_timeout_add(
+	    msec > 0 ? (guint)msec : 1,
+	    overlay_dialog_flash_timeout_cb,
+	    overlay_dialog_flash_widget);
+}
+
+    static gboolean
+overlay_dialog_button_press_cb(
+	GtkWidget	*widget UNUSED,
+	GdkEventButton	*event,
+	gpointer	data)
+{
+    OverlayDialog *dlg = (OverlayDialog *)data;
+    GtkWidget *target = gtk_get_event_widget((GdkEvent *)event);
+
+    if (target != NULL
+	    && (target == dlg->frame
+		|| gtk_widget_is_ancestor(target, dlg->frame)))
+	return false;
+
+    gui_gtk_flash_dialog(100);
+    return true;
+}
 
     static void
 overlay_dialog_clear_selected_button(OverlayDialog *dlg)
@@ -1624,7 +1674,6 @@ create_overlay_dialog(
 	char_u *textfield,
 	OverlayDialog *dlg)
 {
-    GtkWidget *frame;
     GtkWidget *vbox;
     GtkWidget *label;
     GtkWidget *image;
@@ -1645,21 +1694,24 @@ create_overlay_dialog(
     dlg->response = -1;
     dlg->sel = -1;
 
-    frame = gtk_frame_new(NULL);
-    gtk_style_context_add_class(gtk_widget_get_style_context(frame),
+    dlg->frame = gtk_frame_new(NULL);
+    gtk_style_context_add_class(gtk_widget_get_style_context(dlg->frame),
 	    "vim-overlay");
-    gtk_widget_set_halign(frame, GTK_ALIGN_CENTER);
-    gtk_widget_set_valign(frame, GTK_ALIGN_CENTER);
+    gtk_widget_set_halign(dlg->frame, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(dlg->frame, GTK_ALIGN_CENTER);
 
     eventbox = gtk_event_box_new();
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(eventbox), false);
     gtk_widget_set_halign(eventbox, GTK_ALIGN_FILL);
     gtk_widget_set_valign(eventbox, GTK_ALIGN_FILL);
-    gtk_container_add(GTK_CONTAINER(eventbox), frame);
+    gtk_container_add(GTK_CONTAINER(eventbox), dlg->frame);
+    gtk_widget_add_events(eventbox, GDK_BUTTON_PRESS_MASK);
+    g_signal_connect(eventbox, "button-press-event",
+	    G_CALLBACK(overlay_dialog_button_press_cb), dlg);
 
     vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 12);
     gtk_container_set_border_width(GTK_CONTAINER(vbox), 16);
-    gtk_container_add(GTK_CONTAINER(frame), vbox);
+    gtk_container_add(GTK_CONTAINER(dlg->frame), vbox);
 
     if (title != NULL)
     {
@@ -1766,6 +1818,7 @@ overlay_dialog_run(OverlayDialog *dlg)
     gtk_widget_show_all(dlg->root);
     gtk_grab_add(dlg->root);
     gui.dialog_active = true;
+    overlay_dialog_flash_widget = dlg->frame;
 
     if (dlg->textentry != NULL)
 	overlay_dialog_focus_textentry(dlg);
@@ -1794,6 +1847,16 @@ overlay_dialog_run(OverlayDialog *dlg)
     dlg->loop = NULL;
 
     gui.dialog_active = false;
+    overlay_dialog_flash_widget = NULL;
+
+    if (overlay_flash_timer != 0)
+    {
+	g_source_remove(overlay_flash_timer);
+	overlay_flash_timer = 0;
+    }
+    gtk_style_context_remove_class(
+	    gtk_widget_get_style_context(dlg->frame),
+	    "flash");
 
     g_signal_handler_disconnect(G_OBJECT(dlg->root), box_key_handler);
     g_signal_handler_disconnect(G_OBJECT(gui.drawarea),
