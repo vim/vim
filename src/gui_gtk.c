@@ -1411,8 +1411,6 @@ gui_mch_browsedir(
 #if defined(FEAT_GUI_DIALOG)
 
 # ifdef HAVE_GTK3_OVERLAY_DIALOG
-#  define OVERLAY_DIALOG "vim-overlay"
-#  define OVERLAY_DIALOG_SELECTED "selected"
 
 typedef struct
 {
@@ -1437,7 +1435,7 @@ overlay_dialog_clear_selected_button(OverlayDialog *dlg)
 
     button = g_ptr_array_index(dlg->buttons, dlg->sel);
     gtk_style_context_remove_class(gtk_widget_get_style_context(button),
-	    OVERLAY_DIALOG_SELECTED);
+	    "selected");
 }
 
     static bool
@@ -1477,7 +1475,7 @@ overlay_dialog_focus_textentry(OverlayDialog *dlg)
 
     dlg->sel = -1;
     gtk_style_context_add_class(gtk_widget_get_style_context(dlg->textentry),
-	    OVERLAY_DIALOG_SELECTED);
+	    "vim-overlay");
     gtk_widget_grab_focus(dlg->textentry);
     gtk_editable_select_region(GTK_EDITABLE(dlg->textentry), -1, -1);
 }
@@ -1606,7 +1604,7 @@ overlay_dialog_focus_button(OverlayDialog *dlg, int idx)
 	gtk_editable_select_region(GTK_EDITABLE(dlg->textentry), 0, 0);
 	gtk_style_context_remove_class(
 		gtk_widget_get_style_context(dlg->textentry),
-		OVERLAY_DIALOG_SELECTED);
+		"selected");
     }
 
     overlay_dialog_clear_selected_button(dlg);
@@ -1615,7 +1613,7 @@ overlay_dialog_focus_button(OverlayDialog *dlg, int idx)
     gtk_widget_grab_focus(button);
     gtk_window_set_focus(GTK_WINDOW(gui.mainwin), button);
     gtk_style_context_add_class(gtk_widget_get_style_context(button),
-	    OVERLAY_DIALOG_SELECTED);
+	    "selected");
 }
 
     static GtkWidget *
@@ -1649,7 +1647,7 @@ create_overlay_dialog(
 
     frame = gtk_frame_new(NULL);
     gtk_style_context_add_class(gtk_widget_get_style_context(frame),
-	    OVERLAY_DIALOG);
+	    "vim-overlay");
     gtk_widget_set_halign(frame, GTK_ALIGN_CENTER);
     gtk_widget_set_valign(frame, GTK_ALIGN_CENTER);
 
