@@ -1440,7 +1440,7 @@ overlay_dialog_flash_timeout_cb(gpointer data)
     return G_SOURCE_REMOVE;
 }
 
-    void
+    static void
 gui_gtk_flash_dialog(int msec)
 {
     if (overlay_dialog_flash_widget == NULL)
