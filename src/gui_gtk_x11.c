@@ -4174,6 +4174,9 @@ gui_mch_init(void)
     gtk_widget_show(gui.dialog_overlay);
     gtk_box_pack_start(GTK_BOX(vbox), gui.dialog_overlay, TRUE, TRUE, 0);
     gtk_css_provider_load_from_data(gtk_css,
+	    ".vim-overlay.flash {"
+	    "  box-shadow: inset 0 0 0 2px @theme_selected_bg_color;"
+	    "}"
 	    ".vim-overlay {"
 	    "  background-color: @theme_bg_color;"
 	    "}"
