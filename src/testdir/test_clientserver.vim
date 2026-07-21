@@ -549,6 +549,12 @@ endfunc
 func Test_clientserver_serverlist_list()
   CheckNotGui
 
+  " CheckNotGui has already confirmed gvim is not being used to run this test.
+  " However, if this is a GUI _build_ of vim, then the running Vim process
+  " will already have selected _not_ to use socket clientserver. Therefore, we
+  " either need the ability to use the GUI clientserver or to skip the test.
+  call Check_X11_Connection()
+
   let g:test_is_flaky = 1
   let cmd = GetVimCommand()
 
@@ -567,7 +573,7 @@ func Test_clientserver_serverlist_list()
   call assert_equal('list<string>', typename(serverlist(#{list: v:true})))
   call assert_true(serverlist(#{list: v:true})->index('XVIMTEST') != -1)
 
-  if has('win32') || has('gui_running')
+  if has('win32')
     call job_stop(job, 'kill')
   else
     call system(actual .. " --remote-expr 'execute(\"qa!\")'")
