@@ -1226,7 +1226,7 @@ key_press_event(GtkWidget *widget UNUSED,
     key_sym = event->keyval;
     state = event->state;
 #ifdef HAVE_GTK3_OVERLAY_DIALOG
-    if (gui.dialog_textentry_active)
+    if (gui.dialog_active)
 	return FALSE;
 #endif
 #ifdef FEAT_XIM
