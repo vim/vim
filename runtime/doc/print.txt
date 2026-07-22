@@ -49,7 +49,7 @@ Note: If you have problems printing with |:hardcopy|, an alternative is to use
 			Note: If you want PDF, there are tools such as
 			"ps2pdf" that can convert the PostScript to PDF.  If
 			the |+pango| feature is enabled, then emit PDF by
-			setting "format" to "pdf" in 'printoption'.
+			setting "format" to "pdf" in 'printoptions'.
 
 :[range]ha[rdcopy][!] >{filename}
 			As above, but write the resulting PostScript in file
@@ -738,7 +738,7 @@ If Vim is compiled with |+pango|, then it will render pages using Pango (a
 text handling library), and Cairo (a graphics library).  The benefit of this
 is that Unicode is fully supported.  Postscript files will still be generated
 using Cairo.  Additionally, PDF files can be emitted as well, see the
-"formats" key in |popt-option|
+"format" key in |popt-option|
 
 When using the GTK GUI, |+pango| is always enabled and used.  On terminal
 builds of Vim, "--enable-print-pango" must be passed to the configure options.
