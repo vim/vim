@@ -7269,7 +7269,32 @@ nfa_regmatch(
 	    }
 	    else
 	    {
-		if (addstate(nextlist, start, m, NULL, clen) == NULL)
+		char_u	    *save_line = rex.line;
+		char_u	    *save_input = rex.input;
+		linenr_T    save_lnum = rex.lnum;
+
+		// At the end of a line the match can only start on the next
+		// line, use that position instead of the line break.
+		if (REG_MULTI && clen == 0 && nfa_endp != NULL
+					 && rex.lnum < nfa_endp->se_u.pos.lnum)
+		{
+		    char_u  *next_line = reg_getline(rex.lnum + 1);
+
+		    if (next_line != NULL)
+		    {
+			rex.line = next_line;
+			rex.input = rex.line;
+			++rex.lnum;
+		    }
+		}
+
+		r = addstate(nextlist, start, m, NULL, clen);
+
+		rex.line = save_line;
+		rex.input = save_input;
+		rex.lnum = save_lnum;
+
+		if (r == NULL)
 		{
 		    nfa_match = NFA_TOO_EXPENSIVE;
 		    goto theend;
