@@ -2153,7 +2153,8 @@ get_props_in_line(
 	    prop_fill_dict(d, &prop, buf);
 	    if (add_lnum)
 		dict_add_number(d, "lnum", lnum);
-	    list_append_dict(retlist, d);
+	    if (list_append_dict(retlist, d) == FAIL)
+		dict_unref(d);
 	}
     }
 }

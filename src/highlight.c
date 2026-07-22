@@ -260,8 +260,8 @@ static void hl_do_font(int idx, char_u *arg, int do_normal, int do_menu, int do_
 static char *(highlight_init_both[]) = {
     CENT("ErrorMsg term=standout ctermbg=DarkRed ctermfg=White",
 	 "ErrorMsg term=standout ctermbg=DarkRed ctermfg=White guibg=Red guifg=White"),
-    CENT("IncSearch term=reverse cterm=reverse",
-	 "IncSearch term=reverse cterm=reverse gui=reverse"),
+    CENT("IncSearch term=reverse,bold,underline cterm=reverse",
+	 "IncSearch term=reverse,bold,underline cterm=reverse gui=reverse"),
     CENT("ModeMsg term=bold cterm=bold",
 	 "ModeMsg term=bold cterm=bold gui=bold"),
     CENT("NonText term=bold ctermfg=Blue",
@@ -279,12 +279,12 @@ static char *(highlight_init_both[]) = {
 	 "VisualNOS term=underline,bold cterm=underline,bold gui=underline,bold"),
 #endif
 #ifdef FEAT_DIFF
-    CENT("DiffText term=reverse cterm=bold ctermbg=Red",
-	 "DiffText term=reverse cterm=bold ctermbg=Red gui=bold guibg=Red"),
+    CENT("DiffText term=reverse cterm=bold ctermbg=Red ctermfg=Black",
+	 "DiffText term=reverse cterm=bold ctermbg=Red ctermfg=Black gui=bold guibg=Red"),
     "default link DiffTextAdd DiffText",
 #endif
-    CENT("PmenuSbar ctermbg=Grey",
-	 "PmenuSbar ctermbg=Grey guibg=Grey"),
+    CENT("PmenuSbar term=NONE ctermbg=Grey",
+	 "PmenuSbar term=NONE ctermbg=Grey guibg=Grey"),
     CENT("TabLineSel term=bold cterm=bold",
 	 "TabLineSel term=bold cterm=bold gui=bold"),
     CENT("TabLineFill term=reverse cterm=reverse",
@@ -326,8 +326,8 @@ static char *(highlight_init_both[]) = {
 static char *(highlight_init_light[]) = {
     CENT("Directory term=bold ctermfg=DarkBlue",
 	 "Directory term=bold ctermfg=DarkBlue guifg=Blue"),
-    CENT("LineNr term=underline ctermfg=Brown",
-	 "LineNr term=underline ctermfg=Brown guifg=Brown"),
+    CENT("LineNr term=NONE ctermfg=Brown",
+	 "LineNr term=NONE ctermfg=Brown guifg=Brown"),
     CENT("CursorLineNr term=bold cterm=underline ctermfg=Brown",
 	 "CursorLineNr term=bold cterm=underline ctermfg=Brown gui=bold guifg=Brown"),
     CENT("MoreMsg term=bold ctermfg=DarkGreen",
@@ -346,22 +346,22 @@ static char *(highlight_init_light[]) = {
     CENT("SpellLocal term=underline ctermbg=Cyan",
 	 "SpellLocal term=underline ctermbg=Cyan guisp=DarkCyan gui=undercurl"),
 #endif
-    CENT("PmenuThumb ctermbg=Black",
-	 "PmenuThumb ctermbg=Black guibg=Black"),
-    CENT("PmenuShadow ctermbg=Black ctermfg=DarkGrey",
-	 "PmenuShadow ctermbg=Black ctermfg=DarkGrey guibg=Black guifg=DarkGrey"),
-    CENT("Pmenu ctermbg=LightMagenta ctermfg=Black",
-	 "Pmenu ctermbg=LightMagenta ctermfg=Black guibg=LightMagenta"),
-    CENT("PmenuSel ctermbg=LightGrey ctermfg=Black",
-	 "PmenuSel ctermbg=LightGrey ctermfg=Black guibg=Grey"),
-    CENT("SpecialKey term=bold ctermfg=DarkBlue",
-	 "SpecialKey term=bold ctermfg=DarkBlue guifg=Blue"),
+    CENT("PmenuThumb term=reverse ctermbg=Black",
+	 "PmenuThumb term=reverse ctermbg=Black guibg=Black"),
+    CENT("PmenuShadow term=NONE ctermbg=Black ctermfg=DarkGrey",
+	 "PmenuShadow term=NONE ctermbg=Black ctermfg=DarkGrey guibg=Black guifg=DarkGrey"),
+    CENT("Pmenu term=reverse ctermbg=LightMagenta ctermfg=Black",
+	 "Pmenu term=reverse ctermbg=LightMagenta ctermfg=Black guibg=LightMagenta"),
+    CENT("PmenuSel term=underline ctermbg=LightGrey ctermfg=Black",
+	 "PmenuSel term=underline ctermbg=LightGrey ctermfg=Black guibg=Grey"),
+    CENT("SpecialKey term=NONE ctermfg=DarkBlue",
+	 "SpecialKey term=NONE ctermfg=DarkBlue guifg=Blue"),
     CENT("Title term=bold ctermfg=DarkMagenta",
 	 "Title term=bold ctermfg=DarkMagenta gui=bold guifg=Magenta"),
     CENT("WarningMsg term=standout ctermfg=DarkRed",
 	 "WarningMsg term=standout ctermfg=DarkRed guifg=Red"),
-    CENT("WildMenu term=standout ctermbg=Yellow ctermfg=Black",
-	 "WildMenu term=standout ctermbg=Yellow ctermfg=Black guibg=Yellow guifg=Black"),
+    CENT("WildMenu term=underline ctermbg=Yellow ctermfg=Black",
+	 "WildMenu term=underline ctermbg=Yellow ctermfg=Black guibg=Yellow guifg=Black"),
 #ifdef FEAT_FOLDING
     CENT("Folded term=standout ctermbg=Grey ctermfg=DarkBlue",
 	 "Folded term=standout ctermbg=Grey ctermfg=DarkBlue guibg=LightGrey guifg=DarkBlue"),
@@ -375,10 +375,10 @@ static char *(highlight_init_light[]) = {
     CENT("Visual ctermbg=Grey ctermfg=Black",
 	 "Visual ctermbg=Grey ctermfg=Black guibg=LightGrey guifg=Black"),
 #ifdef FEAT_DIFF
-    CENT("DiffAdd term=bold ctermbg=LightBlue",
-	 "DiffAdd term=bold ctermbg=LightBlue guibg=LightBlue"),
-    CENT("DiffChange term=bold ctermbg=LightMagenta",
-	 "DiffChange term=bold ctermbg=LightMagenta guibg=LightMagenta"),
+    CENT("DiffAdd term=bold ctermbg=LightBlue ctermfg=Black",
+	 "DiffAdd term=bold ctermbg=LightBlue ctermfg=Black guibg=LightBlue"),
+    CENT("DiffChange term=bold ctermbg=LightMagenta ctermfg=Black",
+	 "DiffChange term=bold ctermbg=LightMagenta ctermfg=Black guibg=LightMagenta"),
     CENT("DiffDelete term=bold ctermfg=Blue ctermbg=LightCyan",
 	 "DiffDelete term=bold ctermfg=Blue ctermbg=LightCyan gui=bold guifg=Blue guibg=LightCyan"),
 #endif
@@ -417,8 +417,8 @@ static char *(highlight_init_light[]) = {
 static char *(highlight_init_dark[]) = {
     CENT("Directory term=bold ctermfg=LightCyan",
 	 "Directory term=bold ctermfg=LightCyan guifg=Cyan"),
-    CENT("LineNr term=underline ctermfg=Yellow",
-	 "LineNr term=underline ctermfg=Yellow guifg=Yellow"),
+    CENT("LineNr term=NONE ctermfg=Yellow",
+	 "LineNr term=NONE ctermfg=Yellow guifg=Yellow"),
     CENT("CursorLineNr term=bold cterm=underline ctermfg=Yellow",
 	 "CursorLineNr term=bold cterm=underline ctermfg=Yellow gui=bold guifg=Yellow"),
     CENT("MoreMsg term=bold ctermfg=LightGreen",
@@ -427,8 +427,8 @@ static char *(highlight_init_dark[]) = {
 	 "Question term=standout ctermfg=LightGreen gui=bold guifg=Green"),
     CENT("Search term=reverse ctermbg=Yellow ctermfg=Black",
 	 "Search term=reverse ctermbg=Yellow ctermfg=Black guibg=Yellow guifg=Black"),
-    CENT("SpecialKey term=bold ctermfg=LightBlue",
-	 "SpecialKey term=bold ctermfg=LightBlue guifg=Cyan"),
+    CENT("SpecialKey term=NONE ctermfg=LightBlue",
+	 "SpecialKey term=NONE ctermfg=LightBlue guifg=Cyan"),
 #ifdef FEAT_SPELL
     CENT("SpellBad term=reverse ctermbg=Red",
 	 "SpellBad term=reverse ctermbg=Red guisp=Red gui=undercurl"),
@@ -439,20 +439,20 @@ static char *(highlight_init_dark[]) = {
     CENT("SpellLocal term=underline ctermbg=Cyan",
 	 "SpellLocal term=underline ctermbg=Cyan guisp=Cyan gui=undercurl"),
 #endif
-    CENT("PmenuThumb ctermbg=White",
-	 "PmenuThumb ctermbg=White guibg=White"),
-    CENT("PmenuShadow ctermbg=Black ctermfg=DarkGrey",
-	 "PmenuShadow ctermbg=Black ctermfg=DarkGrey guibg=Black guifg=DarkGrey"),
-    CENT("Pmenu ctermbg=Magenta ctermfg=Black",
-	 "Pmenu ctermbg=Magenta ctermfg=Black guibg=Magenta"),
-    CENT("PmenuSel ctermbg=Black ctermfg=DarkGrey",
-	 "PmenuSel ctermbg=Black ctermfg=DarkGrey guibg=DarkGrey"),
+    CENT("PmenuThumb term=reverse ctermbg=White",
+	 "PmenuThumb term=reverse ctermbg=White guibg=White"),
+    CENT("PmenuShadow term=NONE ctermbg=Black ctermfg=DarkGrey",
+	 "PmenuShadow term=NONE ctermbg=Black ctermfg=DarkGrey guibg=Black guifg=DarkGrey"),
+    CENT("Pmenu term=reverse ctermbg=Magenta ctermfg=Black",
+	 "Pmenu term=reverse ctermbg=Magenta ctermfg=Black guibg=Magenta"),
+    CENT("PmenuSel term=underline ctermbg=Black ctermfg=DarkGrey",
+	 "PmenuSel term=underline ctermbg=Black ctermfg=DarkGrey guibg=DarkGrey"),
     CENT("Title term=bold ctermfg=LightMagenta",
 	 "Title term=bold ctermfg=LightMagenta gui=bold guifg=Magenta"),
     CENT("WarningMsg term=standout ctermfg=LightRed",
 	 "WarningMsg term=standout ctermfg=LightRed guifg=Red"),
-    CENT("WildMenu term=standout ctermbg=Yellow ctermfg=Black",
-	 "WildMenu term=standout ctermbg=Yellow ctermfg=Black guibg=Yellow guifg=Black"),
+    CENT("WildMenu term=underline ctermbg=Yellow ctermfg=Black",
+	 "WildMenu term=underline ctermbg=Yellow ctermfg=Black guibg=Yellow guifg=Black"),
 #ifdef FEAT_FOLDING
     CENT("Folded term=standout ctermbg=DarkGrey ctermfg=Cyan",
 	 "Folded term=standout ctermbg=DarkGrey ctermfg=Cyan guibg=DarkGrey guifg=Cyan"),
@@ -5768,8 +5768,8 @@ f_hlget(typval_T *argvars, typval_T *rettv)
 	if (hlarg == NULL || STRICMP(hlarg, HL_TABLE()[i].sg_name) == 0)
 	{
 	    dict = highlight_get_info(i, resolve_link);
-	    if (dict != NULL)
-		list_append_dict(list, dict);
+	    if (dict != NULL && list_append_dict(list, dict) == FAIL)
+		dict_unref(dict);
 	}
     }
 }

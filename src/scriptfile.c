@@ -166,10 +166,11 @@ estack_sfile(estack_arg_T which UNUSED)
 	    if (entry->es_type == ETYPE_UFUNC || entry->es_type == ETYPE_AUCMD)
 	    {
 		sctx_T *def_ctx = entry->es_type == ETYPE_UFUNC
-				      ? &entry->es_info.ufunc->uf_script_ctx
-				      : acp_script_ctx(entry->es_info.aucmd);
+			      ? &entry->es_info.ufunc->uf_script_ctx
+			      : entry->es_info.aucmd != NULL
+				  ? acp_script_ctx(entry->es_info.aucmd) : NULL;
 
-		return def_ctx->sc_sid > 0
+		return def_ctx != NULL && def_ctx->sc_sid > 0
 			   ? vim_strsave(SCRIPT_ITEM(def_ctx->sc_sid)->sn_name)
 			   : NULL;
 	    }
@@ -322,11 +323,15 @@ stacktrace_create(void)
 	}
 	else if (entry->es_type == ETYPE_AUCMD)
 	{
-	    sctx_T sctx = *acp_script_ctx(entry->es_info.aucmd);
-	    char_u *filepath = sctx.sc_sid > 0 ?
-				   get_scriptname(sctx.sc_sid) : (char_u *)"";
+	    // The autocmd may not have a matching pattern yet, in which case
+	    // es_info.aucmd is still NULL.
+	    sctx_T *sctx = entry->es_info.aucmd != NULL
+			       ? acp_script_ctx(entry->es_info.aucmd) : NULL;
+	    char_u *filepath = sctx != NULL && sctx->sc_sid > 0 ?
+				   get_scriptname(sctx->sc_sid) : (char_u *)"";
 
-	    lnum += sctx.sc_lnum;
+	    if (sctx != NULL)
+		lnum += sctx->sc_lnum;
 	    stacktrace_push_item(l, NULL, entry->es_name, lnum, filepath);
 	}
     }

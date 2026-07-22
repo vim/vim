@@ -1,4 +1,4 @@
-*cmdline.txt*	For Vim version 9.2.  Last change: 2026 May 20
+*cmdline.txt*	For Vim version 9.2.  Last change: 2026 Jul 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1428,16 +1428,15 @@ For example, you can turn the native |:find| command into a fuzzy, interactive
 file picker: >
 
 	set findfunc=Find
+	let s:filescache = []
 	func Find(arg, _)
 	  if empty(s:filescache)
-	    let s:filescache = globpath('.', '**', 1, 1)
+	    autocmd CmdlineLeave : ++once let s:filescache = []
+	    let s:filescache = expand('**', 1, 1)
 	    call filter(s:filescache, '!isdirectory(v:val)')
-	    call map(s:filescache, "fnamemodify(v:val, ':.')")
 	  endif
-	  return a:arg == '' ? s:filescache : matchfuzzy(s:filescache, a:arg)
+	  return empty(a:arg) ? s:filescache : matchfuzzy(s:filescache, a:arg)
 	endfunc
-	let s:filescache = []
-	autocmd CmdlineEnter : let s:filescache = []
 
 The `:Grep` command searches for lines matching a pattern and updates the
 results dynamically as you type (triggered after two characters; note: needs

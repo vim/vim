@@ -1284,9 +1284,13 @@ f_serverlist(typval_T *argvars UNUSED, typval_T *rettv)
 #  ifdef FEAT_X11
     if (clientserver_method == CLIENTSERVER_METHOD_X11)
     {
-	make_connection();
-	if (X_DISPLAY != NULL)
-	    list = serverGetVimNames(X_DISPLAY);
+	// This function fails if there is no X11 connection.
+	if (check_connection() == FAIL)
+	    return;
+	// If the check_connection() function returns OK, it has already been
+	// confirmed within that function that make_connection() was called and
+	// that X_DISPLAY is not NULL.
+	list = serverGetVimNames(X_DISPLAY);
     }
 #  endif
 # endif

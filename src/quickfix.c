@@ -7222,7 +7222,10 @@ get_qfline_items(qfline_T *qfp, list_T *list)
     if ((dict = dict_alloc()) == NULL)
 	return FAIL;
     if (list_append_dict(list, dict) == FAIL)
+    {
+	dict_unref(dict);
 	return FAIL;
+    }
 
     buf[0] = qfp->qf_type;
     buf[1] = NUL;

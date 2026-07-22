@@ -1,4 +1,4 @@
-# Unixen: object and executable files.
+# Unix: object and executable files.
 *.o
 src/vim
 src/xxd/xxd
@@ -14,17 +14,8 @@ src/types.vim
 src/tmp_make
 
 # We do need src/auto/configure.
-src/auto/config.cache
-src/auto/config.h
-src/auto/config.log
-src/auto/config.mk
-src/auto/config.status
-src/auto/osdef.h
-src/auto/link.log
-src/auto/link.sed
-src/auto/pathdef.c
-src/auto/wayland/*.c
-src/auto/wayland/*.h
+src/auto/*
+!src/auto/configure
 
 # Windows
 *.exe

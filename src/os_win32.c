@@ -7645,6 +7645,52 @@ sgrn2cn(
     return p && p[0] == 0x0a && p[1] == '\033' ? ++p : NULL;
 }
 
+static bool in_dcs = false;	// inside a DCS (sixel) sequence
+static bool dcs_esc = false;	// last DCS byte written was ESC
+
+/*
+ * Write "len" bytes at "s" with WriteConsoleW, so that the console's own VT
+ * parser processes them.  Needed for DCS sequences when USE_VTP is off.
+ */
+    static void
+write_vt(char_u *s, int len)
+{
+    int		wlen;
+    WCHAR	*ws;
+    DWORD	written;
+
+    wlen = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)s, len, NULL, 0);
+    if (wlen <= 0)
+	return;
+    ws = ALLOC_MULT(WCHAR, wlen);
+    if (ws == NULL)
+	return;
+    MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)s, len, ws, wlen);
+    WriteConsoleW(g_hConOut, ws, wlen, &written, NULL);
+    vim_free(ws);
+}
+
+/*
+ * Return the pointer just after the ST (ESC '\') that ends a DCS sequence.
+ * Returns "end" when the ST is not in this chunk; "in_dcs" then stays set so
+ * that the next mch_write() call continues the scan.
+ */
+    static char_u *
+skip_dcs(char_u *s, char_u *end)
+{
+    for (char_u *p = s; p < end; ++p)
+    {
+	if (dcs_esc && *p == '\\')
+	{
+	    dcs_esc = false;
+	    in_dcs = false;
+	    return p + 1;
+	}
+	dcs_esc = *p == ESC;
+    }
+    return end;
+}
+
 /*
  * mch_write(): write the output buffer to the screen, translating ESC
  * sequences into calls to console output routines.
@@ -7679,6 +7725,18 @@ mch_write(
 	{
 	    redraw_all_later(UPD_CLEAR);
 	    return;
+	}
+
+	if (in_dcs)
+	{
+	    // Continuation of a DCS sequence split over several writes.
+	    int	l = (int)(skip_dcs(s, end) - s);
+
+	    if (vtp_working)
+		write_vt(s, l);
+	    len -= l - 1;
+	    s += l;
+	    continue;
 	}
 
 	while (s + ++prefix < end)
@@ -7982,6 +8040,20 @@ notsgr:
 		    vtp_printf("%.*s", l + 1, s);
 		l++;
 	    }
+	    len -= l - 1;
+	    s += l;
+	}
+	else if (s[0] == ESC && len >= 2-1 && s[1] == 'P')
+	{
+	    // DCS (e.g. sixel image): write_chars() would print it as raw text
+	    // when USE_VTP is off, so let the console's VT parser handle it.
+	    int	l;
+
+	    in_dcs = true;
+	    dcs_esc = false;
+	    l = (int)(skip_dcs(s + 2, end) - s);
+	    if (vtp_working)
+		write_vt(s, l);
 	    len -= l - 1;
 	    s += l;
 	}

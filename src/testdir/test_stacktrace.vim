@@ -1,5 +1,6 @@
 " Test for getstacktrace() and v:stacktrace
 
+source util/screendump.vim
 import './util/vim9.vim' as v9
 
 let s:thisfile = expand('%:p')
@@ -36,7 +37,7 @@ func Test_getstacktrace()
   source Xscript1
   call Xfunc1()
   call AssertStacktrace([
-        \ #{funcref: funcref('Test_getstacktrace'), lnum: 37, filepath: s:thisfile},
+        \ #{funcref: funcref('Test_getstacktrace'), lnum: 38, filepath: s:thisfile},
         \ #{funcref: funcref('Xfunc1'), lnum: 5, filepath: Filepath('Xscript1')},
         \ #{funcref: funcref('Xfunc2'), lnum: 4, filepath: Filepath('Xscript2')},
         \ ], g:stacktrace)
@@ -63,7 +64,7 @@ func Test_getstacktrace_event()
   source Xscript1
   source Xscript2
   call AssertStacktrace([
-       \ #{funcref: funcref('Test_getstacktrace_event'), lnum: 64, filepath: s:thisfile},
+       \ #{funcref: funcref('Test_getstacktrace_event'), lnum: 65, filepath: s:thisfile},
        \ #{event: 'SourcePre Autocommands for "*"', lnum: 7, filepath: Filepath('Xscript1')},
        \ #{funcref: funcref('Xfunc'), lnum: 4, filepath: Filepath('Xscript1')},
        \ ], g:stacktrace)
@@ -106,12 +107,12 @@ func Test_vstacktrace()
   endtry
   call assert_equal([], v:stacktrace)
   call AssertStacktrace([
-       \ #{funcref: funcref('Test_vstacktrace'), lnum: 97, filepath: s:thisfile},
+       \ #{funcref: funcref('Test_vstacktrace'), lnum: 98, filepath: s:thisfile},
        \ #{funcref: funcref('Xfunc1'), lnum: 5, filepath: Filepath('Xscript1')},
        \ #{funcref: funcref('Xfunc2'), lnum: 4, filepath: Filepath('Xscript2')},
        \ ], stacktrace)
   call AssertStacktrace([
-       \ #{funcref: funcref('Test_vstacktrace'), lnum: 101, filepath: s:thisfile},
+       \ #{funcref: funcref('Test_vstacktrace'), lnum: 102, filepath: s:thisfile},
        \ #{funcref: funcref('Xfunc1'), lnum: 5, filepath: Filepath('Xscript1')},
        \ #{funcref: funcref('Xfunc2'), lnum: 4, filepath: Filepath('Xscript2')},
        \ ], stacktrace_inner)
@@ -137,6 +138,52 @@ func Test_stacktrace_vim9()
   call assert_equal([], v:stacktrace)
   [SCRIPT]
   call v9.CheckDefSuccess(lines)
+endfunc
+
+" Building a stacktrace at the "Executing autocommands" more prompt, before the
+" autocommand has matched a pattern, must not crash.
+func Test_getstacktrace_during_autocmd_prompt()
+  CheckRunVimInTerminal
+
+  let lines =<< trim [SCRIPT]
+    func Cb(timer)
+      " The not-yet-matched autocmd entry has no funcref, no event and an empty
+      " filepath; only then does this hit the crash.
+      for d in getstacktrace()
+        if !has_key(d, 'funcref') && !has_key(d, 'event')
+              \ && get(d, 'filepath', '') == ''
+          call writefile(['ok'], 'Xstacktracedone')
+        endif
+      endfor
+    endfunc
+    augroup Test
+      autocmd!
+      autocmd User Foo echo 'autocmd body'
+    augroup END
+    func Go()
+      " verbose=8 prints the "Executing autocommands" message; redraw! fixes the
+      " screen origin so the fill lines make the more prompt land on it.
+      set more verbose=8
+      redraw!
+      call timer_start(20, function('Cb'), #{repeat: -1})
+      for i in range(&lines - 1)
+        echom 'fill' .. i
+      endfor
+      doautocmd User Foo
+    endfunc
+  [SCRIPT]
+  call writefile(lines, 'Xstacktracescript', 'D')
+
+  let buf = RunVimInTerminal('-S Xstacktracescript', #{rows: 6})
+  " Not from a timer: a nested timer callback would not fire at the more prompt.
+  call term_sendkeys(buf, ":call Go()\<CR>")
+  call WaitForAssert({-> assert_true(filereadable('Xstacktracedone'))})
+  call assert_equal('run', job_status(term_getjob(buf)))
+
+  " The more prompt makes a clean :qall unreliable, so stop the job.
+  call job_stop(term_getjob(buf))
+  call WaitForAssert({-> assert_equal('dead', job_status(term_getjob(buf)))})
+  call delete('Xstacktracedone')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

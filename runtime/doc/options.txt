@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Jul 03
+*options.txt*	For Vim version 9.2.  Last change: 2026 Jul 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2302,8 +2302,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    See also |preinserted()|.
 
 	   menu	    Use a popup menu to show the possible completions.  The
-		    menu is only shown when there is more than one match and
-		    sufficient colors are available.  |ins-completion-menu|
+		    menu is only shown when there is more than one match.
+		    |ins-completion-menu|
 
 	   menuone  Use the popup menu also when there is only one match.
 		    Useful when there is additional information about the
@@ -4948,9 +4948,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	restored if possible |X11|.  See |X11-icon| for changing the icon on
 	X11.
 	For MS-Windows the icon can be changed, see |windows-icon|.
-	NOTE: Some terminals treat the icon text as an alias for the window
-	title.  On those, setting the icon text may also change the terminal
-	window title; see 'title'.
+	NOTE: GNU screen is not consistent in handling icon-title and title escape
+	sequences between versions.   See 'title'.
 
 						*'iconstring'*
 'iconstring'		string	(default "")
@@ -9638,9 +9637,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	then the WINDOWID environment variable should be inherited and the
 	title of the window should change back to what it should be after
 	exiting Vim.
-	NOTE: Some terminals treat the icon text as an alias for the window
-	title (see 'icon').  On those, the interaction between 'title' and
-	'icon' depend on the specific behavior of the terminal.
+	NOTE: GNU screen is not consistent in handling icon-title and title escape
+	sequences between versions. In particular, screen 5 may swap title and
+	icon-title.
 
 								*'titlelen'*
 'titlelen'		number	(default 85)

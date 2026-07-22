@@ -1,6 +1,10 @@
-syntax: glob
+# We do need src/auto/configure.
+# ignore everything except for auto/configure
+syntax: regexp
+^src/auto/(?!configure$)
 
-# Unixen: object and executable files.
+syntax: glob
+# Unix: object and executable files.
 *.o
 src/vim
 src/xxd/xxd
@@ -13,19 +17,6 @@ src/objects
 src/po/big5corr
 src/po/sjiscorr
 src/types.vim
-
-# We do need src/auto/configure.
-src/auto/config.cache
-src/auto/config.h
-src/auto/config.log
-src/auto/config.mk
-src/auto/config.status
-src/auto/osdef.h
-src/auto/link.log
-src/auto/link.sed
-src/auto/pathdef.c
-src/auto/wayland/*.c
-src/auto/wayland/*.h
 
 # Windows
 *.exe

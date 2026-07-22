@@ -493,7 +493,7 @@ endfunc
 
 func Test_highlight_eol_on_diff()
   call setline(1, ['abcd', ''])
-  call matchadd('Search', '\n')
+  call matchadd('ErrorMsg', '\n')
   let attrs0 = ScreenAttrs(1, 10)[0]
 
   diffthis
@@ -504,7 +504,7 @@ func Test_highlight_eol_on_diff()
   " '  abcd    '
   "  ^^           sign
   "    ^^^^ ^^^   'DiffAdd' highlight
-  "        ^      'Search' highlight
+  "        ^      'ErrorMsg' highlight
   let attrs = ScreenAttrs(1, 10)[0]
   call assert_equal(repeat([attrs[0]], 2), attrs[0:1])
   call assert_equal(repeat([attrs[2]], 4), attrs[2:5])

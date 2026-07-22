@@ -898,4 +898,29 @@ func Test_path_env_variable_with_whitespaces()
     enew
 endfunc
 
+func Test_findfunc_completeslash()
+  CheckMSWindows
+
+  func FindBsl(pat, cmdarg)
+    return ['Xdir\foo.c']->matchfuzzy(a:pat)
+  endfunc
+  func FindFwd(pat, cmdarg)
+    return ['Xdir/foo.c']->matchfuzzy(a:pat)
+  endfunc
+
+  set findfunc=FindBsl
+  set completeslash=slash
+  call feedkeys(":find Xdir\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"find Xdir\foo.c', @:)
+
+  set findfunc=FindFwd
+  set completeslash=backslash
+  call feedkeys(":find Xdir\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"find Xdir/foo.c', @:)
+
+  set completeslash& findfunc&
+  delfunc FindBsl
+  delfunc FindFwd
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

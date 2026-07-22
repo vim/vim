@@ -6395,37 +6395,27 @@ add_regionpos_range(typval_T *rettv, pos_T p1, pos_T p2)
 
     if (list_append_list(rettv->vval.v_list, l1) == FAIL)
     {
-	vim_free(l1);
+	list_free(l1);
 	return;
     }
 
     l2 = list_alloc();
     if (l2 == NULL)
-    {
-	vim_free(l1);
 	return;
-    }
 
     if (list_append_list(l1, l2) == FAIL)
     {
-	vim_free(l1);
-	vim_free(l2);
+	list_free(l2);
 	return;
     }
 
     l3 = list_alloc();
     if (l3 == NULL)
-    {
-	vim_free(l1);
-	vim_free(l2);
 	return;
-    }
 
     if (list_append_list(l1, l3) == FAIL)
     {
-	vim_free(l1);
-	vim_free(l2);
-	vim_free(l3);
+	list_free(l3);
 	return;
     }
 
@@ -10569,7 +10559,8 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
     list = (list_T *)get_reg_contents(regname, GREG_EXPR_SRC | GREG_LIST);
     if (list == NULL)
 	return;
-    (void)dict_add_list(dict, "regcontents", list);
+    if (dict_add_list(dict, "regcontents", list) == FAIL)
+	list_unref(list);
 
     switch (get_reg_type(regname, &reglen))
     {

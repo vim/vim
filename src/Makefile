@@ -2201,12 +2201,12 @@ proto/gui_gtk_gresources.pro: auto/gui_gtk_gresources.c
 	fi
 
 notags:
-	-rm -f tags
+	$(MAKE) -f Make_tags.mak notags
 
-# Note: tags is made for the currently configured version.
+# Configure sets portable TAGPRG, else modern ctags is used.
 # You can ignore error messages for missing files.
 tags TAGS: notags
-	$(TAGPRG) $(TAGS_FILES)
+	$(MAKE) -f Make_tags.mak tags
 
 # Build the cscope database.
 # This may search more files than necessary.

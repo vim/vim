@@ -56,7 +56,7 @@ static int find_key_option(char_u *arg_arg, int has_lt);
 static void showoptions(int all, int opt_flags);
 static int optval_default(struct vimoption *, char_u *varp, int compatible);
 static void showoneopt(struct vimoption *, int opt_flags);
-static int put_setstring(FILE *fd, char *cmd, char *name, char_u **valuep, long_u flags);
+static int put_setstring(FILE *fd, bool legacy, char *cmd, char *name, char_u **valuep, long_u flags);
 static int put_setnum(FILE *fd, char *cmd, char *name, long *valuep);
 static int put_setbool(FILE *fd, char *cmd, char *name, int value);
 static int istermoption(struct vimoption *p);
@@ -3526,6 +3526,36 @@ set_option_sctx_idx(int opt_idx, int opt_flags, sctx_T script_ctx)
 }
 
 /*
+ * Returns true if an option value will be evaluated as a Vim9 script.
+ * Checks stored script context for the option.  For options that have values in
+ * multiple contexts, opt_flags selects the desired context with OPT_GLOBAL, or
+ * OPT_LOCAL, selecting global or buffer/window context, respectively.
+ */
+    bool
+is_option_value_vim9(int opt_idx, int opt_flags)
+{
+    int		indir = (int)options[opt_idx].indir;
+    sctx_T	*sctx = NULL;
+
+    if ((opt_flags & OPT_GLOBAL) || (indir & (PV_BUF|PV_WIN)) == 0)
+	sctx = &options[opt_idx].script_ctx;
+
+    if ((opt_flags & OPT_LOCAL) || (indir & (PV_BUF|PV_WIN)))
+    {
+	if (indir & PV_BUF)
+	    sctx = &curbuf->b_p_script_ctx[indir & PV_MASK];
+	else if (indir & PV_WIN)
+	    sctx = &curwin->w_p_script_ctx[indir & PV_MASK];
+    }
+
+    // If "sc_sid" is not set, it means the option value was not modified from
+    // the default yet.  As we move towards Vim9 all the default values should
+    // be valid Vim9.
+    return !SCRIPT_ID_VALID(sctx->sc_sid) ||
+	sctx->sc_version >= SCRIPT_VERSION_VIM9;
+}
+
+/*
  * Get the script context of global option "name".
  *
  */
@@ -6507,6 +6537,19 @@ makeset(FILE *fd, int opt_flags, int local_only)
 		else    // P_STRING
 		{
 		    int		do_endif = FALSE;
+		    bool	legacy;
+
+#ifdef FEAT_EVAL
+		    legacy = !is_option_value_vim9(p - &options[0],
+			    round == 1 ? opt_flags | OPT_GLOBAL : OPT_LOCAL);
+#else
+		    // I think none of the options that require expression
+		    // evaluation will be present if expression evaluation is
+		    // disabled.  For example, 'includeexpr' is set to NULL if
+		    // FEAT_EVAL is not present.  So it should be safe to use
+		    // normal "set" and "setlocal" in the session file.
+		    legacy = false;
+#endif
 
 		    // Don't set 'syntax' and 'filetype' again if the value is
 		    // already right, avoids reloading the syntax file.
@@ -6522,8 +6565,8 @@ makeset(FILE *fd, int opt_flags, int local_only)
 			    return FAIL;
 			do_endif = TRUE;
 		    }
-		    if (put_setstring(fd, cmd, p->fullname, (char_u **)varp,
-							     p->flags) == FAIL)
+		    if (put_setstring(fd, legacy, cmd, p->fullname,
+					    (char_u **)varp, p->flags) == FAIL)
 			return FAIL;
 		    if (do_endif)
 		    {
@@ -6545,14 +6588,23 @@ makeset(FILE *fd, int opt_flags, int local_only)
     int
 makefoldset(FILE *fd)
 {
-    if (put_setstring(fd, "setlocal", "fdm", &curwin->w_p_fdm, 0) == FAIL
 # ifdef FEAT_EVAL
-	    || put_setstring(fd, "setlocal", "fde", &curwin->w_p_fde, 0)
-								       == FAIL
+    sctx_T	*fde_script_ctx = &curwin->w_p_script_ctx[WV_FDE];
+    // Similarly to the check in is_option_value_vim9(), if "sc_id" is not set
+    // we have a default value, so it is safe to avoid the ":legacy" prefix.
+    bool	fde_is_legacy = SCRIPT_ID_VALID(fde_script_ctx->sc_sid)
+			&& fde_script_ctx->sc_version < SCRIPT_VERSION_VIM9;
 # endif
-	    || put_setstring(fd, "setlocal", "fmr", &curwin->w_p_fmr, 0)
+
+    if (put_setstring(fd, false, "setlocal", "fdm", &curwin->w_p_fdm, 0)
 								       == FAIL
-	    || put_setstring(fd, "setlocal", "fdi", &curwin->w_p_fdi, 0)
+# ifdef FEAT_EVAL
+	    || put_setstring(fd, fde_is_legacy, "setlocal", "fde",
+						  &curwin->w_p_fde, 0) == FAIL
+# endif
+	    || put_setstring(fd, false, "setlocal", "fmr", &curwin->w_p_fmr, 0)
+								       == FAIL
+	    || put_setstring(fd, false, "setlocal", "fdi", &curwin->w_p_fdi, 0)
 								       == FAIL
 	    || put_setnum(fd, "setlocal", "fdl", &curwin->w_p_fdl) == FAIL
 	    || put_setnum(fd, "setlocal", "fml", &curwin->w_p_fml) == FAIL
@@ -6568,6 +6620,7 @@ makefoldset(FILE *fd)
     static int
 put_setstring(
     FILE	*fd,
+    bool	legacy,
     char	*cmd,
     char	*name,
     char_u	**valuep,
@@ -6578,6 +6631,8 @@ put_setstring(
     char_u	*part = NULL;
     char_u	*p;
 
+    if (legacy && fprintf(fd, "legacy ") < 0)
+	return FAIL;
     if (fprintf(fd, "%s %s=", cmd, name) < 0)
 	return FAIL;
     if (*valuep != NULL)
@@ -6620,6 +6675,8 @@ put_setstring(
 		p = buf;
 		while (*p != NUL)
 		{
+		    if (legacy && fprintf(fd, "legacy ") < 0)
+			return FAIL;
 		    // for each comma separated option part, append value to
 		    // the option, :set rtp+=value
 		    if (fprintf(fd, "%s %s+=", cmd, name) < 0)
