@@ -11604,7 +11604,7 @@ if test "x$have_pango" = "xno" || test "x$have_cairo" = "xno"; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, Pango or Cairo not found" >&5
 printf "%s\n" "no, Pango or Cairo not found" >&6; }
 else
-  if test "x$GUITYPE" = "xGTK" || test "x$GUITYPE" == "xGTK4"; then
+  if test "x$GUITYPE" = "xGTK" || test "x$GUITYPE" = "xGTK4"; then
     enable_hardcopy_pango="yes"
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes, GTK GUI enabled" >&5
 printf "%s\n" "yes, GTK GUI enabled" >&6; }

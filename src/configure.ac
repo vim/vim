@@ -3181,7 +3181,7 @@ AC_ARG_ENABLE(hardcopy-pango,
 if test "x$have_pango" = "xno" || test "x$have_cairo" = "xno"; then
   AC_MSG_RESULT([no, Pango or Cairo not found])
 else
-  if test "x$GUITYPE" = "xGTK" || test "x$GUITYPE" == "xGTK4"; then
+  if test "x$GUITYPE" = "xGTK" || test "x$GUITYPE" = "xGTK4"; then
     enable_hardcopy_pango="yes"
     AC_MSG_RESULT([yes, GTK GUI enabled])
   else
