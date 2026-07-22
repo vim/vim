@@ -2346,6 +2346,7 @@ drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 		gtk_widget_get_native(gui.drawarea));
 
 	gui.scale = gdk_surface_get_scale(surface);
+	popup_update_scale();
 	g_signal_connect(G_OBJECT(surface), "notify::scale",
 		G_CALLBACK(scale_factor_cb), NULL);
     }
