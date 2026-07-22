@@ -6041,7 +6041,7 @@ nfa_regmatch(
 		// states at this position.  When the list of states is going
 		// to be empty quit without advancing, so that "rex.input" is
 		// correct.
-		if (nextlist->n == 0)
+		if (nextlist->nr_active == 0)
 		    clen = 0;
 		goto nextchar;
 	      }
@@ -6099,7 +6099,7 @@ nfa_regmatch(
 #endif
 		nfa_match = TRUE;
 		// See comment above at "goto nextchar".
-		if (nextlist->n == 0)
+		if (nextlist->nr_active == 0)
 		    clen = 0;
 		goto nextchar;
 
@@ -7239,7 +7239,7 @@ nfa_regmatch(
 
 		if (prog->regstart != NUL && clen != 0)
 		{
-		    if (nextlist->n == 0)
+		    if (nextlist->nr_active == 0)
 		    {
 			colnr_T col = (colnr_T)(rex.input - rex.line) + clen;
 
@@ -7298,11 +7298,11 @@ nfa_regmatch(
 	}
 
 #ifdef ENABLE_LOG
-	fprintf(log_fd, ">>> Thislist had %d states available: ", thislist->n);
+	fprintf(log_fd, ">>> Thislist had %d states available: ", thislist->nr_active);
 	{
 	    int i;
 
-	    for (i = 0; i < thislist->n; i++)
+	    for (i = thislist->first_idx; i != NFA_INDEX_NULL; i = thislist->t[i].next_idx)
 		fprintf(log_fd, "%d  ", abs(thislist->t[i].state->id));
 	}
 	fprintf(log_fd, "\n");
