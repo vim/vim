@@ -450,10 +450,13 @@ emit_dsc_comment(char *comment, char *fmt, ...)
     int	    o;
     char    *s = buf;
 
-    o = vim_snprintf(s, len, "%%%%%s: ", comment);
-
     if (fmt == NULL)
+    {
+	o = vim_snprintf(s, len, "%%%%%s", comment);
 	goto exit;
+    }
+    else
+	o = vim_snprintf(s, len, "%%%%%s: ", comment);
 
     len -= o;
     s += o;
