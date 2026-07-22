@@ -551,11 +551,23 @@ socketserver_accept(channel_T *channel)
     channel->ch_socketserver = true;
     channel->ch_ss_close_cb = socketserver_client_close;
 
-    channel->ch_ss_next = client_channels;
-    channel->ch_ss_prev = NULL;
-    if (client_channels != NULL)
-	client_channels->ch_ss_prev = channel;
-    client_channels = channel;
+    // Append the client, so that commands are processed in the order the
+    // clients were accepted, not reversed.
+    channel->ch_ss_next = NULL;
+    if (client_channels == NULL)
+    {
+	channel->ch_ss_prev = NULL;
+	client_channels = channel;
+    }
+    else
+    {
+	channel_T *last = client_channels;
+
+	while (last->ch_ss_next != NULL)
+	    last = last->ch_ss_next;
+	last->ch_ss_next = channel;
+	channel->ch_ss_prev = last;
+    }
 
     // We will read the command from the client later in the input loop.
     ch_log(NULL, "socketserver: accepted new client");
