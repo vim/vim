@@ -1364,17 +1364,7 @@ ins_compl_del_pum(void)
 pum_wanted(void)
 {
     // 'completeopt' must contain "menu" or "menuone"
-    if ((get_cot_flags() & COT_ANY_MENU) == 0 && !compl_autocomplete)
-	return FALSE;
-
-    // The display looks bad on a B&W display.
-    if (t_colors < 8
-#ifdef FEAT_GUI
-	    && !gui.in_use
-#endif
-	    )
-	return FALSE;
-    return TRUE;
+    return (get_cot_flags() & COT_ANY_MENU) != 0 || compl_autocomplete;
 }
 
 /*
