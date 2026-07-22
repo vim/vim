@@ -283,8 +283,8 @@ static char *(highlight_init_both[]) = {
 	 "DiffText term=reverse cterm=bold ctermbg=Red gui=bold guibg=Red"),
     "default link DiffTextAdd DiffText",
 #endif
-    CENT("PmenuSbar ctermbg=Grey",
-	 "PmenuSbar ctermbg=Grey guibg=Grey"),
+    CENT("PmenuSbar term=NONE ctermbg=Grey",
+	 "PmenuSbar term=NONE ctermbg=Grey guibg=Grey"),
     CENT("TabLineSel term=bold cterm=bold",
 	 "TabLineSel term=bold cterm=bold gui=bold"),
     CENT("TabLineFill term=reverse cterm=reverse",
@@ -348,8 +348,8 @@ static char *(highlight_init_light[]) = {
 #endif
     CENT("PmenuThumb term=reverse ctermbg=Black",
 	 "PmenuThumb term=reverse ctermbg=Black guibg=Black"),
-    CENT("PmenuShadow ctermbg=Black ctermfg=DarkGrey",
-	 "PmenuShadow ctermbg=Black ctermfg=DarkGrey guibg=Black guifg=DarkGrey"),
+    CENT("PmenuShadow term=NONE ctermbg=Black ctermfg=DarkGrey",
+	 "PmenuShadow term=NONE ctermbg=Black ctermfg=DarkGrey guibg=Black guifg=DarkGrey"),
     CENT("Pmenu term=reverse ctermbg=LightMagenta ctermfg=Black",
 	 "Pmenu term=reverse ctermbg=LightMagenta ctermfg=Black guibg=LightMagenta"),
     CENT("PmenuSel term=underline ctermbg=LightGrey ctermfg=Black",
@@ -441,8 +441,8 @@ static char *(highlight_init_dark[]) = {
 #endif
     CENT("PmenuThumb term=reverse ctermbg=White",
 	 "PmenuThumb term=reverse ctermbg=White guibg=White"),
-    CENT("PmenuShadow ctermbg=Black ctermfg=DarkGrey",
-	 "PmenuShadow ctermbg=Black ctermfg=DarkGrey guibg=Black guifg=DarkGrey"),
+    CENT("PmenuShadow term=NONE ctermbg=Black ctermfg=DarkGrey",
+	 "PmenuShadow term=NONE ctermbg=Black ctermfg=DarkGrey guibg=Black guifg=DarkGrey"),
     CENT("Pmenu term=reverse ctermbg=Magenta ctermfg=Black",
 	 "Pmenu term=reverse ctermbg=Magenta ctermfg=Black guibg=Magenta"),
     CENT("PmenuSel term=underline ctermbg=Black ctermfg=DarkGrey",
