@@ -806,6 +806,15 @@ vim_menu_focus_cb(GtkEventController *controller UNUSED, VimMenu *self)
 }
 
     static void
+vim_menu_notify_mnemonics_cb(
+	VimMenu	    *self,
+	GParamSpec  *pspec UNUSED,
+	void	    *udata UNUSED)
+{
+    gtk_popover_set_mnemonics_visible(GTK_POPOVER(self), TRUE);
+}
+
+    static void
 vim_menu_init(VimMenu *self)
 {
     GtkEventController	*controller;
@@ -881,6 +890,10 @@ vim_menu_init(VimMenu *self)
     }
     g_object_unref(controllers);
 
+    // Force enable mnemonics underline
+    g_signal_connect(self, "notify::mnemonics-visible",
+	    G_CALLBACK(vim_menu_notify_mnemonics_cb), NULL);
+
     self->prev_x = self->prev_y = -1;
 }
 
@@ -930,6 +943,17 @@ vim_menu_item_clicked_cb(VimMenuItem *self, VimMenu *menu)
     vim_menu_close_all(menu);
     if (self->func != NULL)
 	self->func(self, VIM_MENU_ITEM_CLICKED, self->func_udata);
+}
+
+    static gboolean
+vim_menu_item_mnemonic_activate_cb(
+	VimMenuItem *self,
+	gboolean    group UNUSED,
+	VimMenu	    *menu)
+{
+    vim_menu_set_active_item(menu, self, FALSE);
+    // Return FALSE so that menu item emits "clicked" signal
+    return FALSE;
 }
 
     static void
@@ -983,6 +1007,9 @@ vim_menu_insert_item(VimMenu *self, VimMenuItem *item, int idx)
 
     g_signal_connect_object(item, "clicked",
 	    G_CALLBACK(vim_menu_item_clicked_cb),
+	    self, G_CONNECT_DEFAULT);
+    g_signal_connect_object(item, "mnemonic-activate",
+	    G_CALLBACK(vim_menu_item_mnemonic_activate_cb),
 	    self, G_CONNECT_DEFAULT);
 }
 
