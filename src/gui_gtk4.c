@@ -1439,11 +1439,16 @@ gui_gtk4_update_size(void)
 }
 
 # ifdef FEAT_NETBEANS_INTG
-    cairo_t *
-gui_gtk4_get_multisign_context(int x, int y, int w, int h)
+    void
+gui_gtk4_add_multisign(
+	cairo_surface_t *surf,
+	int		row,
+	int		col,
+	int		width,
+	int		height)
 {
-    return vim_draw_area_get_multisign_cairo(
-	    VIM_DRAW_AREA(gui.drawarea), x, y, w, h);
+    vim_draw_area_add_multisign(VIM_DRAW_AREA(gui.drawarea), surf, row, col,
+	    width, height);
 }
 # endif
 #else // USE_GTK4_SNAPSHOT
@@ -1762,13 +1767,24 @@ gui_mch_insert_lines(int row, int num_lines)
     gtk_widget_queue_draw(gui.drawarea);
 }
 
+#if defined(USE_GTK4_SNAPSHOT) || defined(PROTO)
+/*
+ * See vim_draw_area_set_cursor() for more information
+ */
+    void
+gui_gtk4_draw_cursor(guicolor_T bg, guicolor_T fg, int w, int h)
+{
+    gui_mch_set_bg_color(bg);
+    gui_mch_set_fg_color(fg);
+    vim_draw_area_set_cursor(VIM_DRAW_AREA(gui.drawarea), w, h);
+    gtk_widget_queue_draw(gui.drawarea);
+}
+#endif
+
+#if !defined(USE_GTK4_SNAPSHOT) || defined(PROTO)
     void
 gui_mch_draw_hollow_cursor(guicolor_T color)
 {
-#ifdef USE_GTK4_SNAPSHOT
-    gui_mch_set_fg_color(color);
-    vim_draw_area_set_hollow_cursor(VIM_DRAW_AREA(gui.drawarea));
-#else
     cairo_t *cr;
     int i = 1;
 
@@ -1788,7 +1804,6 @@ gui_mch_draw_hollow_cursor(guicolor_T color)
 	    i * gui.char_width - 1, gui.char_height - 1);
     cairo_stroke(cr);
     cairo_destroy(cr);
-#endif
 
     gtk_widget_queue_draw(gui.drawarea);
 }
@@ -1796,10 +1811,6 @@ gui_mch_draw_hollow_cursor(guicolor_T color)
     void
 gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
 {
-#ifdef USE_GTK4_SNAPSHOT
-    gui_mch_set_fg_color(color);
-    vim_draw_area_set_part_cursor(VIM_DRAW_AREA(gui.drawarea), w, h);
-#else
     cairo_t *cr;
 
     if (gui.surface == NULL)
@@ -1818,10 +1829,10 @@ gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
 	    w, h);
     cairo_fill(cr);
     cairo_destroy(cr);
-#endif
 
     gtk_widget_queue_draw(gui.drawarea);
 }
+#endif
 
     void
 gui_mch_flash(int msec)
@@ -3517,12 +3528,13 @@ gui_mch_destroy_sign(void *sign)
  * ============================================================
  */
 
+#ifndef USE_GTK4_SNAPSHOT
 /*
  * Ligature and text drawing support.
  * Ported from gui_gtk_x11.c (GTK3) to support 'guiligatures' in GTK4.
  */
 
-#define INSERT_PANGO_ATTR(Attribute, AttrList, Start, End)  \
+# define INSERT_PANGO_ATTR(Attribute, AttrList, Start, End)  \
     G_STMT_START{					    \
 	PangoAttribute *tmp_attr_;			    \
 	tmp_attr_ = (Attribute);			    \
@@ -3651,7 +3663,6 @@ setup_zero_width_cluster(PangoItem *item, PangoGlyphInfo *glyph,
 	glyph->geometry.x_offset = -width + MAX(0, width - ink_rect.width) / 2;
 }
 
-#ifndef USE_GTK4_SNAPSHOT
 /*
  * Draw a single glyph string segment: background, foreground, and fake bold.
  */
@@ -3737,7 +3748,6 @@ draw_under(int flags, int row, int col, int cells, cairo_t *cr)
 	cairo_stroke(cr);
     }
 }
-#endif
 
 /*
  * Draw a string of characters on the screen.
@@ -3757,21 +3767,12 @@ gui_gtk_draw_string_ext(
     PangoGlyphString	*glyphs;
     int			column_offset = 0;
     int			i;
-#ifdef USE_GTK4_SNAPSHOT
-    gboolean		s_alloced = FALSE;
-#else
     GdkRectangle	area;
     cairo_t		*cr;
-#endif
 
-    if (gui.text_context == NULL
-#ifndef USE_GTK4_SNAPSHOT
-	    || gui.surface == NULL
-#endif
-	    )
+    if (gui.text_context == NULL || gui.surface == NULL)
 	return len;
 
-#ifndef USE_GTK4_SNAPSHOT
     // Restrict all drawing to the current screen line.
     area.x = gui.border_offset;
     area.y = FILL_Y(row);
@@ -3781,7 +3782,6 @@ gui_gtk_draw_string_ext(
     cr = cairo_create(gui.surface);
     cairo_rectangle(cr, area.x, area.y, area.width, area.height);
     cairo_clip(cr);
-#endif
 
     glyphs = pango_glyph_string_new();
 
@@ -3806,12 +3806,7 @@ gui_gtk_draw_string_ext(
 	    glyphs->log_clusters[i] = i;
 	}
 
-#ifdef USE_GTK4_SNAPSHOT
-	vim_draw_area_add_glyphs(VIM_DRAW_AREA(gui.drawarea), row, col, len,
-		flags, gui.ascii_font, glyphs);
-#else
 	draw_glyph_string(row, col, len, flags, gui.ascii_font, glyphs, cr);
-#endif
 
 	column_offset = len;
     }
@@ -3827,17 +3822,8 @@ not_ascii:;
 	// Safety check: pango crashes with invalid utf-8.
 	if (!utf_valid_string(s, s + len))
 	{
-#ifdef USE_GTK4_SNAPSHOT
-	    // vim_draw_area_add_glyphs() also handles under decorations. Make
-	    // "str" a string of spaces so that under decorations are still
-	    // applied.
-	    s = g_malloc(len);
-	    memset(s, ' ', len);
-	    s_alloced = TRUE;
-#else
 	    column_offset = len;
 	    goto skipitall;
-#endif
 	}
 
 	cluster_width = PANGO_SCALE * gui.char_width;
@@ -3929,14 +3915,8 @@ not_ascii:;
 		}
 	    }
 
-#ifdef USE_GTK4_SNAPSHOT
-	    vim_draw_area_add_glyphs(VIM_DRAW_AREA(gui.drawarea),
-		    row, col + column_offset, item_cells,
-		    flags, item->analysis.font, glyphs);
-#else
 	    draw_glyph_string(row, col + column_offset, item_cells,
-			      flags, item->analysis.font, glyphs, cr);
-#endif
+		    flags, item->analysis.font, glyphs, cr);
 
 	    pango_item_free(item);
 
@@ -3946,23 +3926,18 @@ not_ascii:;
 	pango_attr_list_unref(attr_list);
     }
 
-#ifdef USE_GTK4_SNAPSHOT
-    if (s_alloced)
-	g_free(s);
-#else
 skipitall:
     draw_under(flags, row, col, column_offset, cr);
     cairo_destroy(cr);
-#endif
 
     pango_glyph_string_free(glyphs);
-
 
     if (gui.drawarea != NULL)
 	gtk_widget_queue_draw(gui.drawarea);
 
     return column_offset;
 }
+#endif // !USE_GTK4_SNAPSHOT
 
 /*
  * Draw a string of characters on the screen using the current font and colors.
@@ -3974,6 +3949,17 @@ skipitall:
     int
 gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
 {
+#ifdef USE_GTK4_SNAPSHOT
+    int cells;
+
+    cells = vim_draw_area_draw_string(VIM_DRAW_AREA(gui.drawarea),
+	    row, col, s, len, flags);
+
+    if (gui.drawarea != NULL)
+	gtk_widget_queue_draw(gui.drawarea);
+
+    return cells;
+#else
     char_u	*conv_buf = NULL;
     int		convlen;
     int		len_sum;
@@ -3986,11 +3972,7 @@ gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
     int		is_utf8;
     char_u	backup_ch;
 
-    if (gui.text_context == NULL
-#ifndef USE_GTK4_SNAPSHOT
-	    || gui.surface == NULL
-#endif
-	    )
+    if (gui.text_context == NULL || gui.surface == NULL)
 	return len;
 
     if (output_conv.vc_type != CONV_NONE)
@@ -4090,6 +4072,7 @@ gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
     }
     vim_free(conv_buf);
     return len_sum;
+#endif
 }
 
     int
