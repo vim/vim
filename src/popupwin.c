@@ -2313,10 +2313,8 @@ popup_apply_winupdate_clip(win_T *wp, popup_clip_T *cl)
 	if (wp->w_height < 0)
 	    wp->w_height = 0;
 	if (cl->clip_top_content > 0)
-	{
+	    // w_winrow already points at the first visible row.
 	    wp->w_topline += cl->clip_top_content;
-	    wp->w_winrow += cl->clip_top_content;
-	}
     }
     if (wp->w_popup_leftclip > 0 || wp->w_popup_rightclip > 0)
     {
@@ -2981,6 +2979,10 @@ popup_adjust_position(win_T *wp)
 	popup_hide_for_textprop(wp);
 	return;
     }
+
+    // Make w_winrow the first visible screen row (>= 0); the clipped-off top
+    // rows are recorded in w_popup_topoff.
+    wp->w_winrow += wp->w_popup_topoff;
 
 #ifdef FEAT_IMAGE_SIXEL
     // Final winrow is now known: encode (or re-encode) the sixel image so it
@@ -6120,8 +6122,11 @@ popup_mark_opacity_zindex(win_T *wp)
 
     width = popup_width(wp);
     height = popup_height(wp);
+    // w_winrow/w_wincol are visible cells (>= 0); w_popup_topoff rows are
+    // clipped off the top.
     for (r = wp->w_winrow;
-		       r < wp->w_winrow + height && r < screen_Rows; ++r)
+		       r < wp->w_winrow + height - wp->w_popup_topoff
+						&& r < screen_Rows; ++r)
 	for (c = wp->w_wincol;
 		 c < wp->w_wincol + width - wp->w_popup_leftoff
 						&& c < screen_Columns; ++c)
@@ -6417,7 +6422,7 @@ may_update_popup_mask(int type)
 	    continue;
 
 	{
-	    int mask_start = wp->w_winrow + wp->w_popup_topoff;
+	    int mask_start = wp->w_winrow;
 	    int mask_end = mask_start + height;
 	    int mask_col_start = wp->w_wincol + wp->w_popup_leftclip;
 	    int mask_col_end = wp->w_wincol + width - wp->w_popup_leftoff
@@ -7453,7 +7458,8 @@ update_popups(void (*win_update)(win_T *wp))
 							- wp->w_popup_leftoff;
 	if (wp->w_wincol + left_extra < 0)
 	    left_extra = -wp->w_wincol;
-	wp->w_winrow += top_off;
+	// Move to the content top, skipping any clipped top border/padding.
+	wp->w_winrow += MAX(top_off - wp->w_popup_topoff, 0);
 	wp->w_wincol += left_extra;
 
 	// Draw the popup text, unless it's off screen.
@@ -7486,14 +7492,8 @@ update_popups(void (*win_update)(win_T *wp))
 		wp->w_cursor.lnum = wp->w_botline - 1;
 	}
 
-	wp->w_winrow -= top_off;
+	wp->w_winrow -= MAX(top_off - wp->w_popup_topoff, 0);
 	wp->w_wincol -= left_extra;
-
-	// "clipwindow" with top-clip shifts all popup decorations down so the
-	// first visible row of the popup lands at the host window's top edge.
-	// Apply the shift before drawing borders/padding/etc. and restore at
-	// the end of this popup's iteration.
-	wp->w_winrow += wp->w_popup_topoff;
 
 	// Add offset for border and padding if not done already.
 	if ((wp->w_flags & WFLAG_WCOL_OFF_ADDED) == 0)
@@ -7895,10 +7895,6 @@ update_popups(void (*win_update)(win_T *wp))
 
 	if (override_success)
 	    pop_highlight_overrides();
-
-	// Undo the topoff shift applied before drawing the borders so the
-	// next iteration sees the popup's logical winrow.
-	wp->w_winrow -= wp->w_popup_topoff;
 
 #ifdef FEAT_IMAGE
 	// Emit the popup image right after this popup's decorations land in

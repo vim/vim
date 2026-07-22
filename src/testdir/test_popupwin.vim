@@ -4685,6 +4685,37 @@ func Test_popup_clipwindow_hide_when_prop_off_screen()
   call prop_type_delete('clipprop')
 endfunc
 
+func Test_popup_clipwindow_opacity_negative_winrow()
+  " A "clipwindow" popup with "opacity" whose textprop anchor scrolls above
+  " the window top must not index the opacity mask out of bounds.
+  call prop_type_add('clipprop', {})
+  new
+  call setline(1, range(1, 200)->mapnew({_, v -> 'line ' .. v}))
+  call prop_add(5, 1, #{type: 'clipprop', length: 5})
+  let host = win_getid()
+
+  let id = popup_create(['aaa', 'bbb', 'ccc', 'ddd', 'eee'], #{
+        \ textprop: 'clipprop',
+        \ textpropwin: host,
+        \ wrap: v:false,
+        \ fixed: v:true,
+        \ clipwindow: v:true,
+        \ opacity: 50,
+        \ })
+  call assert_true(id > 0)
+  redraw
+
+  " Scroll so the prop (line 5) sits a couple of lines above the top, so the
+  " popup is clipped at the host window's top edge.
+  call win_execute(host, 'normal! 8Gzt')
+  redraw
+  redraw
+
+  call popup_close(id)
+  bwipe!
+  call prop_type_delete('clipprop')
+endfunc
+
 func Test_popup_clipwindow_top_clip()
   CheckScreendump
 
