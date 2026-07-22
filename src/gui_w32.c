@@ -2597,6 +2597,46 @@ remove_any_timer(void)
     }
 }
 
+#ifdef FEAT_CLIENTSERVER
+// A client message may be handled re-entrantly, e.g. during a redraw while a
+// command line is being read; inserting the keys into the typeahead buffer
+// then corrupts it. Store them here until a safe point.
+static garray_T	server_pending_ga = {0, 0, 0, 0, NULL};
+
+/*
+ * Store keys received from a client, to be inserted into the typeahead buffer
+ * later by server_flush_input().
+ */
+    void
+server_add_input(char_u *str)
+{
+    if (server_pending_ga.ga_data == NULL)
+	ga_init2(&server_pending_ga, 1, 200);
+    ga_concat(&server_pending_ga, str);
+}
+
+/*
+ * Insert postponed keys received from a client, but only when the typeahead
+ * buffer is empty, so that they are not mixed into a command that is currently
+ * being read.
+ */
+    static void
+server_flush_input(void)
+{
+    char_u  *str;
+
+    if (server_pending_ga.ga_len == 0 || typebuf.tb_len != 0)
+	return;
+    str = vim_strnsave(server_pending_ga.ga_data, server_pending_ga.ga_len);
+    server_pending_ga.ga_len = 0;
+    if (str != NULL)
+    {
+	server_to_input_buf(str);
+	vim_free(str);
+    }
+}
+#endif
+
 /*
  * GUI input routine called by gui_wait_for_chars().  Waits for a character
  * from the keyboard.
@@ -2655,6 +2695,10 @@ gui_mch_wait_for_chars(int wtime)
 	    MSG msg;
 
 	    parse_queued_messages();
+# ifdef FEAT_CLIENTSERVER
+	    // Insert keys from a client that were postponed to this safe point.
+	    server_flush_input();
+# endif
 # ifdef FEAT_TIMERS
 	    if (did_add_timer)
 		break;
