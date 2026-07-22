@@ -3,8 +3,10 @@
 " Maintainer:           D. Ben Knoble <ben.knoble+github@gmail.com>
 " Previous Maintainer:  Will Langstroth <will@langstroth.com>
 " URL:                  https://github.com/benknoble/vim-racket
-" Last Change:          2022 Aug 29
-"                       2024 Jan 14 by Vim Project (browsefilter)
+" Last Change:          2025 Aug 09
+" 2026 Mar 31 by Vim project: use shellescape for the K mapping
+" 2026 Apr 01 by Vim project: make K mapping more robust for shell injection
+" 2026 Jun 27 by Vim Project: add recommended style guard
 
 if exists("b:did_ftplugin")
   finish
@@ -17,19 +19,23 @@ set cpo&vim
 " quick hack to allow adding values
 setlocal iskeyword=@,!,#-',*-:,<-Z,a-z,~,_,94
 
+if get(g:, 'racket_recommended_style',
+      \ get(g:, 'filetype_recommended_style', 1))
+  setlocal shiftwidth=2 softtabstop=2
+endif
+
 " Enable auto begin new comment line when continuing from an old comment line
 setlocal comments=:;;;;,:;;;,:;;,:;
 setlocal formatoptions+=r
 
-"setlocal commentstring=;;%s
-setlocal commentstring=#\|\ %s\ \|#
+setlocal commentstring=;;\ %s
 
 setlocal formatprg=raco\ fmt
 
 " Undo our settings when the filetype changes away from Racket
 " (this should be amended if settings/mappings are added above!)
 let b:undo_ftplugin =
-      \  "setlocal iskeyword< lispwords< lisp< comments< formatoptions< formatprg<"
+      \  "setlocal iskeyword< shiftwidth< softtabstop< comments< formatoptions< formatprg<"
       \. " | setlocal commentstring<"
 
 if !exists("no_plugin_maps") && !exists("no_racket_maps")
@@ -39,7 +45,7 @@ if !exists("no_plugin_maps") && !exists("no_racket_maps")
   "    "press ENTER or type a command to continue"
   " We avoid the annoyance of having to hit enter by remapping K directly.
   function s:RacketDoc(word) abort
-    execute 'silent !raco docs --' shellescape(a:word)
+    execute 'silent !raco docs --' shellescape(a:word, v:true)
     redraw!
   endfunction
   nnoremap <buffer> <Plug>RacketDoc :call <SID>RacketDoc(expand('<cword>'))<CR>
@@ -51,7 +57,7 @@ if !exists("no_plugin_maps") && !exists("no_racket_maps")
     try
       let l:old_a = @a
       normal! gv"ay
-      call system("raco docs '". @a . "'")
+      call system("raco docs -- ". string(shellescape(@a)))
       redraw!
       return @a
     finally

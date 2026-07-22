@@ -1,7 +1,7 @@
-*map.txt*       For Vim version 9.1.  Last change: 2024 Jan 25
+*map.txt*	For Vim version 9.2.  Last change: 2026 Jun 13
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
 Key mapping, abbreviations and user-defined commands.
@@ -84,6 +84,8 @@ modes.
 			where the map command applies.  Disallow mapping of
 			{rhs}, to avoid nested and recursive mappings.  Often
 			used to redefine a command.
+			Note: Keys in {rhs} also won't trigger abbreviation,
+			with the exception of |i_CTRL-]| and |c_CTRL-]|.
 			Note: When <Plug> appears in the {rhs} this part is
 			always applied even if remapping is disallowed.
 
@@ -103,7 +105,7 @@ modes.
 			map command applies.  The mapping may remain defined
 			for other modes where it applies.
 			It also works when {lhs} matches the {rhs} of a
-			mapping. This is for when an abbreviation applied.
+			mapping.  This is for when an abbreviation applied.
 			Note: Trailing spaces are included in the {lhs}.
 			See |map-trailing-white|.
 
@@ -206,8 +208,7 @@ be effective in the current buffer only.  Example: >
 Then you can map ",w" to something else in another buffer: >
 	:map <buffer>  ,w  /[#&!]<CR>
 The local buffer mappings are used before the global ones.  See <nowait> below
-to make a short local mapping not taking effect when a longer global one
-exists.
+to make a short local mapping take effect when a longer global one exists.
 The "<buffer>" argument can also be used to clear mappings: >
 	:unmap <buffer> ,w
 	:mapclear <buffer>
@@ -293,7 +294,7 @@ In case you want the mapping to not do anything, you can have the expression
 evaluate to an empty string.  If something changed that requires Vim to
 go through the main loop (e.g. to update the display), return "\<Ignore>".
 This is similar to "nothing" but makes Vim return from the loop that waits for
-input. Example: >
+input.  Example: >
 	func s:OpenPopup()
 	  call popup_create(... arguments ...)
 	  return "\<Ignore>"
@@ -328,7 +329,7 @@ For this reason the following is blocked:
 If you want the mapping to do any of these let the returned characters do
 that, or use a |<Cmd>| mapping instead.
 
-You can use getchar(), it consumes typeahead if there is any. E.g., if you
+You can use getchar(), it consumes typeahead if there is any.  E.g., if you
 have these mappings: >
   inoremap <expr> <C-L> nr2char(getchar())
   inoremap <expr> <C-L>x "foo"
@@ -540,7 +541,7 @@ it's just used here for this situation.
    The simplest way to load a set of related language mappings is by using the
 'keymap' option.  See |45.5|.
    In Insert mode and in Command-line mode the mappings can be disabled with
-the CTRL-^ command |i_CTRL-^| |c_CTRL-^|. These commands change the value of
+the CTRL-^ command |i_CTRL-^| |c_CTRL-^|.  These commands change the value of
 the 'iminsert' option.  When starting to enter a normal command line (not a
 search pattern) the mappings are disabled until a CTRL-^ is typed.  The state
 last used is remembered for Insert mode and Search patterns separately.  The
@@ -588,11 +589,11 @@ e.g. from a timer callback. *E1309*
 
 							*:map-verbose*
 When 'verbose' is non-zero, the detected and used 'keyprotocol' value will be
-displayed in the first line. Also a key map will also display where it was
+displayed in the first line.  Also a key map will also display where it was
 last defined.  Example: >
 
 	:verbose map <C-W>*
-        Kitty keyboard protocol: Cleared
+	Kitty keyboard protocol: Cleared
 	n  <C-W>*      * <C-W><C-S>*
 		Last set from /home/abcd/.vimrc
 
@@ -746,7 +747,7 @@ Upper and lowercase differences are ignored.
 
 							*map-comments*
 It is not possible to put a comment after these commands, because the '"'
-character is considered to be part of the {lhs} or {rhs}. However, one can
+character is considered to be part of the {lhs} or {rhs}.  However, one can
 use |", since this starts a new, empty command with a comment.
 
 							*map_bar* *map-bar*
@@ -825,7 +826,7 @@ Multiplying a count
 When you type a count before triggering a mapping, it's like the count was
 typed before the {lhs}.  For example, with this mapping: >
    :map <F4>  3w
-Typing 2<F4> will result in "23w". Thus not moving 2 * 3 words but 23 words.
+Typing 2<F4> will result in "23w".  Thus not moving 2 * 3 words but 23 words.
 If you want to multiply counts use the expression register: >
    :map <F4>  @='3w'<CR>
 The part between quotes is the expression being executed. |@=|
@@ -958,7 +959,7 @@ configuration).  For that, you can add the line: >
 
 	set convert-meta on
 
-to your ~/.inputrc file. If you're creating the file, you might want to use: >
+to your ~/.inputrc file.  If you're creating the file, you might want to use: >
 
 	$include /etc/inputrc
 
@@ -986,10 +987,10 @@ For the Meta modifier the "T" character is used.  For example, to map Meta-b
 in Insert mode: >
 	:imap <T-b> terrible
 
-1.12 MAPPING SUPER-KEYS or COMMAND-KEYS		*:map-super-keys* *:map-cmd-key*
+1.12 MAPPING SUPER-KEYS or COMMAND-KEYS	     *:map-super-keys* *:map-cmd-key*
 
-The Super modifier is available in GUI mode (when |gui_running| is 1) for
-GVim on Linux and MacVim on Mac OS. If you're on a Mac, this represents the
+The Super modifier is available in GUI mode (when |gui_running| is 1) for gVim
+on Linux and MacVim on Mac OS.  If you're on a Mac, this represents the
 Command key, on Linux with the GTK GUI it represents the Super key.
 The character "D" is used for the Super / Command modifier.
 
@@ -1242,7 +1243,7 @@ an additional rule:
 full-id	  In front of the match is a non-keyword character, or this is where
 	  the line or insertion starts.  Exception: When the abbreviation is
 	  only one character, it is not recognized if there is a non-keyword
-	  character in front of it, other than a space or a tab. However, for
+	  character in front of it, other than a space or a tab.  However, for
 	  the command line "'<,'>" (or any other marks) is ignored, as if the
 	  command line starts after it.
 
@@ -1500,8 +1501,8 @@ be the user command ":Cc2" without an argument, or the command ":Cc" with
 argument "2".  It is advised to put a space between the command name and the
 argument to avoid these problems.
 
-When using a user-defined command, the command can be abbreviated.  However, if
-an abbreviation is not unique, an error will be issued.  Furthermore, a
+When using a user-defined command, the command can be abbreviated.  However,
+if an abbreviation is not unique, an error will be issued.  Furthermore, a
 built-in command will always take precedence.
 
 Example: >
@@ -1517,8 +1518,8 @@ It is recommended that full names for user-defined commands are used in
 scripts.
 
 :com[mand]						*:com* *:command*
-			List all user-defined commands.  When listing commands,
-			the characters in the first columns are:
+			List all user-defined commands.  When listing
+			commands, the characters in the first columns are:
 			    !	Command has the -bang attribute
 			    "	Command has the -register attribute
 			    |   Command has the -bar attribute
@@ -1533,7 +1534,7 @@ scripts.
 
 							*:command-verbose*
 When 'verbose' is non-zero, listing a command will also display where it was
-last defined and any completion argument. Example: >
+last defined and any completion argument.  Example: >
 
     :verbose command TOhtml
 <	Name	    Args Range Complete  Definition ~
@@ -1569,10 +1570,10 @@ See |:verbose-cmd| for more information.
 
 Command attributes ~
 							*command-attributes*
-User-defined commands are treated by Vim just like any other Ex commands.  They
-can have arguments, or have a range specified.  Arguments are subject to
-completion as filenames, buffers, etc.  Exactly how this works depends upon the
-command's attributes, which are specified when the command is defined.
+User-defined commands are treated by Vim just like any other Ex commands.
+They can have arguments, or have a range specified.  Arguments are subject to
+completion as filenames, buffers, etc.  Exactly how this works depends upon
+the command's attributes, which are specified when the command is defined.
 
 When defining a user command in a script, it will be able to call functions
 local to the script and use mappings local to the script.  When the user
@@ -1591,7 +1592,10 @@ reported if any are supplied).  However, it is possible to specify that the
 command can take arguments, using the -nargs attribute.  Valid cases are:
 
 	-nargs=0    No arguments are allowed (the default)
-	-nargs=1    Exactly one argument is required, it includes spaces
+	-nargs=1    Exactly one argument is required, it includes spaces;
+		    completion treats white spaces as argument separation
+	-nargs=_    Exactly one argument is required, it includes spaces;
+		    completion treats white spaces as part of the argument
 	-nargs=*    Any number of arguments are allowed (0, 1, or many),
 		    separated by white space
 	-nargs=?    0 or 1 arguments are allowed
@@ -1599,7 +1603,28 @@ command can take arguments, using the -nargs attribute.  Valid cases are:
 
 Arguments are considered to be separated by (unescaped) spaces or tabs in this
 context, except when there is one argument, then the white space is part of
-the argument.
+the argument. The difference between the "-nargs=1" and "-nargs=_": >
+
+	func MyComplete(ArgLead, CmdLine, CursorPos)
+	  return ["one value", "two values", "three values"]
+		\->matchfuzzy(a:ArgLead)
+	endfunc
+	:command -nargs=1 -complete=customlist,MyComplete MyCmd1 echo <q-args>
+	:command -nargs=_ -complete=customlist,MyComplete MyCmd2 echo <q-args>
+
+Completing ":MyCmd1 two va<tab>" will complete with: >
+
+	:MyCmd1 two one value
+
+Completing ":MyCmd2 two va<tab>" will complete with: >
+
+	:MyCmd2 two values
+
+Use -nargs=_ when the whole argument area should be taken as a single value
+as-is.  When you need several arguments and an individual argument may itself
+contain spaces (so the splitter must keep running), use -nargs=+/* together
+with |:command-completeopt| (-completeopt=escape) instead.
+
 
 Note that arguments are used as text, not as expressions.  Specifically,
 "s:var" will use the script-local variable in the script where the command was
@@ -1624,23 +1649,26 @@ completion can be enabled:
 
 	-complete=arglist	file names in argument list
 	-complete=augroup	autocmd groups
+	-complete=behave	|:behave| suboptions
+	-complete=breakpoint	|:breakadd| suboptions
 	-complete=buffer	buffer names
-	-complete=behave	:behave suboptions
 	-complete=color		color schemes
 	-complete=command	Ex command (and arguments)
 	-complete=compiler	compilers
 	-complete=cscope	|:cscope| suboptions
+	-complete=diff_buffer	diff buffer names
 	-complete=dir		directory names
+	-complete=dir_in_path	directory names in 'cdpath'
 	-complete=environment	environment variable names
 	-complete=event		autocommand events
 	-complete=expression	Vim expression
 	-complete=file		file and directory names
-	-complete=file_in_path	file and directory names in |'path'|
-	-complete=filetype	filetype names |'filetype'|
+	-complete=file_in_path	file and directory names in 'path'
+	-complete=filetype	filetype names 'filetype'
 	-complete=function	function name
 	-complete=help		help subjects
 	-complete=highlight	highlight groups
-	-complete=history	:history suboptions
+	-complete=history	|:history| suboptions
 	-complete=keymap	keyboard mappings
 	-complete=locale	locale names (as output of locale -a)
 	-complete=mapclear	buffer argument
@@ -1649,9 +1677,16 @@ completion can be enabled:
 	-complete=messages	|:messages| suboptions
 	-complete=option	options
 	-complete=packadd	optional package |pack-add| names
+	-complete=retab		|:retab| suboptions
+	-complete=runtime	file and directory names in 'runtimepath'
+	-complete=scriptnames	sourced script names
 	-complete=shellcmd	Shell command
+	-complete=shellcmdline	First is a shell command and subsequent ones
+				are filenames.  The same behavior as |:!cmd|.
+				To get correct completion, |:command-nargs|
+				should be '*' or '+'
 	-complete=sign		|:sign| suboptions
-	-complete=syntax	syntax file names |'syntax'|
+	-complete=syntax	syntax file names 'syntax'
 	-complete=syntime	|:syntime| suboptions
 	-complete=tag		tags
 	-complete=tag_listfiles	tags, file names are shown when CTRL-D is hit
@@ -1674,24 +1709,39 @@ function with the following signature: >
 
 	:function {func}(ArgLead, CmdLine, CursorPos)
 
-The function need not use all these arguments. The function should provide the
-completion candidates as the return value.
+The function need not use all these arguments.  The function should provide
+the completion candidates as the return value.
 
 For the "custom" argument, the function should return the completion
 candidates one per line in a newline separated string.
 							*E1303*
 For the "customlist" argument, the function should return the completion
-candidates as a Vim List.  Non-string items in the list are ignored.
+candidates as a Vim List.  Each item may be either a string or a |Dictionary|.
+A Dictionary item may have the following keys:
+	word	(required) the text inserted into the command line when the
+		item is selected
+	abbr	alternative text shown in the popup menu in place of "word",
+		when 'wildoptions' contains "pum"; useful when the inserted
+		text and the displayed text should differ
+	kind	short kind text (one or two characters), shown in the popup
+		menu when 'wildoptions' contains "pum"
+	menu	extra text shown after the match in the popup menu
+	info	long description shown in the info popup; the |+popupwin|
+		feature is required to display it
+Items that are neither a string nor a Dictionary, and Dictionary items without
+a "word" key, are ignored.  When 'wildoptions' does not contain "pum", only
+"word" is shown.
 
 The function arguments are:
 	ArgLead		the leading portion of the argument currently being
-			completed on
+			completed on; note that this only captures the current
+			space-separated word, even when using "-nargs=1"
 	CmdLine		the entire command line
 	CursorPos	the cursor position in it (byte index)
 The function may use these for determining context.  For the "custom"
 argument, it is not necessary to filter candidates against the (implicit
 pattern in) ArgLead.  Vim will filter the candidates with its regexp engine
-after function return, and this is probably more efficient in most cases. If
+after function return, and this is probably more efficient in most cases.  If
 'wildoptions' contains "fuzzy", then the candidates will be filtered using
 |fuzzy-matching|.  For the "customlist" argument, Vim will not
 filter the returned completion candidates and the user supplied function
@@ -1712,6 +1762,50 @@ the 'path' option: >
     :endfun
 <
 This example does not work for file names with spaces!
+
+							*:command-completeopt*
+For the "custom" and "customlist" types you can further opt into specific
+behaviors with the -completeopt= attribute.  It takes a comma-separated list
+of option names; currently only "escape" is recognized:
+
+	-completeopt=escape
+		The completion function may return matches containing spaces,
+		tabs or backslashes.  When such a match is inserted into the
+		command line each space, tab and backslash is preceded by a
+		backslash so the value is preserved as a single argument.  The
+		unescaped form is used for display (popup menu / wildmenu /
+		|getcompletion()|).  The ArgLead passed to the completion
+		function is also unescaped: when the user types
+		`:Cmd foo\ b<Tab>` the function is called with `foo b`, not
+		`foo\ b` .  In the command's replacement text |<q-args>| and
+		|<f-args>| likewise yield the unescaped value.
+
+Example: >
+    :func MyComplete(ArgLead, CmdLine, CursorPos)
+    :    return filter(['hello world', 'good morning'],
+    :    \              {_, v -> stridx(v, a:ArgLead) ==# 0})
+    :endfunc
+    :com! -nargs=1 -complete=customlist,MyComplete -completeopt=escape MyCmd
+		\ echo <q-args>
+<
+After `:MyCmd <Tab>` the popup shows `hello world` and `good morning`.  Typing
+`:MyCmd hello\ w<Tab>` calls MyComplete with ArgLead set to `hello w` (the
+backslash before the space is removed), the filter finds `hello world`, and
+`<Tab>` inserts it as `:MyCmd hello\ world`.  `<q-args>` then evaluates to the
+logical `hello world`.
+
+Without -completeopt=escape the literal string `hello world` would be inserted
+into the command line, so Vim's argument splitter would treat it as two
+arguments.
+
+-completeopt=escape and -nargs=_ (see |:command-nargs|) target different
+shapes; they are not competing solutions for the same one:
+	"whole line as one argument, no escaping"
+			use -nargs=_
+	"multiple arguments, each may contain spaces"
+			use -nargs=+ or -nargs=* with -completeopt=escape
+Because -nargs=_ disables the argument splitter, escaping has no effect there,
+so combining -nargs=_ with -completeopt=escape is an error (E1579).
 
 
 Range handling ~
@@ -1743,7 +1837,7 @@ by default correspond to the current line, last line and the whole buffer,
 relate to arguments, (loaded) buffers, windows or tab pages.
 
 Possible values are (second column is the short name used in listing):
-    -addr=lines			Range of lines (this is the default for -range)
+    -addr=lines			Range of lines (the default for -range)
     -addr=arguments	  arg	Range for arguments
     -addr=buffers	  buf	Range for buffers (also not loaded buffers)
     -addr=loaded_buffers  load	Range for loaded buffers
@@ -1751,8 +1845,7 @@ Possible values are (second column is the short name used in listing):
     -addr=tabs		  tab	Range for tab pages
     -addr=quickfix	  qf	Range for quickfix entries
     -addr=other		  ?	Other kind of range; can use ".", "$" and "%"
-				as with "lines" (this is the default for
-				-count)
+				as with "lines" (the default for -count)
 
 
 Special cases ~
@@ -1823,11 +1916,11 @@ The valid escape sequences are
 		command was executed with a ! modifier, otherwise
 		expands to nothing.
 					*<mods>* *<q-mods>* *:command-modifiers*
-	<mods>  The command modifiers, if specified. Otherwise, expands to
-		nothing. Supported modifiers are |:aboveleft|, |:belowright|,
+	<mods>  The command modifiers, if specified.  Otherwise, expands to
+		nothing.  Supported modifiers are |:aboveleft|, |:belowright|,
 		|:botright|, |:browse|, |:confirm|, |:hide|, |:horizontal|,
 		|:keepalt|, |:keepjumps|, |:keepmarks|, |:keeppatterns|,
-		|:leftabove|, |:lockmarks|, |:noautocmd|, |:noswapfile|
+		|:leftabove|, |:lockmarks|, |:noautocmd|, |:noswapfile|,
 		|:rightbelow|, |:sandbox|, |:silent|, |:tab|, |:topleft|,
 		|:unsilent|, |:verbose|, and |:vertical|.
 		Note that |:filter| is not supported.
@@ -1933,9 +2026,9 @@ A more substantial example: >
    :endfunction
    :command -nargs=+ -complete=command Allargs call Allargs(<q-args>)
 
-The command Allargs takes any Vim command(s) as argument and executes it on all
-files in the argument list.  Usage example (note use of the "e" flag to ignore
-errors and the "update" command to write modified buffers): >
+The command Allargs takes any Vim command(s) as argument and executes it on
+all files in the argument list.  Usage example (note use of the "e" flag to
+ignore errors and the "update" command to write modified buffers): >
 	:Allargs %s/foo/bar/ge|update
 This will invoke: >
 	:call Allargs("%s/foo/bar/ge|update")

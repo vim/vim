@@ -1,10 +1,8 @@
 " Test various aspects of the Vim9 script language.
 
-source check.vim
-source term_util.vim
-source view_util.vim
-import './vim9.vim' as v9
-source screendump.vim
+import './util/vim9.vim' as v9
+source util/screendump.vim
+source util/shared.vim
 
 func Test_def_basic()
   def SomeFunc(): string
@@ -164,6 +162,47 @@ def Test_wrong_function_name()
   END
   v9.CheckScriptFailure(lines, 'E1182:')
   delfunc g:Define
+
+  lines =<< trim END
+    vim9script
+    var F1_ref: func
+    def Start()
+      F1_ref()
+    enddef
+    Start()
+  END
+  v9.CheckScriptFailure(lines, 'E117:')
+enddef
+
+" Check that in a legacy script a :def accesses the correct script variables.
+" Github issue: #14615.
+def Test_access_var_from_legacy_def()
+  # Access a script variable by name WITH "s:" prefix.
+  var lines =<< trim END
+    let s:foo = 'init'
+    let s:xxfoo = 'init'
+    def! AccessVarFromLegacyDef()
+        s:xxfoo = 'CHANGED'
+    enddef
+    call AccessVarFromLegacyDef()
+    call assert_equal('init', s:foo)
+    call assert_equal('CHANGED', s:xxfoo)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Access a script variable by name WITHOUT "s:" prefix;
+  # previously this accessed "foo" and not "xxfoo"
+  lines =<< trim END
+    let s:foo = 'init'
+    let s:xxfoo = 'init'
+    def! AccessVarFromLegacyDef()
+        xxfoo = 'CHANGED'
+    enddef
+    call AccessVarFromLegacyDef()
+    call assert_equal('init', s:foo)
+    call assert_equal('CHANGED', s:xxfoo)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_listing_function_error()
@@ -351,6 +390,12 @@ def Test_endfunc_enddef()
     enddef there
   END
   v9.CheckScriptFailure(lines, 'E1173: Text found after enddef: there', 6)
+
+  lines =<< trim END
+    def ShortEnddef()
+    endd
+  END
+  v9.CheckScriptFailure(lines, 'E1065: Command cannot be shortened: endd', 2)
 enddef
 
 def Test_missing_endfunc_enddef()
@@ -503,6 +548,47 @@ def Test_not_missing_return()
           return 0
         endif
         throw 'Error'
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for an if-else block ending in a throw statement
+def Test_if_else_with_throw()
+  var lines =<< trim END
+      def Ifelse_Throw1(): number
+        if false
+          return 1
+        else
+          throw 'Error'
+        endif
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      def Ifelse_Throw2(): number
+        if true
+          throw 'Error'
+        else
+          return 2
+        endif
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      def Ifelse_Throw3(): number
+        if true
+          return 1
+        elseif false
+          throw 'Error'
+        else
+          return 3
+        endif
       enddef
       defcompile
   END
@@ -922,7 +1008,18 @@ def Test_nested_function()
         enddef
       enddef
   END
-  v9.CheckDefFailure(lines, 'E1117:')
+  v9.CheckDefFailure(lines, 'E1117: Cannot use ! with nested :def')
+
+  lines =<< trim END
+      def Outer()
+        function Inner()
+          " comment
+        endfunc
+        function! Inner()
+        endfunc
+      enddef
+  END
+  v9.CheckDefFailure(lines, 'E1117: Cannot use ! with nested :function')
 
   lines =<< trim END
       vim9script
@@ -1830,6 +1927,18 @@ def MyDefVarargs(one: string, two = 'foo', ...rest: list<string>): string
     res ..= ',' .. s
   endfor
   return res
+enddef
+
+def Test_call_def_comments()
+  var lines =<< trim END
+      def Func(n: number)
+        echo n
+      enddef
+      Func( # comment
+        1
+        )
+  END
+  v9.CheckSourceDefSuccess(lines)
 enddef
 
 def Test_call_def_varargs()
@@ -3122,6 +3231,7 @@ def Test_nested_closure_fails()
 enddef
 
 def Run_Test_closure_in_for_loop_fails()
+  CheckScreendump
   var lines =<< trim END
     vim9script
     redraw
@@ -3518,6 +3628,7 @@ func Test_silent_echo()
 endfunc
 
 def Run_Test_silent_echo()
+  CheckScreendump
   var lines =<< trim END
     vim9script
     def EchoNothing()
@@ -3636,6 +3747,7 @@ def Test_invalid_function_name()
 enddef
 
 def Test_partial_call()
+  CheckFeature quickfix
   var lines =<< trim END
       var Xsetlist: func
       Xsetlist = function('setloclist', [0])
@@ -4492,6 +4604,7 @@ def Test_multiple_funcref()
 enddef
 
 def Test_cexpr_errmsg_line_number()
+  CheckFeature quickfix
   var lines =<< trim END
       vim9script
       def Func()
@@ -4561,6 +4674,7 @@ def Test_invalid_redir()
 enddef
 
 func Test_keytyped_in_nested_function()
+  CheckScreendump
   CheckRunVimInTerminal
 
   call Run_Test_keytyped_in_nested_function()
@@ -4600,6 +4714,94 @@ def Run_Test_keytyped_in_nested_function()
   # clean up
   term_sendkeys(buf, "\<Esc>")
   g:StopVimInTerminal(buf)
+enddef
+
+" Test for test_override('defcompile')
+def Test_test_override_defcompile()
+  var lines =<< trim END
+    vim9script
+    def Foo()
+      xxx
+    enddef
+  END
+  test_override('defcompile', 1)
+  v9.CheckScriptFailure(lines, 'E476: Invalid command: xxx')
+  test_override('defcompile', 0)
+enddef
+
+" Test for using a comment after the opening curly brace of an inner block.
+def Test_comment_after_inner_block()
+  var lines =<< trim END
+    vim9script
+
+    def F(G: func)
+    enddef
+
+    F(() => {       # comment1
+      F(() => {     # comment2
+        echo 'ok'   # comment3
+      })            # comment4
+    })              # comment5
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for calling an imported funcref which is modified in the current script
+def Test_call_modified_import_func()
+  var lines =<< trim END
+    vim9script
+
+    export var done = 0
+
+    def Noop()
+    enddef
+
+    export var Setup = Noop
+
+    export def Run()
+      done = 0
+      Setup()
+      call(Setup, [])
+      call("Setup", [])
+      call(() => Setup(), [])
+      done += 1
+    enddef
+  END
+  writefile(lines, 'XcallModifiedImportFunc.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+
+    import './XcallModifiedImportFunc.vim' as imp
+
+    var setup = 0
+
+    imp.Run()
+
+    imp.Setup = () => {
+      ++setup
+    }
+
+    imp.Run()
+
+    assert_equal(4, setup)
+    assert_equal(1, imp.done)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for assigning the return value of mkdir() to a new local variable.
+" This used to result in the "E1012: Type mismatch; expected list<any> but
+" got number" error message.
+def Test_assign_mkdir_ret_value()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      var ret: number = mkdir('./foo/bar/baz', 'p')
+    enddef
+    defcompile
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 " The following messes up syntax highlight, keep near the end.
@@ -4668,5 +4870,203 @@ if has('perl')
   enddef
 endif
 
+
+def Test_void_method_chain()
+  #### Case 1: Echo, method chain source is void ####
+  # outside def: runtime error
+  var lines =<< trim END
+    vim9script
+    var Fn1a: func = (): void => {
+      }
+    echo Fn1a()->empty()
+  END
+  v9.CheckScriptFailure(lines, 'E1031: Cannot use void value')
+
+  # inside def, compile-time error (known void return)
+  lines =<< trim END
+    vim9script
+    def Fn1b(): void
+    enddef
+    def TestFunc()
+      echo Fn1b()->empty()
+    enddef
+    defcompile TestFunc
+  END
+  v9.CheckScriptFailure(lines, 'E1031: Cannot use void value')
+
+  # inside def, runtime error (untyped func)
+  lines =<< trim END
+    vim9script
+    def TestFunc()
+      var Fn1c: func = (): void => {
+        }
+      echo Fn1c()->empty()
+    enddef
+    TestFunc()
+  END
+  v9.CheckScriptFailure(lines, 'E1031: Cannot use void value')
+
+  # inside def, compile-time error (func(): void)
+  lines =<< trim END
+    vim9script
+    def TestFunc()
+      var Fn1d: func(): void = () => {
+        }
+      echo Fn1d()->empty()
+    enddef
+    defcompile TestFunc
+  END
+  v9.CheckScriptFailure(lines, 'E1031: Cannot use void value')
+
+  #### Case 2: Echo, method chain destination is void ####
+  # outside def: runtime error
+  lines =<< trim END
+    vim9script
+    var Fn2a: func = (s: string): void => {
+      }
+    echo "x"->Fn2a()
+  END
+  v9.CheckScriptFailure(lines, 'E1186: Expression does not result in a value: "x"->Fn2a()')
+
+  # inside def, compile-time error (known void return)
+  lines =<< trim END
+    vim9script
+    def Fn2b(s: string): void
+    enddef
+    def TestFunc()
+      echo "x"->Fn2b()
+    enddef
+    defcompile TestFunc
+  END
+  v9.CheckScriptFailure(lines, 'E1186: Expression does not result in a value: "x"->Fn2b()')
+
+  # inside def, runtime error (untyped func)
+  lines =<< trim END
+    vim9script
+    def TestFunc()
+      var Fn2c: func = (s: string): void => {
+        }
+      echo "x"->Fn2c()
+    enddef
+    TestFunc()
+  END
+  v9.CheckScriptFailure(lines, 'E1031: Cannot use void value')
+
+  # inside def, compile-time error (func(string): void)
+  lines =<< trim END
+    vim9script
+    def TestFunc()
+      var Fn2d: func(string): void = (s: string): void => {
+        }
+      echo "x"->Fn2d()
+    enddef
+    defcompile TestFunc
+  END
+  v9.CheckScriptFailure(lines, 'E1186: Expression does not result in a value: "x"->Fn2d()')
+
+  #### Case 3: Assignment, RHS is void ####
+  # outside def: runtime error
+  lines =<< trim END
+    vim9script
+    var Fn3a: func = (): void => {
+      }
+    var x = Fn3a()
+  END
+  v9.CheckScriptFailure(lines, 'E1031: Cannot use void value')
+
+  # inside def, compile-time error (known void return)
+  lines =<< trim END
+    vim9script
+    def Fn3b(): void
+    enddef
+    def TestFunc()
+      var x = Fn3b()
+    enddef
+    defcompile TestFunc
+  END
+  v9.CheckScriptFailure(lines, 'E1031: Cannot use void value')
+
+  # inside def, runtime error (untyped func)
+  lines =<< trim END
+    vim9script
+    def TestFunc()
+      var Fn3c: func = (): void => {
+        }
+      var x = Fn3c()
+    enddef
+    TestFunc()
+  END
+  v9.CheckScriptFailure(lines, 'E1031: Cannot use void value')
+
+  # inside def, compile-time error (func(): void)
+  lines =<< trim END
+    vim9script
+    def TestFunc()
+      var Fn3d: func(): void = () => {
+        }
+      var x = Fn3d()
+    enddef
+    defcompile TestFunc
+  END
+  v9.CheckScriptFailure(lines, 'E1031: Cannot use void value')
+
+  #### Case 4: Script-level and :def should behave the same ####
+  # script-level: void built-in assigned to variable
+  lines =<< trim END
+    vim9script
+    var x = bufload('')
+  END
+  v9.CheckScriptFailure(lines, 'E1031: Cannot use void value')
+
+  # inside def: same error
+  lines =<< trim END
+    vim9script
+    def TestFunc()
+      var x = bufload('')
+    enddef
+    TestFunc()
+  END
+  v9.CheckScriptFailure(lines, 'E1031: Cannot use void value')
+
+  # script-level: echo void built-in
+  lines =<< trim END
+    vim9script
+    echo bufload('')
+  END
+  v9.CheckScriptFailure(lines, 'E1186: Expression does not result in a value: bufload(')
+
+  # inside def: compile-time error
+  lines =<< trim END
+    vim9script
+    def TestFunc()
+      echo bufload('')
+    enddef
+    TestFunc()
+  END
+  v9.CheckScriptFailure(lines, 'E1186: Expression does not result in a value: bufload(')
+enddef
+
+def Test_term_wait_in_job_exit_cb()
+  CheckUnix
+  CheckFeature terminal
+
+  var cmd = g:GetVimCommand()
+
+  var lines =<< eval trim END
+      var buf: number = term_start(["{cmd}", "+q"], {{}})
+
+      var job: job = term_getjob(buf)
+
+      job_setoptions(job, {{
+      exit_cb: (_, _) => {{
+        term_wait(buf)
+          }}
+      }})
+  END
+
+  # This shouldn't cause an ASAN error immediately, but will result in a use
+  # after free when Vim exits.
+  v9.CheckDefSuccess(lines)
+enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

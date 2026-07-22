@@ -1,0 +1,12 @@
+# This is a comment.
+# Each line is a file pattern followed by one or more owners.
+
+*       @global-owner1 @global-owner2
+*.js    @js-owner #This is an inline comment.
+*.go	docs@example.com
+*.txt	@octo-org/octocats
+/a/b/	@doctocat
+docs/*	docs@example.com @other
+**/logs @octocat
+
+# vim: set ft=codeowners:

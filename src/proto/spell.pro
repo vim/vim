@@ -6,7 +6,7 @@ int match_compoundrule(slang_T *slang, char_u *compflags);
 int valid_word_prefix(int totprefcnt, int arridx, int flags, char_u *word, slang_T *slang, int cond_req);
 int spell_valid_case(int wordflags, int treeflags);
 int spell_check_window(win_T *wp);
-int spell_move_to(win_T *wp, int dir, int allwords, int curline, hlf_T *attrp);
+int spell_move_to(win_T *wp, int dir, smt_T behaviour, int curline, hlf_T *attrp);
 void spell_cat_line(char_u *buf, char_u *line, int maxlen);
 char_u *spell_enc(void);
 slang_T *slang_alloc(char_u *lang);
@@ -45,6 +45,6 @@ void spell_expand_check_cap(colnr_T col);
 int expand_spelling(linenr_T lnum, char_u *pat, char_u ***matchp);
 int valid_spelllang(char_u *val);
 int valid_spellfile(char_u *val);
-char *did_set_spell_option(int is_spellfile);
+char *did_set_spell_option(void);
 char *compile_cap_prog(synblock_T *synblock);
 /* vim: set ft=c : */

@@ -1,10 +1,8 @@
 " Test for syntax and syntax iskeyword option
 
-source check.vim
 CheckFeature syntax
 
-source view_util.vim
-source screendump.vim
+source util/screendump.vim
 
 func GetSyntaxItem(pat)
   let c = ''
@@ -193,14 +191,14 @@ func Test_syntax_completion()
   " Check that clearing "Aap" avoids it showing up before Boolean.
   hi Aap ctermfg=blue
   call feedkeys(":syn list \<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_match('^"syn list Aap Added Boolean Changed Character ', @:)
+  call assert_match('^"syn list Aap Added Bold BoldItalic Boolean Changed Character ', @:)
   hi clear Aap
 
   call feedkeys(":syn list \<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_match('^"syn list Added Boolean Changed Character ', @:)
+  call assert_match('^"syn list Added Bold BoldItalic Boolean Changed Character ', @:)
 
   call feedkeys(":syn match \<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_match('^"syn match Added Boolean Changed Character ', @:)
+  call assert_match('^"syn match Added Bold BoldItalic Boolean Changed Character ', @:)
 
   syn cluster Aax contains=Aap
   call feedkeys(":syn list @A\<C-A>\<C-B>\"\<CR>", 'tx')
@@ -209,7 +207,7 @@ endfunc
 
 func Test_echohl_completion()
   call feedkeys(":echohl no\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"echohl NonText Normal none', @:)
+  call assert_equal('"echohl NONE NonText Normal', @:)
 endfunc
 
 func Test_syntax_arg_skipped()
@@ -421,6 +419,25 @@ func Test_syn_sync()
   call assert_match('SyncHere', execute('syntax sync'))
   syn sync clear
   call assert_notmatch('SyncHere', execute('syntax sync'))
+
+  syn sync minlines=10
+  syntax cluster xmlStuff contains=xmlGroup1,xmlGroup2
+  syntax region xmlComment start=/<!--/ end=/-->/ keepend contains=@Spell
+  syntax sync match xmlSync1 grouphere xmlComment /<!--/
+  syntax sync match xmlSync2 groupthere NONE /-->/
+  syntax cluster xmlAll contains=ALL
+  let out = execute('syntax sync')
+  call assert_match('xmlSync1', out)
+  call assert_match('xmlSync2', out)
+  call assert_match('grouphere xmlComment', out)
+  call assert_match('groupthere NONE', out)
+  call assert_notmatch('xmlStuff', out)
+  call assert_notmatch('xmlAll', out)
+  call assert_notmatch('cluster', out)
+  call assert_notmatch('keepend', out)
+  " should output 4 lines: 1 header + 3 syn sync lines
+  call assert_equal(4, len(split(out, '\n')))
+
   syn clear
 endfunc
 
@@ -631,6 +648,7 @@ endfunc
 
 " Check highlighting for a small piece of C code with a screen dump.
 func Test_syntax_c()
+  CheckScreendump
   CheckRunVimInTerminal
   call writefile([
 	\ '/* comment line at the top */',
@@ -688,6 +706,43 @@ func Test_syn_zsub()
 
   set re&
   bw!
+endfunc
+
+func s:SynDumpBuffer(ft, lines)
+  new
+  syntax on
+  execute 'setfiletype ' .. a:ft
+  call setline(1, a:lines)
+  let result = []
+  for lnum in range(1, line('$'))
+    for col in range(1, max([1, len(getline(lnum))]))
+      call add(result, synIDattr(synID(lnum, col, 1), 'name'))
+    endfor
+  endfor
+  bwipe!
+  return result
+endfunc
+
+" The in_id_list() cache is a speed optimization only: highlighting must be
+" identical with the cache on (default) and off.  Compare full-buffer synID()
+" output both ways across filetypes that use "contains"/cluster lists.
+func Test_syntax_idlist_cache_unchanged()
+  let samples = {
+        \ 'c': ['#define M 0x1F', "char c = '\\n';",
+        \       'int f(int a) { return a + 0xAB; }'],
+        \ 'vim': ['func <SID>Foo() abort', '  let x = [1, 2] + {"k": 0z1f}',
+        \         'endfunc'],
+        \ 'python': ['class C:', '    def m(self): return {1: "s", 2: r"\d"}'],
+        \ 'sh': ['case $x in', '  a) echo "${y:-0xAB}";;', 'esac'],
+        \ }
+  for ft in sort(keys(samples))
+    call test_override('syn_idlist_cache', 0)
+    let l:on = s:SynDumpBuffer(ft, samples[ft])
+    call test_override('syn_idlist_cache', 1)
+    let l:off = s:SynDumpBuffer(ft, samples[ft])
+    call test_override('ALL', 0)
+    call assert_equal(l:off, l:on, 'filetype ' .. ft)
+  endfor
 endfunc
 
 " Using \z() in a region with NFA failing should not crash.
@@ -949,7 +1004,7 @@ func Test_syn_contained_transparent()
 endfunc
 
 func Test_syn_include_contains_TOP()
-  let l:case = "TOP in included syntax means its group list name"
+  let l:case = "TOP in included syntax refers to top level of that included syntax"
   new
   syntax include @INCLUDED syntax/c.vim
   syntax region FencedCodeBlockC start=/```c/ end=/```/ contains=@INCLUDED
@@ -960,6 +1015,18 @@ func Test_syn_include_contains_TOP()
   " cCppOutElse has contains=TOP
   let l:expected = ["cType"]
   eval AssertHighlightGroups(5, 1, l:expected, 1, l:case)
+  syntax clear
+  bw!
+endfunc
+
+func Test_syn_include_contains_TOP_excluding()
+  new
+  syntax include @INCLUDED syntax/c.vim
+  syntax region FencedCodeBlockC start=/```c/ end=/```/ contains=@INCLUDED
+
+  call setline(1,  ['```c', '#if 0', 'int', '#else', 'int', '#if', '#endif', '```' ])
+  let l:expected = ["cCppOutElse", "cConditional"]
+  eval AssertHighlightGroups(6, 1, l:expected, 1)
   syntax clear
   bw!
 endfunc
@@ -977,5 +1044,30 @@ func Test_WinEnter_synstack_synID()
   bw!
 endfunc
 
+" This was going beyond the end of the "foo" line
+func Test_syn_sync_grouphere_shorter_next_line()
+  let lines =<< trim END
+    if [[ "$var1" == 1 ]]; then
+      foo
+    else
+      bar
+    fi
+  END
+  let lines = ['a']->repeat(50) + lines + ['a']->repeat(48)
+
+  20new
+  call setline(1, lines)
+  syn region shIf transparent
+        \ start="\<if\_s" skip=+-fi\>+ end="\<;\_s*then\>" end="\<fi\>"
+  syn sync minlines=20 maxlines=40
+  syn sync match shIfSync grouphere shIf "\<if\>"
+  redraw!
+
+  normal! G
+  " Should not go beyond end of line
+  redraw!
+
+  bw!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

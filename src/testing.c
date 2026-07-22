@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * Prepare "gap" for an assert error and add the sourcing position.
@@ -21,7 +21,6 @@
     static void
 prepare_assert_error(garray_T *gap)
 {
-    char    buf[NUMBUFLEN];
     char_u  *sname = estack_sfile(ESTACK_NONE);
 
     ga_init2(gap, 1, 100);
@@ -29,15 +28,18 @@ prepare_assert_error(garray_T *gap)
     {
 	ga_concat(gap, sname);
 	if (SOURCING_LNUM > 0)
-	    ga_concat(gap, (char_u *)" ");
+	    GA_CONCAT_LITERAL(gap, " ");
     }
     if (SOURCING_LNUM > 0)
     {
-	sprintf(buf, "line %ld", (long)SOURCING_LNUM);
-	ga_concat(gap, (char_u *)buf);
+	char    buf[NUMBUFLEN];
+	size_t	buflen;
+
+	buflen = vim_snprintf_safelen(buf, sizeof(buf), "line %ld", (long)SOURCING_LNUM);
+	ga_concat_len(gap, (char_u *)buf, buflen);
     }
     if (sname != NULL || SOURCING_LNUM > 0)
-	ga_concat(gap, (char_u *)": ");
+	GA_CONCAT_LITERAL(gap, ": ");
     vim_free(sname);
 }
 
@@ -54,28 +56,31 @@ ga_concat_esc(garray_T *gap, char_u *p, int clen)
     {
 	mch_memmove(buf, p, clen);
 	buf[clen] = NUL;
-	ga_concat(gap, buf);
+	ga_concat_len(gap, buf, clen);
 	return;
     }
 
     switch (*p)
     {
-	case BS: ga_concat(gap, (char_u *)"\\b"); break;
-	case ESC: ga_concat(gap, (char_u *)"\\e"); break;
-	case FF: ga_concat(gap, (char_u *)"\\f"); break;
-	case NL: ga_concat(gap, (char_u *)"\\n"); break;
-	case TAB: ga_concat(gap, (char_u *)"\\t"); break;
-	case CAR: ga_concat(gap, (char_u *)"\\r"); break;
-	case '\\': ga_concat(gap, (char_u *)"\\\\"); break;
+	case BS: GA_CONCAT_LITERAL(gap, "\\b"); break;
+	case ESC: GA_CONCAT_LITERAL(gap, "\\e"); break;
+	case FF: GA_CONCAT_LITERAL(gap, "\\f"); break;
+	case NL: GA_CONCAT_LITERAL(gap, "\\n"); break;
+	case TAB: GA_CONCAT_LITERAL(gap, "\\t"); break;
+	case CAR: GA_CONCAT_LITERAL(gap, "\\r"); break;
+	case '\\': GA_CONCAT_LITERAL(gap, "\\\\"); break;
 	default:
-		   if (*p < ' ' || *p == 0x7f)
-		   {
-		       vim_snprintf((char *)buf, NUMBUFLEN, "\\x%02x", *p);
-		       ga_concat(gap, buf);
-		   }
-		   else
-		       ga_append(gap, *p);
-		   break;
+	   if (*p < ' ' || *p == 0x7f)
+	   {
+		size_t	buflen;
+
+		buflen = vim_snprintf_safelen((char *)buf, sizeof(buf),
+		    "\\x%02x", *p);
+		ga_concat_len(gap, buf, buflen);
+	   }
+	   else
+	       ga_append(gap, *p);
+	   break;
     }
 }
 
@@ -91,15 +96,16 @@ ga_concat_shorten_esc(garray_T *gap, char_u *str)
     int	    c;
     int	    clen;
     char_u  buf[NUMBUFLEN];
+    size_t  buflen;
     int	    same_len;
 
     if (str == NULL)
     {
-	ga_concat(gap, (char_u *)"NULL");
+	GA_CONCAT_LITERAL(gap, "NULL");
 	return;
     }
 
-    for (p = str; *p != NUL; ++p)
+    for (p = str; *p != NUL; )
     {
 	same_len = 1;
 	s = p;
@@ -112,16 +118,20 @@ ga_concat_shorten_esc(garray_T *gap, char_u *str)
 	}
 	if (same_len > 20)
 	{
-	    ga_concat(gap, (char_u *)"\\[");
+	    GA_CONCAT_LITERAL(gap, "\\[");
 	    ga_concat_esc(gap, p, clen);
-	    ga_concat(gap, (char_u *)" occurs ");
-	    vim_snprintf((char *)buf, NUMBUFLEN, "%d", same_len);
-	    ga_concat(gap, buf);
-	    ga_concat(gap, (char_u *)" times]");
-	    p = s - 1;
+	    GA_CONCAT_LITERAL(gap, " occurs ");
+	    buflen = vim_snprintf_safelen((char *)buf, sizeof(buf),
+		"%d", same_len);
+	    ga_concat_len(gap, buf, buflen);
+	    GA_CONCAT_LITERAL(gap, " times]");
+	    p = s;
 	}
 	else
+	{
 	    ga_concat_esc(gap, p, clen);
+	    p += clen;
+	}
     }
 }
 
@@ -151,15 +161,15 @@ fill_assert_error(
     {
 	ga_concat(gap, echo_string(opt_msg_tv, &tofree, numbuf, 0));
 	vim_free(tofree);
-	ga_concat(gap, (char_u *)": ");
+	GA_CONCAT_LITERAL(gap, ": ");
     }
 
     if (atype == ASSERT_MATCH || atype == ASSERT_NOTMATCH)
-	ga_concat(gap, (char_u *)"Pattern ");
+	GA_CONCAT_LITERAL(gap, "Pattern ");
     else if (atype == ASSERT_NOTEQUAL)
-	ga_concat(gap, (char_u *)"Expected not equal to ");
+	GA_CONCAT_LITERAL(gap, "Expected not equal to ");
     else
-	ga_concat(gap, (char_u *)"Expected ");
+	GA_CONCAT_LITERAL(gap, "Expected ");
     if (exp_str == NULL)
     {
 	// When comparing dictionaries, drop the items that are equal, so that
@@ -178,7 +188,13 @@ fill_assert_error(
 	    exp_tv->vval.v_dict = dict_alloc();
 	    got_tv->vval.v_dict = dict_alloc();
 	    if (exp_tv->vval.v_dict == NULL || got_tv->vval.v_dict == NULL)
+	    {
+		dict_unref(exp_tv->vval.v_dict);
+		exp_tv->vval.v_dict = NULL;
+		dict_unref(got_tv->vval.v_dict);
+		got_tv->vval.v_dict = NULL;
 		return;
+	    }
 
 	    todo = (int)exp_d->dv_hashtab.ht_used;
 	    FOR_ALL_HASHTAB_ITEMS(&exp_d->dv_hashtab, hi, todo)
@@ -187,7 +203,7 @@ fill_assert_error(
 		{
 		    item2 = dict_find(got_d, hi->hi_key, -1);
 		    if (item2 == NULL || !tv_equal(&HI2DI(hi)->di_tv,
-						  &item2->di_tv, FALSE, FALSE))
+						  &item2->di_tv, FALSE))
 		    {
 			// item of exp_d not present in got_d or values differ.
 			dict_add_tv(exp_tv->vval.v_dict,
@@ -224,29 +240,30 @@ fill_assert_error(
     else
     {
 	if (atype == ASSERT_FAILS)
-	    ga_concat(gap, (char_u *)"'");
+	    GA_CONCAT_LITERAL(gap, "'");
 	ga_concat_shorten_esc(gap, exp_str);
 	if (atype == ASSERT_FAILS)
-	    ga_concat(gap, (char_u *)"'");
+	    GA_CONCAT_LITERAL(gap, "'");
     }
     if (atype != ASSERT_NOTEQUAL)
     {
 	if (atype == ASSERT_MATCH)
-	    ga_concat(gap, (char_u *)" does not match ");
+	    GA_CONCAT_LITERAL(gap, " does not match ");
 	else if (atype == ASSERT_NOTMATCH)
-	    ga_concat(gap, (char_u *)" does match ");
+	    GA_CONCAT_LITERAL(gap, " does match ");
 	else
-	    ga_concat(gap, (char_u *)" but got ");
+	    GA_CONCAT_LITERAL(gap, " but got ");
 	ga_concat_shorten_esc(gap, tv2string(got_tv, &tofree, numbuf, 0));
 	vim_free(tofree);
 
 	if (omitted != 0)
 	{
-	    char buf[100];
+	    char    buf[100];
+	    size_t  buflen;
 
-	    vim_snprintf(buf, 100, " - %d equal item%s omitted",
-					     omitted, omitted == 1 ? "" : "s");
-	    ga_concat(gap, (char_u *)buf);
+	    buflen = vim_snprintf_safelen(buf, sizeof(buf),
+		" - %d equal item%s omitted", omitted, omitted == 1 ? "" : "s");
+	    ga_concat_len(gap, (char_u *)buf, buflen);
 	}
     }
 
@@ -262,7 +279,7 @@ assert_equal_common(typval_T *argvars, assert_type_T atype)
 {
     garray_T	ga;
 
-    if (tv_equal(&argvars[0], &argvars[1], FALSE, FALSE)
+    if (tv_equal(&argvars[0], &argvars[1], FALSE)
 						   != (atype == ASSERT_EQUAL))
     {
 	prepare_assert_error(&ga);
@@ -365,9 +382,9 @@ assert_beeps(typval_T *argvars, int no_beep)
     {
 	prepare_assert_error(&ga);
 	if (no_beep)
-	    ga_concat(&ga, (char_u *)"command did beep: ");
+	    GA_CONCAT_LITERAL(&ga, "command did beep: ");
 	else
-	    ga_concat(&ga, (char_u *)"command did not beep: ");
+	    GA_CONCAT_LITERAL(&ga, "command did not beep: ");
 	ga_concat(&ga, cmd);
 	assert_error(&ga);
 	ga_clear(&ga);
@@ -424,16 +441,18 @@ assert_equalfile(typval_T *argvars)
     char	line1[200];
     char	line2[200];
     int		lineidx = 0;
+    size_t	IObufflen;
 
     if (fname1 == NULL || fname2 == NULL)
 	return 0;
 
     IObuff[0] = NUL;
+    IObufflen = 0;
     fd1 = mch_fopen((char *)fname1, READBIN);
     if (fd1 == NULL)
     {
-	vim_snprintf((char *)IObuff, IOSIZE, (char *)e_cant_read_file_str,
-								       fname1);
+	IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE,
+	    (char *)e_cant_read_file_str, fname1);
     }
     else
     {
@@ -441,8 +460,8 @@ assert_equalfile(typval_T *argvars)
 	if (fd2 == NULL)
 	{
 	    fclose(fd1);
-	    vim_snprintf((char *)IObuff, IOSIZE, (char *)e_cant_read_file_str,
-								       fname2);
+	    IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE,
+		(char *)e_cant_read_file_str, fname2);
 	}
 	else
 	{
@@ -457,12 +476,16 @@ assert_equalfile(typval_T *argvars)
 		if (c1 == EOF)
 		{
 		    if (c2 != EOF)
+		    {
 			STRCPY(IObuff, "first file is shorter");
+			IObufflen = 21;
+		    }
 		    break;
 		}
 		else if (c2 == EOF)
 		{
 		    STRCPY(IObuff, "second file is shorter");
+		    IObufflen = 22;
 		    break;
 		}
 		else
@@ -472,9 +495,8 @@ assert_equalfile(typval_T *argvars)
 		    ++lineidx;
 		    if (c1 != c2)
 		    {
-			vim_snprintf((char *)IObuff, IOSIZE,
-					    "difference at byte %ld, line %ld",
-							     count, linecount);
+			IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE,
+			    "difference at byte %ld, line %ld", count, linecount);
 			break;
 		    }
 		}
@@ -496,7 +518,7 @@ assert_equalfile(typval_T *argvars)
 	}
     }
 
-    if (IObuff[0] != NUL)
+    if (IObufflen > 0)
     {
 	garray_T	ga;
 	prepare_assert_error(&ga);
@@ -507,21 +529,21 @@ assert_equalfile(typval_T *argvars)
 
 	    ga_concat(&ga, echo_string(&argvars[2], &tofree, numbuf, 0));
 	    vim_free(tofree);
-	    ga_concat(&ga, (char_u *)": ");
+	    GA_CONCAT_LITERAL(&ga, ": ");
 	}
-	ga_concat(&ga, IObuff);
+	ga_concat_len(&ga, IObuff, IObufflen);
 	if (lineidx > 0)
 	{
 	    line1[lineidx] = NUL;
 	    line2[lineidx] = NUL;
-	    ga_concat(&ga, (char_u *)" after \"");
-	    ga_concat(&ga, (char_u *)line1);
+	    GA_CONCAT_LITERAL(&ga, " after \"");
+	    ga_concat_len(&ga, (char_u *)line1, lineidx);
 	    if (STRCMP(line1, line2) != 0)
 	    {
-		ga_concat(&ga, (char_u *)"\" vs \"");
-		ga_concat(&ga, (char_u *)line2);
+		GA_CONCAT_LITERAL(&ga, "\" vs \"");
+		ga_concat_len(&ga, (char_u *)line2, lineidx);
 	    }
-	    ga_concat(&ga, (char_u *)"\"");
+	    GA_CONCAT_LITERAL(&ga, "\"");
 	}
 	assert_error(&ga);
 	ga_clear(&ga);
@@ -573,7 +595,7 @@ f_assert_exception(typval_T *argvars, typval_T *rettv)
     if (*get_vim_var_str(VV_EXCEPTION) == NUL)
     {
 	prepare_assert_error(&ga);
-	ga_concat(&ga, (char_u *)"v:exception is not set");
+	GA_CONCAT_LITERAL(&ga, "v:exception is not set");
 	assert_error(&ga);
 	ga_clear(&ga);
 	rettv->vval.v_number = 1;
@@ -627,7 +649,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
     if (called_emsg == called_emsg_before)
     {
 	prepare_assert_error(&ga);
-	ga_concat(&ga, (char_u *)"command did not fail: ");
+	GA_CONCAT_LITERAL(&ga, "command did not fail: ");
 	assert_append_cmd_or_arg(&ga, argvars, cmd);
 	assert_error(&ga);
 	ga_clear(&ga);
@@ -746,7 +768,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 	    }
 	    fill_assert_error(&ga, &argvars[2], expected_str,
 			&argvars[error_found_index], &actual_tv, ASSERT_FAILS);
-	    ga_concat(&ga, (char_u *)": ");
+	    GA_CONCAT_LITERAL(&ga, ": ");
 	    assert_append_cmd_or_arg(&ga, argvars, cmd);
 	    assert_error(&ga);
 	    ga_clear(&ga);
@@ -1033,6 +1055,8 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
     }
     else if (STRCMP(name, (char_u *)"nfa_fail") == 0)
 	nfa_fail_for_testing = val;
+    else if (STRCMP(name, (char_u *)"syn_idlist_cache") == 0)
+	disable_syn_idlist_cache_for_testing = val;
     else if (STRCMP(name, (char_u *)"no_query_mouse") == 0)
 	no_query_mouse_for_testing = val;
     else if (STRCMP(name, (char_u *)"no_wait_return") == 0)
@@ -1051,12 +1075,15 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	ml_get_alloc_lines = val;
     else if (STRCMP(name, (char_u *)"autoload") == 0)
 	override_autoload = val;
+    else if (STRCMP(name, (char_u *)"defcompile") == 0)
+	override_defcompile = val;
     else if (STRCMP(name, (char_u *)"ALL") == 0)
     {
 	disable_char_avail_for_testing = FALSE;
 	disable_redraw_for_testing = FALSE;
 	ignore_redraw_flag_for_testing = FALSE;
 	nfa_fail_for_testing = FALSE;
+	disable_syn_idlist_cache_for_testing = FALSE;
 	no_query_mouse_for_testing = FALSE;
 	ui_delay_for_testing = 0;
 	reset_term_props_on_termresponse = FALSE;
@@ -1091,9 +1118,8 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	case VAR_SPECIAL:
 	case VAR_STRING:
 	case VAR_INSTR:
-	case VAR_CLASS:
-	case VAR_OBJECT:
 	    break;
+
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
 	    if (argvars[0].vval.v_job != NULL)
@@ -1128,9 +1154,21 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	    if (argvars[0].vval.v_list != NULL)
 		retval = argvars[0].vval.v_list->lv_refcount - 1;
 	    break;
+	case VAR_TUPLE:
+	    if (argvars[0].vval.v_tuple != NULL)
+		retval = argvars[0].vval.v_tuple->tv_refcount - 1;
+	    break;
 	case VAR_DICT:
 	    if (argvars[0].vval.v_dict != NULL)
 		retval = argvars[0].vval.v_dict->dv_refcount - 1;
+	    break;
+	case VAR_CLASS:
+	    if (argvars[0].vval.v_class != NULL)
+		retval = argvars[0].vval.v_class->class_refcount - 1;
+	    break;
+	case VAR_OBJECT:
+	    if (argvars[0].vval.v_object != NULL)
+		retval = argvars[0].vval.v_object->obj_refcount - 1;
 	    break;
 	case VAR_TYPEALIAS:
 	    if (argvars[0].vval.v_typealias != NULL)
@@ -1185,7 +1223,7 @@ f_test_null_blob(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_blob = NULL;
 }
 
-#ifdef FEAT_JOB_CHANNEL
+#if defined(FEAT_JOB_CHANNEL)
     void
 f_test_null_channel(typval_T *argvars UNUSED, typval_T *rettv)
 {
@@ -1200,7 +1238,7 @@ f_test_null_dict(typval_T *argvars UNUSED, typval_T *rettv)
     rettv_dict_set(rettv, NULL);
 }
 
-#ifdef FEAT_JOB_CHANNEL
+#if defined(FEAT_JOB_CHANNEL)
     void
 f_test_null_job(typval_T *argvars UNUSED, typval_T *rettv)
 {
@@ -1237,6 +1275,12 @@ f_test_null_string(typval_T *argvars UNUSED, typval_T *rettv)
 }
 
     void
+f_test_null_tuple(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv_tuple_set(rettv, NULL);
+}
+
+    void
 f_test_unknown(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_UNKNOWN;
@@ -1266,11 +1310,11 @@ f_test_setmouse(typval_T *argvars, typval_T *rettv UNUSED)
     mouse_col = (time_t)tv_get_number(&argvars[1]) - 1;
 }
 
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
     static int
 test_gui_drop_files(dict_T *args UNUSED)
 {
-#  if defined(HAVE_DROP_FILE)
+# if defined(HAVE_DROP_FILE)
     int		row;
     int		col;
     int_u	mods;
@@ -1321,12 +1365,12 @@ test_gui_drop_files(dict_T *args UNUSED)
 	gui_handle_drop(TEXT_X(col - 1), TEXT_Y(row - 1), mods, fnames, count);
     else
 	vim_free(fnames);
-#  endif
+# endif
 
     return TRUE;
 }
 
-#if defined(FIND_REPLACE_DIALOG)
+# if defined(FIND_REPLACE_DIALOG)
     static int
 test_gui_find_repl(dict_T *args)
 {
@@ -1353,7 +1397,7 @@ test_gui_find_repl(dict_T *args)
 
     return retval;
 }
-#endif
+# endif
 
     static int
 test_gui_mouse_event(dict_T *args)
@@ -1389,7 +1433,7 @@ test_gui_mouse_event(dict_T *args)
 	if (dict_get_bool(args, "cell", FALSE))
 	{
 	    // calculate the middle of the character cell
-	    // Note: Cell coordinates are 1-based from vimscript
+	    // Note: Cell coordinates are 1-based from Vim script
 	    pY = (row - 1) * gui.char_height + gui.char_height / 2;
 	    pX = (col - 1) * gui.char_width + gui.char_width / 2;
 	}
@@ -1442,10 +1486,10 @@ test_gui_scrollbar(dict_T *args)
 	return FALSE;
     }
     gui_drag_scrollbar(sb, value, dragging);
-#  ifndef USE_ON_FLY_SCROLL
+# ifndef USE_ON_FLY_SCROLL
     // need to loop through normal_cmd() to handle the scroll events
     exec_normal(FALSE, TRUE, FALSE);
-#  endif
+# endif
 
     return TRUE;
 }
@@ -1453,7 +1497,7 @@ test_gui_scrollbar(dict_T *args)
     static int
 test_gui_tabline_event(dict_T *args UNUSED)
 {
-#  ifdef FEAT_GUI_TABLINE
+# ifdef FEAT_GUI_TABLINE
     int		tabnr;
 
     if (!dict_has_key(args, "tabnr"))
@@ -1462,15 +1506,15 @@ test_gui_tabline_event(dict_T *args UNUSED)
     tabnr = (int)dict_get_number(args, "tabnr");
 
     return send_tabline_event(tabnr);
-#  else
+# else
     return FALSE;
-#  endif
+# endif
 }
 
     static int
 test_gui_tabmenu_event(dict_T *args UNUSED)
 {
-#  ifdef FEAT_GUI_TABLINE
+# ifdef FEAT_GUI_TABLINE
     int	tabnr;
     int	item;
 
@@ -1482,15 +1526,15 @@ test_gui_tabmenu_event(dict_T *args UNUSED)
     item = (int)dict_get_number(args, "item");
 
     send_tabline_menu_event(tabnr, item);
-#  endif
+# endif
     return TRUE;
 }
-# endif
+#endif
 
     void
 f_test_mswin_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-# ifdef MSWIN
+#ifdef MSWIN
     rettv->v_type = VAR_BOOL;
     rettv->vval.v_number = FALSE;
 
@@ -1508,13 +1552,13 @@ f_test_mswin_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     char_u *event = tv_get_string(&argvars[0]);
     rettv->vval.v_number = test_mswin_event(event, argvars[1].vval.v_dict);
 
-# endif
+#endif
 }
 
     void
 f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
     char_u	*event;
 
     rettv->v_type = VAR_BOOL;
@@ -1534,14 +1578,14 @@ f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     event = tv_get_string(&argvars[0]);
     if (STRCMP(event, "dropfiles") == 0)
 	rettv->vval.v_number = test_gui_drop_files(argvars[1].vval.v_dict);
-#  if defined(FIND_REPLACE_DIALOG)
+# if defined(FIND_REPLACE_DIALOG)
     else if (STRCMP(event, "findrepl") == 0)
 	rettv->vval.v_number = test_gui_find_repl(argvars[1].vval.v_dict);
-#  endif
-#  ifdef MSWIN
+# endif
+# ifdef MSWIN
     else if (STRCMP(event, "key") == 0 || STRCMP(event, "mouse") == 0 || STRCMP(event, "set_keycode_trans_strategy") == 0)
 	rettv->vval.v_number = test_mswin_event(event, argvars[1].vval.v_dict);
-#  endif
+# endif
     else if (STRCMP(event, "mouse") == 0)
 	rettv->vval.v_number = test_gui_mouse_event(argvars[1].vval.v_dict);
     else if (STRCMP(event, "scrollbar") == 0)
@@ -1555,7 +1599,7 @@ f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	semsg(_(e_invalid_argument_str), event);
 	return;
     }
-# endif
+#endif
 }
 
     void

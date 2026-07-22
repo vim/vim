@@ -1,14 +1,28 @@
 " Tests for decoding escape sequences sent by the terminal.
 
 " This only works for Unix in a terminal
-source check.vim
 CheckNotGui
 CheckUnix
 
-source shared.vim
-source mouse.vim
-source view_util.vim
-source term_util.vim
+source util/mouse.vim
+
+func s:TermGuiColorsTest()
+  CheckNotMSWindows
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+  if !executable('tput')
+    throw "Skipped: tput not executable!"
+  endif
+  if has("gui_running")
+    throw "Skipped: does not work in GUI mode"
+  endif
+  call system('tput -Txterm-direct RGB 2>/dev/null')
+  if v:shell_error
+    throw "Skipped: xterm-direct $TERM has no RGB capability"
+  endif
+endfunc
+
 
 func Test_term_mouse_left_click()
   new
@@ -301,7 +315,7 @@ func Test_term_mouse_middle_click_no_clipboard()
   let &ttymouse = save_ttymouse
   let &term = save_term
   let &mouse = save_mouse
-  close!
+  bw!
 endfunc
 
 func Test_term_mouse_middle_click_insert_mode()
@@ -345,7 +359,7 @@ func Test_term_mouse_middle_click_insert_mode()
   let &term = save_term
   let &ttymouse = save_ttymouse
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for switching window using mouse in insert mode
@@ -370,7 +384,7 @@ func Test_term_mouse_switch_win_insert_mode()
   let &term = save_term
   let &ttymouse = save_ttymouse
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for using the mouse to increase the height of the cmdline window
@@ -1051,10 +1065,10 @@ func Test_mouse_alt_leftclick()
   let &ttymouse = save_ttymouse
   set mousetime& mousemodel&
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
-func Test_xterm_mouse_click_in_fold_columns()
+func Run_test_xterm_mouse_click_in_fold_columns()
   new
   let save_mouse = &mouse
   let save_term = &term
@@ -1104,6 +1118,15 @@ func Test_xterm_mouse_click_in_fold_columns()
   let &term = save_term
   let &mouse = save_mouse
   bwipe!
+endfunc
+
+func Test_xterm_mouse_click_in_fold_columns()
+  call Run_test_xterm_mouse_click_in_fold_columns()
+  set fillchars+=foldclose:▶
+  call Run_test_xterm_mouse_click_in_fold_columns()
+  set fillchars-=foldclose:▶ fillchars+=foldclose:!
+  call Run_test_xterm_mouse_click_in_fold_columns()
+  set fillchars&
 endfunc
 
 " Left or right click in Ex command line sets position of the cursor.
@@ -1276,7 +1299,7 @@ func Test_term_mouse_visual_mode()
   let &term = save_term
   let &ttymouse = save_ttymouse
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for displaying the popup menu using the right mouse click
@@ -1311,7 +1334,7 @@ func Test_term_mouse_popup_menu()
   let &ttymouse = save_ttymouse
   let &mousemodel = save_mousemodel
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for 'mousemodel' set to popup_setpos to move the cursor where the popup
@@ -1437,7 +1460,7 @@ func Test_term_mouse_popup_menu_setpos()
   let &ttymouse = save_ttymouse
   let &mousemodel = save_mousemodel
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for searching for the word under the cursor using Shift-Right or
@@ -1476,7 +1499,7 @@ func Test_term_mouse_search()
   let &term = save_term
   let &ttymouse = save_ttymouse
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for selecting an entry in the quickfix/location list window using the
@@ -1618,72 +1641,60 @@ func Test_mouse_termcodes()
   %bw!
 endfunc
 
-" This only checks if the sequence is recognized.
-func Test_term_rgb_response()
-  set t_RF=x
-  set t_RB=y
+" Test buttons 8 and 9 for xterm-like terminal mouse support
+func Test_term_mouse_side_buttons()
+  new
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  call test_override('no_query_mouse', 1)
+  set mouse=a term=xterm
+  call WaitForResponses()
 
-  " response to t_RF, 4 digits
-  let red = 0x12
-  let green = 0x34
-  let blue = 0x56
-  let seq = printf("\<Esc>]10;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
-  call feedkeys(seq, 'Lx!')
-  call assert_equal(seq, v:termrfgresp)
+  for ttymouse_val in g:Ttymouse_values
+    let msg = 'ttymouse=' .. ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
 
-  " response to t_RF, 2 digits
-  let red = 0x78
-  let green = 0x9a
-  let blue = 0xbc
-  let seq = printf("\<Esc>]10;rgb:%02x/%02x/%02x\x07", red, green, blue)
-  call feedkeys(seq, 'Lx!')
-  call assert_equal(seq, v:termrfgresp)
+    let mouse_codes = [
+          \ ["<X1Mouse>", TerminalEscapeCode(128, 1, 1, 'M')],
+          \ ["<X1Drag>", TerminalEscapeCode(128+32, 1, 1, 'M')],
+          \ ["<X2Mouse>", TerminalEscapeCode(129, 1, 1, 'M')],
+          \ ["<X2Drag>", TerminalEscapeCode(129+32, 1, 1, 'M')],
+          \ ["<S-X1Mouse>", TerminalEscapeCode(128+4, 1, 1, 'M')],
+          \ ["<S-X2Mouse>", TerminalEscapeCode(129+4, 1, 1, 'M')],
+          \ ["<M-X1Mouse>", TerminalEscapeCode(128+8, 1, 1, 'M')],
+          \ ["<M-X2Mouse>", TerminalEscapeCode(129+8, 1, 1, 'M')],
+          \ ["<C-X1Mouse>", TerminalEscapeCode(128+16, 1, 1, 'M')],
+          \ ["<C-X2Mouse>", TerminalEscapeCode(129+16, 1, 1, 'M')],
+          \ ]
 
-  " response to t_RB, 4 digits, dark
-  set background=light
-  eval 'background'->test_option_not_set()
-  let red = 0x29
-  let green = 0x4a
-  let blue = 0x6b
-  let seq = printf("\<Esc>]11;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
-  call feedkeys(seq, 'Lx!')
-  call assert_equal(seq, v:termrbgresp)
-  call assert_equal('dark', &background)
+    for [outstr, code] in mouse_codes
+      exe "normal ggC\<C-K>" . code
+      call assert_equal(outstr, getline(1), msg)
+    endfor
+  endfor
 
-  " response to t_RB, 4 digits, light
-  set background=dark
-  call test_option_not_set('background')
-  let red = 0x81
-  let green = 0x63
-  let blue = 0x65
-  let seq = printf("\<Esc>]11;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
-  call feedkeys(seq, 'Lx!')
-  call assert_equal(seq, v:termrbgresp)
-  call assert_equal('light', &background)
+  " ttymouse_val 'sgr'
+  let msg = 'ttymouse=sgr'
+  exe 'set ttymouse=sgr'
 
-  " response to t_RB, 2 digits, dark
-  set background=light
-  call test_option_not_set('background')
-  let red = 0x47
-  let green = 0x59
-  let blue = 0x5b
-  let seq = printf("\<Esc>]11;rgb:%02x/%02x/%02x\x07", red, green, blue)
-  call feedkeys(seq, 'Lx!')
-  call assert_equal(seq, v:termrbgresp)
-  call assert_equal('dark', &background)
+  let mouse_codes = [
+        \ ["<X1Mouse>", TerminalEscapeCode(128, 1, 1, 'M')],
+        \ ["<X1Release>", TerminalEscapeCode(128, 1, 1, 'm')],
+        \ ["<X2Mouse>", TerminalEscapeCode(129, 1, 1, 'M')],
+        \ ["<X2Release>", TerminalEscapeCode(129, 1, 1, 'm')],
+        \ ]
 
-  " response to t_RB, 2 digits, light
-  set background=dark
-  call test_option_not_set('background')
-  let red = 0x83
-  let green = 0xa4
-  let blue = 0xc2
-  let seq = printf("\<Esc>]11;rgb:%02x/%02x/%02x\x07", red, green, blue)
-  call feedkeys(seq, 'Lx!')
-  call assert_equal(seq, v:termrbgresp)
-  call assert_equal('light', &background)
+  for [outstr, code] in mouse_codes
+    exe "normal ggC\<C-K>" . code
+    call assert_equal(outstr, getline(1), msg)
+  endfor
 
-  set t_RF= t_RB=
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+  call test_override('no_query_mouse', 0)
+  bwipe!
 endfunc
 
 " This only checks if the sequence is recognized.
@@ -1709,6 +1720,7 @@ func Test_xx01_term_style_response()
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
+        \ decrqm: 'u'
         \ }, terminalprops())
 
   set t_RV=
@@ -1744,6 +1756,7 @@ func Test_xx02_iTerm2_response()
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
+        \ decrqm: 'y'
         \ }, terminalprops())
 
   set t_RV=
@@ -1764,6 +1777,7 @@ func Run_libvterm_konsole_response(code)
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
+        \ decrqm: 'u'
         \ }, terminalprops())
 endfunc
 
@@ -1807,6 +1821,7 @@ func Test_xx04_Mac_Terminal_response()
         \ underline_rgb: 'y',
         \ mouse: 's',
         \ kitty: 'u',
+        \ decrqm: 'n'
         \ }, terminalprops())
   call assert_equal("\<Esc>[58;2;%lu;%lu;%lum", &t_8u)
 
@@ -1838,6 +1853,7 @@ func Test_xx05_mintty_response()
         \ underline_rgb: 'y',
         \ mouse: 's',
         \ kitty: 'u',
+        \ decrqm: 'u'
         \ }, terminalprops())
 
   set t_RV=
@@ -1874,6 +1890,7 @@ func Test_xx06_screen_response()
         \ underline_rgb: 'y',
         \ mouse: 's',
         \ kitty: 'u',
+        \ decrqm: 'n'
         \ }, terminalprops())
 
   set t_RV=
@@ -1899,6 +1916,7 @@ func Do_check_t_8u_set_reset(set_by_user)
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
+        \ decrqm: 'u'
         \ }, terminalprops())
   call assert_equal(a:set_by_user ? default_value : '', &t_8u)
 endfunc
@@ -1938,6 +1956,7 @@ func Test_xx07_xterm_response()
         \ underline_rgb: 'y',
         \ mouse: 'u',
         \ kitty: 'u',
+        \ decrqm: 'u'
         \ }, terminalprops())
 
   " xterm >= 95 < 277 "xterm2"
@@ -1954,6 +1973,7 @@ func Test_xx07_xterm_response()
         \ underline_rgb: 'u',
         \ mouse: '2',
         \ kitty: 'u',
+        \ decrqm: 'u'
         \ }, terminalprops())
 
   " xterm >= 277: "sgr"
@@ -1970,6 +1990,7 @@ func Test_xx07_xterm_response()
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
+        \ decrqm: 'u'
         \ }, terminalprops())
 
   " xterm >= 279: "sgr" and cursor_style not reset; also check t_8u reset,
@@ -1999,7 +2020,14 @@ func Test_xx08_kitty_response()
         \ underline_rgb: 'y',
         \ mouse: 's',
         \ kitty: 'y',
+        \ decrqm: 'y'
         \ }, terminalprops())
+
+  call feedkeys("\<Esc>[?1u") " simulate the kitty keyboard protocol is enabled
+  call feedkeys(':' .. GetEscCodeCSIu('V', '5') .. GetEscCodeCSIuWithoutModifier("\<Esc>") .. "\<C-B>\"\<CR>", 'Lx!')
+  call assert_equal("\"\<Esc>", @:)
+  call feedkeys(':' .. GetEscCodeCSIu('V', '5') .. GetEscCodeCSIu("\<Esc>", '129') .. "\<C-B>\"\<CR>", 'Lx!')
+  call assert_equal("\"\<Esc>", @:)
 
   set t_RV=
   call test_override('term_props', 0)
@@ -2256,6 +2284,17 @@ func Test_modifyOtherKeys_mapped()
 
   iunmap '
   iunmap <C-W><C-A>
+
+  " clean buffer
+  %d _
+  imap B b
+  imap BBB blimp
+  let input = repeat(GetEscCodeCSI27('B', 2), 3)
+  call feedkeys("a" .. input .. "\<Esc>", 'Lx!')
+  call assert_equal('blimp', getline(1))
+  " cleanup
+  iunmap BBB
+  iunmap B
   set timeoutlen&
 endfunc
 
@@ -2554,6 +2593,43 @@ func Test_mapping_kitty_function_keys()
   set timeoutlen&
 endfunc
 
+func Test_mapping_kitty_function_keys2()
+  " uses the CSI {number}; {modifiers} ~ form
+  new
+  set timeoutlen=10
+
+  let maps = [
+        \    ['<F3>', '13', 0],
+        \    ['<S-F3>', '13', 2],
+        \    ['<C-F3>', '13', 5],
+        \    ['<C-S-F3>', '13', 6],
+        \
+        \    ['<F5>', '15', 0],
+        \    ['<S-F5>', '15', 2],
+        \    ['<C-F5>', '15', 5],
+        \    ['<C-S-F5>', '15', 6],
+        \ ]
+
+  for map in maps
+    call RunTest_mapping_funckey(map[0], function('GetEscCodeFunckey2'), map[1], map[2])
+  endfor
+
+  bwipe!
+  set timeoutlen&
+endfunc
+
+func Test_mapping_kitty_shift_enter()
+  new
+  set timeoutlen=10
+
+  imap <buffer> <S-CR> YYYY
+  call feedkeys(printf("i123 %s\<esc>", GetEscCodeCSIu("\<cr>", 2)),'Lx!')
+  call assert_equal('123 YYYY', getline(1))
+
+  bwipe!
+  set timeoutlen&
+endfunc
+
 func Test_insert_literal()
   set timeoutlen=10
 
@@ -2711,16 +2787,352 @@ func Test_home_key_works()
   let &t_@7 = save_end
 endfunc
 
+func Test_home_is_not_khome()
+  " kHome and Home (or xHome) might be defined to the same termcode (for
+  " example, when xterm-codes reports the same for both termcaps).
+  " It is better to choose Home than kHome.
+  let save_K1 = exists('&t_K1') ? &t_K1 : ''
+  let save_kh = exists('&t_kh') ? &t_kh : ''
+
+  let &t_K1 = "\<Esc>OH"       " <kHome>
+  let &t_kh = "\<Esc>O*H"      " <Home>
+
+  new
+  call feedkeys("i\<C-K>\<Esc>OH\<Esc>", 'tx')
+  call assert_equal("<Home>", getline(1))
+
+  bwipe!
+  let &t_K1 = save_K1
+  let &t_kh = save_kh
+endfunc
+
+func Test_raw_codes_in_mappings()
+  let save_cpo = &cpo
+  let save_ku = exists('&t_ku') ? &t_ku : ''
+
+  set cpo-=k
+  let &t_ku = "\<Esc>O*A"
+  exe "map X ^\<Esc>OAjk"
+  let &t_ku = ""
+
+  new
+  exe "normal iabc\<CR>abc\<CR>abc\<CR>abc\<Esc>XX"
+  call assert_equal(['abc', 'abc', 'abc', 'abc'], getline(1, '$'))
+  call assert_equal([0, 2, 1, 0], getpos('.'))
+
+  bwipe!
+  let &cpo = save_cpo
+  let &t_ku = save_ku
+  unmap X
+endfunc
+
+func Test_avoid_keypad_if_ambiguous()
+  let save_kh = exists('&t_kh') ? &t_kh : ''
+  let save_K1 = exists('&t_K1') ? &t_K1 : ''
+  let save_at7 = exists('&t_@7') ? &t_@7 : ''
+  let save_K4 = exists('&t_K4') ? &t_K4 : ''
+  let save_kP = exists('&t_kP') ? &t_kP : ''
+  let save_K3 = exists('&t_K3') ? &t_K3 : ''
+  let save_kN = exists('&t_kN') ? &t_kN : ''
+  let save_K5 = exists('&t_K5') ? &t_K5 : ''
+
+  let &t_kh = "\<Esc>[@;*H"
+  let &t_K1 = "\<Esc>[1;*~"
+  let &t_@7 = "\<Esc>[@;*F"
+  let &t_K4 = "\<Esc>[4;*~"
+  let &t_kP = "\<Esc>[5;*~"
+  let &t_K3 = "\<Esc>Oy"
+  let &t_kN = "\<Esc>[6;*~"
+  let &t_K5 = "\<Esc>Os"
+
+  call feedkeys("\<Esc>P1+r6b68=1B4F48\<Esc>\\", 't') " kh <Home> <Esc>OH
+  call feedkeys("\<Esc>P1+r4b31=1B4F48\<Esc>\\", 't') " K1 <kHome> <Esc>OH
+  call feedkeys("\<Esc>P1+r4037=1B4F46\<Esc>\\", 't') " @7 <End> <Esc>OF
+  call feedkeys("\<Esc>P1+r4b34=1B4F46\<Esc>\\", 't') " K4 <kEnd> <Esc>OF
+  call feedkeys("\<Esc>P1+r6b50=1B5B357E\<Esc>\\", 't') " kP <PageUp> <Esc>[5~
+  call feedkeys("\<Esc>P1+r4b33=1B5B357E\<Esc>\\", 't') " K3 <kPageUp> <Esc>[5~
+  call feedkeys("\<Esc>P1+r6b4e=1B5B367E\<Esc>\\", 't') " kN <PageDown> <Esc>[6~
+  call feedkeys("\<Esc>P1+r4b35=1B5B367E\<Esc>\\", 'tx') " K5 <kPageDown> <Esc>[6~
+
+  let test_kh = exists('&t_kh') ? &t_kh : ''
+  let test_K1 = exists('&t_K1') ? &t_K1 : ''
+  let test_at7 = exists('&t_@7') ? &t_@7 : ''
+  let test_K4 = exists('&t_K4') ? &t_K4 : ''
+  let test_kP = exists('&t_kP') ? &t_kP : ''
+  let test_K3 = exists('&t_K3') ? &t_K3 : ''
+  let test_kN = exists('&t_kN') ? &t_kN : ''
+  let test_K5 = exists('&t_K5') ? &t_K5 : ''
+
+  call assert_equal(
+        \ ["\<Esc>OH", "\<Esc>[1;*~", "\<Esc>OF", "\<Esc>[4;*~",
+        \ "\<Esc>[5;*~", "\<Esc>Oy", "\<Esc>[6;*~", "\<Esc>Os"],
+        \ [test_kh, test_K1, test_at7, test_K4,
+        \ test_kP, test_K3, test_kN, test_K5])
+
+  bwipe!
+  let &t_kh = save_kh
+  let &t_K1 = save_K1
+  let &t_@7 = save_at7
+  let &t_K4 = save_K4
+  let &t_kP = save_kP
+  let &t_K3 = save_K3
+  let &t_kN = save_kN
+  let &t_K5 = save_K5
+endfunc
+
 func Test_terminal_builtin_without_gui()
   CheckNotMSWindows
 
   " builtin_gui should not be output by :set term=xxx
-  let output = systemlist("TERM=dumb " .. v:progpath .. " --clean -c ':set t_ti= t_te=' -c 'set term=xxx' -c ':q!'")
+  let output = systemlist("TERM=dumb " .. v:progpath .. " --not-a-term --clean -c ':set t_ti= t_te=' -c 'set term=xxx' -c ':q!'")
   redraw!
   call map(output, {_, val -> trim(val)})
   call assert_equal(-1, index(output, 'builtin_gui'))
   call assert_notequal(-1, index(output, 'builtin_dumb'))
 endfunc
 
+func Test_xterm_direct_enables_termguicolors()
+  call s:TermGuiColorsTest()
+  " TERM=xterm-direct enables termguicolors
+  let colors  = systemlist('tput -Txterm-direct colors')[0]
+  defer delete('XTerm-direct.txt')
+
+  let buf = RunVimInTerminal('--cmd ":set noswapfile" --clean XTerm-direct.txt',
+        \  {'rows': 10, 'env': {'TERM': 'xterm-direct'}})
+  call TermWait(buf)
+  call term_sendkeys(buf, ":$put ='TERM: ' .. &term\<cr>")
+  " doesn't work. Vim cannot query xterm colors in the embedded terminal?
+  "call term_sendkeys(buf, ":$put ='Colors: ' .. &t_Co\<cr>")
+  call term_sendkeys(buf, ":$put ='Termguicolors: ' .. &tgc\<cr>")
+  call term_sendkeys(buf, ":wq\<cr>")
+  call TermWait(buf)
+
+  let result=readfile('XTerm-direct.txt')
+  " call assert_equal(['', 'TERM: xterm-direct', 'Colors: ' .. colors, 'Termguicolors: 1'], result)
+  call assert_equal(['', 'TERM: xterm-direct', 'Termguicolors: 0'], result)
+  " cleanup
+  bw!
+  close
+endfunc
+
+func Test_xterm_direct_no_termguicolors()
+  " unfortunately doesn't work with libvterm
+  call s:TermGuiColorsTest()
+
+  let lines =<< trim END
+      set notermguicolors noswapfile
+      set t_Co=16777216
+  END
+  call writefile(lines, 'XtermDirect', 'D')
+  defer delete('XTerm-direct2.txt')
+
+  let buf = RunVimInTerminal('-S XtermDirect --clean XTerm-direct2.txt',
+        \  {'rows': 10, 'env': {'TERM': 'xterm-direct'}})
+  call TermWait(buf)
+  call term_sendkeys(buf, ":$put ='TERM: ' .. &term\<cr>")
+  call term_sendkeys(buf, ":$put ='Termguicolors: ' .. &tgc\<cr>")
+  call term_sendkeys(buf, ":wq\<cr>")
+  call TermWait(buf)
+
+  let result=readfile('XTerm-direct2.txt')
+  call assert_equal(['', 'TERM: xterm-direct', 'Termguicolors: 0'], result)
+  " cleanup
+  bw!
+  close
+endfunc
+
+func Test_da1_handling()
+  call feedkeys("\<Esc>[?62,52;c", 'Lx!')
+  call assert_equal("\<Esc>[?62,52;c", v:termda1)
+endfunc
+
+" Test if OSC terminal responses are captured correctly
+func Test_term_response_osc()
+  " Test if large OSC responses (that must be processed in chunks) are handled
+  let data = repeat('a', 3000)
+
+  call feedkeys("\<Esc>]12;" .. data .. "\<Esc>\\", 'Lx!')
+  call assert_equal("\<Esc>]12;" .. data .. "\<Esc>\\", v:termosc)
+
+  " Test small OSC responses
+  call feedkeys("\<Esc>]15;hello world!\x07", 'Lx!')
+  call assert_equal("\<Esc>]15;hello world!\x07", v:termosc)
+endfunc
+
+" Test if xOSC key is emitted.
+func Test_term_response_xosc_key()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    func Test()
+      while getcharstr(-1) != "\<xOSC>"
+      endwhile
+      call writefile(["done"], 'XTestResult')
+    endfunc
+  END
+  call writefile(lines, 'XTest', 'D')
+  defer delete('XTestResult')
+
+  let buf = RunVimInTerminal("-S XTest", {'rows': 10})
+  call TermWait(buf)
+  call term_sendkeys(buf, "\<Esc>:call Test()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "\<Esc>]52;hello;\<Esc>\\")
+  call TermWait(buf)
+  call WaitForAssert({-> assert_equal(["done"], readfile('XTestResult'))})
+  call StopVimInTerminal(buf)
+endfunc
+
+" This only checks if the sequence is recognized.
+func Test_term_rgb_response()
+  set t_RF=x
+  set t_RB=y
+
+  " response to t_RF, 4 digits
+  let red = 0x12
+  let green = 0x34
+  let blue = 0x56
+  let seq = printf("\<Esc>]10;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrfgresp)
+
+  " response to t_RF, 2 digits
+  let red = 0x78
+  let green = 0x9a
+  let blue = 0xbc
+  let seq = printf("\<Esc>]10;rgb:%02x/%02x/%02x\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrfgresp)
+
+  " response to t_RB, 4 digits, dark
+  set background=light
+  eval 'background'->test_option_not_set()
+  let red = 0x29
+  let green = 0x4a
+  let blue = 0x6b
+  let seq = printf("\<Esc>]11;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrbgresp)
+  call assert_equal('dark', &background)
+
+  " response to t_RB, 4 digits, light
+  set background=dark
+  call test_option_not_set('background')
+  let red = 0x81
+  let green = 0x63
+  let blue = 0x65
+  let seq = printf("\<Esc>]11;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrbgresp)
+  call assert_equal('light', &background)
+
+  " response to t_RB, 2 digits, dark
+  set background=light
+  call test_option_not_set('background')
+  let red = 0x47
+  let green = 0x59
+  let blue = 0x5b
+  let seq = printf("\<Esc>]11;rgb:%02x/%02x/%02x\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrbgresp)
+  call assert_equal('dark', &background)
+
+  " response to t_RB, 2 digits, light
+  set background=dark
+  call test_option_not_set('background')
+  let red = 0x83
+  let green = 0xa4
+  let blue = 0xc2
+  let seq = printf("\<Esc>]11;rgb:%02x/%02x/%02x\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrbgresp)
+  call assert_equal('light', &background)
+
+  set t_RF= t_RB=
+endfunc
+
+" Test in-band window resize events (DEC mode 2048).
+" https://gist.github.com/rockorager/e695fb2924d36b2bcf1fff4a3704bd83
+func Test_term_win_resize()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+  vim9script
+
+  autocmd VimResized * writefile([$"{&lines} {&columns}"], "XTestWinResizeResult")
+  END
+  call writefile(lines, 'XTestWinResize', 'D')
+  defer delete("XTestWinResizeResult")
+
+  let buf = RunVimInTerminal('-S XTestWinResize', #{rows: 15, cols: 20})
+
+  " Must add a delay, since status report is sent internally by vim only when
+  " version response is received, which may come after we send the status report
+  " here.
+  sleep 100m
+
+  " Send status report
+  call term_sendkeys(buf, "\<Esc>[?2048;1$y")
+  call TermWait(buf)
+
+  " Resize to 50 rows 100 cols
+  call term_sendkeys(buf, "\<Esc>[48;50;100;0;0t")
+  call TermWait(buf)
+
+  call WaitForAssert({-> assert_equal(["50 100"], readfile("XTestWinResizeResult"))})
+
+  " Test that screen is only resized if it actually changed in width or height.
+  call term_sendkeys(buf, "\<Esc>:intro\<CR>")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<Esc>[48;50;100;0;0t")
+  call TermWait(buf)
+
+  " call delete("tmp.dump")
+  " call term_dumpwrite(buf, "tmp.dump")
+
+  " SIGWINCH handler should be uninstalled
+  call job_stop(term_getjob(buf), 28)
+  call TermWait(buf)
+
+  call WaitForAssert({-> assert_equal(["50 100"], readfile("XTestWinResizeResult"))})
+
+  " SIGWINCH handler should be reinstalled again
+  call term_sendkeys(buf, "\<Esc>:set termresize=sigwinch\<CR>")
+  call TermWait(buf)
+
+  call WaitForAssert({-> assert_equal(["15 20"], readfile("XTestWinResizeResult"))})
+
+  call term_sendkeys(buf, "\<Esc>:set termresize=\<CR>")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<Esc>[48;50;30;0;0t")
+  call TermWait(buf)
+
+  call WaitForAssert({-> assert_equal(["50 30"], readfile("XTestWinResizeResult"))})
+
+  " Simulate no support for in-band window resize
+  call term_sendkeys(buf, "\<Esc>[?2048;0$y")
+  call TermWait(buf)
+
+  " Should reinstall SIGWINCH handler
+  call WaitForAssert({-> assert_equal(["15 20"], readfile("XTestWinResizeResult"))})
+
+  call term_setsize(buf, 5, 20)
+  call TermWait(buf)
+  call WaitForAssert({-> assert_equal(["5 20"], readfile("XTestWinResizeResult"))})
+
+  " Setting 'termresize' to "inband" should do nothing if support is not
+  " detected from terminal.
+  call term_sendkeys(buf, "\<Esc>:set termresize=inband\<CR>")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "\<Esc>[48;50;100;0;0t")
+  call TermWait(buf)
+
+  call WaitForAssert({-> assert_equal(["5 20"], readfile("XTestWinResizeResult"))})
+
+  call StopVimInTerminal(buf)
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

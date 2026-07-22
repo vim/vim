@@ -283,9 +283,8 @@ msgstr " Brukerdefinert fullføring (^U^N^P)"
 msgid " Omni completion (^O^N^P)"
 msgstr " Omni-fullføring (^O^N^P)"
 
-#, fuzzy
-#~ msgid " Spelling suggestion (s^N^P)"
-#~ msgstr " Staveforslag (^S^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
+msgstr " Staveforslag (^S^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " Lokal nøkkelordfullføring (^N^P)"

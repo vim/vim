@@ -12,7 +12,7 @@ int ExpandMappings(char_u *pat, regmatch_T *regmatch, int *numMatches, char_u **
 int check_abbr(int c, char_u *ptr, int col, int mincol);
 char_u *eval_map_expr(mapblock_T *mp, int c);
 char_u *vim_strsave_escape_csi(char_u *p);
-void vim_unescape_csi(char_u *p);
+size_t vim_unescape_csi(char_u *p);
 int makemap(FILE *fd, buf_T *buf);
 int put_escstr(FILE *fd, char_u *strstart, int what);
 void check_map_keycodes(void);

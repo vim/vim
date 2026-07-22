@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Mark references in functions of buffers.
  */
@@ -35,16 +35,21 @@ set_ref_in_buffers(int copyID)
 	if (!abort)
 	    abort = abort || set_ref_in_callback(&bp->b_prompt_interrupt, copyID);
 # endif
-#ifdef FEAT_COMPL_FUNC
+# ifdef FEAT_COMPL_FUNC
 	if (!abort)
 	    abort = abort || set_ref_in_callback(&bp->b_cfu_cb, copyID);
 	if (!abort)
 	    abort = abort || set_ref_in_callback(&bp->b_ofu_cb, copyID);
 	if (!abort)
 	    abort = abort || set_ref_in_callback(&bp->b_tsrfu_cb, copyID);
-#endif
+	if (!abort && bp->b_p_cpt_cb != NULL)
+	    abort = abort || set_ref_in_cpt_callbacks(bp->b_p_cpt_cb,
+		    bp->b_p_cpt_count, copyID);
+# endif
 	if (!abort)
 	    abort = abort || set_ref_in_callback(&bp->b_tfu_cb, copyID);
+	if (!abort)
+	    abort = abort || set_ref_in_callback(&bp->b_ffu_cb, copyID);
 	if (abort)
 	    break;
     }
@@ -668,7 +673,7 @@ get_buffer_info(buf_T *buf)
 	dict_add_list(dict, "windows", windows);
     }
 
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
     // List of popup windows displaying this buffer
     windows = list_alloc();
     if (windows != NULL)
@@ -683,9 +688,9 @@ get_buffer_info(buf_T *buf)
 
 	dict_add_list(dict, "popups", windows);
     }
-#endif
+# endif
 
-#ifdef FEAT_SIGNS
+# ifdef FEAT_SIGNS
     if (buf->b_signlist != NULL)
     {
 	// List of signs placed in this buffer
@@ -696,11 +701,11 @@ get_buffer_info(buf_T *buf)
 	    dict_add_list(dict, "signs", signs);
 	}
     }
-#endif
+# endif
 
-#ifdef FEAT_VIMINFO
+# ifdef FEAT_VIMINFO
     dict_add_number(dict, "lastused", buf->b_last_used);
-#endif
+# endif
 
     return dict;
 }
@@ -780,8 +785,6 @@ get_buffer_lines(
     int		retlist,
     typval_T	*rettv)
 {
-    char_u	*p;
-
     if (retlist)
     {
 	if (rettv_list_alloc(rettv) == FAIL)
@@ -799,10 +802,11 @@ get_buffer_lines(
     if (!retlist)
     {
 	if (start >= 1 && start <= buf->b_ml.ml_line_count)
-	    p = ml_get_buf(buf, start, FALSE);
+	    rettv->vval.v_string =
+		vim_strnsave(ml_get_buf(buf, start, FALSE),
+		    ml_get_buf_len(buf, start));
 	else
-	    p = (char_u *)"";
-	rettv->vval.v_string = vim_strsave(p);
+	    rettv->vval.v_string = vim_strnsave((char_u *)"", 0);
     }
     else
     {
@@ -814,9 +818,13 @@ get_buffer_lines(
 	if (end > buf->b_ml.ml_line_count)
 	    end = buf->b_ml.ml_line_count;
 	while (start <= end)
+	{
 	    if (list_append_string(rettv->vval.v_list,
-				 ml_get_buf(buf, start++, FALSE), -1) == FAIL)
+		ml_get_buf(buf, start, FALSE),
+		(int)ml_get_buf_len(buf, start)) == FAIL)
 		break;
+	    ++start;
+	}
     }
 }
 
@@ -928,7 +936,7 @@ f_setline(typval_T *argvars, typval_T *rettv)
 }
 #endif  // FEAT_EVAL
 
-#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) || defined(PROTO)
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
 /*
  * Make "buf" the current buffer.  restore_buffer() MUST be called to undo.
  * No autocommands will be executed.  Use aucmd_prepbuf() if there are any.
@@ -937,9 +945,9 @@ f_setline(typval_T *argvars, typval_T *rettv)
 switch_buffer(bufref_T *save_curbuf, buf_T *buf)
 {
     block_autocmds();
-#ifdef FEAT_FOLDING
+# ifdef FEAT_FOLDING
     ++disable_fold_update;
-#endif
+# endif
     set_bufref(save_curbuf, curbuf);
     --curbuf->b_nwindows;
     curbuf = buf;
@@ -954,9 +962,9 @@ switch_buffer(bufref_T *save_curbuf, buf_T *buf)
 restore_buffer(bufref_T *save_curbuf)
 {
     unblock_autocmds();
-#ifdef FEAT_FOLDING
+# ifdef FEAT_FOLDING
     --disable_fold_update;
-#endif
+# endif
     // Check for valid buffer, just in case.
     if (bufref_valid(save_curbuf))
     {

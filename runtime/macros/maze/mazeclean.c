@@ -8,7 +8,7 @@
 
 char *M, A, Z, E = 40, line[80], T[3];
 int
-main (C)
+main (int C)
 {
   for (M = line + E, *line = A = scanf ("%d", &C); --E; line[E] = M[E] = E)
     printf ("._");

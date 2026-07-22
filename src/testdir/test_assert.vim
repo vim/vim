@@ -1,8 +1,5 @@
 " Test that the methods used for testing work.
 
-source check.vim
-source term_util.vim
-
 func Test_assert_false()
   call assert_equal(0, assert_false(0))
   call assert_equal(0, assert_false(v:false))
@@ -48,8 +45,17 @@ func Test_assert_equal()
   call assert_match("Expected 'bar' but got 'foo'", v:errors[0])
   call remove(v:errors, 0)
 
+  let s = 'αβγ'
+  call assert_equal(1, assert_equal('δεζ', s))
+  call assert_match("Expected 'δεζ' but got 'αβγ'", v:errors[0])
+  call remove(v:errors, 0)
+
   call assert_equal('XxxxxxxxxxxxxxxxxxxxxxX', 'XyyyyyyyyyyyyyyyyyyyyyyyyyX')
   call assert_match("Expected 'X\\\\\\[x occurs 21 times]X' but got 'X\\\\\\[y occurs 25 times]X'", v:errors[0])
+  call remove(v:errors, 0)
+
+  call assert_equal('ΩωωωωωωωωωωωωωωωωωωωωωΩ', 'ΩψψψψψψψψψψψψψψψψψψψψψψψψψΩ')
+  call assert_match("Expected 'Ω\\\\\\[ω occurs 21 times]Ω' but got 'Ω\\\\\\[ψ occurs 25 times]Ω'", v:errors[0])
   call remove(v:errors, 0)
 
   " special characters are escaped
@@ -373,6 +379,19 @@ func Test_assert_fails_in_timer()
   call assert_match('E471: Argument required', term_getline(buf, 6))
 
   call StopVimInTerminal(buf)
+endfunc
+
+" Check that a typed assert_equal() doesn't prepend an unnecessary ':'.
+func Test_assert_equal_typed()
+  let after =<< trim END
+    call feedkeys(":call assert_equal(0, 1)\<CR>", 't')
+    call feedkeys(":call writefile(v:errors, 'Xerrors')\<CR>", 't')
+    call feedkeys(":qa!\<CR>", 't')
+  END
+  call assert_equal(1, RunVim([], after, ''))
+  call assert_equal(['Expected 0 but got 1'], readfile('Xerrors'))
+
+  call delete('Xerrors')
 endfunc
 
 func Test_assert_beeps()

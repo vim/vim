@@ -1,8 +1,6 @@
 " Tests for the substitute (:s) command
 
-source shared.vim
-source check.vim
-source screendump.vim
+source util/screendump.vim
 
 " NOTE: This needs to be the first test to be
 "       run in the file, since it depends on
@@ -173,6 +171,16 @@ func Test_substitute_repeat()
   call feedkeys("Qsc\<CR>y", 'tx')
   bwipe!
 endfunc
+
+" Test :s with ? as delimiter.
+func Test_substitute_question_delimiter()
+  new
+  call setline(1, '??:??')
+  %s?\?\??!!?g
+  call assert_equal('!!:!!', getline(1))
+  bwipe!
+endfunc
+
 " Test %s/\n// which is implemented as a special case to use a
 " more efficient join rather than doing a regular substitution.
 func Test_substitute_join()
@@ -718,6 +726,7 @@ func Test_sub_cmd_9()
 endfunc
 
 func Test_sub_highlight_zero_match()
+  CheckScreendump
   CheckRunVimInTerminal
 
   let lines =<< trim END
@@ -796,7 +805,7 @@ func Test_replace_keeppatterns()
   a
 foobar
 
-substitute foo asdf
+substitute foo asdf foo
 
 one two
 .
@@ -805,21 +814,26 @@ one two
   /^substitute
   s/foo/bar/
   call assert_equal('foo', @/)
-  call assert_equal('substitute bar asdf', getline('.'))
+  call assert_equal('substitute bar asdf foo', getline('.'))
 
   /^substitute
   keeppatterns s/asdf/xyz/
   call assert_equal('^substitute', @/)
-  call assert_equal('substitute bar xyz', getline('.'))
+  call assert_equal('substitute bar xyz foo', getline('.'))
+
+  /^substitute
+  &
+  call assert_equal('^substitute', @/)
+  call assert_equal('substitute bar xyz bar', getline('.'))
 
   exe "normal /bar /e\<CR>"
   call assert_equal(15, col('.'))
   normal -
   keeppatterns /xyz
   call assert_equal('bar ', @/)
-  call assert_equal('substitute bar xyz', getline('.'))
+  call assert_equal('substitute bar xyz bar', getline('.'))
   exe "normal 0dn"
-  call assert_equal('xyz', getline('.'))
+  call assert_equal('xyz bar', getline('.'))
 
   close!
 endfunc
@@ -1496,6 +1510,20 @@ func Test_substitute_expr_recursive()
   delfunc R
   delfunc Q
   exe bufnr .. "bw!"
+endfunc
+
+" Test for changing 'cpo' in a substitute expression
+func Test_substitute_expr_cpo()
+  func XSubExpr()
+    set cpo=
+    return 'x'
+  endfunc
+
+  let save_cpo = &cpo
+  call assert_equal('xxx', substitute('abc', '.', '\=XSubExpr()', 'g'))
+  call assert_equal(save_cpo, &cpo)
+
+  delfunc XSubExpr
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

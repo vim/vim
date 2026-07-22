@@ -1,7 +1,10 @@
-" Language:     Rust
-" Description:  Vim ftplugin for Rust
-" Maintainer:   Chris Morgan <me@chrismorgan.info>
-" Last Change:  2023-09-11
+" Language:	Rust
+" Description:	Vim ftplugin for Rust
+" Maintainer:	Chris Morgan <me@chrismorgan.info>
+" Last Change:	2024 Mar 17
+"		2024 May 23 by Riley Bruins <ribru17@gmail.com ('commentstring')
+"		2025 Dec 09 update 'textwidth# to 100 #18892
+"		2026 Jun 27 by Vim Project normalize recommended style guard
 " For bugs, patches and license go to https://github.com/rust-lang/rust.vim
 
 if exists("b:did_ftplugin")
@@ -36,7 +39,7 @@ if get(g:, 'rust_bang_comment_leader', 0)
 else
     setlocal comments=s0:/*!,ex:*/,s1:/*,mb:*,ex:*/,:///,://!,://
 endif
-setlocal commentstring=//%s
+setlocal commentstring=//\ %s
 setlocal formatoptions-=t formatoptions+=croqnl
 " j was only added in 7.3.541, so stop complaints about its nonexistence
 silent! setlocal formatoptions+=j
@@ -45,10 +48,11 @@ silent! setlocal formatoptions+=j
 " otherwise it's better than nothing.
 setlocal smartindent nocindent
 
-if get(g:, 'rust_recommended_style', 1)
+if get(g:, 'rust_recommended_style',
+      \ get(g:, 'filetype_recommended_style', 1))
     let b:rust_set_style = 1
     setlocal shiftwidth=4 softtabstop=4 expandtab
-    setlocal textwidth=99
+    setlocal textwidth=100
 endif
 
 setlocal include=\\v^\\s*(pub\\s+)?use\\s+\\zs(\\f\|:)+
@@ -94,14 +98,15 @@ if has('conceal') && get(g:, 'rust_conceal', 0)
 endif
 
 " Motion Commands {{{1
-
-" Bind motion commands to support hanging indents
-nnoremap <silent> <buffer> [[ :call rust#Jump('n', 'Back')<CR>
-nnoremap <silent> <buffer> ]] :call rust#Jump('n', 'Forward')<CR>
-xnoremap <silent> <buffer> [[ :call rust#Jump('v', 'Back')<CR>
-xnoremap <silent> <buffer> ]] :call rust#Jump('v', 'Forward')<CR>
-onoremap <silent> <buffer> [[ :call rust#Jump('o', 'Back')<CR>
-onoremap <silent> <buffer> ]] :call rust#Jump('o', 'Forward')<CR>
+if !exists("g:no_plugin_maps") && !exists("g:no_rust_maps")
+    " Bind motion commands to support hanging indents
+    nnoremap <silent> <buffer> [[ :call rust#Jump('n', 'Back')<CR>
+    nnoremap <silent> <buffer> ]] :call rust#Jump('n', 'Forward')<CR>
+    xnoremap <silent> <buffer> [[ :call rust#Jump('v', 'Back')<CR>
+    xnoremap <silent> <buffer> ]] :call rust#Jump('v', 'Forward')<CR>
+    onoremap <silent> <buffer> [[ :call rust#Jump('o', 'Back')<CR>
+    onoremap <silent> <buffer> ]] :call rust#Jump('o', 'Forward')<CR>
+endif
 
 " Commands {{{1
 
@@ -146,6 +151,7 @@ endif
 " Cleanup {{{1
 
 let b:undo_ftplugin = "
+            \ compiler make |
             \ setlocal formatoptions< comments< commentstring< include< includeexpr< suffixesadd<
             \|if exists('b:rust_set_style')
                 \|setlocal tabstop< shiftwidth< softtabstop< expandtab< textwidth<
@@ -176,12 +182,12 @@ let b:undo_ftplugin = "
                                 \|delcommand -buffer RustInfoToClipboard
                                 \|delcommand -buffer RustInfoToFile
                                 \|delcommand -buffer RustTest
-                                \|nunmap <buffer> [[
-                                \|nunmap <buffer> ]]
-                                \|xunmap <buffer> [[
-                                \|xunmap <buffer> ]]
-                                \|ounmap <buffer> [[
-                                \|ounmap <buffer> ]]
+                                \|silent! nunmap <buffer> [[
+                                \|silent! nunmap <buffer> ]]
+                                \|silent! xunmap <buffer> [[
+                                \|silent! xunmap <buffer> ]]
+                                \|silent! ounmap <buffer> [[
+                                \|silent! ounmap <buffer> ]]
                                 \|setlocal matchpairs-=<:>
                                 \|unlet b:match_skip
                                 \"

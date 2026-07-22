@@ -1,7 +1,7 @@
-*visual.txt*    For Vim version 9.1.  Last change: 2023 Sep 19
+*visual.txt*	For Vim version 9.2.  Last change: 2026 May 22
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
 Visual mode				*Visual* *Visual-mode* *visual-mode*
@@ -128,8 +128,8 @@ gN			Like |gn| but searches backward, like with `N`.
 			active it is stopped.  Only when 'mouse' option
 			contains 'n' or 'a'.  If the position is within 'so'
 			lines from the last line on the screen the text is
-			scrolled up.  If the position is within 'so' lines from
-			the first line on the screen the text is scrolled
+			scrolled up.  If the position is within 'so' lines
+			from the first line on the screen the text is scrolled
 			down.
 
 							*<RightMouse>*
@@ -156,6 +156,9 @@ gN			Like |gn| but searches backward, like with `N`.
 <LeftReleaseNM>		line to focus a window.  NM stands for non-mappable.
 			You cannot use these, but they might show up in some
 			places.
+
+<A-LeftMouse>		Starts or extends the Visual area blockwise, see
+			|<A-LeftMouse>|.
 
 If Visual mode is not active and the "v", "V" or CTRL-V is preceded with a
 count, the size of the previously highlighted area is used for a start.  You
@@ -352,10 +355,10 @@ all lines.
 
 								*v_b_<*
 Visual-block Shift						*v_b_>*
-The block is shifted by 'shiftwidth'.  The RHS of the block is irrelevant.  The
-LHS of the block determines the point from which to apply a right shift, and
-padding includes TABs optimally according to 'ts' and 'et'.  The LHS of the
-block determines the point up to which to shift left.
+The block is shifted by 'shiftwidth'.  The RHS of the block is irrelevant.
+The LHS of the block determines the point from which to apply a right shift,
+and padding includes TABs optimally according to 'ts' and 'et'.  The LHS of
+the block determines the point up to which to shift left.
 See |v_b_>_example|.
 See |v_b_<_example|.
 
@@ -392,7 +395,7 @@ want only part of the line to be replaced you will have to make a mapping for
 it.  In a future release ":" may work on partial lines.
 
 Here is an example, to replace the selected text with the output of "date": >
-	:vmap _a <Esc>`>a<CR><Esc>`<i<CR><Esc>!!date<CR>kJJ
+	:vmap _a <Esc>`>a<CR><Esc>`<i<CR><Esc>!!date<CR>kgJgJ
 
 (In the <> notation |<>|, when typing it you should type it literally; you
 need to remove the 'B' and '<' flags from 'cpoptions')

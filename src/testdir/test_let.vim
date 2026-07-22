@@ -1,6 +1,6 @@
 " Tests for the :let command.
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 func Test_let()
   " Test to not autoload when assigning.  It causes internal error.
@@ -92,6 +92,26 @@ func Test_let()
   let l = [1, 2, 3]
   let [l[0], l[1]] = [10, 20]
   call assert_equal([10, 20, 3], l)
+
+  " Test for using curly brace name in the LHS of an assignment
+  let listvar = [1, 2]
+  let s = 'listvar'
+  let {s} = [3, 4]
+  call assert_equal([3, 4], listvar)
+
+  " Test for using curly brace name as a list and as list index in the LHS of
+  " an assignment
+  let listvar = [1, 2]
+  let idx = 1
+  let s = 'listvar'
+  let {s}[0] = 10
+  let s = 'idx'
+  let listvar[{s}] = 20
+  call assert_equal([10, 20], listvar)
+  let s1 = 'listvar'
+  let s2 = 'idx'
+  let {s1}[{s2}] = 30
+  call assert_equal([10, 30], listvar)
 
   " Test for errors in conditional expression
   call assert_fails('let val = [] ? 1 : 2', 'E745:')
@@ -310,7 +330,7 @@ func Test_let_errors()
   call assert_fails('let [a]', 'E474:')
   call assert_fails('let [a, b] = [', 'E697:')
   call assert_fails('let [a, b] = [10, 20', 'E696:')
-  call assert_fails('let [a, b] = 10', 'E714:')
+  call assert_fails('let [a, b] = 10', 'E1535:')
   call assert_fails('let [a, , b] = [10, 20]', 'E475:')
   call assert_fails('let [a, b&] = [10, 20]', 'E475:')
   call assert_fails('let $ = 10', 'E475:')
@@ -392,6 +412,63 @@ func Test_let_heredoc_fails()
     TEXT
     call assert_report('No exception thrown')
   catch /E730:/
+  catch
+    call assert_report('Caught exception: ' .. v:exception)
+  endtry
+
+  try
+    let @- =<< trim TEXT
+      change
+      insert
+      append
+    TEXT
+    call assert_report('No exception thrown')
+  catch /E730:/
+  catch
+    call assert_report('Caught exception: ' .. v:exception)
+  endtry
+
+  try
+    let [] =<< trim TEXT
+    TEXT
+    call assert_report('No exception thrown')
+  catch /E475:/
+  catch
+    call assert_report('Caught exception: ' .. v:exception)
+  endtry
+
+  try
+    let [a b c] =<< trim TEXT
+    TEXT
+    call assert_report('No exception thrown')
+  catch /E475:/
+  catch
+    call assert_report('Caught exception: ' .. v:exception)
+  endtry
+
+  try
+    let [a; b; c] =<< trim TEXT
+    TEXT
+    call assert_report('No exception thrown')
+  catch /E452:/
+  catch
+    call assert_report('Caught exception: ' .. v:exception)
+  endtry
+
+  try
+    let v =<< trim trimm
+    trimm
+    call assert_report('No exception thrown')
+  catch /E221:/
+  catch
+    call assert_report('Caught exception: ' .. v:exception)
+  endtry
+
+  try
+    let v =<< trim trim evall
+    evall
+    call assert_report('No exception thrown')
+  catch /E221:/
   catch
     call assert_report('Caught exception: ' .. v:exception)
   endtry
@@ -497,6 +574,13 @@ END
   XX
   call assert_equal(['Line1'], var1)
 
+  let var1 =<< trim XX " comment
+    Line1
+      Line2
+    Line3
+  XX
+  call assert_equal(['Line1', '  Line2', 'Line3'], var1)
+
   " ignore "endfunc"
   let var1 =<< END
 something
@@ -571,6 +655,22 @@ append
 END
   call assert_equal(['change', 'insert', 'append'], [a, b, c])
 
+  " unpack assignment with semicolon
+  let [a; b] =<< END
+change
+insert
+append
+END
+  call assert_equal(['change', ['insert', 'append']], [a, b])
+
+  " unpack assignment with registers
+  let [@/, @", @-] =<< END
+change
+insert
+append
+END
+  call assert_equal(['change', 'insert', 'append'], [@/, @", @-])
+
   " curly braces name and list slice assignment
   let foo_3_bar = ['', '', '']
   let foo_{1 + 2}_bar[ : ] =<< END
@@ -627,6 +727,48 @@ END
   END
   call assert_equal(['let a = {abc}', 'let b = X', 'let c = {'], code)
 
+  " Evaluate a dictionary
+  let d1 = #{a: 10, b: 'ss', c: {}}
+  let code =<< eval trim END
+    let d2 = {d1}
+  END
+  call assert_equal(["let d2 = {'a': 10, 'b': 'ss', 'c': {}}"], code)
+
+  " Empty dictionary
+  let d1 = {}
+  let code =<< eval trim END
+    let d2 = {d1}
+  END
+  call assert_equal(["let d2 = {}"], code)
+
+  " null dictionary
+  let d1 = test_null_dict()
+  let code =<< eval trim END
+    let d2 = {d1}
+  END
+  call assert_equal(["let d2 = {}"], code)
+
+  " Evaluate a List
+  let l1 = ['a', 'b', 'c']
+  let code =<< eval trim END
+    let l2 = {l1}
+  END
+  call assert_equal(["let l2 = ['a', 'b', 'c']"], code)
+
+  " Empty List
+  let l1 = []
+  let code =<< eval trim END
+    let l2 = {l1}
+  END
+  call assert_equal(["let l2 = []"], code)
+
+  " Null List
+  let l1 = test_null_list()
+  let code =<< eval trim END
+    let l2 = {l1}
+  END
+  call assert_equal(["let l2 = []"], code)
+
   let code = 'xxx'
   let code =<< eval trim END
     let n = {5 +
@@ -659,6 +801,34 @@ END
       END
   LINES
   call v9.CheckScriptFailure(lines, 'E15:')
+
+  " Test for using heredoc in a single string using :execute or execute()
+  for [cmd, res] in items({
+      \ "let x =<< trim END\n  one\n  two\nEND": ['one', 'two'],
+      \ "let x =<< trim END\n  one\n    two\nEND": ['one', '  two'],
+      \ "  let x =<< trim END\n    one\n    two\n  END": ['one', 'two'],
+      \ "  let x =<< trim END\n    one\n      two\n  END": ['one', '  two'],
+      \ "let x =<< END\n  one\n  two\nEND": ['  one', '  two'],
+      \ "let x =<< END\none\ntwo\nEND": ['one', 'two'],
+      \ "let x =<< END \" comment\none\ntwo\nEND": ['one', 'two'],
+      \ })
+    execute cmd
+    call assert_equal(res, x)
+    unlet x
+    call assert_equal($"\n{string(res)}", execute($"{cmd}\necho x"))
+    unlet x
+  endfor
+  for [cmd, err] in items({
+      \ "let x =<<\none\ntwo": "E172:",
+      \ "let x =<< trim\n  one\n  two": "E172:",
+      \ "let x =<< end\none\ntwo\nend": "E221:",
+      \ "let x =<< END\none\ntwo": "E990: Missing end marker 'END'",
+      \ "let x =<< END !\none\ntwo\nEND": "E488: Trailing characters:  !",
+      \ "let x =<< eval END\none\ntwo{y}\nEND": "E121: Undefined variable: y",
+      \ })
+    call assert_fails('execute cmd', err)
+    call assert_fails('call execute(cmd)', err)
+  endfor
 
   " skipped heredoc
   if 0

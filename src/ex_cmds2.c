@@ -126,9 +126,9 @@ check_changed(buf_T *buf, int flags)
     return FALSE;
 }
 
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG) || defined(PROTO)
+#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 
-#if defined(FEAT_BROWSE) || defined(PROTO)
+# if defined(FEAT_BROWSE)
 /*
  * When wanting to write a file without a file name, ask the user for a name.
  */
@@ -141,7 +141,7 @@ browse_save_fname(buf_T *buf)
     char_u *fname;
 
     fname = do_browse(BROWSE_SAVE, (char_u *)_("Save As"),
-	    NULL, NULL, NULL, NULL, buf);
+	    (char_u *)"Untitled", NULL, NULL, NULL, buf);
     if (fname == NULL)
 	return;
 
@@ -149,7 +149,7 @@ browse_save_fname(buf_T *buf)
 	buf->b_flags |= BF_NOTEDITED;
     vim_free(fname);
 }
-#endif
+# endif
 
 /*
  * Ask the user what to do when abandoning a changed buffer.
@@ -163,7 +163,7 @@ dialog_changed(
     char_u	buff[DIALOG_MSG_SIZE];
     int		ret;
     buf_T	*buf2;
-    exarg_T     ea;
+    exarg_T	ea;
 
     dialog_msg(buff, _("Save changes to \"%s\"?"), buf->b_fname);
     if (checkall)
@@ -177,14 +177,34 @@ dialog_changed(
 
     if (ret == VIM_YES)
     {
-#ifdef FEAT_BROWSE
+	int	empty_bufname;
+
+# ifdef FEAT_BROWSE
 	// May get file name, when there is none
 	browse_save_fname(buf);
-#endif
-	if (buf->b_fname != NULL && check_overwrite(&ea, buf,
-				    buf->b_fname, buf->b_ffname, FALSE) == OK)
+
+	// User cancelled the file dialog; keep the buffer modified.
+	if (buf->b_fname == NULL)
+	    return;
+# endif
+	empty_bufname = buf->b_fname == NULL ? TRUE : FALSE;
+	if (empty_bufname)
+	    buf_set_name(buf->b_fnum, (char_u *)"Untitled");
+
+	if (check_overwrite(&ea, buf, buf->b_fname, buf->b_ffname, FALSE) == OK)
+	{
 	    // didn't hit Cancel
-	    (void)buf_write_all(buf, FALSE);
+	    if (buf_write_all(buf, FALSE) == OK)
+		return;
+	}
+
+	// restore to empty when write failed or was cancelled
+	if (empty_bufname)
+	{
+	    buf->b_fname = NULL;
+	    VIM_CLEAR(buf->b_ffname);
+	    VIM_CLEAR(buf->b_sfname);
+	}
     }
     else if (ret == VIM_NO)
     {
@@ -201,9 +221,9 @@ dialog_changed(
 	{
 	    if (bufIsChanged(buf2)
 		    && (buf2->b_ffname != NULL
-#ifdef FEAT_BROWSE
+# ifdef FEAT_BROWSE
 			|| (cmdmod.cmod_flags & CMOD_BROWSE)
-#endif
+# endif
 			)
 		    && !bt_dontwrite(buf2)
 		    && !buf2->b_p_ro)
@@ -211,10 +231,10 @@ dialog_changed(
 		bufref_T bufref;
 
 		set_bufref(&bufref, buf2);
-#ifdef FEAT_BROWSE
+# ifdef FEAT_BROWSE
 		// May get file name, when there is none
 		browse_save_fname(buf2);
-#endif
+# endif
 		if (buf2->b_fname != NULL && check_overwrite(&ea, buf2,
 				  buf2->b_fname, buf2->b_ffname, FALSE) == OK)
 		    // didn't hit Cancel
@@ -457,6 +477,40 @@ ex_listdo(exarg_T *eap)
     tabpage_T	*tp;
     buf_T	*buf = curbuf;
     int		next_fnum = 0;
+
+    // ":windo" and ":tabdo" only visit existing windows/tabpages, they don't
+    // change the current window's buffer, so they can't escape a 'winfixbuf'
+    // window (which would create a split).
+    if (curwin->w_p_wfb && eap->cmdidx != CMD_windo &&
+	    eap->cmdidx != CMD_tabdo)
+    {
+	if ((eap->cmdidx == CMD_ldo || eap->cmdidx == CMD_lfdo) &&
+		!eap->forceit)
+	{
+	    // Disallow :ldo if 'winfixbuf' is applied
+	    emsg(_(e_winfixbuf_cannot_go_to_buffer));
+	    return;
+	}
+
+	if (win_valid(prevwin) && !prevwin->w_p_wfb)
+	    // 'winfixbuf' is set; attempt to change to a window without it.
+	    win_goto(prevwin);
+	if (curwin->w_p_wfb)
+	{
+	    // Split the window, which will be 'nowinfixbuf', and set curwin to
+	    // that
+	    (void)win_split(0, 0);
+
+	    if (curwin->w_p_wfb)
+	    {
+		// Autocommands set 'winfixbuf' or sent us to another window
+		// with it set, or we failed to split the window.  Give up.
+		emsg(_(e_winfixbuf_cannot_go_to_buffer));
+		return;
+	    }
+	}
+    }
+
 #if defined(FEAT_SYN_HL)
     char_u	*save_ei = NULL;
 #endif
@@ -488,6 +542,9 @@ ex_listdo(exarg_T *eap)
 #endif
 #ifdef FEAT_CLIPBOARD
     start_global_changes();
+#endif
+#ifdef FEAT_CLIPBOARD_PROVIDER
+    inc_clip_provider();
 #endif
 
     if (eap->cmdidx == CMD_windo
@@ -713,6 +770,9 @@ ex_listdo(exarg_T *eap)
 #ifdef FEAT_CLIPBOARD
     end_global_changes();
 #endif
+#ifdef FEAT_CLIPBOARD_PROVIDER
+    dec_clip_provider();
+#endif
 }
 
 #ifdef FEAT_EVAL
@@ -742,7 +802,7 @@ ex_compiler(exarg_T *eap)
     {
 	// ":compiler! {name}" sets global options
 	do_cmdline_cmd((char_u *)
-		"command -nargs=* CompilerSet set <args>");
+		"command -nargs=* -keepscript CompilerSet set <args>");
     }
     else
     {
@@ -788,9 +848,9 @@ ex_compiler(exarg_T *eap)
 }
 #endif
 
-#if defined(FEAT_PYTHON3) || defined(FEAT_PYTHON) || defined(PROTO)
+#if defined(FEAT_PYTHON3) || defined(FEAT_PYTHON)
 
-# if (defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)) || defined(PROTO)
+# if defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)
 /*
  * Detect Python 3 or 2, and initialize 'pyxversion'.
  */

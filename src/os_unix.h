@@ -6,18 +6,6 @@
  * Do ":help credits" in Vim to see a list of people who contributed.
  */
 
-/*
- * NextStep has a problem with configure, undefine a few things:
- */
-#ifdef NeXT
-# ifdef HAVE_UTIME
-#  undef HAVE_UTIME
-# endif
-# ifdef HAVE_SYS_UTSNAME_H
-#  undef HAVE_SYS_UTSNAME_H
-# endif
-#endif
-
 #include <stdio.h>
 #include <ctype.h>
 
@@ -50,10 +38,6 @@
 
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
-#endif
-
-#ifdef HAVE_LIBC_H
-# include <libc.h>		    // for NeXT
 #endif
 
 #ifdef HAVE_SYS_PARAM_H
@@ -138,6 +122,11 @@ typedef void (*sighandler_T) SIGPROTOARG;
 # define MAXNAMLEN NAME_MAX	    // for Linux before .99p3
 #endif
 
+#if defined(__sun)
+# undef MAXNAMLEN
+# define MAXNAMLEN 255
+#endif
+
 /*
  * Note: if MAXNAMLEN has the wrong value, you will get error messages
  *	 for not being able to open the swap file.
@@ -158,8 +147,6 @@ typedef void (*sighandler_T) SIGPROTOARG;
 # define HAVE_TOTAL_MEM
 #endif
 
-
-#ifndef PROTO
 
 #ifdef VMS
 # include <unixio.h>
@@ -198,8 +185,6 @@ typedef void (*sighandler_T) SIGPROTOARG;
 # include <sys/file.h>
 #endif
 
-#endif // PROTO
-
 #ifdef VMS
 typedef struct dsc$descriptor   DESC;
 #endif
@@ -234,7 +219,7 @@ typedef struct dsc$descriptor   DESC;
 
 #ifndef USR_VIMRC_FILE
 # ifdef VMS
-# define USR_VIMRC_FILE  "sys$login:.vimrc"
+#  define USR_VIMRC_FILE  "sys$login:.vimrc"
 # else
 #  define USR_VIMRC_FILE "$HOME/.vimrc"
 # endif
@@ -245,8 +230,14 @@ typedef struct dsc$descriptor   DESC;
 # ifdef VMS
 #  define USR_VIMRC_FILE2	"sys$login:vimfiles/vimrc"
 # else
-#   define USR_VIMRC_FILE2	"~/.vim/vimrc"
+#  define USR_VIMRC_FILE2	"~/.vim/vimrc"
 # endif
+#endif
+
+#ifndef XDG_VIMRC_FILE
+# define XDG_VIMRC_FILE (mch_getenv((char_u *)"XDG_CONFIG_HOME") \
+	? "$XDG_CONFIG_HOME/vim/vimrc" \
+	: "~/.config/vim/vimrc")
 #endif
 
 #if !defined(USR_VIMRC_FILE3) && defined(VMS)
@@ -272,6 +263,12 @@ typedef struct dsc$descriptor   DESC;
 #ifdef VMS
 # ifndef USR_GVIMRC_FILE3
 #  define USR_GVIMRC_FILE3  "sys$login:_gvimrc"
+# endif
+#else
+# ifndef USR_GVIMRC_FILE3
+#  define USR_GVIMRC_FILE3 (mch_getenv("XDG_CONFIG_HOME") \
+	? "$XDG_CONFIG_HOME/vim/gvimrc" \
+	: "~/.config/vim/gvimrc")
 # endif
 #endif
 
@@ -335,6 +332,8 @@ typedef struct dsc$descriptor   DESC;
 #  define DFLT_VDIR    "sys$login:vimfiles/view"
 # else
 #  define DFLT_VDIR    "$HOME/.vim/view"       // default for 'viewdir'
+#  define XDG_VDIR     (mch_getenv("XDG_CONFIG_HOME") ? \
+	"$XDG_CONFIG_HOME/vim/view" : "~/.config/vim/view")
 # endif
 #endif
 
@@ -349,13 +348,19 @@ typedef struct dsc$descriptor   DESC;
 #  ifdef RUNTIME_GLOBAL
 #   ifdef RUNTIME_GLOBAL_AFTER
 #    define DFLT_RUNTIMEPATH	"~/.vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER ",~/.vim/after"
+#    define XDG_RUNTIMEPATH	"$XDG_CONFIG_HOME/vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER ",$XDG_CONFIG_HOME/vim/after"
+#    define XDG_RUNTIMEPATH_FB	"~/.config/vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER ",~/.config/vim/after"
 #    define CLEAN_RUNTIMEPATH	RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER
 #   else
 #    define DFLT_RUNTIMEPATH	"~/.vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL "/after,~/.vim/after"
+#    define XDG_RUNTIMEPATH	"$XDG_CONFIG_HOME/vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL "/after,$XDG_CONFIG_HOME/vim/after"
+#    define XDG_RUNTIMEPATH_FB	"~/.config/vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL "/after,~/.config/vim/after"
 #    define CLEAN_RUNTIMEPATH	RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL "/after"
 #   endif
 #  else
 #   define DFLT_RUNTIMEPATH	"~/.vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,~/.vim/after"
+#   define XDG_RUNTIMEPATH	"$XDG_CONFIG_HOME/vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,$XDG_CONFIG_HOME/vim/after"
+#   define XDG_RUNTIMEPATH_FB	"~/.config/vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,~/.config/vim/after"
 #   define CLEAN_RUNTIMEPATH	"$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after"
 #  endif
 # endif
@@ -417,7 +422,7 @@ typedef struct dsc$descriptor   DESC;
 #  define mch_memmove(to, from, len) bcopy((char *)(from), (char *)(to), len)
 # else
     // ifdef USEMEMCPY
-#   define mch_memmove(to, from, len) memcpy((char *)(to), (char *)(from), len)
+#  define mch_memmove(to, from, len) memcpy((char *)(to), (char *)(from), len)
 # endif
 #endif
 
@@ -468,3 +473,4 @@ int mch_rename(const char *src, const char *dest);
 
 // We have three kinds of ACL support.
 #define HAVE_ACL (HAVE_POSIX_ACL || HAVE_SOLARIS_ACL || HAVE_AIX_ACL)
+

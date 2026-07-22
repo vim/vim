@@ -3,12 +3,11 @@
 set encoding=utf-8
 scriptencoding utf-8
 
-source check.vim
 CheckOption linebreak
 CheckFeature conceal
 CheckFeature signs
 
-source view_util.vim
+source util/screendump.vim
 
 func s:screen_lines(lnum, width) abort
   return ScreenLines(a:lnum, a:width)
@@ -279,6 +278,9 @@ func Test_chinese_char_on_wrap_column()
   call s:compare_lines(expect, lines)
   call assert_equal(len(expect), winline())
   call assert_equal(strwidth(trim(expect[-1], ' ', 2)), wincol())
+  norm! g0
+  call assert_equal(len(expect), winline())
+  call assert_equal(1, wincol())
   call s:close_windows()
 endfunc
 
@@ -314,6 +316,9 @@ func Test_chinese_char_on_wrap_column_sbr()
   call s:compare_lines(expect, lines)
   call assert_equal(len(expect), winline())
   call assert_equal(strwidth(trim(expect[-1], ' ', 2)), wincol())
+  norm! g0
+  call assert_equal(len(expect), winline())
+  call assert_equal(4, wincol())
   call s:close_windows()
 endfunc
 
@@ -356,6 +361,96 @@ func Test_unprintable_char_on_wrap_column()
   call assert_equal(len(expect), winline())
   call assert_equal(strwidth(trim(expect[-1], ' ', 2)), wincol())
   call s:close_windows()
+endfunc
+
+" Test that Visual selection is drawn correctly when 'linebreak' is set and
+" selection ends before multibyte 'showbreak'.
+func Test_visual_ends_before_showbreak()
+  CheckScreendump
+
+  " Redraw at the end is necessary due to https://github.com/vim/vim/issues/16620
+  let lines =<< trim END
+      vim9script
+      &wrap = true
+      &linebreak = true
+      &showbreak = '↪ '
+      ['xxxxx ' .. 'y'->repeat(&columns - 6) .. ' zzzz']->setline(1)
+      normal! wvel
+      redraw
+  END
+  call writefile(lines, 'XvisualEndsBeforeShowbreak', 'D')
+  let buf = RunVimInTerminal('-S XvisualEndsBeforeShowbreak', #{rows: 6})
+  call VerifyScreenDump(buf, 'Test_visual_ends_before_showbreak', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_visual_block_hl_with_linebreak()
+  CheckScreendump
+
+  let lines =<< trim END
+    func Case1()
+      20vnew
+      setlocal linebreak
+      call setline(1, ['foo ' .. repeat('x', 10), 'foo ' .. repeat('x', 20)])
+      exe "normal! gg0\<C-V>3lj"
+    endfunc
+
+    func Case2()
+      setlocal nolinebreak
+      call setline(1, ["foo\tbar", 'foo12345bar', "foo\tbar"])
+      exe "normal! gg03l\<C-V>2j2h"
+    endfunc
+
+    func Case3()
+      setlocal nolinebreak
+      call setline(1, ["foo\uffffbar", 'foo123456bar', "foo\uffffbar"])
+      exe "normal! gg03l\<C-V>2j2h"
+    endfunc
+
+    func Case4()
+      setlocal nolinebreak
+      call setline(1, [repeat('x', 15), repeat('x', 10), repeat('x', 10)])
+      call prop_type_add('test', {})
+      call prop_add(2, 5, #{text: "foo: ", type: "test"})
+      call prop_add(3, 5, #{text: "bar: ", type: "test"})
+      exe "normal! gg02l\<C-V>2j2l"
+    endfunc
+
+    set laststatus=0 showcmd ruler
+    " FIXME: clipboard=autoselect sometimes changes Visual highlight
+    set clipboard=
+  END
+  call writefile(lines, 'XvisualBlockHlWithLinebreak', 'D')
+  let buf = RunVimInTerminal('-S XvisualBlockHlWithLinebreak', #{rows: 6})
+
+  " 'linebreak' after end char (initially fixed by patch 7.4.467)
+  call term_sendkeys(buf, ":call Case1()\r")
+  call VerifyScreenDump(buf, 'Test_visual_block_hl_with_linebreak_1', {})
+
+  " TAB as end char: 'linebreak' shouldn't break Visual block hl
+  call term_sendkeys(buf, "\<Esc>:bwipe! | call Case2()\r")
+  call VerifyScreenDump(buf, 'Test_visual_block_hl_with_linebreak_2', {})
+  call term_sendkeys(buf, "\<Esc>:setlocal linebreak\rgv")
+  call term_wait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_visual_block_hl_with_linebreak_2', {})
+
+  " Unprintable end char: 'linebreak' shouldn't break Visual block hl
+  call term_sendkeys(buf, "\<Esc>:bwipe! | call Case3()\r")
+  call VerifyScreenDump(buf, 'Test_visual_block_hl_with_linebreak_3', {})
+  call term_sendkeys(buf, "\<Esc>:setlocal linebreak\rgv")
+  call term_wait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_visual_block_hl_with_linebreak_3', {})
+
+  " Virtual text before end char: 'linebreak' shouldn't break Visual block hl
+  call term_sendkeys(buf, "\<Esc>:bwipe! | call Case4()\r")
+  call VerifyScreenDump(buf, 'Test_visual_block_hl_with_linebreak_4', {})
+  call term_sendkeys(buf, "\<Esc>:setlocal linebreak\rgv")
+  call term_wait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_visual_block_hl_with_linebreak_4', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

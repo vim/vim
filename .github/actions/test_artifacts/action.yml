@@ -1,0 +1,56 @@
+name: "test_artifacts"
+description: "Upload failed test artifacts"
+runs:
+  using: "composite"
+  steps:
+    - name: Collect matrix properties for naming
+      uses: actions/github-script@v9
+      id: matrix-props
+      env:
+        MATRIX_PROPS: ${{ toJSON(matrix) }}
+      with:
+        # An array-flattening-to-string JavaScript function.
+        script: |
+          const f = function (x) { return x.toString().length > 0; }
+          const g = function (x) {
+            return (Array.isArray(x))
+              ? x.filter(f)
+                .map((function (h) { return function (y) { return h(y); }; })(g))
+                .join('-')
+              : x;
+          }
+          return Object.values(JSON.parse(process.env.MATRIX_PROPS))
+            .filter(f)
+            .map(g)
+            .join('-');
+        # By default, the JSON-encoded return value of the function is
+        # set as the "result".
+        result-encoding: string
+    - name: Upload failed tests
+      uses: actions/upload-artifact@v7
+      with:
+        # Name of the artifact to upload.
+        name: ${{ format('GH-{0}-{1}-{2}-{3}-{4}-failed-tests',
+          github.run_id,
+          github.run_attempt,
+          github.job,
+          strategy.job-index,
+          steps.matrix-props.outputs.result) }}
+
+        # A file, directory or wildcard pattern that describes what
+        # to upload.
+        path: |
+          ${{ github.workspace }}/logs/**/*.symbolized
+          ${{ github.workspace }}/runtime/indent/testdir/*.fail
+          ${{ github.workspace }}/runtime/syntax/testdir/failed/*
+          ${{ github.workspace }}/src/testdir/failed/*
+        # The desired behavior if no files are found using the
+        # provided path.
+        if-no-files-found: ignore
+
+        # Duration after which artifact will expire in days. 0 means
+        # using repository settings.
+        retention-days: 0
+
+        # If true, an artifact with a matching name will be deleted
+        overwrite: true

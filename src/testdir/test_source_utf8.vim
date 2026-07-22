@@ -1,7 +1,5 @@
 " Test the :source! command
 
-source check.vim
-
 func Test_source_utf8()
   " check that sourcing a script with 0x80 as second byte works
   new

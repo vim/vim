@@ -1,10 +1,10 @@
-*popup.txt*  For Vim version 9.1.  Last change: 2022 Oct 07
+*popup.txt*	For Vim version 9.2.  Last change: 2026 Jun 17
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
-Displaying text in a floating window.	*popup* *popup-window* *popupwin*
+Displaying text in a popup window.	*popup* *popup-window* *popupwin*
 
 
 1. Introduction			|popup-intro|
@@ -21,7 +21,9 @@ Displaying text in a floating window.	*popup* *popup-window* *popupwin*
    Popup filter			|popup-filter|
    Popup callback		|popup-callback|
    Popup scrollbar		|popup-scrollbar|
+   Popup opacity		|popup-opacity|
    Popup mask			|popup-mask|
+   Popup image			|popup-image|
 4. Examples			|popup-examples|
 
 
@@ -43,8 +45,11 @@ A popup window can be used for such things as:
 The text in the popup window can be colored with |text-properties|.  It is
 also possible to use syntax highlighting.
 
-The default color used is "Pmenu".  If you prefer something else use the
-"highlight" argument or the 'wincolor' option, e.g.: >
+The default colors are taken from |hl-Popup| (body), |hl-PopupBorder|
+(border) and |hl-PopupTitle| (title), which all link to |hl-Pmenu| by
+default for backward compatibility.  Override them to give general popup
+windows a different look than the popup completion menu, or use the
+"highlight" argument or the 'wincolor' option for a per-popup override: >
 	hi MyPopupColor ctermbg=lightblue guibg=lightblue
 	call setwinvar(winid, '&wincolor', 'MyPopupColor')
 
@@ -186,6 +191,7 @@ Manipulating a popup window:
 	|popup_move()|		change the position and size of a popup
 	|popup_setoptions()|	override options of a popup
 	|popup_settext()|	replace the popup buffer contents
+	|popup_setbuf()|	set the buffer for the popup window
 
 Closing popup windows:
 	|popup_close()|		close one popup
@@ -219,6 +225,8 @@ popup_atcursor({what}, {options})			*popup_atcursor()*
 
 		Can also be used as a |method|: >
 			GetText()->popup_atcursor({})
+<
+		Return type: |Number|
 
 
 popup_beval({what}, {options})			*popup_beval()*
@@ -237,6 +245,8 @@ popup_beval({what}, {options})			*popup_beval()*
 		Can also be used as a |method|: >
 			GetText()->popup_beval({})
 <
+		Return type: |Number|
+
 							*popup_clear()*
 popup_clear([{force}])
 		Emergency solution to a misbehaving plugin: close all popup
@@ -248,10 +258,12 @@ popup_clear([{force}])
 		when it is the current window.  If a terminal is running in a
 		popup it is killed.
 
+		Return type: void
+
 
 popup_close({id} [, {result}])				*popup_close()*
-		Close popup {id}.  The window and the associated buffer will
-		be deleted.
+		Close popup {id}.  The window will be deleted.  The associated
+		buffer will be deleted, if the popup created a new buffer.
 
 		If the popup has a callback it will be called just before the
 		popup window is deleted.  If the optional {result} is present
@@ -260,6 +272,8 @@ popup_close({id} [, {result}])				*popup_close()*
 
 		Can also be used as a |method|: >
 			GetPopup()->popup_close()
+<
+		Return type: void
 
 
 popup_create({what}, {options})				*popup_create()*
@@ -276,6 +290,7 @@ popup_create({what}, {options})				*popup_create()*
 		an existing swap file, it is silently opened read-only, as if
 		a |SwapExists| autocommand had set |v:swapchoice| to 'o'.
 		This is because we assume the buffer is only used for viewing.
+		The buffer number cannot refer to a closing buffer.	*E1551*
 
 		{options} is a dictionary with many possible entries.
 		See |popup_create-arguments| for details.
@@ -290,6 +305,8 @@ popup_create({what}, {options})				*popup_create()*
 
 		Can also be used as a |method|: >
 			GetText()->popup_create({})
+<
+		Return type: |Number|
 
 
 popup_dialog({what}, {options})				*popup_dialog()*
@@ -302,7 +319,7 @@ popup_dialog({what}, {options})				*popup_dialog()*
 				\ padding: [],
 				\ mapping: 0,
 				\})
-<		Use {options} to change the properties. E.g. add a 'filter'
+<		Use {options} to change the properties.  E.g. add a 'filter'
 		option with value 'popup_filter_yesno'.  Example: >
 			call popup_create('do you want to quit (Yes/no)?', #{
 				\ filter: 'popup_filter_yesno',
@@ -314,10 +331,12 @@ popup_dialog({what}, {options})				*popup_dialog()*
 
 		Can also be used as a |method|: >
 			GetText()->popup_dialog({})
+<
+		Return type: |Number|
 
 
 popup_filter_menu({id}, {key})				*popup_filter_menu()*
-		Filter that can be used for a popup. These keys can be used:
+		Filter that can be used for a popup.  These keys can be used:
 		    j <Down> <C-N>	select item below
 		    k <Up> <C-P>	select item above
 		    <Space> <Enter>	accept current selection
@@ -336,9 +355,11 @@ popup_filter_menu({id}, {key})				*popup_filter_menu()*
 		To add shortcut keys, see the example here:
 		|popup_menu-shortcut-example|
 
+		Return type: |vim9-boolean|
+
 
 popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
-		Filter that can be used for a popup. It handles only the keys
+		Filter that can be used for a popup.  It handles only the keys
 		'y', 'Y' and 'n' or 'N'.  Invokes the "callback" of the
 		popup menu with the 1 for 'y' or 'Y' and zero for 'n' or 'N'
 		as the second argument.  Pressing Esc and 'x' works like
@@ -346,11 +367,15 @@ popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
 		keys are ignored.
 		See the example here: |popup_dialog-example|
 
+		Return type: |vim9-boolean|
+
 
 popup_findecho()					*popup_findecho()*
 		Get the |window-ID| for the popup that shows messages for the
 		`:echowindow` command.  Return zero if there is none.
 		Mainly useful to hide the popup.
+
+		Return type: |Number|
 
 
 popup_findinfo()					*popup_findinfo()*
@@ -361,10 +386,15 @@ popup_findinfo()					*popup_findinfo()*
 		the item in the popup menu.
 		Returns zero if there is none.
 
+		Return type: |Number|
+
 
 popup_findpreview()					*popup_findpreview()*
 		Get the |window-ID| for the popup preview window.
 		Return zero if there is none.
+
+		Return type: |Number|
+
 
 popup_getoptions({id})					*popup_getoptions()*
 		Return the {options} for popup {id} in a Dict.
@@ -399,6 +429,8 @@ popup_getoptions({id})					*popup_getoptions()*
 
 		Can also be used as a |method|: >
 			GetPopup()->popup_getoptions()
+<
+		Return type: dict<any>
 
 
 popup_getpos({id})					*popup_getpos()*
@@ -428,10 +460,12 @@ popup_getpos({id})					*popup_getpos()*
 
 		Can also be used as a |method|: >
 			GetPopup()->popup_getpos()
+<
+		Return type: dict<number> or dict<any>
 
 
 popup_hide({id})						*popup_hide()*
-		If {id} is a displayed popup, hide it now. If the popup has a
+		If {id} is a displayed popup, hide it now.  If the popup has a
 		filter it will not be invoked for so long as the popup is
 		hidden.
 		If window {id} does not exist nothing happens.  If window {id}
@@ -440,10 +474,14 @@ popup_hide({id})						*popup_hide()*
 
 		Can also be used as a |method|: >
 			GetPopup()->popup_hide()
+<
+		Return type: void
 
 
 popup_list()						 *popup_list()*
 		Return a List with the |window-ID| of all existing popups.
+
+		Return type: list<number> or list<any>
 
 
 popup_locate({row}, {col})				 *popup_locate()*
@@ -452,12 +490,14 @@ popup_locate({row}, {col})				 *popup_locate()*
 		highest zindex is returned.  If there are no popups at this
 		position then zero is returned.
 
+		Return type: |Number|
+
 
 popup_menu({what}, {options})				 *popup_menu()*
 		Show the {what} near the cursor, handle selecting one of the
 		items with cursorkeys, and close it an item is selected with
-		Space or Enter. {what} should have multiple lines to make this
-		useful.  This works like: >
+		Space or Enter.  {what} should have multiple lines to make
+		this useful.  This works like: >
 			call popup_create({what}, #{
 				\ pos: 'center',
 				\ zindex: 200,
@@ -470,7 +510,7 @@ popup_menu({what}, {options})				 *popup_menu()*
 				\ mapping: 0,
 				\ })
 <		The current line is highlighted with a match using
-		"PopupSelected", or "PmenuSel" if that is not defined.
+		|hl-PopupSelected| which is linked to "PmenuSel" by default.
 
 		Use {options} to change the properties.  Should at least set
 		"callback" to a function that handles the selected item.
@@ -484,6 +524,8 @@ popup_menu({what}, {options})				 *popup_menu()*
 
 <		Can also be used as a |method|: >
 			GetChoices()->popup_menu({})
+<
+		Return type: |Number|
 
 
 popup_move({id}, {options})					*popup_move()*
@@ -503,6 +545,8 @@ popup_move({id}, {options})					*popup_move()*
 
 		Can also be used as a |method|: >
 			GetPopup()->popup_move(options)
+<
+		Return type: void
 
 
 popup_notification({what}, {options})			 *popup_notification()*
@@ -521,7 +565,7 @@ popup_notification({what}, {options})			 *popup_notification()*
 				\ close: 'click',
 				\ padding: [0,1,0,1],
 				\ })
-<		The PopupNotification highlight group is used instead of
+<		The |hl-PopupNotification| highlight group is used instead of
 		WarningMsg if it is defined.
 
 		Without the |+timers| feature the popup will not disappear
@@ -533,6 +577,20 @@ popup_notification({what}, {options})			 *popup_notification()*
 
 		Can also be used as a |method|: >
 			GetText()->popup_notification({})
+<
+		Return type: |Number|
+
+
+popup_setbuf({id}, {buf})				*popup_setbuf()*
+		Set buffer {buf} to be displayed in popup win {id}.  For the
+		use of {buf}, see |bufname()| function.
+		May change window size or position to adjust for the size
+		of the buffer text.
+
+		Can also be used as a |method|: >
+			GetPopup()->popup_setbuf(bufnr('foobar'))
+<
+		Return type: |vim9-boolean|
 
 
 popup_setoptions({id}, {options})			*popup_setoptions()*
@@ -569,24 +627,36 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 
 		Can also be used as a |method|: >
 			GetPopup()->popup_setoptions(options)
+<
+		Return type: void
 
 
 popup_settext({id}, {text})				*popup_settext()*
-		Set the text of the buffer in popup win {id}. {text} is the
-		same as supplied to |popup_create()|, except that a buffer
-		number is not allowed.
+		Set the text of the buffer in popup win {id}.  {text} is
+		a string or a list of strings to be displayed in the popup.
 		Does not change the window size or position, other than caused
 		by the different text.
 
 		Can also be used as a |method|: >
 			GetPopup()->popup_settext('hello')
+<
+		Return type: void
 
 
 popup_show({id})						*popup_show()*
-		If {id} is a hidden popup, show it now.
-		For {id} see `popup_hide()`.
-		If {id} is the info popup it will be positioned next to the
-		current popup menu item.
+		Show a hidden popup window identified by {id}.
+		Use {id} as returned by |popup_create()|.
+
+		If the popup is currently hidden, it will be made visible.
+		See |popup_hide()| to hide a popup.
+
+		If {id} refers to an info popup, it will be positioned next to
+		the currently selected item in the popup menu.
+
+		Returns -1 if a popup window with {id} does not exist.
+		Returns 0 on success.
+
+		Return type: |Number|
 
 
 ==============================================================================
@@ -645,10 +715,18 @@ The second argument of |popup_create()| is a dictionary with options:
 			omitted or invalid the current window is used.  Used
 			when "textprop" is present.
 	textpropid	Used to identify the text property when "textprop" is
-			present. Use zero to reset.
+			present.  Use zero to reset.
+	clipwindow	Only used when "textprop" is set.  When TRUE the popup
+			is kept within the window containing the text
+			property: if the text property scrolls past that
+			window's top, bottom, left or right edge, the popup
+			is clipped at that edge instead of being drawn
+			outside it.  Once the text property has scrolled out
+			of the window the popup is hidden.
+			Default FALSE.
+			See |popup-clipwindow|.
 	fixed		When FALSE (the default), and:
 			 - "pos" is "botleft" or "topleft", and
-			 - "wrap" is off, and
 			 - the popup would be truncated at the right edge of
 			   the screen, then
 			the popup is moved to the left so as to fit the
@@ -686,10 +764,14 @@ The second argument of |popup_create()| is a dictionary with options:
 			border one line of padding is added to put the title
 			on.  You might want to add one or more spaces at the
 			start and end as padding.
+			The title uses |hl-PopupTitle| by default; if
+			"borderhighlight" is set the top border highlight is
+			used instead, and if "highlight"/'wincolor' is set
+			that is used.
 	wrap		TRUE to make the lines wrap (default TRUE).
 	drag		TRUE to allow the popup to be dragged with the mouse
 			by grabbing at the border.  Has no effect if the
-			popup does not have a border. As soon as dragging
+			popup does not have a border.  As soon as dragging
 			starts and "pos" is "center" it is changed to
 			"topleft".
 	dragall		TRUE to allow the popup to be dragged from every
@@ -708,6 +790,27 @@ The second argument of |popup_create()| is a dictionary with options:
 			the popup window.
 	highlight	Highlight group name to use for the text, stored in
 			the 'wincolor' option.
+	highlights	Highlight group overrides, stored in the
+			'winhighlight' option (same format).
+	opacity		Opacity of the popup, a value between 0 and 100:
+			0 is fully transparent (background text fully visible)
+			100 is fully opaque (default, no transparency)
+			Values in between blend the popup background with the
+			underlying text, making it partially transparent.
+			Requires 'termguicolors' to be set.
+			Also see |popup-opacity|.
+	image		Dictionary describing a raw RGB or RGBA pixel buffer
+			to render inside the popup.  When set the popup
+			auto-sizes its cell box from the image's pixel
+			dimensions, so "minwidth" / "minheight" / "maxwidth" /
+			"maxheight" do not need to be set by hand.  Keys:
+			    data    |Blob| of bytes; length must equal
+				    width*height*3 (RGB) or width*height*4
+				    (RGBA).
+			    width   image width in pixels.
+			    height  image height in pixels.
+			Use an empty dictionary to remove a previously set
+			image.  See |popup-image|.
 	padding		List with numbers, defining the padding
 			above/right/below/left of the popup (similar to CSS).
 			An empty list uses a padding of 1 all around.  The
@@ -725,6 +828,8 @@ The second argument of |popup_create()| is a dictionary with options:
 			the highlight for the top/right/bottom/left border.
 			Example: ['TopColor', 'RightColor', 'BottomColor,
 			'LeftColor']
+			When not given and "highlight"/'wincolor' is also not
+			set, |hl-PopupBorder| is used.
 	borderchars	List with characters, defining the character to use
 			for the top/right/bottom/left border.  Optionally
 			followed by the character to use for the
@@ -739,10 +844,10 @@ The second argument of |popup_create()| is a dictionary with options:
 	scrollbar	1 or true: show a scrollbar when the text doesn't fit.
 			zero: do not show a scrollbar.  Default is non-zero.
 			Also see |popup-scrollbar|.
-	scrollbarhighlight  Highlight group name for the scrollbar. The
+	scrollbarhighlight  Highlight group name for the scrollbar.  The
 			background color is what matters.  When not given then
 			PmenuSbar is used.
-	thumbhighlight  Highlight group name for the scrollbar thumb. The
+	thumbhighlight  Highlight group name for the scrollbar thumb.  The
 			background color is what matters.  When not given then
 			PmenuThumb is used.
 	zindex		Priority for the popup, default 50.  Minimum value is
@@ -767,7 +872,7 @@ The second argument of |popup_create()| is a dictionary with options:
 			line or to another window.
 	mousemoved	Like "moved" but referring to the mouse pointer
 			position
-	cursorline	TRUE:	 Highlight the cursor line. Also scrolls the
+	cursorline	TRUE:	 Highlight the cursor line.  Also scrolls the
 				 text to show this line (only works properly
 				 when 'wrap' is off).
 			zero:	 Do not highlight the cursor line.
@@ -874,6 +979,31 @@ If the window for which the popup was defined is closed, the popup is closed.
 
 If the popup cannot fit in the desired position, it may show at a nearby
 position.
+
+
+CLIP TEXTPROP POPUP TO HOST WINDOW			*popup-clipwindow*
+
+When the popup is anchored to a text property in a split window, the popup is
+by default drawn relative to the whole screen and may extend past the edges of
+the window that contains the text property (the "host window").  Setting
+"clipwindow" to TRUE keeps the popup within window's content area:
+parts of the popup that fall outside the window are clipped, and the popup is
+hidden once the text property has scrolled entirely past one of the edges.
+
+Example: a tall popup anchored above the cursor that should never spill into
+the window below the split: >
+	call popup_create(body, #{
+		\ textprop: 'marker',
+		\ textpropid: id,
+		\ pos: 'topleft',
+		\ line: -1, col: 0,
+		\ posinvert: v:false,
+		\ clipwindow: v:true,
+		\ })
+<
+With "posinvert" left at its default (TRUE) the popup may be flipped to the
+opposite side of the text property when there is no room; set it to FALSE to
+keep the requested side and rely on "clipwindow" to clip the overflow.
 
 Some hints:
 - To avoid collision with other plugins the text property type name has to be
@@ -982,6 +1112,43 @@ A click in the lower half will scroll the text up one line.  However, this is
 limited so that the popup does not get smaller.
 
 
+
+POPUP OPACITY						*popup-opacity*
+
+A popup window can be made semi-transparent by setting the "opacity" option.
+The opacity value ranges from 0 to 100:
+    0		Fully transparent - the popup background is invisible and the
+		text behind the popup is fully visible.
+    100		Fully opaque (default) - the popup is not transparent at all.
+    1-99	Partially transparent - the popup background is blended with
+		the underlying text, making both partially visible.
+
+The transparency effect requires using the GUI, having 'termguicolors'
+enabled, or running in a 256-color terminal.  On terminals with fewer
+than 256 colors the opacity setting has no effect.
+
+When a popup is transparent:
+- The popup's background color is blended with the background text
+- The popup's text (foreground) remains fully visible and unblended
+- Text behind the popup is visible through transparent areas
+- The more transparent the popup (lower opacity), the more clearly the
+  background text can be seen
+
+This can be useful for:
+- Creating overlay windows that don't completely obscure underlying text
+- Showing contextual information without blocking the view
+- Creating visual effects and modern UI designs
+
+Example with 50% opacity: >
+	let winid = popup_create('Semi-transparent text', #{
+	\ line: 5,
+	\ col: 10,
+	\ opacity: 50,
+	\ })
+
+The opacity can be changed dynamically using |popup_setoptions()|: >
+	call popup_setoptions(winid, #{opacity: 80})
+
 POPUP MASK						*popup-mask*
 
 To minimize the text that the popup covers, parts of it can be made
@@ -1000,6 +1167,77 @@ For example, to make the last 10 columns of the last line transparent:
 
 To make the four corners transparent:
 	[[1, 1, 1, 1], [-1, -1, 1, 1], [1, 1, -1, -1], [-1, -1, -1, -1]]
+
+POPUP IMAGE						*popup-image*
+
+A popup window can render an image instead of (or on top of) text by passing
+an "image" dictionary to |popup_create()| or |popup_setoptions()|.  The caller
+supplies an already-decoded raw pixel buffer and Vim emits it through
+whichever backend is available at runtime:
+
+    sixel   DEC sixel DCS sequence on a sixel-capable terminal.
+	    |+image_sixel|.  Detected automatically; the buffer is also
+	    cropped one cell above the screen edge to avoid sixel-induced
+	    terminal scrolling.
+    kitty   kitty graphics protocol APC sequence on terminals that support it
+	    (kitty, ghostty, WezTerm, Konsole, ...).  |+image_kitty|.
+	    Detected by actively querying the terminal.
+    GDI     StretchDIBits onto the GUI canvas on the MS-Windows GUI.
+	    |+image_gdi|.
+    Cairo   composite onto a cairo_image_surface_t on the GTK GUI
+	    (covers GTK 2 and GTK 3).  |+image_cairo|.
+    GDK	    Use GdkTexture, which uploads the image onto the GPU for faster
+	    rendering (only for GTK 4).	|+image_gdk|
+
+Vim itself does NOT link against libpng, libjpeg, libwebp or any image
+decoder.  Format decoding is left to the caller, who can pipe the file through
+any external tool (GraphicsMagick, ImageMagick, ffmpeg, a custom converter,
+...) and pass the resulting bytes via a |Blob|.
+
+The "image" dictionary accepts:
+    data	|Blob| of bytes.  Length must equal width*height*3 for RGB,
+		or width*height*4 for RGBA.  RGBA buffers are alpha-composited
+		over the popup's background.
+    width	image width in pixels.
+    height	image height in pixels.
+
+The popup's cell box is derived from the pixel dimensions and the terminal /
+GUI cell metrics, so the caller does not normally have to set "minwidth" /
+"minheight" / "maxwidth" / "maxheight".
+
+For RGBA buffers that need to blend cleanly into the editor's actual backdrop
+the script can call |getbgcolor()| to obtain the current background colour as
+[r, g, b] and pre-composite anti-aliased edges against it.
+
+Minimal RGB example - a 4x4 red square popped at the cursor: >
+	let pixels = repeat([0xff, 0x00, 0x00], 4 * 4)->list2blob()
+	call popup_create('', #{
+	      \ image: #{ data: pixels, width: 4, height: 4 },
+	      \ line: 'cursor+1', col: 'cursor',
+	      \ })
+
+Real-world example - pipe a PNG through GraphicsMagick and pop the resulting
+raw RGB bytes: >
+	let png = 'cat.png'
+	let dim = split(system('gm identify -format "%w %h" '
+		\ .. shellescape(png)))
+	let [w, h] = [str2nr(dim[0]), str2nr(dim[1])]
+	call system('gm convert ' .. shellescape(png)
+		\ .. ' -depth 8 rgb:/tmp/cat.rgb')
+	let blob = readblob('/tmp/cat.rgb')
+	call popup_create('', #{
+	      \ image: #{ data: blob, width: w, height: h },
+	      \ line: 1, col: 1, border: [], padding: [0, 0, 0, 0],
+	      \ })
+
+The image can be replaced at runtime via |popup_setoptions()|.  When the new
+buffer has the same width and height as the current one the pixels are swapped
+in place, which is fast enough to drive frame-by-frame animation from a
+|timer|.  |popup_getoptions()| returns the same dictionary back; the "data"
+entry is a fresh blob copy independent of the popup's internal buffer.
+
+To remove a previously set image pass an empty dictionary: >
+	call popup_setoptions(winid, #{image: {}})
 
 ==============================================================================
 4. Examples						*popup-examples*

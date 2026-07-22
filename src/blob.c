@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * Allocate an empty blob.
@@ -165,8 +165,8 @@ blob_equal(
     blob_T	*b2)
 {
     int	    i;
-    int	    len1 = blob_len(b1);
-    int	    len2 = blob_len(b2);
+    long    len1 = blob_len(b1);
+    long    len2 = blob_len(b2);
 
     // empty and NULL are considered the same
     if (len1 == 0 && len2 == 0)
@@ -263,30 +263,79 @@ write_blob(FILE *fd, blob_T *blob)
  * Convert a blob to a readable form: "0z00112233.44556677.8899"
  */
     char_u *
-blob2string(blob_T *blob, char_u **tofree, char_u *numbuf)
+blob2string(blob_T *blob, char_u **tofree, char_u *numbuf UNUSED)
 {
-    int		i;
-    garray_T    ga;
+    static const char hex_chars[] = "0123456789ABCDEF";
+    int		blen;
+    size_t	total;
+    char_u	*buf;
+    char_u	*p;
+    char_u	*src;
 
-    if (blob == NULL)
+    if (blob == NULL || (blen = blob_len(blob)) == 0)
     {
 	*tofree = NULL;
 	return (char_u *)"0z";
     }
 
-    // Store bytes in the growarray.
-    ga_init2(&ga, 1, 4000);
-    ga_concat(&ga, (char_u *)"0z");
-    for (i = 0; i < blob_len(blob); i++)
+    // 2 ("0z") + 2 hex per byte + one '.' every 4 bytes + NUL terminator.
+    total = 2 + (size_t)blen * 2 + (size_t)((blen - 1) / 4) + 1;
+    buf = alloc(total);
+    if (buf == NULL)
     {
-	if (i > 0 && (i & 3) == 0)
-	    ga_concat(&ga, (char_u *)".");
-	vim_snprintf((char *)numbuf, NUMBUFLEN, "%02X", blob_get(blob, i));
-	ga_concat(&ga, numbuf);
+	*tofree = NULL;
+	return (char_u *)"0z";
     }
-    ga_append(&ga, NUL);		// append a NUL at the end
-    *tofree = ga.ga_data;
-    return *tofree;
+
+    p = buf;
+    *p++ = '0';
+    *p++ = 'z';
+    src = (char_u *)blob->bv_ga.ga_data;
+    for (int i = 0; i < blen; i++)
+    {
+	unsigned b;
+
+	if (i > 0 && (i & 3) == 0)
+	    *p++ = '.';
+	b = src[i];
+	*p++ = hex_chars[b >> 4];
+	*p++ = hex_chars[b & 0xf];
+    }
+    *p = NUL;
+    *tofree = buf;
+    return buf;
+}
+
+/*
+ * "items(blob)" function
+ * Converts a Blob into a List of [index, byte] pairs.
+ * Caller must have already checked that argvars[0] is a Blob.
+ * A null blob behaves like an empty blob.
+ */
+    void
+blob2items(typval_T *argvars, typval_T *rettv)
+{
+    blob_T	*blob = argvars[0].vval.v_blob;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    for (int i = 0; i < blob_len(blob); i++)
+    {
+	list_T	*l2 = list_alloc();
+	if (l2 == NULL)
+	    return;
+
+	if (list_append_list(rettv->vval.v_list, l2) == FAIL)
+	{
+	    vim_free(l2);
+	    return;
+	}
+
+	if (list_append_number(l2, i) == FAIL
+		|| list_append_number(l2, blob_get(blob, i)) == FAIL)
+	    return;
+    }
 }
 
 /*
@@ -786,14 +835,14 @@ blob_reduce(
     void
 blob_reverse(blob_T *b, typval_T *rettv)
 {
-    int	i, len = blob_len(b);
+    long    i, len = blob_len(b);
 
     for (i = 0; i < len / 2; i++)
     {
-	int tmp = blob_get(b, i);
+	int tmp = blob_get(b, (int)i);
 
-	blob_set(b, i, blob_get(b, len - i - 1));
-	blob_set(b, len - i - 1, tmp);
+	blob_set(b, (int)i, blob_get(b, (int)(len - i - 1)));
+	blob_set(b, (int)(len - i - 1), tmp);
     }
     rettv_blob_set(rettv, b);
 }
@@ -806,7 +855,7 @@ f_blob2list(typval_T *argvars, typval_T *rettv)
 {
     blob_T	*blob;
     list_T	*l;
-    int		i;
+    long	i;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
@@ -816,8 +865,8 @@ f_blob2list(typval_T *argvars, typval_T *rettv)
 
     blob = argvars->vval.v_blob;
     l = rettv->vval.v_list;
-    for (i = 0; i < blob_len(blob); i++)
-	list_append_number(l, blob_get(blob, i));
+    for (i = 0; i < (long)blob_len(blob); i++)
+	list_append_number(l, blob_get(blob, (int)i));
 }
 
 /*

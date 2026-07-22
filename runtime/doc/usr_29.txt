@@ -1,6 +1,8 @@
-*usr_29.txt*	For Vim version 9.1.  Last change: 2022 Mar 13
+*usr_29.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
 
-		     VIM USER MANUAL - by Bram Moolenaar
+
+		     VIM USER MANUAL	by Bram Moolenaar
+
 
 			    Moving through programs
 
@@ -34,8 +36,8 @@ following command: >
 
 "ctags" is a separate program.  Most Unix systems already have it installed.
 If you do not have it yet, you can find Universal/Exuberant ctags at:
-	http://ctags.io ~
-	http://ctags.sf.net ~
+	http://ctags.io
+	http://ctags.sf.net
 
 Universal ctags is preferred, Exuberant ctags is no longer being developed.
 

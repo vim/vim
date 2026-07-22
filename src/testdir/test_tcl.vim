@@ -1,6 +1,5 @@
 " Tests for the Tcl interface.
 
-source check.vim
 CheckFeature tcl
 
 " Helper function as there is no builtin tcleval() function similar

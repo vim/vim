@@ -1,9 +1,11 @@
 :MatchDebug	matchit.txt	/*:MatchDebug*
-MatchError	matchit.txt	/*MatchError*
+:MatchDisable	matchit.txt	/*:MatchDisable*
+:MatchEnable	matchit.txt	/*:MatchEnable*
 [%	matchit.txt	/*[%*
 ]%	matchit.txt	/*]%*
 b:match_col	matchit.txt	/*b:match_col*
 b:match_debug	matchit.txt	/*b:match_debug*
+b:match_function	matchit.txt	/*b:match_function*
 b:match_ignorecase	matchit.txt	/*b:match_ignorecase*
 b:match_ini	matchit.txt	/*b:match_ini*
 b:match_iniBR	matchit.txt	/*b:match_iniBR*
@@ -18,7 +20,6 @@ b:match_words	matchit.txt	/*b:match_words*
 g%	matchit.txt	/*g%*
 matchit	matchit.txt	/*matchit*
 matchit-%	matchit.txt	/*matchit-%*
-matchit-\1	matchit.txt	/*matchit-\\1*
 matchit-activate	matchit.txt	/*matchit-activate*
 matchit-backref	matchit.txt	/*matchit-backref*
 matchit-bugs	matchit.txt	/*matchit-bugs*
@@ -26,8 +27,7 @@ matchit-choose	matchit.txt	/*matchit-choose*
 matchit-configure	matchit.txt	/*matchit-configure*
 matchit-debug	matchit.txt	/*matchit-debug*
 matchit-details	matchit.txt	/*matchit-details*
-matchit-highlight	matchit.txt	/*matchit-highlight*
-matchit-hl	matchit.txt	/*matchit-hl*
+matchit-disable	matchit.txt	/*matchit-disable*
 matchit-intro	matchit.txt	/*matchit-intro*
 matchit-languages	matchit.txt	/*matchit-languages*
 matchit-modes	matchit.txt	/*matchit-modes*

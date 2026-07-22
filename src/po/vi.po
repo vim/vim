@@ -4,11 +4,11 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Vim 6.3 \n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-02-25 22:51+0300\n"
-"PO-Revision-Date: 2005-02-30 21:37+0400\n"
-"Last-Translator: Phan Vinh Thinh <teppi@vnlinux.org>\n"
+"POT-Creation-Date: 2024-12-03 22:06+0100\n"
+"PO-Revision-Date: 2024-12-03 22:07+0100\n"
+"Last-Translator: Phạm Bình An <111893501+brianhuster@users.noreply.github.com>\n"
 "Language-Team: Phan Vinh Thinh <teppi@vnlinux.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -53,7 +53,6 @@ msgstr "%d bộ đệm được làm sạch"
 msgid "E84: No modified buffer found"
 msgstr "E84: Không tìm thấy bộ đệm có thay đổi"
 
-#. back where we started, didn't find anything.
 msgid "E85: There is no listed buffer"
 msgstr "E85: Không có bộ đệm được liệt kê"
 
@@ -128,7 +127,6 @@ msgstr "dòng %ld của %ld --%d%%-- cột "
 msgid "[No file]"
 msgstr "[Không có tập tin]"
 
-#. must be a help buffer
 msgid "help"
 msgstr "trợ giúp"
 
@@ -195,8 +193,7 @@ msgid "E100: No other buffer in diff mode"
 msgstr "E100: Không còn bộ đệm trong chế độ khác biệt (diff) nào nữa"
 
 msgid "E101: More than two buffers in diff mode, don't know which one to use"
-msgstr ""
-"E101: Có nhiều hơn hai bộ đệm trong chế độ khác biệt (diff), không biết chọn"
+msgstr "E101: Có nhiều hơn hai bộ đệm trong chế độ khác biệt (diff), không biết nên chọn cái nào"
 
 #, c-format
 msgid "E102: Can't find buffer \"%s\""
@@ -218,12 +215,9 @@ msgstr "E105: Câu lệnh :loadkeymap được sử dụng ngoài tập tin scri
 msgid " Keyword completion (^N^P)"
 msgstr " Tự động kết thúc cho từ khóa (^N^P)"
 
-#. ctrl_x_mode == 0, ^P/^N compl.
 msgid " ^X mode (^E^Y^L^]^F^I^K^D^V^N^P)"
 msgstr " Chế độ ^X (^E^Y^L^]^F^I^K^D^V^N^P)"
 
-#. Scroll has its own msgs, in its place there is the msg for local
-#. * ctrl_x_mode = 0 (eg continue_status & CONT_LOCAL)  -- Acevedo
 msgid " Keyword Local completion (^N^P)"
 msgstr " Tự động kết thúc nội bộ cho từ khóa (^N^P)"
 
@@ -280,10 +274,6 @@ msgstr "Tìm kiếm trong số thẻ đánh dấu."
 msgid " Adding"
 msgstr " Thêm"
 
-#. showmode might reset the internal line pointers, so it must
-#. * be called before line = ml_get(), or when this address is no
-#. * longer needed.  -- Acevedo.
-#.
 msgid "-- Searching..."
 msgstr "-- Tìm kiếm..."
 
@@ -304,8 +294,6 @@ msgstr "Tương ứng %d của %d"
 msgid "match %d"
 msgstr "Tương ứng %d"
 
-#. Skip further arguments but do continue to
-#. * search for a trailing command.
 #, c-format
 msgid "E106: Unknown variable: \"%s\""
 msgstr "E106: Biến không biết: \"%s\""
@@ -363,11 +351,6 @@ msgstr "E119: Không đủ tham số cho hàm: %s"
 msgid "E120: Using <SID> not in a script context: %s"
 msgstr "E120: Sử dụng <SID> ngoài script: %s"
 
-#.
-#. * Yes this is ugly, I don't particularly like it either.  But doing it
-#. * this way has the compelling advantage that translations need not to
-#. * be touched at all.  See below what 'ok' and 'ync' are used for.
-#.
 msgid "&Ok"
 msgstr "&Ok"
 
@@ -453,7 +436,6 @@ msgstr "E131: Không thể xóa hàm số %s: Hàm đang được sử dụng"
 msgid "E132: Function call depth is higher than 'maxfuncdepth'"
 msgstr "E132: Độ sâu của lời gọi hàm số lớn hơn giá trị 'maxfuncdepth'"
 
-#. always scroll up, don't overwrite
 #, c-format
 msgid "calling %s"
 msgstr "lời gọi %s"
@@ -470,7 +452,6 @@ msgstr "%s trả lại #%ld"
 msgid "%s returning \"%s\""
 msgstr "%s trả lại \"%s\""
 
-#. always scroll up, don't overwrite
 #, c-format
 msgid "continuing in %s"
 msgstr "tiếp tục trong %s"
@@ -539,7 +520,6 @@ msgstr "E164: Đây là tập tin đầu tiên"
 msgid "E165: Cannot go beyond last file"
 msgstr "E165: Đây là tập tin cuối cùng"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E666: Compiler not supported: %s"
 msgstr "E666: trình biên dịch không được hỗ trợ: %s"
@@ -625,12 +605,10 @@ msgstr "E624: Không thể mở tập tin \"%s\""
 msgid "E457: Can't read PostScript resource file \"%s\""
 msgstr "E457: Không thể đọc tập tin tài nguyên PostScript \"%s\""
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E618: File \"%s\" is not a PostScript resource file"
 msgstr "E618: \"%s\" không phải là tập tin tài nguyên PostScript"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E619: File \"%s\" is not a supported PostScript resource file"
 msgstr "E619: \"%s\" không phải là tập tin tài nguyên PostScript được hỗ trợ"
@@ -738,7 +716,6 @@ msgstr "E138: Không thể ghi tập tin viminfo %s!"
 msgid "Writing viminfo file \"%s\""
 msgstr "Ghi tập tin viminfo \"%s\""
 
-#. Write the info:
 #, c-format
 msgid "# This viminfo file was generated by Vim %s.\n"
 msgstr "# Tập tin viminfo này được tự động tạo bởi Vim %s.\n"
@@ -756,8 +733,6 @@ msgstr "# Giá trị của tùy chọn 'encoding' vào thời điểm ghi tập 
 msgid "Illegal starting char"
 msgstr "Ký tự đầu tiên không cho phép"
 
-#. Overwriting a file that is loaded in another buffer is not a
-#. * good idea.
 msgid "E139: File is loaded in another buffer"
 msgstr "E139: Tập tin được nạp trong bộ đệm khác"
 
@@ -921,7 +896,6 @@ msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
 msgstr ""
 "Chuyển vào chế độ Ex. Để chuyển về chế độ Thông thường hãy gõ \"visual\""
 
-#. must be at EOF
 msgid "E501: At end-of-file"
 msgstr "E501: Ở cuối tập tin"
 
@@ -1082,7 +1056,6 @@ msgstr "E189: \"%s\" đã có (thêm !, để ghi đè)"
 msgid "E190: Cannot open \"%s\" for writing"
 msgstr "E190: Không mở được \"%s\" để ghi nhớ"
 
-#. set mark
 msgid "E191: Argument must be a letter or forward/backward quote"
 msgstr "E191: Tham số phải là một chữ cái hoặc dấu ngoặc thẳng/ngược"
 
@@ -1126,7 +1099,6 @@ msgid "E608: Cannot :throw exceptions with 'Vim' prefix"
 msgstr ""
 "E608: Không thể thực hiện lệnh :throw cho những ngoại lệ với tiền tố 'Vim'"
 
-#. always scroll up, don't overwrite
 #, c-format
 msgid "Exception thrown: %s"
 msgstr "Trường hợp ngoại lệ: %s"
@@ -1143,7 +1115,6 @@ msgstr "Trường hợp ngoại lệ bị bỏ qua: %s"
 msgid "%s, line %ld"
 msgstr "%s, dòng %ld"
 
-#. always scroll up, don't overwrite
 #, c-format
 msgid "Exception caught: %s"
 msgstr "Xử lý trường hợp ngoại lệ: %s"
@@ -1169,7 +1140,6 @@ msgstr "Lỗi và sự gián đoạn"
 msgid "Error"
 msgstr "Lỗi"
 
-#. if (pending & CSTP_INTERRUPT)
 msgid "Interrupt"
 msgstr "Sự gián đoạn"
 
@@ -1208,15 +1178,12 @@ msgstr "E601: :try xếp lồng vào nhau quá sâu"
 msgid "E603: :catch without :try"
 msgstr "E603: :catch không có :try"
 
-#. Give up for a ":catch" after ":finally" and ignore it.
-#. * Just parse.
 msgid "E604: :catch after :finally"
 msgstr "E604: :catch đứng sau :finally"
 
 msgid "E606: :finally without :try"
 msgstr "E606: :finally không có :try"
 
-#. Give up for a multiple ":finally" and ignore it.
 # TODO: Capitalise first word of message?
 msgid "E607: Multiple :finally"
 msgstr "E607: phát hiện vài :finally"
@@ -1290,7 +1257,6 @@ msgstr "Vim: Đọc từ đầu vào tiêu chuẩn stdin...\n"
 msgid "Reading from stdin..."
 msgstr "Đọc từ đầu vào tiêu chuẩn stdin..."
 
-#. Re-opening the original file failed!
 msgid "E202: Conversion made file unreadable!"
 msgstr "E202: Sự biến đổi làm cho tập tin trở thành không thể đọc!"
 
@@ -1489,9 +1455,6 @@ msgstr "[noeol]"
 msgid "[Incomplete last line]"
 msgstr "[Dòng cuối cùng không đầy đủ]"
 
-#. don't overwrite messages here
-#. must give this prompt
-#. don't use emsg() here, don't want to flush the buffers
 msgid "WARNING: The file has been changed since reading it!!!"
 msgstr "CẢNH BÁO: Tập tin đã thay đổi so với thời điểm đọc!!!"
 
@@ -1565,7 +1528,6 @@ msgstr "E321: Không thể nạp lại \"%s\""
 msgid "--Deleted--"
 msgstr "--Bị xóa--"
 
-#. the group doesn't exist
 #, c-format
 msgid "E367: No such group: \"%s\""
 msgstr "E367: Nhóm \"%s\" không tồn tại"
@@ -1582,7 +1544,6 @@ msgstr "E216: Sự kiện không có thật: %s"
 msgid "E216: No such group or event: %s"
 msgstr "E216: Nhóm hoặc sự kiện không có thật: %s"
 
-#. Highlight title
 msgid ""
 "\n"
 "--- Autocommands ---"
@@ -1608,7 +1569,6 @@ msgstr "%s câu lệnh tự động cho \"%s\""
 msgid "Executing %s"
 msgstr "Thực hiện %s"
 
-#. always scroll up, don't overwrite
 #, c-format
 msgid "autocommand %s"
 msgstr "câu lệnh tự động %s"
@@ -1637,22 +1597,18 @@ msgstr "E222: Thêm vào bộ đệm đang đọc"
 msgid "E223: Recursive mapping"
 msgstr "E223: ánh xạ đệ quy"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E224: Global abbreviation already exists for %s"
 msgstr "E224: đã có sự viết tắt toàn cầu cho %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E225: Global mapping already exists for %s"
 msgstr "E225: đã có ánh xạ toàn cầu cho %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E226: Abbreviation already exists for %s"
 msgstr "E226: đã có sự viết tắt cho %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E227: Mapping already exists for %s"
 msgstr "E227: đã có ánh xạ cho %s"
@@ -1745,18 +1701,15 @@ msgstr "Tìm kiếm gì:"
 msgid "Replace with:"
 msgstr "Thay thế bởi:"
 
-#. whole word only button
 msgid "Match whole word only"
 msgstr "Chỉ tìm tương ứng hoàn toàn với từ"
 
-#. match case button
 msgid "Match case"
 msgstr "Có tính kiểu chữ"
 
 msgid "Direction"
 msgstr "Hướng"
 
-#. 'Up' and 'Down' buttons
 msgid "Up"
 msgstr "Lên"
 
@@ -1916,7 +1869,6 @@ msgstr ""
 msgid "Added cscope database %s"
 msgstr "Đã thêm cơ sở dữ liệu cscope %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E262: Error reading cscope connection %ld"
 msgstr "E262: lỗi lấy thông tin từ kết nối cscope %ld"
@@ -1947,12 +1899,10 @@ msgstr "cs_create_connection: thực hiện fdopen cho fr_fp không thành công
 msgid "E567: No cscope connections"
 msgstr "E567: không có kết nối với cscope"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E259: No matches found for cscope query %s of %s"
 msgstr "E259: không tìm thấy tương ứng với yêu cầu cscope %s cho %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E469: Invalid cscopequickfix flag %c for %c"
 msgstr "E469: cờ cscopequickfix %c cho %c không chính xác"
@@ -1964,7 +1914,6 @@ msgstr "các lệnh cscope:\n"
 msgid "%-5s: %-30s (Usage: %s)"
 msgstr "%-5s: %-30s (Sử dụng: %s)"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E625: Cannot open cscope database: %s"
 msgstr "E625: không mở được cơ sở dữ liệu cscope: %s"
@@ -1980,7 +1929,6 @@ msgstr "E568: cơ sở dữ liệu này của cscope đã được gắn vào t�
 msgid "E569: maximum number of cscope connections reached"
 msgstr "E569: đã đạt tới số kết nối lớn nhất cho phép với cscope"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E261: Cscope connection %s not found"
 msgstr "E261: kết nối với cscope %s không được tìm thấy"
@@ -1989,7 +1937,6 @@ msgstr "E261: kết nối với cscope %s không được tìm thấy"
 msgid "cscope connection %s closed"
 msgstr "kết nối %s với cscope đã bị đóng"
 
-#. should not reach here
 # TODO: Capitalise first word of message?
 msgid "E570: Fatal error in cs_manage_matches"
 msgstr "E570: lỗi nặng trong cs_manage_matches"
@@ -2111,7 +2058,6 @@ msgid ""
 msgstr ""
 "E266: Rất tiếc câu lệnh này không làm việc, vì thư viện Ruby chưa đượcnạp."
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E273: Unknown longjmp status %d"
 msgstr "E273: không rõ trạng thái của longjmp %d"
@@ -2186,7 +2132,6 @@ msgstr "tạm thời chưa được thực thi"
 msgid "unknown option"
 msgstr "tùy chọn không rõ"
 
-#. ???
 msgid "cannot set line(s)"
 msgstr "không thể đặt (các) dòng"
 
@@ -2219,7 +2164,6 @@ msgid ""
 "cannot register callback command: buffer/window is already being deleted"
 msgstr "không đăng ký được câu lệnh gọi ngược: bộ đệm hoặc cửa sổ đang bị xóa"
 
-#. This should never happen.  Famous last word?
 msgid ""
 "E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim."
 "org"
@@ -2300,7 +2244,6 @@ msgstr "Vim: Cảnh báo: Đầu ra không hướng tới một terminal\n"
 msgid "Vim: Warning: Input is not from a terminal\n"
 msgstr "Vim: Cảnh báo: Đầu vào không phải đến từ một terminal\n"
 
-#. just in case..
 msgid "pre-vimrc command line"
 msgstr "dòng lệnh chạy trước khi thực hiện vimrc"
 
@@ -2648,11 +2591,9 @@ msgstr "-P <tiêu đề của mẹ>\tMở Vim bên trong ứng dụng mẹ"
 msgid "No display"
 msgstr "Không có màn hình"
 
-#. Failed to send, abort.
 msgid ": Send failed.\n"
 msgstr ": Gửi không thành công.\n"
 
-#. Let vim start normally.
 msgid ": Send failed. Trying to execute locally\n"
 msgstr ": Gửi không thành công. Thử thực hiện nội bộ\n"
 
@@ -2673,7 +2614,6 @@ msgstr "Không có dấu hiệu nào được đặt."
 msgid "E283: No marks matching \"%s\""
 msgstr "E283: Không có dấu hiệu tương ứng với \"%s\""
 
-#. Highlight title
 msgid ""
 "\n"
 "mark line  col file/text"
@@ -2681,7 +2621,6 @@ msgstr ""
 "\n"
 "nhãn dòng  cột tập tin/văn bản"
 
-#. Highlight title
 msgid ""
 "\n"
 " jump line  col file/text"
@@ -2689,7 +2628,6 @@ msgstr ""
 "\n"
 " bước_nhảy dòng  cột tập tin/văn bản"
 
-#. Highlight title
 msgid ""
 "\n"
 "change line  col text"
@@ -2704,7 +2642,6 @@ msgstr ""
 "\n"
 "# Nhãn của tập tin:\n"
 
-#. Write the jumplist with -'
 msgid ""
 "\n"
 "# Jumplist (newest first):\n"
@@ -2778,7 +2715,6 @@ msgstr "E298: Chưa lấy khối số 12?"
 msgid "E298: Didn't get block nr 2?"
 msgstr "E298: Chưa lấy khối số 2?"
 
-#. could not (re)open the swap file, what can we do????
 msgid "E301: Oops, lost the swap file!!!"
 msgstr "E301: Ối, mất tập tin trao đổi (swap)!!!"
 
@@ -2912,7 +2848,6 @@ msgstr ""
 "Sau đó hãy xóa tập tin .swp.\n"
 "\n"
 
-#. use msg() to start the scrolling properly
 msgid "Swap files found:"
 msgstr "Tìm thấy tập tin trao đổi (swap):"
 
@@ -3015,12 +2950,10 @@ msgstr "Đã cập nhật tập tin trao đổi (swap)"
 msgid "E314: Preserve failed"
 msgstr "E314: Cập nhật không thành công"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: giá trị lnum không đúng: %ld"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E316: ml_get: Cannot find line %ld"
 msgstr "E316: ml_get: không tìm được dòng %ld"
@@ -3053,12 +2986,10 @@ msgstr "E317: giá trị của pointer khối không đúng"
 msgid "pe_line_count is zero"
 msgstr "giá trị pe_line_count bằng không"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E322: Line number out of range: %ld past the end"
 msgstr "E322: số thứ tự dòng vượt quá giới hạn : %ld"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E323: Line count wrong in block %ld"
 msgstr "E323: giá trị đếm dòng không đúng trong khối %ld"
@@ -3086,8 +3017,6 @@ msgstr "Khi mở tập tin: \""
 msgid "      NEWER than swap file!\n"
 msgstr "                    MỚI hơn so với tập tin trao đổi (swap)\n"
 
-#. Some of these messages are long to allow translation to
-#. * other languages.
 msgid ""
 "\n"
 "(1) Another program may be editing the same file.\n"
@@ -3194,8 +3123,6 @@ msgstr ""
 msgid "E332: Separator cannot be part of a menu path"
 msgstr "E332: Cái phân chia không thể là một phần của đường dẫn tới trình đơn"
 
-#. Now we have found the matching menu, and we list the mappings
-#. Highlight title
 msgid ""
 "\n"
 "--- Menus ---"
@@ -3284,7 +3211,6 @@ msgstr "Ghi nhớ tập tin"
 msgid "Open File dialog"
 msgstr "Mở tập tin"
 
-#. TODO: non-GUI file selector here
 msgid "E338: Sorry, no file browser in console mode"
 msgstr ""
 "E338: Xin lỗi nhưng không có trình duyệt tập tin trong chế độ kênh giao tác "
@@ -3313,7 +3239,6 @@ msgstr " (Bị gián đoạn)"
 msgid "Vim: preserving files...\n"
 msgstr "Vim: ghi nhớ các tập tin...\n"
 
-#. close all memfiles, without deleting
 msgid "Vim: Finished.\n"
 msgstr "Vim: Đã xong.\n"
 
@@ -3410,7 +3335,6 @@ msgstr "E551: Thành phần không cho phép"
 msgid "E552: Digit expected"
 msgstr "E552: Cần chỉ ra một số"
 
-#. Get here when the server can't be found.
 msgid "Cannot connect to Netbeans #2"
 msgstr "Không kết nối được với Netbeans #2"
 
@@ -3483,7 +3407,6 @@ msgstr "Đã thụt đầu 1 dòng"
 msgid "%ld lines indented "
 msgstr "%ld dòng đã thụt đầu"
 
-#. must display the prompt
 msgid "cannot yank; delete anyway"
 msgstr "sao chép không thành công; đã xóa"
 
@@ -3509,7 +3432,6 @@ msgstr "đã sao chép %ld dòng"
 msgid "E353: Nothing in register %s"
 msgstr "E353: Trong sổ đăng ký %s không có gì hết"
 
-#. Highlight title
 msgid ""
 "\n"
 "--- Registers ---"
@@ -3743,7 +3665,6 @@ msgstr "không thay đổi được chế độ kênh giao tác (console)?!\n"
 msgid "mch_get_shellsize: not a console??\n"
 msgstr "mch_get_shellsize: không phải là kênh giao tác (console)??\n"
 
-#. if Vim opened a window: Executing a shell may cause crashes
 msgid "E360: Cannot execute shell with -f option"
 msgstr "E360: Không chạy được shell với tùy chọn -f"
 
@@ -3985,7 +3906,6 @@ msgstr "danh sách lỗi %d của %d; %d lỗi"
 msgid "E382: Cannot write, 'buftype' option is set"
 msgstr "E382: Không ghi nhớ được, giá trị 'buftype' không phải là chuỗi rỗng"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E369: Invalid item in %s%%[]"
 msgstr "E369: phần tử không cho phép trong %s%%[]"
@@ -4023,7 +3943,6 @@ msgstr "E56: operand %s* không thể rỗng"
 msgid "E57: %s+ operand could be empty"
 msgstr "E57: operand %s+ không thể rỗng"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E59: Invalid character after %s@"
 msgstr "E59: ký tự không cho phép sau %s@"
@@ -4158,12 +4077,10 @@ msgstr "tìm kiếm sẽ được tiếp tục từ ĐẦU tài liệu"
 msgid "E383: Invalid search string: %s"
 msgstr "E383: Chuỗi tìm kiếm không đúng: %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E384: Search hit TOP without match for: %s"
 msgstr "E384: tìm kiếm kết thúc ở ĐẦU tập tin; không tìm thấy %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E385: Search hit BOTTOM without match for: %s"
 msgstr "E385: tìm kiếm kết thúc ở CUỐI tập tin; không tìm thấy %s"
@@ -4174,7 +4091,6 @@ msgstr "E386: Mong đợi nhập '?' hoặc '/' sau ';'"
 msgid " (includes previously listed match)"
 msgstr " (gồm cả những tương ứng đã liệt kê trước đây)"
 
-#. cursor at status line
 msgid "--- Included files "
 msgstr "--- Tập tin tính đến "
 
@@ -4337,7 +4253,6 @@ msgstr "E409: Tên nhóm không biết: %s"
 msgid "E410: Invalid :syntax subcommand: %s"
 msgstr "E410: Câu lệnh con :syntax không đúng: %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E411: Highlight group not found: %s"
 msgstr "E411: không tìm thấy nhóm chiếu sáng cú pháp: %s"
@@ -4354,17 +4269,14 @@ msgstr "E413: Quá nhiều tham số: \":highlight link %s\""
 msgid "E414: Group has settings, highlight link ignored"
 msgstr "E414: nhóm có thiết lập riêng, chiếu sáng liên kết bị bỏ qua"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E415: Unexpected equal sign: %s"
 msgstr "E415: dấu bằng không được mong đợi: %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E416: Missing equal sign: %s"
 msgstr "E416: thiếu dấu bằng: %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E417: Missing argument: %s"
 msgstr "E417: thiếu tham số: %s"
@@ -4383,7 +4295,6 @@ msgstr "E420: Không rõ màu nền sau (BG)"
 msgid "E421: Color name or number not recognized: %s"
 msgstr "E421: Tên hoặc số của màu không được nhận ra: %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E422: Terminal code too long: %s"
 msgstr "E422: mã terminal quá dài: %s"
@@ -4398,8 +4309,6 @@ msgstr "E424: Sử dụng quá nhiều thuộc tính chiếu sáng cú pháp"
 msgid "E669: Unprintable character in group name"
 msgstr "E669: Ký tự không thể tin ra trong tên nhóm"
 
-#. This is an error, but since there previously was no check only
-#. * give a warning.
 msgid "W18: Invalid character in group name"
 msgstr "W18: Ký tự không cho phép trong tên nhóm"
 
@@ -4414,7 +4323,6 @@ msgstr "E556: ở đầu đống thẻ ghi"
 msgid "E425: Cannot go before first matching tag"
 msgstr "E425: Không chuyển được tới vị trí ở trước thẻ ghi tương ứng đầu tiên"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E426: Tag not found: %s"
 msgstr "E426: không tìm thấy thẻ ghi: %s"
@@ -4425,10 +4333,6 @@ msgstr "  # pri loại thẻ ghi"
 msgid "file\n"
 msgstr "tập tin\n"
 
-#.
-#. * Ask to select a tag from the list.
-#. * When using ":silent" assume that <CR> was entered.
-#.
 msgid "Enter nr of choice (<CR> to abort): "
 msgstr "Hãy chọn số cần thiết (<CR> để dừng):"
 
@@ -4442,7 +4346,6 @@ msgstr "E428: Không chuyển được tới vị trí ở sau thẻ ghi tương
 msgid "File \"%s\" does not exist"
 msgstr "Tập tin \"%s\" không tồn tại"
 
-#. Give an indication of the number of matching tags
 #, c-format
 msgid "tag %d of %d%s"
 msgstr "thẻ ghi %d của %d%s"
@@ -4457,7 +4360,6 @@ msgstr " Đang sử dụng thẻ ghi với kiểu chữ khác!"
 msgid "E429: File \"%s\" does not exist"
 msgstr "E429: Tập tin \"%s\" không tồn tại"
 
-#. Highlight title
 msgid ""
 "\n"
 "  # TO tag         FROM line  in file/text"
@@ -4485,7 +4387,6 @@ msgstr "Trước byte %ld"
 msgid "E432: Tags file not sorted: %s"
 msgstr "E432: Tập tin thẻ ghi chưa được sắp xếp: %s"
 
-#. never opened any tags file
 msgid "E433: No tags file"
 msgstr "E433: Không có tập tin thẻ ghi"
 
@@ -4518,7 +4419,6 @@ msgstr "E436: Trong termcap không có bản ghi \"%s\""
 msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: cần khả năng của terminal \"cm\""
 
-#. Highlight title
 msgid ""
 "\n"
 "--- Terminal keys ---"
@@ -4532,7 +4432,6 @@ msgstr "đã chạy shell mới\n"
 msgid "Vim: Error reading input, exiting...\n"
 msgstr "Vim: Lỗi đọc dữ liệu nhập, thoát...\n"
 
-#. must display the prompt
 msgid "No undo possible; continue anyway"
 msgstr "Không thể hủy thao tác; tiếp tục thực hiện"
 
@@ -4555,7 +4454,6 @@ msgstr "E439: danh sách hủy thao tác (undo) bị hỏng"
 msgid "E440: Undo line missing"
 msgstr "E440: bị mất dòng hủy thao tác"
 
-#. Only MS VC 4.1 and earlier can do Win32s
 msgid ""
 "\n"
 "MS-Windows 16/32-bit GUI version"
@@ -4910,7 +4808,6 @@ msgstr "&So sánh (diff) qua Vim"
 msgid "Edit with &Vim"
 msgstr "Soạn thảo trong &Vim"
 
-#. Now concatenate
 msgid "Edit with existing Vim - &"
 msgstr "Soạn thảo trong Vim đã chạy - &"
 
@@ -4929,10 +4826,6 @@ msgstr "Đường dẫn quá dài!"
 msgid "--No lines in buffer--"
 msgstr "-- Không có dòng nào trong bộ đệm --"
 
-#.
-#. * The error messages that can be shared are included here.
-#. * Excluded are errors that are only used once and debugging messages.
-#.
 msgid "E470: Command aborted"
 msgstr "E470: Câu lệnh bị dừng"
 
@@ -5092,7 +4985,6 @@ msgstr "E481: Không cho phép sử dụng phạm vi"
 msgid "E36: Not enough room"
 msgstr "E36: Không đủ chỗ trống"
 
-#, c-format
 # TODO: Capitalise first word of message?
 msgid "E247: No registered server named \"%s\""
 msgstr "E247: máy chủ \"%s\" chưa đăng ký"
@@ -5230,3 +5122,9 @@ msgstr "E449: Nhận được một biểu thức không cho phép"
 
 msgid "E463: Region is guarded, cannot modify"
 msgstr "E463: Không thể thay đổi vùng đã được bảo vệ"
+
+msgid "No tutorial with that name found"
+msgstr "Không tìm thấy hướng dẫn (tutorial) có tên đó"
+
+msgid "Only one argument accepted (check spaces)"
+msgstr "Chỉ chấp nhận một tham số (vui lòng kiểm tra dấu cách)"

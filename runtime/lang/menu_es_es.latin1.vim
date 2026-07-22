@@ -1,8 +1,8 @@
 " Menu Translations:	Español
 " Previous translator:	Alejandro López-Valencia <dradul@users.sourceforge.net>
 " Last translator:	Omar Campagne Polaino <ocampagne@gmail.com>
-" Version:		7.2.245
-" Last Change:		2012 May 01
+" Version:		9.1.385
+" Last Change:		2024 May 1
 " Original translations
 
 " Quit when menu translations have already been done.
@@ -75,8 +75,8 @@ menutrans Startup\ &Settings		Opciones\ de\ arranque
 menutrans &Global\ Settings		Opciones\ &globales
 
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Activar/Desactivar\ &resaltado\ de\ sintaxis<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		Activar/Desactivar\ &ignorar\ mayúsculas\ y\ minúsculas<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!		Activar/Desactivar\ &mostrar\ coincidencias<Tab>:set\ sm!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!		Activar/Desactivar\ &ignorar\ mayúsculas\ y\ minúsculas<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!		Activar/Desactivar\ &mostrar\ coincidencias<Tab>:set\ sm!
 
 menutrans &Context\ lines		Líneas\ de\ &contexto
 
@@ -88,7 +88,7 @@ menutrans Block\ and\ Insert		Bloque\ e\ inserción
 menutrans Always			Siempre
 
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!	Activar/Desactivar\ modo\ de\ in&serción<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!	Activar/Desactivar\ compatiblidad\ con\ Vi<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!	Activar/Desactivar\ compatiblidad\ con\ Vi<Tab>:set\ cp!
 
 menutrans Search\ &Path\.\.\.		Ruta\ de\ &búsqueda\.\.\.
 
@@ -170,7 +170,7 @@ menutrans &Previous\ Error<Tab>:cp	Error\ p&revio<Tab>:cp
 menutrans &Older\ List<Tab>:cold	Lista\ de\ &viejos\ a\ nuevos<Tab>:cold
 menutrans N&ewer\ List<Tab>:cnew	Lista\ de\ &nuevos\ a\ viejos<Tab>:cnew
 menutrans Error\ &Window		Ven&tana\ de\ errores
-menutrans &Set\ Compiler		Esco&ger\ el\ compilador\ a\ usar
+menutrans Se&T\ Compiler		Esco&ger\ el\ compilador\ a\ usar
 menutrans &Convert\ to\ HEX<Tab>:%!xxd	Convertir\ a\ formato\ &hexadecimal<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r	&Convertir\ al\ formato\ original<Tab>:%!xxd\ -r
 
@@ -319,5 +319,15 @@ menutrans &Convert\ to\ HTML		&Convertir\ a\ HTML
 " Find Help dialog text
 let g:menutrans_help_dialog = "Introduzca un nombre de comando o palabra para obtener ayuda;\n\nAnteponga i_ para comandos de entrada (e.g.: i_CTRL-X)\nAnteponga c_ para comandos de la línea de comandos (e.g.: c_<Del>)\nAnteponga ` para un nombre de opción (e.g.: `shiftwidth`)"
 
+menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Activar/Desactivar\ numeración\ de\ líneas\ relativa<Tab>:set\ nru!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Activar/Desactivar\ ajuste\ de\ línea<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!		Activar/Desactivar\ envolviendo\ la\ palabra<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!			Activar/Desactivar\ pestaña\ expandiéndose<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Activar/Desactivar\ sangría\ automática<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!		Activar/Desactivar\ Sangría\ estilo\ C<Tab>:set\ cin!
+menutrans &Show\ File\ Types\ in\ menu				Mostrar\ tipos\ de\ archivos\ en\ el\ menú
+menutrans Ma&rker						Marcador
+menutrans I&ndent						Sangrar
+menutrans E&xpression						Expresión
 let &cpo = s:keepcpo
 unlet s:keepcpo

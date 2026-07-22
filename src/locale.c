@@ -91,7 +91,7 @@ gettext_lang(char_u *name)
 }
 #endif
 
-#if defined(FEAT_MULTI_LANG) || defined(PROTO)
+#if defined(FEAT_MULTI_LANG)
 /*
  * Return TRUE when "lang" starts with a valid language name.
  * Rejects NULL, empty string, "C", "C.UTF-8" and others.
@@ -169,7 +169,7 @@ get_mess_env(void)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * Set the "v:lang" variable according to the current locale setting.
@@ -511,7 +511,7 @@ init_locales(void)
     locales = find_locales();
 }
 
-# if defined(EXITFREE) || defined(PROTO)
+# if defined(EXITFREE)
     void
 free_locales(void)
 {

@@ -1,0 +1,38 @@
+#!/bin/bash
+# This script generates auxiliary recipes for 'make test': e.g. in the case of JAVA,
+# - a phony target 'java' depends on all of the testdir/input/java*.java
+# - when the syntax file is changed, timestamps of the JAVA files are updated so that the tests will
+#   be rerun against updated syntax
+# - when a vim setup file for test, e.g. testdir/input/setup/java_module_info.vim, is changed,
+#   timestamp of the corresponding input, testdir/input/java_module_info.java, is updated
+#
+# NOTE: At the moment this script DOES NOT strictly track dependency, like cpp on c, so run
+# `make clean test` before deployment
+
+set -eu +f -o pipefail
+
+cd "$(dirname "$0")"/../..
+for input in testdir/input/*.*; do
+	dirname=$(dirname "$input")
+	basename=$(basename "$input")
+
+	case "$basename" in
+		vim9_*.*) ft=vim;;
+		*_*.*) ft=${basename%%_*};;
+		*.*) ft=${basename%%.*};;
+		*) exit 1
+	esac
+
+	vimsetup=$dirname/setup/${basename%.*}.vim
+	if [ ! -r "$vimsetup" ]; then
+		vimsetup=
+	fi
+
+	cat << EOF
+$input: $ft.vim $vimsetup
+	touch -c \$@
+$basename:: $input
+$ft:: $basename
+
+EOF
+done

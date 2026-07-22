@@ -1,17 +1,50 @@
 " Maintainer:  Drew Vogel <dvogel@sidejump.org>
-" Last Change: 2023 Apr 19
+" Last Change: 2024 Mar 20
 "
 " Replaced rgb.txt as the source of de facto standard color names. This is
 " sourced each time the colorscheme command is run. It is also sourced each
 " time the highlight command fails to recognize a gui color. You can override
 " these colors by introducing a new colors/lists/default.vim file earlier in
 " the runtimepath.
+" Note: the color names should be in lower case, because Vim will lookup the
+" a color by its lower case name.
 
 " make sure line continuation works
 let s:keepcpo = &cpo
 set cpo&vim
 
-call extend(v:colornames, {
+function! s:Cleanup()
+  let &cpo = s:keepcpo
+  unlet s:keepcpo
+endfunction
+
+function! s:AddColors(cnames) abort
+  call extend(v:colornames, a:cnames, 'keep')
+
+  " all keys should be in lower case, convert keys that are not yet
+  let len_after = len(v:colornames)
+  if len_after == len(a:cnames)
+    " after extend(): v:colornames has all the keys of default_cnames
+    " checked: v:colornames also has no extra keys
+    " => keys are the same, and keys(default_cnames) are known to be ok
+    return
+  endif
+
+  for [key, val] in items(filter(copy(v:colornames), { key -> key  =~ '\u'}))
+    call remove(v:colornames, key)
+    if !has_key(v:colornames, tolower(key))
+      call extend(v:colornames, {tolower(key): val}, 'keep')
+    endif
+  endfor
+endfunction
+
+if exists('s:default_cnames')
+  call s:AddColors(s:default_cnames)
+  call s:Cleanup()
+  finish
+endif
+
+let s:default_cnames = {
 			\ 'snow': '#fffafa',
 			\ 'ghost white': '#f8f8ff',
 			\ 'ghostwhite': '#f8f8ff',
@@ -800,9 +833,9 @@ call extend(v:colornames, {
 			\ 'rebeccapurple': '#663399',
 			\ 'silver': '#c0c0c0',
 			\ 'teal': '#008080'
-			\ }, 'keep')
+			\ }
 
-let &cpo = s:keepcpo
-unlet s:keepcpo
+call s:AddColors(s:default_cnames)
+call s:Cleanup()
 
 "vim: sw=4

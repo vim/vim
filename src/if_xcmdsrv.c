@@ -14,7 +14,7 @@
 #include "vim.h"
 #include "version.h"
 
-#if defined(FEAT_CLIENTSERVER) || defined(PROTO)
+#if (defined(FEAT_CLIENTSERVER) && defined(FEAT_X11))
 
 # ifdef FEAT_X11
 #  include <X11/Intrinsic.h>
@@ -157,7 +157,7 @@ static PendingCommand *pendingCommands = NULL;
  * this module:
  */
 
-#define MAX_PROP_WORDS 100000
+# define MAX_PROP_WORDS 100000
 
 struct ServerReply
 {
@@ -255,7 +255,7 @@ DoRegisterName(Display *dpy, char_u *name)
 {
     Window	w;
     XErrorHandler old_handler;
-#define MAX_NAME_LENGTH 100
+# define MAX_NAME_LENGTH 100
     char_u	propInfo[MAX_NAME_LENGTH + 20];
 
     if (commProperty == None)
@@ -311,17 +311,20 @@ DoRegisterName(Display *dpy, char_u *name)
 
     if (!got_x_error)
     {
-#ifdef FEAT_EVAL
-	set_vim_var_string(VV_SEND_SERVER, name, -1);
-#endif
-	serverName = vim_strsave(name);
+	size_t	namelen;
+
+	namelen = STRLEN(name);
+# ifdef FEAT_EVAL
+	set_vim_var_string(VV_SEND_SERVER, name, (int)namelen);
+# endif
+	serverName = vim_strnsave(name, namelen);
 	need_maketitle = TRUE;
 	return 0;
     }
     return -2;
 }
 
-#if defined(FEAT_GUI) || defined(PROTO)
+# if defined(FEAT_GUI)
 /*
  * Clean out new ID from registry and set it as comm win.
  * Change any registered window ID.
@@ -356,7 +359,7 @@ serverChangeRegisteredWindow(
     }
     XUngrabServer(dpy);
 }
-#endif
+# endif
 
 /*
  * Send to an instance of Vim via the X display.
@@ -392,9 +395,9 @@ serverSendToVim(
     if (commProperty == None && dpy != NULL && SendInit(dpy) < 0)
 	return -1;
 
-#if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
     ch_log(NULL, "serverSendToVim(%s, %s)", name, cmd);
-#endif
+# endif
 
     // Execute locally if no display or target is ourselves
     if (dpy == NULL || (serverName != NULL && STRICMP(name, serverName) == 0))
@@ -497,10 +500,10 @@ serverSendToVim(
 	    }
     }
 
-#if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
     ch_log(NULL, "serverSendToVim() result: %s",
 	    pending.result == NULL ? "NULL" : (char *)pending.result);
-#endif
+# endif
     if (result != NULL)
 	*result = pending.result;
     else
@@ -561,19 +564,19 @@ ServerWait(
     time_t	    now;
     XEvent	    event;
 
-#define UI_MSEC_DELAY 53
-#define SEND_MSEC_POLL 500
-#ifdef HAVE_SELECT
+# define UI_MSEC_DELAY 53
+# define SEND_MSEC_POLL 500
+# ifdef HAVE_SELECT
     fd_set	    fds;
 
     FD_ZERO(&fds);
     FD_SET(ConnectionNumber(dpy), &fds);
-#else
+# else
     struct pollfd   fds;
 
     fds.fd = ConnectionNumber(dpy);
     fds.events = POLLIN;
-#endif
+# endif
 
     time(&start);
     while (TRUE)
@@ -590,14 +593,14 @@ ServerWait(
 	if (seconds >= 0 && (now - start) >= seconds)
 	    break;
 
-#ifdef FEAT_TIMERS
+# ifdef FEAT_TIMERS
 	check_due_timer();
-#endif
+# endif
 
 	// Just look out for the answer without calling back into Vim
 	if (localLoop)
 	{
-#ifdef HAVE_SELECT
+# ifdef HAVE_SELECT
 	    struct timeval  tv;
 
 	    // Set the time every call, select() may change it to the remaining
@@ -606,10 +609,10 @@ ServerWait(
 	    tv.tv_usec =  SEND_MSEC_POLL * 1000;
 	    if (select(FD_SETSIZE, &fds, NULL, NULL, &tv) < 0)
 		break;
-#else
+# else
 	    if (poll(&fds, 1, SEND_MSEC_POLL) < 0)
 		break;
-#endif
+# endif
 	}
 	else
 	{
@@ -626,9 +629,9 @@ ServerWait(
  * Fetch a list of all the Vim instance names currently registered for the
  * display.
  *
- * Returns a newline separated list in allocated memory or NULL.
+ * Returns a list of strings or NULL on failure.
  */
-    char_u *
+    list_T *
 serverGetVimNames(Display *dpy)
 {
     char_u	*regProp;
@@ -636,13 +639,17 @@ serverGetVimNames(Display *dpy)
     char_u	*p;
     long_u	numItems;
     int_u	w;
-    garray_T	ga;
+    list_T	*list;
 
     if (registryProperty == None)
     {
 	if (SendInit(dpy) < 0)
 	    return NULL;
     }
+
+    list = list_alloc();
+    if (list == NULL)
+	return NULL;
 
     /*
      * Read the registry property.
@@ -653,7 +660,6 @@ serverGetVimNames(Display *dpy)
     /*
      * Scan all of the names out of the property.
      */
-    ga_init2(&ga, 1, 100);
     for (p = regProp; (long_u)(p - regProp) < numItems; p++)
     {
 	entry = p;
@@ -664,18 +670,14 @@ serverGetVimNames(Display *dpy)
 	    w = None;
 	    sscanf((char *)entry, "%x", &w);
 	    if (WindowValid(dpy, (Window)w))
-	    {
-		ga_concat(&ga, p + 1);
-		ga_concat(&ga, (char_u *)"\n");
-	    }
+		list_append_string(list, p + 1, -1);
 	    while (*p != 0)
 		p++;
 	}
     }
     if (regProp != empty_prop)
 	XFree(regProp);
-    ga_append(&ga, NUL);
-    return ga.ga_data;
+    return list;
 }
 
 /////////////////////////////////////////////////////////////
@@ -881,7 +883,7 @@ SendInit(Display *dpy)
     // Make window recognizable as a vim window
     XChangeProperty(dpy, commWindow, vimProperty, XA_STRING,
 		    8, PropModeReplace, (char_u *)VIM_VERSION_SHORT,
-			(int)STRLEN(VIM_VERSION_SHORT) + 1);
+			(int)STRLEN_LITERAL(VIM_VERSION_SHORT) + 1);
 
     XSync(dpy, False);
     (void)XSetErrorHandler(old_handler);
@@ -1228,9 +1230,9 @@ server_parse_message(
     int		code;
     char_u	*tofree;
 
-#if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
     ch_log(NULL, "server_parse_message() numItems: %ld", numItems);
-#endif
+# endif
 
     /*
      * Several commands and results could arrive in the property at
@@ -1272,9 +1274,9 @@ server_parse_message(
 	    enc = NULL;
 	    while ((long_u)(p - propInfo) < numItems && *p == '-')
 	    {
-#if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
 		ch_log(NULL, "server_parse_message() item: %c, %s", p[-2], p);
-#endif
+# endif
 		switch (p[1])
 		{
 		    case 'r':
@@ -1330,7 +1332,7 @@ server_parse_message(
 
 			// Initialize the result property.
 			ga_init2(&reply, 1, 100);
-			(void)ga_grow(&reply, 50 + STRLEN(p_enc));
+			(void)ga_grow(&reply, 50 + STRLEN(p_enc) + STRLEN(serial));
 			sprintf(reply.ga_data, "%cr%c-E %s%c-s %s%c-r ",
 						   0, 0, p_enc, 0, serial, 0);
 			reply.ga_len = 14 + STRLEN(p_enc) + STRLEN(serial);
@@ -1343,7 +1345,7 @@ server_parse_message(
 			    ga_concat(&reply,
 				   (char_u *)_(e_invalid_expression_received));
 			    ga_append(&reply, 0);
-			    ga_concat(&reply, (char_u *)"-c 1");
+			    GA_CONCAT_LITERAL(&reply, "-c 1");
 			}
 			ga_append(&reply, NUL);
 			(void)AppendPropCarefully(dpy, resWindow, commProperty,

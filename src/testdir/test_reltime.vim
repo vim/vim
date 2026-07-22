@@ -1,6 +1,5 @@
 " Tests for reltime()
 
-source check.vim
 CheckFeature reltime
 
 func Test_reltime()

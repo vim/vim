@@ -4,7 +4,7 @@ vim9script
 # Language:           MetaPost
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Eugene Minkovskii <emin@mccme.ru>
-# Latest Revision:    2022 Aug 12
+# Latest Revision:    2026 Jan 10
 
 if exists("b:did_indent")
   finish

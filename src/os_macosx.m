@@ -386,7 +386,7 @@ timer_delete(timer_t timerid)
 
 #ifdef FEAT_SOUND
 
-static NSMutableDictionary<NSNumber*, NSSound*> *sounds_list = nil;
+static NSMutableDictionary *sounds_list = nil;
 
 /// A delegate for handling when a sound has stopped playing, in
 /// order to clean up the sound and to send a callback.
@@ -463,9 +463,9 @@ sound_mch_play(const char_u* sound_name, long sound_id, soundcb_T *callback, boo
 
 	if (sounds_list == nil)
 	{
-	    sounds_list = [[NSMutableDictionary<NSNumber*, NSSound*> alloc] init];
+	    sounds_list = [[NSMutableDictionary alloc] init];
 	}
-	sounds_list[[NSNumber numberWithLong:sound_id]] = sound;
+	[sounds_list setObject:sound forKey:[NSNumber numberWithLong:sound_id]];
 
 	// Make a delegate to handle when the sound stops. No need to call
 	// autorelease because NSSound only holds a weak reference to it.
@@ -482,7 +482,7 @@ sound_mch_stop(long sound_id)
 {
     @autoreleasepool
     {
-	NSSound *sound = sounds_list[[NSNumber numberWithLong:sound_id]];
+	NSSound *sound = [sounds_list objectForKey:[NSNumber numberWithLong:sound_id]];
 	if (sound != nil)
 	{
 	    // Stop the sound. No need to release it because the delegate will do

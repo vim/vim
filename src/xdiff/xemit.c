@@ -22,27 +22,26 @@
 
 #include "xinclude.h"
 
-static long xdl_get_rec(xdfile_t *xdf, long ri, char const **rec) {
 
-	*rec = xdf->recs[ri]->ptr;
+static int xdl_emit_record(xdfile_t *xdf, long ri, char const *pre, xdemitcb_t *ecb)
+{
+	xrecord_t *rec = &xdf->recs[ri];
 
-	return xdf->recs[ri]->size;
-}
-
-
-static int xdl_emit_record(xdfile_t *xdf, long ri, char const *pre, xdemitcb_t *ecb) {
-	long size, psize = (long)strlen(pre);
-	char const *rec;
-
-	size = xdl_get_rec(xdf, ri, &rec);
-	if (xdl_emit_diffrec(rec, size, pre, psize, ecb) < 0) {
-
+	if (xdl_emit_diffrec(rec->ptr, rec->size, pre, (long)strlen(pre), ecb) < 0)
 		return -1;
-	}
 
 	return 0;
 }
 
+#define signed_add_overflows(a, b) \
+    ((b) > LONG_MAX - (a))
+
+static long saturating_add(long a, long b)
+{
+	return signed_add_overflows(a, b) ? LONG_MAX : a + b;
+}
+
+#undef signed_add_overflows
 
 /*
  * Starting at the passed change atom, find the latest change atom to be included
@@ -52,9 +51,11 @@ static int xdl_emit_record(xdfile_t *xdf, long ri, char const *pre, xdemitcb_t *
 xdchange_t *xdl_get_hunk(xdchange_t **xscr, xdemitconf_t const *xecfg)
 {
 	xdchange_t *xch, *xchp, *lxch;
-	long max_common = 2 * xecfg->ctxlen + xecfg->interhunkctxlen;
+	long max_common = saturating_add(saturating_add(xecfg->ctxlen,
+							xecfg->ctxlen),
+					 xecfg->interhunkctxlen);
 	long max_ignorable = xecfg->ctxlen;
-	unsigned long ignored = 0; /* number of ignored blank lines */
+	long ignored = 0; /* number of ignored blank lines */
 
 	/* remove ignorable changes that are too far before other changes */
 	for (xchp = *xscr; xchp && xchp->ignore; xchp = xchp->next) {
@@ -81,7 +82,7 @@ xdchange_t *xdl_get_hunk(xdchange_t **xscr, xdemitconf_t const *xecfg)
 		} else if (distance < max_ignorable && xch->ignore) {
 			ignored += xch->chg2;
 		} else if (lxch != xchp &&
-			   xch->i1 + (long)ignored - (lxch->i1 + lxch->chg1) > max_common) {
+			   xch->i1 + ignored - (lxch->i1 + lxch->chg1) > max_common) {
 			break;
 		} else if (!xch->ignore) {
 			lxch = xch;
@@ -117,11 +118,11 @@ static long def_ff(const char *rec, long len, char *buf, long sz)
 static long match_func_rec(xdfile_t *xdf, xdemitconf_t const *xecfg, long ri,
 			   char *buf, long sz)
 {
-	const char *rec;
-	long len = xdl_get_rec(xdf, ri, &rec);
+	xrecord_t *rec = &xdf->recs[ri];
+
 	if (!xecfg->find_func)
-		return def_ff(rec, len, buf, sz);
-	return xecfg->find_func(rec, len, buf, sz, xecfg->find_func_priv);
+		return def_ff(rec->ptr, rec->size, buf, sz);
+	return xecfg->find_func(rec->ptr, rec->size, buf, sz, xecfg->find_func_priv);
 }
 #endif
 
@@ -163,14 +164,12 @@ static long get_func_line(xdfenv_t *xe, xdemitconf_t const *xecfg,
 #if 0
 static int is_empty_rec(xdfile_t *xdf, long ri)
 {
-	const char *rec;
-	long len = xdl_get_rec(xdf, ri, &rec);
+	xrecord_t *rec = &xdf->recs[ri];
+	long i = 0;
 
-	while (len > 0 && XDL_ISSPACE(*rec)) {
-		rec++;
-		len--;
-	}
-	return !len;
+	for (; i < rec->size && XDL_ISSPACE(rec->ptr[i]); i++);
+
+	return i == rec->size;
 }
 #endif
 

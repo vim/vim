@@ -1,7 +1,7 @@
 " Menu translations for Catalan
 "
 " Maintainer:	Ernest Adrogué <eadrogue@gmx.net>
-" Last Change:	26 Jul 2017
+" Last Change:	2024 May 2
 " Original translations
 
 " Quit when menu translations have already been done.
@@ -71,8 +71,8 @@ menutrans Startup\ &Settings    Opcions\ i&nicials
 menutrans &Global\ Settings		Opcions\ &globals
 " submenú Edita/Opcions Globals
   menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Ressaltat\ de\ &patrons<Tab>:set\ hls!
-  menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		Sensibilitat\ a\ les\ ma&júscules<Tab>:set\ ic!
-  menutrans Toggle\ &Showmatch<Tab>:set\ sm!		&Ressaltat\ de\ coincidències<Tab>:set\ sm!
+  menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!		Sensibilitat\ a\ les\ ma&júscules<Tab>:set\ ic!
+  menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!		&Ressaltat\ de\ coincidències<Tab>:set\ sm!
   menutrans &Context\ lines				Línies\ de\ co&ntext
   menutrans &Virtual\ Edit				Edició\ &virtual
 " submenú Edita/Opcions Globals/Edició virtual
@@ -82,7 +82,7 @@ menutrans &Global\ Settings		Opcions\ &globals
     menutrans Block\ and\ Insert			&Blocs\ i\ inserció
     menutrans Always					S&empre
   menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!		Mode\ d'&inserció<Tab>:set\ im!
-  menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!	Co&mpatible\ amb\ Vi<Tab>:set\ cp!
+  menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!	Co&mpatible\ amb\ Vi<Tab>:set\ cp!
   menutrans Search\ &Path\.\.\.				&Ubicacions\.\.\.
   menutrans Ta&g\ Files\.\.\.				Fitxers\ d'&etiquetes\.\.\.
   menutrans Toggle\ &Toolbar				&Barra\ d'eines
@@ -311,6 +311,13 @@ menutrans Assembly			Ensamblador
 menutrans Config			Configuració
 menutrans Set\ '&syntax'\ only		Només\ el\ ressaltat\ de\ sintaxi
 menutrans Set\ '&filetype'\ too		Carrega\ també\ els\ plugins
+
+menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Commuta\ numeració\ relativa\ de\ línies<Tab>:set\ nru!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Commuta\ embolcall\ de\ línia<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!		Commuta\ embolicant\ la\ paraula<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!			Commuta\ pestanya\ en\ expansió<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Commuta\ sagnat\ automàtic<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!		Commuta\ Sagnat\ d'estil\ C<Tab>:set\ cin!
 
 let &cpo = s:keepcpo
 unlet s:keepcpo

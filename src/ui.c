@@ -63,7 +63,7 @@ ui_write(char_u *s, int len, int console UNUSED)
 #endif
 }
 
-#if defined(UNIX) || defined(VMS) || defined(PROTO) || defined(MSWIN)
+#if defined(UNIX) || defined(VMS) || defined(MSWIN)
 /*
  * When executing an external program, there may be some typed characters that
  * are not consumed by it.  Give them back to ui_inchar() and they are stored
@@ -248,7 +248,7 @@ theend:
     return retval;
 }
 
-#if defined(UNIX) || defined(VMS) || defined(FEAT_GUI) || defined(PROTO)
+#if defined(UNIX) || defined(VMS) || defined(FEAT_GUI)
 /*
  * Common code for mch_inchar() and gui_inchar(): Wait for a while or
  * indefinitely until characters are available, dealing with timers and
@@ -277,11 +277,11 @@ inchar_loop(
     int		did_start_blocking = FALSE;
     long	wait_time;
     long	elapsed_time = 0;
-#ifdef ELAPSED_FUNC
+# ifdef ELAPSED_FUNC
     elapsed_T	start_tv;
 
     ELAPSED_INIT(start_tv);
-#endif
+# endif
 
     // repeat until we got a character or waited long enough
     for (;;)
@@ -291,7 +291,7 @@ inchar_loop(
 	if (resize_func != NULL)
 	    resize_func(FALSE);
 
-#ifdef MESSAGE_QUEUE
+# ifdef MESSAGE_QUEUE
 	// Only process messages when waiting.
 	if (wtime != 0)
 	{
@@ -300,21 +300,44 @@ inchar_loop(
 	    if (typebuf_changed(tb_change_cnt))
 		return 0;
 	}
-#endif
-	if (wtime < 0 && did_start_blocking)
+# endif
+	// When an autocomplete is pending, wake at the sooner of
+	// 'autocompletedelay' and 'updatetime' so the delay does not postpone
+	// CursorHold.  Once CursorHold has fired, only the delay is left.
+	// Gate the injection like trigger_cursorhold() so the deferred key
+	// cannot fire while outside Insert mode, but do still fire the key
+	// when recording a register (gotchars_add_byte() will ignore it).
+	bool delay_pending = ins_compl_autocomplete_pending() && p_acl > 0
+		&& typebuf.tb_len == 0
+		&& !ins_compl_active()
+		&& (get_real_state() & MODE_INSERT) != 0;
+	// Measure the delay from when it was armed (the keystroke), so a
+	// CursorHold returning in between does not push the popup back.
+	long acl_elapsed = delay_pending ? ins_compl_autocomplete_elapsed() : 0;
+
+	if (wtime < 0 && did_start_blocking && !delay_pending)
 	    // blocking and already waited for p_ut
 	    wait_time = -1;
 	else
 	{
+# ifdef ELAPSED_FUNC
+	    elapsed_time = ELAPSED_FUNC(start_tv);
+# endif
 	    if (wtime >= 0)
-		wait_time = wtime;
+		wait_time = wtime - elapsed_time;
+	    else if (delay_pending)
+	    {
+		long delay_left = p_acl - acl_elapsed;
+		long ut_left = p_ut - elapsed_time;
+
+		if (did_start_blocking)
+		    wait_time = delay_left;
+		else
+		    wait_time = MIN(delay_left, ut_left);
+	    }
 	    else
 		// going to block after p_ut
-		wait_time = p_ut;
-#ifdef ELAPSED_FUNC
-	    elapsed_time = ELAPSED_FUNC(start_tv);
-#endif
-	    wait_time -= elapsed_time;
+		wait_time = p_ut - elapsed_time;
 
 	    // If the waiting time is now zero or less, we timed out.  However,
 	    // loop at least once to check for characters and events.  Matters
@@ -324,6 +347,29 @@ inchar_loop(
 		if (wtime >= 0)
 		    // no character available within "wtime"
 		    return 0;
+
+		// The 'autocompletedelay' expired: trigger the popup.  When
+		// 'updatetime' is shorter, fall through to CursorHold instead.
+		if (delay_pending && acl_elapsed >= p_acl && maxlen >= 3
+					    && !typebuf_changed(tb_change_cnt))
+		{
+		    if (buf == NULL)
+		    {
+			char_u	ibuf[3];
+
+			ibuf[0] = CSI;
+			ibuf[1] = KS_EXTRA;
+			ibuf[2] = (int)KE_COMPLETE_DELAY;
+			add_to_input_buf(ibuf, 3);
+		    }
+		    else
+		    {
+			buf[0] = K_SPECIAL;
+			buf[1] = KS_EXTRA;
+			buf[2] = (int)KE_COMPLETE_DELAY;
+		    }
+		    return 3;
+		}
 
 		// No character available within 'updatetime'.
 		did_start_blocking = TRUE;
@@ -357,7 +403,7 @@ inchar_loop(
 	    }
 	}
 
-#ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_JOB_CHANNEL
 	if (wait_time < 0 || wait_time > 100L)
 	{
 	    // Checking if a job ended requires polling.  Do this at least
@@ -370,13 +416,13 @@ inchar_loop(
 	    if (channel_any_readahead())
 		wait_time = 10L;
 	}
-#endif
-#ifdef FEAT_BEVAL_GUI
+# endif
+# ifdef FEAT_BEVAL_GUI
 	if (p_beval && wait_time > 100L)
 	    // The 'balloonexpr' may indirectly invoke a callback while waiting
 	    // for a character, need to check often.
 	    wait_time = 100L;
-#endif
+# endif
 
 	// Wait for a character to be typed or another event, such as the winch
 	// signal or an event on the monitored file descriptors.
@@ -400,18 +446,20 @@ inchar_loop(
 	}
 	// Timed out or interrupted with no character available.
 
-#ifndef ELAPSED_FUNC
+# ifndef ELAPSED_FUNC
 	// estimate the elapsed time
 	elapsed_time += wait_time;
-#endif
+# endif
 
 	if ((resize_func != NULL && resize_func(TRUE))
-#if defined(FEAT_CLIENTSERVER) && defined(UNIX)
-		|| server_waiting()
-#endif
-#ifdef MESSAGE_QUEUE
+# if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
+		||
+		(clientserver_method == CLIENTSERVER_METHOD_X11 &&
+		 server_waiting())
+# endif
+# ifdef MESSAGE_QUEUE
 		|| interrupted
-#endif
+# endif
 		|| wait_time > 0
 		|| (wtime < 0 && !did_start_blocking))
 	    // no character available, but something to be done, keep going
@@ -424,7 +472,7 @@ inchar_loop(
 }
 #endif
 
-#if defined(FEAT_TIMERS) || defined(PROTO)
+#if defined(FEAT_TIMERS)
 /*
  * Wait for a timer to fire or "wait_func" to return non-zero.
  * Returns OK when something was read.
@@ -566,7 +614,7 @@ ui_suspend(void)
     mch_suspend();
 }
 
-#if !defined(UNIX) || !defined(SIGTSTP) || defined(PROTO)
+#if !defined(UNIX) || !defined(SIGTSTP)
 /*
  * When the OS can't really suspend, call this function to start a shell.
  * This is never called in the GUI.
@@ -647,11 +695,10 @@ ui_new_shellsize(void)
     }
 }
 
-#if ((defined(FEAT_EVAL) || defined(FEAT_TERMINAL)) \
+#if (defined(FEAT_EVAL) || defined(FEAT_TERMINAL)) \
 	    && (defined(FEAT_GUI) \
 		|| defined(MSWIN) \
-		|| (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE)))) \
-	|| defined(PROTO)
+		|| (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE)))
 /*
  * Get the window position in pixels, if possible.
  * Return FAIL when not possible.
@@ -727,23 +774,23 @@ ui_breakcheck_force(int force)
 // For the client-server code in the console the received keys are put in the
 // input buffer.
 
-#if defined(USE_INPUT_BUF) || defined(PROTO)
+#if defined(USE_INPUT_BUF)
 
 /*
  * Internal typeahead buffer.  Includes extra space for long key code
  * descriptions which would otherwise overflow.  The buffer is considered full
  * when only this extra space (or part of it) remains.
  */
-#if defined(FEAT_JOB_CHANNEL) || defined(FEAT_CLIENTSERVER)
+# if defined(FEAT_JOB_CHANNEL) || defined(FEAT_CLIENTSERVER)
    /*
     * NetBeans stuffs debugger commands into the input buffer.
     * This requires a larger buffer...
     * (Madsen) Go with this for remote input as well ...
     */
-# define INBUFLEN 4096
-#else
-# define INBUFLEN 250
-#endif
+#  define INBUFLEN 4096
+# else
+#  define INBUFLEN 250
+# endif
 
 static char_u	inbuf[INBUFLEN + MAX_KEY_CODE_LEN];
 static int	inbufcount = 0;	    // number of chars in inbuf[]
@@ -766,21 +813,21 @@ vim_is_input_buf_empty(void)
     return (inbufcount == 0);
 }
 
-#if defined(FEAT_OLE) || defined(PROTO)
+# if defined(FEAT_OLE)
     int
 vim_free_in_input_buf(void)
 {
     return (INBUFLEN - inbufcount);
 }
-#endif
+# endif
 
-#if defined(FEAT_GUI_GTK) || defined(PROTO)
+# if defined(FEAT_GUI_GTK)
     int
 vim_used_in_input_buf(void)
 {
     return inbufcount;
 }
-#endif
+# endif
 
 /*
  * Return the current contents of the input buffer and make it empty.
@@ -904,29 +951,29 @@ read_from_input_buf(char_u *buf, long maxlen)
     void
 fill_input_buf(int exit_on_error UNUSED)
 {
-#if defined(UNIX) || defined(VMS) || defined(MACOS_X)
+# if defined(UNIX) || defined(VMS) || defined(MACOS_X)
     int		len;
     int		try;
     static int	did_read_something = FALSE;
     static char_u *rest = NULL;	    // unconverted rest of previous read
     static int	restlen = 0;
     int		unconverted;
-#endif
+# endif
 
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     if (gui.in_use
-# ifdef NO_CONSOLE_INPUT
+#  ifdef NO_CONSOLE_INPUT
     // Don't use the GUI input when the window hasn't been opened yet.
     // We get here from ui_inchar() when we should try reading from stdin.
 	    && !no_console_input()
-# endif
+#  endif
        )
     {
 	gui_mch_update();
 	return;
     }
-#endif
-#if defined(UNIX) || defined(VMS) || defined(MACOS_X)
+# endif
+# if defined(UNIX) || defined(VMS) || defined(MACOS_X)
     if (vim_is_input_buf_full())
 	return;
     /*
@@ -988,13 +1035,13 @@ fill_input_buf(int exit_on_error UNUSED)
 	    // back to cooked mode, use another descriptor and set the mode to
 	    // what it was.
 	    settmode(TMODE_COOK);
-#ifdef HAVE_DUP
+#  ifdef HAVE_DUP
 	    // Use stderr for stdin, also works for shell commands.
 	    close(0);
 	    vim_ignored = dup(2);
-#else
+#  else
 	    read_cmd_fd = 2;	// read from stderr instead of stdin
-#endif
+#  endif
 	    settmode(m);
 	}
 	if (!exit_on_error)
@@ -1055,7 +1102,7 @@ fill_input_buf(int exit_on_error UNUSED)
 	    ++inbufcount;
 	}
     }
-#endif // UNIX || VMS || MACOS_X
+# endif // UNIX || VMS || MACOS_X
 }
 #endif // USE_INPUT_BUF
 
@@ -1071,7 +1118,7 @@ read_error_exit(void)
     preserve_exit();
 }
 
-#if defined(CURSOR_SHAPE) || defined(PROTO)
+#if defined(CURSOR_SHAPE)
 /*
  * May update the shape of the cursor.
  */
@@ -1162,9 +1209,9 @@ ui_find_longest_lnum(void)
     // line numbers, topline and botline can be invalid when displaying is
     // postponed.
     if (
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 	    (!gui.in_use || vim_strchr(p_go, GO_HORSCROLL) == NULL) &&
-# endif
+#endif
 	    curwin->w_topline <= curwin->w_cursor.lnum
 	    && curwin->w_botline > curwin->w_cursor.lnum
 	    && curwin->w_botline <= curbuf->b_ml.ml_line_count + 1)
@@ -1213,11 +1260,11 @@ ui_focus_change(
     if (in_focus && last_time + 2 < time(NULL))
     {
 	need_redraw = check_timestamps(
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 		gui.in_use
-# else
+#else
 		FALSE
-# endif
+#endif
 		);
 	last_time = time(NULL);
     }
@@ -1240,7 +1287,7 @@ ui_focus_change(
 	maketitle();
 }
 
-#if defined(HAVE_INPUT_METHOD) || defined(PROTO)
+#if defined(HAVE_INPUT_METHOD)
 /*
  * Save current Input Method status to specified place.
  */

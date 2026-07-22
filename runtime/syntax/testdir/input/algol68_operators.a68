@@ -1,0 +1,997 @@
+#
+    Algol 68 Operators
+#
+
+
+#:::::::::::::::::::::::::
+Prelude Symbolic Operators
+:::::::::::::::::::::::::#
+
+
+# IDENTITY #
+
+x :=:  y
+x :/=: y
+
+# BOOL #
+
+~TRUE
+TRUE & FALSE
+TRUE = FALSE
+TRUE /= FALSE
+
+# INT #
+
++42
+-42
+
+42 +* 87
+
+42 +  87
+42 -  87
+42 *  87
+42 %  87
+42 %* 87
+42 /  87
+42 ** 87
+42 ^  87
+
+i +:=  42
+i -:=  42
+i *:=  42
+i %:=  42
+i %*:= 42
+
+42 =  87
+42 /= 87
+42 <  87
+42 <= 87
+42 >  87
+42 >= 87
+
+# REAL #
+
++4.2
+-4.2
+
+4.2 +* 8.7
+
+4.2 + 8.7
+4.2 - 8.7
+4.2 * 8.7
+4.2 / 8.7
+
+4.2 ** 87
+4.2 ^  87
+
+r +:=  42
+r -:=  42
+r *:=  42
+r /:=  42
+
+4.2 =  8.7
+4.2 /= 8.7
+4.2 <  8.7
+4.2 <= 8.7
+4.2 >  8.7
+4.2 >= 8.7
+
+# CHAR #
+
+"a" =  "b"
+"a" /= "b"
+"a" <  "b"
+"a" <= "b"
+"a" >  "b"
+"a" >= "b"
+
+# STRING #
+
+"aaa" =  "bbb"
+"aaa" /= "bbb"
+"aaa" <  "bbb"
+"aaa" <= "bbb"
+"aaa" >  "bbb"
+"aaa" >= "bbb"
+
+"aaa" + "bbb"
+"aaa" + "b"
+   42 * "aaa"
+"aaa" * 42
+
+    s +:= "aaa"
+"aaa" +=: s
+    s *:= 5
+
+
+#:::::::::::::::::
+Symbolic Operators
+:::::::::::::::::#
+
+
+# Monadic #
+
+# monad #
+
+!
+%
+&
++
+-
+?
+^
+~
+
+# monad, becomes #
+
+!:=
+%:=
+&:=
++:=
+-:=
+?:=
+^:=
+~:=
+
+# monad, assigns to #
+
+!=:
+%=:
+&=:
++=:
+-=:
+?=:
+^=:
+~=:
+
+
+# monad, nomad #
+
+!*
+!/
+!<
+!=
+!>
+%*
+%/
+%<
+%=
+%>
+&*
+&/
+&<
+&=
+&>
++*
++/
++<
++=
++>
+-*
+-/
+-<
+-=
+->
+?*
+?/
+?<
+?=
+?>
+^*
+^/
+^<
+^=
+^>
+~*
+~/
+~<
+~=
+~>
+
+# monad, nomad, becomes #
+
+!*:=
+!/:=
+!<:=
+!=:=
+!>:=
+%*:=
+%/:=
+%<:=
+%=:=
+%>:=
+&*:=
+&/:=
+&<:=
+&=:=
+&>:=
++*:=
++/:=
++<:=
++=:=
++>:=
+-*:=
+-/:=
+-<:=
+-=:=
+->:=
+?*:=
+?/:=
+?<:=
+?=:=
+?>:=
+^*:=
+^/:=
+^<:=
+^=:=
+^>:=
+~*:=
+~/:=
+~<:=
+~=:=
+~>:=
+
+# monad, nomad, assigns to #
+
+!*=:
+!/=:
+!<=:
+!==:
+!>=:
+%*=:
+%/=:
+%<=:
+%==:
+%>=:
+&*=:
+&/=:
+&<=:
+&==:
+&>=:
++*=:
++/=:
++<=:
++==:
++>=:
+-*=:
+-/=:
+-<=:
+-==:
+->=:
+?*=:
+?/=:
+?<=:
+?==:
+?>=:
+^*=:
+^/=:
+^<=:
+^==:
+^>=:
+~*=:
+~/=:
+~<=:
+~==:
+~>=:
+
+
+# Dyadic #
+
+# monad #
+
+!
+%
+&
++
+-
+?
+^
+~
+
+# monad, becomes #
+
+!:=
+%:=
+&:=
++:=
+-:=
+?:=
+^:=
+~:=
+
+# monad, assigns to #
+
+!=:
+%=:
+&=:
++=:
+-=:
+?=:
+^=:
+~=:
+
+
+# nomad #
+
+*
+/
+<
+=
+>
+
+# nomad, becomes #
+
+*:=
+/:=
+<:=
+=:=
+>:=
+
+# nomad, assigns to #
+
+*=:
+/=:
+<=:
+==:
+>=:
+
+
+# monad, nomad #
+
+!*
+!/
+!<
+!=
+!>
+%*
+%/
+%<
+%=
+%>
+&*
+&/
+&<
+&=
+&>
++*
++/
++<
++=
++>
+-*
+-/
+-<
+-=
+->
+?*
+?/
+?<
+?=
+?>
+^*
+^/
+^<
+^=
+^>
+~*
+~/
+~<
+~=
+~>
+
+# monad, nomad, becomes #
+
+!*:=
+!/:=
+!<:=
+!=:=
+!>:=
+%*:=
+%/:=
+%<:=
+%=:=
+%>:=
+&*:=
+&/:=
+&<:=
+&=:=
+&>:=
++*:=
++/:=
++<:=
++=:=
++>:=
+-*:=
+-/:=
+-<:=
+-=:=
+->:=
+?*:=
+?/:=
+?<:=
+?=:=
+?>:=
+^*:=
+^/:=
+^<:=
+^=:=
+^>:=
+~*:=
+~/:=
+~<:=
+~=:=
+~>:=
+
+# monad, nomad, assigns to #
+
+!*=:
+!/=:
+!<=:
+!==:
+!>=:
+%*=:
+%/=:
+%<=:
+%==:
+%>=:
+&*=:
+&/=:
+&<=:
+&==:
+&>=:
++*=:
++/=:
++<=:
++==:
++>=:
+-*=:
+-/=:
+-<=:
+-==:
+->=:
+?*=:
+?/=:
+?<=:
+?==:
+?>=:
+^*=:
+^/=:
+^<=:
+^==:
+^>=:
+~*=:
+~/=:
+~<=:
+~==:
+~>=:
+
+
+# nomad, nomad #
+
+**
+*/
+*<
+*=
+*>
+/*
+//
+/<
+/=
+/>
+<*
+</
+<<
+<=
+<>
+=*
+=/
+=<
+==
+=>
+>*
+>/
+><
+>=
+>>
+
+# nomad, nomad, becomes #
+
+**:=
+*/:=
+*<:=
+*=:=
+*>:=
+/*:=
+//:=
+/<:=
+/=:=
+/>:=
+<*:=
+</:=
+<<:=
+<=:=
+<>:=
+=*:=
+=/:=
+=<:=
+==:=
+=>:=
+>*:=
+>/:=
+><:=
+>=:=
+>>:=
+
+# nomad, nomad, assigns to #
+
+**=:
+*/=:
+*<=:
+*==:
+*>=:
+/*=:
+//=:
+/<=:
+/==:
+/>=:
+<*=:
+</=:
+<<=:
+<==:
+<>=:
+=*=:
+=/=:
+=<=:
+===:
+=>=:
+>*=:
+>/=:
+><=:
+>==:
+>>=:
+
+
+#:::::::::::::
+Symbolic Operator Declarations
+:::::::::::::#
+
+
+# Monadic #
+
+
+# monad #
+
+OP ! = (INT a) INT : 42;
+OP % = (INT a) INT : 42;
+OP & = (INT a) INT : 42;
+OP + = (INT a) INT : 42;
+OP - = (INT a) INT : 42;
+OP ? = (INT a) INT : 42;
+OP ^ = (INT a) INT : 42;
+OP ~ = (INT a) INT : 42;
+
+# monad, becomes #
+
+OP !:= = (INT a) INT: 42;
+OP %:= = (INT a) INT: 42;
+OP &:= = (INT a) INT: 42;
+OP +:= = (INT a) INT: 42;
+OP -:= = (INT a) INT: 42;
+OP ?:= = (INT a) INT: 42;
+OP ^:= = (INT a) INT: 42;
+OP ~:= = (INT a) INT: 42;
+
+# monad, assigns to #
+
+OP !=: = (INT a) INT: 42;
+OP %=: = (INT a) INT: 42;
+OP &=: = (INT a) INT: 42;
+OP +=: = (INT a) INT: 42;
+OP -=: = (INT a) INT: 42;
+OP ?=: = (INT a) INT: 42;
+OP ^=: = (INT a) INT: 42;
+OP ~=: = (INT a) INT: 42;
+
+# monad, nomad #
+
+OP !* = (INT a) INT : 42;
+OP !/ = (INT a) INT : 42;
+OP !< = (INT a) INT : 42;
+OP != = (INT a) INT : 42;
+OP !> = (INT a) INT : 42;
+OP %* = (INT a) INT : 42;
+OP %/ = (INT a) INT : 42;
+OP %< = (INT a) INT : 42;
+OP %= = (INT a) INT : 42;
+OP %> = (INT a) INT : 42;
+OP &* = (INT a) INT : 42;
+OP &/ = (INT a) INT : 42;
+OP &< = (INT a) INT : 42;
+OP &= = (INT a) INT : 42;
+OP &> = (INT a) INT : 42;
+OP +* = (INT a) INT : 42;
+OP +/ = (INT a) INT : 42;
+OP +< = (INT a) INT : 42;
+OP += = (INT a) INT : 42;
+OP +> = (INT a) INT : 42;
+OP -* = (INT a) INT : 42;
+OP -/ = (INT a) INT : 42;
+OP -< = (INT a) INT : 42;
+OP -= = (INT a) INT : 42;
+OP -> = (INT a) INT : 42;
+OP ?* = (INT a) INT : 42;
+OP ?/ = (INT a) INT : 42;
+OP ?< = (INT a) INT : 42;
+OP ?= = (INT a) INT : 42;
+OP ?> = (INT a) INT : 42;
+OP ^* = (INT a) INT : 42;
+OP ^/ = (INT a) INT : 42;
+OP ^< = (INT a) INT : 42;
+OP ^= = (INT a) INT : 42;
+OP ^> = (INT a) INT : 42;
+OP ~* = (INT a) INT : 42;
+OP ~/ = (INT a) INT : 42;
+OP ~< = (INT a) INT : 42;
+OP ~= = (INT a) INT : 42;
+OP ~> = (INT a) INT : 42;
+
+# monad, nomad, becomes #
+
+OP !*:= = (INT a) INT: 42;
+OP !/:= = (INT a) INT: 42;
+OP !<:= = (INT a) INT: 42;
+OP !=:= = (INT a) INT: 42;
+OP !>:= = (INT a) INT: 42;
+OP %*:= = (INT a) INT: 42;
+OP %/:= = (INT a) INT: 42;
+OP %<:= = (INT a) INT: 42;
+OP %=:= = (INT a) INT: 42;
+OP %>:= = (INT a) INT: 42;
+OP &*:= = (INT a) INT: 42;
+OP &/:= = (INT a) INT: 42;
+OP &<:= = (INT a) INT: 42;
+OP &=:= = (INT a) INT: 42;
+OP &>:= = (INT a) INT: 42;
+OP +*:= = (INT a) INT: 42;
+OP +/:= = (INT a) INT: 42;
+OP +<:= = (INT a) INT: 42;
+OP +=:= = (INT a) INT: 42;
+OP +>:= = (INT a) INT: 42;
+OP -*:= = (INT a) INT: 42;
+OP -/:= = (INT a) INT: 42;
+OP -<:= = (INT a) INT: 42;
+OP -=:= = (INT a) INT: 42;
+OP ->:= = (INT a) INT: 42;
+OP ?*:= = (INT a) INT: 42;
+OP ?/:= = (INT a) INT: 42;
+OP ?<:= = (INT a) INT: 42;
+OP ?=:= = (INT a) INT: 42;
+OP ?>:= = (INT a) INT: 42;
+OP ^*:= = (INT a) INT: 42;
+OP ^/:= = (INT a) INT: 42;
+OP ^<:= = (INT a) INT: 42;
+OP ^=:= = (INT a) INT: 42;
+OP ^>:= = (INT a) INT: 42;
+OP ~*:= = (INT a) INT: 42;
+OP ~/:= = (INT a) INT: 42;
+OP ~<:= = (INT a) INT: 42;
+OP ~=:= = (INT a) INT: 42;
+OP ~>:= = (INT a) INT: 42;
+
+# monad, nomad, assigns to #
+
+OP !*=: = (INT a) INT: 42;
+OP !/=: = (INT a) INT: 42;
+OP !<=: = (INT a) INT: 42;
+OP !==: = (INT a) INT: 42;
+OP !>=: = (INT a) INT: 42;
+OP %*=: = (INT a) INT: 42;
+OP %/=: = (INT a) INT: 42;
+OP %<=: = (INT a) INT: 42;
+OP %==: = (INT a) INT: 42;
+OP %>=: = (INT a) INT: 42;
+OP &*=: = (INT a) INT: 42;
+OP &/=: = (INT a) INT: 42;
+OP &<=: = (INT a) INT: 42;
+OP &==: = (INT a) INT: 42;
+OP &>=: = (INT a) INT: 42;
+OP +*=: = (INT a) INT: 42;
+OP +/=: = (INT a) INT: 42;
+OP +<=: = (INT a) INT: 42;
+OP +==: = (INT a) INT: 42;
+OP +>=: = (INT a) INT: 42;
+OP -*=: = (INT a) INT: 42;
+OP -/=: = (INT a) INT: 42;
+OP -<=: = (INT a) INT: 42;
+OP -==: = (INT a) INT: 42;
+OP ->=: = (INT a) INT: 42;
+OP ?*=: = (INT a) INT: 42;
+OP ?/=: = (INT a) INT: 42;
+OP ?<=: = (INT a) INT: 42;
+OP ?==: = (INT a) INT: 42;
+OP ?>=: = (INT a) INT: 42;
+OP ^*=: = (INT a) INT: 42;
+OP ^/=: = (INT a) INT: 42;
+OP ^<=: = (INT a) INT: 42;
+OP ^==: = (INT a) INT: 42;
+OP ^>=: = (INT a) INT: 42;
+OP ~*=: = (INT a) INT: 42;
+OP ~/=: = (INT a) INT: 42;
+OP ~<=: = (INT a) INT: 42;
+OP ~==: = (INT a) INT: 42;
+OP ~>=: = (INT a) INT: 42;
+
+
+# Dyadic #
+
+
+# monad #
+
+PRIO ! = 1; OP ! = (INT a, INT b) INT : 42;
+PRIO % = 1; OP % = (INT a, INT b) INT : 42;
+PRIO & = 1; OP & = (INT a, INT b) INT : 42;
+PRIO + = 1; OP + = (INT a, INT b) INT : 42;
+PRIO - = 1; OP - = (INT a, INT b) INT : 42;
+PRIO ? = 1; OP ? = (INT a, INT b) INT : 42;
+PRIO ^ = 1; OP ^ = (INT a, INT b) INT : 42;
+PRIO ~ = 1; OP ~ = (INT a, INT b) INT : 42;
+
+# monad, becomes #
+
+PRIO !:= = 1; OP !:= = (INT a, INT b) INT: 42;
+PRIO %:= = 1; OP %:= = (INT a, INT b) INT: 42;
+PRIO &:= = 1; OP &:= = (INT a, INT b) INT: 42;
+PRIO +:= = 1; OP +:= = (INT a, INT b) INT: 42;
+PRIO -:= = 1; OP -:= = (INT a, INT b) INT: 42;
+PRIO ?:= = 1; OP ?:= = (INT a, INT b) INT: 42;
+PRIO ^:= = 1; OP ^:= = (INT a, INT b) INT: 42;
+PRIO ~:= = 1; OP ~:= = (INT a, INT b) INT: 42;
+
+# monad, assigns to #
+
+PRIO !=: = 1; OP !=: = (INT a, INT b) INT: 42;
+PRIO %=: = 1; OP %=: = (INT a, INT b) INT: 42;
+PRIO &=: = 1; OP &=: = (INT a, INT b) INT: 42;
+PRIO +=: = 1; OP +=: = (INT a, INT b) INT: 42;
+PRIO -=: = 1; OP -=: = (INT a, INT b) INT: 42;
+PRIO ?=: = 1; OP ?=: = (INT a, INT b) INT: 42;
+PRIO ^=: = 1; OP ^=: = (INT a, INT b) INT: 42;
+PRIO ~=: = 1; OP ~=: = (INT a, INT b) INT: 42;
+
+# nomad #
+
+PRIO * = 1; OP * = (INT a, INT b) INT: 42;
+PRIO / = 1; OP / = (INT a, INT b) INT: 42;
+PRIO < = 1; OP < = (INT a, INT b) INT: 42;
+PRIO = = 1; OP = = (INT a, INT b) INT: 42;
+PRIO > = 1; OP > = (INT a, INT b) INT: 42;
+
+# nomad, becomes #
+
+PRIO *:= = 1; OP *:= = (INT a, INT b) INT: 42;
+PRIO /:= = 1; OP /:= = (INT a, INT b) INT: 42;
+PRIO <:= = 1; OP <:= = (INT a, INT b) INT: 42;
+PRIO =:= = 1; OP =:= = (INT a, INT b) INT: 42;
+PRIO >:= = 1; OP >:= = (INT a, INT b) INT: 42;
+
+# nomad, assigns to #
+
+PRIO *=: = 1; OP *=: = (INT a, INT b) INT: 42;
+PRIO /=: = 1; OP /=: = (INT a, INT b) INT: 42;
+PRIO <=: = 1; OP <=: = (INT a, INT b) INT: 42;
+PRIO ==: = 1; OP ==: = (INT a, INT b) INT: 42;
+PRIO >=: = 1; OP >=: = (INT a, INT b) INT: 42;
+
+# monad, nomad #
+
+PRIO !* = 1; OP !* = (INT a, INT b) INT : 42;
+PRIO !/ = 1; OP !/ = (INT a, INT b) INT : 42;
+PRIO !< = 1; OP !< = (INT a, INT b) INT : 42;
+PRIO != = 1; OP != = (INT a, INT b) INT : 42;
+PRIO !> = 1; OP !> = (INT a, INT b) INT : 42;
+PRIO %* = 1; OP %* = (INT a, INT b) INT : 42;
+PRIO %/ = 1; OP %/ = (INT a, INT b) INT : 42;
+PRIO %< = 1; OP %< = (INT a, INT b) INT : 42;
+PRIO %= = 1; OP %= = (INT a, INT b) INT : 42;
+PRIO %> = 1; OP %> = (INT a, INT b) INT : 42;
+PRIO &* = 1; OP &* = (INT a, INT b) INT : 42;
+PRIO &/ = 1; OP &/ = (INT a, INT b) INT : 42;
+PRIO &< = 1; OP &< = (INT a, INT b) INT : 42;
+PRIO &= = 1; OP &= = (INT a, INT b) INT : 42;
+PRIO &> = 1; OP &> = (INT a, INT b) INT : 42;
+PRIO +* = 1; OP +* = (INT a, INT b) INT : 42;
+PRIO +/ = 1; OP +/ = (INT a, INT b) INT : 42;
+PRIO +< = 1; OP +< = (INT a, INT b) INT : 42;
+PRIO += = 1; OP += = (INT a, INT b) INT : 42;
+PRIO +> = 1; OP +> = (INT a, INT b) INT : 42;
+PRIO -* = 1; OP -* = (INT a, INT b) INT : 42;
+PRIO -/ = 1; OP -/ = (INT a, INT b) INT : 42;
+PRIO -< = 1; OP -< = (INT a, INT b) INT : 42;
+PRIO -= = 1; OP -= = (INT a, INT b) INT : 42;
+PRIO -> = 1; OP -> = (INT a, INT b) INT : 42;
+PRIO ?* = 1; OP ?* = (INT a, INT b) INT : 42;
+PRIO ?/ = 1; OP ?/ = (INT a, INT b) INT : 42;
+PRIO ?< = 1; OP ?< = (INT a, INT b) INT : 42;
+PRIO ?= = 1; OP ?= = (INT a, INT b) INT : 42;
+PRIO ?> = 1; OP ?> = (INT a, INT b) INT : 42;
+PRIO ^* = 1; OP ^* = (INT a, INT b) INT : 42;
+PRIO ^/ = 1; OP ^/ = (INT a, INT b) INT : 42;
+PRIO ^< = 1; OP ^< = (INT a, INT b) INT : 42;
+PRIO ^= = 1; OP ^= = (INT a, INT b) INT : 42;
+PRIO ^> = 1; OP ^> = (INT a, INT b) INT : 42;
+PRIO ~* = 1; OP ~* = (INT a, INT b) INT : 42;
+PRIO ~/ = 1; OP ~/ = (INT a, INT b) INT : 42;
+PRIO ~< = 1; OP ~< = (INT a, INT b) INT : 42;
+PRIO ~= = 1; OP ~= = (INT a, INT b) INT : 42;
+PRIO ~> = 1; OP ~> = (INT a, INT b) INT : 42;
+
+# monad, nomad, becomes #
+
+PRIO !*:= = 1; OP !*:= = (INT a, INT b) INT: 42;
+PRIO !/:= = 1; OP !/:= = (INT a, INT b) INT: 42;
+PRIO !<:= = 1; OP !<:= = (INT a, INT b) INT: 42;
+PRIO !=:= = 1; OP !=:= = (INT a, INT b) INT: 42;
+PRIO !>:= = 1; OP !>:= = (INT a, INT b) INT: 42;
+PRIO %*:= = 1; OP %*:= = (INT a, INT b) INT: 42;
+PRIO %/:= = 1; OP %/:= = (INT a, INT b) INT: 42;
+PRIO %<:= = 1; OP %<:= = (INT a, INT b) INT: 42;
+PRIO %=:= = 1; OP %=:= = (INT a, INT b) INT: 42;
+PRIO %>:= = 1; OP %>:= = (INT a, INT b) INT: 42;
+PRIO &*:= = 1; OP &*:= = (INT a, INT b) INT: 42;
+PRIO &/:= = 1; OP &/:= = (INT a, INT b) INT: 42;
+PRIO &<:= = 1; OP &<:= = (INT a, INT b) INT: 42;
+PRIO &=:= = 1; OP &=:= = (INT a, INT b) INT: 42;
+PRIO &>:= = 1; OP &>:= = (INT a, INT b) INT: 42;
+PRIO +*:= = 1; OP +*:= = (INT a, INT b) INT: 42;
+PRIO +/:= = 1; OP +/:= = (INT a, INT b) INT: 42;
+PRIO +<:= = 1; OP +<:= = (INT a, INT b) INT: 42;
+PRIO +=:= = 1; OP +=:= = (INT a, INT b) INT: 42;
+PRIO +>:= = 1; OP +>:= = (INT a, INT b) INT: 42;
+PRIO -*:= = 1; OP -*:= = (INT a, INT b) INT: 42;
+PRIO -/:= = 1; OP -/:= = (INT a, INT b) INT: 42;
+PRIO -<:= = 1; OP -<:= = (INT a, INT b) INT: 42;
+PRIO -=:= = 1; OP -=:= = (INT a, INT b) INT: 42;
+PRIO ->:= = 1; OP ->:= = (INT a, INT b) INT: 42;
+PRIO ?*:= = 1; OP ?*:= = (INT a, INT b) INT: 42;
+PRIO ?/:= = 1; OP ?/:= = (INT a, INT b) INT: 42;
+PRIO ?<:= = 1; OP ?<:= = (INT a, INT b) INT: 42;
+PRIO ?=:= = 1; OP ?=:= = (INT a, INT b) INT: 42;
+PRIO ?>:= = 1; OP ?>:= = (INT a, INT b) INT: 42;
+PRIO ^*:= = 1; OP ^*:= = (INT a, INT b) INT: 42;
+PRIO ^/:= = 1; OP ^/:= = (INT a, INT b) INT: 42;
+PRIO ^<:= = 1; OP ^<:= = (INT a, INT b) INT: 42;
+PRIO ^=:= = 1; OP ^=:= = (INT a, INT b) INT: 42;
+PRIO ^>:= = 1; OP ^>:= = (INT a, INT b) INT: 42;
+PRIO ~*:= = 1; OP ~*:= = (INT a, INT b) INT: 42;
+PRIO ~/:= = 1; OP ~/:= = (INT a, INT b) INT: 42;
+PRIO ~<:= = 1; OP ~<:= = (INT a, INT b) INT: 42;
+PRIO ~=:= = 1; OP ~=:= = (INT a, INT b) INT: 42;
+PRIO ~>:= = 1; OP ~>:= = (INT a, INT b) INT: 42;
+
+# monad, nomad, assigns to #
+
+PRIO !*=: = 1; OP !*=: = (INT a, INT b) INT: 42;
+PRIO !/=: = 1; OP !/=: = (INT a, INT b) INT: 42;
+PRIO !<=: = 1; OP !<=: = (INT a, INT b) INT: 42;
+PRIO !==: = 1; OP !==: = (INT a, INT b) INT: 42;
+PRIO !>=: = 1; OP !>=: = (INT a, INT b) INT: 42;
+PRIO %*=: = 1; OP %*=: = (INT a, INT b) INT: 42;
+PRIO %/=: = 1; OP %/=: = (INT a, INT b) INT: 42;
+PRIO %<=: = 1; OP %<=: = (INT a, INT b) INT: 42;
+PRIO %==: = 1; OP %==: = (INT a, INT b) INT: 42;
+PRIO %>=: = 1; OP %>=: = (INT a, INT b) INT: 42;
+PRIO &*=: = 1; OP &*=: = (INT a, INT b) INT: 42;
+PRIO &/=: = 1; OP &/=: = (INT a, INT b) INT: 42;
+PRIO &<=: = 1; OP &<=: = (INT a, INT b) INT: 42;
+PRIO &==: = 1; OP &==: = (INT a, INT b) INT: 42;
+PRIO &>=: = 1; OP &>=: = (INT a, INT b) INT: 42;
+PRIO +*=: = 1; OP +*=: = (INT a, INT b) INT: 42;
+PRIO +/=: = 1; OP +/=: = (INT a, INT b) INT: 42;
+PRIO +<=: = 1; OP +<=: = (INT a, INT b) INT: 42;
+PRIO +==: = 1; OP +==: = (INT a, INT b) INT: 42;
+PRIO +>=: = 1; OP +>=: = (INT a, INT b) INT: 42;
+PRIO -*=: = 1; OP -*=: = (INT a, INT b) INT: 42;
+PRIO -/=: = 1; OP -/=: = (INT a, INT b) INT: 42;
+PRIO -<=: = 1; OP -<=: = (INT a, INT b) INT: 42;
+PRIO -==: = 1; OP -==: = (INT a, INT b) INT: 42;
+PRIO ->=: = 1; OP ->=: = (INT a, INT b) INT: 42;
+PRIO ?*=: = 1; OP ?*=: = (INT a, INT b) INT: 42;
+PRIO ?/=: = 1; OP ?/=: = (INT a, INT b) INT: 42;
+PRIO ?<=: = 1; OP ?<=: = (INT a, INT b) INT: 42;
+PRIO ?==: = 1; OP ?==: = (INT a, INT b) INT: 42;
+PRIO ?>=: = 1; OP ?>=: = (INT a, INT b) INT: 42;
+PRIO ^*=: = 1; OP ^*=: = (INT a, INT b) INT: 42;
+PRIO ^/=: = 1; OP ^/=: = (INT a, INT b) INT: 42;
+PRIO ^<=: = 1; OP ^<=: = (INT a, INT b) INT: 42;
+PRIO ^==: = 1; OP ^==: = (INT a, INT b) INT: 42;
+PRIO ^>=: = 1; OP ^>=: = (INT a, INT b) INT: 42;
+PRIO ~*=: = 1; OP ~*=: = (INT a, INT b) INT: 42;
+PRIO ~/=: = 1; OP ~/=: = (INT a, INT b) INT: 42;
+PRIO ~<=: = 1; OP ~<=: = (INT a, INT b) INT: 42;
+PRIO ~==: = 1; OP ~==: = (INT a, INT b) INT: 42;
+PRIO ~>=: = 1; OP ~>=: = (INT a, INT b) INT: 42;
+
+# nomad, nomad #
+
+PRIO ** = 1; OP ** = (INT a, INT b) INT: 42;
+PRIO */ = 1; OP */ = (INT a, INT b) INT: 42;
+PRIO *< = 1; OP *< = (INT a, INT b) INT: 42;
+PRIO *= = 1; OP *= = (INT a, INT b) INT: 42;
+PRIO *> = 1; OP *> = (INT a, INT b) INT: 42;
+PRIO /* = 1; OP /* = (INT a, INT b) INT: 42;
+PRIO // = 1; OP // = (INT a, INT b) INT: 42;
+PRIO /< = 1; OP /< = (INT a, INT b) INT: 42;
+PRIO /= = 1; OP /= = (INT a, INT b) INT: 42;
+PRIO /> = 1; OP /> = (INT a, INT b) INT: 42;
+PRIO <* = 1; OP <* = (INT a, INT b) INT: 42;
+PRIO </ = 1; OP </ = (INT a, INT b) INT: 42;
+PRIO << = 1; OP << = (INT a, INT b) INT: 42;
+PRIO <= = 1; OP <= = (INT a, INT b) INT: 42;
+PRIO <> = 1; OP <> = (INT a, INT b) INT: 42;
+PRIO =* = 1; OP =* = (INT a, INT b) INT: 42;
+PRIO =/ = 1; OP =/ = (INT a, INT b) INT: 42;
+PRIO =< = 1; OP =< = (INT a, INT b) INT: 42;
+PRIO == = 1; OP == = (INT a, INT b) INT: 42;
+PRIO => = 1; OP => = (INT a, INT b) INT: 42;
+PRIO >* = 1; OP >* = (INT a, INT b) INT: 42;
+PRIO >/ = 1; OP >/ = (INT a, INT b) INT: 42;
+PRIO >< = 1; OP >< = (INT a, INT b) INT: 42;
+PRIO >= = 1; OP >= = (INT a, INT b) INT: 42;
+PRIO >> = 1; OP >> = (INT a, INT b) INT: 42;
+
+# nomad, nomad, becomes #
+
+PRIO **:= = 1; OP **:= = (INT a, INT b) INT: 42;
+PRIO */:= = 1; OP */:= = (INT a, INT b) INT: 42;
+PRIO *<:= = 1; OP *<:= = (INT a, INT b) INT: 42;
+PRIO *=:= = 1; OP *=:= = (INT a, INT b) INT: 42;
+PRIO *>:= = 1; OP *>:= = (INT a, INT b) INT: 42;
+PRIO /*:= = 1; OP /*:= = (INT a, INT b) INT: 42;
+PRIO //:= = 1; OP //:= = (INT a, INT b) INT: 42;
+PRIO /<:= = 1; OP /<:= = (INT a, INT b) INT: 42;
+PRIO /=:= = 1; OP /=:= = (INT a, INT b) INT: 42;
+PRIO />:= = 1; OP />:= = (INT a, INT b) INT: 42;
+PRIO <*:= = 1; OP <*:= = (INT a, INT b) INT: 42;
+PRIO </:= = 1; OP </:= = (INT a, INT b) INT: 42;
+PRIO <<:= = 1; OP <<:= = (INT a, INT b) INT: 42;
+PRIO <=:= = 1; OP <=:= = (INT a, INT b) INT: 42;
+PRIO <>:= = 1; OP <>:= = (INT a, INT b) INT: 42;
+PRIO =*:= = 1; OP =*:= = (INT a, INT b) INT: 42;
+PRIO =/:= = 1; OP =/:= = (INT a, INT b) INT: 42;
+PRIO =<:= = 1; OP =<:= = (INT a, INT b) INT: 42;
+PRIO ==:= = 1; OP ==:= = (INT a, INT b) INT: 42;
+PRIO =>:= = 1; OP =>:= = (INT a, INT b) INT: 42;
+PRIO >*:= = 1; OP >*:= = (INT a, INT b) INT: 42;
+PRIO >/:= = 1; OP >/:= = (INT a, INT b) INT: 42;
+PRIO ><:= = 1; OP ><:= = (INT a, INT b) INT: 42;
+PRIO >=:= = 1; OP >=:= = (INT a, INT b) INT: 42;
+PRIO >>:= = 1; OP >>:= = (INT a, INT b) INT: 42;
+
+# nomad, nomad, assigns to #
+
+PRIO **=: = 1; OP **=: = (INT a, INT b) INT: 42;
+PRIO */=: = 1; OP */=: = (INT a, INT b) INT: 42;
+PRIO *<=: = 1; OP *<=: = (INT a, INT b) INT: 42;
+PRIO *==: = 1; OP *==: = (INT a, INT b) INT: 42;
+PRIO *>=: = 1; OP *>=: = (INT a, INT b) INT: 42;
+PRIO /*=: = 1; OP /*=: = (INT a, INT b) INT: 42;
+PRIO //=: = 1; OP //=: = (INT a, INT b) INT: 42;
+PRIO /<=: = 1; OP /<=: = (INT a, INT b) INT: 42;
+PRIO /==: = 1; OP /==: = (INT a, INT b) INT: 42;
+PRIO />=: = 1; OP />=: = (INT a, INT b) INT: 42;
+PRIO <*=: = 1; OP <*=: = (INT a, INT b) INT: 42;
+PRIO </=: = 1; OP </=: = (INT a, INT b) INT: 42;
+PRIO <<=: = 1; OP <<=: = (INT a, INT b) INT: 42;
+PRIO <==: = 1; OP <==: = (INT a, INT b) INT: 42;
+PRIO <>=: = 1; OP <>=: = (INT a, INT b) INT: 42;
+PRIO =*=: = 1; OP =*=: = (INT a, INT b) INT: 42;
+PRIO =/=: = 1; OP =/=: = (INT a, INT b) INT: 42;
+PRIO =<=: = 1; OP =<=: = (INT a, INT b) INT: 42;
+PRIO ===: = 1; OP ===: = (INT a, INT b) INT: 42;
+PRIO =>=: = 1; OP =>=: = (INT a, INT b) INT: 42;
+PRIO >*=: = 1; OP >*=: = (INT a, INT b) INT: 42;
+PRIO >/=: = 1; OP >/=: = (INT a, INT b) INT: 42;
+PRIO ><=: = 1; OP ><=: = (INT a, INT b) INT: 42;
+PRIO >==: = 1; OP >==: = (INT a, INT b) INT: 42;
+PRIO >>=: = 1; OP >>=: = (INT a, INT b) INT: 42;
+

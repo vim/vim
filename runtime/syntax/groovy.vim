@@ -5,10 +5,11 @@
 " Version: 	0.1.18
 " URL:	  http://www.vim.org/scripts/script.php?script_id=945
 " Last Change:	2021 Feb 03
+"               2025 Apr 27 by Vim Project correct Vim script spelling
 
 " THE ORIGINAL AUTHOR'S NOTES:
 "
-" This is my very first vim script, I hope to have
+" This is my very first Vim script, I hope to have
 " done it the right way.
 "
 " I must directly or indirectly thank the author of java.vim and ruby.vim:

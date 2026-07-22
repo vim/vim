@@ -130,6 +130,38 @@ setmark_pos(int c, pos_T *pos, int fnum)
 }
 
 /*
+ * Delete every entry referring to file 'fnum' from both the jumplist and the
+ * tag stack.
+ */
+    void
+mark_forget_file(win_T *wp, int fnum)
+{
+    int		i;
+
+    for (i = wp->w_jumplistlen - 1; i >= 0; --i)
+	if (wp->w_jumplist[i].fmark.fnum == fnum)
+	{
+	    vim_free(wp->w_jumplist[i].fname);
+	    if (wp->w_jumplistidx > i)
+		--wp->w_jumplistidx;
+	    --wp->w_jumplistlen;
+	    mch_memmove(&wp->w_jumplist[i], &wp->w_jumplist[i + 1],
+			(wp->w_jumplistlen - i) * sizeof(wp->w_jumplist[i]));
+	}
+
+    for (i = wp->w_tagstacklen - 1; i >= 0; --i)
+	if (wp->w_tagstack[i].fmark.fnum == fnum)
+	{
+	    tagstack_clear_entry(&wp->w_tagstack[i]);
+	    if (wp->w_tagstackidx > i)
+		--wp->w_tagstackidx;
+	    --wp->w_tagstacklen;
+	    mch_memmove(&wp->w_tagstack[i], &wp->w_tagstack[i + 1],
+			(wp->w_tagstacklen - i) * sizeof(wp->w_tagstack[i]));
+	}
+}
+
+/*
  * Set the previous context mark to the current position and add it to the
  * jump list.
  */
@@ -508,10 +540,9 @@ fname2fnum(xfmark_T *fm)
 #endif
 		))
     {
-	int len;
+	size_t len;
 
-	expand_env((char_u *)"~/", NameBuff, MAXPATHL);
-	len = (int)STRLEN(NameBuff);
+	len = expand_env((char_u *)"~/", NameBuff, MAXPATHL);
 	vim_strncpy(NameBuff + len, fm->fname + 2, MAXPATHL - len - 1);
     }
     else
@@ -752,6 +783,11 @@ show_one_mark(
 	if (name == NULL && current)
 	{
 	    name = mark_line(p, 15);
+	    if (name == NULL)
+	    {
+		emsg(_(e_out_of_memory));
+		return;
+	    }
 	    mustfree = TRUE;
 	}
 	if (!message_filtered(name))
@@ -995,6 +1031,25 @@ ex_changes(exarg_T *eap UNUSED)
 	    *lp += amount_after; \
     }
 
+// Like one_adjust_nodel(), but if the position is within the deleted range,
+// move it to the start of the line before the range.
+#define one_adjust_cursor(pp) \
+    { \
+	pos_T *posp = pp; \
+	if (posp->lnum >= line1 && posp->lnum <= line2) \
+	{ \
+	    if (amount == MAXLNUM) /* line with cursor is deleted */ \
+	    { \
+		posp->lnum = MAX(line1 - 1, 1); \
+		posp->col = 0; \
+	    } \
+	    else /* keep cursor on the same line */ \
+		posp->lnum += amount; \
+	} \
+	else if (amount_after && posp->lnum > line2) \
+	    posp->lnum += amount_after; \
+    }
+
 /*
  * Adjust marks between "line1" and "line2" (inclusive) to move "amount" lines.
  * Must be called before changed_*(), appended_lines() or deleted_lines().
@@ -1039,6 +1094,7 @@ mark_adjust_internal(
     linenr_T	*lp;
     win_T	*win;
     tabpage_T	*tab;
+    wininfo_T	*wip;
     static pos_T initpos = {1, 0, 0};
 
     if (line2 < line1 && amount_after == 0L)	    // nothing to do
@@ -1156,21 +1212,7 @@ mark_adjust_internal(
 		    win->w_topfill = 0;
 #endif
 		}
-		if (win->w_cursor.lnum >= line1 && win->w_cursor.lnum <= line2)
-		{
-		    if (amount == MAXLNUM) // line with cursor is deleted
-		    {
-			if (line1 <= 1)
-			    win->w_cursor.lnum = 1;
-			else
-			    win->w_cursor.lnum = line1 - 1;
-			win->w_cursor.col = 0;
-		    }
-		    else		// keep cursor on the same line
-			win->w_cursor.lnum += amount;
-		}
-		else if (amount_after && win->w_cursor.lnum > line2)
-		    win->w_cursor.lnum += amount_after;
+		one_adjust_cursor(&(win->w_cursor));
 	    }
 
 #ifdef FEAT_FOLDING
@@ -1185,6 +1227,10 @@ mark_adjust_internal(
     // adjust diffs
     diff_mark_adjust(line1, line2, amount, amount_after);
 #endif
+
+    // adjust per-window "last cursor" positions
+    FOR_ALL_BUF_WININFO(curbuf, wip)
+	one_adjust_cursor(&(wip->wi_fpos));
 }
 
 // This code is used often, needs to be fast.
@@ -1380,7 +1426,7 @@ set_last_cursor(win_T *win)
 	win->w_buffer->b_last_cursor = win->w_cursor;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_all_marks(void)
 {
@@ -1392,7 +1438,7 @@ free_all_marks(void)
 }
 #endif
 
-#if defined(FEAT_VIMINFO) || defined(PROTO)
+#if defined(FEAT_VIMINFO)
 /*
  * Return a pointer to the named file marks.
  */
@@ -1403,12 +1449,12 @@ get_namedfm(void)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Add information about mark 'mname' to list 'l'
  */
     static int
-add_mark(list_T *l, char_u *mname, pos_T *pos, int bufnr, char_u *fname)
+add_mark(list_T *l, char_u *mname, size_t mnamelen, pos_T *pos, int bufnr, char_u *fname)
 {
     dict_T	*d;
     list_T	*lpos;
@@ -1432,13 +1478,17 @@ add_mark(list_T *l, char_u *mname, pos_T *pos, int bufnr, char_u *fname)
 
     list_append_number(lpos, bufnr);
     list_append_number(lpos, pos->lnum);
-    list_append_number(lpos, pos->col + 1);
+    list_append_number(lpos, pos->col < MAXCOL ? pos->col + 1 : MAXCOL);
     list_append_number(lpos, pos->coladd);
 
-    if (dict_add_string(d, "mark", mname) == FAIL
+    if (dict_add_string_len(d, "mark", mname, (int)mnamelen) == FAIL
 	    || dict_add_list(d, "pos", lpos) == FAIL
 	    || (fname != NULL && dict_add_string(d, "file", fname) == FAIL))
+    {
+	if (lpos->lv_refcount == 0)
+	    list_free(lpos);
 	return FAIL;
+    }
 
     return OK;
 }
@@ -1450,25 +1500,26 @@ add_mark(list_T *l, char_u *mname, pos_T *pos, int bufnr, char_u *fname)
 get_buf_local_marks(buf_T *buf, list_T *l)
 {
     char_u	mname[3] = "' ";
+    size_t	mnamelen = STRLEN_LITERAL("' ");
     int		i;
 
     // Marks 'a' to 'z'
     for (i = 0; i < NMARKS; ++i)
     {
 	mname[1] = 'a' + i;
-	add_mark(l, mname, &buf->b_namedm[i], buf->b_fnum, NULL);
+	add_mark(l, mname, mnamelen, &buf->b_namedm[i], buf->b_fnum, NULL);
     }
 
     // Mark '' is a window local mark and not a buffer local mark
-    add_mark(l, (char_u *)"''", &curwin->w_pcmark, curbuf->b_fnum, NULL);
+    add_mark(l, (char_u *)"''", STRLEN_LITERAL("''"), &curwin->w_pcmark, curbuf->b_fnum, NULL);
 
-    add_mark(l, (char_u *)"'\"", &buf->b_last_cursor, buf->b_fnum, NULL);
-    add_mark(l, (char_u *)"'[", &buf->b_op_start, buf->b_fnum, NULL);
-    add_mark(l, (char_u *)"']", &buf->b_op_end, buf->b_fnum, NULL);
-    add_mark(l, (char_u *)"'^", &buf->b_last_insert, buf->b_fnum, NULL);
-    add_mark(l, (char_u *)"'.", &buf->b_last_change, buf->b_fnum, NULL);
-    add_mark(l, (char_u *)"'<", &buf->b_visual.vi_start, buf->b_fnum, NULL);
-    add_mark(l, (char_u *)"'>", &buf->b_visual.vi_end, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"'\"", STRLEN_LITERAL("'\""), &buf->b_last_cursor, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"'[", STRLEN_LITERAL("'["), &buf->b_op_start, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"']", STRLEN_LITERAL("']"), &buf->b_op_end, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"'^", STRLEN_LITERAL("'^"), &buf->b_last_insert, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"'.", STRLEN_LITERAL("'."), &buf->b_last_change, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"'<", STRLEN_LITERAL("'<"), &buf->b_visual.vi_start, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"'>", STRLEN_LITERAL("'>"), &buf->b_visual.vi_end, buf->b_fnum, NULL);
 }
 
 /*
@@ -1478,6 +1529,7 @@ get_buf_local_marks(buf_T *buf, list_T *l)
 get_global_marks(list_T *l)
 {
     char_u	mname[3] = "' ";
+    size_t	mnamelen = STRLEN_LITERAL("' ");
     int		i;
     char_u	*name;
 
@@ -1491,7 +1543,7 @@ get_global_marks(list_T *l)
 	if (name != NULL)
 	{
 	    mname[1] = i >= NMARKS ? i - NMARKS + '0' : i + 'A';
-	    add_mark(l, mname, &namedfm[i].fmark.mark,
+	    add_mark(l, mname, mnamelen, &namedfm[i].fmark.mark,
 		    namedfm[i].fmark.fnum, name);
 	    if (namedfm[i].fmark.fnum != 0)
 		vim_free(name);

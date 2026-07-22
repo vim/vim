@@ -4,6 +4,9 @@
 " Similar in spirit to rgb.txt, this plugin establishes a human-friendly name
 " for every color listed in the CSS standard:
 "
+" Note: the color names should be in lower case, because Vim will lookup the
+" a color by its lower case name.
+"
 " https://www.w3.org/TR/css-color-3/
 
 let s:keepcpo= &cpo
@@ -26,7 +29,6 @@ call extend(v:colornames, {
 			\ 'css_blue': '#0000FF',
 			\ 'css_teal': '#008080',
 			\ 'css_aqua': '#00FFFF',
-			\
 			\ 'css_aliceblue': '#f0f8ff',
 			\ 'css_antiquewhite': '#faebd7',
 			\ 'css_aquamarine': '#7fffd4',
@@ -159,6 +161,14 @@ call extend(v:colornames, {
 			\ 'css_whitesmoke': '#f5f5f5',
 			\ 'css_yellowgreen': '#9acd32',
 			\ }, 'keep')
+
+" all keys should be in lower case, convert keys that are not yet
+for [key, val] in items(filter(copy(v:colornames), { key -> key  =~ '\u'}))
+  call remove(v:colornames, key)
+  if !has_key(v:colornames, tolower(key))
+    call extend(v:colornames, {tolower(key): val}, 'keep')
+  endif
+endfor
 
 let &cpo= s:keepcpo
 unlet s:keepcpo

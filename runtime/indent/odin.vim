@@ -4,7 +4,7 @@ vim9script
 # Language: Odin
 # Maintainer: Maxim Kim <habamax@gmail.com>
 # Website: https://github.com/habamax/vim-odin
-# Last Change: 2024-01-15
+# Last Change: 2026-06-28
 
 if exists("b:did_indent")
     finish
@@ -14,10 +14,14 @@ b:did_indent = 1
 b:undo_indent = 'setlocal cindent< cinoptions< cinkeys< indentexpr<'
 
 setlocal cindent
-setlocal cinoptions=L0,m1,(s,j1,J1,l1,+0,:0,#1
+setlocal cinoptions=L0,m1,(s,j1,J1,l1,+0,:0,#3
 setlocal cinkeys=0{,0},0),0],!^F,:,o,O
 
 setlocal indentexpr=GetOdinIndent(v:lnum)
+
+def IsCommentOrString(lnum: number, col: number): bool
+    return synIDattr(synID(lnum, col, 1), "name") =~? 'Comment\|String'
+enddef
 
 def PrevLine(lnum: number): number
     var plnum = lnum - 1
@@ -41,7 +45,7 @@ def PrevLine(lnum: number): number
             break
         endif
     endwhile
-    return plnum
+    return max([plnum, 1])
 enddef
 
 def GetOdinIndent(lnum: number): number
@@ -61,30 +65,32 @@ def GetOdinIndent(lnum: number): number
     var indent = cindent(lnum)
     var line = getline(lnum)
 
-    if line =~ '^\s*#\k\+'
+    if line =~ '^\s*#+\k'
+        indent = pindent
+    elseif line =~ '^\s*#\k\+'
         if pline =~ '[{:]\s*$'
             indent = pindent + shiftwidth()
         else
             indent = pindent
         endif
-    elseif pline =~ 'switch\s.*{\s*$'
+    elseif pline =~ '\<switch\>\s.*{\s*$'
         indent = pindent
-    elseif pline =~ 'case\s*.*,\s*\(//.*\)\?$' # https://github.com/habamax/vim-odin/issues/8
-        indent = pindent + matchstr(pline, 'case\s*')->strcharlen()
-    elseif line =~ '^\s*case\s\+.*,\s*$'
+    elseif pline =~ '\<case\>\s*.*,\s*\(//.*\)\?$' # https://github.com/habamax/vim-odin/issues/8
+        indent = pindent + matchstr(pline, '\<case\s*')->strcharlen()
+    elseif line =~ '^\s*case\>\s\+.*,\s*$'
         indent = pindent - shiftwidth()
-    elseif pline =~ 'case\s*.*:\s*\(//.*\)\?$'
-        if line !~ '^\s*}\s*$' && line !~ '^\s*case[[:space:]:]'
+    elseif pline =~ '\<case\>\s*.*:\s*\(//.*\)\?$'
+        if line !~ '^\s*}\s*$' && line !~ '^\s*case\>[[:space:]:]'
             indent = pindent + shiftwidth()
         endif
     elseif pline =~ '^\s*@.*' && line !~ '^\s*}'
         indent = pindent
-    elseif pline =~ ':[:=].*}\s*$'
+    elseif pline =~ ':[:=].*}\s*$' && line !~ '^\s*}'
         indent = pindent
     elseif pline =~ '^\s*}\s*$'
-        if line !~ '^\s*}' && line !~ 'case\s*.*:\s*$'
+        if line !~ '^\s*}' && line !~ '\<case\>\s*.*:\s*$'
             indent = pindent
-        else
+        elseif !IsCommentOrString(lnum, col('$') - 1)
             indent = pindent - shiftwidth()
         endif
     elseif pline =~ '\S:\s*$'
@@ -96,12 +102,14 @@ def GetOdinIndent(lnum: number): number
             if plnum < 1
                 break
             endif
-            if getline(idx) =~ '^\s*case\s.*,\s*$'
+            if getline(idx) =~ '^\s*case\>\s.*,\s*$'
                 indent = indent(idx) + shiftwidth()
                 break
             endif
         endfor
     elseif pline =~ '{[^{]*}\s*$' && line !~ '^\s*[})]\s*$' # https://github.com/habamax/vim-odin/issues/2
+        indent = pindent
+    elseif line !~ '^\s*}' && pline =~ '^\s*\%(if\|for\).*\s\+do\%(\s\+\|$\)' # https://github.com/habamax/vim-odin/issues/15
         indent = pindent
     elseif pline =~ '^\s*}\s*$' # https://github.com/habamax/vim-odin/issues/3
         # Find line with opening { and check if there is a label:

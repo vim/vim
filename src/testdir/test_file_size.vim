@@ -8,8 +8,6 @@
 " cksum is part of POSIX and so should be available on most Unixes.
 " If it isn't available then the test will be skipped.
 
-source check.vim
-
 func Test_File_Size()
   CheckExecutable cksum
 

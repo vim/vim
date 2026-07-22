@@ -82,8 +82,8 @@
  * toupper() and tolower() implementations only work for ASCII.
  */
 #ifdef MSWIN
-#  define TOUPPER_LOC(c)	toupper_tab[(c) & 255]
-#  define TOLOWER_LOC(c)	tolower_tab[(c) & 255]
+# define TOUPPER_LOC(c)	toupper_tab[(c) & 255]
+# define TOLOWER_LOC(c)	tolower_tab[(c) & 255]
 #else
 # ifdef BROKEN_TOUPPER
 #  define TOUPPER_LOC(c)	(SAFE_islower(c) ? SAFE_toupper(c) : (c))
@@ -168,8 +168,8 @@
 # undef HAVE_LSTAT		// VMS does not have lstat()
 # define mch_stat(n, p)		stat(vms_fixfilename(n), (p))
 #else
-# ifndef MSWIN
-#   define mch_access(n, p)	access((n), (p))
+# if !defined(MSWIN) && !defined(PROTO)
+#  define mch_access(n, p)	access((n), (p))
 # endif
 
 // Use 64-bit fstat function on MS-Windows.
@@ -194,7 +194,11 @@
 #ifdef HAVE_LSTAT
 # define mch_lstat(n, p)	lstat((n), (p))
 #else
-# define mch_lstat(n, p)	mch_stat((n), (p))
+# ifdef MSWIN
+#  define mch_lstat(n, p)	vim_lstat((n), (p))
+# else
+#  define mch_lstat(n, p)	mch_stat((n), (p))
+# endif
 #endif
 
 #ifdef VMS
@@ -356,11 +360,26 @@
  */
 #define VIM_CLEAR(p) \
     do { \
-	if ((p) != NULL) \
-	{ \
-	    vim_free(p); \
-	    (p) = NULL; \
-	} \
+	vim_free(p); \
+	(p) = NULL; \
+    } while (0)
+
+/*
+ * Free a string and set it's pointer to NULL and length to 0
+ */
+#define VIM_CLEAR_STRING(s) \
+    do { \
+	VIM_CLEAR(s.string); \
+	s.length = 0; \
+    } while (0)
+
+#define STR_LITERAL_INIT(s) \
+    {(char_u *)(s), STRLEN_LITERAL(s)}
+
+#define STR_LITERAL_SET(str, s) \
+    do { \
+	(str).string = (char_u *)(s); \
+	(str).length = STRLEN_LITERAL(s); \
     } while (0)
 
 // Whether a command index indicates a user command.
@@ -414,6 +433,7 @@
 #define GA_GROW_FAILS(gap, n) unlikely((((gap)->ga_maxlen - (gap)->ga_len < (n)) ? ga_grow_inner((gap), (n)) : OK) == FAIL)
 // Inlined version of ga_grow() with optimized condition that it succeeds.
 #define GA_GROW_OK(gap, n) likely((((gap)->ga_maxlen - (gap)->ga_len < (n)) ? ga_grow_inner((gap), (n)) : OK) == OK)
+#define GA_CONCAT_LITERAL(gap, s) ga_concat_len((gap), (char_u *)(s), STRLEN_LITERAL(s))
 
 #ifndef MIN
 # define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -426,9 +446,9 @@
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof((a)[0]))
 
 #ifdef FEAT_MENU
-#define FOR_ALL_MENUS(m) \
+# define FOR_ALL_MENUS(m) \
     for ((m) = root_menu; (m) != NULL; (m) = (m)->next)
-#define FOR_ALL_CHILD_MENUS(p, c) \
+# define FOR_ALL_CHILD_MENUS(p, c) \
     for ((c) = (p)->children; (c) != NULL; (c) = (c)->next)
 #endif
 
@@ -466,7 +486,7 @@
     for ((sign) = (buf)->b_signlist; (sign) != NULL; (sign) = (sign)->se_next)
 
 #ifdef FEAT_SPELL
-#define FOR_ALL_SPELL_LANGS(slang) \
+# define FOR_ALL_SPELL_LANGS(slang) \
     for ((slang) = first_lang; (slang) != NULL; (slang) = (slang)->sl_next)
 #endif
 
@@ -477,3 +497,7 @@
 // Iterate over all the items in a hash table
 #define FOR_ALL_HASHTAB_ITEMS(ht, hi, todo) \
     for ((hi) = (ht)->ht_array; (todo) > 0; ++(hi))
+
+#define TUPLE_LEN(t)	    (t->tv_items.ga_len)
+#define TUPLE_ITEM(t, i) \
+	    (((typval_T *)t->tv_items.ga_data) + i)

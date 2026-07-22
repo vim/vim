@@ -2,6 +2,7 @@
 void do_ascii(exarg_T *eap);
 void ex_align(exarg_T *eap);
 void ex_sort(exarg_T *eap);
+void ex_uniq(exarg_T *eap);
 int do_move(linenr_T line1, linenr_T line2, linenr_T dest);
 void ex_copy(linenr_T line1, linenr_T line2, linenr_T n);
 void free_prev_shellcmd(void);

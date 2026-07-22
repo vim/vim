@@ -1,10 +1,9 @@
 " Test spell checking
 " Note: this file uses latin1 encoding, but is used with utf-8 encoding.
 
-source check.vim
 CheckFeature spell
 
-source screendump.vim
+source util/screendump.vim
 
 func TearDown()
   set nospell
@@ -298,6 +297,20 @@ func Test_compl_with_CTRL_X_CTRL_K_using_spell()
 
   bwipe!
   set spell& spelllang& dictionary& ignorecase&
+endfunc
+
+func Test_compl_with_CTRL_X_s()
+  new
+  set spell spelllang=en_us showmode
+  inoremap <buffer><F2> <Cmd>let g:msg = Screenline(&lines)<CR>
+
+  call feedkeys("STheatre\<C-X>s\<F2>\<C-Y>\<Esc>", 'tx')
+  call assert_equal(['Theater'], getline(1, '$'))
+  call assert_match('(^S^N^P)', g:msg)
+
+  bwipe!
+  set spell& spelllang& showmode&
+  unlet g:msg
 endfunc
 
 func Test_spellrepall()
@@ -899,7 +912,10 @@ func Test_spellsuggest_too_deep()
   " This was incrementing "depth" over MAXWLEN.
   new
   norm s000G00ý000000000000
-  sil norm ..vzG................vvzG0     v z=
+  try
+    sil norm ..vzG................vvzG0     v z=
+  catch /E759:/
+  endtry
   bwipe!
 endfunc
 
@@ -1553,5 +1569,48 @@ let g:test_data_aff_sal = [
       \"SAL ZZ-                  _",
       \"SAL Z                    S",
       \ ]
+
+func Test_suggest_spell_restore()
+  norm! z=
+  call assert_equal(0, &spell)
+  set spelllang=
+  sil! norm! z=
+  call assert_equal(0, &spell)
+  set spelllang=en
+  call setline(1, ['1','2'])
+  norm! vjz=
+  call assert_equal(0, &spell)
+  set spelllang&
+  bwipe!
+endfunc
+
+" A crafted .spl with a self-referential BY_INDEX node in the PREFIXTREE drove
+" dump_prefixes() past its MAXWLEN-sized depth arrays (stack out-of-bounds
+" write).  The tree parses cleanly (shared refs aren't recursed); the walk
+" happens on :spelldump.  Reaching the assert means no OOB.  Same class as the
+" tree_count_words() fix (9.2.0653).
+func Test_spelldump_prefixtree_overflow()
+  CheckUnix
+  let save_rtp = &runtimepath
+  call mkdir('Xrtp/spell', 'pR')
+  " VIMspell + v50, SN_PREFCOND(prefixcnt=1), SN_END,
+  " LWORDTREE word "a" with affixID=1 (so dump_prefixes runs),
+  " empty KWORDTREE, PREFIXTREE child BY_INDEX -> nodeidx 0 (self-cycle), 'A'
+  let spl = eval('0z56494D7370656C6C32030000000003000100FF00000004'
+        \ .. '0161010220010000000000000002010100000041')
+  call writefile(spl, 'Xrtp/spell/xx.utf-8.spl', 'b')
+
+  new
+  set runtimepath+=./Xrtp
+  set spelllang=xx
+  set spell
+  spelldump
+  call assert_true(line('$') > 1)
+
+  set spell& spelllang&
+  let &runtimepath = save_rtp
+  bwipe!
+  bwipe!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

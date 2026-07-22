@@ -1,8 +1,5 @@
 " Test for :global and :vglobal
 
-source check.vim
-source term_util.vim
-
 func Test_yank_put_clipboard()
   new
   call setline(1, ['a', 'b', 'c'])
@@ -89,7 +86,7 @@ func Test_global_print()
   endtry
   call assert_equal('yes', caught)
 
-  close!
+  bw!
 endfunc
 
 func Test_global_empty_pattern()
@@ -113,10 +110,19 @@ func Test_global_newline()
   call setline(1, ["foo\<NL>bar"])
   exe "g/foo/s/foo\\\<NL>bar/xyz/"
   call assert_equal('xyz', getline(1))
-  close!
+  bw!
 endfunc
 
-func Test_wrong_delimiter()
+" Test :g with ? as delimiter.
+func Test_global_question_delimiter()
+  new
+  call setline(1, ['aaaaa', 'b?bbb', 'ccccc', 'ddd?d', 'eeeee'])
+  g?\??delete
+  call assert_equal(['aaaaa', 'ccccc', 'eeeee'], getline(1, '$'))
+  bwipe!
+endfunc
+
+func Test_global_wrong_delimiter()
   call assert_fails('g x^bxd', 'E146:')
 endfunc
 

@@ -12,7 +12,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL)
 
 #define FOR_ALL_JOBS(job) \
     for ((job) = first_job; (job) != NULL; (job) = (job)->jv_next)
@@ -27,12 +27,16 @@ handle_mode(typval_T *item, jobopt_T *opt, ch_mode_T *modep, int jo)
 	*modep = CH_MODE_NL;
     else if (STRCMP(val, "raw") == 0)
 	*modep = CH_MODE_RAW;
+    else if (STRCMP(val, "blob") == 0)
+	*modep = CH_MODE_BLOB;
     else if (STRCMP(val, "js") == 0)
 	*modep = CH_MODE_JS;
     else if (STRCMP(val, "json") == 0)
 	*modep = CH_MODE_JSON;
     else if (STRCMP(val, "lsp") == 0)
 	*modep = CH_MODE_LSP;
+    else if (STRCMP(val, "dap") == 0)
+	*modep = CH_MODE_DAP;
     else
     {
 	semsg(_(e_invalid_argument_str), val);
@@ -382,7 +386,8 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported2 & JO2_TERM_FINISH))
 		    break;
 		val = tv_get_string(item);
-		if (STRCMP(val, "open") != 0 && STRCMP(val, "close") != 0)
+		if (STRCMP(val, "open") != 0 && STRCMP(val, "close") != 0
+			&& STRCMP(val, "noclose") != 0)
 		{
 		    semsg(_(e_invalid_value_for_argument_str_str),
 							   "term_finish", val);
@@ -838,7 +843,7 @@ free_jobs_to_free_later(void)
     }
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 job_free_all(void)
 {
@@ -891,7 +896,7 @@ job_still_useful(job_T *job)
     return job_need_end_check(job) || job_channel_still_useful(job);
 }
 
-#if defined(GUI_MAY_FORK) || defined(GUI_MAY_SPAWN) || defined(PROTO)
+#if defined(GUI_MAY_FORK) || defined(GUI_MAY_SPAWN)
 /*
  * Return TRUE when there is any running job that we care about.
  */
@@ -915,7 +920,7 @@ job_any_running(void)
 # define USE_ARGV
 #endif
 
-#if !defined(USE_ARGV) || defined(PROTO)
+#if !defined(USE_ARGV)
 /*
  * Escape one argument for an external command.
  * Returns the escaped string in allocated memory.  NULL when out of memory.
@@ -1087,7 +1092,7 @@ set_ref_in_job(int copyID)
 	{
 	    tv.v_type = VAR_JOB;
 	    tv.vval.v_job = job;
-	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
+	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL, NULL);
 	}
     return abort;
 }
@@ -1452,7 +1457,7 @@ job_start(
 	for (i = 0; i < argc; ++i)
 	{
 	    if (i > 0)
-		ga_concat(&ga, (char_u *)"  ");
+		GA_CONCAT_LITERAL(&ga, "  ");
 	    ga_concat(&ga, (char_u *)argv[i]);
 	}
 	ga_append(&ga, NUL);
@@ -1697,8 +1702,6 @@ f_prompt_setcallback(typval_T *argvars, typval_T *rettv UNUSED)
 
     free_callback(&buf->b_prompt_callback);
     set_callback(&buf->b_prompt_callback, &callback);
-    if (callback.cb_free_name)
-	vim_free(callback.cb_name);
 }
 
 /*
@@ -1726,8 +1729,6 @@ f_prompt_setinterrupt(typval_T *argvars, typval_T *rettv UNUSED)
 
     free_callback(&buf->b_prompt_interrupt);
     set_callback(&buf->b_prompt_interrupt, &callback);
-    if (callback.cb_free_name)
-	vim_free(callback.cb_name);
 }
 
 
@@ -1869,7 +1870,11 @@ job_info(job_T *job, dict_T *dict)
     if (l == NULL)
 	return;
 
-    dict_add_list(dict, "cmd", l);
+    if (dict_add_list(dict, "cmd", l) == FAIL)
+    {
+	list_unref(l);
+	return;
+    }
     if (job->jv_argv != NULL)
 	for (i = 0; job->jv_argv[i] != NULL; i++)
 	    list_append_string(l, (char_u *)job->jv_argv[i], -1);
@@ -2019,18 +2024,18 @@ job_to_string_buf(typval_T *varp, char_u *buf)
     status = job->jv_status == JOB_FAILED ? "fail"
 		    : job->jv_status >= JOB_ENDED ? "dead"
 		    : "run";
-# ifdef UNIX
+#ifdef UNIX
     vim_snprintf((char *)buf, NUMBUFLEN,
 		"process %ld %s", (long)job->jv_pid, status);
-# elif defined(MSWIN)
+#elif defined(MSWIN)
     vim_snprintf((char *)buf, NUMBUFLEN,
 		"process %ld %s",
 		(long)job->jv_proc_info.dwProcessId,
 		status);
-# else
+#else
     // fall-back
     vim_snprintf((char *)buf, NUMBUFLEN, "process ? %s", status);
-# endif
+#endif
     return buf;
 }
 

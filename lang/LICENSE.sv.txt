@@ -1,0 +1,78 @@
+VIM-LICENS
+
+I)  Det finns inga begränsningar för distribution av oförändrade kopior av Vim förutom
+    att de måste innehålla denna licenstext.  Du kan också distribuera
+    oförändrade delar av Vim, likaså utan begränsningar förutom att de måste
+    innehålla denna licenstext.  Du får också inkludera körbara filer
+    som du har skapat från de oförändrade Vim-källorna, samt dina egna användningsexempel
+    och Vim-skript.
+
+II) Det är tillåtet att distribuera en modifierad (eller utökad) version av Vim,
+    inklusive körbara filer och/eller källkod, när följande fyra
+    villkor är uppfyllda:
+    1) Denna licenstext måste inkluderas oförändrad.
+    2) Den modifierade Vim måste distribueras på ett av följande fem sätt:
+       a) Om du själv gör ändringar i Vim måste du tydligt beskriva
+          distributionen hur man kan kontakta dig.  När underhållaren ber dig
+          (på något sätt) om en kopia av den modifierade Vim du distribuerat, måste du
+          måste du göra dina ändringar, inklusive källkoden, tillgängliga för
+          underhållaren utan kostnad.  Underhållaren förbehåller sig rätten att
+          inkludera dina ändringar i den officiella versionen av Vim.  Vad
+          underhållaren kommer att göra med dina ändringar och under vilken licens de
+          kommer att distribueras är förhandlingsbart.  Om ingen förhandling har ägt rum
+          gäller denna licens, eller en senare version, även för dina ändringar.
+          De nuvarande underhållarna finns listade här: https://github.com/orgs/vim/people.
+          Om detta ändras kommer det att meddelas på lämpliga platser (troligen
+          vim.sf.net, www.vim.org och/eller comp.editors). När det är helt
+          omöjligt att kontakta underhållaren upphör skyldigheten att skicka
+          dina ändringar upphör.  När underhållaren har bekräftat att han har
+          mottagit dina ändringar behöver de inte skickas igen.
+       b) Om du har fått en modifierad Vim som distribuerats enligt
+          nämnts under a) får du distribuera den vidare
+          oförändrat, enligt vad som anges i I).  Om du gör ytterligare ändringar gäller
+          gäller texten under a) för dessa ändringar.
+       c) Tillhandahåll alla ändringar, inklusive källkod, med varje kopia av
+          den modifierade Vim du distribuerar.  Detta kan göras i form av en
+          kontextdiff.  Du kan välja vilken licens du vill använda för ny kod som du
+          lägger till.  Ändringarna och deras licens får inte hindra andra från att
+          göra egna ändringar i den officiella versionen av Vim.
+       d) När du har en modifierad Vim som innehåller ändringar enligt
+          under c), kan du distribuera den utan källkoden för
+          ändringarna om följande tre villkor är uppfyllda:
+          - Licensen som gäller för ändringarna tillåter dig att distribuera
+            ändringarna till Vim-underhållaren utan avgift eller begränsningar, och
+            tillåter Vim-underhållaren att inkludera ändringarna i den officiella
+            versionen av Vim utan avgift eller begränsningar.
+          - Du behåller ändringarna i minst tre år efter senaste
+            distribution av motsvarande modifierade Vim.  När underhållaren
+            eller någon som du distribuerat den modifierade Vim till ber dig (på
+            något sätt) om ändringarna inom denna period måste du göra dem
+            tillgängliga för honom.
+          - Du beskriver tydligt i distributionen hur man kan kontakta dig.  Denna
+            kontaktinformationen måste vara giltig i minst tre år
+            efter den sista distributionen av motsvarande modifierade Vim, eller så länge
+            som möjligt.
+       e) När GNU General Public License (GPL) gäller för ändringarna,
+          kan du distribuera den modifierade Vim under GNU GPL version 2 eller
+          någon senare version.
+    3) Ett meddelande måste läggas till, åtminstone i utdata från kommandot ":version"
+       och i introduktionsskärmen, så att användaren av den modifierade Vim
+       kan se att den har modifierats.  Vid distribution enligt
+       under 2)e) krävs det endast att meddelandet läggs till i den mån detta
+       inte strider mot den licens som används för ändringarna.
+    4) Kontaktinformationen som krävs enligt 2)a) och 2)d) får inte
+       tas bort eller ändras, förutom att personen själv kan göra
+       korrigeringar.
+
+III) Om du distribuerar en modifierad version av Vim uppmuntras du att använda
+     Vim-licensen för dina ändringar och göra dem tillgängliga för
+     underhållaren, inklusive källkoden.  Det bästa sättet att göra detta är
+     via e-post eller genom att ladda upp filerna till en server och e-posta URL:en.
+     Om antalet ändringar är litet (t.ex. en modifierad Makefile) räcker det att skicka ett
+     kontextdiff.  E-postadressen som ska användas är
+     <maintainer@vim.org>
+
+IV)  Det är inte tillåtet att ta bort denna licens från distributionen av Vim
+     källkoden, delar av den eller från en modifierad version.  Du får använda denna
+     licensen för tidigare Vim-utgåvor istället för den licens som de levererades med
+     med, om du så önskar.

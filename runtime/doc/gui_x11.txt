@@ -1,7 +1,7 @@
-*gui_x11.txt*   For Vim version 9.1.  Last change: 2024 Jan 30
+*gui_x11.txt*	For Vim version 9.2.  Last change: 2026 June 29
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
 Vim's Graphical User Interface				*gui-x11* *GUI-X11*
@@ -280,7 +280,7 @@ For "mwm" (Motif window manager) the line would be: >
 
 Mouse Pointers Available in X11 ~
 						*X11_mouse_shapes*
-By using the |'mouseshape'| option, the mouse pointer can be automatically
+By using the 'mouseshape' option, the mouse pointer can be automatically
 changed whenever Vim enters one of its various modes (e.g., Insert or
 Command).  Currently, the available pointers are:
 
@@ -321,8 +321,8 @@ stuff like -bg, -fg, etc).  The ones that are supported are:
     -fg -foreground {color}			foreground color
     -bg -background {color}			background color
 
-To set the font, see |'guifont'|.  For GTK, there's also a menu option that
-does this.
+To set the font, see 'guifont'.  For GTK, there's also a menu option that does
+this.
 
 Additionally, there are these command line arguments, which are handled by GTK
 internally.  Look in the GTK documentation for how they are used:
@@ -350,12 +350,34 @@ If you want to set the colors of remaining gui components (e.g., the
 menubar, scrollbar, whatever), those are GTK specific settings and you
 need to set those up in some sort of gtkrc file.  You'll have to refer
 to the GTK documentation, however little there is, on how to do this.
-See http://developer.gnome.org/doc/API/2.0/gtk/gtk-Resource-Files.html
+See https://www.manpagez.com/html/gtk2/gtk2-2.24.24/gtk2-Resource-Files.php
 for more information.
 							*gtk3-slow*
-If you are using GTK3 and Vim appears to be slow, try setting the environment
-variable $GDK_RENDERING to "image".
+If the GTK3 GUI is slow, try: >
 
+    $ GDK_RENDERING=image gvim
+
+Small font, high resolution, many 'lines' (vertical screen) and UI scaling all
+contribute to a slower redraw.
+
+							*gtk4-slow*
+If the GTK4 GUI is slow, freezes, or does not accept keyboard input right
+after startup, it may be caused by the OpenGL renderer or GPU driver.  Try
+starting gvim with one of the following environment variables.  Setting
+$GSK_RENDERER to "cairo" disables the GSK OpenGL renderer.  Setting
+$LIBGL_ALWAYS_SOFTWARE to "true" retains the OpenGL renderer but forces Mesa
+to use software rendering: >
+
+    $ GSK_RENDERER=cairo gvim
+    $ LIBGL_ALWAYS_SOFTWARE=true gvim
+<
+							*gtk4-hwaccel*
+If Vim is compiled with the configure option "--enable-gtk4-hwaccel" set, then
+the GTK4 GUI will use GtkSnapshot instead of Cairo, allowing for hardware
+accelerated rendering, which is much faster.  Enabling this configure option
+also makes the GTK4 GUI use |+image_gdk| instead of |+image_cairo| for
+rendering popup window images.  Note that this feature is currently
+experimental.
 
 Tooltip Colors ~
 							*gtk-tooltip-colors*
@@ -519,7 +541,7 @@ of the normal GtkWindow.  This enables Vim to act as a GTK+ plugin.
 
 This really is a programmer's interface, and is of no use without a supporting
 application to spawn the Vim correctly.  For more details on GTK+ sockets, see
-http://www.gtk.org/api/
+https://www.gtk.org/docs/apis/index
 
 Note that this feature requires the latest GTK version.  GTK 1.2.10 still has
 a small problem.  The socket feature has not yet been tested with GTK+ 2 --
@@ -602,7 +624,7 @@ your pkg-config works with your GTK+ 2: >
 
     $ pkg-config --modversion gtk+-2.0
 
-Replace gtk+-2.0 with gtk+-3.0 for GTK+ 3. If you get the correct version
+Replace gtk+-2.0 with gtk+-3.0 for GTK+ 3.  If you get the correct version
 number of your GTK+, you can proceed; if not, you probably need to do some
 system administration chores to set up pkg-config and GTK+ correctly.
 
@@ -636,8 +658,8 @@ that version.
 For Motif, you need at least Motif version 1.2 and/or X11R5.  Motif 2.0 and
 X11R6 are OK.  Motif 1.1 and X11R4 might work, no guarantee (there may be a
 few problems, but you might make it compile and run with a bit of work, please
-send me the patches if you do).  The newest releases of LessTif have been
-reported to work fine too.
+send patches if you do).  The newest releases of LessTif have been reported to
+work fine too.
 
 					    *gui-x11-athena* *gui-x11-neXtaw*
 Support for the Athena GUI and neXtaw was removed in patch 8.2.4677.
@@ -649,9 +671,7 @@ X11R5 with a library for X11R6 probably doesn't work (although the linking
 won't give an error message, Vim will crash later).
 
 							*gui-wayland*
-Initial support for the Wayland display server protocol has landed in patch
-9.1.0064. To enable it, you need to set the environment variable
-"$GVIM_ENABLE_WAYLAND" in your shell.
+Support for the Wayland display server protocol has landed in patch 9.1.0064.
 
 Note: The Wayland protocol is subject to some restrictions, so the following
 functions won't work: |getwinpos()|, |getwinposx()|, |getwinposy()| and the
@@ -686,7 +706,7 @@ cut, copy and paste operations).
 
 Of these three, Vim uses PRIMARY when reading and writing the "* register
 (hence when the X11 selections are available, Vim sets a default value for
-|'clipboard'| of "autoselect"), and CLIPBOARD when reading and writing the "+
+'clipboard' of "autoselect"), and CLIPBOARD when reading and writing the "+
 register.  Vim does not access the SECONDARY selection.
 
 This applies both to the GUI and the terminal version.  For non-X11 systems
@@ -708,6 +728,35 @@ Examples: (assuming the default option values)
 Note that the text in the "+ register remains available when making a Visual
 selection, which makes other text available in the "* register.  That allows
 overwriting selected text.
+
+								*W23*
+When you are yanking into the "* or "+ register and Vim cannot establish a
+connection to the X11 selection (or clipboard), it will use register 0 and
+output a warning:
+
+  Warning: Clipboard register not available, using register 0 ~
+
+Note: This also applies to the Wayland clipboard feature as well.
+
+								*W24*
+Vim comes in different flavors, from a tiny build, that just tries to be
+compatible to original Vi, to enhanced builds which include many improvements
+(like a GUI).  However, on servers and embedded systems, Vim is typically
+compiled without clipboard support, since this feature requires X11 libraries
+to be present.  Check the ":version" output for the flag |+clipboard| or
+-clipboard.  The former means clipboard support is present while the latter
+means your Vim does not contain clipboard support.
+
+In the case when you are trying to access the "* or "+ register and Vim has
+no clipboard support, you will see this warning:
+
+  Warning: Clipboard register not available. See :h W24~
+
+If you have a vim with no clipboard support but would like to use the
+clipboard, try to install a more enhanced Vim package like vim-enhanced or
+vim-gtk3 (the gui packages usually also come with a terminal Vim that has
+clipboard support included).
+
 							*x11-cut-buffer*
 There are, by default, 8 cut-buffers: CUT_BUFFER0 to CUT_BUFFER7.  Vim only
 uses CUT_BUFFER0, which is the one that xterm uses by default.
@@ -736,6 +785,17 @@ CLIPBOARD, thus the "+ doesn't work with xterm.
 Most newer applications will provide their current selection via PRIMARY ("*)
 and use CLIPBOARD ("+) for cut/copy/paste operations.  You thus have access to
 both by choosing to use either of the "* or "+ registers.
+
+							*gtk4-menu-navigation*
+In the GTK 4 GUI, you may also navigate the menu items with these keyboard
+mappings:
+    key			meaning ~
+    <Tab> <Down>	Go to next item
+    <S-Tab> <Up>	Go to previous item
+    <Left>		Go to parent submenu
+    <Right>		Go to current item's submenu
+    <C-Left>		Go to next menu bar item
+    <C-Right>		Go to previous menu bar item
 
 
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

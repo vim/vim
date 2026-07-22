@@ -1,7 +1,7 @@
 " Tests for the List and Dict types
 scriptencoding utf-8
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 func TearDown()
   " Run garbage collection after every test
@@ -60,6 +60,9 @@ func Test_list_slice()
       assert_equal([1, 2], l[-3 : -1])
   END
   call v9.CheckDefAndScriptSuccess(lines)
+
+  call assert_fails('let l[[]] = 1', 'E730: Using a List as a String')
+  call assert_fails('let l[1 : []] = [1]', 'E730: Using a List as a String')
 endfunc
 
 " List identity
@@ -178,6 +181,27 @@ func Test_list_assign()
   END
   call v9.CheckScriptFailure(['vim9script'] + lines, 'E688:')
   call v9.CheckDefExecFailure(lines, 'E1093: Expected 2 items but got 1')
+
+  let lines =<< trim END
+    VAR l = [2]
+    LET l += test_null_list()
+    call assert_equal([2], l)
+    LET l = test_null_list()
+    LET l += [1]
+    call assert_equal([1], l)
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+
+  let lines =<< trim END
+    VAR [x, y] = test_null_list()
+  END
+  call v9.CheckLegacyAndVim9Failure(lines, [
+        \ 'E714: List required',
+        \ 'E1093: Expected 2 items but got 0',
+        \ 'E714: List required'])
+
+  let d = {'abc': [1, 2, 3]}
+  call assert_fails('let d.abc[0:0z10] = [10, 20]', 'E976: Using a Blob as a String')
 endfunc
 
 " test for range assign
@@ -206,7 +230,7 @@ func Test_list_items()
   endfor
   call assert_equal([[0, 'a'], [1, 'b'], [2, 'c']], r)
 
-  call assert_fails('call items(3)', 'E1225:')
+  call assert_fails('call items(3)', 'E1251:')
 endfunc
 
 func Test_string_items()
@@ -447,6 +471,9 @@ func Test_dict_assign()
     n.key = 3
   END
   call v9.CheckDefFailure(lines, 'E1141:')
+
+  let d = {'abc': {}}
+  call assert_fails("let d.abc[0z10] = 10", 'E976: Using a Blob as a String')
 endfunc
 
 " Function in script-local List or Dict
@@ -548,6 +575,8 @@ func Test_dict_literal_keys()
   " why *{} cannot be used for a literal dictionary
   let blue = 'blue'
   call assert_equal('6', trim(execute('echo 2 *{blue: 3}.blue')))
+
+  call assert_fails('eval 1 || #{a:', 'E15:') " used to leak
 endfunc
 
 " Nasty: deepcopy() dict that refers to itself (fails when noref used)
@@ -981,7 +1010,7 @@ func Test_reverse_sort_uniq()
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
-  call assert_fails('call reverse({})', 'E1252:')
+  call assert_fails('call reverse({})', 'E1253:')
   call assert_fails('call uniq([1, 2], {x, y -> []})', 'E745:')
   call assert_fails("call sort([1, 2], function('min'), 1)", "E1206:")
   call assert_fails("call sort([1, 2], function('invalid_func'))", "E700:")
@@ -1054,15 +1083,15 @@ func Test_reduce()
   call assert_fails("call reduce('', { acc, val -> acc + val })", 'E998: Reduce of an empty String with no initial value')
   call assert_fails("call reduce(test_null_string(), { acc, val -> acc + val })", 'E998: Reduce of an empty String with no initial value')
 
-  call assert_fails("call reduce({}, { acc, val -> acc + val }, 1)", 'E1098:')
-  call assert_fails("call reduce(0, { acc, val -> acc + val }, 1)", 'E1098:')
+  call assert_fails("call reduce({}, { acc, val -> acc + val }, 1)", 'E1253:')
+  call assert_fails("call reduce(0, { acc, val -> acc + val }, 1)", 'E1253:')
   call assert_fails("call reduce([1, 2], 'Xdoes_not_exist')", 'E117:')
   call assert_fails("echo reduce(0z01, { acc, val -> 2 * acc + val }, '')", 'E1210:')
 
-  call assert_fails("vim9 reduce(0, (acc, val) => (acc .. val), '')", 'E1252:')
-  call assert_fails("vim9 reduce({}, (acc, val) => (acc .. val), '')", 'E1252:')
-  call assert_fails("vim9 reduce(0.1, (acc, val) => (acc .. val), '')", 'E1252:')
-  call assert_fails("vim9 reduce(function('tr'), (acc, val) => (acc .. val), '')", 'E1252:')
+  call assert_fails("vim9 reduce(0, (acc, val) => (acc .. val), '')", 'E1253:')
+  call assert_fails("vim9 reduce({}, (acc, val) => (acc .. val), '')", 'E1253:')
+  call assert_fails("vim9 reduce(0.1, (acc, val) => (acc .. val), '')", 'E1253:')
+  call assert_fails("vim9 reduce(function('tr'), (acc, val) => (acc .. val), '')", 'E1253:')
   call assert_fails("call reduce('', { acc, val -> acc + val }, 1)", 'E1174:')
   call assert_fails("call reduce('', { acc, val -> acc + val }, {})", 'E1174:')
   call assert_fails("call reduce('', { acc, val -> acc + val }, 0.1)", 'E1174:')
@@ -1128,6 +1157,19 @@ func Test_listdict_compare()
   call assert_fails('echo {} =~ {}', 'E736:')
 endfunc
 
+func Test_recursive_listdict_compare()
+  let l1 = [0, 1]
+  let l1[0] = l1
+  let l2 = [0, 1]
+  let l2[0] = l2
+  call assert_true(l1 == l2)
+  let d1 = {0: 0, 1: 1}
+  let d1[0] = d1
+  let d2 = {0: 0, 1: 1}
+  let d2[0] = d2
+  call assert_true(d1 == d2)
+endfunc
+
   " compare complex recursively linked list and dict
 func Test_listdict_compare_complex()
   let lines =<< trim END
@@ -1175,7 +1217,12 @@ func Test_listdict_extend()
 
       LET l = [1, 2, 3]
       call extend(l, [4, 5, 6], -3)
-      call assert_equal([4, 5, 6, 1, 2,  3], l)
+      call assert_equal([4, 5, 6, 1, 2, 3], l)
+
+      LET l = [1, 2, 3]
+      call assert_equal([1, 2, 3], l->extend([]))
+      call assert_equal([1, 2, 3], l->extend(test_null_list()))
+      call assert_equal([1, 2, 3], l)
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
@@ -1203,6 +1250,11 @@ func Test_listdict_extend()
       LET d = {'a': 'A', 'b': 9}
       call extend(d, {'b': 0, 'c': 'C'}, "keep")
       call assert_equal({'a': 'A', 'b': 9, 'c': 'C'}, d)
+
+      LET d = {'a': 'A', 'b': 9}
+      call assert_equal({'a': 'A', 'b': 9}, d->extend({}))
+      call assert_equal({'a': 'A', 'b': 9}, d->extend(test_null_dict()))
+      call assert_equal({'a': 'A', 'b': 9}, d)
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
@@ -1244,6 +1296,11 @@ func Test_listdict_extendnew()
   call assert_equal([1, 2, 3], l)
   lockvar l
   call assert_equal([1, 2, 3, 4, 5], extendnew(l, [4, 5]))
+  let l2 = extendnew(l, test_null_list())
+  call assert_equal([1, 2, 3], l2)
+  let l2 += [4]
+  call assert_equal([1, 2, 3, 4], l2)
+  call assert_equal([1, 2, 3], l)
 
   " Test extendnew() with dictionaries.
   let d = {'a': {'b': 'B'}}
@@ -1251,6 +1308,11 @@ func Test_listdict_extendnew()
   call assert_equal({'a': {'b': 'B'}}, d)
   lockvar d
   call assert_equal({'a': {'b': 'B'}, 'c': 'cc'}, extendnew(d, {'c': 'cc'}))
+  let d2 = extendnew(d, test_null_dict())
+  call assert_equal({'a': {'b': 'B'}}, d2)
+  let d2['c'] = 'C'
+  call assert_equal({'a': {'b': 'B'}, 'c': 'C'}, d2)
+  call assert_equal({'a': {'b': 'B'}}, d)
 endfunc
 
 func s:check_scope_dict(x, fixed)
@@ -1372,7 +1434,7 @@ func Test_listdict_index()
   call v9.CheckLegacyAndVim9Failure(['VAR d = {"k": 10}', 'echo d[1 : 2]'], 'E719:')
 
   call assert_fails("let v = [4, 6][{-> 1}]", 'E729:')
-  call v9.CheckDefAndScriptFailure(['var v = [4, 6][() => 1]'], ['E1012', 'E703:'])
+  call v9.CheckDefAndScriptFailure(['var v = [4, 6][() => 1]'], ['E1012:', 'E703:'])
 
   call v9.CheckLegacyAndVim9Failure(['VAR v = range(5)[2 : []]'], ['E730:', 'E1012:', 'E730:'])
 
@@ -1431,7 +1493,7 @@ func Test_null_list()
   let l = test_null_list()
   call assert_equal([], extend(l, l, 0))
   call assert_equal(0, insert(test_null_list(), 2, -1))
-  call assert_fails('let s = join([1, 2], [])', 'E730:')
+  call assert_fails('let s = join([1, 2], [])', 'E1174:')
   call assert_fails('call remove(l, 0, 2)', 'E684:')
   call assert_fails('call insert(l, 2, -1)', 'E684:')
   call assert_fails('call extend(test_null_list(), test_null_list())', 'E1134:')
@@ -1505,12 +1567,14 @@ func Test_indexof()
   call assert_equal(-1, indexof(test_null_list(), {i, v -> v == 'a'}))
   call assert_equal(-1, indexof(l, test_null_string()))
   call assert_equal(-1, indexof(l, test_null_function()))
+  call assert_equal(-1, indexof(l, ""))
+  call assert_fails('let i = indexof(l, " ")', 'E15:')
 
   " failure cases
   call assert_fails('let i = indexof(l, "v:val == ''cyan''")', 'E735:')
   call assert_fails('let i = indexof(l, "color == ''cyan''")', 'E121:')
   call assert_fails('let i = indexof(l, {})', 'E1256:')
-  call assert_fails('let i = indexof({}, "v:val == 2")', 'E1226:')
+  call assert_fails('let i = indexof({}, "v:val == 2")', 'E1528:')
   call assert_fails('let i = indexof([], "v:val == 2", [])', 'E1206:')
 
   func TestIdx(k, v)
@@ -1529,5 +1593,559 @@ func Test_indexof()
   call assert_fails('let i = indexof(l, function("TestIdx"))', 'E605:')
   delfunc TestIdx
 endfunc
+
+func Test_extendnew_leak()
+  " This used to leak memory
+  for i in range(100) | silent! call extendnew([], [], []) | endfor
+  for i in range(100) | silent! call extendnew({}, {}, {}) | endfor
+endfunc
+
+" Test for comparing deeply nested List/Dict values
+func Test_deep_nested_listdict_compare()
+  let lines =<< trim END
+    def GetNestedList(sz: number): list<any>
+      var l: list<any> = []
+      var x: list<any> = l
+      for i in range(sz)
+        var y: list<any> = [1]
+        add(x, y)
+        x = y
+      endfor
+      return l
+    enddef
+
+    VAR l1 = GetNestedList(1000)
+    VAR l2 = GetNestedList(999)
+    call assert_false(l1 == l2)
+
+    #" after 1000 nested items, the lists are considered to be equal
+    VAR l3 = GetNestedList(1001)
+    VAR l4 = GetNestedList(1002)
+    call assert_true(l3 == l4)
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+
+  let lines =<< trim END
+    def GetNestedDict(sz: number): dict<any>
+      var d: dict<any> = {}
+      var x: dict<any> = d
+      for i in range(sz)
+        var y: dict<any> = {}
+        x['a'] = y
+        x = y
+      endfor
+      return d
+    enddef
+
+    VAR d1 = GetNestedDict(1000)
+    VAR d2 = GetNestedDict(999)
+    call assert_false(d1 == d2)
+
+    #" after 1000 nested items, the Dicts are considered to be equal
+    VAR d3 = GetNestedDict(1001)
+    VAR d4 = GetNestedDict(1002)
+    call assert_true(d3 == d4)
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+endfunc
+
+" Test for using id()
+def Test_id_with_dict()
+  # demonstrate a way that "id(item)" differs from "string(item)"
+  var d1 = {one: 1}
+  var d2 = {one: 1}
+  var d3 = {one: 1}
+  var idDict: dict<any>
+  idDict[id(d1)] = d1
+  idDict[id(d2)] = d2
+  idDict[id(d3)] = d3
+  assert_equal(3, idDict->len())
+
+  var stringDict: dict<any>
+  stringDict[string(d1)] = d1
+  stringDict[string(d2)] = d2
+  stringDict[string(d3)] = d3
+  assert_equal(1, stringDict->len())
+
+  assert_equal('', id(3))
+
+  assert_equal('', id(null))
+  assert_equal('', id(null_blob))
+  assert_equal('', id(null_dict))
+  assert_equal('', id(null_function))
+  assert_equal('', id(null_list))
+  assert_equal('', id(null_partial))
+  assert_equal('', id(null_string))
+  assert_equal('', id(null_channel))
+  assert_equal('', id(null_job))
+enddef
+
+" Test for adding an item to a List with type list<any> by using the list
+" length as the index
+def Test_list_length_as_index()
+  # Append a new item to a list (vim9script)
+  var lines =<< trim END
+    var l = []
+    l[0] = 'abc'
+    assert_equal(['abc'], l)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Type check when adding a new item
+  lines =<< trim END
+    var l: list<string>
+    l[0] = 10
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected string but got number', 2)
+
+  # In legacy script, appending a new item to a list should fail.
+  lines =<< trim END
+    let l = []
+    let l[0] = 'abc'
+  END
+  v9.CheckLegacyFailure(lines, 'E684: List index out of range: 0')
+
+  # Append a new item to a dict which is part of another list
+  lines =<< trim END
+    var inner: dict<string> = {}
+    var outer: list<any> = [inner]
+
+    outer[0] = {a: 'xxx'}
+    assert_equal([{'a': 'xxx'}], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Append a new item to a list which is part of another tuple
+  lines =<< trim END
+    var inner: list<string>
+    var outer: tuple<any> = (inner,)
+
+    outer[0][0] = 'aaa'
+    assert_equal((['aaa'],), outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Append a new item to a list which is part of another list
+  lines =<< trim END
+    var inner: list<dict<string>>
+    var outer: list<any> = [inner]
+
+    outer[0][0] = {a: ''}
+    assert_equal([[{'a': ''}]], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Type check
+  lines =<< trim END
+    var inner: list<dict<string>>
+    var outer: list<any> = [inner]
+    outer[0][0] = {a: 0z10}
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected dict<string> but got dict<blob>', 3)
+
+  # In legacy script, appending a new item to a list which is part of another
+  # list should fail.
+  lines =<< trim END
+    let inner = []
+    let outer = [inner]
+
+    let outer[0][0] = {'a': ''}
+  END
+  v9.CheckLegacyFailure(lines, 'E684: List index out of range: 0')
+
+  # appending an item to a nested list
+  lines =<< trim END
+    var inner: list<list<dict<string>>>
+    var outer: list<any> = [inner]
+
+    outer[0][0] = []
+    outer[0][0][0] = {a: 'abc'}
+    assert_equal([[[{'a': 'abc'}]]], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<list<dict<string>>>
+    var outer: list<any> = [inner]
+    outer[0][0] = []
+    outer[0][0][0] = {a: 0z10}
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected dict<string> but got dict<blob>', 4)
+
+  # legacy script
+  lines =<< trim END
+    let inner = [[]]
+    let outer = [inner]
+    let outer[0][0][0] = {'a': 'abc'}
+  END
+  v9.CheckLegacyFailure(lines, 'E684: List index out of range: 0')
+
+  # adding a new blob to a list of blobs
+  lines =<< trim END
+    var inner: list<blob>
+    var outer: list<any> = [inner]
+    outer[0][0] = 0z10
+    assert_equal([[0z10]], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<blob>
+    var outer: list<any> = [inner]
+    outer[0][0] = 10
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected blob but got number', 3)
+
+  # adding a new tuple to a list of tuples
+  lines =<< trim END
+    var inner: list<tuple<string>>
+    var outer: list<any> = [inner]
+    outer[0][0] = ('abc',)
+    assert_equal([[('abc',)]], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<tuple<string>>
+    var outer: list<any> = [inner]
+    outer[0][0] = ['abc']
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected tuple<string> but got list<string>', 3)
+
+  # adding a new string to a list of strings
+  lines =<< trim END
+    var inner: list<string>
+    var outer: list<any> = [inner]
+    outer[0][0] = 'xx'
+    assert_equal([['xx']], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<string>
+    var outer: list<any> = [inner]
+    outer[0][0] = 10
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected string but got number', 3)
+
+  # adding a new number to a list of numbers
+  lines =<< trim END
+    var inner: list<number>
+    var outer: list<any> = [inner]
+    outer[0][0] = 1234
+    assert_equal([[1234]], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<number>
+    var outer: list<any> = [inner]
+    outer[0][0] = ''
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got string', 3)
+
+  # adding a new float to a list of floats
+  lines =<< trim END
+    var inner: list<float>
+    var outer: list<any> = [inner]
+    outer[0][0] = 2.0
+    assert_equal([[2.0]], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<float>
+    var outer: list<any> = [inner]
+    outer[0][0] = ''
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected float but got string', 3)
+
+  # adding a new bool to a list of bools
+  lines =<< trim END
+    var inner: list<bool>
+    var outer: list<any> = [inner]
+    outer[0][0] = true
+    assert_equal([[true]], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<bool>
+    var outer: list<any> = [inner]
+    outer[0][0] = 'a'
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected bool but got string', 3)
+
+  # adding a new funcref to a list of funcrefs
+  lines =<< trim END
+    var inner: list<func>
+    var outer: list<any> = [inner]
+    outer[0][0] = function('min')
+    assert_equal([[function('min')]], outer)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # adding a new lambda to a list of funcrefs
+  lines =<< trim END
+    var inner: list<func>
+    var outer: list<any> = [inner]
+    outer[0][0] = () => 'x'
+    assert_match("\[\[function('<lambda>\d\+')]]", string(outer))
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<func>
+    var outer: list<any> = [inner]
+    outer[0][0] = 'min'
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected func(...): unknown but got string', 3)
+
+  # adding a new job to a list of jobs
+  lines =<< trim END
+    var inner: list<job>
+    var outer: list<any> = [inner]
+    outer[0][0] = test_null_job()
+    assert_equal('[[''no process'']]', string(outer))
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<job>
+    var outer: list<any> = [inner]
+    outer[0][0] = test_null_channel()
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected job but got channel', 3)
+
+  # adding a new channel to a list of channels
+  lines =<< trim END
+    var inner: list<channel>
+    var outer: list<any> = [inner]
+    outer[0][0] = test_null_channel()
+    assert_equal('[[''channel fail'']]', string(outer))
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # type check
+  lines =<< trim END
+    var inner: list<channel>
+    var outer: list<any> = [inner]
+    outer[0][0] = test_null_job()
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected channel but got job', 3)
+
+  # adding a new object to a list of objects
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    var inner: list<A>
+    var outer: list<any> = [inner]
+    outer[0][0] = A.new()
+    assert_equal('[[object of A {}]]', string(outer))
+    def Fn()
+      var Finner: list<A>
+      var Fouter: list<any> = [Finner]
+      Fouter[0][0] = A.new()
+      assert_equal('[[object of A {}]]', string(Fouter))
+    enddef
+    Fn()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # type check (in a script)
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    var inner: list<A>
+    var outer: list<any> = [inner]
+    outer[0][0] = B.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected object<A> but got object<B>', 8)
+
+  # type check (in a method)
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    def Fn()
+      var inner: list<A>
+      var outer: list<any> = [inner]
+      outer[0][0] = B.new()
+    enddef
+    Fn()
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected object<A> but got object<B>', 3)
+
+  # adding a new enum to a list of enums
+  lines =<< trim END
+    vim9script
+    enum Color
+      RED,
+      BLUE,
+      GREEN
+    endenum
+    var inner: list<Color>
+    var outer: list<any> = [inner]
+    outer[0][0] = Color.BLUE
+    assert_equal("[[enum Color.BLUE {name: 'BLUE', ordinal: 1}]]", string(outer))
+    def Fn()
+      var Finner: list<Color>
+      var Fouter: list<any> = [Finner]
+      Fouter[0][0] = Color.GREEN
+      assert_equal("[[enum Color.GREEN {name: 'GREEN', ordinal: 2}]]", string(Fouter))
+    enddef
+    Fn()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # type check (in a script)
+  lines =<< trim END
+    vim9script
+    enum Color
+      RED,
+      BLUE,
+      GREEN
+    endenum
+    enum Shape
+      CIRCLE,
+      SQUARE
+    endenum
+    var inner: list<Color>
+    var outer: list<any> = [inner]
+    outer[0][0] = Shape.CIRCLE
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected enum<Color> but got enum<Shape>', 13)
+
+  # type check (in a method)
+  lines =<< trim END
+    vim9script
+    enum Color
+      RED,
+      BLUE,
+      GREEN
+    endenum
+    enum Shape
+      CIRCLE,
+      SQUARE
+    endenum
+    def Fn()
+      var inner: list<Color>
+      var outer: list<any> = [inner]
+      outer[0][0] = Shape.CIRCLE
+    enddef
+    Fn()
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected enum<Color> but got enum<Shape>', 3)
+
+  # adding a new string to a list of strings (using type alias)
+  lines =<< trim END
+    vim9script
+    type StrType = string
+    var inner: list<StrType>
+    var outer: list<any> = [inner]
+    outer[0][0] = 'abc'
+    assert_equal([['abc']], outer)
+
+    def Fn()
+      var Finner: list<StrType>
+      var Fouter: list<any> = [Finner]
+      Fouter[0][0] = 'abc'
+      assert_equal([['abc']], Fouter)
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # type check (using type alias in a script)
+  lines =<< trim END
+    vim9script
+    type StrType = string
+    var inner: list<StrType>
+    var outer: list<any> = [inner]
+    outer[0][0] = 10
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1012: Type mismatch; expected string but got number', 5)
+
+  # type check (using type alias in a method)
+  lines =<< trim END
+    vim9script
+    type StrType = string
+    def Fn()
+      var inner: list<StrType>
+      var outer: list<any> = [inner]
+      outer[0][0] = 10
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1012: Type mismatch; expected string but got number', 3)
+
+  # append to a List object variable which is part of another list
+  lines =<< trim END
+    vim9script
+    class A
+      var l: list<string>
+    endclass
+
+    var inner: list<A>
+    var outer: list<any> = [inner]
+    outer[0][0] = A.new()
+    outer[0][0].l[0] = 'abc'
+    assert_equal("[[object of A {l: ['abc']}]]", string(outer))
+
+    def Fn()
+      var Finner: list<A>
+      var Fouter: list<any> = [Finner]
+      Fouter[0][0] = A.new()
+      Fouter[0][0].l[0] = 'abc'
+      assert_equal("[[object of A {l: ['abc']}]]", string(Fouter))
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # type check (in a script)
+  lines =<< trim END
+    vim9script
+    class A
+      var l: list<string>
+    endclass
+    var inner: list<A>
+    var outer: list<any> = [inner]
+    outer[0][0] = A.new()
+    outer[0][0].l[0] = 0z10
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1012: Type mismatch; expected string but got blob', 8)
+
+  # type check (in a method)
+  lines =<< trim END
+    vim9script
+    class A
+      var l: list<string>
+    endclass
+    def Fn()
+      var inner: list<A>
+      var outer: list<any> = [inner]
+      outer[0][0] = A.new()
+      outer[0][0].l[0] = 0z10
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1012: Type mismatch; expected string but got blob', 4)
+enddef
 
 " vim: shiftwidth=2 sts=2 expandtab

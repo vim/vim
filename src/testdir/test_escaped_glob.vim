@@ -1,8 +1,6 @@
 " Test whether glob()/globpath() return correct results with certain escaped
 " characters.
 
-source check.vim
-
 func SetUp()
   " consistent sorting of file names
   set nofileignorecase

@@ -1,6 +1,6 @@
 " Vim filetype plugin file
 " Language:      Perl
-" Maintainer:    vim-perl <vim-perl@googlegroups.com>
+" Maintainer:    vim-perl <vim-perl@googlegroups.com> (need to be subscribed to post)
 " Homepage:      https://github.com/vim-perl/vim-perl
 " Bugs/requests: https://github.com/vim-perl/vim-perl/issues
 " License:       Vim License (see :help license)
@@ -8,6 +8,7 @@
 "                2023 Sep 07 by Vim Project (safety check: don't execute perl
 "                    from current directory)
 "                2024 Jan 14 by Vim Project (browsefilter)
+"                2024 May 24 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
 if exists("b:did_ftplugin") | finish | endif
 let b:did_ftplugin = 1
@@ -22,7 +23,7 @@ setlocal formatoptions+=crqol
 setlocal keywordprg=perldoc\ -f
 
 setlocal comments=:#
-setlocal commentstring=#%s
+setlocal commentstring=#\ %s
 
 " Provided by Ned Konz <ned at bike-nomad dot com>
 "---------------------------------------------

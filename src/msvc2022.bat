@@ -11,3 +11,7 @@ rem     msvc2022 x64
 set "VSVEROPT=-version [17.0^,18.0^)"
 call "%~dp0msvc-latest.bat" %*
 set VSVEROPT=
+if defined VCToolsVersion (
+	echo VS 2022 ^(%VCToolsVersion%^) %VSCMD_ARG_TGT_ARCH%
+	title VS 2022 %VSCMD_ARG_TGT_ARCH%
+)

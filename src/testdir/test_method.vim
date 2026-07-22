@@ -1,7 +1,5 @@
 " Tests for ->method()
 
-source check.vim
-
 func Test_list_method()
   let l = [1, 2, 3]
   call assert_equal([1, 2, 3, 4], [1, 2, 3]->add(4))
@@ -52,7 +50,7 @@ func Test_dict_method()
   call assert_fails("let x = d->insert(0)", 'E899:')
   call assert_true(d->has_key('two'))
   call assert_equal([['one', 1], ['two', 2], ['three', 3]], d->items())
-  call assert_fails("let x = d->join()", 'E1211:')
+  call assert_fails("let x = d->join()", 'E1529:')
   call assert_equal(['one', 'two', 'three'], d->keys())
   call assert_equal(3, d->len())
   call assert_equal(#{one: 2, two: 3, three: 4}, d->map('v:val + 1'))
@@ -62,7 +60,7 @@ func Test_dict_method()
   call assert_equal(2, d->remove("two"))
   let d.two = 2
   call assert_fails('let x = d->repeat(2)', 'E731:')
-  call assert_fails('let x = d->reverse()', 'E1252:')
+  call assert_fails('let x = d->reverse()', 'E1253:')
   call assert_fails('let x = d->sort()', 'E686:')
   call assert_equal("{'one': 1, 'two': 2, 'three': 3}", d->string())
   call assert_equal(v:t_dict, d->type())
@@ -78,7 +76,7 @@ func Test_string_method()
   eval "a\rb\ec"->strtrans()->assert_equal('a^Mb^[c')
   eval "aあb"->strwidth()->assert_equal(4)
   eval 'abc'->substitute('b', 'x', '')->assert_equal('axc')
-  call assert_fails('eval 123->items()', 'E1225:')
+  call assert_fails('eval 123->items()', 'E1251: List, Tuple, Dictionary, Blob or String required for argument 1')
 
   eval 'abc'->printf('the %s arg')->assert_equal('the abc arg')
 endfunc
@@ -136,6 +134,13 @@ func Test_method_syntax()
   call assert_fails('eval [1, 2, 3] ->sort ()', 'E274:')
   call assert_fails('eval [1, 2, 3]-> sort ()', 'E274:')
   call assert_fails('eval [1, 2, 3]-> sort()', 'E274:')
+
+  " Test for using a method name containing a curly brace name
+  let s = 'len'
+  call assert_equal(4, "xxxx"->str{s}())
+
+  " Test for using a method in an interpolated string
+  call assert_equal('4', $'{"xxxx"->strlen()}')
 endfunc
 
 func Test_method_lambda()

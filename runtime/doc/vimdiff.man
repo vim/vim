@@ -44,4 +44,4 @@ AUTHOR
 
 
 
-                                 2001 March 30                      VIMDIFF(1)
+                                 2021 June 13                       VIMDIFF(1)

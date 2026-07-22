@@ -14,12 +14,7 @@
 #define USING_FLOAT_STUFF
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
-
-// When not generating protos this is included in proto.h
-#ifdef PROTO
-# include "vim9.h"
-#endif
+#if defined(FEAT_EVAL)
 
 /*
  * Get the index of the current instruction.
@@ -99,7 +94,7 @@ check_vim9_unlet(char_u *name)
     if (name[1] != ':' || vim_strchr((char_u *)"gwtb", *name) == NULL)
     {
 	// "unlet s:var" is allowed in legacy script.
-	if (*name == 's' && !script_is_vim9())
+	if (*name == 's' && !in_vim9script())
 	    return OK;
 	semsg(_(e_cannot_unlet_str), name);
 	return FAIL;
@@ -220,7 +215,7 @@ compile_lock_unlock(
 	// These checks are reminiscent of the variable_exists function.
 	// But most of the matches require special handling.
 
-	// If bare name is is locally accessible, except for local var,
+	// If bare name is locally accessible, except for local var,
 	// then put it on the stack to use with ISN_LOCKUNLOCK.
 	// This could be v.memb, v[idx_key]; bare class variable,
 	// function arg. The item on the stack, will be passed
@@ -253,8 +248,8 @@ compile_lock_unlock(
 		if (*end != '.' && *end != '[')
 		{
 		    // Push the class of the bare class variable name
-		    name = cl->class_name;
-		    len = (int)STRLEN(name);
+		    name = cl->class_name.string;
+		    len = (int)cl->class_name.length;
 #ifdef LOG_LOCKVAR
 		    ch_log(NULL, "LKVAR:    ... cctx_class_member: name %s",
 			   name);
@@ -292,7 +287,7 @@ compile_lock_unlock(
 #ifdef LOG_LOCKVAR
 	    ch_log(NULL, "LKVAR:    ... INS_LOCKUNLOCK %s", name);
 #endif
-	    if (compile_load(&name, name + len, cctx, FALSE, FALSE) == FAIL)
+	    if (compile_load(&name, len, name + len, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 	    isn = ISN_LOCKUNLOCK;
 	}
@@ -601,8 +596,15 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	emsg(_(e_elseif_without_if));
 	return NULL;
     }
+    if (scope->se_u.se_if.is_seen_else)
+    {
+	emsg(_(e_elseif_after_else));
+	return NULL;
+    }
     unwind_locals(cctx, scope->se_local_count, TRUE);
-    if (!cctx->ctx_had_return)
+    if (!cctx->ctx_had_return && !cctx->ctx_had_throw)
+	// the previous if block didn't end in a "return" or a "throw"
+	// statement.
 	scope->se_u.se_if.is_had_return = FALSE;
 
     if (cctx->ctx_skip == SKIP_NOT)
@@ -617,6 +619,13 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	// Do not count the "elseif" for profiling and cmdmod
 	instr->ga_len = current_instr_idx(cctx);
 
+	skip_expr_cctx(&p, cctx);
+	return p;
+    }
+
+    if (scope->se_skip_save == SKIP_YES)
+    {
+	// Enclosing outer block is dead, skip this elseif
 	skip_expr_cctx(&p, cctx);
 	return p;
     }
@@ -748,8 +757,15 @@ compile_else(char_u *arg, cctx_T *cctx)
 	emsg(_(e_else_without_if));
 	return NULL;
     }
+    if (scope->se_u.se_if.is_seen_else)
+    {
+	emsg(_(e_multiple_else));
+	return NULL;
+    }
     unwind_locals(cctx, scope->se_local_count, TRUE);
-    if (!cctx->ctx_had_return)
+    if (!cctx->ctx_had_return && !cctx->ctx_had_throw)
+	// the previous if block didn't end in a "return" or a "throw"
+	// statement.
 	scope->se_u.se_if.is_had_return = FALSE;
     scope->se_u.se_if.is_seen_else = TRUE;
 
@@ -821,7 +837,9 @@ compile_endif(char_u *arg, cctx_T *cctx)
     }
     ifscope = &scope->se_u.se_if;
     unwind_locals(cctx, scope->se_local_count, TRUE);
-    if (!cctx->ctx_had_return)
+    if (!cctx->ctx_had_return && !cctx->ctx_had_throw)
+	// the previous if block didn't end in a "return" or a "throw"
+	// statement.
 	ifscope->is_had_return = FALSE;
 
     if (scope->se_u.se_if.is_if_label >= 0)
@@ -862,6 +880,40 @@ compile_fill_loop_info(loop_info_T *loop_info, int funcref_idx, cctx_T *cctx)
     loop_info->li_funcref_idx = funcref_idx;
     loop_info->li_local_count = cctx->ctx_locals.ga_len;
     loop_info->li_closure_count = cctx->ctx_closure_count;
+}
+
+/*
+ * When compiling a for loop to iterate over a tuple, get the type of the loop
+ * variable to use.
+ */
+    static type_T *
+compile_for_tuple_get_vartype(type_T *vartype, int var_list)
+{
+    // If this is not a variadic tuple, or all the tuple items don't have
+    // the same type, then use t_any
+    if (!(vartype->tt_flags & TTFLAG_VARARGS) || vartype->tt_argcount != 1)
+	return &t_any;
+
+    // variadic tuple
+    type_T *member_type = vartype->tt_args[0]->tt_member;
+    if (member_type->tt_type == VAR_ANY)
+	return &t_any;
+
+    if (!var_list)
+	// for x in tuple<...list<xxx>>
+	return member_type;
+
+    if (member_type->tt_type == VAR_LIST
+	    && member_type->tt_member->tt_type != VAR_ANY)
+	// for [x, y] in tuple<...list<list<xxx>>>
+	return member_type->tt_member;
+    else if (member_type->tt_type == VAR_TUPLE
+				&& member_type->tt_flags & TTFLAG_VARARGS
+				&& member_type->tt_argcount == 1)
+	// for [x, y] in tuple<...list<tuple<...list<xxx>>>>
+	return member_type->tt_args[0]->tt_member;
+
+    return &t_any;
 }
 
 /*
@@ -994,6 +1046,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	// give an error now.
 	vartype = get_type_on_stack(cctx, 0);
 	if (vartype->tt_type != VAR_LIST
+		&& vartype->tt_type != VAR_TUPLE
 		&& vartype->tt_type != VAR_STRING
 		&& vartype->tt_type != VAR_BLOB
 		&& vartype->tt_type != VAR_ANY
@@ -1018,6 +1071,8 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 			  && vartype->tt_member->tt_member->tt_type != VAR_ANY)
 		item_type = vartype->tt_member->tt_member;
 	}
+	else if (vartype->tt_type == VAR_TUPLE)
+	    item_type = compile_for_tuple_get_vartype(vartype, var_list);
 
 	// CMDMOD_REV must come before the FOR instruction.
 	generate_undo_cmdmods(cctx);
@@ -1087,8 +1142,9 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		    goto failed;
 		}
 		p = skipwhite(p + 1);
-		lhs_type = parse_type(&p, cctx->ctx_type_list, TRUE);
-		if (lhs_type == NULL)
+		lhs_type = parse_type(&p, cctx->ctx_type_list, cctx->ctx_ufunc,
+								cctx, TRUE);
+		if (lhs_type == NULL || !valid_declaration_type(lhs_type))
 		    goto failed;
 	    }
 
@@ -1133,7 +1189,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		if (lhs_type == &t_any)
 		    lhs_type = item_type;
 		else if (item_type != &t_unknown
-			&& need_type_where(item_type, lhs_type, FALSE, -1,
+			&& need_type_where(item_type, lhs_type, 0, -1,
 					    where, cctx, FALSE, FALSE) == FAIL)
 		    goto failed;
 		var_lvar = reserve_local(cctx, arg, varlen, ASSIGN_FINAL,
@@ -1208,7 +1264,7 @@ compile_endfor(char_u *arg, cctx_T *cctx)
 	if (compile_loop_end(&forscope->fs_loop_info, cctx) == FAIL)
 	    return NULL;
 
-	unwind_locals(cctx, scope->se_local_count, FALSE);
+	unwind_locals(cctx, scope->se_local_count, TRUE);
 
 	// At end of ":for" scope jump back to the FOR instruction.
 	generate_JUMP(cctx, JUMP_ALWAYS, forscope->fs_top_label);
@@ -1335,7 +1391,7 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
 	if (compile_loop_end(&whilescope->ws_loop_info, cctx) == FAIL)
 	    return NULL;
 
-	unwind_locals(cctx, scope->se_local_count, FALSE);
+	unwind_locals(cctx, scope->se_local_count, TRUE);
 
 #ifdef FEAT_PROFILE
 	// count the endwhile before jumping
@@ -1639,7 +1695,7 @@ compile_try(char_u *arg, cctx_T *cctx)
  * Compile "catch {expr}".
  */
     char_u *
-compile_catch(char_u *arg, cctx_T *cctx UNUSED)
+compile_catch(char_u *arg, cctx_T *cctx)
 {
     scope_T	*scope = cctx->ctx_scope;
     garray_T	*instr = &cctx->ctx_instr;
@@ -1923,7 +1979,7 @@ compile_endtry(char_u *arg, cctx_T *cctx)
  * compile "throw {expr}"
  */
     char_u *
-compile_throw(char_u *arg, cctx_T *cctx UNUSED)
+compile_throw(char_u *arg, cctx_T *cctx)
 {
     char_u *p = skipwhite(arg);
 
@@ -1931,7 +1987,7 @@ compile_throw(char_u *arg, cctx_T *cctx UNUSED)
 	return NULL;
     if (cctx->ctx_skip == SKIP_YES)
 	return p;
-    if (may_generate_2STRING(-1, FALSE, cctx) == FAIL)
+    if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 	return NULL;
     if (generate_instr_drop(cctx, ISN_THROW, 1) == NULL)
 	return NULL;
@@ -2001,25 +2057,40 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
     int		argcount = 0;
     int		defer_var_idx;
     type_T	*type = NULL;
-    int		func_idx;
+    int		func_idx = -1;
 
-    // Get a funcref for the function name.
-    // TODO: better way to find the "(".
-    paren = vim_strchr(arg, '(');
-    if (paren == NULL)
+    if (*arg == '(')
     {
-	semsg(_(e_missing_parenthesis_str), arg);
-	return NULL;
+	// a lambda function
+	if (compile_lambda(&arg, cctx) != OK)
+	    return NULL;
+	paren = vim_strchr(arg, '(');
+	if (paren == NULL)
+	{
+	    semsg(_(e_missing_parenthesis_str), arg);
+	    return NULL;
+	}
     }
-    *paren = NUL;
-    func_idx = find_internal_func(arg);
-    if (func_idx >= 0)
-	// TODO: better type
-	generate_PUSHFUNC(cctx, (char_u *)internal_func_name(func_idx),
-							   &t_func_any, FALSE);
-    else if (compile_expr0(&arg, cctx) == FAIL)
-	return NULL;
-    *paren = '(';
+    else
+    {
+	// Get a funcref for the function name.
+	// TODO: better way to find the "(".
+	paren = vim_strchr(arg, '(');
+	if (paren == NULL)
+	{
+	    semsg(_(e_missing_parenthesis_str), arg);
+	    return NULL;
+	}
+	*paren = NUL;
+	func_idx = find_internal_func(arg);
+	if (func_idx >= 0)
+	    // TODO: better type
+	    generate_PUSHFUNC(cctx, (char_u *)internal_func_name(func_idx),
+		    &t_func_any, FALSE);
+	else if (compile_expr0(&arg, cctx) == FAIL)
+	    return NULL;
+	*paren = '(';
+    }
 
     // check for function type
     if (cctx->ctx_skip != SKIP_YES)
@@ -2155,9 +2226,12 @@ compile_variable_range(exarg_T *eap, cctx_T *cctx)
 /*
  * :put r
  * :put ={expr}
+ * or if fixindent == TRUE
+ * :iput r
+ * :iput ={expr}
  */
     char_u *
-compile_put(char_u *arg, exarg_T *eap, cctx_T *cctx)
+compile_put(char_u *arg, exarg_T *eap, cctx_T *cctx, int fixindent)
 {
     char_u	*line = arg;
     linenr_T	lnum;
@@ -2196,7 +2270,8 @@ compile_put(char_u *arg, exarg_T *eap, cctx_T *cctx)
 	    --lnum;
     }
 
-    generate_PUT(cctx, eap->regname, lnum);
+    generate_PUT(cctx, eap->regname, lnum, fixindent);
+
     return line;
 }
 
@@ -2359,7 +2434,7 @@ compile_exec(char_u *line_arg, exarg_T *eap, cctx_T *cctx)
 	    p += 2;
 	    if (compile_expr0(&p, cctx) == FAIL)
 		return NULL;
-	    may_generate_2STRING(-1, TRUE, cctx);
+	    may_generate_2STRING(-1, TOSTRING_TOLERANT, cctx);
 	    ++count;
 	    p = skipwhite(p);
 	    if (*p != '`')
@@ -2567,7 +2642,7 @@ compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
 	if (compile_assign_lhs(arg, lhs, CMD_redir,
 					 FALSE, FALSE, FALSE, 1, cctx) == FAIL)
 	    return NULL;
-	if (need_type(&t_string, lhs->lhs_member_type, FALSE,
+	if (need_type(&t_string, lhs->lhs_member_type, 0,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 	    return NULL;
 	if (cctx->ctx_skip == SKIP_YES)
@@ -2593,7 +2668,7 @@ compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
     return compile_exec(line, eap, cctx);
 }
 
-#if defined(FEAT_QUICKFIX) || defined(PROTO)
+#if defined(FEAT_QUICKFIX)
     char_u *
 compile_cexpr(char_u *line, exarg_T *eap, cctx_T *cctx)
 {
@@ -2649,7 +2724,7 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    int save_flags = cmdmod.cmod_flags;
 
 	    generate_LEGACY_EVAL(cctx, p);
-	    if (need_type(&t_any, cctx->ctx_ufunc->uf_ret_type, FALSE, -1,
+	    if (need_type(&t_any, cctx->ctx_ufunc->uf_ret_type, 0, -1,
 						0, cctx, FALSE, FALSE) == FAIL)
 		return NULL;
 	    cmdmod.cmod_flags |= CMOD_LEGACY;
@@ -2680,7 +2755,7 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    }
 	    else
 	    {
-		if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, FALSE,
+		if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, 0,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		    return NULL;
 	    }

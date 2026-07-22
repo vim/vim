@@ -1,0 +1,101 @@
+-- vim: set ft=luau sw=2 noet:
+
+-- START_INDENT
+@native
+function compute<T>(values: {T}): number
+local total: number = 0
+for _, value: T in values do
+if value then
+continue
+else
+total += 1
+end
+end
+return total
+end
+
+local function typed(
+name: string,
+count: number
+): boolean
+return count > 0
+end
+
+function singletonReturn(): "end"
+print("string singleton return")
+end
+
+if ready then -- end in a comment
+print("comment closer ignored")
+end
+
+local oneline = function() end
+local afterOneline = oneline
+
+declare function PluginManager(): PluginManager
+local afterDeclareFunction = true
+
+declare function WithArgs(
+arg: string
+): boolean
+local afterDeclareFunctionArgs = true
+
+local text = `function(`
+local afterText = text
+
+-- function(
+local afterLineComment = text
+
+class = makeClass()
+local afterClassIdentifier = class
+
+export type Box<T> = {
+read value: T,
+write name: string,
+callback: (T) -> (),
+}
+
+const function makeBox<T>(value: T): Box<T>
+return {
+value = value,
+name = `box {tostring(value)}`,
+callback = function(item: T)
+print(item)
+end,
+}
+end
+
+declare extern type Vector with
+x: number
+y: number
+z: number
+end
+
+declare class EnumItem extends Enum
+@deprecated
+function IsA(self, enumName: string): boolean
+Name: string
+end
+
+type function Optionalize(t)
+return types.optional(t)
+end
+
+local choice = if 2 == 3 then 4 else 5
+local raw = [=[
+if true then
+]=]
+local afterRaw = choice
+
+--[=[
+function ignored()
+]=]
+local afterComment = raw
+
+class Widget
+public Name: string
+public function Describe(self): string
+return `Widget {self.Name}`
+end
+end
+-- END_INDENT

@@ -61,4 +61,9 @@ int mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc);
 int build_argv_from_string(char_u *cmd, char ***argv, int *argc);
 int build_argv_from_list(list_T *l, char ***argv, int *argc);
 int get_special_pty_type(void);
+int cmp_keyvalue_value(const void *a, const void *b);
+int cmp_keyvalue_value_n(const void *a, const void *b);
+int cmp_keyvalue_value_i(const void *a, const void *b);
+int cmp_keyvalue_value_ni(const void *a, const void *b);
+void *mergesort_list(void *head, void *(*get_next)(void *), void (*set_next)(void *, void *), void *(*get_prev)(void *), void (*set_prev)(void *, void *), int (*compare)(const void *, const void *));
 /* vim: set ft=c : */

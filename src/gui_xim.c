@@ -16,25 +16,21 @@
 #if !defined(GTK_CHECK_VERSION)
 # define GTK_CHECK_VERSION(a, b, c) 0
 #endif
-#if !defined(FEAT_GUI_GTK) && defined(PROTO)
-typedef int GtkWidget;
-typedef int GtkIMContext;
-typedef int gchar;
-typedef int gpointer;
-typedef int PangoAttrIterator;
-typedef int GdkEventKey;
-#endif
 
 #if defined(FEAT_GUI_GTK) && defined(FEAT_XIM)
-# if GTK_CHECK_VERSION(3,0,0)
+# ifdef USE_GTK4
+#  include <gdk/gdkkeysyms.h>
+# elif GTK_CHECK_VERSION(3,0,0)
 #  include <gdk/gdkkeysyms-compat.h>
 # else
 #  include <gdk/gdkkeysyms.h>
 # endif
-# ifdef MSWIN
-#  include <gdk/gdkwin32.h>
-# else
-#  include <gdk/gdkx.h>
+# if !defined(USE_GTK4)
+#  ifdef MSWIN
+#   include <gdk/gdkwin32.h>
+#  else
+#   include <gdk/gdkx.h>
+#  endif
 # endif
 #endif
 
@@ -79,9 +75,8 @@ xim_log(char *s, ...)
 # define USE_IMSTATUSFUNC (*p_imsf != NUL)
 #endif
 
-#if (defined(FEAT_EVAL) && \
-     (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM) || defined(VIMDLL))) || \
-    defined(PROTO)
+#if defined(FEAT_EVAL) && \
+     (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM) || defined(VIMDLL))
 static callback_T imaf_cb;	    // 'imactivatefunc' callback function
 static callback_T imsf_cb;	    // 'imstatusfunc' callback function
 
@@ -137,7 +132,7 @@ call_imstatusfunc(void)
 }
 #endif
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_xim_stuff(void)
 {
@@ -149,7 +144,7 @@ free_xim_stuff(void)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Mark the global 'imactivatefunc' and 'imstatusfunc' callbacks with "copyID"
  * so that they are not garbage collected.
@@ -169,9 +164,9 @@ set_ref_in_im_funcs(int copyID UNUSED)
 #endif
 
 
-#if defined(FEAT_XIM) || defined(PROTO)
+#if defined(FEAT_XIM)
 
-# if defined(FEAT_GUI_GTK) || defined(PROTO)
+# if defined(FEAT_GUI_GTK)
 static int xim_has_preediting = FALSE;  // IM current status
 
 /*
@@ -183,7 +178,7 @@ init_preedit_start_col(void)
     if (State & MODE_CMDLINE)
 	preedit_start_col = cmdline_getvcol_cursor();
     else if (curwin != NULL && curwin->w_buffer != NULL)
-	getvcol(curwin, &curwin->w_cursor, &preedit_start_col, NULL, NULL);
+	getvcol(curwin, &curwin->w_cursor, &preedit_start_col, NULL, NULL, 0);
     // Prevent that preediting marks the buffer as changed.
     xim_changed_while_preediting = curbuf->b_changed;
 }
@@ -194,11 +189,24 @@ static int im_preedit_cursor   = 0;	// cursor offset in characters
 static int im_preedit_trailing = 0;	// number of characters after cursor
 
 static unsigned long im_commit_handler_id  = 0;
+#  ifdef USE_GTK4
+static unsigned int  im_activatekey_keyval = GDK_KEY_VoidSymbol;
+#  else
 static unsigned int  im_activatekey_keyval = GDK_VoidSymbol;
+#  endif
 static unsigned int  im_activatekey_state  = 0;
 
 static GtkWidget *preedit_window = NULL;
 static GtkWidget *preedit_label = NULL;
+#  ifdef USE_GTK4
+static int preedit_label_width = 0;	// last measured popover natural width
+static int preedit_popover_height = 0;	// last measured popover natural height
+// CSS provider that styles the preedit popover frame; rebuilt whenever
+// gui.back_pixel changes so the popover background matches the editor's
+// background colour and fully covers the cursor cell.
+static GtkCssProvider *preedit_css_provider = NULL;
+static guicolor_T preedit_css_cached_bg = INVALCOLOR;
+#  endif
 
 static void im_preedit_window_set_position(void);
 
@@ -236,8 +244,27 @@ im_set_position(int row, int col)
 
     area.x = FILL_X(col);
     area.y = FILL_Y(row);
-    area.width  = gui.char_width * (mb_lefthalve(row, col) ? 2 : 1);
+    // The screen buffer may not be allocated yet when this is called from
+    // xim_init() during gui_mch_init() to seed the IM's initial cursor
+    // location, so guard mb_lefthalve() against a NULL LineOffset[].
+    area.width  = gui.char_width
+		    * ((ScreenLines != NULL && mb_lefthalve(row, col)) ? 2 : 1);
     area.height = gui.char_height;
+
+#  ifdef USE_GTK4
+    // Stretch the cursor rect height to cover the preedit popover so the
+    // IM's candidate window is placed below the popover rather than on
+    // top of it.  Coordinates stay in client-widget (drawarea) space;
+    // GTK4's IM module translates to the surface internally.
+    if (p_imst == IM_OVER_THE_SPOT)
+    {
+	int popover_h = preedit_popover_height;
+	if (popover_h <= 0)
+	    popover_h = gui.char_height;
+	if (popover_h > area.height)
+	    area.height = popover_h;
+    }
+#  endif
 
     gtk_im_context_set_cursor_location(xic, &area);
 
@@ -272,14 +299,48 @@ im_add_to_input(char_u *str, int len)
 	gui_mch_mousehide(TRUE);
 }
 
-     static void
+    static void
 im_preedit_window_set_position(void)
 {
-    int x, y, width, height;
-    int screen_x, screen_y, screen_width, screen_height;
-
     if (preedit_window == NULL)
 	return;
+
+#  ifdef USE_GTK4
+    // GTK4: The popover is parented to gui.mainwin (the toplevel) rather
+    // than gui.drawarea, because GtkDrawingArea is a leaf widget that does
+    // not support children and causes snapshot/redraw artifacts when used
+    // as a popover parent.  Translate the cursor cell coordinates from
+    // drawarea space to mainwin space, and use the cached label width as
+    // the anchor rect width so the popover's left edge aligns with the
+    // cursor cell:
+    //   popup_origin.x = anchor.x + anchor.w/2 - popup_w/2
+    // With anchor.w == label_w and popup_w ≈ label_w (after CSS zeroing
+    // popover frame padding), popup_origin.x ≈ anchor.x.
+    GdkRectangle rect;
+    graphene_point_t pt_in, pt_out;
+
+    pt_in.x = FILL_X(gui.col);
+    pt_in.y = FILL_Y(gui.row);
+    if (!gtk_widget_compute_point(gui.drawarea, gui.mainwin,
+						&pt_in, &pt_out))
+    {
+	pt_out.x = pt_in.x;
+	pt_out.y = pt_in.y;
+    }
+    rect.x = (int)pt_out.x;
+    rect.y = (int)pt_out.y;
+    rect.width = preedit_label_width;
+    rect.height = 0;
+    // make up for the difference between GVim's line height and GtkLabel's line height
+    int offset = gui.char_height - preedit_popover_height;
+    gtk_popover_set_offset(GTK_POPOVER(preedit_window), 0, offset);
+    // make the arrow pointer at start so that it only starts sliding
+    // horizontally when screen border is reached
+    gtk_widget_set_halign(preedit_window, GTK_ALIGN_START);
+    gtk_popover_set_pointing_to(GTK_POPOVER(preedit_window), &rect);
+#  else
+    int x, y, width, height;
+    int screen_x, screen_y, screen_width, screen_height;
 
     gui_gtk_get_screen_geom_of_win(gui.drawarea, 0, 0,
 			  &screen_x, &screen_y, &screen_width, &screen_height);
@@ -292,46 +353,131 @@ im_preedit_window_set_position(void)
     if (y + height > screen_y + screen_height)
 	y = screen_y + screen_height - height;
     gtk_window_move(GTK_WINDOW(preedit_window), x, y);
+#  endif
 }
 
     static void
 im_preedit_window_open(void)
 {
     char *preedit_string;
-#if !GTK_CHECK_VERSION(3,16,0)
+#  if !GTK_CHECK_VERSION(3,16,0)
     char buf[8];
-#endif
+#  endif
     PangoAttrList *attr_list;
     PangoLayout *layout;
-#if GTK_CHECK_VERSION(3,0,0)
-# if !GTK_CHECK_VERSION(3,16,0)
+#  if GTK_CHECK_VERSION(3,0,0)
+#   if !GTK_CHECK_VERSION(3,16,0)
     GdkRGBA color;
-# endif
-#else
+#   endif
+#  else
     GdkColor color;
-#endif
+#  endif
     gint w, h;
 
     if (preedit_window == NULL)
     {
+#  ifdef USE_GTK4
+	// GTK4: use GtkPopover (xdg_popup) so the compositor keeps keyboard
+	// focus on the drawing area and does not disable text-input-v3.
+	// See issue #20257.  Parent the popover to gui.mainwin (a real
+	// container) rather than gui.drawarea: GtkDrawingArea is a leaf
+	// widget and using it as a popover parent causes snapshot artifacts
+	// (white-out) on the drawing area.
+	preedit_window = gtk_popover_new();
+	gtk_popover_set_autohide(GTK_POPOVER(preedit_window), FALSE);
+	gtk_popover_set_has_arrow(GTK_POPOVER(preedit_window), FALSE);
+	// Pin the popover below the anchor.  Together with anchor.h == 0 in
+	// im_preedit_window_set_position() this lands the popover's top edge
+	// exactly on FILL_Y(row), so the popover covers the cursor cell rather
+	// than landing above it (the default GTK_POS_TOP would do that and
+	// only flip to bottom when there is no room above, which is flaky).
+	gtk_popover_set_position(GTK_POPOVER(preedit_window), GTK_POS_BOTTOM);
+	gtk_widget_set_can_focus(preedit_window, FALSE);
+	gtk_widget_set_focusable(preedit_window, FALSE);
+	gtk_widget_set_can_target(preedit_window, FALSE);
+	gtk_widget_set_parent(preedit_window, gui.mainwin);
+#  else
 	preedit_window = gtk_window_new(GTK_WINDOW_POPUP);
 	gtk_window_set_transient_for(GTK_WINDOW(preedit_window),
 						     GTK_WINDOW(gui.mainwin));
+#  endif
 	preedit_label = gtk_label_new("");
 	gtk_widget_set_name(preedit_label, "vim-gui-preedit-area");
+#  ifdef USE_GTK4
+	gtk_label_set_xalign(GTK_LABEL(preedit_label), 0.0);
+	gtk_widget_set_halign(preedit_label, GTK_ALIGN_START);
+	gtk_widget_set_valign(preedit_label, GTK_ALIGN_START);
+	// Tag the popover with a CSS class so the minimal frame CSS below
+	// (no border, no rounded corners, no shadow, no padding) applies
+	// only to our preedit popover and not other popovers in the app.
+	gtk_widget_add_css_class(preedit_window, "vim-preedit-popover");
+	gtk_popover_set_child(GTK_POPOVER(preedit_window), preedit_label);
+#  else
 	gtk_container_add(GTK_CONTAINER(preedit_window), preedit_label);
+#  endif
     }
 
-#if GTK_CHECK_VERSION(3,16,0)
+#  ifdef USE_GTK4
+    // Build (or rebuild on background-colour change) the CSS that flattens
+    // the popover frame and paints its background with gui.back_pixel.
+    // Using a solid background instead of `background: transparent` makes
+    // the popover surface fully cover the cursor cell even when the popover
+    // surface is allocated a pixel or two larger than the glyph bounding
+    // box (e.g. due to residual theme insets) -- otherwise the blinking
+    // text cursor at the cell origin shows through the popover frame.
+    if (preedit_css_provider == NULL || preedit_css_cached_bg != gui.back_pixel)
+    {
+	GdkDisplay *display = gdk_display_get_default();
+	gchar *css;
+
+	if (preedit_css_provider != NULL)
+	{
+	    gtk_style_context_remove_provider_for_display(display,
+				    GTK_STYLE_PROVIDER(preedit_css_provider));
+	    g_object_unref(preedit_css_provider);
+	}
+	preedit_css_provider = gtk_css_provider_new();
+	css = g_strdup_printf(
+		"popover.vim-preedit-popover,\n"
+		"popover.vim-preedit-popover > contents,\n"
+		"popover.vim-preedit-popover label {\n"
+		"  border: none;\n"
+		"  border-radius: 0;\n"
+		"  box-shadow: none;\n"
+		"  padding: 0;\n"
+		"  margin: 0;\n"
+		"  min-width: 0;\n"
+		"  min-height: 0;\n"
+		"  background-color: #%02lx%02lx%02lx;\n"
+		"}\n"
+		"popover.vim-preedit-popover > arrow {\n"
+		"  background: transparent;\n"
+		"  border: none;\n"
+		"}\n",
+		(unsigned long)((gui.back_pixel >> 16) & 0xff),
+		(unsigned long)((gui.back_pixel >> 8) & 0xff),
+		(unsigned long)(gui.back_pixel & 0xff));
+	gtk_css_provider_load_from_string(preedit_css_provider, css);
+	g_free(css);
+	gtk_style_context_add_provider_for_display(display,
+			    GTK_STYLE_PROVIDER(preedit_css_provider), G_MAXUINT);
+	preedit_css_cached_bg = gui.back_pixel;
+    }
+#  endif
+
+#  ifndef USE_GTK4
+#   if GTK_CHECK_VERSION(3,16,0)
     {
 	GtkStyleContext * const context
-				  = gtk_widget_get_style_context(gui.drawarea);
+				  = gtk_widget_get_style_context(preedit_label);
 	GtkCssProvider * const provider = gtk_css_provider_new();
 	gchar		   *css = NULL;
 	const char * const fontname
 			   = pango_font_description_get_family(gui.norm_font);
-	gint	fontsize
-		= pango_font_description_get_size(gui.norm_font) / PANGO_SCALE;
+	// Since font sizes can be specified as non-integer values like 10.5,
+	// they must be handled as floating-point (gdouble).
+	gdouble	fontsize
+		= (gdouble)pango_font_description_get_size(gui.norm_font) / PANGO_SCALE;
 	gchar	*fontsize_propval = NULL;
 
 	if (!pango_font_description_get_size_is_absolute(gui.norm_font))
@@ -344,12 +490,12 @@ im_preedit_window_open(void)
 	    fontsize = dpi * fontsize / 72;
 	}
 	if (fontsize > 0)
-	    fontsize_propval = g_strdup_printf("%dpx", fontsize);
+	    fontsize_propval = g_strdup_printf("%dpx", (gint)(fontsize + 0.5));
 	else
 	    fontsize_propval = g_strdup_printf("inherit");
 
 	css = g_strdup_printf(
-		"widget#vim-gui-preedit-area {\n"
+		"#vim-gui-preedit-area {\n"
 		"  font-family: %s,monospace;\n"
 		"  font-size: %s;\n"
 		"  color: #%.2lx%.2lx%.2lx;\n"
@@ -372,7 +518,7 @@ im_preedit_window_open(void)
 	g_free(fontsize_propval);
 	g_object_unref(provider);
     }
-#elif GTK_CHECK_VERSION(3,0,0)
+#   elif GTK_CHECK_VERSION(3,0,0)
     gtk_widget_override_font(preedit_label, gui.norm_font);
 
     vim_snprintf(buf, sizeof(buf), "#%06X", gui.norm_pixel);
@@ -383,7 +529,7 @@ im_preedit_window_open(void)
     gdk_rgba_parse(&color, buf);
     gtk_widget_override_background_color(preedit_label, GTK_STATE_FLAG_NORMAL,
 								      &color);
-#else
+#   else
     gtk_widget_modify_font(preedit_label, gui.norm_font);
 
     vim_snprintf(buf, sizeof(buf), "#%06X", (unsigned)gui.norm_pixel);
@@ -393,23 +539,97 @@ im_preedit_window_open(void)
     vim_snprintf(buf, sizeof(buf), "#%06X", (unsigned)gui.back_pixel);
     gdk_color_parse(buf, &color);
     gtk_widget_modify_bg(preedit_window, GTK_STATE_NORMAL, &color);
-#endif
+#   endif
+#  endif // !USE_GTK4
 
     gtk_im_context_get_preedit_string(xic, &preedit_string, &attr_list, NULL);
 
     if (preedit_string[0] != NUL)
     {
+#  ifdef USE_GTK4
+	// GTK4: drive all styling (font + foreground + background) via
+	// PangoAttributes on the label rather than CSS.  This pins the
+	// preedit text to gui.norm_font (family + weight + style + size)
+	// and the editor colors without going through CSS DPI conversion
+	// or selector matching.  These attributes are merged with whatever
+	// the IM gave us (e.g. underline for composing range).
+	PangoAttribute *pa;
+
+	if (attr_list == NULL)
+	    attr_list = pango_attr_list_new();
+
+	if (gui.norm_font != NULL)
+	{
+	    pa = pango_attr_font_desc_new(gui.norm_font);
+	    pa->start_index = 0;
+	    pa->end_index = G_MAXUINT;
+	    pango_attr_list_insert(attr_list, pa);
+	}
+
+	pa = pango_attr_foreground_new(
+		((gui.norm_pixel >> 16) & 0xff) * 257,
+		((gui.norm_pixel >> 8) & 0xff) * 257,
+		(gui.norm_pixel & 0xff) * 257);
+	pa->start_index = 0;
+	pa->end_index = G_MAXUINT;
+	pango_attr_list_insert(attr_list, pa);
+
+	pa = pango_attr_background_new(
+		((gui.back_pixel >> 16) & 0xff) * 257,
+		((gui.back_pixel >> 8) & 0xff) * 257,
+		(gui.back_pixel & 0xff) * 257);
+	pa->start_index = 0;
+	pa->end_index = G_MAXUINT;
+	pango_attr_list_insert(attr_list, pa);
+#  endif
 	gtk_label_set_text(GTK_LABEL(preedit_label), preedit_string);
 	gtk_label_set_attributes(GTK_LABEL(preedit_label), attr_list);
 
 	layout = gtk_label_get_layout(GTK_LABEL(preedit_label));
 	pango_layout_get_pixel_size(layout, &w, &h);
 	h = MAX(h, gui.char_height);
-	gtk_window_resize(GTK_WINDOW(preedit_window), w, h);
+#  ifdef USE_GTK4
+	// Cache label/popover size derived from the Pango layout, which is
+	// available without mapping the popover.  Using these for positioning
+	// avoids calling gtk_popover_set_pointing_to() after popup, which
+	// triggers a GDK "compositor doesn't support moving popups" warning
+	// on compositors without xdg_popup.reposition (e.g. Weston).
+	preedit_label_width = w;
+	preedit_popover_height = h;
 
+	// Report an enlarged cursor rectangle that covers both the cursor
+	// cell and the preedit popover.  This way the IM (e.g. fcitx5)
+	// places its candidate window below the popover instead of on top
+	// of it.  Coordinates are in client-widget (drawarea) space.
+	if (xic != NULL)
+	{
+	    GdkRectangle area;
+
+	    area.x = FILL_X(gui.col);
+	    area.y = FILL_Y(gui.row);
+	    area.width = preedit_label_width;
+	    area.height = MAX(gui.char_height, preedit_popover_height);
+	    gtk_im_context_set_cursor_location(xic, &area);
+	}
+
+	// Pop down before re-anchoring: on compositors that lack
+	// xdg_popup.reposition (e.g. Weston), calling set_pointing_to() on
+	// a mapped popover triggers GDK's remap fallback and a warning.
+	// Doing the popdown ourselves makes the next popup land at the new
+	// anchor cleanly without that warning.
+	if (gtk_widget_get_mapped(preedit_window))
+	    gtk_popover_popdown(GTK_POPOVER(preedit_window));
+
+	im_preedit_window_set_position();
+
+	gtk_widget_queue_resize(preedit_window);
+	gtk_popover_popup(GTK_POPOVER(preedit_window));
+#  else
+	gtk_window_resize(GTK_WINDOW(preedit_window), w, h);
 	gtk_widget_show_all(preedit_window);
 
 	im_preedit_window_set_position();
+#  endif
     }
 
     g_free(preedit_string);
@@ -419,8 +639,13 @@ im_preedit_window_open(void)
     static void
 im_preedit_window_close(void)
 {
-    if (preedit_window != NULL)
-	gtk_widget_hide(preedit_window);
+    if (preedit_window == NULL)
+	return;
+#  ifdef USE_GTK4
+    gtk_popover_popdown(GTK_POPOVER(preedit_window));
+#  else
+    gtk_widget_hide(preedit_window);
+#  endif
 }
 
     static void
@@ -445,9 +670,9 @@ im_delete_preedit(void)
     }
 
     if (State & MODE_NORMAL
-#ifdef FEAT_TERMINAL
+#  ifdef FEAT_TERMINAL
 	    && !term_use_loop()
-#endif
+#  endif
        )
     {
 	im_preedit_cursor = 0;
@@ -516,9 +741,9 @@ im_commit_cb(GtkIMContext *context UNUSED,
     int		commit_with_preedit = TRUE;
     char_u	*im_str;
 
-#ifdef XIM_DEBUG
+#  ifdef XIM_DEBUG
     xim_log("im_commit_cb(): %s\n", str);
-#endif
+#  endif
 
     if (p_imst == IM_ON_THE_SPOT)
     {
@@ -602,9 +827,9 @@ im_commit_cb(GtkIMContext *context UNUSED,
     static void
 im_preedit_start_cb(GtkIMContext *context UNUSED, gpointer data UNUSED)
 {
-#ifdef XIM_DEBUG
+#  ifdef XIM_DEBUG
     xim_log("im_preedit_start_cb()\n");
-#endif
+#  endif
 
     im_is_active = TRUE;
     preedit_is_active = TRUE;
@@ -618,9 +843,9 @@ im_preedit_start_cb(GtkIMContext *context UNUSED, gpointer data UNUSED)
     static void
 im_preedit_end_cb(GtkIMContext *context UNUSED, gpointer data UNUSED)
 {
-#ifdef XIM_DEBUG
+#  ifdef XIM_DEBUG
     xim_log("im_preedit_end_cb()\n");
-#endif
+#  endif
     im_delete_preedit();
 
     // Indicate that preediting has finished
@@ -628,12 +853,12 @@ im_preedit_end_cb(GtkIMContext *context UNUSED, gpointer data UNUSED)
 	preedit_start_col = MAXCOL;
     xim_has_preediting = FALSE;
 
-#if 0
+#  if 0
     // Removal of this line suggested by Takuhiro Nishioka.  Fixes that IM was
     // switched off unintentionally.  We now use preedit_is_active (added by
     // SungHyun Nam).
     im_is_active = FALSE;
-#endif
+#  endif
     preedit_is_active = FALSE;
     gui_update_cursor(TRUE, FALSE);
     im_show_info();
@@ -695,9 +920,9 @@ im_preedit_changed_cb(GtkIMContext *context, gpointer data UNUSED)
 					  &preedit_string, NULL,
 					  NULL);
 
-#ifdef XIM_DEBUG
+#  ifdef XIM_DEBUG
     xim_log("im_preedit_changed_cb(): %s\n", preedit_string);
-#endif
+#  endif
 
     g_return_if_fail(preedit_string != NULL); // just in case
 
@@ -878,15 +1103,16 @@ im_get_feedback_attr(int col)
     void
 xim_init(void)
 {
-#ifdef XIM_DEBUG
+#  ifdef XIM_DEBUG
     xim_log("xim_init()\n");
-#endif
+#  endif
 
     g_return_if_fail(gui.drawarea != NULL);
+#  ifndef USE_GTK4
     g_return_if_fail(gtk_widget_get_window(gui.drawarea) != NULL);
+#  endif
 
     xic = gtk_im_multicontext_new();
-    g_object_ref(xic);
 
     im_commit_handler_id = g_signal_connect(G_OBJECT(xic), "commit",
 					    G_CALLBACK(&im_commit_cb), NULL);
@@ -897,15 +1123,28 @@ xim_init(void)
     g_signal_connect(G_OBJECT(xic), "preedit_end",
 		     G_CALLBACK(&im_preedit_end_cb), NULL);
 
+#  ifdef USE_GTK4
+    gtk_im_context_set_client_widget(xic, gui.drawarea);
+
+    // Seed the cursor location immediately.  GTK4's Wayland IM module
+    // batches text-input-v3 state and sends it on the next commit cycle
+    // (typically triggered by focus_in).  Without this seed the very
+    // first commit would carry the protocol default (0, 0, 0, 0) for the
+    // cursor rectangle, and the IM's candidate window for the very first
+    // composition would appear at the top-left of the surface instead of
+    // next to the cursor.
+    im_set_position(gui.row, gui.col);
+#  else
     gtk_im_context_set_client_window(xic, gtk_widget_get_window(gui.drawarea));
+#  endif
 }
 
     void
 im_shutdown(void)
 {
-#ifdef XIM_DEBUG
+#  ifdef XIM_DEBUG
     xim_log("im_shutdown()\n");
-#endif
+#  endif
 
     if (xic != NULL)
     {
@@ -913,6 +1152,25 @@ im_shutdown(void)
 	g_object_unref(xic);
 	xic = NULL;
     }
+#  ifdef USE_GTK4
+    // GTK4: a widget added via gtk_widget_set_parent() must be detached
+    // with gtk_widget_unparent() before its parent is finalized, otherwise
+    // GTK prints "Finalizing ..., but it still has children left".
+    if (preedit_window != NULL)
+    {
+	gtk_widget_unparent(preedit_window);
+	preedit_window = NULL;
+	preedit_label = NULL;
+    }
+    if (preedit_css_provider != NULL)
+    {
+	gtk_style_context_remove_provider_for_display(gdk_display_get_default(),
+				GTK_STYLE_PROVIDER(preedit_css_provider));
+	g_object_unref(preedit_css_provider);
+	preedit_css_provider = NULL;
+	preedit_css_cached_bg = INVALCOLOR;
+    }
+#  endif
     im_is_active = FALSE;
     im_commit_handler_id = 0;
     if (p_imst == IM_ON_THE_SPOT)
@@ -920,6 +1178,7 @@ im_shutdown(void)
     xim_has_preediting = FALSE;
 }
 
+#  ifndef USE_GTK4
 /*
  * Convert the string argument to keyval and state for GdkEventKey.
  * If str is valid return TRUE, otherwise FALSE.
@@ -989,7 +1248,9 @@ im_xim_isvalid_imactivate(void)
 			       &im_activatekey_keyval,
 			       &im_activatekey_state);
 }
+#  endif // !USE_GTK4
 
+#  ifndef USE_GTK4
     static void
 im_synthesize_keypress(unsigned int keyval, unsigned int state)
 {
@@ -1017,15 +1278,16 @@ im_synthesize_keypress(unsigned int keyval, unsigned int state)
 
     gdk_event_free((GdkEvent *)event);
 }
+#  endif // !USE_GTK4
 
     void
 xim_reset(void)
 {
-# ifdef FEAT_EVAL
+#  ifdef FEAT_EVAL
     if (USE_IMACTIVATEFUNC)
 	call_imactivatefunc(im_is_active);
     else
-# endif
+#  endif
     if (xic != NULL)
     {
 	gtk_im_context_reset(xic);
@@ -1036,6 +1298,11 @@ xim_reset(void)
 	{
 	    xim_set_focus(gui.in_focus);
 
+#  ifdef USE_GTK4
+	    im_shutdown();
+	    xim_init();
+	    xim_set_focus(gui.in_focus);
+#  else
 	    if (im_activatekey_keyval != GDK_VoidSymbol)
 	    {
 		if (im_is_active)
@@ -1052,6 +1319,7 @@ xim_reset(void)
 		xim_init();
 		xim_set_focus(gui.in_focus);
 	    }
+#  endif
 	}
     }
 
@@ -1060,12 +1328,13 @@ xim_reset(void)
     xim_has_preediting = FALSE;
 }
 
+#  ifndef USE_GTK4
     int
 xim_queue_key_press_event(GdkEventKey *event, int down)
 {
-#ifdef FEAT_GUI_GTK
+#   ifdef FEAT_GUI_GTK
     if (event->state & GDK_SUPER_MASK) return FALSE;
-#endif
+#   endif
     if (down)
     {
 	// Workaround GTK2 XIM 'feature' that always converts keypad keys to
@@ -1194,6 +1463,23 @@ xim_queue_key_press_event(GdkEventKey *event, int down)
 
     return FALSE;
 }
+#  else // USE_GTK4
+// GTK4: imactivatekey is not supported because GTK4's GtkIMContext
+// does not allow synthesizing key events for IM activation.
+    int
+im_xim_isvalid_imactivate(void)
+{
+    // Empty string is always valid (means no activation key).
+    // Any other value is not supported in GTK4.
+    return p_imak[0] == NUL;
+}
+
+    int
+xim_queue_key_press_event(GdkEvent *event UNUSED, int down UNUSED)
+{
+    return FALSE;
+}
+#  endif // !USE_GTK4
 
     int
 im_get_status(void)
@@ -1358,7 +1644,7 @@ xim_set_preedit(void)
     }
 }
 
-#  if defined(FEAT_GUI_X11) || defined(PROTO)
+#  if defined(FEAT_GUI_X11)
 #   if defined(XtSpecificationRelease) && XtSpecificationRelease >= 6 && !defined(SUN_SYSTEM)
 #    define USE_X11R6_XIM
 #   endif
@@ -1366,7 +1652,7 @@ xim_set_preedit(void)
 static int xim_real_init(Window x11_window, Display *x11_display);
 
 
-#  ifdef USE_X11R6_XIM
+#   ifdef USE_X11R6_XIM
     static void
 xim_instantiate_cb(
     Display	*display,
@@ -1376,9 +1662,9 @@ xim_instantiate_cb(
     Window	x11_window;
     Display	*x11_display;
 
-#   ifdef XIM_DEBUG
+#    ifdef XIM_DEBUG
     xim_log("xim_instantiate_cb()\n");
-#   endif
+#    endif
 
     gui_get_x11_windis(&x11_window, &x11_display);
     if (display != x11_display)
@@ -1400,9 +1686,9 @@ xim_destroy_cb(
     Window	x11_window;
     Display	*x11_display;
 
-#   ifdef XIM_DEBUG
+#    ifdef XIM_DEBUG
     xim_log("xim_destroy_cb()\n");
-   #endif
+#    endif
     gui_get_x11_windis(&x11_window, &x11_display);
 
     xic = NULL;
@@ -1413,7 +1699,7 @@ xim_destroy_cb(
     XRegisterIMInstantiateCallback(x11_display, NULL, NULL, NULL,
 				   xim_instantiate_cb, NULL);
 }
-#  endif
+#   endif
 
     void
 xim_init(void)
@@ -1421,9 +1707,9 @@ xim_init(void)
     Window	x11_window;
     Display	*x11_display;
 
-#  ifdef XIM_DEBUG
+#   ifdef XIM_DEBUG
     xim_log("xim_init()\n");
-#  endif
+#   endif
 
     gui_get_x11_windis(&x11_window, &x11_display);
 
@@ -1434,10 +1720,10 @@ xim_init(void)
 
     gui_set_shellsize(FALSE, FALSE, RESIZE_BOTH);
 
-#  ifdef USE_X11R6_XIM
+#   ifdef USE_X11R6_XIM
     XRegisterIMInstantiateCallback(x11_display, NULL, NULL, NULL,
 				   xim_instantiate_cb, NULL);
-#  endif
+#   endif
 }
 
     static int
@@ -1449,7 +1735,7 @@ xim_real_init(Window x11_window, Display *x11_display)
 		*ns,
 		*end,
 		tmp[1024];
-#  define IMLEN_MAX 40
+#   define IMLEN_MAX 40
     char	buf[IMLEN_MAX + 7];
     XIM		xim = NULL;
     XIMStyles	*xim_styles;
@@ -1466,7 +1752,8 @@ xim_real_init(Window x11_window, Display *x11_display)
 
     if (gui.rsrc_input_method != NULL && *gui.rsrc_input_method != NUL)
     {
-	strcpy(tmp, gui.rsrc_input_method);
+	vim_strncpy((char_u *)tmp, (char_u *)gui.rsrc_input_method,
+	    sizeof(tmp) - 1);
 	for (ns = s = tmp; ns != NULL && *s != NUL;)
 	{
 	    s = (char *)skipwhite((char_u *)s);
@@ -1514,7 +1801,7 @@ xim_real_init(Window x11_window, Display *x11_display)
 	return FALSE;
     }
 
-#  ifdef USE_X11R6_XIM
+#   ifdef USE_X11R6_XIM
     {
 	XIMCallback destroy_cb;
 
@@ -1523,7 +1810,7 @@ xim_real_init(Window x11_window, Display *x11_display)
 	if (XSetIMValues(xim, XNDestroyCallback, &destroy_cb, NULL))
 	    emsg(_(e_warning_could_not_set_destroy_callback_to_im));
     }
-#  endif
+#   endif
 
     if (XGetIMValues(xim, XNQueryInputStyle, &xim_styles, NULL) || !xim_styles)
     {
@@ -1533,7 +1820,8 @@ xim_real_init(Window x11_window, Display *x11_display)
     }
 
     found = False;
-    strcpy(tmp, gui.rsrc_preedit_type_name);
+    vim_strncpy((char_u *)tmp, (char_u *)gui.rsrc_preedit_type_name,
+	    sizeof(tmp) - 1);
     for (s = tmp; s && !found; )
     {
 	while (*s && SAFE_isspace(*s))
@@ -1599,7 +1887,7 @@ xim_real_init(Window x11_window, Display *x11_display)
 
     // A crash was reported when trying to pass gui.norm_font as XNFontSet,
     // thus that has been removed.  Hopefully the default works...
-#  ifdef FEAT_XFONTSET
+#   ifdef FEAT_XFONTSET
     if (gui.fontset != NOFONTSET)
     {
 	preedit_list = XVaCreateNestedList(0,
@@ -1615,7 +1903,7 @@ xim_real_init(Window x11_window, Display *x11_display)
 				NULL);
     }
     else
-#  endif
+#   endif
     {
 	preedit_list = XVaCreateNestedList(0,
 				XNSpotLocation, &over_spot,
@@ -1678,7 +1966,7 @@ im_get_status(void)
 
 # endif // !FEAT_GUI_GTK
 
-# if !defined(FEAT_GUI_GTK) || defined(PROTO)
+# if !defined(FEAT_GUI_GTK)
 /*
  * Set up the status area.
  *
@@ -1717,10 +2005,10 @@ xim_set_status_area(void)
 	status_area.y = gui.char_height * Rows + gui.border_offset;
 	if (gui.which_scrollbars[SBAR_BOTTOM])
 	    status_area.y += gui.scrollbar_height;
-#ifdef FEAT_MENU
+#  ifdef FEAT_MENU
 	if (gui.menu_is_active)
 	    status_area.y += gui.menu_height;
-#endif
+#  endif
 	status_area.height = gui.char_height;
 	status_list = XVaCreateNestedList(0, XNArea, &status_area, NULL);
     }
@@ -1730,10 +2018,10 @@ xim_set_status_area(void)
 	status_area.y = gui.char_height * Rows + gui.border_offset;
 	if (gui.which_scrollbars[SBAR_BOTTOM])
 	    status_area.y += gui.scrollbar_height;
-#ifdef FEAT_MENU
+#  ifdef FEAT_MENU
 	if (gui.menu_is_active)
 	    status_area.y += gui.menu_height;
-#endif
+#  endif
 	status_area.width = 0;
 	status_area.height = gui.char_height;
     }
@@ -1745,10 +2033,10 @@ xim_set_status_area(void)
 	pre_area.width = gui.char_width * Columns - pre_area.x;
 	if (gui.which_scrollbars[SBAR_BOTTOM])
 	    pre_area.y += gui.scrollbar_height;
-#ifdef FEAT_MENU
+#  ifdef FEAT_MENU
 	if (gui.menu_is_active)
 	    pre_area.y += gui.menu_height;
-#endif
+#  endif
 	pre_area.height = gui.char_height;
 	preedit_list = XVaCreateNestedList(0, XNArea, &pre_area, NULL);
     }
@@ -1795,7 +2083,7 @@ xim_get_status_area_height(void)
 
 #else // !defined(FEAT_XIM)
 
-# if defined(IME_WITHOUT_XIM) || defined(VIMDLL) || defined(PROTO)
+# if defined(IME_WITHOUT_XIM) || defined(VIMDLL)
 static int im_was_set_active = FALSE;
 
     int

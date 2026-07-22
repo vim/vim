@@ -1,11 +1,10 @@
 " Test for Select-mode
 
 " This only works for Unix in a terminal
-source check.vim
 CheckNotGui
 CheckUnix
 
-source mouse.vim
+source util/mouse.vim
 
 " Test for select mode
 func Test_selectmode_basic()
@@ -317,6 +316,22 @@ func Test_ins_ctrl_o_in_insert_mode_resets_selectmode()
   call cursor(1, 1)
   exe "norm! \<c-v>\<c-g>\<c-o>c\<c-o>\<c-v>\<right>\<right>IABC"
   call assert_equal('ABCbcdef', getline(1))
+
+  bwipe!
+endfunc
+
+" Test that an :lmap mapping for a printable keypad key is applied when typing
+" it in Select mode.
+func Test_selectmode_keypad_lmap()
+  new
+  lnoremap <buffer> <kPoint> ???
+  lnoremap <buffer> <kEnter> !!!
+  setlocal iminsert=1
+  call setline(1, 'abcdef')
+  call feedkeys("gH\<kPoint>\<Esc>", 'tx')
+  call assert_equal(['???'], getline(1, '$'))
+  call feedkeys("gH\<kEnter>\<Esc>", 'tx')
+  call assert_equal(['!!!'], getline(1, '$'))
 
   bwipe!
 endfunc

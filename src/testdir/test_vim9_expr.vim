@@ -1,7 +1,6 @@
 " Tests for Vim9 script expressions
 
-source check.vim
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 let g:cond = v:false
 def FuncOne(arg: number): string
@@ -232,6 +231,283 @@ def Test_expr1_falsy()
   END
   v9.CheckDefAndScriptSuccess(lines)
 
+  # falsy operator with objects and enum values
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+
+    var c = C.new()
+    assert_equal(c, c ?? 'falsy')
+    assert_equal('truthy', !c ?? 'truthy')
+    assert_equal('falsy', null_object ?? 'falsy')
+    assert_equal(true, !null_object ?? 'truthy')
+
+    enum Color
+      Red,
+      Blue
+    endenum
+    assert_equal(Color.Red, Color.Red ?? 'falsy')
+    assert_equal('truthy', !Color.Red ?? 'truthy')
+
+    def Fn()
+      var c2 = C.new()
+      assert_equal(c2, c2 ?? 'falsy')
+      assert_equal('truthy', !c2 ?? 'truthy')
+      assert_equal('falsy', null_object ?? 'falsy')
+      assert_equal(true, !null_object ?? 'truthy')
+      assert_equal(Color.Red, Color.Red ?? 'falsy')
+      assert_equal('truthy', !Color.Red ?? 'truthy')
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # class cannot be used with the falsy operator
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    echo A ?? 'falsy'
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1405: Class "A" cannot be used as a value')
+
+  lines =<< trim END
+    vim9script
+    class B
+    endclass
+    echo !B
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1405: Class "B" cannot be used as a value')
+
+  # Expression evaluation should stop after using a class with the falsy
+  # operator
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    var output: string = 'pass'
+    try
+      echo C ?? 'falsy' !! execute("output = 'fail'")
+    catch /E1405:/
+    endtry
+    assert_equal('pass', output)
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # When using a class with the falsy operator, expression evaluation should
+  # be aborted in a function
+  g:falsy_output = 'pass'
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    g:falsy_output = 'pass'
+    def Fn()
+      echo C ?? 'falsy' !! execute('g:falsy_output = "fail"')
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 1)
+  assert_equal('pass', g:falsy_output)
+  unlet g:falsy_output
+
+  # When using a class with the "!" operator, expression evaluation should be
+  # aborted
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    var output: string = 'pass'
+    try
+      echo !C !! execute("output = 'fail'")
+    catch /E1405:/
+    endtry
+    assert_equal('pass', output)
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # When using a class with the "!" operator, expression evaluation should be
+  # aborted in a function
+  g:falsy_output = 'pass'
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    def Fn()
+      echo !C !! execute('g:falsy_output = "fail"')
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 1)
+  assert_equal('pass', g:falsy_output)
+  unlet g:falsy_output
+
+  lines =<< trim END
+    vim9script
+    echo null_class ?? 'falsy'
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1405: Class "" cannot be used as a value')
+
+  lines =<< trim END
+    vim9script
+    echo !null_class
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1405: Class "" cannot be used as a value')
+
+  # enum cannot be used with the falsy operator
+  lines =<< trim END
+    vim9script
+    enum E1
+    endenum
+    echo E1 ?? 'falsy'
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1421: Enum "E1" cannot be used as a value')
+
+  lines =<< trim END
+    vim9script
+    enum E2
+    endenum
+    echo !E2
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1421: Enum "E2" cannot be used as a value')
+
+  # Expression evaluation should stop after using an enum with the falsy
+  # operator
+  lines =<< trim END
+    vim9script
+    enum E
+    endenum
+    var output: string = 'pass'
+    try
+      echo E ?? 'falsy' !! execute("output = 'fail'")
+    catch /E1421:/
+    endtry
+    assert_equal('pass', output)
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # When using a enum with the falsy operator, expression evaluation should
+  # be aborted in a function
+  g:falsy_output = 'pass'
+  lines =<< trim END
+    vim9script
+    enum E3
+    endenum
+    g:falsy_output = 'pass'
+    def Fn()
+      echo E3 ?? 'falsy' !! execute('g:falsy_output = "fail"')
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1421: Enum "E3" cannot be used as a value', 1)
+  assert_equal('pass', g:falsy_output)
+  unlet g:falsy_output
+
+  # Expression evaluation should stop after using an enum with the ! operator
+  lines =<< trim END
+    vim9script
+    enum E
+    endenum
+    var output: string = 'pass'
+    try
+      echo !E !! execute("output = 'fail'")
+    catch /E1421:/
+    endtry
+    assert_equal('pass', output)
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # When using a enum with the "!" operator, expression evaluation should be
+  # aborted in a function
+  g:falsy_output = 'pass'
+  lines =<< trim END
+    vim9script
+    enum E4
+    endenum
+    def Fn()
+      echo !E4 !! execute('g:falsy_output = "fail"')
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1421: Enum "E4" cannot be used as a value', 1)
+  assert_equal('pass', g:falsy_output)
+  unlet g:falsy_output
+
+  # typealias cannot be used with the falsy operator
+  lines =<< trim END
+    vim9script
+    type T1 = list<bool>
+    echo T1 ?? 'falsy'
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1403: Type alias "T1" cannot be used as a value')
+
+  lines =<< trim END
+    vim9script
+    type T2 = list<bool>
+    echo !T2
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1403: Type alias "T2" cannot be used as a value')
+
+  # Expression evaluation should stop after using a typealias with the falsy
+  # operator
+  lines =<< trim END
+    vim9script
+    type T3 = dict<string>
+    var output: string = 'pass'
+    try
+      echo T3 ?? 'falsy' !! execute("output = 'fail'")
+    catch /E1403:/
+    endtry
+    assert_equal('pass', output)
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # When using a typealias with the falsy operator, expression evaluation
+  # should be aborted in a function
+  g:falsy_output = 'pass'
+  lines =<< trim END
+    vim9script
+    type T3 = dict<job>
+    g:falsy_output = 'pass'
+    def Fn()
+      echo T3 ?? 'falsy' !! execute('g:falsy_output = "fail"')
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
+  assert_equal('pass', g:falsy_output)
+  unlet g:falsy_output
+
+  # Expression evaluation should stop after using a typealias with the !
+  # operator
+  lines =<< trim END
+    vim9script
+    type T3 = dict<string>
+    var output: string = 'pass'
+    try
+      echo !T3 !! execute("output = 'fail'")
+    catch /E1403:/
+    endtry
+    assert_equal('pass', output)
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # When using a typealias with the "!" operator, expression evaluation should
+  # be aborted in a function
+  g:falsy_output = 'pass'
+  lines =<< trim END
+    vim9script
+    type T4 = list<number>
+    def Fn()
+      echo !T4 !! execute('g:falsy_output = "fail"')
+    enddef
+    Fn()
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
+  assert_equal('pass', g:falsy_output)
+  unlet g:falsy_output
+
   var msg = "White space required before and after '??'"
   call v9.CheckDefAndScriptFailure(["var x = 1?? 'one' : 'two'"], msg, 1)
   call v9.CheckDefAndScriptFailure(["var x = 1 ??'one' : 'two'"], msg, 1)
@@ -309,6 +585,36 @@ def Test_expr2()
         g:vals = [1]
       endif
       assert_equal([1], g:vals)
+
+      # string interpolation with ||
+      assert_equal('true', $"{0 || 1}")
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # test the short-circuit operation
+  lines =<< trim END
+    assert_equal(true, true && true)
+    assert_equal(false, true && !true)
+    assert_equal(false, !true && true)
+    assert_equal(false, !true && !true)
+
+    assert_equal(true, true || true)
+    assert_equal(true, true || !true)
+    assert_equal(true, !true || true)
+    assert_equal(false, !true || !true)
+
+    assert_equal(false, false && false)
+    assert_equal(false, false && !false)
+    assert_equal(false, !false && false)
+    assert_equal(true, !false && !false)
+
+    assert_equal(false, false || false)
+    assert_equal(true, false || !false)
+    assert_equal(true, !false || false)
+    assert_equal(true, !false || !false)
+
+    assert_equal(false, !true && !true && !true)
+    assert_equal(true, !false || !false || !false)
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef
@@ -388,6 +694,7 @@ def Test_expr2_fails()
   v9.CheckDefExecAndScriptFailure(['var x = 3', 'if x', 'endif'], 'E1023:', 2)
 
   v9.CheckDefAndScriptFailure(["var x = [] || false"], ['E1012: Type mismatch; expected bool but got list<any>', 'E745:'], 1)
+  v9.CheckDefAndScriptFailure(["var x = $'{false || []}'"], ['E1012: Type mismatch; expected bool but got list<any>', 'E745:'], 1)
 
   var lines =<< trim END
     vim9script
@@ -448,6 +755,9 @@ def Test_expr3()
         failed = true
       endif
       assert_false(failed)
+
+      # string interpolation with &&
+      assert_equal('false', $"{1 && 0}")
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef
@@ -547,6 +857,8 @@ def Test_expr3_fails()
       echo true && s
   END
   v9.CheckDefAndScriptFailure(lines, ['E1012: Type mismatch; expected bool but got string', 'E1135: Using a String as a Bool: "asdf"'])
+
+  v9.CheckDefAndScriptFailure(["var x = $'{true && []}'"], ['E1012: Type mismatch; expected bool but got list<any>', 'E745:'], 1)
 enddef
 
 " global variables to use for tests with the "any" type
@@ -676,7 +988,7 @@ def Test_expr4_equal()
 
   v9.CheckDefExecAndScriptFailure(['var x: any = "a"', 'echo x == true'], 'E1072: Cannot compare string with bool', 2)
   v9.CheckDefExecAndScriptFailure(["var x: any = true", 'echo x == ""'], 'E1072: Cannot compare bool with string', 2)
-  v9.CheckDefExecAndScriptFailure(["var x: any = 99", 'echo x == true'], ['E1138', 'E1072:'], 2)
+  v9.CheckDefExecAndScriptFailure(["var x: any = 99", 'echo x == true'], ['E1138:', 'E1072:'], 2)
   v9.CheckDefExecAndScriptFailure(["var x: any = 'a'", 'echo x == 99'], ['E1030:', 'E1072:'], 2)
 
   lines =<< trim END
@@ -1574,7 +1886,7 @@ def Test_expr6_vim9script()
   lines =<< trim END
       echo 0z1234 - 44
   END
-  v9.CheckDefAndScriptFailure(lines, ['E1036', 'E974:'], 1)
+  v9.CheckDefAndScriptFailure(lines, ['E1036:', 'E974:'], 1)
 
   lines =<< trim END
       echo 'abc' is? 'abc'
@@ -1829,8 +2141,8 @@ def Test_expr7()
   v9.CheckDefFailure(["var d = 6 * "], 'E1097:', 3)
   v9.CheckScriptFailure(['vim9script', "var d = 6 * "], 'E15:', 2)
 
-  v9.CheckDefAndScriptFailure(['echo 1 / 0'], 'E1154', 1)
-  v9.CheckDefAndScriptFailure(['echo 1 % 0'], 'E1154', 1)
+  v9.CheckDefAndScriptFailure(['echo 1 / 0'], 'E1154:', 1)
+  v9.CheckDefAndScriptFailure(['echo 1 % 0'], 'E1154:', 1)
 
   g:zero = 0
   v9.CheckDefExecFailure(['echo 123 / g:zero'], 'E1154: Divide by zero')
@@ -1840,19 +2152,19 @@ def Test_expr7()
         'g:one = 1.0',
         'g:two = 2.0',
         'echo g:one % g:two',
-        ], 'E804', 3)
+        ], 'E804:', 3)
 
   lines =<< trim END
     var n = 0
     eval 1 / n
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1154', 2)
+  v9.CheckDefExecAndScriptFailure(lines, 'E1154:', 2)
 
   lines =<< trim END
     var n = 0
     eval 1 % n
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1154', 2)
+  v9.CheckDefExecAndScriptFailure(lines, 'E1154:', 2)
 enddef
 
 def Test_expr7_vim9script()
@@ -2082,6 +2394,12 @@ def Test_expr9_number()
       Test()
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    eval("10\n")
+  END
+  v9.CheckSourceScriptFailure(lines, "E488: Trailing characters: \n")
 enddef
 
 def Test_expr9_float()
@@ -2125,6 +2443,7 @@ def Test_expr9_blob()
   v9.CheckDefAndScriptSuccess(lines)
 
   v9.CheckDefAndScriptFailure(["var x = 0z123"], 'E973:', 1)
+  v9.CheckDefAndScriptFailure(["var x = null_blox"], ['E1001:', 'E121:'], 1)
 enddef
 
 def Test_expr9_string()
@@ -2142,7 +2461,7 @@ def Test_expr9_string()
 
   v9.CheckDefAndScriptFailure(['var x = "abc'], 'E114:', 1)
   v9.CheckDefAndScriptFailure(["var x = 'abc"], 'E115:', 1)
-  v9.CheckDefFailure(["if 0", "echo 'xx", "endif"], 'E115', 2)
+  v9.CheckDefFailure(["if 0", "echo 'xx", "endif"], 'E115:', 2)
 
   # interpolated string
   var val = 'val'
@@ -2513,28 +2832,28 @@ def Test_expr9_lambda_block()
   lines =<< trim END
       map([1, 2], (k, v) => { redrawt })
   END
-  v9.CheckDefAndScriptFailure(lines, 'E488')
+  v9.CheckDefAndScriptFailure(lines, 'E488:')
 
   lines =<< trim END
       var Func = (nr: int) => {
               echo nr
             }
   END
-  v9.CheckDefAndScriptFailure(lines, 'E1010', 1)
+  v9.CheckDefAndScriptFailure(lines, 'E1010:', 1)
 
   lines =<< trim END
       var Func = (nr: number): int => {
               return nr
             }
   END
-  v9.CheckDefAndScriptFailure(lines, 'E1010', 1)
+  v9.CheckDefAndScriptFailure(lines, 'E1010:', 1)
 
   lines =<< trim END
       var Func = (nr: number): int => {
               return nr
   END
-  v9.CheckDefFailure(lines, 'E1171', 0)  # line nr is function start
-  v9.CheckScriptFailure(['vim9script'] + lines, 'E1171', 2)
+  v9.CheckDefFailure(lines, 'E1171:', 0)  # line nr is function start
+  v9.CheckScriptFailure(['vim9script'] + lines, 'E1171:', 2)
 
   lines =<< trim END
       var Func = (nr: number): int => {
@@ -2837,6 +3156,10 @@ def Test_expr9_dict()
   v9.CheckDefFailure(['var x = ({'], 'E723:', 2)
   v9.CheckScriptFailure(['vim9script', 'var x = ({'], 'E723:', 2)
   v9.CheckDefExecAndScriptFailure(['{}[getftype("file")]'], 'E716: Key not present in Dictionary: ""', 1)
+
+  # invalid dot notation key name
+  v9.CheckDefAndScriptFailure(['var x = { "a#b": 1 }', 'x.a#b'], ['E488:', 'E716:'], 2)
+  v9.CheckDefAndScriptFailure(['var x = { "a:b": 1 }', 'x.a:b'], ['E488:', 'E716:'], 2)
 enddef
 
 def Test_expr9_dict_vim9script()
@@ -3249,6 +3572,7 @@ def SetSomeVar()
 enddef
 
 def Test_expr9_option()
+  CheckFeature quickfix
   var lines =<< trim END
       # option
       set ts=11
@@ -3309,7 +3633,11 @@ def Test_expr9_register()
   END
   v9.CheckDefAndScriptSuccess(lines)
 
-  v9.CheckDefAndScriptFailure(["@. = 'yes'"], ['E354:', 'E488:'], 1)
+  # read-only registers
+  v9.CheckDefAndScriptFailure(["@. = 'yes'"], 'E354:', 1)
+  v9.CheckDefAndScriptFailure(["@% = 'yes'"], 'E354:', 1)
+  v9.CheckDefAndScriptFailure(["@: = 'yes'"], 'E354:', 1)
+  v9.CheckDefAndScriptFailure(["@~ = 'yes'"], 'E354:', 1)
 enddef
 
 " This is slow when run under valgrind.
@@ -3596,6 +3924,7 @@ def Test_expr9_call_autoload()
 enddef
 
 def Test_expr9_method_call()
+  CheckFeature quickfix
   var lines =<< trim END
       new
       setline(1, ['first', 'last'])
@@ -3671,7 +4000,7 @@ def Test_expr9_method_call()
     enddef
     RetVoid()->byteidx(3)
   END
-  v9.CheckDefExecFailure(lines, 'E1013:')
+  v9.CheckDefExecFailure(lines, 'E1031: Cannot use void value')
 
   lines =<< trim END
       const SetList = [function('len')]
@@ -3792,6 +4121,11 @@ def Test_expr9_not()
 
       assert_equal(false, ![1, 2, 3]->reverse())
       assert_equal(true, ![]->reverse())
+
+      # float
+      assert_equal(true, !0.0)
+      assert_equal(false, !1.0)
+      assert_equal(false, !25.678)
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef

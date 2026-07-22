@@ -1,6 +1,5 @@
 " Test 'autochdir' behavior
 
-source check.vim
 CheckOption autochdir
 
 func Test_set_filename()

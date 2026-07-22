@@ -1,11 +1,12 @@
 " Vim filetype plugin file
 " Language:	python
-" Maintainer:	Tom Picton <tom@tompicton.co.uk>
+" Maintainer:	Tom Picton <tom@tompicton.com>
 " Previous Maintainer: James Sully <sullyj3@gmail.com>
 " Previous Maintainer: Johannes Zellner <johannes@zellner.org>
-" Last Change:	Mon, 5 October 2020
-"		2024 Jan 14 by Vim Project (browsefilter)
-" https://github.com/tpict/vim-ftplugin-python
+" Repository: https://github.com/tpict/vim-ftplugin-python
+" Last Change: 2024/05/13
+"              2024 Nov 30 use pytest compiler (#16130)
+"              2026 Jun 27 by Vim Project (normalize recommended style guard)
 
 if exists("b:did_ftplugin") | finish | endif
 let b:did_ftplugin = 1
@@ -15,7 +16,7 @@ set cpo&vim
 setlocal cinkeys-=0#
 setlocal indentkeys-=0#
 setlocal include=^\\s*\\(from\\\|import\\)
-setlocal define=^\\s*\\(def\\\|class\\)
+setlocal define=^\\s*\\(\\(async\\s\\+\\)\\?def\\\|class\\)
 
 " For imports with leading .., append / and replace additional .s with ../
 let b:grandparent_match = '^\(.\.\)\(\.*\)'
@@ -57,14 +58,14 @@ let b:next_end='\v\S\n*(%$\|^(\s*\n*)*(class\|def\|async def)\|^\S)'
 let b:prev_end='\v\S\n*(^(\s*\n*)*(class\|def\|async def)\|^\S)'
 
 if !exists('g:no_plugin_maps') && !exists('g:no_python_maps')
-    execute "nnoremap <silent> <buffer> ]] :call <SID>Python_jump('n', '". b:next_toplevel."', 'W', v:count1)<cr>"
-    execute "nnoremap <silent> <buffer> [[ :call <SID>Python_jump('n', '". b:prev_toplevel."', 'Wb', v:count1)<cr>"
-    execute "nnoremap <silent> <buffer> ][ :call <SID>Python_jump('n', '". b:next_endtoplevel."', 'W', v:count1, 0)<cr>"
-    execute "nnoremap <silent> <buffer> [] :call <SID>Python_jump('n', '". b:prev_endtoplevel."', 'Wb', v:count1, 0)<cr>"
-    execute "nnoremap <silent> <buffer> ]m :call <SID>Python_jump('n', '". b:next."', 'W', v:count1)<cr>"
-    execute "nnoremap <silent> <buffer> [m :call <SID>Python_jump('n', '". b:prev."', 'Wb', v:count1)<cr>"
-    execute "nnoremap <silent> <buffer> ]M :call <SID>Python_jump('n', '". b:next_end."', 'W', v:count1, 0)<cr>"
-    execute "nnoremap <silent> <buffer> [M :call <SID>Python_jump('n', '". b:prev_end."', 'Wb', v:count1, 0)<cr>"
+    execute "nnoremap <silent> <buffer> ]] :<C-U>call <SID>Python_jump('n', '". b:next_toplevel."', 'W', v:count1)<cr>"
+    execute "nnoremap <silent> <buffer> [[ :<C-U>call <SID>Python_jump('n', '". b:prev_toplevel."', 'Wb', v:count1)<cr>"
+    execute "nnoremap <silent> <buffer> ][ :<C-U>call <SID>Python_jump('n', '". b:next_endtoplevel."', 'W', v:count1, 0)<cr>"
+    execute "nnoremap <silent> <buffer> [] :<C-U>call <SID>Python_jump('n', '". b:prev_endtoplevel."', 'Wb', v:count1, 0)<cr>"
+    execute "nnoremap <silent> <buffer> ]m :<C-U>call <SID>Python_jump('n', '". b:next."', 'W', v:count1)<cr>"
+    execute "nnoremap <silent> <buffer> [m :<C-U>call <SID>Python_jump('n', '". b:prev."', 'Wb', v:count1)<cr>"
+    execute "nnoremap <silent> <buffer> ]M :<C-U>call <SID>Python_jump('n', '". b:next_end."', 'W', v:count1, 0)<cr>"
+    execute "nnoremap <silent> <buffer> [M :<C-U>call <SID>Python_jump('n', '". b:prev_end."', 'Wb', v:count1, 0)<cr>"
 
     execute "onoremap <silent> <buffer> ]] :call <SID>Python_jump('o', '". b:next_toplevel."', 'W', v:count1)<cr>"
     execute "onoremap <silent> <buffer> [[ :call <SID>Python_jump('o', '". b:prev_toplevel."', 'Wb', v:count1)<cr>"
@@ -119,7 +120,8 @@ if has("browsefilter") && !exists("b:browsefilter")
     endif
 endif
 
-if !exists("g:python_recommended_style") || g:python_recommended_style != 0
+if get(g:, 'python_recommended_style',
+      \ get(g:, 'filetype_recommended_style', 1))
     " As suggested by PEP8.
     setlocal expandtab tabstop=4 softtabstop=4 shiftwidth=4
 endif
@@ -133,6 +135,11 @@ if executable('python3')
   setlocal keywordprg=python3\ -m\ pydoc
 elseif executable('python')
   setlocal keywordprg=python\ -m\ pydoc
+endif
+
+if expand('%:t') =~# '\v^test_.*\.py$|_test\.py$' && executable('pytest')
+  compiler pytest
+  let &l:makeprg .= ' %:S'
 endif
 
 " Script for filetype switching to undo the local stuff we may have changed
@@ -149,6 +156,7 @@ let b:undo_ftplugin = 'setlocal cinkeys<'
       \ . '|setlocal softtabstop<'
       \ . '|setlocal suffixesadd<'
       \ . '|setlocal tabstop<'
+      \ . '|setlocal makeprg<'
       \ . '|silent! nunmap <buffer> [M'
       \ . '|silent! nunmap <buffer> [['
       \ . '|silent! nunmap <buffer> []'

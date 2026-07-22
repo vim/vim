@@ -1,31 +1,38 @@
-" Vim compiler file
-" Compiler: Hare Compiler
-" Maintainer: Amelia Clarke <me@rsaihe.dev>
-" Last Change: 2022-09-21
+vim9script
 
-if exists("g:current_compiler")
+# Vim compiler file.
+# Compiler:    Hare
+# Maintainer:  Amelia Clarke <selene@perilune.dev>
+# Last Change: 2026 Jan 24
+# Upstream:    https://git.sr.ht/~sircmpwn/hare.vim
+
+if exists('g:current_compiler')
   finish
 endif
-let g:current_compiler = "hare"
+g:current_compiler = 'hare'
 
-let s:cpo_save = &cpo
-set cpo&vim
-
-if exists(':CompilerSet') != 2
-  command -nargs=* CompilerSet setlocal <args>
-endif
-
-if filereadable("Makefile") || filereadable("makefile")
+if filereadable('Makefile') || filereadable('makefile')
   CompilerSet makeprg=make
 else
-  CompilerSet makeprg=hare\ build
+  const makeprg = 'hare build ' .. get(g:, 'hare_makeprg_params', '-q')
+  execute 'CompilerSet makeprg=' .. escape(makeprg, ' "\|')
 endif
 
 CompilerSet errorformat=
-  \Error\ %f:%l:%c:\ %m,
-  \Syntax\ error:\ %.%#\ at\ %f:%l:%c\\,\ %m,
+  \%E%o:%l:%v:\ error:\ %m,
+  \%E%o:%l:%v:\ syntax\ error:\ %m,
+  \%E%o:%l:%v:\ %\\%%(unexpected\ name\ %\\)%\\@=%m,
+  \%C,%C\ %.%#,%C%l\ %.%#,
+  \%trror:\ %o:\ %\\%%(%\\h%\\w%\\+%\\%%(::%\\h%\\w%\\+%\\)%#:\ %\\)%\\@=%m,
+  \%trror:\ %m,
+  \%+EAbort:\ %m%>,
+  \%C%.%#,
   \%-G%.%#
 
-let &cpo = s:cpo_save
-unlet s:cpo_save
-" vim: tabstop=2 shiftwidth=2 expandtab
+augroup HareQuickFix
+  autocmd!
+  autocmd QuickFixCmdPost make hare#QuickFixPaths()
+  autocmd QuickFixCmdPost lmake hare#QuickFixPaths()
+augroup END
+
+# vim: et sts=2 sw=2 ts=8 tw=80

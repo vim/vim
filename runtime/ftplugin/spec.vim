@@ -2,8 +2,11 @@
 " Filename: spec.vim
 " Maintainer: Igor Gnatenko i.gnatenko.brain@gmail.com
 " Former Maintainer: Gustavo Niemeyer <niemeyer@conectiva.com> (until March 2014)
-" Last Change: Mon Jun 01 21:15 MSK 2015 Igor Gnatenko
-" Update by Zdenek Dohnal, 2022 May 17
+" Last Change: 2015 Jun 01
+"  Update by Zdenek Dohnal, 2022 May 17
+"  2024 Sep 10 by Vim Project: add epoch support for spec changelog, #15537
+"  2024 Oct 07 by Vim Project: add comment support, #15817
+"  2026 May 25 by Vim Project: drop the python GetRelVer() func
 
 if exists("b:did_ftplugin")
 	finish
@@ -13,6 +16,11 @@ let b:did_ftplugin = 1
 let s:cpo_save = &cpo
 set cpo&vim
 
+setlocal comments=b:#
+setlocal commentstring=#\ %s
+
+let b:undo_ftplugin = "setlocal comments< commentstring<"
+
 if !exists("no_plugin_maps") && !exists("no_spec_maps")
 	if !hasmapto("<Plug>SpecChangelog")
 		map <buffer> <LocalLeader>c <Plug>SpecChangelog
@@ -20,33 +28,7 @@ if !exists("no_plugin_maps") && !exists("no_spec_maps")
 endif
 
 if !hasmapto("call <SID>SpecChangelog(\"\")<CR>")
-       noremap <buffer> <unique> <script> <Plug>SpecChangelog :call <SID>SpecChangelog("")<CR>
-endif
-
-if !exists("*s:GetRelVer")
-	function! s:GetRelVer()
-		if has('python')
-python << PYEND
-import sys, datetime, shutil, tempfile
-import vim
-
-try:
-    import rpm
-except ImportError:
-    pass
-else:
-    specfile = vim.current.buffer.name
-    if specfile:
-        rpm.delMacro("dist")
-        spec = rpm.spec(specfile)
-        headers = spec.sourceHeader
-        version = headers["Version"]
-        release = headers["Release"]
-        vim.command("let ver = '" + version + "'")
-        vim.command("let rel = '" + release + "'")
-PYEND
-		endif
-	endfunction
+	noremap <buffer> <unique> <script> <Plug>SpecChangelog :call <SID>SpecChangelog("")<CR>
 endif
 
 if !exists("*s:SpecChangelog")
@@ -66,9 +48,11 @@ if !exists("*s:SpecChangelog")
 		endif
 		let line = 0
 		let name = ""
+		let epoch = ""
 		let ver = ""
 		let rel = ""
 		let nameline = -1
+		let epochline = -1
 		let verline = -1
 		let relline = -1
 		let chgline = -1
@@ -77,6 +61,9 @@ if !exists("*s:SpecChangelog")
 			if name == "" && linestr =~? '^Name:'
 				let nameline = line
 				let name = substitute(strpart(linestr,5), '^[	 ]*\([^ 	]\+\)[		]*$','\1','')
+			elseif epoch == "" && linestr =~? '^Epoch:'
+				let epochline = line
+				let epoch = substitute(strpart(linestr,6), '^[     ]*\([^         ]\+\)[          ]*$','\1','')
 			elseif ver == "" && linestr =~? '^Version:'
 				let verline = line
 				let ver = substitute(strpart(linestr,8), '^[	 ]*\([^ 	]\+\)[		]*$','\1','')
@@ -93,13 +80,12 @@ if !exists("*s:SpecChangelog")
 		if nameline != -1 && verline != -1 && relline != -1
 			let include_release_info = exists("g:spec_chglog_release_info")
 			let name = s:ParseRpmVars(name, nameline)
+			let epoch = s:ParseRpmVars(epoch, epochline)
 			let ver = s:ParseRpmVars(ver, verline)
 			let rel = s:ParseRpmVars(rel, relline)
 		else
 			let include_release_info = 0
 		endif
-
-		call s:GetRelVer()
 
 		if chgline == -1
 			let option = confirm("Can't find %changelog. Create one? ","&End of file\n&Here\n&Cancel",3)
@@ -117,6 +103,9 @@ if !exists("*s:SpecChangelog")
 		if chgline != -1
 			let tmptime = v:lc_time
 			language time C
+			if strlen(epoch)
+				let ver = epoch.":".ver
+			endif
 			let parsed_format = "* ".strftime(format)." - ".ver."-".rel
 			execute "language time" tmptime
 			let release_info = "+ ".name."-".ver."-".rel
@@ -206,4 +195,4 @@ let b:match_words =
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
-let b:undo_ftplugin = "unlet! b:match_ignorecase b:match_words"
+let b:undo_ftplugin ..= " | unlet! b:match_ignorecase b:match_words"

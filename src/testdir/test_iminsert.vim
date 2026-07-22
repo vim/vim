@@ -1,8 +1,6 @@
 " Test for 'iminsert'
 
-source view_util.vim
-source check.vim
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 let s:imactivatefunc_called = 0
 let s:imstatusfunc_called = 0

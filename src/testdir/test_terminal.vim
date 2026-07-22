@@ -2,13 +2,10 @@
 " This is split in two, because it can take a lot of time.
 " See test_terminal2.vim and test_terminal3.vim for further tests.
 
-source check.vim
 CheckFeature terminal
 
-source shared.vim
-source screendump.vim
-source mouse.vim
-source term_util.vim
+source util/screendump.vim
+source util/mouse.vim
 
 let s:python = PythonProg()
 let $PROMPT_COMMAND=''
@@ -60,8 +57,8 @@ func Test_terminal_TerminalWinOpen()
   close
 
   if has("unix")
-    terminal ++hidden ++open sleep 1
-    sleep 1
+    terminal ++hidden ++open echo
+    call WaitForAssert({-> assert_equal('terminal', &buftype)})
     call assert_fails("echo b:done", 'E121:')
   endif
 
@@ -320,10 +317,10 @@ endfunc
 func Get_cat_123_cmd()
   if has('win32')
     if !has('conpty')
-      return 'cmd /c "cls && color 2 && echo 123"'
+      return 'cmd /D /c "cls && color 2 && echo 123"'
     else
       " When clearing twice, extra sequence is not output.
-      return 'cmd /c "cls && cls && color 2 && echo 123"'
+      return 'cmd /D /c "cls && cls && color 2 && echo 123"'
     endif
   else
     call writefile(["\<Esc>[32m123"], 'Xtext')
@@ -410,7 +407,7 @@ func Test_terminal_scrape_multibyte()
   if has('win32')
     " Run cmd with UTF-8 codepage to make the type command print the expected
     " multibyte characters.
-    let buf = term_start("cmd /K chcp 65001")
+    let buf = term_start("cmd /D /K chcp 65001")
     call term_sendkeys(buf, "type Xtext\<CR>")
     eval buf->term_sendkeys("exit\<CR>")
     let line = 4
@@ -457,7 +454,7 @@ endfunc
 func Test_terminal_scroll()
   call writefile(range(1, 200), 'Xtext', 'D')
   if has('win32')
-    let cmd = 'cmd /c "type Xtext"'
+    let cmd = 'cmd /D /c "type Xtext"'
   else
     let cmd = "cat Xtext"
   endif
@@ -501,12 +498,28 @@ func Test_terminal_scrollback()
   let lines = line('$')
   call assert_inrange(91, 100, lines)
 
+  " When 'termwinscroll' becomes small, the scrollback should become small.
+  set termwinscroll=20
+  call term_sendkeys(buf, "echo set20\<CR>")
+  call WaitForAssert({-> assert_true([term_getline(buf, rows - 1), term_getline(buf, rows - 2)]->index('set20') >= 0)})
+  let lines = line('$')
+  call assert_inrange(19, 20, lines)
+
+  " When 'termwinscroll' under 10 which means 10% of it will be 0,
+  " the scrollback should become small.
+  set termwinscroll=1
+  call term_sendkeys(buf, "echo set1\<CR>")
+  call WaitForAssert({-> assert_true([term_getline(buf, rows - 1), term_getline(buf, rows - 2)]->index('set1') >= 0)})
+  let lines = line('$')
+  call assert_inrange(1, 2, lines)
+
   call StopShellInTerminal(buf)
   exe buf . 'bwipe'
   set termwinscroll&
 endfunc
 
 func Test_terminal_postponed_scrollback()
+  CheckScreendump
   " tail -f only works on Unix
   CheckUnix
 
@@ -761,11 +774,27 @@ func Test_terminal_finish_open_close()
   call assert_equal('opened the buffer in a window', g:result)
   unlet g:result
   bwipe
+
+  " Test "noclose" for term_start()
+  let cmd = Get_cat_123_cmd()
+
+  let buf = term_start(cmd, {
+        \ 'term_finish': 'noclose',
+        \ 'hidden': v:true
+        \ })
+
+  call WaitForAssert({-> assert_equal('finished', term_getstatus(buf))})
+
+  let info = getbufinfo(buf)[0]
+  call assert_equal(1, info.hidden)
+  call assert_equal(1, info.listed)
+  call assert_equal(1, info.loaded)
+  call WaitForAssert({-> assert_equal(['123'], getbufline(buf, 1, 1))})
 endfunc
 
 func Test_terminal_cwd()
   if has('win32')
-    let cmd = 'cmd /c cd'
+    let cmd = 'cmd /D /c cd'
   else
     CheckExecutable pwd
     let cmd = 'pwd'
@@ -929,7 +958,17 @@ func Test_terminal_eof_arg()
     call WaitFor({-> getline('$') =~ 'hello'})
     call assert_equal('hello', getline('$'))
   endif
-  call assert_equal(123, bufnr()->term_getjob()->job_info().exitval)
+  let job = bufnr()->term_getjob()
+  call WaitForAssert({-> assert_equal('dead', job_status(job))})
+  let exitval = job->job_info().exitval
+  if !has('win32')
+    call assert_equal(123, exitval)
+  else
+    " python 3.13 on Windows returns exit code 1
+    " older versions returned correctly exit code 123
+    " https://github.com/python/cpython/issues/129900
+    call assert_match('1\|123', exitval)
+  endif
   %bwipe!
 endfunc
 
@@ -940,8 +979,10 @@ func Test_terminal_eof_arg_win32_ctrl_z()
 
   call setline(1, ['print("hello")'])
   exe '1term ++eof=<C-Z> ' .. s:python
-  call WaitForAssert({-> assert_match('\^Z', getline(line('$') - 1))})
-  call assert_match('\^Z', getline(line('$') - 1))
+  call WaitForAssert({-> assert_match('\^Z', getline(line('$') - 1) .. getline(line('$')))})
+  " until python 3.12 there was an extra line break, with 3.13 it was removed,
+  " so depending on the python version the ^Z is on the last or second-last line
+  call assert_match('\^Z', getline(line('$') - 1) .. getline(line('$')))
   %bwipe!
 endfunc
 
@@ -961,7 +1002,17 @@ func Test_terminal_duplicate_eof_arg()
     call WaitFor({-> getline('$') =~ 'hello'})
     call assert_equal('hello', getline('$'))
   endif
-  call assert_equal(123, bufnr()->term_getjob()->job_info().exitval)
+  let job = bufnr()->term_getjob()
+  call WaitForAssert({-> assert_equal('dead', job_status(job))})
+  let exitval = job->job_info().exitval
+  if !has('win32')
+    call assert_equal(123, exitval)
+  else
+    " python 3.13 on Windows returns exit code 1
+    " older versions returned correctly exit code 123
+    " https://github.com/python/cpython/issues/129900
+    call assert_match('1\|123', exitval)
+  endif
   %bwipe!
 endfunc
 
@@ -1111,7 +1162,7 @@ func Test_terminal_composing_unicode()
   set encoding=utf-8
 
   if has('win32')
-    let cmd = "cmd /K chcp 65001"
+    let cmd = "cmd /D /K chcp 65001"
     let lnum = [3, 6, 9]
   else
     let cmd = &shell
@@ -1119,7 +1170,11 @@ func Test_terminal_composing_unicode()
   endif
 
   enew
-  let buf = term_start(cmd, {'curwin': 1})
+  let term_opts = {'curwin': 1}
+  if has('sun')
+    let term_opts.env = {'LC_ALL': 'C.UTF-8'}
+  endif
+  let buf = term_start(cmd, term_opts)
   let g:job = term_getjob(buf)
   call WaitFor({-> term_getline(buf, 1) !=# ''}, 1000)
 
@@ -1265,6 +1320,7 @@ endfunc
 
 " Run this first, it fails when run after other tests.
 func Test_aa_terminal_focus_events()
+  CheckScreendump
   CheckNotGui
   CheckUnix
   CheckRunVimInTerminal
@@ -1302,7 +1358,7 @@ endfunc
 
 " Run Vim, start a terminal in that Vim with the kill argument,
 " :qall works.
-func Run_terminal_qall_kill(line1, line2)
+func Run_terminal_qall_kill_int(line1, line2, cmd)
   " 1. Open a terminal window and wait for the prompt to appear
   " 2. set kill using term_setkill()
   " 3. make Vim exit, it will kill the shell
@@ -1314,13 +1370,18 @@ func Run_terminal_qall_kill(line1, line2)
 	\ 'endwhile',
 	\ a:line2,
 	\ 'au VimLeavePre * call writefile(["done"], "Xdone")',
-	\ 'qall',
+	\ a:cmd,
 	\ ]
   if !RunVim([], after, '')
     return
   endif
   call assert_equal("done", readfile("Xdone")[0])
   call delete("Xdone")
+endfunc
+
+func Run_terminal_qall_kill(line1, line2)
+  call Run_terminal_qall_kill_int(a:line1, a:line2, 'qall')
+  call Run_terminal_qall_kill_int(a:line1, a:line2, 'wqall')
 endfunc
 
 " Run Vim in a terminal, then start a terminal in that Vim with a kill
@@ -1336,7 +1397,7 @@ func Test_terminal_qall_kill_func()
 endfunc
 
 " Run Vim, start a terminal in that Vim without the kill argument,
-" check that :qall does not exit, :qall! does.
+" check that :qall does not exit.
 func Test_terminal_qall_exit()
   let after =<< trim [CODE]
     term
@@ -1356,6 +1417,28 @@ func Test_terminal_qall_exit()
   endif
   call assert_equal("done", readfile("Xdone")[0])
   call delete("Xdone")
+endfunc
+
+" :qall! and :wqall! should exit when there is a terminal buffer.
+func Test_terminal_qall_wqall_bang_exit()
+  for cmd in ['qall!', 'wqall!']
+    let after =<< trim eval [CODE]
+      term
+      let buf = bufnr("%")
+      while term_getline(buf, 1) =~ "^\\s*$"
+        sleep 10m
+      endwhile
+      set nomore
+      au VimLeavePre * call writefile(["done"], "Xdone")
+      {cmd}
+    [CODE]
+
+    if !RunVim([], after, '')
+      continue
+    endif
+    call assert_equal("done", readfile("Xdone")[0])
+    call delete("Xdone")
+  endfor
 endfunc
 
 " Run Vim in a terminal, then start a terminal in that Vim without a kill
@@ -1442,6 +1525,7 @@ func Test_terminal_open_autocmd()
 endfunc
 
 func Test_open_term_from_cmd()
+  CheckScreendump
   CheckUnix
   CheckRunVimInTerminal
 
@@ -1464,6 +1548,7 @@ func Test_open_term_from_cmd()
 endfunc
 
 func Test_combining_double_width()
+  CheckScreendump
   CheckUnix
   CheckRunVimInTerminal
 
@@ -1633,6 +1718,7 @@ func Test_terminal_dumpload()
 endfunc
 
 func Test_terminal_dumpload_dump()
+  CheckScreendump
   CheckRunVimInTerminal
 
   let lines =<< trim END
@@ -2134,6 +2220,31 @@ func Test_terminal_ansicolors_default()
   exe buf . 'bwipe'
 endfunc
 
+func Test_terminal_ansicolors_default_reset_tgc()
+  CheckScreendump
+  CheckFeature termguicolors
+  CheckRunVimInTerminal
+
+  let $PS1="$ "
+  let buf = RunVimInTerminal('-c "term sh"', {'rows': 12})
+  call TermWait(buf)
+  " Wait for the shell to display a prompt
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+
+  call term_sendkeys(buf, "printf '\\033[0;30;41mhello world\\033[0m\\n'\<CR>")
+  call WaitForAssert({-> assert_match('hello world', term_getline(buf, 2))})
+  call term_sendkeys(buf, "\<C-W>:set notgc\<CR>")
+  call term_sendkeys(buf, "printf '\\033[0;30;41mhello world\\033[0m\\n'\<CR>")
+  call WaitForAssert({-> assert_match('hello world', term_getline(buf, 4))})
+
+  call VerifyScreenDump(buf, 'Test_terminal_ansi_reset_tgc', {})
+
+  call term_sendkeys(buf, "exit\<CR>")
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+  unlet! $PS1
+endfunc
+
 let s:test_colors = [
 	\ '#616e64', '#0d0a79',
 	\ '#6d610d', '#0a7373',
@@ -2204,6 +2315,7 @@ func Test_terminal_ansicolors_func()
 endfunc
 
 func Test_terminal_all_ansi_colors()
+  CheckScreendump
   CheckRunVimInTerminal
 
   " Use all the ANSI colors.
@@ -2356,6 +2468,41 @@ func Test_term_TextChangedT_close()
   augroup TermTest
     au!
   augroup END
+endfunc
+
+func Test_terminal_disable_kitty_keyboard()
+  CheckRunVimInTerminal
+  let cmd = ['sh', '-c', 'printf ''\033[>1u\033[?u\033[<u\033[?u''; sleep 1']
+  let buf = term_start(cmd)
+  let job = term_getjob(buf)
+  call WaitForAssert({-> assert_equal('dead', job_status(job))})
+  call WaitForAssert({-> assert_equal('^[[?1u^[[?0u', term_getline(buf, 1))})
+  bwipe!
+endfunc
+
+func Test_terminal_unwraps()
+  CheckNotMSWindows
+
+  30vnew
+
+  redraw
+  let buf = term_start("echo 1+2+3+4+5+6+7+8+9+10+11+12+13+14+15")
+  " Wait until both wrapped lines have appeared in the terminal
+  call WaitForAssert({-> assert_equal('14+15', term_getline(buf, 2))})
+
+  " A long wrapped line appears as 2 lines in libvterm
+  let l = term_getline(buf, 1)
+  call assert_equal('1+2+3+4+5+6+7+8+9+10+11+12+13+', l)
+
+  let l = term_getline(buf, 2)
+  call assert_equal('14+15', l)
+
+  call TermWait(buf)
+  " It should appear as a single buffer line in vim
+  let lastline = getline('$')
+  call assert_equal('1+2+3+4+5+6+7+8+9+10+11+12+13+14+15', lastline)
+
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -148,7 +148,7 @@ static struct ref refsdeleted;	// dummy object for deleted ref list
 // TCL interface manager
 ////////////////////////////////////////////////////////////////////////////
 
-#if defined(DYNAMIC_TCL) || defined(PROTO)
+#if defined(DYNAMIC_TCL)
 # ifndef DYNAMIC_TCL_DLL
 #  define DYNAMIC_TCL_DLL "tcl83.dll"
 # endif
@@ -233,7 +233,7 @@ tcl_runtime_link_init(char *libname, int verbose)
     }
     return OK;
 }
-#endif // defined(DYNAMIC_TCL) || defined(PROTO)
+#endif // defined(DYNAMIC_TCL)
 
 #ifdef DYNAMIC_TCL
 static char *find_executable_arg = NULL;
@@ -249,7 +249,7 @@ vim_tcl_init(char *arg)
 #endif
 }
 
-#if defined(DYNAMIC_TCL) || defined(PROTO)
+#if defined(DYNAMIC_TCL)
 
 static int stubs_initialized = FALSE;
 
@@ -282,7 +282,7 @@ tcl_enabled(int verbose)
 }
 #endif
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
 /*
  * Called once when exiting.
  */
@@ -1103,7 +1103,7 @@ winselfcmd(
 	    // TODO: should check column
 	    win->w_cursor.lnum = val1;
 	    win->w_cursor.col = col2vim(val2);
-	    win->w_set_curswant = TRUE;
+	    win->w_set_curswant = true;
 	    flags |= FL_UPDATE_SCREEN;
 	    break;
 

@@ -1,7 +1,6 @@
 " Test for v:hlsearch
 
-source check.vim
-source screendump.vim
+source util/screendump.vim
 
 func Test_hlsearch()
   new
@@ -74,6 +73,7 @@ func Test_hlsearch_eol_highlight()
 endfunc
 
 func Test_hlsearch_Ctrl_R()
+  CheckScreendump
   CheckRunVimInTerminal
 
   let lines =<< trim END
@@ -92,6 +92,7 @@ func Test_hlsearch_Ctrl_R()
 endfunc
 
 func Test_hlsearch_clipboard()
+  CheckScreendump
   CheckRunVimInTerminal
   CheckFeature clipboard_working
 

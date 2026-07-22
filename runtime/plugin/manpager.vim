@@ -1,6 +1,8 @@
 " Vim plugin for using Vim as manpager.
 " Maintainer: Enno Nagel <ennonagel+vim@gmail.com>
-" Last Change: 2022 Oct 17
+" Last Change: 2024 Jul 03
+" 2026 Mar 22 by Vim Project: strip OSC 9 sequences (#19787)
+" 2026 Mar 24 by Vim Project: strip Bell char: Ctrl-G (#19807)
 
 if exists('g:loaded_manpager_plugin')
   finish
@@ -20,9 +22,6 @@ function s:ManPager()
   endif
   syntax on
 
-  " Make this an unlisted, readonly scratch buffer
-  setlocal buftype=nofile noswapfile bufhidden=hide nobuflisted readonly
-
   " Ensure text width matches window width
   setlocal foldcolumn& nofoldenable nonumber norelativenumber
 
@@ -35,6 +34,9 @@ function s:ManPager()
   " Remove ansi sequences
   exe 'silent! keepj keepp %s/\v\e\[%(%(\d;)?\d{1,2})?[mK]//e' .. (&gdefault ? '' : 'g')
 
+  " Remove OSC 8 hyperlink sequences: \e]8;;...\e\ or \e]8;;...<BEL>
+  exe 'silent! keepj keepp %s/\v\e\]8;[^\x07\e]*%(%x07|\e\\)//e' .. (&gdefault ? '' : 'g')
+
   " Remove empty lines above the header
   call cursor(1, 1)
   let n = search(".*(.*)", "c")
@@ -44,6 +46,9 @@ function s:ManPager()
 
   " Finished preprocessing the buffer, prevent any further modifications
   setlocal nomodified nomodifiable
+
+  " Make this an unlisted, readonly scratch buffer
+  setlocal buftype=nofile noswapfile bufhidden=hide nobuflisted readonly
 
   " Set filetype to man even if ftplugin is disabled
   setlocal filetype=man

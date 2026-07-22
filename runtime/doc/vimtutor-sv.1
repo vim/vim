@@ -1,0 +1,93 @@
+.\"*******************************************************************
+.\"
+.\" This file was generated with po4a. Translate the source file.
+.\"
+.\"*******************************************************************
+.TH VIMTUTOR 1 "3 december 2024"
+.SH NAMN
+vimtutor  Vim\-handledaren
+.SH SYNOPSIS
+.br
+\fBvimtutor [\-l | \-\-language ISO639] [\-c | \-\-chapter NUMMER] [\-g | \-\-gui] [ISO639]\fP
+.br
+\fBvimtutor [\-h | \-\-help]\fP
+.br
+\fBvimtutor [\-\-list]\fP
+.SH BESKRIVNING
+\fBVimtutor\fP startar \fBVim\fP \-handledaren.
+.PP
+\fBVimtutor\fP är användbart för personer som vill lära sig sina första \fBVim\fP
+\-kommandon.  Det valfria argumentet [ISO639] är namnet på ett språk
+bestående av två eller tre bokstäver, till exempel "sv" eller "es".
+.PP
+\fBVimtutor\fP öppnar endast tillfälliga kopior av de ursprungliga
+handledningsfilerna, så det finns ingen risk att lektionerna skrivs över.
+.PP
+\fBVim\fP startas alltid i \fBVi\fP nocompatible\-läge.
+.SH FLAGGOR
+.TP
+\fB\-l\fP, \fB\-\-language\ \fP\fIISO639\fP
+Ange språkkoden med två eller tre bokstäver. T.ex. 'sv', 'es', 'bar'.
+Standardinställningen är språket för den lokala inställningen om det finns
+tillgängligt, annars engelska.
+.TP
+\fB\-c\fP, \fB\-\-chapter\ \fP\fINUMMER\fP
+Ställ in kapitelnummer. Standardinställningen är kapitel ett.
+.TP
+\fB\-g\fP, \fB\-\-gui\fP
+Starta \fBvimtutor\fP i grafiska gränssnittsversionen av vim om den är
+tillgänglig, annars faller du tillbaka till konsolversionen av vim.
+.TP
+\fB\-h\fP, \fB\-\-help\fP
+Visa användningsinformation.
+.TP
+\fB\-\-list\fP
+Visa kapitel och språk.
+.SH EXEMPEL
+För att starta \fBvimtutor\fP på tyska på kapitel ett:
+.PP
+.nf
+.RS
+vimtutor de
+.RE
+.fi
+.PP
+På engelska i kapitel två:
+.PP
+.nf
+.RS
+vimtutor \-c2
+.RE
+.fi
+.PP
+Långt kommando för bayerska i grafiska gränssnittet i kapitel ett:
+.PP
+.nf
+.RS
+vimtutor \-\-language bar \-\-chapter 1 \-\-gui
+.RE
+.fi
+.SH FILER
+.TP  15
+/usr/local/share/vim/vim??/tutor/tutor1[.språk]
+\fBVimtutor\fP, kapitel ett, textfil(er).
+.TP  15
+/usr/local/share/vim/vim??/tutor/tutor2[.språk]
+\fBVimtutor\fP, kapitel två, textfil(er).
+.TP  15
+/usr/local/share/vim/vim??/tutor/tutor.vim
+\fBVim\fP \-skriptet som används för att kopiera \fBVimtutor\fP \-textfilen.
+.SH UPPHOVSPERSON
+\fBThe Vi Tutorial\fP skrevs ursprungligen för Vi av Michael C. Pierce och
+Robert K. Ware, Colorado School of Mines, med idéer från Charles Smith,
+Colorado State University.  \fBE\-mail: bware@mines.colorado.edu (fungerar inte längre).\fP
+.PP
+Modifierad för \fBVim\fP, av Bram Moolenaar.
+.PP
+Översättningsbidragare listas i handledningsfilerna.
+.SH "SE ÄVEN"
+vim(1)
+.SH SVENSK ÖVERSÄTTNING
+Vim översattes ursprungligen av Johan Svedberg 2003-2007 och har under 2025
+uppdaterats av Daniel Nylander, speciellt manualsidor samt själva Vim.
+Om du hittar fel i översättningen, kontakta <tp-sv@listor.tp-sv.se>.

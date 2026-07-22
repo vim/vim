@@ -1,6 +1,16 @@
 ' vim: filetype=vb shiftwidth=4 expandtab
 '
 ' START_INDENT
+#Const Debug = False
+
+#If Win64 Then
+' Win64=true, Win32=true, Win16=false
+#ElseIf Win32 Then
+' Win32=true, Win16=false
+#Else
+' Win16=true
+#End If
+
 Public Type GEmployeeRecord     ' Create user-defined type. 
     ID As Integer               ' Define elements of data type. 
     Name As String * 20 
@@ -95,6 +105,9 @@ Public Sub TestMultiline (cellAddr As String, rowNbr As Long)
     Dim rng As Range
 
     Set rng = Range(cellAddr)
+
+    ' Line continuation is implemented as a two-character sequence-
+    ' whitespace followed by underscore.
     With rng
         .Cells(1,1).Value = _
             "Line 1 of multiline string; " & _
@@ -102,14 +115,25 @@ Public Sub TestMultiline (cellAddr As String, rowNbr As Long)
             "Line 3 of multiline string"
     End With
 
-    ' The following lines have whitespace after the underscore character
-    ' and therefore do not form a valid multiline statement.  The indent
-    ' script correctly treats them as four single line statements contrary
-    ' to the author's obvious indent.
-    rng..Cells(1,1).Value = _ 
-    "Line 1 of multiline string; " & _ 
-    "Line 2 of multiline string; " & _ 
-    "Line 3 of multiline string"
+    ' This code block omits the leading whitespace character and so 
+    ' the trailing underscore will not be treated as line continuation.
+    With rng
+        .Cells(1,1).Value =_
+        "Line 1 of multiline string; " &_
+        "Line 2 of multiline string; " &_
+        "Line 3 of multiline string"
+    End With
+
+    ' The following lines have whitespace after the underscore character.
+    ' This is contrary to Microsoft documentation but it is reported that
+    ' some Microsoft editors allow it and will still treat the statement
+    ' as line-continued.  
+    With rng
+        rng.Cells(1,1).Value = _ 
+            "Line 1 of multiline string; " & _ 
+            "Line 2 of multiline string; " & _ 
+            "Line 3 of multiline string"
+    End With
 
 End Sub
 
@@ -121,6 +145,18 @@ stmtLabel:
 
 End Sub
 
+Public Static Function TestStatic(addend As Integer)
+    Dim Integer accumulator
+    accumulator = accumulator + addend
+    TestStatic = accumulator
+End Function
+
+Friend Function TestFriend(addend As Integer)
+    Static Integer accumulator
+    accumulator = accumulator + addend
+    TestFriend = accumulator
+End Function
+
 Sub TestTypeKeyword()
     Type EmployeeRecord         ' Create user-defined type. 
         ID As Integer           ' Define elements of data type. 
@@ -130,5 +166,11 @@ Sub TestTypeKeyword()
         HireDate As Date 
     End Type 
     Dim varType As EmployeeRecord
+End Sub
+
+Sub TestDateLiteralAfterLineContinuation
+    Dim birthday as Date
+    birthday = _
+        #January 1, 1901#
 End Sub
 ' END_INDENT

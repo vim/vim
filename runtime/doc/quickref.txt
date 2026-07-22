@@ -1,7 +1,8 @@
-*quickref.txt*  For Vim version 9.1.  Last change: 2023 Dec 05
+*quickref.txt*	For Vim version 9.2.  Last change: 2026 May 17
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
+
 
 			    Quick reference guide
 
@@ -607,6 +608,9 @@ Short explanation of each option:		*option-list*
 'arabic'	  'arab'    for Arabic as a default second language
 'arabicshape'	  'arshape' do shaping for Arabic characters
 'autochdir'	  'acd'     change directory to the file in the current window
+'autocomplete'	  'ac'      enable automatic completion in insert mode
+'autocompletedelay' 'acl'   delay in msec before menu appears after typing
+'autocompletetimeout' 'act' initial decay timeout for autocompletion algorithm
 'autoindent'	  'ai'	    take indent for new line from previous line
 'autoread'	  'ar'	    autom. read file when changed outside of Vim
 'autoshelldir'	  'asd'     change directory to the shell's current directory
@@ -639,12 +643,14 @@ Short explanation of each option:		*option-list*
 'cdpath'	  'cd'	    list of directories searched with ":cd"
 'cedit'			    key used to open the command-line window
 'charconvert'	  'ccv'     expression for character encoding conversion
+'chistory'	  'chi'     maximum number of quickfix lists in history
 'cindent'	  'cin'     do C program indenting
 'cinkeys'	  'cink'    keys that trigger indent when 'cindent' is set
 'cinoptions'	  'cino'    how to do indenting when 'cindent' is set
 'cinscopedecls'	  'cinsd'   words that are recognized by 'cino-g'
 'cinwords'	  'cinw'    words where 'si' and 'cin' add an indent
 'clipboard'	  'cb'	    use the clipboard as the unnamed register
+'clipmethod'	  'cpm'	    specify order of what clipboard methods to use
 'cmdheight'	  'ch'	    number of lines to use for the command-line
 'cmdwinheight'	  'cwh'     height of the command-line window
 'colorcolumn'	  'cc'	    columns to highlight
@@ -657,6 +663,7 @@ Short explanation of each option:		*option-list*
 'completeopt'	  'cot'     options for Insert mode completion
 'completepopup'	  'cpp'     options for the Insert mode completion info popup
 'completeslash'	  'csl'	    like 'shellslash' for completion
+'completetimeout' 'cto'     initial decay timeout for CTRL-N and CTRL-P
 'concealcursor'	  'cocu'    whether concealable text is hidden in cursor line
 'conceallevel'	  'cole'    whether concealable text is shown or hidden
 'confirm'	  'cf'	    ask what to do about unsaved/read-only files
@@ -680,6 +687,7 @@ Short explanation of each option:		*option-list*
 'delcombine'	  'deco'    delete combining characters on their own
 'dictionary'	  'dict'    list of file names used for keyword completion
 'diff'			    use diff mode for the current window
+'diffanchors'	  'dia'     list of {address} to force anchoring of a diff
 'diffexpr'	  'dex'     expression used to obtain a diff file
 'diffopt'	  'dip'     options for using diff mode
 'digraph'	  'dg'	    enable the entering of digraphs in Insert mode
@@ -698,6 +706,7 @@ Short explanation of each option:		*option-list*
 'errorformat'	  'efm'     description of the lines in the error file
 'esckeys'	  'ek'	    recognize function keys in Insert mode
 'eventignore'	  'ei'	    autocommand events that are ignored
+'eventignorewin'  'eiw'     autocommand events that are ignored in a window
 'expandtab'	  'et'	    use spaces when <Tab> is inserted
 'exrc'		  'ex'	    read .vimrc and .exrc in the current directory
 'fileencoding'	  'fenc'    file encoding for multibyte text
@@ -707,6 +716,7 @@ Short explanation of each option:		*option-list*
 'fileignorecase'  'fic'     ignore case when using file names
 'filetype'	  'ft'	    type of file, used for autocommands
 'fillchars'	  'fcs'     characters to use for displaying special items
+'findfunc'	  'ffu'     function to be called for the |:find| command
 'fixendofline'	  'fixeol'  make sure last line in file has <EOL>
 'fkmap'		  'fk'	    obsolete option for Farsi
 'foldclose'	  'fcl'     close a fold when the cursor leaves it
@@ -784,6 +794,7 @@ Short explanation of each option:		*option-list*
 'langremap'	  'lrm'	    do apply 'langmap' to mapped characters
 'laststatus'	  'ls'	    tells when last window has status lines
 'lazyredraw'	  'lz'	    don't redraw while executing macros
+'lhistory'	  'lhi'	    maximum number of location lists in history
 'linebreak'	  'lbr'     wrap long lines at a blank
 'lines'			    number of lines in the display
 'linespace'	  'lsp'     number of pixel lines to use between characters
@@ -812,6 +823,7 @@ Short explanation of each option:		*option-list*
 'modeline'	  'ml'	    recognize modelines at start or end of file
 'modelineexpr'	  'mle'	    allow setting expression options from a modeline
 'modelines'	  'mls'     number of lines checked for modelines
+'modelinestrict'  'mlst'    only allow safe options in modelines
 'modifiable'	  'ma'	    changes to the text are not possible
 'modified'	  'mod'     buffer has been modified
 'more'			    pause listings when the whole screen is filled
@@ -854,6 +866,7 @@ Short explanation of each option:		*option-list*
 'printoptions'	  'popt'    controls the format of :hardcopy output
 'prompt'	  'prompt'  enable prompt in Ex mode
 'pumheight'	  'ph'	    maximum height of the popup menu
+'pumopt'	  'pumopt'  additional options for the popup menu
 'pumwidth'	  'pw'	    minimum width of the popup menu
 'pythondll'		    name of the Python 2 dynamic library
 'pythonhome'		    name of the Python 2 home directory
@@ -882,6 +895,7 @@ Short explanation of each option:		*option-list*
 'scrollfocus'	  'scf'     scroll wheel applies to window under pointer
 'scrolljump'	  'sj'	    minimum number of lines to scroll
 'scrolloff'	  'so'	    minimum nr. of lines above and below cursor
+'scrolloffpad'	  'sop'	    vertically center cursor at end of file
 'scrollopt'	  'sbo'     how 'scrollbind' should behave
 'sections'	  'sect'    nroff macros that separate sections
 'secure'		    secure mode for reading .vimrc in current dir
@@ -914,9 +928,9 @@ Short explanation of each option:		*option-list*
 'signcolumn'	  'scl'	    when to display the sign column
 'smartcase'	  'scs'     no ignore case when pattern has uppercase
 'smartindent'	  'si'	    smart autoindenting for C programs
-'smarttab'	  'sta'     use 'shiftwidth' when inserting <Tab>
+'smarttab'	  'sta'     <Tab> in leading whitespace indents by 'shiftwidth'
 'smoothscroll'	  'sms'     scroll by screen lines when 'wrap' is set
-'softtabstop'	  'sts'     number of spaces that <Tab> uses while editing
+'softtabstop'	  'sts'     number of columns between two soft tab stops
 'spell'			    enable spell checking
 'spellcapcheck'   'spc'     pattern to locate end of a sentence
 'spellfile'	  'spf'     files where |zg| and |zw| store words
@@ -928,6 +942,7 @@ Short explanation of each option:		*option-list*
 'splitright'	  'spr'     new window is put right of the current one
 'startofline'	  'sol'     commands move cursor to first non-blank in line
 'statusline'	  'stl'     custom format for the status line
+'statuslineopt'	  'stlo'    additional options for the |status-line|
 'suffixes'	  'su'	    suffixes that are ignored with multiple match
 'suffixesadd'	  'sua'     suffixes added when searching for a file
 'swapfile'	  'swf'     whether to use a swapfile for a buffer
@@ -935,21 +950,24 @@ Short explanation of each option:		*option-list*
 'switchbuf'	  'swb'     sets behavior when switching to another buffer
 'synmaxcol'	  'smc'     maximum column to find syntax items
 'syntax'	  'syn'     syntax to be loaded for current buffer
+'tabclose'	  'tcl'     which tab page to focus when closing a tab
 'tabline'	  'tal'     custom format for the console tab pages line
 'tabpagemax'	  'tpm'     maximum number of tab pages for |-p| and "tab all"
-'tabstop'	  'ts'	    number of spaces that <Tab> in file uses
+'tabstop'	  'ts'	    number of columns between two tab stops
 'tagbsearch'	  'tbs'     use binary searching in tags files
 'tagcase'	  'tc'      how to handle case when searching in tags files
 'tagfunc'	  'tfu'	    function to get list of tag matches
 'taglength'	  'tl'	    number of significant characters for a tag
 'tagrelative'	  'tr'	    file names in tag file are relative
 'tags'		  'tag'     list of file names used by the tag command
+'tagsecure'	  'tsc'	    do not open remote files using tag commands
 'tagstack'	  'tgst'    push tags onto the tag stack
 'tcldll'		    name of the Tcl dynamic library
 'term'			    name of the terminal
 'termbidi'	  'tbidi'   terminal takes care of bi-directionality
 'termencoding'	  'tenc'    character encoding used by the terminal
 'termguicolors'	  'tgc'     use GUI colors for the terminal
+'termsync'	  'tsy'     enable terminal sync mode for redraw
 'termwinkey'	  'twk'	    key that precedes a Vim command in a terminal
 'termwinscroll'   'twsl'    max number of scrollback lines in a terminal window
 'termwinsize'	  'tws'	    size of a terminal window
@@ -982,8 +1000,8 @@ Short explanation of each option:		*option-list*
 'undoreload'	  'ur'	    max nr of lines to save for undo on a buffer reload
 'updatecount'	  'uc'	    after this many characters flush swap file
 'updatetime'	  'ut'	    after this many milliseconds flush swap file
-'varsofttabstop'  'vsts'    a list of number of spaces when typing <Tab>
-'vartabstop'	  'vts'	    a list of number of spaces for <Tab>s
+'varsofttabstop'  'vsts'    a list of number of columns between soft tab stops
+'vartabstop'	  'vts'	    a list of number of columns between tab stops
 'verbose'	  'vbs'     give informative messages
 'verbosefile'	  'vfile'   file to write messages in
 'viewdir'	  'vdir'    directory where to store files with :mkview
@@ -1004,7 +1022,9 @@ Short explanation of each option:		*option-list*
 'wildoptions'	  'wop'     specifies how command line completion is done
 'winaltkeys'	  'wak'     when the windows system handles ALT keys
 'wincolor'	  'wcr'	    window-local highlighting
+'winhighlight'	  'whl'	    window-local highlighting mappings
 'window'	  'wi'	    nr of lines to scroll for CTRL-F and CTRL-B
+'winfixbuf'	  'wfb'     keep window focused on a single buffer
 'winfixheight'	  'wfh'     keep window height when opening/closing windows
 'winfixwidth'	  'wfw'     keep window width when opening/closing windows
 'winheight'	  'wh'	    minimum number of lines for the current window
@@ -1012,6 +1032,9 @@ Short explanation of each option:		*option-list*
 'winminwidth'	  'wmw'     minimal number of columns for any window
 'winptydll'		    name of the winpty dynamic library
 'winwidth'	  'wiw'     minimal number of columns for current window
+'wlseat'	  'wse'	    the Wayland seat to use
+'wlsteal'	  'wst'	    allow focus stealing functionality for Wayland
+'wltimeoutlen'	  'wtm'	    timeout to use when polling in Wayland
 'wrap'			    long lines wrap and continue on the next line
 'wrapmargin'	  'wm'	    chars from the right where wrapping starts
 'wrapscan'	  'ws'	    searches wrap around the end of the file
@@ -1448,7 +1471,7 @@ Context-sensitive completion on the command-line:
 ------------------------------------------------------------------------------
 *Q_fo*		Folding
 
-|'foldmethod'|	set foldmethod=manual	manual folding
+'foldmethod'	set foldmethod=manual	manual folding
 		set foldmethod=indent	folding by indent
 		set foldmethod=expr	folding by 'foldexpr'
 		set foldmethod=syntax	folding by syntax regions

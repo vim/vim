@@ -2,7 +2,14 @@
 " Language:         Rust
 " Author:           Chris Morgan <me@chrismorgan.info>
 " Last Change:      2023-09-11
+" 2024 Jul 04 by Vim Project: use shiftwidth() instead of hard-coding shifted values #15138
+" 2025 Dec 29 by Vim Project: clean up
+" 2025 Dec 31 by Vim Project: correctly indent after nested array literal #19042
+" 2026 Jan 28 by Vim Project: fix indentation when a string literal contains 'if' #19265
+" 2026 May 04 by Vim Project: fix typo
+
 " For bugs, patches and license go to https://github.com/rust-lang/rust.vim
+" Note: upstream seems umaintained: https://github.com/rust-lang/rust.vim/issues/502
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -83,16 +90,6 @@ function! s:is_string_comment(lnum, col)
     endif
 endfunction
 
-if exists('*shiftwidth')
-    function! s:shiftwidth()
-        return shiftwidth()
-    endfunc
-else
-    function! s:shiftwidth()
-        return &shiftwidth
-    endfunc
-endif
-
 function GetRustIndent(lnum)
     " Starting assumption: cindent (called at the end) will do it right
     " normally. We just want to fix up a few cases.
@@ -144,9 +141,24 @@ function GetRustIndent(lnum)
     let l:standalone_close = line =~# '\V\^\s\*}\s\*\$'
     let l:standalone_where = line =~# '\V\^\s\*where\s\*\$'
     if l:standalone_open || l:standalone_close || l:standalone_where
-        " ToDo: we can search for more items than 'fn' and 'if'.
-        let [l:found_line, l:col, l:submatch] =
-                    \ searchpos('\<\(fn\)\|\(if\)\>', 'bnWp')
+        let l:orig_line = line('.')
+        let l:orig_col = col('.')
+        let l:i = 0
+        while 1
+            " ToDo: we can search for more items than 'fn' and 'if'.
+            let [l:found_line, l:col, l:submatch] =
+                        \ searchpos('\<\(fn\|if\)\>', 'bWp')
+            if l:found_line ==# 0 || !s:is_string_comment(l:found_line, l:col)
+                break
+            endif
+            let l:i += 1
+            " Limit to 10 iterations as a failsafe against endless looping.
+            if l:i >= 10
+                let l:found_line = 0
+                break
+            endif
+        endwhile
+        call cursor(l:orig_line, l:orig_col)
         if l:found_line !=# 0
             " Now we count the number of '{' and '}' in between the match
             " locations and the current line (there is probably a better
@@ -179,7 +191,7 @@ function GetRustIndent(lnum)
     " A standalone 'where' adds a shift.
     let l:standalone_prevline_where = prevline =~# '\V\^\s\*where\s\*\$'
     if l:standalone_prevline_where
-        return indent(prevlinenum) + 4
+        return indent(prevlinenum) + shiftwidth()
     endif
 
     " Handle where clauses nicely: subsequent values should line up nicely.
@@ -197,8 +209,24 @@ function GetRustIndent(lnum)
         let l:scope_start = searchpair('{\|(', '', '}\|)', 'nbW',
                     \ 's:is_string_comment(line("."), col("."))')
         if l:scope_start != 0 && l:scope_start < a:lnum
-            return indent(l:scope_start) + 4
+            return indent(l:scope_start) + shiftwidth()
         endif
+    endif
+
+    " Prevent cindent from becoming confused when pairing square brackets, as
+    " in
+    "
+    " let arr = [[u8; 4]; 2] = [
+    "     [0; 4],
+    "     [1, 3, 5, 9],
+    " ];
+    "     | ← indentation placed here
+    "
+    " for which it calculates too much indentation in the line following the
+    " close of the array.
+    if prevline =~# '^\s*\]' && l:last_prevline_character ==# ';'
+                \ && line !~# '^\s*}'
+        return indent(prevlinenum)
     endif
 
     if l:last_prevline_character ==# ","
@@ -235,43 +263,6 @@ function GetRustIndent(lnum)
         " There are probably other cases where we don't want to do this as
         " well. Add them as needed.
         return indent(prevlinenum)
-    endif
-
-    if !has("patch-7.4.355")
-        " cindent before 7.4.355 doesn't do the module scope well at all; e.g.::
-        "
-        " static FOO : &'static [bool] = [
-        " true,
-        "	 false,
-        "	 false,
-        "	 true,
-        "	 ];
-        "
-        "	 uh oh, next statement is indented further!
-
-        " Note that this does *not* apply the line continuation pattern properly;
-        " that's too hard to do correctly for my liking at present, so I'll just
-        " start with these two main cases (square brackets and not returning to
-        " column zero)
-
-        call cursor(a:lnum, 1)
-        if searchpair('{\|(', '', '}\|)', 'nbW',
-                    \ 's:is_string_comment(line("."), col("."))') == 0
-            if searchpair('\[', '', '\]', 'nbW',
-                        \ 's:is_string_comment(line("."), col("."))') == 0
-                " Global scope, should be zero
-                return 0
-            else
-                " At the module scope, inside square brackets only
-                "if getline(a:lnum)[0] == ']' || search('\[', '', '\]', 'nW') == a:lnum
-                if line =~# "^\\s*]"
-                    " It's the closing line, dedent it
-                    return 0
-                else
-                    return &shiftwidth
-                endif
-            endif
-        endif
     endif
 
     " Fall back on cindent, which does it mostly right

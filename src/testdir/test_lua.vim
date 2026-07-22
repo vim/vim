@@ -1,7 +1,5 @@
 " Tests for Lua.
 
-source check.vim
-
 " This test also works without the lua feature.
 func Test_skip_lua()
   if 0
@@ -117,11 +115,11 @@ func Test_lua_eval()
 
   " lua.eval with a bool
   lua v = vim.eval('v:true')
-  call assert_equal('number', luaeval('vim.type(v)'))
-  call assert_equal(1, luaeval('v'))
+  call assert_equal('boolean', luaeval('vim.type(v)'))
+  call assert_equal(v:true, luaeval('v'))
   lua v = vim.eval('v:false')
-  call assert_equal('number', luaeval('vim.type(v)'))
-  call assert_equal(0, luaeval('v'))
+  call assert_equal('boolean', luaeval('vim.type(v)'))
+  call assert_equal(v:false, luaeval('v'))
 
   " lua.eval with a null
   lua v = vim.eval('v:null')
@@ -934,7 +932,10 @@ vim.command('let s ..= "B"')
   lua << trim eof
     vim.command('let s ..= "E"')
   eof
-  call assert_equal('ABCDE', s)
+  lua << trimm
+vim.command('let s ..= "F"')
+trimm
+  call assert_equal('ABCDEF', s)
 endfunc
 
 " Test for adding, accessing and removing global variables using the vim.g

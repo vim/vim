@@ -3,7 +3,7 @@
 "     Language: Ada (GNAT)
 "          $Id: gnat.vim 887 2008-07-08 14:29:01Z krischik $
 "    Copyright: Copyright (C) 2006 Martin Krischik
-"   Maintainer:	Martin Krischi <krischik@users.sourceforge.net>k
+"   Maintainer:	Martin Krischi <krischik@users.sourceforge.net>
 "		Ned Okie <nokie@radford.edu>
 "      $Author: krischik $
 "        $Date: 2008-07-08 16:29:01 +0200 (Di, 08 Jul 2008) $
@@ -50,13 +50,6 @@ if !exists("g:gnat")
       \ 'call gnat.Set_Project_File ()')
 
    call g:gnat.Set_Session ()
-endif
-
-if exists(":CompilerSet") != 2
-   "
-   " plugin loaded by other means then the "compiler" command
-   "
-   command -nargs=* CompilerSet setlocal <args>
 endif
 
 execute "CompilerSet makeprg="     . escape (g:gnat.Get_Command('Make'), ' ')

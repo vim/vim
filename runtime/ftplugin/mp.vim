@@ -4,8 +4,7 @@ vim9script
 # Language:           MetaPost
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
-# Latest Revision:    2022 Aug 12
-#                     2024 Jan 14 by Vim Project (browsefilter)
+# Latest Revision:    2026 Jan 10
 
 if exists("b:did_ftplugin")
   finish

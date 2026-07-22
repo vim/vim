@@ -1,0 +1,104 @@
+.TH VIMTUTOR 1 "2024 December 03"
+.SH 名称
+vimtutor \- Vim 教程
+.SH 概述
+.br
+.B vimtutor [\-l | \-\-language ISO639] [\-c | \-\-chapter 数字] [\-g | \-\-gui] [ISO639]
+.br
+.B vimtutor [\-h | \-\-help]
+.br
+.B vimtutor [\-\-list]
+.SH 描述
+.B Vimtutor
+会启动
+.B Vim
+教程。
+.PP
+.B Vimtutor
+适合想要学习
+.B Vim
+基本命令的初学者。
+可选的 [ISO639] 参数是语言的两个或三个字母代码，
+例如 "it"（意大利语）或 "es"（西班牙语）。
+.PP
+.B Vimtutor
+仅打开原始教程文件的临时副本，不会覆盖课程内容。
+.PP
+.B Vim
+始终以
+.B Vi
+不兼容模式启动。
+.SH 选项
+.TP
+.BR \-l ", " \-\-language\ \fIISO639\fR
+设置两个或三个字母的语言代码，例如 'it'、'es'、'bar'。
+默认使用当前区域设置对应的语言（若可用），否则使用英语。
+.TP
+.BR \-c ", " \-\-chapter\ \fI数字\fR
+设置章节编号，默认为第一章。
+.TP
+.BR \-g ", " \-\-gui
+以图形界面版本的 Vim 启动
+.B vimtutor
+（若可用），否则回退到控制台版本的 Vim。
+.TP
+.BR \-h ", " \-\-help
+显示用法信息。
+.TP
+.BR \-\-list
+显示所有可用的章节和语言列表。
+.SH 示例
+以德语启动
+.B vimtutor
+并进入第一章：
+.PP
+.nf
+.RS
+vimtutor de
+.RE
+.fi
+.PP
+以英语启动并进入第二章：
+.PP
+.nf
+.RS
+vimtutor -c2
+.RE
+.fi
+.PP
+以巴伐利亚语在图形界面下启动并进入第一章（长选项格式）：
+.PP
+.nf
+.RS
+vimtutor --language bar --chapter 1 --gui
+.RE
+.fi
+.SH 文件
+.TP 15
+/usr/local/share/vim/vim??/tutor/tutor1[.language]
+.B Vimtutor
+第一章的文本文件。
+.TP 15
+/usr/local/share/vim/vim??/tutor/tutor2[.language]
+.B Vimtutor
+第二章的文本文件。
+.TP 15
+/usr/local/share/vim/vim??/tutor/tutor.vim
+用于复制
+.B Vimtutor
+文本文件的
+.B Vim
+脚本。
+.SH 作者
+.B 《Vi 教程》
+最初由科罗拉多矿业学院的 Michael C. Pierce 和 Robert K. Ware 为 Vi 编写，
+并采用了科罗拉多州立大学 Charles Smith 提供的构思。
+.B 电子邮件：bware@mines.colorado.edu（现已失效）。
+.PP
+后由 Bram Moolenaar 修改为适用于
+.B Vim
+的版本。
+.PP
+各翻译版本的贡献者列于教程文件中。
+.SH 参见
+vim(1)

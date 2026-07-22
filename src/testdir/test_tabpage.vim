@@ -1,7 +1,6 @@
 " Tests for tabpage
 
-source screendump.vim
-source check.vim
+source util/screendump.vim
 
 function Test_tabpage()
   CheckFeature quickfix
@@ -117,10 +116,16 @@ function Test_tabpage()
   call assert_equal(3, tabpagenr())
   +3tabmove
   call assert_equal(6, tabpagenr())
+  silent -tabmove
+  call assert_equal(5, tabpagenr())
+  silent -2 tabmove
+  call assert_equal(3, tabpagenr())
+  silent	-2	tabmove
+  call assert_equal(1, tabpagenr())
 
-  " The following are a no-op
   norm! 2gt
   call assert_equal(2, tabpagenr())
+  " The following are a no-op
   tabmove 2
   call assert_equal(2, tabpagenr())
   2tabmove
@@ -156,10 +161,13 @@ func Test_tabpage_drop()
   tab split f3
   normal! gt
   call assert_equal(1, tabpagenr())
+  tab drop f4
+  call assert_equal(1, tabpagenr('#'))
 
   tab drop f3
-  call assert_equal(3, tabpagenr())
-  call assert_equal(1, tabpagenr('#'))
+  call assert_equal(4, tabpagenr())
+  call assert_equal(2, tabpagenr('#'))
+  bwipe!
   bwipe!
   bwipe!
   bwipe!
@@ -679,6 +687,7 @@ func Test_tabs()
 endfunc
 
 func Test_tabpage_cmdheight()
+  CheckScreendump
   CheckRunVimInTerminal
   call writefile([
         \ 'set laststatus=2',
@@ -956,6 +965,64 @@ func Test_tabpage_alloc_failure()
   call assert_equal(1, tabpagenr('$'))
 endfunc
 
+func Test_tabpage_tabclose()
+  " Default behaviour, move to the right.
+  call s:reconstruct_tabpage_for_test(6)
+  norm! 4gt
+  setl tcl=
+  tabclose
+  call assert_equal("n3", bufname())
+
+  " Move to the left.
+  call s:reconstruct_tabpage_for_test(6)
+  norm! 4gt
+  setl tcl=left
+  tabclose
+  call assert_equal("n1", bufname())
+
+  " Move to the last used tab page.
+  call s:reconstruct_tabpage_for_test(6)
+  norm! 5gt
+  norm! 2gt
+  setl tcl=uselast
+  tabclose
+  call assert_equal("n3", bufname())
+
+  " Same, but the last used tab page is invalid. Move to the right.
+  call s:reconstruct_tabpage_for_test(6)
+  norm! 5gt
+  norm! 3gt
+  setl tcl=uselast
+  tabclose 5
+  tabclose!
+  call assert_equal("n2", bufname())
+
+  " Same, but the last used tab page is invalid. Move to the left.
+  call s:reconstruct_tabpage_for_test(6)
+  norm! 5gt
+  norm! 3gt
+  setl tcl=uselast,left
+  tabclose 5
+  tabclose!
+  call assert_equal("n0", bufname())
+
+  " Move left when moving right is not possible.
+  call s:reconstruct_tabpage_for_test(6)
+  setl tcl=
+  norm! 6gt
+  tabclose
+  call assert_equal("n3", bufname())
+
+  " Move right when moving left is not possible.
+  call s:reconstruct_tabpage_for_test(6)
+  setl tcl=left
+  norm! 1gt
+  tabclose
+  call assert_equal("n0", bufname())
+
+  setl tcl&
+endfunc
+
 " this was giving ml_get errors
 func Test_tabpage_last_line()
   enew
@@ -985,6 +1052,23 @@ func Test_tabpage_drop_tabmove()
   augroup! TestTabpageTabmove
 
   " clean up
+  bwipe!
+  bwipe!
+  bwipe!
+endfunc
+
+" Test that settabvar() shouldn't change the last accessed tabpage.
+func Test_lastused_tabpage_settabvar()
+  tabonly!
+  tabnew
+  tabnew
+  tabnew
+  call assert_equal(3, tabpagenr('#'))
+
+  call settabvar(2, 'myvar', 'tabval')
+  call assert_equal('tabval', gettabvar(2, 'myvar'))
+  call assert_equal(3, tabpagenr('#'))
+
   bwipe!
   bwipe!
   bwipe!

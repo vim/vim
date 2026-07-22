@@ -1,6 +1,6 @@
 " Menu Translations: Serbian
 " Maintainer: Aleksandar Jelenak <ajelenak AT yahoo.com>
-" Last Change:	Fri, 30 May 2003 10:17:39 Eastern Daylight Time
+" Last Change:	2024 May 2
 " Adapted for VIM 8 by: Иван Пешић on 2017-12-28 12:05+0400
 " Original translations
 
@@ -117,8 +117,8 @@ menutrans Create\ &Fold<Tab>zf		  С&твори\ свијутак<Tab>zf
 menutrans &Delete\ Fold<Tab>zd		  О&бриши\ свијутак<Tab>zd
 menutrans Delete\ &All\ Folds<Tab>zD	  Обриши\ све\ св&ијутке<Tab>zD
 menutrans Fold\ column\ &width		  Ширина\ &реда\ цвијутка
-"menutrans &Diff		      &Упоређивање
-menutrans &Make<Tab>:make     'mak&е'<Tab>:make
+menutrans &Diff		      Упоређивање
+menutrans &Make<Tab>:make     Направити<Tab>:make
 menutrans &List\ Errors<Tab>:cl     Списак\ &грешака<Tab>:cl
 menutrans L&ist\ Messages<Tab>:cl!  Сп&исак\ порука<Tab>:cl!
 menutrans &Next\ Error<Tab>:cn	    С&ледећа\ грешка<Tab>:cn
@@ -254,7 +254,7 @@ if has("toolbar")
     tmenu ToolBar.LoadSesn Учитај сеансу
     tmenu ToolBar.SaveSesn Сачувај сеансу
     tmenu ToolBar.RunScript   Изврши спис
-    tmenu ToolBar.Make     'make'
+    tmenu ToolBar.Make     Направити
     tmenu ToolBar.Shell    Оперативно окружење
     tmenu ToolBar.RunCtags Направи ознаке
     tmenu ToolBar.TagJump  Иди на ознаку
@@ -294,4 +294,4 @@ let menutrans_no_file = "[Нема фајла]"
 let &cpo = s:keepcpo
 unlet s:keepcpo
 
-" vim: tw=0 keymap=serbian
+" vim: tw=0

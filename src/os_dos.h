@@ -109,7 +109,6 @@
 #define CLEAN_RUNTIMEPATH	"$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after"
 
 #define CASE_INSENSITIVE_FILENAME   // ignore case when comparing file names
-#define SPACE_IN_FILENAME
 #define BACKSLASH_IN_FILENAME
 #define USE_CRNL		// lines end in CR-NL instead of NL
 #define HAVE_DUP		// have dup()

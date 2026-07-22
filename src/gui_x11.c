@@ -380,10 +380,10 @@ static XtResource vim_resources[] =
 # ifdef FONTSET_ALWAYS
 	XtNmenuFontSet,
 	XtCMenuFontSet,
-#else
+# else
 	XtNmenuFont,
 	XtCMenuFont,
-#endif
+# endif
 	XtRString,
 	sizeof(char *),
 	XtOffsetOf(gui_T, rsrc_menu_font_name),
@@ -622,7 +622,7 @@ gui_x11_expose_cb(
     gui_mch_update();
 }
 
-#if (defined(FEAT_NETBEANS_INTG) && defined(FEAT_GUI_MOTIF)) || defined(PROTO)
+#if defined(FEAT_NETBEANS_INTG) && defined(FEAT_GUI_MOTIF)
 /*
  * This function fills in the XRectangle object with the current x,y
  * coordinates and height, width so that an XtVaSetValues to the same shell of
@@ -1146,7 +1146,7 @@ gui_mch_prepare(int *argc, char **argv)
 #ifdef FEAT_NETBEANS_INTG
 	    if (strncmp("-nb", argv[arg], 3) == 0)
 	{
-	    gui.dofork = FALSE;	// don't fork() when starting GUI
+	    gui.dofork = false;	// don't fork() when starting GUI
 	    netbeansArg = argv[arg];
 	    mch_memmove(&argv[arg], &argv[arg + 1],
 					    (--*argc - arg) * sizeof(char *));
@@ -1162,9 +1162,9 @@ gui_mch_prepare(int *argc, char **argv)
 # define CARDINAL (Cardinal *)
 #else
 # if XtSpecificationRelease == 4
-# define CARDINAL (Cardinal *)
+#  define CARDINAL (Cardinal *)
 # else
-# define CARDINAL (int *)
+#  define CARDINAL (int *)
 # endif
 #endif
 
@@ -1184,7 +1184,7 @@ gui_mch_init_check(void)
 		cmdline_options, XtNumber(cmdline_options),
 		CARDINAL &gui_argc, gui_argv);
 
-# if defined(LC_NUMERIC)
+#if defined(LC_NUMERIC)
     {
 	// The call to XtOpenDisplay() may have set the locale from the
 	// environment. Set LC_NUMERIC to "C" to make sure that strtod() uses a
@@ -1194,10 +1194,10 @@ gui_mch_init_check(void)
 	if (p == NULL || strcmp(p, "C") != 0)
 	   setlocale(LC_NUMERIC, "C");
     }
-# endif
+#endif
     if (app_context == NULL || gui.dpy == NULL)
     {
-	gui.dying = TRUE;
+	gui.dying = true;
 	emsg(_(e_cannot_open_display));
 	return FAIL;
     }
@@ -1363,20 +1363,9 @@ gui_mch_init(void)
 #else
 // Use Pixmaps, looking much nicer.
 
-// If you get an error message here, you still need to unpack the runtime
-// archive!
-# ifdef magick
-#  undef magick
-# endif
-# define magick vim32x32
 # include "../runtime/vim32x32.xpm"
-# undef magick
-# define magick vim16x16
 # include "../runtime/vim16x16.xpm"
-# undef magick
-# define magick vim48x48
 # include "../runtime/vim48x48.xpm"
-# undef magick
 
     static Pixmap	icon = 0;
     static Pixmap	icon_mask = 0;
@@ -1429,9 +1418,6 @@ gui_mch_init(void)
     XtVaSetValues(vimShell, XmNiconPixmap, icon, XmNiconMask, icon_mask, NULL);
 #endif
     }
-
-    if (gui.color_approx)
-	emsg(_(e_cannot_allocate_colormap_entry_some_colors_may_be_incorrect));
 
 #ifdef FEAT_BEVAL_GUI
     gui_init_tooltip_font();
@@ -1557,7 +1543,7 @@ gui_mch_open(void)
     return OK;
 }
 
-#if defined(FEAT_BEVAL_GUI) || defined(PROTO)
+#if defined(FEAT_BEVAL_GUI)
 /*
  * Convert the tooltip fontset name to an XFontSet.
  */
@@ -1578,14 +1564,14 @@ gui_init_tooltip_font(void)
 }
 #endif
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 // Convert the menu font/fontset name to an XFontStruct/XFontset
     void
 gui_init_menu_font(void)
 {
     XrmValue from, to;
 
-#ifdef FONTSET_ALWAYS
+# ifdef FONTSET_ALWAYS
     from.addr = (char *)gui.rsrc_menu_font_name;
     from.size = strlen(from.addr);
     to.addr = (XtPointer)&gui.menu_fontset;
@@ -1595,7 +1581,7 @@ gui_init_menu_font(void)
     {
 	// Failed. What to do?
     }
-#else
+# else
     from.addr = (char *)gui.rsrc_menu_font_name;
     from.size = strlen(from.addr);
     to.addr = (XtPointer)&gui.menu_font;
@@ -1605,7 +1591,7 @@ gui_init_menu_font(void)
     {
 	// Failed. What to do?
     }
-#endif
+# endif
 }
 #endif
 
@@ -1876,7 +1862,7 @@ gui_mch_get_font(char_u *name, int giveErrorIfMissing)
     return (GuiFont)font;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return the name of font "font" in allocated memory.
  */
@@ -1961,7 +1947,7 @@ gui_mch_set_font(GuiFont font)
 #endif
 }
 
-#if defined(FEAT_XFONTSET) || defined(PROTO)
+#if defined(FEAT_XFONTSET)
 /*
  * Set the current text fontset.
  * Adjust the ascent, in case it's different.
@@ -1984,7 +1970,7 @@ gui_mch_free_font(GuiFont font)
 	XFreeFont(gui.dpy, (XFontStruct *)font);
 }
 
-#if defined(FEAT_XFONTSET) || defined(PROTO)
+#if defined(FEAT_XFONTSET)
 /*
  * If a fontset is not going to be used, free its structure.
  */
@@ -2112,7 +2098,7 @@ fontset_height(
     return extents->max_logical_extent.height;
 }
 
-#if 0
+# if 0
 // NOT USED YET
     static int
 fontset_descent(XFontSet fs)
@@ -2122,7 +2108,7 @@ fontset_descent(XFontSet fs)
     extents = XExtentsOfFontSet (fs);
     return extents->max_logical_extent.height + extents->max_logical_extent.y;
 }
-#endif
+# endif
 
     static int
 fontset_ascent(XFontSet fs)
@@ -2493,7 +2479,7 @@ gui_mch_iconify(void)
     XIconifyWindow(gui.dpy, XtWindow(vimShell), DefaultScreen(gui.dpy));
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Bring the Vim window to the foreground.
  */
@@ -2803,7 +2789,7 @@ clip_mch_set_selection(
     clip_x11_set_selection(cbd);
 }
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 /*
  * Menu stuff.
  */
@@ -2819,9 +2805,9 @@ gui_mch_menu_grey(vimmenu_T *menu, int grey)
 
     gui_mch_menu_hidden(menu, False);
     if (grey
-#ifdef FEAT_GUI_MOTIF
+# ifdef FEAT_GUI_MOTIF
 	    || !menu->sensitive
-#endif
+# endif
        )
 	XtSetSensitive(menu->id, False);
     else
@@ -3114,7 +3100,7 @@ gui_mch_setmouse(int x, int y)
 	XWarpPointer(gui.dpy, (Window)0, gui.wid, 0, 0, 0, 0, x, y);
 }
 
-#if (defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)) || defined(PROTO)
+#if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
     XButtonPressedEvent *
 gui_x11_get_last_mouse_event(void)
 {
@@ -3122,7 +3108,7 @@ gui_x11_get_last_mouse_event(void)
 }
 #endif
 
-#if defined(FEAT_SIGN_ICONS) || defined(PROTO)
+#if defined(FEAT_SIGN_ICONS)
 
 // Signs are currently always 2 chars wide.  Hopefully the font is big enough
 // to provide room for the bitmap!
@@ -3219,7 +3205,7 @@ gui_mch_mousehide(
 #endif
 }
 
-#if defined(FEAT_MOUSESHAPE) || defined(PROTO)
+#if defined(FEAT_MOUSESHAPE)
 
 // Table for shape IDs.  Keep in sync with the mshape_names[] table in
 // misc2.c!
@@ -3274,7 +3260,7 @@ mch_set_mouse_shape(int shape)
 }
 #endif
 
-#if (defined(FEAT_TOOLBAR) && defined(FEAT_BEVAL_GUI)) || defined(PROTO)
+#if defined(FEAT_TOOLBAR) && defined(FEAT_BEVAL_GUI)
 /*
  * Set the balloon-eval used for the tooltip of a toolbar menu item.
  * The check for a non-toolbar item was added, because there is a crash when

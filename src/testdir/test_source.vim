@@ -1,8 +1,5 @@
 " Tests for the :source command.
 
-source check.vim
-source view_util.vim
-
 func Test_source_autocmd()
   call writefile([
 	\ 'let did_source = 1',
@@ -57,7 +54,7 @@ func Test_different_script()
   call assert_fails('source XtwoScript', 'E121:')
 endfunc
 
-" When sourcing a vim script, shebang should be ignored.
+" When sourcing a Vim script, shebang should be ignored.
 func Test_source_ignore_shebang()
   call writefile(['#!./xyzabc', 'let g:val=369'], 'Xsisfile.vim', 'D')
   source Xsisfile.vim
@@ -408,7 +405,7 @@ func Test_source_buffer_vim9()
   source
   call assert_equal(10, Xtestfunc())
 
-  " test for sourcing a vim9 script with line continuation
+  " test for sourcing a Vim9 script with line continuation
   %d _
   let lines =<< trim END
      vim9script
@@ -636,6 +633,22 @@ func Test_source_buffer_vim9()
   call assert_fails('vim9cmd source ++abcde', 'E484:')
 
   %bw!
+endfunc
+
+" Test that the modifier does not override the script type when sourcing files
+" with :vim9cmd and :legacy
+func Test_source_file_ignores_modifiers()
+  let lines = ["let g:legacy_sourced = 42"]
+  call writefile(lines, 'Xsourcelegacy', 'D')
+  vim9cmd source Xsourcelegacy
+  call assert_equal(42, g:legacy_sourced)
+  unlet g:legacy_sourced
+
+  let lines = ["vim9script", "g:vim9_sourced = 42"]
+  call writefile(lines, 'Xsourcevim9', 'D')
+  legacy source Xsourcevim9
+  call assert_equal(42, g:vim9_sourced)
+  unlet g:vim9_sourced
 endfunc
 
 func Test_source_buffer_long_line()

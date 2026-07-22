@@ -1,6 +1,6 @@
 " Menu Translations:	Korean
 " Maintainer:		SungHyun Nam <goweol@gmail.com>
-" Last Change:		2012 May 01
+" Last Change:		2024 May 2
 " Original translations
 
 " Quit when menu translations have already been done.
@@ -36,8 +36,8 @@ menutrans &New<Tab>:enew		새로운(&N)<Tab>:enew
 menutrans &Close<Tab>:close		닫기(&C)<Tab>:close
 menutrans &Save<Tab>:w			저장(&S)<Tab>:w
 menutrans Save\ &As\.\.\.<Tab>:sav	다른\ 이름으로\ 저장(&A)\.\.\.<Tab>:sav
-"menutrans Split\ &Diff\ with\.\.\.	Split\ &Diff\ with\.\.\.
-"menutrans Split\ Patched\ &By\.\.\.	Split\ Patched\ &By\.\.\.
+menutrans Split\ &Diff\ with\.\.\.	분할\ 차이점\.\.\.
+menutrans Split\ Patched\ &By\.\.\.	분할\ 패치\ 기준\.\.\.
 menutrans &Print			인쇄(&P)
 menutrans Sa&ve-Exit<Tab>:wqa		저장하고\ 끝내기(&v)<Tab>:wqa
 menutrans E&xit<Tab>:qa			끝내기(&x)<Tab>:qa
@@ -62,8 +62,8 @@ menutrans Startup\ &Settings		시작\ 설정(&S)
 " Edit/Global Settings
 menutrans &Global\ Settings		전역\ 설정(&G)
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls! 패턴\ 하이라이트\ 토글(&H)<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic! 대소문자\ 구분\ 토글(&I)<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm! Showmatch\ 토글(&S)<Tab>:set\ sm!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic! 대소문자\ 구분\ 토글(&I)<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm! Showmatch\ 토글(&S)<Tab>:set\ sm!
 menutrans &Context\ lines		콘텍스트\ 줄(&C)
 menutrans &Virtual\ Edit		가상\ 편집(&V)
 menutrans Never				사용\ 안\ 함
@@ -72,7 +72,7 @@ menutrans Insert\ mode			삽입\ 모드
 menutrans Block\ and\ Insert		블럭과\ 삽입
 menutrans Always			항상\ 사용
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im! 삽입\ 모드\ 토글(&M)<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp! Vi\ 호환\ 토글(&o)<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp! Vi\ 호환\ 토글(&o)<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\.		찾기\ 경로(&P)\.\.\.
 menutrans Ta&g\ Files\.\.\.		꼬리표\ 파일(&g)\.\.\.
 
@@ -141,14 +141,14 @@ menutrans M&anual			수동(&a)
 menutrans I&ndent			들여쓰기(&n)
 menutrans E&xpression			표현식(&x)
 menutrans S&yntax			신택스(&y)
-"menutrans &Diff				&Diff
+menutrans &Diff				차이점
 menutrans Ma&rker			꼬리표(&r)
 " create and delete folds
 menutrans Create\ &Fold<Tab>zf		접기\ 생성(&F)<Tab>zf
 menutrans &Delete\ Fold<Tab>zd		접기\ 삭제(&D)<Tab>zd
 menutrans Delete\ &All\ Folds<Tab>zD	모든\ 접기\ 삭제(&A)<Tab>zD
 " moving around in folds
-menutrans Fold\ column\ &width		접기\ 컬럼\ 너비(&w)
+menutrans Fold\ col&umn\ width		접기\ 컬럼\ 너비(&w)
 
 "menutrans &Diff				&Diff
 menutrans &Update			갱신(&U)
@@ -261,6 +261,13 @@ menutrans on/off\ for\ &This\ file 이\ 파일만\ 켜기/끄기(&T)
 menutrans Co&lor\ test		색\ 시험(&l)
 menutrans &Highlight\ test	Highlight\ 시험(&H)
 menutrans &Convert\ to\ HTML	HTML로\ 변환(&C)
+menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Toggle\ 상대\ 줄\ 번호\ 매기기<Tab>:set\ nru!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		줄\ 바꿈\ 전환<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!		Toggle\ Word에서\ 줄\ 바꿈<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!			탭\ 확장\ 전환<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!		자동\ 들여쓰기\ 전환<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!		C\ 스타일\ 들여쓰기\ 전환<Tab>:set\ cin!
+menutrans &Show\ File\ Types\ in\ menu				메뉴에\ 파일\ 형식\ 표시
 
 let &cpo = s:keepcpo
 unlet s:keepcpo

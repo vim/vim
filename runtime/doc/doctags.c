@@ -9,7 +9,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 #include <stdlib.h>
 
 #define LINELEN 200
@@ -63,8 +62,8 @@ main(int argc, char **argv)
 					// followed by a white character or end-of-line.
 					if (p == p2
 							&& (p1 == line || p1[-1] == ' ' || p1[-1] == '\t')
-								&& (strchr(" \t\n\r", p[1]) != NULL
-									|| p[1] == '\0'))
+							&& (strchr(" \t\n\r", p[1]) != NULL
+								|| p[1] == '\0'))
 					{
 						*p2 = '\0';
 						++p1;

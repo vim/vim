@@ -1,6 +1,6 @@
 " Tests for the Blob types
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 func TearDown()
   " Run garbage collection after every test
@@ -35,7 +35,7 @@ func Test_blob_create()
       call assert_fails('VAR b = 0z1.1')
       call assert_fails('VAR b = 0z.')
       call assert_fails('VAR b = 0z001122.')
-      call assert_fails('call get("", 1)', 'E896:')
+      call assert_fails('call get("", 1)', 'E1531:')
       call assert_equal(0, len(test_null_blob()))
       call assert_equal(0z, copy(test_null_blob()))
   END
@@ -74,6 +74,13 @@ func Test_blob_assign()
       VAR l = [0z12]
       VAR m = deepcopy(l)
       LET m[0] = 0z34	#" E742 or E741 should not occur.
+
+      VAR blob1 = 0z10
+      LET blob1 += test_null_blob()
+      call assert_equal(0z10, blob1)
+      LET blob1 = test_null_blob()
+      LET blob1 += 0z20
+      call assert_equal(0z20, blob1)
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
@@ -94,6 +101,18 @@ func Test_blob_assign()
       LET b[3 : 2] = 0z
   END
   call v9.CheckLegacyAndVim9Failure(lines, 'E979:')
+
+  let lines =<< trim END
+      VAR b = 0zDEADBEEF
+      LET b[0 : 1] = 0x1122
+  END
+  call v9.CheckLegacyAndVim9Failure(lines, ['E709:', 'E1012:', 'E709:'])
+
+  let lines =<< trim END
+      VAR b = 0zDEADBEEF
+      LET b[0] = 0z11
+  END
+  call v9.CheckLegacyAndVim9Failure(lines, ['E974:', 'E974:', 'E1012:'])
 
   let lines =<< trim END
       VAR b = 0zDEADBEEF
@@ -221,13 +240,13 @@ func Test_blob_compare()
       VAR b1 = 0z0011
       echo b1 == 9
   END
-  call v9.CheckLegacyAndVim9Failure(lines, ['E977:', 'E1072', 'E1072'])
+  call v9.CheckLegacyAndVim9Failure(lines, ['E977:', 'E1072:', 'E1072:'])
 
   let lines =<< trim END
       VAR b1 = 0z0011
       echo b1 != 9
   END
-  call v9.CheckLegacyAndVim9Failure(lines, ['E977:', 'E1072', 'E1072'])
+  call v9.CheckLegacyAndVim9Failure(lines, ['E977:', 'E1072:', 'E1072:'])
 
   let lines =<< trim END
       VAR b1 = 0z0011
@@ -329,6 +348,17 @@ func Test_blob_for_loop()
         LET i += 1
       endfor
       call assert_equal(5, i)
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+
+  " Test for skipping the loop var assignment in a for loop
+  let lines =<< trim END
+    VAR blob = 0z998877
+    VAR c = 0
+    for _ in blob
+      LET c += 1
+    endfor
+    call assert_equal(3, c)
   END
   call v9.CheckLegacyAndVim9Success(lines)
 endfunc
@@ -756,6 +786,7 @@ endfunc
 
 func Test_blob_repeat()
   call assert_equal(0z, repeat(0z00, 0))
+  call assert_equal(0z, repeat(0z, 1))
   call assert_equal(0z00, repeat(0z00, 1))
   call assert_equal(0z0000, repeat(0z00, 2))
   call assert_equal(0z00000000, repeat(0z0000, 2))
@@ -819,6 +850,7 @@ func Test_indexof()
   call assert_equal(-1, indexof(test_null_blob(), "v:val == 0xde"))
   call assert_equal(-1, indexof(b, test_null_string()))
   call assert_equal(-1, indexof(b, test_null_function()))
+  call assert_equal(-1, indexof(b, ""))
 
   let b = 0z01020102
   call assert_equal(1, indexof(b, "v:val == 0x02", #{startidx: 0}))
@@ -830,6 +862,106 @@ func Test_indexof()
   " failure cases
   call assert_fails('let i = indexof(b, "val == 0xde")', 'E121:')
   call assert_fails('let i = indexof(b, {})', 'E1256:')
+  call assert_fails('let i = indexof(b, " ")', 'E15:')
+endfunc
+
+" Test for using the items() function with a blob
+func Test_blob_items()
+  let lines =<< trim END
+    call assert_equal([[0, 0xAA], [1, 0xBB], [2, 0xCC]], 0zAABBCC->items())
+    call assert_equal([[0, 0]], 0z00->items())
+    call assert_equal([], 0z->items())
+    call assert_equal([], test_null_blob()->items())
+  END
+  call v9.CheckSourceLegacyAndVim9Success(lines)
+endfunc
+
+" Test for setting a byte in a blob with invalid value
+func Test_blob_byte_set_invalid_value()
+  let lines =<< trim END
+    VAR b = 0zD0C3E4E18E1B
+    LET b[0] = 229539777187355
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, 'E1239: Invalid value for blob:')
+endfunc
+
+" Test when converting a blob to a string, and there is an empty line (newline
+" followed directly by another newline).
+func Test_blob2str_empty_line()
+  let stuff =<< trim END
+  Hello
+
+  World!
+  END
+
+  let b = str2blob(stuff)
+  call assert_equal(['Hello', '', 'World!'], blob2str(b))
+endfunc
+
+func Test_blob2str_multi_byte_encodings()
+  " UTF-16LE: "Hello" = 48 00 65 00 6C 00 6C 00 6F 00
+  call assert_equal(['Hello'], blob2str(0z480065006C006C006F00, {'encoding': 'utf-16le'}))
+  call assert_equal(['Hello'], blob2str(0z480065006C006C006F00, {'encoding': 'utf16le'}))
+
+  " UTF-16BE: "Hello" = 00 48 00 65 00 6C 00 6C 00 6F
+  call assert_equal(['Hello'], blob2str(0z00480065006C006C006F, {'encoding': 'utf-16be'}))
+  call assert_equal(['Hello'], blob2str(0z00480065006C006C006F, {'encoding': 'utf16be'}))
+
+  " UCS-2LE: "Hello" = 48 00 65 00 6C 00 6C 00 6F 00
+  call assert_equal(['Hello'], blob2str(0z480065006C006C006F00, {'encoding': 'ucs-2le'}))
+  call assert_equal(['Hello'], blob2str(0z480065006C006C006F00, {'encoding': 'ucs2le'}))
+
+  " UCS-2BE: "Hello" = 00 48 00 65 00 6C 00 6C 00 6F
+  call assert_equal(['Hello'], blob2str(0z00480065006C006C006F, {'encoding': 'ucs-2be'}))
+  call assert_equal(['Hello'], blob2str(0z00480065006C006C006F, {'encoding': 'ucs2be'}))
+
+  " UTF-32LE: "Hi" = 48 00 00 00 69 00 00 00
+  call assert_equal(['Hi'], blob2str(0z4800000069000000, {'encoding': 'utf-32le'}))
+  call assert_equal(['Hi'], blob2str(0z4800000069000000, {'encoding': 'utf32le'}))
+
+  " UTF-32BE: "Hi" = 00 00 00 48 00 00 00 69
+  call assert_equal(['Hi'], blob2str(0z0000004800000069, {'encoding': 'utf-32be'}))
+  call assert_equal(['Hi'], blob2str(0z0000004800000069, {'encoding': 'utf32be'}))
+
+  " UCS-4LE: "Hi" = 48 00 00 00 69 00 00 00
+  call assert_equal(['Hi'], blob2str(0z4800000069000000, {'encoding': 'ucs-4le'}))
+  call assert_equal(['Hi'], blob2str(0z4800000069000000, {'encoding': 'ucs4le'}))
+
+  " UCS-4BE: "Hi" = 00 00 00 48 00 00 00 69
+  call assert_equal(['Hi'], blob2str(0z0000004800000069, {'encoding': 'ucs-4be'}))
+  call assert_equal(['Hi'], blob2str(0z0000004800000069, {'encoding': 'ucs4be'}))
+
+  " UTF-16LE with newlines: "Hi\nBye" = 48 00 69 00 0A 00 42 00 79 00 65 00
+  call assert_equal(['Hi', 'Bye'], blob2str(0z48006900.0A004200.79006500, {'encoding': 'utf-16le'}))
+
+  " UTF-32LE with newlines: "A\nB" = 41 00 00 00 0A 00 00 00 42 00 00 00
+  call assert_equal(['A', 'B'], blob2str(0z41000000.0A000000.42000000, {'encoding': 'utf-32le'}))
+endfunc
+
+func Test_blob_utf16be_encoding()
+  CheckFeature iconv
+
+  " Write utf-16be
+  new
+  setl nobomb
+  call setline(1, "A\u3042")
+  write ++enc=utf-16be ++ff=unix Xutf16be
+  defer delete('Xutf16be')
+  bwipe!
+
+  let bytes = readblob('Xutf16be')
+  " 'A' = U+0041 -> 00 41 (BE), U+3042 -> 30 42 (BE)
+  call assert_equal(0z0041.3042, bytes[0:3])
+
+  " iconv
+  let s = "A\u3042Z"
+  let be = iconv(s, 'utf-8', 'utf-16be')
+  if be == s
+    " iconv lacks utf-16be support
+    return
+  endif
+  call assert_equal(s, iconv(be, 'utf-16be', 'utf-8'))
+  call assert_notequal(be, iconv(s, 'utf-8', 'utf-16le'))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

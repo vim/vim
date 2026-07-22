@@ -1,7 +1,6 @@
 " Test the ":move" command.
 
-source check.vim
-source screendump.vim
+source util/screendump.vim
 
 func Test_move()
   enew!
@@ -47,6 +46,7 @@ func Test_move()
 endfunc
 
 func Test_move_undo()
+  CheckScreendump
   CheckRunVimInTerminal
 
   let lines =<< trim END

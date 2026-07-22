@@ -11,3 +11,12 @@ leak:libperl.so.*
 leak:libpython*.so.*
 leak:libruby*.so.*
 leak:libxcb*.so.*
+# The renderer leaks 128 bytes of metadata when run under CI. Seems to only
+# happen with software rendering.
+leak:gdk_x11_screen_init_gl
+# leak reported on CI for test_clipmethod
+leak:libgtk-3*.so.*
+# Leak from GTK when creating gtk4 dialog windows?
+leak:wl_proxy_marshal_array_flags
+leak:gtk_widget_realize
+leak:libgtk-4*.so.*

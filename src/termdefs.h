@@ -115,10 +115,13 @@ enum SpecialKey
     KS_SRI,	// restore icon text
     KS_FD,	// disable focus event tracking
     KS_FE,	// enable focus event tracking
-    KS_CF	// set terminal alternate font
+    KS_CF,	// set terminal alternate font
+    KS_XON,	// terminal uses xon/xoff handshaking
+    KS_BSU,	// begin synchronized update
+    KS_ESU	// end synchronized update
 };
 
-#define KS_LAST	    KS_CF
+#define KS_LAST	    KS_ESU
 
 /*
  * the terminal capabilities are stored in this array
@@ -224,6 +227,9 @@ extern char_u *(term_strings[]);    // current terminal strings
 #define T_SRI	(TERM_STR(KS_SRI))	// restore icon text
 #define T_FD	(TERM_STR(KS_FD))	// disable focus event tracking
 #define T_FE	(TERM_STR(KS_FE))	// enable focus event tracking
+#define T_XON	(TERM_STR(KS_XON))	// terminal uses xon/xoff handshaking
+#define T_BSU	(TERM_STR(KS_BSU))	// begin synchronized update
+#define T_ESU	(TERM_STR(KS_ESU))	// end synchronized update
 
 typedef enum {
     TMODE_COOK,	    // terminal mode for external cmds and Ex mode
@@ -231,3 +237,8 @@ typedef enum {
     TMODE_RAW,	    // terminal mode for Normal and Insert mode
     TMODE_UNKNOWN   // after executing a shell
 } tmode_T;
+
+#if defined(MSWIN)
+// Mapping between cterm indices < 16 and their counterpart in the ANSI palette.
+extern const char_u cterm_ansi_idx[];
+#endif

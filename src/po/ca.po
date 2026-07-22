@@ -1326,8 +1326,8 @@ msgstr " Compleció definida per l'usuari (^U^N^P)"
 msgid " Omni completion (^O^N^P)"
 msgstr " Omni-compleció (^O^N^P)"
 
-msgid " Spelling suggestion (s^N^P)"
-msgstr " Suggeriment d'ortografia (s^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
+msgstr " Suggeriment d'ortografia (^S^N^P)"
 
 # i C-x C-p
 msgid " Keyword Local completion (^N^P)"

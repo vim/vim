@@ -1,0 +1,43 @@
+# vi:ft=sudoers
+Host_Alias NODES = ! node0, 192.168.10.1
+User_Alias ADMIN = alice, bob
+Cmnd_Alias VIM = /usr/bin/vim, sha224:d14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f /usr/bin/view, sha256:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU= /usr/bin/vimdiff
+Runas_Alias ROOT = charlie, dave
+
+# Boolean Flags
+Defaults authenticate
+Defaults@ ALL, NODES case_insensitive_group , ! case_insensitive_user
+Defaults@!node0, !node1 !! env_reset
+Defaults@10.0.0.1 , !172.16.0.1/12, !!192.168.0.1/255.255.0.0 !! fqdn
+Defaults:ALL, ADMIN ignore_dot
+Defaults:user0, #1000, %group0, %#1000 mail_all_cmnds
+Defaults!ALL,VIM noexec
+Defaults!list,sudoedit !path_info
+Defaults! /bin/ls requiretty
+Defaults!!/bin/less , /bin/more set_home
+Defaults> ALL,ROOT !setenv
+Defaults>!user0,!!#1000,!!!%group0,!!!!%#1000 !!!!! syslog_pid
+
+# Integers
+Defaults command_timeout=1, command_timeout=22s, command_timeout=33m, command_timeout=44h, command_timeout=55d, command_timeout=6D7H8M9S
+Defaults:ALL passwd_tries = 3, passwd_timeout = 2.5, umask = 0027
+Defaults@ALL ! passwd_timeout , !!! umask
+
+# Strings
+Defaults editor = "/usr/bin/vim:/bin/vi"
+Defaults secure_path = /usr/sbin\:/usr/bin
+Defaults>ALL syslog_badpri=alert,syslog_goodpri=notice
+
+# Lists
+Defaults env_check	= TZ
+Defaults env_delete	+= "PATH *PATH"
+Defaults env_keep	-= "XDG_*_HOME"
+Defaults>ALL !!!!! env_keep
+
+Defaults passprompt_regex  = "[Pp]assword[: ]*"
+Defaults passprompt_regex -= "(?i)PASSWORD"
+Defaults passprompt_regex += "password"
+
+# Directives
+@includedir /etc/sudoers.d
+#include /etc/sudoers.d/%h

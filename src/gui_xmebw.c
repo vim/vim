@@ -505,7 +505,7 @@ draw_shadows(XmEnhancedButtonWidget eb)
     Boolean	etched_in;
 
     if (!eb->primitive.shadow_thickness)
-       return;
+	return;
 
     if ((eb->core.width <= 2 * eb->primitive.highlight_thickness)
 	    || (eb->core.height <= 2 * eb->primitive.highlight_thickness))
@@ -748,9 +748,9 @@ draw_label(XmEnhancedButtonWidget eb, XEvent *event, Region region)
 
     static void
 Enter(Widget wid,
-      XEvent *event,
-      String *params UNUSED,
-      Cardinal *num_params UNUSED)
+    XEvent *event,
+    String *params UNUSED,
+    Cardinal *num_params UNUSED)
 {
     XmEnhancedButtonWidget eb = (XmEnhancedButtonWidget) wid;
     XmPushButtonCallbackStruct call_value;
@@ -837,9 +837,9 @@ Enter(Widget wid,
 
     static void
 Leave(Widget wid,
-      XEvent *event,
-      String *params UNUSED,
-      Cardinal *num_params UNUSED)
+    XEvent *event,
+    String *params UNUSED,
+    Cardinal *num_params UNUSED)
 {
     XmEnhancedButtonWidget eb = (XmEnhancedButtonWidget)wid;
     XmPushButtonCallbackStruct call_value;

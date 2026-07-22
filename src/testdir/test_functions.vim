@@ -1,10 +1,8 @@
 " Tests for various functions.
 
-source shared.vim
-source check.vim
-source term_util.vim
-source screendump.vim
-import './vim9.vim' as v9
+source util/screendump.vim
+source util/view_util.vim
+import './util/vim9.vim' as v9
 
 " Must be done first, since the alternate buffer must be unset.
 func Test_00_bufexists()
@@ -136,35 +134,57 @@ func Test_max()
   call assert_equal(0, max([]))
   call assert_equal(2, max([2]))
   call assert_equal(2, max([1, 2]))
+  call assert_equal(3, max([1.0, 2, 3]))
+  call assert_equal(3.0, max([1, 2, 3.0]))
   call assert_equal(2, max([1, 2, v:null]))
+
+  call assert_equal(0, max(()))
+  call assert_equal(2, max((2, )))
+  call assert_equal(2, max((1, 2)))
+  call assert_equal(3, max((1.0, 2, 3)))
+  call assert_equal(3.0, max((1, 2, 3.0)))
+  call assert_equal(2, max((1, 2, v:null)))
 
   call assert_equal(0, max({}))
   call assert_equal(2, max({'a':1, 'b':2}))
+
+  call assert_equal('abz', max(['abc', 'aba', 'abz']))
 
   call assert_fails('call max(1)', 'E712:')
   call assert_fails('call max(v:none)', 'E712:')
 
   " check we only get one error
-  call assert_fails('call max([#{}, [1]])', ['E728:', 'E728:'])
-  call assert_fails('call max(#{a: {}, b: [1]})', ['E728:', 'E728:'])
+  call assert_fails('call max([#{}, [1]])', ['E691:', 'E691:'])
+  call assert_fails('call max(#{a: {}, b: [1]})', ['E691:', 'E691:'])
 endfunc
 
 func Test_min()
   call assert_equal(0, min([]))
   call assert_equal(2, min([2]))
   call assert_equal(1, min([1, 2]))
-  call assert_equal(0, min([1, 2, v:null]))
+  call assert_equal(1, min([1, 2, 3.0]))
+  call assert_equal(1.0, min([1.0, 2]))
+  call assert_equal(v:null, min([1, 2, v:null]))
+
+  call assert_equal(0, min(()))
+  call assert_equal(2, min((2, )))
+  call assert_equal(1, min((1, 2)))
+  call assert_equal(1, min((1, 2, 3.0)))
+  call assert_equal(1.0, min((1.0, 2)))
+  call assert_equal(v:null, min((1, 2, v:null)))
 
   call assert_equal(0, min({}))
   call assert_equal(1, min({'a':1, 'b':2}))
 
+  call assert_equal('aba', min(['abc', 'aba', 'abz']))
+
   call assert_fails('call min(1)', 'E712:')
   call assert_fails('call min(v:none)', 'E712:')
-  call assert_fails('call min([1, {}])', 'E728:')
+  call assert_fails('call min([1, {}])', 'E735:')
 
   " check we only get one error
-  call assert_fails('call min([[1], #{}])', ['E745:', 'E745:'])
-  call assert_fails('call min(#{a: [1], b: #{}})', ['E745:', 'E745:'])
+  call assert_fails('call min([[1], #{}])', ['E691:', 'E691:'])
+  call assert_fails('call min(#{a: [1], b: #{}})', ['E691:', 'E691:'])
 endfunc
 
 func Test_strwidth()
@@ -277,17 +297,17 @@ func Test_strftime()
     let tz = $TZ
   endif
 
-  " Force EST and then UTC, save the current hour (24-hour clock) for each
-  let $TZ = 'EST' | let est = strftime('%H')
-  let $TZ = 'UTC' | let utc = strftime('%H')
+  " Force different time zones, save the current hour (24-hour clock) for each
+  let $TZ = 'GMT+1' | let one = strftime('%H')
+  let $TZ = 'GMT+2' | let two = strftime('%H')
 
   " Those hours should be two bytes long, and should not be the same; if they
   " are, a tzset(3) call may have failed somewhere
-  call assert_equal(strlen(est), 2)
-  call assert_equal(strlen(utc), 2)
+  call assert_equal(strlen(one), 2)
+  call assert_equal(strlen(two), 2)
   " TODO: this fails on MS-Windows
   if has('unix')
-    call assert_notequal(est, utc)
+    call assert_notequal(one, two)
   endif
 
   " If we cached a timezone value, put it back, otherwise clear it
@@ -309,9 +329,12 @@ func Test_strptime()
 
   call assert_equal(1484653763, strptime('%Y-%m-%d %T', '2017-01-17 11:49:23'))
 
-  " Force DST and check that it's considered
-  let $TZ = 'WINTER0SUMMER,J1,J365'
-  call assert_equal(1484653763 - 3600, strptime('%Y-%m-%d %T', '2017-01-17 11:49:23'))
+  " Force DST and check that it's considered.
+  " MS-Windows CRT tzset() does not parse POSIX TZ strings with DST rules.
+  if !has('win32') && !has('sun')
+    let $TZ = 'WINTER0SUMMER,J1,J365'
+    call assert_equal(1484653763 - 3600, strptime('%Y-%m-%d %T', '2017-01-17 11:49:23'))
+  endif
 
   call assert_fails('call strptime()', 'E119:')
   call assert_fails('call strptime("xxx")', 'E119:')
@@ -923,6 +946,10 @@ func Test_mode()
   call feedkeys("gQ\<Insert>\<F2>vi\<CR>", 'xt')
   call assert_equal("c-cvr", g:current_modes)
 
+  " Commandline mode in Visual mode should return "c-c", never "v-v".
+  call feedkeys("v\<Cmd>call input('')\<CR>\<F2>\<CR>\<Esc>", 'xt')
+  call assert_equal("c-c", g:current_modes)
+
   " Executing commands in Vim Ex mode should return "cv", never "cvr",
   " as Cmdline editing has already ended.
   call feedkeys("gQcall Save_mode()\<CR>vi\<CR>", 'xt')
@@ -947,18 +974,6 @@ func Test_mode()
   execute "normal! gR\<C-o>g@l\<Esc>"
   call assert_equal('n-niV', g:current_modes)
 
-  " Test statusline updates for overstrike mode
-  if CanRunVimInTerminal()
-    let buf = RunVimInTerminal('', {'rows': 12})
-    call term_sendkeys(buf, ":set laststatus=2 statusline=%!mode(1)\<CR>")
-    call term_sendkeys(buf, ":")
-    call TermWait(buf)
-    call VerifyScreenDump(buf, 'Test_mode_1', {})
-    call term_sendkeys(buf, "\<Insert>")
-    call TermWait(buf)
-    call VerifyScreenDump(buf, 'Test_mode_2', {})
-    call StopVimInTerminal(buf)
-  endif
 
   if has('terminal')
     term
@@ -984,6 +999,22 @@ func Test_mode()
   set complete&
   set operatorfunc&
   delfunction OperatorFunc
+endfunc
+
+" Test for the mode() function using Screendump feature
+func Test_mode_screendump()
+  CheckScreendump
+
+  " Test statusline updates for overstrike mode
+  let buf = RunVimInTerminal('', {'rows': 12})
+  call term_sendkeys(buf, ":set laststatus=2 statusline=%!mode(1)\<CR>")
+  call term_sendkeys(buf, ":")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_mode_1', {})
+  call term_sendkeys(buf, "\<Insert>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_mode_2', {})
+  call StopVimInTerminal(buf)
 endfunc
 
 " Test for append()
@@ -1024,7 +1055,7 @@ func Test_setline()
   call setline(3, test_null_list())
   call setline(2, ["baz"])
   call assert_equal(['bar', 'baz'], getline(1, '$'))
-  close!
+  bw!
 endfunc
 
 func Test_getbufvar()
@@ -2113,6 +2144,41 @@ func Test_executable_longname()
   call delete(fname)
 endfunc
 
+func Test_executable_single_character_dir()
+  call mkdir('Xpath', 'R')
+  call mkdir('Xpath/a')
+  call mkdir('Xpath/b')
+  call mkdir('Xpath/c')
+  if has('win32')
+    call writefile([], 'Xpath/a/Xcmd1.bat')
+    call writefile([], 'Xpath/b/Xcmd2.bat')
+    call writefile([], 'Xpath/c/Xcmd3.bat')
+    let sep = ';'
+  else
+    call writefile([], 'Xpath/a/Xcmd1')
+    call writefile([], 'Xpath/b/Xcmd2')
+    call writefile([], 'Xpath/c/Xcmd3')
+    call setfperm('Xpath/a/Xcmd1', 'rwxr-xr-x')
+    call setfperm('Xpath/b/Xcmd2', 'rwxr-xr-x')
+    call setfperm('Xpath/c/Xcmd3', 'rwxr-xr-x')
+    let sep = ':'
+  endif
+
+  let save_path = $PATH
+  " a: single character name without path separator
+  " b: single character name with path separator
+  " c: single character name without path separator at last of PATH
+  let $PATH = [
+        \ fnamemodify('./Xpath/a', ':p:h'),
+        \ fnamemodify('./Xpath/b', ':p'),
+        \ fnamemodify('./Xpath/c', ':p:h')
+        \ ]->join(sep)
+  call assert_true(executable('Xcmd1'))
+  call assert_true(executable('Xcmd2'))
+  call assert_true(executable('Xcmd3'))
+  let $PATH = save_path
+endfunc
+
 func Test_hostname()
   let hostname_vim = hostname()
   if has('unix')
@@ -2240,6 +2306,21 @@ func Test_input_func()
 
   call assert_fails("call input('F:', '', 'invalid')", 'E180:')
   call assert_fails("call input('F:', '', [])", 'E730:')
+
+  " Test for using "command" as the completion function
+  call feedkeys(":let c = input('Command? ', '', 'command')\<CR>"
+        \ .. "echo bufnam\<C-A>\<CR>", 'xt')
+  call assert_equal('echo bufname(', c)
+
+  " Test for using "shellcmdline" as the completion function
+  call feedkeys(":let c = input('Shell? ', '', 'shellcmdline')\<CR>"
+        \ .. "vim test_functions.\<C-A>\<CR>", 'xt')
+  call assert_equal('vim test_functions.vim', c)
+  if executable('whoami')
+    call feedkeys(":let c = input('Shell? ', '', 'shellcmdline')\<CR>"
+          \ .. "whoam\<C-A>\<CR>", 'xt')
+    call assert_match('\<whoami\>', c)
+  endif
 endfunc
 
 " Test for the inputdialog() function
@@ -2558,6 +2639,83 @@ func Test_getchar()
   call assert_equal("\<M-F2>", getchar(0))
   call assert_equal(0, getchar(0))
 
+  call feedkeys("\<Tab>", '')
+  call assert_equal(char2nr("\<Tab>"), getchar())
+  call feedkeys("\<Tab>", '')
+  call assert_equal(char2nr("\<Tab>"), getchar(-1))
+  call feedkeys("\<Tab>", '')
+  call assert_equal(char2nr("\<Tab>"), getchar(-1, {}))
+  call feedkeys("\<Tab>", '')
+  call assert_equal(char2nr("\<Tab>"), getchar(-1, #{number: v:true}))
+  call assert_equal(0, getchar(0))
+  call assert_equal(0, getchar(1))
+  call assert_equal(0, getchar(0, #{number: v:true}))
+  call assert_equal(0, getchar(1, #{number: v:true}))
+
+  call feedkeys("\<Tab>", '')
+  call assert_equal("\<Tab>", getcharstr())
+  call feedkeys("\<Tab>", '')
+  call assert_equal("\<Tab>", getcharstr(-1))
+  call feedkeys("\<Tab>", '')
+  call assert_equal("\<Tab>", getcharstr(-1, {}))
+  call feedkeys("\<Tab>", '')
+  call assert_equal("\<Tab>", getchar(-1, #{number: v:false}))
+  call assert_equal('', getcharstr(0))
+  call assert_equal('', getcharstr(1))
+  call assert_equal('', getchar(0, #{number: v:false}))
+  call assert_equal('', getchar(1, #{number: v:false}))
+
+  for key in ["C-I", "C-X", "M-x"]
+    let lines =<< eval trim END
+      call feedkeys("\<*{key}>", '')
+      call assert_equal(char2nr("\<{key}>"), getchar())
+      call feedkeys("\<*{key}>", '')
+      call assert_equal(char2nr("\<{key}>"), getchar(-1))
+      call feedkeys("\<*{key}>", '')
+      call assert_equal(char2nr("\<{key}>"), getchar(-1, {{}}))
+      call feedkeys("\<*{key}>", '')
+      call assert_equal(char2nr("\<{key}>"), getchar(-1, {{'number': 1}}))
+      call feedkeys("\<*{key}>", '')
+      call assert_equal(char2nr("\<{key}>"), getchar(-1, {{'simplify': 1}}))
+      call feedkeys("\<*{key}>", '')
+      call assert_equal("\<*{key}>", getchar(-1, {{'simplify': v:false}}))
+      call assert_equal(0, getchar(0))
+      call assert_equal(0, getchar(1))
+    END
+    call v9.CheckLegacyAndVim9Success(lines)
+
+    let lines =<< eval trim END
+      call feedkeys("\<*{key}>", '')
+      call assert_equal("\<{key}>", getcharstr())
+      call feedkeys("\<*{key}>", '')
+      call assert_equal("\<{key}>", getcharstr(-1))
+      call feedkeys("\<*{key}>", '')
+      call assert_equal("\<{key}>", getcharstr(-1, {{}}))
+      call feedkeys("\<*{key}>", '')
+      call assert_equal("\<{key}>", getchar(-1, {{'number': 0}}))
+      call feedkeys("\<*{key}>", '')
+      call assert_equal("\<{key}>", getcharstr(-1, {{'simplify': 1}}))
+      call feedkeys("\<*{key}>", '')
+      call assert_equal("\<*{key}>", getcharstr(-1, {{'simplify': v:false}}))
+      call assert_equal('', getcharstr(0))
+      call assert_equal('', getcharstr(1))
+    END
+    call v9.CheckLegacyAndVim9Success(lines)
+  endfor
+
+  call assert_fails('call getchar(1, 1)', 'E1206:')
+  call assert_fails('call getcharstr(1, 1)', 'E1206:')
+  call assert_fails('call getchar(1, #{cursor: "foo"})', 'E475:')
+  call assert_fails('call getcharstr(1, #{cursor: "foo"})', 'E475:')
+  call assert_fails('call getchar(1, #{cursor: 0z})', 'E976:')
+  call assert_fails('call getcharstr(1, #{cursor: 0z})', 'E976:')
+  call assert_fails('call getchar(1, #{simplify: 0z})', 'E974:')
+  call assert_fails('call getcharstr(1, #{simplify: 0z})', 'E974:')
+  call assert_fails('call getchar(1, #{number: []})', 'E745:')
+  call assert_fails('call getchar(1, #{number: {}})', 'E728:')
+  call assert_fails('call getcharstr(1, #{number: v:true})', 'E475:')
+  call assert_fails('call getcharstr(1, #{number: v:false})', 'E475:')
+
   call setline(1, 'xxxx')
   call test_setmouse(1, 3)
   let v:mouse_win = 9
@@ -2571,6 +2729,57 @@ func Test_getchar()
   call assert_equal(1, v:mouse_lnum)
   call assert_equal(3, v:mouse_col)
   enew!
+endfunc
+
+func Test_getchar_cursor_position()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, ['foobar', 'foobar', 'foobar'])
+    call cursor(3, 6)
+    nnoremap <F1> <Cmd>echo 1234<Bar>call getchar()<CR>
+    nnoremap <F2> <Cmd>call getchar()<CR>
+    nnoremap <F3> <Cmd>call getchar(-1, {})<CR>
+    nnoremap <F4> <Cmd>call getchar(-1, #{cursor: 'msg'})<CR>
+    nnoremap <F5> <Cmd>call getchar(-1, #{cursor: 'keep'})<CR>
+    nnoremap <F6> <Cmd>call getchar(-1, #{cursor: 'hide'})<CR>
+  END
+  call writefile(lines, 'XgetcharCursorPos', 'D')
+  let buf = RunVimInTerminal('-S XgetcharCursorPos', {'rows': 6})
+  call WaitForAssert({-> assert_equal([3, 6], term_getcursor(buf)[0:1])})
+
+  call term_sendkeys(buf, "\<F1>")
+  call WaitForAssert({-> assert_equal([6, 5], term_getcursor(buf)[0:1])})
+  call assert_true(term_getcursor(buf)[2].visible)
+  call term_sendkeys(buf, 'a')
+  call WaitForAssert({-> assert_equal([3, 6], term_getcursor(buf)[0:1])})
+  call assert_true(term_getcursor(buf)[2].visible)
+
+  for key in ["\<F2>", "\<F3>", "\<F4>"]
+    call term_sendkeys(buf, key)
+    call WaitForAssert({-> assert_equal([6, 1], term_getcursor(buf)[0:1])})
+    call assert_true(term_getcursor(buf)[2].visible)
+    call term_sendkeys(buf, 'a')
+    call WaitForAssert({-> assert_equal([3, 6], term_getcursor(buf)[0:1])})
+    call assert_true(term_getcursor(buf)[2].visible)
+  endfor
+
+  call term_sendkeys(buf, "\<F5>")
+  call TermWait(buf, 50)
+  call assert_equal([3, 6], term_getcursor(buf)[0:1])
+  call assert_true(term_getcursor(buf)[2].visible)
+  call term_sendkeys(buf, 'a')
+  call TermWait(buf, 50)
+  call assert_equal([3, 6], term_getcursor(buf)[0:1])
+  call assert_true(term_getcursor(buf)[2].visible)
+
+  call term_sendkeys(buf, "\<F6>")
+  call WaitForAssert({-> assert_false(term_getcursor(buf)[2].visible)})
+  call term_sendkeys(buf, 'a')
+  call WaitForAssert({-> assert_true(term_getcursor(buf)[2].visible)})
+  call assert_equal([3, 6], term_getcursor(buf)[0:1])
+
+  call StopVimInTerminal(buf)
 endfunc
 
 func Test_libcall_libcallnr()
@@ -2756,6 +2965,7 @@ func Test_platform_name()
   " Is Unix?
   call assert_equal(has('bsd'), has('bsd') && has('unix'))
   call assert_equal(has('hpux'), has('hpux') && has('unix'))
+  call assert_equal(has('hurd'), has('hurd') && has('unix'))
   call assert_equal(has('linux'), has('linux') && has('unix'))
   call assert_equal(has('mac'), has('mac') && has('unix'))
   call assert_equal(has('qnx'), has('qnx') && has('unix'))
@@ -2773,6 +2983,7 @@ func Test_platform_name()
     call assert_equal(uname =~? 'QNX', has('qnx'))
     call assert_equal(uname =~? 'SunOS', has('sun'))
     call assert_equal(uname =~? 'CYGWIN\|MSYS', has('win32unix'))
+    call assert_equal(uname =~? 'GNU', has('hurd'))
   endif
 endfunc
 
@@ -2899,7 +3110,8 @@ func Test_readdirex_sort()
 
   " 6) Collation de_DE
   " Switch locale, this may not work on the CI system, if the locale isn't
-  " available
+  " available. Doesn't work on OpenBSD, which has minimal locale support.
+  CheckNotOpenBSD
   try
     lang collate de_DE
     let files = readdirex('Xsortdir2', 1, #{sort: 'collate'})->map({-> v:val.name})
@@ -2986,6 +3198,8 @@ endfunc
 func Test_call()
   call assert_equal(3, call('len', [123]))
   call assert_equal(3, 'len'->call([123]))
+  call assert_equal(4, call({ x -> len(x) }, ['xxxx']))
+  call assert_equal(2, call(function('len'), ['xx']))
   call assert_fails("call call('len', 123)", 'E1211:')
   call assert_equal(0, call('', []))
   call assert_equal(0, call('len', test_null_list()))
@@ -3412,7 +3626,7 @@ func Test_range()
     call assert_fails('call term_start(range(3, 4))', 'E474:')
     let g:terminal_ansi_colors = range(16)
     if has('win32')
-      let cmd = "cmd /c dir"
+      let cmd = "cmd /D /c dir"
     else
       let cmd = "ls"
     endif
@@ -3489,6 +3703,10 @@ func Test_keytrans()
   call assert_equal('<M-x>', "\<*M-x>"->keytrans())
   call assert_equal('<C-I>', "\<*C-I>"->keytrans())
   call assert_equal('<S-3>', "\<*S-3>"->keytrans())
+  call assert_equal('<Bar>', '|'->keytrans())
+  call assert_equal('<M-Bar>', "\<*M-|>"->keytrans())
+  call assert_equal('<Bslash>', '\'->keytrans())
+  call assert_equal('<M-Bslash>', "\<*M-\>"->keytrans())
   call assert_equal('π', 'π'->keytrans())
   call assert_equal('<M-π>', "\<M-π>"->keytrans())
   call assert_equal('ě', 'ě'->keytrans())
@@ -3697,6 +3915,73 @@ func Test_getmousepos()
         \ column: 8,
         \ coladd: 21,
         \ }, getmousepos())
+
+  30vnew
+  setlocal smoothscroll number
+  call setline(1, join(range(100)))
+  exe "normal! \<C-E>"
+  call test_setmouse(1, 5)
+  call assert_equal(#{
+        \ screenrow: 1,
+        \ screencol: 5,
+        \ winid: win_getid(),
+        \ winrow: 1,
+        \ wincol: 5,
+        \ line: 1,
+        \ column: 27,
+        \ coladd: 0,
+        \ }, getmousepos())
+  call test_setmouse(2, 5)
+  call assert_equal(#{
+        \ screenrow: 2,
+        \ screencol: 5,
+        \ winid: win_getid(),
+        \ winrow: 2,
+        \ wincol: 5,
+        \ line: 1,
+        \ column: 53,
+        \ coladd: 0,
+        \ }, getmousepos())
+
+  exe "normal! \<C-E>"
+  call test_setmouse(1, 5)
+  call assert_equal(#{
+        \ screenrow: 1,
+        \ screencol: 5,
+        \ winid: win_getid(),
+        \ winrow: 1,
+        \ wincol: 5,
+        \ line: 1,
+        \ column: 53,
+        \ coladd: 0,
+        \ }, getmousepos())
+  call test_setmouse(2, 5)
+  call assert_equal(#{
+        \ screenrow: 2,
+        \ screencol: 5,
+        \ winid: win_getid(),
+        \ winrow: 2,
+        \ wincol: 5,
+        \ line: 1,
+        \ column: 79,
+        \ coladd: 0,
+        \ }, getmousepos())
+
+  vert resize 4
+  call test_setmouse(2, 2)
+  " This used to crash Vim
+  call assert_equal(#{
+        \ screenrow: 2,
+        \ screencol: 2,
+        \ winid: win_getid(),
+        \ winrow: 2,
+        \ wincol: 2,
+        \ line: 1,
+        \ column: 53,
+        \ coladd: 0,
+        \ }, getmousepos())
+
+  bwipe!
   bwipe!
 endfunc
 
@@ -3728,6 +4013,56 @@ func Test_glob()
   call assert_fails("call glob('*', 0, {})", 'E728:')
 endfunc
 
+func Test_glob2()
+  call mkdir('[XglobDir]', 'R')
+  call mkdir('abc[glob]def', 'R')
+
+  call writefile(['glob'], '[XglobDir]/Xglob')
+  call writefile(['glob'], 'abc[glob]def/Xglob')
+  if has("unix")
+    call assert_equal([], (glob('[XglobDir]/*', 0, 1)))
+    call assert_equal([], (glob('abc[glob]def/*', 0, 1)))
+    call assert_equal(['[XglobDir]/Xglob'], (glob('\[XglobDir]/*', 0, 1)))
+    call assert_equal(['abc[glob]def/Xglob'], (glob('abc\[glob]def/*', 0, 1)))
+  elseif has("win32")
+    let _sl=&shellslash
+    call assert_equal([], (glob('[XglobDir]\*', 0, 1)))
+    call assert_equal([], (glob('abc[glob]def\*', 0, 1)))
+    call assert_equal([], (glob('\[XglobDir]\*', 0, 1)))
+    call assert_equal([], (glob('abc\[glob]def\*', 0, 1)))
+    set noshellslash
+    call assert_equal(['[XglobDir]\Xglob'], (glob('[[]XglobDir]/*', 0, 1)))
+    call assert_equal(['abc[glob]def\Xglob'], (glob('abc[[]glob]def/*', 0, 1)))
+    set shellslash
+    call assert_equal(['[XglobDir]/Xglob'], (glob('[[]XglobDir]/*', 0, 1)))
+    call assert_equal(['abc[glob]def/Xglob'], (glob('abc[[]glob]def/*', 0, 1)))
+    let &shellslash=_sl
+  endif
+endfunc
+
+func Test_glob_symlinks()
+  call writefile([], 'Xglob1')
+
+  if has("win32")
+    silent !mklink XglobBad DoesNotExist
+    if v:shell_error
+      throw 'Skipped: cannot create symlinks'
+    endif
+    silent !mklink XglobOk Xglob1
+  else
+    silent !ln -s DoesNotExist XglobBad
+    silent !ln -s Xglob1 XglobOk
+  endif
+
+  " The broken symlink is excluded when alllinks is false.
+  call assert_equal(['Xglob1', 'XglobBad', 'XglobOk'], sort(glob('Xglob*', 0, 1, 1)))
+  call assert_equal(['Xglob1', 'XglobOk'], sort(glob('Xglob*', 0, 1, 0)))
+
+  call delete('Xglob1')
+  call delete('XglobBad')
+  call delete('XglobOk')
+endfunc
+
 " Test for browse()
 func Test_browse()
   CheckFeature browse
@@ -3746,11 +4081,6 @@ endfunc
 
 func Test_default_arg_value()
   call assert_equal('msg', HasDefault())
-endfunc
-
-" Test for gettext()
-func Test_gettext()
-  call assert_fails('call gettext(1)', 'E1174:')
 endfunc
 
 func Test_builtin_check()
@@ -3794,6 +4124,43 @@ func Test_funcref_to_string()
   call assert_equal("function('g:Test_funcref_to_string')", string(Fn))
 endfunc
 
+" A funcref cannot start with an underscore (except when used as a protected
+" class or object variable)
+func Test_funcref_with_underscore()
+  " at script level
+  let lines =<< trim END
+    vim9script
+    var _Fn = () => 10
+  END
+  call v9.CheckSourceFailure(lines, 'E704: Funcref variable name must start with a capital: _Fn')
+
+  " inside a function
+  let lines =<< trim END
+    vim9script
+    def Func()
+      var _Fn = () => 10
+    enddef
+    defcompile
+  END
+  call v9.CheckSourceFailure(lines, 'E704: Funcref variable name must start with a capital: _Fn', 1)
+
+  " as a function argument
+  let lines =<< trim END
+    vim9script
+    def Func(_Fn: func)
+    enddef
+    defcompile
+  END
+  call v9.CheckSourceFailure(lines, 'E704: Funcref variable name must start with a capital: _Fn', 2)
+
+  " as a lambda argument
+  let lines =<< trim END
+    vim9script
+    var Fn = (_Farg: func) => 10
+  END
+  call v9.CheckSourceFailure(lines, 'E704: Funcref variable name must start with a capital: _Farg', 2)
+endfunc
+
 " Test for isabsolutepath()
 func Test_isabsolutepath()
   call assert_false(isabsolutepath(''))
@@ -3805,7 +4172,8 @@ func Test_isabsolutepath()
     call assert_true(isabsolutepath('A:\Foo'))
     call assert_true(isabsolutepath('A:/Foo'))
     call assert_false(isabsolutepath('A:Foo'))
-    call assert_false(isabsolutepath('\Windows'))
+    call assert_true(isabsolutepath('\Windows'))
+    call assert_true(isabsolutepath('/Windows'))
     call assert_true(isabsolutepath('\\Server2\Share\Test\Foo.txt'))
   else
     call assert_true(isabsolutepath('/'))
@@ -3951,6 +4319,445 @@ func Test_glob_extended_mswin()
   let expected = ['Xtestglob/foo/bar/src/foo.cpp', 'Xtestglob/foo/bar/src/foo.h', 'Xtestglob/foo/bar/src/foo.sh']
   call assert_equal(expected, sort(glob('Xtestglob/**/foo.*', 0, 1)))
   call delete('Xtestglob', 'rf')
+endfunc
+
+" Tests for the slice() function.
+func Test_slice()
+  let lines =<< trim END
+    call assert_equal([1, 2, 3, 4, 5], slice(range(6), 1))
+    call assert_equal([2, 3, 4, 5], slice(range(6), 2))
+    call assert_equal([2, 3], slice(range(6), 2, 4))
+    call assert_equal([0, 1, 2, 3], slice(range(6), 0, 4))
+    call assert_equal([1, 2, 3], slice(range(6), 1, 4))
+    call assert_equal([1, 2, 3, 4], slice(range(6), 1, -1))
+    call assert_equal([1, 2], slice(range(6), 1, -3))
+    call assert_equal([1], slice(range(6), 1, -4))
+    call assert_equal([], slice(range(6), 1, -5))
+    call assert_equal([], slice(range(6), 1, -6))
+
+    call assert_equal(0z1122334455, slice(0z001122334455, 1))
+    call assert_equal(0z22334455, slice(0z001122334455, 2))
+    call assert_equal(0z2233, slice(0z001122334455, 2, 4))
+    call assert_equal(0z00112233, slice(0z001122334455, 0, 4))
+    call assert_equal(0z112233, slice(0z001122334455, 1, 4))
+    call assert_equal(0z11223344, slice(0z001122334455, 1, -1))
+    call assert_equal(0z1122, slice(0z001122334455, 1, -3))
+    call assert_equal(0z11, slice(0z001122334455, 1, -4))
+    call assert_equal(0z, slice(0z001122334455, 1, -5))
+    call assert_equal(0z, slice(0z001122334455, 1, -6))
+
+    call assert_equal('12345', slice('012345', 1))
+    call assert_equal('2345', slice('012345', 2))
+    call assert_equal('23', slice('012345', 2, 4))
+    call assert_equal('0123', slice('012345', 0, 4))
+    call assert_equal('123', slice('012345', 1, 4))
+    call assert_equal('1234', slice('012345', 1, -1))
+    call assert_equal('12', slice('012345', 1, -3))
+    call assert_equal('1', slice('012345', 1, -4))
+    call assert_equal('', slice('012345', 1, -5))
+    call assert_equal('', slice('012345', 1, -6))
+
+    #" Composing chars are treated as a part of the preceding base char.
+    call assert_equal('β̳́γ̳̂δ̳̃ε̳̄ζ̳̅', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(1))
+    call assert_equal('γ̳̂δ̳̃ε̳̄ζ̳̅', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(2))
+    call assert_equal('γ̳̂δ̳̃', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(2, 4))
+    call assert_equal('ὰ̳β̳́γ̳̂δ̳̃', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(0, 4))
+    call assert_equal('β̳́γ̳̂δ̳̃', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(1, 4))
+    call assert_equal('β̳́γ̳̂δ̳̃ε̳̄', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(1, -1))
+    call assert_equal('β̳́γ̳̂', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(1, -3))
+    call assert_equal('β̳́', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(1, -4))
+    call assert_equal('', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(1, -5))
+    call assert_equal('', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(1, -6))
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+
+  call assert_equal(0, slice(v:true, 1))
+endfunc
+
+
+" Test for getbgcolor()
+" The actual value depends on terminal capability and highlight settings, so
+" only verify the documented shape: either [] or [r, g, b] with each
+" component an integer in 0..255.
+func Test_getbgcolor()
+  let bg = getbgcolor()
+  call assert_equal(v:t_list, type(bg))
+  if !empty(bg)
+    call assert_equal(3, len(bg))
+    for c in bg
+      call assert_equal(v:t_number, type(c))
+      call assert_true(c >= 0 && c <= 255, $'component out of range: {c}')
+    endfor
+  endif
+endfunc
+
+" Test for getcellpixels() for unix system
+" Pixel size of a cell is terminal-dependent.  When the host terminal of the
+" RunVimInTerminal vterm exposes neither ws_xpixel/ws_ypixel via TIOCGWINSZ
+" nor a CSI 14 t reply, getcellpixels() returns an empty list -- accept
+" both shapes here, just verify the syntax is a (possibly empty) list.
+func Test_getcellpixels_for_unix()
+  CheckNotMSWindows
+  CheckRunVimInTerminal
+
+  let buf = RunVimInTerminal('', #{rows: 6})
+
+  " write getcellpixels() result to current buffer.
+  call term_sendkeys(buf, ":redi @\"\<CR>")
+  call term_sendkeys(buf, ":echo getcellpixels()\<CR>")
+  call term_sendkeys(buf, ":redi END\<CR>")
+  call term_sendkeys(buf, "P")
+
+  call WaitForAssert({-> assert_match('\[\(\d\+,\s*\d\+\)\?\]', term_getline(buf, 3))}, 1000)
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test for getcellpixels() for windows system
+" Windows terminal vim is not support. check return `[]`.
+func Test_getcellpixels_for_windows()
+  CheckMSWindows
+  CheckRunVimInTerminal
+
+  let buf = RunVimInTerminal('', #{rows: 6})
+
+  " write getcellpixels() result to current buffer.
+  call term_sendkeys(buf, ":redi @\"\<CR>")
+  call term_sendkeys(buf, ":echo getcellpixels()\<CR>")
+  call term_sendkeys(buf, ":redi END\<CR>")
+  call term_sendkeys(buf, "P")
+
+  call WaitForAssert({-> assert_match("\[\]", term_getline(buf, 3))}, 1000)
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test for getcellpixels() on gVim
+func Test_getcellpixels_gui()
+  if has("gui_running")
+    let cellpixels = getcellpixels()
+    call assert_equal(2, len(cellpixels))
+  endif
+endfunc
+
+func Str2Blob(s)
+  return list2blob(str2list(a:s))
+endfunc
+
+func Blob2Str(b)
+  return list2str(blob2list(a:b))
+endfunc
+
+" Test for the base64_encode() and base64_decode() functions
+func Test_base64_encoding()
+  let lines =<< trim END
+    #" Test for encoding/decoding the RFC-4648 alphabets
+    VAR s = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+    for i in range(64)
+      call assert_equal($'{s[i]}A==', base64_encode(list2blob([i << 2])))
+      call assert_equal(list2blob([i << 2]), base64_decode($'{s[i]}A=='))
+    endfor
+
+    #" Test for encoding with padding
+    call assert_equal('TQ==', base64_encode(g:Str2Blob("M")))
+    call assert_equal('TWE=', base64_encode(g:Str2Blob("Ma")))
+    call assert_equal('TWFu', g:Str2Blob("Man")->base64_encode())
+    call assert_equal('', base64_encode(0z))
+    call assert_equal('', base64_encode(g:Str2Blob("")))
+
+    #" Test for decoding with padding
+    call assert_equal('light work.', g:Blob2Str(base64_decode("bGlnaHQgd29yay4=")))
+    call assert_equal('light work', g:Blob2Str(base64_decode("bGlnaHQgd29yaw==")))
+    call assert_equal('light wor', g:Blob2Str("bGlnaHQgd29y"->base64_decode()))
+    call assert_equal(0z00, base64_decode("===="))
+    call assert_equal(0z, base64_decode(""))
+
+    #" Test for invalid padding
+    call assert_equal('Hello', g:Blob2Str(base64_decode("SGVsbG8=")))
+    call assert_fails('call base64_decode("SGVsbG9=")', 'E475:')
+    call assert_fails('call base64_decode("SGVsbG9")', 'E475:')
+    call assert_equal('Hell', g:Blob2Str(base64_decode("SGVsbA==")))
+    call assert_fails('call base64_decode("SGVsbA=")', 'E475:')
+    call assert_fails('call base64_decode("SGVsbA")', 'E475:')
+    call assert_fails('call base64_decode("SGVsbA====")', 'E475:')
+
+    #" Error case
+    call assert_fails('call base64_decode("b")', 'E475: Invalid argument: b')
+    call assert_fails('call base64_decode("<<==")', 'E475: Invalid argument: <<==')
+
+    call assert_fails('call base64_encode([])', 'E1238: Blob required for argument 1')
+    call assert_fails('call base64_decode([])', 'E1174: String required for argument 1')
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+endfunc
+
+" Tests for the str2blob() function
+func Test_str2blob()
+  let lines =<< trim END
+    call assert_equal(0z, str2blob([""]))
+    call assert_equal(0z, str2blob([]))
+    call assert_equal(0z, str2blob(test_null_list()))
+    call assert_equal(0z, str2blob([test_null_string()]))
+    call assert_equal(0z0A, str2blob([test_null_string(), test_null_string()]))
+    call assert_fails("call str2blob('')", 'E1211: List required for argument 1')
+    call assert_equal(0z61, str2blob(["a"]))
+    call assert_equal(0z6162, str2blob(["ab"]))
+    call assert_equal(0z610062, str2blob(["a\nb"]))
+    call assert_equal(0z61620A6364, str2blob(["ab", "cd"]))
+    call assert_equal(0z0A, str2blob(["", ""]))
+    call assert_equal(0z610A62, str2blob(["a", "b"]))
+    call assert_equal(0z610A0A62, str2blob(["a", "", "b"]))
+    call assert_equal(0z610A0A62, str2blob(["a", test_null_string(), "b"]))
+
+    call assert_equal(0zC2ABC2BB, str2blob(["«»"]))
+    call assert_equal(0zC59DC59F, str2blob(["ŝş"]))
+    call assert_equal(0zE0AE85E0.AE87, str2blob(["அஇ"]))
+    call assert_equal(0zF09F81B0.F09F81B3, str2blob(["🁰🁳"]))
+    call assert_equal(0z616263, str2blob(['abc'], {}))
+    call assert_equal(0zABBB, str2blob(['«»'], {'encoding': 'latin1'}))
+    call assert_equal(0zABBB0AABBB, str2blob(['«»', '«»'], {'encoding': 'latin1'}))
+    call assert_equal(0zC2ABC2BB, str2blob(['«»'], {'encoding': 'utf8'}))
+
+    if has('iconv')
+      call assert_equal(0z480065006C006C006F00, str2blob(['Hello'], {'encoding': 'utf-16le'}))
+      call assert_equal(0z480065006C006C006F00, str2blob(['Hello'], {'encoding': 'utf16le'}))
+      call assert_equal(0z00480065006C006C006F, str2blob(['Hello'], {'encoding': 'utf-16be'}))
+      call assert_equal(0z48006900.0A004200.79006500, str2blob(['Hi', 'Bye'], {'encoding': 'utf-16le'}))
+      call assert_equal(0z61000A006200, str2blob(["a\nb"], {'encoding': 'utf-16le'}))
+      call assert_equal(0z, str2blob([''], {'encoding': 'utf-16le'}))
+      call assert_equal(0z0A00, str2blob(['', ''], {'encoding': 'utf-16le'}))
+      for enc in ['utf-16le', 'utf-16be', 'ucs-2le', 'utf-32le', 'utf-32be']
+        call assert_equal(['Hello', 'World'],
+              \ blob2str(str2blob(['Hello', 'World'], {'encoding': enc}), {'encoding': enc}), enc)
+      endfor
+    endif
+
+    call assert_equal(0z62, str2blob(["b"], test_null_dict()))
+    call assert_equal(0z63, str2blob(["c"], {'encoding': test_null_string()}))
+
+    call assert_fails("call str2blob(['abc'], [])", 'E1206: Dictionary required for argument 2')
+    call assert_fails("call str2blob(['abc'], {'encoding': []})", 'E730: Using a List as a String')
+    call assert_fails("call str2blob(['abc'], {'encoding': 'ab12xy'})", 'E1516: Unable to convert to ''ab12xy'' encoding')
+    call assert_fails("call str2blob(['ŝş'], {'encoding': 'latin1'})", 'E1516: Unable to convert to ''latin1'' encoding')
+    call assert_fails("call str2blob(['அஇ'], {'encoding': 'latin1'})", 'E1516: Unable to convert to ''latin1'' encoding')
+    call assert_fails("call str2blob(['🁰🁳'], {'encoding': 'latin1'})", 'E1516: Unable to convert to ''latin1'' encoding')
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+endfunc
+
+" Tests for the blob2str() function
+func Test_blob2str()
+  let lines =<< trim END
+    call assert_equal([], blob2str(0z))
+    call assert_equal([], blob2str(test_null_blob()))
+    call assert_fails("call blob2str([])", 'E1238: Blob required for argument 1')
+    call assert_equal(["ab"], blob2str(0z6162))
+    call assert_equal(["a\nb"], blob2str(0z610062))
+    call assert_equal(["ab", "cd"], blob2str(0z61620A6364))
+    call assert_equal(["ab", "cd", ""], blob2str(0z61620A63640A))
+
+    call assert_equal(["«»"], blob2str(0zC2ABC2BB))
+    call assert_equal(["ŝş"], blob2str(0zC59DC59F))
+    call assert_equal(["அஇ"], blob2str(0zE0AE85E0.AE87))
+    call assert_equal(["🁰🁳"], blob2str(0zF09F81B0.F09F81B3))
+    call assert_equal(['«»'], blob2str(0zABBB, {'encoding': 'latin1'}))
+    call assert_equal(['«»'], blob2str(0zC2ABC2BB, {'encoding': 'utf8'}))
+    call assert_equal(['«»'], blob2str(0zC2ABC2BB, {'encoding': 'utf-8'}))
+
+    call assert_equal(['a'], blob2str(0z61, test_null_dict()))
+    call assert_equal(['a'], blob2str(0z61, {'encoding': test_null_string()}))
+
+    call assert_equal(["\x80"], blob2str(0z80, {'encoding': 'none'}))
+    call assert_equal(['a', "\x80"], blob2str(0z610A80, {'encoding': 'none'}))
+
+    #" Invalid encoding
+    call assert_fails("call blob2str(0z80)", "E1515: Unable to convert from 'utf-8' encoding")
+    call assert_fails("call blob2str(0z610A80)", "E1515: Unable to convert from 'utf-8' encoding")
+    call assert_fails("call blob2str(0zC0)", "E1515: Unable to convert from 'utf-8' encoding")
+    call assert_fails("call blob2str(0zE0)", "E1515: Unable to convert from 'utf-8' encoding")
+    call assert_fails("call blob2str(0zF0)", "E1515: Unable to convert from 'utf-8' encoding")
+
+    call assert_fails("call blob2str(0z6180)", "E1515: Unable to convert from 'utf-8' encoding")
+    call assert_fails("call blob2str(0z61C0)", "E1515: Unable to convert from 'utf-8' encoding")
+    call assert_fails("call blob2str(0z61E0)", "E1515: Unable to convert from 'utf-8' encoding")
+    call assert_fails("call blob2str(0z61F0)", "E1515: Unable to convert from 'utf-8' encoding")
+
+    call assert_fails("call blob2str(0zC0C0)", "E1515: Unable to convert from 'utf-8' encoding")
+    call assert_fails("call blob2str(0z61C0C0)", "E1515: Unable to convert from 'utf-8' encoding")
+
+    call assert_fails("call blob2str(0zE0)", "E1515: Unable to convert from 'utf-8' encoding")
+    call assert_fails("call blob2str(0zE080)", "E1515: Unable to convert from 'utf-8' encoding")
+    call assert_fails("call blob2str(0zE080C0)", "E1515: Unable to convert from 'utf-8' encoding")
+    call assert_fails("call blob2str(0z61E080C0)", "E1515: Unable to convert from 'utf-8' encoding")
+
+    call assert_fails("call blob2str(0zF08080C0)", "E1515: Unable to convert from 'utf-8' encoding")
+    call assert_fails("call blob2str(0z61F08080C0)", "E1515: Unable to convert from 'utf-8' encoding")
+    call assert_fails("call blob2str(0zF0)", "E1515: Unable to convert from 'utf-8' encoding")
+    call assert_fails("call blob2str(0zF080)", "E1515: Unable to convert from 'utf-8' encoding")
+    call assert_fails("call blob2str(0zF08080)", "E1515: Unable to convert from 'utf-8' encoding")
+
+    call assert_fails("call blob2str(0z6162, [])", 'E1206: Dictionary required for argument 2')
+    call assert_fails("call blob2str(0z6162, {'encoding': []})", 'E730: Using a List as a String')
+    call assert_fails("call blob2str(0z6162, {'encoding': 'ab12xy'})", 'E1515: Unable to convert from ''ab12xy'' encoding')
+
+    if has("iconv")
+      #" UTF-16LE encoding
+      call assert_equal(['Hello'], blob2str(0z480065006C006C006F00, {'encoding': 'utf-16le'}))
+      call assert_equal(['Hello'], blob2str(0z480065006C006C006F00, {'encoding': 'utf16le'}))
+      #" UCS-2LE encoding
+      call assert_equal(['Hello'], blob2str(0z480065006C006C006F00, {'encoding': 'ucs-2le'}))
+      call assert_equal(['Hello'], blob2str(0z480065006C006C006F00, {'encoding': 'ucs2le'}))
+    endif
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+endfunc
+
+" Test for uri_encode() and uri_decode() functions
+func Test_uriencoding()
+  let lines =<< trim END
+    #" uri encoding
+    call assert_equal('a1%20b2', uri_encode('a1 b2'))
+    call assert_equal('-%3F%26%2F%23%2B%3D%3A%5B%5D%40-', uri_encode('-?&/#+=:[]@-'))
+    call assert_equal('%22%3C%3E%5E%60%7B%7C%7D', uri_encode('"<>^`{|}'))
+    call assert_equal('%CE%B1%CE%B2%CE%B3%CE%B4%CE%B5', 'αβγδε'->uri_encode())
+    call assert_equal('r%C3%A9sum%C3%A9', uri_encode('résumé'))
+    call assert_equal('%E4%BD%A0%E5%A5%BD', uri_encode('你好'))
+    call assert_equal('%F0%9F%98%8A%F0%9F%98%8A', uri_encode('😊😊'))
+    call assert_equal('-_.~', uri_encode('-_.~'))
+    call assert_equal('', uri_encode(''))
+    call assert_equal('%2520%2523', uri_encode('%20%23'))
+    call assert_equal('', uri_encode(test_null_string()))
+    call assert_equal('a', uri_encode('a'))
+    call assert_equal('%20', uri_encode(' '))
+    call assert_equal('%CE%B1', uri_encode('α'))
+    call assert_equal('c%3A%5Cmy%5Cdir%5Ca%20b%20c', uri_encode('c:\my\dir\a b c'))
+    call assert_fails('call uri_encode([])', 'E1174: String required for argument 1')
+
+    #" uri decoding
+    call assert_equal('a1 b2', uri_decode('a1%20b2'))
+    call assert_equal('-?&/#+=:[]@-', uri_decode('-%3F%26%2F%23%2B%3D%3A%5B%5D%40-'))
+    call assert_equal('"<>^`{|}', uri_decode('%22%3C%3E%5E%60%7B%7C%7D'))
+    call assert_equal('αβγδε', '%CE%B1%CE%B2%CE%B3%CE%B4%CE%B5'->uri_decode())
+    call assert_equal('résumé', uri_decode('r%C3%A9sum%C3%A9'))
+    call assert_equal('你好', uri_decode('%E4%BD%A0%E5%A5%BD'))
+    call assert_equal('😊😊', uri_decode('%F0%9F%98%8A%F0%9F%98%8A'))
+    call assert_equal('a+b', uri_decode('a+b'))
+    call assert_equal('-_.~', uri_decode('-_.~'))
+    call assert_equal('', uri_decode(''))
+    call assert_equal('%20%23', uri_decode('%2520%2523'))
+    call assert_equal('', uri_decode(test_null_string()))
+    call assert_equal('a', uri_decode('a'))
+    call assert_equal(' ', uri_decode('%20'))
+    call assert_equal('α', uri_decode('%CE%B1'))
+    call assert_equal('c:\my\dir\a b c', uri_decode('c%3A%5Cmy%5Cdir%5Ca%20b%20c'))
+    call assert_equal('%', uri_decode('%'))
+    call assert_equal('%3', uri_decode('%3'))
+    call assert_equal(';', uri_decode('%3b'))
+    call assert_equal('a%xyb', uri_decode('a%xyb'))
+    call assert_fails('call uri_decode([])', 'E1174: String required for argument 1')
+
+    #" control characters
+    VAR cstr = "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10"
+    LET cstr ..= "\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F"
+    VAR expected = ''
+    for i in range(1, 31)
+      LET expected ..= printf("%%%02X", i)
+    endfor
+    call assert_equal(expected, uri_encode(cstr))
+    call assert_equal(cstr, uri_decode(expected))
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+endfunc
+
+" Note: legacy func, not vim9 def, to avoid the test file being vim9script
+func Test_vim9_def_fc_sandbox()
+  sandbox def! g:Bad()
+    system('echo unsafe')
+  enddef
+
+  call assert_fails('call g:Bad()', 'E48:')
+  delfunction g:Bad
+endfunc
+
+func Test_vim9_def_call_dfunc_fc_sandbox()
+  " Inner has FC_SANDBOX, outer does not.
+  " Calling outer goes through call_dfunc into inner, exercising
+  " the sandbox handling in call_dfunc and func_return.
+  sandbox def! g:Inner()
+    system('echo unsafe')
+  enddef
+
+  def! g:Outer()
+    g:Inner()
+  enddef
+
+  call assert_fails('call g:Outer()', 'E48:')
+  delfunction g:Inner
+  delfunction g:Outer
+endfunc
+
+" Deferred body inside a sandboxed def function must still run sandboxed.
+func Test_vim9_def_defer_fc_sandbox()
+  sandbox def! g:BadDefer()
+    defer system('echo unsafe')
+  enddef
+
+  call assert_fails('call g:BadDefer()', 'E48:')
+  delfunction g:BadDefer
+endfunc
+
+" Test wincol() counts in screen cells from left side of the window
+func Test_wincol()
+  enew!
+  set ff=unix mouse=a
+
+  let win_width = 30
+  call NewWindow(20, win_width)
+
+  call setline(1, "the quick brown fox jump")
+
+  norm! 0
+  call assert_equal([1, 1], [winline(), wincol()])
+
+  call test_setmouse(1, 10)
+  call feedkeys("\<LeftMouse>\<Ignore>", "xt")
+  call assert_equal([1, 10], [winline(), wincol()])
+
+  if has('rightleft')
+    norm! 0
+    call assert_equal([1, 1], [winline(), wincol()])
+
+    set rightleft
+    " cursor is still at column 1, but in screen cells it is at the distance of window width:
+    call assert_equal([1, win_width], [winline(), wincol()])
+
+    " test_setmouse() works in screen coordinates, which is not affected by 'rightleft':
+    call test_setmouse(1, 10)
+    call feedkeys("\<LeftMouse>\<Ignore>", "xt")
+    call assert_equal([1, 10], [winline(), wincol()])
+    set rightleft&
+  endif
+
+  " With 'rightleft' the cursor is on the leftmost cell of a double-wide
+  " character, so wincol() is one less than where the character starts.
+  call setline(1, "あいうえお")
+
+  norm! 0
+  call assert_equal([1, 1], [winline(), wincol()])
+  norm! l
+  call assert_equal([1, 3], [winline(), wincol()])
+
+  if has('rightleft')
+    set rightleft
+    norm! 0
+    call assert_equal([1, win_width - 1], [winline(), wincol()])
+    norm! l
+    call assert_equal([1, win_width - 3], [winline(), wincol()])
+    set rightleft&
+  endif
+
+  set ff& mouse&
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -1,8 +1,13 @@
 " Vim syntax file
 " Language:	C++
-" Current Maintainer:	vim-jp (https://github.com/vim-jp/vim-cpp)
-" Previous Maintainer:	Ken Shan <ccshan@post.harvard.edu>
-" Last Change:	2023 Dec 08
+" Maintainer:		This runtime file is looking for a new maintainer.
+" Previous Maintainer:	vim-jp (https://github.com/vim-jp/vim-cpp)
+"			Ken Shan <ccshan@post.harvard.edu>
+" Last Change:	2024 May 04
+"   2024 May 04 by Vim Project fix digit separator in octals and floats
+"   2026 Jan 06 by Vim Project orphaning announcement
+"   2026 Jan 08 by Vim Project highlight capital letter prefixes for numbers
+"   2026 May 29 by Vim Project add C++23 stdfloat types (#16498)
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -55,12 +60,12 @@ if !exists("cpp_no_cpp14")
   syn match cppNumbers		display transparent "\<\d\|\.\d" contains=cppNumber,cppFloat
   syn match cppNumber		display contained "\<0\([Uu]\=\([Ll]\|LL\|ll\)\|\([Ll]\|LL\|ll\)\=[Uu]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
   syn match cppNumber		display contained "\<[1-9]\('\=\d\+\)*\([Uu]\=\([Ll]\|LL\|ll\)\|\([Ll]\|LL\|ll\)\=[Uu]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
-  syn match cppNumber		display contained "\<0\o\+\([Uu]\=\([Ll]\|LL\|ll\)\|\([Ll]\|LL\|ll\)\=[Uu]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
-  syn match cppNumber		display contained "\<0b[01]\('\=[01]\+\)*\([Uu]\=\([Ll]\|LL\|ll\)\|\([Ll]\|LL\|ll\)\=[Uu]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
-  syn match cppNumber		display contained "\<0x\x\('\=\x\+\)*\([Uu]\=\([Ll]\|LL\|ll\)\|\([Ll]\|LL\|ll\)\=[Uu]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
-  syn match cppFloat		display contained "\<\d\+\.\d*\(e[-+]\=\d\+\)\=\([FfLl]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
-  syn match cppFloat		display contained "\<\.\d\+\(e[-+]\=\d\+\)\=\([FfLl]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
-  syn match cppFloat		display contained "\<\d\+e[-+]\=\d\+\([FfLl]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
+  syn match cppNumber		display contained "\<0\('\=\o\+\)\+\([Uu]\=\([Ll]\|LL\|ll\)\|\([Ll]\|LL\|ll\)\=[Uu]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
+  syn match cppNumber		display contained "\<0[Bb][01]\('\=[01]\+\)*\([Uu]\=\([Ll]\|LL\|ll\)\|\([Ll]\|LL\|ll\)\=[Uu]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
+  syn match cppNumber		display contained "\<0[Xx]\x\('\=\x\+\)*\([Uu]\=\([Ll]\|LL\|ll\)\|\([Ll]\|LL\|ll\)\=[Uu]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
+  syn match cppFloat		display contained "\<\d\('\=\d\+\)*\.\(\d\('\=\d\+\)*\)\=\([Ee][-+]\=\d\+\)\=\([FfLl]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
+  syn match cppFloat		display contained "\.\d\('\=\d\+\)*\([Ee][-+]\=\d\+\)\=\([FfLl]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
+  syn match cppFloat		display contained "\<\d\+[Ee][-+]\=\d\+\([FfLl]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
   syn region cppString		start=+\(L\|u\|u8\|U\)\="+ skip=+\\\\\|\\"\|\\$+ excludenl end=+"\(sv\|s\|_\i*\)\=+ end='$' contains=cSpecial,cFormat,@Spell
 endif
 
@@ -68,8 +73,8 @@ endif
 if !exists("cpp_no_cpp17")
   syn match cppCast		"\<reinterpret_pointer_cast\s*<"me=e-1
   syn match cppCast		"\<reinterpret_pointer_cast\s*$"
-  syn match cppFloat		display contained "\<0x\x*\.\x\+p[-+]\=\d\+\([FfLl]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
-  syn match cppFloat		display contained "\<0x\x\+\.\=p[-+]\=\d\+\([FfLl]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
+  syn match cppFloat		display contained "\<0[Xx]\x*\.\x\+p[-+]\=\d\+\([FfLl]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
+  syn match cppFloat		display contained "\<0[Xx]\x\+\.\=p[-+]\=\d\+\([FfLl]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
 
   " TODO: push this up to c.vim if/when supported in C23
   syn match cppCharacter	"u8'[^\\]'"
@@ -91,13 +96,27 @@ if !exists("cpp_no_cpp20")
   syn match cppNumber		display contained "\<0\(y\|d\)\>"
   syn match cppNumber		display contained "\<[1-9]\('\=\d\+\)*\(y\|d\)\>"
   syn match cppNumber		display contained "\<0\o\+\(y\|d\)\>"
-  syn match cppNumber		display contained "\<0b[01]\('\=[01]\+\)*\(y\|d\)\>"
-  syn match cppNumber		display contained "\<0x\x\('\=\x\+\)*\(y\|d\)\>"
+  syn match cppNumber		display contained "\<0[Bb][01]\('\=[01]\+\)*\(y\|d\)\>"
+  syn match cppNumber		display contained "\<0[Xx]\x\('\=\x\+\)*\(y\|d\)\>"
   syn keyword cppStatement	co_await co_return co_yield requires
   syn keyword cppStorageClass	consteval constinit
   syn keyword cppStructure	concept
   syn keyword cppType		char8_t
   syn keyword cppModule		import module export
+endif
+
+" C++ 23 extensions
+if !exists("cpp_no_cpp23")
+  syn keyword cppType		float16_t float32_t float64_t float128_t bfloat16_t
+endif
+
+" C++ 26 extensions
+if !exists("cpp_no_cpp26")
+  " attribute [[ ... ]] with optional value expr, eg [[=foo{1}]]
+  syn region cppAttribute	matchgroup=cppAttributeBracket start="\w\@1<!\[\[" end="\]\]" contains=TOP,@Spell
+  syn match cppReflect		"\^\^"
+  syn match cppSpliceBracket	"\[:\|:\]"
+  syn keyword cppStatement	contract_assert
 endif
 
 " The minimum and maximum operators in GNU C++
@@ -124,6 +143,9 @@ hi def link cppString		String
 hi def link cppNumber		Number
 hi def link cppFloat		Number
 hi def link cppModule		Include
+hi def link cppAttributeBracket	Special
+hi def link cppReflect		Operator
+hi def link cppSpliceBracket	Special
 
 let b:current_syntax = "cpp"
 

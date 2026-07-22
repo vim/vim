@@ -2,7 +2,9 @@ vim9script
 
 # Language:     Vim script
 # Maintainer:   github user lacygoill
-# Last Change:  2023 Jun 29
+# Last Change:  2025 Oct 09
+#
+# Includes changes from The Vim Project:
 
 # NOTE: Whenever you change the code, make sure the tests are still passing:
 #
@@ -18,9 +20,8 @@ def IndentMoreInBracketBlock(): number # {{{2
     if get(g:, 'vim_indent', {})
             ->get('more_in_bracket_block', false)
         return shiftwidth()
-    else
-        return 0
     endif
+    return 0
 enddef
 
 def IndentMoreLineContinuation(): number # {{{2
@@ -30,9 +31,8 @@ def IndentMoreLineContinuation(): number # {{{2
 
     if n->typename() == 'string'
         return n->eval()
-    else
-        return n
     endif
+    return n
 enddef
 # }}}2
 
@@ -140,7 +140,7 @@ const HEREDOC_OPERATOR: string = '\s=<<\s\@=\%(\s\+\%(trim\|eval\)\)\{,2}'
 
 # A better regex would be:
 #
-#     [^-+*/%.:# \t[:alnum:]\"|]\@=.\|->\@!\%(=\s\)\@!\|[+*/%]\%(=\s\)\@!
+#     [^-+*/%.:#[:blank:][:alnum:]\"|]\|->\@!\%(=\s\)\@!\|[+*/%]\%(=\s\)\@!
 #
 # But sometimes, it can be too costly and cause `E363` to be given.
 const PATTERN_DELIMITER: string = '[-+*/%]\%(=\s\)\@!'
@@ -168,6 +168,7 @@ const MODIFIERS: dict<string> = {
     def: ['export', 'static'],
     class: ['export', 'abstract', 'export abstract'],
     interface: ['export'],
+    enum: ['export'],
 }
 #     ...
 #     class: ['export', 'abstract', 'export abstract'],
@@ -187,10 +188,9 @@ const MODIFIERS: dict<string> = {
 patterns =<< trim eval END
     argdo\>!\=
     bufdo\>!\=
-    cdo\>!\=
+    [cl]f\=do\>!\=
     folddoc\%[losed]\>
     foldd\%[oopen]\>
-    ldo\=\>!\=
     tabdo\=\>
     windo\>
     au\%[tocmd]\>!\=.*
@@ -284,15 +284,15 @@ patterns = []
     for kwds: list<string> in BLOCKS
         for kwd: string in kwds[0 : -2]
             if MODIFIERS->has_key(kwd->Unshorten())
-                patterns += [$'\%({MODIFIERS[kwd]}\)\={kwd}']
+                patterns->add($'\%({MODIFIERS[kwd]}\)\={kwd}')
             else
-                patterns += [kwd]
+                patterns->add(kwd)
             endif
         endfor
     endfor
 }
 
-const STARTS_NAMED_BLOCK: string = $'^\s*\%(sil\%[ent]\s\+\)\=\%({patterns->join('\|')}\)\>\%(\s\|$\|!\)\@='
+const STARTS_NAMED_BLOCK: string = $'^\s*\%(sil\%[ent]!\=\s\+\)\=\%({patterns->join('\|')}\)\>\%(\s\|$\|!\)\@='
 
 # STARTS_CURLY_BLOCK {{{3
 
@@ -341,8 +341,10 @@ const PLUS_MINUS_COMMAND: string = '^\s*[+-]\s*$'
 patterns =<< trim eval END
     {'\'}<argd\%[elete]\s\+\*\s*$
     \<[lt]\=cd!\=\s\+-\s*$
-    \<norm\%[al]!\=\s*\S\+$
-    \%(\<sil\%[ent]!\=\s\+\)\=\<[nvxsoilct]\=\%(nore\|un\)map!\=\s
+    \<norm\%[al]!\=\s\+.*$
+    \<reg\%[isters]\%(\s\+\S\+\)\+$
+    \%(\<sil\%[ent]!\=\s\+\)\=\<[nvxsoilct]\=\%(nore\|un\)\=map!\=\s
+    \<set\%(\%[global]\|\%[local]\)\>.*,$
     {PLUS_MINUS_COMMAND}
 END
 
@@ -381,7 +383,7 @@ const LINE_CONTINUATION_AT_EOL: string = '\%('
     # It can be the start of a dictionary or a block.
     # We only want to match the former.
     .. '\|' .. $'^\%({STARTS_CURLY_BLOCK}\)\@!.*\zs{{'
-    .. '\)\s*\%(\s#.*\)\=$'
+    .. '\)\s*\%(\s#[^{].*\)\=$'
 # }}}2
 # SOL {{{2
 # BACKSLASH_AT_SOL {{{3
@@ -399,6 +401,7 @@ const LINE_CONTINUATION_AT_SOL: string = '^\s*\%('
     .. '\|' .. '[#"]\\ '
     .. '\|' .. OPERATOR
     .. '\|' .. '->\s*\h'
+    .. '\|' .. '->\s*(' # lambda call: ->((v) => v ? "ON" : "OFF")()
     .. '\|' .. '\.\h'  # dict member
     .. '\|' .. '|'
     # TODO: `}` at the start of a line is not necessarily a line continuation.
@@ -424,6 +427,9 @@ export def Expr(lnum = v:lnum): number # {{{2
     elseif line_A.lnum->IsRightBelow('HereDoc')
         var ind: number = b:vimindent.startindent
         unlet! b:vimindent
+        if line_A.text =~ ENDS_BLOCK_OR_CLAUSE
+            return ind - shiftwidth()
+        endif
         return ind
     endif
 
@@ -438,9 +444,8 @@ export def Expr(lnum = v:lnum): number # {{{2
     if line_A.text =~ BACKSLASH_AT_SOL
         if line_B.text =~ BACKSLASH_AT_SOL
             return Indent(line_B.lnum)
-        else
-            return Indent(line_B.lnum) + IndentMoreLineContinuation()
         endif
+        return Indent(line_B.lnum) + IndentMoreLineContinuation()
     endif
 
     if line_A->AtStartOf('FuncHeader')
@@ -453,9 +458,8 @@ export def Expr(lnum = v:lnum): number # {{{2
         unlet! b:vimindent
         if line_A.text =~ ENDS_FUNCTION
             return startindent
-        else
-            return startindent + shiftwidth()
         endif
+        return startindent + shiftwidth()
     endif
 
     var past_bracket_block: dict<any>
@@ -536,8 +540,9 @@ export def Expr(lnum = v:lnum): number # {{{2
 
     if line_B.text =~ STARTS_CURLY_BLOCK
         return Indent(line_B.lnum) + shiftwidth() + IndentMoreInBracketBlock()
+    endif
 
-    elseif line_A.text =~ CLOSING_BRACKET_AT_SOL
+    if line_A.text =~ CLOSING_BRACKET_AT_SOL
         var start: number = MatchingOpenBracket(line_A)
         if start <= 0
             return -1
@@ -559,9 +564,8 @@ export def Expr(lnum = v:lnum): number # {{{2
         var block_start: number = SearchPairStart(start, middle, end)
         if block_start > 0
             return Indent(block_start)
-        else
-            return -1
         endif
+        return -1
     endif
 
     var base_ind: number
@@ -585,8 +589,7 @@ export def Expr(lnum = v:lnum): number # {{{2
         endif
     endif
 
-    var ind: number = base_ind + Offset(line_A, line_B)
-    return [ind, 0]->max()
+    return base_ind + Offset(line_A, line_B)
 enddef
 
 def g:GetVimIndent(): number # {{{2
@@ -605,31 +608,34 @@ def Offset( # {{{2
     if line_B->AtStartOf('FuncHeader')
             && IsInInterface()
         return 0
+    endif
 
     # increase indentation inside a block
-    elseif line_B.text =~ STARTS_NAMED_BLOCK
+    if line_B.text =~ STARTS_NAMED_BLOCK
             || line_B->EndsWithCurlyBlock()
         # But don't indent if the line starting the block also closes it.
         if line_B->AlsoClosesBlock()
             return 0
+        endif
         # Indent twice for  a line continuation in the block  header itself, so that
         # we can easily  distinguish the end of  the block header from  the start of
         # the block body.
-        elseif (line_B->EndsWithLineContinuation()
+        if (line_B->EndsWithLineContinuation()
                 && !line_A.isfirst)
                 || (line_A.text =~ LINE_CONTINUATION_AT_SOL
                 && line_A.text !~ PLUS_MINUS_COMMAND)
                 || line_A.text->Is_IN_KeywordForLoop(line_B.text)
             return 2 * shiftwidth()
-        else
-            return shiftwidth()
         endif
+        return shiftwidth()
+    endif
 
     # increase indentation of  a line if it's the continuation  of a command which
     # started on a previous line
-    elseif !line_A.isfirst
+    if !line_A.isfirst
             && (line_B->EndsWithLineContinuation()
             || line_A.text =~ LINE_CONTINUATION_AT_SOL)
+            && !(line_B->EndsWithComma() && line_A.lnum->IsInside('EnumBlock'))
         return shiftwidth()
     endif
 
@@ -646,12 +652,11 @@ def HereDocIndent(line_A: string): number # {{{2
             # will need to be indented relative to the start of the heredoc.  It
             # must know where it starts; it needs the cache.
             return 0
-        else
-            var ind: number = b:vimindent.startindent
-            # invalidate the cache so that it's not used for the next heredoc
-            unlet! b:vimindent
-            return ind
         endif
+        var ind: number = b:vimindent.startindent
+        # invalidate the cache so that it's not used for the next heredoc
+        unlet! b:vimindent
+        return ind
     endif
 
     # In a non-trimmed heredoc, all of leading whitespace is semantic.
@@ -693,7 +698,7 @@ def HereDocIndent(line_A: string): number # {{{2
         b:vimindent.startindent = new_startindent
     endif
 
-    return [0, Indent(v:lnum) + b:vimindent.offset]->max()
+    return Indent(v:lnum) + b:vimindent.offset
 enddef
 
 def CommentIndent(): number # {{{2
@@ -720,9 +725,8 @@ def CommentIndent(): number # {{{2
     endif
     if getline(next) =~ ENDS_BLOCK
         return ind + shiftwidth()
-    else
-        return ind
     endif
+    return ind
 enddef
 
 def BracketBlockIndent(line_A: dict<any>, block: dict<any>): number # {{{2
@@ -974,8 +978,10 @@ def SearchPair( # {{{3
     if end == '[' || end == ']'
         e = e->escape('[]')
     endif
+    # VIM_INDENT_TEST_TRACE_START
     return searchpair('\C' .. s, (middle == '' ? '' : '\C' .. middle), '\C' .. e,
         flags, (): bool => InCommentOrString(), stopline, TIMEOUT)
+    # VIM_INDENT_TEST_TRACE_END dist#vimindent#SearchPair
 enddef
 
 def SearchPairStart( # {{{3
@@ -1047,6 +1053,22 @@ def ContinuesBelowBracketBlock( # {{{3
 enddef
 
 def IsInside(lnum: number, syntax: string): bool # {{{3
+    if syntax == 'EnumBlock'
+        var cur_pos = getpos('.')
+        cursor(lnum, 1)
+        var enum_pos = search('^\C\s*\%(export\s\)\=\s*enum\s\+\S\+', 'bnW')
+        var endenum_pos = search('^\C\s*endenum\>', 'bnW')
+        setpos('.', cur_pos)
+
+        if enum_pos == 0 && endenum_pos == 0
+            return false
+        endif
+        if (enum_pos > 0 && (endenum_pos == 0 || enum_pos > endenum_pos))
+            return true
+        endif
+        return false
+    endif
+
     if !exists('b:vimindent')
             || !b:vimindent->has_key($'is_{syntax}')
         return false
@@ -1245,7 +1267,9 @@ def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{3
 
     var pos: list<number> = getcurpos()
     cursor(line.lnum, 1)
+    # VIM_INDENT_TEST_TRACE_START
     var match_lnum: number = search(pat, 'cnW', line.lnum, TIMEOUT, (): bool => InCommentOrString())
+    # VIM_INDENT_TEST_TRACE_END dist#vimindent#NonCommentedMatch
     setpos('.', pos)
     return match_lnum > 0
 enddef

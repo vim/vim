@@ -1,7 +1,7 @@
 " Menu Translations:	Slovenian / Slovensko
 " Maintainer:		Mojca Miklavec <mojca.miklavec.lists@gmail.com>
 " Originally By:	Mojca Miklavec <mojca.miklavec.lists@gmail.com>
-" Last Change:		2020 Apr 23
+" Last Change:		2024 May 2
 " vim:set foldmethod=marker tabstop=8:
 " Original translations
 
@@ -57,8 +57,8 @@ menutrans Startup\ &Settings				Začetne\ nastavitve
 menutrans &Global\ Settings				&Globalne\ nastavitve
 
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Vključi/izključi\ poudarjanje\ iskanega\ niza<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		Vključi/izključi\ ločevanje\ velikih\ in\ malih\ črk<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!		Vključi/izključi\ kratek\ skok\ na\ pripadajoči\ oklepaj<Tab>:set\ sm!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!		Vključi/izključi\ ločevanje\ velikih\ in\ malih\ črk<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!		Vključi/izključi\ kratek\ skok\ na\ pripadajoči\ oklepaj<Tab>:set\ sm!
 
 menutrans &Context\ lines				Št\.\ vidnih\ vrstic\ pred/za\ kurzorjem
 
@@ -69,7 +69,7 @@ menutrans Insert\ mode					Le\ v\ načinu\ za\ pisanje
 menutrans Block\ and\ Insert				Pri\ obojem
 menutrans Always					Vedno
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!		Vključi/izključi\ način\ za\ pisanje<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!		Vključi/izključi\ združljivost\ z\ Vi-jem<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!		Vključi/izključi\ združljivost\ z\ Vi-jem<Tab>:set\ cp!
 
 menutrans Search\ &Path\.\.\.				Pot\ za\ iskanje\ \.\.\.
 menutrans Ta&g\ Files\.\.\.				Ta&g-datoteke\.\.\.
@@ -149,7 +149,7 @@ if has("folding")
   menutrans &Delete\ Fold<Tab>zd			Izbriši\ zavihek<Tab>zd
   menutrans Delete\ &All\ Folds<Tab>zD			Izbriši\ vse\ zavihke<Tab>zD
   " moving around in folds
-  menutrans Fold\ column\ &width			Širina\ stolpca\ z\ zavihkom
+  menutrans Fold\ col&umn\ width			Širina\ stolpca\ z\ zavihkom
 endif  " has folding
 
 if has("diff")
@@ -295,6 +295,13 @@ let g:menutrans_textwidth_dialog = "Vnesite novo širino besedila (ali 0 za izkl
 let g:menutrans_fileformat_dialog = "Izberite format datoteke"
 let g:menutrans_fileformat_choices = "&Unix\n&Dos\n&Mac\n&Prekliči"
 " }}}
+menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	relativno\ številčenje\ vrstic<Tab>:set\ nru!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		ovijanje\ vrstic<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!		zavijanje\ v\ besedo<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!			razpredelnica\ se\ širi<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Samodejno\ zamikanje<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!		Zamik\ v\ slogu\ C<Tab>:set\ cin!
+menutrans &Show\ File\ Types\ in\ menu		Prikaži\ vrste\ datotek\ v\ meniju
 
 let &cpo = s:keepcpo
 unlet s:keepcpo

@@ -29,7 +29,7 @@ func Test_preserveindent()
   call assert_equal("\t    \t    l", getline(1))
   set sw& et& pi&
 
-  close!
+  bw!
 endfunc
 
 " Test for indent()
@@ -42,7 +42,7 @@ func Test_indent_func()
   call assert_equal(4, indent(1))
   call setline(1, "    \t    abc")
   call assert_equal(12, indent(1))
-  close!
+  bw!
 endfunc
 
 " Test for reindenting a line using the '=' operator
@@ -56,7 +56,7 @@ func Test_reindent()
   call setline(1, ['foo', 'bar'])
   call feedkeys('ggVG=', 'xt')
   call assert_equal(['foo', 'bar'], getline(1, 2))
-  close!
+  bw!
 endfunc
 
 " Test indent operator creating one undo entry
@@ -103,7 +103,45 @@ func Test_preproc_indent()
   call assert_equal('#define FOO 1', getline(1))
   set cindent&
 
-  close!
+  bw!
+endfunc
+
+func Test_userlabel_indent()
+  new
+  call setline(1, ['{', 'label:'])
+  normal GV=
+  call assert_equal('label:', getline(2))
+
+  call setline(2, 'läbél:')
+  normal GV=
+  call assert_equal('läbél:', getline(2))
+
+  bw!
+endfunc
+
+" Test that struct members are aligned
+func Test_struct_indent()
+  new
+  call setline(1, ['struct a a = {', '1,', '1,'])
+  normal gg=G
+  call assert_equal(getline(2), getline(3))
+
+  call setline(1, 'a = (struct a) {')
+  normal gg=G
+  call assert_equal(getline(2), getline(3))
+
+  call setline(1, 'void *ptr = &(static struct a) {{')
+  normal gg=G
+  call assert_equal(getline(2), getline(3))
+
+  call setline(1, 'a = (macro(arg1, "str)))")) {')
+  normal gg=G
+  call assert_equal(getline(2), getline(3))
+
+  call setline(1, 'return (struct a) {')
+  normal gg=G
+  call assert_equal(getline(2), getline(3))
+  bw!
 endfunc
 
 " Test for 'copyindent'
@@ -118,7 +156,7 @@ func Test_copyindent()
   call feedkeys("ol", 'xt')
   call assert_equal("    \t    l", getline(2))
   set sw& ai& et& ci&
-  close!
+  bw!
 endfunc
 
 " Test for changing multiple lines with lisp indent
@@ -128,7 +166,7 @@ func Test_lisp_indent_change_multiline()
   call setline(1, ['(if a', '  (if b', '    (return 5)))'])
   normal! jc2j(return 4))
   call assert_equal('  (return 4))', getline(2))
-  close!
+  bw!
 endfunc
 
 func Test_lisp_indent()
@@ -141,7 +179,7 @@ func Test_lisp_indent()
   normal! jostr1"
   normal! jostr2"
   call assert_equal(['  ;; comment', '  ;; comment', '  \ abc', '  \ abc', '', '  ;; ret', '  " str1\', '  str1"', '  " st\b', '  str2"'], getline(2, 11))
-  close!
+  bw!
 endfunc
 
 func Test_lisp_indent_quoted()
@@ -157,7 +195,7 @@ endfunc
 " Test for setting the 'indentexpr' from a modeline
 func Test_modeline_indent_expr()
   let modeline = &modeline
-  set modeline
+  set modeline nomodelinestrict
   func GetIndent()
     return line('.') * 2
   endfunc
@@ -168,10 +206,10 @@ func Test_modeline_indent_expr()
   exe "normal Oa\nb\n"
   call assert_equal(['  a', '    b'], getline(1, 2))
 
-  set modelineexpr&
+  set modelineexpr& modelinestrict&
   delfunc GetIndent
   let &modeline = modeline
-  close!
+  bw!
 endfunc
 
 func Test_indent_func_with_gq()
@@ -283,7 +321,7 @@ func Test_indent_overflow_count()
   norm! V2147483647>
   " indents by INT_MAX
   call assert_equal(2147483647, indent(1))
-  close!
+  bw!
 endfunc
 
 func Test_indent_overflow_count2()
@@ -297,7 +335,53 @@ func Test_indent_overflow_count2()
   call setline(1, "\tabc")
   norm! <<
   call assert_equal(0, indent(1))
-  close!
+  bw!
+endfunc
+
+" Test that mouse shape is restored to Normal mode after using "gq" when
+" 'indentexpr' executes :normal.
+func Test_mouse_shape_indent_norm_with_gq()
+  CheckFeature mouseshape
+  CheckCanRunGui
+
+  let lines =<< trim END
+    func Indent()
+      exe "normal! \<Ignore>"
+      return 0
+    endfunc
+
+    setlocal indentexpr=Indent()
+  END
+  call writefile(lines, 'Xindentexpr.vim', 'D')
+
+  let lines =<< trim END
+    vim9script
+    var mouse_shapes = []
+
+    setline(1, [repeat('a', 80), repeat('b', 80)])
+
+    feedkeys('ggVG')
+    timer_start(50, (_) => {
+      mouse_shapes += [getmouseshape()]
+      timer_start(50, (_) => {
+        feedkeys('gq')
+        timer_start(50, (_) => {
+          mouse_shapes += [getmouseshape()]
+          timer_start(50, (_) => {
+            writefile(mouse_shapes, 'Xmouseshapes')
+            quit!
+          })
+        })
+      })
+    })
+  END
+  call writefile(lines, 'Xmouseshape.vim', 'D')
+
+  call RunVim([], [], "-g -S Xindentexpr.vim -S Xmouseshape.vim")
+  call WaitForAssert({-> assert_equal(['rightup-arrow', 'arrow'],
+        \ readfile('Xmouseshapes'))}, 300)
+
+  call delete('Xmouseshapes')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

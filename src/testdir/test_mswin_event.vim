@@ -1,9 +1,8 @@
 " Test MS-Windows input event handling.
 " Most of this works the same in Windows GUI as well as Windows console.
 
-source check.vim
 CheckMSWindows
-source mouse.vim
+source util/mouse.vim
 
 " Helper function for sending a grouped sequence of low level key presses
 " The modifier key(s) can be included as VK Key Codes in the sequence
@@ -704,6 +703,8 @@ endfunc
 func Test_mswin_event_mouse()
   CheckMSWindows
   new
+
+  let g:test_is_flaky = 1
 
   set mousemodel=extend
   call test_override('no_query_mouse', 1)

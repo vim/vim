@@ -1,7 +1,5 @@
 " Test behavior of boolean-like values.
 
-source check.vim
-
 " Test what is explained at ":help TRUE" and ":help FALSE".
 func Test_if()
   if v:false

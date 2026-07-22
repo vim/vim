@@ -1,5 +1,5 @@
 #
-# Makefile for AROS, AmigaOS4 and MorphOS.
+# Makefile for AROS, AmigaOS 3.x, AmigaOS 4 and MorphOS.
 #
 BIN = vim
 CC ?= gcc
@@ -13,7 +13,6 @@ CFLAGS = -c -O3
 CFLAGS += \
 	-DNO_ARP \
 	-DUSE_TMPNAM \
-	-DHAVE_STDARG_H \
 	-DHAVE_TGETENT \
 	-DHAVE_TERMCAP \
 	-DNEW_SHELLSIZE \
@@ -53,8 +52,9 @@ endif
 
 # OS specific compiler flags
 ifeq ($(UNM),AmigaOS)
-LDFLAGS = -mcrt=clib2 -lauto -lm -lnet
-CFLAGS += -DHAVE_FSYNC -D__USE_INLINE__ -mcrt=clib2
+# AmigaOS 4 (PowerPC)
+LDFLAGS = -lauto
+CFLAGS += -DHAVE_FSYNC -D__USE_INLINE__
 else
 ifeq ($(UNM),AROS)
 LDFLAGS = -DHAVE_FSYNC -ldebug
@@ -62,6 +62,12 @@ else
 ifeq ($(UNM),MorphOS)
 CFLAGS += -noixemul
 LDFLAGS = -ldebug -lm -noixemul
+else
+# Classic AmigaOS 3.x (68k) with bebbo-gcc and libnix.
+# Build: make -f Make_ami.mak UNM=AmigaOS3 CC=m68k-amigaos-gcc BUILD=normal
+CFLAGS += -noixemul -std=gnu99 -DWORDS_BIGENDIAN -DHAVE_ERRNO_H
+LDFLAGS = -noixemul -lm
+endif
 endif
 endif
 endif
@@ -69,6 +75,11 @@ endif
 # Patch level used for Amiga style version string
 ifdef PATCHLEVEL
 CFLAGS += -DPATCHLEVEL=\"$(PATCHLEVEL)\"
+endif
+
+# Build date used for Amiga style version string
+ifdef BUILDDATE
+CFLAGS += -DBUILDDATE=\"$(BUILDDATE)\"
 endif
 
 # Common sources
@@ -113,7 +124,9 @@ SRC += \
 	findfile.c \
 	float.c \
 	fold.c \
+	fuzzy.c \
 	getchar.c \
+	gc.c \
 	hardcopy.c \
 	hashtab.c \
 	help.c \
@@ -122,6 +135,7 @@ SRC += \
 	indent.c \
 	insexpand.c \
 	json.c \
+	linematch.c\
 	list.c \
 	locale.c \
 	logfile.c \
@@ -143,6 +157,7 @@ SRC += \
 	option.c \
 	optionstr.c \
 	os_amiga.c \
+	os_amiga_stubs.c \
 	popupmenu.c \
 	popupwin.c \
 	quickfix.c \
@@ -154,12 +169,16 @@ SRC += \
 	session.c \
 	sha256.c \
 	sign.c \
+	sixel.c \
+	kitty.c \
+	cairo.c \
 	spell.c \
 	spellfile.c \
 	spellsuggest.c \
 	strings.c \
 	syntax.c \
 	tag.c \
+	tabpanel.c \
 	term.c \
 	termlib.c \
 	testing.c \
@@ -167,6 +186,7 @@ SRC += \
 	textobject.c \
 	textprop.c \
 	time.c \
+	tuple.c \
 	typval.c \
 	ui.c \
 	undo.c \
@@ -179,6 +199,7 @@ SRC += \
 	vim9compile.c \
 	vim9execute.c \
 	vim9expr.c \
+	vim9generics.c \
 	vim9instr.c \
 	vim9script.c \
 	vim9type.c \

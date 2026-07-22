@@ -312,7 +312,7 @@ EXTERN char e_function_name_required[]
 // E130 unused
 EXTERN char e_cannot_delete_function_str_it_is_in_use[]
 	INIT(= N_("E131: Cannot delete function %s: It is in use"));
-EXTERN char e_function_call_depth_is_higher_than_macfuncdepth[]
+EXTERN char e_function_call_depth_is_higher_than_maxfuncdepth[]
 	INIT(= N_("E132: Function call depth is higher than 'maxfuncdepth'"));
 EXTERN char e_return_not_inside_function[]
 	INIT(= N_("E133: :return not inside a function"));
@@ -547,10 +547,10 @@ EXTERN char e_cannot_read_from_str[]
 	INIT(= N_("E230: Cannot read from \"%s\""));
 EXTERN char e_guifontwide_invalid[]
 	INIT(= N_("E231: 'guifontwide' invalid"));
-#ifdef FEAT_BEVAL_GUI
+# ifdef FEAT_BEVAL_GUI
 EXTERN char e_cannot_create_ballooneval_with_both_message_and_callback[]
 	INIT(= "E232: Cannot create BalloonEval with both message and callback");
-#endif
+# endif
 # if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
 EXTERN char e_cannot_open_display[]
 	INIT(= N_("E233: Cannot open display"));
@@ -1038,8 +1038,10 @@ EXTERN char e_missing_argument_str[]
 	INIT(= N_("E417: Missing argument: %s"));
 EXTERN char e_illegal_value_str[]
 	INIT(= N_("E418: Illegal value: %s"));
+#ifdef FEAT_EVAL
 EXTERN char e_im_a_teapot[]
 	INIT(= N_("E418: I'm a teapot"));
+#endif
 EXTERN char e_fg_color_unknown[]
 	INIT(= N_("E419: FG color unknown"));
 EXTERN char e_bg_color_unknown[]
@@ -1136,11 +1138,8 @@ EXTERN char e_cant_find_postscript_resource_file_str_ps[]
 EXTERN char e_cant_read_postscript_resource_file_str[]
 	INIT(= N_("E457: Can't read PostScript resource file \"%s\""));
 #endif
-#ifdef FEAT_GUI_X11
-EXTERN char e_cannot_allocate_colormap_entry_some_colors_may_be_incorrect[]
-	INIT(= N_("E458: Cannot allocate colormap entry, some colors may be incorrect"));
-#endif
-#if defined(UNIX) || defined(FEAT_SESSION)
+// E458 unused
+#if defined(UNIX) || defined(FEAT_SESSION) || defined(FEAT_SOCKETSERVER)
 EXTERN char e_cannot_go_back_to_previous_directory[]
 	INIT(= N_("E459: Cannot go back to previous directory"));
 #endif
@@ -1273,8 +1272,10 @@ EXTERN char e_is_not_file_or_writable_device[]
 	INIT(= N_("is not a file or writable device"));
 EXTERN char e_str_is_not_file_or_writable_device[]
 	INIT(= N_("E503: \"%s\" is not a file or writable device"));
+#ifdef FEAT_EVAL
 EXTERN char e_coffee_currently_not_available[]
 	INIT(= N_("E503: Coffee is currently not available"));
+#endif
 	// E504
 EXTERN char e_is_read_only_cannot_override_W_in_cpoptions[]
 	INIT(= N_("is read-only (cannot override: \"W\" in 'cpoptions')"));
@@ -1360,9 +1361,9 @@ EXTERN char e_illegal_character_after_chr[]
 #ifdef FEAT_FOLDING
 EXTERN char e_comma_required[]
 	INIT(= N_("E536: Comma required"));
+#endif
 EXTERN char e_commentstring_must_be_empty_or_contain_str[]
 	INIT(= N_("E537: 'commentstring' must be empty or contain %s"));
-#endif
 EXTERN char e_pattern_found_in_every_line_str[]
 	INIT(= N_("E538: Pattern found in every line: %s"));
 EXTERN char e_illegal_character_str[]
@@ -1571,11 +1572,12 @@ EXTERN char e_too_many_signs_defined[]
 EXTERN char e_unknown_printer_font_str[]
 	INIT(= N_("E613: Unknown printer font: %s"));
 #endif
-EXTERN char e_class_required[]
-	INIT(= N_("E614: Class required"));
+// E614 unused (deleted)
 // E615 unused
+#ifdef FEAT_EVAL
 EXTERN char e_object_required_for_argument_nr[]
 	INIT(= N_("E616: Object required for argument %d"));
+#endif
 #ifdef FEAT_GUI_GTK
 EXTERN char e_cannot_be_changed_in_gtk_GUI[]
 	INIT(= N_("E617: Cannot be changed in the GTK GUI"));
@@ -1613,10 +1615,10 @@ EXTERN char e_missing_colon_str[]
 	INIT(= N_("E627: Missing colon: %s"));
 EXTERN char e_missing_bang_or_slash_in_str[]
 	INIT(= N_("E628: Missing ! or / in: %s"));
-#ifdef NBDEBUG
+# ifdef NBDEBUG
 EXTERN char e_bad_return_from_nb_do_cmd[]
 	INIT(= "E629: Bad return from nb_do_cmd");
-#endif
+# endif
 #endif
 #ifdef FEAT_JOB_CHANNEL
 EXTERN char e_str_write_while_not_connected[]
@@ -1659,7 +1661,8 @@ EXTERN char e_invalid_buffer_identifier_in_setdot[]
 	INIT(= N_("E647: Invalid buffer identifier in setDot"));
 EXTERN char e_invalid_buffer_identifier_in_close[]
 	INIT(= N_("E648: Invalid buffer identifier in close"));
-// E649 unused
+EXTERN char e_invalid_identifier_in_defineannotype[]
+	INIT(= N_("E649: Invalid identifier name in defineAnnoType"));
 EXTERN char e_invalid_buffer_identifier_in_defineannotype[]
 	INIT(= N_("E650: Invalid buffer identifier in defineAnnoType"));
 EXTERN char e_invalid_buffer_identifier_in_addanno[]
@@ -2162,10 +2165,10 @@ EXTERN char e_netbeans_is_not_supported_with_this_GUI[]
 	INIT(= N_("E838: NetBeans is not supported with this GUI"));
 #endif
 // E839 unused
-# ifdef FEAT_COMPL_FUNC
+#ifdef FEAT_COMPL_FUNC
 EXTERN char e_complete_function_deleted_text[]
 	INIT(= N_("E840: Completion function deleted text"));
-# endif
+#endif
 EXTERN char e_reserved_name_cannot_be_used_for_user_defined_command[]
 	INIT(= N_("E841: Reserved name, cannot be used for user defined command"));
 EXTERN char e_no_line_number_to_use_for_slnum[]
@@ -2268,7 +2271,7 @@ EXTERN char e_nfa_regexp_while_converting_from_postfix_to_nfa_too_many_stats_lef
 EXTERN char e_nfa_regexp_not_enough_space_to_store_whole_nfa[]
 	INIT(= N_("E876: (NFA regexp) Not enough space to store the whole NFA"));
 EXTERN char e_nfa_regexp_invalid_character_class_nr[]
-	INIT(= "E877: (NFA regexp) Invalid character class: %d");
+	INIT(= N_("E877: (NFA regexp) Invalid character class: %d"));
 EXTERN char e_nfa_regexp_could_not_allocate_memory_for_branch_traversal[]
 	INIT(= N_("E878: (NFA regexp) Could not allocate memory for branch traversal!"));
 #ifdef FEAT_SYN_HL
@@ -2284,8 +2287,8 @@ EXTERN char e_line_count_changed_unexpectedly[]
 #ifdef FEAT_EVAL
 EXTERN char e_uniq_compare_function_failed[]
 	INIT(= N_("E882: Uniq compare function failed"));
-EXTERN char e_search_pattern_and_expression_register_may_not_contain_two_or_more_lines[]
-	INIT(= N_("E883: Search pattern and expression register may not contain two or more lines"));
+EXTERN char e_register_char_cannot_contain_multiple_lines[]
+	INIT(= N_("E883: Register '%c' cannot contain multiple lines"));
 EXTERN char e_function_name_cannot_contain_colon_str[]
 	INIT(= N_("E884: Function name cannot contain a colon: %s"));
 #endif
@@ -2298,7 +2301,7 @@ EXTERN char e_cant_rename_viminfo_file_to_str[]
 	INIT(= N_("E886: Can't rename viminfo file to %s!"));
 #endif
 #if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
-EXTERN char e_sorry_this_command_is_disabled_python_side_module_could_not_be_loaded[]
+EXTERN char e_sorry_this_command_is_disabled_python_site_module_could_not_be_loaded[]
 	INIT(= N_("E887: Sorry, this command is disabled, the Python's site module could not be loaded."));
 #endif
 EXTERN char e_nfa_regexp_cannot_repeat_str[]
@@ -2374,8 +2377,8 @@ EXTERN char e_using_job_as_number[]
 	INIT(= N_("E910: Using a Job as a Number"));
 EXTERN char e_using_job_as_float[]
 	INIT(= N_("E911: Using a Job as a Float"));
-EXTERN char e_cannot_use_evalexpr_sendexpr_with_raw_or_nl_channel[]
-	INIT(= N_("E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"));
+EXTERN char e_cannot_use_evalexpr_sendexpr_with_raw_nl_or_blob_channel[]
+	INIT(= N_("E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw, nl or blob channel"));
 EXTERN char e_using_channel_as_number[]
 	INIT(= N_("E913: Using a Channel as a Number"));
 EXTERN char e_using_channel_as_float[]
@@ -2526,9 +2529,11 @@ EXTERN char e_invalid_action_str_2[]
 EXTERN char e_setting_v_str_to_value_with_wrong_type[]
 	INIT(= N_("E963: Setting v:%s to value with wrong type"));
 #endif
-#ifdef FEAT_PROP_POPUP
+#if defined(FEAT_PROP_POPUP) || defined(FEAT_EVAL)
 EXTERN char_u e_invalid_column_number_nr[]
 	INIT(= N_("E964: Invalid column number: %ld"));
+#endif
+#ifdef FEAT_PROP_POPUP
 EXTERN char e_missing_property_type_name[]
 	INIT(= N_("E965: Missing property type name"));
 #endif
@@ -2878,8 +2883,8 @@ EXTERN char e_assert_fails_fourth_argument[]
 	INIT(= N_("E1115: \"assert_fails()\" fourth argument must be a number"));
 EXTERN char e_assert_fails_fifth_argument[]
 	INIT(= N_("E1116: \"assert_fails()\" fifth argument must be a string"));
-EXTERN char e_cannot_use_bang_with_nested_def[]
-	INIT(= N_("E1117: Cannot use ! with nested :def"));
+EXTERN char e_cannot_use_bang_with_nested_def_str[]
+	INIT(= N_("E1117: Cannot use ! with nested %s"));
 EXTERN char e_cannot_change_locked_list[]
 	INIT(= N_("E1118: Cannot change locked list"));
 EXTERN char e_cannot_change_locked_list_item[]
@@ -2925,8 +2930,8 @@ EXTERN char e_using_bool_as_number[]
 	INIT(= N_("E1138: Using a Bool as a Number"));
 EXTERN char e_missing_matching_bracket_after_dict_key[]
 	INIT(= N_("E1139: Missing matching bracket after dict key"));
-EXTERN char e_for_argument_must_be_sequence_of_lists[]
-	INIT(= N_("E1140: :for argument must be a sequence of lists"));
+EXTERN char e_for_argument_must_be_sequence_of_lists_or_tuples[]
+	INIT(= N_("E1140: :for argument must be a sequence of lists or tuples"));
 EXTERN char e_indexable_type_required[]
 	INIT(= N_("E1141: Indexable type required"));
 EXTERN char e_calling_test_garbagecollect_now_while_v_testing_is_not_set[]
@@ -3129,18 +3134,16 @@ EXTERN char e_float_or_number_required_for_argument_nr[]
 	INIT(= N_("E1219: Float or Number required for argument %d"));
 EXTERN char e_string_or_number_required_for_argument_nr[]
 	INIT(= N_("E1220: String or Number required for argument %d"));
-# ifdef FEAT_JOB_CHANNEL
 EXTERN char e_string_or_blob_required_for_argument_nr[]
 	INIT(= N_("E1221: String or Blob required for argument %d"));
-# endif
 EXTERN char e_string_or_list_required_for_argument_nr[]
 	INIT(= N_("E1222: String or List required for argument %d"));
 EXTERN char e_string_or_dict_required_for_argument_nr[]
 	INIT(= N_("E1223: String or Dictionary required for argument %d"));
 EXTERN char e_string_number_or_list_required_for_argument_nr[]
 	INIT(= N_("E1224: String, Number or List required for argument %d"));
-EXTERN char e_string_list_or_dict_required_for_argument_nr[]
-	INIT(= N_("E1225: String, List or Dictionary required for argument %d"));
+EXTERN char e_string_list_tuple_or_dict_required_for_argument_nr[]
+	INIT(= N_("E1225: String, List, Tuple or Dictionary required for argument %d"));
 EXTERN char e_list_or_blob_required_for_argument_nr[]
 	INIT(= N_("E1226: List or Blob required for argument %d"));
 EXTERN char e_list_or_dict_required_for_argument_nr[]
@@ -3165,7 +3168,8 @@ EXTERN char e_exists_compiled_can_only_be_used_in_def_function[]
 EXTERN char e_legacy_must_be_followed_by_command[]
 	INIT(= N_("E1234: legacy must be followed by a command"));
 #ifdef FEAT_EVAL
-// E1235 unused
+EXTERN char e_bool_or_number_required_for_argument_nr[]
+	INIT(= N_("E1235: Bool or Number required for argument %d"));
 EXTERN char e_cannot_use_str_itself_it_is_imported[]
 	INIT(= N_("E1236: Cannot use %s itself, it is imported"));
 #endif
@@ -3175,7 +3179,7 @@ EXTERN char e_no_such_user_defined_command_in_current_buffer_str[]
 EXTERN char e_blob_required_for_argument_nr[]
 	INIT(= N_("E1238: Blob required for argument %d"));
 EXTERN char e_invalid_value_for_blob_nr[]
-	INIT(= N_("E1239: Invalid value for blob: %d"));
+	INIT(= N_("E1239: Invalid value for blob: 0x%lX"));
 #endif
 EXTERN char e_resulting_text_too_long[]
 	INIT(= N_("E1240: Resulting text too long"));
@@ -3185,7 +3189,7 @@ EXTERN char e_separator_not_supported_str[]
 EXTERN char e_no_white_space_allowed_before_separator_str[]
 	INIT(= N_("E1242: No white space allowed before separator: %s"));
 #endif
-#ifdef FEAT_GUI_GTK
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)
 EXTERN char e_ascii_code_not_in_range[]
 	INIT(= N_("E1243: ASCII code not in 32-127 range"));
 #endif
@@ -3210,11 +3214,12 @@ EXTERN char e_highlight_group_name_too_long[]
 #ifdef FEAT_EVAL
 EXTERN char e_argument_of_str_must_be_list_string_dictionary_or_blob[]
 	INIT(= N_("E1250: Argument of %s must be a List, String, Dictionary or Blob"));
-EXTERN char e_list_dict_blob_or_string_required_for_argument_nr[]
-	INIT(= N_("E1251: List, Dictionary, Blob or String required for argument %d"));
+EXTERN char e_list_tuple_dict_blob_or_string_required_for_argument_nr[]
+	INIT(= N_("E1251: List, Tuple, Dictionary, Blob or String required for argument %d"));
 EXTERN char e_string_list_or_blob_required_for_argument_nr[]
 	INIT(= N_("E1252: String, List or Blob required for argument %d"));
-// E1253 unused
+EXTERN char e_string_list_tuple_or_blob_required_for_argument_nr[]
+	INIT(= N_("E1253: String, List, Tuple or Blob required for argument %d"));
 EXTERN char e_cannot_use_script_variable_in_for_loop[]
 	INIT(= N_("E1254: Cannot use script variable in for loop"));
 #endif
@@ -3301,26 +3306,28 @@ EXTERN char e_could_not_clear_timeout_str[]
 	INIT(= N_("E1285: Could not clear timeout: %s"));
 EXTERN char e_could_not_set_timeout_str[]
 	INIT(= N_("E1286: Could not set timeout: %s"));
-#ifndef PROF_NSEC
+# ifndef PROF_NSEC
 EXTERN char e_could_not_set_handler_for_timeout_str[]
 	INIT(= N_("E1287: Could not set handler for timeout: %s"));
 EXTERN char e_could_not_reset_handler_for_timeout_str[]
 	INIT(= N_("E1288: Could not reset handler for timeout: %s"));
 EXTERN char e_could_not_check_for_pending_sigalrm_str[]
 	INIT(= N_("E1289: Could not check for pending SIGALRM: %s"));
-#endif
+# endif
 #endif
 #ifdef FEAT_EVAL
 EXTERN char e_substitute_nesting_too_deep[]
 	INIT(= N_("E1290: substitute nesting too deep"));
+# ifdef MSWIN
 EXTERN char e_invalid_argument_nr[]
 	INIT(= N_("E1291: Invalid argument: %ld"));
+# endif
 #endif
 EXTERN char e_cmdline_window_already_open[]
 	INIT(= N_("E1292: Command-line window is already open"));
 #ifdef FEAT_PROP_POPUP
-EXTERN char e_cannot_use_negative_id_after_adding_textprop_with_text[]
-	INIT(= N_("E1293: Cannot use a negative id after adding a textprop with text"));
+EXTERN char e_cannot_use_negative_id[]
+	INIT(= N_("E1293: Cannot use a negative id for a text property"));
 EXTERN char e_can_only_use_text_align_when_column_is_zero[]
 	INIT(= N_("E1294: Can only use text_align when column is zero"));
 #endif
@@ -3341,8 +3348,8 @@ EXTERN char e_window_unexpectedly_close_while_searching_for_tags[]
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_use_partial_with_dictionary_for_defer[]
 	INIT(= N_("E1300: Cannot use a partial with dictionary for :defer"));
-EXTERN char e_string_number_list_or_blob_required_for_argument_nr[]
-	INIT(= N_("E1301: String, Number, List or Blob required for argument %d"));
+EXTERN char e_repeatable_type_required_for_argument_nr[]
+	INIT(= N_("E1301: String, Number, List, Tuple or Blob required for argument %d"));
 EXTERN char e_script_variable_was_deleted[]
 	INIT(= N_("E1302: Script variable was deleted"));
 EXTERN char e_custom_list_completion_function_does_not_return_list_but_str[]
@@ -3385,16 +3392,13 @@ EXTERN char e_invalid_object_variable_declaration_str[]
 	INIT(= N_("E1317: Invalid object variable declaration: %s"));
 EXTERN char e_not_valid_command_in_class_str[]
 	INIT(= N_("E1318: Not a valid command in a class: %s"));
-EXTERN char e_using_class_as_number[]
-	INIT(= N_("E1319: Using a Class as a Number"));
+// E1319 unused
 EXTERN char e_using_object_as_number[]
 	INIT(= N_("E1320: Using an Object as a Number"));
-EXTERN char e_using_class_as_float[]
-	INIT(= N_("E1321: Using a Class as a Float"));
+// E1321 unused
 EXTERN char e_using_object_as_float[]
 	INIT(= N_("E1322: Using an Object as a Float"));
-EXTERN char e_using_class_as_string[]
-	INIT(= N_("E1323: Using a Class as a String"));
+// E1323 unused
 EXTERN char e_using_object_as_string[]
 	INIT(= N_("E1324: Using an Object as a String"));
 EXTERN char e_method_not_found_on_class_str_str[]
@@ -3407,12 +3411,12 @@ EXTERN char e_constructor_default_value_must_be_vnone_str[]
 	INIT(= N_("E1328: Constructor default value must be v:none: %s"));
 EXTERN char e_invalid_class_variable_declaration_str[]
 	INIT(= N_("E1329: Invalid class variable declaration: %s"));
-EXTERN char e_invalid_type_for_object_variable_str[]
-	INIT(= N_("E1330: Invalid type for object variable: %s"));
+EXTERN char e_invalid_type_in_variable_declaration_str[]
+	INIT(= N_("E1330: Invalid type used in variable declaration: %s"));
 EXTERN char e_public_must_be_followed_by_var_static_final_or_const[]
-	INIT(= N_("E1331: Public must be followed by \"var\" or \"static\" or \"final\" or \"const\""));
+	INIT(= N_("E1331: public must be followed by \"var\" or \"static\" or \"final\" or \"const\""));
 EXTERN char e_public_variable_name_cannot_start_with_underscore_str[]
-	INIT(= N_("E1332: Public variable name cannot start with underscore: %s"));
+	INIT(= N_("E1332: public variable name cannot start with underscore: %s"));
 EXTERN char e_cannot_access_protected_variable_str[]
 	INIT(= N_("E1333: Cannot access protected variable \"%s\" in class \"%s\""));
 // E1334 unused
@@ -3424,12 +3428,8 @@ EXTERN char e_internal_error_shortmess_too_long[]
 #ifdef FEAT_EVAL
 EXTERN char e_class_variable_str_not_found_in_class_str[]
 	INIT(= N_("E1337: Class variable \"%s\" not found in class \"%s\""));
-// E1338 unused
 #endif
-#ifdef FEAT_PROP_POPUP
-EXTERN char e_cannot_add_textprop_with_text_after_using_textprop_with_negative_id[]
-	INIT(= N_("E1339: Cannot add a textprop with text after using a textprop with a negative id"));
-#endif
+// E1338 and E1339 unused
 #ifdef FEAT_EVAL
 EXTERN char e_argument_already_declared_in_class_str[]
 	INIT(= N_("E1340: Argument already declared in the class: %s"));
@@ -3501,7 +3501,7 @@ EXTERN char e_abstract_must_be_followed_by_def[]
 	INIT(= N_("E1371: Abstract must be followed by \"def\""));
 EXTERN char e_abstract_method_in_concrete_class[]
 	INIT(= N_("E1372: Abstract method \"%s\" cannot be defined in a concrete class"));
-EXTERN char e_abstract_method_str_not_found[]
+EXTERN char e_abstract_method_str_not_implemented[]
 	INIT(= N_("E1373: Abstract method \"%s\" is not implemented"));
 EXTERN char e_class_variable_str_accessible_only_inside_class_str[]
 	INIT(= N_("E1374: Class variable \"%s\" accessible only inside class \"%s\""));
@@ -3530,9 +3530,9 @@ EXTERN char e_class_method_str_accessible_only_using_class_str[]
 EXTERN char e_object_method_str_accessible_only_using_object_str[]
 	INIT(= N_("E1386: Object method \"%s\" accessible only using class \"%s\" object"));
 EXTERN char e_public_variable_not_supported_in_interface[]
-	INIT(= N_("E1387: Public variable not supported in an interface"));
+	INIT(= N_("E1387: public variable not supported in an interface"));
 EXTERN char e_public_keyword_not_supported_for_method[]
-	INIT(= N_("E1388: Public keyword not supported for a method"));
+	INIT(= N_("E1388: public keyword not supported for a method"));
 EXTERN char e_missing_name_after_implements[]
 	INIT(= N_("E1389: Missing name after implements"));
 EXTERN char e_cannot_use_an_object_variable_except_with_the_new_method_str[]
@@ -3545,8 +3545,8 @@ EXTERN char e_type_can_only_be_defined_in_vim9_script[]
 	INIT(= N_("E1393: Type can only be defined in Vim9 script"));
 EXTERN char e_type_name_must_start_with_uppercase_letter_str[]
 	INIT(= N_("E1394: Type name must start with an uppercase letter: %s"));
-EXTERN char e_cannot_modify_typealias[]
-	INIT(= N_("E1395: Type alias \"%s\" cannot be modified"));
+EXTERN char e_using_null_class[]
+	INIT(= N_("E1395: Using a null class"));
 EXTERN char e_typealias_already_exists_for_str[]
 	INIT(= N_("E1396: Type alias \"%s\" already exists"));
 EXTERN char e_missing_typealias_name[]
@@ -3555,20 +3555,17 @@ EXTERN char e_missing_typealias_type[]
 	INIT(= N_("E1398: Missing type alias type"));
 EXTERN char e_type_can_only_be_used_in_script[]
 	INIT(= N_("E1399: Type can only be used in a script"));
-EXTERN char e_using_typealias_as_number[]
-	INIT(= N_("E1400: Using type alias \"%s\" as a Number"));
-EXTERN char e_using_typealias_as_float[]
-	INIT(= N_("E1401: Using type alias \"%s\" as a Float"));
-EXTERN char e_using_typealias_as_string[]
-	INIT(= N_("E1402: Using type alias \"%s\" as a String"));
+// E1400 unused
+// E1401 unused
+// E1402 unused
 EXTERN char e_using_typealias_as_value_str[]
 	INIT(= N_("E1403: Type alias \"%s\" cannot be used as a value"));
 EXTERN char e_abstract_cannot_be_used_in_interface[]
 	INIT(= N_("E1404: Abstract cannot be used in an interface"));
 EXTERN char e_using_class_as_value_str[]
 	INIT(= N_("E1405: Class \"%s\" cannot be used as a value"));
-EXTERN char e_using_class_as_var_val[]
-	INIT(= N_("E1406: Cannot use a Class as a variable or value"));
+EXTERN char e_public_and_protected_member_have_same_name_str_str[]
+	INIT(= N_("E1406: Public and protected member have the same name: %s and _%s"));
 EXTERN char e_using_typealias_as_var_val[]
 	INIT(= N_("E1407: Cannot use a Typealias as a variable or value"));
 EXTERN char e_final_variable_not_supported_in_interface[]
@@ -3579,31 +3576,245 @@ EXTERN char e_const_variable_not_supported_in_interface[]
 	INIT(= N_("E1410: Const variable not supported in an interface"));
 EXTERN char e_missing_dot_after_object_str[]
 	INIT(= N_("E1411: Missing dot after object \"%s\""));
+EXTERN char e_builtin_object_method_str_not_supported[]
+	INIT(= N_("E1412: Builtin object method \"%s\" not supported"));
+EXTERN char e_builtin_class_method_not_supported[]
+	INIT(= N_("E1413: Builtin class method not supported"));
+EXTERN char e_enum_can_only_be_defined_in_vim9_script[]
+       INIT(= N_("E1414: Enum can only be defined in Vim9 script"));
+EXTERN char e_enum_name_must_start_with_uppercase_letter_str[]
+	INIT(= N_("E1415: Enum name must start with an uppercase letter: %s"));
+EXTERN char e_enum_cannot_extend_class[]
+	INIT(= N_("E1416: Enum cannot extend a class or enum"));
+EXTERN char e_abstract_cannot_be_used_in_enum[]
+	INIT(= N_("E1417: Abstract cannot be used in an Enum"));
+EXTERN char e_invalid_enum_value_declaration_str[]
+	INIT(= N_("E1418: Invalid enum value declaration: %s"));
+EXTERN char e_not_valid_command_in_enum_str[]
+	INIT(= N_("E1419: Not a valid command in an Enum: %s"));
+EXTERN char e_missing_endenum[]
+	INIT(= N_("E1420: Missing :endenum"));
+EXTERN char e_using_enum_as_value_str[]
+	INIT(= N_("E1421: Enum \"%s\" cannot be used as a value"));
+EXTERN char e_enum_value_str_not_found_in_enum_str[]
+	INIT(= N_("E1422: Enum value \"%s\" not found in enum \"%s\""));
+EXTERN char e_enumvalue_str_cannot_be_modified[]
+	INIT(= N_("E1423: Enum value \"%s.%s\" cannot be modified"));
+EXTERN char e_using_enum_str_as_number[]
+	INIT(= N_("E1424: Using an Enum \"%s\" as a Number"));
+EXTERN char e_using_enum_str_as_string[]
+	INIT(= N_("E1425: Using an Enum \"%s\" as a String"));
+EXTERN char e_enum_str_ordinal_cannot_be_modified[]
+	INIT(= N_("E1426: Enum \"%s\" ordinal value cannot be modified"));
+EXTERN char e_enum_str_name_cannot_be_modified[]
+	INIT(= N_("E1427: Enum \"%s\" name cannot be modified"));
+EXTERN char e_duplicate_enum_str[]
+	INIT(= N_("E1428: Duplicate enum value: %s"));
+EXTERN char e_class_can_only_be_used_in_script[]
+	INIT(= N_("E1429: Class can only be used in a script"));
+EXTERN char e_uninitialized_object_var_reference[]
+	INIT(= N_("E1430: Uninitialized object variable '%s' referenced"));
+EXTERN char e_abstract_method_str_direct[]
+	INIT(= N_("E1431: Abstract method \"%s\" in class \"%s\" cannot be accessed directly"));
+EXTERN char e_generic_method_str_override_with_concrete_method_in_class_str[]
+	INIT(= N_("E1432: Overriding generic method \"%s\" in class \"%s\" with a concrete method"));
+EXTERN char e_concrete_method_str_override_with_generic_method_in_class_str[]
+	INIT(= N_("E1433: Overriding concrete method \"%s\" in class \"%s\" with a generic method"));
+EXTERN char e_generic_method_str_type_arguments_mismatch_in_class_str[]
+	INIT(= N_("E1434: Mismatched number of type variables for generic method  \"%s\" in class \"%s\""));
+EXTERN char e_enum_can_only_be_used_in_script[]
+	INIT(= N_("E1435: Enum can only be used in a script"));
+EXTERN char e_interface_can_only_be_used_in_script[]
+	INIT(= N_("E1436: Interface can only be used in a script"));
+EXTERN char e_can_only_compare_object_with_object[]
+	INIT(= N_("E1437: Can only compare Object with Object"));
 #endif
-// E1412 - E1499 unused (reserved for Vim9 class support)
+// E1438 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1500: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]
 	INIT(= N_("E1501: format argument %d unused in $-style format: %s"));
 EXTERN char e_positional_num_field_spec_reused_str_str[]
 	INIT(= N_("E1502: Positional argument %d used as field width reused as different type: %s/%s"));
+#ifdef FEAT_EVAL
 EXTERN char e_positional_nr_out_of_bounds_str[]
 	INIT(= N_("E1503: Positional argument %d out of bounds: %s"));
+#endif
 EXTERN char e_positional_arg_num_type_inconsistent_str_str[]
 	INIT(= N_("E1504: Positional argument %d type used inconsistently: %s/%s"));
 EXTERN char e_invalid_format_specifier_str[]
 	INIT(= N_("E1505: Invalid format specifier: %s"));
+#ifdef FEAT_XATTR
 EXTERN char e_xattr_erange[]
 	INIT(= N_("E1506: Buffer too small to copy xattr value or key"));
+#endif
 EXTERN char e_aptypes_is_null_nr_str[]
 	INIT(= "E1507: Internal error: ap_types or ap_types[idx] is NULL: %d: %s");
+#ifdef FEAT_XATTR
 EXTERN char e_xattr_e2big[]
 	INIT(= N_("E1508: Size of the extended attribute value is larger than the maximum size allowed"));
 EXTERN char e_xattr_other[]
 	INIT(= N_("E1509: Error occurred when reading or writing extended attribute"));
+#endif
 EXTERN char e_val_too_large[]
 	INIT(= N_("E1510: Value too large: %s"));
 EXTERN char e_wrong_number_of_characters_for_field_str[]
 	INIT(= N_("E1511: Wrong number of characters for field \"%s\""));
 EXTERN char e_wrong_character_width_for_field_str[]
 	INIT(= N_("E1512: Wrong character width for field \"%s\""));
+EXTERN char e_winfixbuf_cannot_go_to_buffer[]
+	INIT(= N_("E1513: Cannot switch buffer. 'winfixbuf' is enabled"));
+EXTERN char e_invalid_return_type_from_findfunc[]
+	INIT(= N_("E1514: 'findfunc' did not return a List type"));
+EXTERN char e_str_encoding_from_failed[]
+	INIT(= N_("E1515: Unable to convert from '%s' encoding"));
+EXTERN char e_str_encoding_to_failed[]
+	INIT(= N_("E1516: Unable to convert to '%s' encoding"));
+#ifdef FEAT_EVAL
+EXTERN char e_can_only_compare_tuple_with_tuple[]
+	INIT(= N_("E1517: Can only compare Tuple with Tuple"));
+EXTERN char e_invalid_operation_for_tuple[]
+	INIT(= N_("E1518: Invalid operation for Tuple"));
+EXTERN char e_tuple_index_out_of_range_nr[]
+	INIT(= N_("E1519: Tuple index out of range: %ld"));
+EXTERN char e_using_tuple_as_number[]
+	INIT(= N_("E1520: Using a Tuple as a Number"));
+EXTERN char e_using_tuple_as_float[]
+	INIT(= N_("E1521: Using a Tuple as a Float"));
+EXTERN char e_using_tuple_as_string[]
+	INIT(= N_("E1522: Using a Tuple as a String"));
+EXTERN char e_string_list_tuple_or_blob_required[]
+	INIT(= N_("E1523: String, List, Tuple or Blob required"));
+EXTERN char e_cannot_use_tuple_with_function_str[]
+	INIT(= N_("E1524: Cannot use a tuple with function %s"));
+EXTERN char e_argument_of_str_must_be_list_tuple_string_dictionary_or_blob[]
+	INIT(= N_("E1525: Argument of %s must be a List, Tuple, String, Dictionary or Blob"));
+EXTERN char e_missing_end_of_tuple_rsp_str[]
+	INIT(= N_("E1526: Missing end of Tuple ')': %s"));
+EXTERN char e_missing_comma_in_tuple_str[]
+	INIT(= N_("E1527: Missing comma in Tuple: %s"));
+EXTERN char e_list_or_tuple_or_blob_required_for_argument_nr[]
+	INIT(= N_("E1528: List or Tuple or Blob required for argument %d"));
+EXTERN char e_list_or_tuple_required_for_argument_nr[]
+	INIT(= N_("E1529: List or Tuple required for argument %d"));
+EXTERN char e_list_or_tuple_or_dict_required_for_argument_nr[]
+	INIT(= N_("E1530: List or Tuple or Dictionary required for argument %d"));
+EXTERN char e_argument_of_str_must_be_list_tuple_dictionary_or_blob[]
+	INIT(= N_("E1531: Argument of %s must be a List, Tuple, Dictionary or Blob"));
+EXTERN char e_tuple_is_immutable[]
+	INIT(= N_("E1532: Cannot modify a tuple"));
+EXTERN char e_cannot_slice_tuple[]
+	INIT(= N_("E1533: Cannot slice a tuple"));
+EXTERN char e_tuple_required_for_argument_nr[]
+	INIT(= N_("E1534: Tuple required for argument %d"));
+EXTERN char e_list_or_tuple_required[]
+	INIT(= N_("E1535: List or Tuple required"));
+EXTERN char e_tuple_required[]
+	INIT(= N_("E1536: Tuple required"));
+EXTERN char e_less_targets_than_tuple_items[]
+	INIT(= N_("E1537: Less targets than Tuple items"));
+EXTERN char e_more_targets_than_tuple_items[]
+	INIT(= N_("E1538: More targets than Tuple items"));
+EXTERN char e_variadic_tuple_must_end_with_list_type_str[]
+	INIT(= N_("E1539: Variadic tuple must end with a list type: %s"));
+EXTERN char e_cannot_use_variadic_tuple_in_concatenation[]
+	INIT(= N_("E1540: Cannot use a variadic tuple in concatenation"));
+#endif
+EXTERN char e_unicode_val_too_large[]
+	INIT(= N_("E1541: Value too large, max Unicode codepoint is U+10FFFF"));
+#ifdef FEAT_QUICKFIX
+EXTERN char e_cannot_have_negative_or_zero_number_of_quickfix[]
+	INIT(= N_("E1542: Cannot have a negative or zero number of quickfix/location lists"));
+EXTERN char e_cannot_have_more_than_hundred_quickfix[]
+	INIT(= N_("E1543: Cannot have more than a hundred quickfix/location lists"));
+EXTERN char e_failed_resizing_quickfix_stack[]
+	INIT(= N_("E1544: Failed resizing the quickfix/location list stack"));
+EXTERN char e_no_quickfix_stack[]
+	INIT(= N_("E1545: Quickfix list stack unavailable"));
+#endif
+EXTERN char e_cannot_switch_to_a_closing_buffer[]
+	INIT(= N_("E1546: Cannot switch to a closing buffer"));
+EXTERN char e_cannot_not_support_redrawtabpanel[]
+	INIT(= N_("E1547: This version of Vim does not support :redrawtabpanel"));
+#ifdef FEAT_WAYLAND
+EXTERN char e_wayland_connection_unavailable[]
+	INIT(= N_("E1548: Wayland connection is unavailable"));
+#endif
+#if defined(FEAT_DIFF)
+EXTERN char e_cannot_have_more_than_nr_diff_anchors[]
+	INIT(= N_("E1549: Cannot have more than %d diff anchors"));
+EXTERN char e_failed_to_find_all_diff_anchors[]
+	INIT(= N_("E1550: Failed to find all diff anchors"));
+#endif
+#ifdef FEAT_PROP_POPUP
+EXTERN char e_cannot_open_a_popup_window_to_a_closing_buffer[]
+	INIT(= N_("E1551: Cannot open a popup window to a closing buffer"));
+#endif
+#ifdef FEAT_EVAL
+EXTERN char e_type_var_name_must_start_with_uppercase_letter_str[]
+	INIT(= N_("E1552: Type variable name must start with an uppercase letter: %s"));
+EXTERN char e_missing_comma_in_generic_function_str[]
+	INIT(= N_("E1553: Missing comma after type in generic function: %s"));
+EXTERN char e_missing_closing_angle_bracket_in_generic_function_str[]
+	INIT(= N_("E1554: Missing '>' in generic function: %s"));
+EXTERN char e_empty_type_list_for_generic_function_str[]
+	INIT(= N_("E1555: Empty type list specified for generic function '%s'"));
+EXTERN char e_too_many_types_for_generic_function_str[]
+	INIT(= N_("E1556: Too many types specified for generic function '%s'"));
+EXTERN char e_not_enough_types_for_generic_function_str[]
+	INIT(= N_("E1557: Not enough types specified for generic function '%s'"));
+EXTERN char e_unknown_generic_function_str[]
+	INIT(= N_("E1558: Unknown generic function: %s"));
+EXTERN char e_generic_func_missing_type_args_str[]
+	INIT(= N_("E1559: Type arguments missing for generic function '%s'"));
+EXTERN char e_not_a_generic_function_str[]
+	INIT(= N_("E1560: Not a generic function: %s"));
+EXTERN char e_duplicate_type_var_name_str[]
+	INIT(= N_("E1561: Duplicate type variable name: %s"));
+#endif
+#if defined(FEAT_DIFF)
+EXTERN char e_diff_anchors_with_hidden_windows[]
+	INIT(= N_("E1562: Diff anchors cannot be used with hidden diff windows"));
+#endif
+#ifdef FEAT_SOCKETSERVER
+EXTERN char e_socket_name_no_slashes[]
+	INIT(= N_("E1564: Socket name '%s' cannot have slashes in it without being a path"));
+EXTERN char e_socket_server_not_online[]
+	INIT(= N_("E1565: Socket server is not online, call remote_startserver() first"));
+EXTERN char e_socket_server_failed_connecting[]
+	INIT(= N_("E1566: Failed connecting to socket '%s'"));
+EXTERN char e_socket_server_version_mismatch[]
+	INIT(= N_("E1567: Socket server protocol version mismatch, check what Vim version you are using"));
+#endif
+EXTERN char e_osc_response_timed_out[]
+	INIT(= N_("E1568: OSC command response timed out: %.*s"));
+#ifdef FEAT_EVAL
+EXTERN char e_cannot_add_listener_in_listener_callback[]
+	INIT(= N_("E1569: Cannot use listener_add in a listener callback"));
+EXTERN char e_cannot_add_redraw_listener_in_listener_callback[]
+	INIT(= N_("E1570: Cannot use redraw_listener_add in a redraw listener callback"));
+EXTERN char e_no_redraw_listener_callbacks_defined[]
+	INIT(= N_("E1571: Must specify at least one callback for redraw_listener_add"));
+#endif
+EXTERN char e_leadtab_requires_tab[]
+	INIT(= N_("E1572: 'listchars' field \"leadtab\" requires \"tab\" to be specified"));
+#ifdef FEAT_JOB_CHANNEL
+EXTERN char e_cannot_listen_on_port[]
+	INIT(= N_("E1573: Cannot listen on port"));
+EXTERN char e_gethostbyname_in_channel_listen[]
+	INIT(= N_("E1574: gethostbyname(): cannot resolve hostname in channel_listen()"));
+#endif
+#ifdef FEAT_EVAL
+EXTERN char e_cannot_create_pipes[]
+	INIT(= N_("E1575: Cannot create pipes"));
+#endif
+EXTERN char e_tag_file_entry_must_not_be_url[]
+	INIT(= N_("E1576: Tag file entry must not be a URL"));
+EXTERN char e_invalid_format_string_single_percent_s[]
+	INIT(= N_("E1577: Invalid format string, only one \"%s\" is allowed"));
+#ifdef FEAT_SPELL
+EXTERN char e_too_many_postponed_prefixes_spell[]
+	INIT(= N_("E1578: Too many postponed prefixes and/or compound flags"));
+#endif
+EXTERN char e_completeopt_escape_cannot_be_used_with_nargs_underscore[]
+	INIT(= N_("E1579: -completeopt=escape cannot be used with -nargs=_"));

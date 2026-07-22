@@ -1,0 +1,43 @@
+# vi:ft=sudoers
+ALL ALL = 				ALL
+ALL ALL = 		NOSETENV :	ALL
+ALL ALL = 	CWD = *			ALL
+ALL ALL = (ALL)				ALL
+ALL ALL = (ALL)				ALL
+ALL ALL = (ALL)		NOSETENV :	ALL
+ALL ALL = (ALL)	CWD = *			ALL
+ALL ALL = (ALL)	CWD = *	NOSETENV :	ALL
+
+!user0, %group0 ALL = (user0, !user1 : !group0, group1) ALL
+#1000,  %#1000  ALL = (#1000 : #1000) ALL
+ALL ALL = (       ) ALL
+ALL ALL = (ALL    ) ALL
+ALL ALL = (   :   ) ALL
+ALL ALL = (   :ALL) ALL
+ALL ALL = (ALL:ALL) ALL
+
+ALL node0 , ! node1 = ALL : ! node2 , node3 = (ALL:ALL) CWD=/ ALL
+
+user0 node0 =        APPARMOR_PROFILE=unconfined /bin/pwd ""
+user1 node1 = (root) APPARMOR_PROFILE=prof_a//&prof_b NOEXEC: /bin/ping
+
+user0 node0 = PRIVS="proc_info,proc_session" /bin/kill
+
+#1000 node0 = 		NOTBEFORE= 2026013123		NOTAFTER = 20270131235959		/bin/crontab
+#1001 node1 = ()	NOTAFTER = 20270131235959Z	NOTBEFORE= 2026013123Z		MAIL :	/bin/crontab
+#1002 node2 = (ALL)	NOTBEFORE= 20260131235959-1200	NOTAFTER = 2027013123+1400		/bin/crontab
+
+%group0 node0 = TIMEOUT = 1		/bin/more
+%group1 node0 = TIMEOUT = 2s		/bin/more, (ALL:ALL) TIMEOUT=2S		NOFOLLOW: /bin/less
+%group2 node0 = TIMEOUT = 3m		/bin/more, (ALL:ALL) TIMEOUT=3M		NOFOLLOW: /bin/less
+%group3 node0 = TIMEOUT = 4h		/bin/more, (ALL:ALL) TIMEOUT=4H		NOFOLLOW: /bin/less
+%group4 node0 = TIMEOUT = 5d		/bin/more, (ALL:ALL) TIMEOUT=5D		NOFOLLOW: /bin/less
+%group5 node0 = TIMEOUT = 1D2h3M4s	/bin/more, (ALL:ALL) TIMEOUT=1d2H3m4S	NOFOLLOW: /bin/less
+
+%#1000 node0 =        CWD=/srv			list
+%#1001 node0 = (    ) CWD=~root			list
+%#1002 node0 = (:ALL) CWD=*	NOEXEC :	list
+
+#65535 ALL = (ALL) NOEXEC:NOFOLLOW:NOLOG_INPUT:NOMAIL:NOINTERCEPT:NOPASSWD:NOSETENV: sudoedit
+
+ALL ALL = (ALL:ALL) TIMEOUT=1m CWD=* FOLLOW : ^/bin/[ef]?grep$

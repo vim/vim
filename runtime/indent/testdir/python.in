@@ -1,6 +1,8 @@
 # vim: set ft=python sw=4 et:
 
 # START_INDENT
+# INDENT_EXE let g:pyindent_searchpair_timeout = 256
+# INDENT_EXE runtime autoload/python.vim
 dict = {
 'a': 1,
 'b': 2,

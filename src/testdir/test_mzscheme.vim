@@ -1,6 +1,5 @@
 " Test for MzScheme interface and mzeval() function
 
-source check.vim
 CheckFeature mzscheme
 
 func MzRequire()

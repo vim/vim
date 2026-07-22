@@ -16,6 +16,7 @@ LANGUAGES = \
 		fr \
 		ga \
 		hu \
+		hy \
 		it \
 		ja \
 		ja.euc-jp \
@@ -36,6 +37,7 @@ LANGUAGES = \
 		sk.cp1250 \
 		sr \
 		sv \
+		ta \
 		tr \
 		uk \
 		uk.cp1251 \
@@ -61,6 +63,7 @@ POFILES = \
 		fr.po \
 		ga.po \
 		hu.po \
+		hy.po \
 		it.po \
 		ja.po \
 		ja.euc-jp.po \
@@ -81,6 +84,7 @@ POFILES = \
 		sk.cp1250.po \
 		sr.po \
 		sv.po \
+		ta.po \
 		tr.po \
 		uk.po \
 		uk.cp1251.po \
@@ -105,6 +109,7 @@ MOFILES = \
 		fr.mo \
 		ga.mo \
 		hu.mo \
+		hy.mo \
 		it.mo \
 		ja.mo \
 		ko.UTF-8.mo \
@@ -118,6 +123,7 @@ MOFILES = \
 		sk.mo \
 		sr.mo \
 		sv.mo \
+		ta.mo \
 		tr.mo \
 		uk.mo \
 		vi.mo \
@@ -154,6 +160,7 @@ CHECKFILES = \
 		fr.ck \
 		ga.ck \
 		hu.ck \
+		hy.ck \
 		it.ck \
 		ja.ck \
 		ja.euc-jp.ck \
@@ -174,6 +181,7 @@ CHECKFILES = \
 		sk.cp1250.ck \
 		sr.ck \
 		sv.ck \
+		ta.ck \
 		tr.ck \
 		uk.ck \
 		uk.cp1251.ck \
@@ -186,10 +194,12 @@ CHECKFILES = \
 
 PO_VIM_INPUTLIST = \
 	../../runtime/optwin.vim \
+	../../runtime/autoload/typeset.vim \
 	../../runtime/defaults.vim
 
 PO_VIM_JSLIST = \
 	optwin.js \
+	typeset.js \
 	defaults.js
 
 # Arguments for xgettext to pick up messages to translate from the source code.

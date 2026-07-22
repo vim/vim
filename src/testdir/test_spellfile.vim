@@ -1,8 +1,5 @@
 " Test for commands that operate on the spellfile.
 
-source shared.vim
-source check.vim
-
 CheckFeature spell
 CheckFeature syntax
 
@@ -337,6 +334,10 @@ func Test_spellfile_format_error()
   " SN_COMPOUND: incorrect comppatlen
   call Spellfile_Test(0z080000000007040101000000020165, 'E758:')
 
+  " SN_COMPOUND: oversized sectionlen
+  let v = eval('0z08004000000803010161' .. repeat('61', 50) .. 'FF')
+  call Spellfile_Test(v, 'E759:')
+
   " SN_INFO: missing info
   call Spellfile_Test(0z0F0000000005040101, '')
 
@@ -371,6 +372,24 @@ func Test_spellfile_format_error()
   " LWORDTREE: incorrect sibling node count
   call Spellfile_Test(0zFF00000001040000000000000000, 'E759:')
 
+  " LWORDTREE: declared nodecount larger than the tree actually fills.
+  " Root has two siblings: 'x' (recurses into an end-of-word at idx 3..4)
+  " and BY_INDEX targeting position 9.  Tree fills positions 0..4, leaving
+  " 5..9 unwritten — byts[9] would be uninitialized without the fix.
+  call Spellfile_Test(0zFF0000000A02780100000979010000000000000000000000, 'E759:')
+
+  " LWORDTREE: recursion depth past MAXWLEN.  A linear chain of 254
+  " (siblingcount=1, byte='a') frames drives read_tree_node to depth
+  " MAXWLEN where the new guard rejects.  The trailing (01 00) gives the
+  " chain a clean end-of-word so an *unguarded* parser would accept the
+  " file silently — that's what makes this a meaningful regression test
+  " for the depth check specifically (a deeper chain would also crash
+  " unguarded builds via stack overflow, which we don't want in CI).
+  let v = eval('0zFF00000200' .. repeat('0161', 255)
+               \ .. '0100' ..  repeat('00', 8))
+
+  call Spellfile_Test(v, 'E759:')
+
   " KWORDTREE: missing tree node
   call Spellfile_Test(0zFF0000000000000004, 'E758:')
 
@@ -384,6 +403,30 @@ func Test_spellfile_format_error()
   call Spellfile_Test(0zFF00000000000000000000000201010000, 'E759:')
 
   let &rtp = save_rtp
+endfunc
+
+" An over-length soundfold() argument must not overflow the MAXWLEN result
+" buffer in the single-byte branch of spell_soundfold_sal().
+func Test_spellfile_soundfold_sal_overflow()
+  let save_enc = &encoding
+  set encoding=latin1
+  " A SAL map that appends without collapsing, so the result is not shorter
+  " than the input.
+  call writefile(['SET ISO8859-1', 'SAL collapse_result false',
+	\ 'SAL a aaaa', 'SAL b bbbb'], 'Xsal.aff')
+  call writefile(['2', 'hello', 'world'], 'Xsal.dic')
+  mkspell! Xsal Xsal
+  set spl=Xsal.latin1.spl spell
+
+  " 253 input characters hit the buffer boundary; the result must not exceed
+  " MAXWLEN - 1.
+  call assert_true(strlen(soundfold(repeat('a', 253))) <= 253)
+
+  set nospell spl& spelllang&
+  call delete('Xsal.aff')
+  call delete('Xsal.dic')
+  call delete('Xsal.latin1.spl')
+  let &encoding = save_enc
 endfunc
 
 " Test for format errors in suggest file
@@ -845,6 +888,22 @@ func Test_spell_add_word()
   %bw!
 endfunc
 
+func Test_spell_add_long_word()
+  set spell spellfile=./Xspellfile.add spelllang=en
+
+  let word = repeat('a', 9000)
+  let v:errmsg = ''
+  " Spell checking doesn't really work for such a long word,
+  " but this should not cause an E1510 error.
+  exe 'spellgood ' .. word
+  call assert_equal('', v:errmsg)
+  call assert_equal([word], readfile('./Xspellfile.add'))
+
+  set spell& spellfile= spelllang& encoding=utf-8
+  call delete('./Xspellfile.add')
+  call delete('./Xspellfile.add.spl')
+endfunc
+
 func Test_spellfile_verbose()
   call writefile(['1', 'one'], 'XtestVerbose.dic', 'D')
   call writefile([], 'XtestVerbose.aff', 'D')
@@ -1138,7 +1197,7 @@ endfunc
 " 'spellfile' accepts '@' on top of 'isfname'.
 def Test_spellfile_allow_at_character()
   mkdir('Xtest/the foo@bar,dir', 'p')
-  &spellfile = './Xtest/the foo@bar,dir/Xspellfile.add'
+  &spellfile = './Xtest/the foo@bar\,dir/Xspellfile.add'
   &spellfile = ''
   delete('Xtest', 'rf')
 enddef
@@ -1152,5 +1211,139 @@ func Test_mkspell_empty_dic()
   call delete('XtestEmpty.spl')
 endfunc
 
+" This used to cause a buffer overflow
+func Test_mkspell_no_buffer_overflow()
+  CheckNotMSWindows
+
+  let aff_lines = ['SET ISO8859-1', 'SFX A Y 1',
+        \ 'SFX A 0 s ' .. repeat(nr2char(0xff), 491)]
+  call writefile(aff_lines, 'Xbof.aff', 'D')
+  call writefile(['1', 'word/A'], 'Xbof.dic', 'D')
+  " Must not crash; ignore any conversion/regex errors.
+  try
+    mkspell! Xbof.spl Xbof
+  catch
+  endtry
+  defer delete('Xbof.spl')
+
+  let long = repeat(nr2char(0xff), 200)
+  let aff2_lines = ['SET ISO8859-1', 'SFX A Y 1',
+        \ 'SFX A 0 ' .. long .. ' .']
+  call writefile(aff2_lines, 'Xbof2.aff', 'D')
+  call writefile(['1', long .. '/A'], 'Xbof2.dic', 'D')
+  try
+    mkspell! Xbof2.spl Xbof2
+  catch
+  endtry
+  defer delete('Xbof2.spl')
+endfunc
+
+func Test_mkspell_no_affixlist_overflow()
+  let aff_lines = [
+        \ 'SET ISO8859-1',
+        \ 'PFXPOSTPONE',
+        \ 'PFX A Y 1',
+        \ 'PFX A 0 pre .',
+        \ ]
+  call writefile(aff_lines, 'Xaffbof.aff', 'D')
+  call writefile(['1', 'word/' .. repeat('A', 300)], 'Xaffbof.dic', 'D')
+
+  call assert_fails('mkspell! Xaffbof.spl Xaffbof',
+        \ 'Too many postponed prefixes and/or compound flags')
+  call assert_false(filereadable('Xaffbof.spl'))
+endfunc
+
+func Test_mkspell_no_compflag_overflow()
+  " Overflow the compound-flag path in get_compflags(): a word whose
+  " affix list repeats a compound flag many times accumulates one ID per
+  " occurrence, overrunning store_afflist[MAXWLEN].
+  let aff_lines = [
+        \ 'SET ISO8859-1',
+        \ 'COMPOUNDFLAG c',
+        \ ]
+  call writefile(aff_lines, 'Xcompbof.aff', 'D')
+
+  " Repeat the compound flag 'c' far past MAXWLEN.
+  call writefile(['1', 'word/' .. repeat('c', 300)], 'Xcompbof.dic', 'D')
+
+  call assert_fails('mkspell! Xcompbof.spl Xcompbof',
+        \ 'Too many postponed prefixes and/or compound flags')
+  call assert_false(filereadable('Xcompbof.spl'))
+endfunc
+
+func Test_spell_sug_tree_count_words_overflow()
+  " A crafted .spl/.sug pair with a BY_INDEX self-cycle in the fold word tree
+  " parses cleanly (shared refs aren't recursed, so read_tree_node()'s depth
+  " cap never trips), but drove tree_count_words() past its MAXWLEN-sized depth
+  " arrays -> stack out-of-bounds write.  The walk only happens when
+  " spellsuggest() loads the matching .sug.  Reaching the assert == no OOB.
+  call mkdir('Xrtp/spell', 'pR')
+  " VIMspell + v50, SN_SUGFILE(ts), SN_END, LWORDTREE{node:1,BY_INDEX->0,'A'},
+  " empty KWORDTREE/PREFIXTREE
+  let spl = eval('0z56494D7370656C6C320B0000000008000000001234'
+        \ .. '5678FF000000020101000000410000000000000000')
+  " VIMsug + v1, matching ts, SUGWORDTREE word "a", empty SUGTABLE
+  let sug = 0z56494D737567010000000012345678000000040161010000000000
+  call writefile(spl, 'Xrtp/spell/xx.utf-8.spl', 'b')
+  call writefile(sug, 'Xrtp/spell/xx.utf-8.sug', 'b')
+
+  new
+  set runtimepath+=./Xrtp
+  set spelllang=xx
+  set spell
+  " Unpatched: OOB write here (ASan abort, or crash).  Patched: returns a list.
+  call assert_equal(v:t_list, type(spellsuggest('helloo')))
+
+  set spell& spelllang& runtimepath&
+  bwipe!
+endfunc
+
+" A word longer than MAXWLEN must not overflow the soundfold result buffer in
+" the single-byte SOFO branch of spell_soundfold_sofo().
+func Test_soundfold_overflow()
+  let _enc=&enc
+  set enc=latin1
+  call writefile(['SOFOFROM ab', 'SOFOTO xy'], 'Xtest.aff', 'D')
+  call writefile(['1', 'foo'], 'Xtest.dic', 'D')
+  mkspell! Xtest Xtest
+  defer delete('Xtest.latin1.spl')
+  defer delete('Xtest.latin1.sug')
+  setl spelllang=Xtest.latin1.spl spell
+
+  " Before the fix the copy loop wrote one byte per input byte into a
+  " MAXWLEN (254) stack buffer with no upper bound, smashing the stack.
+  let sound = soundfold(repeat('ab', 300))
+  call assert_true(strlen(sound) < 254, 'soundfold result exceeds MAXWLEN')
+
+  set spell& spelllang&
+  let &enc = _enc
+endfunc
+
+func Test_spell_sal_sofo_truncated()
+  call mkdir('Xspelldir/spell', 'pR')
+
+  " "VIMspell" <ver=0x32>
+  "   SN_SAL(5)  flags=0 len=7   : <salflags=0><salcount=0,1><a><0><1>a<1>a
+  "   SN_SOFO(6) flags=0 len=0   : truncated, no body -> EOF in reader
+  " (28 bytes total)
+  let bytes = 0z56494d7370656c6c.3205000000000700.000101610161060000.000000
+  call writefile(bytes, 'Xspelldir/spell/Xx.utf-8.spl', 'b')
+
+  let save_rtp = &rtp
+  set rtp=./Xspelldir
+  try
+    set spelllang=Xx
+    silent! set spell
+  catch
+    " an error message is fine; a crash is not
+  endtry
+
+  " Reaching this point means Vim did not crash on the crafted file.
+  call assert_true(v:true)
+
+  set nospell
+  set spelllang&
+  let &rtp = save_rtp
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

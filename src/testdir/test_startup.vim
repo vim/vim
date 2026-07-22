@@ -1,9 +1,6 @@
 " Tests for startup.
 
-source shared.vim
-source screendump.vim
-source term_util.vim
-source check.vim
+source util/screendump.vim
 
 " Check that loading startup.vim works.
 func Test_startup_script()
@@ -74,6 +71,36 @@ func Test_after_comes_later()
   call delete('Xsequence')
 endfunc
 
+func Test_vim_did_init()
+  let before =<< trim [CODE]
+    set nocp viminfo+=nviminfo
+    set guioptions+=M
+    set loadplugins
+    set rtp=Xhere
+    set nomore
+  [CODE]
+
+  let after =<< trim [CODE]
+    redir! > Xtestout
+    echo g:var_vimrc
+    echo g:var_plugin
+    redir END
+    quit
+  [CODE]
+
+  call writefile(['let g:var_vimrc=v:vim_did_init'], 'Xvimrc', 'D')
+  call mkdir('Xhere/plugin', 'pR')
+  call writefile(['let g:var_plugin=v:vim_did_init'], 'Xhere/plugin/here.vim')
+
+  if RunVim(before, after, '-u Xvimrc')
+    let lines = readfile('Xtestout')
+    call assert_equal('0', lines[1])
+    call assert_equal('1', lines[2])
+  endif
+
+  call delete('Xtestout')
+endfunc
+
 func Test_pack_in_rtp_when_plugins_run()
   CheckFeature packages
   let before =<< trim [CODE]
@@ -125,6 +152,26 @@ func Test_help_arg()
       endif
     endfor
     call assert_equal(['Readonly mode', '--version'], found)
+  endif
+  call delete('Xtestout')
+endfunc
+
+func Test_version_arg()
+  " This does not work with a GUI-only binary, such as on MS-Windows.
+  CheckAnyOf Unix NotGui
+
+  if RunVim([], [], '--version >Xtestout')
+    let lines = readfile('Xtestout')
+    call assert_true(len(lines) > 10)
+    call assert_match('Vi IMproved', lines[0])
+
+    let idx = indexof(lines, 'v:val =~# "Features included.*:"')
+    call assert_true(idx >= 0)
+    call assert_true(idx + 1 < len(lines))
+    " Make sure the feature name is doubled on a line.
+    " For example, "+acl       +jumplist"
+    let feat_name = '[+-]+\?\w\+\%(()\)\?'
+    call assert_match($'^{feat_name}\s\+{feat_name}', lines[idx+1])
   endif
   call delete('Xtestout')
 endfunc
@@ -526,7 +573,7 @@ func Test_geometry()
       " Depending on the GUI library and the windowing system the final size
       " might be a bit different, allow for some tolerance.  Tuned based on
       " actual failures.
-      call assert_inrange(31, 35, str2nr(lines[0]))
+      call assert_inrange(30, 35, str2nr(lines[0]))
       " for some reason, the window may contain fewer lines than requested
       " for GTK, so allow some tolerance
       call assert_inrange(8, 13,  str2nr(lines[1]))
@@ -559,7 +606,7 @@ func Test_invalid_args()
   CheckUnix
   CheckNotGui
 
-  for opt in ['-Y', '--does-not-exist']
+  for opt in ['-K', '--does-not-exist']
     let out = split(system(GetVimCommand() .. ' ' .. opt), "\n")
     call assert_equal(1, v:shell_error)
     call assert_match('^VIM - Vi IMproved .* (.*)$',              out[0])
@@ -590,7 +637,7 @@ func Test_invalid_args()
     endfor
   endif
 
-  if has('gui_gtk')
+  if has('gui_gtk') && has("xterm_clipboard")
     let out = split(system(GetVimCommand() .. ' --display'), "\n")
     call assert_equal(1, v:shell_error)
     call assert_match('^VIM - Vi IMproved .* (.*)$',         out[0])
@@ -740,6 +787,19 @@ func Test_log()
   call delete('Xlogfile')
 endfunc
 
+func Test_log_nonexistent()
+  " this used to crash Vim
+  CheckRunVimInTerminal
+  CheckUnix
+  let args = ' -u NONE -i NONE -U NONE --log /X/Xlogfile -X -c qa!'
+  let options = {'term_finish': 'open', 'cmd':
+        \  'sh -c "' .. GetVimCommand() .. args .. '"'}
+  let buf = RunVimInTerminal('', options)
+  call WaitForAssert({-> assert_match('E484: Can''t open file.*Xlogfile', term_getline(buf, 1))})
+  " terminal job has already finished, so just close the buffer
+  exe buf .. "bw!"
+endfunc
+
 func Test_read_stdin()
   let after =<< trim [CODE]
     write Xtestout
@@ -766,6 +826,71 @@ func Test_progpath()
 
   " Only expect "vim" to appear in v:progname.
   call assert_match('vim\c', v:progname)
+endfunc
+
+func Test_stdin_no_newline()
+  CheckScreendump
+  CheckUnix
+  CheckExecutable bash
+  " For some reason bash doesn't exit at the end of the test on FreeBSD &
+  " OpenBSD.
+  CheckNotBSD
+
+  let $PS1 = 'TEST_PROMPT> '
+  let buf = RunVimInTerminal('', #{rows: 20, cmd: 'bash --noprofile --norc'})
+  call TermWait(buf, 100)
+
+  " Write input to temp file
+  call term_sendkeys(buf, "echo hello > temp.txt\<CR>")
+  call TermWait(buf, 200)
+
+  call term_sendkeys(buf, "bash -c '../vim --not-a-term -u NONE -c \":q!\" -' < temp.txt\<CR>")
+  call TermWait(buf, 200)
+
+  " Capture terminal output
+  let lines = []
+  for i in range(1, term_getsize(buf)[0])
+    call add(lines, term_getline(buf, i))
+  endfor
+
+  " Find the command line in output
+  let cmd_line = -1
+  for i in range(len(lines))
+    if lines[i] =~ '.*vim.*--not-a-term.*'
+      let cmd_line = i
+      break
+    endif
+  endfor
+
+  if cmd_line == -1
+    call assert_report('Command line not found in terminal output')
+  else
+    let next_line = -1
+    for i in range(cmd_line + 1, len(lines))
+      if lines[i] =~ '\S'
+        let next_line = i
+        break
+      endif
+    endfor
+
+    if next_line == -1
+      call assert_report('No prompt found after command execution')
+    else
+      call assert_equal(cmd_line + 1, next_line, 'Prompt should be on the immediate next line')
+      call assert_match('.*TEST_PROMPT>.*', lines[next_line], 'Line should contain the prompt PS1')
+    endif
+  endif
+
+  " Clean up temp file and exit shell
+  call term_sendkeys(buf, "\<C-U>rm -f temp.txt\<CR>")
+  call term_sendkeys(buf, "exit\<CR>")
+  call TermWait(buf, 200)
+
+  if job_status(term_getjob(buf)) ==# 'run'
+    call StopVimInTerminal(buf)
+  endif
+
+  unlet $PS1
 endfunc
 
 func Test_silent_ex_mode()
@@ -825,6 +950,7 @@ func Test_issue_3969()
 endfunc
 
 func Test_start_with_tabs()
+  CheckScreendump
   CheckRunVimInTerminal
 
   let buf = RunVimInTerminal('-p a b c', {})
@@ -1037,6 +1163,8 @@ func Test_EXINIT()
   [CODE]
   call writefile(after, 'Xafter', 'D')
   let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "set enc=utf8"'
+  call setenv('HOME', '/non-existing')
+  call setenv('XDG_CONFIG_HOME', '/non-existing')
   call setenv('EXINIT', 'let exinit_found="yes"')
   exe "silent !" . cmd
   call assert_equal([], readfile('Xtestout'))
@@ -1364,7 +1492,7 @@ func Test_cq_zero_exmode()
   let logfile = 'Xcq_log.txt'
   let out = system(GetVimCommand() .. ' --clean --log ' .. logfile .. ' -es -X -c "argdelete foobar" -c"7cq"')
   call assert_equal(8, v:shell_error)
-  let log = filter(readfile(logfile), {idx, val -> val =~ "E480"})
+  let log = filter(readfile(logfile), {idx, val -> val =~ "E480:"})
   call assert_match('E480: No match: foobar', log[0])
   call delete(logfile)
 
@@ -1375,7 +1503,7 @@ func Test_cq_zero_exmode()
   else
     call assert_equal(256, v:shell_error)
   endif
-  let log = filter(readfile(logfile), {idx, val -> val =~ "E480"})
+  let log = filter(readfile(logfile), {idx, val -> val =~ "E480:"})
   call assert_match('E480: No match: foobar', log[0])
   call delete('Xcq_log.txt')
 endfunc

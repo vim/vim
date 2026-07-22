@@ -24,15 +24,16 @@ virtual_active(void)
 {
     unsigned int cur_ve_flags = get_ve_flags();
 
+    if (cur_ve_flags == VE_ALL
+	    || ((cur_ve_flags & VE_INSERT) && (State & MODE_INSERT)))
+	return TRUE;
+
     // While an operator is being executed we return "virtual_op", because
     // VIsual_active has already been reset, thus we can't check for "block"
     // being used.
     if (virtual_op != MAYBE)
 	return virtual_op;
-    return (cur_ve_flags == VE_ALL
-	    || ((cur_ve_flags & VE_BLOCK) && VIsual_active
-						      && VIsual_mode == Ctrl_V)
-	    || ((cur_ve_flags & VE_INSERT) && (State & MODE_INSERT)));
+    return (cur_ve_flags & VE_BLOCK) && VIsual_active && VIsual_mode == Ctrl_V;
 }
 
 /*
@@ -43,7 +44,7 @@ getviscol(void)
 {
     colnr_T	x;
 
-    getvvcol(curwin, &curwin->w_cursor, &x, NULL, NULL);
+    getvvcol(curwin, &curwin->w_cursor, &x, NULL, NULL, 0);
     return (int)x;
 }
 
@@ -60,11 +61,8 @@ coladvance_force(colnr_T wcol)
     if (wcol == MAXCOL)
 	curwin->w_valid &= ~VALID_VIRTCOL;
     else
-    {
 	// Virtcol is valid
-	curwin->w_valid |= VALID_VIRTCOL;
-	curwin->w_virtcol = wcol;
-    }
+	set_valid_virtcol(curwin, wcol);
     return rc;
 }
 
@@ -72,7 +70,7 @@ coladvance_force(colnr_T wcol)
  * Get the screen position of character col with a coladd in the cursor line.
  */
     int
-getviscol2(colnr_T col, colnr_T coladd UNUSED)
+getviscol2(colnr_T col, colnr_T coladd)
 {
     colnr_T	x;
     pos_T	pos;
@@ -80,7 +78,7 @@ getviscol2(colnr_T col, colnr_T coladd UNUSED)
     pos.lnum = curwin->w_cursor.lnum;
     pos.col = col;
     pos.coladd = coladd;
-    getvvcol(curwin, &pos, &x, NULL, NULL);
+    getvvcol(curwin, &pos, &x, NULL, NULL, 0);
     return (int)x;
 }
 
@@ -101,11 +99,8 @@ coladvance(colnr_T wantcol)
     if (wantcol == MAXCOL || rc == FAIL)
 	curwin->w_valid &= ~VALID_VIRTCOL;
     else if (*ml_get_cursor() != TAB)
-    {
 	// Virtcol is valid when not on a TAB
-	curwin->w_valid |= VALID_VIRTCOL;
-	curwin->w_virtcol = wantcol;
-    }
+	set_valid_virtcol(curwin, wantcol);
     return rc;
 }
 
@@ -130,6 +125,7 @@ coladvance2(
     colnr_T	wcol = wcol_arg;
     int		idx;
     char_u	*line;
+    int		linelen;
     colnr_T	col = 0;
     int		csize = 0;
     int		one_more;
@@ -142,10 +138,11 @@ coladvance2(
 		    || (VIsual_active && *p_sel != 'o')
 		    || ((get_ve_flags() & VE_ONEMORE) && wcol < MAXCOL);
     line = ml_get_buf(curbuf, pos->lnum, FALSE);
+    linelen = ml_get_buf_len(curbuf, pos->lnum);
 
     if (wcol >= MAXCOL)
     {
-	    idx = (int)STRLEN(line) - 1 + one_more;
+	    idx = linelen - 1 + one_more;
 	    col = wcol;
 
 	    if ((addspaces || finetune) && !VIsual_active)
@@ -166,7 +163,7 @@ coladvance2(
 		&& wcol >= (colnr_T)width
 		&& width > 0)
 	{
-	    csize = linetabsize(curwin, pos->lnum);
+	    csize = linetabsize_eol(curwin, pos->lnum);
 	    if (csize > 0)
 		csize--;
 
@@ -189,7 +186,7 @@ coladvance2(
 #endif
 	    // Count a tab for what it's worth (if list mode not on)
 #ifdef FEAT_LINEBREAK
-	    csize = win_lbr_chartabsize(&cts, &head);
+	    csize = win_lbr_chartabsize(&cts, &head, NULL);
 	    MB_PTR_ADV(cts.cts_ptr);
 #else
 	    csize = lbr_chartabsize_adv(&cts);
@@ -214,10 +211,10 @@ coladvance2(
 	if (col > wcol || (!virtual_active() && one_more == 0))
 	{
 	    idx -= 1;
-# ifdef FEAT_LINEBREAK
+#ifdef FEAT_LINEBREAK
 	    // Don't count the chars from 'showbreak'.
 	    csize -= head;
-# endif
+#endif
 	    col -= csize;
 	}
 
@@ -255,7 +252,6 @@ coladvance2(
 	    else
 	    {
 		// Break a tab
-		int	linelen = (int)STRLEN(line);
 		int	correct = wcol - col - csize + 1; // negative!!
 		char_u	*newline;
 		int	t, s = 0;
@@ -303,7 +299,7 @@ coladvance2(
 	    {
 		colnr_T	    scol, ecol;
 
-		getvcol(curwin, pos, &scol, NULL, &ecol);
+		getvcol(curwin, pos, &scol, NULL, &ecol, 0);
 		pos->coladd = ecol - scol;
 	    }
 	}
@@ -412,7 +408,7 @@ dec(pos_T *lp)
     {
 	// past end of line
 	p = ml_get(lp->lnum);
-	lp->col = (colnr_T)STRLEN(p);
+	lp->col = ml_get_len(lp->lnum);
 	if (has_mbyte)
 	    lp->col -= (*mb_head_off)(p, p + lp->col);
 	return 0;
@@ -435,7 +431,7 @@ dec(pos_T *lp)
 	// there is a prior line
 	lp->lnum--;
 	p = ml_get(lp->lnum);
-	lp->col = (colnr_T)STRLEN(p);
+	lp->col = ml_get_len(lp->lnum);
 	if (has_mbyte)
 	    lp->col -= (*mb_head_off)(p, p + lp->col);
 	return 1;
@@ -515,7 +511,6 @@ get_cursor_rel_lnum(
     void
 check_pos(buf_T *buf, pos_T *pos)
 {
-    char_u *line;
     colnr_T len;
 
     if (pos->lnum > buf->b_ml.ml_line_count)
@@ -523,8 +518,7 @@ check_pos(buf_T *buf, pos_T *pos)
 
     if (pos->col > 0)
     {
-	line = ml_get_buf(buf, pos->lnum, FALSE);
-	len = (colnr_T)STRLEN(line);
+	len = ml_get_buf_len(buf, pos->lnum);
 	if (pos->col > len)
 	    pos->col = len;
     }
@@ -570,7 +564,7 @@ check_cursor_col_win(win_T *win)
     colnr_T      oldcoladd = win->w_cursor.col + win->w_cursor.coladd;
     unsigned int cur_ve_flags = get_ve_flags();
 
-    len = (colnr_T)STRLEN(ml_get_buf(win->w_buffer, win->w_cursor.lnum, FALSE));
+    len = ml_get_buf_len(win->w_buffer, win->w_cursor.lnum);
     if (len == 0)
 	win->w_cursor.col = 0;
     else if (win->w_cursor.col >= len)
@@ -613,7 +607,7 @@ check_cursor_col_win(win_T *win)
 	    {
 		int cs, ce;
 
-		getvcol(win, &win->w_cursor, &cs, NULL, &ce);
+		getvcol(win, &win->w_cursor, &cs, NULL, &ce, 0);
 		if (win->w_cursor.coladd > ce - cs)
 		    win->w_cursor.coladd = ce - cs;
 	    }
@@ -649,7 +643,7 @@ check_visual_pos(void)
     }
     else
     {
-	int len = (int)STRLEN(ml_get(VIsual.lnum));
+	int len = ml_get_len(VIsual.lnum);
 
 	if (VIsual.col > len)
 	{
@@ -709,7 +703,7 @@ set_leftcol(colnr_T leftcol)
     // advance the cursor one more char.  If this fails (last char of the
     // line) adjust the scrolling.
     colnr_T	s, e;
-    getvvcol(curwin, &curwin->w_cursor, &s, NULL, &e);
+    getvvcol(curwin, &curwin->w_cursor, &s, NULL, &e, 0);
     if (e > (colnr_T)lastcol)
     {
 	retval = TRUE;
@@ -726,7 +720,7 @@ set_leftcol(colnr_T leftcol)
     }
 
     if (retval)
-	curwin->w_set_curswant = TRUE;
+	curwin->w_set_curswant = true;
     redraw_later(UPD_NOT_VALID);
     return retval;
 }
@@ -772,7 +766,7 @@ copy_option_part(
     return len;
 }
 
-#ifndef HAVE_MEMSET
+#if !defined(HAVE_MEMSET) && !defined(PROTO)
     void *
 vim_memset(void *ptr, int c, size_t size)
 {
@@ -924,184 +918,206 @@ static char_u modifier_keys_table[] =
 
 static struct key_name_entry
 {
-    int	    key;	// Special key code or ascii value
-    char_u  *name;	// Name of key
+    int		enabled;	    // is this entry available (TRUE/FALSE)?
+    int		key;		    // special key code or ascii value
+    string_T	name;		    // name of key
+    int		is_alt;		    // is an alternative name
 } key_names_table[] =
+// Must be sorted by the 'name.string' field in ascending order because it is used by bsearch()!
 {
-    {' ',		(char_u *)"Space"},
-    {TAB,		(char_u *)"Tab"},
-    {K_TAB,		(char_u *)"Tab"},
-    {NL,		(char_u *)"NL"},
-    {NL,		(char_u *)"NewLine"},	// Alternative name
-    {NL,		(char_u *)"LineFeed"},	// Alternative name
-    {NL,		(char_u *)"LF"},	// Alternative name
-    {CAR,		(char_u *)"CR"},
-    {CAR,		(char_u *)"Return"},	// Alternative name
-    {CAR,		(char_u *)"Enter"},	// Alternative name
-    {K_BS,		(char_u *)"BS"},
-    {K_BS,		(char_u *)"BackSpace"},	// Alternative name
-    {ESC,		(char_u *)"Esc"},
-    {CSI,		(char_u *)"CSI"},
-    {K_CSI,		(char_u *)"xCSI"},
-    {'|',		(char_u *)"Bar"},
-    {'\\',		(char_u *)"Bslash"},
-    {K_DEL,		(char_u *)"Del"},
-    {K_DEL,		(char_u *)"Delete"},	// Alternative name
-    {K_KDEL,		(char_u *)"kDel"},
-    {K_UP,		(char_u *)"Up"},
-    {K_DOWN,		(char_u *)"Down"},
-    {K_LEFT,		(char_u *)"Left"},
-    {K_RIGHT,		(char_u *)"Right"},
-    {K_XUP,		(char_u *)"xUp"},
-    {K_XDOWN,		(char_u *)"xDown"},
-    {K_XLEFT,		(char_u *)"xLeft"},
-    {K_XRIGHT,		(char_u *)"xRight"},
-    {K_PS,		(char_u *)"PasteStart"},
-    {K_PE,		(char_u *)"PasteEnd"},
-
-    {K_F1,		(char_u *)"F1"},
-    {K_F2,		(char_u *)"F2"},
-    {K_F3,		(char_u *)"F3"},
-    {K_F4,		(char_u *)"F4"},
-    {K_F5,		(char_u *)"F5"},
-    {K_F6,		(char_u *)"F6"},
-    {K_F7,		(char_u *)"F7"},
-    {K_F8,		(char_u *)"F8"},
-    {K_F9,		(char_u *)"F9"},
-    {K_F10,		(char_u *)"F10"},
-
-    {K_F11,		(char_u *)"F11"},
-    {K_F12,		(char_u *)"F12"},
-    {K_F13,		(char_u *)"F13"},
-    {K_F14,		(char_u *)"F14"},
-    {K_F15,		(char_u *)"F15"},
-    {K_F16,		(char_u *)"F16"},
-    {K_F17,		(char_u *)"F17"},
-    {K_F18,		(char_u *)"F18"},
-    {K_F19,		(char_u *)"F19"},
-    {K_F20,		(char_u *)"F20"},
-
-    {K_F21,		(char_u *)"F21"},
-    {K_F22,		(char_u *)"F22"},
-    {K_F23,		(char_u *)"F23"},
-    {K_F24,		(char_u *)"F24"},
-    {K_F25,		(char_u *)"F25"},
-    {K_F26,		(char_u *)"F26"},
-    {K_F27,		(char_u *)"F27"},
-    {K_F28,		(char_u *)"F28"},
-    {K_F29,		(char_u *)"F29"},
-    {K_F30,		(char_u *)"F30"},
-
-    {K_F31,		(char_u *)"F31"},
-    {K_F32,		(char_u *)"F32"},
-    {K_F33,		(char_u *)"F33"},
-    {K_F34,		(char_u *)"F34"},
-    {K_F35,		(char_u *)"F35"},
-    {K_F36,		(char_u *)"F36"},
-    {K_F37,		(char_u *)"F37"},
-
-    {K_XF1,		(char_u *)"xF1"},
-    {K_XF2,		(char_u *)"xF2"},
-    {K_XF3,		(char_u *)"xF3"},
-    {K_XF4,		(char_u *)"xF4"},
-
-    {K_HELP,		(char_u *)"Help"},
-    {K_UNDO,		(char_u *)"Undo"},
-    {K_INS,		(char_u *)"Insert"},
-    {K_INS,		(char_u *)"Ins"},	// Alternative name
-    {K_KINS,		(char_u *)"kInsert"},
-    {K_HOME,		(char_u *)"Home"},
-    {K_KHOME,		(char_u *)"kHome"},
-    {K_XHOME,		(char_u *)"xHome"},
-    {K_ZHOME,		(char_u *)"zHome"},
-    {K_END,		(char_u *)"End"},
-    {K_KEND,		(char_u *)"kEnd"},
-    {K_XEND,		(char_u *)"xEnd"},
-    {K_ZEND,		(char_u *)"zEnd"},
-    {K_PAGEUP,		(char_u *)"PageUp"},
-    {K_PAGEDOWN,	(char_u *)"PageDown"},
-    {K_KPAGEUP,		(char_u *)"kPageUp"},
-    {K_KPAGEDOWN,	(char_u *)"kPageDown"},
-
-    {K_KPLUS,		(char_u *)"kPlus"},
-    {K_KMINUS,		(char_u *)"kMinus"},
-    {K_KDIVIDE,		(char_u *)"kDivide"},
-    {K_KMULTIPLY,	(char_u *)"kMultiply"},
-    {K_KENTER,		(char_u *)"kEnter"},
-    {K_KPOINT,		(char_u *)"kPoint"},
-
-    {K_K0,		(char_u *)"k0"},
-    {K_K1,		(char_u *)"k1"},
-    {K_K2,		(char_u *)"k2"},
-    {K_K3,		(char_u *)"k3"},
-    {K_K4,		(char_u *)"k4"},
-    {K_K5,		(char_u *)"k5"},
-    {K_K6,		(char_u *)"k6"},
-    {K_K7,		(char_u *)"k7"},
-    {K_K8,		(char_u *)"k8"},
-    {K_K9,		(char_u *)"k9"},
-
-    {'<',		(char_u *)"lt"},
-
-    {K_MOUSE,		(char_u *)"Mouse"},
-#ifdef FEAT_MOUSE_NET
-    {K_NETTERM_MOUSE,	(char_u *)"NetMouse"},
-#endif
+    {TRUE, K_BS, STR_LITERAL_INIT("BackSpace"), TRUE},
+    {TRUE, '|', STR_LITERAL_INIT("Bar"), FALSE},
+    {TRUE, K_BS, STR_LITERAL_INIT("BS"), FALSE},
+    {TRUE, '\\', STR_LITERAL_INIT("Bslash"), FALSE},
+    {TRUE, K_COMMAND, STR_LITERAL_INIT("Cmd"), FALSE},
+    {TRUE, CAR, STR_LITERAL_INIT("CR"), FALSE},
+    {TRUE, CSI, STR_LITERAL_INIT("CSI"), FALSE},
+    {TRUE, K_CURSORHOLD, STR_LITERAL_INIT("CursorHold"), FALSE},
+    {
 #ifdef FEAT_MOUSE_DEC
-    {K_DEC_MOUSE,	(char_u *)"DecMouse"},
+    TRUE,
+#else
+    FALSE,
 #endif
+	K_DEC_MOUSE, STR_LITERAL_INIT("DecMouse"), FALSE},
+    {TRUE, K_DEL, STR_LITERAL_INIT("Del"), FALSE},
+    {TRUE, K_DEL, STR_LITERAL_INIT("Delete"), TRUE},
+    {TRUE, K_DOWN, STR_LITERAL_INIT("Down"), FALSE},
+    {TRUE, K_DROP, STR_LITERAL_INIT("Drop"), FALSE},
+    {TRUE, K_END, STR_LITERAL_INIT("End"), FALSE},
+    {TRUE, CAR, STR_LITERAL_INIT("Enter"), TRUE},
+    {TRUE, ESC, STR_LITERAL_INIT("Esc"), FALSE},
+
+    {TRUE, K_F1, STR_LITERAL_INIT("F1"), FALSE},
+    {TRUE, K_F10, STR_LITERAL_INIT("F10"), FALSE},
+    {TRUE, K_F11, STR_LITERAL_INIT("F11"), FALSE},
+    {TRUE, K_F12, STR_LITERAL_INIT("F12"), FALSE},
+    {TRUE, K_F13, STR_LITERAL_INIT("F13"), FALSE},
+    {TRUE, K_F14, STR_LITERAL_INIT("F14"), FALSE},
+    {TRUE, K_F15, STR_LITERAL_INIT("F15"), FALSE},
+    {TRUE, K_F16, STR_LITERAL_INIT("F16"), FALSE},
+    {TRUE, K_F17, STR_LITERAL_INIT("F17"), FALSE},
+    {TRUE, K_F18, STR_LITERAL_INIT("F18"), FALSE},
+    {TRUE, K_F19, STR_LITERAL_INIT("F19"), FALSE},
+
+    {TRUE, K_F2, STR_LITERAL_INIT("F2"), FALSE},
+    {TRUE, K_F20, STR_LITERAL_INIT("F20"), FALSE},
+    {TRUE, K_F21, STR_LITERAL_INIT("F21"), FALSE},
+    {TRUE, K_F22, STR_LITERAL_INIT("F22"), FALSE},
+    {TRUE, K_F23, STR_LITERAL_INIT("F23"), FALSE},
+    {TRUE, K_F24, STR_LITERAL_INIT("F24"), FALSE},
+    {TRUE, K_F25, STR_LITERAL_INIT("F25"), FALSE},
+    {TRUE, K_F26, STR_LITERAL_INIT("F26"), FALSE},
+    {TRUE, K_F27, STR_LITERAL_INIT("F27"), FALSE},
+    {TRUE, K_F28, STR_LITERAL_INIT("F28"), FALSE},
+    {TRUE, K_F29, STR_LITERAL_INIT("F29"), FALSE},
+
+    {TRUE, K_F3, STR_LITERAL_INIT("F3"), FALSE},
+    {TRUE, K_F30, STR_LITERAL_INIT("F30"), FALSE},
+    {TRUE, K_F31, STR_LITERAL_INIT("F31"), FALSE},
+    {TRUE, K_F32, STR_LITERAL_INIT("F32"), FALSE},
+    {TRUE, K_F33, STR_LITERAL_INIT("F33"), FALSE},
+    {TRUE, K_F34, STR_LITERAL_INIT("F34"), FALSE},
+    {TRUE, K_F35, STR_LITERAL_INIT("F35"), FALSE},
+    {TRUE, K_F36, STR_LITERAL_INIT("F36"), FALSE},
+    {TRUE, K_F37, STR_LITERAL_INIT("F37"), FALSE},
+
+    {TRUE, K_F4, STR_LITERAL_INIT("F4"), FALSE},
+    {TRUE, K_F5, STR_LITERAL_INIT("F5"), FALSE},
+    {TRUE, K_F6, STR_LITERAL_INIT("F6"), FALSE},
+    {TRUE, K_F7, STR_LITERAL_INIT("F7"), FALSE},
+    {TRUE, K_F8, STR_LITERAL_INIT("F8"), FALSE},
+    {TRUE, K_F9, STR_LITERAL_INIT("F9"), FALSE},
+
+    {TRUE, K_FOCUSGAINED, STR_LITERAL_INIT("FocusGained"), FALSE},
+    {TRUE, K_FOCUSLOST, STR_LITERAL_INIT("FocusLost"), FALSE},
+    {TRUE, K_HELP, STR_LITERAL_INIT("Help"), FALSE},
+    {TRUE, K_HOME, STR_LITERAL_INIT("Home"), FALSE},
+    {TRUE, K_IGNORE, STR_LITERAL_INIT("Ignore"), FALSE},
+    {TRUE, K_INS, STR_LITERAL_INIT("Ins"), TRUE},
+    {TRUE, K_INS, STR_LITERAL_INIT("Insert"), FALSE},
+    {
 #ifdef FEAT_MOUSE_JSB
-    {K_JSBTERM_MOUSE,	(char_u *)"JsbMouse"},
+    TRUE,
+#else
+    FALSE,
 #endif
+	K_JSBTERM_MOUSE, STR_LITERAL_INIT("JsbMouse"), FALSE},
+    {TRUE, K_K0, STR_LITERAL_INIT("k0"), FALSE},
+    {TRUE, K_K1, STR_LITERAL_INIT("k1"), FALSE},
+    {TRUE, K_K2, STR_LITERAL_INIT("k2"), FALSE},
+    {TRUE, K_K3, STR_LITERAL_INIT("k3"), FALSE},
+    {TRUE, K_K4, STR_LITERAL_INIT("k4"), FALSE},
+    {TRUE, K_K5, STR_LITERAL_INIT("k5"), FALSE},
+    {TRUE, K_K6, STR_LITERAL_INIT("k6"), FALSE},
+    {TRUE, K_K7, STR_LITERAL_INIT("k7"), FALSE},
+    {TRUE, K_K8, STR_LITERAL_INIT("k8"), FALSE},
+    {TRUE, K_K9, STR_LITERAL_INIT("k9"), FALSE},
+
+    {TRUE, K_KDEL, STR_LITERAL_INIT("kDel"), FALSE},
+    {TRUE, K_KDIVIDE, STR_LITERAL_INIT("kDivide"), FALSE},
+    {TRUE, K_KEND, STR_LITERAL_INIT("kEnd"), FALSE},
+    {TRUE, K_KENTER, STR_LITERAL_INIT("kEnter"), FALSE},
+    {TRUE, K_KHOME, STR_LITERAL_INIT("kHome"), FALSE},
+    {TRUE, K_KINS, STR_LITERAL_INIT("kInsert"), FALSE},
+    {TRUE, K_KMINUS, STR_LITERAL_INIT("kMinus"), FALSE},
+    {TRUE, K_KMULTIPLY, STR_LITERAL_INIT("kMultiply"), FALSE},
+    {TRUE, K_KPAGEDOWN, STR_LITERAL_INIT("kPageDown"), FALSE},
+    {TRUE, K_KPAGEUP, STR_LITERAL_INIT("kPageUp"), FALSE},
+    {TRUE, K_KPLUS, STR_LITERAL_INIT("kPlus"), FALSE},
+    {TRUE, K_KPOINT, STR_LITERAL_INIT("kPoint"), FALSE},
+    {TRUE, K_LEFT, STR_LITERAL_INIT("Left"), FALSE},
+    {TRUE, K_LEFTDRAG, STR_LITERAL_INIT("LeftDrag"), FALSE},
+    {TRUE, K_LEFTMOUSE, STR_LITERAL_INIT("LeftMouse"), FALSE},
+    {TRUE, K_LEFTMOUSE_NM, STR_LITERAL_INIT("LeftMouseNM"), FALSE},
+    {TRUE, K_LEFTRELEASE, STR_LITERAL_INIT("LeftRelease"), FALSE},
+    {TRUE, K_LEFTRELEASE_NM, STR_LITERAL_INIT("LeftReleaseNM"), FALSE},
+    {TRUE, NL, STR_LITERAL_INIT("LF"), TRUE},
+    {TRUE, NL, STR_LITERAL_INIT("LineFeed"), TRUE},
+    {TRUE, '<', STR_LITERAL_INIT("lt"), FALSE},
+    {TRUE, K_MIDDLEDRAG, STR_LITERAL_INIT("MiddleDrag"), FALSE},
+    {TRUE, K_MIDDLEMOUSE, STR_LITERAL_INIT("MiddleMouse"), FALSE},
+    {TRUE, K_MIDDLERELEASE, STR_LITERAL_INIT("MiddleRelease"), FALSE},
+    {TRUE, K_MOUSE, STR_LITERAL_INIT("Mouse"), FALSE},
+    {TRUE, K_MOUSEDOWN, STR_LITERAL_INIT("MouseDown"), TRUE},
+    {TRUE, K_MOUSEMOVE, STR_LITERAL_INIT("MouseMove"), FALSE},
+    {TRUE, K_MOUSEUP, STR_LITERAL_INIT("MouseUp"), TRUE},
+    {
+#ifdef FEAT_MOUSE_NET
+    TRUE,
+#else
+    FALSE,
+#endif
+	K_NETTERM_MOUSE, STR_LITERAL_INIT("NetMouse"), FALSE},
+    {TRUE, NL, STR_LITERAL_INIT("NewLine"), TRUE},
+    {TRUE, NL, STR_LITERAL_INIT("NL"), FALSE},
+    {TRUE, K_ZERO, STR_LITERAL_INIT("Nul"), FALSE},
+    {TRUE, OSC, STR_LITERAL_INIT("OSC"), FALSE},
+    {TRUE, K_PAGEDOWN, STR_LITERAL_INIT("PageDown"), FALSE},
+    {TRUE, K_PAGEUP, STR_LITERAL_INIT("PageUp"), FALSE},
+    {TRUE, K_PE, STR_LITERAL_INIT("PasteEnd"), FALSE},
+    {TRUE, K_PS, STR_LITERAL_INIT("PasteStart"), FALSE},
+    {TRUE, K_PLUG, STR_LITERAL_INIT("Plug"), FALSE},
+    {
 #ifdef FEAT_MOUSE_PTERM
-    {K_PTERM_MOUSE,	(char_u *)"PtermMouse"},
+    TRUE,
+#else
+    FALSE,
 #endif
-#ifdef FEAT_MOUSE_URXVT
-    {K_URXVT_MOUSE,	(char_u *)"UrxvtMouse"},
-#endif
-    {K_SGR_MOUSE,	(char_u *)"SgrMouse"},
-    {K_SGR_MOUSERELEASE, (char_u *)"SgrMouseRelease"},
-    {K_LEFTMOUSE,	(char_u *)"LeftMouse"},
-    {K_LEFTMOUSE_NM,	(char_u *)"LeftMouseNM"},
-    {K_LEFTDRAG,	(char_u *)"LeftDrag"},
-    {K_LEFTRELEASE,	(char_u *)"LeftRelease"},
-    {K_LEFTRELEASE_NM,	(char_u *)"LeftReleaseNM"},
-    {K_MOUSEMOVE,	(char_u *)"MouseMove"},
-    {K_MIDDLEMOUSE,	(char_u *)"MiddleMouse"},
-    {K_MIDDLEDRAG,	(char_u *)"MiddleDrag"},
-    {K_MIDDLERELEASE,	(char_u *)"MiddleRelease"},
-    {K_RIGHTMOUSE,	(char_u *)"RightMouse"},
-    {K_RIGHTDRAG,	(char_u *)"RightDrag"},
-    {K_RIGHTRELEASE,	(char_u *)"RightRelease"},
-    {K_MOUSEDOWN,	(char_u *)"ScrollWheelUp"},
-    {K_MOUSEUP,		(char_u *)"ScrollWheelDown"},
-    {K_MOUSELEFT,	(char_u *)"ScrollWheelRight"},
-    {K_MOUSERIGHT,	(char_u *)"ScrollWheelLeft"},
-    {K_MOUSEDOWN,	(char_u *)"MouseDown"}, // OBSOLETE: Use
-    {K_MOUSEUP,		(char_u *)"MouseUp"},	// ScrollWheelXXX instead
-    {K_X1MOUSE,		(char_u *)"X1Mouse"},
-    {K_X1DRAG,		(char_u *)"X1Drag"},
-    {K_X1RELEASE,		(char_u *)"X1Release"},
-    {K_X2MOUSE,		(char_u *)"X2Mouse"},
-    {K_X2DRAG,		(char_u *)"X2Drag"},
-    {K_X2RELEASE,		(char_u *)"X2Release"},
-    {K_DROP,		(char_u *)"Drop"},
-    {K_ZERO,		(char_u *)"Nul"},
+	K_PTERM_MOUSE, STR_LITERAL_INIT("PtermMouse"), FALSE},
+    {TRUE, CAR, STR_LITERAL_INIT("Return"), TRUE},
+    {TRUE, K_RIGHT, STR_LITERAL_INIT("Right"), FALSE},
+    {TRUE, K_RIGHTDRAG, STR_LITERAL_INIT("RightDrag"), FALSE},
+    {TRUE, K_RIGHTMOUSE, STR_LITERAL_INIT("RightMouse"), FALSE},
+    {TRUE, K_RIGHTRELEASE, STR_LITERAL_INIT("RightRelease"), FALSE},
+    {TRUE, K_SCRIPT_COMMAND, STR_LITERAL_INIT("ScriptCmd"), FALSE},
+    {TRUE, K_MOUSEUP, STR_LITERAL_INIT("ScrollWheelDown"), FALSE},
+    {TRUE, K_MOUSERIGHT, STR_LITERAL_INIT("ScrollWheelLeft"), FALSE},
+    {TRUE, K_MOUSELEFT, STR_LITERAL_INIT("ScrollWheelRight"), FALSE},
+    {TRUE, K_MOUSEDOWN, STR_LITERAL_INIT("ScrollWheelUp"), FALSE},
+    {TRUE, K_SGR_MOUSE, STR_LITERAL_INIT("SgrMouse"), FALSE},
+    {TRUE, K_SGR_MOUSERELEASE, STR_LITERAL_INIT("SgrMouseRelease"), FALSE},
+    {
 #ifdef FEAT_EVAL
-    {K_SNR,		(char_u *)"SNR"},
+    TRUE,
+#else
+    FALSE,
 #endif
-    {K_PLUG,		(char_u *)"Plug"},
-    {K_CURSORHOLD,	(char_u *)"CursorHold"},
-    {K_IGNORE,		(char_u *)"Ignore"},
-    {K_COMMAND,		(char_u *)"Cmd"},
-    {K_SCRIPT_COMMAND,	(char_u *)"ScriptCmd"},
-    {K_FOCUSGAINED,	(char_u *)"FocusGained"},
-    {K_FOCUSLOST,	(char_u *)"FocusLost"},
-    {0,			NULL}
+	K_SNR, STR_LITERAL_INIT("SNR"), FALSE},
+    {TRUE, ' ', STR_LITERAL_INIT("Space"), FALSE},
+    {TRUE, TAB, STR_LITERAL_INIT("Tab"), FALSE},
+    {TRUE, K_TAB, STR_LITERAL_INIT("Tab"), FALSE},
+    {TRUE, K_UNDO, STR_LITERAL_INIT("Undo"), FALSE},
+    {TRUE, K_UP, STR_LITERAL_INIT("Up"), FALSE},
+    {
+#ifdef FEAT_MOUSE_URXVT
+    TRUE,
+#else
+    FALSE,
+#endif
+	K_URXVT_MOUSE, STR_LITERAL_INIT("UrxvtMouse"), FALSE},
+    {TRUE, K_X1DRAG, STR_LITERAL_INIT("X1Drag"), FALSE},
+    {TRUE, K_X1MOUSE, STR_LITERAL_INIT("X1Mouse"), FALSE},
+    {TRUE, K_X1RELEASE, STR_LITERAL_INIT("X1Release"), FALSE},
+    {TRUE, K_X2DRAG, STR_LITERAL_INIT("X2Drag"), FALSE},
+    {TRUE, K_X2MOUSE, STR_LITERAL_INIT("X2Mouse"), FALSE},
+    {TRUE, K_X2RELEASE, STR_LITERAL_INIT("X2Release"), FALSE},
+    {TRUE, K_CSI, STR_LITERAL_INIT("xCSI"), FALSE},
+    {TRUE, K_XDOWN, STR_LITERAL_INIT("xDown"), FALSE},
+    {TRUE, K_XEND, STR_LITERAL_INIT("xEnd"), FALSE},
+    {TRUE, K_XF1, STR_LITERAL_INIT("xF1"), FALSE},
+    {TRUE, K_XF2, STR_LITERAL_INIT("xF2"), FALSE},
+    {TRUE, K_XF3, STR_LITERAL_INIT("xF3"), FALSE},
+    {TRUE, K_XF4, STR_LITERAL_INIT("xF4"), FALSE},
+    {TRUE, K_XHOME, STR_LITERAL_INIT("xHome"), FALSE},
+    {TRUE, K_XLEFT, STR_LITERAL_INIT("xLeft"), FALSE},
+    {TRUE, K_OSC, STR_LITERAL_INIT("xOSC"), FALSE},
+    {TRUE, K_XRIGHT, STR_LITERAL_INIT("xRight"), FALSE},
+    {TRUE, K_XUP, STR_LITERAL_INIT("xUp"), FALSE},
+    {TRUE, K_ZEND, STR_LITERAL_INIT("zEnd"), FALSE},
+    {TRUE, K_ZHOME, STR_LITERAL_INIT("zHome"), FALSE}
     // NOTE: When adding a long name update MAX_KEY_NAME_LEN.
 };
-
-#define KEY_NAMES_TABLE_LEN ARRAY_LENGTH(key_names_table)
 
 /*
  * Return the modifier mask bit (MOD_MASK_*) which corresponds to the given
@@ -1191,10 +1207,8 @@ handle_x_keys(int key)
 get_special_key_name(int c, int modifiers)
 {
     static char_u string[MAX_KEY_NAME_LEN + 1];
-
-    int	    i, idx;
+    int	    i, idx, len;
     int	    table_idx;
-    char_u  *s;
 
     string[0] = '<';
     idx = 1;
@@ -1266,13 +1280,14 @@ get_special_key_name(int c, int modifiers)
 	// Not a special key, only modifiers, output directly
 	else
 	{
-	    if (has_mbyte && (*mb_char2len)(c) > 1)
-		idx += (*mb_char2bytes)(c, string + idx);
-	    else if (vim_isprintc(c))
+	    len = (*mb_char2len)(c);
+	    if (len == 1 && vim_isprintc(c))
 		string[idx++] = c;
+	    else if (has_mbyte && len > 1)
+		idx += (*mb_char2bytes)(c, string + idx);
 	    else
 	    {
-		s = transchar(c);
+		char_u	*s = transchar(c);
 		while (*s)
 		    string[idx++] = *s++;
 	    }
@@ -1280,16 +1295,19 @@ get_special_key_name(int c, int modifiers)
     }
     else		// use name of special key
     {
-	size_t len = STRLEN(key_names_table[table_idx].name);
+	string_T    *s;
 
-	if (len + idx + 2 <= MAX_KEY_NAME_LEN)
+	s = &key_names_table[table_idx].name;
+
+	if (s->length + idx + 2 <= MAX_KEY_NAME_LEN)
 	{
-	    STRCPY(string + idx, key_names_table[table_idx].name);
-	    idx += (int)len;
+	    STRCPY(string + idx, s->string);
+	    idx += (int)s->length;
 	}
     }
     string[idx++] = '>';
     string[idx] = NUL;
+
     return string;
 }
 
@@ -1669,12 +1687,55 @@ find_special_key_in_table(int c)
 {
     int	    i;
 
-    for (i = 0; key_names_table[i].name != NULL; i++)
-	if (c == key_names_table[i].key)
+    for (i = 0; i < (int)ARRAY_LENGTH(key_names_table); i++)
+	if (c == key_names_table[i].key && !key_names_table[i].is_alt)
+	    return key_names_table[i].enabled ? i : -1;
+
+    return -1;
+}
+
+
+/*
+ * Compare two 'struct key_name_entry' structures.
+ * Note that the target string (p1) may contain additional trailing characters
+ * that should not factor into the comparison. Example:
+ * 'LeftMouse>", "<LeftMouse>"] ...'
+ * should match with
+ * 'LeftMouse'.
+ * These characters are identified by vim_isNormalIDc().
+ */
+    static int
+cmp_key_name_entry(const void *a, const void *b)
+{
+    char_u  *p1 = ((struct key_name_entry *)a)->name.string;
+    char_u  *p2 = ((struct key_name_entry *)b)->name.string;
+    int	    result = 0;
+
+    if (p1 == p2)
+	return 0;
+
+    while (vim_isNormalIDc(*p1) && *p2 != NUL)
+    {
+	if ((result = TOLOWER_ASC(*p1) - TOLOWER_ASC(*p2)) != 0)
 	    break;
-    if (key_names_table[i].name == NULL)
-	i = -1;
-    return i;
+	++p1;
+	++p2;
+    }
+
+    if (result == 0)
+    {
+	if (*p2 == NUL)
+	{
+	    if (vim_isNormalIDc(*p1))
+		result = 1;
+	}
+	else
+	{
+	    result = -1;
+	}
+    }
+
+    return result;
 }
 
 /*
@@ -1687,15 +1748,13 @@ find_special_key_in_table(int c)
     int
 get_special_key_code(char_u *name)
 {
-    char_u  *table_name;
-    char_u  string[3];
-    int	    i, j;
-
     /*
      * If it's <t_xx> we get the code for xx from the termcap
      */
     if (name[0] == 't' && name[1] == '_' && name[2] != NUL && name[3] != NUL)
     {
+	char_u  string[3];
+
 	string[0] = name[2];
 	string[1] = name[3];
 	string[2] = NUL;
@@ -1703,24 +1762,40 @@ get_special_key_code(char_u *name)
 	    return TERMCAP2KEY(name[2], name[3]);
     }
     else
-	for (i = 0; key_names_table[i].name != NULL; i++)
+    {
+	struct key_name_entry	target;
+	struct key_name_entry	*entry;
+
+	target.enabled = TRUE;
+	target.key = 0;
+	target.name.string = name;
+	target.name.length = 0;
+
+	entry = (struct key_name_entry *)bsearch(
+	    &target,
+	    &key_names_table,
+	    ARRAY_LENGTH(key_names_table),
+	    sizeof(key_names_table[0]),
+	    cmp_key_name_entry);
+	if (entry != NULL && entry->enabled)
 	{
-	    table_name = key_names_table[i].name;
-	    for (j = 0; vim_isNormalIDc(name[j]) && table_name[j] != NUL; j++)
-		if (TOLOWER_ASC(table_name[j]) != TOLOWER_ASC(name[j]))
-		    break;
-	    if (!vim_isNormalIDc(name[j]) && table_name[j] == NUL)
-		return key_names_table[i].key;
+	    int key = entry->key;
+	    // Both TAB and K_TAB have name "Tab", and it's unspecified which
+	    // one bsearch() will return.  TAB is the expected one.
+	    return key == K_TAB ? TAB : key;
 	}
+    }
+
     return 0;
 }
 
     char_u *
 get_key_name(int i)
 {
-    if (i >= (int)KEY_NAMES_TABLE_LEN)
+    if (i < 0 || i >= (int)ARRAY_LENGTH(key_names_table))
 	return NULL;
-    return  key_names_table[i].name;
+
+    return key_names_table[i].name.string;
 }
 
 /*
@@ -1799,6 +1874,9 @@ set_fileformat(
     // This may cause the buffer to become (un)modified.
     check_status(curbuf);
     redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+    redraw_tabpanel = TRUE;
+#endif
     need_maketitle = TRUE;	    // set window title later
 }
 
@@ -1822,7 +1900,6 @@ default_fileformat(void)
     int
 call_shell(char_u *cmd, int opt)
 {
-    char_u	*ncmd;
     int		retval;
 #ifdef FEAT_PROFILE
     proftime_T	wait_time;
@@ -1863,7 +1940,9 @@ call_shell(char_u *cmd, int opt)
 	    retval = mch_call_shell(cmd, opt);
 	else
 	{
-	    char_u *ecmd = cmd;
+	    char_u  *ncmd;
+	    size_t  ncmdsize;
+	    char_u  *ecmd = cmd;
 
 	    if (*p_sxe != NUL && *p_sxq == '(')
 	    {
@@ -1871,14 +1950,13 @@ call_shell(char_u *cmd, int opt)
 		if (ecmd == NULL)
 		    ecmd = cmd;
 	    }
-	    ncmd = alloc(STRLEN(ecmd) + STRLEN(p_sxq) * 2 + 1);
+	    ncmdsize = STRLEN(ecmd) + STRLEN(p_sxq) * 2 + 1;
+	    ncmd = alloc(ncmdsize);
 	    if (ncmd != NULL)
 	    {
-		STRCPY(ncmd, p_sxq);
-		STRCAT(ncmd, ecmd);
 		// When 'shellxquote' is ( append ).
 		// When 'shellxquote' is "( append )".
-		STRCAT(ncmd, *p_sxq == '(' ? (char_u *)")"
+		vim_snprintf((char *)ncmd, ncmdsize, "%s%s%s", p_sxq, ecmd, *p_sxq == '(' ? (char_u *)")"
 		    : *p_sxq == '"' && *(p_sxq+1) == '(' ? (char_u *)")\""
 		    : p_sxq);
 		retval = mch_call_shell(ncmd, opt);
@@ -1968,8 +2046,7 @@ same_directory(char_u *f1, char_u *f2)
 
 #if defined(FEAT_SESSION) || defined(FEAT_AUTOCHDIR) \
 	|| defined(MSWIN) || defined(FEAT_GUI_GTK) \
-	|| defined(FEAT_NETBEANS_INTG) \
-	|| defined(PROTO)
+	|| defined(FEAT_NETBEANS_INTG)
 /*
  * Change to a file's directory.
  * Caller must call shorten_fnames()!
@@ -2004,7 +2081,7 @@ vim_chdirfile(char_u *fname, char *trigger_autocmd)
 }
 #endif
 
-#if defined(STAT_IGNORES_SLASH) || defined(PROTO)
+#if defined(STAT_IGNORES_SLASH)
 /*
  * Check if "name" ends in a slash and is not a directory.
  * Used for systems where stat() ignores a trailing slash on a file name.
@@ -2034,7 +2111,7 @@ vim_stat(const char *name, stat_T *stp)
 }
 #endif
 
-#if defined(CURSOR_SHAPE) || defined(PROTO)
+#if defined(CURSOR_SHAPE)
 
 /*
  * Handling of cursor and mouse pointer shapes in various modes.
@@ -2069,25 +2146,25 @@ cursorentry_T shape_table[SHAPE_IDX_COUNT] =
  * Table with names for mouse shapes.  Keep in sync with all the tables for
  * mch_set_mouse_shape()!.
  */
-static char *mshape_names[] =
+static string_T mshape_names[] =
 {
-    "arrow",	// default, must be the first one
-    "blank",	// hidden
-    "beam",
-    "updown",
-    "udsizing",
-    "leftright",
-    "lrsizing",
-    "busy",
-    "no",
-    "crosshair",
-    "hand1",
-    "hand2",
-    "pencil",
-    "question",
-    "rightup-arrow",
-    "up-arrow",
-    NULL
+    STR_LITERAL_INIT("arrow"),	// default, must be the first one
+    STR_LITERAL_INIT("blank"),	// hidden
+    STR_LITERAL_INIT("beam"),
+    STR_LITERAL_INIT("updown"),
+    STR_LITERAL_INIT("udsizing"),
+    STR_LITERAL_INIT("leftright"),
+    STR_LITERAL_INIT("lrsizing"),
+    STR_LITERAL_INIT("busy"),
+    STR_LITERAL_INIT("no"),
+    STR_LITERAL_INIT("crosshair"),
+    STR_LITERAL_INIT("hand1"),
+    STR_LITERAL_INIT("hand2"),
+    STR_LITERAL_INIT("pencil"),
+    STR_LITERAL_INIT("question"),
+    STR_LITERAL_INIT("rightup-arrow"),
+    STR_LITERAL_INIT("up-arrow"),
+    {NULL, 0}
 };
 
 #  define MSHAPE_NAMES_COUNT  (ARRAY_LENGTH(mshape_names) - 1)
@@ -2122,11 +2199,11 @@ parse_shape_opt(int what)
 	/*
 	 * Repeat for all comma separated parts.
 	 */
-#ifdef FEAT_MOUSESHAPE
+# ifdef FEAT_MOUSESHAPE
 	if (what == SHAPE_MOUSE)
 	    modep = p_mouseshape;
 	else
-#endif
+# endif
 	    modep = p_guicursor;
 	while (*modep != NUL)
 	{
@@ -2173,14 +2250,14 @@ parse_shape_opt(int what)
 		    idx = all_idx--;
 		else if (round == 2)
 		{
-#ifdef FEAT_MOUSESHAPE
+# ifdef FEAT_MOUSESHAPE
 		    if (what == SHAPE_MOUSE)
 		    {
 			// Set the default, for the missing parts
 			shape_table[idx].mshape = 0;
 		    }
 		    else
-#endif
+# endif
 		    {
 			// Set the defaults, for the missing parts
 			shape_table[idx].shape = SHAPE_BLOCK;
@@ -2193,12 +2270,12 @@ parse_shape_opt(int what)
 		// Parse the part after the colon
 		for (p = colonp + 1; *p && *p != ','; )
 		{
-#ifdef FEAT_MOUSESHAPE
+# ifdef FEAT_MOUSESHAPE
 		    if (what == SHAPE_MOUSE)
 		    {
 			for (i = 0; ; ++i)
 			{
-			    if (mshape_names[i] == NULL)
+			    if (mshape_names[i].string == NULL)
 			    {
 				if (!VIM_ISDIGIT(*p))
 				    return e_illegal_mouseshape;
@@ -2209,18 +2286,17 @@ parse_shape_opt(int what)
 				    (void)getdigits(&p);
 				break;
 			    }
-			    len = (int)STRLEN(mshape_names[i]);
-			    if (STRNICMP(p, mshape_names[i], len) == 0)
+			    if (STRNICMP(p, mshape_names[i].string, mshape_names[i].length) == 0)
 			    {
 				if (round == 2)
 				    shape_table[idx].mshape = i;
-				p += len;
+				p += mshape_names[i].length;
 				break;
 			    }
 			}
 		    }
 		    else // if (what == SHAPE_MOUSE)
-#endif
+# endif
 		    {
 			/*
 			 * First handle the ones with a number argument.
@@ -2314,13 +2390,13 @@ parse_shape_opt(int what)
     // If the 's' flag is not given, use the 'v' cursor for 's'
     if (!found_ve)
     {
-#ifdef FEAT_MOUSESHAPE
+# ifdef FEAT_MOUSESHAPE
 	if (what == SHAPE_MOUSE)
 	{
 	    shape_table[SHAPE_IDX_VE].mshape = shape_table[SHAPE_IDX_V].mshape;
 	}
 	else
-#endif
+# endif
 	{
 	    shape_table[SHAPE_IDX_VE].shape = shape_table[SHAPE_IDX_V].shape;
 	    shape_table[SHAPE_IDX_VE].percentage =
@@ -2340,7 +2416,7 @@ parse_shape_opt(int what)
 }
 
 # if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) \
-	|| defined(FEAT_MOUSESHAPE) || defined(PROTO)
+	|| defined(FEAT_MOUSESHAPE)
 /*
  * Return the index into shape_table[] for the current mode.
  * When "mouse" is TRUE, consider indexes valid for the mouse pointer.
@@ -2348,22 +2424,22 @@ parse_shape_opt(int what)
     int
 get_shape_idx(int mouse)
 {
-#ifdef FEAT_MOUSESHAPE
+#  ifdef FEAT_MOUSESHAPE
     if (mouse && (State == MODE_HITRETURN || State == MODE_ASKMORE))
     {
-# ifdef FEAT_GUI
+#   ifdef FEAT_GUI
 	int x, y;
 	gui_mch_getmouse(&x, &y);
 	if (Y_2_ROW(y) == Rows - 1)
 	    return SHAPE_IDX_MOREL;
-# endif
+#   endif
 	return SHAPE_IDX_MORE;
     }
     if (mouse && drag_status_line)
 	return SHAPE_IDX_SDRAG;
     if (mouse && drag_sep_line)
 	return SHAPE_IDX_VDRAG;
-#endif
+#  endif
     if (!mouse && State == MODE_SHOWMATCH)
 	return SHAPE_IDX_SM;
     if (State & VREPLACE_FLAG)
@@ -2391,9 +2467,9 @@ get_shape_idx(int mouse)
     }
     return SHAPE_IDX_N;
 }
-#endif
+# endif
 
-# if defined(FEAT_MOUSESHAPE) || defined(PROTO)
+# if defined(FEAT_MOUSESHAPE)
 static int current_mouse_shape = 0;
 
 /*
@@ -2447,7 +2523,7 @@ update_mouseshape(int shape_idx)
 
 #endif // CURSOR_SHAPE
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Mainly for tests: get the name of the current mouse shape.
  */
@@ -2456,11 +2532,12 @@ f_getmouseshape(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
-# if defined(FEAT_MOUSESHAPE) || defined(PROTO)
+# if defined(FEAT_MOUSESHAPE)
     if (current_mouse_shape >= 0
 			      && current_mouse_shape < (int)MSHAPE_NAMES_COUNT)
-	rettv->vval.v_string = vim_strsave(
-				  (char_u *)mshape_names[current_mouse_shape]);
+	rettv->vval.v_string = vim_strnsave(
+				  mshape_names[current_mouse_shape].string,
+				  mshape_names[current_mouse_shape].length);
 # endif
 }
 #endif
@@ -2511,7 +2588,7 @@ get_user_name(char_u *buf, int len)
     return OK;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
 /*
  * Free the memory allocated by get_user_name()
  */
@@ -2522,7 +2599,7 @@ free_username(void)
 }
 #endif
 
-#ifndef HAVE_QSORT
+#if !defined(HAVE_QSORT) && !defined(PROTO)
 /*
  * Our own qsort(), for systems that don't have it.
  * It's simple and slow.  From the K&R C book.
@@ -2589,9 +2666,9 @@ qsort(
  *  (history removed, not very interesting.  See the "screen" sources.)
  */
 
-#if !defined(HAVE_SETENV) && !defined(HAVE_PUTENV)
+#if !defined(HAVE_SETENV) && !defined(HAVE_PUTENV) && !defined(PROTO)
 
-#define EXTRASIZE 5		// increment to add to env. size
+# define EXTRASIZE 5		// increment to add to env. size
 
 static int  envsize = -1;	// current size of environment
 extern char **environ;		// the global which is your env.
@@ -2729,7 +2806,7 @@ vimpty_getenv(const char_u *string)
 
 #endif // !defined(HAVE_SETENV) && !defined(HAVE_PUTENV)
 
-#if defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_EVAL) || defined(FEAT_SPELL)
 /*
  * Return 0 for not writable, 1 for writable file, 2 for a dir which we have
  * rights to write into.
@@ -2738,18 +2815,18 @@ vimpty_getenv(const char_u *string)
 filewritable(char_u *fname)
 {
     int		retval = 0;
-#if defined(UNIX) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
     int		perm = 0;
-#endif
+# endif
 
-#if defined(UNIX) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
     perm = mch_getperm(fname);
-#endif
+# endif
     if (
 # ifdef MSWIN
 	    mch_writable(fname) &&
 # else
-# if defined(UNIX) || defined(VMS)
+#  if defined(UNIX) || defined(VMS)
 	    (perm & 0222) &&
 #  endif
 # endif
@@ -2764,7 +2841,7 @@ filewritable(char_u *fname)
 }
 #endif
 
-#if defined(FEAT_SPELL) || defined(FEAT_PERSISTENT_UNDO) || defined(PROTO)
+#if defined(FEAT_SPELL) || defined(FEAT_PERSISTENT_UNDO)
 /*
  * Read 2 bytes from "fd" and turn them into an int, MSB first.
  * Returns -1 when encountering EOF.
@@ -2906,8 +2983,7 @@ elapsed(DWORD start_tick)
 
 #if defined(FEAT_JOB_CHANNEL) \
 	|| (defined(UNIX) && (!defined(USE_SYSTEM) \
-	|| (defined(FEAT_GUI) && defined(FEAT_TERMINAL)))) \
-	|| defined(PROTO)
+	|| (defined(FEAT_GUI) && defined(FEAT_TERMINAL))))
 /*
  * Parse "cmd" and put the white-separated parts in "argv".
  * "argv" is an allocated array with "argc" entries and room for 4 more.
@@ -3014,7 +3090,9 @@ build_argv_from_string(char_u *cmd, char ***argv, int *argc)
     return OK;
 }
 
-# if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+#endif
+
+#if defined(FEAT_EVAL)
 /*
  * Build "argv[argc]" from the list "l".
  * "argv[argc]" is set to NULL;
@@ -3049,7 +3127,6 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
     (*argv)[*argc] = NULL;
     return OK;
 }
-# endif
 #endif
 
 /*
@@ -3069,4 +3146,173 @@ get_special_pty_type(void)
 #else
     return 0;
 #endif
+}
+
+// compare two keyvalue_T structs by case sensitive value
+    int
+cmp_keyvalue_value(const void *a, const void *b)
+{
+    keyvalue_T *kv1 = (keyvalue_T *)a;
+    keyvalue_T *kv2 = (keyvalue_T *)b;
+
+    return STRCMP(kv1->value.string, kv2->value.string);
+}
+
+// compare two keyvalue_T structs by value with length
+    int
+cmp_keyvalue_value_n(const void *a, const void *b)
+{
+    keyvalue_T *kv1 = (keyvalue_T *)a;
+    keyvalue_T *kv2 = (keyvalue_T *)b;
+
+    return STRNCMP(kv1->value.string, kv2->value.string, MAX(kv1->value.length,
+		kv2->value.length));
+}
+
+// compare two keyvalue_T structs by case insensitive value
+    int
+cmp_keyvalue_value_i(const void *a, const void *b)
+{
+    keyvalue_T *kv1 = (keyvalue_T *)a;
+    keyvalue_T *kv2 = (keyvalue_T *)b;
+
+    return STRICMP(kv1->value.string, kv2->value.string);
+}
+
+// compare two keyvalue_T structs by case insensitive ASCII value
+// with value.length
+    int
+cmp_keyvalue_value_ni(const void *a, const void *b)
+{
+    keyvalue_T *kv1 = (keyvalue_T *)a;
+    keyvalue_T *kv2 = (keyvalue_T *)b;
+
+    return vim_strnicmp_asc((char *)kv1->value.string,
+	    (char *)kv2->value.string, MAX(kv1->value.length,
+		    kv2->value.length));
+}
+
+/*
+ * Iterative merge sort for doubly linked list.
+ * O(NlogN) worst case, and stable.
+ *  - The list is divided into blocks of increasing size (1, 2, 4, 8, ...).
+ *  - Each pair of blocks is merged in sorted order.
+ *  - Merged blocks are reconnected to build the sorted list.
+ */
+    void *
+mergesort_list(
+    void	*head,
+    void	*(*get_next)(void *),
+    void	(*set_next)(void *, void *),
+    void	*(*get_prev)(void *),
+    void	(*set_prev)(void *, void *),
+    int		(*compare)(const void *, const void *))
+{
+    if (!head || !get_next(head))
+	return head;
+
+    // Count length
+    int	    n = 0;
+    void*   curr = head;
+    while (curr)
+    {
+	n++;
+	curr = get_next(curr);
+    }
+
+    int	size;
+    for (size = 1; size < n; size *= 2)
+    {
+	void*	new_head = NULL;
+	void*	tail = NULL;
+	curr = head;
+
+	while (curr)
+	{
+	    // Split two runs
+	    void    *left = curr;
+	    void    *right = left;
+	    int	    i;
+	    for (i = 0; i < size && right; ++i)
+		right = get_next(right);
+
+	    void    *next = right;
+	    for (i = 0; i < size && next; ++i)
+		next = get_next(next);
+
+	    // Break links
+	    void    *l_end = right ? get_prev(right) : NULL;
+	    if (l_end)
+		set_next(l_end, NULL);
+	    if (right)
+		set_prev(right, NULL);
+
+	    void    *r_end = next ? get_prev(next) : NULL;
+	    if (r_end)
+		set_next(r_end, NULL);
+	    if (next)
+		set_prev(next, NULL);
+
+	    // Merge
+	    void    *merged = NULL;
+	    void    *merged_tail = NULL;
+
+	    while (left || right)
+	    {
+		void	*chosen = NULL;
+		if (!left)
+		{
+		    chosen = right;
+		    right = get_next(right);
+		}
+		else if (!right)
+		{
+		    chosen = left;
+		    left = get_next(left);
+		}
+		else if (compare(left, right) <= 0)
+		{
+		    chosen = left;
+		    left = get_next(left);
+		}
+		else
+		{
+		    chosen = right;
+		    right = get_next(right);
+		}
+
+		if (merged_tail)
+		{
+		    set_next(merged_tail, chosen);
+		    set_prev(chosen, merged_tail);
+		    merged_tail = chosen;
+		}
+		else
+		{
+		    merged = merged_tail = chosen;
+		    set_prev(chosen, NULL);
+		}
+	    }
+
+	    // Connect to full list
+	    if (!new_head)
+		new_head = merged;
+	    else
+	    {
+		set_next(tail, merged);
+		set_prev(merged, tail);
+	    }
+
+	    // Move tail to end
+	    while (get_next(merged_tail))
+		merged_tail = get_next(merged_tail);
+	    tail = merged_tail;
+
+	    curr = next;
+	}
+
+	head = new_head;
+    }
+
+    return head;
 }

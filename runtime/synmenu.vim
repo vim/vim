@@ -2,7 +2,7 @@
 " This file is normally sourced from menu.vim.
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2024 Jan 04
+" Last Change:		2025 Mar 09
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Define the SetSyn function, used for the Syntax menu entries.
@@ -110,6 +110,7 @@ an 50.20.110 &Syntax.C.C++ :cal SetSyn("cpp")<CR>
 an 50.20.120 &Syntax.C.C# :cal SetSyn("cs")<CR>
 an 50.20.130 &Syntax.C.Cabal\ Haskell\ build\ file :cal SetSyn("cabal")<CR>
 an 50.20.140 &Syntax.C.Calendar :cal SetSyn("calendar")<CR>
+an 50.20.140 &Syntax.C.Cangjie :cal SetSyn("cangjie")<CR>
 an 50.20.150 &Syntax.C.Cascading\ Style\ Sheets :cal SetSyn("css")<CR>
 an 50.20.160 &Syntax.C.CDL :cal SetSyn("cdl")<CR>
 an 50.20.170 &Syntax.C.Cdrdao\ TOC :cal SetSyn("cdrtoc")<CR>
@@ -256,6 +257,7 @@ an 50.50.170 &Syntax.HIJK.Hercules :cal SetSyn("hercules")<CR>
 an 50.50.180 &Syntax.HIJK.Hex\ dump.XXD :cal SetSyn("xxd")<CR>
 an 50.50.190 &Syntax.HIJK.Hex\ dump.Intel\ MCS51 :cal SetSyn("hex")<CR>
 an 50.50.200 &Syntax.HIJK.Hg\ commit :cal SetSyn("hgcommit")<CR>
+an 50.50.205 &Syntax.HIJK.HIP :cal SetSyn("hip")<CR>
 an 50.50.210 &Syntax.HIJK.Hollywood :cal SetSyn("hollywood")<CR>
 an 50.50.220 &Syntax.HIJK.HTML.HTML :cal SetSyn("html")<CR>
 an 50.50.230 &Syntax.HIJK.HTML.HTML\ with\ M4 :cal SetSyn("htmlm4")<CR>
@@ -578,26 +580,27 @@ an 50.150.190 &Syntax.T.TealInfo :cal SetSyn("tli")<CR>
 an 50.150.200 &Syntax.T.Telix\ Salt :cal SetSyn("tsalt")<CR>
 an 50.150.210 &Syntax.T.Termcap/Printcap :cal SetSyn("ptcap")<CR>
 an 50.150.220 &Syntax.T.Terminfo :cal SetSyn("terminfo")<CR>
-an 50.150.230 &Syntax.T.Tera\ Term :cal SetSyn("teraterm")<CR>
-an 50.150.240 &Syntax.T.TeX.TeX/LaTeX :cal SetSyn("tex")<CR>
-an 50.150.250 &Syntax.T.TeX.plain\ TeX :cal SetSyn("plaintex")<CR>
-an 50.150.260 &Syntax.T.TeX.Initex :cal SetSyn("initex")<CR>
-an 50.150.270 &Syntax.T.TeX.ConTeXt :cal SetSyn("context")<CR>
-an 50.150.280 &Syntax.T.TeX.TeX\ configuration :cal SetSyn("texmf")<CR>
-an 50.150.290 &Syntax.T.TeX.Texinfo :cal SetSyn("texinfo")<CR>
-an 50.150.300 &Syntax.T.TF\ mud\ client :cal SetSyn("tf")<CR>
-an 50.150.310 &Syntax.T.Tidy\ configuration :cal SetSyn("tidy")<CR>
-an 50.150.320 &Syntax.T.Tilde :cal SetSyn("tilde")<CR>
-an 50.150.330 &Syntax.T.Tmux\ configuration :cal SetSyn("tmux")<CR>
-an 50.150.340 &Syntax.T.TPP :cal SetSyn("tpp")<CR>
-an 50.150.350 &Syntax.T.Trasys\ input :cal SetSyn("trasys")<CR>
-an 50.150.360 &Syntax.T.Treetop :cal SetSyn("treetop")<CR>
-an 50.150.370 &Syntax.T.Trustees :cal SetSyn("trustees")<CR>
-an 50.150.380 &Syntax.T.TSS.Command\ Line :cal SetSyn("tsscl")<CR>
-an 50.150.390 &Syntax.T.TSS.Geometry :cal SetSyn("tssgm")<CR>
-an 50.150.400 &Syntax.T.TSS.Optics :cal SetSyn("tssop")<CR>
-an 50.150.410 &Syntax.T.Typescript :cal SetSyn("typescript")<CR>
-an 50.150.420 &Syntax.T.TypescriptReact :cal SetSyn("typescriptreact")<CR>
+an 50.150.230 &Syntax.T.Tera :cal SetSyn("tera")<CR>
+an 50.150.240 &Syntax.T.Tera\ Term :cal SetSyn("teraterm")<CR>
+an 50.150.250 &Syntax.T.TeX.TeX/LaTeX :cal SetSyn("tex")<CR>
+an 50.150.260 &Syntax.T.TeX.plain\ TeX :cal SetSyn("plaintex")<CR>
+an 50.150.270 &Syntax.T.TeX.Initex :cal SetSyn("initex")<CR>
+an 50.150.280 &Syntax.T.TeX.ConTeXt :cal SetSyn("context")<CR>
+an 50.150.290 &Syntax.T.TeX.TeX\ configuration :cal SetSyn("texmf")<CR>
+an 50.150.300 &Syntax.T.TeX.Texinfo :cal SetSyn("texinfo")<CR>
+an 50.150.310 &Syntax.T.TF\ mud\ client :cal SetSyn("tf")<CR>
+an 50.150.320 &Syntax.T.Tidy\ configuration :cal SetSyn("tidy")<CR>
+an 50.150.330 &Syntax.T.Tilde :cal SetSyn("tilde")<CR>
+an 50.150.340 &Syntax.T.Tmux\ configuration :cal SetSyn("tmux")<CR>
+an 50.150.350 &Syntax.T.TPP :cal SetSyn("tpp")<CR>
+an 50.150.360 &Syntax.T.Trasys\ input :cal SetSyn("trasys")<CR>
+an 50.150.370 &Syntax.T.Treetop :cal SetSyn("treetop")<CR>
+an 50.150.380 &Syntax.T.Trustees :cal SetSyn("trustees")<CR>
+an 50.150.390 &Syntax.T.TSS.Command\ Line :cal SetSyn("tsscl")<CR>
+an 50.150.400 &Syntax.T.TSS.Geometry :cal SetSyn("tssgm")<CR>
+an 50.150.410 &Syntax.T.TSS.Optics :cal SetSyn("tssop")<CR>
+an 50.150.420 &Syntax.T.Typescript :cal SetSyn("typescript")<CR>
+an 50.150.430 &Syntax.T.TypescriptReact :cal SetSyn("typescriptreact")<CR>
 an 50.160.100 &Syntax.UV.Udev\ config :cal SetSyn("udevconf")<CR>
 an 50.160.110 &Syntax.UV.Udev\ permissions :cal SetSyn("udevperm")<CR>
 an 50.160.120 &Syntax.UV.Udev\ rules :cal SetSyn("udevrules")<CR>

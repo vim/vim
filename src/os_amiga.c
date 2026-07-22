@@ -23,9 +23,6 @@
 #undef TRUE		// will be redefined by exec/types.h
 #undef FALSE
 
-// cproto fails on missing include files, skip them
-#ifndef PROTO
-
 #ifndef LATTICE
 # include <exec/exec.h>
 # include <intuition/intuition.h>
@@ -57,17 +54,18 @@
 # include <libraries/arp_pragmas.h>
 #endif
 
-#endif // PROTO
-
 /*
- * Set stack size to 1 MiB on NG systems. This should be enough even for
- * hungry syntax HL / plugin combinations. Leave the stack alone on OS 3
- * and below, those systems might be low on memory.
+ * Set stack size on startup.  1 MiB on NG systems (OS4, AROS, MorphOS)
+ * which have plenty of RAM.  256 KiB on classic OS 3 -- enough for syntax
+ * highlighting and Vim9 execution but conservative for systems with as
+ * little as 2 MiB of Fast RAM.
  */
 #if defined(__amigaos4__)
 static const char* __attribute__((used)) stackcookie = "$STACK: 1048576";
 #elif defined(__AROS__) || defined(__MORPHOS__)
 unsigned long __stack = 1048576;
+#elif defined(__GNUC__) && defined(AMIGA)
+unsigned long __stack = 262144;
 #endif
 
 /*
@@ -87,6 +85,26 @@ static int lock2name(BPTR lock, char_u *buf, long   len);
 static void out_num(long n);
 static struct FileInfoBlock *get_fib(char_u *);
 static int sortcmp(const void *a, const void *b);
+
+/*
+ * Lock() wrapper that suppresses "Please insert volume" system requesters.
+ * AmigaDOS pops a requester when Lock() is called with a name that matches a
+ * non-mounted volume (e.g., a bare name like "vim" becomes "vim:" -> volume
+ * request).  Setting pr_WindowPtr to -1 suppresses the requester and makes
+ * Lock() return NULL immediately.  See dos.library/ErrorReport.
+ */
+    static BPTR
+safe_Lock(UBYTE *name, long mode)
+{
+    struct Process *me = (struct Process *)FindTask(NULL);
+    APTR oldwin = me->pr_WindowPtr;
+    BPTR flock;
+
+    me->pr_WindowPtr = (APTR)-1L;
+    flock = Lock(name, mode);
+    me->pr_WindowPtr = oldwin;
+    return flock;
+}
 
 static BPTR		raw_in = (BPTR)NULL;
 static BPTR		raw_out = (BPTR)NULL;
@@ -230,7 +248,9 @@ mch_avail_mem(int special)
     void
 mch_delay(long msec, int flags)
 {
-#ifndef LATTICE		// SAS declares void Delay(ULONG)
+    // Delay() is declared in <proto/dos.h> for GCC; the local prototype is
+    // only needed for the LATTICE/SAS toolchains.
+#ifdef LATTICE
     void	    Delay(long);
 #endif
 
@@ -266,6 +286,17 @@ mch_init(void)
 #ifdef AZTEC_C
     Enable_Abort = 0;		// disallow vim to be aborted
 #endif
+
+    // Suppress "Please insert volume" system requesters.  Vim probes many
+    // paths at startup ($VIM, $VIMRUNTIME, defaults.vim, vimrc, etc.) and
+    // Lock()/Open() calls on non-existent paths can trigger requesters from
+    // AmigaDOS (and from the C runtime library which calls Lock() internally).
+    // A CLI editor should handle missing files gracefully, not pop up dialogs.
+    {
+	struct Process *me = (struct Process *)FindTask(NULL);
+	me->pr_WindowPtr = (APTR)-1L;
+    }
+
     Columns = 80;
     Rows = 24;
 
@@ -302,9 +333,7 @@ mch_init(void)
 #endif
 }
 
-#ifndef PROTO
-# include <workbench/startup.h>
-#endif
+#include <workbench/startup.h>
 
 /*
  * Check_win checks whether we have an interactive window.
@@ -543,6 +572,8 @@ mch_check_win(int argc, char **argv)
     exitval = 0;    // The Execute succeeded: exit this program
 
 exit:
+    if (nilfh)
+	Close(nilfh);
 #ifdef FEAT_ARP
     if (ArpBase)
 	CloseLibrary((struct Library *) ArpBase);
@@ -612,7 +643,7 @@ get_fib(char_u *fname)
     if (fib == NULL)
 	return;
 
-    flock = Lock((UBYTE *)fname, (long)ACCESS_READ);
+    flock = safe_Lock((UBYTE *)fname, (long)ACCESS_READ);
     if (flock == (BPTR)NULL || !Examine(flock, fib))
     {
 	free_fib(fib);  // in case of an error the memory is freed here
@@ -691,10 +722,11 @@ mch_get_user_name(char_u *s, int len)
     void
 mch_get_host_name(char_u *s, int len)
 {
-#if !defined(__AROS__)
-    gethostname(s, len);
+#if defined(__amigaos4__) || defined(__MORPHOS__)
+    gethostname((char *)s, len);
 #else
-    vim_strncpy(s, "Amiga", len - 1);
+    // AROS and classic OS 3 (libnix) do not have gethostname().
+    vim_strncpy(s, (char_u *)"amiga", len - 1);
 #endif
 }
 
@@ -742,7 +774,7 @@ mch_FullName(
     int		i;
 
     // Lock the file.  If it exists, we can get the exact name.
-    if ((l = Lock((UBYTE *)fname, (long)ACCESS_READ)) != (BPTR)0)
+    if ((l = safe_Lock((UBYTE *)fname, (long)ACCESS_READ)) != (BPTR)0)
     {
 	retval = lock2name(l, buf, (long)len - 1);
 	UnLock(l);
@@ -1040,9 +1072,7 @@ mch_settmode(tmode_T tmode)
  * Heavely modified by mool.
  */
 
-#ifndef PROTO
-# include <devices/conunit.h>
-#endif
+#include <devices/conunit.h>
 
 /*
  * Get console size in a system friendly way on AROS and MorphOS.
@@ -1103,21 +1133,21 @@ mch_get_shellsize(void)
 mch_get_shellsize(void)
 {
     struct ConUnit  *conUnit;
-#ifndef __amigaos4__
+# ifndef __amigaos4__
     char	    id_a[sizeof(struct InfoData) + 3];
-#endif
+# endif
     struct InfoData *id=0;
 
     if (!term_console)	// not an amiga window
 	goto out;
 
     // insure longword alignment
-#ifdef __amigaos4__
+# ifdef __amigaos4__
     if (!(id = AllocDosObject(DOS_INFODATA, 0)))
 	goto out;
-#else
+# else
     id = (struct InfoData *)(((long)id_a + 3L) & ~3L);
-#endif
+# endif
 
     /*
      * Should make console aware of real window size, not the one we set.
@@ -1158,9 +1188,9 @@ mch_get_shellsize(void)
 
     return OK;
 out:
-#ifdef __amigaos4__
+# ifdef __amigaos4__
     FreeDosObject(DOS_INFODATA, id); // Safe to pass NULL
-#endif
+# endif
 
     return FAIL;
 }
@@ -1215,11 +1245,9 @@ out_num(long n)
  * say 'oml lib:amiga.lib -r sendpacket.o'
  */
 
-#ifndef PROTO
-// #include <proto/exec.h>
-// #include <proto/dos.h>
+//#include <proto/exec.h>
+//#include <proto/dos.h>
 # include <exec/memory.h>
-#endif
 
 /*
  * Function - dos_packet written by Phil Lindsay, Carolyn Scheppner, and Andy
@@ -1503,7 +1531,7 @@ mch_breakcheck(int force UNUSED)
 // is zero).  Since we want to check for our own ^C's
 
 #ifdef _DCC
-#define Chk_Abort chkabort
+# define Chk_Abort chkabort
 #endif
 
 #ifdef LATTICE
@@ -1694,13 +1722,7 @@ mch_has_wildcard(char_u *p)
 	if (*p == '\\' && p[1] != NUL)
 	    ++p;
 	else
-	    if (vim_strchr((char_u *)
-#  ifdef VIM_BACKTICK
-				    "*?[(#$`"
-#  else
-				    "*?[(#$"
-#  endif
-						, *p) != NULL
+	    if (vim_strchr((char_u *)"*?[(#$`", *p) != NULL
 		    || (*p == '~' && p[1] != NUL))
 		return TRUE;
     }
@@ -1767,4 +1789,32 @@ mch_setenv(char *var, char *value, int x UNUSED)
     if (SetVar((UBYTE *)var, (UBYTE *)value, (LONG)-1, (ULONG)GVF_LOCAL_ONLY))
 	return 0;   // success
     return -1;	    // failure
+}
+
+/*
+ * Fill the buffer 'buf' with 'len' random bytes.
+ * Returns FAIL if RANDOM: is not available or something went wrong.
+ */
+    int
+mch_get_random(char_u *buf, int len)
+{
+    struct Process *proc = (struct Process *) FindTask(0L);
+    APTR win = proc->pr_WindowPtr;
+
+    // Don't show requester if RANDOM: doesn't exist
+    proc->pr_WindowPtr = (APTR) -1L;
+
+    BPTR fh = Open("RANDOM:", MODE_OLDFILE);
+
+    proc->pr_WindowPtr = win;
+
+    int status;
+
+    if (!fh || Read(fh, buf, len) != len)
+	status = FAIL;
+    else
+	status = OK;
+
+    Close(fh);
+    return status;
 }

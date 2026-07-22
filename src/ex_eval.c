@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 static char	*get_end_emsg(cstack_T *cstack);
 
@@ -275,7 +275,7 @@ cause_errthrow(
 		    {
 			char	    *tmsg;
 
-			// Skip the extra "Vim " prefix for message "E458".
+			// Skip the extra "Vim " prefix for message "E457".
 			tmsg = elem->msg;
 			if (STRNCMP(tmsg, "Vim E", 5) == 0
 				&& VIM_ISDIGIT(tmsg[5])
@@ -562,6 +562,10 @@ throw_exception(void *value, except_type_T type, char_u *cmdname)
 	excp->throw_lnum = SOURCING_LNUM;
     }
 
+    excp->stacktrace = stacktrace_create();
+    if (excp->stacktrace != NULL)
+	excp->stacktrace->lv_refcount = 1;
+
     if (p_verbose >= 13 || debug_break_level > 0)
     {
 	int	save_msg_silent = msg_silent;
@@ -647,6 +651,7 @@ discard_exception(except_T *excp, int was_finished)
     if (excp->type == ET_ERROR)
 	free_msglist(excp->messages);
     vim_free(excp->throw_name);
+    list_unref(excp->stacktrace);
     vim_free(excp);
 }
 
@@ -671,14 +676,17 @@ catch_exception(except_T *excp)
     excp->caught = caught_stack;
     caught_stack = excp;
     set_vim_var_string(VV_EXCEPTION, (char_u *)excp->value, -1);
+    set_vim_var_list(VV_STACKTRACE, excp->stacktrace);
     if (*excp->throw_name != NUL)
     {
+	size_t	IObufflen;
+
 	if (excp->throw_lnum != 0)
-	    vim_snprintf((char *)IObuff, IOSIZE, _("%s, line %ld"),
+	    IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE, _("%s, line %ld"),
 				    excp->throw_name, (long)excp->throw_lnum);
 	else
-	    vim_snprintf((char *)IObuff, IOSIZE, "%s", excp->throw_name);
-	set_vim_var_string(VV_THROWPOINT, IObuff, -1);
+	    IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE, "%s", excp->throw_name);
+	set_vim_var_string(VV_THROWPOINT, IObuff, (int)IObufflen);
     }
     else
 	// throw_name not set on an exception from a command that was typed.
@@ -712,7 +720,7 @@ catch_exception(except_T *excp)
 /*
  * Remove an exception from the caught stack.
  */
-    static void
+    void
 finish_exception(except_T *excp)
 {
     if (excp != caught_stack)
@@ -721,16 +729,19 @@ finish_exception(except_T *excp)
     if (caught_stack != NULL)
     {
 	set_vim_var_string(VV_EXCEPTION, (char_u *)caught_stack->value, -1);
+	set_vim_var_list(VV_STACKTRACE, caught_stack->stacktrace);
 	if (*caught_stack->throw_name != NUL)
 	{
+	    size_t  IObufflen;
+
 	    if (caught_stack->throw_lnum != 0)
-		vim_snprintf((char *)IObuff, IOSIZE,
+		IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE,
 			_("%s, line %ld"), caught_stack->throw_name,
 			(long)caught_stack->throw_lnum);
 	    else
-		vim_snprintf((char *)IObuff, IOSIZE, "%s",
+		IObufflen = vim_snprintf_safelen((char *)IObuff, IOSIZE, "%s",
 						    caught_stack->throw_name);
-	    set_vim_var_string(VV_THROWPOINT, IObuff, -1);
+	    set_vim_var_string(VV_THROWPOINT, IObuff, (int)IObufflen);
 	}
 	else
 	    // throw_name not set on an exception from a command that was
@@ -741,6 +752,7 @@ finish_exception(except_T *excp)
     {
 	set_vim_var_string(VV_EXCEPTION, NULL, -1);
 	set_vim_var_string(VV_THROWPOINT, NULL, -1);
+	set_vim_var_list(VV_STACKTRACE, NULL);
     }
 
     // Discard the exception, but use the finish message for 'verbose'.
@@ -1593,8 +1605,30 @@ inside_block(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
     int		i;
 
+    // Control flow commands handle '|' themselves and must not be treated
+    // as if inside a block even when they are - otherwise '|' separators
+    // in "try | catch | endtry" etc. would not be recognized.
+    switch (eap->cmdidx)
+    {
+	case CMD_if:
+	case CMD_elseif:
+	case CMD_else:
+	case CMD_endif:
+	case CMD_while:
+	case CMD_endwhile:
+	case CMD_for:
+	case CMD_endfor:
+	case CMD_try:
+	case CMD_catch:
+	case CMD_finally:
+	case CMD_endtry:
+	    return FALSE;
+	default:
+	    break;
+    }
+
     for (i = 0; i <= cstack->cs_idx; ++i)
-	if (cstack->cs_flags[cstack->cs_idx] & CSF_BLOCK)
+	if (cstack->cs_flags[i] & CSF_BLOCK)
 	    return TRUE;
     return FALSE;
 }

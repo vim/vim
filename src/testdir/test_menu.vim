@@ -1,9 +1,8 @@
 " Test that the system menu can be loaded.
 
-source check.vim
 CheckFeature menu
 
-source screendump.vim
+source util/screendump.vim
 
 func Test_load_menu()
   try
@@ -158,6 +157,12 @@ func Test_menu_errors()
 
   silent! unmenu Foo
   unmenu Test
+endfunc
+
+func Test_unmenu_range_errors()
+  for prefix in ['', 'a', 'c', 'i', 'n', 's', 't', 'tl', 'v', 'x']
+    call assert_fails('42' .. prefix .. 'unmenu', 'E481:')
+  endfor
 endfunc
 
 " Test for menu item completion in command line
@@ -425,7 +430,7 @@ func Test_menu_special()
   call feedkeys(":emenu n Test.Sign\<CR>", 'x')
   call assert_equal("m\tn", getline(1))
   set cpo-=<
-  close!
+  bw!
   nunmenu Test.Sign
 endfunc
 
@@ -463,7 +468,7 @@ func Test_emenu_cmd()
   2emenu Test.foo
   call assert_equal(['aaaa', 'xxxx'], getline(1, 2))
   xunmenu Test.foo
-  close!
+  bw!
 endfunc
 
 " Test for PopUp menus
@@ -481,13 +486,48 @@ func Test_popup_menu()
   unmenu PopUp
 endfunc
 
+func Test_popup_menu_truncated()
+  CheckNotGui
+
+  set mouse=a mousemodel=popup
+  aunmenu PopUp
+  for i in range(2 * &lines)
+    exe $'menu PopUp.{i} <Cmd>let g:res = {i}<CR>'
+  endfor
+
+  func LeftClickExpr(row, col)
+    call test_setmouse(a:row, a:col)
+    return "\<LeftMouse>"
+  endfunc
+
+  " Clicking at the bottom should place popup menu above click position.
+  " <RightRelease> should not select an item immediately.
+  let g:res = -1
+  call test_setmouse(&lines, 1)
+  nnoremap <expr><F2> LeftClickExpr(4, 1)
+  call feedkeys("\<RightMouse>\<RightRelease>\<F2>", 'tx')
+  call assert_equal(3, g:res)
+
+  " Clicking at the top should place popup menu below click position.
+  let g:res = -1
+  call test_setmouse(1, 1)
+  nnoremap <expr><F2> LeftClickExpr(5, 1)
+  call feedkeys("\<RightMouse>\<RightRelease>\<F2>", 'tx')
+  call assert_equal(3, g:res)
+
+  nunmap <F2>
+  delfunc LeftClickExpr
+  unlet g:res
+  aunmenu PopUp
+  set mouse& mousemodel&
+endfunc
+
 " Test for MenuPopup autocommand
 func Test_autocmd_MenuPopup()
   CheckNotGui
 
-  set mouse=a
-  set mousemodel=popup
-  aunmenu *
+  set mouse=a mousemodel=popup
+  aunmenu PopUp
   autocmd MenuPopup * exe printf(
     \ 'anoremenu PopUp.Foo <Cmd>let g:res = ["%s", "%s"]<CR>',
     \ expand('<afile>'), expand('<amatch>'))
@@ -596,6 +636,7 @@ endfunc
 
 " Test for opening a menu drawn in the cmdline area
 func Test_popupmenu_cmdline()
+  CheckScreendump
   CheckRunVimInTerminal
 
   let lines =<< trim END

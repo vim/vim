@@ -161,4 +161,28 @@ func Test_find_complete()
   set path&
 endfunc
 
+" Verify that backticks in 'path' are not executed
+func Test_find_completion_backtick_in_path()
+  CheckUnix
+  CheckExecutable id
+  set nomodelinestrict modeline
+
+  let lines =<< trim END
+    // vim: set path+=`id>Xrce_marker` :
+  END
+
+  call writefile(lines, 'Xpoc.c', 'D')
+  new Xpoc.c
+  call assert_match('`id>Xrce_marker`', &path)
+  " Triggering completion must not execute the backtick command.
+  call getcompletion('', 'file_in_path')
+  call assert_false(filereadable('Xrce_marker'))
+  call feedkeys(":find \t\n", "xt")
+  call assert_false(filereadable('Xrce_marker'))
+
+  bwipe!
+  call delete('Xrce_marker')
+  set modelinestrict& modeline&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

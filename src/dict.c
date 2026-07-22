@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 // List head for garbage collection. Although there can be a reference loop
 // from partial to dict to partial, we don't need to keep track of the partial,
@@ -387,7 +387,11 @@ dict_add(dict_T *d, dictitem_T *item)
  * Returns FAIL when out of memory and when key already exists.
  */
     static int
-dict_add_number_special(dict_T *d, char *key, varnumber_T nr, vartype_T vartype)
+dict_add_number_special(
+    dict_T	*d,
+    char	*key,
+    varnumber_T	nr,
+    vartype_T	vartype)
 {
     dictitem_T	*item;
 
@@ -480,12 +484,15 @@ dict_add_list(dict_T *d, char *key, list_T *list)
 	return FAIL;
     item->di_tv.v_type = VAR_LIST;
     item->di_tv.vval.v_list = list;
-    ++list->lv_refcount;
     if (dict_add(d, item) == FAIL)
     {
+	// Detach "list" so dictitem_free() does not unref it: on failure
+	// ownership stays with the caller.
+	item->di_tv.vval.v_list = NULL;
 	dictitem_free(item);
 	return FAIL;
     }
+    ++list->lv_refcount;
     return OK;
 }
 
@@ -523,6 +530,30 @@ dict_add_callback(dict_T *d, char *key, callback_T *cb)
     if (item == NULL)
 	return FAIL;
     put_callback(cb, &item->di_tv);
+    if (dict_add(d, item) == FAIL)
+    {
+	dictitem_free(item);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Add a function entry to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_func(dict_T *d, char *key, ufunc_T *fp)
+{
+    dictitem_T	*item;
+
+    item = dictitem_alloc((char_u *)key);
+    if (item == NULL)
+	return FAIL;
+    item->di_tv.v_type = VAR_FUNC;
+    item->di_tv.vval.v_string = vim_strnsave(fp->uf_name, fp->uf_namelen);
+    // Reference before dict_add() so dictitem_free()'s unref stays balanced on failure.
+    func_ref(item->di_tv.vval.v_string);
     if (dict_add(d, item) == FAIL)
     {
 	dictitem_free(item);
@@ -594,12 +625,15 @@ dict_add_dict(dict_T *d, char *key, dict_T *dict)
 	return FAIL;
     item->di_tv.v_type = VAR_DICT;
     item->di_tv.vval.v_dict = dict;
-    ++dict->dv_refcount;
     if (dict_add(d, item) == FAIL)
     {
+	// Detach "dict" so dictitem_free() does not unref it: on failure
+	// ownership stays with the caller.
+	item->di_tv.vval.v_dict = NULL;
 	dictitem_free(item);
 	return FAIL;
     }
+    ++dict->dv_refcount;
     return OK;
 }
 
@@ -641,7 +675,8 @@ dict_find(dict_T *d, char_u *key, int len)
     else
     {
 	// Avoid a malloc/free by using buf[].
-	vim_strncpy(buf, key, len);
+	mch_memmove(buf, key, (size_t)len);
+	buf[len] = NUL;
 	akey = buf;
     }
 
@@ -790,7 +825,7 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
 	    if (first)
 		first = FALSE;
 	    else
-		ga_concat(&ga, (char_u *)", ");
+		GA_CONCAT_LITERAL(&ga, ", ");
 
 	    tofree = string_quote(hi->hi_key, FALSE);
 	    if (tofree != NULL)
@@ -798,7 +833,7 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
 		ga_concat(&ga, tofree);
 		vim_free(tofree);
 	    }
-	    ga_concat(&ga, (char_u *)": ");
+	    GA_CONCAT_LITERAL(&ga, ": ");
 	    s = echo_string_core(&HI2DI(hi)->di_tv, &tofree, numbuf, copyID,
 						 FALSE, restore_copyID, TRUE);
 	    if (s != NULL)
@@ -967,7 +1002,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 		{
 		    emsg(_(e_missing_matching_bracket_after_dict_key));
 		    clear_tv(&tvkey);
-		    return FAIL;
+		    goto failret;
 		}
 		++*arg;
 	    }
@@ -1011,17 +1046,13 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	*arg = skipwhite_and_linebreak(*arg + 1, evalarg);
 	if (eval1(arg, &tv, evalarg) == FAIL)	// recursive!
 	{
-	    if (evaluate)
-		clear_tv(&tvkey);
+	    clear_tv(&tvkey);
 	    goto failret;
 	}
 	if (check_typval_is_value(&tv) == FAIL)
 	{
-	    if (evaluate)
-	    {
-		clear_tv(&tvkey);
-		clear_tv(&tv);
-	    }
+	    clear_tv(&tvkey);
+	    clear_tv(&tv);
 	    goto failret;
 	}
 	if (evaluate)
@@ -1052,12 +1083,12 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	had_comma = **arg == ',';
 	if (had_comma)
 	{
-	    if (vim9script && (*arg)[1] != NUL && !VIM_ISWHITE((*arg)[1]))
+	    if (vim9script && !IS_WHITE_NL_OR_NUL((*arg)[1]))
 	    {
 		semsg(_(e_white_space_required_after_str_str), ",", *arg);
 		goto failret;
 	    }
-	    *arg = skipwhite(*arg + 1);
+	    *arg = skipwhite_and_nl(*arg + 1);
 	}
 
 	// the "}" can be on the next line
@@ -1089,6 +1120,33 @@ failret:
 	rettv_dict_set(rettv, d);
 
     return OK;
+}
+
+/*
+ * Evaluate a literal dictionary: #{key: val, key: val}
+ * "*arg" points to the "#".
+ * On return, "*arg" points to the character after the Dict.
+ * Return OK or FAIL.  Returns NOTDONE for {expr}.
+ */
+    int
+eval_lit_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
+{
+    int		vim9script = in_vim9script();
+    int		ret = OK;
+
+    if (vim9script)
+    {
+	ret = vim9_bad_comment(*arg) ? FAIL : NOTDONE;
+    }
+    else if ((*arg)[1] == '{')
+    {
+	++*arg;
+	ret = eval_dict(arg, rettv, evalarg, TRUE);
+    }
+    else
+	ret = NOTDONE;
+
+    return ret;
 }
 
 /*
@@ -1195,8 +1253,7 @@ dict_lookup(hashitem_T *hi)
 dict_equal(
     dict_T	*d1,
     dict_T	*d2,
-    int		ic,	    // ignore case for strings
-    int		recursive)  // TRUE when used recursively
+    int		ic)	    // ignore case for strings
 {
     hashitem_T	*hi;
     dictitem_T	*item2;
@@ -1220,7 +1277,7 @@ dict_equal(
 	    item2 = dict_find(d2, hi->hi_key, -1);
 	    if (item2 == NULL)
 		return FALSE;
-	    if (!tv_equal(&HI2DI(hi)->di_tv, &item2->di_tv, ic, recursive))
+	    if (!tv_equal(&HI2DI(hi)->di_tv, &item2->di_tv, ic))
 		return FALSE;
 	    --todo;
 	}
@@ -1248,7 +1305,7 @@ dict_count(dict_T *d, typval_T *needle, int ic)
 	if (!HASHITEM_EMPTY(hi))
 	{
 	    --todo;
-	    if (tv_equal(&HI2DI(hi)->di_tv, needle, ic, FALSE))
+	    if (tv_equal(&HI2DI(hi)->di_tv, needle, ic))
 		++n;
 	}
     }
@@ -1279,9 +1336,6 @@ dict_extend_func(
 	emsg(_(e_cannot_extend_null_dict));
 	return;
     }
-    d2 = argvars[1].vval.v_dict;
-    if (d2 == NULL)
-	return;
 
     if (!is_new && value_check_lock(d1->dv_lock, arg_errmsg, TRUE))
 	return;
@@ -1293,6 +1347,10 @@ dict_extend_func(
 	    return;
     }
 
+    d2 = argvars[1].vval.v_dict;
+    if (d2 == NULL)
+	goto theend;
+
     // Check the third argument.
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
@@ -1300,12 +1358,18 @@ dict_extend_func(
 
 	action = tv_get_string_chk(&argvars[2]);
 	if (action == NULL)
+	{
+	    if (is_new)
+		dict_unref(d1);
 	    return;
+	}
 	for (i = 0; i < 3; ++i)
 	    if (STRCMP(action, av[i]) == 0)
 		break;
 	if (i == 3)
 	{
+	    if (is_new)
+		dict_unref(d1);
 	    semsg(_(e_invalid_argument_str), action);
 	    return;
 	}
@@ -1315,9 +1379,14 @@ dict_extend_func(
 
     if (type != NULL && check_typval_arg_type(type, &argvars[1],
 							 func_name, 2) == FAIL)
+    {
+	if (is_new)
+	    dict_unref(d1);
 	return;
+    }
     dict_extend(d1, d2, action, func_name);
 
+theend:
     if (is_new)
     {
 	rettv->v_type = VAR_DICT;
@@ -1498,9 +1567,7 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
-    if ((what == DICT2LIST_ITEMS
-		? check_for_string_or_list_or_dict_arg(argvars, 0)
-		: check_for_dict_arg(argvars, 0)) == FAIL)
+    if (check_for_dict_arg(argvars, 0) == FAIL)
 	return;
 
     d = argvars[0].vval.v_dict;
@@ -1556,14 +1623,9 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
  * "items(dict)" function
  */
     void
-f_items(typval_T *argvars, typval_T *rettv)
+dict2items(typval_T *argvars, typval_T *rettv)
 {
-    if (argvars[0].v_type == VAR_STRING)
-	string2items(argvars, rettv);
-    else if (argvars[0].v_type == VAR_LIST)
-	list2items(argvars, rettv);
-    else
-	dict2list(argvars, rettv, DICT2LIST_ITEMS);
+    dict2list(argvars, rettv, DICT2LIST_ITEMS);
 }
 
 /*

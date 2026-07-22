@@ -1,23 +1,21 @@
 " Test for the --remote functionality
 
-source check.vim
 CheckFeature clientserver
 CheckFeature terminal
 
-source shared.vim
-source screendump.vim
-source mouse.vim
-source term_util.vim
+source util/screendump.vim
+source util/mouse.vim
 
 let s:remote_works = 0
 let s:skip = 'Skipped: --remote feature is not possible'
 
-" nees to be run as first test to verify, that vim --servername works
+" needs to be run as first test to verify, that vim --servername works
 func Verify_remote_feature_works()
   CheckRunVimInTerminal
   enew
   let buf = RunVimInTerminal('--servername XVIMTEST', {'rows': 8})
   call TermWait(buf)
+
   let cmd = GetVimCommandCleanTerm() .. '--serverlist'
   call term_sendkeys(buf, ":r! " .. cmd .. "\<CR>")
   call TermWait(buf)
@@ -61,6 +59,14 @@ func Test_remote_servername()
   " open XTEST.txt, if wildignore setting is not ignored, the server
   " will continue with the Xdummy.log file
   let buf2 = RunVimInTerminal('--servername XVIMTEST --remote-silent XTEST.txt', {'rows': 5, 'wait_for_ruler': 0})
+
+  " It may take a while for the command to be sent to XVIMTEST and be executed.
+  " Do a blocking --remote-expr so that is assured the command was executed.
+  botright new
+  let buf3 = RunVimInTerminal('--servername XVIMTEST --remote-expr "v:servername"', {'rows': 5, 'wait_for_ruler': 0})
+  call WaitForAssert({-> assert_equal("finished", term_getstatus(buf3))})
+  exe buf3 .. 'bw!'
+
   " job should be no-longer running, so we can just close it
   exe buf2 .. 'bw!'
   call term_sendkeys(buf, ":sil :3,$d\<CR>")
@@ -74,6 +80,66 @@ func Test_remote_servername()
   call assert_equal(2, len(buf_contents))
   bw!
   close
+endfunc
+
+func Test_remote_servername_shellslash()
+  " Note this test does not currently run on Windows
+  " because:
+  " 1) we cannot run the gui version of Vim inside a terminal
+  " 2) Running Windows vim.exe inside a terminal would work, but is
+  "    disabled because of the limited colors inside the default Windows
+  "    console (see CanRunVimInTerminal in term_util.vim)
+  CheckRunVimInTerminal
+  CheckMSWindows
+
+  " That is the file we want the server to open,
+  " despite the wildignore setting
+  call mkdir(expand('~/remote/'), 'pD')
+  call writefile(range(1, 20), expand('~/remote/XTEST.txt'), 'D')
+  " just a dummy file, so that the ':wq' further down is successful
+  call writefile(range(1, 20), 'Xdummy.log', 'D')
+
+  " Run Vim in a terminal and open a terminal window to run Vim in.
+  let lines =<< trim END
+    set shellslash
+    cd ~/remote
+  END
+  call writefile(lines, 'XRemoteEditing1.vim', 'D')
+  let buf = RunVimInTerminal('--servername XVIMTEST -S XRemoteEditing1.vim  Xdummy.log', {'rows': 10})
+  call TermWait(buf)
+
+  " wildignore setting should be ignored and the XVIMTEST server should now
+  " open XTEST.txt, if wildignore setting is not ignored, the server
+  " will continue with the Xdummy.log file
+  let buf2 = RunVimInTerminal('--servername XVIMTEST --remote-silent ~/remote/XTEST.txt', {'rows': 5, 'wait_for_ruler': 0})
+  " job should be no-longer running, so we can just close it
+  exe buf2 .. 'bw!'
+
+  call term_sendkeys(buf, ":pwd\<CR>")
+  call WaitForAssert({-> assert_match('remote/$', term_getline(buf, 10))}, 1000)
+  call TermWait(buf)
+  call term_sendkeys(buf, ":q!\<CR>")
+  call TermWait(buf)
+  if term_getstatus(buf) == 'running'
+    call StopVimInTerminal(buf)
+  endif
+  bw!
+  close
+endfunc
+
+" Test if serverlist() lists itself.
+func Test_remote_servername_itself()
+  let lines =<< trim END
+    call writefile([serverlist()], "XTest")
+  END
+  defer delete("XTest")
+  call writefile(lines, 'XRemote.vim', 'D')
+  let buf = RunVimInTerminal('--servername XVIMTEST -S XRemote.vim', {'rows': 8})
+  call TermWait(buf)
+
+  call WaitForAssert({-> assert_match("XVIMTEST", readfile("XTest")[0])})
+
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

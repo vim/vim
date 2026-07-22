@@ -31,7 +31,8 @@
 #define EX_BANG		0x002	// allow a ! after the command name
 #define EX_EXTRA	0x004	// allow extra args after command name
 #define EX_XFILE	0x008	// expand wildcards in extra part
-#define EX_NOSPC	0x010	// no spaces allowed in the extra part
+#define EX_NOSPC	0x010	// extra part is a single argument (no split on
+				// whitespace)
 #define	EX_DFLALL	0x020	// default file range is 1,$
 #define EX_WHOLEFOLD	0x040	// extend range to include whole fold also
 				// when less than two numbers given
@@ -60,6 +61,7 @@
 #define EX_EXPR_ARG    0x8000000  // argument is an expression
 #define EX_WHOLE      0x10000000  // command name cannot be shortened in Vim9
 #define EX_EXPORT     0x20000000  // command can be used after :export
+#define EX_ARGSPACE   0x40000000  // completion: keep spaces in arg lead
 
 #define EX_FILES (EX_XFILE | EX_EXTRA)	// multiple extra files allowed
 #define EX_FILE1 (EX_FILES | EX_NOSPC)	// 1 file, defaults to current file
@@ -99,13 +101,14 @@ typedef struct exarg exarg_T;
  */
 #ifdef DO_DECLARE_EXCMD
 # define EXCMD(a, b, c, d, e) \
-	{(char_u *)b, c, (long_u)(d), e}
+	{(char_u *)b, STRLEN_LITERAL(b), c, (long_u)(d), e}
 
 typedef void (*ex_func_T) (exarg_T *eap);
 
 static struct cmdname
 {
     char_u	*cmd_name;	// name of the command
+    size_t	cmd_namelen;	// length of the command name
     ex_func_T   cmd_func;	// function for this command
     long_u	cmd_argt;	// flags declared above
     cmd_addr_T	cmd_addr_type;	// flag for address type
@@ -128,7 +131,7 @@ EXCMD(CMD_aboveleft,	"aboveleft",	ex_wrongmodifier,
 	EX_NEEDARG|EX_EXTRA|EX_NOTRLCOM,
 	ADDR_NONE),
 EXCMD(CMD_abstract,	"abstract",	ex_class,
-	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK|EX_EXPORT,
+	EX_EXTRA|EX_CMDWIN|EX_LOCK_OK|EX_WHOLE|EX_EXPORT,
 	ADDR_NONE),
 EXCMD(CMD_all,		"all",		ex_all,
 	EX_BANG|EX_RANGE|EX_COUNT|EX_TRLBAR,
@@ -233,7 +236,7 @@ EXCMD(CMD_breakdel,	"breakdel",	ex_breakdel,
 	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
 EXCMD(CMD_breaklist,	"breaklist",	ex_breaklist,
-	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
+	EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
 EXCMD(CMD_browse,	"browse",	ex_wrongmodifier,
 	EX_NEEDARG|EX_EXTRA|EX_NOTRLCOM|EX_CMDWIN|EX_LOCK_OK,
@@ -270,7 +273,7 @@ EXCMD(CMD_cabove,	"cabove",	ex_cbelow,
 	ADDR_UNSIGNED),
 EXCMD(CMD_caddbuffer,	"caddbuffer",	ex_cbuffer,
 	EX_RANGE|EX_WORD1|EX_TRLBAR,
-	ADDR_OTHER),
+	ADDR_LINES),
 EXCMD(CMD_caddexpr,	"caddexpr",	ex_cexpr,
 	EX_NEEDARG|EX_WORD1|EX_NOTRLCOM|EX_EXPR_ARG,
 	ADDR_NONE),
@@ -288,7 +291,7 @@ EXCMD(CMD_catch,	"catch",	ex_catch,
 	ADDR_NONE),
 EXCMD(CMD_cbuffer,	"cbuffer",	ex_cbuffer,
 	EX_BANG|EX_RANGE|EX_WORD1|EX_TRLBAR,
-	ADDR_OTHER),
+	ADDR_LINES),
 EXCMD(CMD_cbefore,	"cbefore",	ex_cbelow,
 	EX_RANGE|EX_COUNT|EX_TRLBAR,
 	ADDR_UNSIGNED),
@@ -330,7 +333,7 @@ EXCMD(CMD_cgetfile,	"cgetfile",	ex_cfile,
 	ADDR_NONE),
 EXCMD(CMD_cgetbuffer,	"cgetbuffer",	ex_cbuffer,
 	EX_RANGE|EX_WORD1|EX_TRLBAR,
-	ADDR_OTHER),
+	ADDR_LINES),
 EXCMD(CMD_cgetexpr,	"cgetexpr",	ex_cexpr,
 	EX_NEEDARG|EX_WORD1|EX_NOTRLCOM|EX_EXPR_ARG,
 	ADDR_NONE),
@@ -352,11 +355,14 @@ EXCMD(CMD_chistory,	"chistory",	qf_history,
 EXCMD(CMD_clist,	"clist",	qf_list,
 	EX_BANG|EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
+EXCMD(CMD_clipreset,	"clipreset",	ex_clipreset,
+	EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
+	ADDR_NONE),
 EXCMD(CMD_clast,	"clast",	ex_cc,
 	EX_RANGE|EX_COUNT|EX_TRLBAR|EX_BANG,
 	ADDR_UNSIGNED),
 EXCMD(CMD_class,	"class",	ex_class,
-	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK|EX_EXPORT,
+	EX_EXTRA|EX_CMDWIN|EX_LOCK_OK|EX_WHOLE|EX_EXPORT,
 	ADDR_NONE),
 EXCMD(CMD_close,	"close",	ex_close,
 	EX_BANG|EX_RANGE|EX_COUNT|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
@@ -464,7 +470,7 @@ EXCMD(CMD_debuggreedy,	"debuggreedy",	ex_debuggreedy,
 	EX_RANGE|EX_ZEROR|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_OTHER),
 EXCMD(CMD_def,		"def",		ex_function,
-	EX_EXTRA|EX_BANG|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK|EX_EXPORT,
+	EX_EXTRA|EX_BANG|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK|EX_WHOLE|EX_EXPORT,
 	ADDR_NONE),
 EXCMD(CMD_defcompile,	"defcompile",	ex_defcompile,
 	EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK|EX_TRLBAR|EX_EXTRA,
@@ -485,7 +491,7 @@ EXCMD(CMD_diffupdate,	"diffupdate",	ex_diffupdate,
 	EX_BANG|EX_TRLBAR,
 	ADDR_NONE),
 EXCMD(CMD_diffget,	"diffget",	ex_diffgetput,
-	EX_RANGE|EX_EXTRA|EX_TRLBAR|EX_MODIFY,
+	EX_RANGE|EX_ZEROR|EX_EXTRA|EX_TRLBAR|EX_MODIFY,
 	ADDR_LINES),
 EXCMD(CMD_diffoff,	"diffoff",	ex_diffoff,
 	EX_BANG|EX_TRLBAR,
@@ -494,7 +500,7 @@ EXCMD(CMD_diffpatch,	"diffpatch",	ex_diffpatch,
 	EX_EXTRA|EX_FILE1|EX_TRLBAR|EX_MODIFY,
 	ADDR_NONE),
 EXCMD(CMD_diffput,	"diffput",	ex_diffgetput,
-	EX_RANGE|EX_EXTRA|EX_TRLBAR,
+	EX_RANGE|EX_ZEROR|EX_EXTRA|EX_TRLBAR,
 	ADDR_LINES),
 EXCMD(CMD_diffsplit,	"diffsplit",	ex_diffsplit,
 	EX_EXTRA|EX_FILE1|EX_TRLBAR,
@@ -521,7 +527,7 @@ EXCMD(CMD_doautoall,	"doautoall",	ex_doautoall,
 	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
 EXCMD(CMD_drop,		"drop",		ex_drop,
-	EX_FILES|EX_CMDARG|EX_NEEDARG|EX_ARGOPT|EX_TRLBAR,
+	EX_BANG|EX_FILES|EX_CMDARG|EX_NEEDARG|EX_ARGOPT|EX_TRLBAR,
 	ADDR_NONE),
 EXCMD(CMD_dsearch,	"dsearch",	ex_findpat,
 	EX_BANG|EX_RANGE|EX_DFLALL|EX_WHOLEFOLD|EX_EXTRA|EX_CMDWIN|EX_LOCK_OK,
@@ -548,7 +554,7 @@ EXCMD(CMD_echomsg,	"echomsg",	ex_execute,
 	EX_EXTRA|EX_NOTRLCOM|EX_EXPR_ARG|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
 EXCMD(CMD_echoconsole,	"echoconsole",	ex_execute,
-	EX_EXTRA|EX_NOTRLCOM|EX_EXPR_ARG|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK,
+	EX_EXTRA|EX_NOTRLCOM|EX_EXPR_ARG|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
 EXCMD(CMD_echon,	"echon",	ex_echo,
 	EX_EXTRA|EX_NOTRLCOM|EX_EXPR_ARG|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK,
@@ -569,16 +575,16 @@ EXCMD(CMD_endif,	"endif",	ex_endif,
 	EX_TRLBAR|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK|EX_WHOLE,
 	ADDR_NONE),
 EXCMD(CMD_endinterface,	"endinterface",	ex_wrongmodifier,
-	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
+	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK|EX_WHOLE,
 	ADDR_NONE),
 EXCMD(CMD_endclass,	"endclass",	ex_wrongmodifier,
-	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
+	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK|EX_WHOLE,
 	ADDR_NONE),
 EXCMD(CMD_enddef,	"enddef",	ex_endfunction,
 	EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK|EX_WHOLE,
 	ADDR_NONE),
 EXCMD(CMD_endenum,	"endenum",	ex_wrongmodifier,
-	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
+	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK|EX_WHOLE,
 	ADDR_NONE),
 EXCMD(CMD_endfunction,	"endfunction",	ex_endfunction,
 	EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
@@ -595,8 +601,8 @@ EXCMD(CMD_endwhile,	"endwhile",	ex_endwhile,
 EXCMD(CMD_enew,		"enew",		ex_edit,
 	EX_BANG|EX_TRLBAR,
 	ADDR_NONE),
-EXCMD(CMD_enum,		"enum",		ex_enum,
-	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK|EX_EXPORT,
+EXCMD(CMD_enum,		"enum",		ex_class,
+	EX_EXTRA|EX_CMDWIN|EX_LOCK_OK|EX_WHOLE|EX_EXPORT,
 	ADDR_NONE),
 EXCMD(CMD_eval,		"eval",		ex_eval,
 	EX_EXTRA|EX_NOTRLCOM|EX_EXPR_ARG|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK,
@@ -689,8 +695,8 @@ EXCMD(CMD_help,		"help",		ex_help,
 	EX_BANG|EX_EXTRA|EX_NOTRLCOM,
 	ADDR_NONE),
 EXCMD(CMD_helpclose,	"helpclose",	ex_helpclose,
-	EX_RANGE|EX_COUNT|EX_TRLBAR,
-	ADDR_OTHER),
+	EX_TRLBAR,
+	ADDR_NONE),
 EXCMD(CMD_helpfind,	"helpfind",	ex_helpfind,
 	EX_EXTRA|EX_NOTRLCOM,
 	ADDR_NONE),
@@ -758,8 +764,11 @@ EXCMD(CMD_intro,	"intro",	ex_intro,
 	EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
 EXCMD(CMD_interface,	"interface",	ex_class,
-	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK|EX_EXPORT,
+	EX_EXTRA|EX_CMDWIN|EX_LOCK_OK|EX_WHOLE|EX_EXPORT,
 	ADDR_NONE),
+EXCMD(CMD_iput,		"iput",		ex_iput,
+	EX_RANGE|EX_WHOLEFOLD|EX_BANG|EX_REGSTR|EX_TRLBAR|EX_ZEROR|EX_CMDWIN|EX_LOCK_OK|EX_MODIFY,
+	ADDR_LINES),
 EXCMD(CMD_isearch,	"isearch",	ex_findpat,
 	EX_BANG|EX_RANGE|EX_DFLALL|EX_WHOLEFOLD|EX_EXTRA|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_LINES),
@@ -819,7 +828,7 @@ EXCMD(CMD_laddexpr,	"laddexpr",	ex_cexpr,
 	ADDR_NONE),
 EXCMD(CMD_laddbuffer,	"laddbuffer",	ex_cbuffer,
 	EX_RANGE|EX_WORD1|EX_TRLBAR,
-	ADDR_OTHER),
+	ADDR_LINES),
 EXCMD(CMD_laddfile,	"laddfile",	ex_cfile,
 	EX_TRLBAR|EX_FILE1,
 	ADDR_NONE),
@@ -831,7 +840,7 @@ EXCMD(CMD_later,	"later",	ex_later,
 	ADDR_NONE),
 EXCMD(CMD_lbuffer,	"lbuffer",	ex_cbuffer,
 	EX_BANG|EX_RANGE|EX_WORD1|EX_TRLBAR,
-	ADDR_OTHER),
+	ADDR_LINES),
 EXCMD(CMD_lbefore,	"lbefore",	ex_cbelow,
 	EX_RANGE|EX_COUNT|EX_TRLBAR,
 	ADDR_UNSIGNED),
@@ -885,7 +894,7 @@ EXCMD(CMD_lgetfile,	"lgetfile",	ex_cfile,
 	ADDR_NONE),
 EXCMD(CMD_lgetbuffer,	"lgetbuffer",	ex_cbuffer,
 	EX_RANGE|EX_WORD1|EX_TRLBAR,
-	ADDR_OTHER),
+	ADDR_LINES),
 EXCMD(CMD_lgetexpr,	"lgetexpr",	ex_cexpr,
 	EX_NEEDARG|EX_WORD1|EX_NOTRLCOM|EX_EXPR_ARG,
 	ADDR_NONE),
@@ -1144,14 +1153,17 @@ EXCMD(CMD_packadd,	"packadd",	ex_packadd,
 EXCMD(CMD_packloadall,	"packloadall",	ex_packloadall,
 	EX_BANG|EX_TRLBAR|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
+EXCMD(CMD_pbuffer,	"pbuffer",	ex_pbuffer,
+	EX_BANG|EX_RANGE|EX_BUFNAME|EX_BUFUNL|EX_COUNT|EX_EXTRA|EX_CMDARG|EX_TRLBAR,
+	ADDR_BUFFERS),
 EXCMD(CMD_pclose,	"pclose",	ex_pclose,
 	EX_BANG|EX_TRLBAR,
 	ADDR_NONE),
 EXCMD(CMD_perl,		"perl",		ex_perl,
-	EX_RANGE|EX_EXTRA|EX_DFLALL|EX_NEEDARG|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK,
+	EX_RANGE|EX_EXTRA|EX_DFLALL|EX_NEEDARG|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK|EX_RESTRICT,
 	ADDR_LINES),
 EXCMD(CMD_perldo,	"perldo",	ex_perldo,
-	EX_RANGE|EX_EXTRA|EX_DFLALL|EX_NEEDARG|EX_CMDWIN|EX_LOCK_OK,
+	EX_RANGE|EX_EXTRA|EX_DFLALL|EX_NEEDARG|EX_CMDWIN|EX_LOCK_OK|EX_RESTRICT,
 	ADDR_LINES),
 EXCMD(CMD_pedit,	"pedit",	ex_pedit,
 	EX_BANG|EX_FILE1|EX_CMDARG|EX_ARGOPT|EX_TRLBAR,
@@ -1217,7 +1229,7 @@ EXCMD(CMD_put,		"put",		ex_put,
 	EX_RANGE|EX_WHOLEFOLD|EX_BANG|EX_REGSTR|EX_TRLBAR|EX_ZEROR|EX_CMDWIN|EX_LOCK_OK|EX_MODIFY,
 	ADDR_LINES),
 EXCMD(CMD_public,	"public",	ex_wrongmodifier,
-	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
+	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK|EX_WHOLE,
 	ADDR_NONE),
 EXCMD(CMD_pwd,		"pwd",		ex_pwd,
 	EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
@@ -1283,6 +1295,9 @@ EXCMD(CMD_redrawstatus,	"redrawstatus",	ex_redrawstatus,
 	EX_BANG|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
 EXCMD(CMD_redrawtabline, "redrawtabline", ex_redrawtabline,
+	EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
+	ADDR_NONE),
+EXCMD(CMD_redrawtabpanel, "redrawtabpanel", ex_redrawtabpanel,
 	EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
 EXCMD(CMD_registers,	"registers",	ex_display,
@@ -1493,7 +1508,7 @@ EXCMD(CMD_startreplace,	"startreplace",	ex_startinsert,
 	EX_BANG|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
 EXCMD(CMD_static,	"static",	ex_wrongmodifier,
-	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
+	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK|EX_WHOLE,
 	ADDR_NONE),
 EXCMD(CMD_stopinsert,	"stopinsert",	ex_stopinsert,
 	EX_BANG|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
@@ -1547,8 +1562,8 @@ EXCMD(CMD_tags,		"tags",		do_tags,
 	EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
 EXCMD(CMD_tab,		"tab",		ex_wrongmodifier,
-	EX_NEEDARG|EX_EXTRA|EX_NOTRLCOM,
-	ADDR_NONE),
+	EX_RANGE|EX_ZEROR|EX_NEEDARG|EX_EXTRA|EX_NOTRLCOM,
+	ADDR_TABS),
 EXCMD(CMD_tabclose,	"tabclose",	ex_tabclose,
 	EX_BANG|EX_RANGE|EX_ZEROR|EX_EXTRA|EX_NOSPC|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_TABS),
@@ -1634,8 +1649,8 @@ EXCMD(CMD_tlnoremenu,	"tlnoremenu",	ex_menu,
 	EX_RANGE|EX_ZEROR|EX_EXTRA|EX_TRLBAR|EX_NOTRLCOM|EX_CTRLV|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_OTHER),
 EXCMD(CMD_tlunmenu,	"tlunmenu",	ex_menu,
-	EX_RANGE|EX_ZEROR|EX_EXTRA|EX_TRLBAR|EX_NOTRLCOM|EX_CTRLV|EX_CMDWIN|EX_LOCK_OK,
-	ADDR_OTHER),
+	EX_EXTRA|EX_TRLBAR|EX_NOTRLCOM|EX_CTRLV|EX_CMDWIN|EX_LOCK_OK,
+	ADDR_NONE),
 EXCMD(CMD_tmenu,	"tmenu",	ex_menu,
 	EX_RANGE|EX_ZEROR|EX_EXTRA|EX_TRLBAR|EX_NOTRLCOM|EX_CTRLV|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_OTHER),
@@ -1673,7 +1688,7 @@ EXCMD(CMD_tunmap,	"tunmap",	ex_unmap,
 	EX_EXTRA|EX_TRLBAR|EX_NOTRLCOM|EX_CTRLV|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
 EXCMD(CMD_type,		"type",		ex_type,
-	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK|EX_EXPORT,
+	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK|EX_WHOLE|EX_EXPORT,
 	ADDR_NONE),
 EXCMD(CMD_undo,		"undo",		ex_undo,
 	EX_RANGE|EX_COUNT|EX_ZEROR|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
@@ -1690,6 +1705,9 @@ EXCMD(CMD_unabbreviate,	"unabbreviate",	ex_abbreviate,
 EXCMD(CMD_unhide,	"unhide",	ex_buffer_all,
 	EX_RANGE|EX_COUNT|EX_TRLBAR,
 	ADDR_OTHER),
+EXCMD(CMD_uniq,		"uniq",		ex_uniq,
+	EX_RANGE|EX_DFLALL|EX_WHOLEFOLD|EX_BANG|EX_EXTRA|EX_NOTRLCOM|EX_MODIFY,
+	ADDR_LINES),
 EXCMD(CMD_unlet,	"unlet",	ex_unlet,
 	EX_BANG|EX_EXTRA|EX_NEEDARG|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
@@ -1794,6 +1812,9 @@ EXCMD(CMD_windo,	"windo",	ex_listdo,
 	ADDR_WINDOWS),
 EXCMD(CMD_winpos,	"winpos",	ex_winpos,
 	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
+	ADDR_NONE),
+EXCMD(CMD_wlrestore,	"wlrestore",	ex_wlrestore,
+	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK|EX_BANG,
 	ADDR_NONE),
 EXCMD(CMD_wnext,	"wnext",	ex_wnext,
 	EX_RANGE|EX_BANG|EX_FILE1|EX_ARGOPT|EX_TRLBAR,
@@ -1925,9 +1946,9 @@ struct exarg
     char_u	*nextcmd;	// next command (NULL if none)
     char_u	*cmd;		// the name of the command (except for :make)
     char_u	**cmdlinep;	// pointer to pointer of allocated cmdline
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     char_u	*cmdline_tofree; // free later
-#endif
+# endif
     cmdidx_T	cmdidx;		// the index for the command
     long	argt;		// flags for the command
     int		skip;		// don't execute the command, only parse it
@@ -1952,17 +1973,19 @@ struct exarg
     char	*errmsg;	// returned error message
     char_u	*(*ea_getline)(int, void *, int, getline_opt_T);
     void	*cookie;	// argument for getline()
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     cstack_T	*cstack;	// condition stack for ":if" etc.
-#endif
+    class_T	*ea_class;		// Name of class being defined. Used by :class
+				// and :enum commands.
+# endif
 };
 
-#define FORCE_BIN 1		// ":edit ++bin file"
-#define FORCE_NOBIN 2		// ":edit ++nobin file"
+# define FORCE_BIN 1		// ":edit ++bin file"
+# define FORCE_NOBIN 2		// ":edit ++nobin file"
 
 // Values for "flags"
-#define EXFLAG_LIST	0x01	// 'l': list
-#define EXFLAG_NR	0x02	// '#': number
-#define EXFLAG_PRINT	0x04	// 'p': print
+# define EXFLAG_LIST	0x01	// 'l': list
+# define EXFLAG_NR	0x02	// '#': number
+# define EXFLAG_PRINT	0x04	// 'p': print
 
 #endif

@@ -2,7 +2,7 @@ vim9script
 
 # Script to define the syntax menu in synmenu.vim
 # Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2023 Aug 10
+# Last Change:	2025 Mar 09
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # This is used by "make menu" in the src directory.
@@ -124,6 +124,7 @@ SynMenu C.C++:cpp
 SynMenu C.C#:cs
 SynMenu C.Cabal\ Haskell\ build\ file:cabal
 SynMenu C.Calendar:calendar
+SynMenu C.Cangjie:cangjie
 SynMenu C.Cascading\ Style\ Sheets:css
 SynMenu C.CDL:cdl
 SynMenu C.Cdrdao\ TOC:cdrtoc
@@ -275,6 +276,7 @@ SynMenu HIJK.Hercules:hercules
 SynMenu HIJK.Hex\ dump.XXD:xxd
 SynMenu HIJK.Hex\ dump.Intel\ MCS51:hex
 SynMenu HIJK.Hg\ commit:hgcommit
+SynMenu HIJK.HIP:hip
 SynMenu HIJK.Hollywood:hollywood
 SynMenu HIJK.HTML.HTML:html
 SynMenu HIJK.HTML.HTML\ with\ M4:htmlm4
@@ -605,6 +607,7 @@ SynMenu T.TealInfo:tli
 SynMenu T.Telix\ Salt:tsalt
 SynMenu T.Termcap/Printcap:ptcap
 SynMenu T.Terminfo:terminfo
+SynMenu T.Tera:tera
 SynMenu T.Tera\ Term:teraterm
 SynMenu T.TeX.TeX/LaTeX:tex
 SynMenu T.TeX.plain\ TeX:plaintex

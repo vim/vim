@@ -1,8 +1,5 @@
 " Test for expanding file names
 
-source shared.vim
-source check.vim
-
 func Test_with_directories()
   call mkdir('Xdir1')
   call mkdir('Xdir2')
@@ -49,6 +46,19 @@ func Test_expand_tilde_filename()
   call assert_notequal(expand('%:p'), expand('~/'))
   call assert_match('\~', expand('%:p'))
   bwipe!
+endfunc
+
+func Test_expand_env_pathsep()
+  let $FOO = './foo'
+  call assert_equal('./foo/bar', expand('$FOO/bar'))
+  let $FOO = './foo/'
+  call assert_equal('./foo/bar', expand('$FOO/bar'))
+  let $FOO = 'C:'
+  call assert_equal('C:/bar', expand('$FOO/bar'))
+  let $FOO = 'C:/'
+  call assert_equal('C:/bar', expand('$FOO/bar'))
+
+  unlet $FOO
 endfunc
 
 func Test_expandcmd()
@@ -113,7 +123,7 @@ func Test_expandcmd()
   endif
 
   unlet $FOO
-  close!
+  bw!
 endfunc
 
 " Test for expanding <sfile>, <slnum> and <sflnum> outside of sourcing a script

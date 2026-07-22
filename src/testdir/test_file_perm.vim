@@ -17,7 +17,7 @@ func Test_file_perm()
   call assert_equal(1, setfperm('XtestPerm', 'r--r--r--'))
   call assert_equal('r--r--r--', getfperm('XtestPerm'))
 
-  call assert_fails("setfperm('XtestPerm', '---')")
+  call assert_fails("call setfperm('XtestPerm', '---')", 'E475: Invalid argument: ---')
 
   call assert_equal(1, setfperm('XtestPerm', 'rwx------'))
 

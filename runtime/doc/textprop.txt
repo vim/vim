@@ -1,7 +1,7 @@
-*textprop.txt*  For Vim version 9.1.  Last change: 2023 Apr 23
+*textprop.txt*	For Vim version 9.2.  Last change: 2026 May 31
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
 Displaying text with properties attached.	*textprop* *text-properties*
@@ -118,6 +118,8 @@ prop_list({lnum} [, {props}])		text properties in {lnum}
 prop_remove({props} [, {lnum} [, {lnum-end}]])
 					remove a text property
 
+						*text-prop-functions-details*
+
 						*prop_add()* *E965*
 prop_add({lnum}, {col}, {props})
 		Attach a text property at position {lnum}, {col}.  {col} is
@@ -138,10 +140,10 @@ prop_add({lnum}, {col}, {props})
 		   bufnr	buffer to add the property to; when omitted
 				the current buffer is used
 		   id		user defined ID for the property; must be a
-				number, should be positive; when using "text"
-				then "id" must not be present and will be set
-				automatically to a negative number; otherwise
-				zero is used
+				number, should be positive |E1510|;
+				when using "text" then any "id" value is
+				ignored and a negative number is assigned
+				automatically; otherwise zero is used
 							*E1305*
 		   text		text to be displayed before {col}, or
 				above/below the line if {col} is zero; prepend
@@ -175,7 +177,9 @@ prop_add({lnum}, {col}, {props})
 				When omitted "truncate" is used.
 				Note that this applies to the individual text
 				property, the 'wrap' option sets the overall
-				behavior
+				behavior.  "wrap" only takes effect when the
+				'wrap' option is set; with 'nowrap' the text
+				is truncated at the right edge of the window.
 		All fields except "type" are optional.
 
 		It is an error when both "length" and "end_lnum" or "end_col"
@@ -192,7 +196,7 @@ prop_add({lnum}, {col}, {props})
 		the property type does not have "end_incl" set.
 
 		"type" will first be looked up in the buffer the property is
-		added to. When not found, the global property types are used.
+		added to.  When not found, the global property types are used.
 		If not found an error is given.
 							*virtual-text*
 		When "text" is used and the column is non-zero then this text
@@ -222,20 +226,17 @@ prop_add({lnum}, {col}, {props})
 		is difficult to compute).
 		A negative "id" will be chosen and is returned.
 
-		Before text properties with text were supported it was
-		possible to use a negative "id", even though this was very
-		rare.  Now that negative "id"s are reserved for text
-		properties with text an error is given when using a negative
-		"id".  When a text property with text already exists using a
-		negative "id" results in *E1293* .  If a negative "id" was
-		used and later a text property with text is added results in
-		*E1339* .
+		Negative "id"s are reserved for text properties with "text"
+		and cannot be used otherwise.  Using a negative "id" results
+		in *E1293* .
 
 		Can also be used as a |method|: >
 			GetLnum()->prop_add(col, props)
 <
-						*prop_add_list()*
-prop_add_list({props}, [{item}, ...])
+		Return type: |Number|
+
+
+prop_add_list({props}, [{item}, ...])			*prop_add_list()*
 		Similar to prop_add(), but attaches a text property at
 		multiple positions in a buffer.
 
@@ -267,10 +268,12 @@ prop_add_list({props}, [{item}, ...])
 			call prop_add_list(#{type: 'MyProp', id: 2},
 					\ [[1, 4, 1, 7],
 					\  [1, 15, 1, 20],
-					\  [2, 30, 3, 30]]
+					\  [2, 30, 3, 30]])
 <
 		Can also be used as a |method|: >
 			GetProp()->prop_add_list([[1, 1, 1, 2], [1, 4, 1, 8]])
+<
+		Return type: void
 
 
 prop_clear({lnum} [, {lnum-end} [, {props}]])		*prop_clear()*
@@ -284,8 +287,10 @@ prop_clear({lnum} [, {lnum-end} [, {props}]])		*prop_clear()*
 		Can also be used as a |method|: >
 			GetLnum()->prop_clear()
 <
-							*prop_find()*
-prop_find({props} [, {direction}])
+		Return type: void
+
+
+prop_find({props} [, {direction}])			*prop_find()*
 		Search for a text property as specified with {props}:
 		   id		property with this ID
 		   type		property with this type name
@@ -310,6 +315,8 @@ prop_find({props} [, {direction}])
 		as with prop_list(), and additionally an "lnum" entry.
 		If no match is found then an empty Dict is returned.
 
+		Return type: dict<any>
+
 
 prop_list({lnum} [, {props}])				*prop_list()*
 		Returns a List with all the text properties in line {lnum}.
@@ -321,14 +328,14 @@ prop_list({lnum} [, {props}])				*prop_list()*
 				A negative value is used as an offset from the
 				last buffer line; -1 refers to the last buffer
 				line.
-		   types	List of property type names. Return only text
+		   types	List of property type names.  Return only text
 				properties that match one of the type names.
-		   ids		List of property identifiers. Return only text
-				properties with one of these identifiers.
+		   ids		List of property identifiers.  Return only
+				text properties with one of these identifiers.
 
 		The properties are ordered by starting column and priority.
 		Each property is a Dict with these entries:
-		   lnum		starting line number. Present only when
+		   lnum		starting line number.  Present only when
 				returning text properties between {lnum} and
 				{end_lnum}.
 		   col		starting column
@@ -355,7 +362,7 @@ prop_list({lnum} [, {props}])				*prop_list()*
 
 		Returns an empty list on error.
 
-		Examples:
+		Examples: >
 		   " get text properties placed in line 5
 		   echo prop_list(5)
 		   " get text properties placed in line 20 in buffer 4
@@ -376,10 +383,12 @@ prop_list({lnum} [, {props}])				*prop_list()*
 		   " in buffer 4.
 		   echo prop_list(1, {'bufnr': 4, 'types': ['myprop'],
 					\ 'ids': [100], 'end_lnum': -1})
-
+<
 		Can also be used as a |method|: >
 			GetLnum()->prop_list()
 <
+		Return type: list<dict<any>> or list<any>
+
 						*prop_remove()* *E968* *E860*
 prop_remove({props} [, {lnum} [, {lnum-end}]])
 		Remove a matching text property from line {lnum}.  When
@@ -409,6 +418,8 @@ prop_remove({props} [, {lnum} [, {lnum-end}]])
 
 		Can also be used as a |method|: >
 			GetProps()->prop_remove()
+<
+		Return type: |Number|
 
 
 prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
@@ -436,6 +447,9 @@ prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
 
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_add(props)
+<
+		Return type: void
+
 
 prop_type_change({name}, {props})			*prop_type_change()*
 		Change properties of an existing text property type.  If a
@@ -444,6 +458,9 @@ prop_type_change({name}, {props})			*prop_type_change()*
 
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_change(props)
+<
+		Return type: void
+
 
 prop_type_delete({name} [, {props}])			*prop_type_delete()*
 		Remove the text property type {name}.  When text properties
@@ -458,6 +475,9 @@ prop_type_delete({name} [, {props}])			*prop_type_delete()*
 
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_delete()
+<
+		Return type: void
+
 
 prop_type_get({name} [, {props}])			*prop_type_get()*
 		Returns the properties of property type {name}.  This is a
@@ -471,12 +491,17 @@ prop_type_get({name} [, {props}])			*prop_type_get()*
 
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_get()
+<
+		Return type: dict<any>
+
 
 prop_type_list([{props}])				*prop_type_list()*
 		Returns a list with all property type names.
 
 		{props} can contain a "bufnr" item.  When it is given, use
 		this buffer instead of the global property types.
+
+		Return type: list<string> or list<any>
 
 
 ==============================================================================
@@ -488,7 +513,9 @@ will move accordingly.
 
 When text is deleted and a text property no longer includes any text, it is
 deleted.  However, a text property that was defined as zero-width will remain,
-unless the whole line is deleted.
+unless the whole line is deleted.  When lines are joined by a multi-line
+substitute command, virtual text properties on the deleted lines are moved to
+the resulting joined line.
 								*E275*
 When a buffer is unloaded, all the text properties are gone.  There is no way
 to store the properties in a file.  You can only re-create them.  When a
@@ -504,7 +531,7 @@ callback update spelling mistakes in the changed text.  Vim will move the
 properties below the changed text, so that they still highlight the same text,
 thus you don't need to update these.
 
-
+							*text-prop-cleared*
 Text property columns are not updated or copied: ~
 
 - When setting the line with |setline()| or through an interface, such as Lua,

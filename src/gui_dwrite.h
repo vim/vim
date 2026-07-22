@@ -51,6 +51,13 @@ typedef struct DWriteRenderingParams {
     int textAntialiasMode;
 } DWriteRenderingParams;
 
+#define DWRITE_MAX_FONT_FEATURES 32
+
+typedef struct DWriteFontFeature {
+    unsigned int tag;	    // OpenType feature tag (4 bytes)
+    unsigned int parameter; // Feature parameter (0 = disable, 1 = enable)
+} DWriteFontFeature;
+
 void DWrite_Init(void);
 void DWrite_Final(void);
 
@@ -85,6 +92,11 @@ void DWriteContext_SetRenderingParams(
 DWriteRenderingParams *DWriteContext_GetRenderingParams(
 	DWriteContext *ctx,
 	DWriteRenderingParams *params);
+
+void DWriteContext_SetFontFeatures(
+	DWriteContext *ctx,
+	const DWriteFontFeature *features,
+	int count);
 
 #ifdef __cplusplus
 }

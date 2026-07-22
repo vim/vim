@@ -73,6 +73,11 @@
 #  define rb_num2int	rb_num2int_stub
 # endif
 
+# if RUBY_VERSION >= 20
+// USE_TYPEDDATA is not defined yet. We just check for 2.0.
+#  define rb_check_typeddata		rb_check_typeddata_stub
+# endif
+
 # if RUBY_VERSION == 21
 // Ruby 2.1 adds new GC called RGenGC and RARRAY_PTR uses
 // rb_gc_writebarrier_unprotect_promoted if USE_RGENGC
@@ -107,8 +112,21 @@
 # undef SIZEOF_TIME_T
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
+
+#if defined(__clang__) && (__clang_major__ >= 21)
+# pragma GCC diagnostic ignored "-Wdefault-const-init-field-unsafe"
+#endif
+
 #include <ruby.h>
 #include <ruby/encoding.h>
+
+#if defined(__GNUC__) || defined(__clang__)
+# pragma GCC diagnostic pop
+#endif
 
 // See above.
 #ifdef SIZEOF_TIME_T
@@ -161,6 +179,9 @@
 #ifdef HAVE_DUP
 # undef HAVE_DUP
 #endif
+#ifdef HAVE_FSYNC
+# undef HAVE_FSYNC
+#endif
 
 // Avoid redefining TRUE/FALSE in vterm.h.
 #ifdef TRUE
@@ -191,12 +212,6 @@
 # endif
 #endif
 
-#if defined(PROTO) && !defined(FEAT_RUBY)
-// Define these to be able to generate the function prototypes.
-# define VALUE int
-# define RUBY_DATA_FUNC int
-#endif
-
 static int ruby_initialized = 0;
 static void *ruby_stack_start;
 static VALUE objtbl;
@@ -217,10 +232,7 @@ static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 # define ruby_init_stack(addr) ruby_init_stack((addr), rb_ia64_bsp())
 #endif
 
-#if defined(DYNAMIC_RUBY) || defined(PROTO)
-# if defined(PROTO) && !defined(HINSTANCE)
-#  define HINSTANCE int		// for generating prototypes
-# endif
+#if defined(DYNAMIC_RUBY)
 
 /*
  * Wrapper defines
@@ -238,9 +250,6 @@ static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 # define rb_class_new_instance		dll_rb_class_new_instance
 # if RUBY_VERSION < 30
 #  define rb_check_type			dll_rb_check_type
-# endif
-# ifdef USE_TYPEDDATA
-#  define rb_check_typeddata		dll_rb_check_typeddata
 # endif
 # define rb_class_path			dll_rb_class_path
 # ifdef USE_TYPEDDATA
@@ -386,12 +395,12 @@ static void (*dll_rb_debug_rstring_null_ptr) (const char*);
 # endif
 static VALUE (*dll_rb_define_class_under) (VALUE, const char*, VALUE);
 static void (*dll_rb_define_const) (VALUE,const char*,VALUE);
-static void (*dll_rb_define_global_function) (const char*,VALUE(*)(),int);
-static void (*dll_rb_define_method) (VALUE,const char*,VALUE(*)(),int);
+static void (*dll_rb_define_global_function) (const char*,VALUE(*)(int,VALUE*,VALUE),int);
+static void (*dll_rb_define_method) (VALUE,const char*,VALUE(*)(ANYARGS),int);
 static VALUE (*dll_rb_define_module) (const char*);
-static void (*dll_rb_define_module_function) (VALUE,const char*,VALUE(*)(),int);
-static void (*dll_rb_define_singleton_method) (VALUE,const char*,VALUE(*)(),int);
-static void (*dll_rb_define_virtual_variable) (const char*,VALUE(*)(),void(*)());
+static void (*dll_rb_define_module_function) (VALUE,const char*,VALUE(*)(VALUE,VALUE),int);
+static void (*dll_rb_define_singleton_method) (VALUE,const char*,VALUE(*)(ANYARGS),int);
+static void (*dll_rb_define_virtual_variable) (const char*,VALUE(*)(ID,VALUE*),void(*)());
 static VALUE *dll_rb_stdout;
 static VALUE *dll_rb_stderr;
 static VALUE *dll_rb_eArgError;
@@ -597,6 +606,12 @@ rb_unexpected_type_stub(VALUE self, int t)
     dll_rb_unexpected_type(self, t);
 }
 #  endif
+#  ifdef USE_TYPEDDATA
+void *rb_check_typeddata_stub(VALUE obj, const rb_data_type_t *data_type)
+{
+    return dll_rb_check_typeddata(obj, data_type);
+}
+#  endif
 # endif // ifndef PROTO
 
 static HINSTANCE hinstRuby = NULL; // Instance of ruby.dll
@@ -790,7 +805,7 @@ ruby_enabled(int verbose)
 {
     return ruby_runtime_link_init((char *)p_rubydll, verbose) == OK;
 }
-#endif // defined(DYNAMIC_RUBY) || defined(PROTO)
+#endif // defined(DYNAMIC_RUBY)
 
     void
 ruby_end(void)
@@ -1677,7 +1692,7 @@ window_set_cursor(VALUE self, VALUE pos)
     col = RARRAY_PTR(pos)[1];
     win->w_cursor.lnum = NUM2LONG(lnum);
     win->w_cursor.col = NUM2UINT(col);
-    win->w_set_curswant = TRUE;
+    win->w_set_curswant = true;
     check_cursor();		    // put cursor on an existing line
     update_screen(UPD_NOT_VALID);
     return Qnil;
@@ -1720,10 +1735,10 @@ ruby_io_init(void)
 
     rb_stdout = rb_obj_alloc(rb_cObject);
     rb_stderr = rb_obj_alloc(rb_cObject);
-    rb_define_singleton_method(rb_stdout, "write", vim_message, 1);
-    rb_define_singleton_method(rb_stdout, "flush", f_nop, 0);
-    rb_define_singleton_method(rb_stderr, "write", vim_message, 1);
-    rb_define_singleton_method(rb_stderr, "flush", f_nop, 0);
+    rb_define_singleton_method(rb_stdout, "write", (void*)vim_message, 1);
+    rb_define_singleton_method(rb_stdout, "flush", (void*)f_nop, 0);
+    rb_define_singleton_method(rb_stderr, "write", (void*)vim_message, 1);
+    rb_define_singleton_method(rb_stderr, "flush", (void*)f_nop, 0);
     rb_define_global_function("p", f_p, -1);
 }
 
@@ -1757,36 +1772,36 @@ ruby_vim_init(void)
 						rb_eStandardError);
 
     cBuffer = rb_define_class_under(mVIM, "Buffer", rb_cObject);
-    rb_define_singleton_method(cBuffer, "current", buffer_s_current, 0);
-    rb_define_singleton_method(cBuffer, "count", buffer_s_count, 0);
-    rb_define_singleton_method(cBuffer, "[]", buffer_s_aref, 1);
-    rb_define_method(cBuffer, "name", buffer_name, 0);
-    rb_define_method(cBuffer, "number", buffer_number, 0);
-    rb_define_method(cBuffer, "count", buffer_count, 0);
-    rb_define_method(cBuffer, "length", buffer_count, 0);
-    rb_define_method(cBuffer, "[]", buffer_aref, 1);
-    rb_define_method(cBuffer, "[]=", buffer_aset, 2);
-    rb_define_method(cBuffer, "delete", buffer_delete, 1);
-    rb_define_method(cBuffer, "append", buffer_append, 2);
+    rb_define_singleton_method(cBuffer, "current", (void*)buffer_s_current, 0);
+    rb_define_singleton_method(cBuffer, "count", (void*)buffer_s_count, 0);
+    rb_define_singleton_method(cBuffer, "[]", (void*)buffer_s_aref, 1);
+    rb_define_method(cBuffer, "name", (void*)buffer_name, 0);
+    rb_define_method(cBuffer, "number", (void*)buffer_number, 0);
+    rb_define_method(cBuffer, "count", (void*)buffer_count, 0);
+    rb_define_method(cBuffer, "length", (void*)buffer_count, 0);
+    rb_define_method(cBuffer, "[]", (void*)buffer_aref, 1);
+    rb_define_method(cBuffer, "[]=", (void*)buffer_aset, 2);
+    rb_define_method(cBuffer, "delete", (void*)buffer_delete, 1);
+    rb_define_method(cBuffer, "append", (void*)buffer_append, 2);
 
     // Added line manipulation functions
     //   SegPhault - 03/07/05
-    rb_define_method(cBuffer, "line_number", current_line_number, 0);
-    rb_define_method(cBuffer, "line", line_s_current, 0);
-    rb_define_method(cBuffer, "line=", set_current_line, 1);
+    rb_define_method(cBuffer, "line_number", (void*)current_line_number, 0);
+    rb_define_method(cBuffer, "line", (void*)line_s_current, 0);
+    rb_define_method(cBuffer, "line=", (void*)set_current_line, 1);
 
 
     cVimWindow = rb_define_class_under(mVIM, "Window", rb_cObject);
-    rb_define_singleton_method(cVimWindow, "current", window_s_current, 0);
-    rb_define_singleton_method(cVimWindow, "count", window_s_count, 0);
-    rb_define_singleton_method(cVimWindow, "[]", window_s_aref, 1);
-    rb_define_method(cVimWindow, "buffer", window_buffer, 0);
-    rb_define_method(cVimWindow, "height", window_height, 0);
-    rb_define_method(cVimWindow, "height=", window_set_height, 1);
-    rb_define_method(cVimWindow, "width", window_width, 0);
-    rb_define_method(cVimWindow, "width=", window_set_width, 1);
-    rb_define_method(cVimWindow, "cursor", window_cursor, 0);
-    rb_define_method(cVimWindow, "cursor=", window_set_cursor, 1);
+    rb_define_singleton_method(cVimWindow, "current", (void*)window_s_current, 0);
+    rb_define_singleton_method(cVimWindow, "count", (void*)window_s_count, 0);
+    rb_define_singleton_method(cVimWindow, "[]", (void*)window_s_aref, 1);
+    rb_define_method(cVimWindow, "buffer", (void*)window_buffer, 0);
+    rb_define_method(cVimWindow, "height", (void*)window_height, 0);
+    rb_define_method(cVimWindow, "height=", (void*)window_set_height, 1);
+    rb_define_method(cVimWindow, "width", (void*)window_width, 0);
+    rb_define_method(cVimWindow, "width=", (void*)window_set_width, 1);
+    rb_define_method(cVimWindow, "cursor", (void*)window_cursor, 0);
+    rb_define_method(cVimWindow, "cursor=", (void*)window_set_cursor, 1);
 
     rb_define_virtual_variable("$curbuf", buffer_s_current_getter, 0);
     rb_define_virtual_variable("$curwin", window_s_current_getter, 0);

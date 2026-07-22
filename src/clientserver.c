@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_CLIENTSERVER) || defined(PROTO)
+#if defined(FEAT_CLIENTSERVER)
 
 static void cmdsrv_main(int *argc, char **argv, char_u *serverName_arg, char_u **serverStr);
 static char_u *serverMakeName(char_u *arg, char *cmd);
@@ -37,7 +37,7 @@ server_to_input_buf(char_u *str)
     str = replace_termcodes(str, &ptr, 0, REPTERM_DO_LT, NULL);
     p_cpo = cpo_save;
 
-    if (*ptr != NUL)	// trailing CTRL-V results in nothing
+    if (ptr != NULL && *ptr != NUL)	// trailing CTRL-V results in nothing
     {
 	/*
 	 * Add the string to the input stream.
@@ -70,9 +70,9 @@ eval_client_expr_to_string(char_u *expr)
     funccal_entry_T funccal_entry;
     int		did_save_funccal = FALSE;
 
-#if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
     ch_log(NULL, "eval_client_expr_to_string(\"%s\")", expr);
-#endif
+# endif
 
     // Evaluate the expression at the toplevel, don't use variables local to
     // the calling function. Except when in debug mode.
@@ -177,7 +177,7 @@ serverConvert(
 }
 #endif
 
-#if (defined(FEAT_CLIENTSERVER) && !defined(NO_VIM_MAIN)) || defined(PROTO)
+#if defined(FEAT_CLIENTSERVER) && !defined(NO_VIM_MAIN)
 
 /*
  * Common code for the X command server and the Win32 command server.
@@ -191,6 +191,8 @@ static char_u *build_drop_cmd(int filec, char **filev, int tabs, int sendReply);
     void
 exec_on_server(mparm_T *parmp)
 {
+    int made_name = FALSE;
+
     if (parmp->serverName_arg != NULL && *parmp->serverName_arg == NUL)
 	return;
 
@@ -214,34 +216,57 @@ exec_on_server(mparm_T *parmp)
     // If we're still running, get the name to register ourselves.
     // On Win32 can register right now, for X11 need to setup the
     // clipboard first, it's further down.
-    parmp->servername = serverMakeName(parmp->serverName_arg,
-	    parmp->argv[0]);
+    if (!made_name && parmp->servername == NULL)
+	parmp->servername = serverMakeName(parmp->serverName_arg,
+		parmp->argv[0]);
 # ifdef MSWIN
-    if (parmp->servername != NULL)
+    if (parmp->servername != NULL && clientserver_method == CLIENTSERVER_METHOD_MSWIN)
     {
 	serverSetName(parmp->servername);
+#  ifndef FEAT_SOCKETSERVER
 	vim_free(parmp->servername);
+#  endif
     }
 # endif
 }
-
 /*
  * Prepare for running as a Vim server.
  */
     void
 prepare_server(mparm_T *parmp)
 {
-# if defined(FEAT_X11)
+# if defined(FEAT_X11) || defined(FEAT_SOCKETSERVER)
     /*
      * Register for remote command execution with :serversend and --remote
      * unless there was a -X or a --servername '' on the command line.
      * Only register nongui-vim's with an explicit --servername argument,
      * or when compiling with autoservername.
      * When running as root --servername is also required.
+     *
+     * If we are Windows and socketserver is being used, then don't use
+     * autoservername, since traditional naming isn't supported.
      */
-    if (X_DISPLAY != NULL && parmp->servername != NULL && (
+
+    if (
+#  if defined(FEAT_X11) || (defined(FEAT_SOCKETSERVER) && !defined(MSWIN))
+	    (
+#   ifdef FEAT_X11
+	    X_DISPLAY != NULL
+#   endif
+#   if defined(FEAT_X11) && defined(FEAT_SOCKETSERVER) && !defined(MSWIN)
+	    ||
+#   endif
+#   if defined(FEAT_SOCKETSERVER) && !defined(MSWIN)
+	    clientserver_method == CLIENTSERVER_METHOD_SOCKET
+#   endif
+	    ) &&
+#  endif
+	    parmp->servername != NULL && (
 #  if defined(FEAT_AUTOSERVERNAME) || defined(FEAT_GUI)
 		(
+#   if defined(FEAT_SOCKETSERVER) && defined(MSWIN)
+		 clientserver_method != CLIENTSERVER_METHOD_SOCKET &&
+#   endif
 #   if defined(FEAT_AUTOSERVERNAME)
 		    1
 #   else
@@ -254,12 +279,29 @@ prepare_server(mparm_T *parmp)
 #  endif
 		parmp->serverName_arg != NULL))
     {
-	(void)serverRegisterName(X_DISPLAY, parmp->servername);
+
+#  ifdef FEAT_SOCKETSERVER
+	if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+	    socketserver_start(parmp->servername, false);
+#  endif
+#  ifdef FEAT_X11
+	if (clientserver_method == CLIENTSERVER_METHOD_X11)
+	{
+	    (void)serverRegisterName(X_DISPLAY, parmp->servername);
+	    TIME_MSG("register x11 server name");
+	}
+#  endif
 	vim_free(parmp->servername);
-	TIME_MSG("register server name");
     }
     else
-	serverDelayedStartName = parmp->servername;
+    {
+#  ifdef FEAT_X11
+	if (clientserver_method == CLIENTSERVER_METHOD_X11)
+	    serverDelayedStartName = parmp->servername;
+	else
+#  endif
+	    vim_free(parmp->servername);
+    }
 # endif
 
     /*
@@ -286,25 +328,28 @@ cmdsrv_main(
     char_u	*res;
     int		i;
     char_u	*sname;
-    int		ret;
+    int		ret = -1;
     int		didone = FALSE;
     int		exiterr = 0;
     char	**newArgV = argv + 1;
     int		newArgC = 1,
 		Argc = *argc;
     int		argtype;
-#define ARGTYPE_OTHER		0
-#define ARGTYPE_EDIT		1
-#define ARGTYPE_EDIT_WAIT	2
-#define ARGTYPE_SEND		3
+# define ARGTYPE_OTHER		0
+# define ARGTYPE_EDIT		1
+# define ARGTYPE_EDIT_WAIT	2
+# define ARGTYPE_SEND		3
     int		silent = FALSE;
     int		tabs = FALSE;
-# ifndef FEAT_X11
+# ifdef MSWIN
     HWND	srv;
-# else
+# elif defined(FEAT_X11)
     Window	srv;
 
     setup_term_clip();
+# endif
+# ifdef FEAT_SOCKETSERVER
+    channel_T	*ch = NULL;
 # endif
 
     sname = serverMakeName(serverName_arg, argv[0]);
@@ -384,18 +429,30 @@ cmdsrv_main(
 		}
 		Argc = i;
 	    }
+
+# ifdef FEAT_SOCKETSERVER
+	    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+		ret = socketserver_send(sname, *serverStr, NULL, false, -1,
+			silent, &ch);
+# endif
 # ifdef FEAT_X11
-	    if (xterm_dpy == NULL)
+	    if (clientserver_method == CLIENTSERVER_METHOD_X11)
 	    {
-		mch_errmsg(_("No display"));
-		ret = -1;
+		if (xterm_dpy == NULL)
+		{
+		    mch_errmsg(_("No display"));
+		    ret = -1;
+		}
+		else
+		    ret = serverSendToVim(xterm_dpy, sname, *serverStr,
+			    NULL, &srv, 0, 0, 0, silent);
 	    }
-	    else
-		ret = serverSendToVim(xterm_dpy, sname, *serverStr,
-						  NULL, &srv, 0, 0, 0, silent);
-# else
-	    // Win32 always works?
-	    ret = serverSendToVim(sname, *serverStr, NULL, &srv, 0, 0, silent);
+# endif
+# ifdef MSWIN
+	    if (clientserver_method == CLIENTSERVER_METHOD_MSWIN)
+		// Win32 always works?
+		ret = serverSendToVim(sname, *serverStr, NULL, &srv, 0, 0,
+			silent);
 # endif
 	    if (ret < 0)
 	    {
@@ -452,16 +509,26 @@ cmdsrv_main(
 		vim_memset(done, 0, numFiles);
 		while (memchr(done, 0, numFiles) != NULL)
 		{
-		    char_u  *p;
+		    char_u  *p = NULL;
 		    int	    j;
 # ifdef MSWIN
-		    p = serverGetReply(srv, NULL, TRUE, TRUE, 0);
+		    if (clientserver_method == CLIENTSERVER_METHOD_MSWIN)
+			p = serverGetReply(srv, NULL, TRUE, TRUE, 0);
+# endif
+# ifdef FEAT_SOCKETSERVER
+		    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET
+			    && (ch == NULL
+				|| socketserver_read_reply(sname, &p, -1, true)
+				== FAIL))
+			    break;
+# endif
+# ifdef FEAT_X11
+		    if (clientserver_method == CLIENTSERVER_METHOD_X11
+			    && serverReadReply(xterm_dpy, srv, &p, TRUE, -1) < 0)
+			    break;
+# endif
 		    if (p == NULL)
 			break;
-# else
-		    if (serverReadReply(xterm_dpy, srv, &p, TRUE, -1) < 0)
-			break;
-# endif
 		    j = atoi((char *)p);
 		    vim_free(p);
 		    if (j >= 0 && j < numFiles)
@@ -475,6 +542,13 @@ cmdsrv_main(
 			done[j] = 1;
 		    }
 		}
+# ifdef FEAT_SOCKETSERVER
+		if (ch != NULL)
+		{
+		    channel_close(ch, false);
+		    channel_clear(ch);
+		}
+# endif
 # ifdef FEAT_GUI_MSWIN
 		Shell_NotifyIcon(NIM_DELETE, &ni);
 # endif
@@ -483,18 +557,35 @@ cmdsrv_main(
 	}
 	else if (STRICMP(argv[i], "--remote-expr") == 0)
 	{
+	    int status = OK;
+
 	    if (i == *argc - 1)
 		mainerr_arg_missing((char_u *)argv[i]);
 # ifdef MSWIN
 	    // Win32 always works?
-	    if (serverSendToVim(sname, (char_u *)argv[i + 1],
+	    if (clientserver_method == CLIENTSERVER_METHOD_MSWIN
+		    && serverSendToVim(sname, (char_u *)argv[i + 1],
 						  &res, NULL, 1, 0, FALSE) < 0)
-# else
-	    if (xterm_dpy == NULL)
-		mch_errmsg(_("No display: Send expression failed.\n"));
-	    else if (serverSendToVim(xterm_dpy, sname, (char_u *)argv[i + 1],
-					       &res, NULL, 1, 0, 1, FALSE) < 0)
+		status = FAIL;
 # endif
+# ifdef FEAT_SOCKETSERVER
+	    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET
+		&& socketserver_send(sname, (char_u *)argv[i + 1],
+			    &res, 1, 0, false, NULL) < 0)
+		status = FAIL;
+# endif
+# ifdef FEAT_X11
+	    if (clientserver_method == CLIENTSERVER_METHOD_X11)
+	    {
+		if (xterm_dpy == NULL)
+		    mch_errmsg(_("No display: Send expression failed.\n"));
+		else if (serverSendToVim(xterm_dpy, sname,
+			    (char_u *)argv[i + 1], &res,
+			    NULL, 1, 0, 1, FALSE) < 0)
+		    status = FAIL;
+	    }
+# endif
+	    if (status == FAIL)
 	    {
 		if (res != NULL && *res != NUL)
 		{
@@ -507,13 +598,33 @@ cmdsrv_main(
 	}
 	else if (STRICMP(argv[i], "--serverlist") == 0)
 	{
+	    list_T	*list = NULL;
+	    garray_T	ga;
+
 # ifdef MSWIN
-	    // Win32 always works?
-	    res = serverGetVimNames();
-# else
-	    if (xterm_dpy != NULL)
-		res = serverGetVimNames(xterm_dpy);
+	    if (clientserver_method == CLIENTSERVER_METHOD_MSWIN)
+		// Win32 always works?
+		list = serverGetVimNames();
 # endif
+# ifdef FEAT_SOCKETSERVER
+	    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+		list = socketserver_list();
+# endif
+# ifdef FEAT_X11
+	    if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
+		    xterm_dpy != NULL)
+		list = serverGetVimNames(xterm_dpy);
+# endif
+
+	    ga_init2(&ga, 1, 80);
+	    if (list != NULL)
+	    {
+		list_join(&ga, list, (char_u *)"\n", TRUE, FALSE, 0);
+		ga_append(&ga, NUL);
+		list_free(list);
+	    }
+	    res = ga.ga_data;
+
 	    if (did_emsg)
 		mch_errmsg("\n");
 	}
@@ -564,12 +675,13 @@ build_drop_cmd(
     int		i;
     char_u	*inicmd = NULL;
     char_u	*p;
-    char_u	*cdp;
+    string_T	cdp;
     char_u	*cwd;
     // reset wildignore temporarily
-    const char *wig[] =
-    { "<CR><C-\\><C-N>:let g:_wig=&wig|set wig=",
-      "<C-\\><C-N>:let &wig=g:_wig|unlet g:_wig<CR>"};
+    const string_T wig[] = {
+	STR_LITERAL_INIT("<CR><C-\\><C-N>:let g:_wig=&wig|set wig="),
+	STR_LITERAL_INIT("<C-\\><C-N>:let &wig=g:_wig|unlet g:_wig<CR>")
+    };
 
     if (filec > 0 && filev[0][0] == '+')
     {
@@ -590,55 +702,55 @@ build_drop_cmd(
 	vim_free(cwd);
 	return NULL;
     }
-    cdp = vim_strsave_escaped_ext(cwd,
-#ifdef BACKSLASH_IN_FILENAME
+    cdp.string = vim_strsave_escaped_ext(cwd,
+# ifdef BACKSLASH_IN_FILENAME
 	    (char_u *)"",  // rem_backslash() will tell what chars to escape
-#else
+# else
 	    PATH_ESC_CHARS,
-#endif
+# endif
 	    '\\', TRUE);
     vim_free(cwd);
-    if (cdp == NULL)
+    if (cdp.string == NULL)
 	return NULL;
+    cdp.length = STRLEN(cdp.string);
     ga_init2(&ga, 1, 100);
-    ga_concat(&ga, (char_u *)"<C-\\><C-N>:cd ");
-    ga_concat(&ga, cdp);
+    GA_CONCAT_LITERAL(&ga, "<C-\\><C-N>:cd ");
+    ga_concat_len(&ga, cdp.string, cdp.length);
     // reset wildignorecase temporarily
-    ga_concat(&ga, (char_u *)wig[0]);
+    ga_concat_len(&ga, wig[0].string, wig[0].length);
 
     // Call inputsave() so that a prompt for an encryption key works.
-    ga_concat(&ga, (char_u *)
-		       "<CR>:if exists('*inputsave')|call inputsave()|endif|");
+    GA_CONCAT_LITERAL(&ga, "<CR><C-\\><C-N>:if exists('*inputsave')|call inputsave()|endif|");
     if (tabs)
-	ga_concat(&ga, (char_u *)"tab ");
-    ga_concat(&ga, (char_u *)"drop");
+	GA_CONCAT_LITERAL(&ga, "tab ");
+    GA_CONCAT_LITERAL(&ga, "drop");
     for (i = 0; i < filec; i++)
     {
 	// On Unix the shell has already expanded the wildcards, don't want to
 	// do it again in the Vim server.  On MS-Windows only escape
 	// non-wildcard characters.
 	p = vim_strsave_escaped((char_u *)filev[i],
-#ifdef UNIX
+# ifdef UNIX
 		PATH_ESC_CHARS
-#else
+# else
 		(char_u *)" \t%#"
-#endif
+# endif
 		);
 	if (p == NULL)
 	{
+	    vim_free(cdp.string);
 	    vim_free(ga.ga_data);
 	    return NULL;
 	}
-	ga_concat(&ga, (char_u *)" ");
+	GA_CONCAT_LITERAL(&ga, " ");
 	ga_concat(&ga, p);
 	vim_free(p);
     }
-    ga_concat(&ga, (char_u *)
-		  "|if exists('*inputrestore')|call inputrestore()|endif<CR>");
+    GA_CONCAT_LITERAL(&ga, "|if exists('*inputrestore')|call inputrestore()|endif<CR>");
 
     // The :drop commands goes to Insert mode when 'insertmode' is set, use
     // CTRL-\ CTRL-N again.
-    ga_concat(&ga, (char_u *)"<C-\\><C-N>");
+    GA_CONCAT_LITERAL(&ga, "<C-\\><C-N>");
 
     // Switch back to the correct current directory (prior to temporary path
     // switch) unless 'autochdir' is set, in which case it will already be
@@ -651,28 +763,34 @@ build_drop_cmd(
     //      cd -
     //    endif
     //  endif
-    ga_concat(&ga, (char_u *)":if !exists('+acd')||!&acd|if haslocaldir()|");
-    ga_concat(&ga, (char_u *)"cd -|lcd -|elseif getcwd() ==# '");
-    ga_concat(&ga, cdp);
-    ga_concat(&ga, (char_u *)"'|cd -|endif|endif<CR>");
-    vim_free(cdp);
+    GA_CONCAT_LITERAL(&ga, ":if !exists('+acd')||!&acd|if haslocaldir()|");
+# ifdef MSWIN
+    // in case :set shellslash is set, need to normalize the directory separators
+    // '/' is not valid in a filename so replacing '/' by '\\' should be safe
+    GA_CONCAT_LITERAL(&ga, "cd -|lcd -|elseif getcwd()->tr('/','\\') ==# '");
+# else
+    GA_CONCAT_LITERAL(&ga, "cd -|lcd -|elseif getcwd() ==# '");
+# endif
+    ga_concat_len(&ga, cdp.string, cdp.length);
+    GA_CONCAT_LITERAL(&ga, "'|cd -|endif|endif<CR>");
+    vim_free(cdp.string);
     // reset wildignorecase
-    ga_concat(&ga, (char_u *)wig[1]);
+    ga_concat_len(&ga, wig[1].string, wig[1].length);
 
     if (sendReply)
-	ga_concat(&ga, (char_u *)":call SetupRemoteReplies()<CR>");
-    ga_concat(&ga, (char_u *)":");
+	GA_CONCAT_LITERAL(&ga, ":call SetupRemoteReplies()<CR>");
+    GA_CONCAT_LITERAL(&ga, ":");
     if (inicmd != NULL)
     {
 	// Can't use <CR> after "inicmd", because a "startinsert" would cause
 	// the following commands to be inserted as text.  Use a "|",
 	// hopefully "inicmd" does allow this...
 	ga_concat(&ga, inicmd);
-	ga_concat(&ga, (char_u *)"|");
+	GA_CONCAT_LITERAL(&ga, "|");
     }
     // Bring the window to the foreground, goto Insert mode when 'im' set and
     // clear command line.
-    ga_concat(&ga, (char_u *)"cal foreground()|if &im|star|en|redr|f<CR>");
+    GA_CONCAT_LITERAL(&ga, "cal foreground()|if &im|star|en|redr|f<CR>");
     ga_append(&ga, NUL);
     return ga.ga_data;
 }
@@ -688,7 +806,24 @@ serverMakeName(char_u *arg, char *cmd)
     char_u *p;
 
     if (arg != NULL && *arg != NUL)
+    {
+# ifdef FEAT_SOCKETSERVER
+	// When using socketserver backend, do not change the name if path or
+	// channel address.
+	if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+	{
+	    if (STRNICMP(arg, "channel:", 8) == 0 || arg[0] == '/' ||
+		    STRNCMP(arg, "./", 2) == 0 || STRNCMP(arg, "../", 3) == 0)
+		p = vim_strsave(arg);
+	    else
+		p = vim_strsave_up(arg);
+	}
+	else
+	    p = vim_strsave_up(arg);
+# else
 	p = vim_strsave_up(arg);
+# endif
+    }
     else
     {
 	p = vim_strsave_up(gettail((char_u *)cmd));
@@ -719,6 +854,8 @@ make_connection(void)
     static int
 check_connection(void)
 {
+    if (clientserver_method != CLIENTSERVER_METHOD_X11)
+	return OK;
     make_connection();
     if (X_DISPLAY == NULL)
     {
@@ -741,8 +878,11 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 # ifdef MSWIN
     HWND	w;
 # else
+#  ifdef FEAT_X11
     Window	w;
+#  endif
 # endif
+    int		ret = OK;
 
     if (check_restricted() || check_secure())
 	return;
@@ -760,11 +900,24 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 	return;		// type error; errmsg already given
     keys = tv_get_string_buf(&argvars[1], buf);
 # ifdef MSWIN
-    if (serverSendToVim(server_name, keys, &r, &w, expr, timeout, TRUE) < 0)
-# else
-    if (serverSendToVim(X_DISPLAY, server_name, keys, &r, &w, expr, timeout,
-								  0, TRUE) < 0)
+    if (clientserver_method == CLIENTSERVER_METHOD_MSWIN
+	    && serverSendToVim(server_name, keys, &r, &w, expr,
+		timeout, TRUE) < 0)
+	ret = FAIL;
 # endif
+# ifdef FEAT_SOCKETSERVER
+    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET
+	&& socketserver_send(server_name, keys, &r, expr,
+	    timeout * 1000, true, NULL) < 0)
+	ret = FAIL;
+# endif
+# ifdef FEAT_X11
+    if (clientserver_method == CLIENTSERVER_METHOD_X11)
+	if (serverSendToVim(X_DISPLAY, server_name, keys, &r, &w, expr, timeout,
+		    0, TRUE) < 0)
+	ret = FAIL;
+# endif
+    if (ret == FAIL)
     {
 	if (r != NULL)
 	{
@@ -781,13 +934,36 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
 	dictitem_T	v;
-	char_u		str[30];
+# if defined(MSWIN) || defined(FEAT_X11)
+	char_u		sbuf[30];
+# endif
+	char_u		*str = NULL;
 	char_u		*idvar;
 
 	idvar = tv_get_string_chk(&argvars[2]);
 	if (idvar != NULL && *idvar != NUL)
 	{
-	    sprintf((char *)str, PRINTF_HEX_LONG_U, (long_u)w);
+# ifdef MSWIN
+	    if (clientserver_method == CLIENTSERVER_METHOD_MSWIN)
+	    {
+		sprintf((char *)sbuf, PRINTF_HEX_LONG_U, (long_u)w);
+		str = sbuf;
+	    }
+# endif
+# ifdef FEAT_X11
+	    if (clientserver_method == CLIENTSERVER_METHOD_X11)
+	    {
+		sprintf((char *)sbuf, PRINTF_HEX_LONG_U, (long_u)w);
+		str = sbuf;
+	    }
+# endif
+# ifdef FEAT_SOCKETSERVER
+	    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+		str = server_name;
+# endif
+	    if (str == NULL)
+		str = (char_u *)"";
+
 	    v.di_tv.v_type = VAR_STRING;
 	    v.di_tv.vval.v_string = vim_strsave(str);
 	    set_var(idvar, &v.di_tv, FALSE);
@@ -797,7 +973,7 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * "remote_expr()" function
  */
@@ -807,7 +983,7 @@ f_remote_expr(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
-#ifdef FEAT_CLIENTSERVER
+# ifdef FEAT_CLIENTSERVER
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
 		|| check_for_string_arg(argvars, 1) == FAIL
@@ -817,7 +993,7 @@ f_remote_expr(typval_T *argvars UNUSED, typval_T *rettv)
 	return;
 
     remote_common(argvars, rettv, TRUE);
-#endif
+# endif
 }
 
 /*
@@ -826,11 +1002,11 @@ f_remote_expr(typval_T *argvars UNUSED, typval_T *rettv)
     void
 f_remote_foreground(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_CLIENTSERVER
+# ifdef FEAT_CLIENTSERVER
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
-# ifdef MSWIN
+#  ifdef MSWIN
     // On Win32 it's done in this application.
     {
 	char_u	*server_name = tv_get_string_chk(&argvars[0]);
@@ -838,7 +1014,7 @@ f_remote_foreground(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	if (server_name != NULL)
 	    serverForeground(server_name);
     }
-# else
+#  else
     // Send a foreground() expression to the server.
     argvars[1].v_type = VAR_STRING;
     argvars[1].vval.v_string = vim_strsave((char_u *)"foreground()");
@@ -847,19 +1023,19 @@ f_remote_foreground(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     rettv->vval.v_string = NULL;
     remote_common(argvars, rettv, TRUE);
     vim_free(argvars[1].vval.v_string);
+#  endif
 # endif
-#endif
 }
 
     void
 f_remote_peek(typval_T *argvars UNUSED, typval_T *rettv)
 {
-#ifdef FEAT_CLIENTSERVER
+# ifdef FEAT_CLIENTSERVER
     dictitem_T	v;
     char_u	*s = NULL;
-# ifdef MSWIN
+#  ifdef MSWIN
     long_u	n = 0;
-# endif
+#  endif
     char_u	*serverid;
 
     rettv->vval.v_number = -1;
@@ -874,22 +1050,33 @@ f_remote_peek(typval_T *argvars UNUSED, typval_T *rettv)
     serverid = tv_get_string_chk(&argvars[0]);
     if (serverid == NULL)
 	return;		// type error; errmsg already given
-# ifdef MSWIN
-    sscanf((const char *)serverid, SCANF_HEX_LONG_U, &n);
-    if (n == 0)
-	rettv->vval.v_number = -1;
-    else
+#  ifdef MSWIN
+    if (clientserver_method == CLIENTSERVER_METHOD_MSWIN)
     {
-	s = serverGetReply((HWND)n, FALSE, FALSE, FALSE, 0);
-	rettv->vval.v_number = (s != NULL);
+	sscanf((const char *)serverid, SCANF_HEX_LONG_U, &n);
+	if (n == 0)
+	    rettv->vval.v_number = -1;
+	else
+	{
+	    s = serverGetReply((HWND)n, FALSE, FALSE, FALSE, 0);
+	    rettv->vval.v_number = (s != NULL);
+	}
     }
-# else
-    if (check_connection() == FAIL)
-	return;
+#  endif
+#  ifdef FEAT_SOCKETSERVER
+    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+	rettv->vval.v_number = socketserver_peek_reply(serverid, &s);
+#  endif
+#  ifdef FEAT_X11
+    if (clientserver_method == CLIENTSERVER_METHOD_X11)
+    {
+	if (check_connection() == FAIL)
+	    return;
 
-    rettv->vval.v_number = serverPeekReply(X_DISPLAY,
-						serverStrToWin(serverid), &s);
-# endif
+	rettv->vval.v_number = serverPeekReply(X_DISPLAY,
+		serverStrToWin(serverid), &s);
+    }
+#  endif
 
     if (argvars[1].v_type != VAR_UNKNOWN && rettv->vval.v_number > 0)
     {
@@ -902,9 +1089,9 @@ f_remote_peek(typval_T *argvars UNUSED, typval_T *rettv)
 	    set_var(retvar, &v.di_tv, FALSE);
 	vim_free(v.di_tv.vval.v_string);
     }
-#else
+# else
     rettv->vval.v_number = -1;
-#endif
+# endif
 }
 
     void
@@ -912,7 +1099,7 @@ f_remote_read(typval_T *argvars UNUSED, typval_T *rettv)
 {
     char_u	*r = NULL;
 
-#ifdef FEAT_CLIENTSERVER
+# ifdef FEAT_CLIENTSERVER
     char_u	*serverid;
 
     if (in_vim9script()
@@ -924,27 +1111,39 @@ f_remote_read(typval_T *argvars UNUSED, typval_T *rettv)
     if (serverid != NULL && !check_restricted() && !check_secure())
     {
 	int timeout = 0;
-# ifdef MSWIN
+#  ifdef MSWIN
 	// The server's HWND is encoded in the 'id' parameter
 	long_u		n = 0;
-# endif
+#  endif
 
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	    timeout = tv_get_number(&argvars[1]);
 
-# ifdef MSWIN
-	sscanf((char *)serverid, SCANF_HEX_LONG_U, &n);
-	if (n != 0)
-	    r = serverGetReply((HWND)n, FALSE, TRUE, TRUE, timeout);
-	if (r == NULL)
-# else
-	if (check_connection() == FAIL
-		|| serverReadReply(X_DISPLAY, serverStrToWin(serverid),
-						       &r, FALSE, timeout) < 0)
-# endif
+#  ifdef MSWIN
+	if (clientserver_method == CLIENTSERVER_METHOD_MSWIN)
+	{
+	    sscanf((char *)serverid, SCANF_HEX_LONG_U, &n);
+	    if (n != 0)
+		r = serverGetReply((HWND)n, FALSE, TRUE, TRUE, timeout);
+	    if (r == NULL)
+		emsg(_(e_unable_to_read_server_reply));
+	}
+#  endif
+#  ifdef FEAT_SOCKETSERVER
+	if (clientserver_method == CLIENTSERVER_METHOD_SOCKET &&
+		socketserver_read_reply(serverid, &r, timeout * 1000, false)
+		== FAIL)
 	    emsg(_(e_unable_to_read_server_reply));
+#  endif
+#  ifdef FEAT_X11
+	if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
+		(check_connection() == FAIL
+		|| serverReadReply(X_DISPLAY, serverStrToWin(serverid),
+						       &r, FALSE, timeout) < 0))
+	    emsg(_(e_unable_to_read_server_reply));
+#  endif
     }
-#endif
+# endif
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = r;
 }
@@ -958,7 +1157,7 @@ f_remote_send(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
-#ifdef FEAT_CLIENTSERVER
+# ifdef FEAT_CLIENTSERVER
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
 		|| check_for_string_arg(argvars, 1) == FAIL
@@ -966,7 +1165,7 @@ f_remote_send(typval_T *argvars UNUSED, typval_T *rettv)
 	return;
 
     remote_common(argvars, rettv, FALSE);
-#endif
+# endif
 }
 
 /*
@@ -975,7 +1174,7 @@ f_remote_send(typval_T *argvars UNUSED, typval_T *rettv)
     void
 f_remote_startserver(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_CLIENTSERVER
+# ifdef FEAT_CLIENTSERVER
     if (check_for_nonempty_string_arg(argvars, 0) == FAIL)
 	return;
 
@@ -986,25 +1185,35 @@ f_remote_startserver(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     }
 
     char_u *server = tv_get_string_chk(&argvars[0]);
-# ifdef FEAT_X11
-    if (check_connection() == OK)
+    if (server == NULL)
+	return;
+#  ifdef MSWIN
+    if (clientserver_method == CLIENTSERVER_METHOD_MSWIN)
+	serverSetName(server);
+#  endif
+#  ifdef FEAT_SOCKETSERVER
+    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+	socketserver_start(server, true);
+#  endif
+#  ifdef FEAT_X11
+    if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
+	    check_connection() == OK)
 	serverRegisterName(X_DISPLAY, server);
-# else
-    serverSetName(server);
-# endif
+#  endif
 
-#else
+# else
     emsg(_(e_clientserver_feature_not_available));
-#endif
+# endif
 }
 
     void
 f_server2client(typval_T *argvars UNUSED, typval_T *rettv)
 {
-#ifdef FEAT_CLIENTSERVER
+# ifdef FEAT_CLIENTSERVER
     char_u	buf[NUMBUFLEN];
     char_u	*server;
     char_u	*reply;
+    int		ret = OK;
 
     rettv->vval.v_number = -1;
     if (check_restricted() || check_secure())
@@ -1020,37 +1229,117 @@ f_server2client(typval_T *argvars UNUSED, typval_T *rettv)
     if (server == NULL || reply == NULL)
 	return;
 
-# ifdef FEAT_X11
-    if (check_connection() == FAIL)
-	return;
-# endif
+#  ifdef FEAT_SOCKETSERVER
+    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET &&
+	    socketserver_send_reply(server, reply) == FAIL)
+	ret = FAIL;
+#  endif
+#  ifdef FEAT_X11
+    if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
+	    serverSendReply(server, reply) < 0)
+	ret = FAIL;
+#  endif
+#  ifdef MSWIN
+    if (clientserver_method == CLIENTSERVER_METHOD_MSWIN
+	    && serverSendReply(server, reply) < 0)
+	ret = FAIL;
+#  endif
 
-    if (serverSendReply(server, reply) < 0)
+    if (ret == FAIL)
     {
 	emsg(_(e_unable_to_send_to_client));
 	return;
     }
     rettv->vval.v_number = 0;
-#else
+# else
     rettv->vval.v_number = -1;
-#endif
+# endif
 }
 
     void
 f_serverlist(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    char_u	*r = NULL;
+    list_T  *list = NULL;
+    bool    use_list = false;
 
-#ifdef FEAT_CLIENTSERVER
-# ifdef MSWIN
-    r = serverGetVimNames();
-# else
-    make_connection();
-    if (X_DISPLAY != NULL)
-	r = serverGetVimNames(X_DISPLAY);
+    if (check_for_opt_dict_arg(argvars, 0) == FAIL)
+	return;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	dict_T *d = argvars[0].vval.v_dict;
+
+	use_list = dict_get_bool(d, "list", false);
+    }
+
+# ifdef FEAT_CLIENTSERVER
+#  ifdef MSWIN
+    if (clientserver_method == CLIENTSERVER_METHOD_MSWIN)
+	list = serverGetVimNames();
+#  endif
+#  ifdef FEAT_SOCKETSERVER
+    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+	list = socketserver_list();
+#  endif
+#  ifdef FEAT_X11
+    if (clientserver_method == CLIENTSERVER_METHOD_X11)
+    {
+	// This function fails if there is no X11 connection.
+	if (check_connection() == FAIL)
+	    return;
+	// If the check_connection() function returns OK, it has already been
+	// confirmed within that function that make_connection() was called and
+	// that X_DISPLAY is not NULL.
+	list = serverGetVimNames(X_DISPLAY);
+    }
+#  endif
 # endif
+    if (use_list && list != NULL)
+    {
+	list->lv_refcount++;
+	rettv->v_type = VAR_LIST;
+	rettv->vval.v_list = list;
+    }
+    else
+    {
+	garray_T ga;
+
+	ga_init2(&ga, 1, 80);
+
+	if (list != NULL)
+	{
+	    list_join(&ga, list, (char_u *)"\n", TRUE, FALSE, 0);
+	    ga_append(&ga, NUL);
+	    list_free(list);
+	}
+
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = (char_u *)ga.ga_data;
+    }
+}
 #endif
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = r;
+
+#ifdef FEAT_CLIENTSERVER_BACKENDS
+/*
+ * Check the $VIM_CLIENTSERVER environment variable and set the method
+ */
+    void
+check_clientserver_method_env(void)
+{
+    char_u *env = mch_getenv("VIM_CLIENTSERVER");
+
+    if (env == NULL)
+	return;
+
+    if (STRICMP(env, "socket") == 0)
+	clientserver_method = CLIENTSERVER_METHOD_SOCKET;
+# ifdef FEAT_X11
+    else if (STRICMP(env, "x11") == 0)
+	clientserver_method = CLIENTSERVER_METHOD_X11;
+# endif
+# ifdef MSWIN
+    else if (STRICMP(env, "mswin") == 0)
+	clientserver_method = CLIENTSERVER_METHOD_MSWIN;
+# endif
 }
 #endif

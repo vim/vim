@@ -12,4 +12,18 @@ rem   If you use Community (or Professional) edition, you can also use "x64"
 rem   option:
 rem     msvc2015 x64
 
+set Platform=
+if not exist "%VS140COMNTOOLS%..\..\VC\vcvarsall.bat" (
+	echo Error: vcvarsall.bat not found.
+	exit /b 1
+)
 call "%VS140COMNTOOLS%..\..\VC\vcvarsall.bat" %*
+if defined VisualStudioVersion (
+	if defined Platform (
+		echo VS 2015 ^(%VisualStudioVersion%^) %Platform%
+		title VS 2015 %Platform%
+	) else (
+		echo VS 2015 ^(%VisualStudioVersion%^) x86
+		title VS 2015 x86
+	)
+)

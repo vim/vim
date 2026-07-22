@@ -1,8 +1,6 @@
 # [![Vim The editor](https://github.com/vim/vim/raw/master/runtime/vimlogo.gif)](https://www.vim.org)
 
 [![Github Build status](https://github.com/vim/vim/workflows/GitHub%20CI/badge.svg)](https://github.com/vim/vim/actions?query=workflow%3A%22GitHub+CI%22)
-[![Appveyor Build status](https://ci.appveyor.com/api/projects/status/o2qht2kjm02sgghk?svg=true)](https://ci.appveyor.com/project/chrisbra/vim)
-[![Cirrus Build Status](https://api.cirrus-ci.com/github/vim/vim.svg)](https://cirrus-ci.com/github/vim/vim)
 [![Coverage Status](https://codecov.io/gh/vim/vim/coverage.svg?branch=master)](https://codecov.io/gh/vim/vim?branch=master)
 [![Coverity Scan](https://scan.coverity.com/projects/241/badge.svg)](https://scan.coverity.com/projects/vim)
 [![Debian CI](https://badges.debian.net/badges/debian/testing/vim/version.svg)](https://buildd.debian.org/vim)
@@ -12,13 +10,15 @@
 If you find a bug or want to discuss the best way to add a new feature, please
 [open an issue](https://github.com/vim/vim/issues/new/choose).
 If you have a question or want to discuss the best way to do something with
-Vim, you can use [StackExchange](https://vi.stackexchange.com/)
+Vim, you can join [`#vim`](https://web.libera.chat/#vim),
+[reddit.com/r/vim](https://reddit.com/r/vim),
+use [StackExchange](https://vi.stackexchange.com/),
 or one of the [Maillists](https://www.vim.org/community.php).
 
 ## What is Vim?
 
 Vim is a greatly improved version of the good old UNIX editor
-[Vi](https://en.wikipedia.org/wiki/Vi).  Many new
+[Vi](https://en.wikipedia.org/wiki/Vi_(text_editor)).  Many new
 features have been added: multi-level undo, syntax highlighting, command line
 history, on-line help, spell checking, filename completion, block operations,
 script language, etc.  There is also a Graphical User Interface (GUI)
@@ -31,6 +31,10 @@ This editor is very useful for editing programs and other plain text files.
 All commands are given with normal keyboard characters, so those who can type
 with ten fingers can work very fast.  Additionally, function keys can be
 mapped to commands by the user, and the mouse can be used.
+
+Vim also aims to provide a (mostly) POSIX-compatible vi implementation, when
+compiled with a minimal feature set (typically called vim.tiny), which is used
+by many Linux distributions as the default vi editor.
 
 Vim runs under MS-Windows (7, 8, 10, 11), macOS, Haiku, VMS and almost all
 flavours of UNIX.  Porting to other systems should not be very difficult.
@@ -55,7 +59,7 @@ an overview of currently available distributions.
 
 Some popular places to get the latest Vim:
 * Check out the git repository from [GitHub](https://github.com/vim/vim).
-* Get the source code as an [archive](https://github.com/vim/vim/releases).
+* Get the source code as an [archive](https://github.com/vim/vim/tags).
 * Get a Windows executable from the
 [vim-win32-installer](https://github.com/vim/vim-win32-installer/releases) repository.
 
@@ -109,12 +113,12 @@ distribute it.
 ## Sponsoring
 
 Fixing bugs and adding new features takes a lot of time and effort.  To show
-your appreciation for the work and motivate Bram and others to continue
-working on Vim please send a donation.
+your appreciation for the work and motivate developers to continue working on
+Vim please send a donation.
 
-Since Bram is back to a paid job the money will now be used to help children
-in Uganda.  See [`runtime/doc/uganda.txt`](./runtime/doc/uganda.txt).  But
-at the same time donations increase Bram's motivation to keep working on Vim!
+The money you donated will be mainly used to help children in Uganda.  See
+[`runtime/doc/uganda.txt`](./runtime/doc/uganda.txt).  But at the same time
+donations increase the development team motivation to keep working on Vim!
 
 For the most recent information about sponsoring look on the Vim web site:
 	https://www.vim.org/sponsor/
@@ -126,7 +130,7 @@ If you would like to help make Vim better, see the
 
 ## Information
 
-If you are on macOS, you can use [Macvim](https://macvim-dev.github.io/macvim/).
+If you are on macOS, you can use [MacVim](https://macvim.org).
 
 The latest news about Vim can be found on the Vim home page:
 	https://www.vim.org/
@@ -150,4 +154,4 @@ Most of Vim was created by Bram Moolenaar `<Bram@vim.org>`
 Send any other comments, patches, flowers and suggestions to the vim-dev mailing list:
 	`<vim-dev@vim.org>`
 
-This is `README.md` for version 9.1 of Vim: Vi IMproved.
+This is `README.md` for version 9.2 of Vim: Vi IMproved.

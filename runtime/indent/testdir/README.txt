@@ -36,6 +36,9 @@ First of all, create a FILETYPE.in file.  It should contain:
 	      \ 'string'
 	" END_INDENT
 
+  When an indent script utilises timed "search*()"es and supports related
+  timeout configuration, consider setting a generous timeout value from
+  INDENT_EXE lines (look at "g:vim_indent" in "testdir/vim.in" for details).
   Note that the command is not undone, you may need to reverse the effect for
   the next block of lines.
 

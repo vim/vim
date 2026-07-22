@@ -1,0 +1,363 @@
+.\"*******************************************************************
+.\"
+.\" This file was generated with po4a. Translate the source file.
+.\"
+.\"*******************************************************************
+.TH XXD 1 "Maj 2024" "Manualsida för xxd"
+.\"
+.\" 21st May 1996
+.\" Man page author:
+.\"    Tony Nugent <tony@sctnugen.ppp.gu.edu.au> <T.Nugent@sct.gu.edu.au>
+.\"    Changes by Bram Moolenaar <Bram@vim.org>
+.SH NAMN
+\fIxxd\fP \- gör en hexdump eller gör det omvända.
+.SH SYNOPSIS
+\fBxxd\fP \-h[elp]
+.br
+\fBxxd\fP [flaggor] [infil [utfil]]
+.br
+\fBxxd\fP \-r[evert] [flaggor] [infil [utfil]]
+.SH BESKRIVNING
+\fIxxd\fP skapar en hexdump av en given fil eller standardinmatning.  Det kan
+också konvertera en hexdump tillbaka till sin ursprungliga binära form.
+Liksom \fBuuencode\fP(1)  och \fBuudecode\fP(1)  tillåter det överföring av binär
+data i en "mail\-safe" ASCII\-representation, men har fördelen att avkoda till
+standardutmatning.  Dessutom kan det användas för att utföra binär
+filpatchning.
+.SH FLAGGOR
+Om ingen \fIinfile\fP anges, läses standardinmatningen.  Om \fIinfile\fP anges som
+ett \`\fB\-\fP'\-tecken, hämtas inmatningen från standardinmatningen.  Om ingen
+\fIoutfile\fP anges (eller om ett \`\fB\-\fP'\-tecken finns på dess plats), skickas
+resultaten till standardutmatningen.
+.PP
+Observera att en "lat" parser används som inte kontrollerar mer än den
+första optionsbokstaven, såvida inte optionen följs av en parameter.
+Mellanslag mellan en enskild optionsbokstav och dess parameter är valfria.
+Parametrar till optioner kan anges i decimal\-, hexadecimal\- eller
+oktalnotation.  Således är \fB\-c8\fP, \fB\-c 8\fP, \fB\-c 010\fP och \fB\-cols 8\fP alla
+likvärdiga.
+.PP
+.TP
+\fI\-a\fP | \fI\-autoskip\fP
+Växla autoskip: En enda '*' ersätter NUL\-rader. Standardinställning är av.
+.TP
+\fI\-b\fP | \fI\-bits\fP
+Växla till bitdump (binära siffror) istället för hexdump. Den här flaggan
+skriver oktetter som åtta siffror "1" och "0" istället för en vanlig
+hexadecimal dump. Varje rad föregås av ett radnummer i hexadecimal och följs
+av en ASCII\- (eller EBCDIC\-) representation. Kommandoradsväxeln \-p fungerar
+inte i det här läget. Kan kombineras med \-i.
+.TP
+\fI\-c cols \fP|\fI \-cols kolumner\fP
+Format <\fIcols\fP> oktetter per rad. Standard 16 (\-i: 12, \-ps: 30, \-b:
+6). Max 256.  Inget maximum för \-ps. Med \-ps resulterar 0 i en lång rad med
+utdata.
+.TP
+\fI\-C\fP | \fI\-capitalize\fP
+Använd versaler för variabelnamn i C\-inkluderingsfilformat när du använder
+\-i.
+.TP
+\fI\-d\fP
+visa offset i decimal istället för hex.
+.TP
+\fI\-E\fP | \fI\-EBCDIC\fP
+Ändra teckenkodningen i den högra kolumnen från ASCII till EBCDIC.  Detta
+ändrar inte den hexadecimala representationen. Flaggan är meningslös i
+kombination med \-r, \-p eller \-i.
+.TP
+\fI\-e\fP
+Byt till little\-endian hex dump.  Denna flagga behandlar byte\-grupper som
+ord i little\-endian byte\-ordning.  Standardgrupperingen på 4 byte kan ändras
+med \fI\-g\fP.  Denna flagga gäller endast hex dump, ASCII\- (eller EBCDIC\-)
+representationen förblir oförändrad.  Kommandoradsväxlarna \-r, \-p, \-i
+fungerar inte i detta läge.
+.TP
+\fI\-g bytes \fP|\fI \-groupsize byte\fP
+Separera utdata för varje <\fIbytes\fP> \-byte (två hexadecimala tecken
+eller åtta bitars siffror vardera) med ett blanksteg.  Ange \fI\-g 0\fP för att
+undertrycka gruppering.  <\fIBytes\fP> \-standardvärdet är \fI2\fP i
+normalt läge, \fI4\fP i little\-endian\-läge och \fI1\fP i bits\-läge.  Gruppering
+gäller inte för PostScript eller inkluderingsstil.
+.TP
+\fI\-h\fP | \fI\-help\fP
+Skriv ut en sammanfattning av tillgängliga kommandon och avsluta. Ingen
+hexdumpning utförs.
+.TP
+\fI\-i\fP | \fI\-include\fP
+Utdata i C\-inkluderingsfilformat. En komplett statisk arraydefinition skrivs
+(uppkallad efter inmatningsfilen), såvida inte xxd läser från stdin. Kan
+kombineras med \-b.
+.TP
+\fI\-l len \fP|\fI \-len len\fP
+Stanna efter att ha skrivit <\fIlen\fP> oktetter.
+.TP
+\fI\-n name  |  \-name namn\fP
+Åsidosätt variabelnamnets utdata när \-i används. Arrayen heter \fIname\fP och
+längden heter \fIname\fP_len.
+.TP
+\fI\-o offset\fP
+Lägg till <\fIoffset\fP> till den visade filpositionen.
+.TP
+\fI\-p\fP | \fI\-ps\fP | \fI\-postscript\fP | \fI\-plain\fP
+Utdata i PostScript\-format med kontinuerlig hexdump. Kallas även vanlig
+hexdump.
+.TP
+\fI\-r\fP | \fI\-revert\fP
+Omvänd operation: konvertera (eller patcha) hexdump till binär.  Om xxd inte
+skriver till stdout, skriver det till sin utdatafil utan att trunka
+den. Använd kombinationen \fI\-r \-p\fP för att läsa vanliga hexadecimala
+dumpningar utan radnummerinformation och utan en särskild
+kolumnlayout. Extra blanksteg och radbrytningar är tillåtna var som
+helst. Använd kombinationen \fI\-r \-b\fP för att läsa en bitdump istället för en
+hexdump.
+.TP
+\fI\-R\fP \fIwhen\fP
+I utdata färgas både hexvärdet och värdet med samma färg beroende på
+hexvärdet. Detta hjälper främst till att skilja mellan utskrivbara och
+icke\-utskrivbara tecken.  \fIwhen\fP är \fBnever\fP, \fBalways\fP eller \fBauto\fP
+(standard: auto).  När miljövariabeln \fB$NO_COLOR\fP är inställd inaktiveras
+färgläggningen.
+.TP
+\fI\-seek offset\fP
+När det används efter \fI\-r\fP: återställ med <\fIoffset\fP> läggs till i
+filpositioner som hittas i hexdump.
+.TP
+\fI\-s [+][\-]seek\fP
+Börja vid <\fIseek\fP> byte absolut (eller relativ) infile offset.  \fI+ \fPanger att sökningen är relativ till den aktuella stdin\-filpositionen
+(meningslöst när man inte läser från stdin).  \fI\- \fPanger att sökningen ska
+ske så många tecken från slutet av inmatningen (eller om det kombineras med
+\fI+\fP: före den aktuella stdin\-filpositionen).  Utan flaggan \-s börjar xxd
+vid den aktuella filpositionen.
+.TP
+\fI\-u\fP
+Använd versaler för hexadecimala bokstäver. Standard är gemener.
+.TP
+\fI\-v\fP | \fI\-version\fP
+Visa versionssträng.
+.SH VARNINGAR
+.PP
+\fIxxd \-r\fP finns en inbyggd funktion som utvärderar radnummerinformation.  Om
+utdatafilen är sökbar kan radnumren i början av varje hexdump\-rad vara i fel
+ordning, rader kan saknas eller överlappa varandra. I dessa fall kommer xxd
+att lseek(2) till nästa position. Om utdatafilen inte är sökbar är endast
+luckor tillåtna, vilka kommer att fyllas med nolltecken.
+.PP
+\fIxxd \-r\fP genereras aldrig parsningsfel. Skräp ignoreras tyst.
+.PP
+När du redigerar hexdumps, observera att \fIxxd \-r\fP hoppar över allt på
+inmatningsraden efter att ha läst tillräckligt många kolumner med
+hexadecimal data (se flaggan \-c). Detta innebär också att ändringar i de
+utskrivbara ASCII\- (eller EBCDIC\-) kolumnerna alltid
+ignoreras. Återställning av en vanlig (eller PostScript) hexdump med xxd \-r
+\-p är inte beroende av rätt antal kolumner.  Här tolkas allt som ser ut som
+ett par hexadecimala siffror.
+.PP
+Observera skillnaden mellan
+.br
+\fI% xxd \-i fil\fP
+.br
+och
+.br
+\fI% xxd \-i < fil\fP
+.PP
+\fIxxd \-s +seek\fP kan skilja sig från \fIxxd \-s seek\fP, eftersom lseek(2)
+används för att "spola tillbaka" indata.  Ett '+' gör skillnad om
+indatakällan är stdin och om stdins filposition inte är i början av filen
+när xxd startas och får sin indata.  Följande exempel kan hjälpa till att
+förtydliga (eller förvirra ytterligare!):
+.PP
+Spola tillbaka stdin innan läsning; nödvändigt eftersom `cat' redan har läst
+till slutet av stdin.
+.br
+\fI% sh \-c "cat > plain_copy; xxd \-s 0 > hex_copy" < file\fP
+.PP
+Hexdump från filposition 0x480 (=1024+128) och framåt. Tecknet "+" betyder
+"relativt till aktuell position", så "128" läggs till 1k där dd slutade.
+.br
+\fI% sh \-c "dd of=plain_snippet bs=1k count=1; xxd \-s +128 > hex_snippet" < file\fP
+.PP
+Hexdump från filposition 0x100 (=1024\-768) och framåt.
+.br
+\fI% sh \-c "dd of=plain_snippet bs=1k count=1; xxd \-s +\-768 > hex_snippet" < file\fP
+.PP
+Detta är dock en sällsynt situation och användningen av `+' behövs
+sällan. Författaren föredrar att övervaka effekten av xxd med strace(1)
+eller truss(1) när \-s används.
+.SH EXEMPEL
+.PP
+.br
+Skriv ut allt utom de tre första raderna (hex 0x30 byte) av \fBfile\fP.
+.br
+\fI% xxd \-s 0x30 fil\fP
+.PP
+.br
+Skriv ut 3 rader (hex 0x30 byte) från slutet av \fBfile\fP.
+.br
+\fI% xxd \-s \-0x30 fil\fP
+.PP
+Observera: Resultaten i exemplen nedan är relevanta för xxd.1\-man\-sidan från
+maj 2024
+.PP
+.br
+Skriv ut 120 byte som en kontinuerlig hexdump med 20 oktetter per rad.
+.br
+\fI% xxd \-l 120 \-ps \-c 20 xxd.1\fP
+.br
+2e544820585844203120224d6179203230323422
+.br
+20224d616e75616c207061676520666f72207878
+.br
+64220a2e5c220a2e5c222032317374204d617920
+.br
+313939360a2e5c22204d616e2070616765206175
+.br
+74686f723a0a2e5c2220202020546f6e79204e75
+.br
+67656e74203c746f6e79407363746e7567656e2e
+.br
+
+.br
+Hexdump de första 120 byte av denna man\-sida med 12 oktetter per rad.
+.br
+\fI% xxd \-l 120 \-c 12 xxd.1\fP
+.br
+00000000: 2e54 4820 5858 4420 3120 224d .TH XXD 1 "M
+.br
+0000000c: 6179 2032 3032 3422 2022 4d61 ay 2024" "Ma
+.br
+00000018: 6e75 616c 2070 6167 6520 666f manuell sida för
+.br
+00000024: 7220 7878 6422 0a2e 5c22 0a2e r xxd"..\e"..
+.br
+00000030: 5c22 2032 3173 7420 4d61 7920 \e" 21 maj
+.br
+0000003c: 3139 3936 0a2e 5c22 204d 616e 1996..\e" Man
+.br
+00000048: 2070 6167 6520 6175 7468 6f72 sidans författare
+.br
+00000054: 3a0a 2e5c 2220 2020 2054 6f6e :..\e" Ton
+.br
+00000060: 7920 4e75 6765 6e74 203c 746f y Nugent <till
+.br
+0000006c: 6e79 4073 6374 6e75 6765 6e2e ny@sctnugen.
+.PP
+.br
+Visa endast datumet från filen xxd.1
+.br
+\fI% xxd \-s 0x33 \-l 13 \-c 13 xxd.1\fP
+.br
+00000033: 3231 7374 204d 6179 2031 3939 36 21 maj 1996
+.PP
+.br
+Kopiera \fBinput_file\fP till \fBoutput_file\fP och lägg till 100 byte med värdet
+0x00 i början.
+.br
+\fI% xxd input_file | xxd \-r \-s 100 > output_file\fP
+.br
+
+.br
+Korrigera datumet i filen xxd.1
+.br
+\fI% echo "0000034: 3574 68" | xxd \-r \- xxd.1\fP
+.br
+\fI% xxd \-s 0x33 \-l 13 \-c 13 xxd.1\fP
+.br
+00000033: 3235 7468 204d 6179 2031 3939 36 25 maj 1996
+.PP
+.br
+Skapa en fil på 65537 byte med alla byte 0x00, förutom den sista som är 'A'
+(hex 0x41).
+.br
+\fI% echo "010000: 41" | xxd \-r > fil\fP
+.PP
+.br
+Hexdump denna fil med autoskip.
+.br
+\fI% xxd \-a \-c 12 fil\fP
+.br
+00000000: 0000 0000 0000 0000 0000 0000 ............
+.br
+*
+.br
+0000fffc: 0000 0000 41 ....A
+.PP
+Skapa en 1 byte\-fil som innehåller ett enda 'A'\-tecken.  Siffran efter '\-r
+\-s' läggs till radnumren i filen; i praktiken undertrycks de inledande
+bytena.
+.br
+\fI% echo "010000: 41" | xxd \-r \-s \-0x10000 > fil\fP
+.PP
+Använd xxd som filter i en redigerare som \fBvim(1)\fP för att hexdumpning av
+ett område markerat mellan `a' och `z'.
+.br
+\fI:'a,'z!xxd\fP
+.PP
+Använd xxd som filter i en redigerare som \fBvim(1)\fP för att återställa en
+binär hexdump markerad mellan `a' och `z'.
+.br
+\fI:'a,'z!xxd \-r\fP
+.PP
+Använd xxd som filter i en redigerare som \fBvim(1)\fP för att återställa en
+rad i en hexdump. Flytta markören över raden och skriv:
+.br
+\fI!!xxd \-r\fP
+.PP
+Läs enskilda tecken från en seriell linje
+.br
+\fI% xxd \-c1 < /dev/term/b &amp;\fP
+.br
+\fI% stty < /dev/term/b \-echo \-opost \-isig \-icanon min 1\fP
+.br
+\fI% echo \-n foo > /dev/term/b\fP
+.PP
+.SH RETURVÄRDEN
+Följande felvärden returneras:
+.TP
+0
+inga fel upptäcktes.
+.TP
+\-1
+operationen stöds inte \%(\fI\%xxd \-r \-i\fP fortfarande omöjligt).
+.TP
+1
+fel vid tolkning av flaggor.
+.TP
+2
+problem med inmatningsfilen.
+.TP
+3
+problem med utdatafilen.
+.TP
+4,5
+önskad sökposition är ouppnåelig.
+.SH "SE ÄVEN"
+uuencode(1), uudecode(1), patch(1)
+.br
+.SH VARNINGAR
+Verktygets konstighet matchar dess skapares hjärna. Använd helt på egen
+risk. Kopiera filer. Spåra dem. Bli en trollkarl.
+.br
+.SH VERSION
+Denna manual sida dokumenterar xxd version 1.7 från 2024\-05.
+.SH UPPHOVSPERSON
+.br
+(c) 1990\-1997 av Juergen Weigert
+.br
+<jnweiger@informatik.uni\-erlangen.de>
+.LP
+Distribuera fritt och ange mig som källa,
+.br
+tjäna pengar och dela med mig,
+.br
+förlora pengar och fråga inte mig.
+.PP
+Manualsida skapad av Tony Nugent
+.br
+<tony@sctnugen.ppp.gu.edu.au> <T.Nugent@sct.gu.edu.au>
+.br
+Små ändringar av Bram Moolenaar. Redigerat av Juergen Weigert.
+.PP
+.SH SVENSK ÖVERSÄTTNING
+Vim översattes ursprungligen av Johan Svedberg 2003-2007 och har under 2025
+uppdaterats av Daniel Nylander, speciellt manualsidor samt själva Vim.
+Om du hittar fel i översättningen, kontakta <tp-sv@listor.tp-sv.se>.

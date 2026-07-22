@@ -1,7 +1,9 @@
 " Vim syntax file
 " Language:		Haskell
 " Maintainer:		Haskell Cafe mailinglist <haskell-cafe@haskell.org>
-" Last Change:		2020 Oct 4 by Marcin Szamotulski <profunctor@pm.me>
+" 			(need to be subscribed to post)
+" Last Change:		2024 Mar 28 by Enrico Maria De Angelis <enricomaria.dean6elis@gmail.com>
+"			2025 Nov 20 by Vim Project: Allow spaces in backticks #18776
 " Original Author:	John Williams <jrw@pobox.com>
 "
 " Thanks to Ryan Crumley for suggestions and John Meacham for
@@ -46,8 +48,8 @@ syn match VarId "\(\<[A-Z][a-zA-Z0-9_']*\.\)*\<[a-z][a-zA-Z0-9_']*\>" contains=@
 " others are variables (e.g. functions).
 syn match hsVarSym "\(\<[A-Z][a-zA-Z0-9_']*\.\)\=[-!#$%&\*\+/<=>\?@\\^|~.][-!#$%&\*\+/<=>\?@\\^|~:.]*"
 syn match hsConSym "\(\<[A-Z][a-zA-Z0-9_']*\.\)\=:[-!#$%&\*\+./<=>\?@\\^|~:]*"
-syn match hsVarSym "`\(\<[A-Z][a-zA-Z0-9_']*\.\)\=[a-z][a-zA-Z0-9_']*`"
-syn match hsConSym "`\(\<[A-Z][a-zA-Z0-9_']*\.\)\=[A-Z][a-zA-Z0-9_']*`"
+syn match hsVarSym "` *\(\<[A-Z][a-zA-Z0-9_']*\.\)\=[a-z][a-zA-Z0-9_']* *`"
+syn match hsConSym "` *\(\<[A-Z][a-zA-Z0-9_']*\.\)\=[A-Z][a-zA-Z0-9_']* *`"
 
 " (Non-qualified) identifiers which start with # are labels
 syn match hsLabel "#[a-z][a-zA-Z0-9_']*\>"
@@ -104,8 +106,8 @@ endif
 
 
 " Comments
-syn match   hsLineComment      "---*\([^-!#$%&\*\+./<=>\?@\\^|~].*\)\?$" contains=@Spell
-syn region  hsBlockComment     start="{-"  end="-}" contains=hsBlockComment,@Spell
+syn match   hsLineComment      "---*\([^-!#$%&\*\+./<=>\?@\\^|~].*\)\?$" contains=hsTodo,@Spell
+syn region  hsBlockComment     start="{-"  end="-}" contains=hsBlockComment,hsTodo,@Spell
 syn region  hsPragma	       start="{-#" end="#-}"
 
 syn keyword hsTodo	        contained FIXME TODO XXX NOTE
@@ -164,6 +166,7 @@ hi def link hsLiterateComment		  hsComment
 hi def link hsBlockComment		  hsComment
 hi def link hsLineComment			  hsComment
 hi def link hsComment			  Comment
+hi def link hsTodo			  Todo
 hi def link hsPragma			  SpecialComment
 hi def link hsBoolean			  Boolean
 hi def link hsType			  Type

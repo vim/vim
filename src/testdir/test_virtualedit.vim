@@ -77,13 +77,30 @@ endfunc
 func Test_edit_change()
   new
   set virtualedit=all
+
   call setline(1, "\t⒌")
   normal Cx
   call assert_equal('x', getline(1))
+
+  call setline(1, "\ta̳")
+  normal Cx
+  call assert_equal('x', getline(1))
+
+  call setline(1, "\tβ̳")
+  normal Cx
+  call assert_equal('x', getline(1))
+
+  if has('arabic')
+    call setline(1, "\tلا")
+    normal Cx
+    call assert_equal('x', getline(1))
+  endif
+
   " Do a visual block change
   call setline(1, ['a', 'b', 'c'])
   exe "normal gg3l\<C-V>2jcx"
   call assert_equal(['a  x', 'b  x', 'c  x'], getline(1, '$'))
+
   bwipe!
   set virtualedit=
 endfunc
@@ -378,7 +395,7 @@ func Test_delete_break_tab()
   normal v3ld
   call assert_equal('    two', getline(1))
   set virtualedit&
-  close!
+  bw!
 endfunc
 
 " Test for using <BS>, <C-W> and <C-U> in virtual edit mode
@@ -396,7 +413,7 @@ func Test_ve_backspace()
   call assert_equal([0, 1, 1, 0], getpos('.'))
   set backspace&
   set virtualedit&
-  close!
+  bw!
 endfunc
 
 " Test for delete (x) on EOL character and after EOL
@@ -692,5 +709,97 @@ func Test_virtualedit_replace_after_tab()
   bwipe!
 endfunc
 
+" Test that setpos('.') and cursor() behave the same for v:maxcol
+func Test_virtualedit_set_cursor_pos_maxcol()
+  new
+  set virtualedit=all
+
+  call setline(1, 'foobar')
+  exe "normal! V\<Esc>"
+  call assert_equal([0, 1, 1, 0], getpos("'<"))
+  call assert_equal([0, 1, v:maxcol, 0], getpos("'>"))
+  let pos = getpos("'>")
+
+  call cursor(1, 1)
+  call setpos('.', pos)
+  call assert_equal([0, 1, 7, 0], getpos('.'))
+
+  call cursor(1, 1)
+  call cursor(pos[1:])
+  call assert_equal([0, 1, 7, 0], getpos('.'))
+
+  set virtualedit&
+  bwipe!
+endfunc
+
+" Verify that getpos() remains consistent when the cursor is past EOL after
+" toggling Visual mode with virtualedit=all.
+func Test_virtualedit_getpos_stable_past_eol_after_visual()
+  new
+  set virtualedit=all
+  call setline(1, 'abc')
+
+  normal! gg$3l
+  let p1 = getpos('.')
+
+  normal! v
+  redraw
+  exe "normal! \<Esc>"
+
+  let p2 = getpos('.')
+  call assert_equal(p1, p2, 'Position should not be re-encoded after leaving Visual mode')
+
+  set virtualedit&
+  bwipe!
+endfunc
+
+func Test_virtualedit_insert()
+  new
+  set virtualedit=insert
+
+  call feedkeys("ifoobar\<Right>\<Right>\<Right>\<Right>baz\<Esc>", 'tnix')
+  call assert_equal('foobar    baz', getline(1))
+
+  call feedkeys("ccFOOBAR\<Right>\<Right>\<Right>\<Right>BAZ\<Esc>", 'tnix')
+  call assert_equal('FOOBAR    BAZ', getline(1))
+
+  set virtualedit&
+  bwipe!
+endfunc
+
+func Test_set_virtualedit_on_mode_change()
+  new
+  set virtualedit=all
+  augroup testing
+    au ModeChanged n:* set virtualedit=onemore
+    au ModeChanged *:n set virtualedit=all
+    au ModeChanged i:* call cursor(getpos("'^")[1:])
+  augroup END
+
+  call feedkeys("ilkj\<Esc>", 'tnix')
+  call assert_equal([0, 1, 4, 0], getpos('.'))
+
+  call feedkeys("cclkj\<Esc>", 'tnix')
+  call assert_equal([0, 1, 4, 0], getpos('.'))
+
+  au! testing ModeChanged
+  augroup! testing
+  set virtualedit&
+  bwipe!
+endfunc
+
+func Test_strip_autoindent_with_virtualedit_onemore()
+  new
+  setlocal autoindent virtualedit=onemore
+  call feedkeys("i   x\<CR>\<Esc>", 'tnix')
+  call assert_equal(['   x', ''], getline(1, '$'))
+
+  %delete _
+  setlocal virtualedit&
+  call feedkeys("i   x\<CR>\<Esc>", 'tnix')
+  call assert_equal(['   x', ''], getline(1, '$'))
+
+  bwipe!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -1,0 +1,512 @@
+.\"*******************************************************************
+.\"
+.\" This file was generated with po4a. Translate the source file.
+.\"
+.\"*******************************************************************
+.TH VIM 1 "27 juni 2025"
+.SH NAMN
+vim \- Vi IMproved, en textredigerare för programmerare
+.SH SYNOPSIS
+.br
+\fBvim\fP [flaggor] [fil ..]
+.br
+\fBvim\fP [flaggor] \-
+.br
+\fBvim\fP [flaggor] \-t tagg
+.br
+\fBvim\fP [flaggor] \-q [felfil]
+.PP
+.br
+\fBex\fP
+.br
+\fBview\fP
+.br
+\fBgvim\fP \fBgview\fP \fBevim\fP \fBeview\fP
+.br
+\fBrvim\fP \fBrview\fP \fBrgvim\fP \fBrgview\fP
+.SH BESKRIVNING
+\fBVim\fP är en textredigerare som är uppåtkompatibel med Vi.  Den kan användas
+för att redigera alla typer av ren text.  Den är särskilt användbar för att
+redigera program.
+.PP
+Det finns många förbättringar jämfört med Vi: ångra på flera nivåer, flera
+fönster och buffertar, syntaxmarkering, redigering av kommandoraden,
+komplettering av filnamn, onlinehjälp, visuellt val osv.  Se ":help
+vi_diff.txt" för en sammanfattning av skillnaderna mellan \fBVim\fP och Vi.
+.PP
+När du kör \fBVim\fP kan du få mycket hjälp från online\-hjälpsystemet med
+kommandot ":help".  Se avsnittet ONLINEHJÄLP nedan.
+.PP
+Oftast startas \fBVim\fP för att redigera en enskild fil med kommandot
+.PP
+  vim fil
+.PP
+Mer generellt startas \fBVim\fP med:
+.PP
+  vim [flaggor] [fillista]
+.PP
+Om filförteckningen saknas startar redigeraren med en tom buffert. Annars
+kan exakt en av följande fyra användas för att välja en eller flera filer
+som ska redigeras.
+.TP  12
+fil ..
+En lista med filnamn. Den första filen är den aktuella filen och läses in i
+buffertminnet. Markören placeras på den första raden i buffertminnet. Du kan
+komma åt de andra filerna med kommandot ":next". För att redigera en fil som
+börjar med ett bindestreck, lägg till "\-\-" före filnamnslistan.
+.TP
+\-
+Filen som ska redigeras läses från stdin. Kommandon läses från stderr, som
+bör vara en tty.
+.TP
+\-t {tag}
+Filen som ska redigeras och den initiala markörpositionen beror på en
+"tagg", en sorts goto\-etikett. {tag} söks upp i taggfilen, den associerade
+filen blir den aktuella filen och det associerade kommandot exekveras.
+Detta används främst för C\-program, där {tag} kan vara ett
+funktionsnamn. Effekten blir att filen som innehåller den funktionen blir
+den aktuella filen och markören placeras i början av funktionen. Se ":help
+tag\-commands".
+.TP
+\-q [felfil]
+Starta i quickFix\-läge. Filen [errorfile] läses och det första felet
+visas. Om [errorfile] utelämnas hämtas filnamnet från flaggan 'errorfile'
+(standard är "AztecC.Err" för Amiga, "errors.err" på andra system).
+Ytterligare fel kan hoppas till med kommandot ":cn". Se ":help quickfix".
+.PP
+\fBVim\fP en fungerar olika beroende på kommandots namn (den körbara filen kan
+fortfarande vara samma fil).
+.TP  10
+vim
+Det "normala" sättet, allt är standard.
+.TP
+ex
+Starta i Ex\-läge. Gå till normalt läge med kommandot ":vi". Kan även göras
+med argumentet "\-e".
+.TP
+view
+Starta i skrivskyddat läge. Du kommer att skyddas från att skriva
+filerna. Kan också göras med argumentet "\-R".
+.TP
+gvim gview
+GUI\-versionen.  Öppnar ett nytt fönster.  Kan även göras med argumentet
+"\-g".
+.TP
+evim eview
+GUI\-versionen i enkelt läge.  Öppnar ett nytt fönster.  Kan även göras med
+argumentet "\-y".
+.TP
+rvim rview rgvim rgview
+Som ovan, men med begränsningar. Det går inte att starta shell\-kommandon
+eller pausa \fBVim.\fP Kan också göras med argumentet "\-Z".
+.SH FLAGGOR
+Flaggorna kan anges i valfri ordning, före eller efter filnamnen.  Flaggor
+utan argument kan kombineras efter ett enda bindestreck.
+.TP  12
++[num]
+För den första filen placeras markören på raden "num". Om "num" saknas
+placeras markören på den sista raden.
+.TP
++/{pat}
+För den första filen placeras markören på raden där {pat} förekommer första
+gången. Se ":help search\-pattern" för tillgängliga sökmönster.
+.TP
++{command}
+.TP
+\-c {command}
+{command} kommer att utföras efter att den första filen har lästs. {command}
+tolkas som ett Ex\-kommando.  Om {command} innehåller mellanslag måste det
+omges av dubbla citattecken (detta beror på vilket skal som används).
+Exempel: vim "+set si" main.c
+.br
+Obs! Du kan använda upp till 10 "+" eller "\-c"\-kommandon.
+.TP
+\-A
+Om \fBVim\fP har kompilerats med ARABIC\-stöd för redigering av filer med
+skrivriktning från höger till vänster och arabisk tangentbordskartläggning,
+startar denna flagga \fBVim\fP i arabiskt läge, dvs. 'arabic' är inställt.  I
+annat fall visas ett felmeddelande och \fBVim\fP avbryts.
+.TP
+\-b
+Binärt läge.  Några flaggor kommer att ställas in som gör det möjligt att
+redigera en binär eller körbar fil.
+.TP
+\-C
+Kompatibel.  Ställ in flaggan "compatible".  Detta gör att \fBVim\fP beter sig
+ungefär som Vi, även om det finns en .vimrc\-fil.
+.TP
+\-d
+Starta i diff\-läge.  Det bör finnas mellan två och åtta filnamnsargument.
+\fBVim\fP öppnar alla filer och visar skillnaderna mellan dem.  Fungerar som
+vimdiff(1).
+.TP
+\-d {device}, \-dev {device}
+Öppna {device} för användning som terminal. Endast på Amiga. Exempel: "\-d
+con:20/30/600/150".
+.TP
+\-D
+Felsökning. Gå till felsökningsläge när du kör det första kommandot från ett
+skript.
+.TP
+\-e
+Starta \fBVim\fP i Ex\-läge, precis som om den körbara filen hette "ex".
+.TP
+\-E
+Starta \fBVim\fP i förbättrat Ex\-läge, precis som om den körbara filen hette
+"exim".
+.TP
+\-f
+Förgrund.  För grafiska gränssnittsversionen kommer \fBVim\fP inte att förgrena
+sig och kopplas bort från det skal det startades i.  På Amiga startas inte
+\fBVim\fP om för att öppna ett nytt fönster.  Denna flagga bör användas när
+\fBVim\fP körs av ett program som väntar på att redigeringssessionen ska
+avslutas (t.ex. e\-post).  På Amiga fungerar inte kommandona ":sh" och ":!".
+.TP
+\-F
+Om \fBVim\fP har kompilerats med FKMAP\-stöd för redigering av filer med
+skrivriktning från höger till vänster och persisk tangentbordskartläggning,
+startar denna flagga \fBVim\fP i persiskt läge, dvs. 'fkmap' och 'rightleft' är
+inställda.  I annat fall visas ett felmeddelande och \fBVim\fP avbryts.
+.br
+Obs: Stöd för farsi har tagits bort i patch 8.1.0932.
+.TP
+\-g
+Om \fBVim\fP har kompilerats med GUI\-stöd aktiverar denna flagga grafiskt
+gränssnitt.  Om inget stöd för grafiskt gränssnitt har kompilerats in visas
+ett felmeddelande och \fBVim\fP avbryts.
+.TP
+\-H
+Om \fBVim\fP har kompilerats med RIGHTLEFT\-stöd för redigering av filer med
+höger\-till\-vänster\-orientering och hebreisk tangentbordskartläggning,
+startar denna flagga \fBVim\fP i hebreiskt läge, dvs. 'hkmap' och 'rightleft'
+är inställda.  I annat fall visas ett felmeddelande och \fBVim\fP avbryts.
+.TP
+\-i {viminfo}
+Anger filnamnet som ska användas vid läsning eller skrivning av
+viminfo\-filen, istället för standardnamnet "~/.viminfo". Detta kan också
+användas för att hoppa över användningen av .viminfo\-filen genom att ange
+namnet "NONE".
+.TP
+\-l
+Lisp\-läge. Aktiverar flaggorna "lisp" och "showmatch".
+.TP
+\-L
+Samma som \-r.
+.TP
+\-m
+Ändring av filer är inaktiverad. Återställer flaggan "write". Du kan
+fortfarande ändra buffertminnet, men det går inte att skriva en fil.
+.TP
+\-M
+Ändringar är inte tillåtna.  Flaggorna "modifiable" och "write" kommer att
+inaktiveras, så att ändringar inte är tillåtna och filer inte kan
+skrivas. Observera att dessa flaggor kan aktiveras för att möjliggöra
+ändringar.
+.TP
+\-n
+Ingen växlingsfil kommer att användas. Återställning efter en krasch kommer
+att vara omöjlig.  Praktiskt om du vill redigera en fil på ett mycket
+långsamt medium (t.ex. diskett).  Kan också göras med ":set uc=0".  Kan
+ångras med ":set uc=200".
+.TP
+\-N
+Icke\-kompatibelt läge.  Återställer flaggan "compatible".  Detta gör att
+\fBVim\fP fungerar något bättre, men är mindre kompatibelt med Vi, även om det
+inte finns någon .vimrc\-fil.
+.TP
+\-nb
+Bli redigeringsserver för NetBeans.  Se dokumentationen för mer information.
+.TP
+\-o[N]
+Öppna N staplade fönster. Om N utelämnas öppnas ett fönster för varje fil.
+.TP
+\-O[N]
+Öppna N fönster bredvid varandra. Om N utelämnas öppnas ett fönster för
+varje fil.
+.TP
+\-p[N]
+Öppna N flikar. Om N utelämnas öppnas en flik för varje fil.
+.TP
+\-P {parent\-title}
+Endast Win32 GUI: Ange titeln på den överordnade applikationen. När det är
+möjligt kommer Vim att köras i ett MDI\-fönster inuti
+applikationen. {parent\-title} måste visas i fönstertiteln för den
+överordnade applikationen. Se till att den är tillräckligt
+specifik. Observera att implementeringen fortfarande är primitiv. Den
+fungerar inte med alla applikationer och menyn fungerar inte.
+.TP
+\-r
+Lista växlingsfiler, med information om hur de används för återställning.
+.TP
+\-r {file}
+Återställningsläge. Swap\-filen används för att återställa en kraschad
+redigeringssession. Swap\-filen är en fil med samma filnamn som textfilen med
+".swp" tillagt. Se ":help recovery".
+.TP
+\-R
+Skrivskyddat läge. Flaggan 'readonly' kommer att aktiveras. Du kan
+fortfarande redigera buffertminnet, men du kommer inte att kunna skriva över
+en fil av misstag. Om du vill skriva över en fil, lägg till ett utropstecken
+till Ex\-kommandot, som i ":w!".  Flaggan \-R innebär också flaggan \-n (se
+ovan). Flaggan "readonly" kan återställas med ":set noro". Se ":help
+\&'readonly'".
+.TP
+\-s
+Tyst läge. Endast när det startas som "Ex" eller när flaggan "\-e" angavs
+före flaggan "\-s".
+.TP
+\-s {scriptin}
+Skriptfilen {scriptin} läses. Tecknen i filen tolkas som om du hade skrivit
+dem. Samma sak kan göras med kommandot ":source! {scriptin}". Om slutet av
+filen nås innan redigeraren avslutas läses ytterligare tecken från
+tangentbordet.
+.TP
+\-S {file}
+{file} hämtas efter att den första filen har lästs. Detta motsvarar \-c
+"source {file}". {file} får inte börja med '\-'. Om {file} utelämnas används
+"Session.vim" (fungerar endast när \-S är det sista argumentet).
+.TP
+\-T {terminal}
+Anger namnet på den terminal du använder för \fBVim\fP.  Krävs endast när den
+automatiska metoden inte fungerar.  Bör vara en terminal som är känd för
+\fBVim\fP (inbyggd) eller definierad i termcap\- eller terminfo\-filen.
+.TP
+\-u {vimrc}
+Använd kommandona i filen {vimrc} för initialiseringar. Alla andra
+initialiseringar hoppas över. Använd detta för att redigera en speciell typ
+av filer. Det kan också användas för att hoppa över alla initialiseringar
+genom att ange namnet "NONE". Se ":help initialization" i vim för mer
+information.
+.TP
+\-U {gvimrc}
+Använd kommandona i filen {gvimrc} för GUI\-initialiseringar. Alla andra
+GUI\-initialiseringar hoppas över. Det kan också användas för att hoppa över
+alla GUI\-initialiseringar genom att ange namnet "NONE". Se ":help gui\-init"
+i vim för mer information.
+.TP
+\-v
+Starta \fBVim\fP i Vi\-läge, precis som om det körbara programmet hette "vi".
+Detta har endast effekt när det körbara programmet heter "ex".
+.TP
+\-V[N]
+Utförlig.  Ger meddelanden om vilka filer som hämtas och för läsning och
+skrivning av en viminfo\-fil.  Det valfria talet N är värdet för 'verbose'.
+Standardvärdet är 10.
+.TP
+\-V[N]{filename}
+Som \-V och ställ in 'verbosefile' till {filename}. Resultatet blir att
+meddelanden inte visas utan skrivs till filen {filename}. {filename} får
+inte börja med en siffra.
+.TP
+\-w{number}
+Ställ in flaggan "window" till {number}.
+.TP
+\-w {scriptout}
+Alla tecken som du skriver in sparas i filen {scriptout} tills du avslutar
+\fBVim\fP. Detta är användbart om du vill skapa en skriptfil som ska användas
+med "vim \-s" eller ":source!". Om filen {scriptout} finns, läggs tecknen
+till i slutet av den.
+.TP
+\-W {scriptout}
+Som \-w, men en befintlig fil skrivs över.
+.TP
+\-x
+Om \fBVim\fP har kompilerats med krypteringsstöd, använd kryptering när du
+skriver filer.  Du kommer att bli ombedd att ange en krypteringsnyckel.
+.TP
+\-X
+Anslut inte till X\-servern.  Förkortar starttiden i en terminal, men
+fönstertiteln och urklipp kommer inte att användas.
+.TP
+\-Y
+Anslut inte till Wayland Compositor
+.TP
+\-y
+Starta \fBVim\fP i enkelt läge, precis som om den körbara filen hette "evim"
+eller "eview".  Gör att \fBVim\fP beter sig som en klick\-och\-skriv\-editor.
+.TP
+\-Z
+Begränsat läge. Fungerar som om den körbara filen börjar med "r".
+.TP
+
+Anger slutet på flaggorna.  Argument efter detta kommer att behandlas som
+ett filnamn.  Detta kan användas för att redigera ett filnamn som börjar med
+ett '\-'.
+.TP
+\-\-clean
+Använd inte några personliga inställningar (vimrc, plugins etc.). Användbart
+för att se om ett problem uppstår även med en ren Vim\-installation.
+.TP
+\-\-cmd {command}
+Som att använda "\-c", men kommandot exekveras precis innan någon vimrc\-fil
+bearbetas. Du kan använda upp till 10 av dessa kommandon, oberoende av
+"\-c"\-kommandon.
+.TP
+\-\-echo\-wid
+Endast grafiskt GTK\-gränssnitt: Skriv ut fönster\-id på stdout.
+.TP
+\-\-gui\-dialog\-file {name}
+När du använder GUI, istället för att visa en dialogruta, skriv titeln och
+meddelandet i dialogrutan till fil {name}. Filen skapas eller läggs
+till. Endast användbart för testning, för att undvika att testet fastnar i
+en dialogruta som inte kan ses. Utan GUI ignoreras argumentet.
+.TP
+\-\-help, \-h, \-?
+Ge lite hjälp om kommandoradsargument och flaggor.  Efter detta avslutas
+\fBVim\fP.
+.TP
+\-\-literal
+Ta filnamnsargument bokstavligt, expandera inte jokertecken. Detta har ingen
+effekt på Unix där skalet expanderar jokertecken.
+.TP
+\-\-log {filename}
+Om \fBVim\fP har kompilerats med eval\- och kanal\-funktionen, starta loggningen
+och skriv poster till {filename}. Detta fungerar som att anropa
+\fIch_logfile({filename}, 'ao')\fP mycket tidigt under uppstarten.
+.TP
+\-\-nofork
+Förgrund.  För grafiska gränssnittsversionen kommer \fBVim\fP inte att förgrena
+sig och kopplas bort från det skal det startades i.
+.TP
+\-\-noplugin
+Hoppa över inläsning av plugins. Implicerat av \-u NONE.
+.TP
+\-\-not\-a\-term
+Meddelar \fBVim\fP en att användaren vet att in\- och/eller utgången inte är
+ansluten till en terminal.  Detta förhindrar varningen och den två sekunders
+fördröjning som skulle inträffa.
+.TP
+\-\-remote
+Anslut till en Vim\-server och låt den redigera filerna som anges i resten av
+argumenten. Om ingen server hittas visas en varning och filerna redigeras i
+den aktuella Vim.
+.TP
+\-\-remote\-expr {expr}
+Anslut till en Vim\-server, utvärdera {expr} i den och skriv ut resultatet på
+stdout.
+.TP
+\-\-remote\-send {keys}
+Anslut till en Vim\-server och skicka {keys} till den.
+.TP
+\-\-remote\-silent
+Som \-\-remote, men utan varningen när ingen server hittas.
+.TP
+\-\-remote\-wait
+Som \-\-remote, men Vim avslutas inte förrän filerna har redigerats.
+.TP
+\-\-remote\-wait\-silent
+Som \-\-remote\-wait, men utan varningen när ingen server hittas.
+.TP
+\-\-serverlist
+Lista namnen på alla Vim\-servrar som kan hittas.
+.TP
+\-\-servername {name}
+Använd {name} som servernamn. Används för den aktuella Vim, såvida det inte
+används med ett \-\-remote\-argument, då är det namnet på servern som ska
+anslutas till. Om socketserver\-backend används och namnet börjar med "/",
+"./" eller "../", tolkas det som en absolut, relativ eller relativ sökväg
+till socketen.
+.TP
+\-\-clientserver {backend}
+Använd {backend} som backend för clientserver\-funktionalitet, antingen
+"socket" eller "x11".  Endast tillgängligt när det kompilerats med både
+socketserver\- och X11\-funktioner
+.TP
+\-\-socketid {id}
+Endast grafiskt GTK\-gränssnitt: Använd GtkPlug\-mekanismen för att köra gVim
+i ett annat fönster.
+.TP
+\-\-startuptime {file}
+Skriv tidsmeddelanden till filen {fname} under uppstart.
+.TP
+\-\-ttyfail
+Om stdin eller stdout inte är en terminal (tty) ska programmet avslutas
+omedelbart.
+.TP
+\-\-version
+Skriv ut versioninformation och avsluta.
+.TP
+\-\-windowid {id}
+Endast Win32 GUI: Få gVim att försöka använda fönstret {id} som överordnat
+fönster, så att det körs inuti det fönstret.
+.SH ONLINEHJÄLP
+Skriv ":help" i \fBVim\fP en för att komma igång.  Skriv ":help ämne" för att
+få hjälp om ett specifikt ämne.  Till exempel: ":help ZZ" för att få hjälp
+om kommandot "ZZ".  Använd <, Tab\-> och CTRL\-D för att komplettera
+ämnen (":help cmdline\-completion").  Taggar finns för att hoppa från en
+plats till en annan (en sorts hypertextlänkar, se ":help").  Alla
+dokumentationsfiler kan visas på detta sätt, till exempel ":help
+syntax.txt".
+.SH FILER
+.TP  15
+/usr/local/share/vim/vim??/doc/*.txt
+\fBVim\fP \-dokumentationsfilerna.  Använd ":help doc\-file\-list" för att få en
+komplett lista.
+.br
+\fIvim??\fP är ett kort versionsnummer, till exempel vim91 för \fBVim 9.1\fP
+.TP
+/usr/local/share/vim/vim??/doc/tags
+Taggfilen som används för att hitta information i dokumentationsfilerna.
+.TP
+/usr/local/share/vim/vim??/syntax/syntax.vim
+Systemomfattande syntaxinitialiseringar.
+.TP
+/usr/local/share/vim/vim??/syntax/*.vim
+Syntaxfiler för olika språk.
+.TP
+/usr/local/share/vim/vimrc
+Systemomfattande initialiseringar av \fBVim\fP.
+.TP
+~/.vimrc, ~/.vim/vimrc, $XDG_CONFIG_HOME/vim/vimrc
+Dina personliga \fBVim\fP \-initialiseringar (den första som hittas används).
+.TP
+/usr/local/share/vim/gvimrc
+Systemomfattande gvim\-initialiseringar.
+.TP
+~/.gvimrc, ~/.vim/gvimrc, $XDG_CONFIG_HOME/vim/gvimrc
+Dina personliga \fBgVim\fP \-initialiseringar (den första som hittas används).
+.TP
+/usr/local/share/vim/vim??/optwin.vim
+Skript som används för kommandot ":options", ett smidigt sätt att visa och
+ställa in flaggor.
+.TP
+/usr/local/share/vim/vim??/menu.vim
+Systemomfattande menyinitialiseringar för \fBgVim.\fP
+.TP
+/usr/local/share/vim/vim??/bugreport.vim
+Skript för att generera en felrapport. Se ":help bugs".
+.TP
+/usr/local/share/vim/vim??/filetype.vim
+Skript för att identifiera filtyp utifrån filnamn. Se ":help 'filetype'".
+.TP
+/usr/local/share/vim/vim??/scripts.vim
+Skript för att identifiera filtypen utifrån dess innehåll. Se ":help
+\&'filetype'".
+.TP
+/usr/local/share/vim/vim??/print/*.ps
+Filer som används för PostScript\-utskrift.
+.PP
+För aktuell information, läs på VIM:s webbsida:
+.br
+<URL:http://www.vim.org/>
+.SH "SE ÄVEN"
+vimtutor(1)
+.SH UPPHOVSPERSON
+Det mesta av \fBVim\fP har skapats av Bram Moolenaar, med stor hjälp från
+andra.  Se ":help credits" i \fBVim.\fP
+.br
+\fBVim\fP är baserad på Stevie, utvecklad av: Tim Thompson, Tony Andrews och
+G.R. (Fred) Walter.  Även om nästan ingen av den ursprungliga koden finns
+kvar.
+.SH BUGGAR
+Troligen. Se ":help todo" för en lista över kända problem.
+.PP
+Observera att ett antal saker som vissa kan betrakta som buggar i själva
+verket beror på att Vi:s beteende reproduceras alltför troget. Och om du
+tycker att andra saker är buggar "eftersom Vi gör det annorlunda" bör du
+titta närmare på filen vi_diff.txt (eller skriva :help vi_diff.txt när du är
+i Vim).  Titta också på flaggorna 'compatible' och 'cpoptions'.
+.SH SVENSK ÖVERSÄTTNING
+Vim översattes ursprungligen av Johan Svedberg 2003-2007 och har under 2025
+uppdaterats av Daniel Nylander, speciellt manualsidor samt själva Vim.
+Om du hittar fel i översättningen, kontakta <tp-sv@listor.tp-sv.se>.

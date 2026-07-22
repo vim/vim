@@ -1,0 +1,213 @@
+===============================================================================
+=    B i e n v e n u e  dans  l e  T u t o r i e l  de  VIM   –   Version 1.7 =
+===============================================================================
+=			    C H A P I T R E   DEUX			      =
+===============================================================================
+
+     Hic sunt dracones : si cʼest la première fois que vous utilisez Vim
+     et que vous souhaitez accéder au tutoriel dʼintroduction, tapez
+     les trois touches  :q!  puis la touche <ENTRÉE> et recommencez.
+
+     Il vous faudra entre 8 et 10 minutes pour terminer ce chapitre, selon
+     que vous passiez plus ou moins de temps à expérimenter.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			Leçon 2.1.1 : REGISTRES NOMMÉS
+
+
+         ** Conserver deux mots copiés en parallèle, puis les coller **
+
+  1. Déplacez le curseur sur la ligne ci-dessous commençant par : --->
+
+  2. Placez-vous nʼimporte où dans le mot 'Édouard' et tapez   "ayiw
+
+AIDE MNÉMOTECHNIQUE :	dans le registre(") nommé (a) (y)ank la portion
+	(i)nterne du (w)ord sous-jacent
+
+  3. Avancez jusquʼau mot 'chouquettes' (fq ou 2fc ou $ ou /ch<ENTRÉE>)
+     et tapez   "byiw
+
+  4. Rendez-vous sur le mot 'Vincent' et tapez   ciw<CTRL-R>a<ÉCHAP>
+
+AIDE MNÉMOTECHNIQUE :	é(c)hange la partie (i)nterne du (w)ord sous-jacent
+	avec le <contenu du (r)egistre> nommé (a)
+
+  5. Rendez-vous sur le mot 'croissant' et tapez   ciw<CTRL-R>b<ÉCHAP>
+
+--->  a) Édouard aura toute autorité sur le contingentement des chouquettes
+      b) À ce titre, Vincent exercera seul le pouvoir discrétionnaire sur
+         lʼattribution des croissants.
+
+NOTE : On peut aussi utiliser les registres avec la commande de suppression.
+       Taper  "sdiw supprimera le mot sous-jacent et en conservera une copie
+       dans le registre (s).
+
+RÉFÉRENCES: 	Registres 		:h registers
+		Registres nommés	:h quotea
+		Mouvements 		:h motion.txt<ENTRÉE> /inner<ENTRÉE>
+		CTRL-R			:h insert<ENTRÉE> /CTRL-R<ENTRÉE>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+		     Leçon 2.1.2 : LE REGISTRE DʼEXPRESSIONS
+
+
+	     ** Insérer à la volée le résultat dʼun calcul **
+
+  1. Déplacez le curseur sur la ligne ci-dessous commençant par : --->
+
+  2. Placez-vous sur le nombre
+
+  3. Tapez  ciw<CTRL-R> suivi de  =60*60*24<ENTRÉE>
+
+  4. Sur la ligne suivante, en mode Insertion, ajoutez la date du jour avec
+     <CTRL-R> suivi de  =system('date')<ENTRÉE>
+
+NOTE : Tous les appels système dépendent de votre système dʼexploitation. Par
+      exemple sur MS-Windows, utilisez plutôt
+      system('date /t')   ou  :r!date /t
+
+---> Dans une journée, il y a 100 secondes.
+     Aujourdʼhui, nous sommes :
+
+NOTE: on arrive au même résultat avec  :pu=system('date')
+      ou, plus court  :r!date
+
+RÉFÉRENCE : 	Registre dʼexpressions 	:h quote=
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+		      Leçon 2.1.3 : LES REGISTRES NUMÉROTÉS
+
+
+	** Tapez  yy et dd afin de contempler leur effet sur les registres **
+
+  1. Déplacez le curseur sur la ligne ci-dessous commençant par : --->
+
+  2. Copiez (yy) la ligne 0, puis inspectez les registres avec  :reg<ENTRÉE>
+
+  3. Supprimez la ligne 0 avec  "cdd, puis inspectez les registres
+     (Où pensez-vous retrouver la ligne 0 ?)
+
+  4. Continuez à supprimer chaque ligne successivement (avec dd), tout en
+     regardant le résultat au passage avec  :reg.
+
+NOTE : Vous devriez remarquer que les anciennes lignes supprimées descendent
+       dans la liste des registres au fur et à mesure que vous supprimez de
+       nouvelles lignes.
+
+  5. Maintenant collez le contenu des registres suivant, dans cet ordre :
+     c, 7, 4, 2, 8. i.e collez avec  "cp puis "7p puis etc. 
+
+---> 0. Ceci
+     9. zigzag
+     8. secret
+     7. est
+     6. on
+     5. axe
+     4. un
+     3. guerre
+     2. message
+     1. hommage 
+
+NOTE : Les lignes entièrement supprimées (via dd) restent beaucoup plus
+       longtemps dans les registres numérotés que les lignes copiées (via yy)
+       ou les suppressions impliquant des mouvements plus courts.
+
+RÉFÉRENCE : 	Registres numérotés 	:h quote0
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+		      Leçon 2.1.4 : LʼÉLÉGANCE DES MARQUES
+
+
+		** Lʼart dʼéviter les calculs pour le codeur décérébré **
+
+NOTE : En programmation, déplacer de gros blocs de code est souvent une vraie
+       corvée. Le souci nʼest pas la difficulté de lʼopération, mais la
+       gymnastique mentale quʼimposent les calculs de numéros de ligne — une
+       tâche fastidieuse et source dʼerreurs.
+       La technique qui suit vous épargne justement ce tracas pour des
+       opérations comme   "a147d   ou   :945,1091d a   ou pire encore
+       i<CTRL-R> suivi de  =1091-945<ENTRÉE>
+
+  1. Déplacez le curseur sur la ligne ci-dessous commençant par : --->
+
+  2. Placez-vous sur la première ligne de la fonction et placez une marque (a)
+     avec   ma
+
+NOTE : peu importe la position exacte sur la ligne.
+
+  3. Allez à la fin de la ligne, puis à la fin du bloc de code avec  $%
+
+  4. Supprimez le bloc et conservez-le dans le registre (a) avec  "ad'a
+
+AIDE MNÉMOTECHNIQUE :	demande au registre(") nommé (a) de conserver la
+	(d)élétion effectuée depuis le curseur jusquʼà la LIGNE contenant la
+	marque(') (a)
+
+  5. Collez le bloc entre BBB et CCC avec  "ap
+
+NOTE : exercez-vous plusieurs fois pour que ça devienne naturel   ma$%"ad'a
+
+---> AAA
+     function itGotRealBigRealFast() {
+       if ( somethingIsTrue ) {
+         doIt()
+       }
+       // the taxonomy of our function has changed and it
+       // no longer makes alphabetical sense in its current position
+
+       // imagine hundreds of lines of code
+
+       // naively you could navigate to the start and end and record or
+       // remember each line number
+     }
+     BBB
+     CCC
+
+NOTE : les marques et les registres ne partagent pas leur espace de noms,
+       le registre (a) est complètement indépendant de la marque (a).
+       On ne peut pas en dire autant des registres et des macros.
+
+RÉFÉRENCES :	Marques		:h marks
+				:h mark-motions  (différence entre ' et ` )
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+			       Leçon 2.1 RÉSUMÉ
+
+
+  1. Utiliser lʼun des 26 registres nommés (a-z) pour conserver
+     (copier/supprimer) et coller du texte.
+  2. Copier un mot entier en plaçant le curseur sur le mot :   yiw
+  3. Changer un mot entier en plaçant le curseur sur le mot :   ciw
+  4. Insérer du texte directement depuis un registre, en mode Insertion :
+     <CTRL-R>a
+
+  5. Insérer le résultat dʼune opération arithmétique simple :
+     <CTRL-R> suivi de  =60*60<ENTRÉE> en mode Insertion
+  6. Insérer le résultat dʼun appel système : <CTRL-R> suivi de
+     =system('ls -1')<ENTRÉE>
+     en mode Insertion
+
+  7. Inspecter les registres avec   :reg
+  8. Apprendre pourquoi les suppressions de lignes entières (dd) sont
+     préservées plus longtemps : elles bénéficient des registres 1 à 9 et sont
+     préservées plus longtemps que toute autre opération
+  9. Apprendre la destination finale de toutes les copies dans les registres
+     numérotés et à quel point elles sont éphémères
+
+ 10. Placer des marques depuis le mode Normal   m[a-zA-Z0-9]
+ 11. Se déplacer ligne par ligne jusquʼà une marque avec  '
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Voilà, vous êtes arrivé à la fin du chapitre deux du tutoriel de Vim. Il est
+  encore en chantier.
+
+  Ce chapitre a été écrit par Paul D. Parker,
+  il a été traduit en français par Damien Lejay.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

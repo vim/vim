@@ -1,7 +1,6 @@
 " Test for cursorline and cursorlineopt
 
-source check.vim
-source screendump.vim
+source util/screendump.vim
 
 func s:screen_attr(lnum) abort
   return map(range(1, 8), 'screenattr(a:lnum, v:val)')
@@ -268,13 +267,42 @@ func Test_cursorline_callback()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_cursorline_screenline_resize()
+  CheckScreendump
+
+  let lines =<< trim END
+      50vnew
+      call setline(1, repeat('xyz ', 30))
+      setlocal number cursorline cursorlineopt=screenline
+      normal! $
+  END
+  call writefile(lines, 'Xcul_screenline_resize', 'D')
+
+  let buf = RunVimInTerminal('-S Xcul_screenline_resize', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_cursorline_screenline_resize_1', {})
+  call term_sendkeys(buf, ":vertical resize -4\<CR>")
+  call VerifyScreenDump(buf, 'Test_cursorline_screenline_resize_2', {})
+  call term_sendkeys(buf, ":set cpoptions+=n\<CR>")
+  call VerifyScreenDump(buf, 'Test_cursorline_screenline_resize_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_cursorline_screenline_update()
   CheckScreendump
 
   let lines =<< trim END
+      func TestRetab()
+        let w = winwidth(0)
+        call cursor([1, w + 1, 0, w + 1])
+        call line('w0')
+        retab 8
+      endfunc
+
       call setline(1, repeat('xyz ', 30))
-      set cursorline cursorlineopt=screenline
+      set cursorline cursorlineopt=screenline tabstop=8
       inoremap <F2> <Cmd>call cursor(1, 1)<CR>
+      inoremap <F3> <Cmd>call TestRetab()<CR>
   END
   call writefile(lines, 'Xcul_screenline', 'D')
 
@@ -283,9 +311,22 @@ func Test_cursorline_screenline_update()
   call VerifyScreenDump(buf, 'Test_cursorline_screenline_1', {})
   call term_sendkeys(buf, "\<F2>")
   call VerifyScreenDump(buf, 'Test_cursorline_screenline_2', {})
+  call term_sendkeys(buf, "\<F3>")
+  call VerifyScreenDump(buf, 'Test_cursorline_screenline_3', {})
   call term_sendkeys(buf, "\<Esc>")
 
   call StopVimInTerminal(buf)
+endfunc
+
+func Test_cursorline_screenline_zero_width()
+  CheckOption foldcolumn
+
+  set cursorline culopt=screenline winminwidth=1 foldcolumn=1
+  " This used to crash Vim
+  1vnew | redraw
+
+  bwipe!
+  set cursorline& culopt& winminwidth& foldcolumn&
 endfunc
 
 func Test_cursorline_cursorbind_horizontal_scroll()

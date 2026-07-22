@@ -1,9 +1,5 @@
 " Test :suspend
 
-source check.vim
-source term_util.vim
-source shared.vim
-
 func CheckSuspended(buf, fileExists)
   call WaitForAssert({-> assert_match('[$#] $', term_getline(a:buf, '.'))})
 
@@ -34,7 +30,8 @@ func Test_suspend()
 
   call term_sendkeys(buf, v:progpath
         \               . " --clean -X"
-        \               . " -c 'set nu keyprotocol='"
+        \               . " --cmd 'set t_RK= keyprotocol='"
+        \               . " -c 'set nu'"
         \               . " -c 'call setline(1, \"foo\")'"
         \               . " Xfoo\<CR>")
   " Cursor in terminal buffer should be on first line in spawned vim.
@@ -84,7 +81,8 @@ func Test_suspend_autocmd()
 
   call term_sendkeys(buf, v:progpath
         \               . " --clean -X"
-        \               . " -c 'set nu keyprotocol='"
+        \               . " --cmd 'set t_RK= keyprotocol='"
+        \               . " -c 'set nu'"
         \               . " -c 'let g:count = 0'"
         \               . " -c 'au VimSuspend * let g:count += 1'"
         \               . " -c 'au VimResume * let g:count += 1'"
