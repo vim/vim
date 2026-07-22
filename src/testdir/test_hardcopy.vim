@@ -230,11 +230,12 @@ func Test_printoptions_portrait()
   endif
   call assert_true(match(lines, 'DocumentMedia: A4') != -1)
   call assert_true(match(lines, 'PageMedia: A4') != -1)
-  call delete('Xhardcopy_printoptions')
+  call delete('Xhardcopy_printoptions_portrait')
 
   set printoptions=portrait:n
   1,50hardcopy > Xhardcopy_printoptions_portrait
   let lines = readfile('Xhardcopy_printoptions_portrait')
+  call delete('Xhardcopy_printoptions_portrait')
 
   call assert_true(match(lines, 'Orientation: Landscape') != -1)
   if has('postscript')
@@ -242,7 +243,7 @@ func Test_printoptions_portrait()
   endif
   call assert_true(match(lines, 'DocumentMedia: A4') != -1)
   call assert_true(match(lines, 'PageMedia: A4') != -1)
-  call delete('Xhardcopy_printoptions')
+  call delete('Xhardcopy_printoptions_portrait')
 
   set printoptions&
   bwipe
