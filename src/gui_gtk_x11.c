@@ -837,8 +837,12 @@ scale_factor_event(GtkWidget *widget,
     gui_resize_shell(w, usable_height);
     gui_gtk_form_thaw(GTK_FORM(gui.formwin));
 #  ifdef FEAT_IMAGE
-    gui.scale = gtk_widget_get_scale_factor(widget);
-    popup_update_scale();
+    {
+	double old = gui.scale;
+
+	gui.scale = gtk_widget_get_scale_factor(widget);
+	popup_update_scale(old);
+    }
 #  endif
 
     return TRUE;

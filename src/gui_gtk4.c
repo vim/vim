@@ -2344,9 +2344,10 @@ drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 	// Use GdkSurface, as that handles fractional scale values.
 	GdkSurface *surface = gtk_native_get_surface(
 		gtk_widget_get_native(gui.drawarea));
+	double old = gui.scale;
 
 	gui.scale = gdk_surface_get_scale(surface);
-	popup_update_scale();
+	popup_update_scale(old);
 	g_signal_connect(G_OBJECT(surface), "notify::scale",
 		G_CALLBACK(scale_factor_cb), NULL);
     }
@@ -2446,8 +2447,12 @@ scale_factor_cb(GdkSurface  *surface,
 	redraw_all_later(UPD_CLEAR);
 #endif
 #if defined(FEAT_IMAGE)
-    gui.scale = gdk_surface_get_scale(surface);
-    popup_update_scale();
+    {
+	double old = gui.scale;
+
+	gui.scale = gdk_surface_get_scale(surface);
+	popup_update_scale(old);
+    }
 #endif
 }
 

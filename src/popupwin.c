@@ -3016,29 +3016,21 @@ popup_adjust_position(win_T *wp)
  * Should be called when scale factor changes.
  */
     void
-popup_update_scale(void)
+popup_update_scale(double old_scale)
 {
     win_T *wp;
+    double ratio = old_scale / gui.scale;
+
     FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
     {
 	// If the popup has an image, recalculate its bounding box in cells
 	if (wp->w_popup_image_data != NULL)
 	{
-	    int cx, cy;
-	    int cw, ch;
-
-	    cx = LOG2PHY(gui.char_width);
-	    cy = LOG2PHY(gui.char_height);
-
-	    // Calculate the new cell width and height
-	    cw = (wp->w_popup_image_w + cx - 1) / cx;
-	    ch = (wp->w_popup_image_h + cy - 1) / cy;
-
-	    // Update the window dimensions to fit the image at the new scale
-	    wp->w_minwidth  = cw;
-	    wp->w_maxwidth  = cw;
-	    wp->w_minheight = ch;
-	    wp->w_maxheight = ch;
+	    // Add +0.5 so that it rounds to nearest whole value
+	    wp->w_minwidth  = wp->w_minwidth * ratio + 0.5;
+	    wp->w_maxwidth  = wp->w_maxwidth * ratio + 0.5;
+	    wp->w_minheight = wp->w_minheight * ratio + 0.5;
+	    wp->w_maxheight = wp->w_maxheight * ratio + 0.5;
 	}
 
 	// Reflow the popup layout with the newly calculated limits
