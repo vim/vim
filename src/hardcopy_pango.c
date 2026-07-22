@@ -670,12 +670,16 @@ mch_print_text_out(char_u *textp, int len)
 	// better.
 	o = (double)pango_glyph_string_get_width(glyphs) / PANGO_SCALE;
 
-	// Draw background color
-	long_to_rgb(pctx.cur_bg, &r, &g, &b);
-	cairo_set_source_rgb(pctx.cr, r, g, b);
-	cairo_rectangle(pctx.cr, pctx.cur_x + width,
-		GET_Y(pctx.cur_line) - pctx.line_spacing, o, pctx.char_height);
-	cairo_fill(pctx.cr);
+	// Draw background color (only if different). Cannot batch bg color,
+	// because then we would overwrite glyphs.
+	if (pctx.cur_bg != PRCOLOR_WHITE)
+	{
+	    long_to_rgb(pctx.cur_bg, &r, &g, &b);
+	    cairo_set_source_rgb(pctx.cr, r, g, b);
+	    cairo_rectangle(pctx.cr, pctx.cur_x + width,
+		    GET_Y(pctx.cur_line) - pctx.line_spacing, o, pctx.char_height);
+	    cairo_fill(pctx.cr);
+	}
 
 	// Draw actual text
 	long_to_rgb(pctx.cur_fg, &r, &g, &b);
