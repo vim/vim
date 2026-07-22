@@ -52698,6 +52698,7 @@ Changed ~
 - It is possible to clear the alternate file register |quote#|.
 - |serverlist()| can return a list of all available server names.
 - Improve visual appearance when the terminal does not support colors.
+- Improve diff highlighting for terminals with 256 or less colors.
 
 
 							*added-9.3*
