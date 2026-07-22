@@ -5994,7 +5994,10 @@ gui_gtk4_print_dialog(
 	opt = &printer_opts[OPT_PRINT_COLLATE];
 	if (opt->present)
 	{
-	    gtk_print_settings_set_collate(print_settings, TRUE);
+	    if (*opt->string == 'y')
+		gtk_print_settings_set_collate(print_settings, TRUE);
+	    else
+		gtk_print_settings_set_collate(print_settings, FALSE);
 	}
     }
 
