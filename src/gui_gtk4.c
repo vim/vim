@@ -5040,6 +5040,9 @@ gui_gtk4_print_dialog(
     gtk_print_dialog_set_title(dialog, (const char *)jobname);
     gtk_print_dialog_set_modal(dialog, TRUE);
 
+    print_setup = NULL;
+    print_stream = NULL;
+
     if (print_settings == NULL)
     {
 	option_table_T *opt;
@@ -5103,6 +5106,8 @@ gui_gtk4_print_dialog(
     if (print_setup == NULL || print_stream == NULL)
     {
 	g_object_unref(dialog);
+	g_clear_pointer(&print_setup, gtk_print_setup_unref);
+	g_clear_object(&print_stream);
 	return FAIL;
     }
 
@@ -5126,7 +5131,8 @@ gui_gtk4_print_dialog(
 
     *((cairo_write_func_t *)write_func) = print_write_func;
 
-    gtk_print_setup_unref(print_setup);
+    g_clear_pointer(&print_setup, gtk_print_setup_unref);
+    g_clear_object(&print_stream);
     g_object_unref(dialog);
 
     return OK;
