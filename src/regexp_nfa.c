@@ -4048,6 +4048,8 @@ typedef struct
     nfa_pim_T	pim;		// if pim.result != NFA_PIM_UNUSED: postponed
 				// invisible match
     regsubs_T	subs;		// submatch info, only party used
+    int		prev_idx;	// index of previous active element
+    int		next_idx;	// index of next active element
 } nfa_thread_T;
 
 // nfa_list_T contains the alternative NFA execution states.
@@ -4055,10 +4057,22 @@ typedef struct
 {
     nfa_thread_T    *t;		// allocated array of states
     int		    n;		// nr of states currently in "t"
+    int		    nr_active;	// nr of active states currently in "t"
     int		    len;	// max nr of states in "t"
     int		    id;		// ID of the list
     int		    has_pim;	// TRUE when any state has a PIM
+    int		    first_idx;	// index of the first in sequence active element in "t"
+    int		    last_idx;	// index of the last in sequence active element in "t"
 } nfa_list_T;
+
+//
+// sentinel value indicating end of the list for:
+// first_idx and last_idx in nfa_list_T, and
+// prev_idx and next_idx in nfa_thread_T.
+enum
+{
+    NFA_INDEX_NULL = -1
+};
 
 #ifdef ENABLE_LOG
 static void log_subexpr(regsub_T *sub);
@@ -4385,10 +4399,10 @@ has_state_with_pos(
     regsubs_T		*subs,	// pointers to subexpressions
     nfa_pim_T		*pim)	// postponed match or NULL
 {
-    nfa_thread_T	*thread;
-    int			i;
+    nfa_thread_T    *thread;
+    int		    i;
 
-    for (i = 0; i < l->n; ++i)
+    for (i = l->first_idx; i != NFA_INDEX_NULL; i = l->t[i].next_idx)
     {
 	thread = &l->t[i];
 	if (thread->state->id == state->id
@@ -4559,8 +4573,6 @@ addstate(
     int			off = off_arg;
     int			add_here = FALSE;
     int			listindex = 0;
-    int			k;
-    int			found = FALSE;
     nfa_thread_T	*thread;
     struct multipos	save_multipos;
     int			save_in_use;
@@ -4677,16 +4689,24 @@ addstate(
 		if (!rex.nfa_has_backref && pim == NULL && !l->has_pim
 						     && state->c != NFA_MATCH)
 		{
+		    int	found = FALSE;
+
 		    // When called from addstate_here() do insert before
 		    // existing states.
 		    if (add_here)
 		    {
-			for (k = 0; k < l->n && k < listindex; ++k)
+			int k;
+
+			for (k = l->first_idx;
+			    k != NFA_INDEX_NULL && k != listindex;
+			    k = l->t[k].next_idx)
+			{
 			    if (l->t[k].state->id == state->id)
 			    {
 				found = TRUE;
 				break;
 			    }
+			}
 		    }
 		    if (!add_here || found)
 		    {
@@ -4747,8 +4767,23 @@ skip_add:
 
 	    // add the state to the list
 	    state->lastlist[nfa_ll_index] = l->id;
-	    thread = &l->t[l->n++];
+	    thread = &l->t[l->n];
 	    thread->state = state;
+	    thread->next_idx = NFA_INDEX_NULL;
+	    if (l->n == 0)
+	    {
+		thread->prev_idx = NFA_INDEX_NULL;
+		l->first_idx = 0;
+	    }
+	    else
+	    {
+		thread->prev_idx = l->last_idx;
+		l->t[thread->prev_idx].next_idx = l->n;
+	    }
+	    l->last_idx = l->n;
+	    ++l->n;
+	    ++l->nr_active;
+
 	    if (pim == NULL)
 		thread->pim.result = NFA_PIM_UNUSED;
 	    else
@@ -5021,12 +5056,16 @@ addstate_here(
     nfa_state_T		*state,	// state to update
     regsubs_T		*subs,	// pointers to subexpressions
     nfa_pim_T		*pim,   // postponed look-behind match
-    int			*ip)
+    int			listidx,
+    int			*next_listidx)
 {
-    int tlen = l->n;
-    int count;
-    int listidx = *ip;
-    regsubs_T *r;
+    regsubs_T	    *r;
+    int		    save_nr_active = l->nr_active;
+    int		    save_last_idx = l->last_idx;    // remember the index of the last
+						    // entry in the state list
+    int		    first_added_idx;		    // index of the first thread added
+						    // by addstate()
+    nfa_thread_T    *thread;			    // the thread referenced by listidx
 
     // First add the state(s) at the end, so that we know how many there are.
     // Pass the listidx as offset (avoids adding another argument to
@@ -5035,64 +5074,48 @@ addstate_here(
     if (r == NULL)
 	return NULL;
 
-    // when "*ip" was at the end of the list, nothing to do
-    if (listidx + 1 == tlen)
+    //
+    // if no state got added, nothing to do
+    if (l->nr_active == save_nr_active)
 	return r;
 
-    // re-order to put the new state at the current position
-    count = l->n - tlen;
-    if (count == 0)
-	return r; // no state got added
-    if (count == 1)
-    {
-	// overwrite the current state
-	l->t[listidx] = l->t[l->n - 1];
-    }
-    else if (count > 1)
-    {
-	if (l->n + count - 1 >= l->len)
-	{
-	    // not enough space to move the new states, reallocate the list
-	    // and move the states to the right position
-	    int		    newlen = l->len * 3 / 2 + 50;
-	    size_t	    newsize = newlen * sizeof(nfa_thread_T);
-	    nfa_thread_T    *newl;
+    thread = &l->t[listidx];
 
-	    if ((long)(newsize >> 10) >= p_mmp)
-	    {
-		emsg(_(e_pattern_uses_more_memory_than_maxmempattern));
-		return NULL;
-	    }
-	    newl = alloc(newsize);
-	    if (newl == NULL)
-		return NULL;
-	    l->len = newlen;
-	    mch_memmove(&(newl[0]),
-		    &(l->t[0]),
-		    sizeof(nfa_thread_T) * listidx);
-	    mch_memmove(&(newl[listidx]),
-		    &(l->t[l->n - count]),
-		    sizeof(nfa_thread_T) * count);
-	    mch_memmove(&(newl[listidx + count]),
-		    &(l->t[listidx + 1]),
-		    sizeof(nfa_thread_T) * (l->n - count - listidx - 1));
-	    vim_free(l->t);
-	    l->t = newl;
-	}
-	else
-	{
-	    // make space for new states, then move them from the
-	    // end to the current position
-	    mch_memmove(&(l->t[listidx + count]),
-		    &(l->t[listidx + 1]),
-		    sizeof(nfa_thread_T) * (l->n - listidx - 1));
-	    mch_memmove(&(l->t[listidx]),
-		    &(l->t[l->n - 1]),
-		    sizeof(nfa_thread_T) * count);
-	}
+    //
+    // if "listidx" was at the end of the list, nothing to do
+    if (listidx == save_last_idx)
+    {
+	*next_listidx = thread->next_idx;
+	return r;
     }
-    --l->n;
-    *ip = listidx - 1;
+
+    //
+    // re-order to put the new state at the current position.
+    // adjust the elements' indices to bypass the thread that needs to be replaced,
+    // thus deactiviating it.
+    first_added_idx = l->t[save_last_idx].next_idx;
+    l->t[first_added_idx].prev_idx = thread->prev_idx;
+    if (listidx == l->first_idx)
+    {
+	//
+	// the thread to be replaced is at the start of the list,
+	// so we need to adjust the lists' first index.
+	l->first_idx = first_added_idx;
+	*next_listidx = l->first_idx;
+    }
+    else
+    {
+	l->t[thread->prev_idx].next_idx = first_added_idx;
+	*next_listidx = thread->prev_idx;
+    }
+    l->t[thread->next_idx].prev_idx = l->last_idx;
+    l->t[save_last_idx].next_idx = NFA_INDEX_NULL;
+    l->t[l->last_idx].next_idx = thread->next_idx;
+
+    thread->prev_idx = thread->next_idx = NFA_INDEX_NULL;
+
+    l->last_idx = save_last_idx;
+    --l->nr_active;
 
     return r;
 }
@@ -5777,6 +5800,7 @@ nfa_regmatch(
     nfa_thread_T *t;
     nfa_list_T	list[2];
     int		listidx;
+    int		next_listidx;
     nfa_list_T	*thislist;
     nfa_list_T	*nextlist;
     int		*listids = NULL;
@@ -5849,9 +5873,15 @@ nfa_regmatch(
 
     thislist = &list[0];
     thislist->n = 0;
+    thislist->nr_active = 0;
+    thislist->first_idx = NFA_INDEX_NULL;
+    thislist->last_idx = NFA_INDEX_NULL;
     thislist->has_pim = FALSE;
     nextlist = &list[1];
     nextlist->n = 0;
+    nextlist->nr_active = 0;
+    nextlist->first_idx = NFA_INDEX_NULL;
+    nextlist->last_idx = NFA_INDEX_NULL;
     nextlist->has_pim = FALSE;
 #ifdef ENABLE_LOG
     fprintf(log_fd, "(---) STARTSTATE first\n");
@@ -5916,7 +5946,10 @@ nfa_regmatch(
 	thislist = &list[flag];
 	nextlist = &list[flag ^= 1];
 	nextlist->n = 0;	    // clear nextlist
+	nextlist->nr_active = 0;    // clear nextlist
 	nextlist->has_pim = FALSE;
+	nextlist->first_idx = NFA_INDEX_NULL;
+	nextlist->last_idx = NFA_INDEX_NULL;
 	++rex.nfa_listid;
 	if (prog->re_engine == AUTOMATIC_ENGINE
 		&& (rex.nfa_listid >= NFA_MAX_STATES
@@ -5937,11 +5970,11 @@ nfa_regmatch(
 	fprintf(log_fd, "------------------------------------------\n");
 	fprintf(log_fd, ">>> Reginput is \"%s\"\n", rex.input);
 	fprintf(log_fd, ">>> Advanced one character... Current char is %c (code %d) \n", curc, (int)curc);
-	fprintf(log_fd, ">>> Thislist has %d states available: ", thislist->n);
+	fprintf(log_fd, ">>> Thislist has %d states available: ", thislist->nr_active);
 	{
 	    int i;
 
-	    for (i = 0; i < thislist->n; i++)
+	    for (i = thislist->first_idx; i != NFA_INDEX_NULL; i = thislist->t[i].next_idx)
 		fprintf(log_fd, "%d  ", abs(thislist->t[i].state->id));
 	}
 	fprintf(log_fd, "\n");
@@ -5953,11 +5986,13 @@ nfa_regmatch(
 	/*
 	 * If the state lists are empty we can stop.
 	 */
-	if (thislist->n == 0)
+	if (thislist->nr_active == 0)
 	    break;
 
 	// compute nextlist
-	for (listidx = 0; listidx < thislist->n; ++listidx)
+	for (next_listidx = listidx = thislist->first_idx;
+	    listidx != NFA_INDEX_NULL;
+	    listidx = next_listidx)
 	{
 	    // If the list gets very long there probably is something wrong.
 	    // At least allow interrupting with CTRL-C.
@@ -5969,6 +6004,7 @@ nfa_regmatch(
 		break;
 #endif
 	    t = &thislist->t[listidx];
+	    next_listidx = t->next_idx;
 
 #ifdef NFA_REGEXP_DEBUG_LOG
 	    nfa_set_code(t->state->c);
@@ -6022,7 +6058,7 @@ nfa_regmatch(
 		// states at this position.  When the list of states is going
 		// to be empty quit without advancing, so that "rex.input" is
 		// correct.
-		if (nextlist->n == 0)
+		if (nextlist->nr_active == 0)
 		    clen = 0;
 		goto nextchar;
 	      }
@@ -6080,7 +6116,7 @@ nfa_regmatch(
 #endif
 		nfa_match = TRUE;
 		// See comment above at "goto nextchar".
-		if (nextlist->n == 0)
+		if (nextlist->nr_active == 0)
 		    clen = 0;
 		goto nextchar;
 
@@ -6183,7 +6219,7 @@ nfa_regmatch(
 			// node; Add its out to the current list (zero-width
 			// match).
 			if (addstate_here(thislist, t->state->out1->out,
-					     &t->subs, &pim, &listidx) == NULL)
+					     &t->subs, &pim, listidx, &next_listidx) == NULL)
 			{
 			    nfa_match = NFA_TOO_EXPENSIVE;
 			    goto theend;
@@ -7169,12 +7205,12 @@ nfa_regmatch(
 
 		if (add_here)
 		    r = addstate_here(thislist, add_state, &t->subs,
-								pim, &listidx);
+						pim, listidx, &next_listidx);
 		else
 		{
 		    r = addstate(nextlist, add_state, &t->subs, pim, add_off);
 		    if (add_count > 0)
-			nextlist->t[nextlist->n - 1].count = add_count;
+			nextlist->t[nextlist->last_idx].count = add_count;
 		}
 		if (r == NULL)
 		{
@@ -7182,8 +7218,9 @@ nfa_regmatch(
 		    goto theend;
 		}
 	    }
-
-	} // for (thislist = thislist; thislist->state; thislist++)
+	}   // for (listidx = thislist->first_idx;
+	    //    listidx != NFA_INDEX_NULL;
+	    //    listidx = next_listidx)
 
 	// Look for the start of a match in the current position by adding the
 	// start state to the list of states.
@@ -7219,7 +7256,7 @@ nfa_regmatch(
 
 		if (prog->regstart != NUL && clen != 0)
 		{
-		    if (nextlist->n == 0)
+		    if (nextlist->nr_active == 0)
 		    {
 			colnr_T col = (colnr_T)(rex.input - rex.line) + clen;
 
@@ -7303,11 +7340,11 @@ nfa_regmatch(
 	}
 
 #ifdef ENABLE_LOG
-	fprintf(log_fd, ">>> Thislist had %d states available: ", thislist->n);
+	fprintf(log_fd, ">>> Thislist had %d states available: ", thislist->nr_active);
 	{
 	    int i;
 
-	    for (i = 0; i < thislist->n; i++)
+	    for (i = thislist->first_idx; i != NFA_INDEX_NULL; i = thislist->t[i].next_idx)
 		fprintf(log_fd, "%d  ", abs(thislist->t[i].state->id));
 	}
 	fprintf(log_fd, "\n");
