@@ -229,6 +229,9 @@ and SyntaxWarning \u00A1 and \U00010605'''
 test = B"""Bytes with quotes ' and "
 and escapes \t and \040 and \xFF
 and SyntaxWarning \u00A1 and \U00010605"""
+test = b"Bytes with bracket ["
+test = b"Bytes with bracket ("
+test = b"Bytes with bracket {"
 
 # Raw bytes
 test = br'Raw bytes with literal \' and \" and \t'
@@ -247,3 +250,15 @@ and literal \u00A1 and \U00010605'''
 test = RB"""Raw bytes with quotes ' and "
 and literal \t and \040 and \xFF
 and literal \u00A1 and \U00010605"""
+test = rb"Raw bytes with bracket ["
+test = rb"Raw bytes with bracket ("
+test = rb"Raw bytes with bracket {"
+test = Rb"Raw bytes with bracket ["
+test = Rb"Raw bytes with bracket ("
+test = Rb"Raw bytes with bracket {"
+test = bR"Raw bytes with bracket ["
+test = bR"Raw bytes with bracket ("
+test = bR"Raw bytes with bracket {"
+
+
+
