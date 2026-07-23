@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 9.2.  Last change: 2026 May 23
+*spell.txt*	For Vim version 9.2.  Last change: 2026 Jul 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -388,9 +388,8 @@ version.
 SPELLFILE CLEANUP					*spellfile-cleanup*
 
 The |zw| command turns existing entries in 'spellfile' into comment lines.
-This avoids having to write a new file every time, but results in the file
-only getting longer, never shorter.  To clean up the comment lines in all
-".add" spell files do this: >
+This results in the file only getting longer, never shorter.  To clean up the
+comment lines in all ".add" spell files do this: >
 	:runtime spell/cleanadd.vim
 
 This deletes all comment lines, except the ones that start with "##".  Use

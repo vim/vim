@@ -187,8 +187,13 @@ func Test_spell_undo_keeps_word()
 
   " The reported case: add a word, undo it, the word is kept after the '#'.
   spellgood fooee
+  call writefile([], './Xspellundo.add.tmp')
+  call assert_fails('spellundo fooee', 'E484:')
+  call assert_equal(['fooee'], readfile('./Xspellundo.add'))
+  call delete('./Xspellundo.add.tmp')
   spellundo fooee
   call assert_equal(['#fooee'], readfile('./Xspellundo.add'))
+  call assert_equal([], glob('./Xspellundo.add.tmp', FALSE, TRUE))
 
   " A word in the middle of the file: first character kept, neighbours intact.
   call delete('./Xspellundo.add')

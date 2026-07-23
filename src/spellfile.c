@@ -6308,6 +6308,8 @@ spell_add_word(
     char_u	line[MAXWLEN * 2];
     long	fpos, fpos_next = 0;
     int		i;
+    int		rewrite_failed = FALSE;
+    int		did_change = FALSE;
     size_t	linelen;
     char_u	*spf;
 
@@ -6375,11 +6377,18 @@ spell_add_word(
     if (what == SPELL_ADD_BAD || undo)
     {
 	garray_T	ga;
+	char_u		*write_fname = fname;
+#ifdef HAVE_READLINK
+	char_u		fname_res[MAXPATHL];
+
+	if (resolve_symlink(fname, fname_res) == OK)
+	    write_fname = fname_res;
+#endif
 
 	// When the word appears as good word we need to remove that one,
 	// since its flags sort before the one with WF_BANNED.
 	ga_init2(&ga, sizeof(long), 10);
-	fd = mch_fopen((char *)fname, READBIN);
+	fd = mch_fopen((char *)write_fname, READBIN);
 	if (fd != NULL)
 	{
 	    char_u	*fbuf = NULL;
@@ -6421,38 +6430,122 @@ spell_add_word(
 
 	    if (fbuf != NULL)
 	    {
-		FILE	*wfd = mch_fopen((char *)fname, WRITEBIN);
+		char_u	*tempname;
+		FILE	*wfd = NULL;
+#ifndef VMS
+		int	tempfd;
+#endif
+		int	write_error = FALSE;
+		int	renamed = FALSE;
+		long	perm = mch_getperm(write_fname);
 
+		tempname = buf_modname(FALSE, write_fname,
+#ifdef VMS
+			(char_u *)"-tmp",
+#else
+			(char_u *)".tmp",
+#endif
+			FALSE);
+		if (tempname != NULL)
+		{
+#ifdef VMS
+		    stat_T st;
+
+		    if (mch_stat((char *)tempname, &st) < 0)
+			wfd = mch_fopen((char *)tempname, WRITEBIN);
+#else
+		    tempfd = mch_open((char *)tempname,
+			    O_CREAT | O_EXTRA | O_EXCL | O_WRONLY | O_NOFOLLOW,
+			    (int)((perm & 0777) | 0600));
+		    if (tempfd >= 0)
+		    {
+			wfd = fdopen(tempfd, WRITEBIN);
+			if (wfd == NULL)
+			    close(tempfd);
+		    }
+#endif
+		}
 		if (wfd == NULL)
-		    semsg(_(e_cant_open_file_str), fname);
+		{
+		    semsg(_(e_cant_open_file_str),
+				   tempname == NULL ? write_fname : tempname);
+		    rewrite_failed = TRUE;
+		}
 		else
 		{
-		    long	prev = 0;
+		    long prev = 0;
 
 		    for (i = 0; i < ga.ga_len; ++i)
 		    {
-			long	off = ((long *)ga.ga_data)[i];
+			long off = ((long *)ga.ga_data)[i];
 
-			fwrite(fbuf + prev, 1, (size_t)(off - prev), wfd);
-			fputc('#', wfd);
+			if (fwrite(fbuf + prev, 1, (size_t)(off - prev), wfd)
+						!= (size_t)(off - prev)
+				|| fputc('#', wfd) == EOF)
+			{
+			    write_error = TRUE;
+			    break;
+			}
 			prev = off;
 		    }
-		    fwrite(fbuf + prev, 1, (size_t)(fsize - prev), wfd);
-		    fclose(wfd);
-		    if (undo)
+		    if (!write_error
+			    && fwrite(fbuf + prev, 1, (size_t)(fsize - prev), wfd)
+						!= (size_t)(fsize - prev))
+			write_error = TRUE;
+		    if (fclose(wfd) == EOF)
+			write_error = TRUE;
+
+		    if (!write_error && mch_setperm(tempname, perm) == OK)
 		    {
-			home_replace(NULL, fname, NameBuff, MAXPATHL, TRUE);
-			smsg(_("Word '%.*s' removed from %s"),
-			     len, word, NameBuff);
+#ifdef HAVE_ACL
+			vim_acl_T acl = mch_get_acl(write_fname);
+
+			mch_set_acl(tempname, acl);
+			mch_free_acl(acl);
+#endif
+#if defined(HAVE_SELINUX) || defined(HAVE_SMACK)
+			mch_copy_sec(write_fname, tempname);
+#endif
+#ifdef FEAT_XATTR
+			mch_copy_xattr(write_fname, tempname);
+#endif
+#ifdef MSWIN
+			(void)mch_copy_file_attribute(write_fname, tempname);
+#endif
+			if (vim_rename(tempname, write_fname) == 0)
+			{
+			    renamed = TRUE;
+			    did_change = TRUE;
+			    if (undo)
+			    {
+				home_replace(NULL, fname, NameBuff, MAXPATHL, TRUE);
+				smsg(_("Word '%.*s' removed from %s"),
+					     len, word, NameBuff);
+			    }
+			}
+			else
+			    write_error = TRUE;
+		    }
+		    else
+			write_error = TRUE;
+		    if (write_error)
+		    {
+			semsg(_(e_error_writing_to_str), write_fname);
+			rewrite_failed = TRUE;
 		    }
 		}
+		if (tempname != NULL && !renamed)
+		    mch_remove(tempname);
+		vim_free(tempname);
 		vim_free(fbuf);
 	    }
+	    else if (ga.ga_len > 0)
+		rewrite_failed = TRUE;
 	}
 	ga_clear(&ga);
     }
 
-    if (!undo)
+    if (!undo && !rewrite_failed)
     {
 	fd = mch_fopen((char *)fname, "a");
 	if (fd == NULL && new_spf)
@@ -6487,13 +6580,14 @@ spell_add_word(
 	    else
 		fprintf(fd, "%.*s\n", len, word);
 	    fclose(fd);
+	    did_change = TRUE;
 
 	    home_replace(NULL, fname, NameBuff, MAXPATHL, TRUE);
 	    smsg(_("Word '%.*s' added to %s"), len, word, NameBuff);
 	}
     }
 
-    if (fd != NULL)
+    if (did_change)
     {
 	// Update the .add.spl file.
 	mkspell(1, &fname, FALSE, TRUE, TRUE);
