@@ -3315,6 +3315,8 @@ const ft_from_name = {
   ".swcrc": "json",
   "composer.lock": "json",
   "symfony.lock": "json",
+  # osquery configuration
+  "osquery.conf": "jsonc",
   # Kconfig
   "Kconfig": "kconfig",
   "Kconfig.debug": "kconfig",
