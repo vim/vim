@@ -3818,3 +3818,7 @@ EXTERN char e_too_many_postponed_prefixes_spell[]
 #endif
 EXTERN char e_completeopt_escape_cannot_be_used_with_nargs_underscore[]
 	INIT(= N_("E1579: -completeopt=escape cannot be used with -nargs=_"));
+#ifdef FEAT_PROP_POPUP
+EXTERN char e_too_many_text_properties_on_a_single_line[]
+	INIT(= N_("E1580: Too many text properties on a single line"));
+#endif

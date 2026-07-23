@@ -5027,4 +5027,22 @@ func Test_textprop_below_truncated_with_ellipsis()
   set ff&
 endfunc
 
+" Adding more than 65535 text properties to one line must be rejected instead
+" of wrapping the uint16_t property count and overflowing the allocation.
+func Test_prop_add_over_uint16_max()
+  CheckNotAsan
+  CheckNotValgrind
+  new
+  call setline(1, 'x')
+  call prop_type_add('overflow', {})
+  for _ in range(0xffff)
+    call prop_add(1, 1, {'type': 'overflow', 'length': 0})
+  endfor
+  call assert_equal(0xffff, prop_list(1)->len())
+  call assert_fails("call prop_add(1, 1, {'type': 'overflow', 'length': 0})", 'E1580:')
+  call assert_equal(0xffff, prop_list(1)->len())
+  call prop_type_delete('overflow')
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

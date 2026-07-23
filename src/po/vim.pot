@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-06-27 08:41+0000\n"
+"POT-Creation-Date: 2026-07-23 20:13+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8895,6 +8895,9 @@ msgid "E1578: Too many postponed prefixes and/or compound flags"
 msgstr ""
 
 msgid "E1579: -completeopt=escape cannot be used with -nargs=_"
+msgstr ""
+
+msgid "E1580: Too many text properties on a single line"
 msgstr ""
 
 #. type of cmdline window or 0
