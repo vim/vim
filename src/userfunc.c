@@ -571,7 +571,7 @@ parse_argument_types(
 			}
 		    }
 		    else
-			type = parse_type(&p, &fp->uf_type_list, fp, cctx, TRUE);
+			type = parse_type(&p, &fp->uf_type_list, cctx, TRUE);
 		}
 		if (type == NULL || !valid_declaration_type(type))
 		    return FAIL;
@@ -607,7 +607,7 @@ parse_argument_types(
 	    fp->uf_va_type = &t_list_any;
 	else
 	{
-	    fp->uf_va_type = parse_type(&p, &fp->uf_type_list, fp, cctx, TRUE);
+	    fp->uf_va_type = parse_type(&p, &fp->uf_type_list, cctx, TRUE);
 	    if (fp->uf_va_type != NULL && fp->uf_va_type->tt_type != VAR_LIST)
 	    {
 		semsg(_(e_variable_arguments_type_must_be_list_str),
@@ -631,7 +631,7 @@ parse_return_type(ufunc_T *fp, char_u *ret_type, cctx_T *cctx)
     {
 	char_u *p = ret_type;
 
-	fp->uf_ret_type = parse_type(&p, &fp->uf_type_list, fp, cctx, TRUE);
+	fp->uf_ret_type = parse_type(&p, &fp->uf_type_list, cctx, TRUE);
 	if (fp->uf_ret_type == NULL)
 	{
 	    fp->uf_ret_type = &t_void;
@@ -1604,6 +1604,8 @@ lambda_function_body(
     lnum_save = SOURCING_LNUM;
     SOURCING_LNUM = sourcing_lnum_top;
 
+    set_type_resolve_ctx_ufunc(ufunc);
+
     // parse argument types
     if (parse_argument_types(ufunc, argtypes, varargs, NULL, NULL, 0,
 		NULL) == FAIL)
@@ -1652,6 +1654,7 @@ erret:
 	func_clear(ufunc, TRUE);
 	func_free(ufunc, TRUE);
     }
+    clear_type_resolve_ctx();
     return ret;
 }
 
@@ -1850,6 +1853,8 @@ get_lambda_tv(
 	ga_init(&fp->uf_def_args);
 	if (types_optional)
 	{
+	    set_type_resolve_ctx_ufunc(fp);
+
 	    if (parse_argument_types(fp, &argtypes,
 				vim9script && varargs, NULL, NULL, 0,
 				cctx) == FAIL)
@@ -1857,12 +1862,14 @@ get_lambda_tv(
 	    if (ret_type != NULL)
 	    {
 		fp->uf_ret_type = parse_type(&ret_type, &fp->uf_type_list,
-					     NULL, cctx, TRUE);
+					     cctx, TRUE);
 		if (fp->uf_ret_type == NULL)
 		    goto errret;
 	    }
 	    else
 		fp->uf_ret_type = &t_unknown;
+
+	    clear_type_resolve_ctx();
 	}
 
 	fp->uf_lines = newlines;
@@ -1927,6 +1934,7 @@ errret:
     vim_free(pt);
     vim_free(tofree2);
     eval_lavars_used = old_eval_lavars;
+    clear_type_resolve_ctx();
     return FAIL;
 }
 
@@ -3971,7 +3979,7 @@ call_func(
     // even when call_func() returns FAIL.
     rettv->v_type = VAR_UNKNOWN;
 
-    generic_func_args_table_init(&gfatab);
+    generic_args_table_init(&gfatab);
 
     if (partial != NULL)
 	fp = partial->pt_func;
@@ -3987,7 +3995,7 @@ call_func(
 	    if (p != NULL)
 	    {
 		len = p - funcname;
-		if (parse_generic_func_type_args(funcname, len, p, &gfatab,
+		if (parse_generic_type_args(funcname, len, p, &gfatab,
 						funcexe->fe_cctx) == NULL)
 		    goto theend;
 	    }
@@ -4117,7 +4125,7 @@ call_func(
 		    goto theend;
 		}
 	    }
-	    else if (generic_func_args_table_size(&gfatab) > 0)
+	    else if (generic_args_table_size(&gfatab) > 0)
 	    {
 		emsg_funcname(fp != NULL ? e_not_a_generic_function_str
 				: e_unknown_generic_function_str, rfname);
@@ -4213,7 +4221,7 @@ theend:
 
     vim_free(tofree);
     vim_free(name);
-    generic_func_args_table_clear(&gfatab);
+    generic_args_table_clear(&gfatab);
 
     return ret;
 }
@@ -5099,7 +5107,7 @@ define_function(
     ga_init(&argtypes);
     ga_init(&arg_objm);
     ga_init(&default_args);
-    generic_func_args_table_init(&gfatab);
+    generic_args_table_init(&gfatab);
 
     /*
      * Get the function name.  There are these situations:
@@ -5209,7 +5217,7 @@ define_function(
     if (vim9script && eap->cmdidx == CMD_def && *p == '<')
     {
 	// generic function
-	p = parse_generic_func_type_params(name, p, &gfatab, cctx);
+	p = parse_generic_type_params(name, p, &gfatab, cctx);
 	if (p == NULL)
 	    goto ret_free;
     }
@@ -5659,7 +5667,7 @@ define_function(
 
 	fp->uf_def_status = UF_TO_BE_COMPILED;
 
-	if (generic_func_args_table_size(&gfatab) > 0)
+	if (generic_args_table_size(&gfatab) > 0)
 	{
 	    // initialize generic function state
 	    flags |= FC_GENERIC;
@@ -5678,6 +5686,8 @@ define_function(
 	// is_export.
 	int save_is_export = is_export;
 	is_export = FALSE;
+
+	set_type_resolve_ctx_ufunc(fp);
 
 	if (parse_argument_types(fp, &argtypes, varargs, &arg_objm,
 				obj_members, obj_member_count, cctx) == FAIL)
@@ -5792,11 +5802,12 @@ ret_free:
     // The generic types are still in use and should not be freed.  Instead
     // clear the grow array.
     ga_clear(&gfatab.gfat_param_types);
-    generic_func_args_table_clear(&gfatab);
+    generic_args_table_clear(&gfatab);
     vim_free(fudi.fd_newkey);
     if (name != name_arg)
 	vim_free(name);
     vim_free(ret_type);
+    clear_type_resolve_ctx();
     did_emsg |= saved_did_emsg;
 
     return fp;

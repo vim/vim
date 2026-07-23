@@ -192,6 +192,44 @@ free_type(type_T *type)
 }
 
 /*
+ * Type resolution context
+ * Function and/or class where to look for the type definition (used for
+ * generic types)
+ */
+static type_resolve_ctx_T trctx;
+
+    void
+set_type_resolve_ctx_ufunc(ufunc_T *fp)
+{
+    trctx.trc_fp = fp;
+}
+
+    ufunc_T *
+get_type_resolve_ctx_ufunc(void)
+{
+    return trctx.trc_fp;
+}
+
+    void
+set_type_resolve_ctx_class(class_T *cl)
+{
+    trctx.trc_class = cl;
+}
+
+    class_T *
+get_type_resolve_ctx_class(void)
+{
+    return trctx.trc_class;
+}
+
+    void
+clear_type_resolve_ctx(void)
+{
+    trctx.trc_class = NULL;
+    trctx.trc_fp = NULL;
+}
+
+/*
  * Return TRUE if "type" is to be recursed into for setting the type.
  */
     static int
@@ -1317,6 +1355,11 @@ check_object_type_maybe(
 	if (actual->tt_class != expected->tt_class)
 	    ret = FAIL;
     }
+    else if (IS_GENERIC_CLASS(actual->tt_class))
+    {
+	if (!generic_class_instance(actual->tt_class, expected->tt_class))
+	    ret = FAIL;
+    }
     else if (!class_instance_of(actual->tt_class, expected->tt_class))
     {
 	// Check if this is an up-cast, if so we'll have to check the type at
@@ -1492,43 +1535,41 @@ check_argument_types(
 }
 
 /*
- * Skip over type in list<type>, dict<type> or tuple<type>.
+ * Skip over the type in:
+ *   list<type>
+ *   dict<type>
+ *   tuple<{type1}, {type2}, ....<type>>
+ *   class_name<{type1}, {type2}, ...>
  * Returns a pointer to the character after the type.  "syn_error" is set to
  * TRUE on syntax error.
  */
     static char_u *
 skip_member_type(char_u *start, char_u *p, int *syn_error)
 {
-    if (STRNCMP("tuple", start, 5) == 0)
-    {
-	// handle tuple<{type1}, {type2}, ....<type>>
-	p = skipwhite(p + 1);
-	while (*p != '>' && *p != NUL)
-	{
-	    char_u *sp = p;
+    bool	tuple = false;
 
-	    if (STRNCMP(p, "...", 3) == 0)
-		p += 3;
-	    p = skip_type(p, TRUE);
-	    if (p == sp)
-	    {
-		*syn_error = TRUE;
-		return p;  // syntax error
-	    }
-	    if (*p == ',')
-		p = skipwhite(p + 1);
-	}
-	if (*p == '>')
-	    p++;
-    }
-    else
+    if (STRNCMP("tuple", start, 5) == 0)
+	tuple = true;
+
+    p = skipwhite(p + 1);
+    while (*p != '>' && *p != NUL)
     {
-	p = skipwhite(p);
-	p = skip_type(skipwhite(p + 1), FALSE);
-	p = skipwhite(p);
-	if (*p == '>')
-	    ++p;
+	char_u	*sp = p;
+
+	if (tuple && STRNCMP(p, "...", 3) == 0)
+	    p += 3;
+
+	p = skip_type(p, tuple);
+	if (p == sp)
+	{
+	    *syn_error = TRUE;
+	    return p;  // syntax error
+	}
+	if (*p == ',')
+	    p = skipwhite(p + 1);
     }
+    if (*p == '>')
+	p++;
 
     return p;
 }
@@ -1625,7 +1666,6 @@ parse_type_member(
 	garray_T    *type_gap,
 	int	    give_error,
 	char	    *info,
-	ufunc_T	    *ufunc,
 	cctx_T	    *cctx)
 {
     char_u  *arg_start = *arg;
@@ -1645,7 +1685,7 @@ parse_type_member(
     }
     *arg = skipwhite(*arg + 1);
 
-    member_type = parse_type(arg, type_gap, ufunc, cctx, give_error);
+    member_type = parse_type(arg, type_gap, cctx, give_error);
     if (member_type == NULL || !valid_declaration_type(member_type))
 	return NULL;
 
@@ -1674,7 +1714,6 @@ parse_type_func(
     size_t	len,
     garray_T	*type_gap,
     int		give_error,
-    ufunc_T	*ufunc,
     cctx_T	*cctx)
 {
     char_u  *p;
@@ -1715,7 +1754,7 @@ parse_type_func(
 		return NULL;
 	    }
 
-	    type = parse_type(&p, type_gap, ufunc, cctx, give_error);
+	    type = parse_type(&p, type_gap, cctx, give_error);
 	    if (type == NULL || !valid_declaration_type(type))
 		return NULL;
 	    if ((flags & TTFLAG_VARARGS) != 0 && type->tt_type != VAR_LIST)
@@ -1775,7 +1814,7 @@ parse_type_func(
 	if (!VIM_ISWHITE(**arg) && give_error)
 	    semsg(_(e_white_space_required_after_str_str), ":", *arg - 1);
 	*arg = skipwhite(*arg);
-	ret_type = parse_type(arg, type_gap, ufunc, cctx, give_error);
+	ret_type = parse_type(arg, type_gap, cctx, give_error);
 	if (ret_type == NULL)
 	    return NULL;
     }
@@ -1809,7 +1848,6 @@ parse_type_tuple(
     char_u	**arg,
     garray_T	*type_gap,
     int		give_error,
-    ufunc_T	*ufunc,
     cctx_T	*cctx)
 {
     char_u	*p;
@@ -1847,7 +1885,7 @@ parse_type_tuple(
 	    p += 3;
 	}
 
-	type = parse_type(&p, type_gap, ufunc, cctx, give_error);
+	type = parse_type(&p, type_gap, cctx, give_error);
 	if (type == NULL || !valid_declaration_type(type))
 	    goto on_err;
 
@@ -1951,7 +1989,7 @@ parse_type_object(
     // skip spaces following "object<"
     *arg = skipwhite(*arg + 1);
 
-    object_type = parse_type(arg, type_gap, NULL, cctx, give_error);
+    object_type = parse_type(arg, type_gap, cctx, give_error);
     if (object_type == NULL)
 	return NULL;
 
@@ -1989,7 +2027,6 @@ parse_type_user_defined(
     size_t	len,
     garray_T	*type_gap,
     int		give_error,
-    ufunc_T	*ufunc,
     cctx_T	*cctx)
 {
     int		did_emsg_before = did_emsg;
@@ -2000,6 +2037,33 @@ parse_type_user_defined(
     {
 	if (tv.v_type == VAR_CLASS && tv.vval.v_class != NULL)
 	{
+#if 0
+	    if (IS_GENERIC_CLASS(tv.vval.v_class))
+	    {
+		// generic class
+		if (*(*arg + len) != '<')
+		{
+		    semsg(_(e_generic_class_missing_type_args_str),
+			    tv.vval.v_class->class_name);
+		    clear_tv(&tv);
+		    return NULL;
+		}
+
+		// Find the generic class
+		*arg += len;
+		len = 0;
+		class_T *new_cl = find_generic_class(tv.vval.v_class, arg);
+		if (new_cl == NULL)
+		{
+		    clear_tv(&tv);
+		    return NULL;
+		}
+		class_unref(tv.vval.v_class);
+		tv.vval.v_class = new_cl;
+		new_cl->class_refcount++;
+	    }
+#endif
+
 	    type_T *type = get_type_ptr(type_gap);
 	    if (type != NULL)
 	    {
@@ -2013,6 +2077,16 @@ parse_type_user_defined(
 		// Skip over ".ClassName".
 		while (ASCII_ISALNUM(**arg) || **arg == '_' || **arg == '.')
 		    ++*arg;
+
+		// skip over generic types
+		if (**arg == '<')
+		{
+		    if (skip_generic_func_type_args(arg) == FAIL)
+		    {
+			free_type(type);
+			return NULL;
+		    }
+		}
 
 		return type;
 	    }
@@ -2033,7 +2107,7 @@ parse_type_user_defined(
     }
 
     // Check whether it is a generic type
-    type_T *type = find_generic_type(*arg, len, ufunc, cctx);
+    type_T *type = find_generic_type(*arg, len, cctx);
     if (type != NULL)
     {
 	*arg += len;
@@ -2062,7 +2136,6 @@ parse_type_user_defined(
 parse_type(
     char_u	**arg,
     garray_T	*type_gap,
-    ufunc_T	*ufunc,
     cctx_T	*cctx,
     int		give_error)
 {
@@ -2107,8 +2180,7 @@ parse_type(
 	    {
 		*arg += len;
 		return parse_type_member(arg, &t_dict_any, type_gap,
-						give_error, "dict", ufunc,
-						cctx);
+						give_error, "dict", cctx);
 	    }
 	    break;
 	case 'f':
@@ -2118,8 +2190,7 @@ parse_type(
 		return &t_float;
 	    }
 	    if (len == 4 && STRNCMP(*arg, "func", len) == 0)
-		return parse_type_func(arg, len, type_gap, give_error, ufunc,
-									cctx);
+		return parse_type_func(arg, len, type_gap, give_error, cctx);
 	    break;
 	case 'j':
 	    if (len == 3 && STRNCMP(*arg, "job", len) == 0)
@@ -2133,8 +2204,7 @@ parse_type(
 	    {
 		*arg += len;
 		return parse_type_member(arg, &t_list_any, type_gap,
-						give_error, "list", ufunc,
-						cctx);
+						give_error, "list", cctx);
 	    }
 	    break;
 	case 'n':
@@ -2162,8 +2232,7 @@ parse_type(
 	    if (len == 5 && STRNCMP(*arg, "tuple", len) == 0)
 	    {
 		*arg += len;
-		return parse_type_tuple(arg, type_gap, give_error, ufunc,
-									cctx);
+		return parse_type_tuple(arg, type_gap, give_error, cctx);
 	    }
 	    break;
 	case 'v':
@@ -2176,8 +2245,7 @@ parse_type(
     }
 
     // User defined type
-    return parse_type_user_defined(arg, len, type_gap, give_error, ufunc,
-									cctx);
+    return parse_type_user_defined(arg, len, type_gap, give_error, cctx);
 }
 
 /*

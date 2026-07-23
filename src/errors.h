@@ -3753,12 +3753,12 @@ EXTERN char e_cannot_open_a_popup_window_to_a_closing_buffer[]
 #ifdef FEAT_EVAL
 EXTERN char e_type_var_name_must_start_with_uppercase_letter_str[]
 	INIT(= N_("E1552: Type variable name must start with an uppercase letter: %s"));
-EXTERN char e_missing_comma_in_generic_function_str[]
-	INIT(= N_("E1553: Missing comma after type in generic function: %s"));
-EXTERN char e_missing_closing_angle_bracket_in_generic_function_str[]
-	INIT(= N_("E1554: Missing '>' in generic function: %s"));
-EXTERN char e_empty_type_list_for_generic_function_str[]
-	INIT(= N_("E1555: Empty type list specified for generic function '%s'"));
+EXTERN char e_missing_comma_in_generic_str[]
+	INIT(= N_("E1553: Missing comma after type in generic: %s"));
+EXTERN char e_missing_closing_angle_bracket_in_generic_str[]
+	INIT(= N_("E1554: Missing '>' in generic: %s"));
+EXTERN char e_empty_type_list_for_generic_str[]
+	INIT(= N_("E1555: Empty type list specified for generic '%s'"));
 EXTERN char e_too_many_types_for_generic_function_str[]
 	INIT(= N_("E1556: Too many types specified for generic function '%s'"));
 EXTERN char e_not_enough_types_for_generic_function_str[]
@@ -3818,3 +3818,13 @@ EXTERN char e_too_many_postponed_prefixes_spell[]
 #endif
 EXTERN char e_completeopt_escape_cannot_be_used_with_nargs_underscore[]
 	INIT(= N_("E1579: -completeopt=escape cannot be used with -nargs=_"));
+#ifdef FEAT_EVAL
+EXTERN char e_generic_class_missing_type_args_str[]
+	INIT(= N_("E1580: Type arguments missing for generic class '%s'"));
+EXTERN char e_not_a_generic_class_str[]
+	INIT(= N_("E1581: Not a generic class: %s"));
+EXTERN char e_too_many_types_for_generic_class_str[]
+	INIT(= N_("E1582: Too many types specified for generic class '%s'"));
+EXTERN char e_not_enough_types_for_generic_class_str[]
+	INIT(= N_("E1583: Not enough types specified for generic class '%s'"));
+#endif
