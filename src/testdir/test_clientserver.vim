@@ -373,6 +373,60 @@ func Test_client_server_socketserver_address()
   endtry
 endfunc
 
+" A flood of client connections must not crash the socketserver: connections
+" beyond the accept cap are refused instead of overflowing the fd_set / pollfd
+" sets, and the server keeps working once they are closed again.
+func Test_client_server_socketserver_connection_flood()
+  CheckFeature socketserver
+  CheckNotMSWindows
+
+  let g:test_is_flaky = 1
+  let cmd = GetVimCommand()
+  if cmd == ''
+    throw 'GetVimCommand() failed'
+  endif
+
+  let actual = cmd .. ' --clientserver socket --servername channel:2001'
+  let job = job_start(actual, {'stoponexit': 'kill', 'out_io': 'null'})
+  call WaitForAssert({-> assert_equal("run", job_status(job))})
+  call WaitForAssert({-> assert_match('channel:2001',
+        \ system(actual .. ' --remote-expr "v:servername"'))})
+
+  " Open many more connections than the server accepts.
+  let channels = []
+  for i in range(150)
+    let ch = ch_open('localhost:2001', {'mode': 'raw', 'waittime': 100})
+    if ch_status(ch) == 'open'
+      call add(channels, ch)
+    endif
+  endfor
+
+  " The server must survive, and must have refused the excess connections.
+  call assert_equal("run", job_status(job))
+  call WaitForAssert({-> assert_inrange(1, 100,
+        \ len(filter(copy(channels), {_, c -> ch_status(c) == 'open'})))})
+
+  " Close them again.  Afterwards the server must accept connections once
+  " more, which also verifies the client count is decremented.
+  for ch in channels
+    if ch_status(ch) == 'open'
+      call ch_close(ch)
+    endif
+  endfor
+  call WaitForAssert({-> assert_match('channel:2001',
+        \ system(actual .. ' --remote-expr "v:servername"'))})
+
+  call system(actual .. " --remote-expr 'execute(\"qa!\")'")
+  try
+    call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  finally
+    if job_status(job) != 'dead'
+      call assert_report('Server did not exit')
+      call job_stop(job, 'kill')
+    endif
+  endtry
+endfunc
+
 " Test if --remote-wait works properly with multiple files
 func Test_client_server_multiple_remote_wait()
   CheckRunVimInTerminal

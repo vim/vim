@@ -4028,6 +4028,9 @@ channel_fill_wfds(int maxfd_arg, fd_set *wfds)
 	chanpart_T  *in_part = &ch->ch_part[PART_IN];
 
 	if (in_part->ch_fd != INVALID_FD
+# ifdef FD_SETSIZE
+		&& (int)in_part->ch_fd < FD_SETSIZE
+# endif
 		&& is_channel_write_remaining(in_part))
 	{
 	    FD_SET((int)in_part->ch_fd, wfds);
@@ -4165,7 +4168,7 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 #else
 	for (;;)
 	{
-	    struct pollfd   fds[MAX_OPEN_CHANNELS + 1];
+	    struct pollfd   fds[MAX_OPEN_CHANNELS + 1 + MAX_CLIENT_CHANNELS];
 	    int		    nfd = 1;
 
 	    fds[0].fd = fd;
@@ -5415,6 +5418,12 @@ channel_select_setup(
 		}
 		else
 		{
+# ifdef FD_SETSIZE
+		    // An fd that does not fit in the fd_set cannot be watched
+		    // with select(); skip it rather than overflow the set.
+		    if ((int)fd >= FD_SETSIZE)
+			continue;
+# endif
 		    FD_SET((int)fd, rfds);
 		    if (maxfd < (int)fd)
 			maxfd = (int)fd;
@@ -5447,7 +5456,11 @@ channel_select_check(int ret_in, void *rfds_in, void *wfds_in)
 	{
 	    sock_T fd = channel->ch_part[part].ch_fd;
 
-	    if (ret > 0 && fd != INVALID_FD && FD_ISSET(fd, rfds))
+	    if (ret > 0 && fd != INVALID_FD
+# ifdef FD_SETSIZE
+		    && (int)fd < FD_SETSIZE
+# endif
+		    && FD_ISSET(fd, rfds))
 	    {
 		channel_read(channel, part, "channel_select_check");
 		FD_CLR(fd, rfds);
@@ -5462,6 +5475,9 @@ channel_select_check(int ret_in, void *rfds_in, void *wfds_in)
 
 	in_part = &channel->ch_part[PART_IN];
 	if (ret > 0 && in_part->ch_fd != INVALID_FD
+# ifdef FD_SETSIZE
+		    && (int)in_part->ch_fd < FD_SETSIZE
+# endif
 					    && FD_ISSET(in_part->ch_fd, wfds))
 	{
 	    // Clear the flag first, ch_fd may change in channel_write_input().

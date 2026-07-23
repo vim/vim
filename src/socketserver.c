@@ -57,6 +57,7 @@ static char_u	    *server_addr_cwd = NULL; // CWD when server was started, used
 static garray_T	    server_replies;
 
 static channel_T    *client_channels = NULL;
+static int	    client_channel_count = 0;
 
 # define FOR_ALL_CLIENTS(ch) \
     for (ch = client_channels; ch != NULL; ch = ch->ch_ss_next)
@@ -538,6 +539,8 @@ socketserver_client_close(channel_T *channel)
 	channel->ch_ss_prev->ch_ss_next = channel->ch_ss_next;
     if (channel->ch_ss_next != NULL)
 	channel->ch_ss_next->ch_ss_prev = channel->ch_ss_prev;
+    if (client_channel_count > 0)
+	--client_channel_count;
 
     ch_log(NULL, "socketserver: client channel closed");
 }
@@ -548,6 +551,16 @@ socketserver_client_close(channel_T *channel)
     static void
 socketserver_accept(channel_T *channel)
 {
+    if (client_channel_count >= MAX_CLIENT_CHANNELS)
+    {
+	// Too many client connections: refuse this one instead of letting the
+	// channel's file descriptor overflow the select()/poll() sets.
+	ch_log(NULL, "socketserver: too many clients, refusing connection");
+	channel_close(channel, FALSE);
+	channel_unref(channel);
+	return;
+    }
+
     channel->ch_socketserver = true;
     channel->ch_ss_close_cb = socketserver_client_close;
 
@@ -568,6 +581,7 @@ socketserver_accept(channel_T *channel)
 	last->ch_ss_next = channel;
 	channel->ch_ss_prev = last;
     }
+    ++client_channel_count;
 
     // We will read the command from the client later in the input loop.
     ch_log(NULL, "socketserver: accepted new client");
@@ -872,7 +886,11 @@ socketserver_wait(channel_T *channel, int timeout)
 
 	FOR_ALL_CLIENTS(ch)
 	{
-	    if (ch->CH_SOCK_FD != INVALID_FD)
+	    if (ch->CH_SOCK_FD != INVALID_FD
+#  ifdef FD_SETSIZE
+		    && (int)ch->CH_SOCK_FD < FD_SETSIZE
+#  endif
+		    )
 	    {
 		FD_SET(ch->CH_SOCK_FD, &rfds);
 		if (maxfd < (int)ch->CH_SOCK_FD)
@@ -903,6 +921,9 @@ socketserver_wait(channel_T *channel, int timeout)
 
 	    FOR_ALL_CLIENTS(ch)
 		if (ch->CH_SOCK_FD != INVALID_FD
+#  ifdef FD_SETSIZE
+			&& (int)ch->CH_SOCK_FD < FD_SETSIZE
+#  endif
 			&& FD_ISSET(ch->CH_SOCK_FD, &rfds))
 		    channel_check(ch, PART_SOCK);
 
@@ -920,7 +941,7 @@ socketserver_wait(channel_T *channel, int timeout)
 	    continue;
 	}
 # else
-	struct pollfd   fds[MAX_OPEN_CHANNELS + 1];
+	struct pollfd   fds[MAX_OPEN_CHANNELS + 1 + MAX_CLIENT_CHANNELS];
 	int		nfd = 0;
 	int		channel_idx = -1;
 	int		server_idx = -1;
