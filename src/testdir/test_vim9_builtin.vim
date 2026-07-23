@@ -1671,6 +1671,7 @@ def Test_fullcommand()
 
   assert_equal('dlist', fullcommand('dl'))
   assert_equal('', fullcommand('dp'))
+  assert_equal('', fullcommand('d#'))
   assert_equal('delete', fullcommand('del'))
   assert_equal('', fullcommand('dell'))
   assert_equal('', fullcommand('delp'))
