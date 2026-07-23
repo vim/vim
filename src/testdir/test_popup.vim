@@ -1286,6 +1286,24 @@ func Test_pum_getpos()
   unlet g:pum_pos
 endfunc
 
+" The popup menu is also used on a terminal without colors (issue #20800)
+func Test_pum_without_colors()
+  CheckNotGui
+
+  new
+  let save_t_Co = &t_Co
+  set t_Co=0
+  inoremap <buffer><F5> <C-R>=GetPumPosition()<CR>
+  call setline(1, ['hello', 'help', ''])
+  call cursor(3, 1)
+  call feedkeys("ih\<C-N>\<F5>\<Esc>", 'tx')
+  call assert_equal(2, g:pum_pos.size)
+
+  let &t_Co = save_t_Co
+  bw!
+  unlet g:pum_pos
+endfunc
+
 " Test for the popup menu with the 'rightleft' option set
 func Test_pum_rightleft()
   CheckFeature rightleft
@@ -2685,6 +2703,29 @@ func Test_pumopt_opacity_pmenu_cleared()
   call VerifyScreenDump(buf, 'Test_pumopt_opacity_pmenu_cleared_4', {})
   call term_sendkeys(buf, "\<C-E>\<Esc>u")
   call TermWait(buf)
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_pum_opacity_lowcolor()
+  CheckScreendump
+
+  let lines =<< trim END
+  set pumopt=opacity:50
+  call setline(1, '')
+  for i in range(5)
+    call append(line('$'), 'under under under')
+  endfor
+  normal gg
+  inoremap <F5> <Cmd>call complete(col('.'),
+        \ ['item', 'another item', 'and a last one'])<CR>
+  END
+  call writefile(lines, 'XtestPumOpacityLowcolor', 'D')
+  let buf = RunVimInTerminal('-S XtestPumOpacityLowcolor', #{rows: 12, cols: 60, tcolors: 16})
+
+  call term_sendkeys(buf, "i\<F5>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pum_opacity_lowcolor', {})
+
   call StopVimInTerminal(buf)
 endfunc
 

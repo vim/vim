@@ -24,7 +24,9 @@ static void set_guifontwide(char_u *font_name);
 static void gui_check_pos(void);
 static void gui_reset_scroll_region(void);
 static void gui_outstr(char_u *, int);
+#ifndef USE_GTK4_SNAPSHOT
 static int gui_screenchar(int off, int flags, guicolor_T fg, guicolor_T bg, int back);
+#endif
 static int gui_outstr_nowrap(char_u *s, int len, int flags, guicolor_T fg, guicolor_T bg, int back);
 static void gui_delete_lines(int row, int count);
 static void gui_insert_lines(int row, int count);
@@ -1354,13 +1356,28 @@ gui_update_cursor(
      */
     if (!gui.in_focus)
     {
+#ifdef USE_GTK4_SNAPSHOT
+	gui_gtk4_draw_cursor(cbg, cfg, -1, -1);
+#else
 	gui_mch_draw_hollow_cursor(cbg);
+#endif
 	return;
     }
+
+#ifdef USE_GTK4_SNAPSHOT
+    // Make sure that character underneath is drawn again in case it is part of
+    // a ligature.
+    gui_redraw_block(gui.row, gui.col, gui.row, gui.col, GUI_MON_NOCLEAR);
+    // gui_redraw_block() will invalidate the cursor
+    gui.cursor_is_valid = true;
+#endif
 
     old_hl_mask = gui.highlight_mask;
     if (shape->shape == SHAPE_BLOCK)
     {
+#ifdef USE_GTK4_SNAPSHOT
+	gui_gtk4_draw_cursor(cbg, cfg, 0, 0);
+#else
 	/*
 	 * Draw the text character with the cursor colors.	Use the
 	 * character attributes plus the cursor attributes.
@@ -1368,6 +1385,7 @@ gui_update_cursor(
 	gui.highlight_mask = (cattr | attr);
 	(void)gui_screenchar(LineOffset[gui.row] + gui.col,
 		GUI_MON_IS_CURSOR | GUI_MON_NOCLEAR, cfg, cbg, 0);
+#endif
     }
     else
     {
@@ -1406,15 +1424,18 @@ gui_update_cursor(
 	    }
 #endif
 	}
+#ifdef USE_GTK4_SNAPSHOT
+	gui_gtk4_draw_cursor(cbg, cfg, cur_width, cur_height);
+#else
 	gui_mch_draw_part_cursor(cur_width, cur_height, cbg);
+#endif
 #if defined(FEAT_RIGHTLEFT)
 	if (col_off)
 	    --gui.col;
 #endif
 
-	// Doesn't seem to work for MSWindows. Not necessary when using
-	// GtkSnapshot, because everything is drawn in order in the snapshot
-	// vfunc.
+	// Doesn't seem to work for MSWindows. We call gui_redraw_block() above
+	// for GtkSnapshot.
 #if !defined(FEAT_GUI_MSWIN) && !defined(USE_GTK4_SNAPSHOT)
 	gui.highlight_mask = ScreenAttrs[LineOffset[gui.row] + gui.col];
 	(void)gui_screenchar(LineOffset[gui.row] + gui.col,
@@ -2212,6 +2233,7 @@ gui_outstr(char_u *s, int len)
     }
 }
 
+#ifndef USE_GTK4_SNAPSHOT
 /*
  * Output one character (may be one or two display cells).
  * Caller must check for valid "off".
@@ -2248,6 +2270,7 @@ gui_screenchar(
 	    enc_dbcs ? (*mb_ptr2len)(ScreenLines + off) : 1,
 							 flags, fg, bg, back);
 }
+#endif
 
 #ifdef FEAT_GUI_GTK
 /*

@@ -4834,6 +4834,37 @@ func Test_popup_clipwindow_hide_when_prop_off_screen()
   call prop_type_delete('clipprop')
 endfunc
 
+func Test_popup_clipwindow_opacity_negative_winrow()
+  " A "clipwindow" popup with "opacity" whose textprop anchor scrolls above
+  " the window top must not index the opacity mask out of bounds.
+  call prop_type_add('clipprop', {})
+  new
+  call setline(1, range(1, 200)->mapnew({_, v -> 'line ' .. v}))
+  call prop_add(5, 1, #{type: 'clipprop', length: 5})
+  let host = win_getid()
+
+  let id = popup_create(['aaa', 'bbb', 'ccc', 'ddd', 'eee'], #{
+        \ textprop: 'clipprop',
+        \ textpropwin: host,
+        \ wrap: v:false,
+        \ fixed: v:true,
+        \ clipwindow: v:true,
+        \ opacity: 50,
+        \ })
+  call assert_true(id > 0)
+  redraw
+
+  " Scroll so the prop (line 5) sits a couple of lines above the top, so the
+  " popup is clipped at the host window's top edge.
+  call win_execute(host, 'normal! 8Gzt')
+  redraw
+  redraw
+
+  call popup_close(id)
+  bwipe!
+  call prop_type_delete('clipprop')
+endfunc
+
 func Test_popup_clipwindow_top_clip()
   CheckScreendump
 
@@ -5980,6 +6011,27 @@ func Test_popup_opacity_attr()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_opacity_lowcolor()
+  CheckScreendump
+
+  let lines =<< trim END
+  call setline(1, repeat(['under under under'], 10))
+  call popup_create('Popup Popup', #{
+        \ line: 2, col: 3,
+        \ border: [1, 1, 1, 1],
+        \ padding: [1, 1, 1 ,1],
+        \ minwidth: 20,
+        \ minheight: 2,
+        \ opacity: 70,
+        \ })
+  END
+  call writefile(lines, 'XtestPopupOpacityLowcolor', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacityLowcolor', #{rows: 12, cols: 60, tcolors: 16})
+  call VerifyScreenDump(buf, 'Test_popup_opacity_lowcolor', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_popup_image_update()
   CheckFeature image
 
@@ -6034,6 +6086,40 @@ func Test_popup_image_clear_with_empty_dict()
   call assert_true(has_key(popup_getoptions(winid), 'image'))
 
   call popup_close(winid)
+endfunc
+
+" A popup image is emitted as a DCS (sixel) escape sequence.  On the Windows
+" console it has to go through the VT path, otherwise the escape sequence ends
+" up on the screen as raw text when 'termguicolors' is off.  Send the sequence
+" with echoraw() so that only the console write is under test.  See #20795.
+func Test_dcs_not_written_as_text_windows_cui()
+  CheckFeature terminal
+  if !has('win32') || has('gui_running')
+    throw 'Skipped: only for the Windows CUI'
+  endif
+
+  " Draw the text first, so nothing repairs the cells afterwards in case the
+  " sequence does land on the screen as text.
+  let lines =<< trim END
+      call setline(1, 'READY')
+      redraw
+      call echoraw("\<Esc>P0;1;8q\"1;1;8;8#1;2;100;0;0#1~~~~~~~~-\<Esc>\\")
+  END
+  call writefile(lines, 'XpopupDcs', 'D')
+
+  let buf = term_start(GetVimCommandCleanTerm() .. '-S XpopupDcs',
+        \ #{term_rows: 12, term_cols: 40})
+  call WaitForAssert({-> assert_equal('READY',
+        \ term_scrape(buf, 1)[:4]->map({_, v -> v['chars']})->join(''))})
+  call TermWait(buf, 50)
+
+  let screen = ''
+  for row in range(1, 12)
+    let screen ..= term_scrape(buf, row)->map({_, v -> v['chars']})->join('')
+  endfor
+  call assert_notmatch('0;1;8q', screen)
+
+  call StopVimInTerminal(buf)
 endfunc
 
 func Test_popup_image_set_and_getoptions()

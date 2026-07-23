@@ -3605,10 +3605,14 @@ def Test_remote_serverlist()
 
   v9.CheckSourceDefAndScriptFailure(['serverlist("")'], ['E1013: Argument 1: type mismatch, expected dict<any> but got string', 'E1206: Dictionary required for argument 1'])
   v9.CheckSourceScriptFailure(['vim9script', 'serverlist({list: ""})'], 'E1135: Using a String as a Bool: ""')
-  var l: any = serverlist()
-  assert_equal(v:t_string, type(l))
-  l = serverlist({'list': true})
-  assert_equal(v:t_list, type(l))
+  try
+    var l: any = serverlist()
+    assert_equal(v:t_string, type(l))
+    l = serverlist({'list': true})
+    assert_equal(v:t_list, type(l))
+  catch /E240:/
+    # ignore no connection to the X server
+  endtry
 enddef
 
 def Test_remove_literal_list()

@@ -1870,7 +1870,11 @@ job_info(job_T *job, dict_T *dict)
     if (l == NULL)
 	return;
 
-    dict_add_list(dict, "cmd", l);
+    if (dict_add_list(dict, "cmd", l) == FAIL)
+    {
+	list_unref(l);
+	return;
+    }
     if (job->jv_argv != NULL)
 	for (i = 0; job->jv_argv[i] != NULL; i++)
 	    list_append_string(l, (char_u *)job->jv_argv[i], -1);

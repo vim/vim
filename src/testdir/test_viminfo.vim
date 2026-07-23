@@ -38,6 +38,19 @@ func Test_viminfo_read_and_write()
   call assert_equal(3, done)
 endfunc
 
+func Test_viminfo_clear_search_pattern()
+  let save = @/
+  let @/ = 'foobar'
+  defer delete('Xviminfo')
+  wviminfo Xviminfo
+  call assert_notequal(-1, match(readfile('Xviminfo'), 'foobar'))
+
+  let @/ = ''
+  wviminfo Xviminfo
+  call assert_equal(-1, match(readfile('Xviminfo'), 'foobar'))
+  call setreg('/', save)
+endfunc
+
 func Test_global_vars()
   let g:MY_GLOBAL_STRING = "Vim Editor"
   let g:MY_GLOBAL_NUM = 345

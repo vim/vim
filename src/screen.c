@@ -1695,6 +1695,9 @@ win_redr_custom(
     }
     ewp->w_p_crb = p_crb_save;
 
+    if (p_sc && STRCMP(opt_name, p_sloc) == 0)
+	showcmd_update_clear_state();
+
     // Note: In the loop, build_stl_str_hl_mline() may replace stl_tmp with
     // a newly allocated buffer (when "%!" evaluation occurs), freeing the
     // original "stl" internally.  After the loop, stl_tmp must be freed
@@ -3550,6 +3553,9 @@ give_up:
     if (starting == 0 && ++retry_count <= 3)
     {
 	apply_autocmds(EVENT_VIMRESIZED, NULL, NULL, FALSE, curbuf);
+	// A shell resize also changes window sizes; trigger WinResized (and
+	// WinScrolled) now instead of waiting for the next command.
+	may_trigger_win_scrolled_resized();
 	// In rare cases, autocommands may have altered Rows or Columns,
 	// jump back to check if we need to allocate the screen again.
 	goto retry;
@@ -4054,6 +4060,19 @@ setcursor(void)
     setcursor_mayforce(FALSE);
 }
 
+#ifdef FEAT_RIGHTLEFT
+/*
+ * Return the number of screen cells used by the character under the cursor
+ * in the current window.
+ */
+    int
+cursor_screen_cells(void)
+{
+    return has_mbyte && (*mb_ptr2cells)(ml_get_cursor()) == 2
+				  && vim_isprintc(gchar_cursor()) ? 2 : 1;
+}
+#endif
+
 /*
  * Set cursor to its position in the current window.
  * When "force" is TRUE also when not redrawing.
@@ -4070,9 +4089,7 @@ setcursor_mayforce(int force)
 		// With 'rightleft' set and the cursor on a double-wide
 		// character, position it on the leftmost column.
 		curwin->w_p_rl ? ((int)curwin->w_width - curwin->w_wcol
-		    - ((has_mbyte
-			   && (*mb_ptr2cells)(ml_get_cursor()) == 2
-			   && vim_isprintc(gchar_cursor())) ? 2 : 1)) :
+					    - cursor_screen_cells()) :
 #endif
 					    curwin->w_wcol));
     }
@@ -5322,6 +5339,7 @@ draw_tabline(void)
 	    if (width > 0)
 		screen_puts_len(showcmd_buf, width, 0, (int)Columns
 			    - width - (tabcount > 1) * 2, attr_nosel);
+	    showcmd_update_clear_state();
 	}
 
 	// Put an "X" for closing the current tab if there are several.

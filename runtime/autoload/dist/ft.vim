@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Jun 14
+# Last Change:		2026 Jul 22
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -1860,6 +1860,11 @@ const ft_from_ext = {
   "cairo": "cairo",
   # Cap'n Proto
   "capnp": "capnp",
+  # Dockerfile
+  "containerfile": "dockerfile",
+  "Containerfile": "dockerfile",
+  "dockerfile": "dockerfile",
+  "Dockerfile": "dockerfile",
   # Common Package Specification
   "cps": "json",
   # C#
@@ -1964,6 +1969,8 @@ const ft_from_ext = {
   # CUDA Compute Unified Device Architecture
   "cu": "cuda",
   "cuh": "cuda",
+  # HIP Heterogeneous-compute Interface for Portability
+  "hip": "hip",
   # Cue
   "cue": "cue",
   # DAX
@@ -3264,6 +3271,8 @@ const ft_from_name = {
   "TAG_EDITMSG": "gitcommit",
   "NOTES_EDITMSG": "gitcommit",
   "EDIT_DESCRIPTION": "gitcommit",
+  # Git revision list
+  ".git-blame-ignore-revs": "gitrevlist",
   # gnash(1) configuration files
   "gnashrc": "gnash",
   ".gnashrc": "gnash",
@@ -3338,6 +3347,7 @@ const ft_from_name = {
   "meson.options": "meson",
   "meson_options.txt": "meson",
   # msmtp
+  "msmtprc": "msmtp",
   ".msmtprc": "msmtp",
   # Mrxvtrc
   "mrxvtrc": "mrxvtrc",

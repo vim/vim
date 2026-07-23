@@ -3,6 +3,7 @@
 
 CheckFeature textprop
 
+source util/view_util.vim
 source util/screendump.vim
 import './util/vim9.vim' as v9
 
@@ -4991,4 +4992,57 @@ func Test_prop_find_floating_vtext()
     call prop_type_delete(tn)
   endfor
 endfunc
+
+func Test_textprop_below_truncated_with_ellipsis()
+  enew!
+  set ff=unix
+
+  let visible_width = 20
+  call NewWindow(5, visible_width)
+
+  call setline(1, ['foo'])
+
+  call prop_type_add('virtual_text_prop', #{highlight: 'ErrorMsg', bufnr: bufnr()})
+
+  let virtual_text = 'some long virtual text'
+  call prop_add(1, 0, #{
+    \ type: 'virtual_text_prop',
+    \ text: virtual_text,
+    \ text_align: 'below',
+    \})
+
+  " virtual text should be trimmed with '…':
+  let expected_lines = [
+    \'foo                 ',
+    \'some long virtual t…',
+    \'~                   ',
+  \]
+  let actual_lines = ScreenLines([1, expected_lines->len()], visible_width)
+  call assert_equal(expected_lines, actual_lines)
+
+  call prop_clear(1)
+  call prop_type_delete('virtual_text_prop', #{bufnr: bufnr()})
+  only!
+  enew!
+  set ff&
+endfunc
+
+" Adding more than 65535 text properties to one line must be rejected instead
+" of wrapping the uint16_t property count and overflowing the allocation.
+func Test_prop_add_over_uint16_max()
+  CheckNotAsan
+  CheckNotValgrind
+  new
+  call setline(1, 'x')
+  call prop_type_add('overflow', {})
+  for _ in range(0xffff)
+    call prop_add(1, 1, {'type': 'overflow', 'length': 0})
+  endfor
+  call assert_equal(0xffff, prop_list(1)->len())
+  call assert_fails("call prop_add(1, 1, {'type': 'overflow', 'length': 0})", 'E1580:')
+  call assert_equal(0xffff, prop_list(1)->len())
+  call prop_type_delete('overflow')
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

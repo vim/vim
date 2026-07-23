@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Jun 26
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Jul 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52697,6 +52697,8 @@ Changed ~
   to insert-mode mappings.
 - It is possible to clear the alternate file register |quote#|.
 - |serverlist()| can return a list of all available server names.
+- Improve visual appearance when the terminal does not support colors.
+- Improve diff highlighting for terminals with 256 or less colors.
 
 
 							*added-9.3*

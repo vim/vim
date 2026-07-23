@@ -1993,6 +1993,16 @@ textpos2screenpos_core(
     *scolp = scol + coloff;
     *ccolp = ccol + coloff;
     *ecolp = ecol + coloff;
+# ifdef FEAT_RIGHTLEFT
+    if (wp->w_p_rl && row > 0)
+    {
+	// With 'rightleft' the cursor is on the leftmost cell of the
+	// character, which comes last in reading order.
+	int endoff = *ecolp - wp->w_wincol - 1;
+
+	*ccolp = wp->w_wincol + wp->w_width - endoff;
+    }
+# endif
     return FAIL;
 }
 

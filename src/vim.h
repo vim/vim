@@ -2910,6 +2910,15 @@ typedef int (*conceal_screenline_cb_T)(colnr_T col, colnr_T end_col, int row,
 # define MAX_OPEN_CHANNELS 0
 #endif
 
+// Maximum number of simultaneously accepted socketserver client channels.
+// Bounds the channels (and file descriptors) added to the select()/poll()
+// sets so a connection flood cannot overflow the fd_set / pollfd arrays.
+#ifdef FEAT_SOCKETSERVER
+# define MAX_CLIENT_CHANNELS 100
+#else
+# define MAX_CLIENT_CHANNELS 0
+#endif
+
 #if defined(MSWIN)
 # define MAX_NAMED_PIPE_SIZE 65535
 #endif

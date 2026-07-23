@@ -67,6 +67,9 @@ clear_vim9_scriptlocal_vars(int sid)
     hash_init(ht);
     delete_script_functions(sid);
 
+    // also the exported variables of an autoload script
+    delete_autoload_export_vars(SCRIPT_ITEM(sid)->sn_autoload_prefix);
+
     // old imports and script variables are no longer valid
     free_imports_and_script_vars(sid);
 }

@@ -96,6 +96,11 @@ static char *(features[]) =
 #else
 	"-acl",
 #endif
+#ifdef FEAT_ARABIC
+	"+arabic",
+#else
+	"-arabic",
+#endif
 #ifdef AMIGA		// only for Amiga systems
 # ifdef FEAT_ARP
 	"+ARP",
@@ -103,17 +108,12 @@ static char *(features[]) =
 	"-ARP",
 # endif
 #endif
-#ifdef FEAT_ARABIC
-	"+arabic",
+#ifdef FEAT_AUTOCHDIR
+	"+autochdir",
 #else
-	"-arabic",
+	"-autochdir",
 #endif
 	"+autocmd",
-#ifdef FEAT_AUTOCHDIR
-       "+autochdir",
-#else
-       "-autochdir",
-#endif
 #ifdef FEAT_AUTOSERVERNAME
 	"+autoservername",
 #else
@@ -275,6 +275,36 @@ static char *(features[]) =
 #else
 	"-iconv",
 #endif
+#ifdef FEAT_IMAGE
+	"+image",
+#else
+	"-image",
+#endif
+#ifdef FEAT_IMAGE_CAIRO
+	"+image_cairo",
+#else
+	"-image_cairo",
+#endif
+#ifdef FEAT_IMAGE_GDI
+	"+image_gdi",
+#else
+	"-image_gdi",
+#endif
+#ifdef FEAT_IMAGE_GDK
+	"+image_gdk",
+#else
+	"-image_gdk",
+#endif
+#ifdef FEAT_IMAGE_KITTY
+	"+image_kitty",
+#else
+	"-image_kitty",
+#endif
+#ifdef FEAT_IMAGE_SIXEL
+	"+image_sixel",
+#else
+	"-image_sixel",
+#endif
 	"+insert_expand",
 #ifdef FEAT_IPV6
 	"+ipv6",
@@ -336,12 +366,6 @@ static char *(features[]) =
 #endif
 	"+modify_fname",
 	"+mouse",
-#ifdef FEAT_MOUSESHAPE
-	"+mouseshape",
-#else
-	"-mouseshape",
-#endif
-
 #if defined(UNIX) || defined(VMS)
 # ifdef FEAT_MOUSE_DEC
 	"+mouse_dec",
@@ -390,6 +414,11 @@ static char *(features[]) =
 	"-mouse_urxvt",
 # endif
 	"+mouse_xterm",
+#endif
+#ifdef FEAT_MOUSESHAPE
+	"+mouseshape",
+#else
+	"-mouseshape",
 #endif
 
 #ifdef FEAT_MBYTE_IME
@@ -535,36 +564,6 @@ static char *(features[]) =
 #else
 	"-sodium",
 #endif
-#ifdef FEAT_IMAGE
-	"+image",
-#else
-	"-image",
-#endif
-#ifdef FEAT_IMAGE_SIXEL
-	"+image_sixel",
-#else
-	"-image_sixel",
-#endif
-#ifdef FEAT_IMAGE_KITTY
-	"+image_kitty",
-#else
-	"-image_kitty",
-#endif
-#ifdef FEAT_IMAGE_GDI
-	"+image_gdi",
-#else
-	"-image_gdi",
-#endif
-#ifdef FEAT_IMAGE_CAIRO
-	"+image_cairo",
-#else
-	"-image_cairo",
-#endif
-#ifdef FEAT_IMAGE_GDK
-	"+image_gdk",
-#else
-	"-image_gdk",
-#endif
 #ifdef FEAT_SOUND
 	"+sound",
 #else
@@ -600,9 +599,9 @@ static char *(features[]) =
 #else
 	"-tabpanel",
 #endif
+	"-tag_any_white",
 	"+tag_binary",
 	"-tag_old_static",
-	"-tag_any_white",
 #ifdef FEAT_TCL
 # ifdef DYNAMIC_TCL
 	"+tcl/dyn",
@@ -759,6 +758,128 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    843,
+/**/
+    842,
+/**/
+    841,
+/**/
+    840,
+/**/
+    839,
+/**/
+    838,
+/**/
+    837,
+/**/
+    836,
+/**/
+    835,
+/**/
+    834,
+/**/
+    833,
+/**/
+    832,
+/**/
+    831,
+/**/
+    830,
+/**/
+    829,
+/**/
+    828,
+/**/
+    827,
+/**/
+    826,
+/**/
+    825,
+/**/
+    824,
+/**/
+    823,
+/**/
+    822,
+/**/
+    821,
+/**/
+    820,
+/**/
+    819,
+/**/
+    818,
+/**/
+    817,
+/**/
+    816,
+/**/
+    815,
+/**/
+    814,
+/**/
+    813,
+/**/
+    812,
+/**/
+    811,
+/**/
+    810,
+/**/
+    809,
+/**/
+    808,
+/**/
+    807,
+/**/
+    806,
+/**/
+    805,
+/**/
+    804,
+/**/
+    803,
+/**/
+    802,
+/**/
+    801,
+/**/
+    800,
+/**/
+    799,
+/**/
+    798,
+/**/
+    797,
+/**/
+    796,
+/**/
+    795,
+/**/
+    794,
+/**/
+    793,
+/**/
+    792,
+/**/
+    791,
+/**/
+    790,
+/**/
+    789,
+/**/
+    788,
+/**/
+    787,
+/**/
+    786,
+/**/
+    785,
+/**/
+    784,
+/**/
+    783,
 /**/
     782,
 /**/

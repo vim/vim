@@ -3346,7 +3346,9 @@ expand_files_and_dirs(
     if (free_pat)
 	vim_free(pat);
 #ifdef BACKSLASH_IN_FILENAME
-    if (p_csl[0] != NUL && (options & WILD_IGNORE_COMPLETESLASH) == 0)
+    if (p_csl[0] != NUL
+	    && (options & WILD_IGNORE_COMPLETESLASH) == 0
+	    && xp->xp_context != EXPAND_FINDFUNC)
     {
 	int j;
 
@@ -5040,6 +5042,8 @@ f_cmdcomplete_info(typval_T *argvars UNUSED, typval_T *rettv)
 	if (li == NULL)
 	    return;
 	ret = dict_add_list(retdict, "matches", li);
+	if (ret == FAIL)
+	    list_unref(li);
 	for (idx = 0; ret == OK && idx < ccline->xpc->xp_numfiles; idx++)
 	    list_append_string(li, ccline->xpc->xp_files[idx], -1);
     }

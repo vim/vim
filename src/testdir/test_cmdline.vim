@@ -226,6 +226,85 @@ func Test_wildmenu_screendump()
   call StopVimInTerminal(buf)
 endfunc
 
+" When the wildmenu popup menu shrinks, its shadow must be cleared, also on the
+" empty (~) lines above the menu.  See issue #20740.
+func Test_wildmenu_pum_shadow()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    func MyCompl(a, l, p)
+      return filter(['axxxxxxxxx', 'ab', 'ac'], 'stridx(v:val, a:a) == 0')
+    endfunc
+    command! -nargs=1 -complete=customlist,MyCompl MyCmd echo <q-args>
+    set wildmode=noselect:lastused,full
+    set wildoptions=pum,fuzzy
+    set pumopt=shadow
+    set shortmess+=I
+    " Give the shadow a distinct color so it is easy to tell apart from the
+    " background in the screen dump.
+    hi Normal ctermbg=grey ctermfg=black guibg=grey guifg=black
+    hi PmenuShadow ctermbg=darkred ctermfg=white guibg=darkred guifg=white
+    autocmd CmdlineChanged : call wildtrigger()
+  [SCRIPT]
+  call writefile(lines, 'XTest_wildshadow', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_wildshadow', {'rows': 12, 'cols': 40})
+
+  " Wide popup with a shadow drawn over the ~ lines.
+  call term_sendkeys(buf, ":MyCmd a")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_shadow_1', {})
+
+  " Narrow the matches: the popup shrinks and the wider shadow must be cleared.
+  call term_sendkeys(buf, "b")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_shadow_2', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+" Same as above but with a border, and the menu also gets narrower.  When the
+" menu shrinks the stale content of the wider menu must be cleared before the
+" shadow is drawn over it, otherwise the old border and text show through the
+" shadow.  See issue #20740.
+func Test_wildmenu_pum_shadow_border()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    func MyCompl(a, l, p)
+      return filter(['aVeryLongItemName', 'ab', 'ac'], 'stridx(v:val, a:a) == 0')
+    endfunc
+    command! -nargs=1 -complete=customlist,MyCompl MyCmd echo <q-args>
+    set wildmode=noselect:lastused,full
+    set wildoptions=pum,fuzzy
+    set pumopt=shadow,border:single
+    set shortmess+=I
+    " Give the shadow a distinct color so it is easy to tell apart from the
+    " background in the screen dump.
+    hi Normal ctermbg=grey ctermfg=black guibg=grey guifg=black
+    hi PmenuShadow ctermbg=darkred ctermfg=white guibg=darkred guifg=white
+    autocmd CmdlineChanged : call wildtrigger()
+  [SCRIPT]
+  call writefile(lines, 'XTest_wildshadowborder', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_wildshadowborder', {'rows': 12, 'cols': 40})
+
+  " Wide popup with a border and a shadow drawn over the ~ lines.
+  call term_sendkeys(buf, ":MyCmd a")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_shadow_border_1', {})
+
+  " Narrow the matches: the popup shrinks in both width and height, the wider
+  " menu's border and text must be cleared next to and under the shadow.
+  call term_sendkeys(buf, "b")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_shadow_border_2', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_wildmenu_with_input_func()
   CheckScreendump
 

@@ -1,7 +1,7 @@
 " Name:         shine
 " Description:  Light colorscheme inspired by normal text editors.
-" Author:       Original author is Yasuhiro Matsumoto <mattn@mail.goo.ne.jp>
-" Maintainer:   Original maintainer is Yasuhiro Matsumoto <mattn@mail.goo.ne.jp>
+" Author:       Original author is Yasuhiro Matsumoto <mattn.jp@gmail.com>
+" Maintainer:   Original maintainer is Yasuhiro Matsumoto <mattn.jp@gmail.com>
 " URL:          https://github.com/vim/colorschemes
 " License:      Same as Vim
 " Last Change:  2026 Apr 27

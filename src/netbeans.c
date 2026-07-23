@@ -3100,16 +3100,25 @@ netbeans_draw_multisign_indicator(int row)
 # else
     GdkDrawable *drawable = gui.drawarea->window;
 # endif
+# ifdef USE_GTK4_SNAPSHOT
+    cairo_surface_t *surf;
+# endif
 
     if (!NETBEANS_OPEN)
 	return;
 
     x = 0;
+# ifdef USE_GTK4_SNAPSHOT
+    y = 2;
+# else
     y = row * gui.char_height + 2;
+# endif
 
 # if GTK_CHECK_VERSION(3,0,0)
 #  ifdef USE_GTK4_SNAPSHOT
-    cr = gui_gtk4_get_multisign_context(x, y, 5, gui.char_height);
+    surf = cairo_image_surface_create(
+	    CAIRO_FORMAT_ARGB32, 5, gui.char_height);
+    cr = cairo_create(surf);
 #  else
     cr = cairo_create(gui.surface);
 #  endif
@@ -3143,8 +3152,16 @@ netbeans_draw_multisign_indicator(int row)
     gdk_draw_point(drawable, gui.text_gc, x+2, y);
 # endif
 
+# ifdef USE_GTK4_SNAPSHOT
+    cairo_fill(cr);
+    gui_gtk4_add_multisign(surf, row, 0, 5, gui.char_height);
+# endif
+
 # if GTK_CHECK_VERSION(3,0,0)
     cairo_destroy(cr);
+# endif
+# ifdef USE_GTK4_SNAPSHOT
+    cairo_surface_destroy(surf);
 # endif
 }
 #endif // FEAT_GUI_GTK
