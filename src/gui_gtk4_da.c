@@ -914,7 +914,12 @@ draw_row_ensure_decor(DrawRow *drow, int flags)
 	int x_start = FILL_X(0);
 	int x_end = FILL_X(drow->n_cells);
 
-	// GskPath was added in GSK 4.14, otherwise use cairo
+	// Instead of rendering the entire pattern, use a repeating node to
+	// render a single cycle of the undercurl, taking advantage of the GPU
+	// (if using opengl or vulkan renderer).
+	GskRenderNode *child = NULL;
+
+	// GskPath was added in GSK 4.14, otherwise use Cairo
 #if GTK_CHECK_VERSION(4, 14, 0)
 	GskPathBuilder	*builder;
 	GskPath		*path;
@@ -924,52 +929,52 @@ draw_row_ensure_decor(DrawRow *drow, int flags)
 
 	builder = gsk_path_builder_new();
 
-	gsk_path_builder_move_to(builder,
-		x_start + 1,
-		y - 2 + 0.5);
+	// Start at X = -1 (val[7]) to ensure a fully formed stroke at X = 0
+	gsk_path_builder_move_to(builder, -1, y - val[7] + 0.5);
+	gsk_path_builder_line_to(builder, 0, y - val[0] + 0.5);
 
-	for (int i = x_start + 1; i < x_end; i++)
-	{
-	    int offset = val[i % 8];
+	for (int i = 1; i < 8; i++)
+	    gsk_path_builder_line_to(builder, i, y - val[i] + 0.5);
 
-	    gsk_path_builder_line_to(builder,
-		    i, y - offset + 0.5);
-	}
+	// Extend to X = 9 (val[1]) to ensure a fully formed stroke at X = 8
+	gsk_path_builder_line_to(builder, 8, y - val[0] + 0.5);
+	gsk_path_builder_line_to(builder, 9, y - val[1] + 0.5);
 
 	path = gsk_path_builder_free_to_path(builder);
-
 	stroke = gsk_stroke_new(1.0);
 
-	gsk_path_get_stroke_bounds (path, stroke, &bounds);
+	gsk_path_get_stroke_bounds(path, stroke, &bounds);
 	color_node = gsk_color_node_new(&white_rgba, &bounds);
+	child = gsk_stroke_node_new(color_node, path, stroke);
 
-	drow->underc_mask = gsk_stroke_node_new(color_node, path, stroke);
 	gsk_stroke_free(stroke);
 	gsk_path_unref(path);
 	gsk_render_node_unref(color_node);
 #else
-	cairo_t		*cr;
-	GskRenderNode	*node;
+	cairo_t *cr;
 
-	node = gsk_cairo_node_new(
-		&GRAPHENE_RECT_INIT(x_start, y - 3, x_end - x_start, 5));
-	cr = gsk_cairo_node_get_draw_context(node);
+	child = gsk_cairo_node_new(&GRAPHENE_RECT_INIT(-2, y - 4, 12, 7));
+	cr = gsk_cairo_node_get_draw_context(child);
 
 	cairo_set_line_width(cr, 1.0);
 	cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
 
-	cairo_move_to(cr, x_start + 1, y - 2 + 0.5);
+	cairo_move_to(cr, -1, y - val[7] + 0.5);
+	cairo_line_to(cr, 0, y - val[0] + 0.5);
 
-	for (int i = x_start + 1; i < x_end; ++i)
-	{
-	    int offset = val[i % 8];
-	    cairo_line_to(cr, i, y - offset + 0.5);
-	}
+	for (int i = 1; i < 8; ++i)
+	    cairo_line_to(cr, i, y - val[i] + 0.5);
+
+	cairo_line_to(cr, 8, y - val[0] + 0.5);
+	cairo_line_to(cr, 9, y - val[1] + 0.5);
 
 	cairo_stroke(cr);
 	cairo_destroy(cr);
-	drow->underc_mask = node;
 #endif
+	drow->underc_mask = gsk_repeat_node_new(
+		&GRAPHENE_RECT_INIT(x_start, y - 3, x_end - x_start, 5),
+		child, &GRAPHENE_RECT_INIT(0.0f, y - 3, 8.0f, 5.0f));
+	gsk_render_node_unref(child);
     }
 }
 
