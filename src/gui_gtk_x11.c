@@ -1080,7 +1080,12 @@ focus_in_event(GtkWidget *widget,
 	       GdkEventFocus *event UNUSED,
 	       gpointer data UNUSED)
 {
-    gui_focus_change(TRUE);
+#ifdef FEAT_GUI_DIALOG
+    if (gui.is_x11 && gui.dialog_focus_pending > 0)
+	--gui.dialog_focus_pending;
+    else
+#endif
+	gui_focus_change(TRUE);
 
     if (blink_state == BLINK_NONE)
 	gui_mch_start_blink();
@@ -4136,6 +4141,7 @@ gui_mch_init(void)
 #if GTK_CHECK_VERSION(3,4,0)
     if (GDK_IS_X11_DISPLAY(gdk_display_get_default()))
     {
+	gui.is_x11 = true;
 	// for X11, if we were using smooth scroll events, we
 	// would get an scroll without deltas on the very first user scroll* and
 	// get both "unsmooth" scroll and smooth scroll events after

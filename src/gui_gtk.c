@@ -1709,6 +1709,10 @@ gui_mch_dialog(int	type,	    // type of dialog
     int		response;
     DialogInfo  dialoginfo;
 
+    ++gui.dialogs_active;
+    if (gui.is_x11)
+	++gui.dialog_focus_pending;
+
     dialog = create_message_dialog(type, title, message);
     dialoginfo.dialog = GTK_DIALOG(dialog);
     dialog_add_buttons(GTK_DIALOG(dialog), buttons);
@@ -1796,6 +1800,7 @@ gui_mch_dialog(int	type,	    // type of dialog
 	gtk_widget_destroy(dialog);
     }
 
+    --gui.dialogs_active;
     return response > 0 ? response : 0;
 }
 

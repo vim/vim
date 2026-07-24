@@ -485,6 +485,11 @@ gui_init_check(void)
     result = OK;
 #else
 # ifdef FEAT_GUI_GTK
+    gui.is_x11 = false;
+#  ifdef FEAT_GUI_DIALOG
+    gui.dialogs_active = 0;
+    gui.dialog_focus_pending = 0;
+#  endif
 #  ifdef GDK_WINDOWING_WAYLAND
     gui.is_wayland = false;
 #  endif
@@ -4905,7 +4910,11 @@ gui_focus_change(int in_focus)
     // Put events in the input queue only when allowed.
     // ui_focus_change() isn't called directly, because it invokes
     // autocommands and that must not happen asynchronously.
-    if (!hold_gui_events)
+    if (!hold_gui_events
+# if defined(FEAT_GUI_GTK) && defined(FEAT_GUI_DIALOG)
+	    && gui.dialogs_active == 0
+# endif
+       )
     {
 	char_u  bytes[3];
 
