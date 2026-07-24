@@ -94,3 +94,29 @@ open_paren_at_EOL(
         100, 200, 300, 400)
 
 # END_INDENT
+
+# START_INDENT
+"["
+#
+b"abc"
+#
+f"["
+#
+r"["
+#
+b"["
+#
+b"["
+b"]"
+#
+b"("
+#
+b"{"
+#
+b"(" b")"
+#
+b"{" b"}"
+#
+# END_INDENT
+
+

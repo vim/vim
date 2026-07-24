@@ -1,11 +1,12 @@
 " Vim syntax file
 " Language:	Python
 " Maintainer:	Zvezdan Petkovic <zpetkovic@acm.org>
-" Last Change:	2025 Sep 08
+" Last Change:	2026 Jul 23
 " 2025 Sep 25 by Vim Project: fix wrong type highlighting #18394
 " 2025 Dec 03 by Vim Project: highlight t-strings #18679
 " 2026 Jan 26 by Vim Project: highlight constants #18922
 " 2026 Mar 11 by Vim Project: fix number performance #19630
+" 2026 Jul 23 by Vim Project: fix indent for byte string brackets #20812
 " Credits:	Neil Schemenauer <nas@python.ca>
 "		Dmitry Vasiliev
 "		Rob B
@@ -202,24 +203,24 @@ syn region  pythonRawFString
       \ contains=pythonFStringField,pythonFStringSkip,pythonSpaceError,pythonDoctest,@Spell
 
 " Bytes
-syn region  pythonBytes
+syn region  pythonBytesString
       \ matchgroup=pythonQuotes
       \ start=+\cB\z(['"]\)+
       \ end="\z1"
       \ skip="\\\\\|\\\z1"
       \ contains=pythonEscape
-syn region  pythonBytes
+syn region  pythonBytesString
       \ matchgroup=pythonTripleQuotes
       \ start=+\cB\z('''\|"""\)+
       \ end="\z1"
       \ keepend
       \ contains=pythonEscape
-syn region  pythonRawBytes
+syn region  pythonRawBytesString
       \ matchgroup=pythonQuotes
       \ start=+\c\%(BR\|RB\)\z(['"]\)+
       \ end="\z1"
       \ skip="\\\\\|\\\z1"
-syn region  pythonRawBytes
+syn region  pythonRawBytesString
       \ matchgroup=pythonTripleQuotes
       \ start=+\c\%(BR\|RB\)\z('''\|"""\)+
       \ end="\z1"
@@ -422,8 +423,8 @@ hi def link pythonString		String
 hi def link pythonRawString		String
 hi def link pythonFString		String
 hi def link pythonRawFString		String
-hi def link pythonBytes 		String
-hi def link pythonRawBytes 		String
+hi def link pythonBytesString 		String
+hi def link pythonRawBytesString 	String
 hi def link pythonQuotes		String
 hi def link pythonTripleQuotes		pythonQuotes
 hi def link pythonEscape		Special
