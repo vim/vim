@@ -3656,6 +3656,13 @@ nv_screenline_conceal_set_wcol(int row, int ccol)
 	return;
     curwin->w_wrow = row - W_WINROW(curwin) - 1;
     curwin->w_wcol = ccol - curwin->w_wincol - 1;
+# ifdef FEAT_RIGHTLEFT
+    // The screenline map reports a physical screen column, while w_wcol is
+    // stored in reading order and mirrored when the cursor is displayed.
+    if (curwin->w_p_rl)
+	curwin->w_wcol = curwin->w_width - curwin->w_wcol
+						   - cursor_screen_cells();
+# endif
     curwin->w_valid |= VALID_WROW|VALID_WCOL;
     curwin->w_valid &= ~VALID_VIRTCOL;
     curwin->w_valid_cursor = curwin->w_cursor;

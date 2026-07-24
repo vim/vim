@@ -702,9 +702,9 @@ func Test_conceallevel_three_getmousepos_rightleft_after_conceal()
   let pos = screenpos(0, 1, target_col)
   let [winrow, wincol] = win_screenpos(0)
   call assert_equal(2, pos.row - winrow + 1)
-  call assert_equal(37, pos.col - wincol + 1)
+  call assert_equal(4, pos.col - wincol + 1)
   call assert_equal(37, pos.curscol - wincol + 1)
-  call assert_equal(37, pos.endcol - wincol + 1)
+  call assert_equal(4, pos.endcol - wincol + 1)
 
   call test_setmouse(pos.row, pos.curscol)
   let mousepos = getmousepos()
@@ -2003,12 +2003,37 @@ func Test_conceallevel_three_screenline_option_invalidation()
             \ s:ConceallevelThreeScreenlineMoveCell(target_col))
 
       setlocal rightleft
+      call cursor(1, target_col)
+      call assert_equal([2, 37], s:CurrentScreenCell())
       call assert_equal([1, 37],
             \ s:ConceallevelThreeScreenlineMoveCell(target_col))
 
       setlocal norightleft
       call assert_equal([1, 4],
             \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+
+      if has('multi_byte')
+        setlocal rightleft
+        let line = 'aaあ' .. repeat('a', 38)
+              \ .. ' HIDDEN target words after hidden text'
+        call setline(1, line)
+        let wide_col = stridx(line, 'あ') + 1
+        let target_col = stridx(line, 'target') + 1
+
+        call cursor(1, wide_col)
+        let pos = screenpos(0, 1, wide_col)
+        let [winrow, wincol] = win_screenpos(0)
+        call assert_equal([1, 3, 37, 4],
+              \ [pos.row - winrow + 1, pos.col - wincol + 1,
+              \ pos.curscol - wincol + 1, pos.endcol - wincol + 1])
+        call assert_equal([1, 37], s:CurrentScreenCell())
+
+        call assert_equal([1, 37],
+              \ s:ConceallevelThreeScreenlineMoveCell(target_col))
+        call assert_equal(wide_col, col('.'))
+      endif
+
+      setlocal norightleft
     endif
   finally
     execute 'set ambiwidth=' .. save_ambiwidth

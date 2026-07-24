@@ -1139,6 +1139,12 @@ conceal_cursor_winpos(
 	return FAIL;
     *wrowp = row - W_WINROW(wp) - 1;
     *wcolp = ccol - wp->w_wincol - 1;
+# ifdef FEAT_RIGHTLEFT
+    // The conceal iterator reports a physical screen column, while w_wcol is
+    // stored in reading order and mirrored when the cursor is displayed.
+    if (wp->w_p_rl)
+	*wcolp = wp->w_width - *wcolp - cursor_screen_cells();
+# endif
     return OK;
 }
 #endif
@@ -1704,6 +1710,16 @@ conceal_screenpos_store(
     scol = start_col + ctx->wp->w_wincol + 1;
     ccol = cursor_col + ctx->wp->w_wincol + 1;
     ecol = scol + cells - 1;
+#  ifdef FEAT_RIGHTLEFT
+    if (ctx->wp->w_p_rl)
+    {
+	// Keep "col" and "endcol" in reading order.  Only "curscol" is
+	// the physical screen column for a right-to-left window.
+	scol = ctx->wp->w_wincol + ctx->wp->w_width
+					       - (start_col + cells - 1);
+	ecol = scol + cells - 1;
+    }
+#  endif
     if (col <= ctx->pos->col && ctx->pos->col <= end_col)
     {
 	ctx->row = row;
