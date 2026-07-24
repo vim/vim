@@ -2,7 +2,7 @@
 typval_T *alloc_tv(void);
 typval_T *alloc_string_tv(char_u *s);
 void free_tv(typval_T *varp);
-void clear_tv(typval_T *varp);
+void clear_tv_inner(typval_T *varp);
 void init_tv(typval_T *varp);
 varnumber_T tv_get_number(typval_T *varp);
 varnumber_T tv_to_number(typval_T *varp);
@@ -66,7 +66,7 @@ char_u *tv_get_string_buf_chk(typval_T *varp, char_u *buf);
 char_u *tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict);
 char_u *tv_stringify(typval_T *varp, char_u *buf);
 int tv_check_lock(typval_T *tv, char_u *name, int use_gettext);
-int copy_tv(typval_T *from, typval_T *to);
+int copy_tv_inner(typval_T *from, typval_T *to);
 int typval_compare2(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, int *res);
 int typval_compare(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic);
 int typval_compare_list(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, int *res);
