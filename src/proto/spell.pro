@@ -11,6 +11,7 @@ void spell_cat_line(char_u *buf, char_u *line, int maxlen);
 char_u *spell_enc(void);
 slang_T *slang_alloc(char_u *lang);
 void slang_free(slang_T *lp);
+void free_sal_items(garray_T *gap);
 void slang_clear(slang_T *lp);
 void slang_clear_sug(slang_T *lp);
 void count_common_word(slang_T *lp, char_u *word, int len, int count);
