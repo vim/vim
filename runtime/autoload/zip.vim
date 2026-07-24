@@ -93,7 +93,7 @@ endif
 fun! s:SafeExecutable(exe)
   if !executable(g:zip_update[0]) && &shell !~ 'pwsh'
     call s:Mess('Error', "***error*** (zip) '".a:exe."' not available on your system")
-    finish
+    return v:false
   endif
   if !dist#vim#IsSafeExecutable('zip', a:exe) && &shell !~ 'pwsh'
     call s:Mess('Error', "Warning: NOT executing " .. a:exe .. " from current directory!")
