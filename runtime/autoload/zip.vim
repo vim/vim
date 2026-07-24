@@ -86,18 +86,28 @@ if v:version < 901
  call s:Mess('WarningMsg', "***warning*** this version of zip needs vim 9.1 or later")
  finish
 endif
+
+" ---------------------------------------------------------------------
 " sanity checks
-if !executable(g:zip_update[0]) && &shell !~ 'pwsh'
- call s:Mess('WarningMsg', "***error*** zip not available on your system")
-endif
-if !executable(g:zip_browse[0]) && &shell !~ 'pwsh'
- call s:Mess('Error', "***error*** (zip#Browse) unzip not available on your system")
- finish
-endif
-if !dist#vim#IsSafeExecutable('zip', g:zip_browse[0]) && &shell !~ 'pwsh'
- call s:Mess('Error', "Warning: NOT executing " .. g:zip_browse[0] .. " from current directory!")
- finish
-endif
+" s:SafeExecutable: {{{2
+fun! s:SafeExecutable(exe)
+  if !executable(g:zip_update[0]) && &shell !~ 'pwsh'
+    call s:Mess('Error', "***error*** (zip) '".a:exe."' not available on your system")
+    finish
+  endif
+  if !dist#vim#IsSafeExecutable('zip', a:exe) && &shell !~ 'pwsh'
+    call s:Mess('Error', "Warning: NOT executing " .. a:exe .. " from current directory!")
+    return v:false
+  endif
+  return v:true
+endfun
+" garantee default command is exist and not be injected by environment
+" every default command should be checked
+if !s:SafeExecutable(g:zip_delete[0])  | finish | endif
+if !s:SafeExecutable(g:zip_update[0])  | finish | endif
+if !s:SafeExecutable(g:zip_browse[0])  | finish | endif
+if !s:SafeExecutable(g:zip_read[0])    | finish | endif
+if !s:SafeExecutable(g:zip_extract[0]) | finish | endif
 
 " ----------------
 "  PowerShell: {{{1
@@ -226,7 +236,7 @@ fun! zip#Browse(zipfile)
   defer s:RestoreOpts(dict)
 
   " sanity checks
-  if !s:cmd_safe_executable(g:zip_browse[0]) && &shell !~ 'pwsh'
+  if !executable(g:zip_browse[0]) && &shell !~ 'pwsh'
    call s:Mess('Error', "***error*** (zip#Browse) unzip not available on your system: '".join(g:zip_browse)."'")
    return
   endif
@@ -334,7 +344,7 @@ fun! zip#Read(fname,mode)
   endif
   let fname    = fname->substitute('[', '[[]', 'g')->escape('?*\\')
   " sanity check
-  if !s:cmd_safe_executable(substitute(g:zip_read[0],'\s\+.*$','',''))  && &shell !~ 'pwsh'
+  if !executable(substitute(g:zip_read[0],'\s\+.*$','',''))  && &shell !~ 'pwsh'
    call s:Mess('Error', "***error*** (zip#Read) sorry, your system doesn't appear to have the ".join(g:zip_read)." program")
    return
   endif
@@ -370,7 +380,7 @@ fun! zip#Write(fname)
   defer s:RestoreOpts(dict)
 
   " sanity checks
-  if !s:cmd_safe_executable(substitute(g:zip_update[0],'\s\+.*$','','')) && &shell !~ 'pwsh'
+  if !executable(substitute(g:zip_update[0],'\s\+.*$','','')) && &shell !~ 'pwsh'
     call s:Mess('Error', "***error*** (zip#Read) sorry, your system doesn't appear to have the ".join(g:zip_update)." program")
     return
   endif
@@ -557,16 +567,6 @@ fun! zip#Extract()
   else
     echomsg "***note*** successfully extracted ".fname
   endif
-endfun
-
-" ---------------------------------------------------------------------
-" s:cmd_safe_executable: {{{2
-fun! s:cmd_safe_executable(exe)
-  if !dist#vim#IsSafeExecutable('zip', a:exe) && &shell !~ 'pwsh'
-    call s:Mess('Error', "Warning: NOT executing " .. a:exe .. " from current directory!")
-    return v:false
-  endif
-  return executable(a:exe)
 endfun
 
 " ---------------------------------------------------------------------
