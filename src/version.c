@@ -462,6 +462,11 @@ static char *(features[]) =
 #else
 	"-packages",
 #endif
+#ifdef FEAT_PRINT_PANGO
+	"+pango",
+#else
+	"-pango",
+#endif
 	"+path_extra",
 #ifdef FEAT_PERL
 # ifdef DYNAMIC_PERL
@@ -487,11 +492,6 @@ static char *(features[]) =
 	"+postscript",
 # else
 	"-postscript",
-# endif
-# ifdef FEAT_PRINT_PANGO
-	"+pango",
-# else
-	"-pango",
 # endif
 	"+printer",
 #else
