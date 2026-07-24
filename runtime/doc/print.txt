@@ -13,7 +13,8 @@ Printing						*printing*
 5. PostScript CJK Printing		|postscript-cjk-printing|
 6. PostScript Printing Troubleshooting	|postscript-print-trouble|
 7. PostScript Utilities			|postscript-print-util|
-8. Formfeed Characters			|printing-formfeed|
+8. Pango Printing			|pango-printing|
+9. Formfeed Characters			|printing-formfeed|
 
 {only available when compiled with the |+printer| feature}
 
@@ -33,11 +34,11 @@ Note: If you have problems printing with |:hardcopy|, an alternative is to use
 			Send [range] lines (default whole file) to the
 			printer.
 
-			On MS-Windows a dialog is displayed to allow selection
-			of printer, paper size etc.  To skip the dialog, use
-			the [!].  In this case the printer defined by
-			'printdevice' is used, or, if 'printdevice' is empty,
-			the system default printer.
+			On MS-Windows or GTK4 GUI, a dialog is displayed to
+			allow selection of printer, paper size etc.  To skip
+			the dialog, use the [!].  In this case the printer
+			defined by 'printdevice' is used, or, if 'printdevice'
+			is empty, the system default printer.
 
 			For systems other than MS-Windows, PostScript is
 			written in a temp file and 'printexpr' is used to
@@ -46,7 +47,9 @@ Note: If you have problems printing with |:hardcopy|, an alternative is to use
 			is ignored.  'printoptions' can be used to specify
 			paper size, duplex, etc.
 			Note: If you want PDF, there are tools such as
-			"ps2pdf" that can convert the PostScript to PDF.
+			"ps2pdf" that can convert the PostScript to PDF.  If
+			the |+pango| feature is enabled, then emit PDF by
+			setting "format" to "pdf" in 'printoptions'.
 
 :[range]ha[rdcopy][!] >{filename}
 			As above, but write the resulting PostScript in file
@@ -54,7 +57,7 @@ Note: If you have problems printing with |:hardcopy|, an alternative is to use
 			Things like "%" are expanded |cmdline-special|
 			Careful: An existing file is silently overwritten.
 			{only available when compiled with the |+postscript|
-			feature}
+			or |+pango| feature}
 			On MS-Windows use the "print to file" feature of the
 			printer driver.
 
@@ -129,7 +132,7 @@ MS-Windows platform.
 							*pexpr-option*
 'printexpr' 'pexpr'	String	(default: see below)
 			global
-Expression that is evaluated to print the PostScript produced with
+Expression that is evaluated to print the PostScript or PDF produced with
 |:hardcopy|.
 The file name to be printed is in |v:fname_in|.
 The arguments to the ":hardcopy" command are in |v:cmdarg|.
@@ -195,7 +198,8 @@ output.  It has the same format as the 'guifont' option, except that only one
 font may be named, and the special "guifont=*" syntax is not available.
 
 In the Win32 GUI version this specifies a font name with its extra attributes,
-as with the 'guifont' option.
+as with the 'guifont' option.  When |+pango| is enabled, the format is the
+same as 'guifont' for the GTK GUI (e.g. "Courier New 10").
 
 For other systems, only ":h11" is recognized, where "11" is the point size of
 the font.  When omitted, the point size is 10.
@@ -397,6 +401,13 @@ of |:hardcopy|:
   formfeed:y		When a form feed character is encountered, continue
 			printing of the current line at the beginning of the
 			first line on a new page.
+  format:postscript (default)
+			Output format: Postscript
+  format:{name}		Output format from this table (only used when compiled
+			with |+pango| feature):
+			{name}		meaning ~
+			postscript	Generate Postscript
+			pdf		Generate Adobe PDF
 
 The item indicated with (default) is used when the item is not present.  The
 values are not always used, especially when using a dialog to select the
@@ -435,6 +446,9 @@ There are currently a number of limitations with PostScript printing:
   empty).  Any characters that are not successfully converted are shown as
   unknown characters.  Printing will fail if Vim cannot convert the multibyte
   to the 8-bit encoding.
+
+When using the Pango backend for printing, these limitations are solved.  See
+|pango-printing| for more information.
 
 ==============================================================================
 4. Custom 8-bit Print Character Encodings	*postscript-print-encoding*
@@ -717,9 +731,26 @@ There are a couple of points to bear in mind:
    desktop ink jets than for small office laser printers where the paper path
    is hidden from view.
 
+==============================================================================
+8. Pango Printing					*pango-printing*
+
+If Vim is compiled with |+pango|, then it will render pages using Pango (a
+text handling library), and Cairo (a graphics library).  The benefit of this
+is that Unicode is fully supported.  Postscript files will still be generated
+using Cairo.  Additionally, PDF files can be emitted as well, see the
+"format" key in |popt-option|
+
+When using the GTK GUI, |+pango| is always enabled and used.  On terminal
+builds of Vim, "--enable-hardcopy-pango" must be passed to the configure
+options. The linked Cairo library must have the Postscript and PDF backends
+enabled.
+
+							*gtk4-print*
+When using the GTK4 GUI, |:hardcopy| will use a native graphical print dialog,
+similar to MS-Windows.  See |:hardcopy| for more information.
 
 ==============================================================================
-8. Formfeed Characters					*printing-formfeed*
+9. Formfeed Characters					*printing-formfeed*
 
 By default Vim does not do any special processing of formfeed control
 characters.  Setting the 'printoptions' formfeed item will make Vim recognize
