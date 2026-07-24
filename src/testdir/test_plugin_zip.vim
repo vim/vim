@@ -84,22 +84,22 @@ def g:Test_zip_basic()
   bw
 
   ### Check opening zip when "unzip" program is missing
-  var save_zip_unzipcmd = g:zip_read
-  g:zip_read = ["/", ""]
+  var save_zip_unzipcmd = g:zip_browse
+  g:zip_browse = ["/"]
   assert_match('unzip not available on your system', execute("e X.zip"))
 
   ### Check when "unzip" don't work
   if executable("false")
-    g:zip_read = ["false", ""]
+    g:zip_browse = ["false"]
     assert_match('X\.zip is not a zip file', execute("e X.zip"))
   endif
   bw
 
-  g:zip_read = save_zip_unzipcmd
+  g:zip_browse = save_zip_unzipcmd
   e X.zip
 
   ### Check opening file when "unzip" is missing
-  g:zip_read = ["/", ""]
+  g:zip_read = ["/"]
   assert_match('sorry, your system doesn''t appear to have the / program',
                execute("normal \<CR>"))
 
@@ -111,13 +111,13 @@ def g:Test_zip_basic()
   :1|:/^$//file/
   exe "normal \<cr>Goanother\<esc>"
   var save_zip_zipcmd = g:zip_update
-  g:zip_update = ["/", ""]
+  g:zip_update = ["/"]
   assert_match('sorry, your system doesn''t appear to have the / program',
                execute("write"))
 
   ### Check when "zip" report failure
   if executable("false")
-    g:zip_update = ["false", ""]
+    g:zip_update = ["false"]
     assert_match('sorry, unable to update .*/X\.zip with Xzip/file\.txt',
                   execute("write"))
   endif

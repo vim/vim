@@ -227,7 +227,7 @@ fun! zip#Browse(zipfile)
 
   " sanity checks
   if !s:cmd_safe_executable(g:zip_browse[0]) && &shell !~ 'pwsh'
-   call s:Mess('Error', "***error*** (zip#Browse) executing '".join(g:zip_browse)."'.")
+   call s:Mess('Error', "***error*** (zip#Browse) unzip not available on your system: '".join(g:zip_browse)."'")
    return
   endif
   if !filereadable(a:zipfile)
@@ -335,7 +335,7 @@ fun! zip#Read(fname,mode)
   let fname    = fname->substitute('[', '[[]', 'g')->escape('?*\\')
   " sanity check
   if !s:cmd_safe_executable(substitute(g:zip_read[0],'\s\+.*$','',''))  && &shell !~ 'pwsh'
-   call s:Mess('Error', "***error*** (zip#Read) executing '".join(g:zip_read)."'.")
+   call s:Mess('Error', "***error*** (zip#Read) sorry, your system doesn't appear to have the ".join(g:zip_read)." program")
    return
   endif
 
@@ -371,7 +371,7 @@ fun! zip#Write(fname)
 
   " sanity checks
   if !s:cmd_safe_executable(substitute(g:zip_update[0],'\s\+.*$','','')) && &shell !~ 'pwsh'
-    call s:Mess('Error', "***error*** (zip#update) executing '".join(g:zip_update)."'.")
+    call s:Mess('Error', "***error*** (zip#Read) sorry, your system doesn't appear to have the ".join(g:zip_update)." program")
     return
   endif
 
