@@ -4076,7 +4076,7 @@ func Test_normal_count_out_of_range()
   normal 9y99999999|
   call assert_equal(899999991, v:count)
   normal 10y99999999|
-  call assert_equal(2147483647, v:count)
+  call assert_equal(999999990, v:count)
   normal 44444444444y44444444444|
   call assert_equal(2147483647, v:count)
   bwipe!
