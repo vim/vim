@@ -319,8 +319,8 @@ getcount:
 	// multiplied.
 	if (cap->count0)
 	{
-	    if (cap->opcount >= 999999999L / cap->count0)
-		cap->count0 = 999999999L;
+	    if (cap->opcount >= 2147483647L / cap->count0)
+		cap->count0 = 2147483647L;
 	    else
 		cap->count0 *= cap->opcount;
 	}
