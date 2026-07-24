@@ -4065,20 +4065,20 @@ func Test_normal_count_out_of_range()
   new
   call setline(1, 'text')
   normal 44444444444|
-  call assert_equal(999999999, v:count)
+  call assert_equal(2147483647, v:count)
   normal 444444444444|
-  call assert_equal(999999999, v:count)
+  call assert_equal(2147483647, v:count)
   normal 4444444444444|
-  call assert_equal(999999999, v:count)
+  call assert_equal(2147483647, v:count)
   normal 4444444444444444444|
-  call assert_equal(999999999, v:count)
+  call assert_equal(2147483647, v:count)
 
   normal 9y99999999|
   call assert_equal(899999991, v:count)
   normal 10y99999999|
-  call assert_equal(999999999, v:count)
+  call assert_equal(2147483647, v:count)
   normal 44444444444y44444444444|
-  call assert_equal(999999999, v:count)
+  call assert_equal(2147483647, v:count)
   bwipe!
 endfunc
 
