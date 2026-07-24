@@ -1,0 +1,53 @@
+# ed(1)
+# VIM_TEST_SETUP hi link edAddressSeparator Todo
+
+
+# Smoke Test
+
+
+# 1. H - Enable verbose error explanations
+H
+# 2. a - Append text after the current line
+a
+First Line
+Second Line
+Third Line
+.
+# 3. i - Insert text before the current line
+1i
+Intro Line
+.
+# 4. c - Change (replace) a specific line
+3c
+Modified Second Line
+.
+# 5. d - Delete a specific line
+2d
+# 6. s - Substitute text using a regular expression
+1,3s/Line/Entry/g
+# 7. m - Move lines to a new location
+1,2m$
+# 8. t - Copy (transfer) lines to a new location
+1t2
+# 9. j - Join two lines together
+2,3j
+# 10. k - Mark a line with a lowercase letter (e.g., 'a')
+1ka
+# 11. p - Print the current buffer content
+,p
+# 12. n - Print lines with line numbers
+,n
+# 13. l - Print lines in a visually unambiguous form
+,l
+# 14. = - Print the current line number
+$=
+# 15. ! - Execute a shell command
+!ls
+# 16. f - Set or display the default filename
+f newfile.txt
+# 17. w - Write the buffer to the file
+w
+# 18. q - Quit the editor
+q
+
+

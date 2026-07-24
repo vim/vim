@@ -1,0 +1,697 @@
+# ed(1) commmands
+
+
+# Append Command
+
+
+a
+.
+
+a
+line 1
+.
+
+a
+line 1
+line 2
+line 3
+.
+
+an
+line 1
+.
+
+al
+line 1
+.
+
+ap
+line 1
+.
+
+.a
+line 1
+.
+
+# extensions
+
+alnp
+line 1
+.
+
+# global subcommand
+
+g/foo/a\
+.
+
+g/foo/a\
+line 1
+
+g/foo/a\
+line 1\
+.
+
+g/foo/a\
+line 1\
+.\
+p
+
+
+# Change Command
+
+
+c
+.
+
+c
+line 1
+.
+
+c
+line 1
+line 2
+line 3
+.
+
+cn
+line 1
+.
+
+cl
+line 1
+.
+
+cp
+line 1
+.
+
+.,.c
+line 1
+.
+
+# extensions
+
+clnp
+line 1
+.
+
+# global subcommand
+
+g/foo/c\
+.
+
+g/foo/c\
+line 1
+
+g/foo/c\
+line 1\
+.
+
+g/foo/c\
+line 1\
+.\
+p
+
+
+# Delete Command
+
+
+d
+.,.d
+
+dl
+dn
+dp
+
+
+# extensions
+
+dlnp
+
+
+# Edit Command
+
+
+e
+e filename
+
+e !echo Input text
+e !!
+
+
+# Edit Without Checking Command
+
+
+E
+E filename
+
+
+# Filename Command
+
+
+f
+f filename
+
+
+# Global Command
+
+
+g/
+g//
+g/foo
+g/foo/
+
+1,$g/
+1,$g//
+1,$g/foo
+1,$g/foo/
+
+g//p
+g//\
+p
+
+g//l\
+n\
+p
+g//\
+l\
+n\
+p
+
+1,$g/foo/p
+1,$g/foo/.,+1p
+1,$g/foo/\
+.,+1p
+
+
+# Interactive Global Command
+
+
+G/
+G//
+G/foo
+G/foo/
+
+1,$G/
+1,$G//
+1,$G/foo
+1,$G/foo/
+
+G/foo/
+d
+&
+
+
+# Help Command
+
+h
+
+
+# Help Mode Command
+
+H
+
+
+# Insert Command
+
+
+i
+.
+
+i
+line 1
+.
+
+i
+line 1
+line 2
+line 3
+.
+
+in
+line 1
+.
+
+il
+line 1
+.
+
+ip
+line 1
+.
+
+.i
+line 1
+.
+
+# extensions
+
+ilnp
+line 1
+.
+
+# global subcommand
+
+g/foo/i\
+.
+
+g/foo/i\
+line 1
+
+g/foo/i\
+line 1\
+.
+
+g/foo/i\
+line 1\
+.\
+p
+
+
+# Join Command
+
+
+j
+.,.+1j
+
+
+# Mark Command
+
+
+ka
+.ka
+
+
+# List Command
+
+
+l
+.,.l
+
+
+# Move Command
+
+
+m$
+.,.m$
+
+m/pattern/
+.,.m/pattern/
+
+
+# Number Command
+
+
+n
+.,.n
+
+
+# Print Command
+
+
+p
+.,.p
+
+
+# Prompt Command
+
+
+P
+
+
+# Quit Command
+
+
+q
+
+
+# Quit Without Checking Command
+
+Q
+
+
+# Read Command
+
+r
+r filename
+$r
+$r filename
+
+r !echo Input text
+r !!
+
+
+# Substitute Command
+
+
+s/foo/bar/
+.,.s/foo/bar/
+
+s//bar
+
+s/foo/barbaz
+s/foo/bar\
+baz
+s/foo/bar\
+baz/
+
+s/foo/bar&baz
+s/foo/bar&\
+baz
+s/foo/bar&\
+baz/
+
+s/foo/%
+s/foo/%/
+
+s/foo/\%
+s/foo/\%/
+s/foo/%%
+s/foo/%%/
+s/foo/%a
+s/foo/%a/
+s/foo/a%
+s/foo/a%/
+s/foo/%a%
+s/foo/%a%/
+
+s/foo/bar\1baz/
+s/foo/bar\2baz/
+s/foo/bar\3baz/
+s/foo/bar\4baz/
+s/foo/bar\5baz/
+s/foo/bar\6baz/
+s/foo/bar\7baz/
+s/foo/bar\8baz/
+s/foo/bar\9baz/
+
+s/foo/bar\10baz/
+s/foo/bar\11baz/
+s/foo/bar\12baz/
+s/foo/bar\13baz/
+s/foo/bar\14baz/
+s/foo/bar\15baz/
+s/foo/bar\16baz/
+s/foo/bar\17baz/
+s/foo/bar\18baz/
+s/foo/bar\19baz/
+
+
+# flags
+
+s/foo/bar/g
+s/foo/bar/l
+s/foo/bar/n
+s/foo/bar/p
+
+s/foo/bar/gl
+s/foo/bar/gn
+s/foo/bar/gp
+s/foo/bar/lg
+s/foo/bar/ln
+s/foo/bar/lp
+s/foo/bar/ng
+s/foo/bar/nl
+s/foo/bar/np
+s/foo/bar/pg
+s/foo/bar/pl
+s/foo/bar/pn
+
+s/foo/bar/gln
+s/foo/bar/glp
+s/foo/bar/gnl
+s/foo/bar/gnp
+s/foo/bar/gpl
+s/foo/bar/gpn
+s/foo/bar/lgn
+s/foo/bar/lgp
+s/foo/bar/lng
+s/foo/bar/lnp
+s/foo/bar/lpg
+s/foo/bar/lpn
+s/foo/bar/ngl
+s/foo/bar/ngp
+s/foo/bar/nlg
+s/foo/bar/nlp
+s/foo/bar/npg
+s/foo/bar/npl
+s/foo/bar/pgl
+s/foo/bar/pgn
+s/foo/bar/plg
+s/foo/bar/pln
+s/foo/bar/png
+s/foo/bar/pnl
+
+s/foo/bar/glnp
+s/foo/bar/glpn
+s/foo/bar/gnlp
+s/foo/bar/gnpl
+s/foo/bar/gpln
+s/foo/bar/gpnl
+s/foo/bar/lgnp
+s/foo/bar/lgpn
+s/foo/bar/lngp
+s/foo/bar/lnpg
+s/foo/bar/lpgn
+s/foo/bar/lpng
+s/foo/bar/nglp
+s/foo/bar/ngpl
+s/foo/bar/nlgp
+s/foo/bar/nlpg
+s/foo/bar/npgl
+s/foo/bar/nplg
+s/foo/bar/pgln
+s/foo/bar/pgnl
+s/foo/bar/plgn
+s/foo/bar/plng
+s/foo/bar/pngl
+s/foo/bar/pnlg
+
+
+s/foo/bar/3
+s/foo/bar/l
+s/foo/bar/n
+s/foo/bar/p
+
+s/foo/bar/3l
+s/foo/bar/3n
+s/foo/bar/3p
+s/foo/bar/l3
+s/foo/bar/ln
+s/foo/bar/lp
+s/foo/bar/n3
+s/foo/bar/nl
+s/foo/bar/np
+s/foo/bar/p3
+s/foo/bar/pl
+s/foo/bar/pn
+
+s/foo/bar/3ln
+s/foo/bar/3lp
+s/foo/bar/3nl
+s/foo/bar/3np
+s/foo/bar/3pl
+s/foo/bar/3pn
+s/foo/bar/l3n
+s/foo/bar/l3p
+s/foo/bar/ln3
+s/foo/bar/lnp
+s/foo/bar/lp3
+s/foo/bar/lpn
+s/foo/bar/n3l
+s/foo/bar/n3p
+s/foo/bar/nl3
+s/foo/bar/nlp
+s/foo/bar/np3
+s/foo/bar/npl
+s/foo/bar/p3l
+s/foo/bar/p3n
+s/foo/bar/pl3
+s/foo/bar/pln
+s/foo/bar/pn3
+s/foo/bar/pnl
+
+s/foo/bar/3lnp
+s/foo/bar/3lpn
+s/foo/bar/3nlp
+s/foo/bar/3npl
+s/foo/bar/3pln
+s/foo/bar/3pnl
+s/foo/bar/l3np
+s/foo/bar/l3pn
+s/foo/bar/ln3p
+s/foo/bar/lnp3
+s/foo/bar/lp3n
+s/foo/bar/lpn3
+s/foo/bar/n3lp
+s/foo/bar/n3pl
+s/foo/bar/nl3p
+s/foo/bar/nlp3
+s/foo/bar/np3l
+s/foo/bar/npl3
+s/foo/bar/p3ln
+s/foo/bar/p3nl
+s/foo/bar/pl3n
+s/foo/bar/pln3
+s/foo/bar/pn3l
+s/foo/bar/pnl3
+
+
+# repeat last substitute
+
+s3
+sg
+sp
+sr
+
+s3g
+s3p
+s3r
+sg3
+sgp
+sgr
+sp3
+spg
+spr
+sr3
+srg
+srp
+
+s3gp
+s3gr
+s3pg
+s3pr
+s3rg
+s3rp
+sg3p
+sg3r
+sgp3
+sgpr
+sgr3
+sgrp
+sp3g
+sp3r
+spg3
+spgr
+spr3
+sprg
+sr3g
+sr3p
+srg3
+srgp
+srp3
+srpg
+
+s3gpr
+s3grp
+s3pgr
+s3prg
+s3rgp
+s3rpg
+sg3pr
+sg3rp
+sgp3r
+sgpr3
+sgr3p
+sgrp3
+sp3gr
+sp3rg
+spg3r
+spgr3
+spr3g
+sprg3
+sr3gp
+sr3pg
+srg3p
+srgp3
+srp3g
+srpg3
+
+# repeat last substitute flags as delimiters
+
+s3...3...3
+sg...g...g
+sp...p...p
+sr...r...r
+
+
+# Copy Command
+
+
+t$
+.,.t$
+
+t/pattern/
+.,.t/pattern/
+
+
+# Undo Command
+
+
+u
+
+
+# Global Non-Matched Command
+
+
+v/
+v//
+v/foo
+v/foo/
+
+1,$v/
+1,$v//
+1,$v/foo
+1,$v/foo/
+
+
+# Interactive Global Non-Matched Command
+
+
+V/
+V//
+V/foo
+V/foo/
+
+1,$V/
+1,$V//
+1,$V/foo
+1,$V/foo/
+
+
+# Write Command
+
+
+w
+1,$w
+w filename
+1,$w filename
+
+
+# Line Number Command
+
+
+=
+$=
+
+
+# Shell Escape Command
+
+
+!echo "Foo"
+
+!!
+
+!echo %
+!echo \%
+!echo \\%
+!echo \\\%
+!echo \\\\%
+
+
+# Null Command
+
+
+.+1
+
+
