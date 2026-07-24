@@ -34,7 +34,7 @@ void vim_draw_area_add_sign(VimDrawArea *self, GdkTexture *sign, int row, int co
 void vim_draw_area_add_multisign(VimDrawArea *self, cairo_surface_t *surf, int row, int col, int width, int height);
 # endif
 # ifdef FEAT_IMAGE_GDK
-void vim_draw_area_add_image(VimDrawArea *self, GdkTexture *image, int row, int col, int src_x, int src_y, int draw_w, int draw_h, int zindex, int id);
+void vim_draw_area_add_image(VimDrawArea *self, GdkTexture *image, int row, int col, double src_x, double src_y, double draw_w, double draw_h, int zindex, int id);
 void vim_draw_area_remove_image(VimDrawArea *self, int id);
 # endif
 

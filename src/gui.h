@@ -103,6 +103,15 @@ typedef GdkEvent GdkEventKey;	// GTK4: GdkEventKey merged into GdkEvent
 # define FILL_Y(row)	((row) * gui.char_height + gui.border_offset)
 # define Y_2_ROW(y)	(((y) - gui.border_offset) / gui.char_height)
 #endif
+#if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE)
+// Logical pixels to physical pixels
+# define LOG2PHY(l) (gui.in_use ? (double)(l) * gui.scale : (l))
+ // Physical pixels to logical pixels
+# define PHY2LOG(p) (gui.in_use ? (double)(p) / gui.scale : (p))
+#else
+# define LOG2PHY(l) (l)
+# define PHY2LOG(p) (p)
+#endif
 
 // Indices for arrays of scrollbars
 #define SBAR_NONE	    (-1)
@@ -422,6 +431,9 @@ typedef struct Gui
     bool	is_x11;	            // active gdk backend in gtk is x11
 # ifdef GDK_WINDOWING_WAYLAND
     bool	is_wayland;	    // active gdk backend in gtk is wayland
+# endif
+# ifdef FEAT_IMAGE
+    double	scale;		    // Current scaling (may be fractional)
 # endif
 #endif	// FEAT_GUI_GTK
 

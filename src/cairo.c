@@ -122,6 +122,7 @@ cairo_popup_image_ensure(win_T *wp)
 	cairo_surface_destroy(surf);
 	return false;
     }
+    cairo_surface_set_device_scale(surf, gui.scale, gui.scale);
     cairo_popup_image_fill_surface(wp, surf);
     wp->w_popup_image_surface = surf;
     return true;
@@ -163,7 +164,8 @@ cairo_popup_image_free(win_T *wp)
  * non-zero offsets to crop the portion that falls outside the host window.
  * Builds the cache on first call.  Caller is responsible for scheduling a
  * redraw of the target's owning widget if needed (e.g.
- * gtk_widget_queue_draw_area on GTK).
+ * gtk_widget_queue_draw_area on GTK). "x" and "y" are assumed to be in logical
+ * pixels, the rest are in physical pixels.
  */
     void
 cairo_popup_image_paint(
@@ -171,10 +173,10 @@ cairo_popup_image_paint(
 	void	*target,
 	int	 x,
 	int	 y,
-	int	 src_x,
-	int	 src_y,
-	int	 draw_w,
-	int	 draw_h)
+	double	 src_x,
+	double	 src_y,
+	double	 draw_w,
+	double	 draw_h)
 {
     cairo_t *cr;
 
@@ -184,6 +186,10 @@ cairo_popup_image_paint(
 	return;
     cairo_surface_t *surface = (cairo_surface_t *)wp->w_popup_image_surface;
 
+    src_x = PHY2LOG(src_x);
+    src_y = PHY2LOG(src_y);
+    draw_w = PHY2LOG(draw_w);
+    draw_h = PHY2LOG(draw_h);
 
 # if !GTK_CHECK_VERSION(3,0,0)
     cr = gdk_cairo_create((GdkDrawable *)target);
