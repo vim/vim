@@ -136,47 +136,115 @@ prefix that is very unlikely to be used elsewhere.  For example, if you have a
 ==============================================================================
 *52.2*	Autoloading
 
-After splitting your large script into pieces, all the lines will still be
-loaded and executed the moment the script is used.  Every `import` loads the
-imported script to find the items defined there.  Although that is good for
-finding errors early, it also takes time.  Which is wasted if the
-functionality is not often used.
+After splitting a large script into pieces, an imported script is
+loaded and executed at the moment the importing script is sourced.
+Every |import| loads the imported script to find the items defined there.
+However, if an imported script is large, then the startup time may become
+noticeably slower, but on the other hand if there are errors they will be
+detected at import time.
 
-Instead of having `import` load the script immediately, it can be postponed
-until needed.  Using the example above, only one change needs to be made in
-the plugin/theplugin.vim script: >
+To avoid long startup times, the loading of an imported script may
+be deferred until it is actually needed. This is done with the `autoload` keyword.
+Using the example above, only one change is needed in `plugin/theplugin.vim`:
+>
 	import autoload "../lib/getmessage.vim"
+<
+Nothing in the rest of the script needs to change.
+However, `../lib/getmessage.vim` is not loaded or checked at import time.
+Not even the existence of the GetMessage() function is
+checked until it is used. As a result, errors in `getmessage` script,
+are detected only at runtime.
 
-Nothing in the rest of the script needs to change.  However, the types will
-not be checked.  Not even the existence of the GetMessage() function is
-checked until it is used.  You will have to decide what is more important for
-your script: fast startup or getting errors early.  You can also add the
-"autoload" argument later, after you have checked everything works.
+You will have to decide what is more important for your script: fast startup
+or getting errors early.
+
+A practical strategy is to omit the `autoload` keyword during development
+and debugging so that errors are reported immediately, then add it back
+before distributing your plugin to improve startup performance.
 
 
-AUTOLOAD DIRECTORY
+AUTOLOAD DIRECTORIES
 
-Another form is to use autoload with a script name that is not an absolute or
-relative path: >
+Another way to lazily load scripts is to `autoload import` a script
+without specifying any relative or absolute path, like in the following
+example:
+>
 	import autoload "monthlib.vim"
+<
+Vim searches for the script in the `autoload/ directories under |runtimepath|.
+This means that the script must reside in an `autoload/` folder.
+On Unix systems, one such directories is often  `~/.vim/autoload`.
+It will also search under |packpath|, under `start`.
 
-This will search for the script "monthlib.vim" in the autoload directories of
-'runtimepath'.  With Unix one of the directories often is "~/.vim/autoload".
-It will also search under 'packpath', under "start".
+When a script is imported this way, its exported symbols are referenced
+through a global autoload namespace rather than remaining local to the
+importing script.
 
-The main advantage of this is that this script can be easily shared with other
-scripts.  You do need to make sure that the script name is unique, since Vim
-will search all the "autoload" directories in 'runtimepath', and if you are
-using several plugins with a plugin manager, it may add a directory to
-'runtimepath', each of which might have an "autoload" directory.
+Since Vim searches every `autoload/` directory in |runtimepath|, choose
+a unique script name. Plugin managers often add multiple directories to
+|runtimepath|, each of which may contain an `autoload/` directory.
 
-Without autoload: >
-	import "monthlib.vim"
+The two forms of `import autoload` are summarized as follows:
 
-Vim will search for the script "monthlib.vim" in the import directories of
-'runtimepath'.  Note that in this case adding or removing "autoload" changes
-where the script is found.  With a relative or absolute path the location does
-not change.
+- `import autoload "foo.vim"`
+  exported symbols are available through the global autoload namespace.
+
+- `import autoload "/some/path/foo.vim"`
+  exported symbols remain local to the importing script.
+
+For example, suppose an |enum| is defined in a script located in an
+`autoload/` directory and imported using `import autoload "foo.vim"`. The
+|enum| then becomes part of the global autoload namespace. If the script is
+modified and sourced again, Vim reports |E1041| because the enum has already
+been defined in the global autoload namespace and cannot be redefined.
+However, functions, constants and variables can be safely redefined.
+
+The main advantage of accessing symbols through the global autoload namespace
+is that the script can be easily imported by other scripts, and symbols can be
+used straight away.
+
+If the same |enum| as in the previous example is defined in a script outside an
+`autoload/` directory and imported using a relative or absolute path, it remains
+local to the importing script. In that case, the script can be modified and
+sourced repeatedly without triggering |E1041|, because the enum is recreated
+within the script-local namespace each time.
+
+However, sharing symbols in this case is more complex. We can show it through
+an example. Assume that `/some/path/my_plugin/lib/my_typedef.vim` exports the
+following |enum|:
+<
+  enum Color
+    white,
+    Red,
+    Green, Blue, Black
+  endenum
+>
+and assume that you want to expose it.
+A user cannot just use var a: Color = Color.Blue but the user shall
+somehow import the |enum| Color.
+One possible way could be to something like the following:
+>
+  vim9script
+
+  # Retrieve the plugin type definition
+  const my_plugin_path = globpath(&rtp, 'lib/my_typedef.vim')->fnamemodify(':h')
+  import autoload $"{my_plugin_path}/my_typedef.vim" as my_typedef
+
+  var mycolor: my_typedef.Color = my_typedef.Color.Blue
+<
+which is verbose and not robust but it provides strong encapsulation.
+
+Finally, when a script is imported without `autoload` and without path, like the
+following example:
+>
+  import "monthlib.vim"
+<
+Then Vim will search for the script "monthlib.vim" in the import directories
+of 'runtimepath'.
+
+In this case, adding or removing the `autoload` keyword changes where Vim
+searches for the script. When a relative or absolute path is used, then the
+location does not change.
 
 ==============================================================================
 *52.3*	Autoloading without import/export
