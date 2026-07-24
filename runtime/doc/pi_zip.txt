@@ -48,21 +48,22 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
    If this variable exists and is true, the file window will not be
    automatically maximized when opened.
 
-							*g:zip_unzipcmd*
-   Use this option to specify the program which does the duty of "unzip".
+							*g:zip_browse*
+							*g:zip_read*
+							*g:zip_extract*
+   Use these option to specify the program which does the duty of "unzip".
    It's used during browsing. By default: >
-	let g:zip_unzipcmd= "unzip"
+	let g:zip_browse  = ["unzip", "-Z1"]
+	let g:zip_read    = ["unzip", "-p"]
+	let g:zip_extract = ["unzip", "-o"]
 <
-							*g:zip_zipcmd*
+							*g:zip_delete*
+							*g:zip_update*
    Use this option to specify the program which does the duty of "zip".
    It's used during the writing (updating) of a file already in a zip
    file; by default: >
-	let g:zip_zipcmd= "zip"
-<
-							*g:zip_extractcmd*
-   This option specifies the program (and any options needed) used to
-   extract a file from a zip archive.  By default, >
-	let g:zip_extractcmd= g:zip_unzipcmd
+	let g:zip_delete = ["zip", "-d"]
+	let g:zip_update = ["zip", "-u"]
 <
 							*g:zip_exec*
    For security reasons, one may prevent that Vim runs executables
