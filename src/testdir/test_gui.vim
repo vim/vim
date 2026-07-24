@@ -1314,6 +1314,205 @@ func Test_gui_mouse_event()
   set mousemodel&
 endfunc
 
+func Test_gui_mouse_conceallevel_three_selection()
+  CheckFeature conceal
+
+  " Low level input isn't 100% reliable.
+  let g:test_is_flaky = 1
+
+  let save_mouse = &mouse
+  let save_mousemodel = &mousemodel
+  let save_columns = &columns
+  let save_lines = &lines
+
+  call test_override('no_query_mouse', 1)
+  set columns=40 lines=12
+  new
+  try
+    set mouse=a mousemodel=extend
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    syntax match Hidden /HIDDEN / conceal
+
+    let line = repeat('a', 42)
+          \ .. ' HIDDEN target words after hidden text to force wrapping'
+          \ .. ' and mapping checks'
+    call setline(1, line)
+    call cursor(1, 1)
+    redraw!
+
+    let start_col = 10
+    let target_col = stridx(line, 'target') + 4
+    let start = screenpos(0, 1, start_col)
+    let target = screenpos(0, 1, target_col)
+    call assert_true(start.row > 0)
+    call assert_true(target.row > start.row)
+
+    let @" = ''
+    let args = #{button: 0, row: start.row, col: start.curscol,
+          \ multiclick: 0, modifiers: 0}
+    call test_gui_event('mouse', args)
+    let args = #{button: 0x43, row: target.row, col: target.curscol,
+          \ multiclick: 0, modifiers: 0}
+    call test_gui_event('mouse', args)
+    let args.button = 0x3
+    call test_gui_event('mouse', args)
+
+    call feedkeys("y", 'Lx!')
+    call assert_equal(strpart(line, start_col - 1,
+          \ target_col - start_col + 1), @")
+  finally
+    call feedkeys("\<Esc>", 'Lx!')
+    syntax clear Hidden
+    bwipe!
+    let &columns = save_columns
+    let &lines = save_lines
+    let &mouse = save_mouse
+    let &mousemodel = save_mousemodel
+    call test_override('no_query_mouse', 0)
+  endtry
+endfunc
+
+func Test_gui_mouse_conceallevel_three_modeless_selection()
+  CheckFeature conceal
+
+  " Low level input isn't 100% reliable.
+  let g:test_is_flaky = 1
+
+  let save_mouse = &mouse
+  let save_guioptions = &guioptions
+  let save_columns = &columns
+  let save_lines = &lines
+
+  call test_override('no_query_mouse', 1)
+  set columns=40 lines=12
+  new
+  try
+    set mouse=
+    set guioptions+=A
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    syntax match Hidden /HIDDEN / conceal
+
+    let line = repeat('a', 42)
+          \ .. ' HIDDEN target words after hidden text to force wrapping'
+          \ .. ' and mapping checks'
+    call setline(1, line)
+    call cursor(1, 1)
+    redraw!
+
+    " Double-click should select the visible word after the hidden span.
+    let target_col = stridx(line, 'target') + 1
+    let target = screenpos(0, 1, target_col)
+    call assert_true(target.row > 0)
+    let @* = ''
+    let args = #{button: 0, row: target.row, col: target.curscol,
+          \ multiclick: 0, modifiers: 0}
+    call test_gui_event('mouse', args)
+    let args.multiclick = 1
+    call test_gui_event('mouse', args)
+    let args.button = 0x3
+    let args.multiclick = 0
+    call test_gui_event('mouse', args)
+    call feedkeys("\<Esc>", 'Lx!')
+    call assert_equal('target', @*)
+
+    " With the P flag modeless selection should use the + register.
+    set guioptions+=P
+    let start_col = 10
+    let target_col = stridx(line, 'target') + 4
+    let target = screenpos(0, 1, target_col)
+    call assert_true(target.row > 0)
+    let @+ = ''
+    call cursor(1, start_col)
+    redraw!
+    let args = #{button: 2, row: target.row, col: target.curscol,
+          \ multiclick: 0, modifiers: 0}
+    call test_gui_event('mouse', args)
+    let args.button = 0x3
+    call test_gui_event('mouse', args)
+    call feedkeys("\<Esc>", 'Lx!')
+    call assert_equal(substitute(strpart(line, start_col - 1,
+          \ target_col - start_col + 1), 'HIDDEN ', '', ''), @+)
+  finally
+    call feedkeys("\<Esc>", 'Lx!')
+    syntax clear Hidden
+    bwipe!
+    let @+ = ''
+    let @* = ''
+    let &columns = save_columns
+    let &lines = save_lines
+    let &guioptions = save_guioptions
+    let &mouse = save_mouse
+    call test_override('no_query_mouse', 0)
+  endtry
+endfunc
+
+func Test_gui_mousefocus_conceallevel_three()
+  CheckFeature conceal
+  CheckNotMSWindows
+
+  let save_mouse = &mouse
+  let save_mousefocus = &mousefocus
+  let save_columns = &columns
+  let save_lines = &lines
+
+  call test_override('no_query_mouse', 1)
+  set columns=40 lines=14 mouse=a mousefocus
+  new
+  let target_buf = bufnr()
+  try
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    syntax match Hidden /HIDDEN / conceal
+
+    let line = repeat('a', 42)
+          \ .. ' HIDDEN target words after hidden text to force wrapping'
+          \ .. ' and mapping checks'
+    call setline(1, line)
+    let target_win = win_getid()
+
+    belowright new
+    let other_buf = bufnr()
+    call setline(1, 'other window')
+    let other_win = win_getid()
+
+    redraw!
+    let target_col = stridx(line, 'target') + 1
+    let target = screenpos(target_win, 1, target_col)
+    call assert_true(target.row > 0)
+    let [target_winrow, _] = win_screenpos(target_win)
+    let focus_row = target_winrow + winheight(target_win)
+    call assert_equal(other_win, win_getid())
+
+    " This is the non-mappable focus event used by 'mousefocus'.
+    call test_setmouse(focus_row, 1)
+    call feedkeys("\<LeftMouseNM>\<LeftReleaseNM>", 'tx')
+    call assert_equal(target_win, win_getid())
+
+    call test_setmouse(target.row, target.curscol)
+    let mousepos = getmousepos()
+    call assert_equal(target_win, mousepos.winid)
+    call assert_equal(1, mousepos.line)
+    call assert_equal(target_col, mousepos.column)
+  finally
+    if exists('target_win') && win_id2win(target_win) > 0
+      call win_execute(target_win, 'syntax clear Hidden')
+    endif
+    if exists('other_buf')
+      exe 'silent! bwipe! ' .. other_buf
+    endif
+    if exists('target_buf')
+      exe 'silent! bwipe! ' .. target_buf
+    endif
+    let &columns = save_columns
+    let &lines = save_lines
+    let &mousefocus = save_mousefocus
+    let &mouse = save_mouse
+    call test_override('no_query_mouse', 0)
+  endtry
+endfunc
+
 " Test invalid parameters for test_gui_event()
 func Test_gui_event_mouse_fails()
   call test_override('no_query_mouse', 1)
@@ -1365,6 +1564,12 @@ endfunc
 func MouseWasMoved()
   let pos = getmousepos()
   call add(g:eventlist, #{row: pos.screenrow, col: pos.screencol})
+endfunc
+
+func MouseMoveConcealWasMoved()
+  let pos = getmousepos()
+  call add(g:eventlist, #{line: pos.line, column: pos.column,
+        \ screenrow: pos.screenrow, screencol: pos.screencol})
 endfunc
 
 func Test_gui_mouse_move_event()
@@ -1431,6 +1636,63 @@ func Test_gui_mouse_move_event()
   unlet g:eventlist
   unmap <MouseMove>
   set mousemev&
+endfunc
+
+func Test_gui_mouse_move_event_conceallevel_three()
+  CheckFeature conceal
+
+  let save_mouse = &mouse
+  let save_mousemev = &mousemev
+  let save_columns = &columns
+  let save_lines = &lines
+
+  call test_override('no_query_mouse', 1)
+  set columns=40 lines=12 mouse=a mousemev
+  new
+  try
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    syntax match Hidden /HIDDEN / conceal
+
+    let line = repeat('a', 42)
+          \ .. ' HIDDEN target words after hidden text to force wrapping'
+          \ .. ' and mapping checks'
+    call setline(1, line)
+    redraw!
+
+    let target_col = stridx(line, 'target') + 1
+    let target = screenpos(0, 1, target_col)
+    call assert_true(target.row > 0)
+
+    let g:eventlist = []
+    nnoremap <special> <silent> <MouseMove>
+          \ :call MouseMoveConcealWasMoved()<CR>
+    let args = #{move: 1, button: 0, multiclick: 0, modifiers: 0,
+          \ cell: v:true}
+    call PrepareForMouseEvent(args)
+
+    call extend(args, #{row: target.row, col: target.curscol})
+    call test_gui_event('mouse', args)
+    call feedkeys('', 'Lx!')
+
+    " FIXME: on MS-Windows we can get a stray event first.
+    if has('win32') && len(g:eventlist) > 1
+      let g:eventlist = g:eventlist[-1 :]
+    endif
+
+    call assert_equal([#{line: 1, column: target_col,
+          \ screenrow: target.row, screencol: target.curscol}], g:eventlist)
+  finally
+    syntax clear Hidden
+    bwipe!
+    silent! unmap <MouseMove>
+    unlet! g:eventlist
+    let &columns = save_columns
+    let &lines = save_lines
+    let &mousemev = save_mousemev
+    let &mouse = save_mouse
+    call test_override('no_query_mouse', 0)
+  endtry
 endfunc
 
 " Test for 'guitablabel' and 'guitabtooltip' options

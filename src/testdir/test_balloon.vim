@@ -94,4 +94,54 @@ func Test_balloon_eval_term_rightleft()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_balloon_eval_term_conceallevel_three_col()
+  CheckRunVimInTerminal
+
+  let line = repeat('a', 24)
+        \ .. ' HIDDEN target words after hidden text to force wrapping'
+        \ .. ' and mapping checks'
+  let target_col = stridx(line, 'target') + 1
+  let xtra_lines =<< trim [CODE]
+    setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+          \ signcolumn=no nonumber
+    syntax match Hidden /HIDDEN / conceal
+    set balloonevalterm balloonexpr=MyBalloonExpr() balloondelay=100
+    func MyBalloonExpr()
+      call writefile([string(v:beval_lnum), string(v:beval_col),
+            \ v:beval_text], 'Xbeval_conceal_result')
+      return ''
+    endfunc
+    func Trigger()
+      let target_col = stridx(getline(1), 'target') + 1
+      let pos = screenpos(0, 1, target_col)
+      call writefile([string(pos.row), string(pos.curscol),
+            \ string(target_col)], 'Xbeval_conceal_pos')
+      call test_setmouse(pos.row, pos.curscol)
+      call feedkeys("\<MouseMove>\<Ignore>", "xt")
+    endfunc
+  [CODE]
+  call writefile(['call setline(1, ' .. string(line) .. ')'] + xtra_lines,
+        \ 'XTest_beval_conceal', 'D')
+  call delete('Xbeval_conceal_result')
+  call delete('Xbeval_conceal_pos')
+
+  let buf = RunVimInTerminal('-S XTest_beval_conceal',
+        \ {'rows': 10, 'cols': 40})
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, ":call Trigger()\<CR>")
+  call WaitFor({-> filereadable('Xbeval_conceal_pos')
+        \ && len(readfile('Xbeval_conceal_pos')) > 0})
+  let pos = readfile('Xbeval_conceal_pos')
+  call assert_equal('1', pos[0])
+  call assert_true(str2nr(pos[1]) < target_col)
+  call WaitFor({-> filereadable('Xbeval_conceal_result')
+        \ && len(readfile('Xbeval_conceal_result')) > 0})
+  call assert_equal(['1', string(target_col), 'target'],
+        \ readfile('Xbeval_conceal_result'))
+
+  call StopVimInTerminal(buf)
+  call delete('Xbeval_conceal_result')
+  call delete('Xbeval_conceal_pos')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

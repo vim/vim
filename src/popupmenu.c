@@ -365,10 +365,18 @@ pum_display(
 	    // w_wcol includes virtual text "above".
 	    wcol %= curwin->w_width;
 #ifdef FEAT_CONCEAL
-	    // w_wcol does not account for text concealed before the cursor;
-	    // shift by the offset win_line() recorded for the cursor line so the
-	    // menu lines up with the visible text.
-	    if (curwin->w_p_cole > 0 && conceal_cursor_line(curwin))
+	    // w_wcol may still include text concealed before the cursor.  Shift
+	    // by the offset win_line() recorded for the cursor line so the menu
+	    // lines up with visible text.  Insert completion supplies an already
+	    // corrected column for 'conceallevel' 3 when wrapping or rightleft
+	    // mirroring needs the actual drawn cursor position.
+	    if ((pum_wcol < 0 || curwin->w_p_cole != 3
+			|| (!curwin->w_p_wrap
+# ifdef FEAT_RIGHTLEFT
+			    && !curwin->w_p_rl
+# endif
+			   ))
+		    && curwin->w_p_cole > 0 && conceal_cursor_line(curwin))
 	    {
 		wcol -= curwin->w_wcol_conceal_off;
 		if (wcol < 0)

@@ -74,6 +74,85 @@ static void borrow_stl_vsep_hl(void);
 static int  did_update_one_window;
 #endif
 
+#ifdef FEAT_CONCEAL
+    static void
+getvvcol_conceal(
+    win_T	*wp,
+    pos_T	*pos,
+    colnr_T	*start,
+    colnr_T	*end,
+    int		flags)
+{
+    colnr_T	raw_start;
+    colnr_T	raw_end;
+    long	concealed_vcol;
+
+    getvvcol(wp, pos, &raw_start, NULL, &raw_end, flags);
+    concealed_vcol = plines_win_col_conceal_vcol(wp, pos->lnum, pos->col);
+    if (concealed_vcol >= 0)
+    {
+	long	delta = concealed_vcol - (long)raw_start;
+	long	adjusted_start = (long)raw_start + delta;
+	long	adjusted_end = (long)raw_end + delta;
+
+	if (adjusted_start < 0)
+	    adjusted_start = 0;
+	if (adjusted_end < adjusted_start)
+	    adjusted_end = adjusted_start;
+	if (adjusted_start > MAXCOL)
+	    adjusted_start = MAXCOL;
+	if (adjusted_end > MAXCOL)
+	    adjusted_end = MAXCOL;
+	raw_start = (colnr_T)adjusted_start;
+	raw_end = (colnr_T)adjusted_end;
+    }
+    if (start != NULL)
+	*start = raw_start;
+    if (end != NULL)
+	*end = raw_end;
+}
+
+/*
+ * Get blockwise Visual columns in the drawn virtual-column space used by
+ * wrapped 'conceallevel' 3 text.
+ */
+    static void
+getvcols_conceal(
+    win_T	*wp,
+    pos_T	*pos1,
+    pos_T	*pos2,
+    colnr_T	*left,
+    colnr_T	*right,
+    int		flags)
+{
+    colnr_T	from1, from2, to1, to2;
+
+    if (LT_POSP(pos1, pos2))
+    {
+	getvvcol_conceal(wp, pos1, &from1, &to1, flags);
+	getvvcol_conceal(wp, pos2, &from2, &to2, flags);
+    }
+    else
+    {
+	getvvcol_conceal(wp, pos2, &from1, &to1, flags);
+	getvvcol_conceal(wp, pos1, &from2, &to2, flags);
+    }
+    if (from2 < from1)
+	*left = from2;
+    else
+	*left = from1;
+    if (to2 > to1)
+    {
+	if (*p_sel == 'e' && from2 - 1 >= to1)
+	    *right = from2 - 1;
+	else
+	    *right = to2;
+    }
+    else
+	*right = to1;
+}
+#endif
+
 #ifdef FEAT_EVAL
 static void redraw_listener_cleanup(void);
 static void invoke_redraw_listener_start_or_end(bool start);
@@ -2189,8 +2268,27 @@ win_update(win_T *wp)
 	    if (VIsual_mode == Ctrl_V)
 	    {
 		colnr_T	    fromc, toc;
+#ifdef FEAT_CONCEAL
+		bool	    cursor_concealed = false;
+#endif
 
-		getvcols(wp, &VIsual, &curwin->w_cursor, &fromc, &toc,
+#ifdef FEAT_CONCEAL
+		if (wp->w_p_wrap && wp->w_p_cole == 3)
+		{
+		    getvcols_conceal(wp, &VIsual, &curwin->w_cursor,
+					&fromc, &toc, GETVCOL_END_EXCL_LBR);
+		    cursor_concealed = plines_win_col_concealed(wp,
+				    curwin->w_cursor.lnum, curwin->w_cursor.col);
+		    if (cursor_concealed)
+		    {
+			mid_start = 0;
+			mid_end = wp->w_height;
+			type = UPD_NOT_VALID;
+		    }
+		}
+		else
+#endif
+		    getvcols(wp, &VIsual, &curwin->w_cursor, &fromc, &toc,
 							 GETVCOL_END_EXCL_LBR);
 		++toc;
 		// Highlight to the end of the line, unless 'virtualedit' has
@@ -2214,7 +2312,13 @@ win_update(win_T *wp)
 			    colnr_T t;
 
 			    pos.col = (int)ml_get_buf_len(wp->w_buffer, pos.lnum);
-			    getvvcol(wp, &pos, NULL, NULL, &t, 0);
+#ifdef FEAT_CONCEAL
+			    if (wp->w_p_wrap && wp->w_p_cole == 3)
+				getvvcol_conceal(wp, &pos, NULL,
+									&t, 0);
+			    else
+#endif
+				getvvcol(wp, &pos, NULL, NULL, &t, 0);
 			    if (toc < t)
 				toc = t;
 			}
@@ -2225,7 +2329,11 @@ win_update(win_T *wp)
 		}
 
 		if (fromc != wp->w_old_cursor_fcol
-			|| toc != wp->w_old_cursor_lcol)
+			|| toc != wp->w_old_cursor_lcol
+#ifdef FEAT_CONCEAL
+			|| cursor_concealed
+#endif
+			)
 		{
 		    if (from > VIsual.lnum)
 			from = VIsual.lnum;
@@ -3570,6 +3678,12 @@ redrawWinline(
     win_T	*wp,
     linenr_T	lnum)
 {
+#ifdef FEAT_CONCEAL
+    // With zero-width concealed text, redrawing one wrapped line may change
+    // how many screen rows it occupies.
+    if (wp->w_p_wrap && plines_win_may_conceal(wp, lnum))
+	wp->w_lines_valid = 0;
+#endif
     redraw_win_range_later(wp, lnum, lnum);
 }
 

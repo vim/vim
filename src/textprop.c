@@ -16,6 +16,41 @@
 #if defined(FEAT_PROP_POPUP)
 
 static void um_store_changes(unpacked_memline_T *um);
+static unsigned long text_prop_change_tick = 0;
+static unsigned long text_prop_type_change_tick = 0;
+
+/*
+ * Text property changes do not update b:changedtick.  Keep a separate tick so
+ * that cached screen geometry can detect them.
+ */
+    static void
+text_prop_changed(buf_T *buf)
+{
+    buf->b_textprop_change_tick = ++text_prop_change_tick;
+}
+
+/*
+ * A global property type can be used by text properties in any buffer.
+ */
+    static void
+text_prop_type_changed(buf_T *buf)
+{
+    if (buf != NULL)
+	text_prop_changed(buf);
+    else
+	++text_prop_type_change_tick;
+}
+
+/*
+ * Return the state that affects text-property screen geometry for "buf".
+ */
+    hash_T
+text_prop_state_hash(buf_T *buf)
+{
+    hash_T hash = (hash_T)buf->b_textprop_change_tick;
+
+    return hash * 101 + (hash_T)text_prop_type_change_tick;
+}
 
 /*
  * Free virtual text strings in a detached unpacked memline's props.
@@ -514,6 +549,7 @@ um_store_changes(unpacked_memline_T *um)
     um->buf->b_ml.ml_line_ptr = packed;
     um->buf->b_ml.ml_line_len = packed_len;
     um->buf->b_ml.ml_flags |= ML_LINE_DIRTY;
+    text_prop_changed(um->buf);
 
     um->detached = false;
     um->text = packed;
@@ -918,6 +954,7 @@ prop_add_one(
 	buf->b_ml.ml_line_ptr = newtext;
 	buf->b_ml.ml_line_len = new_line_len;
 	buf->b_ml.ml_flags |= ML_LINE_DIRTY;
+	text_prop_changed(buf);
     }
 
     changed_line_display_buf(buf);
@@ -1569,6 +1606,7 @@ set_text_props(linenr_T lnum, textprop_T *tps, int count)
 	curbuf->b_ml.ml_line_len = total_len;
 	curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
     }
+    text_prop_changed(curbuf);
 }
 
 /*
@@ -2664,6 +2702,8 @@ prop_type_set(typval_T *argvars, int add)
 		prop->pt_flags &= ~PT_FLAG_INS_END_INCL;
 	}
     }
+    if (!add)
+	text_prop_type_changed(buf);
 }
 
 /*
@@ -2731,6 +2771,7 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
     }
     hash_remove(ht, hi, "prop type delete");
     vim_free(prop);
+    text_prop_type_changed(buf);
 
     // currently visible text properties will disappear
     redraw_all_later(UPD_CLEAR);

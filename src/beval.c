@@ -36,11 +36,18 @@ find_word_under_cursor(
     win_T	*wp;
     char_u	*lbuf;
     linenr_T	lnum;
+# ifdef FEAT_CONCEAL
+    int		screen_col;
+# endif
 
     *textp = NULL;
     wp = mouse_find_win(&row, &col, FAIL_POPUP);
     if (wp == NULL || row < 0 || row >= wp->w_height || col >= wp->w_width)
 	return FAIL;
+
+# ifdef FEAT_CONCEAL
+    screen_col = col;
+# endif
 
     // Found a window and the cursor is in the text.  Now find the line
     // number.
@@ -59,6 +66,9 @@ find_word_under_cursor(
 	// instead of the whole line.
 	int		len;
 	pos_T	*spos = NULL, *epos = NULL;
+# ifdef FEAT_CONCEAL
+	colnr_T	conceal_col;
+# endif
 
 	if (VIsual_active)
 	{
@@ -74,7 +84,13 @@ find_word_under_cursor(
 	    }
 	}
 
-	col = vcol2col(wp, lnum, col, NULL);
+# ifdef FEAT_CONCEAL
+	if (mouse_conceal_col(wp, lnum, row, screen_col,
+						    &conceal_col, NULL))
+	    col = (int)conceal_col;
+	else
+# endif
+	    col = vcol2col(wp, lnum, col, NULL);
 	scol = col;
 
 	if (VIsual_active

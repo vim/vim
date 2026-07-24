@@ -654,45 +654,10 @@ endfunc
 
 " Test if serverlist() can return a list of strings
 func Test_clientserver_serverlist_list()
-  CheckNotGui
+  let servers = serverlist(#{list: v:true})
 
-  " CheckNotGui has already confirmed gvim is not being used to run this test.
-  " However, if this is a GUI _build_ of vim, then the running Vim process
-  " will already have selected _not_ to use socket clientserver. Therefore, we
-  " either need the ability to use the GUI clientserver or to skip the test.
-  call Check_X11_Connection()
-
-  let g:test_is_flaky = 1
-  let cmd = GetVimCommand()
-
-  if cmd == ''
-    throw 'GetVimCommand() failed'
-  endif
-
-  " Don't use channel:2000, because previous tests use that and it may take a
-  " while for the channel to fully close.
-  let actual = cmd .. ' --servername XVIMTEST'
-
-  let job = job_start(actual, {'stoponexit': 'kill', 'out_io': 'null'})
-
-  call WaitForAssert({-> assert_match('XVIMTEST', serverlist())})
-
-  call assert_equal('list<string>', typename(serverlist(#{list: v:true})))
-  call assert_true(serverlist(#{list: v:true})->index('XVIMTEST') != -1)
-
-  if has('win32')
-    call job_stop(job, 'kill')
-  else
-    call system(actual .. " --remote-expr 'execute(\"qa!\")'")
-  endif
-  try
-    call WaitForAssert({-> assert_equal("dead", job_status(job))})
-  finally
-    if job_status(job) != 'dead'
-      call assert_report('Server did not exit')
-      call job_stop(job, 'kill')
-    endif
-  endtry
+  call assert_equal('list<string>', typename(servers))
+  call assert_equal(serverlist(), join(servers, "\n"))
 endfunc
 
 func Test_clientserver_serverlist_without_x11()

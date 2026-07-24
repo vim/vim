@@ -572,6 +572,12 @@ update_topline(void)
 	if (curwin->w_cursor.lnum == curwin->w_topline)
 	    validate_cursor();
     }
+#ifdef FEAT_CONCEAL
+    else if (curwin->w_p_cole == 3 && !curwin->w_p_sms
+	    && curwin->w_skipcol != 0
+	    && curwin->w_cursor.lnum != curwin->w_topline)
+	reset_skipcol();
+#endif
 
     *so_ptr = save_so;
 }
@@ -668,6 +674,9 @@ check_cursor_moved(win_T *wp)
 	wp->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL
 				      |VALID_CHEIGHT|VALID_CROW|VALID_TOPLINE
 				      |VALID_BOTLINE|VALID_BOTLINE_AP);
+#ifdef FEAT_CONCEAL
+	wp->w_flags &= ~(WFLAG_CONCEAL_WCOL|WFLAG_CONCEAL_NO_REDRAW);
+#endif
 	wp->w_valid_cursor = wp->w_cursor;
 	wp->w_valid_leftcol = wp->w_leftcol;
 	wp->w_valid_skipcol = wp->w_skipcol;
@@ -677,6 +686,9 @@ check_cursor_moved(win_T *wp)
 	wp->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL
 				      |VALID_CHEIGHT|VALID_CROW
 				      |VALID_BOTLINE|VALID_BOTLINE_AP);
+#ifdef FEAT_CONCEAL
+	wp->w_flags &= ~(WFLAG_CONCEAL_WCOL|WFLAG_CONCEAL_NO_REDRAW);
+#endif
 	wp->w_valid_cursor = wp->w_cursor;
 	wp->w_valid_leftcol = wp->w_leftcol;
 	wp->w_valid_skipcol = wp->w_skipcol;
@@ -686,6 +698,9 @@ check_cursor_moved(win_T *wp)
 	     || wp->w_cursor.coladd != wp->w_valid_cursor.coladd)
     {
 	wp->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
+#ifdef FEAT_CONCEAL
+	wp->w_flags &= ~(WFLAG_CONCEAL_WCOL|WFLAG_CONCEAL_NO_REDRAW);
+#endif
 	wp->w_valid_cursor.col = wp->w_cursor.col;
 	wp->w_valid_leftcol = wp->w_leftcol;
 	wp->w_valid_cursor.coladd = wp->w_cursor.coladd;
@@ -1088,6 +1103,52 @@ validate_cheight(void)
     curwin->w_valid |= VALID_CHEIGHT;
 }
 
+#if defined(FEAT_CONCEAL) && (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP))
+    static int
+textpos2screenpos_core(
+	win_T	*wp,
+	pos_T	*pos,
+	int	*rowp,
+	int	*scolp,
+	int	*ccolp,
+	int	*ecolp,
+	bool	cursor_layout);
+
+/*
+ * Return the cursor's row and column relative to the window text area.
+ */
+    static int
+conceal_cursor_winpos(
+	win_T	*wp,
+	int	*wrowp,
+	int	*wcolp)
+{
+    int row;
+    int scol;
+    int ccol;
+    int ecol;
+    int result;
+
+    if (!wp->w_p_wrap || wp->w_p_cole != 3)
+	return FAIL;
+    result = textpos2screenpos_core(wp, &wp->w_cursor, &row, &scol, &ccol,
+							 &ecol, true);
+    if (result == NOTDONE)
+	return NOTDONE;
+    if (result == FAIL || row <= 0 || ccol <= 0)
+	return FAIL;
+    *wrowp = row - W_WINROW(wp) - 1;
+    *wcolp = ccol - wp->w_wincol - 1;
+# ifdef FEAT_RIGHTLEFT
+    // The conceal iterator reports a physical screen column, while w_wcol is
+    // stored in reading order and mirrored when the cursor is displayed.
+    if (wp->w_p_rl)
+	*wcolp = wp->w_width - *wcolp - cursor_screen_cells();
+# endif
+    return OK;
+}
+#endif
+
 /*
  * Validate w_wcol and w_virtcol only.
  */
@@ -1097,12 +1158,37 @@ validate_cursor_col(void)
     colnr_T off;
     colnr_T col;
     int     width;
+#if defined(FEAT_CONCEAL) && (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP))
+    int	    conceal_row;
+    int	    conceal_col;
+#endif
+#ifdef FEAT_FOLDING
+    bool    cline_folded;
+#endif
 
     validate_virtcol();
 
     if (curwin->w_valid & VALID_WCOL)
 	return;
 
+#if defined(FEAT_CONCEAL) && (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP))
+    if (conceal_cursor_winpos(curwin, &conceal_row, &conceal_col) == OK)
+    {
+	curwin->w_wrow = conceal_row;
+	curwin->w_wcol = conceal_col;
+	curwin->w_valid |= VALID_WROW|VALID_WCOL;
+	return;
+    }
+#endif
+
+#ifdef FEAT_FOLDING
+    cline_folded = (curwin->w_valid & VALID_CHEIGHT)
+	? curwin->w_cline_folded
+	: hasFolding(curwin->w_cursor.lnum, NULL, NULL);
+    if (cline_folded)
+	col = curwin->w_leftcol;
+    else
+#endif
     col = curwin->w_virtcol;
     off = curwin_col_off();
     col += off;
@@ -1110,6 +1196,9 @@ validate_cursor_col(void)
 
     // long line wrapping, adjust curwin->w_wrow
     if (curwin->w_p_wrap
+#ifdef FEAT_FOLDING
+	    && !cline_folded
+#endif
 	    && col >= (colnr_T)curwin->w_width
 	    && width > 0)
 	// use same formula as what is used in curs_columns()
@@ -1125,6 +1214,30 @@ validate_cursor_col(void)
     curwin->w_flags &= ~WFLAG_WCOL_OFF_ADDED;
 #endif
 }
+
+#if defined(FEAT_CONCEAL) && (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP))
+/*
+ * Update w_wrow and w_wcol from the actual screen position for a concealed
+ * wrapped cursor line.  Return OK if the cached position was updated.
+ */
+    int
+update_conceal_cursor_screenpos(win_T *wp)
+{
+    int row;
+    int col;
+
+    if (conceal_cursor_winpos(wp, &row, &col) != OK)
+    {
+	wp->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
+	return FAIL;
+    }
+    wp->w_wrow = row;
+    wp->w_wcol = col;
+    wp->w_valid |= VALID_WROW|VALID_WCOL;
+    wp->w_valid &= ~VALID_VIRTCOL;
+    return OK;
+}
+#endif
 
 /*
  * Compute offset of a window, occupied by absolute or relative line number,
@@ -1192,6 +1305,16 @@ curs_columns(
     long	so = get_scrolloff_value();
     long	siso = get_sidescrolloff_value();
     int		did_sub_skipcol = FALSE;
+#ifdef FEAT_FOLDING
+    bool	cline_folded;
+#endif
+#ifdef FEAT_CONCEAL
+    long	concealed_vcol = -1;
+    int		conceal_cursor_result = FAIL;
+# if defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP)
+    bool	skip_conceal_cursor_pos = false;
+# endif
+#endif
 
     /*
      * First make sure that w_topline is valid (after moving the cursor).
@@ -1213,19 +1336,70 @@ curs_columns(
      * Compute the number of virtual columns.
      */
 #ifdef FEAT_FOLDING
-    if (curwin->w_cline_folded)
+    cline_folded = curwin->w_cline_folded;
+    if (cline_folded)
 	// In a folded line the cursor is always in the first column
 	startcol = curwin->w_virtcol = endcol = curwin->w_leftcol;
     else
 #endif
 	getvvcol(curwin, &curwin->w_cursor,
 				  &startcol, &(curwin->w_virtcol), &endcol, 0);
+#ifdef FEAT_CONCEAL
+# if defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP)
+    // A queued scroll does not display its intermediate cursor position.  On
+    // a partially skipped topline use the lightweight concealed-column path;
+    // the last command in the queue computes the exact drawn position.
+#  ifdef FEAT_FOLDING
+    if (curwin->w_p_wrap && curwin->w_p_cole == 3 && !cline_folded
+#  else
+    if (curwin->w_p_wrap && curwin->w_p_cole == 3
+#  endif
+	    && curwin->w_cursor.lnum == curwin->w_topline
+	    && curwin->w_skipcol > 0
+	    && KeyTyped && char_avail())
+	skip_conceal_cursor_pos = true;
+#  ifdef FEAT_FOLDING
+    if (!skip_conceal_cursor_pos && curwin->w_p_wrap
+			    && curwin->w_p_cole == 3 && !cline_folded)
+#  else
+    if (!skip_conceal_cursor_pos
+			    && curwin->w_p_wrap && curwin->w_p_cole == 3)
+#  endif
+    {
+	int row;
+	int col;
+
+	conceal_cursor_result = conceal_cursor_winpos(curwin, &row, &col);
+	if (conceal_cursor_result == OK)
+	{
+	    curwin->w_wrow = row;
+	    curwin->w_wcol = col;
+	    goto columns_done;
+	}
+    }
+# endif
+# ifdef FEAT_FOLDING
+    if (conceal_cursor_result != NOTDONE
+	    && curwin->w_p_wrap && curwin->w_p_cole == 3 && !cline_folded)
+# else
+    if (conceal_cursor_result != NOTDONE
+		    && curwin->w_p_wrap && curwin->w_p_cole == 3)
+# endif
+	concealed_vcol = plines_win_col_conceal_vcol(curwin,
+				   curwin->w_cursor.lnum, curwin->w_cursor.col);
+#endif
 
     // remove '$' from change command when cursor moves onto it
     if (startcol > dollar_vcol)
 	dollar_vcol = -1;
 
     extra = curwin_col_off();
+#ifdef FEAT_CONCEAL
+    if (concealed_vcol >= 0 && curwin->w_p_wrap)
+	curwin->w_wcol = curwin->w_virtcol + concealed_vcol - startcol
+								       + extra;
+    else
+#endif
     curwin->w_wcol = curwin->w_virtcol + extra;
     endcol += extra;
 
@@ -1455,6 +1629,9 @@ curs_columns(
     if (prev_skipcol != curwin->w_skipcol)
 	redraw_later(UPD_SOME_VALID);
 
+#ifdef FEAT_CONCEAL
+columns_done:
+#endif
 #ifdef FEAT_SYN_HL
     redraw_for_cursorcolumn(curwin);
 #endif
@@ -1478,18 +1655,242 @@ curs_columns(
 }
 
 #if defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP)
+# ifdef FEAT_CONCEAL
+typedef struct
+{
+    win_T	*wp;
+    pos_T	*pos;
+    int		base_row;
+    int		row;
+    int		scol;
+    int		ccol;
+    int		ecol;
+    int		before_col;
+    int		before_row;
+    int		before_scol;
+    int		before_ccol;
+    int		before_ecol;
+    int		after_col;
+    int		after_row;
+    int		after_scol;
+    int		after_ccol;
+    int		after_ecol;
+    bool	found;
+} conceal_screenpos_ctx_T;
+
+    static int
+conceal_screenpos_store(
+	colnr_T		col,
+	colnr_T		end_col,
+	int		row,
+	int		start_col,
+	int		cursor_col,
+	int		cells,
+	void		*ctx_arg)
+{
+    conceal_screenpos_ctx_T *ctx = (conceal_screenpos_ctx_T *)ctx_arg;
+    int			    scol;
+    int			    ccol;
+    int			    ecol;
+    int			    width;
+    int			    rowoff = 0;
+
+    row += ctx->base_row;
+    if (cursor_col < 0)
+	return OK;
+
+    width = ctx->wp->w_width - win_col_off(ctx->wp) + win_col_off2(ctx->wp);
+    if (ctx->wp->w_p_wrap && width > 0
+					   && cursor_col >= ctx->wp->w_width)
+    {
+	rowoff = (cursor_col - ctx->wp->w_width) / width + 1;
+	row += rowoff;
+    }
+    row += W_WINROW(ctx->wp) + 1;
+    scol = start_col + ctx->wp->w_wincol + 1;
+    ccol = cursor_col + ctx->wp->w_wincol + 1;
+    ecol = scol + cells - 1;
+#  ifdef FEAT_RIGHTLEFT
+    if (ctx->wp->w_p_rl)
+    {
+	// Keep "col" and "endcol" in reading order.  Only "curscol" is
+	// the physical screen column for a right-to-left window.
+	scol = ctx->wp->w_wincol + ctx->wp->w_width
+					       - (start_col + cells - 1);
+	ecol = scol + cells - 1;
+    }
+#  endif
+    if (col <= ctx->pos->col && ctx->pos->col <= end_col)
+    {
+	ctx->row = row;
+	ctx->scol = scol;
+	ctx->ccol = ccol;
+	ctx->ecol = ecol;
+	ctx->found = true;
+#  ifdef FEAT_RIGHTLEFT
+	// Conceal later in the buffer line shifts earlier cells in a rightleft
+	// line, so keep collecting until the whole line has been checked.
+	if (ctx->wp->w_p_rl)
+	    return OK;
+#  endif
+	return NOTDONE;
+    }
+#  ifdef FEAT_RIGHTLEFT
+    if (ctx->wp->w_p_rl && ctx->found)
+	return OK;
+#  endif
+    if (end_col < ctx->pos->col)
+    {
+	ctx->before_col = col;
+	ctx->before_row = row;
+	ctx->before_scol = scol;
+	ctx->before_ccol = ccol;
+	ctx->before_ecol = ecol;
+    }
+    else if (col > ctx->pos->col && ctx->after_col < 0)
+    {
+	ctx->after_col = col;
+	ctx->after_row = row;
+	ctx->after_scol = scol;
+	ctx->after_ccol = ccol;
+	ctx->after_ecol = ecol;
+	return NOTDONE;
+    }
+    return OK;
+}
+
 /*
- * Compute the screen position of text character at "pos" in window "wp"
- * The resulting values are one-based, zero when character is not visible.
+ * Use the same cell positions as win_line() for 'conceallevel' 3.
  */
-    void
-textpos2screenpos(
+    static int
+conceal_textpos2screenpos(
+	win_T	*wp,
+	pos_T	*pos,
+	int	base_row,
+	int	*rowp,
+	int	*scolp,
+	int	*ccolp,
+	int	*ecolp,
+	bool	cursor_layout)
+{
+    conceal_screenpos_ctx_T ctx;
+    bool		    has_conceal = false;
+    bool		    offscreen_row;
+    bool		    plain_prefix;
+    bool		    unnormalized_col;
+
+    if (!plines_win_may_conceal(wp, pos->lnum))
+	return FAIL;
+
+    CLEAR_FIELD(ctx);
+    ctx.wp = wp;
+    ctx.pos = pos;
+    ctx.base_row = base_row;
+    ctx.before_col = -1;
+    ctx.after_col = -1;
+    if (win_line_conceal_iter(wp, pos->lnum,
+		conceal_screenpos_store, &ctx, &has_conceal, NULL) == FAIL)
+	return FAIL;
+
+    // In a left-to-right line, conceal later in the line cannot move an
+    // earlier cell that was collected exactly.  Rightleft collection keeps
+    // going to the end of the line after finding the requested cell.
+    if (!has_conceal && !ctx.found)
+	return FAIL;
+
+    if (!ctx.found)
+    {
+	char_u *line = ml_get_buf(wp->w_buffer, pos->lnum, FALSE);
+
+	if (!plines_win_col_concealed(wp, pos->lnum, pos->col))
+	    return FAIL;
+	if (ctx.before_col >= 0 && ctx.after_col >= 0
+		&& line[pos->col] == TAB
+		&& ctx.before_row != ctx.after_row)
+	{
+	    ctx.row = ctx.after_row;
+	    ctx.scol = ctx.after_scol;
+	    ctx.ccol = ctx.after_ccol;
+	    ctx.ecol = ctx.after_ecol;
+	}
+	else if (ctx.before_col >= 0 && ctx.after_col >= 0)
+	{
+	    if (pos->col - ctx.before_col <= ctx.after_col - pos->col)
+	    {
+		ctx.row = ctx.before_row;
+		ctx.scol = ctx.before_scol;
+		ctx.ccol = ctx.before_ccol;
+		ctx.ecol = ctx.before_ecol;
+	    }
+	    else
+	    {
+		ctx.row = ctx.after_row;
+		ctx.scol = ctx.after_scol;
+		ctx.ccol = ctx.after_ccol;
+		ctx.ecol = ctx.after_ecol;
+	    }
+	}
+	else if (ctx.after_col >= 0)
+	{
+	    ctx.row = ctx.after_row;
+	    ctx.scol = ctx.after_scol;
+	    ctx.ccol = ctx.after_ccol;
+	    ctx.ecol = ctx.after_ecol;
+	}
+	else if (ctx.before_col >= 0)
+	{
+	    ctx.row = ctx.before_row;
+	    ctx.scol = ctx.before_scol;
+	    ctx.ccol = ctx.before_ccol;
+	    ctx.ecol = ctx.before_ecol;
+	}
+	else
+	    return FAIL;
+    }
+    offscreen_row = ctx.row <= W_WINROW(wp)
+				 || ctx.row > W_WINROW(wp) + wp->w_height;
+    plain_prefix = (wp->w_skipcol == 0 || pos->lnum != wp->w_topline)
+						&& !has_conceal && ctx.found;
+    unnormalized_col = ctx.ccol <= wp->w_wincol
+				 || ctx.ccol > wp->w_wincol + wp->w_width;
+    if (offscreen_row || (cursor_layout && unnormalized_col && plain_prefix))
+    {
+	// Public screen positions use zero for an offscreen character.  NOTDONE
+	// also tells curs_columns() that no concealed cell precedes this cursor,
+	// so its ordinary virtual column does not need another full-line scan.
+	*rowp = 0;
+	*scolp = 0;
+	*ccolp = 0;
+	*ecolp = 0;
+	return cursor_layout && plain_prefix ? NOTDONE : OK;
+    }
+    // Wrapped collector columns are not normalized to the wrapped row here.
+    // Let the established virtual-column fallback do that conversion.
+    if (unnormalized_col)
+	return FAIL;
+
+    *rowp = ctx.row;
+    *scolp = ctx.scol;
+    *ccolp = ctx.ccol;
+    *ecolp = ctx.ecol;
+    return OK;
+}
+# endif
+
+/*
+ * Compute the screen position of text character at "pos" in window "wp".
+ * Return OK when conceal-aware coordinates were used, NOTDONE when an
+ * offscreen cursor has no concealed prefix, and FAIL otherwise.
+ */
+    static int
+textpos2screenpos_core(
 	win_T	*wp,
 	pos_T	*pos,
 	int	*rowp,	// screen row
 	int	*scolp,	// start screen column
 	int	*ccolp,	// cursor screen column
-	int	*ecolp)	// end screen column
+	int	*ecolp,	// end screen column
+	bool	cursor_layout UNUSED)
 {
     colnr_T	scol = 0, ccol = 0, ecol = 0;
     int		row = 0;
@@ -1500,6 +1901,9 @@ textpos2screenpos(
 	colnr_T	    col;
 	int	    width;
 	linenr_T    lnum = pos->lnum;
+# ifdef FEAT_CONCEAL
+	int	    row_without_filler;
+# endif
 # ifdef FEAT_FOLDING
 	int	    is_folded;
 
@@ -1509,6 +1913,9 @@ textpos2screenpos(
 	// "row" should be the screen line where line "lnum" begins, which can
 	// be negative if "lnum" is "w_topline" and "w_skipcol" is non-zero.
 	row -= adjust_plines_for_skipcol(wp);
+# ifdef FEAT_CONCEAL
+	row_without_filler = row;
+# endif
 
 # ifdef FEAT_DIFF
 	// Add filler lines above this buffer line.
@@ -1526,10 +1933,52 @@ textpos2screenpos(
 	else
 # endif
 	{
+# ifdef FEAT_CONCEAL
+	    if (wp->w_p_cole == 3)
+	    {
+		int result = conceal_textpos2screenpos(wp, pos,
+			row_without_filler, rowp, scolp, ccolp, ecolp,
+							cursor_layout);
+
+		if (result != FAIL)
+		    return result;
+	    }
+# endif
 	    getvcol(wp, pos, &scol, &ccol, &ecol, 0);
+# ifdef FEAT_CONCEAL
+	    long concealed_vcol = -1;
+	    bool conceal_tab_wrap = false;
+
+	    if (wp->w_p_wrap && wp->w_p_cole == 3)
+		concealed_vcol = plines_win_col_conceal_vcol(wp, lnum,
+								pos->col);
+
+	    if (concealed_vcol >= 0)
+	    {
+		long conceal_delta = concealed_vcol - scol;
+
+		if (conceal_delta != 0
+			&& pos->col < ml_get_buf_len(wp->w_buffer, lnum)
+			&& ml_get_buf(wp->w_buffer, lnum, FALSE)[pos->col] == TAB)
+		    conceal_tab_wrap = true;
+		scol += conceal_delta;
+		ccol += conceal_delta;
+		ecol += conceal_delta;
+	    }
+# endif
 
 	    // similar to what is done in validate_cursor_col()
 	    col = scol;
+# ifdef FEAT_CONCEAL
+	    if (conceal_tab_wrap && wp->w_p_wrap)
+	    {
+		int concealed_row = plines_win_col(wp, lnum, pos->col) - 1;
+
+		if (concealed_row > 0)
+		    col += concealed_row * (wp->w_width - off
+							+ win_col_off2(wp));
+	    }
+# endif
 	    col += off;
 	    width = wp->w_width - off + win_col_off2(wp);
 
@@ -1570,6 +2019,26 @@ textpos2screenpos(
 	*ccolp = wp->w_wincol + wp->w_width - endoff;
     }
 # endif
+    return FAIL;
+}
+
+/*
+ * Compute the visible screen position of text character at "pos".
+ * The resulting values are one-based, zero when the character is not visible.
+ */
+    int
+textpos2screenpos(
+	win_T	*wp,
+	pos_T	*pos,
+	int	*rowp,
+	int	*scolp,
+	int	*ccolp,
+	int	*ecolp)
+{
+    int result = textpos2screenpos_core(wp, pos, rowp, scolp, ccolp, ecolp,
+								false);
+
+    return result == NOTDONE ? OK : result;
 }
 #endif
 

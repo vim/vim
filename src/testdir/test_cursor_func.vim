@@ -216,6 +216,65 @@ func Test_screenpos()
   call assert_equal(#{col: 1, row: 1, endcol: 1, curscol: 1}, screenpos(0, 1, -v:maxcol))
 endfunc
 
+func Test_screenpos_conceallevel_three_multibyte()
+  CheckFeature conceal
+
+  let matchid = -1
+  new
+  try
+    setlocal wrap conceallevel=3 concealcursor=nvic
+    call setline(1, "x\u00e9Y")
+    let matchid = matchadd('Conceal', 'x', 10, -1, #{conceal: ''})
+    redraw
+
+    call assert_equal(#{col: 2, row: 1, endcol: 2, curscol: 2},
+	  \ screenpos(win_getid(), 1, 4))
+
+    call setline(1, "x\tY")
+    redraw
+    call assert_equal(#{col: 1, row: 1, endcol: 7, curscol: 7},
+	  \ screenpos(win_getid(), 1, 2))
+
+    call setline(1, "x\u3042Y")
+    redraw
+    call assert_equal(#{col: 1, row: 1, endcol: 2, curscol: 1},
+	  \ screenpos(win_getid(), 1, 2))
+
+  finally
+    if matchid > 0
+      silent! call matchdelete(matchid)
+    endif
+    bwipe!
+  endtry
+endfunc
+
+func Test_screenpos_conceallevel_three_tab_wrap()
+  CheckFeature conceal
+
+  let matchid = -1
+  botright vertical new
+  try
+    vertical resize 4
+    setlocal wrap conceallevel=3 concealcursor=nvic tabstop=8 signcolumn=no
+    setlocal nonumber
+    call setline(1, "x\tY")
+    let matchid = matchadd('Conceal', 'x', 10, -1, #{conceal: ''})
+    redraw
+
+    let [winrow, _] = win_screenpos(win_getid())
+    let pos = screenpos(win_getid(), 1, 2)
+    call assert_equal(winrow + 1, pos.row)
+    call assert_equal(6, pos.endcol - pos.col)
+    call assert_equal(pos.endcol, pos.curscol)
+
+  finally
+    if matchid > 0
+      silent! call matchdelete(matchid)
+    endif
+    bwipe!
+  endtry
+endfunc
+
 func Test_screenpos_rightleft()
   CheckFeature rightleft
 
@@ -638,6 +697,23 @@ func Test_virtcol2col()
   call setline(1, '')
   call assert_equal(0, virtcol2col(0, 1, 1))
   call assert_equal(0, virtcol2col(0, 1, 2))
+
+  if has('conceal')
+    " virtcol2col() maps virtual columns, which ignore conceal.
+    setlocal wrap conceallevel=3 concealcursor=nvic signcolumn=no nonumber
+    let line = repeat('a', 24) .. ' HIDDEN target after hidden text'
+    call setline(1, line)
+    let matchid = matchadd('Conceal', 'HIDDEN ', 10, -1, #{conceal: ''})
+    redraw!
+    let target_col = stridx(line, 'target') + 1
+    let pos = screenpos(0, 1, target_col)
+    call assert_true(pos.curscol > 0)
+    call assert_true(pos.curscol < target_col)
+    call assert_equal(target_col, virtcol2col(0, 1, target_col))
+    call assert_equal(pos.curscol, virtcol2col(0, 1, pos.curscol))
+    call matchdelete(matchid)
+    setlocal wrap& conceallevel& concealcursor& signcolumn& number&
+  endif
 
   let w = winwidth(0)
   call setline(2, repeat('a', w + 2))

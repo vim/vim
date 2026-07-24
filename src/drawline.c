@@ -99,6 +99,31 @@ margin_columns_win(win_T *wp, int *left_col, int *right_col)
 # define LINE_ATTR
 #endif
 
+#ifdef FEAT_CONCEAL
+typedef struct
+{
+    conceal_screenline_cb_T cb;
+    void	*cb_ctx;
+    bool	has_conceal;
+    bool	failed;
+# ifdef FEAT_SEARCH_EXTRA
+    bool	use_search_hl;
+# endif
+} drawline_conceal_iter_T;
+
+static drawline_conceal_iter_T *drawline_conceal_iter = NULL;
+# define DRAWLINE_COLLECTING (drawline_conceal_iter != NULL)
+# ifdef FEAT_SEARCH_EXTRA
+#  define DRAWLINE_SEARCH_HL \
+	(!DRAWLINE_COLLECTING || drawline_conceal_iter->use_search_hl)
+# endif
+#else
+# define DRAWLINE_COLLECTING false
+# ifdef FEAT_SEARCH_EXTRA
+#  define DRAWLINE_SEARCH_HL true
+# endif
+#endif
+
 // structure with variables passed between win_line() and other functions
 typedef struct {
     int		draw_state;	// what to draw next
@@ -868,6 +893,11 @@ text_prop_no_showbreak(textprop_T *tp)
     static void
 wlv_screen_line(win_T *wp, winlinevars_T *wlv, int clear_end)
 {
+#ifdef FEAT_CONCEAL
+    if (DRAWLINE_COLLECTING)
+	return;
+#endif
+
     if (wlv->row == 0 && wp->w_skipcol > 0
 #if defined(FEAT_LINEBREAK)
 	    // do not overwrite the 'showbreak' text with "<<<"
@@ -915,6 +945,15 @@ wlv_screen_line(win_T *wp, winlinevars_T *wlv, int clear_end)
     static void
 draw_screen_line(win_T *wp, winlinevars_T *wlv)
 {
+#ifdef FEAT_CONCEAL
+    if (DRAWLINE_COLLECTING)
+    {
+	++wlv->row;
+	++wlv->screen_row;
+	return;
+    }
+#endif
+
 #ifdef FEAT_SYN_HL
     long	v;
     int		wcol;
@@ -1142,6 +1181,134 @@ apply_cursorline_highlight(
 }
 #endif
 
+#if defined(FEAT_LINEBREAK) && defined(FEAT_CONCEAL) && defined(FEAT_SYN_HL)
+/*
+ * Return the visible width of the non-break run starting at "ptr", when
+ * syntax concealment hides characters for 'conceallevel' 3.  Return -1 when
+ * the regular linebreak calculation should be used.
+ */
+    static int
+lbr_conceal_width(
+	win_T		*wp,
+	linenr_T	lnum,
+	char_u		*line,
+	char_u		*ptr,
+	colnr_T		start_vcol,
+	colnr_T		restore_col,
+	int		screen_extra,
+	int		*segment_widthp,
+	bool		*concealedp,
+	bool		*followed_by_breakp)
+{
+    char_u	*p = ptr;
+    int		width = 0;
+    int		segment_width = 0;
+    bool	seen_visible = false;
+    bool	segment_done = false;
+    int		save_did_emsg = did_emsg;
+
+    *segment_widthp = 0;
+    *concealedp = false;
+    *followed_by_breakp = false;
+    if (!DRAWLINE_COLLECTING && lnum != wp->w_cursor.lnum
+						&& KeyTyped && char_avail())
+	return -1;
+    did_emsg = FALSE;
+
+    while (*p != NUL)
+    {
+	colnr_T	col = (colnr_T)(p - line);
+	int	flags;
+	int	seqnr;
+	int	char_width;
+
+	if (*p == TAB)
+	{
+	    width = -1;
+	    break;
+	}
+
+	(void)syn_get_id(wp, lnum, col, FALSE, NULL, FALSE);
+	flags = get_syntax_info(&seqnr);
+	if (did_emsg)
+	{
+	    width = -1;
+	    break;
+	}
+
+	if (VIM_ISBREAK((int)*p))
+	{
+	    if (flags & HL_CONCEAL)
+	    {
+		*concealedp = true;
+		MB_PTR_ADV(p);
+		continue;
+	    }
+	    break;
+	}
+
+	if (flags & HL_CONCEAL)
+	{
+	    *concealedp = true;
+	    if (seen_visible)
+	    {
+		segment_done = true;
+		break;
+	    }
+	    MB_PTR_ADV(p);
+	    continue;
+	}
+
+	char_width = win_chartabsize(wp, p, start_vcol + width);
+	if (char_width <= 0)
+	{
+	    width = -1;
+	    break;
+	}
+	width += char_width;
+	if (width > screen_extra && !*concealedp)
+	    break;
+	if (!segment_done)
+	{
+	    segment_width += char_width;
+	    seen_visible = true;
+	}
+	MB_PTR_ADV(p);
+    }
+
+    *followed_by_breakp = VIM_ISBREAK((int)*p);
+    (void)syn_get_id(wp, lnum, restore_col, FALSE, NULL, FALSE);
+    if (did_emsg)
+    {
+	wp->w_s->b_syn_error = TRUE;
+	width = -1;
+    }
+    else
+	did_emsg = save_did_emsg;
+
+    *segment_widthp = segment_width;
+    return width;
+}
+#endif
+
+#ifdef FEAT_CONCEAL
+    static bool
+drawline_visual_cell_selected(
+	linenr_T	lnum,
+	colnr_T		col,
+	colnr_T		end_col,
+	pos_T		*top,
+	pos_T		*bot)
+{
+    if (top == NULL || bot == NULL || lnum < top->lnum || lnum > bot->lnum)
+	return false;
+    if (lnum == top->lnum && end_col < top->col)
+	return false;
+    return lnum != bot->lnum || (*p_sel == 'e' ? col < bot->col
+						       : col <= bot->col);
+}
+#endif
+
 /*
  * Display line "lnum" of window "wp" on the screen.
  * Start at row "startrow", stop when "endrow" is reached.
@@ -1166,6 +1333,11 @@ win_line(
 
     int		c = 0;			// init for GCC
     long	vcol_prev = -1;		// "wlv.vcol" of previous character
+    long	area_vcol = -1;		// vcol used for highlighting
+    long	area_vcol_prev = -1;	// previous highlighting vcol
+#ifdef FEAT_CONCEAL
+    long	vcol_hlc_prev = -1;	// VCOL_HLC of previous character
+#endif
     char_u	*line;			// current line
     char_u	*ptr;			// current position in "line"
     int		in_curline = wp == curwin && lnum == curwin->w_cursor.lnum;
@@ -1191,6 +1363,7 @@ win_line(
 					// to be added to wlv.vcol later
     int		fromcol_prev = -2;	// start of inverting after cursor
     int		noinvcur = FALSE;	// don't invert the cursor
+    colnr_T	noinvcur_vcol = 0;	// virtual column for "noinvcur"
     int		lnum_in_visual_area = FALSE;
     pos_T	pos;
     long	v;
@@ -1201,6 +1374,12 @@ win_line(
     int		vi_attr = 0;		// attributes for Visual and incsearch
 					// highlighting
     int		area_attr = 0;		// attributes desired by highlighting
+#ifdef FEAT_CONCEAL
+    bool	visual_conceal_active = false;
+    pos_T	*visual_conceal_top = NULL;
+    pos_T	*visual_conceal_bot = NULL;
+    bool	visual_block_conceal = false;
+#endif
     int		search_attr = 0;	// attributes desired by 'hlsearch' or
 					// ComplMatchIns
 #ifdef FEAT_SYN_HL
@@ -1305,8 +1484,17 @@ win_line(
     int		prev_syntax_id	= 0;
     int		conceal_attr	= HL_ATTR(HLF_CONCEAL);
     int		is_concealing	= FALSE;
-    int		did_wcol	= FALSE;
+    int		did_wcol	= in_curline
+			    && (wp->w_flags & WFLAG_CONCEAL_WCOL) != 0
+			    && wp->w_conceal_wcol_width == wp->w_width
+			    && EQUAL_POS(wp->w_conceal_wcol_pos,
+							wp->w_cursor)
+			    && wp->w_conceal_wcol_state
+						== conceal_wcol_state_hash(wp);
     int		old_boguscols   = 0;
+# if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
+    bool	lbr_seen_conceal = false;
+# endif
 # define VCOL_HLC (wlv.vcol - wlv.vcol_off_co - wlv.vcol_off_tp)
 # define FIX_FOR_BOGUSCOLS \
     { \
@@ -1319,6 +1507,11 @@ win_line(
     }
 #else
 # define VCOL_HLC (wlv.vcol - wlv.vcol_off_tp)
+#endif
+
+#ifdef FEAT_CONCEAL
+    if (in_curline && !DRAWLINE_COLLECTING)
+	wp->w_flags &= ~WFLAG_CONCEAL_WCOL;
 #endif
 
     if (startrow > endrow)		// past the end already!
@@ -1403,6 +1596,19 @@ win_line(
 		bot = &curwin->w_cursor;
 	    }
 	    lnum_in_visual_area = (lnum >= top->lnum && lnum <= bot->lnum);
+#ifdef FEAT_CONCEAL
+	    if (lnum_in_visual_area && wp->w_p_wrap && wp->w_p_cole == 3
+		    && VIsual_mode != Ctrl_V && VIsual_mode != 'V'
+		    && vim_strchr(wp->w_p_cocu, 'v') != NULL)
+	    {
+		visual_conceal_active = true;
+		visual_conceal_top = top;
+		visual_conceal_bot = bot;
+	    }
+	    if (lnum_in_visual_area && wp->w_p_wrap && wp->w_p_cole == 3
+		    && VIsual_mode == Ctrl_V)
+		visual_block_conceal = true;
+#endif
 	    if (VIsual_mode == Ctrl_V)
 	    {
 		// block mode
@@ -1450,6 +1656,10 @@ win_line(
 		    }
 		}
 	    }
+#ifdef FEAT_CONCEAL
+	    if (visual_conceal_active)
+		wlv.fromcol = -1;
+#endif
 
 	    // Check if the character under the cursor should not be inverted
 	    if (!highlight_match && in_curline
@@ -1457,10 +1667,39 @@ win_line(
 		    && !gui.in_use
 #endif
 		    )
+	    {
 		noinvcur = TRUE;
+		noinvcur_vcol = wp->w_virtcol;
+#ifdef FEAT_CONCEAL
+		if (visual_block_conceal)
+		{
+		    long concealed_vcol = plines_win_col_conceal_vcol(wp, lnum,
+								wp->w_cursor.col);
+
+		    if (concealed_vcol >= 0)
+			noinvcur_vcol = (colnr_T)concealed_vcol;
+# ifdef FEAT_SYN_HL
+		    // Need to restart syntax highlighting for this line.
+		    if (has_syntax)
+			syntax_start(wp, lnum);
+# endif
+# ifdef FEAT_SEARCH_EXTRA
+		    if (DRAWLINE_SEARCH_HL)
+		    {
+			init_search_hl(wp, &screen_search_hl);
+			prepare_search_hl(wp, &screen_search_hl, lnum);
+		    }
+# endif
+		}
+#endif
+	    }
 
 	    // if inverting in this line set area_highlighting
-	    if (wlv.fromcol >= 0)
+	    if (wlv.fromcol >= 0
+#ifdef FEAT_CONCEAL
+		    || visual_conceal_active
+#endif
+	       )
 	    {
 		area_highlighting = TRUE;
 		vi_attr = HL_ATTR(HLF_V);
@@ -1969,23 +2208,23 @@ win_line(
     {
 	if (noinvcur)
 	{
-	    if ((colnr_T)wlv.fromcol == wp->w_virtcol)
+	    if ((colnr_T)wlv.fromcol == noinvcur_vcol)
 	    {
 		// highlighting starts at cursor, let it start just after the
 		// cursor
 		fromcol_prev = wlv.fromcol;
 		wlv.fromcol = -1;
 	    }
-	    else if ((colnr_T)wlv.fromcol < wp->w_virtcol)
+	    else if ((colnr_T)wlv.fromcol < noinvcur_vcol)
 		// restart highlighting after the cursor
-		fromcol_prev = wp->w_virtcol;
+		fromcol_prev = noinvcur_vcol;
 	}
 	if (wlv.fromcol >= wlv.tocol)
 	    wlv.fromcol = -1;
     }
 
 #ifdef FEAT_SEARCH_EXTRA
-    if (number_only == 0)
+    if (number_only == 0 && DRAWLINE_SEARCH_HL)
     {
 	v = (long)(ptr - line);
 	area_highlighting |= prepare_search_hl_line(wp, lnum, (colnr_T)v,
@@ -2035,6 +2274,8 @@ win_line(
 #endif
 #ifdef FEAT_CONCEAL
 	int	did_decrement_ptr = FALSE;
+	char_u	*cursor_ptr = NULL;
+	char_u	*cursor_ptr_end = NULL;
 #endif
 
 	// Skip this quickly when working on the text.
@@ -2508,39 +2749,77 @@ win_line(
 		wlv.extra_for_textprop ? &saved_area_attr :
 #endif
 							    &area_attr;
+	    area_vcol = wlv.vcol;
+	    area_vcol_prev = vcol_prev;
+#ifdef FEAT_CONCEAL
+	    if (visual_block_conceal)
+	    {
+		area_vcol = VCOL_HLC;
+		area_vcol_prev = vcol_hlc_prev;
+	    }
+#endif
+	    bool area_start = area_vcol == wlv.fromcol
+		|| (has_mbyte && area_vcol + 1 == wlv.fromcol
+		    && ((wlv.n_extra == 0 && (*mb_ptr2cells)(ptr) > 1)
+			|| (wlv.n_extra > 0 && wlv.p_extra != NULL
+			    && (*mb_ptr2cells)(wlv.p_extra) > 1)))
+		|| ((int)area_vcol_prev == fromcol_prev
+		    && area_vcol_prev < area_vcol	// not at margin
+		    && area_vcol < wlv.tocol);
+	    bool area_stop = area_vcol == wlv.tocol;
+	    bool cursor_stop = noinvcur
+				&& (colnr_T)area_vcol == noinvcur_vcol;
+#ifdef FEAT_CONCEAL
+	    if (visual_block_conceal)
+	    {
+		if (area_vcol_prev < area_vcol && area_vcol < wlv.tocol)
+		{
+		    if (wlv.fromcol >= 0 && area_vcol_prev < wlv.fromcol
+			    && area_vcol > wlv.fromcol)
+			area_start = true;
+		    if (fromcol_prev >= 0
+			    && area_vcol_prev < (long)fromcol_prev
+			    && area_vcol > (long)fromcol_prev)
+			area_start = true;
+		}
+		if (area_vcol_prev <= wlv.tocol && area_vcol > wlv.tocol)
+		    area_stop = true;
+		if (noinvcur && area_vcol_prev <= (long)noinvcur_vcol
+			&& area_vcol > (long)noinvcur_vcol)
+		    cursor_stop = true;
+	    }
+#endif
 
 	    // handle Visual or match highlighting in this line
-	    if (wlv.vcol == wlv.fromcol
-		    || (has_mbyte && wlv.vcol + 1 == wlv.fromcol
-			&& ((wlv.n_extra == 0 && (*mb_ptr2cells)(ptr) > 1)
-			    || (wlv.n_extra > 0 && wlv.p_extra != NULL
-				&& (*mb_ptr2cells)(wlv.p_extra) > 1)))
-		    || ((int)vcol_prev == fromcol_prev
-			&& vcol_prev < wlv.vcol	// not at margin
-			&& wlv.vcol < wlv.tocol))
+	    if (area_start)
 		*area_attr_p = vi_attr;		// start highlighting
 	    else if (*area_attr_p != 0
-		    && (wlv.vcol == wlv.tocol
-			|| (noinvcur && (colnr_T)wlv.vcol == wp->w_virtcol)))
+		    && (area_stop || cursor_stop))
 		*area_attr_p = 0;		// stop highlighting
 
 	    if (wlv.n_extra == 0)
 	    {
 #ifdef FEAT_SEARCH_EXTRA
-		// Check for start/end of 'hlsearch' and other matches.
-		// After end, check for start/end of next match.
-		// When another match, have to check for start again.
-		v = (long)(ptr - line);
-		search_attr = update_search_hl(wp, lnum, (colnr_T)v, &line,
-				      &screen_search_hl, &has_match_conc,
-				      &match_conc, did_line_attr, lcs_eol_one,
-				      &on_last_col);
-		ptr = line + v;  // "line" may have been changed
+		if (DRAWLINE_SEARCH_HL)
+		{
+		    // Check for start/end of 'hlsearch' and other matches.
+		    // After end, check for start/end of next match.
+		    // When another match, have to check for start again.
+		    v = (long)(ptr - line);
+		    search_attr = update_search_hl(wp, lnum, (colnr_T)v,
+					&line, &screen_search_hl,
+					&has_match_conc, &match_conc,
+					did_line_attr, lcs_eol_one,
+					&on_last_col);
+		    ptr = line + v;  // "line" may have been changed
 
-		// Do not allow a conceal over EOL otherwise EOL will be missed
-		// and bad things happen.
-		if (*ptr == NUL)
-		    has_match_conc = 0;
+		    // Do not allow a conceal over EOL otherwise EOL will be
+		    // missed and bad things happen.
+		    if (*ptr == NUL)
+			has_match_conc = 0;
+		}
+		else
+		    search_attr = 0;
 #else
 		search_attr = 0;
 #endif
@@ -2690,9 +2969,9 @@ win_line(
 	    }
 	    else if (wlv.line_attr != 0
 		    && ((wlv.fromcol == -10 && wlv.tocol == MAXCOL)
-			      || wlv.vcol < wlv.fromcol
-			      || vcol_prev < fromcol_prev
-			      || wlv.vcol >= wlv.tocol))
+			      || area_vcol < wlv.fromcol
+			      || area_vcol_prev < fromcol_prev
+			      || area_vcol >= wlv.tocol))
 	    {
 		// Use wlv.line_attr when not in the Visual or 'incsearch' area
 		// (area_attr may be 0 when "noinvcur" is set).
@@ -2858,6 +3137,10 @@ win_line(
 	    int		c0;
 #endif
 	    char_u	*prev_ptr = ptr;
+
+#ifdef FEAT_CONCEAL
+	    cursor_ptr = prev_ptr;
+#endif
 
 	    // Get a character from the line itself.
 	    c = *ptr;
@@ -3172,11 +3455,24 @@ win_line(
 		if ( wp->w_p_lbr && !wlv.need_lbr && c != NUL &&
 			!VIM_ISBREAK((int)*ptr))
 		    wlv.need_lbr = TRUE;
+# if defined(FEAT_CONCEAL) && defined(FEAT_SYN_HL)
+		if (wp->w_p_cole == 3 && wlv.vcol_off_co > 0)
+		    lbr_seen_conceal = true;
+# endif
 #endif
 #ifdef FEAT_LINEBREAK
 		// Found last space before word: check for line break.
+		bool lbr_next_is_break = c != NUL
+					   && VIM_ISBREAK((int)*ptr);
+# if defined(FEAT_CONCEAL) && defined(FEAT_SYN_HL)
+		bool lbr_next_may_conceal = wp->w_p_cole == 3
+						 && has_syntax && c != TAB;
+# else
+		bool lbr_next_may_conceal = false;
+# endif
 		if (wp->w_p_lbr && c0 == c && wlv.need_lbr
-				  && VIM_ISBREAK(c) && !VIM_ISBREAK((int)*ptr))
+			&& VIM_ISBREAK(c)
+			&& (!lbr_next_is_break || lbr_next_may_conceal))
 		{
 		    int	    mb_off = has_mbyte ? (*mb_head_off)(line, ptr - 1)
 									   : 0;
@@ -3184,7 +3480,12 @@ win_line(
 		    chartabsize_T cts;
 
 
-		    colnr_T init_colnr = wlv.vcol;
+		    colnr_T init_colnr =
+# ifdef FEAT_CONCEAL
+			wp->w_p_cole == 3 ? VCOL_HLC : wlv.vcol;
+# else
+			wlv.vcol;
+# endif
 # ifdef FEAT_PROP_POPUP
 		    init_colnr -= vcol_first_char;
 # endif
@@ -3197,6 +3498,97 @@ win_line(
 		    // TODO: consider using "tailp" here
 		    wlv.n_extra = win_lbr_chartabsize(&cts, NULL, NULL) - 1;
 		    clear_chartabsize_arg(&cts);
+
+# if defined(FEAT_CONCEAL) && defined(FEAT_SYN_HL)
+		    if (wp->w_p_cole == 3 && has_syntax && c != TAB
+			    && (wlv.vcol_off_co > 0 || lbr_seen_conceal
+				|| lbr_next_is_break))
+		    {
+			bool	concealed = false;
+			bool	followed_by_break = false;
+			int	screen_extra = wp->w_width - wlv.col - 1;
+			int	plain_width = 0;
+			bool	need_lbr_conceal = false;
+			int	segment_width = 0;
+			int	visible_width;
+
+			if (screen_extra >= 0)
+			{
+			    char_u *q = ptr;
+
+			    while (*q != NUL && !VIM_ISBREAK((int)*q))
+			    {
+				if (*q == TAB)
+				{
+				    plain_width = -1;
+				    break;
+				}
+				plain_width += win_chartabsize(wp, q,
+						wlv.col + 1 + plain_width);
+				if (plain_width > screen_extra)
+				{
+				    need_lbr_conceal = true;
+				    break;
+				}
+				MB_PTR_ADV(q);
+			    }
+			    if (plain_width == screen_extra
+				    && VIM_ISBREAK((int)*q))
+				need_lbr_conceal = true;
+			    if (!need_lbr_conceal && lbr_next_is_break)
+				need_lbr_conceal = true;
+			}
+
+			if (!need_lbr_conceal && wlv.n_extra > 0)
+			    wlv.n_extra = 0;
+
+			if (screen_extra >= 0 && need_lbr_conceal)
+			    visible_width = lbr_conceal_width(wp, lnum,
+				    line, ptr, VCOL_HLC + 1, (colnr_T)(p - line),
+				    screen_extra, &segment_width, &concealed,
+				    &followed_by_break);
+			else
+			    visible_width = -1;
+
+			if (lbr_next_is_break && !concealed)
+			{
+			    visible_width = -1;
+			    wlv.n_extra = 0;
+			}
+
+			if (visible_width >= 0
+				&& need_lbr_conceal
+				&& (concealed || wlv.vcol_off_co > 0
+				    || lbr_seen_conceal))
+			{
+			    int fit_width = concealed
+					    ? segment_width : visible_width;
+			    bool use_plain_attr = false;
+
+			    if (concealed || wlv.vcol_off_co > 0)
+				lbr_seen_conceal = true;
+			    if (concealed && (fit_width < screen_extra
+					|| (fit_width == screen_extra
+					    && !followed_by_break)))
+				wlv.n_extra = 0;
+			    else if (screen_extra != wlv.n_extra)
+			    {
+				wlv.n_extra = screen_extra;
+				use_plain_attr = wlv.n_extra > 0;
+			    }
+			    else if (wlv.n_extra > 0)
+				use_plain_attr = true;
+
+			    if (use_plain_attr && wlv.n_extra > 0)
+			    {
+				saved_attr2 = wlv.char_attr;
+				wlv.extra_attr = wlv.win_attr;
+				n_attr = wlv.n_extra;
+				wlv.n_attr_skip = 1;
+			    }
+			}
+		    }
+# endif
 
 		    if (on_last_col && c != TAB)
 			// Do not continue search/match highlighting over the
@@ -3445,6 +3837,10 @@ win_line(
 #ifdef FEAT_CONCEAL
 		    {
 			int vc_saved = wlv.vcol_off_co;
+			bool limit_tab_for_showbreak = wp->w_p_wrap
+					    && *get_showbreak_value(wp) != NUL
+					    && wlv.vcol_off_co > 0
+					    && VCOL_HLC == 0;
 
 			// Tab alignment should be identical regardless of
 			// 'conceallevel' value. So tab compensates of all
@@ -3452,7 +3848,25 @@ win_line(
 			// vcol_off_co and boguscols accumulated so far in the
 			// line. Note that the tab can be longer than
 			// 'tabstop' when there are concealed characters.
-			FIX_FOR_BOGUSCOLS;
+			if (limit_tab_for_showbreak)
+			{
+			    // Keep the wrapped height in sync with
+			    // plines_win_col_conceal(): when the tab follows
+			    // only concealed text on a line with 'showbreak',
+			    // it must stop at the right edge instead of
+			    // creating a blank wrapped row.
+			    wlv.n_extra = wp->w_width - win_col_off(wp)
+							 - (int)VCOL_HLC - 2;
+			    if (wlv.n_extra < 0)
+				wlv.n_extra = 0;
+			    wlv.vcol -= wlv.vcol_off_co;
+			    wlv.vcol_off_co = 0;
+			    wlv.col -= wlv.boguscols;
+			    old_boguscols = wlv.boguscols;
+			    wlv.boguscols = 0;
+			}
+			else
+			    FIX_FOR_BOGUSCOLS;
 
 			// Make sure, the highlighting for the tab char will be
 			// correctly set further below (effectively reverts the
@@ -3614,7 +4028,7 @@ win_line(
 			     || VIsual_mode == 'v')
 			 && virtual_active()
 			 && wlv.tocol != MAXCOL
-			 && wlv.vcol < wlv.tocol
+			 && area_vcol < wlv.tocol
 			 && (
 #ifdef FEAT_RIGHTLEFT
 			    wp->w_p_rl ? (wlv.col >= 0) :
@@ -3716,12 +4130,16 @@ win_line(
 #ifdef FEAT_CONCEAL
 	    if (   wp->w_p_cole > 0
 		&& (wp != curwin || lnum != wp->w_cursor.lnum
-						    || conceal_cursor_line(wp))
+							    || conceal_cursor_line(wp))
 		&& ((syntax_flags & HL_CONCEAL) != 0 || has_match_conc > 0)
 		&& !(lnum_in_visual_area
 				    && vim_strchr(wp->w_p_cocu, 'v') == NULL))
 	    {
 		int syntax_conceal = (syntax_flags & HL_CONCEAL) != 0;
+# if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
+		if (wp->w_p_cole == 3)
+		    lbr_seen_conceal = true;
+# endif
 		wlv.char_attr = conceal_attr;
 		if (((prev_syntax_id != syntax_seqnr && syntax_conceal)
 			    || has_match_conc > 1)
@@ -3799,13 +4217,23 @@ win_line(
 	}
 
 #ifdef FEAT_CONCEAL
+	cursor_ptr_end = ptr;
+
 	// In the cursor line and we may be concealing characters: correct
 	// the cursor column when we reach its position.
 	// With 'virtualedit' we may never reach cursor position, but we still
 	// need to correct the cursor column, so do that at end of line.
+	bool cursor_on_char = wp->w_p_wrap && wp->w_p_cole == 3
+		    && cursor_ptr != NULL
+		    && cursor_ptr_end > cursor_ptr
+		    && wp->w_cursor.col >= (colnr_T)(cursor_ptr - line)
+		    && wp->w_cursor.col < (colnr_T)(cursor_ptr_end - line);
 	if (!did_wcol && wlv.draw_state == WL_LINE
 		&& in_curline && conceal_cursor_line(wp)
-		&& (wlv.vcol + skip_cells >= wp->w_virtcol || c == NUL))
+		&& !DRAWLINE_COLLECTING
+		&& (wp->w_p_wrap && wp->w_p_cole == 3
+		    ? cursor_on_char || c == NUL
+		    : wlv.vcol + skip_cells >= wp->w_virtcol || c == NUL))
 	{
 # ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
@@ -3817,7 +4245,8 @@ win_line(
 	    // pum_display() can line the menu up with the visible text;
 	    // "skip_cells" is the concealed cell at the cursor not yet counted.
 	    wp->w_wcol_conceal_off = wlv.vcol_off_co + skip_cells;
-	    if (wlv.vcol + skip_cells < wp->w_virtcol)
+	    if (!(wp->w_p_wrap && wp->w_p_cole == 3 && cursor_on_char)
+		    && wlv.vcol + skip_cells < wp->w_virtcol)
 		// Cursor beyond end of the line with 'virtualedit'.
 		wp->w_wcol += wp->w_virtcol - wlv.vcol - skip_cells;
 	    wp->w_wrow = wlv.row;
@@ -3947,15 +4376,17 @@ win_line(
 #ifdef FEAT_SEARCH_EXTRA
 	    // flag to indicate whether prevcol equals startcol of search_hl or
 	    // one of the matches
-	    int prevcol_hl_flag = get_prevcol_hl_flag(wp, &screen_search_hl,
-					      (long)(ptr - line) - (c == NUL));
+	    int prevcol_hl_flag = DRAWLINE_SEARCH_HL
+		? get_prevcol_hl_flag(wp, &screen_search_hl,
+					      (long)(ptr - line) - (c == NUL))
+		: FALSE;
 #endif
 	    // Invert at least one char, used for Visual and empty line or
 	    // highlight match at end of line. If it's beyond the last
 	    // char on the screen, just overwrite that one (tricky!)  Not
 	    // needed when a '$' was displayed for 'list'.
 	    if (wp->w_lcs_chars.eol == lcs_eol_one
-		    && ((area_attr != 0 && wlv.vcol == wlv.fromcol
+		    && ((area_attr != 0 && area_vcol == wlv.fromcol
 			    && (VIsual_mode != Ctrl_V
 				|| lnum == VIsual.lnum
 				|| lnum == curwin->w_cursor.lnum)
@@ -4001,9 +4432,12 @@ win_line(
 		else
 		{
 		    // Add a blank character to highlight.
-		    ScreenLines[wlv.off] = ' ';
-		    if (enc_utf8)
-			ScreenLinesUC[wlv.off] = 0;
+		    if (!DRAWLINE_COLLECTING)
+		    {
+			ScreenLines[wlv.off] = ' ';
+			if (enc_utf8)
+			    ScreenLinesUC[wlv.off] = 0;
+		    }
 		}
 #ifdef FEAT_SEARCH_EXTRA
 		if (area_attr == 0)
@@ -4014,8 +4448,11 @@ win_line(
 					   (long)(ptr - line), &wlv.char_attr);
 		}
 #endif
-		ScreenAttrs[wlv.off] = wlv.char_attr;
-		ScreenCols[wlv.off] = wlv.vcol;
+		if (!DRAWLINE_COLLECTING)
+		{
+		    ScreenAttrs[wlv.off] = wlv.char_attr;
+		    ScreenCols[wlv.off] = wlv.vcol;
+		}
 #ifdef FEAT_RIGHTLEFT
 		if (wp->w_p_rl)
 		{
@@ -4050,7 +4487,7 @@ win_line(
 
 		// Update w_cline_height and w_cline_folded if the cursor line
 		// was updated (saves a call to plines() later).
-		if (in_curline)
+		if (in_curline && !DRAWLINE_COLLECTING)
 		{
 		    curwin->w_cline_row = startrow;
 		    curwin->w_cline_height = wlv.row - startrow;
@@ -4136,7 +4573,12 @@ win_line(
 #endif
 
 	if (wlv.draw_state == WL_LINE)
+	{
 	    vcol_prev = wlv.vcol;
+#ifdef FEAT_CONCEAL
+	    vcol_hlc_prev = VCOL_HLC;
+#endif
+	}
 
 	// Store character to be displayed.
 	// Skip characters that are left of the screen for 'nowrap'.
@@ -4151,69 +4593,137 @@ win_line(
 		--wlv.col;
 	    }
 #endif
-	    ScreenLines[wlv.off] = c;
-	    if (enc_dbcs == DBCS_JPNU)
+#ifdef FEAT_CONCEAL
+	    if (DRAWLINE_COLLECTING && drawline_conceal_iter->cb != NULL
+		    && wlv.draw_state == WL_LINE
+		    && cursor_ptr != NULL && cursor_ptr_end > cursor_ptr
+		    && !is_concealing
+		    && (!did_decrement_ptr || *cursor_ptr == TAB) && c != NUL)
 	    {
-		if ((mb_c & 0xff00) == 0x8e00)
-		    ScreenLines[wlv.off] = 0x8e;
-		ScreenLines2[wlv.off] = mb_c & 0xff;
-	    }
-	    else if (enc_utf8)
-	    {
-		if (mb_utf8)
-		{
-		    int i;
+		int cells = has_mbyte ? (*mb_char2cells)(mb_c) : 1;
+		int cursor_col = wlv.col;
 
-		    ScreenLinesUC[wlv.off] = mb_c;
-		    if ((c & 0xff) == 0)
-			ScreenLines[wlv.off] = 0x80;   // avoid storing zero
-		    for (i = 0; i < Screen_mco; ++i)
+		if (*cursor_ptr == TAB)
+		{
+		    cells = wlv.n_extra > 0 ? wlv.n_extra : 1;
+		    cursor_col = wlv.col + cells - 1;
+		}
+		else if (!vim_isprintc(*cursor_ptr))
+		{
+		    cells += wlv.n_extra;
+		}
+
+		if (cells > 0)
+		{
+		    int cb_ret = drawline_conceal_iter->cb(
+			    (colnr_T)(cursor_ptr - line),
+			    (colnr_T)(cursor_ptr_end - line) - 1,
+			    wlv.row, wlv.col, cursor_col, cells,
+			    drawline_conceal_iter->cb_ctx);
+
+		    if (cb_ret != OK)
 		    {
-			ScreenLinesC[i][wlv.off] = u8cc[i];
-			if (u8cc[i] == 0)
-			    break;
+			if (cb_ret == FAIL)
+			    drawline_conceal_iter->failed = true;
+			break;
 		    }
 		}
-		else
-		    ScreenLinesUC[wlv.off] = 0;
 	    }
-	    if (multi_attr)
+	    if (visual_conceal_active && wlv.draw_state == WL_LINE
+		    && cursor_ptr != NULL && cursor_ptr_end > cursor_ptr
+		    && !is_concealing && c != NUL
+		    && drawline_visual_cell_selected(lnum,
+			(colnr_T)(cursor_ptr - line),
+			(colnr_T)(cursor_ptr_end - line) - 1,
+			visual_conceal_top, visual_conceal_bot)
+		    && !(noinvcur && lnum == wp->w_cursor.lnum
+			&& (colnr_T)(cursor_ptr - line) <= wp->w_cursor.col
+			&& wp->w_cursor.col
+			    <= (colnr_T)(cursor_ptr_end - line) - 1))
 	    {
-		ScreenAttrs[wlv.off] = multi_attr;
-		multi_attr = 0;
+		if (wlv.line_attr != 0)
+		    wlv.char_attr = hl_combine_attr(wlv.line_attr, vi_attr);
+		else
+		    wlv.char_attr = vi_attr;
 	    }
-	    else
-		ScreenAttrs[wlv.off] = wlv.char_attr;
-
-	    if (wlv.draw_state > WL_NR
-#ifdef FEAT_DIFF
-		    && wlv.filler_todo <= 0
 #endif
-		    )
-		ScreenCols[wlv.off] = wlv.vcol;
-	    else
-		ScreenCols[wlv.off] = -1;
-
-	    if (has_mbyte && (*mb_char2cells)(mb_c) > 1)
+	    if (!DRAWLINE_COLLECTING)
 	    {
-		// Need to fill two screen columns.
-		++wlv.off;
-		++wlv.col;
-		if (enc_utf8)
-		    // UTF-8: Put a 0 in the second screen char.
-		    ScreenLines[wlv.off] = 0;
+		ScreenLines[wlv.off] = c;
+		if (enc_dbcs == DBCS_JPNU)
+		{
+		    if ((mb_c & 0xff00) == 0x8e00)
+			ScreenLines[wlv.off] = 0x8e;
+		    ScreenLines2[wlv.off] = mb_c & 0xff;
+		}
+		else if (enc_utf8)
+		{
+		    if (mb_utf8)
+		    {
+			int i;
+
+			ScreenLinesUC[wlv.off] = mb_c;
+			if ((c & 0xff) == 0)
+			    ScreenLines[wlv.off] = 0x80; // avoid storing zero
+			for (i = 0; i < Screen_mco; ++i)
+			{
+			    ScreenLinesC[i][wlv.off] = u8cc[i];
+			    if (u8cc[i] == 0)
+				break;
+			}
+		    }
+		    else
+			ScreenLinesUC[wlv.off] = 0;
+		}
+		if (multi_attr)
+		{
+		    ScreenAttrs[wlv.off] = multi_attr;
+		    multi_attr = 0;
+		}
 		else
-		    // DBCS: Put second byte in the second screen char.
-		    ScreenLines[wlv.off] = mb_c & 0xff;
+		    ScreenAttrs[wlv.off] = wlv.char_attr;
 
 		if (wlv.draw_state > WL_NR
 #ifdef FEAT_DIFF
 			&& wlv.filler_todo <= 0
 #endif
 			)
-		    ScreenCols[wlv.off] = ++wlv.vcol;
+		    ScreenCols[wlv.off] = wlv.vcol;
 		else
 		    ScreenCols[wlv.off] = -1;
+	    }
+	    else if (multi_attr)
+		multi_attr = 0;
+
+	    if (has_mbyte && (*mb_char2cells)(mb_c) > 1)
+	    {
+		// Need to fill two screen columns.
+		++wlv.off;
+		++wlv.col;
+		if (!DRAWLINE_COLLECTING)
+		{
+		    if (enc_utf8)
+			// UTF-8: Put a 0 in the second screen char.
+			ScreenLines[wlv.off] = 0;
+		    else
+			// DBCS: Put second byte in the second screen char.
+			ScreenLines[wlv.off] = mb_c & 0xff;
+
+		    if (wlv.draw_state > WL_NR
+#ifdef FEAT_DIFF
+			    && wlv.filler_todo <= 0
+#endif
+			    )
+			ScreenCols[wlv.off] = ++wlv.vcol;
+		    else
+			ScreenCols[wlv.off] = -1;
+		}
+		else if (wlv.draw_state > WL_NR
+#ifdef FEAT_DIFF
+			&& wlv.filler_todo <= 0
+#endif
+			)
+		    ++wlv.vcol;
 
 		// When "wlv.tocol" is halfway a character, set it to the end
 		// of the character, otherwise highlighting won't stop.
@@ -4245,10 +4755,16 @@ win_line(
 #ifdef FEAT_CONCEAL
 	else if (wp->w_p_cole > 0 && is_concealing)
 	{
-	    int concealed_wide = has_mbyte && (*mb_char2cells)(mb_c) > 1;
+	    bool concealed_wide = has_mbyte && (*mb_char2cells)(mb_c) > 1;
 
+	    if (DRAWLINE_COLLECTING)
+		drawline_conceal_iter->has_conceal = true;
 	    --skip_cells;
 	    ++wlv.vcol_off_co;
+# if defined(FEAT_LINEBREAK) && defined(FEAT_SYN_HL)
+	    if (wp->w_p_cole == 3)
+		lbr_seen_conceal = true;
+# endif
 	    if (concealed_wide)
 	    {
 		// When a double-width char is concealed,
@@ -4260,7 +4776,7 @@ win_line(
 	    if (wlv.n_extra > 0)
 		wlv.vcol_off_co += wlv.n_extra;
 
-	    if (wp->w_p_wrap)
+	    if (wp->w_p_wrap && wp->w_p_cole != 3)
 	    {
 		// Special voodoo required if 'wrap' is on.
 		//
@@ -4277,9 +4793,9 @@ win_line(
 		// For popup windows with fixed width, don't advance col
 		// to allow full text to be displayed.
 # ifdef FEAT_PROP_POPUP
-		int adjust_col = !WIN_IS_POPUP(wp);
+		bool adjust_col = !WIN_IS_POPUP(wp);
 # else
-		int adjust_col = TRUE;
+		bool adjust_col = true;
 # endif
 		if (wlv.n_extra > 0)
 		{
@@ -4357,7 +4873,6 @@ win_line(
 		    n_attr = 0;
 		}
 	    }
-
 	}
 #endif // FEAT_CONCEAL
 	else
@@ -4498,6 +5013,13 @@ win_line(
 #endif
 		    )
 	    {
+#ifdef FEAT_CONCEAL
+		if (DRAWLINE_COLLECTING)
+		{
+		    drawline_conceal_iter->failed = true;
+		    break;
+		}
+#endif
 		win_draw_end(wp, '@', ' ', TRUE, wlv.row, wp->w_height, HLF_AT);
 		draw_vsep_win(wp, wlv.row);
 		wlv.row = endrow;
@@ -4510,7 +5032,8 @@ win_line(
 		break;
 	    }
 
-	    if (screen_cur_row == wlv.screen_row - 1
+	    if (!DRAWLINE_COLLECTING
+		    && screen_cur_row == wlv.screen_row - 1
 #ifdef FEAT_DIFF
 		     && wlv.filler_todo <= 0
 #endif
@@ -4604,3 +5127,54 @@ win_line(
     vim_free(wlv.saved_p_extra_free);
     return wlv.row;
 }
+
+#ifdef FEAT_CONCEAL
+/*
+ * Iterate over the visible buffer cells for "lnum" as win_line() lays them out.
+ * The callback receives row and column values relative to a synthetic row zero.
+ * A callback may return NOTDONE to stop early without making iteration fail;
+ * then "rowsp" does not describe the full line height.
+ * When "cb" is NULL, only collect whether the line has concealment and how
+ * many rows it occupies.
+ */
+    int
+win_line_conceal_iter(
+    win_T		*wp,
+    linenr_T		lnum,
+    conceal_screenline_cb_T cb,
+    void		*cb_ctx,
+    bool		*has_concealp,
+    int			*rowsp)
+{
+    drawline_conceal_iter_T iter;
+    spellvars_T		spv;
+    int			row;
+
+    if (DRAWLINE_COLLECTING)
+	return FAIL;
+
+    CLEAR_FIELD(iter);
+    CLEAR_FIELD(spv);
+    iter.cb = cb;
+    iter.cb_ctx = cb_ctx;
+# ifdef FEAT_SEARCH_EXTRA
+    iter.use_search_hl = conceal_match_may_conceal(wp);
+# endif
+    drawline_conceal_iter = &iter;
+# ifdef FEAT_SEARCH_EXTRA
+    if (iter.use_search_hl)
+    {
+	init_search_hl(wp, &screen_search_hl);
+	prepare_search_hl(wp, &screen_search_hl, lnum);
+    }
+# endif
+    row = win_line(wp, lnum, 0, INT_MAX, 0, &spv);
+    if (has_concealp != NULL)
+	*has_concealp = iter.has_conceal;
+    if (rowsp != NULL)
+	*rowsp = row;
+
+    drawline_conceal_iter = NULL;
+    return row < 0 || iter.failed ? FAIL : OK;
+}
+#endif
