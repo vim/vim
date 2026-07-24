@@ -901,6 +901,21 @@ vim_main2(void)
 # ifdef FEAT_EVAL
     set_vim_var_nr(VV_VIM_DID_ENTER, 1L);
 # endif
+# ifdef FEAT_GUI
+    // Draw the screen now, so that the colors from the vimrc are shown before
+    // a possibly slow VimEnter autocommand runs, instead of the default colors
+    // the window was created with.
+    if (gui.in_use)
+    {
+	update_topline();
+	validate_cursor();
+	update_screen(0);
+	setcursor();
+	cursor_on();
+	out_flush();
+	TIME_MSG("drawing screen before VimEnter");
+    }
+# endif
     apply_autocmds(EVENT_VIMENTER, NULL, NULL, FALSE, curbuf);
     TIME_MSG("VimEnter autocommands");
 
