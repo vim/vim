@@ -2230,7 +2230,19 @@ getdigits(char_u **pp)
     long	retval;
 
     p = *pp;
+#ifdef __sun
+    errno = 0;
+    retval = strtol((char *)p, NULL, 10);
+    if (errno == ERANGE)
+    {
+	if (*p == '-')
+	    retval = LONG_MIN;
+	else
+	    retval = LONG_MAX;
+    }
+#else
     retval = atol((char *)p);
+#endif
     if (*p == '-')		// skip negative sign
 	++p;
     p = skipdigits(p);		// skip to next non-digit
