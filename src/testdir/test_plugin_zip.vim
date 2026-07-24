@@ -84,46 +84,46 @@ def g:Test_zip_basic()
   bw
 
   ### Check opening zip when "unzip" program is missing
-  var save_zip_unzipcmd = g:zip_unzipcmd
-  g:zip_unzipcmd = "/"
-  assert_match('unzip not available on your system', execute("e X.zip"))
+  var save_zip_unzipcmd = g:zip_browse
+  g:zip_browse = ["/"]
+  assert_match('not available on your system', execute("e X.zip"))
 
   ### Check when "unzip" don't work
   if executable("false")
-    g:zip_unzipcmd = "false"
+    g:zip_browse = ["false"]
     assert_match('X\.zip is not a zip file', execute("e X.zip"))
   endif
   bw
 
-  g:zip_unzipcmd = save_zip_unzipcmd
+  g:zip_browse = save_zip_unzipcmd
   e X.zip
 
   ### Check opening file when "unzip" is missing
-  g:zip_unzipcmd = "/"
+  g:zip_read = ["/"]
   assert_match('sorry, your system doesn''t appear to have the / program',
                execute("normal \<CR>"))
 
   bw|bw
-  g:zip_unzipcmd = save_zip_unzipcmd
+  g:zip_read = save_zip_unzipcmd
   e X.zip
 
   ### Check :write when "zip" program is missing
   :1|:/^$//file/
   exe "normal \<cr>Goanother\<esc>"
-  var save_zip_zipcmd = g:zip_zipcmd
-  g:zip_zipcmd = "/"
+  var save_zip_zipcmd = g:zip_update
+  g:zip_update = ["/"]
   assert_match('sorry, your system doesn''t appear to have the / program',
                execute("write"))
 
   ### Check when "zip" report failure
   if executable("false")
-    g:zip_zipcmd = "false"
+    g:zip_update = ["false"]
     assert_match('sorry, unable to update .*/X\.zip with Xzip/file\.txt',
                   execute("write"))
   endif
   bw!|bw
 
-  g:zip_zipcmd = save_zip_zipcmd
+  g:zip_update = save_zip_zipcmd
 
   ### Check opening an no zipfile
   writefile(["qsdf"], "Xcorupt.zip", "D")
@@ -190,7 +190,7 @@ def g:Test_zip_glob_fname()
   search('\V' .. fname)
   exe ":normal \<cr>"
   assert_match('zipfile://.*/X\.zip::zipglob/a\[a\]\.txt', @%)
-  assert_equal('a test file with []', getline(1))
+  assert_equal('zipglob/a[a].txt', getline(1))
   bw
 
   e X.zip
@@ -199,7 +199,7 @@ def g:Test_zip_glob_fname()
   search('\V' .. fname)
   exe ":normal \<cr>"
   assert_match('zipfile://.*/X\.zip::zipglob/a\*\.txt', @%)
-  assert_equal('a test file with a*', getline(1))
+  assert_equal('zipglob/a*.txt', getline(1))
   bw
 
   e X.zip
@@ -208,7 +208,7 @@ def g:Test_zip_glob_fname()
   search('\V' .. fname)
   exe ":normal \<cr>"
   assert_match('zipfile://.*/X\.zip::zipglob/a?\.txt', @%)
-  assert_equal('a test file with a?', getline(1))
+  assert_equal('zipglob/a?.txt', getline(1))
   bw
 
   e X.zip
@@ -217,7 +217,7 @@ def g:Test_zip_glob_fname()
   search('\V' .. escape(fname, '\\'))
   exe ":normal \<cr>"
   assert_match('zipfile://.*/X\.zip::zipglob/a\\\.txt', @%)
-  assert_equal('a test file with a\', getline(1))
+  assert_equal('zipglob/a\.txt', getline(1))
   bw
 
   e X.zip
@@ -226,7 +226,7 @@ def g:Test_zip_glob_fname()
   search('\V' .. escape(fname, '\\'))
   exe ":normal \<cr>"
   assert_match('zipfile://.*/X\.zip::zipglob/a\\\\\.txt', @%)
-  assert_equal('a test file with a double \', getline(1))
+  assert_equal('zipglob/a\\.txt', getline(1))
   bw
 
   bw
