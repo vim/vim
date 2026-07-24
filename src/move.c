@@ -45,7 +45,7 @@ adjust_plines_for_skipcol(win_T *wp)
     if (wp->w_skipcol == 0)
 	return 0;
 
-    int width = wp->w_width - win_col_off(wp);
+    int width = W_WIDTH_INNER(wp) - win_col_off(wp);
     int w2 = width + win_col_off2(wp);
     if (wp->w_skipcol >= width && w2 > 0)
 	return (wp->w_skipcol - width) / w2 + 1;
@@ -1234,12 +1234,12 @@ curs_columns(
      */
     curwin->w_wrow = curwin->w_cline_row;
 
-    width1 = curwin->w_width - extra;
+    width1 = W_WIDTH_INNER(curwin) - extra;
     if (width1 <= 0)
     {
 	// No room for text, put cursor in last char of window.
 	// If not wrapping, the last non-empty line.
-	curwin->w_wcol = curwin->w_width - 1;
+	curwin->w_wcol = W_WIDTH_INNER(curwin) > 0 ? W_WIDTH_INNER(curwin) - 1 : 0;
 	if (curwin->w_p_wrap)
 	    curwin->w_wrow = curwin->w_height - 1;
 	else
@@ -1267,10 +1267,10 @@ curs_columns(
 	}
 
 	// long line wrapping, adjust curwin->w_wrow
-	if (curwin->w_wcol >= curwin->w_width)
+	if (curwin->w_wcol >= W_WIDTH_INNER(curwin))
 	{
 	    // this same formula is used in validate_cursor_col()
-	    n = (curwin->w_wcol - curwin->w_width) / width2 + 1;
+	    n = (curwin->w_wcol - (W_WIDTH_INNER(curwin))) / width2 + 1;
 	    curwin->w_wcol -= n * width2;
 	    curwin->w_wrow += n;
 	}
@@ -1288,7 +1288,7 @@ curs_columns(
 #ifdef FEAT_PROP_POPUP
 	if (curwin->w_virtcol_first_char > 0)
 	{
-	    int cols = (curwin->w_width - extra);
+	    int cols = (W_WIDTH_INNER(curwin) - extra);
 	    int rows = cols > 0 ? curwin->w_virtcol_first_char / cols : 1;
 
 	    // each "above" text prop shifts the text one row down
@@ -1305,7 +1305,7 @@ curs_columns(
 	 * extra.
 	 */
 	off_left = startcol - curwin->w_leftcol - siso;
-	off_right = endcol - curwin->w_leftcol - (curwin->w_width - siso) + 1;
+	off_right = endcol - curwin->w_leftcol - (W_WIDTH_INNER(curwin) - siso) + 1;
 	if (off_left < 0 || off_right > 0)
 	{
 	    if (off_left < 0)
@@ -1531,20 +1531,20 @@ textpos2screenpos(
 	    // similar to what is done in validate_cursor_col()
 	    col = scol;
 	    col += off;
-	    width = wp->w_width - off + win_col_off2(wp);
+	    width = W_WIDTH_INNER(wp) - off + win_col_off2(wp);
 
 	    // long line wrapping, adjust row
 	    if (wp->w_p_wrap
-		    && col >= (colnr_T)wp->w_width
+		    && col >= (colnr_T)(W_WIDTH_INNER(wp))
 		    && width > 0)
 	    {
 		// use same formula as what is used in curs_columns()
-		int rowoff = ((col - wp->w_width) / width + 1);
+		int rowoff = ((col - W_WIDTH_INNER(wp)) / width + 1);
 		col -= rowoff * width;
 		row += rowoff;
 	    }
 	    col -= wp->w_leftcol;
-	    if (col >= wp->w_width)
+	    if (col >= W_WIDTH_INNER(wp))
 		col = -1;
 	    if (col >= 0 && row >= 0 && row < wp->w_height)
 	    {
@@ -1685,7 +1685,7 @@ static void cursor_correct_sms(void)
 	return;
 
     long    so = get_scrolloff_value();
-    int	    width1 = curwin->w_width - curwin_col_off();
+    int	    width1 = W_WIDTH_INNER(curwin) - curwin_col_off();
     int	    width2 = width1 + curwin_col_off2();
     int	    so_cols = so == 0 ? 0 : width1 + (so - 1) * width2;
     int	    space_cols = (curwin->w_height - 1) * width2;
@@ -1704,7 +1704,7 @@ static void cursor_correct_sms(void)
 	so_cols -= width1;
 
     overlap = curwin->w_skipcol == 0 ? 0
-			: sms_marker_overlap(curwin, curwin->w_width - width2);
+			: sms_marker_overlap(curwin, W_WIDTH_INNER(curwin) - width2);
     // If we have non-zero scrolloff, ignore marker overlap.
     top = curwin->w_skipcol + (so_cols != 0 ? so_cols : overlap);
     bot = curwin->w_skipcol + width1 + (curwin->w_height - 1) * width2
@@ -1828,7 +1828,7 @@ scrolldown(
 
     if (do_sms)
     {
-	width1 = curwin->w_width - curwin_col_off();
+	width1 = W_WIDTH_INNER(curwin) - curwin_col_off();
 	width2 = width1 + curwin_col_off2();
     }
 
@@ -1922,12 +1922,12 @@ scrolldown(
      * and move the cursor onto the displayed part of the window.
      */
     wrow = curwin->w_wrow;
-    if (curwin->w_p_wrap && curwin->w_width != 0)
+    if (curwin->w_p_wrap && W_WIDTH_INNER(curwin) > 0)
     {
 	validate_virtcol();
 	validate_cheight();
 	wrow += curwin->w_cline_height - 1 -
-	    curwin->w_virtcol / curwin->w_width;
+	    curwin->w_virtcol / (W_WIDTH_INNER(curwin));
     }
     while (wrow >= curwin->w_height && curwin->w_cursor.lnum > 1)
     {
@@ -1978,7 +1978,7 @@ scrollup(
 #endif
        )
     {
-	int	    width1 = curwin->w_width - curwin_col_off();
+	int	    width1 = W_WIDTH_INNER(curwin) - curwin_col_off();
 	int	    width2 = width1 + curwin_col_off2();
 	int	    size = 0;
 	colnr_T	    prev_skipcol = curwin->w_skipcol;
@@ -2092,7 +2092,7 @@ adjust_skipcol(void)
 	    || curwin->w_cursor.lnum != curwin->w_topline)
 	return;
 
-    int	    width1 = curwin->w_width - curwin_col_off();
+    int	    width1 = W_WIDTH_INNER(curwin) - curwin_col_off();
     if (width1 <= 0)
 	return;  // no text will be displayed
 
@@ -2116,7 +2116,7 @@ adjust_skipcol(void)
     }
 
     validate_virtcol();
-    overlap = sms_marker_overlap(curwin, curwin->w_width - width2);
+    overlap = sms_marker_overlap(curwin, W_WIDTH_INNER(curwin) - width2);
     while (curwin->w_skipcol > 0
 	    && curwin->w_virtcol < curwin->w_skipcol + overlap + scrolloff_cols)
     {
@@ -3280,7 +3280,7 @@ static int scroll_with_sms(int dir, long count, long *curscount)
 	if (labs(curwin->w_topline - prev_topline) > (dir == BACKWARD))
 	    fixdir = dir * -1;
 
-	int width1 = curwin->w_width - curwin_col_off();
+	int width1 = W_WIDTH_INNER(curwin) - curwin_col_off();
 	int width2 = width1 + curwin_col_off2();
 	count = 1 + (curwin->w_skipcol - width1 - 1) / width2;
 	if (fixdir == FORWARD)

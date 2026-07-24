@@ -1404,6 +1404,7 @@ enum
 #ifdef FEAT_SIGNS
     , WV_SCL
 #endif
+    , WV_RMAR
     , WV_COUNT	    // must be the last one
 };
 

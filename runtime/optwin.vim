@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2026 May 17
+" Last Change:	2026 Jul 25
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If there already is an option window, jump to that one.
@@ -358,6 +358,9 @@ call append("$", " \tset sop=" . &sop)
 call <SID>AddOption("wrap", gettext("long lines wrap"))
 call append("$", "\t" .. s:local_to_window)
 call <SID>BinOptionL("wrap")
+call <SID>AddOption("rightmargin", gettext("columns reserved after text"))
+call append("$", "\t" .. s:local_to_window)
+call <SID>BinOptionL("rmar")
 call <SID>AddOption("linebreak", gettext("wrap long lines at a character in 'breakat'"))
 call append("$", "\t" .. s:local_to_window)
 call <SID>BinOptionL("lbr")
