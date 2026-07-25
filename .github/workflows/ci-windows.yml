@@ -128,7 +128,7 @@ jobs:
           release: false
 
       - name: Checkout repository from GitHub
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7.0.1
 
       - name: Create a list of download URLs
         shell: cmd
