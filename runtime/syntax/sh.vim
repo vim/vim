@@ -598,12 +598,12 @@ syn match  shVariable	"\<\h\w*\ze="			nextgroup=shVarAssign
 if exists("b:is_bash")
     " The subscript form for array values, e.g. "foo=([2]=10 [4]=100)".
     syn region  shArrayValue	contained	start="\[\%(..\{-}\]=\)\@=" end="\]=\@="	contains=@shArrayValueList nextgroup=shVarAssign
-    syn cluster shArrayValueList	contains=shArithmetic,shArithParen,shCommandSub,shDeref,shDerefSimple,shExpr,shNumber,shExSingleQuote,shExDoubleQuote,shSingleQuote,shDoubleQuote,shSpecial,shParen,bashSpecialVariables,shParenError
+    syn cluster shArrayValueList	contains=shArithmetic,shArithParen,shCommandSub,shDeref,shDerefSimple,shEscape,shExpr,shNumber,shExSingleQuote,shExDoubleQuote,shSingleQuote,shDoubleQuote,shSpecial,shParen,bashSpecialVariables,shParenError
     syn region  shArrayRegion	contained matchgroup=shShellVariables start="(" skip='\\\\\|\\.' end=")" contains=@shArrayValueList,shArrayValue,shComment
 elseif (exists("b:is_kornshell") && !exists("b:is_ksh88"))
     " The subscript form for array values, e.g. "foo=([2]=10 [4]=100)".
     syn region  shArrayValue	contained	start="\[\%(..\{-}\]=\)\@=" end="\]=\@="	contains=@shArrayValueList nextgroup=shVarAssign
-    syn cluster shArrayValueList	contains=shArithmetic,shArithParen,shCommandSub,shDeref,shDerefSimple,shExpr,shNumber,shExSingleQuote,shExDoubleQuote,shSingleQuote,shDoubleQuote,shSpecial,shParen,kshSpecialVariables,shParenError
+    syn cluster shArrayValueList	contains=shArithmetic,shArithParen,shCommandSub,shDeref,shDerefSimple,shEscape,shExpr,shNumber,shExSingleQuote,shExDoubleQuote,shSingleQuote,shDoubleQuote,shSpecial,shParen,kshSpecialVariables,shParenError
     syn region  shArrayRegion	contained matchgroup=shShellVariables start="(" skip='\\\\\|\\.' end=")" contains=@shArrayValueList,shArrayValue,shComment,shArrayRegion
 endif
 if exists("b:is_bash") || exists("b:is_kornshell")
