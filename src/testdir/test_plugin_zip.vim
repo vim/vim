@@ -16,9 +16,15 @@ def CopyZipFile(source: string)
 enddef
 
 def g:Test_zip_basic()
+  ### Check load once
+  assert_true(!exists("g:loaded_zip"), "Test config: now the zip autoload should not be loaded.")
+
   CopyZipFile("test.zip")
   defer delete("X.zip")
   e X.zip
+
+  ### Check load once
+  assert_true(exists("g:loaded_zip"))
 
   ### Check header
   assert_match('^" zip\.vim version v\d\+', getline(1))
