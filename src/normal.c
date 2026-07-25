@@ -1850,14 +1850,14 @@ display_showcmd(void)
 
     if (*p_sloc == 's')
     {
-	if (showcmd_is_clear)
+	if (showcmd_is_clear && !vgetc_busy)
 	    curwin->w_redr_status = true;
 	else
 	    win_redr_status(curwin, FALSE);
     }
     else if (*p_sloc == 't')
     {
-	if (showcmd_is_clear)
+	if (showcmd_is_clear && !vgetc_busy)
 	    redraw_tabline = TRUE;
 	else
 	    draw_tabline();
