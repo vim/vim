@@ -106,6 +106,9 @@ endif
 
 let s:ps = ''
 " order: `g:zip_pwsh` > `&shell`, with executable check
+if &shell =~? 'cmd'
+  call s:Mess('Note', "***note*** (zip) you can set shell option or `g:zip_pwsh` to enable powershell fallback")
+endif
 if &shell =~? 'powershell' || g:zip_pwsh =~? 'powershell'
   if executable('powershell')
     let s:ps = 'powershell'

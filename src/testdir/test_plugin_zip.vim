@@ -19,6 +19,11 @@ def g:Test_zip_basic()
   ### Check load once
   assert_true(!exists("g:loaded_zip"), "Test config: now the zip autoload should not be loaded.")
 
+  ### Windows OS: PowerShell fallback should be manually set up
+  if &shell =~? 'cmd'
+    set shell=powershell
+  endif
+
   CopyZipFile("test.zip")
   defer delete("X.zip")
   e X.zip
