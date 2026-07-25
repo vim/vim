@@ -3,6 +3,9 @@ vim9script
 export var allowed: bool = false
 
 export def Available(): bool
+  if has('gui_running')
+    return false
+  endif
   if get(g:, 'osc52_force_avail', 0)
     return true
   endif
