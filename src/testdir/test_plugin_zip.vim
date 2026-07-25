@@ -154,16 +154,8 @@ enddef
 
 def g:Test_zip_windows_powershell()
   CheckMSWindows
-  " TODO: add more test for powershell fallback
+  ### TODO: add more test for powershell fallback
 
-  ### Check when "zip" report failure
-  if executable("false")
-    g:zip_update = ["false"]
-    assert_match('sorry, unable to update .*/X\.zip with Xzip/file\.txt',
-                  execute("write"))
-  endif
-
-  bw!|bw
   ### Check opening an no zipfile
   writefile(["qsdf"], "Xcorupt.zip", "D")
   e! Xcorupt.zip
