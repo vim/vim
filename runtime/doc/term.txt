@@ -1,4 +1,4 @@
-*term.txt*	For Vim version 9.2.  Last change: 2026 Mar 04
+*term.txt*	For Vim version 9.2.  Last change: 2026 Jul 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -690,18 +690,20 @@ work the 'termguicolors' option needs to be set.
 See https://github.com/termstandard/colors for a list of terminals that
 support true colors.
 
-For telling the terminal what RGB color to use the |t_8f| and |t_8b| termcap
-entries are used.  These are set by default to values that work for most
-terminals.  If that does not work for your terminal you can set them manually.
-The default values are set like this: >
+For telling the terminal what RGB color to use the |t_8f|, |t_8b|, and |t_8u|
+termcap entries are used.  These are set by default to values that work for
+most terminals.  If that does not work for your terminal you can set them
+manually.  The default values are set like this: >
 	 let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
 	 let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+	 let &t_8u = "\<Esc>[58;2;%lu;%lu;%lum"
 
 Some terminals accept similar sequences, with semicolons replaced by colons
 and an extra colon after the number 2 (this is conformant to the ISO 8613-6
 standard, but less widely supported): >
 	 let &t_8f = "\<Esc>[38:2::%lu:%lu:%lum"
 	 let &t_8b = "\<Esc>[48:2::%lu:%lu:%lum"
+	 let &t_8u = "\<Esc>[58:2::%lu:%lu:%lum"
 
 These options contain printf strings, with |printf()| (actually, its C
 equivalent hence `l` modifier) invoked with the t_ option value and three
