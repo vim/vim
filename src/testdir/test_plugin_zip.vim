@@ -94,6 +94,9 @@ def g:Test_zip_basic()
   assert_equal("X.zip", @%)
   bw
 
+  ### Windows OS: PowerShell fallback
+  CheckNotMSWindows
+
   ### Check opening zip when "unzip" program is missing
   var save_zip_unzipcmd = g:zip_browse
   g:zip_browse = ["/"]
@@ -136,6 +139,31 @@ def g:Test_zip_basic()
 
   g:zip_update = save_zip_zipcmd
 
+  ### Check opening an no zipfile
+  writefile(["qsdf"], "Xcorupt.zip", "D")
+  e! Xcorupt.zip
+  assert_equal("qsdf", getline(1))
+
+  bw
+
+  ### Check no existing zipfile
+  assert_match('File not readable', execute("e Xnot_exists.zip"))
+
+  bw
+enddef
+
+def g:Test_zip_windows_powershell()
+  CheckMSWindows
+  " TODO: add more test for powershell fallback
+
+  ### Check when "zip" report failure
+  if executable("false")
+    g:zip_update = ["false"]
+    assert_match('sorry, unable to update .*/X\.zip with Xzip/file\.txt',
+                  execute("write"))
+  endif
+
+  bw!|bw
   ### Check opening an no zipfile
   writefile(["qsdf"], "Xcorupt.zip", "D")
   e! Xcorupt.zip
