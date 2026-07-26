@@ -5390,13 +5390,13 @@ func s:do_test_popup_opacity_terminal_close_no_leftover(tabpage)
 
   " A semi-transparent popup over a terminal used to leave the old popup
   " cells behind when it closed.
-  let lines =<< trim END
+  let lines =<< eval trim END
     set shell=/bin/sh noruler
     unlet $PROMPT_COMMAND
     let $PS1 = 'vim> '
     terminal ++curwin
     call popup_create('ABC',
-        \ #{line: 5, col: 10, highlight: 'None', opacity: 30})
+        \ #{{line: 5, col: 10, highlight: 'None', opacity: 30, tabpage: {a:tabpage}}})
     func CloseIt()
       let id = popup_list()[0]
       call popup_close(id)
