@@ -56,4 +56,6 @@ void restore_v_event(dict_T *v_event, save_v_event_T *sve);
 void may_trigger_modechanged(void);
 int vim_append_digit_long(long *value, int digit);
 int trim_to_int(vimlong_T x);
+char_u *base64_encode_bytes(const char_u *data, size_t input_len);
+int base64_decode_bytes(const char_u *data, size_t input_len, garray_T *gap, int message);
 /* vim: set ft=c : */

@@ -2955,3 +2955,155 @@ trim_to_int(vimlong_T x)
     return x > INT_MAX ? INT_MAX : x < INT_MIN ? INT_MIN : x;
 }
 
+#if defined(FEAT_EVAL) || defined(FEAT_CLIPBOARD_OSC52)
+// Base64 character set
+static const char_u base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+// Base64 decoding table (initialized in init_base64_dec_table() below)
+static char_u base64_dec_table[256];
+
+/*
+ * Initialize the base64 decoding table
+ */
+    static void
+init_base64_dec_table(void)
+{
+    static int base64_dec_tbl_initialized = FALSE;
+
+    if (base64_dec_tbl_initialized)
+	return;
+
+    // Unsupported characters are set to 0xFF
+    vim_memset(base64_dec_table, 0xFF, sizeof(base64_dec_table));
+
+    // Initialize the index for the base64 alphabets
+    for (size_t i = 0; i < sizeof(base64_table) - 1; i++)
+	base64_dec_table[(char_u)base64_table[i]] = (char_u)i;
+
+    // base64 padding character
+    base64_dec_table['='] = 0;
+
+    base64_dec_tbl_initialized = TRUE;
+}
+
+/*
+ * Encode "input_len" bytes from "data".
+ */
+    char_u *
+base64_encode_bytes(const char_u *data, size_t input_len)
+{
+    size_t encoded_len = ((input_len + 2) / 3) * 4;
+    char_u *encoded = alloc(encoded_len + 1);
+    if (encoded == NULL)
+	return NULL;
+
+    size_t i, j;
+    for (i = 0, j = 0; i < input_len;)
+    {
+	int_u octet_a = i < input_len ? data[i++] : 0;
+	int_u octet_b = i < input_len ? data[i++] : 0;
+	int_u octet_c = i < input_len ? data[i++] : 0;
+
+	int_u triple = (octet_a << 16) | (octet_b << 8) | octet_c;
+
+	encoded[j++] = base64_table[(triple >> 18) & 0x3F];
+	encoded[j++] = base64_table[(triple >> 12) & 0x3F];
+	encoded[j++] = (!octet_b && i >= input_len) ? '='
+					: base64_table[(triple >> 6) & 0x3F];
+	encoded[j++] = (!octet_c && i >= input_len) ? '='
+					: base64_table[triple & 0x3F];
+    }
+    encoded[j] = NUL;
+
+    return encoded;
+}
+
+/*
+ * Decode "input_len" bytes of base-64 data.
+ *
+ * Appends decoded bytes to "gap".  Returns FAIL for invalid input.  When
+ * "message" is true an invalid-input error is reported.
+ */
+    int
+base64_decode_bytes(
+    const char_u	*data,
+    size_t		input_len,
+    garray_T		*gap,
+    int			message)
+{
+    size_t decoded_len;
+
+    if (input_len == 0)
+	return OK;
+
+    if (input_len % 4 != 0)
+    {
+	// Invalid input length
+	if (message)
+	    semsg(_(e_invalid_argument_str), data);
+	return FAIL;
+    }
+
+    init_base64_dec_table();
+
+    decoded_len = (input_len / 4) * 3;
+    if (data[input_len - 1] == '=')
+	decoded_len--;
+    if (data[input_len - 2] == '=')
+	decoded_len--;
+
+    size_t i, j;
+    for (i = 0, j = 0; i < input_len;)
+    {
+	int_u sextet_a = base64_dec_table[(char_u)data[i++]];
+	int_u sextet_b = base64_dec_table[(char_u)data[i++]];
+	int_u sextet_c = base64_dec_table[(char_u)data[i++]];
+	int_u sextet_d = base64_dec_table[(char_u)data[i++]];
+
+	if (sextet_a == 0xFF || sextet_b == 0xFF || sextet_c == 0xFF
+							|| sextet_d == 0xFF)
+	{
+	    // Invalid character
+	    if (message)
+		semsg(_(e_invalid_argument_str), data);
+	    ga_clear(gap);
+	    return FAIL;
+	}
+
+	int_u triple = (sextet_a << 18) | (sextet_b << 12)
+						| (sextet_c << 6) | sextet_d;
+
+	if (j < decoded_len)
+	{
+	    ga_append(gap, (triple >> 16) & 0xFF);
+	    j++;
+	}
+	if (j < decoded_len)
+	{
+	    ga_append(gap, (triple >> 8) & 0xFF);
+	    j++;
+	}
+	if (j < decoded_len)
+	{
+	    ga_append(gap, triple & 0xFF);
+	    j++;
+	}
+
+	if (j == decoded_len)
+	{
+	    // Check for invalid padding bytes (based on the
+	    // "Base64 Malleability in Practice" ACM paper).
+	    if ((data[input_len - 2] == '=' && ((sextet_b & 0xF) != 0))
+		|| ((data[input_len - 1] == '=') && ((sextet_c & 0x3) != 0)))
+	    {
+		if (message)
+		    semsg(_(e_invalid_argument_str), data);
+		ga_clear(gap);
+		return FAIL;
+	    }
+	}
+    }
+    return OK;
+}
+
+#endif // FEAT_EVAL FEAT_CLIPBOARD_OSC52
