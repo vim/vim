@@ -38,10 +38,12 @@ Note: If you have problems printing with |:hardcopy|, an alternative is to use
 			allow selection of printer, paper size etc.  To skip
 			the dialog, use the [!].  In this case the printer
 			defined by 'printdevice' is used, or, if 'printdevice'
-			is empty, the system default printer.
+			is empty, the system default printer.  Note that the
+			GTK4 GUI print dialog requires the XDG desktop portal
+			print interface to be available and at least GTK 4.14.
 
-			For systems other than MS-Windows, PostScript is
-			written in a temp file and 'printexpr' is used to
+			For systems other than MS-Windows or Pango, PostScript
+			is written in a temp file and 'printexpr' is used to
 			actually print it.  Then [arguments] can be used by
 			'printexpr' through |v:cmdarg|.  Otherwise [arguments]
 			is ignored.  'printoptions' can be used to specify

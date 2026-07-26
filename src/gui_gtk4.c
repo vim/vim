@@ -4982,20 +4982,23 @@ static GtkPrintSettings *print_settings = NULL;
 static GtkPageSetup *page_setup = NULL;
 static GtkPrintSetup *print_setup = NULL;
 static GOutputStream *print_stream = NULL;
+static prt_settings_T *prt_settings = NULL;
 
     static cairo_status_t
 print_write_func(void *udata UNUSED, const char_u *data, int_u len)
 {
-    size_t written;
+    GError *error = NULL;
+
     if (g_output_stream_write_all(
-		print_stream, data, (size_t)len, &written, NULL, NULL))
-    {
-	if ((int_u)written != len)
-	    return CAIRO_STATUS_WRITE_ERROR;
+		print_stream, data, (size_t)len, NULL, NULL, &error))
 	return CAIRO_STATUS_SUCCESS;
-    }
     else
+    {
+	semsg(_(e_print_error_str), error->message);
+	prt_settings->user_abort_msg = FALSE;
+	prt_settings->user_abort = TRUE;
 	return CAIRO_STATUS_WRITE_ERROR;
+    }
 }
 
     static void
@@ -5011,13 +5014,17 @@ print_stream_cb(
     static void
 print_dialog_cb(GtkPrintDialog *dialog, GAsyncResult *result, gboolean *done)
 {
-    print_setup = gtk_print_dialog_setup_finish(dialog, result, NULL);
+    GError *error = NULL;
+    print_setup = gtk_print_dialog_setup_finish(dialog, result, &error);
 
     if (print_setup != NULL)
 	gtk_print_dialog_print(dialog, GTK_WINDOW(gui.mainwin),
 		print_setup, NULL, (GAsyncReadyCallback)print_stream_cb, done);
     else
+    {
+	semsg(_(e_print_error_str), error->message);
 	*done = TRUE;
+    }
 }
 
 /*
@@ -5133,6 +5140,8 @@ gui_gtk4_print_dialog(
 
     g_clear_pointer(&print_setup, gtk_print_setup_unref);
     g_object_unref(dialog);
+
+    prt_settings = psettings;
 
     return OK;
 #else

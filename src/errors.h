@@ -569,7 +569,7 @@ EXTERN char e_font_str_is_not_fixed_width[]
 	INIT(= N_("E236: Font \"%s\" is not fixed-width"));
 # endif
 #endif
-#ifdef MSWIN
+#if defined(MSWIN) || defined(FEAT_PRINT_PANGO)
 EXTERN char e_printer_selection_failed[]
 	INIT(= N_("E237: Printer selection failed"));
 EXTERN char e_print_error_str[]

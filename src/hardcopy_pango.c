@@ -325,7 +325,8 @@ mch_print_init(
 	pctx.filename = (char_u *)filename;
     }
     else
-	pctx.surface = cairo_ps_surface_create_for_stream(write_func,
+	// Use PDF to write to stream, thats what GTK-demo program does.
+	pctx.surface = cairo_pdf_surface_create_for_stream(write_func,
 		NULL, pctx.page_width, pctx.page_height);
 
     if (cairo_surface_status(pctx.surface) != CAIRO_STATUS_SUCCESS)
