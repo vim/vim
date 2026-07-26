@@ -43,16 +43,11 @@
  * Format: [WIDTHxHEIGHT][{+-}XOFF{+-}YOFF]
  */
 #define NoValue		0x0000
-#define XValue		0x0001
-#define YValue		0x0002
 #define WidthValue	0x0004
 #define HeightValue	0x0008
-#define XNegative	0x0010
-#define YNegative	0x0020
 
     static int
-vim_parse_geometry(const char *str, int *x, int *y,
-	unsigned int *width, unsigned int *height)
+vim_parse_geometry(const char *str, unsigned int *width, unsigned int *height)
 {
     int mask = NoValue;
     char *end;
@@ -83,37 +78,6 @@ vim_parse_geometry(const char *str, int *x, int *y,
 	    *height = (unsigned int)val;
 	    mask |= HeightValue;
 	    str = end;
-	}
-    }
-
-    // Parse x offset
-    if (*str == '+' || *str == '-')
-    {
-	int negative = (*str == '-');
-	str++;
-	val = strtol(str, &end, 10);
-	if (end != str)
-	{
-	    *x = negative ? -(int)val : (int)val;
-	    mask |= XValue;
-	    if (negative)
-		mask |= XNegative;
-	    str = end;
-	}
-    }
-
-    // Parse y offset
-    if (*str == '+' || *str == '-')
-    {
-	int negative = (*str == '-');
-	str++;
-	val = strtol(str, &end, 10);
-	if (end != str)
-	{
-	    *y = negative ? -(int)val : (int)val;
-	    mask |= YValue;
-	    if (negative)
-		mask |= YNegative;
 	}
     }
 
@@ -300,6 +264,8 @@ static void clipboard_changed_cb(GdkClipboard *clipboard, gpointer user_data);
 static void show_menubar_popover(void);
 #endif
 
+const char *prgname = NULL;
+
 /*
  * Parse the GUI related command-line arguments.  Any arguments used are
  * deleted from argv, and *argc is decremented accordingly.  This is called
@@ -312,6 +278,75 @@ gui_mch_prepare(int *argc, char **argv)
     // gui_mch_init_check() after the fork.  Calling it before fork
     // breaks the display connection in the child process, causing gvim
     // to fail to start without --nofork.
+
+    int	i = 0;
+
+    while (i < *argc)
+    {
+	char *s, *value = NULL;
+	if (argv[i][0] != '-' && argv[i][0] != '+')
+	{
+	    ++i;
+	    continue;
+	}
+
+	s = argv[i];
+
+	if ((value = strchr(s, '=')) != NULL)
+	    value++;
+	else if (i + 1 < *argc && strcmp(argv[i + 1], "--") != 0)
+	    value = argv[i + 1];
+
+	if (strncmp(s, "-fn", 3) == 0 || strncmp(s, "-font", 5) == 0)
+	{
+	    font_argument = value;
+	}
+	else if (strncmp(s, "-geom", 5) == 0 || strncmp(s, "-geometry", 9) == 0)
+	{
+	    gui.geom = vim_strsave((char_u *)value);
+	}
+	else if (strncmp(s, "-bg", 3) == 0 || strncmp(s, "-background", 11) == 0)
+	{
+	    background_argument = value;
+	}
+	else if (strncmp(s, "-fg", 3) == 0 || strncmp(s, "-foreground", 11) == 0)
+	{
+	    foreground_argument = value;
+	}
+	else if (strncmp(s, "-nb", 3) == 0)
+	{
+	    gui.dofork = false; // don't fork() when starting GUI
+	    netbeansArg = argv[i];
+	    value = NULL; // Unset value
+	}
+	else if (strncmp(s, "--prg-name", 8) == 0)
+	{
+	    // GTK4 specific
+	    prgname = value;
+	}
+	else
+	{
+	    i++;
+	    continue;
+	}
+
+	// Remove the flag from the argument vector.
+	if (--*argc > i)
+	{
+	    int n_strip = 1;
+
+	    // Move the argument's value as well, if there is one.
+	    if (value != NULL)
+	    {
+		++n_strip;
+		--*argc;
+	    }
+	    if (*argc > i)
+		mch_memmove(&argv[i], &argv[i + n_strip],
+			(*argc - i) * sizeof(char *));
+	}
+	argv[*argc] = NULL;
+    }
 }
 
 /*
@@ -417,8 +452,9 @@ gui_mch_init_check(void)
 {
     // This defaults to argv[0], but we want it to match the name of the
     // shipped gvim.desktop so that Vim's windows can be associated with this
-    // file.  Also sets WM_CLASS on X11.
-    g_set_prgname("gvim");
+    // file.  Also sets WM_CLASS on X11. If "--prg-name" is specified, then use
+    // that.
+    g_set_prgname(prgname == NULL ? "gvim" : prgname);
 
     // Suppress noisy EGL warnings when GL is not available.  Only set
     // this when actually starting the GUI, so non-GUI invocations are
@@ -668,10 +704,8 @@ gui_mch_open(void)
     {
 	int		mask;
 	unsigned int	w, h;
-	int		x = 0;
-	int		y = 0;
 
-	mask = vim_parse_geometry((char *)gui.geom, &x, &y, &w, &h);
+	mask = vim_parse_geometry((char *)gui.geom, &w, &h);
 
 	if (mask & WidthValue)
 	    Columns = w;
@@ -685,12 +719,15 @@ gui_mch_open(void)
 
 	VIM_CLEAR(gui.geom);
     }
+    else
+    {
+	// Use 80x24 as the default GUI size, unless geometry was specified.
+	if (Columns > 80)
+	    Columns = 80;
+	if (Rows > 24)
+	    Rows = 24;
+    }
 
-    // Use 80x24 as the default GUI size, unless geometry was specified.
-    if (Columns > 80 && gui.geom == NULL)
-	Columns = 80;
-    if (Rows > 24 && gui.geom == NULL)
-	Rows = 24;
     pixel_width = (guint)(gui_get_base_width() + Columns * gui.char_width);
     pixel_height = (guint)(gui_get_base_height() + Rows * gui.char_height);
     gtk_window_set_default_size(GTK_WINDOW(gui.mainwin),
@@ -725,6 +762,7 @@ gui_mch_open(void)
 		     G_CALLBACK(mainwin_destroy_cb), NULL);
     // Resize is handled by GtkForm's size_allocate callback.
 
+    // Not sure if this needed but still do it I guess?
     gtk_widget_set_visible(gui.mainwin, TRUE);
 
     // Make sure the drawing area gets keyboard focus.
