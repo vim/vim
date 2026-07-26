@@ -327,9 +327,9 @@ If using the GTK4 GUI, then only the following are supported:
     -fg -foreground {color}
     -bg -background {color}
 
-Command line arguments Specific to GTK4:
+Command line arguments specific to GTK4:
     command line argument   meaning ~
-    --prg-name		    Argument passed to g_set_prgname(), otherwise
+    --prg-name {name}	    Argument passed to g_set_prgname(), otherwise
 			    "gvim" is used.  On Wayland this will set the app
 			    id, which is equivalent to the X11 WM_CLASS
 

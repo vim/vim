@@ -264,7 +264,7 @@ static void clipboard_changed_cb(GdkClipboard *clipboard, gpointer user_data);
 static void show_menubar_popover(void);
 #endif
 
-const char *prgname = NULL;
+static const char *prgname = NULL;
 
 /*
  * Parse the GUI related command-line arguments.  Any arguments used are
@@ -298,21 +298,13 @@ gui_mch_prepare(int *argc, char **argv)
 	    value = argv[i + 1];
 
 	if (strncmp(s, "-fn", 3) == 0 || strncmp(s, "-font", 5) == 0)
-	{
 	    font_argument = value;
-	}
 	else if (strncmp(s, "-geom", 5) == 0 || strncmp(s, "-geometry", 9) == 0)
-	{
 	    gui.geom = vim_strsave((char_u *)value);
-	}
 	else if (strncmp(s, "-bg", 3) == 0 || strncmp(s, "-background", 11) == 0)
-	{
 	    background_argument = value;
-	}
 	else if (strncmp(s, "-fg", 3) == 0 || strncmp(s, "-foreground", 11) == 0)
-	{
 	    foreground_argument = value;
-	}
 	else if (strncmp(s, "-nb", 3) == 0)
 	{
 	    gui.dofork = false; // don't fork() when starting GUI
@@ -320,10 +312,8 @@ gui_mch_prepare(int *argc, char **argv)
 	    value = NULL; // Unset value
 	}
 	else if (strncmp(s, "--prg-name", 8) == 0)
-	{
 	    // GTK4 specific
 	    prgname = value;
-	}
 	else
 	{
 	    i++;
