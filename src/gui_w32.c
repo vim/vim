@@ -379,6 +379,11 @@ static WPARAM		s_wParam = 0;
 static LPARAM		s_lParam = 0;
 
 static HWND		s_textArea = NULL;
+
+// Set when the text area was painted with the background color only, because
+// the screen contents were not available yet.
+static bool		s_textarea_bg_only = false;
+
 static UINT		s_uMsg = 0;
 
 static char_u		*s_textfield; // Used by dialogs to pass back strings
@@ -1632,6 +1637,10 @@ gui_mch_new_colors(void)
     prevBrush = (HBRUSH)SetClassLongPtr(
 				s_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)s_brush);
     InvalidateRect(s_hwnd, NULL, TRUE);
+    // The text area is a child window, the invalidation above does not
+    // include it.
+    if (s_textarea_bg_only && s_textArea != NULL)
+	InvalidateRect(s_textArea, NULL, TRUE);
     DeleteObject(prevBrush);
 }
 
@@ -3714,6 +3723,15 @@ _OnPaint(
 
     if (!IsRectEmpty(&ps.rcPaint))
     {
+	// The text area has no background brush, thus undefined pixels remain
+	// visible until the screen contents are drawn.
+	if (!screen_cleared || ScreenLines == NULL)
+	{
+	    clear_rect(&ps.rcPaint);
+	    s_textarea_bg_only = true;
+	}
+	else
+	    s_textarea_bg_only = false;
 	gui_redraw(ps.rcPaint.left, ps.rcPaint.top,
 		ps.rcPaint.right - ps.rcPaint.left + 1,
 		ps.rcPaint.bottom - ps.rcPaint.top + 1);
