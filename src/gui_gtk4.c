@@ -5132,7 +5132,6 @@ gui_gtk4_print_dialog(
     *((cairo_write_func_t *)write_func) = print_write_func;
 
     g_clear_pointer(&print_setup, gtk_print_setup_unref);
-    g_clear_object(&print_stream);
     g_object_unref(dialog);
 
     return OK;
