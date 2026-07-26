@@ -117,6 +117,7 @@ static void redraw_under_popup_area(int winrow, int wincol, int height,
 	int width, int leftoff);
 static void redraw_overlapped_opacity_popups(int winrow, int wincol,
 	int height, int width, int leftoff, int zindex);
+static void redraw_win_under_opacity_popup(win_T *wp);
 #ifdef FEAT_IMAGE_KITTY
 static void popup_image_clear_kitty(win_T *wp);
 #endif
@@ -4641,6 +4642,11 @@ popup_close(int id, int force)
 		first_popupwin = wp->w_next;
 	    else
 		prev->w_next = wp->w_next;
+#ifdef FEAT_TERMINAL
+	    // If the popup to be closed is opaque, terminal windows under
+	    // the popup should trigger a force repaint of their windows.
+	    redraw_win_under_opacity_popup(wp);
+#endif
 	    popup_free(wp);
 	    return OK;
 	}
@@ -4684,6 +4690,11 @@ popup_close_tabpage(tabpage_T *tp, int id, int force)
 		*root = wp->w_next;
 	    else
 		prev->w_next = wp->w_next;
+#ifdef FEAT_TERMINAL
+	    // If the popup to be closed is opaque, terminal windows under
+	    // the popup should trigger a force repaint of their windows.
+	    redraw_win_under_opacity_popup(wp);
+#endif
 	    popup_free(wp);
 	    return OK;
 	}
