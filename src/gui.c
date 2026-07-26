@@ -24,7 +24,7 @@ static void set_guifontwide(char_u *font_name);
 static void gui_check_pos(void);
 static void gui_reset_scroll_region(void);
 static void gui_outstr(char_u *, int);
-#ifndef USE_GTK4_SNAPSHOT
+#ifndef USE_GTK4
 static int gui_screenchar(int off, int flags, guicolor_T fg, guicolor_T bg, int back);
 #endif
 static int gui_outstr_nowrap(char_u *s, int len, int flags, guicolor_T fg, guicolor_T bg, int back);
@@ -1199,7 +1199,7 @@ gui_update_cursor(
     int		cattr;		// cursor attributes
     int		attr;
     attrentry_T *aep = NULL;
-#if (defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)) && !defined(USE_GTK4_SNAPSHOT)
+#if (defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)) && !defined(USE_GTK4)
     bool	lig_left = false, lig_right = false;
 #endif
 
@@ -1367,7 +1367,7 @@ gui_update_cursor(
      */
     if (!gui.in_focus)
     {
-#ifdef USE_GTK4_SNAPSHOT
+#ifdef USE_GTK4
 	gui_gtk4_draw_cursor(cbg, cfg, -1, -1);
 #else
 	gui_mch_draw_hollow_cursor(cbg);
@@ -1375,7 +1375,7 @@ gui_update_cursor(
 	return;
     }
 
-#ifdef USE_GTK4_SNAPSHOT
+#ifdef USE_GTK4
     // Make sure that character underneath is drawn again in case it is part of
     // a ligature.
     gui_redraw_block(gui.row, gui.col, gui.row, gui.col, GUI_MON_NOCLEAR);
@@ -1392,7 +1392,7 @@ gui_update_cursor(
 	    {
 		gui_redraw_block(gui.row, c + 1, gui.row, gui.col - 1,
 			GUI_MON_NOCLEAR);
-# ifndef USE_GTK4_SNAPSHOT
+# ifndef USE_GTK4
 		lig_left = true;
 # endif
 	    }
@@ -1406,7 +1406,7 @@ gui_update_cursor(
 	    {
 		gui_redraw_block(gui.row, gui.col + 1, gui.row, c - 1,
 			GUI_MON_NOCLEAR);
-# ifndef USE_GTK4_SNAPSHOT
+# ifndef USE_GTK4
 		lig_right = true;
 # endif
 	    }
@@ -1416,7 +1416,7 @@ gui_update_cursor(
     // it again.
     gui.cursor_is_valid = true;
 
-# ifndef USE_GTK4_SNAPSHOT
+# ifndef USE_GTK4
     if ((lig_left || lig_right) && shape->shape != SHAPE_BLOCK)
     {
 	// Because the cursor is not drawn with gui_screenchar(), must blit the
@@ -1435,7 +1435,7 @@ gui_update_cursor(
     old_hl_mask = gui.highlight_mask;
     if (shape->shape == SHAPE_BLOCK)
     {
-#ifdef USE_GTK4_SNAPSHOT
+#ifdef USE_GTK4
 	gui_gtk4_draw_cursor(cbg, cfg, 0, 0);
 #else
 	/*
@@ -1484,7 +1484,7 @@ gui_update_cursor(
 	    }
 #endif
 	}
-#ifdef USE_GTK4_SNAPSHOT
+#ifdef USE_GTK4
 	gui_gtk4_draw_cursor(cbg, cfg, cur_width, cur_height);
 #else
 	gui_mch_draw_part_cursor(cur_width, cur_height, cbg);
@@ -1496,7 +1496,7 @@ gui_update_cursor(
 
 	// Doesn't seem to work for MSWindows. We call gui_redraw_block() above
 	// for GtkSnapshot.
-#if !defined(FEAT_GUI_MSWIN) && !defined(USE_GTK4_SNAPSHOT)
+#if !defined(FEAT_GUI_MSWIN) && !defined(USE_GTK4)
 	gui.highlight_mask = ScreenAttrs[LineOffset[gui.row] + gui.col];
 	(void)gui_screenchar(LineOffset[gui.row] + gui.col,
 		GUI_MON_TRS_CURSOR | GUI_MON_NOCLEAR,
@@ -1689,14 +1689,14 @@ again:
     gui.num_cols = (pixel_width - gui_get_base_width()) / gui.char_width;
     gui.num_rows = (pixel_height - gui_get_base_height()) / gui.char_height;
 
-#ifdef USE_GTK4_SNAPSHOT
+#ifdef USE_GTK4
     gui_gtk4_update_size();
 #endif
 
     gui_position_components(pixel_width);
     gui_reset_scroll_region();
 
-#if defined(FEAT_GUI_GTK) && defined(USE_GTK4) && !defined(USE_GTK4_SNAPSHOT)
+#if defined(FEAT_GUI_GTK) && defined(USE_GTK4) && !defined(USE_GTK4)
     // We do not resize the draw area via the "resize" signal. This is because
     // when the window is resized, the form widget is the one that is resized,
     // so let that call gui_resize_shell() which will allocate the surface and
@@ -1726,7 +1726,7 @@ again:
 
     gui_update_scrollbars(TRUE);
     gui_update_cursor(FALSE, TRUE);
-#if defined(FEAT_GUI_GTK) && defined(USE_GTK4_SNAPSHOT)
+#if defined(FEAT_GUI_GTK) && defined(USE_GTK4)
     gui_gtk_calculate_bleed(pixel_width, pixel_height);
 #endif
 #if defined(FEAT_XIM) && !defined(FEAT_GUI_GTK)
@@ -1899,7 +1899,7 @@ gui_set_shellsize(
     gui_update_scrollbars(TRUE);
     gui_reset_scroll_region();
 
-#if defined(FEAT_GUI_GTK) && defined(USE_GTK4_SNAPSHOT)
+#if defined(FEAT_GUI_GTK) && defined(USE_GTK4)
     gui_gtk_calculate_bleed(width, height);
 #endif
 }
@@ -2293,7 +2293,7 @@ gui_outstr(char_u *s, int len)
     }
 }
 
-#ifndef USE_GTK4_SNAPSHOT
+#ifndef USE_GTK4
 /*
  * Output one character (may be one or two display cells).
  * Caller must check for valid "off".

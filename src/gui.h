@@ -285,7 +285,7 @@ typedef struct Gui
 #ifdef FEAT_DIRECTX
     bool	directx_enabled;    // DirectX (DirectWrite) rendering active
 #endif
-#if defined(FEAT_GUI_GTK) && defined(USE_GTK4_SNAPSHOT)
+#if defined(FEAT_GUI_GTK) && defined(USE_GTK4)
     int		bleed_right;	    // Number of pixels to bleed bg color right
     int		bleed_bot;	    // Number of pixels to bleed bg color down
 #endif
@@ -400,11 +400,9 @@ typedef struct Gui
     GdkColor	*bgcolor;	    // GDK-styled background color
     GdkColor	*spcolor;	    // GDK-styled special color
 # endif
-# if defined(USE_GTK3) || defined(USE_GTK4)
-#  ifndef USE_GTK4_SNAPSHOT
+# if defined(USE_GTK3) && !defined(USE_GTK4)
     cairo_surface_t *surface;       // drawarea surface
-#  endif
-# else
+# elif !defined(USE_GTK4)
     GdkGC	*text_gc;	    // cached GC for normal text
 # endif
     PangoContext     *text_context; // the context used for all text

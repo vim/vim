@@ -2819,11 +2819,7 @@ list_version(void)
     msg_puts(_("without GUI."));
 #elif defined(FEAT_GUI_GTK)
 # if defined(USE_GTK4)
-#  ifdef USE_GTK4_SNAPSHOT
-    msg_puts(_("with GTK4 GUI (hwaccel)."));
-#  else
     msg_puts(_("with GTK4 GUI."));
-#  endif
 # elif defined(USE_GTK3)
     msg_puts(_("with GTK3 GUI."));
 # elif defined(FEAT_GUI_GNOME)
