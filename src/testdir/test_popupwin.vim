@@ -5383,6 +5383,50 @@ func Test_popup_opacity_terminal_move_no_leftover()
   exe buf .. 'bwipe!'
 endfunc
 
+func s:do_test_popup_opacity_terminal_close_no_leftover(tabpage)
+  CheckScreendump
+  CheckFeature terminal
+  CheckUnix
+
+  " A semi-transparent popup over a terminal used to leave the old popup
+  " cells behind when it closed.
+  let lines =<< trim END
+    set shell=/bin/sh noruler
+    unlet $PROMPT_COMMAND
+    let $PS1 = 'vim> '
+    terminal ++curwin
+    call popup_create('ABC',
+        \ #{line: 5, col: 10, highlight: 'None', opacity: 30})
+    func CloseIt()
+      let id = popup_list()[0]
+      call popup_close(id)
+    endfunc
+  END
+  call writefile(lines, 'XtestPopupOpacityTermClose', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacityTermClose',
+	\ #{rows: 12, wait_for_ruler: 0})
+  call WaitForAssert({-> assert_match('ABC', term_getline(buf, 5))})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_term_close_1', {})
+
+  " Close the popup: the old "ABC" cells must be cleared.
+  call term_sendkeys(buf, "\<C-W>:call CloseIt()\<CR>")
+  call WaitForAssert({-> assert_equal('', term_getline(buf, 5)->trim())})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_term_close_2', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<C-W>:qa!\<CR>")
+  call WaitForAssert({-> assert_equal("finished", term_getstatus(buf))})
+  exe buf .. 'bwipe!'
+endfunc
+
+function Test_popup_opacity_global_terminal_close_no_leftover()
+  call s:do_test_popup_opacity_terminal_close_no_leftover(-1)
+endfunction
+
+function Test_popup_opacity_tablocal_terminal_close_no_leftover()
+  call s:do_test_popup_opacity_terminal_close_no_leftover(0)
+endfunction
+
 func Test_popup_opacity_terminal_no_freeze()
   CheckFeature terminal
   CheckUnix
