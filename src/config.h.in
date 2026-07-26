@@ -484,6 +484,12 @@
 /* Define if you want Cygwin to use the WIN32 clipboard, not compatible with X11*/
 #undef FEAT_CYGWIN_WIN32_CLIPBOARD
 
+/* Define to include OSC 52 clipboard support. */
+#undef FEAT_CLIPBOARD_OSC52
+
+/* Define to include OSC 52 tiny clipboard support. */
+#undef FEAT_CLIPBOARD_OSC52_TINY
+
 /* Define if we have AvailabilityMacros.h on Mac OS X */
 #undef HAVE_AVAILABILITYMACROS_H
 

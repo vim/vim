@@ -56,6 +56,7 @@
 static void parse_builtin_tcap(char_u *s);
 static void gather_termleader(void);
 #ifdef FEAT_TERMRESPONSE
+static int can_get_termresponse(void);
 static void req_codes_from_term(void);
 static void req_more_codes_from_term(void);
 static void got_code_from_term(char_u *code, int len);
@@ -1581,6 +1582,149 @@ init_term_props(int all)
 	if (all || term_props[i].tpr_set_by_termresponse)
 	    term_props[i].tpr_status = TPR_UNKNOWN;
 }
+#ifdef FEAT_CLIPBOARD_OSC52
+static unsigned osc52_response_count[2] = {0, 0};
+
+    bool
+term_osc52_is_enabled(void)
+{
+    static int enabled = -1;
+
+    if (enabled < 0)
+    {
+	char_u *value = mch_getenv((char_u *)"VIMOSC52");
+
+	enabled = value != NULL && STRCMP(value, "1") == 0;
+    }
+    return enabled;
+}
+
+    static char
+*osc52_msg(const char *target, const char *payload)
+{
+    size_t len = 8 + strlen(target) + strlen(payload);
+
+    char *buf = (char *)alloc(len);
+    if (buf == NULL)
+	return NULL;
+
+    snprintf(buf, len,
+	    "\033]52;%s;%s\007",
+	    target, payload);
+    return buf;
+}
+
+    void
+term_osc52_send(const char *selection, const char_u *payload, size_t len)
+{
+    char_u	*b64;
+    char	*msg;
+
+    if (!term_osc52_is_enabled())
+	return;
+
+    b64 = base64_encode_bytes(payload, len);
+    if (b64 == NULL)
+	return;
+
+    msg = osc52_msg(selection, (char *)b64);
+    vim_free(b64);
+
+    if (msg != NULL)
+    {
+        out_str((char_u *)msg);
+        out_flush();
+        vim_free(msg);
+    }
+}
+
+    void
+term_osc52_request(int regname)
+{
+    int		idx = regname == '*' ? 0 : 1;
+    unsigned	count;
+    long	elapsed = 0;
+    long	timeout = 100L;
+    char	*msg;
+
+    if (!term_osc52_is_enabled() || !can_get_termresponse())
+	return;
+
+    count = osc52_response_count[idx];
+    msg = osc52_msg(regname == '*' ? "p" : "c", "?");
+    if (msg == NULL)
+	return;
+
+    out_str((char_u *)msg);
+    out_flush();
+    vim_free(msg);
+
+    if (p_ost < timeout)
+	timeout = p_ost;
+
+    while (!got_int && elapsed < timeout
+	    && count == osc52_response_count[idx])
+    {
+	(void)vpeekc_nomap();
+	if (count != osc52_response_count[idx])
+	    break;
+
+	ui_delay(10L, FALSE);
+	elapsed += 10;
+    }
+}
+
+    static void
+handle_osc52_read(int regname, char_u *b64)
+{
+    char_u		*end;
+    char_u		*str;
+    garray_T	decoded;
+    long		len;
+    yankreg_T	*old_y_current;
+    yankreg_T	*old_y_previous;
+
+    // b64 points to "<base64> BEL" or "<base64> ESC \\".
+    end = vim_strchr(b64, '\007');
+    if (end == NULL)
+	end = (char_u *)strstr((char *)b64, "\033\\");
+    if (end == NULL)
+	return;
+    if (end == b64)
+    {
+	str = (char_u *)"";
+	len = 0;
+    }
+    else
+    {
+	ga_init2(&decoded, 1, 100);
+	if (base64_decode_bytes(b64, (size_t)(end - b64),
+		    &decoded, FALSE) == FAIL)
+	{
+	    ga_clear(&decoded);
+	    return;
+	}
+
+	str = decoded.ga_data;
+	len = decoded.ga_len;
+    }
+
+    old_y_current = get_y_current();
+    old_y_previous = get_y_previous();
+
+    get_yank_register(regname, TRUE);
+    free_yank_all();
+    str_to_reg(get_y_current(), MAUTO, str, len, 0L, FALSE);
+
+    set_y_previous(old_y_previous);
+    set_y_current(old_y_current);
+
+    if (end != b64)
+	ga_clear(&decoded);
+
+    ++osc52_response_count[regname == '*' ? 0 : 1];
+}
+#endif
 
 #if defined(FEAT_EVAL)
     void
@@ -6127,6 +6271,19 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 	    check_for_color_response(osc_state.buf.ga_data, osc_state.buf.ga_len - 1);
 
 	    char_u savebg = *p_bg;
+#ifdef FEAT_CLIPBOARD_OSC52
+	    if (term_osc52_is_enabled()
+		    && STRNCMP(osc_state.buf.ga_data, "\033]52;", 5) == 0)
+	    {
+		char_u *target = osc_state.buf.ga_data + 5;
+		char_u *payload = vim_strchr(target, ';');
+
+		if (payload != NULL && payload == target + 1
+			&& (*target == 'c' || *target == 'p'))
+		    handle_osc52_read(*target == 'p' ? '*' : '+',
+			    payload + 1);
+	    }
+#endif
 	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"osc",
 		    NULL, FALSE, curbuf);
 	    if (*p_bg != savebg)

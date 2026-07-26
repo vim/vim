@@ -100,4 +100,7 @@ void term_disable_dec(void);
 void term_set_win_resize(bool state);
 int sync_output_active(void);
 void term_set_sync_output(int flags);
+bool term_osc52_is_enabled(void);
+void term_osc52_request(int regname);
+void term_osc52_send(const char *selection, const char_u *payload, size_t len);
 /* vim: set ft=c : */

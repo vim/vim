@@ -151,7 +151,7 @@ static char *(features[]) =
 #else
 	"-clientserver",
 #endif
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_CLIPBOARD_OSC52)
 	"+clipboard",
 #else
 	"-clipboard",
@@ -421,6 +421,11 @@ static char *(features[]) =
 	"-netbeans_intg",
 #endif
 	"+num64",
+#if defined(FEAT_CLIPBOARD_OSC52)
+	"+osc52",
+#else
+	"-osc52",
+#endif
 #ifdef FEAT_GUI_MSWIN
 # ifdef FEAT_OLE
 	"+ole",

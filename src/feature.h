@@ -907,6 +907,7 @@
 
 /*
  * +clipboard		Clipboard support.  Always used for the GUI.
+ * +osc52		OSC 52 terminal clipboard support.
  * +xterm_clipboard	Unix only: Include code for handling the clipboard
  *			in an xterm like in the GUI.
  */

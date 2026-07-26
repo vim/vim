@@ -46,7 +46,57 @@ get_y_regs(void)
 }
 #endif
 
-#if defined(FEAT_CLIPBOARD) || defined(FEAT_CLIPBOARD_PROVIDER)
+#ifdef FEAT_CLIPBOARD_OSC52_TINY
+    static void
+may_get_osc52_register(int regname)
+{
+    if (regname == '+' || regname == '*')
+	term_osc52_request(regname);
+    else if ((regname == 0 || regname == '"')
+	    && term_osc52_is_enabled())
+	term_osc52_request('+');
+}
+
+/*
+ * Send "reg" to the terminal clipboard.
+ */
+    static void
+osc52_send_yankreg(int regname, yankreg_T *reg)
+{
+    char_u	*text;
+    char_u	*p;
+    size_t	len = 0;
+    long	i;
+
+    if (reg->y_array == NULL)
+	return;
+
+    for (i = 0; i < reg->y_size; ++i)
+    {
+	len += reg->y_array[i].length;
+	if (i + 1 < reg->y_size || reg->y_type == MLINE)
+	    ++len;
+    }
+    text = alloc(len + 1);
+    if (text == NULL)
+	return;
+
+    p = text;
+    for (i = 0; i < reg->y_size; ++i)
+    {
+	mch_memmove(p, reg->y_array[i].string, reg->y_array[i].length);
+	p += reg->y_array[i].length;
+	if (i + 1 < reg->y_size || reg->y_type == MLINE)
+	    *p++ = '\n';
+    }
+    *p = NUL;
+    term_osc52_send(regname == '+' ? "c" : "p", text, len);
+    vim_free(text);
+}
+#endif
+
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_CLIPBOARD_PROVIDER) \
+    || defined(FEAT_CLIPBOARD_OSC52)
     yankreg_T *
 get_y_register(int reg)
 {
@@ -190,8 +240,9 @@ valid_yank_reg(
 	    || regname == '"'
 	    || regname == '-'
 	    || regname == '_'
-#if defined(FEAT_CLIPBOARD) // If +clipboard is enabled, then these registers
-			    // always exist.
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_CLIPBOARD_OSC52)
+	    // If +clipboard or +osc52 is enabled, then these registers
+	    // always exist.
 	    || regname == '*'
 	    || regname == '+'
 #elif defined(FEAT_CLIPBOARD_PROVIDER)
@@ -207,7 +258,7 @@ valid_yank_reg(
 #endif
 							)
 	return TRUE;
-#ifndef FEAT_CLIPBOARD
+#if !defined(FEAT_CLIPBOARD) && !defined(FEAT_CLIPBOARD_OSC52)
     // clipboard support not enabled in this build
     else if (regname == '*' || regname == '+')
     {
@@ -237,6 +288,15 @@ get_yank_register(int regname, int writing)
     int	    ret = FALSE;
 
     y_append = FALSE;
+#ifdef FEAT_CLIPBOARD_OSC52_TINY
+    if ((regname == 0 || regname == '"') && term_osc52_is_enabled())
+    {
+	y_current = &y_regs[PLUS_REGISTER];
+	if (writing)
+	    y_previous = y_current;
+	return TRUE;
+    }
+#endif
     if ((regname == 0 || regname == '"') && !writing && y_previous != NULL)
     {
 	y_current = y_previous;
@@ -285,6 +345,17 @@ get_yank_register(int regname, int writing)
 	i = REAL_PLUS_REGISTER;
 	ret = TRUE;
     }
+#elif defined(FEAT_CLIPBOARD_OSC52_TINY)
+    else if (regname == '*')
+    {
+	i = STAR_REGISTER;
+	ret = TRUE;
+    }
+    else if (regname == '+')
+    {
+	i = PLUS_REGISTER;
+	ret = TRUE;
+    }
 #endif
 #ifdef FEAT_DND
     else if (!writing && regname == '~')
@@ -313,7 +384,7 @@ get_register(
 #ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_request(name);
 #endif
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD)
     if (clipmethod != CLIPMETHOD_PROVIDER)
     {
 	// When Visual area changed, may have to update selection.  Obtain the
@@ -331,6 +402,8 @@ get_register(
 	    may_get_selection(name);
 	}
     }
+#elif defined(FEAT_CLIPBOARD_OSC52_TINY)
+    may_get_osc52_register(name);
 #endif
 
     get_yank_register(name, 0);
@@ -381,14 +454,16 @@ put_register(int name, void *reg)
     free_yank_all();
     *y_current = *(yankreg_T *)reg;
     vim_free(reg);
-
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD) && defined(HAVE_CLIPMETHOD)
     // Send text written to clipboard register to the clipboard.
     may_set_selection();
+#elif defined(FEAT_CLIPBOARD_OSC52_TINY)
+    if (name == '+' || name == '*')
+	osc52_send_yankreg(name, y_current);
 #endif
 }
 
-#if defined(FEAT_CLIPBOARD)
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_CLIPBOARD_OSC52)
     void
 free_register(void *reg)
 {
@@ -662,10 +737,13 @@ do_execreg(
     }
     execreg_lastc = regname;
 
+#ifdef FEAT_CLIPBOARD_OSC52_TINY
+    may_get_osc52_register(regname);
+#endif
 #ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_request(regname);
 #endif
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD) && defined(HAVE_CLIPMETHOD)
     if (clipmethod != CLIPMETHOD_PROVIDER)
 	regname = may_get_selection(regname);
 #endif
@@ -869,11 +947,13 @@ insert_reg(
     // check for valid regname
     if (regname != NUL && !valid_yank_reg(regname, FALSE))
 	return FAIL;
-
+#ifdef FEAT_CLIPBOARD_OSC52_TINY
+    may_get_osc52_register(regname);
+#endif
 #ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_request(regname);
 #endif
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD) && defined(HAVE_CLIPMETHOD)
     if (clipmethod != CLIPMETHOD_PROVIDER)
 	regname = may_get_selection(regname);
 #endif
@@ -1039,6 +1119,9 @@ cmdline_paste_reg(
     long	i;
     int		literally = literally_arg;
 
+#ifdef FEAT_CLIPBOARD_OSC52_TINY
+    may_get_osc52_register(regname);
+#endif
     if (get_yank_register(regname, FALSE))
 	literally = TRUE;
     if (y_current->y_array == NULL)
@@ -1206,7 +1289,7 @@ put_do_autocmd(
     inc_clip_provider();
     call_clip_provider_request(regname);
 # endif
-# ifdef FEAT_CLIPBOARD
+# if defined(FEAT_CLIPBOARD) && defined(HAVE_CLIPMETHOD)
     if (clipmethod != CLIPMETHOD_PROVIDER)
 	regname = may_get_selection(regname);
 # endif
@@ -1348,7 +1431,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
     if (oap->regname == '_')	    // black hole: nothing to do
 	return OK;
 
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD)
     if ((!clip_star.available && oap->regname == '*') ||
 	(!clip_plus.available && oap->regname == '+'))
     {
@@ -1564,7 +1647,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
     }
 #endif
 
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD)
     if (clipmethod != CLIPMETHOD_PROVIDER)
     {
 	// If we were yanking to the '*' register, send result to clipboard. If
@@ -1599,6 +1682,16 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	    clip_gen_set_selection(&clip_plus);
 	}
 # endif
+    }
+#endif
+
+#ifdef FEAT_CLIPBOARD_OSC52_TINY
+    if (term_osc52_is_enabled())
+    {
+	if (curr == &y_regs[PLUS_REGISTER])
+	    osc52_send_yankreg('+', curr);
+	else if (curr == &y_regs[STAR_REGISTER])
+	    osc52_send_yankreg('*', curr);
     }
 #endif
 
@@ -1725,7 +1818,9 @@ do_put(
     pos_T	orig_start = curbuf->b_op_start;
     pos_T	orig_end = curbuf->b_op_end;
     unsigned int cur_ve_flags = get_ve_flags();
-
+#ifdef FEAT_CLIPBOARD_OSC52_TINY
+    may_get_osc52_register(regname);
+#endif
 #ifdef HAVE_CLIPMETHOD
     adjust_clip_reg(&regname);
 #endif
@@ -1733,7 +1828,7 @@ do_put(
     inc_clip_provider();
     call_clip_provider_request(regname);
 #endif
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD) && defined(HAVE_CLIPMETHOD)
     if (clipmethod != CLIPMETHOD_PROVIDER)
 	// Adjust register name for "unnamed" in 'clipboard'.
 	(void)may_get_selection(regname);
@@ -2586,7 +2681,12 @@ get_register_name(int num)
 	return num + '0';
     else if (num == DELETION_REGISTER)
 	return '-';
-#if defined(FEAT_CLIPBOARD) || defined(FEAT_CLIPBOARD_PROVIDER)
+#ifdef FEAT_CLIPBOARD_OSC52_TINY
+    else if (num == PLUS_REGISTER)
+	return '+';
+    else if (num == STAR_REGISTER)
+	return '*';
+#elif defined(FEAT_CLIPBOARD) || defined(FEAT_CLIPBOARD_PROVIDER)
     else if (num == STAR_REGISTER)
 	return '*';
     // If there is only one clipboard, we only want the plus register to point
@@ -2644,12 +2744,6 @@ ex_display(exarg_T *eap)
     for (i = -1; i < NUM_REGISTERS && !got_int; ++i)
     {
 	name = get_register_name(i);
-	switch (get_reg_type(name, NULL))
-	{
-	    case MLINE: type = 'l'; break;
-	    case MCHAR: type = 'c'; break;
-	    default:	type = 'b'; break;
-	}
 	if (arg != NULL && vim_strchr(arg, name) == NULL
 #ifdef ONE_CLIPBOARD
 		// Star register and plus register contain the same thing.
@@ -2657,6 +2751,12 @@ ex_display(exarg_T *eap)
 #endif
 		)
 	    continue;	    // did not ask for this register
+	switch (get_reg_type(name, NULL))
+	{
+	    case MLINE: type = 'l'; break;
+	    case MCHAR: type = 'c'; break;
+	    default:	type = 'b'; break;
+	}
 
 #ifdef HAVE_CLIPMETHOD
 	adjust_clip_reg(&name);
@@ -2664,7 +2764,7 @@ ex_display(exarg_T *eap)
 #ifdef FEAT_CLIPBOARD_PROVIDER
 	call_clip_provider_request(name);
 #endif
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD) && defined(HAVE_CLIPMETHOD)
 	if (clipmethod != CLIPMETHOD_PROVIDER)
 	    // Adjust register name for "unnamed" in 'clipboard'.
 	    // When it's a clipboard register, fill it with the current contents
@@ -2867,10 +2967,13 @@ get_reg_type(int regname, long *reglen)
 	    return MCHAR;
     }
 
+#ifdef FEAT_CLIPBOARD_OSC52_TINY
+    may_get_osc52_register(regname);
+#endif
 #ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_request(regname);
 #endif
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD)
     if (clipmethod != CLIPMETHOD_PROVIDER)
 	regname = may_get_selection(regname);
 #endif
@@ -2949,11 +3052,13 @@ get_reg_contents(int regname, int flags)
     // check for valid regname
     if (regname != NUL && !valid_yank_reg(regname, FALSE))
 	return NULL;
-
+#ifdef FEAT_CLIPBOARD_OSC52_TINY
+    may_get_osc52_register(regname);
+#endif
 # ifdef FEAT_CLIPBOARD_PROVIDER
     call_clip_provider_request(regname);
 # endif
-# ifdef FEAT_CLIPBOARD
+# if defined(FEAT_CLIPBOARD) && defined(HAVE_CLIPMETHOD)
     if (clipmethod != CLIPMETHOD_PROVIDER)
 	regname = may_get_selection(regname);
 # endif
@@ -3052,9 +3157,14 @@ finish_write_reg(
     yankreg_T	*old_y_previous,
     yankreg_T	*old_y_current)
 {
-# ifdef FEAT_CLIPBOARD
+# if defined(FEAT_CLIPBOARD)
     // Send text of clipboard register to the clipboard.
     may_set_selection();
+# elif defined(FEAT_CLIPBOARD_OSC52_TINY)
+    if (y_current == &y_regs[PLUS_REGISTER])
+	osc52_send_yankreg('+', y_current);
+    else if (y_current == &y_regs[STAR_REGISTER])
+	osc52_send_yankreg('*', y_current);
 # endif
 
     // ':let @" = "val"' should change the meaning of the "" register
@@ -3211,7 +3321,8 @@ write_reg_contents_ex(
 }
 #endif	// FEAT_EVAL
 
-#if defined(FEAT_CLIPBOARD) || defined(FEAT_EVAL)
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_CLIPBOARD_OSC52) \
+    || defined(FEAT_EVAL)
 /*
  * Put a string into a register.  When the register is not empty, the string
  * is appended.
@@ -3367,4 +3478,4 @@ str_to_reg(
     y_ptr->y_time_set = vim_time();
 # endif
 }
-#endif // FEAT_CLIPBOARD || FEAT_EVAL
+#endif // FEAT_CLIPBOARD || FEAT_CLIPBOARD_OSC52 || FEAT_EVAL

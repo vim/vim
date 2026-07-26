@@ -5106,9 +5106,11 @@ typedef enum {
 
 // Symbolic names for some registers.
 #define DELETION_REGISTER	36
-#if defined(FEAT_CLIPBOARD) || defined(HAVE_CLIPMETHOD)
+#if defined(FEAT_CLIPBOARD) || defined(HAVE_CLIPMETHOD) \
+	|| defined(FEAT_CLIPBOARD_OSC52)
 # define STAR_REGISTER		37
-# if defined(FEAT_X11) || defined(FEAT_WAYLAND)
+# if defined(FEAT_X11) || defined(FEAT_WAYLAND) \
+	|| defined(FEAT_CLIPBOARD_OSC52)
 #  define PLUS_REGISTER	38
 #  define REAL_PLUS_REGISTER	PLUS_REGISTER
 # else
@@ -5126,7 +5128,7 @@ typedef enum {
 # define TILDE_REGISTER		(PLUS_REGISTER + 1)
 #endif
 
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_CLIPBOARD_OSC52)
 # ifdef FEAT_DND
 #  define NUM_REGISTERS		(TILDE_REGISTER + 1)
 # else

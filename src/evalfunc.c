@@ -6856,7 +6856,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 		},
 	{"clipboard",
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_CLIPBOARD_OSC52)
 		1
 #else
 		0
@@ -7333,6 +7333,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"osc52",
+#ifdef FEAT_CLIPBOARD_OSC52
+		1
+#else
+		0
+#endif
+	},
 	{"packages",
 #ifdef FEAT_EVAL
 		1
