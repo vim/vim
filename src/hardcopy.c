@@ -564,7 +564,9 @@ ex_hardcopy(exarg_T *eap)
 
     CLEAR_FIELD(settings);
     settings.has_color = TRUE;
+#ifdef FEAT_PRINT_PANGO
     settings.user_abort_msg = TRUE;
+#endif
 
 #if defined(FEAT_POSTSCRIPT) || defined(FEAT_PRINT_PANGO)
     if (*eap->arg == '>')
@@ -804,7 +806,11 @@ ex_hardcopy(exarg_T *eap)
     }
 
 print_fail:
-    if (got_int || (settings.user_abort && settings.user_abort_msg))
+    if (got_int || (settings.user_abort
+#ifdef FEAT_PRINT_PANGO
+		&& settings.user_abort_msg
+#endif
+		))
     {
 	sprintf((char *)IObuff, "%s", _("Printing aborted"));
 	prt_message(IObuff);

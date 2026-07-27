@@ -4830,7 +4830,9 @@ typedef struct
     int		do_syntax;
 #endif
     int		user_abort;
+#ifdef FEAT_PRINT_PANGO
     int		user_abort_msg;
+#endif
     char_u	*jobname;
 #if defined(FEAT_POSTSCRIPT) || defined(FEAT_PRINT_PANGO)
     char_u	*outfile;
