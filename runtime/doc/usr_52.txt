@@ -149,12 +149,11 @@ keyword.
 Using the example above, only one change is needed in `plugin/theplugin.vim`: >
 	import autoload "../lib/getmessage.vim"
 <
-Nothing in the rest of the script needs to change.
-However, `../lib/getmessage.vim` is not loaded at import time; Vim only
-verifies that the file exists and is readable.
-Not even the existence of the GetMessage() function is
-checked until it is used.  As a result, errors in `getmessage` script
-are detected only at runtime.
+Nothing in the rest of the script needs to change.  However, the types will
+not be checked, and "../lib/getmessage.vim" is not loaded at import time; Vim
+only verifies that the file exists and is readable.  Not even the existence of
+the GetMessage() function is checked until it is used.  As a result, errors in
+the "getmessage.vim" script are detected only at runtime.
 
 You will have to decide what is more important for your script: fast startup
 or getting errors early.
