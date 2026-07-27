@@ -146,7 +146,8 @@ detected at import time.
 To avoid long startup times, the loading of an imported script may
 be deferred until it is actually needed.  This is done with the `autoload`
 keyword.
-Using the example above, only one change is needed in `plugin/theplugin.vim`: >
+Using the example above, only one change is needed in `plugin/theplugin.vim`:
+>
 	import autoload "../lib/getmessage.vim"
 <
 Nothing in the rest of the script needs to change.  However, the types will
@@ -213,7 +214,7 @@ Vim will search for the script "monthlib.vim" in the import directories
 of 'runtimepath'.
 
 In this case, adding or removing the `autoload` keyword changes where Vim
-searches for the script. When a relative or absolute path is used, then the
+searches for the script.  When a relative or absolute path is used, then the
 location does not change.
 
 ==============================================================================
