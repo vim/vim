@@ -9,8 +9,6 @@
 
 #include "vim.h"
 
-#ifdef USE_GTK4_SNAPSHOT
-
 #include <gtk/gtk.h>
 #include "gui_gtk4_da.h"
 
@@ -2024,5 +2022,3 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
     }
 #endif
 }
-
-#endif // USE_GTK4_SNAPSHOT
