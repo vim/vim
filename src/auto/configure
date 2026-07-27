@@ -1553,7 +1553,7 @@ Optional Features:
   --disable-gtktest       Do not try to compile and run a test GTK program
   --disable-icon-cache-update        update disabled
   --disable-desktop-database-update  update disabled
-  --enable-hardcopy-pango     Use Pango and Cairo for improved hardcopy printing default=yes when GTK GUI enabled
+  --enable-hardcopy-pango     Use Pango and Cairo for improved hardcopy printing. default=yes when GTK GUI enabled
   --disable-largefile     omit support for large files
   --disable-canberra      Do not use libcanberra.
   --disable-libsodium      Do not use libsodium.

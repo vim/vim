@@ -3153,7 +3153,7 @@ AC_SUBST(UPDATE_DESKTOP_DATABASE)
 
 AC_MSG_CHECKING(--enable-hardcopy-pango argument)
 AC_ARG_ENABLE(hardcopy-pango,
-	[  --enable-hardcopy-pango     Use Pango and Cairo for improved hardcopy printing [default=yes when GTK GUI enabled]],
+	[  --enable-hardcopy-pango     Use Pango and Cairo for improved hardcopy printing. [default=yes when GTK GUI enabled]],
 	,, enable_hardcopy_pango="no")
 
 if test "x$have_pango" = "xno" || test "x$have_cairo" = "xno"; then
