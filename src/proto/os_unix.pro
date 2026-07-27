@@ -95,5 +95,4 @@ void xsmp_close(void);
 void stop_timeout(void);
 volatile sig_atomic_t *start_timeout(long msec);
 void delete_timer(void);
-int mch_create_anon_file(void);
 /* vim: set ft=c : */
