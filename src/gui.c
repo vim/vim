@@ -1727,7 +1727,7 @@ again:
     gui_update_scrollbars(TRUE);
     gui_update_cursor(FALSE, TRUE);
 #if defined(FEAT_GUI_GTK) && defined(USE_GTK4_SNAPSHOT)
-    gui_gtk_calculate_bleed(pixel_width, pixel_height);
+    gui_gtk4_calculate_bleed(pixel_width, pixel_height);
 #endif
 #if defined(FEAT_XIM) && !defined(FEAT_GUI_GTK)
     xim_set_status_area();
@@ -1900,7 +1900,7 @@ gui_set_shellsize(
     gui_reset_scroll_region();
 
 #if defined(FEAT_GUI_GTK) && defined(USE_GTK4_SNAPSHOT)
-    gui_gtk_calculate_bleed(width, height);
+    gui_gtk4_calculate_bleed(width, height);
 #endif
 }
 
