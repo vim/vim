@@ -752,7 +752,8 @@ au BufNewFile,BufRead *.mysql,.mysql_history	setf mysql
 " Tcl Shell RC file
 " Vivado journal file records REPL input in tcl syntax
 " Vivado log file records REPL input in tcl syntax and output
-au BufNewFile,BufRead tclsh.rc,vivado*.{jou,log}	setf tcl
+" Xilinx Design Constraints file is a Tcl script
+au BufNewFile,BufRead tclsh.rc,vivado*.{jou,log},*.xdc	setf tcl
 
 " M$ Resource files
 " /etc/Muttrc.d/file.rc is muttrc
