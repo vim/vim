@@ -210,7 +210,7 @@ Finally, when a script is imported without `autoload` and without path, like
 the following example: >
 	import "monthlib.vim"
 <
-Then Vim will search for the script "monthlib.vim" in the import directories
+Vim will search for the script "monthlib.vim" in the import directories
 of 'runtimepath'.
 
 In this case, adding or removing the `autoload` keyword changes where Vim
