@@ -166,7 +166,7 @@ before distributing your plugin to improve startup performance.
 
 AUTOLOAD DIRECTORIES
 
-Another way to lazily load scripts is to `autoload import` a script
+Another way to lazily load scripts is to `import autoload` a script
 without specifying any relative or absolute path, like in the following
 example: >
 	import autoload "monthlib.vim"
