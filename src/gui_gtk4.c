@@ -4083,8 +4083,11 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
  * after all UI elements are positioned and resized.
  */
     void
-gui_gtk_calculate_bleed(int width, int height)
+gui_gtk4_calculate_bleed(int width, int height)
 {
+    int old_right = gui.bleed_right;
+    int old_bot = gui.bleed_bot;
+
     gui.bleed_right = width - last_text_area_w;
     gui.bleed_bot = height - last_text_area_h;
 
@@ -4100,6 +4103,10 @@ gui_gtk_calculate_bleed(int width, int height)
 	gui.bleed_right = 0;
     if (gui.bleed_bot < 0)
 	gui.bleed_bot = 0;
+
+    // Make sure to update draw area if changed
+    if (old_right != gui.bleed_right || old_bot != gui.bleed_bot)
+	gtk_widget_queue_draw(GTK_WIDGET(gui.drawarea));
 }
 
 /*
