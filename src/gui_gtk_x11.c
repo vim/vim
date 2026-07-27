@@ -4299,7 +4299,7 @@ gui_mch_init(void)
 			   G_CALLBACK(gtk_settings_xft_dpi_changed_cb), NULL);
     }
 
-#ifdef FEAT_IMAGE
+#if defined(FEAT_IMAGE) && GTK_CHECK_VERSION(3,10,0)
     gui.scale = gtk_widget_get_scale_factor(gui.formwin);
 #endif
 
