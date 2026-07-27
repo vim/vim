@@ -1665,7 +1665,17 @@ gui_mch_open(void)
     // Actually open the window, if not already visible
     // (may be done already in gui_mch_set_shellsize)
     if (!IsWindowVisible(s_hwnd))
+    {
 	ShowWindow(s_hwnd, SW_SHOWDEFAULT);
+
+	// Waiting for the message loop leaves the window undrawn while a
+	// slow VimEnter autocommand runs. The flush presents the DirectX draw.
+	if (s_textArea != NULL)
+	{
+	    UpdateWindow(s_textArea);
+	    gui_mch_flush();
+	}
+    }
 
 #ifdef MSWIN_FIND_REPLACE
     // Init replace string here, so that we keep it when re-opening the
