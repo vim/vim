@@ -267,6 +267,26 @@ static void show_menubar_popover(void);
 static const char *prgname = NULL;
 
 /*
+ * Check if "s" is the option "name" (which includes the leading dash(es)). .
+ * "value" is set to the value if the option uses 'opt=val' format.
+ */
+    static gboolean
+arg_match(const char *s, const char *name, char **value)
+{
+    size_t  len = strlen(name);
+
+    if (strncmp(s, name, len) != 0)
+	return FALSE;
+    if (s[len] == '=')
+	*value = (char *)s + len + 1;
+    else if (s[len] != NUL)
+	// Something follows the option name that isn't "=": this is a
+	// different, longer option (e.g. "-fnord" while matching "-fn").
+	return FALSE;
+    return TRUE;
+}
+
+/*
  * Parse the GUI related command-line arguments.  Any arguments used are
  * deleted from argv, and *argc is decremented accordingly.  This is called
  * when vim is started, whether or not the GUI has been started.
@@ -283,35 +303,53 @@ gui_mch_prepare(int *argc, char **argv)
 
     while (i < *argc)
     {
-	char *s, *value = NULL;
-	if (argv[i][0] != '-' && argv[i][0] != '+')
+	char	*s = argv[i];
+	char	*value = NULL;
+	int	has_inline_value = FALSE;
+	int	n_strip;
+
+	if (s[0] != '-' && s[0] != '+')
 	{
 	    ++i;
 	    continue;
 	}
 
-	s = argv[i];
+	if (strchr(s, '=') != NULL)
+	    has_inline_value = TRUE;
 
-	if ((value = strchr(s, '=')) != NULL)
-	    value++;
-	else if (i + 1 < *argc && strcmp(argv[i + 1], "--") != 0)
-	    value = argv[i + 1];
+	// If the value was not given inline (no "="), it would come from the
+	// next argv element.  Do not treat that next element as this option's
+	// value if it is "--" (end-of-options marker) or is another option.
+	if (!has_inline_value)
+	{
+	    if (i + 1 < *argc
+		    && strcmp(argv[i + 1], "--") != 0
+		    && !((argv[i + 1][0] == '-' || argv[i + 1][0] == '+')
+			&& !vim_isdigit(argv[i + 1][1])))
+		value = argv[i + 1];
+	    else
+		value = NULL;
+	}
 
-	if (strncmp(s, "-fn", 3) == 0 || strncmp(s, "-font", 5) == 0)
+	if (arg_match(s, "-fn", &value) || arg_match(s, "-font", &value))
 	    font_argument = value;
-	else if (strncmp(s, "-geom", 5) == 0 || strncmp(s, "-geometry", 9) == 0)
+	else if (arg_match(s, "-geom", &value)
+		|| arg_match(s, "-geometry", &value))
 	    gui.geom = vim_strsave((char_u *)value);
-	else if (strncmp(s, "-bg", 3) == 0 || strncmp(s, "-background", 11) == 0)
+	else if (arg_match(s, "-bg", &value)
+		|| arg_match(s, "-background", &value))
 	    background_argument = value;
-	else if (strncmp(s, "-fg", 3) == 0 || strncmp(s, "-foreground", 11) == 0)
+	else if (arg_match(s, "-fg", &value)
+		|| arg_match(s, "-foreground", &value))
 	    foreground_argument = value;
-	else if (strncmp(s, "-nb", 3) == 0)
+	else if (arg_match(s, "-nb", &value))
 	{
 	    gui.dofork = false; // don't fork() when starting GUI
 	    netbeansArg = argv[i];
+	    has_inline_value = FALSE;
 	    value = NULL; // Unset value
 	}
-	else if (strncmp(s, "--prg-name", 8) == 0)
+	else if (arg_match(s, "--prg-name", &value))
 	    // GTK4 specific
 	    prgname = value;
 	else
@@ -321,21 +359,21 @@ gui_mch_prepare(int *argc, char **argv)
 	}
 
 	// Remove the flag from the argument vector.
-	if (--*argc > i)
-	{
-	    int n_strip = 1;
+	n_strip = 1;
+	// Move the argument's value as well, but only if it was consumed
+	// from a separate argv element (the "-opt=value" form lives inside
+	// the flag's own element and is stripped along with it already).
+	if (value != NULL && !has_inline_value)
+	    n_strip = 2;
 
-	    // Move the argument's value as well, if there is one.
-	    if (value != NULL)
-	    {
-		++n_strip;
-		--*argc;
-	    }
+	if (*argc - n_strip >= i)
+	{
+	    *argc -= n_strip;
 	    if (*argc > i)
 		mch_memmove(&argv[i], &argv[i + n_strip],
 			(*argc - i) * sizeof(char *));
+	    argv[*argc] = NULL;
 	}
-	argv[*argc] = NULL;
     }
 }
 
