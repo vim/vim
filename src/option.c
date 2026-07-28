@@ -3436,6 +3436,9 @@ insecure_flag(win_T *wp, int opt_idx, int opt_flags)
 #  ifdef FEAT_FIND_ID
 	    case PV_INEX:	return &wp->w_buffer->b_p_inex_flags;
 #  endif
+#  ifdef FEAT_COMPL_FUNC
+	    case PV_CPT:	return &wp->w_buffer->b_p_cpt_flags;
+#  endif
 # endif
 	}
     else
@@ -7733,6 +7736,8 @@ clear_winopt(winopt_T *wop UNUSED)
 // Index into the options table for a buffer-local option enum.
 static int buf_opt_idx[BV_COUNT];
 # define COPY_OPT_SCTX(buf, bv) buf->b_p_script_ctx[bv] = options[buf_opt_idx[bv]].script_ctx
+# define COPY_OPT_INSECURE(flagsfield, bv) \
+	(flagsfield) = (options[buf_opt_idx[bv]].flags & P_INSECURE)
 
 /*
  * Initialize buf_opt_idx[] if not done already.
@@ -7752,6 +7757,7 @@ init_buf_opt_idx(void)
 }
 #else
 # define COPY_OPT_SCTX(buf, bv)
+# define COPY_OPT_INSECURE(flagsfield, bv)
 #endif
 
 /*
@@ -7874,6 +7880,7 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_cpt = vim_strsave(p_cpt);
 	    COPY_OPT_SCTX(buf, BV_CPT);
 #ifdef FEAT_COMPL_FUNC
+	    COPY_OPT_INSECURE(buf->b_p_cpt_flags, BV_CPT);
 	    set_buflocal_cpt_callbacks(buf);
 #endif
 #ifdef BACKSLASH_IN_FILENAME
@@ -7967,6 +7974,7 @@ buf_copy_options(buf_T *buf, int flags)
 #if defined(FEAT_EVAL)
 	    buf->b_p_inde = vim_strsave(p_inde);
 	    COPY_OPT_SCTX(buf, BV_INDE);
+	    COPY_OPT_INSECURE(buf->b_p_inde_flags, BV_INDE);
 	    buf->b_p_indk = vim_strsave(p_indk);
 	    COPY_OPT_SCTX(buf, BV_INDK);
 #endif
@@ -7974,6 +7982,7 @@ buf_copy_options(buf_T *buf, int flags)
 #if defined(FEAT_EVAL)
 	    buf->b_p_fex = vim_strsave(p_fex);
 	    COPY_OPT_SCTX(buf, BV_FEX);
+	    COPY_OPT_INSECURE(buf->b_p_fex_flags, BV_FEX);
 #endif
 #ifdef FEAT_CRYPT
 	    buf->b_p_key = vim_strsave(p_key);
@@ -8028,6 +8037,7 @@ buf_copy_options(buf_T *buf, int flags)
 # ifdef FEAT_EVAL
 	    buf->b_p_inex = vim_strsave(p_inex);
 	    COPY_OPT_SCTX(buf, BV_INEX);
+	    COPY_OPT_INSECURE(buf->b_p_inex_flags, BV_INEX);
 # endif
 #endif
 	    buf->b_p_cot = empty_option;
