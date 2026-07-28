@@ -1232,9 +1232,8 @@ win_split_ins(
 
 	    win_setheight_win(oldwin->w_height + new_size
 		    + statusline_height(oldwin), oldwin);
+	    // w_height now excludes the status line
 	    oldwin_height = oldwin->w_height;
-	    if (need_status)
-		oldwin_height -= statusline_height(oldwin);
 	}
 
 	// Only make all windows the same height if one of them (except oldwin)
