@@ -348,6 +348,10 @@ ex_language(exarg_T *eap)
 	    extern int _nl_msg_cat_cntr;
 
 	    ++_nl_msg_cat_cntr;
+# elif defined(DYNAMIC_GETTEXT)
+	    // Same thing when gettext is loaded at runtime.
+	    if (dyn_libintl_nl_msg_cat_cntr != NULL)
+		++*dyn_libintl_nl_msg_cat_cntr;
 # endif
 	    // Reset $LC_ALL, otherwise it would overrule everything.
 	    vim_setenv((char_u *)"LC_ALL", (char_u *)"");
