@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Jul 27
+# Last Change:		2026 Jul 28
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -2416,6 +2416,8 @@ const ft_from_ext = {
   "page": "mallard",
   # Manpage
   "man": "man",
+  # Marko
+  "marko": "marko",
   # Maple V
   "mv": "maple",
   "mpl": "maple",

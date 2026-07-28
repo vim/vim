@@ -1,0 +1,43 @@
+// concise mode: custom tags, builtins, statements, scriptlets, text blocks
+import { fetchItems } from "./api"
+
+$ const doubled = input.count * 2;
+
+let/basket=[]
+let<number>/typed=0
+
+container fluid
+  section-heading as="h2" -- Everything partnerships need
+  bento cols=4
+    bento-cell [
+      featured
+      colSpan=2
+      title="One platform"
+    ]
+      p -- Onboarding and enablement, unified.
+
+if=input.ready
+  for|item, i| of=fetchItems()
+    log "item loaded"
+    -- Price: ${item.price}
+  while(i<10)
+    -- counting
+try
+  await(promise)
+else
+  return=null
+@then|result|
+  -- resolved
+
+style.scss {
+  .basket { color: red }
+}
+
+--
+A delimited block is html mode, so bare words are prose.
+<b>bold ${doubled}</b>
+--
+
+<footer>
+if you read this inside an element body, it stays plain prose
+</footer>

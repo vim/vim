@@ -1,0 +1,35 @@
+<!doctype html>
+<!-- html mode: tags, attributes, embedded languages -->
+import { formatPrice } from "./util"
+static const VERSION = 1
+
+<style>
+  .price { color: green }
+</style>
+
+<let/count=1/>
+<const/{ items }=input/>
+
+<div.card#main class="cart" data-total:=total ...rest>
+  <if=count>
+    <my-button size="large" onClick=() => buy()>Buy ${count + 1}</my-button>
+  </if>
+  <for|item, index| of=items>
+    <span>${formatPrice(item.price)}</span>
+  </for>
+  <generic-list<string> a=1/>
+  <${dynamicTag} title="dynamic">body</>
+  <@footer>slot content</@footer>
+</div>
+
+<div
+  class="multiline"
+  data-x=1
+>text with &amp; entity and \${an escaped placeholder}</div>
+
+<textarea rows=3>literal <b>text</b> with ${count}</textarea>
+<html-comment>rendered <i>comment</i> body</html-comment>
+
+<script>
+  const el = document.querySelector(".price");
+</script>

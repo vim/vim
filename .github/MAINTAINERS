@@ -629,6 +629,7 @@ runtime/syntax/m3quake.vim				@dkearns
 runtime/syntax/mailcap.vim				@dkearns
 runtime/syntax/mallard.vim				@jhradilek
 runtime/syntax/markdown.vim				@tpope
+runtime/syntax/marko.vim				@briancarbone
 runtime/syntax/mason.vim				@petdance
 runtime/syntax/mbsync.vim				@fymyte
 runtime/syntax/mediawiki.vim				@avidseeker
