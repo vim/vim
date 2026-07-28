@@ -4978,38 +4978,12 @@ ex_helpfind(exarg_T *eap UNUSED)
  * ============================================================
  */
 
+#ifdef USE_GTK4_PRINT_DIALOG
+static GtkPrintDialog *print_dialog = NULL;
 static GtkPrintSettings *print_settings = NULL;
 static GtkPageSetup *page_setup = NULL;
 static GtkPrintSetup *print_setup = NULL;
-static GOutputStream *print_stream = NULL;
-static prt_settings_T *prt_settings = NULL;
-
-    static cairo_status_t
-print_write_func(void *udata UNUSED, const char_u *data, int_u len)
-{
-    GError *error = NULL;
-
-    if (g_output_stream_write_all(
-		print_stream, data, (size_t)len, NULL, NULL, &error))
-	return CAIRO_STATUS_SUCCESS;
-    else
-    {
-	semsg(_(e_print_error_str), error->message);
-	prt_settings->user_abort_msg = FALSE;
-	prt_settings->user_abort = TRUE;
-	return CAIRO_STATUS_WRITE_ERROR;
-    }
-}
-
-    static void
-print_stream_cb(
-	GtkPrintDialog	*dialog,
-	GAsyncResult	*result,
-	gboolean	*done)
-{
-    print_stream = gtk_print_dialog_print_finish(dialog, result, NULL);
-    *done = TRUE;
-}
+static GFile *print_file;
 
     static void
 print_dialog_cb(GtkPrintDialog *dialog, GAsyncResult *result, gboolean *done)
@@ -5017,38 +4991,34 @@ print_dialog_cb(GtkPrintDialog *dialog, GAsyncResult *result, gboolean *done)
     GError *error = NULL;
     print_setup = gtk_print_dialog_setup_finish(dialog, result, &error);
 
-    if (print_setup != NULL)
-	gtk_print_dialog_print(dialog, GTK_WINDOW(gui.mainwin),
-		print_setup, NULL, (GAsyncReadyCallback)print_stream_cb, done);
-    else
+    if (print_setup == NULL)
     {
 	semsg(_(e_print_error_str), error->message);
-	*done = TRUE;
+	g_error_free(error);
     }
+    *done = TRUE;
 }
 
 /*
- * Return OK on success, FAIL on failure (e.g. user cancelled), and MAYBE if not
- * supported.
+ * Return file to write to on success (allocated string), or NULL on failure
+ * (e.g. user cancelled)
  */
-    int
+    char_u *
 gui_gtk4_print_dialog(
 	prt_settings_T	*psettings,
 	char_u		*jobname,
 	double		*page_width,
-	double		*page_height,
-	void		*write_func) // cairo_write_func_t
+	double		*page_height)
 {
-    // GtkPrintDialog was added in GTK 4.14
-#if GTK_CHECK_VERSION(4, 14, 0)
     GtkPrintDialog  *dialog = gtk_print_dialog_new();
     gboolean	    done = FALSE;
+    char_u	    *temp;
 
     gtk_print_dialog_set_title(dialog, (const char *)jobname);
     gtk_print_dialog_set_modal(dialog, TRUE);
 
+    print_dialog = NULL;
     print_setup = NULL;
-    print_stream = NULL;
 
     if (print_settings == NULL)
     {
@@ -5110,12 +5080,13 @@ gui_gtk4_print_dialog(
     while (!done)
 	g_main_context_iteration(NULL, TRUE);
 
-    if (print_setup == NULL || print_stream == NULL)
+    if (print_setup == NULL)
     {
 	g_object_unref(dialog);
 	g_clear_pointer(&print_setup, gtk_print_setup_unref);
-	g_clear_object(&print_stream);
-	return FAIL;
+
+	psettings->user_abort_msg = FALSE;
+	return NULL;
     }
 
     g_clear_object(&print_settings);
@@ -5136,30 +5107,53 @@ gui_gtk4_print_dialog(
     *page_height = gtk_page_setup_get_paper_height(page_setup,
 	    GTK_UNIT_POINTS);
 
-    *((cairo_write_func_t *)write_func) = print_write_func;
+    temp  = vim_tempname('p', FALSE);
+    if (temp == NULL)
+    {
+	emsg(_(e_cant_find_temp_file_for_writing));
+	g_clear_object(&dialog);
+	g_clear_pointer(&print_setup, gtk_print_setup_unref);
 
-    g_clear_pointer(&print_setup, gtk_print_setup_unref);
+	psettings->user_abort_msg = FALSE;
+	return NULL;
+    }
+    print_file = g_file_new_for_path((char *)temp);
+
+    print_dialog = dialog;
+
+    return temp;
+}
+
+    static void
+print_file_cb(
+	GtkPrintDialog	*dialog,
+	GAsyncResult	*result,
+	GFile		*file)
+{
+    char *path = g_file_get_path(file);
+
+    (void)gtk_print_dialog_print_file_finish(dialog, result, NULL);
     g_object_unref(dialog);
 
-    prt_settings = psettings;
-
-    return OK;
-#else
-    return MAYBE;
-#endif
+    // Don't use g_file_delete() to be consistent
+    mch_remove(path);
+    g_free(path);
 }
+
 
     void
-gui_gtk4_print_cleanup(void)
+gui_gtk4_print_finish(void)
 {
-#if GTK_CHECK_VERSION(4, 14, 0)
-    if (print_stream != NULL)
+    if (print_dialog != NULL)
     {
-	g_output_stream_close(print_stream, NULL, NULL);
-	g_object_unref(print_stream);
-	print_stream = NULL;
+	gtk_print_dialog_print_file(
+		print_dialog, GTK_WINDOW(gui.mainwin),
+		print_setup, print_file, NULL,
+		(GAsyncReadyCallback)print_file_cb, print_file);
+	print_dialog = NULL;
+	g_clear_pointer(&print_setup, gtk_print_setup_unref);
     }
-#endif
 }
+#endif // USE_GTK4_PRINT_DIALOG
 
 #endif // FEAT_GUI_GTK

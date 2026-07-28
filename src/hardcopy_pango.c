@@ -91,7 +91,9 @@ static struct
 
     char_u draw_flags;
 
+#ifdef USE_GTK4_PRINT_DIALOG
     bool dialog;
+#endif
 } pctx;
 
 static const char *print_formats[] = {
@@ -228,29 +230,27 @@ mch_print_init(
     bool	portrait;
     int		media;
     char_u	*filename = NULL;
+#ifdef USE_GTK4_PRINT_DIALOG
     bool	dialog = false;
 
-    cairo_write_func_t write_func = NULL;
-
-#if defined(FEAT_GUI_GTK) && defined(USE_GTK4)
     if (gui.in_use && !forceit && psettings->outfile == NULL)
     {
-	int ret = gui_gtk4_print_dialog(psettings, jobname,
-		&pctx.page_width, &pctx.page_height, &write_func);
+	filename = gui_gtk4_print_dialog(psettings, jobname,
+		&pctx.page_width, &pctx.page_height);
 
-	if (ret == FAIL)
+	if (filename == NULL)
 	    return FAIL;
-	if (ret == OK)
-	    dialog = true;
+	dialog = true;
     }
 #endif
 
-    pctx.dialog = dialog;
     pctx.format = PRT_FORMAT_PS;
 
-    // Let printer handle stuff when using dialog. Not sure if our postscript
-    // DSC comments can intefere with dialog settings, but don't add them...
+    // Let GTK handle stuff when using dialog. Not sure if our postscript DSC
+    // comments can intefere with dialog settings, but don't add them...
+#ifdef USE_GTK4_PRINT_DIALOG
     if (!dialog)
+#endif
     {
 	// Get paper type to use
 	portrait = (!printer_opts[OPT_PRINT_PORTRAIT].present ||
@@ -299,9 +299,17 @@ mch_print_init(
 		    break;
 		}
 	}
+    }
+    psettings->user_abort = FALSE;
 
-	psettings->user_abort = FALSE;
+#ifdef USE_GTK4_PRINT_DIALOG
+    if (dialog)
+	// Always use PDF for dialog
+	pctx.format = PRT_FORMAT_PDF;
+#endif
 
+    if (filename == NULL)
+    {
 	// If the user didn't specify a file name, use a temp file.
 	if (psettings->outfile == NULL)
 	{
@@ -314,20 +322,17 @@ mch_print_init(
 	}
 	else
 	    filename = expand_env_save(psettings->outfile);
-
-	if (pctx.format == PRT_FORMAT_PS)
-	    pctx.surface = cairo_ps_surface_create((const char *)filename,
-		    pctx.page_width, pctx.page_height);
-	else
-	    pctx.surface = cairo_pdf_surface_create((const char *)filename,
-		    pctx.page_width, pctx.page_height);
-
-	pctx.filename = (char_u *)filename;
     }
+
+    // If using dialog, then always use PDF
+    if (pctx.format == PRT_FORMAT_PS)
+	pctx.surface = cairo_ps_surface_create((const char *)filename,
+		pctx.page_width, pctx.page_height);
     else
-	// Use PDF to write to stream, thats what GTK-demo program does.
-	pctx.surface = cairo_pdf_surface_create_for_stream(write_func,
-		NULL, pctx.page_width, pctx.page_height);
+	pctx.surface = cairo_pdf_surface_create((const char *)filename,
+		pctx.page_width, pctx.page_height);
+
+    pctx.filename = (char_u *)filename;
 
     if (cairo_surface_status(pctx.surface) != CAIRO_STATUS_SUCCESS)
     {
@@ -414,7 +419,9 @@ mch_print_init(
 
     psettings->jobname = jobname;
 
+#ifdef USE_GTK4_PRINT_DIALOG
     if (!dialog)
+#endif
     {
 	pctx.collate = (!printer_opts[OPT_PRINT_COLLATE].present ||
 		TOLOWER_ASC(printer_opts[OPT_PRINT_COLLATE].string[0]) == 'y');
@@ -434,6 +441,10 @@ mch_print_init(
 		pctx.tumble = TRUE;
 	}
     }
+
+#ifdef USE_GTK4_PRINT_DIALOG
+    pctx.dialog = dialog;
+#endif
 
     return OK;
 }
@@ -481,8 +492,10 @@ mch_print_begin(prt_settings_T *psettings)
     pctx.cur_line = 0;
     pctx.draw_flags = 0;
 
+#ifdef USE_GTK4_PRINT_DIALOG
     if (pctx.dialog)
 	return TRUE;
+#endif
 
     if (!get_user_name((char_u *)user, sizeof(user)))
 	STRCPY(user, "Unknown");
@@ -546,7 +559,11 @@ mch_print_end(prt_settings_T *psettings)
     cairo_surface_finish(pctx.surface);
 
     if (psettings->outfile == NULL && !got_int && !psettings->user_abort
-	    && pctx.filename != NULL)
+	    && pctx.filename != NULL
+#ifdef USE_GTK4_PRINT_DIALOG
+	    && !pctx.dialog
+#endif
+       )
     {
 	msg(_("Sending to printer..."));
 
@@ -753,11 +770,14 @@ mch_print_cleanup(void)
     g_clear_pointer(&pctx.surface, cairo_surface_destroy);
     g_clear_object(&pctx.text_context);
     g_clear_pointer(&pctx.font, pango_font_description_free);
-    g_clear_pointer(&pctx.filename, vim_free);
-#if defined(FEAT_GUI_GTK) && defined(USE_GTK4)
+
+#ifdef USE_GTK4_PRINT_DIALOG
+    // If using dialog, defer the temp file deletion later
     if (pctx.dialog)
-	gui_gtk4_print_cleanup();
+	gui_gtk4_print_finish();
 #endif
+
+    g_clear_pointer(&pctx.filename, vim_free);
 }
 
 #endif // FEAT_PRINT_PANGO
