@@ -267,7 +267,7 @@ static void show_menubar_popover(void);
 static const char *prgname = NULL;
 
 /*
- * Check if "s" is the option "name" (which includes the leading dash(es)). .
+ * Check if "s" is the option "name" (which includes the leading dash(es)).
  * "value" is set to the value if the option uses 'opt=val' format.
  */
     static gboolean
@@ -335,19 +335,22 @@ gui_mch_prepare(int *argc, char **argv)
 	    font_argument = value;
 	else if (arg_match(s, "-geom", &value)
 		|| arg_match(s, "-geometry", &value))
-	    gui.geom = vim_strsave((char_u *)value);
+	{
+	    if (value != NULL)
+		gui.geom = vim_strsave((char_u *)value);
+	}
 	else if (arg_match(s, "-bg", &value)
 		|| arg_match(s, "-background", &value))
 	    background_argument = value;
 	else if (arg_match(s, "-fg", &value)
 		|| arg_match(s, "-foreground", &value))
 	    foreground_argument = value;
-	else if (arg_match(s, "-nb", &value))
+	else if (strncmp(s, "-nb", 2) == 0)
 	{
 	    gui.dofork = false; // don't fork() when starting GUI
 	    netbeansArg = argv[i];
-	    has_inline_value = FALSE;
-	    value = NULL; // Unset value
+	    has_inline_value = TRUE; // -nb uses non standard syntax, just
+				     // remove the flag.
 	}
 	else if (arg_match(s, "--prg-name", &value))
 	    // GTK4 specific
