@@ -494,6 +494,64 @@ set_init_expand_env(void)
     }
 }
 
+#if defined(MSWIN) && defined(FEAT_GETTEXT)
+/*
+ * Get the display language of Windows and the languages to fall back on, as a
+ * colon separated list for gettext, e.g. "ja_JP:en_US".  The list stops after
+ * English, untranslated messages are English already.
+ * Returns NULL when it cannot be obtained.  The result must be freed.
+ */
+    static char_u *
+get_ui_langs(void)
+{
+    ULONG	num_languages = 0;
+    ULONG	bufsize = 0;
+    WCHAR	*buffer;
+    char_u	*langs = NULL;
+
+    if (!GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &num_languages, NULL,
+								    &bufsize)
+	    || bufsize == 0)
+	return NULL;
+
+    buffer = ALLOC_MULT(WCHAR, bufsize);
+    if (buffer == NULL)
+	return NULL;
+
+    if (GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &num_languages, buffer,
+								    &bufsize))
+    {
+	// The list is NUL separated, the result needs the same room.
+	langs = alloc(bufsize);
+	if (langs != NULL)
+	{
+	    char_u	*d = langs;
+	    WCHAR	*s = buffer;
+
+	    while (*s != L'\0')
+	    {
+		bool	english = s[0] == L'e' && s[1] == L'n'
+					&& (s[2] == L'\0' || s[2] == L'-');
+
+		if (d > langs)
+		    *d++ = ':';
+		// Locale names are ASCII, "en-US" becomes "en_US".
+		for ( ; *s != L'\0'; ++s)
+		    *d++ = *s == L'-' ? '_' : (char_u)*s;
+		++s;
+
+		if (english)
+		    break;
+	    }
+	    *d = NUL;
+	}
+    }
+    vim_free(buffer);
+
+    return langs;
+}
+#endif
+
 /*
  * Initialize the 'LANG' environment variable to a default value.
  */
@@ -501,32 +559,27 @@ set_init_expand_env(void)
 set_init_lang_env(void)
 {
 #if defined(MSWIN) && defined(FEAT_GETTEXT)
-    // If $LANG isn't set, try to get a good value for it.  This makes the
-    // right language be used automatically.  Don't do this for English.
-    if (mch_getenv((char_u *)"LANG") == NULL)
+    // If the language isn't set in the environment, use the display language
+    // of Windows.  Not the regional format, which is what the CRT would use
+    // for setlocale(LC_ALL, "").
+    if (mch_getenv((char_u *)"LANG") == NULL
+	    && mch_getenv((char_u *)"LANGUAGE") == NULL
+	    && mch_getenv((char_u *)"LC_ALL") == NULL
+	    && mch_getenv((char_u *)"LC_MESSAGES") == NULL)
     {
-	char	buf[20];
-	long_u	n;
+	char_u	*langs = get_ui_langs();
 
-	// Could use LOCALE_SISO639LANGNAME, but it's not in Win95.
-	// LOCALE_SABBREVLANGNAME gives us three letters, like "enu", we use
-	// only the first two.
-	n = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SABBREVLANGNAME,
-							     (LPTSTR)buf, 20);
-	if (n >= 2 && STRNICMP(buf, "en", 2) != 0)
+	if (langs != NULL && *langs != NUL)
 	{
-	    // There are a few exceptions (probably more)
-	    if (STRNICMP(buf, "cht", 3) == 0 || STRNICMP(buf, "zht", 3) == 0)
-		STRCPY(buf, "zh_TW");
-	    else if (STRNICMP(buf, "chs", 3) == 0
-					      || STRNICMP(buf, "zhc", 3) == 0)
-		STRCPY(buf, "zh_CN");
-	    else if (STRNICMP(buf, "jp", 2) == 0)
-		STRCPY(buf, "ja");
-	    else
-		buf[2] = NUL;		// truncate to two-letter code
-	    vim_setenv((char_u *)"LANG", (char_u *)buf);
+	    char_u	*colon = vim_strchr(langs, ':');
+
+	    // $LANGUAGE is the list gettext picks from, $LANG the language.
+	    vim_setenv((char_u *)"LANGUAGE", langs);
+	    if (colon != NULL)
+		*colon = NUL;
+	    vim_setenv((char_u *)"LANG", langs);
 	}
+	vim_free(langs);
     }
 #elif defined(MACOS_CONVERT)
     // Moved to os_mac_conv.c to avoid dependency problems.
