@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.2.  Last change: 2026 Jul 22
+*vim9.txt*	For Vim version 9.2.  Last change: 2026 Jul 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -723,6 +723,10 @@ characters, e.g.: >
 	     return 'value'
 	   })
 No command can follow the "{", only a comment can be used there.
+
+Since the block ends at the first line starting with "}", the closing "}" of a
+dictionary inside the block must not be at the start of a line.  See
+|command-block| for an example and the workaround.
 
 						*command-block* *E1026*
 The block can also be used for defining a user command.  Inside the block Vim9
