@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.2.  Last change: 2026 Jun 21
+*syntax.txt*	For Vim version 9.2.  Last change: 2026 Jul 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5870,6 +5870,8 @@ font={font-name}					*highlight-font*
 	When setting the font for the "Normal" group, this becomes the default
 	font (until the 'guifont' option is changed; the last one set is
 	used).
+	In the GTK GUI, a font can only be set for the "Normal" group; for
+	other groups it is accepted but has no effect.
 	The following only works with Motif, not with other GUIs:
 	When setting the font for the "Menu" group, the menus will be changed.
 	When setting the font for the "Tooltip" group, the tooltips will be
@@ -5880,7 +5882,7 @@ font={font-name}					*highlight-font*
 	To use a font name with an embedded space or other special character,
 	put it in single quotes.  The single quote cannot be used then.
 	Example: >
-	    :hi comment font='Monospace 10'
+	    :hi Normal font='Monospace 10'
 
 guifg={color-name}					*highlight-guifg*
 guibg={color-name}					*highlight-guibg*
