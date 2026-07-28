@@ -2700,7 +2700,8 @@ popup_adjust_position(win_T *wp)
 	else
 	    ++lnum;
 
-	// do not use the width of lines we're not going to show
+	// stop at the last line that is going to be shown; the width was
+	// already computed above from every buffer line
 	if (maxheight > 0
 		   && (wp->w_firstline >= 0
 			       ? lnum - wp->w_topline
