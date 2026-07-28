@@ -3447,6 +3447,7 @@ struct file_buffer
     char_u	*b_p_csl;	// 'completeslash'
 #endif
 #ifdef FEAT_COMPL_FUNC
+    long_u	b_p_cpt_flags;	// flags for 'complete'
     callback_T	*b_p_cpt_cb;	// F{func} in 'complete' callback
     int		b_p_cpt_count;	// Count of values in 'complete'
     char_u	*b_p_cfu;	// 'completefunc'
