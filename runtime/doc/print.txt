@@ -39,8 +39,7 @@ Note: If you have problems printing with |:hardcopy|, an alternative is to use
 			the dialog, use the [!].  In this case the printer
 			defined by 'printdevice' is used, or, if 'printdevice'
 			is empty, the system default printer.  Note that the
-			GTK4 GUI print dialog requires the XDG desktop portal
-			print interface to be available and at least GTK 4.14.
+			GTK4 GUI print dialog requires at least GTK 4.14.
 
 			For systems other than MS-Windows or Pango, PostScript
 			is written in a temp file and 'printexpr' is used to
