@@ -505,6 +505,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     manconf: ['/etc/man.conf', 'man.config', 'any/etc/man.conf'],
     maple: ['file.mv', 'file.mpl', 'file.mws'],
     markdown: ['file.markdown', 'file.mdown', 'file.mkd', 'file.mkdn', 'file.mdwn', 'file.md'],
+    marko: ['file.marko'],
     masm: ['file.masm'],
     mason: ['file.mason', 'file.mhtml'],
     master: ['file.mas', 'file.master'],

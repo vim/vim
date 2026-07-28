@@ -709,6 +709,9 @@ au BufNewFile,BufRead *.markdown,*.mdown,*.mkd,*.mkdn,*.mdwn,*.md
 	\   setf markdown |
 	\ endif
 
+" Marko
+au BufNewFile,BufRead *.marko			setf marko
+
 " Mathematica, Matlab, Murphi, Objective C or Octave
 au BufNewFile,BufRead *.m			call dist#ft#FTm()
 
