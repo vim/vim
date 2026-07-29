@@ -321,11 +321,24 @@ stuff like -bg, -fg, etc).  The ones that are supported are:
     -fg -foreground {color}			foreground color
     -bg -background {color}			background color
 
+If using the GTK4 GUI, then only the following are supported:
+    -fn  or  -font
+    -geom  or  -geometry    (window positioning is NOT supported)
+    -fg -foreground {color}
+    -bg -background {color}
+
+Command line arguments specific to GTK4:
+    command line argument   meaning ~
+    --prg-name {name}	    Argument passed to g_set_prgname(), otherwise
+			    "gvim" is used.  On Wayland this will set the app
+			    id, which is equivalent to the X11 WM_CLASS
+
 To set the font, see 'guifont'.  For GTK, there's also a menu option that does
 this.
 
 Additionally, there are these command line arguments, which are handled by GTK
-internally.  Look in the GTK documentation for how they are used:
+internally (except GTK4, see below).  Look in the GTK documentation for how
+they are used:
 	--sync
 	--gdk-debug
 	--gdk-no-debug
@@ -342,6 +355,10 @@ internally.  Look in the GTK documentation for how they are used:
 These arguments are ignored when the |+netbeans_intg| feature is used:
 	-xrm
 	-mf
+
+If using the GTK4 GUI, then no GTK specific command line arguments are
+supported. Instead configure GTK via environment variables:
+https://docs.gtk.org/gtk4/running.html
 
 As for colors, Vim's color settings (for syntax highlighting) is still
 done the traditional Vim way.  See |:highlight| for more help.

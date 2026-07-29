@@ -355,6 +355,9 @@ OPTIONS
                    is not connected to a terminal.  This will avoid the  warn‐
                    ing and the two second delay that would happen.
 
+       --prg-name {name}
+                   Set GTK program name. Only for GTK4 GUI.
+
        --remote    Connect to a Vim server and make it edit the files given in
                    the rest of the arguments.  If no server is found a warning
                    is given and the files are edited in the current Vim.

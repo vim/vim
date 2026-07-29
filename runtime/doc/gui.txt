@@ -25,7 +25,7 @@ Other GUI documentation:
 
 First you must make sure you actually have a version of Vim with the GUI code
 included.  You can check this with the ":version" command, it says "with xxx
-GUI", where "xxx" is X11-Motif, Photon, GTK2, GTK3, etc., or
+GUI", where "xxx" is X11-Motif, Photon, GTK2, GTK3, GTK4, etc., or
 "MS-Windows 32 bit GUI version".
 
 How to start the GUI depends on the system used.  Mostly you can run the
