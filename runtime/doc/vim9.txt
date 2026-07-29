@@ -724,6 +724,10 @@ characters, e.g.: >
 	   })
 No command can follow the "{", only a comment can be used there.
 
+Since the block ends at the first line starting with "}", the closing "}" of a
+dictionary inside the block must not be at the start of a line.  See
+|command-block| for an example and the workaround.
+
 						*command-block* *E1026*
 The block can also be used for defining a user command.  Inside the block Vim9
 syntax will be used.
