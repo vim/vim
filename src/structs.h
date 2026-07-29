@@ -287,6 +287,8 @@ typedef struct
     char_u	*wo_rlc;
 # define w_p_rlc w_onebuf_opt.wo_rlc	// 'rightleftcmd'
 #endif
+    long	wo_rmar;
+#define w_p_rmar w_onebuf_opt.wo_rmar	// 'rightmargin'
     long	wo_scr;
 #define w_p_scr w_onebuf_opt.wo_scr	// 'scroll'
     int		wo_sms;

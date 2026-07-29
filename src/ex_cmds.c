@@ -168,7 +168,7 @@ ex_align(exarg_T *eap)
 	if (width <= 0)
 	    width = curbuf->b_p_tw;
 	if (width == 0 && curbuf->b_p_wm > 0)
-	    width = curwin->w_width - curbuf->b_p_wm;
+	    width = W_WIDTH_INNER(curwin) - curbuf->b_p_wm;
 	if (width <= 0)
 	    width = 80;
     }

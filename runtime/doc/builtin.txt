@@ -5443,6 +5443,8 @@ getwininfo([{winid}])					*getwininfo()*
 					{only with the +quickfix feature}
 			quickfix	1 if quickfix or location list window
 					{only with the +quickfix feature}
+			rightmargin	number of columns reserved by
+					'rightmargin'
 			status_height	status lines height (0 or 1)
 			tabnr		tab page number
 			terminal	1 if a terminal window
