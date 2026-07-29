@@ -21,7 +21,7 @@ def g:Test_zip_basic()
 
   ### Windows OS: PowerShell fallback should be manually set up
   if &shell =~? 'cmd'
-    set shell=powershell
+    let g:zip_pwsh='powershell'
   endif
 
   CopyZipFile("test.zip")

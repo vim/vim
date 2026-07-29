@@ -107,7 +107,7 @@ endif
 let s:ps = ''
 " order: `g:zip_pwsh` > `&shell`, with executable check
 if &shell =~? 'cmd'
-  call s:Mess('Note', "***note*** (zip) you can set shell option or `g:zip_pwsh` to enable powershell fallback")
+  call s:Mess('MoreMsg', "***note*** (zip) you can set shell option or `g:zip_pwsh` to enable powershell fallback")
 endif
 if &shell =~? 'powershell' || g:zip_pwsh =~? 'powershell'
   if executable('powershell')
@@ -420,7 +420,7 @@ fun! zip#Write(fname)
 
   " sanity checks
   if !executable(substitute(g:zip_update[0],'\s\+.*$','','')) && !s:isPS()
-    call s:Mess('Error', "***error*** (zip#Read) sorry, your system doesn't appear to have the ".join(g:zip_update)." program")
+    call s:Mess('Error', "***error*** (zip#Write) sorry, your system doesn't appear to have the ".join(g:zip_update)." program")
     return
   endif
 
@@ -503,7 +503,7 @@ fun! zip#Write(fname)
   let ps_cmd = s:ZipUpdatePS(zip, fname)
   let ps_cmd = 'call system(''' . substitute(ps_cmd, "'", "''", 'g') . ''')'
   call s:TryExecGnuFallBackToPs(g:zip_update[0], gnu_cmd, ps_cmd)
-  if !s:isPS()
+  if s:isPS()
     " Vim flashes 'creation in progress ...' from what I believe is the
     " ProgressAction stream of PowerShell. Unfortunately, this cannot be
     " suppressed (as of 250824) due to an open PowerShell issue.
