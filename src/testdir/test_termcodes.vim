@@ -3096,6 +3096,29 @@ func Test_term_rgb_response()
   set t_RF= t_RB=
 endfunc
 
+" Test responses to the terminal color scheme request.
+func Test_term_color_scheme_response()
+  let save_bg = &background
+
+  " Simulate a background value that was not explicitly set by the user.
+  set background=light
+  call test_option_not_set('background')
+  call feedkeys("\<Esc>[?997;1n", 'Lx!')
+  call assert_equal('dark', &background)
+
+  call feedkeys("\<Esc>[?997;2n", 'Lx!')
+  call assert_equal('light', &background)
+
+  " Do not override a value explicitly set by the user.
+  set background=dark
+  call feedkeys("\<Esc>[?997;2n", 'Lx!')
+  call assert_equal('dark', &background)
+
+  " Restore the value and its not-explicitly-set state.
+  let &background = save_bg
+  call test_option_not_set('background')
+endfunc
+
 " Test in-band window resize events (DEC mode 2048).
 " https://gist.github.com/rockorager/e695fb2924d36b2bcf1fff4a3704bd83
 func Test_term_win_resize()

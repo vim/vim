@@ -147,6 +147,9 @@ static int bg_b = 255;
 // Request background color report:
 static termrequest_T rbg_status = TERMREQUEST_INIT;
 
+// Request terminal color scheme report:
+static termrequest_T csq_status = TERMREQUEST_INIT;
+
 // Request cursor blinking mode report:
 static termrequest_T rbm_status = TERMREQUEST_INIT;
 
@@ -167,6 +170,7 @@ static termrequest_T *all_termrequests[] = {
     &rfg_status,
 # endif
     &rbg_status,
+    &csq_status,
     &rbm_status,
     &rcs_status,
     &winpos_status,
@@ -529,6 +533,9 @@ static tcap_entry_T builtin_xterm[] = {
     {(int)KS_CXM,	"\033[?1006;1000%?%p1%{1}%=%th%el%;"},
     {(int)KS_RFG,	"\033]10;?\007"},
     {(int)KS_RBG,	"\033]11;?\007"},
+    {(int)KS_CSQ,	"\033[?996n"},
+    {(int)KS_CSE,	"\033[?2031h"},
+    {(int)KS_CSD,	"\033[?2031l"},
     {(int)KS_U7,	"\033[6n"},
     {(int)KS_CAU,	"\033[58;5;%dm"},
     {(int)KS_CBE,	"\033[?2004h"},
@@ -1324,6 +1331,9 @@ static tcap_entry_T builtin_debug[] = {
     {(int)KS_U7,	"[U7]"},
     {(int)KS_RFG,	"[RFG]"},
     {(int)KS_RBG,	"[RBG]"},
+    {(int)KS_CSQ,	"[CSQ]"},
+    {(int)KS_CSE,	"[CSE]"},
+    {(int)KS_CSD,	"[CSD]"},
     {(int)KS_CF,	"[CF%d]"},
     {K_UP,		"[KU]"},
     {K_DOWN,		"[KD]"},
@@ -1873,6 +1883,7 @@ get_term_entries(int *height, int *width)
 			{KS_CWP, "WP"}, {KS_CWS, "WS"},
 			{KS_CSI, "SI"}, {KS_CEI, "EI"},
 			{KS_U7, "u7"}, {KS_RFG, "RF"}, {KS_RBG, "RB"},
+			{KS_CSQ, "SQ"}, {KS_CSE, "SE"}, {KS_CSD, "SD"},
 			{KS_8F, "8f"}, {KS_8B, "8b"}, {KS_8U, "8u"},
 			{KS_CBE, "BE"}, {KS_CBD, "BD"},
 			{KS_CST, "ST"}, {KS_CRT, "RT"},
@@ -4120,6 +4131,9 @@ starttermcap(void)
 	out_str(T_FE);
 #endif
 
+    if (*T_CSE != NUL)
+	out_str(T_CSE);
+
     out_flush();
     termcap_active = TRUE;
     screen_start();			// don't know where cursor is now
@@ -4129,6 +4143,7 @@ starttermcap(void)
 # endif
     {
 	may_req_termresponse();
+	may_req_bg_color();
 	// Immediately check for a response.  If t_Co changes, we don't
 	// want to redraw with wrong colors first.
 	if (crv_status.tr_progress == STATUS_SENT)
@@ -4167,6 +4182,7 @@ stoptermcap(void)
 	// Check for termcodes first, otherwise an external program may
 	// get them.
 	check_for_codes_from_term();
+	csq_status.tr_progress = STATUS_GET;
     }
 #endif
     MAY_WANT_TO_LOG_THIS;
@@ -4176,6 +4192,9 @@ stoptermcap(void)
     if (p_ek && *T_FD != NUL)
 	out_str(T_FD);
 #endif
+
+    if (*T_CSD != NUL)
+	out_str(T_CSD);
 
     out_str(T_BD);			// disable bracketed paste mode
     out_str(T_KE);			// stop "keypad transmit" mode
@@ -4359,6 +4378,16 @@ may_req_bg_color(void)
 	    LOG_TR1("Sending BG request");
 	    out_str(T_RBG);
 	    termrequest_sent(&rbg_status);
+	    didit = TRUE;
+	}
+
+	// Only request color scheme if t_SQ is set.
+	if (csq_status.tr_progress == STATUS_GET && *T_CSQ != NUL)
+	{
+	    MAY_WANT_TO_LOG_THIS;
+	    LOG_TR1("Sending color scheme request");
+	    out_str(T_CSQ);
+	    termrequest_sent(&csq_status);
 	    didit = TRUE;
 	}
 
@@ -5724,6 +5753,8 @@ handle_csi_function_key(
  *
  * - DECRPM response: {lead}?2026;{mode}$y
  *
+ * - LIGHT/DARK mode response: {lead}?997;{mode}n
+ *
  * Return 0 for no match, -1 for partial match, > 0 for full match.
  */
     static int
@@ -5919,6 +5950,39 @@ handle_csi(
 	}
 	else
 	    LOG_TRN("Unknown DECRPM mode %d setting %d", arg[0], setting);
+    }
+
+    // LIGHT/DARK mode: CSI ? 997 ; {1,2} n
+    else if (first == '?' && trail == 'n' && argc == 2
+	    && arg[0] == 997)
+    {
+	int scheme = arg[1];
+
+	*slen = csi_len;
+	key_name[0] = (int)KS_EXTRA;
+	key_name[1] = (int)KE_IGNORE;
+
+	if (scheme == 1 || scheme == 2)
+	{
+	    LOG_TRN("Received DEC mode %d: %s", arg[0], tp);
+	    if (csq_status.tr_progress == STATUS_SENT)
+		csq_status.tr_progress = STATUS_GOT;
+
+	    char *new_bg_val = scheme == 1 ? "dark" : "light";
+	    LOG_TRN("setting background to: %s", new_bg_val);
+	    if (!option_was_set((char_u *)"bg")
+		    && STRCMP(p_bg, new_bg_val) != 0)
+	    {
+		// value differs, apply it
+		set_option_value_give_err((char_u *)"bg",
+			0L, (char_u *)new_bg_val, 0);
+		reset_option_was_set((char_u *)"bg");
+		redraw_asap(UPD_CLEAR);
+	    }
+	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"background", NULL, FALSE, curbuf);
+	}
+	else
+	    LOG_TRN("Unknown DEC mode %d scheme %d", arg[0], scheme);
     }
 
 #ifdef UNIX
