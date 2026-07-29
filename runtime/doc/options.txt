@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Jul 22
+*options.txt*	For Vim version 9.2.  Last change: 2026 Jul 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5680,6 +5680,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 		0: never
 		1: only if there are at least two windows
 		2: always
+
+	Here "last window" means the last window in a column, i.e. the bottom-
+	most one, just above the command line.  A window with another window
+	below it always has a status line, since it also visually separates
+	those.
+
 	The screen looks nicer with a status line if you have several
 	windows, but it takes another screen line. |status-line|
 
