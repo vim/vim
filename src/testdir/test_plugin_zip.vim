@@ -21,7 +21,7 @@ def g:Test_zip_basic()
 
   ### Windows OS: PowerShell fallback should be manually set up
   if &shell =~? 'cmd'
-    let g:zip_pwsh='powershell'
+    g:zip_pwsh = 'powershell'
   endif
 
   CopyZipFile("test.zip")
@@ -221,7 +221,7 @@ def g:Test_zip_glob_fname()
   search('\V' .. fname)
   exe ":normal \<cr>"
   assert_match('zipfile://.*/X\.zip::zipglob/a\[a\]\.txt', @%)
-  assert_equal('zipglob/a[a].txt', getline(1))
+  assert_equal('a test file with []', getline(1))
   bw
 
   e X.zip
@@ -230,7 +230,7 @@ def g:Test_zip_glob_fname()
   search('\V' .. fname)
   exe ":normal \<cr>"
   assert_match('zipfile://.*/X\.zip::zipglob/a\*\.txt', @%)
-  assert_equal('zipglob/a*.txt', getline(1))
+  assert_equal('a test file with a*', getline(1))
   bw
 
   e X.zip
@@ -239,7 +239,7 @@ def g:Test_zip_glob_fname()
   search('\V' .. fname)
   exe ":normal \<cr>"
   assert_match('zipfile://.*/X\.zip::zipglob/a?\.txt', @%)
-  assert_equal('zipglob/a?.txt', getline(1))
+  assert_equal('a test file with a?', getline(1))
   bw
 
   e X.zip
@@ -248,7 +248,7 @@ def g:Test_zip_glob_fname()
   search('\V' .. escape(fname, '\\'))
   exe ":normal \<cr>"
   assert_match('zipfile://.*/X\.zip::zipglob/a\\\.txt', @%)
-  assert_equal('zipglob/a\.txt', getline(1))
+  assert_equal('a test file with a\\', getline(1))
   bw
 
   e X.zip
@@ -257,7 +257,7 @@ def g:Test_zip_glob_fname()
   search('\V' .. escape(fname, '\\'))
   exe ":normal \<cr>"
   assert_match('zipfile://.*/X\.zip::zipglob/a\\\\\.txt', @%)
-  assert_equal('zipglob/a\\.txt', getline(1))
+  assert_equal('a test file with a double \\', getline(1))
   bw
 
   bw
