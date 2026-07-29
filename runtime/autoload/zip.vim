@@ -94,10 +94,10 @@ if v:version < 901
 endif
 
 " ---------------------------------------------------------------------
-"  Compatability checks
+"  Compatibility checks
 " PowerShell: {{{2
-" Existence of powershell always means a Windows OS. Defaultly the
-" `zip`/`unzip` is not installed on Windows, but the runtime of
+" The presence of PowerShell usually means a Windows OS. By default the
+" `zip`/`unzip` are not installed on Windows, but the runtime of
 " powershell support relative functionalities about zip compression
 " and extraction.
 " In the following implementations we'll use some powershell scripts

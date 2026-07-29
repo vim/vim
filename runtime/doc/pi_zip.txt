@@ -59,9 +59,9 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
 <
 							*g:zip_delete*
 							*g:zip_update*
-   Use this option to specify the program which does the duty of "zip".
+   Use these option to specify the program which does the duty of "zip".
    It's used during the writing (updating) of a file already in a zip
-   file; by default: >
+   file. Default value: >
 	let g:zip_delete = ["zip", "-d"]
 	let g:zip_update = ["zip", "-u"]
 <
