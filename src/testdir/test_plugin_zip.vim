@@ -248,7 +248,7 @@ def g:Test_zip_glob_fname()
   search('\V' .. escape(fname, '\\'))
   exe ":normal \<cr>"
   assert_match('zipfile://.*/X\.zip::zipglob/a\\\.txt', @%)
-  assert_equal('zipglob/a\\.txt', getline(1))
+  assert_equal('zipglob/a\.txt', getline(1))
   bw
 
   e X.zip
@@ -257,7 +257,7 @@ def g:Test_zip_glob_fname()
   search('\V' .. escape(fname, '\\'))
   exe ":normal \<cr>"
   assert_match('zipfile://.*/X\.zip::zipglob/a\\\\\.txt', @%)
-  assert_equal('zipglob/a\\\\.txt', getline(1))
+  assert_equal('zipglob/a\\.txt', getline(1))
   bw
 
   bw
