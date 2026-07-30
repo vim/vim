@@ -439,7 +439,7 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
 
 /*
  * Like plines_win(), but only reports the number of physical screen lines
- * used from the start of the line to the given column number.
+ * used from the start of the line to the given byte column.
  */
     int
 plines_win_col(win_T *wp, linenr_T lnum, long column)
@@ -465,7 +465,8 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 
     init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
-    while (*cts.cts_ptr != NUL && --column >= 0)
+    // "column" is a byte index, advance the pointer until it is reached.
+    while (*cts.cts_ptr != NUL && cts.cts_ptr < line + column)
     {
 	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL, NULL);
 	MB_PTR_ADV(cts.cts_ptr);
