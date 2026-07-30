@@ -2665,10 +2665,9 @@ popup_adjust_position(win_T *wp)
 		shift_by -= truncate_shift;
 	    }
 
-	    // When wrapping is enabled and maxwidth is explicitly set,
-	    // don't shift beyond maxwidth - let the text wrap instead.
-	    if (wp->w_p_wrap && wp->w_maxwidth > 0
-				    && maxwidth + shift_by > wp->w_maxwidth)
+	    // When maxwidth is explicitly set, don't shift beyond it, the text
+	    // is wrapped or truncated instead.
+	    if (wp->w_maxwidth > 0 && maxwidth + shift_by > wp->w_maxwidth)
 		shift_by = wp->w_maxwidth - maxwidth;
 
 	    if (shift_by > 0)
