@@ -449,6 +449,24 @@ def Test_block_local_vars_with_func()
       assert_equal(['foo', 'bar'], Func())
   END
   v9.CheckScriptSuccess(lines)
+
+  # also when the variables are used in a lambda inside the function
+  lines =<< trim END
+      vim9script
+      if true
+        var foo = 'foo'
+        if true
+          var bar = 'bar'
+          def Func(): list<string>
+            var Lambda = () => [foo, bar]
+            return Lambda()
+          enddef
+          defcompile
+        endif
+      endif
+      assert_equal(['foo', 'bar'], Func())
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 " legacy func for command that's defined later

@@ -1795,9 +1795,26 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     clear_tv(&rettv);
 
     if (cctx->ctx_ufunc != NULL)
+    {
 	// This lambda might be defined in a class method.  Inherit the class
 	// from the current function.
 	ufunc->uf_defclass = cctx->ctx_ufunc->uf_defclass;
+
+	// Copy over the block scope IDs, so that a script variable declared in
+	// an enclosing block can be found.
+	int block_depth = cctx->ctx_ufunc->uf_block_depth;
+
+	if (block_depth > 0)
+	{
+	    ufunc->uf_block_ids = ALLOC_MULT(int, block_depth);
+	    if (ufunc->uf_block_ids != NULL)
+	    {
+		mch_memmove(ufunc->uf_block_ids, cctx->ctx_ufunc->uf_block_ids,
+						    sizeof(int) * block_depth);
+		ufunc->uf_block_depth = block_depth;
+	    }
+	}
+    }
 
     // Compile it here to get the return type.  The return type is optional,
     // when it's missing use t_unknown.  This is recognized in
