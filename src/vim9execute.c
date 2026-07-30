@@ -7330,9 +7330,10 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		{
 		    isn_outer_T *outer = &iptr->isn_arg.outer;
 
-		    if (outer->outer_depth == OUTER_LOOP_DEPTH)
-			smsg("%s%4d STOREOUTER level 1 $%d in loop",
-				pfx, current, outer->outer_idx);
+		    if (outer->outer_depth < 0)
+			smsg("%s%4d STOREOUTER $%d in loop level %d",
+				pfx, current, outer->outer_idx,
+				-outer->outer_depth);
 		    else
 			smsg("%s%4d STOREOUTER level %d $%d", pfx, current,
 				outer->outer_depth, outer->outer_idx);

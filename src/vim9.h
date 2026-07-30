@@ -444,10 +444,10 @@ typedef struct {
 // arguments to ISN_LOADOUTER and ISN_STOREOUTER
 typedef struct {
     int		outer_idx;	// index
-    int		outer_depth;	// nesting level, stack frames to go up
+    int		outer_depth;	// nesting level, stack frames to go up;
+				// negative for a loop variable, the loop
+				// depth is -outer_depth - 1
 } isn_outer_T;
-
-#define OUTER_LOOP_DEPTH -9	// used for outer_depth for loop variables
 
 // arguments to ISN_SUBSTITUTE
 typedef struct {
