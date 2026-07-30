@@ -345,6 +345,7 @@ gui_mch_prepare(int *argc, char **argv)
 	else if (arg_match(s, "-fg", &value)
 		|| arg_match(s, "-foreground", &value))
 	    foreground_argument = value;
+#ifdef FEAT_NETBEANS_INTG
 	else if (strncmp(s, "-nb", 3) == 0)
 	{
 	    gui.dofork = false; // don't fork() when starting GUI
@@ -352,6 +353,7 @@ gui_mch_prepare(int *argc, char **argv)
 	    has_inline_value = TRUE; // -nb uses non standard syntax, just
 				     // remove the flag.
 	}
+#endif
 	else if (arg_match(s, "--prg-name", &value))
 	    // GTK4 specific
 	    prgname = value;
