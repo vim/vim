@@ -2899,6 +2899,36 @@ def Test_for_loop_with_closure()
       endfor
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  # assigning to a variable declared in the loop from a closure
+  lines =<< trim END
+      for i in range(3)
+        var inloop = 0
+        var F = () => {
+              inloop = i + 1
+            }
+        F()
+        assert_equal(i + 1, inloop)
+      endfor
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # same in a nested loop
+  lines =<< trim END
+      var result: list<number>
+      for i in range(2)
+        for j in range(2)
+          var inloop = 0
+          var F = () => {
+                inloop = i * 10 + j
+              }
+          F()
+          result += [inloop]
+        endfor
+      endfor
+      assert_equal([0, 1, 10, 11], result)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_define_global_closure_in_loops()

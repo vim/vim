@@ -1177,7 +1177,12 @@ generate_CLASSMEMBER(
  * Generate an ISN_STOREOUTER instruction.
  */
     static int
-generate_STOREOUTER(cctx_T *cctx, int idx, int level, int loop_idx)
+generate_STOREOUTER(
+	cctx_T	    *cctx,
+	int	    idx,
+	int	    level,
+	int	    loop_depth,
+	int	    loop_idx)
 {
     isn_T	*isn;
 
@@ -1187,9 +1192,9 @@ generate_STOREOUTER(cctx_T *cctx, int idx, int level, int loop_idx)
     if (level == 1 && loop_idx >= 0 && idx >= loop_idx)
     {
 	// Store a variable defined in a loop.  A copy will be made at the end
-	// of the loop.  TODO: how about deeper nesting?
+	// of the loop.
 	isn->isn_arg.outer.outer_idx = idx - loop_idx;
-	isn->isn_arg.outer.outer_depth = OUTER_LOOP_DEPTH;
+	isn->isn_arg.outer.outer_depth = -loop_depth - 1;
     }
     else
     {
@@ -2644,7 +2649,8 @@ generate_store_lhs(cctx_T *cctx, lhs_T *lhs, int instr_count, int is_decl)
     }
     else if (lhs->lhs_lvar->lv_from_outer > 0)
 	generate_STOREOUTER(cctx, lhs->lhs_lvar->lv_idx,
-		lhs->lhs_lvar->lv_from_outer, lhs->lhs_lvar->lv_loop_idx);
+		lhs->lhs_lvar->lv_from_outer, lhs->lhs_lvar->lv_loop_depth,
+		lhs->lhs_lvar->lv_loop_idx);
     else
 	generate_STORE(cctx, ISN_STORE, lhs->lhs_lvar->lv_idx, NULL);
     return OK;
