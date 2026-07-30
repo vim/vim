@@ -86,7 +86,7 @@ def g:Test_zip_basic()
   ### Check opening zip when "unzip" program is missing
   var save_zip_unzipcmd = g:zip_unzipcmd
   g:zip_unzipcmd = "/"
-  assert_match('unzip not available on your system', execute("e X.zip"))
+  assert_match('(zip#Browse) sorry, your system doesn''t appear to have the / program', execute("e X.zip"))
 
   ### Check when "unzip" don't work
   if executable("false")
