@@ -40,10 +40,10 @@ Mapping with modifier is not recognized after a partial mapping.  Probably
 because the typeahead was simplified when looking for a matching mapping.
 Need to somehow undo the simplification.  #12002
 
-Windows scroll when using the autocmd window.  #12085
-in restore_snapshot_rec() restore more values from the snapshot, instead of
-calling frame_new_height() and frame_new_width(), especially w_topline and
-w_skipcol.
+Using the autocmd window resets w_skipcol when the cursor is in a long
+wrapped line.  In restore_snapshot_rec() restore more values from the
+snapshot, instead of calling frame_new_height() and frame_new_width(),
+especially w_skipcol.
 
 Check places that source "path/*.vim" to not match other extensions, e.g.
 .vim9, on MS-Windows (short file name match, gets expanded to long file name).
