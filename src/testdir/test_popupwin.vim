@@ -2203,6 +2203,44 @@ func Test_popup_wrap_with_maxwidth()
   %bwipe!
 endfunc
 
+func Test_popup_nowrap_with_maxwidth()
+  " When wrap is off and maxwidth is explicitly set, a popup near the right
+  " edge of the screen must not get wider than maxwidth by shifting left.
+  let maxw = 20
+  let col = &columns - maxw + 1
+
+  " Text longer than maxwidth is truncated, no shift is needed.
+  let p = popup_create(repeat('x', 40), #{
+	\ line: 5, col: col, maxwidth: maxw, wrap: 0})
+  call s:VerifyPosition(p, 'nowrap with maxwidth at right edge',
+	\ 5, col, maxw, 1)
+  call popup_close(p)
+
+  " Not enough space at the right: shift left, but only up to maxwidth.
+  let p = popup_create(repeat('y', 40), #{
+	\ line: 5, col: &columns - 5, maxwidth: maxw, wrap: 0})
+  call s:VerifyPosition(p, 'nowrap with maxwidth shifts up to maxwidth',
+	\ 5, col, maxw, 1)
+  call popup_close(p)
+
+  " Same with a border and padding.
+  let p = popup_create(repeat('z', 40), #{
+	\ line: 5, col: &columns - 5, maxwidth: maxw, wrap: 0,
+	\ border: [], padding: [0, 1, 0, 1]})
+  call assert_equal(maxw, popup_getpos(p).core_width)
+  call popup_close(p)
+
+  " When maxwidth is not set, shift-left uses the whole text width.
+  let p = popup_create(repeat('w', 40), #{
+	\ line: 5, col: col, wrap: 0})
+  call s:VerifyPosition(p, 'nowrap without maxwidth shifts left',
+	\ 5, col - maxw, 40, 1)
+  call popup_close(p)
+
+  call popup_clear()
+  %bwipe!
+endfunc
+
 func Test_adjust_left_past_screen_width()
   " width of screen
   let X = join(map(range(&columns), {->'X'}), '')
