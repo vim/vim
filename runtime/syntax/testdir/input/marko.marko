@@ -3,33 +3,46 @@
 import { formatPrice } from "./util"
 static const VERSION = 1
 
-<style>
+<style/styles>
   .price { color: green }
 </style>
-
 <let/count=1/>
-<const/{ items }=input/>
-
-<div.card#main class="cart" data-total:=total ...rest>
-  <if=count>
-    <my-button size="large" onClick=() => buy()>Buy ${count + 1}</my-button>
+<const/[width, , ...dims]=box/>
+<div.card#main class="cart" total:=sum ...rest ...(a ? b : c)>
+  <if=tag === "select" || count > 0>
+    <my-button size="lg" onClick=(e) => buy(e)>${count + 1}</my-button>
   </if>
+  <else-if=fallback ?? choices/>
   <for|item, index| of=items>
     <span>${formatPrice(item.price)}</span>
   </for>
-  <generic-list<string> a=1/>
-  <${dynamicTag} title="dynamic">body</>
-  <@footer>slot content</@footer>
+  <generic-list<Config<string>> a=1/>
+  <${dynamicTag} title="dynamic">body</${dynamicTag}>
 </div>
-
+<link
+  rel="canonical"
+  href=translated
+    ? localizeUrl(url, { locale }).href
+    : baseHref
+>
+<audio-player ratio=total / count volume=Math.max(
+  0,
+  settings.findIndex((s) => s.active),
+)/>
+<h${size} id:scoped>heading</>
+<${"hello"}-world/>
+<badge#item-${id}.tone-${kind} café="façade" x=`a${`b ${c}`}d`/>
+<form onSubmit<T>(e) { go<T>(e) } action(a, b) msg="say \"hi\""/>
+<effect() { cleanup() }>body prose</effect>
+<await(promise)>
+  <@then|result|>${result}</@then>
+</await>
+<macro renderPrice|amount|>${formatPrice(amount)}</macro>
 <div
   class="multiline"
   data-x=1
 >text with &amp; entity and \${an escaped placeholder}</div>
-
 <textarea rows=3>literal <b>text</b> with ${count}</textarea>
-<html-comment>rendered <i>comment</i> body</html-comment>
-
 <script>
   const el = document.querySelector(".price");
 </script>
