@@ -1,4 +1,4 @@
-*pi_zip.txt*	For Vim version 9.2.  Last change: 2026 Jun 20
+*pi_zip.txt*	For Vim version 9.2.  Last change: 2026 Jul 30
 
 				+====================+
 				| Zip File Interface |
@@ -48,22 +48,21 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
    If this variable exists and is true, the file window will not be
    automatically maximized when opened.
 
-							*g:zip_browse*
-							*g:zip_read*
-							*g:zip_extract*
-   Use these option to specify the program which does the duty of "unzip".
+							*g:zip_unzipcmd*
+   Use this option to specify the program which does the duty of "unzip".
    It's used during browsing. By default: >
-	let g:zip_browse  = ["unzip", "-Z1"]
-	let g:zip_read    = ["unzip", "-p"]
-	let g:zip_extract = ["unzip", "-o"]
+	let g:zip_unzipcmd= "unzip"
 <
-							*g:zip_delete*
-							*g:zip_update*
-   Use these option to specify the program which does the duty of "zip".
+							*g:zip_zipcmd*
+   Use this option to specify the program which does the duty of "zip".
    It's used during the writing (updating) of a file already in a zip
-   file. Default value: >
-	let g:zip_delete = ["zip", "-d"]
-	let g:zip_update = ["zip", "-u"]
+   file; by default: >
+	let g:zip_zipcmd= "zip"
+<
+							*g:zip_extractcmd*
+   This option specifies the program (and any options needed) used to
+   extract a file from a zip archive.  By default, >
+	let g:zip_extractcmd= g:zip_unzipcmd
 <
 							*g:zip_exec*
    For security reasons, one may prevent that Vim runs executables
@@ -77,16 +76,15 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
 							*g:zip_pwsh*
    This plugin will first attempt to use the (more capable) GNU zip/unzip
    commands.  If these commands are not available or fail, and the user is
-   using PowerShell , the plugin will fall back to a PowerShell cmdlet.
+   using PowerShell, the plugin will fall back to a PowerShell cmdlet.
    The PowerShell cmdlets are limited: they cannot write or extract files
    within subdirectories of a zip archive.  The advantage, however, is that
-   no separate unzip binary needs to be installed. The 'shell' option will
-   be checked whether to choose "pwsh" or "powershell", or use 'g:zip_pwsh'
-   to determine. If there are both available, this plugin will choose pwsh.
-   Default value of 'g:zip_pwsh' is an empty string, which would not over-
-   write the 'shell' option configuration. This functionality is not turned
-   on by default on MS-Windows, since the default 'shell' is "cmd.exe". For
-   example: >
+   no separate unzip binary needs to be installed.  The 'shell' option will
+   be checked whether to choose "pwsh" or "powershell", or set `g:zip_pwsh`.
+   If both are available, this plugin will prefer pwsh. Default value of
+   "g:zip_pwsh" is an empty string, which would not overwrite the 'shell'
+   option configuration.  This functionality is not turned on by default on
+   MS-Windows, since the default 'shell' is "cmd.exe". For example: >
 	let g:zip_pwsh='powershell'
 <
    PREVENTING LOADING~

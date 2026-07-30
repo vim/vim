@@ -25,8 +25,7 @@
 " 2026 Apr 14 by Vim Project: Detect more path traversal attacks on Windows
 " 2026 Apr 15 by Vim Project: Detect more path traversal attacks on Windows
 " 2026 Jun 20 by Vim Project: Fix wrong escaping for the powershell calls
-" 2026 Jul 24 by Vim Project: Customizable zip/unzip commands
-" 2026 Jul 25 by Vim Project: Compatability for both powershell 5 and pwsh 7
+" 2026 Jul 25 by Vim Project: Improved Compatibility for powershell 5 and pwsh 7
 " License:	Vim License  (see vim's :help license)
 " Copyright:	Copyright (C) 2005-2019 Charles E. Campbell {{{1
 "		Permission is hereby granted to use and distribute this code,
@@ -54,28 +53,18 @@ let s:NOTE           = 0
 
 " ---------------------------------------------------------------------
 "  Global Values: {{{1
-"  For all below command lists, the first string will be checked by
-"  executable().
-if !exists("g:zip_delete")
- let g:zip_delete= ["zip", "-d"]
+if !exists("g:zip_zipcmd")
+ let g:zip_zipcmd= "zip"
 endif
-if !exists("g:zip_update")
- let g:zip_update= ["zip", "-u"]
+if !exists("g:zip_unzipcmd")
+ let g:zip_unzipcmd= "unzip"
 endif
-if !exists("g:zip_browse")
- let g:zip_browse= ["unzip", "-Z1"]
+if !exists("g:zip_extractcmd")
+ let g:zip_extractcmd= g:zip_unzipcmd
 endif
-if !exists("g:zip_read")
- let g:zip_read= ["unzip", "-p"]
-endif
-if !exists("g:zip_extract")
- let g:zip_extract= ["unzip", "-o"]
-endif
-
 if !exists("g:zip_pwsh")
   let g:zip_pwsh=''
 endif
-
 
 " ---------------------------------------------------------------------
 "  required early
@@ -96,8 +85,8 @@ endif
 " ---------------------------------------------------------------------
 "  Compatibility checks
 " PowerShell: {{{2
-" The presence of PowerShell usually means a Windows OS. By default the
-" `zip`/`unzip` are not installed on Windows, but the runtime of
+" Existence of powershell always means a Windows OS. By default the
+" `zip`/`unzip` is not installed on Windows, but the runtime of
 " powershell support relative functionalities about zip compression
 " and extraction.
 " In the following implementations we'll use some powershell scripts
@@ -106,15 +95,12 @@ endif
 
 let s:ps = ''
 " order: `g:zip_pwsh` > `&shell`, with executable check
-if &shell =~? 'cmd'
-  call s:Mess('MoreMsg', "***note*** (zip) you can set shell option or `g:zip_pwsh` to enable powershell fallback")
-endif
-if &shell =~? 'powershell' || g:zip_pwsh =~? 'powershell'
+if &shell =~# 'powershell' || g:zip_pwsh =~# 'powershell'
   if executable('powershell')
     let s:ps = 'powershell'
   endif
 endif
-if (empty(g:zip_pwsh) && &shell =~ 'pwsh') || g:zip_pwsh =~ 'pwsh'
+if (empty(g:zip_pwsh) && &shell =~# 'pwsh') || g:zip_pwsh =~# 'pwsh'
   if executable('pwsh')
     let s:ps = 'pwsh'
   endif
@@ -125,9 +111,10 @@ fun! s:isPS()
 endfun
 
 " ---------------------------------------------------------------------
-" sanity checks {{{2
+" sanity checks
+" s:SafeExecutable: {{{2
 fun! s:SafeExecutable(exe)
-  if !executable(g:zip_update[0]) && !s:isPS()
+  if !executable(a:exe) && !s:isPS()
     call s:Mess('Error', "***error*** (zip) '".a:exe."' not available on your system")
     return v:false
   endif
@@ -137,13 +124,11 @@ fun! s:SafeExecutable(exe)
   endif
   return v:true
 endfun
-" garantee default command is exist and not be injected by environment
+" guarantee default command is exist and not be injected by environment
 " every default command should be checked
-if !s:SafeExecutable(g:zip_delete[0])  | finish | endif
-if !s:SafeExecutable(g:zip_update[0])  | finish | endif
-if !s:SafeExecutable(g:zip_browse[0])  | finish | endif
-if !s:SafeExecutable(g:zip_read[0])    | finish | endif
-if !s:SafeExecutable(g:zip_extract[0]) | finish | endif
+if !s:SafeExecutable(g:zip_zipcmd)  | finish | endif
+if !s:SafeExecutable(g:zip_unzipcmd)  | finish | endif
+if !s:SafeExecutable(g:zip_extractcmd)  | finish | endif
 
 " ----------------
 "  PowerShell: {{{1
@@ -275,8 +260,8 @@ fun! zip#Browse(zipfile)
   defer s:RestoreOpts(dict)
 
   " sanity checks
-  if !executable(g:zip_browse[0]) && !s:isPS()
-   call s:Mess('Error', "***error*** (zip#Browse) unzip not available on your system: '".join(g:zip_browse)."'")
+  if !executable(g:zip_unzipcmd) && !s:isPS()
+   call s:Mess('Error', "***error*** (zip#Browse) unzip not available on your system")
    return
   endif
   if !filereadable(a:zipfile)
@@ -310,9 +295,9 @@ fun! zip#Browse(zipfile)
  \                '" Select a file with cursor and press ENTER'])
   keepj $
 
-  let gnu_cmd = 'keepj sil r! ' . join(g:zip_browse) . ' -- ' . s:Escape(a:zipfile, 1)
+  let gnu_cmd = "keepj sil r! " . g:zip_unzipcmd . " -Z1 -- " . s:Escape(a:zipfile, 1)
   let ps_cmd = 'keepj sil r! ' . s:ZipBrowsePS(a:zipfile)
-  call s:TryExecGnuFallBackToPs(g:zip_browse[0], gnu_cmd, ps_cmd)
+  call s:TryExecGnuFallBackToPs(g:zip_unzipcmd, gnu_cmd, ps_cmd)
 
   if v:shell_error != 0
    call s:Mess('WarningMsg', "***warning*** (zip#Browse) ".fnameescape(a:zipfile)." is not a zip file")
@@ -383,21 +368,21 @@ fun! zip#Read(fname,mode)
   endif
   let fname    = fname->substitute('[', '[[]', 'g')->escape('?*\\')
   " sanity check
-  if !executable(substitute(g:zip_read[0],'\s\+.*$','',''))  && !s:isPS()
-   call s:Mess('Error', "***error*** (zip#Read) sorry, your system doesn't appear to have the ".join(g:zip_read)." program")
+  if !executable(substitute(g:zip_unzipcmd,'\s\+.*$','',''))  && !s:isPS()
+   call s:Mess('Error', "***error*** (zip#Read) sorry, your system doesn't appear to have the ".g:zip_unzipcmd." program")
    return
   endif
 
   " the following code does much the same thing as
-  "   exe "keepj sil! r! unzip -p -- ".s:Escape(zipfile,1)." ".s:Escape(fname,1)
+  "   exe "keepj sil! r! ".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fname,1)
   " but allows zipfile://... entries in quickfix lists
   let temp = tempname()
   let fn   = expand('%:p')
 
-  let gnu_cmd = join(g:zip_read) . ' -- ' . s:Escape(zipfile) . ' ' . s:Escape(fname) . ' > ' . s:Escape(temp)
+  let gnu_cmd = g:zip_unzipcmd . ' -p -- ' . s:Escape(zipfile) . ' ' . s:Escape(fname) . ' > ' . s:Escape(temp)
   let gnu_cmd = 'call system(' . string(gnu_cmd) . ')'
   let ps_cmd = 'call system(' . string(s:ZipReadPS(zipfile, fname, temp)) . ')'
-  call s:TryExecGnuFallBackToPs(g:zip_read[0], gnu_cmd, ps_cmd)
+  call s:TryExecGnuFallBackToPs(g:zip_unzipcmd, gnu_cmd, ps_cmd)
 
   sil exe 'keepalt file '.temp
   sil keepj e!
@@ -419,8 +404,8 @@ fun! zip#Write(fname)
   defer s:RestoreOpts(dict)
 
   " sanity checks
-  if !executable(substitute(g:zip_update[0],'\s\+.*$','','')) && !s:isPS()
-    call s:Mess('Error', "***error*** (zip#Write) sorry, your system doesn't appear to have the ".join(g:zip_update)." program")
+  if !executable(substitute(g:zip_zipcmd,'\s\+.*$','','')) && &shell !~ 'pwsh'
+    call s:Mess('Error', "***error*** (zip#Write) sorry, your system doesn't appear to have the ".g:zip_zipcmd." program")
     return
   endif
 
@@ -468,10 +453,10 @@ fun! zip#Write(fname)
     endif
   endif
   if fname =~ '^[.]\{1,2}/'
-    let gnu_cmd = join(g:zip_delete) . ' ' . s:Escape(fnamemodify(zipfile,":p")) . ' ' . s:Escape(fname)
+    let gnu_cmd = g:zip_zipcmd . ' -d ' . s:Escape(fnamemodify(zipfile,":p")) . ' ' . s:Escape(fname)
     let gnu_cmd = 'call system(' . string(gnu_cmd) . ')'
     let ps_cmd = $"call system({string(s:ZipDeleteFilePS(zipfile, fname))})"
-    call s:TryExecGnuFallBackToPs(g:zip_delete[0], gnu_cmd, ps_cmd)
+    call s:TryExecGnuFallBackToPs(g:zip_zipcmd, gnu_cmd, ps_cmd)
     let fname = fname->substitute('^\([.]\{1,2}/\)\+', '', 'g')
     let need_rename = 1
   endif
@@ -497,12 +482,12 @@ fun! zip#Write(fname)
     let fname = substitute(fname, '[', '[[]', 'g')
   endif
 
-  let gnu_cmd = join(g:zip_update) . ' '. s:Escape(fnamemodify(zipfile,":p")) . ' ' . s:Escape(fname)
+  let gnu_cmd = g:zip_zipcmd . ' -u '. s:Escape(fnamemodify(zipfile,":p")) . ' ' . s:Escape(fname)
   let gnu_cmd = 'call system(''' . substitute(gnu_cmd, "'", "''", 'g') . ''')'
   let zip = fnamemodify(zipfile, ':p')
   let ps_cmd = s:ZipUpdatePS(zip, fname)
   let ps_cmd = 'call system(''' . substitute(ps_cmd, "'", "''", 'g') . ''')'
-  call s:TryExecGnuFallBackToPs(g:zip_update[0], gnu_cmd, ps_cmd)
+  call s:TryExecGnuFallBackToPs(g:zip_zipcmd, gnu_cmd, ps_cmd)
   if s:isPS()
     " Vim flashes 'creation in progress ...' from what I believe is the
     " ProgressAction stream of PowerShell. Unfortunately, this cannot be
@@ -594,13 +579,13 @@ fun! zip#Extract()
   endif
 
   " extract the file mentioned under the cursor
-  let gnu_cmd = join(g:zip_extract) . ' '. shellescape(b:zipfile) . ' ' . target
+  let gnu_cmd = g:zip_extractcmd . ' -o '. shellescape(b:zipfile) . ' ' . target
   let gnu_cmd = 'call system(' . string(gnu_cmd) . ')'
   let ps_cmd = 'call system(' . string(s:ZipExtractFilePS(b:zipfile, fname)) . ')'
-  call s:TryExecGnuFallBackToPs(g:zip_extract[0], gnu_cmd, ps_cmd)
+  call s:TryExecGnuFallBackToPs(g:zip_extractcmd, gnu_cmd, ps_cmd)
 
   if v:shell_error != 0
-    call s:Mess('Error', "***error*** ".join(g:zip_extract)." ".b:zipfile." ".fname.": failed!")
+    call s:Mess('Error', "***error*** ".g:zip_extractcmd." ".b:zipfile." ".fname.": failed!")
   elseif !filereadable(fname) && !s:isPS()
     call s:Mess('Error', "***error*** attempted to extract ".fname." but it doesn't appear to be present!")
   else
