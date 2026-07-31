@@ -1660,6 +1660,13 @@ win_update(win_T *wp)
     }
 #endif
 
+#ifdef FEAT_SYN_HL
+    // 'cursorcolumn' is drawn with w_virtcol, make sure it is up to date.
+    // This may set w_redr_type, thus do it before using it below.
+    if (wp->w_p_cuc)
+	validate_virtcol_win(wp);
+#endif
+
     type = wp->w_redr_type;
 
     if (type == UPD_NOT_VALID)

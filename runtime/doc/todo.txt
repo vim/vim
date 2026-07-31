@@ -57,9 +57,6 @@ Virtual text problems:
    #12232)
 -  truncated Virtual text below an empty line causes display error #12493
 
-When 'virtualedit' is "all" and 'cursorcolumn' is set, the wrong column may be
-highlighted. (van-de-bugger, 2018 Jan 23, #2576)
-
 Errors when running tests with valgrind:
 - test_codestyle.vim:  e.g.:
     command line..script /home/mool/vim/vim91/src/testdir/runtest.vim[569]..function RunTheTest[52]..Test_test_files line 6: keycode_check.vim: space before tab: Expected 0 but got 7
