@@ -116,10 +116,12 @@ get_mess_lang(void)
     p = get_locale_val(LC_MESSAGES);
 #  else
     // This is necessary for Win32, where LC_MESSAGES is not defined and $LANG
-    // may be set to the LCID number.  LC_COLLATE is the best guess, LC_TIME
-    // and LC_MONETARY may be set differently for a Japanese working in the
-    // US.
-    p = get_locale_val(LC_COLLATE);
+    // may be set to the LCID number.  $LANG holds the display language, see
+    // set_init_lang_env().  Otherwise LC_COLLATE is the best guess, LC_TIME
+    // and LC_MONETARY may be set differently for a Japanese working in the US.
+    p = mch_getenv((char_u *)"LANG");
+    if (!is_valid_mess_lang(p))
+	p = get_locale_val(LC_COLLATE);
 #  endif
 # else
     p = mch_getenv((char_u *)"LC_ALL");
@@ -348,6 +350,10 @@ ex_language(exarg_T *eap)
 	    extern int _nl_msg_cat_cntr;
 
 	    ++_nl_msg_cat_cntr;
+# elif defined(DYNAMIC_GETTEXT)
+	    // Same thing when gettext is loaded at runtime.
+	    if (dyn_libintl_nl_msg_cat_cntr != NULL)
+		++*dyn_libintl_nl_msg_cat_cntr;
 # endif
 	    // Reset $LC_ALL, otherwise it would overrule everything.
 	    vim_setenv((char_u *)"LC_ALL", (char_u *)"");
@@ -361,9 +367,6 @@ ex_language(exarg_T *eap)
 		if (what == LC_ALL)
 		{
 		    vim_setenv((char_u *)"LANG", name);
-
-		    // Clear $LANGUAGE because GNU gettext uses it.
-		    vim_setenv((char_u *)"LANGUAGE", (char_u *)"");
 # ifdef MSWIN
 		    // Apparently MS-Windows printf() may cause a crash when
 		    // we give it 8-bit text while it's expecting text in the
@@ -379,6 +382,8 @@ ex_language(exarg_T *eap)
 # else
 		    mname = name;
 # endif
+		    // Clear $LANGUAGE because GNU gettext uses it.
+		    vim_setenv((char_u *)"LANGUAGE", (char_u *)"");
 		    vim_setenv((char_u *)"LC_MESSAGES", mname);
 # ifdef FEAT_MULTI_LANG
 		    set_helplang_default(mname);

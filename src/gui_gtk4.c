@@ -30,9 +30,7 @@
 #include <gtk/gtk.h>
 #include "gui_gtk4_f.h"
 #include "gui_gtk4_cb.h"
-#ifdef USE_GTK4_SNAPSHOT
-# include "gui_gtk4_da.h"
-#endif
+#include "gui_gtk4_da.h"
 #ifdef FEAT_TOOLBAR
 # include "gui_gtk4_tb.h"
 #endif
@@ -45,16 +43,11 @@
  * Format: [WIDTHxHEIGHT][{+-}XOFF{+-}YOFF]
  */
 #define NoValue		0x0000
-#define XValue		0x0001
-#define YValue		0x0002
 #define WidthValue	0x0004
 #define HeightValue	0x0008
-#define XNegative	0x0010
-#define YNegative	0x0020
 
     static int
-vim_parse_geometry(const char *str, int *x, int *y,
-	unsigned int *width, unsigned int *height)
+vim_parse_geometry(const char *str, unsigned int *width, unsigned int *height)
 {
     int mask = NoValue;
     char *end;
@@ -85,37 +78,6 @@ vim_parse_geometry(const char *str, int *x, int *y,
 	    *height = (unsigned int)val;
 	    mask |= HeightValue;
 	    str = end;
-	}
-    }
-
-    // Parse x offset
-    if (*str == '+' || *str == '-')
-    {
-	int negative = (*str == '-');
-	str++;
-	val = strtol(str, &end, 10);
-	if (end != str)
-	{
-	    *x = negative ? -(int)val : (int)val;
-	    mask |= XValue;
-	    if (negative)
-		mask |= XNegative;
-	    str = end;
-	}
-    }
-
-    // Parse y offset
-    if (*str == '+' || *str == '-')
-    {
-	int negative = (*str == '-');
-	str++;
-	val = strtol(str, &end, 10);
-	if (end != str)
-	{
-	    *y = negative ? -(int)val : (int)val;
-	    mask |= YValue;
-	    if (negative)
-		mask |= YNegative;
 	}
     }
 
@@ -271,9 +233,6 @@ modifiers_gdk2vim(guint state)
 static GtkWidget *vbox;		// the main vertical box
 
 // Forward declarations for event callbacks
-#ifndef USE_GTK4_SNAPSHOT
-static void draw_event(GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer data);
-#endif
 static gboolean key_press_event(GtkEventControllerKey *controller, guint keyval, guint keycode, GdkModifierType state, gpointer data);
 static void key_release_event(GtkEventControllerKey *controller, guint keyval, guint keycode, GdkModifierType state, gpointer data);
 static void button_press_event(GtkGestureClick *gesture, int n_press, double x, double y, gpointer data);
@@ -299,14 +258,33 @@ static int query_pointer_pos(int *x, int *y, GdkModifierType *state);
 static void mainwin_fullscreened_cb(GObject *obj, GParamSpec *pspec, gpointer user_data);
 static void drawarea_realize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_unrealize_cb(GtkWidget *widget, gpointer data);
-#ifndef USE_GTK4_SNAPSHOT
-static void drawarea_scale_factor_cb(GObject *object, GParamSpec *pspec, gpointer data);
-static cairo_surface_t *create_backing_surface(int width, int height);
-#endif
+static void scale_factor_cb(GdkSurface *surface, GParamSpec *pspec, void *udata);
 static void clipboard_changed_cb(GdkClipboard *clipboard, gpointer user_data);
 #ifdef FEAT_MENU
 static void show_menubar_popover(void);
 #endif
+
+static const char *prgname = NULL;
+
+/*
+ * Check if "s" is the option "name" (which includes the leading dash(es)).
+ * "value" is set to the value if the option uses 'opt=val' format.
+ */
+    static gboolean
+arg_match(const char *s, const char *name, char **value)
+{
+    size_t  len = strlen(name);
+
+    if (strncmp(s, name, len) != 0)
+	return FALSE;
+    if (s[len] == '=')
+	*value = (char *)s + len + 1;
+    else if (s[len] != NUL)
+	// Something follows the option name that isn't "=": this is a
+	// different, longer option (e.g. "-fnord" while matching "-fn").
+	return FALSE;
+    return TRUE;
+}
 
 /*
  * Parse the GUI related command-line arguments.  Any arguments used are
@@ -320,6 +298,88 @@ gui_mch_prepare(int *argc, char **argv)
     // gui_mch_init_check() after the fork.  Calling it before fork
     // breaks the display connection in the child process, causing gvim
     // to fail to start without --nofork.
+
+    int	i = 0;
+
+    while (i < *argc)
+    {
+	char	*s = argv[i];
+	char	*value = NULL;
+	int	has_inline_value = FALSE;
+	int	n_strip;
+
+	if (s[0] != '-' && s[0] != '+')
+	{
+	    ++i;
+	    continue;
+	}
+
+	if (strchr(s, '=') != NULL)
+	    has_inline_value = TRUE;
+
+	// If the value was not given inline (no "="), it would come from the
+	// next argv element.  Do not treat that next element as this option's
+	// value if it is "--" (end-of-options marker) or is another option.
+	if (!has_inline_value)
+	{
+	    if (i + 1 < *argc
+		    && strcmp(argv[i + 1], "--") != 0
+		    && !((argv[i + 1][0] == '-' || argv[i + 1][0] == '+')
+			&& !vim_isdigit(argv[i + 1][1])))
+		value = argv[i + 1];
+	    else
+		value = NULL;
+	}
+
+	if (arg_match(s, "-fn", &value) || arg_match(s, "-font", &value))
+	    font_argument = value;
+	else if (arg_match(s, "-geom", &value)
+		|| arg_match(s, "-geometry", &value))
+	{
+	    if (value != NULL)
+		gui.geom = vim_strsave((char_u *)value);
+	}
+	else if (arg_match(s, "-bg", &value)
+		|| arg_match(s, "-background", &value))
+	    background_argument = value;
+	else if (arg_match(s, "-fg", &value)
+		|| arg_match(s, "-foreground", &value))
+	    foreground_argument = value;
+#ifdef FEAT_NETBEANS_INTG
+	else if (strncmp(s, "-nb", 3) == 0)
+	{
+	    gui.dofork = false; // don't fork() when starting GUI
+	    netbeansArg = argv[i];
+	    has_inline_value = TRUE; // -nb uses non standard syntax, just
+				     // remove the flag.
+	}
+#endif
+	else if (arg_match(s, "--prg-name", &value))
+	    // GTK4 specific
+	    prgname = value;
+	else
+	{
+	    i++;
+	    continue;
+	}
+
+	// Remove the flag from the argument vector.
+	n_strip = 1;
+	// Move the argument's value as well, but only if it was consumed
+	// from a separate argv element (the "-opt=value" form lives inside
+	// the flag's own element and is stripped along with it already).
+	if (value != NULL && !has_inline_value)
+	    n_strip = 2;
+
+	if (*argc - n_strip >= i)
+	{
+	    *argc -= n_strip;
+	    if (*argc > i)
+		mch_memmove(&argv[i], &argv[i + n_strip],
+			(*argc - i) * sizeof(char *));
+	    argv[*argc] = NULL;
+	}
+    }
 }
 
 /*
@@ -425,8 +485,9 @@ gui_mch_init_check(void)
 {
     // This defaults to argv[0], but we want it to match the name of the
     // shipped gvim.desktop so that Vim's windows can be associated with this
-    // file.  Also sets WM_CLASS on X11.
-    g_set_prgname("gvim");
+    // file.  Also sets WM_CLASS on X11. If "--prg-name" is specified, then use
+    // that.
+    g_set_prgname(prgname == NULL ? "gvim" : prgname);
 
     // Suppress noisy EGL warnings when GL is not available.  Only set
     // this when actually starting the GUI, so non-GUI invocations are
@@ -554,25 +615,12 @@ gui_mch_init(void)
     gtk_box_append(GTK_BOX(vbox), gui.formwin);
 
     // The drawing area for the editor content.
-#ifdef USE_GTK4_SNAPSHOT
     gui.drawarea = vim_draw_area_new();
-#else
-    gui.drawarea = gtk_drawing_area_new();
-    gui.surface = NULL;
-#endif
     gtk_widget_set_focusable(gui.drawarea, TRUE);
     gtk_widget_set_vexpand(gui.drawarea, TRUE);
     gtk_widget_set_hexpand(gui.drawarea, TRUE);
     vim_form_put(VIM_FORM(gui.formwin), gui.drawarea, 0, 0);
 
-#ifndef USE_GTK4_SNAPSHOT
-    // Set up drawing.
-    gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(gui.drawarea),
-	    (GtkDrawingAreaDrawFunc)draw_event, NULL, NULL);
-
-    g_signal_connect(G_OBJECT(gui.drawarea), "notify::scale-factor",
-		     G_CALLBACK(drawarea_scale_factor_cb), NULL);
-#endif
     g_signal_connect(G_OBJECT(gui.drawarea), "realize",
 		     G_CALLBACK(drawarea_realize_cb), NULL);
     g_signal_connect(G_OBJECT(gui.drawarea), "unrealize",
@@ -667,31 +715,9 @@ gui_mch_init(void)
     return OK;
 }
 
-#ifndef USE_GTK4_SNAPSHOT
-/*
- * Called when the foreground or background color has been changed.
- */
-    static void
-surface_fill_bg(void)
-{
-    if (gui.surface != NULL)
-    {
-	cairo_t *cr = cairo_create(gui.surface);
-	cairo_set_source_rgba(cr,
-		gui.bgcolor->red, gui.bgcolor->green,
-		gui.bgcolor->blue, gui.bgcolor->alpha);
-	cairo_paint(cr);
-	cairo_destroy(cr);
-    }
-}
-#endif
-
     void
 gui_mch_new_colors(void)
 {
-#ifndef USE_GTK4_SNAPSHOT
-    surface_fill_bg();
-#endif
     if (gui.drawarea != NULL && gtk_widget_get_realized(gui.drawarea))
 	gtk_widget_queue_draw(gui.drawarea);
 }
@@ -711,10 +737,8 @@ gui_mch_open(void)
     {
 	int		mask;
 	unsigned int	w, h;
-	int		x = 0;
-	int		y = 0;
 
-	mask = vim_parse_geometry((char *)gui.geom, &x, &y, &w, &h);
+	mask = vim_parse_geometry((char *)gui.geom, &w, &h);
 
 	if (mask & WidthValue)
 	    Columns = w;
@@ -728,12 +752,15 @@ gui_mch_open(void)
 
 	VIM_CLEAR(gui.geom);
     }
+    else
+    {
+	// Use 80x24 as the default GUI size, unless geometry was specified.
+	if (Columns > 80)
+	    Columns = 80;
+	if (Rows > 24)
+	    Rows = 24;
+    }
 
-    // Use 80x24 as the default GUI size, unless geometry was specified.
-    if (Columns > 80 && gui.geom == NULL)
-	Columns = 80;
-    if (Rows > 24 && gui.geom == NULL)
-	Rows = 24;
     pixel_width = (guint)(gui_get_base_width() + Columns * gui.char_width);
     pixel_height = (guint)(gui_get_base_height() + Rows * gui.char_height);
     gtk_window_set_default_size(GTK_WINDOW(gui.mainwin),
@@ -768,6 +795,7 @@ gui_mch_open(void)
 		     G_CALLBACK(mainwin_destroy_cb), NULL);
     // Resize is handled by GtkForm's size_allocate callback.
 
+    // Not sure if this needed but still do it I guess?
     gtk_widget_set_visible(gui.mainwin, TRUE);
 
     // Make sure the drawing area gets keyboard focus.
@@ -1430,7 +1458,6 @@ gui_mch_get_rgb(guicolor_T pixel)
  * ============================================================
  */
 
-#ifdef USE_GTK4_SNAPSHOT
     void
 gui_gtk4_update_size(void)
 {
@@ -1438,7 +1465,7 @@ gui_gtk4_update_size(void)
 	    gui.num_rows, gui.num_cols);
 }
 
-# ifdef FEAT_NETBEANS_INTG
+#ifdef FEAT_NETBEANS_INTG
     void
 gui_gtk4_add_multisign(
 	cairo_surface_t *surf,
@@ -1450,90 +1477,13 @@ gui_gtk4_add_multisign(
     vim_draw_area_add_multisign(VIM_DRAW_AREA(gui.drawarea), surf, row, col,
 	    width, height);
 }
-# endif
-#else // USE_GTK4_SNAPSHOT
-static void set_cairo_source_from_pixel(cairo_t *cr, guicolor_T pixel);
-
-    static void
-draw_event(GtkDrawingArea *area UNUSED, cairo_t *cr,
-	int width, int height, gpointer data UNUSED)
-{
-    // Surface creation/resizing is handled by drawarea_resize_cb.
-    // Here we only paint the surface to the widget.
-
-    // Fill background with Vim's background color
-    set_cairo_source_from_pixel(cr, gui.back_pixel);
-    cairo_rectangle(cr, 0, 0, width, height);
-    cairo_fill(cr);
-
-    // Paint the Vim surface on top
-    if (gui.surface != NULL)
-    {
-	cairo_set_source_surface(cr, gui.surface, 0, 0);
-	cairo_paint(cr);
-    }
-}
-
-    static void
-set_cairo_source_from_pixel(cairo_t *cr, guicolor_T pixel)
-{
-    cairo_set_source_rgb(cr,
-	    ((pixel & 0xff0000) >> 16) / 255.0,
-	    ((pixel & 0xff00) >> 8) / 255.0,
-	    (pixel & 0xff) / 255.0);
-}
-
-    static int
-get_drawarea_scale(void)
-{
-    int scale = 1;
-
-    if (gui.drawarea != NULL)
-	scale = gtk_widget_get_scale_factor(gui.drawarea);
-    if (scale < 1)
-	scale = 1;
-    return scale;
-}
-
-    static cairo_surface_t *
-create_backing_surface(int width, int height)
-{
-    cairo_surface_t *surf;
-    int		    scale;
-
-    if (width <= 0 || height <= 0)
-	return NULL;
-
-    scale = get_drawarea_scale();
-    surf = cairo_image_surface_create(
-	    CAIRO_FORMAT_ARGB32, width * scale, height * scale);
-    cairo_surface_set_device_scale(surf, (double)scale, (double)scale);
-    return surf;
-}
-#endif // !USE_GTK4_SNAPSHOT
+#endif
 
     void
 gui_mch_clear_block(int row1, int col1, int row2, int col2)
 {
-#ifdef USE_GTK4_SNAPSHOT
     vim_draw_area_clear_block(VIM_DRAW_AREA(gui.drawarea), row1,
 	    col1, row2, col2);
-#else
-    cairo_t *cr;
-
-    if (gui.surface == NULL)
-	return;
-
-    cr = cairo_create(gui.surface);
-    set_cairo_source_from_pixel(cr, gui.back_pixel);
-    cairo_rectangle(cr,
-	    FILL_X(col1), FILL_Y(row1),
-	    (col2 - col1 + 1) * gui.char_width,
-	    (row2 - row1 + 1) * gui.char_height);
-    cairo_fill(cr);
-    cairo_destroy(cr);
-#endif
-
     if (gui.drawarea != NULL)
 	gtk_widget_queue_draw(gui.drawarea);
 }
@@ -1541,20 +1491,7 @@ gui_mch_clear_block(int row1, int col1, int row2, int col2)
     void
 gui_mch_clear_all(void)
 {
-#ifdef USE_GTK4_SNAPSHOT
     vim_draw_area_clear(VIM_DRAW_AREA(gui.drawarea));
-#else
-    cairo_t *cr;
-
-    if (gui.surface == NULL)
-	return;
-
-    cr = cairo_create(gui.surface);
-    set_cairo_source_from_pixel(cr, gui.back_pixel);
-    cairo_paint(cr);
-    cairo_destroy(cr);
-#endif
-
     if (gui.drawarea != NULL)
 	gtk_widget_queue_draw(gui.drawarea);
 }
@@ -1690,52 +1627,12 @@ gui_mch_draw_popup_image(
 }
 #endif // FEAT_IMAGE_CAIRO
 
-#ifndef USE_GTK4_SNAPSHOT
-    static void
-surface_copy_rect(int dest_x, int dest_y,
-	int src_x, int src_y,
-	int width, int height)
-{
-    cairo_t *cr;
-    cairo_surface_t *tmp;
-
-    if (gui.surface == NULL || width <= 0 || height <= 0)
-	return;
-
-    // Use a temporary surface to avoid overlap issues
-    tmp = create_backing_surface(width, height);
-    if (tmp == NULL)
-	return;
-    cr = cairo_create(tmp);
-    cairo_set_source_surface(cr, gui.surface, -src_x, -src_y);
-    cairo_paint(cr);
-    cairo_destroy(cr);
-
-    cr = cairo_create(gui.surface);
-    cairo_set_source_surface(cr, tmp, dest_x, dest_y);
-    cairo_paint(cr);
-    cairo_destroy(cr);
-    cairo_surface_destroy(tmp);
-}
-#endif
-
     void
 gui_mch_delete_lines(int row, int num_lines)
 {
-#ifdef USE_GTK4_SNAPSHOT
     vim_draw_area_move_block(VIM_DRAW_AREA(gui.drawarea),
 	    row, row + num_lines, gui.scroll_region_bot,
 	    gui.scroll_region_left, gui.scroll_region_right);
-#else
-    int ncols = gui.scroll_region_right - gui.scroll_region_left + 1;
-    int nrows = gui.scroll_region_bot - row + 1;
-    int src_nrows = nrows - num_lines;
-
-    surface_copy_rect(
-	    FILL_X(gui.scroll_region_left), FILL_Y(row),
-	    FILL_X(gui.scroll_region_left), FILL_Y(row + num_lines),
-	    gui.char_width * ncols + 1, gui.char_height * src_nrows);
-#endif
     gui_clear_block(
 	    gui.scroll_region_bot - num_lines + 1, gui.scroll_region_left,
 	    gui.scroll_region_bot, gui.scroll_region_right);
@@ -1746,20 +1643,9 @@ gui_mch_delete_lines(int row, int num_lines)
     void
 gui_mch_insert_lines(int row, int num_lines)
 {
-#ifdef USE_GTK4_SNAPSHOT
     vim_draw_area_move_block(VIM_DRAW_AREA(gui.drawarea),
 	    row + num_lines, row, gui.scroll_region_bot - num_lines,
 	    gui.scroll_region_left, gui.scroll_region_right);
-#else
-    int ncols = gui.scroll_region_right - gui.scroll_region_left + 1;
-    int nrows = gui.scroll_region_bot - row + 1;
-    int src_nrows = nrows - num_lines;
-
-    surface_copy_rect(
-	    FILL_X(gui.scroll_region_left), FILL_Y(row + num_lines),
-	    FILL_X(gui.scroll_region_left), FILL_Y(row),
-	    gui.char_width * ncols + 1, gui.char_height * src_nrows);
-#endif
     gui_clear_block(
 	    row, gui.scroll_region_left,
 	    row + num_lines - 1, gui.scroll_region_right);
@@ -1767,7 +1653,6 @@ gui_mch_insert_lines(int row, int num_lines)
     gtk_widget_queue_draw(gui.drawarea);
 }
 
-#if defined(USE_GTK4_SNAPSHOT) || defined(PROTO)
 /*
  * See vim_draw_area_set_cursor() for more information
  */
@@ -1779,70 +1664,11 @@ gui_gtk4_draw_cursor(guicolor_T bg, guicolor_T fg, int w, int h)
     vim_draw_area_set_cursor(VIM_DRAW_AREA(gui.drawarea), w, h);
     gtk_widget_queue_draw(gui.drawarea);
 }
-#endif
-
-#if !defined(USE_GTK4_SNAPSHOT) || defined(PROTO)
-    void
-gui_mch_draw_hollow_cursor(guicolor_T color)
-{
-    cairo_t *cr;
-    int i = 1;
-
-    if (gui.surface == NULL)
-	return;
-
-    cr = cairo_create(gui.surface);
-    gui_mch_set_fg_color(color);
-    cairo_set_source_rgba(cr,
-	    gui.fgcolor->red, gui.fgcolor->green,
-	    gui.fgcolor->blue, gui.fgcolor->alpha);
-    if (mb_lefthalve(gui.row, gui.col))
-	i = 2;
-    cairo_set_line_width(cr, 1.0);
-    cairo_rectangle(cr,
-	    FILL_X(gui.col) + 0.5, FILL_Y(gui.row) + 0.5,
-	    i * gui.char_width - 1, gui.char_height - 1);
-    cairo_stroke(cr);
-    cairo_destroy(cr);
-
-    gtk_widget_queue_draw(gui.drawarea);
-}
-
-    void
-gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
-{
-    cairo_t *cr;
-
-    if (gui.surface == NULL)
-	return;
-
-    gui_mch_set_fg_color(color);
-    cr = cairo_create(gui.surface);
-    cairo_set_source_rgba(cr,
-	    gui.fgcolor->red, gui.fgcolor->green,
-	    gui.fgcolor->blue, gui.fgcolor->alpha);
-    cairo_rectangle(cr,
-# ifdef FEAT_RIGHTLEFT
-	    CURSOR_BAR_RIGHT ? FILL_X(gui.col + 1) - w :
-# endif
-	    FILL_X(gui.col), FILL_Y(gui.row) + gui.char_height - h,
-	    w, h);
-    cairo_fill(cr);
-    cairo_destroy(cr);
-
-    gtk_widget_queue_draw(gui.drawarea);
-}
-#endif
 
     void
 gui_mch_flash(int msec)
 {
     // Invert the screen, wait, then invert back
-#ifndef USE_GTK4_SNAPSHOT
-    if (gui.surface == NULL)
-	return;
-#endif
-
     gui_mch_invert_rectangle(0, 0, (int)Rows - 1, (int)Columns - 1);
     gui_mch_flush();
     ui_delay((long)msec, TRUE);
@@ -1852,24 +1678,7 @@ gui_mch_flash(int msec)
     void
 gui_mch_invert_rectangle(int r, int c, int nr, int nc)
 {
-#ifdef USE_GTK4_SNAPSHOT
     vim_draw_area_invert_block(VIM_DRAW_AREA(gui.drawarea), r, c, nr, nc);
-#else
-    cairo_t *cr;
-
-    if (gui.surface == NULL)
-	return;
-
-    cr = cairo_create(gui.surface);
-    cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
-    cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
-    cairo_rectangle(cr,
-	    FILL_X(c), FILL_Y(r),
-	    (nc + 1) * gui.char_width, (nr + 1) * gui.char_height);
-    cairo_fill(cr);
-    cairo_destroy(cr);
-#endif
-
     gtk_widget_queue_draw(gui.drawarea);
 }
 
@@ -2321,28 +2130,15 @@ focus_out_event(GtkEventControllerFocus *controller UNUSED,
     static void
 drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 {
-#ifndef USE_GTK4_SNAPSHOT
-    int w, h;
+    // Use GdkSurface, as that handles fractional scale values.
+    GdkSurface *surface = gtk_native_get_surface(
+	    gtk_widget_get_native(gui.drawarea));
+    double old = gui.scale;
 
-    // Use formwin size since drawarea may not have its final size yet
-    if (gui.formwin != NULL)
-    {
-	w = gtk_widget_get_width(gui.formwin);
-	h = gtk_widget_get_height(gui.formwin);
-    }
-    else
-    {
-	w = gtk_widget_get_width(widget);
-	h = gtk_widget_get_height(widget);
-    }
-
-    if (w <= 0) w = 800;
-    if (h <= 0) h = 600;
-
-    if (gui.surface != NULL)
-	cairo_surface_destroy(gui.surface);
-    gui.surface = create_backing_surface(w, h);
-#endif
+    gui.scale = gdk_surface_get_scale(surface);
+    popup_update_scale(old);
+    g_signal_connect(G_OBJECT(surface), "notify::scale",
+	    G_CALLBACK(scale_factor_cb), NULL);
 
     gui_mch_new_colors();
 }
@@ -2353,92 +2149,20 @@ drawarea_unrealize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 #ifdef FEAT_XIM
     im_shutdown();
 #endif
-#ifndef USE_GTK4_SNAPSHOT
-    if (gui.surface != NULL)
-    {
-	cairo_surface_destroy(gui.surface);
-	gui.surface = NULL;
-    }
-#endif
-}
-
-#ifndef USE_GTK4_SNAPSHOT
-    void
-gui_gtk4_resize(int width, int height)
-{
-    cairo_t *cr;
-    cairo_surface_t *old_surface;
-    int scale = get_drawarea_scale();
-
-    if (width <= 0 || height <= 0)
-	return;
-
-    // Keep the backing surface in sync with the drawing area so GTK keeps
-    // showing the previous frame. Re-creating it preserves the old
-    // contents.
-    if (gui.surface != NULL)
-    {
-	int sw = cairo_image_surface_get_width(gui.surface) / scale;
-	int sh = cairo_image_surface_get_height(gui.surface) / scale;
-	if (sw != width || sh != height)
-	{
-	    old_surface = gui.surface;
-	    gui.surface = create_backing_surface(width, height);
-	    if (gui.surface != NULL)
-	    {
-		cr = cairo_create(gui.surface);
-		set_cairo_source_from_pixel(cr, gui.back_pixel);
-		cairo_paint(cr);
-		cairo_set_source_surface(cr, old_surface, 0, 0);
-		cairo_paint(cr);
-		cairo_destroy(cr);
-	    }
-	    cairo_surface_destroy(old_surface);
-	}
-    }
-    else
-    {
-	gui.surface = create_backing_surface(width, height);
-	if (gui.surface != NULL)
-	{
-	    cr = cairo_create(gui.surface);
-	    set_cairo_source_from_pixel(cr, gui.back_pixel);
-	    cairo_paint(cr);
-	    cairo_destroy(cr);
-	}
-    }
 }
 
     static void
-drawarea_scale_factor_cb(GObject *object UNUSED,
-	GParamSpec *pspec UNUSED, gpointer data UNUSED)
+scale_factor_cb(GdkSurface  *surface,
+	GParamSpec	    *pspec UNUSED,
+	void		    *udata UNUSED)
 {
-    int	w, h;
+#if defined(FEAT_IMAGE)
+    double old = gui.scale;
 
-    if (gui.drawarea == NULL)
-	return;
-
-    w = gtk_widget_get_width(gui.drawarea);
-    h = gtk_widget_get_height(gui.drawarea);
-    if (w <= 0 || h <= 0)
-	return;
-
-    if (gui.surface != NULL)
-	cairo_surface_destroy(gui.surface);
-    gui.surface = create_backing_surface(w, h);
-
-    if (gui.surface != NULL)
-    {
-	cairo_t *cr = cairo_create(gui.surface);
-	set_cairo_source_from_pixel(cr, gui.back_pixel);
-	cairo_paint(cr);
-	cairo_destroy(cr);
-    }
-    gtk_widget_queue_draw(gui.drawarea);
-    if (gui.in_use)
-	redraw_all_later(UPD_CLEAR);
-}
+    gui.scale = gdk_surface_get_scale(surface);
+    popup_update_scale(old);
 #endif
+}
 
 typedef enum
 {
@@ -3438,7 +3162,6 @@ tabline_menu_press_event(
     void
 gui_mch_drawsign(int row, int col, int typenr)
 {
-# ifdef USE_GTK4_SNAPSHOT
     GdkTexture *sign;
 
     sign = (GdkTexture *)sign_get_image(typenr);
@@ -3447,42 +3170,6 @@ gui_mch_drawsign(int row, int col, int typenr)
 
     vim_draw_area_add_sign(VIM_DRAW_AREA(gui.drawarea), sign,
 	    row, col, SIGN_WIDTH, SIGN_HEIGHT);
-# else
-    GdkPixbuf	*sign;
-    cairo_t	*cr;
-    int		width, height;
-
-    sign = (GdkPixbuf *)sign_get_image(typenr);
-    if (sign == NULL || gui.surface == NULL)
-	return;
-
-    cr = cairo_create(gui.surface);
-
-    width = gdk_pixbuf_get_width(sign);
-    height = gdk_pixbuf_get_height(sign);
-
-    // Scale to fit the sign area if needed
-    if (width != SIGN_WIDTH || height != SIGN_HEIGHT)
-    {
-	GdkPixbuf *scaled = gdk_pixbuf_scale_simple(sign,
-		SIGN_WIDTH, SIGN_HEIGHT, GDK_INTERP_BILINEAR);
-	if (scaled != NULL)
-	{
-	    gdk_cairo_set_source_pixbuf(cr, scaled,
-		    FILL_X(col), FILL_Y(row));
-	    g_object_unref(scaled);
-	}
-	else
-	    gdk_cairo_set_source_pixbuf(cr, sign,
-		    FILL_X(col), FILL_Y(row));
-    }
-    else
-	gdk_cairo_set_source_pixbuf(cr, sign,
-		FILL_X(col), FILL_Y(row));
-
-    cairo_paint(cr);
-    cairo_destroy(cr);
-# endif
 
     gtk_widget_queue_draw(gui.drawarea);
 }
@@ -3492,21 +3179,13 @@ gui_mch_register_sign(char_u *signfile)
 {
     if (signfile[0] != NUL && signfile[0] != '-' && gui.in_use)
     {
-	GError *error = NULL;
-# ifdef USE_GTK4_SNAPSHOT
+	GError	    *error = NULL;
 	GdkTexture  *sign;
 
 	sign = gdk_texture_new_from_filename((const char *)signfile,
 							    &error);
 	if (sign != NULL)
 	    return sign;
-# else
-	GdkPixbuf *sign;
-
-	sign = gdk_pixbuf_new_from_file((const char *)signfile, &error);
-	if (error == NULL)
-	    return sign;
-# endif
 
 	semsg("E255: %s", error->message);
 	g_error_free(error);
@@ -3528,417 +3207,6 @@ gui_mch_destroy_sign(void *sign)
  * ============================================================
  */
 
-#ifndef USE_GTK4_SNAPSHOT
-/*
- * Ligature and text drawing support.
- * Ported from gui_gtk_x11.c (GTK3) to support 'guiligatures' in GTK4.
- */
-
-# define INSERT_PANGO_ATTR(Attribute, AttrList, Start, End)  \
-    G_STMT_START{					    \
-	PangoAttribute *tmp_attr_;			    \
-	tmp_attr_ = (Attribute);			    \
-	tmp_attr_->start_index = (Start);		    \
-	tmp_attr_->end_index = (End);			    \
-	pango_attr_list_insert((AttrList), tmp_attr_);	    \
-    }G_STMT_END
-
-/*
- * Apply the 'guifontwide' font to double-width characters in the string.
- */
-    static void
-apply_wide_font_attr(char_u *s, int len, PangoAttrList *attr_list)
-{
-    char_u  *start = NULL;
-    char_u  *p;
-    int	    uc;
-
-    for (p = s; p < s + len; p += utf_byte2len(*p))
-    {
-	uc = utf_ptr2char(p);
-
-	if (start == NULL)
-	{
-	    if (uc >= 0x80 && utf_char2cells(uc) == 2)
-		start = p;
-	}
-	else if (uc < 0x80
-		 || (utf_char2cells(uc) != 2 && !utf_iscomposing(uc)))
-	{
-	    INSERT_PANGO_ATTR(pango_attr_font_desc_new(gui.wide_font),
-			      attr_list, start - s, p - s);
-	    start = NULL;
-	}
-    }
-
-    if (start != NULL)
-	INSERT_PANGO_ATTR(pango_attr_font_desc_new(gui.wide_font),
-			  attr_list, start - s, len);
-}
-
-/*
- * Count the number of display cells occupied by a glyph cluster.
- */
-    static int
-count_cluster_cells(char_u *s, PangoItem *item,
-		    PangoGlyphString *glyphs, int i,
-		    int *cluster_width,
-		    int *last_glyph_rbearing)
-{
-    char_u  *p;
-    int	    next;
-    int	    start, end;
-    int	    width;
-    int	    uc;
-    int	    cellcount = 0;
-
-    width = glyphs->glyphs[i].geometry.width;
-
-    for (next = i + 1; next < glyphs->num_glyphs; ++next)
-    {
-	if (glyphs->glyphs[next].attr.is_cluster_start)
-	    break;
-	else if (glyphs->glyphs[next].geometry.width > width)
-	    width = glyphs->glyphs[next].geometry.width;
-    }
-
-    start = item->offset + glyphs->log_clusters[i];
-    end   = item->offset + ((next < glyphs->num_glyphs) ?
-			    glyphs->log_clusters[next] : item->length);
-
-    for (p = s + start; p < s + end; p += utf_byte2len(*p))
-    {
-	uc = utf_ptr2char(p);
-	if (uc < 0x80)
-	    ++cellcount;
-	else if (!utf_iscomposing(uc))
-	    cellcount += utf_char2cells(uc);
-    }
-
-    if (last_glyph_rbearing != NULL
-	    && cellcount > 0 && next == glyphs->num_glyphs)
-    {
-	PangoRectangle ink_rect;
-
-	pango_font_get_glyph_extents(item->analysis.font,
-				     glyphs->glyphs[i].glyph,
-				     &ink_rect, NULL);
-
-	if (PANGO_RBEARING(ink_rect) > 0)
-	    *last_glyph_rbearing = PANGO_RBEARING(ink_rect);
-    }
-
-    if (cellcount > 0)
-	*cluster_width = width;
-
-    return cellcount;
-}
-
-/*
- * Handle combining characters that form a zero-width cluster.
- */
-    static void
-setup_zero_width_cluster(PangoItem *item, PangoGlyphInfo *glyph,
-			 int last_cellcount, int last_cluster_width,
-			 int last_glyph_rbearing)
-{
-    PangoRectangle  ink_rect;
-    PangoRectangle  logical_rect;
-    int		    width;
-
-    width = last_cellcount * gui.char_width * PANGO_SCALE;
-    glyph->geometry.x_offset = -width + MAX(0, width - last_cluster_width) / 2;
-    glyph->geometry.width = 0;
-
-    pango_font_get_glyph_extents(item->analysis.font,
-				 glyph->glyph,
-				 &ink_rect, &logical_rect);
-    if (ink_rect.x < 0)
-    {
-	glyph->geometry.x_offset += last_glyph_rbearing;
-	glyph->geometry.y_offset  = logical_rect.height
-		- (gui.char_height - p_linespace) * PANGO_SCALE;
-    }
-    else
-	glyph->geometry.x_offset = -width + MAX(0, width - ink_rect.width) / 2;
-}
-
-/*
- * Draw a single glyph string segment: background, foreground, and fake bold.
- */
-    static void
-draw_glyph_string(int row, int col, int num_cells, int flags,
-		  PangoFont *font, PangoGlyphString *glyphs,
-		  cairo_t *cr)
-{
-    if (!(flags & DRAW_TRANSP))
-    {
-	cairo_set_source_rgba(cr,
-		gui.bgcolor->red, gui.bgcolor->green, gui.bgcolor->blue,
-		gui.bgcolor->alpha);
-	cairo_rectangle(cr,
-			FILL_X(col), FILL_Y(row),
-			num_cells * gui.char_width, gui.char_height);
-	cairo_fill(cr);
-    }
-
-    cairo_set_source_rgba(cr,
-	    gui.fgcolor->red, gui.fgcolor->green, gui.fgcolor->blue,
-	    gui.fgcolor->alpha);
-    cairo_move_to(cr, TEXT_X(col), TEXT_Y(row));
-    pango_cairo_show_glyph_string(cr, font, glyphs);
-
-    // Redraw with offset of 1 to emulate bold
-    if ((flags & DRAW_BOLD) && !gui.font_can_bold)
-    {
-	cairo_move_to(cr, TEXT_X(col) + 1, TEXT_Y(row));
-	pango_cairo_show_glyph_string(cr, font, glyphs);
-    }
-}
-
-/*
- * Draw underline, undercurl, and strikethrough decorations.
- */
-    static void
-draw_under(int flags, int row, int col, int cells, cairo_t *cr)
-{
-    // Draw underline
-    if (flags & DRAW_UNDERL)
-    {
-	int y = FILL_Y(row + 1) - 1;
-	cairo_set_source_rgba(cr,
-		gui.fgcolor->red, gui.fgcolor->green,
-		gui.fgcolor->blue, gui.fgcolor->alpha);
-	cairo_set_line_width(cr, 1.0);
-	cairo_move_to(cr, FILL_X(col), y + 0.5);
-	cairo_line_to(cr, FILL_X(col + cells), y + 0.5);
-	cairo_stroke(cr);
-    }
-
-    // Draw undercurl
-    if (flags & DRAW_UNDERC)
-    {
-	static const int val[8] = {1, 0, 0, 0, 1, 2, 2, 2};
-	int y = FILL_Y(row + 1) - 1;
-	int i, offset;
-
-	cairo_set_line_width(cr, 1.0);
-	cairo_set_source_rgba(cr,
-		gui.spcolor->red, gui.spcolor->green,
-		gui.spcolor->blue, gui.spcolor->alpha);
-	cairo_move_to(cr, FILL_X(col) + 1, y - 2 + 0.5);
-	for (i = FILL_X(col) + 1; i < FILL_X(col + cells); ++i)
-	{
-	    offset = val[i % 8];
-	    cairo_line_to(cr, i, y - offset + 0.5);
-	}
-	cairo_stroke(cr);
-    }
-
-    // Draw strikethrough
-    if (flags & DRAW_STRIKE)
-    {
-	int y = FILL_Y(row) + gui.char_height / 2;
-	cairo_set_source_rgba(cr,
-		gui.fgcolor->red, gui.fgcolor->green,
-		gui.fgcolor->blue, gui.fgcolor->alpha);
-	cairo_set_line_width(cr, 1.0);
-	cairo_move_to(cr, FILL_X(col), y + 0.5);
-	cairo_line_to(cr, FILL_X(col + cells), y + 0.5);
-	cairo_stroke(cr);
-    }
-}
-
-/*
- * Draw a string of characters on the screen.
- * "force_pango" is set when ligature characters require Pango shaping
- * instead of the fast ASCII glyph cache path.
- * Returns the number of display cells used.
- */
-    int
-gui_gtk_draw_string_ext(
-	int	row,
-	int	col,
-	char_u	*s,
-	int	len,
-	int	flags,
-	int	force_pango)
-{
-    PangoGlyphString	*glyphs;
-    int			column_offset = 0;
-    int			i;
-    GdkRectangle	area;
-    cairo_t		*cr;
-
-    if (gui.text_context == NULL || gui.surface == NULL)
-	return len;
-
-    // Restrict all drawing to the current screen line.
-    area.x = gui.border_offset;
-    area.y = FILL_Y(row);
-    area.width	= gui.num_cols * gui.char_width;
-    area.height = gui.char_height;
-
-    cr = cairo_create(gui.surface);
-    cairo_rectangle(cr, area.x, area.y, area.width, area.height);
-    cairo_clip(cr);
-
-    glyphs = pango_glyph_string_new();
-
-    // Fast path for pure ASCII: use cached glyph table.
-    // Skip this path when force_pango is set (ligatures need shaping).
-    if (!(flags & DRAW_ITALIC)
-	    && !((flags & DRAW_BOLD) && gui.font_can_bold)
-	    && gui.ascii_glyphs != NULL
-	    && !force_pango)
-    {
-	char_u *p;
-
-	for (p = s; p < s + len; ++p)
-	    if (*p & 0x80)
-		goto not_ascii;
-
-	pango_glyph_string_set_size(glyphs, len);
-
-	for (i = 0; i < len; ++i)
-	{
-	    glyphs->glyphs[i] = gui.ascii_glyphs->glyphs[2 * s[i]];
-	    glyphs->log_clusters[i] = i;
-	}
-
-	draw_glyph_string(row, col, len, flags, gui.ascii_font, glyphs, cr);
-
-	column_offset = len;
-    }
-    else
-    {
-not_ascii:;
-	PangoAttrList	*attr_list;
-	GList		*item_list;
-	int		cluster_width;
-	int		last_glyph_rbearing;
-	int		cells = 0;
-
-	// Safety check: pango crashes with invalid utf-8.
-	if (!utf_valid_string(s, s + len))
-	{
-	    column_offset = len;
-	    goto skipitall;
-	}
-
-	cluster_width = PANGO_SCALE * gui.char_width;
-	last_glyph_rbearing = PANGO_SCALE * gui.char_width;
-
-	attr_list = pango_attr_list_new();
-
-	// If 'guifontwide' is set then use that for double-width characters.
-	if (gui.wide_font != NULL)
-	    apply_wide_font_attr(s, len, attr_list);
-
-	if ((flags & DRAW_BOLD) && gui.font_can_bold)
-	    INSERT_PANGO_ATTR(pango_attr_weight_new(PANGO_WEIGHT_BOLD),
-			      attr_list, 0, len);
-	if (flags & DRAW_ITALIC)
-	    INSERT_PANGO_ATTR(pango_attr_style_new(PANGO_STYLE_ITALIC),
-			      attr_list, 0, len);
-
-	item_list = pango_itemize(gui.text_context,
-				  (const char *)s, 0, len, attr_list, NULL);
-
-	while (item_list != NULL)
-	{
-	    PangoItem	*item;
-	    int		item_cells = 0;
-
-	    item = (PangoItem *)item_list->data;
-	    item_list = g_list_delete_link(item_list, item_list);
-
-	    // Force LTR direction; Vim handles bidi on its own.
-	    item->analysis.level = (item->analysis.level + 1) & (~1U);
-
-	    pango_shape_full((const char *)s + item->offset, item->length,
-		    (const char *)s, len, &item->analysis, glyphs);
-
-	    // Fixed-width hack: assign a fixed width to each glyph based on
-	    // the number of cells it occupies, handling composing characters
-	    // and cluster boundaries properly.
-	    for (i = 0; i < glyphs->num_glyphs; ++i)
-	    {
-		PangoGlyphInfo *glyph;
-
-		glyph = &glyphs->glyphs[i];
-
-		if (glyph->attr.is_cluster_start)
-		{
-		    int cellcount;
-
-		    cellcount = count_cluster_cells(
-			    s, item, glyphs, i, &cluster_width,
-			    (item_list != NULL) ? &last_glyph_rbearing : NULL);
-
-		    if (cellcount > 0)
-		    {
-			int width;
-
-			width = cellcount * gui.char_width * PANGO_SCALE;
-			glyph->geometry.x_offset +=
-					    MAX(0, width - cluster_width) / 2;
-			glyph->geometry.width = width;
-		    }
-		    else
-		    {
-			setup_zero_width_cluster(item, glyph, cells,
-						 cluster_width,
-						 last_glyph_rbearing);
-		    }
-
-		    item_cells += cellcount;
-		    cells = cellcount;
-		}
-		else if (i > 0)
-		{
-		    int width;
-
-		    if (glyph->geometry.x_offset >= 0)
-		    {
-			glyphs->glyphs[i].geometry.width =
-					 glyphs->glyphs[i - 1].geometry.width;
-			glyphs->glyphs[i - 1].geometry.width = 0;
-		    }
-		    width = cells * gui.char_width * PANGO_SCALE;
-		    glyph->geometry.x_offset +=
-					    MAX(0, width - cluster_width) / 2;
-		}
-		else
-		{
-		    glyph->geometry.width = 0;
-		}
-	    }
-
-	    draw_glyph_string(row, col + column_offset, item_cells,
-		    flags, item->analysis.font, glyphs, cr);
-
-	    pango_item_free(item);
-
-	    column_offset += item_cells;
-	}
-
-	pango_attr_list_unref(attr_list);
-    }
-
-skipitall:
-    draw_under(flags, row, col, column_offset, cr);
-    cairo_destroy(cr);
-
-    pango_glyph_string_free(glyphs);
-
-    if (gui.drawarea != NULL)
-	gtk_widget_queue_draw(gui.drawarea);
-
-    return column_offset;
-}
-#endif // !USE_GTK4_SNAPSHOT
-
 /*
  * Draw a string of characters on the screen using the current font and colors.
  * Splits the string into ASCII and ligature/UTF-8 segments so that ligature
@@ -3949,7 +3217,6 @@ skipitall:
     int
 gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
 {
-#ifdef USE_GTK4_SNAPSHOT
     int cells;
 
     cells = vim_draw_area_draw_string(VIM_DRAW_AREA(gui.drawarea),
@@ -3959,120 +3226,6 @@ gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
 	gtk_widget_queue_draw(gui.drawarea);
 
     return cells;
-#else
-    char_u	*conv_buf = NULL;
-    int		convlen;
-    int		len_sum;
-    int		byte_sum;
-    char_u	*cs;
-    int		needs_pango;
-    int		should_need_pango = FALSE;
-    int		slen;
-    int		is_ligature;
-    int		is_utf8;
-    char_u	backup_ch;
-
-    if (gui.text_context == NULL || gui.surface == NULL)
-	return len;
-
-    if (output_conv.vc_type != CONV_NONE)
-    {
-	convlen = len;
-	conv_buf = string_convert(&output_conv, s, &convlen);
-	if (conv_buf != NULL)
-	{
-	    s = conv_buf;
-	    len = convlen;
-	}
-    }
-
-    /*
-     * Ligature support:
-     * Split the string into segments that are either pure ASCII (fast path)
-     * or ligature/UTF-8 (Pango path).  A single ligature character between
-     * ASCII characters is treated as ASCII since it can't form a ligature
-     * on its own.
-     */
-    len_sum = 0;
-    byte_sum = 0;
-    cs = s;
-
-    // First char decides starting mode.
-    is_utf8 = (*cs & 0x80);
-    is_ligature = gui.ligatures_map[*cs] && (len > 1);
-    if (is_ligature)
-	is_ligature = gui.ligatures_map[*(cs + 1)];
-    if (!is_utf8 && len > 1)
-	is_utf8 = (*(cs + 1) & 0x80) != 0;
-    needs_pango = is_utf8 || is_ligature;
-
-    while (cs < s + len)
-    {
-	slen = 0;
-	while (slen < (len - byte_sum))
-	{
-	    is_ligature = gui.ligatures_map[*(cs + slen)];
-	    // Look ahead: single ligature char between ASCII is ASCII.
-	    if (is_ligature && !needs_pango)
-	    {
-		if ((slen + 1) < (len - byte_sum))
-		    is_ligature = gui.ligatures_map[*(cs + slen + 1)];
-		else
-		    is_ligature = 0;
-	    }
-	    is_utf8 = *(cs + slen) & 0x80;
-	    // ASCII followed by UTF-8 could be combining.
-	    if ((!is_utf8) && ((slen + 1) < (len - byte_sum)))
-		is_utf8 = (*(cs + slen + 1) & 0x80);
-	    should_need_pango = (is_ligature || is_utf8);
-	    if (needs_pango != should_need_pango)
-		break;
-	    if (needs_pango)
-	    {
-		if (is_ligature)
-		{
-		    slen++;
-		}
-		else
-		{
-		    if ((*(cs + slen) & 0xC0) == 0x80)
-		    {
-			while ((slen < (len - byte_sum))
-					    && ((*(cs + slen) & 0xC0) == 0x80))
-			    slen++;
-		    }
-		    else if ((*(cs + slen) & 0xE0) == 0xC0)
-			slen++;
-		    else if ((*(cs + slen) & 0xF0) == 0xE0)
-			slen += 2;
-		    else if ((*(cs + slen) & 0xF8) == 0xF0)
-			slen += 3;
-		    else
-			slen++;
-		}
-	    }
-	    else
-	    {
-		slen++;
-	    }
-	}
-
-	if (slen < len)
-	{
-	    backup_ch = *(cs + slen);
-	    *(cs + slen) = NUL;
-	}
-	len_sum += gui_gtk_draw_string_ext(row, col + len_sum, cs, slen,
-					    flags, needs_pango);
-	if (slen < len)
-	    *(cs + slen) = backup_ch;
-	cs += slen;
-	byte_sum += slen;
-	needs_pango = should_need_pango;
-    }
-    vim_free(conv_buf);
-    return len_sum;
-#endif
 }
 
     int
@@ -4996,14 +4149,16 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
     vim_form_move_resize(VIM_FORM(gui.formwin), gui.drawarea, x, y, w, h);
 }
 
-#ifdef USE_GTK4_SNAPSHOT
 /*
  * Calculate the number of pixels to bleed background color to. Should be called
  * after all UI elements are positioned and resized.
  */
     void
-gui_gtk_calculate_bleed(int width, int height)
+gui_gtk4_calculate_bleed(int width, int height)
 {
+    int old_right = gui.bleed_right;
+    int old_bot = gui.bleed_bot;
+
     gui.bleed_right = width - last_text_area_w;
     gui.bleed_bot = height - last_text_area_h;
 
@@ -5019,8 +4174,11 @@ gui_gtk_calculate_bleed(int width, int height)
 	gui.bleed_right = 0;
     if (gui.bleed_bot < 0)
 	gui.bleed_bot = 0;
+
+    // Make sure to update draw area if changed
+    if (old_right != gui.bleed_right || old_bot != gui.bleed_bot)
+	gtk_widget_queue_draw(GTK_WIDGET(gui.drawarea));
 }
-#endif
 
 /*
  * ============================================================

@@ -65,7 +65,7 @@ func Test_vimball_basic()
   call assert_true(filereadable('.VimballRecord'))
   let record = readfile('.VimballRecord')
   call assert_equal(1, record->len())
-  call assert_match('^Xtest.vmb: rmdir.*call delete(', record[0])
+  call assert_match('^Xtest.vmb: call delete(''.\{-}'')|call delete(''.\{-}'',"d")$', record[0])
   call s:teardown()
 endfunc
 
@@ -108,5 +108,19 @@ func Test_vimball_evil_filenames()
 
   let mess = execute(':mess')->split('\n')[-1]
   call assert_match('(Vimball) Forbidding strange filename:.* aborting\.\.\.', mess)
+  call s:teardown()
+endfunc
+
+func Test_vimball_VimballRecord_filenames()
+  call s:Mkvimball()
+  call delete('XVimball', 'rf')
+  sp Xtest.vmb
+  4s#.*\ze\t#.VimballRecord#
+  so %
+  call feedkeys("\<cr>", "it")
+
+  let mess = execute(':mess')->split('\n')[-1]
+  call assert_match('(Vimball) Forbidding .VimballRecord filename.* aborting\.\.\.', mess)
+  call assert_false(filereadable('.VimballRecord'))
   call s:teardown()
 endfunc

@@ -3478,6 +3478,17 @@ redraw_buf_and_status_later(buf_T *buf, int type)
 #endif
 
 /*
+ * mark the ruler for redraw when the last window has no status line and the
+ * ruler takes its place in the last screen line; showmode() draws it
+ */
+    static void
+ruler_redraw_lastwin(void)
+{
+    if (p_ru && lastwin->w_status_height == 0)
+	redraw_cmdline = TRUE;
+}
+
+/*
  * mark all status lines for redraw; used after first :cd
  */
     void
@@ -3491,6 +3502,7 @@ status_redraw_all(void)
 	    wp->w_redr_status = true;
 	    redraw_later(UPD_VALID);
 	}
+    ruler_redraw_lastwin();
 }
 
 /*
@@ -3507,6 +3519,8 @@ status_redraw_curbuf(void)
 	    wp->w_redr_status = true;
 	    redraw_later(UPD_VALID);
 	}
+    if (lastwin->w_buffer == curbuf)
+	ruler_redraw_lastwin();
 }
 
 /*

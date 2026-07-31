@@ -1730,7 +1730,7 @@ checkSmall(
     // Mark any nested folds to maybe-small
     setSmallMaybe(&fp->fd_nested);
 
-    if (fp->fd_len > curwin->w_p_fml)
+    if (fp->fd_len > wp->w_p_fml)
 	fp->fd_small = FALSE;
     else
     {
@@ -1738,7 +1738,7 @@ checkSmall(
 	for (n = 0; n < fp->fd_len; ++n)
 	{
 	    count += plines_win_nofold(wp, fp->fd_top + lnum_off + n);
-	    if (count > curwin->w_p_fml)
+	    if (count > wp->w_p_fml)
 	    {
 		fp->fd_small = FALSE;
 		return;

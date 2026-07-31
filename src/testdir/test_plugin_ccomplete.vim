@@ -31,6 +31,32 @@ func Test_ccomplete_no_exec_via_typeref()
   unlet! g:ccomplete_injected
 endfunc
 
+" Escaping "/" and "\" is not enough: with no "/" in the payload, an unclosed
+" "[" makes vimgrep's pattern skipping fail, and the command parser then treats
+" the first "|" as a command separator.  The typeref must be matched literally.
+func Test_ccomplete_no_exec_via_typeref_bracket()
+  CheckUnix
+  let sentinel = tempname()
+  call delete(sentinel)
+  let tagsfile = s:WriteTags([
+        \ "myvar\tmain.c\t/^x$/;\"\tv\ttyperef:struct:[|call system('touch " .. sentinel .. "')|####",
+        \ ])
+
+  let save_tags = &tags
+  let &tags = tagsfile
+
+  new
+  call ccomplete#Complete(1, '')
+  call ccomplete#Complete(0, 'myvar.x')
+
+  call assert_false(filereadable(sentinel),
+        \ 'typeref field was executed as an Ex command during omni-completion')
+
+  bwipe!
+  let &tags = save_tags
+  call delete(sentinel)
+endfunc
+
 " A legitimate typeref must still drive struct-member completion: escaping the
 " field value must not break the normal path.
 func Test_ccomplete_typeref_completion_still_works()

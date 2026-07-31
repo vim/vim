@@ -1,4 +1,4 @@
-*todo.txt*	For Vim version 9.2.  Last change: 2026 Jun 23
+*todo.txt*	For Vim version 9.2.  Last change: 2026 Jul 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -40,10 +40,13 @@ Mapping with modifier is not recognized after a partial mapping.  Probably
 because the typeahead was simplified when looking for a matching mapping.
 Need to somehow undo the simplification.  #12002
 
-Windows scroll when using the autocmd window.  #12085
-in restore_snapshot_rec() restore more values from the snapshot, instead of
-calling frame_new_height() and frame_new_width(), especially w_topline and
-w_skipcol.
+With 'smoothscroll' the scroll position is lost when a window is temporarily
+squeezed to a couple of lines, for example ":help" followed by ":close".  In
+restore_snapshot_rec() restore more values from the snapshot, instead of
+calling frame_new_height() and frame_new_width(), especially w_skipcol.
+
+With 'splitkeep' "screen" the scroll position is lost when splitting and
+closing a window, win_fix_cursor() moves the cursor to another line.
 
 Check places that source "path/*.vim" to not match other extensions, e.g.
 .vim9, on MS-Windows (short file name match, gets expanded to long file name).

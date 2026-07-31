@@ -1885,7 +1885,7 @@ EXTERN Display	*xterm_dpy INIT(= NULL);
 EXTERN XtAppContext app_context INIT(= (XtAppContext)NULL);
 #endif
 
-#ifdef FEAT_GUI_GTK
+#if defined(FEAT_GUI_GTK) && !defined(USE_GTK4)
 EXTERN guint32	gtk_socket_id INIT(= 0);
 EXTERN int	echo_wid_arg INIT(= FALSE);	// --echo-wid argument
 #endif

@@ -759,6 +759,82 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    881,
+/**/
+    880,
+/**/
+    879,
+/**/
+    878,
+/**/
+    877,
+/**/
+    876,
+/**/
+    875,
+/**/
+    874,
+/**/
+    873,
+/**/
+    872,
+/**/
+    871,
+/**/
+    870,
+/**/
+    869,
+/**/
+    868,
+/**/
+    867,
+/**/
+    866,
+/**/
+    865,
+/**/
+    864,
+/**/
+    863,
+/**/
+    862,
+/**/
+    861,
+/**/
+    860,
+/**/
+    859,
+/**/
+    858,
+/**/
+    857,
+/**/
+    856,
+/**/
+    855,
+/**/
+    854,
+/**/
+    853,
+/**/
+    852,
+/**/
+    851,
+/**/
+    850,
+/**/
+    849,
+/**/
+    848,
+/**/
+    847,
+/**/
+    846,
+/**/
+    845,
+/**/
+    844,
+/**/
     843,
 /**/
     842,
@@ -2793,11 +2869,7 @@ list_version(void)
     msg_puts(_("without GUI."));
 #elif defined(FEAT_GUI_GTK)
 # if defined(USE_GTK4)
-#  ifdef USE_GTK4_SNAPSHOT
-    msg_puts(_("with GTK4 GUI (hwaccel)."));
-#  else
     msg_puts(_("with GTK4 GUI."));
-#  endif
 # elif defined(USE_GTK3)
     msg_puts(_("with GTK3 GUI."));
 # elif defined(FEAT_GUI_GNOME)

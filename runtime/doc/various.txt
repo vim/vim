@@ -1,4 +1,4 @@
-*various.txt*	For Vim version 9.2.  Last change: 2026 Jun 13
+*various.txt*	For Vim version 9.2.  Last change: 2026 Jul 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -28,6 +28,9 @@ CTRL-L			Clear and redraw the screen.  The redraw may happen
 			Useful to update the status line(s) when 'statusline'
 			includes an item that doesn't cause automatic
 			updating.
+			When the last window has no status line the ruler is
+			redrawn instead, this is useful when 'rulerformat'
+			includes such an item.
 			If the command line is being edited the redraw is
 			postponed until later.
 

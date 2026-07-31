@@ -1232,9 +1232,8 @@ win_split_ins(
 
 	    win_setheight_win(oldwin->w_height + new_size
 		    + statusline_height(oldwin), oldwin);
+	    // w_height now excludes the status line
 	    oldwin_height = oldwin->w_height;
-	    if (need_status)
-		oldwin_height -= statusline_height(oldwin);
 	}
 
 	// Only make all windows the same height if one of them (except oldwin)
@@ -7414,7 +7413,10 @@ win_new_height(win_T *wp, int height)
     // values might be invalid.
     if (!exiting && *p_spk == 'c')
     {
-	wp->w_skipcol = 0;
+	// With 'smoothscroll' w_skipcol is the scroll position, keep it.
+	// Otherwise it only keeps the cursor visible and is computed again.
+	if (!wp->w_p_sms)
+	    wp->w_skipcol = 0;
 	scroll_to_fraction(wp, prev_height);
     }
 }
@@ -7470,14 +7472,16 @@ scroll_to_fraction(win_T *wp, int prev_height)
 	    if (wp->w_wrow >= wp->w_height
 				       && (wp->w_width - win_col_off(wp)) > 0)
 	    {
-		wp->w_skipcol += wp->w_width - win_col_off(wp);
+		// The cursor must be visible, override the scroll position.
+		colnr_T	skipcol = wp->w_width - win_col_off(wp);
+
 		--wp->w_wrow;
 		while (wp->w_wrow >= wp->w_height)
 		{
-		    wp->w_skipcol += wp->w_width - win_col_off(wp)
-							   + win_col_off2(wp);
+		    skipcol += wp->w_width - win_col_off(wp) + win_col_off2(wp);
 		    --wp->w_wrow;
 		}
+		wp->w_skipcol = skipcol;
 	    }
 	}
 	else if (sline > 0)

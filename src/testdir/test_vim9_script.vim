@@ -449,6 +449,24 @@ def Test_block_local_vars_with_func()
       assert_equal(['foo', 'bar'], Func())
   END
   v9.CheckScriptSuccess(lines)
+
+  # also when the variables are used in a lambda inside the function
+  lines =<< trim END
+      vim9script
+      if true
+        var foo = 'foo'
+        if true
+          var bar = 'bar'
+          def Func(): list<string>
+            var Lambda = () => [foo, bar]
+            return Lambda()
+          enddef
+          defcompile
+        endif
+      endif
+      assert_equal(['foo', 'bar'], Func())
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 " legacy func for command that's defined later
@@ -2897,6 +2915,36 @@ def Test_for_loop_with_closure()
         assert_equal(3 .. 'd', lv_list[i]())
         assert_equal(i .. c, copy_list[i]())
       endfor
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # assigning to a variable declared in the loop from a closure
+  lines =<< trim END
+      for i in range(3)
+        var inloop = 0
+        var F = () => {
+              inloop = i + 1
+            }
+        F()
+        assert_equal(i + 1, inloop)
+      endfor
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # same in a nested loop
+  lines =<< trim END
+      var result: list<number>
+      for i in range(2)
+        for j in range(2)
+          var inloop = 0
+          var F = () => {
+                inloop = i * 10 + j
+              }
+          F()
+          result += [inloop]
+        endfor
+      endfor
+      assert_equal([0, 1, 10, 11], result)
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef

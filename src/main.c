@@ -1965,13 +1965,13 @@ early_arg_scan(mparm_T *parmp UNUSED)
 	    else
 #  ifdef FEAT_GUI_MSWIN
 		win_socket_id = id;
-#  else
+#  elif !defined(USE_GTK4)
 		gtk_socket_id = id;
 #  endif
 	    i++;
 	}
 # endif
-# ifdef FEAT_GUI_GTK
+# if defined(FEAT_GUI_GTK) && !defined(USE_GTK4)
 	else if (STRICMP(argv[i], "--echo-wid") == 0)
 	    echo_wid_arg = TRUE;
 # endif
@@ -3812,17 +3812,25 @@ usage(void)
     main_msg(_("-xrm <resource>\tSet the specified resource"));
 # endif // FEAT_GUI_X11
 # ifdef FEAT_GUI_GTK
+#  ifdef USE_GTK4
+    mch_msg(_("\nArguments recognised by gvim (GTK4 version):\n"));
+#  else
     mch_msg(_("\nArguments recognised by gvim (GTK+ version):\n"));
+#  endif
     main_msg(_("-background <color>\tUse <color> for the background (also: -bg)"));
     main_msg(_("-foreground <color>\tUse <color> for normal text (also: -fg)"));
     main_msg(_("-font <font>\t\tUse <font> for normal text (also: -fn)"));
     main_msg(_("-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"));
+#  ifdef USE_GTK4
+    main_msg("--prg-name <name>\tSet GTK program name");
+#  else
     main_msg(_("-iconic\t\tStart Vim iconified"));
     main_msg(_("-reverse\t\tUse reverse video (also: -rv)"));
     main_msg(_("-display <display>\tRun Vim on <display> (also: --display)"));
     main_msg(_("--role <role>\tSet a unique role to identify the main window"));
     main_msg(_("--socketid <xid>\tOpen Vim inside another GTK widget"));
     main_msg(_("--echo-wid\t\tMake gvim echo the Window ID on stdout"));
+#  endif
 # endif
 # ifdef FEAT_GUI_MSWIN
 #  ifdef VIMDLL

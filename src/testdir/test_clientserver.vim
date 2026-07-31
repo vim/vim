@@ -427,6 +427,59 @@ func Test_client_server_socketserver_connection_flood()
   endtry
 endfunc
 
+" An invalid JSON message that spans two socketserver read buffers must not
+" crash the server: the parse buffer is refilled (and freed) mid-string, and
+" the error path must not report the position from the stale, freed cursor.
+func Test_client_server_socketserver_json_refill()
+  CheckFeature socketserver
+  CheckNotMSWindows
+
+  let g:test_is_flaky = 1
+  let cmd = GetVimCommand()
+  if cmd == ''
+    throw 'GetVimCommand() failed'
+  endif
+
+  let actual = cmd .. ' --clientserver socket --servername channel:2002'
+  let job = job_start(actual, {'stoponexit': 'kill', 'out_io': 'null'})
+  call WaitForAssert({-> assert_equal("run", job_status(job))})
+  call WaitForAssert({-> assert_match('channel:2002',
+        \ system(actual .. ' --remote-expr "v:servername"'))})
+
+  let ch = test_null_channel()
+  for _ in range(50)
+    let ch = ch_open('127.0.0.1:2002', {'mode': 'raw', 'waittime': 100})
+    if ch_status(ch) == 'open'
+      break
+    endif
+    sleep 100m
+  endfor
+  call assert_equal('open', ch_status(ch))
+
+  " The server reads at most MAXMSGSIZE (4096) bytes per read, so a single
+  " message longer than that is split across two read buffers. Keep the JSON
+  " string open past the split to force a refill (which frees the first
+  " buffer), then end in an invalid \u escape so the parse fails.
+  call ch_sendraw(ch, '{"k":"' .. repeat('A', 4200) .. '\uZZZZ')
+  sleep 500m
+
+  " The server must survive the invalid message and stay responsive.
+  call assert_equal("run", job_status(job))
+  call assert_match('channel:2002',
+        \ system(actual .. ' --remote-expr "v:servername"'))
+
+  call ch_close(ch)
+  call system(actual .. " --remote-expr 'execute(\"qa!\")'")
+  try
+    call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  finally
+    if job_status(job) != 'dead'
+      call assert_report('Server did not exit')
+      call job_stop(job, 'kill')
+    endif
+  endtry
+endfunc
+
 " Test if --remote-wait works properly with multiple files
 func Test_client_server_multiple_remote_wait()
   CheckRunVimInTerminal

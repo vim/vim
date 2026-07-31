@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Jul 22
+# Last Change:		2026 Jul 28
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -2416,6 +2416,8 @@ const ft_from_ext = {
   "page": "mallard",
   # Manpage
   "man": "man",
+  # Marko
+  "marko": "marko",
   # Maple V
   "mv": "maple",
   "mpl": "maple",
@@ -3166,6 +3168,8 @@ const ft_from_ext = {
   "tiltfile": "tiltfile",
   # Ghostty
   "ghostty": "ghostty",
+  # Xilinx Design Constraint file
+  "xdc": "tcl",
 }
 # Key: file name (the final path component, excluding the drive and root)
 # Value: filetype
@@ -3315,6 +3319,8 @@ const ft_from_name = {
   ".swcrc": "json",
   "composer.lock": "json",
   "symfony.lock": "json",
+  # osquery configuration
+  "osquery.conf": "jsonc",
   # Kconfig
   "Kconfig": "kconfig",
   "Kconfig.debug": "kconfig",

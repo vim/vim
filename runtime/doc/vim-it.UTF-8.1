@@ -216,7 +216,7 @@ in Modo Ex migliorato, come se il programma eseguito sia "exim".
 Direttamente [Foreground].  Per la versione GUI,
 .B Vim
 non creare [fork] una nuova finestra, indipendente dalla shell di invocazione.
-Per l'Amiga, non fa ripartire
+Per l'Amiga, non far ripartire
 .B Vim
 per aprire una nuova finestra.
 Opzione da usare quando
@@ -483,7 +483,7 @@ e scrivere le registrazioni a {nome_file}.  Ciò equivale a chiamare
 in una fase molto iniziale dell'avvio del programma.
 .TP
 \-\-nofork
-Eseguire Vim irettamente [Foreground].  Per la versione GUI,
+Eseguire Vim direttamente [Foreground].  Per la versione GUI,
 .B Vim
 non crea [fork] una nuova finestra, indipendente dalla shell di invocazione.
 .TP
@@ -497,6 +497,9 @@ che l'utente è consapevole che l'input e l'output non avvengono con un
 terminale vero e proprio.  Ciò serve per evitare il messaggio di avvertimento
 e il ritardo di due secondi, ossia il comportamento previsto in assenza di
 questo argomento.
+.TP
+\--prg-name {nome}
+Impostare il nome del programma GTK. Solo se si sta usando la GUI GTK4.
 .TP
 \-\-remote
 Connettersi a un server Vim a cui chiedere di editare i file elencati come

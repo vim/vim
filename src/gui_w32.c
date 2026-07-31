@@ -379,6 +379,11 @@ static WPARAM		s_wParam = 0;
 static LPARAM		s_lParam = 0;
 
 static HWND		s_textArea = NULL;
+
+// Set when the text area was painted with the background color only, because
+// the screen contents were not available yet.
+static bool		s_textarea_bg_only = false;
+
 static UINT		s_uMsg = 0;
 
 static char_u		*s_textfield; // Used by dialogs to pass back strings
@@ -1632,6 +1637,10 @@ gui_mch_new_colors(void)
     prevBrush = (HBRUSH)SetClassLongPtr(
 				s_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)s_brush);
     InvalidateRect(s_hwnd, NULL, TRUE);
+    // The text area is a child window, the invalidation above does not
+    // include it.
+    if (s_textarea_bg_only && s_textArea != NULL)
+	InvalidateRect(s_textArea, NULL, TRUE);
     DeleteObject(prevBrush);
 }
 
@@ -1656,7 +1665,17 @@ gui_mch_open(void)
     // Actually open the window, if not already visible
     // (may be done already in gui_mch_set_shellsize)
     if (!IsWindowVisible(s_hwnd))
+    {
 	ShowWindow(s_hwnd, SW_SHOWDEFAULT);
+
+	// Waiting for the message loop leaves the window undrawn while a
+	// slow VimEnter autocommand runs. The flush presents the DirectX draw.
+	if (s_textArea != NULL)
+	{
+	    UpdateWindow(s_textArea);
+	    gui_mch_flush();
+	}
+    }
 
 #ifdef MSWIN_FIND_REPLACE
     // Init replace string here, so that we keep it when re-opening the
@@ -2597,6 +2616,46 @@ remove_any_timer(void)
     }
 }
 
+#ifdef FEAT_CLIENTSERVER
+// A client message may be handled re-entrantly, e.g. during a redraw while a
+// command line is being read; inserting the keys into the typeahead buffer
+// then corrupts it. Store them here until a safe point.
+static garray_T	server_pending_ga = {0, 0, 0, 0, NULL};
+
+/*
+ * Store keys received from a client, to be inserted into the typeahead buffer
+ * later by server_flush_input().
+ */
+    void
+server_add_input(char_u *str)
+{
+    if (server_pending_ga.ga_data == NULL)
+	ga_init2(&server_pending_ga, 1, 200);
+    ga_concat(&server_pending_ga, str);
+}
+
+/*
+ * Insert postponed keys received from a client, but only when the typeahead
+ * buffer is empty, so that they are not mixed into a command that is currently
+ * being read.
+ */
+    static void
+server_flush_input(void)
+{
+    char_u  *str;
+
+    if (server_pending_ga.ga_len == 0 || typebuf.tb_len != 0)
+	return;
+    str = vim_strnsave(server_pending_ga.ga_data, server_pending_ga.ga_len);
+    server_pending_ga.ga_len = 0;
+    if (str != NULL)
+    {
+	server_to_input_buf(str);
+	vim_free(str);
+    }
+}
+#endif
+
 /*
  * GUI input routine called by gui_wait_for_chars().  Waits for a character
  * from the keyboard.
@@ -2655,6 +2714,10 @@ gui_mch_wait_for_chars(int wtime)
 	    MSG msg;
 
 	    parse_queued_messages();
+# ifdef FEAT_CLIENTSERVER
+	    // Insert keys from a client that were postponed to this safe point.
+	    server_flush_input();
+# endif
 # ifdef FEAT_TIMERS
 	    if (did_add_timer)
 		break;
@@ -3670,6 +3733,15 @@ _OnPaint(
 
     if (!IsRectEmpty(&ps.rcPaint))
     {
+	// The text area has no background brush, thus undefined pixels remain
+	// visible until the screen contents are drawn.
+	if (!screen_cleared || ScreenLines == NULL)
+	{
+	    clear_rect(&ps.rcPaint);
+	    s_textarea_bg_only = true;
+	}
+	else
+	    s_textarea_bg_only = false;
 	gui_redraw(ps.rcPaint.left, ps.rcPaint.top,
 		ps.rcPaint.right - ps.rcPaint.left + 1,
 		ps.rcPaint.bottom - ps.rcPaint.top + 1);

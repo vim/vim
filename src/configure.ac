@@ -2425,17 +2425,6 @@ AC_ARG_ENABLE(fontset,
 AC_MSG_RESULT($enable_fontset)
 dnl defining FEAT_XFONTSET is delayed, so that it can be disabled for no GUI
 
-AC_MSG_CHECKING(if shm_open is available)
-cppflags_save=$CPPFLAGS
-CPPFLAGS="$CPPFLAGS $X_CFLAGS"
-AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		   [#include <sys/mman.h>
-		    #include <sys/stat.h>
-		    #include <fcntl.h>], [shm_open("/test", O_CREAT, 0600);])],
-		   AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SHM_OPEN),
-		   AC_MSG_RESULT(no))
-CPPFLAGS=$cppflags_save
-
 AC_MSG_CHECKING(--with-wayland argument)
 AC_ARG_WITH(wayland,
 	[  --with-wayland	  Include support for the Wayland protocol.],
@@ -2480,6 +2469,8 @@ if test "$with_wayland" = yes; then
   fi
 CPPFLAGS=$cppflags_save
 CFLAGS=$cflags_save
+else
+  AC_MSG_RESULT(no)
 fi
 
 dnl GTK4 does not use X11 APIs directly, so skip X11 detection entirely.
@@ -2723,19 +2714,6 @@ if test "x$SKIP_GTK4" != "xYES" -a "$enable_gui_canon" != "gtk4"; then
     SKIP_GTK4=YES
   fi
 fi
-
-if test "x$SKIP_GTK4" != "xYES" -a "$enable_gui_canon" = "gtk4"; then
-  AC_MSG_CHECKING(--enable-gtk4-hwaccel argument)
-  AC_ARG_ENABLE(gtk4-hwaccel,
-	[  --enable-gtk4-hwaccel  Use hardware accelerated rendering backend for GTK4 [default=no]],
-	, enable_gtk4_hwaccel="no")
-  AC_MSG_RESULT($enable_gtk4_hwaccel)
-
-  if test "x$enable_gtk4_hwaccel" = "xyes"; then
-    AC_DEFINE(USE_GTK4_SNAPSHOT)
-  fi
-fi
-
 
 if test "x$SKIP_GTK3" != "xYES" -a "$enable_gui_canon" != "gtk3"; then
   AC_MSG_CHECKING(whether or not to look for GTK+ 3)

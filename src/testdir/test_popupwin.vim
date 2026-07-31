@@ -2203,6 +2203,44 @@ func Test_popup_wrap_with_maxwidth()
   %bwipe!
 endfunc
 
+func Test_popup_nowrap_with_maxwidth()
+  " When wrap is off and maxwidth is explicitly set, a popup near the right
+  " edge of the screen must not get wider than maxwidth by shifting left.
+  let maxw = 20
+  let col = &columns - maxw + 1
+
+  " Text longer than maxwidth is truncated, no shift is needed.
+  let p = popup_create(repeat('x', 40), #{
+	\ line: 5, col: col, maxwidth: maxw, wrap: 0})
+  call s:VerifyPosition(p, 'nowrap with maxwidth at right edge',
+	\ 5, col, maxw, 1)
+  call popup_close(p)
+
+  " Not enough space at the right: shift left, but only up to maxwidth.
+  let p = popup_create(repeat('y', 40), #{
+	\ line: 5, col: &columns - 5, maxwidth: maxw, wrap: 0})
+  call s:VerifyPosition(p, 'nowrap with maxwidth shifts up to maxwidth',
+	\ 5, col, maxw, 1)
+  call popup_close(p)
+
+  " Same with a border and padding.
+  let p = popup_create(repeat('z', 40), #{
+	\ line: 5, col: &columns - 5, maxwidth: maxw, wrap: 0,
+	\ border: [], padding: [0, 1, 0, 1]})
+  call assert_equal(maxw, popup_getpos(p).core_width)
+  call popup_close(p)
+
+  " When maxwidth is not set, shift-left uses the whole text width.
+  let p = popup_create(repeat('w', 40), #{
+	\ line: 5, col: col, wrap: 0})
+  call s:VerifyPosition(p, 'nowrap without maxwidth shifts left',
+	\ 5, col - maxw, 40, 1)
+  call popup_close(p)
+
+  call popup_clear()
+  %bwipe!
+endfunc
+
 func Test_adjust_left_past_screen_width()
   " width of screen
   let X = join(map(range(&columns), {->'X'}), '')
@@ -5382,6 +5420,50 @@ func Test_popup_opacity_terminal_move_no_leftover()
   call WaitForAssert({-> assert_equal("finished", term_getstatus(buf))})
   exe buf .. 'bwipe!'
 endfunc
+
+func s:do_test_popup_opacity_terminal_close_no_leftover(tabpage)
+  CheckScreendump
+  CheckFeature terminal
+  CheckUnix
+
+  " A semi-transparent popup over a terminal used to leave the old popup
+  " cells behind when it closed.
+  let lines =<< eval trim END
+    set shell=/bin/sh noruler
+    unlet $PROMPT_COMMAND
+    let $PS1 = 'vim> '
+    terminal ++curwin
+    call popup_create('ABC',
+        \ #{{line: 5, col: 10, highlight: 'None', opacity: 30, tabpage: {a:tabpage}}})
+    func CloseIt()
+      let id = popup_list()[0]
+      call popup_close(id)
+    endfunc
+  END
+  call writefile(lines, 'XtestPopupOpacityTermClose', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacityTermClose',
+	\ #{rows: 12, wait_for_ruler: 0})
+  call WaitForAssert({-> assert_match('ABC', term_getline(buf, 5))})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_term_close_1', {})
+
+  " Close the popup: the old "ABC" cells must be cleared.
+  call term_sendkeys(buf, "\<C-W>:call CloseIt()\<CR>")
+  call WaitForAssert({-> assert_equal('', term_getline(buf, 5)->trim())})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_term_close_2', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<C-W>:qa!\<CR>")
+  call WaitForAssert({-> assert_equal("finished", term_getstatus(buf))})
+  exe buf .. 'bwipe!'
+endfunc
+
+function Test_popup_opacity_global_terminal_close_no_leftover()
+  call s:do_test_popup_opacity_terminal_close_no_leftover(-1)
+endfunction
+
+function Test_popup_opacity_tablocal_terminal_close_no_leftover()
+  call s:do_test_popup_opacity_terminal_close_no_leftover(0)
+endfunction
 
 func Test_popup_opacity_terminal_no_freeze()
   CheckFeature terminal

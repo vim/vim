@@ -1421,6 +1421,8 @@ set_sofo(slang_T *lp, char_u *from, char_u *to)
 
     if (has_mbyte)
     {
+	free_sal_items(&lp->sl_sal);
+
 	// Use "sl_sal" as an array with 256 pointers to a list of wide
 	// characters.  The index is the low byte of the character.
 	// The list contains from-to pairs with a terminating NUL.
@@ -1434,7 +1436,9 @@ set_sofo(slang_T *lp, char_u *from, char_u *to)
 	lp->sl_sofo = TRUE;
 
 	// First count the number of items for each list.  Temporarily use
-	// sl_sal_first[] for this.
+	// sl_sal_first[] for this.  Reset it first: a preceding SN_SAL section
+	// may have set the entries to -1 via set_sal_first().
+	vim_memset(lp->sl_sal_first, 0, sizeof(salfirst_T) * 256);
 	for (p = from, s = to; *p != NUL && *s != NUL; )
 	{
 	    c = mb_cptr2char_adv(&p);

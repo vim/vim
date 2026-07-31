@@ -1752,6 +1752,30 @@ slang_free(slang_T *lp)
     vim_free(lp);
 }
 
+
+/*
+ * Free the salitem_T entries in a "sl_sal" garray (the SN_SAL form) and
+ * clear the garray.  Used by slang_clear() and when set_sofo() reuses
+ * sl_sal for the SN_SOFO form.
+ */
+    void
+free_sal_items(garray_T *gap)
+{
+    salitem_T	*smp;
+
+    while (gap->ga_len > 0)
+    {
+	smp = &((salitem_T *)gap->ga_data)[--gap->ga_len];
+	vim_free(smp->sm_lead);
+	// Don't free sm_oneof and sm_rules, they point into sm_lead.
+	vim_free(smp->sm_to);
+	vim_free(smp->sm_lead_w);
+	vim_free(smp->sm_oneof_w);
+	vim_free(smp->sm_to_w);
+    }
+    ga_clear(gap);
+}
+
 /*
  * Clear an slang_T so that the file can be reloaded.
  */
@@ -1760,7 +1784,6 @@ slang_clear(slang_T *lp)
 {
     garray_T	*gap;
     fromto_T	*ftp;
-    salitem_T	*smp;
     int		i;
     int		round;
 
@@ -1792,20 +1815,10 @@ slang_clear(slang_T *lp)
 	    // SOFOFROM and SOFOTO items: free lists of wide characters.
 	    for (i = 0; i < gap->ga_len; ++i)
 		vim_free(((int **)gap->ga_data)[i]);
+	ga_clear(gap);
     }
     else
-	// SAL items: free salitem_T items
-	while (gap->ga_len > 0)
-	{
-	    smp = &((salitem_T *)gap->ga_data)[--gap->ga_len];
-	    vim_free(smp->sm_lead);
-	    // Don't free sm_oneof and sm_rules, they point into sm_lead.
-	    vim_free(smp->sm_to);
-	    vim_free(smp->sm_lead_w);
-	    vim_free(smp->sm_oneof_w);
-	    vim_free(smp->sm_to_w);
-	}
-    ga_clear(gap);
+	free_sal_items(gap);
 
     for (i = 0; i < lp->sl_prefixcnt; ++i)
 	vim_regfree(lp->sl_prefprog[i]);

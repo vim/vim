@@ -862,7 +862,6 @@ enable_gui
 enable_gtk2_check
 enable_gnome_check
 enable_gtk4_check
-enable_gtk4_hwaccel
 enable_gtk3_check
 enable_motif_check
 enable_gtktest
@@ -1542,7 +1541,6 @@ Optional Features:
   --enable-gtk2-check     If auto-select GUI, check for GTK+ 2 default=yes
   --enable-gnome-check    If GTK GUI, check for GNOME default=no
   --enable-gtk4-check     If auto-select GUI, check for GTK 4 default=yes
-  --enable-gtk4-hwaccel  Use hardware accelerated rendering backend for GTK4 default=no
   --enable-gtk3-check     If auto-select GUI, check for GTK+ 3 default=yes
   --enable-motif-check    If auto-select GUI, check for Motif default=yes
   --disable-gtktest       Do not try to compile and run a test GTK program
@@ -9177,37 +9175,6 @@ fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enable_fontset" >&5
 printf "%s\n" "$enable_fontset" >&6; }
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if shm_open is available" >&5
-printf %s "checking if shm_open is available... " >&6; }
-cppflags_save=$CPPFLAGS
-CPPFLAGS="$CPPFLAGS $X_CFLAGS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <sys/mman.h>
-		    #include <sys/stat.h>
-		    #include <fcntl.h>
-int
-main (void)
-{
-shm_open("/test", O_CREAT, 0600);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }; printf "%s\n" "#define HAVE_SHM_OPEN 1" >>confdefs.h
-
-else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; } ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-CPPFLAGS=$cppflags_save
-
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --with-wayland argument" >&5
 printf %s "checking --with-wayland argument... " >&6; }
 
@@ -9269,6 +9236,9 @@ printf "%s\n" "no" >&6; }
   fi
 CPPFLAGS=$cppflags_save
 CFLAGS=$cflags_save
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
 fi
 
 if test "x$enable_gui" = "xgtk4"; then
@@ -10610,28 +10580,6 @@ printf "%s\n" "$enable_gtk4_check" >&6; }
     SKIP_GTK4=YES
   fi
 fi
-
-if test "x$SKIP_GTK4" != "xYES" -a "$enable_gui_canon" = "gtk4"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-gtk4-hwaccel argument" >&5
-printf %s "checking --enable-gtk4-hwaccel argument... " >&6; }
-  # Check whether --enable-gtk4-hwaccel was given.
-if test ${enable_gtk4_hwaccel+y}
-then :
-  enableval=$enable_gtk4_hwaccel;
-else case e in #(
-  e) enable_gtk4_hwaccel="no" ;;
-esac
-fi
-
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enable_gtk4_hwaccel" >&5
-printf "%s\n" "$enable_gtk4_hwaccel" >&6; }
-
-  if test "x$enable_gtk4_hwaccel" = "xyes"; then
-    printf "%s\n" "#define USE_GTK4_SNAPSHOT 1" >>confdefs.h
-
-  fi
-fi
-
 
 if test "x$SKIP_GTK3" != "xYES" -a "$enable_gui_canon" != "gtk3"; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether or not to look for GTK+ 3" >&5
