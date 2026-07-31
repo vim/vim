@@ -3114,19 +3114,6 @@ cursor_correct(void)
 	    )
 	return;
 
-    if (curwin->w_p_sms && !curwin->w_p_wrap)
-    {
-	// 'smoothscroll' is active
-	if (curwin->w_cline_height == curwin->w_height)
-	{
-	    // The cursor line just fits in the window, don't scroll.
-	    reset_skipcol();
-	    return;
-	}
-	// TODO: If the cursor line doesn't fit in the window then only adjust
-	// w_skipcol.
-    }
-
     /*
      * Narrow down the area where the cursor can be put by taking lines from
      * the top and the bottom until:
