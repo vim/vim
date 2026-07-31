@@ -1089,8 +1089,13 @@ focus_in_event(GtkWidget *widget,
 	       gpointer data UNUSED)
 {
 #ifdef FEAT_GUI_DIALOG
-    if (gui.is_x11 && gui.dialog_focus_pending > 0)
+    if (gui.dialog_focus_pending)
+    {
 	--gui.dialog_focus_pending;
+	++hold_gui_events;
+	gui_focus_change(TRUE);
+	--hold_gui_events;
+    }
     else
 #endif
 	gui_focus_change(TRUE);
@@ -1111,6 +1116,11 @@ focus_out_event(GtkWidget *widget UNUSED,
 		GdkEventFocus *event UNUSED,
 		gpointer data UNUSED)
 {
+    if (gui.dialogs_active > 0)
+    {
+      ++gui.dialog_focus_pending;
+    }
+
     gui_focus_change(FALSE);
 
     if (blink_state != BLINK_NONE)
