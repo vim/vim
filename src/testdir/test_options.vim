@@ -663,6 +663,12 @@ func Test_set_completion_string_values()
   call feedkeys(":set completepopup=height:10,align:\<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"set completepopup=height:10,align:item', @:)
   call assert_equal([], getcompletion('set completepopup=bogusname:', 'cmdline'))
+  " a name ending in a known sub-option name is not a sub-option
+  call assert_equal([], getcompletion('set completepopup=invalid_close:', 'cmdline'))
+  call assert_equal([], getcompletion('set completepopup=xborder:', 'cmdline'))
+  call assert_equal([], getcompletion('set completepopup=xhighlight:', 'cmdline'))
+  call assert_equal(['on', 'off'],
+        \ getcompletion('set completepopup=border:on,close:', 'cmdline'))
   call assert_equal(['on', 'off'], getcompletion('set completepopup=close:', 'cmdline'))
   call assert_equal(['on', 'off'], getcompletion('set completepopup=close:o', 'cmdline'))
   call assert_equal(['off'], getcompletion('set previewpopup=close:of', 'cmdline'))
@@ -687,6 +693,8 @@ func Test_set_completion_string_values()
   " diffopt: special handling of algorithm:<alg_list> and inline:<inline_type>
   call assert_equal('filler', getcompletion('set diffopt+=', 'cmdline')[0])
   call assert_equal([], getcompletion('set diffopt+=iblank,foldcolumn:', 'cmdline'))
+  call assert_equal([], getcompletion('set diffopt+=Xalgorithm:', 'cmdline'))
+  call assert_equal([], getcompletion('set diffopt+=iblank,Xinline:', 'cmdline'))
   call assert_equal('patience', getcompletion('set diffopt+=iblank,algorithm:pat*', 'cmdline')[0])
   call assert_equal('char', getcompletion('set diffopt+=iwhite,inline:ch*', 'cmdline')[0])
 
