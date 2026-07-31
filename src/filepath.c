@@ -586,6 +586,10 @@ repeat:
 	    }
 	    *fnamelen = l;
 	}
+
+	// The name was replaced by the short name, "tail" points into the
+	// previous name.
+	tail = gettail(*fnamep);
     }
 #endif // MSWIN
 
