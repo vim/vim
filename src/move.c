@@ -2537,9 +2537,23 @@ scroll_cursor_top(int min_scroll, int always)
 	{
 	    validate_virtcol();
 	    if (curwin->w_skipcol >= curwin->w_virtcol)
-		// TODO: if the line doesn't fit may optimize w_skipcol instead
-		// of making it zero
-		reset_skipcol();
+	    {
+		// Skip up to the screen line the cursor is in, so that the
+		// position in the line is kept.
+		int	width1 = curwin->w_width - curwin_col_off();
+		int	width2 = width1 + curwin_col_off2();
+		int	plines_off = 0;
+		int	skipcol;
+
+		if (width2 > 0 && curwin->w_virtcol >= (colnr_T)width1)
+		    plines_off = (curwin->w_virtcol - width1) / width2 + 1;
+		skipcol = skipcol_from_plines(curwin, plines_off);
+		if (skipcol != curwin->w_skipcol)
+		{
+		    curwin->w_skipcol = skipcol;
+		    redraw_later(UPD_SOME_VALID);
+		}
+	    }
 	}
 	if (curwin->w_topline != old_topline
 		|| curwin->w_skipcol != old_skipcol
