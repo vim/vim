@@ -119,7 +119,7 @@ func Test_glob_short_name_extension()
   call assert_equal(['bar.vim'], matches)
 
   " A pattern that is a short name still matches.
-  let short = fnamemodify(file, ':p:8:t')
+  let short = fnamemodify(fnamemodify(file, ':p:8'), ':t')
   call assert_equal([file], split(glob(dir . '/' . short), "\n"))
 endfunc
 
