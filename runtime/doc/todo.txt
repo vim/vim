@@ -36,10 +36,6 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Mapping with modifier is not recognized after a partial mapping.  Probably
-because the typeahead was simplified when looking for a matching mapping.
-Need to somehow undo the simplification.  #12002
-
 With 'smoothscroll' the scroll position is lost when a window is temporarily
 squeezed to a couple of lines, for example ":help" followed by ":close".  In
 restore_snapshot_rec() restore more values from the snapshot, instead of
