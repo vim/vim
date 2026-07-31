@@ -3782,6 +3782,48 @@ func Test_prop_above_with_indent()
   call prop_type_delete('indented')
 endfunc
 
+" A Tab in the line is not affected by virtual text above it.
+func Test_prop_above_with_tab()
+  " Use a width that is not a multiple of 'tabstop', otherwise counting the
+  " virtual text for the size of a Tab happens to give the right result.
+  call NewWindow(10, 45)
+  setlocal tabstop=8
+  call setline(1, ["\tX"])
+  call prop_type_add('above', #{highlight: 'Search'})
+
+  " Get the column of the "X" without and with the virtual text.
+  redraw
+  let col_without = 0
+  for col in range(1, winwidth(0))
+    if screenstring(1, col) == 'X'
+      let col_without = col
+      break
+    endif
+  endfor
+  call assert_equal(9, col_without)
+
+  call prop_add(1, 0, #{type: 'above', text: 'text above', text_align: 'above'})
+  redraw
+  let col_with = 0
+  for col in range(1, winwidth(0))
+    if screenstring(2, col) == 'X'
+      let col_with = col
+      break
+    endif
+  endfor
+  call assert_equal(col_without, col_with)
+
+  " The cursor is placed on the character, also with a second Tab.
+  call setline(1, ["\t\tX"])
+  redraw
+  normal! 0fX
+  call assert_equal('X', screenstring(winline(), wincol()))
+
+  only!
+  bwipe!
+  call prop_type_delete('above')
+endfunc
+
 func Test_prop_above_with_number()
   CheckScreendump
   CheckRunVimInTerminal

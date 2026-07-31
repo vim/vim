@@ -3334,7 +3334,9 @@ win_line(
 		if (c == TAB && (!wp->w_p_list || wp->w_lcs_chars.tab1))
 		{
 		    int	    tab_len = 0;
-		    long    vcol_adjusted = wlv.vcol; // removed showbreak len
+		    // Virtual text and 'showbreak' do not count for the size
+		    // of a Tab.
+		    long    vcol_adjusted = wlv.vcol - wlv.vcol_off_tp;
 		    int	    lcs_tab1 = wp->w_lcs_chars.tab1;
 		    int	    lcs_tab2 = wp->w_lcs_chars.tab2;
 		    int	    lcs_tab3 = wp->w_lcs_chars.tab3;
@@ -3353,7 +3355,7 @@ win_line(
 		    // only adjust the tab_len, when at the first column
 		    // after the showbreak value was drawn
 		    if (*sbr != NUL && wlv.vcol == wlv.vcol_sbr && wp->w_p_wrap)
-			vcol_adjusted = wlv.vcol - MB_CHARLEN(sbr);
+			vcol_adjusted -= MB_CHARLEN(sbr);
 #endif
 		    // tab amount depends on current column
 #ifdef FEAT_VARTABS
