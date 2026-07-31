@@ -6604,7 +6604,10 @@ nv_pipe(cmdarg_T *cap)
 {
     cap->oap->motion_type = MCHAR;
     cap->oap->inclusive = FALSE;
-    beginline(0);
+    // Not using beginline(), the columns to skip for 'smoothscroll' must be
+    // adjusted for the column we end up in, not for column zero.
+    curwin->w_cursor.col = 0;
+    curwin->w_cursor.coladd = 0;
     if (cap->count0 > 0)
     {
 	coladvance((colnr_T)(cap->count0 - 1));
@@ -6615,6 +6618,7 @@ nv_pipe(cmdarg_T *cap)
     // keep curswant at the column where we wanted to go, not where
     // we ended; differs if line is too short
     curwin->w_set_curswant = false;
+    adjust_skipcol();
 }
 
 /*
