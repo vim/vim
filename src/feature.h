@@ -925,7 +925,8 @@
 #if defined(FEAT_NORMAL) \
 	&& (defined(UNIX) || defined(VMS)) \
 	&& defined(WANT_X11) && defined(HAVE_X11) \
-	&& !defined(USE_GTK4)
+	&& !defined(USE_GTK4) \
+	&& !defined(FEAT_CLIPBOARD_OSC52_ONLY)
 # define FEAT_XCLIPBOARD
 # ifndef FEAT_CLIPBOARD
 #  define FEAT_CLIPBOARD
@@ -933,7 +934,8 @@
 #endif
 
 #if defined(FEAT_NORMAL) && defined(UNIX) \
-    && defined(HAVE_WAYLAND) && defined(WANT_WAYLAND)
+    && defined(HAVE_WAYLAND) && defined(WANT_WAYLAND) \
+    && !defined(FEAT_CLIPBOARD_OSC52_ONLY)
 # define FEAT_WAYLAND_CLIPBOARD
 # ifndef FEAT_CLIPBOARD
 #  define FEAT_CLIPBOARD

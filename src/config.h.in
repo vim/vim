@@ -490,6 +490,9 @@
 /* Define to include OSC 52 tiny clipboard support. */
 #undef FEAT_CLIPBOARD_OSC52_TINY
 
+/* Define to use OSC 52 as the only clipboard backend. */
+#undef FEAT_CLIPBOARD_OSC52_ONLY
+
 /* Define if we have AvailabilityMacros.h on Mac OS X */
 #undef HAVE_AVAILABILITYMACROS_H
 

@@ -2425,7 +2425,6 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
 		   AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SHM_OPEN),
 		   AC_MSG_RESULT(no))
 CPPFLAGS=$cppflags_save
-
 AC_MSG_CHECKING(--with-wayland argument)
 AC_ARG_WITH(wayland,
 	[  --with-wayland	  Include support for the Wayland protocol.],
@@ -2435,6 +2434,22 @@ AC_ARG_WITH(wayland,
 			 AC_MSG_RESULT([cannot use wayland with tiny features])],
 			[with_wayland=yes
 			 AC_MSG_RESULT([yes])]))
+
+dnl OSC 52 clipboard support.
+AC_MSG_CHECKING(--enable-osc52 argument)
+AC_ARG_ENABLE(osc52,
+ [  --enable-osc52[=OPTS]     OSC 52 Clipboard [default=yes] [OPTS=no/yes/only]], , enable_osc52="no")
+case "$enable_osc52" in
+  no|yes|only) ;;
+  *) AC_MSG_ERROR([--enable-osc52 accepts: no, yes or only]);;
+esac
+AC_MSG_RESULT($enable_osc52)
+
+if test "$enable_osc52" = only; then
+  with_wayland=no
+  with_x=no
+  with_x_arg=no
+fi
 
 if test "$with_wayland" = yes; then
   cppflags_save=$CPPFLAGS
@@ -3388,6 +3403,24 @@ if test "$enable_fontset" = "yes"; then
   AC_DEFINE(FEAT_XFONTSET)
 fi
 
+dnl Finish OSC 52 setup after GUI selection is known.
+if test "$enable_osc52" = yes; then
+  case "$enable_gui_canon:$GUITYPE" in
+    no:NONE|auto:NONE);; # OK
+    *)
+      AC_MSG_ERROR(
+      [--enable-osc52=$enable_osc52 not supported without --enable-gui=no]);;
+  esac
+fi
+
+if test "$enable_osc52" != no; then
+  AC_DEFINE(FEAT_CLIPBOARD_OSC52)
+  if test "$features" = tiny; then
+    AC_DEFINE(FEAT_CLIPBOARD_OSC52_TINY)
+  elif test "$enable_osc52" = only; then
+    AC_DEFINE(FEAT_CLIPBOARD_OSC52_ONLY)
+  fi
+fi
 
 dnl ---------------------------------------------------------------------------
 dnl end of GUI-checking

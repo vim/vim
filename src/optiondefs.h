@@ -641,7 +641,11 @@ static struct vimoption options[] =
 #ifdef HAVE_CLIPMETHOD
 			    (char_u *)&p_cpm, PV_NONE, did_set_clipmethod, expand_set_clipmethod,
 # ifdef UNIX
+#  ifdef FEAT_CLIPBOARD_OSC52_ONLY
+			    {(char_u *)"osc52", (char_u *)0L}
+#  else
 			    {(char_u *)"wayland,x11", (char_u *)0L}
+#  endif
 # elif defined(VMS)
 			    {(char_u *)"x11", (char_u *)0L}
 # else

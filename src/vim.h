@@ -2051,7 +2051,8 @@ typedef int sock_T;
 # define HAVE_CLIPMETHOD
 #endif
 
-#if defined(HAVE_CLIPMETHOD) && defined(FEAT_EVAL)
+#if defined(HAVE_CLIPMETHOD) && defined(FEAT_EVAL) \
+	&& !defined(FEAT_CLIPBOARD_OSC52_ONLY)
 # define FEAT_CLIPBOARD_PROVIDER
 #endif
 
