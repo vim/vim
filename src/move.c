@@ -2687,6 +2687,15 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
     used = curwin->w_cline_height;
 #endif
 
+    if (do_sms && (dy_flags & DY_LASTLINE))
+    {
+	// The rest of the cursor line may be cut off at the bottom.
+	int upto_cursor = plines_win_col(curwin, cln, curwin->w_cursor.col);
+
+	if (upto_cursor < used)
+	    used = upto_cursor;
+    }
+
     // If the cursor is on or below botline, we will at least scroll by the
     // height of the cursor line, which is "used".  Correct for empty lines,
     // which are really part of botline.
