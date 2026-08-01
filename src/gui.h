@@ -422,6 +422,7 @@ typedef struct Gui
 # ifdef FEAT_GUI_DIALOG
     // Multiple dialogs not allowed, just tracked for future use.
     int		dialogs_active;     // number of active GUI dialogs
+    // Suppress focus-in event when focus returns.
     int		dialog_focus_pending;
 # endif
     bool	is_x11;	            // active gdk backend in gtk is x11
