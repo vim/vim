@@ -41,9 +41,6 @@ squeezed to a couple of lines, for example ":help" followed by ":close".  In
 restore_snapshot_rec() restore more values from the snapshot, instead of
 calling frame_new_height() and frame_new_width(), especially w_skipcol.
 
-With 'splitkeep' "screen" the scroll position is lost when splitting and
-closing a window, win_fix_cursor() moves the cursor to another line.
-
 When a help item can't be found, then open 'helpfile'.  Search for the tag in
 that file and gtive E149 only when not found.  Helps for a tiny Vim installed
 without all the help files.
