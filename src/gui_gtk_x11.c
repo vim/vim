@@ -1089,7 +1089,7 @@ focus_in_event(GtkWidget *widget,
 	       gpointer data UNUSED)
 {
 #ifdef FEAT_GUI_DIALOG
-    if (gui.dialog_focus_pending)
+    if (gui.dialog_focus_pending > 0)
     {
 	--gui.dialog_focus_pending;
 	++hold_gui_events;
@@ -1116,10 +1116,10 @@ focus_out_event(GtkWidget *widget UNUSED,
 		GdkEventFocus *event UNUSED,
 		gpointer data UNUSED)
 {
+#ifdef FEAT_GUI_DIALOG
     if (gui.dialogs_active > 0)
-    {
-      ++gui.dialog_focus_pending;
-    }
+	++gui.dialog_focus_pending;
+#endif
 
     gui_focus_change(FALSE);
 
