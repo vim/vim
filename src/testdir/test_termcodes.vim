@@ -2313,7 +2313,7 @@ func Test_modifyOtherKeys_after_partial_mapping()
   " A NL that was not simplified from the key protocol does not use the
   " mapping for CTRL-J.
   %d _
-  call feedkeys("aa\<C-J>\<Esc>", 'Lx!')
+  call feedkeys("aa\<NL>\<Esc>", 'Lx!')
   call assert_equal(['a', ''], getline(1, '$'))
 
   iunmap <C-J>
