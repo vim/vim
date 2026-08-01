@@ -121,4 +121,26 @@ func Test_ColonEight_then_tail()
   call assert_equal(fnamemodify(sfile, ':r'), fnamemodify(file, ':p:8:r'))
 endfunc
 
+" A pattern must not match the short name of a file with a longer extension:
+" the short name of "foo.vim9" is "FOO~1.VIM", which matches "*.vim".
+func Test_glob_short_name_extension()
+  let dir = 'c:/Xtest_glob8'
+  call s:SetupDir(dir)
+  call mkdir(dir, 'D')
+
+  let file = dir . '/foo.vim9'
+  call writefile([], file, 'D')
+  if fnamemodify(file, ':p:8') ==? fnamemodify(file, ':p')
+    throw 'Skipped: 8.3 short names are not created on this volume'
+  endif
+  call writefile([], dir . '/bar.vim', 'D')
+
+  let matches = map(split(glob(dir . '/*.vim'), "\n"), {_, v -> fnamemodify(v, ':t')})
+  call assert_equal(['bar.vim'], matches)
+
+  " A pattern that is a short name still matches.
+  let short = fnamemodify(file, ':p:8:t')
+  call assert_equal([file], split(glob(dir . '/' . short), "\n"))
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

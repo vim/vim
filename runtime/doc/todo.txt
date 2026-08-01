@@ -44,10 +44,6 @@ calling frame_new_height() and frame_new_width(), especially w_skipcol.
 With 'splitkeep' "screen" the scroll position is lost when splitting and
 closing a window, win_fix_cursor() moves the cursor to another line.
 
-Check places that source "path/*.vim" to not match other extensions, e.g.
-.vim9, on MS-Windows (short file name match, gets expanded to long file name).
-E.g. for startup files, plugins, packs, etc.
-
 When a help item can't be found, then open 'helpfile'.  Search for the tag in
 that file and gtive E149 only when not found.  Helps for a tiny Vim installed
 without all the help files.
