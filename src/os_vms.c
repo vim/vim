@@ -1005,9 +1005,11 @@ vms_init(void)
 	    feat_value_max = decc$feature_get_value(feat_index, 3);
 
 	    if ((decc_feat_array[i].value >= feat_value_min) && (decc_feat_array[i].value <= feat_value_max))
+	    {
 		// Valid value.  Set it if necessary
 		if (feat_value != decc_feat_array[i].value)
 		    sts = decc$feature_set_value(feat_index, 1, decc_feat_array[i].value);
+	    }
 	    else
 		// Invalid DECC feature value
 		printf("INVALID DECC FEATURE VALUE, %d: %d <= %s <= %d.\n",
