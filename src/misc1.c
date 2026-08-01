@@ -2430,8 +2430,9 @@ get_cmd_output(
     if (check_restricted() || check_secure())
 	return NULL;
 
-    // get a name for the temp file
-    if ((tempname = vim_tempname('o', FALSE)) == NULL)
+    // Keep the file reserved until the shell opens it.  On MS-Windows,
+    // deleting it here would let another Vim process reuse the same name.
+    if ((tempname = vim_tempname('o', TRUE)) == NULL)
     {
 	emsg(_(e_cant_get_temp_file_name));
 	return NULL;
@@ -2478,7 +2479,6 @@ get_cmd_output(
     if (buffer != NULL)
 	i = (int)fread((char *)buffer, (size_t)1, (size_t)len, fd);
     fclose(fd);
-    mch_remove(tempname);
     if (buffer == NULL)
 	goto done;
 # ifdef VMS
@@ -2502,6 +2502,7 @@ get_cmd_output(
 	*ret_len = len;
 
 done:
+    mch_remove(tempname);
     vim_free(tempname);
     return buffer;
 }
@@ -2955,4 +2956,3 @@ trim_to_int(vimlong_T x)
 {
     return x > INT_MAX ? INT_MAX : x < INT_MIN ? INT_MIN : x;
 }
-
