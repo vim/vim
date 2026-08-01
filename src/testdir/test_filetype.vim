@@ -271,6 +271,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     dylanlid: ['file.lid'],
     earthfile: ['Earthfile'],
     ecd: ['file.ecd'],
+    ed: ['file.ed'],
     edif: ['file.edf', 'file.edif', 'file.edo'],
     editorconfig: ['.editorconfig'],
     eelixir: ['file.eex', 'file.leex'],
@@ -1161,6 +1162,7 @@ def s:GetScriptChecks(): dict<list<list<string>>>
     dart:   [['#!/path/dart']],
     bpftrace:  [['#!/path/bpftrace']],
     vim:    [['#!/path/vim']],
+    ed:     [['#!/usr/bin/ed -f']],
   }
 enddef
 
