@@ -101,4 +101,24 @@ func Test_ColonEight_notexists()
   call assert_equal(non_exists, fnamemodify(non_exists, ':p:8'))
 endfunc
 
+" ":8" replaces the name, the modifiers after it must use the new name.
+func Test_ColonEight_then_tail()
+  let dir = 'c:/Xtest_C8tail'
+  call s:SetupDir(dir)
+
+  let file = dir . '/longfilename.txt'
+
+  call mkdir(dir, 'D')
+  call writefile([], file, 'D')
+
+  let sfile = fnamemodify(file, ':p:8')
+  if sfile ==? fnamemodify(file, ':p')
+    throw 'Skipped: 8.3 short names are not created on this volume'
+  endif
+
+  call assert_equal(fnamemodify(sfile, ':t'), fnamemodify(file, ':p:8:t'))
+  call assert_equal(fnamemodify(sfile, ':e'), fnamemodify(file, ':p:8:e'))
+  call assert_equal(fnamemodify(sfile, ':r'), fnamemodify(file, ':p:8:r'))
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
