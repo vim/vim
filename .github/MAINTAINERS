@@ -544,6 +544,7 @@ runtime/syntax/dot.vim					@mmottl
 runtime/syntax/doxygen.vim				@frogonwheels
 runtime/syntax/dtd.vim					@chrisbra
 runtime/syntax/dts.vim					@zonque
+runtime/syntax/ed.vim					@dkearns
 runtime/syntax/editorconfig.vim				@gpanders
 runtime/syntax/eiffel.vim				@jocelyn
 runtime/syntax/erlang.vim				@hcs42
