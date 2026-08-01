@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.2.  Last change: 2026 May 31
+*eval.txt*	For Vim version 9.2.  Last change: 2026 Jul 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2207,8 +2207,12 @@ v:argv		The command line arguments Vim was invoked with.  This is a
 
 					*v:beval_col* *beval_col-variable*
 v:beval_col	The number of the column, over which the mouse pointer is.
-		This is the byte index in the |v:beval_lnum| line.
-		Only valid while evaluating the 'balloonexpr' option.
+		This is the byte index in the |v:beval_lnum| line.  For
+		zero-width text concealed by 'conceallevel' set to 3, this is
+		the byte index for the character at the drawn screen cell,
+		when |conceal| is active for the window and line.  Only valid
+		while evaluating the 'balloonexpr' option.  Inline virtual
+		text has no buffer byte and may map to adjacent buffer text.
 
 					*v:beval_bufnr* *beval_bufnr-variable*
 v:beval_bufnr	The number of the buffer, over which the mouse pointer is.
@@ -2225,6 +2229,10 @@ v:beval_text	The text under or after the mouse pointer.  Usually a word as
 		']' the text before it is used, including the matching '[' and
 		word before it.  When on a Visual area within one line the
 		highlighted text is used.  Also see |<cexpr>|.
+		For zero-width text concealed by 'conceallevel' set to 3, the
+		drawn screen cell is used to find the text when |conceal| is
+		active for the window and line.  Inline virtual text may
+		resolve to adjacent buffer text.
 		Only valid while evaluating the 'balloonexpr' option.
 
 					*v:beval_winnr* *beval_winnr-variable*

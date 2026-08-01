@@ -17,6 +17,13 @@
 
 # define SEARCH_HL_PRIORITY 0
 
+    static void
+match_changed(win_T *wp)
+{
+    ++wp->w_match_change_tick;
+    wp->w_match_dynamic_valid = false;
+}
+
 /*
  * Add match to the match list of window "wp".
  * If "pat" is not NULL the pattern will be highlighted with the group "grp"
@@ -206,6 +213,7 @@ match_add(
 	prev->mit_next = m;
     m->mit_next = cur;
 
+    match_changed(wp);
     redraw_win_later(wp, rtype);
     return id;
 
@@ -262,6 +270,7 @@ match_delete(win_T *wp, int id, int perr)
     }
     vim_free(cur->mit_pos_array);
     vim_free(cur);
+    match_changed(wp);
     redraw_win_later(wp, rtype);
     return 0;
 }
@@ -273,6 +282,7 @@ match_delete(win_T *wp, int id, int perr)
 clear_matches(win_T *wp)
 {
     matchitem_T *m;
+    bool did_clear = wp->w_match_head != NULL;
 
     while (wp->w_match_head != NULL)
     {
@@ -283,6 +293,8 @@ clear_matches(win_T *wp)
 	vim_free(wp->w_match_head);
 	wp->w_match_head = m;
     }
+    if (did_clear)
+	match_changed(wp);
     redraw_win_later(wp, UPD_SOME_VALID);
 }
 

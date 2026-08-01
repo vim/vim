@@ -1451,6 +1451,12 @@ main_loop(
 	    if (conceal_update_lines
 		    && (conceal_old_cursor_line != conceal_new_cursor_line
 			|| conceal_cursor_line(curwin)
+			|| need_cursor_line_redraw)
+		    && (conceal_old_cursor_line != conceal_new_cursor_line
+			|| (curwin->w_flags & WFLAG_CONCEAL_NO_REDRAW) == 0
+			|| need_cursor_line_redraw)
+		    && (conceal_old_cursor_line == conceal_new_cursor_line
+			|| !conceal_cursor_line(curwin)
 			|| need_cursor_line_redraw))
 	    {
 		if (conceal_old_cursor_line != conceal_new_cursor_line
@@ -1462,6 +1468,8 @@ main_loop(
 		curwin->w_valid &= ~VALID_CROW;
 		need_cursor_line_redraw = FALSE;
 	    }
+	    conceal_update_lines = FALSE;
+	    curwin->w_flags &= ~WFLAG_CONCEAL_NO_REDRAW;
 #endif
 
 	    // Trigger TextChanged if b:changedtick differs.
