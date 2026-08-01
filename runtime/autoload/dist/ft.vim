@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Jul 28
+# Last Change:		2026 Jul 30
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -2053,6 +2053,8 @@ const ft_from_ext = {
   "overlay": "dts",
   # Embedix Component Description
   "ecd": "ecd",
+  # ed(1)
+  "ed": "ed",
   # ERicsson LANGuage; Yaws is erlang too
   "erl": "erlang",
   "hrl": "erlang",

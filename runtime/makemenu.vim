@@ -1,8 +1,8 @@
 vim9script
 
 # Script to define the syntax menu in synmenu.vim
-# Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2025 Mar 09
+# Maintainer:		The Vim Project <https://github.com/vim/vim>
+# Last Change:		2026 Jul 30
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # This is used by "make menu" in the src directory.
@@ -205,6 +205,7 @@ SynMenu DE.Dylan.Dylan\ interface:dylanintr
 SynMenu DE.Dylan.Dylan\ lid:dylanlid
 
 SynMenu DE.EDIF:edif
+SynMenu DE.Ed:ed
 SynMenu DE.Eiffel:eiffel
 SynMenu DE.Eight:8th
 SynMenu DE.Elinks\ config:elinks
