@@ -6919,16 +6919,17 @@ gui_mch_flush(void)
 {
     if (gui.mainwin == NULL || !gtk_widget_get_realized(gui.mainwin))
 	return;
-#if !GTK_CHECK_VERSION(3,0,0)
-       gdk_display_flush(gtk_widget_get_display(gui.mainwin));
-       return;
-#endif
+#if GTK_CHECK_VERSION(3,0,0)
     if (dirty_region != NULL && gui.drawarea != NULL)
     {
 	gtk_widget_queue_draw_region(gui.drawarea, dirty_region);
 	cairo_region_destroy(dirty_region);
 	dirty_region = NULL;
     }
+#else
+       gdk_display_flush(gtk_widget_get_display(gui.mainwin));
+       return;
+#endif
 }
 
 /*
