@@ -1,4 +1,4 @@
-*todo.txt*	For Vim version 9.2.  Last change: 2026 Jul 31
+*todo.txt*	For Vim version 9.2.  Last change: 2026 Aug 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -56,9 +56,6 @@ Virtual text problems:
 -  Virtual text aligned "above": Wrong indentation when using tabs  (Issue
    #12232)
 -  truncated Virtual text below an empty line causes display error #12493
-
-When 'virtualedit' is "all" and 'cursorcolumn' is set, the wrong column may be
-highlighted. (van-de-bugger, 2018 Jan 23, #2576)
 
 Errors when running tests with valgrind:
 - test_codestyle.vim:  e.g.:
