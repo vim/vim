@@ -666,9 +666,11 @@ EXTERN char_u	*p_pvp;		// 'previewpopup'
 EXTERN char_u	*p_pdev;	// 'printdevice'
 # ifdef FEAT_POSTSCRIPT
 EXTERN char_u	*p_penc;	// 'printencoding'
-EXTERN char_u	*p_pexpr;	// 'printexpr'
 EXTERN char_u	*p_pmfn;	// 'printmbfont'
 EXTERN char_u	*p_pmcs;	// 'printmbcharset'
+# endif
+# if defined(FEAT_POSTSCRIPT) || defined(FEAT_PRINT_PANGO)
+EXTERN char_u	*p_pexpr;	// 'printexpr'
 # endif
 EXTERN char_u	*p_pfn;		// 'printfont'
 EXTERN char_u	*p_popt;	// 'printoptions'

@@ -1832,8 +1832,9 @@ extern cursorentry_T shape_table[SHAPE_IDX_COUNT];
 # define OPT_PRINT_COLLATE	11
 # define OPT_PRINT_JOBSPLIT	12
 # define OPT_PRINT_FORMFEED	13
+# define OPT_PRINT_FORMAT	14
 
-# define OPT_PRINT_NUM_OPTIONS	14
+# define OPT_PRINT_NUM_OPTIONS	15
 
 EXTERN option_table_T printer_opts[OPT_PRINT_NUM_OPTIONS]
 # ifdef DO_INIT
@@ -1852,6 +1853,7 @@ EXTERN option_table_T printer_opts[OPT_PRINT_NUM_OPTIONS]
 	{"collate",	FALSE, 0, NULL, 0, FALSE},
 	{"jobsplit", FALSE, 0, NULL, 0, FALSE},
 	{"formfeed", FALSE, 0, NULL, 0, FALSE},
+	{"format", FALSE, 0, NULL, 0, FALSE},
     }
 # endif
     ;

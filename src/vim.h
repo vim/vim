@@ -2780,6 +2780,12 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 # endif
 #endif
 
+#if defined(FEAT_PRINT_PANGO) && defined(FEAT_GUI_GTK) && defined(USE_GTK4)
+# if GTK_CHECK_VERSION(4, 14, 0)
+#  define USE_GTK4_PRINT_DIALOG
+# endif
+#endif
+
 #ifndef FEAT_NETBEANS_INTG
 # undef NBDEBUG
 #endif

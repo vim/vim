@@ -657,6 +657,12 @@ GUI_LIB_LOC
 GUI_INC_LOC
 NARROW_PROTO
 MOTIF_LIBNAME
+CAIRO_CPPFLAGS
+CAIRO_CFLAGS
+CAIRO_LIBS
+PANGO_CPPFLAGS
+PANGO_CFLAGS
+PANGO_LIBS
 GRESOURCE_OBJ
 GRESOURCE_SRC
 UPDATE_DESKTOP_DATABASE
@@ -870,6 +876,7 @@ with_gnome_libs
 with_gnome
 enable_icon_cache_update
 enable_desktop_database_update
+enable_hardcopy_pango
 with_motif_lib
 with_tlib
 enable_largefile
@@ -1546,6 +1553,7 @@ Optional Features:
   --disable-gtktest       Do not try to compile and run a test GTK program
   --disable-icon-cache-update        update disabled
   --disable-desktop-database-update  update disabled
+  --enable-hardcopy-pango     Use Pango and Cairo for improved hardcopy printing. default=yes when GTK GUI enabled
   --disable-largefile     omit support for large files
   --disable-canberra      Do not use libcanberra.
   --disable-libsodium      Do not use libsodium.
@@ -9241,6 +9249,43 @@ else
 printf "%s\n" "no" >&6; }
 fi
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for cairo" >&5
+printf %s "checking for cairo... " >&6; }
+have_cairo="no"
+if "$PKG_CONFIG" --exists 'cairo-ps'; then
+  if "$PKG_CONFIG" --exists 'cairo-pdf'; then
+    have_cairo="yes"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+    CAIRO_CFLAGS=`$PKG_CONFIG --cflags-only-other cairo-ps cairo-pdf`
+    CAIRO_CPPFLAGS=`$PKG_CONFIG --cflags-only-I cairo-ps cairo-pdf`
+    CAIRO_LIBS=`$PKG_CONFIG --libs cairo-ps cairo-pdf`
+  else
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+  fi
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pango" >&5
+printf %s "checking for pango... " >&6; }
+have_pango="no"
+if "$PKG_CONFIG" --exists 'pango' && "$PKG_CONFIG" --exists 'pangocairo'; then
+  have_pango="yes"
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+  PANGO_CFLAGS=`$PKG_CONFIG --cflags-only-other pango pangocairo`
+  PANGO_CPPFLAGS=`$PKG_CONFIG --cflags-only-I pango pangocairo`
+  PANGO_LIBS=`$PKG_CONFIG --libs pango pangocairo`
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
 if test "x$enable_gui" = "xgtk4"; then
   with_x=no
 fi
@@ -11492,6 +11537,58 @@ fi
 
 
 
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-hardcopy-pango argument" >&5
+printf %s "checking --enable-hardcopy-pango argument... " >&6; }
+# Check whether --enable-hardcopy-pango was given.
+if test ${enable_hardcopy_pango+y}
+then :
+  enableval=$enable_hardcopy_pango;
+fi
+
+
+if test "x$have_pango" = "xno" || test "x$have_cairo" = "xno"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, Pango or Cairo not found" >&5
+printf "%s\n" "no, Pango or Cairo not found" >&6; }
+else
+  if test "x$GUITYPE" = "xGTK" || test "x$GUITYPE" = "xGTK4"; then
+    enable_hardcopy_pango="yes"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes, GTK GUI enabled" >&5
+printf "%s\n" "yes, GTK GUI enabled" >&6; }
+  else
+    if test "$enable_hardcopy_pango" = "yes"; then
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+    else
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    fi
+  fi
+fi
+
+if test "$enable_hardcopy_pango" = "yes"; then
+  cppflags_save=$CPPFLAGS
+  cflags_save=$CFLAGS
+
+  printf "%s\n" "#define FEAT_PRINT_PANGO 1" >>confdefs.h
+
+
+  CPPFLAGS="$CPPFLAGS $PANGO_CPPFLAGS"
+  CFLAGS="$CFLAGS $PANGO_CFLAGS"
+
+
+
+
+  CPPFLAGS="$CPPFLAGS $CAIRO_CPPFLAGS"
+  CFLAGS="$CFLAGS $CAIRO_CFLAGS"
+
+
+
+
+  CPPFLAGS=$cppflags_save
+  CFLAGS=$cflags_save
+fi
 
 
 

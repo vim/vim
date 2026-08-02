@@ -2022,7 +2022,7 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"printexpr", "pexpr",  P_STRING|P_VI_DEF|P_SECURE,
-#ifdef FEAT_POSTSCRIPT
+#if defined(FEAT_POSTSCRIPT) || defined(FEAT_PRINT_PANGO)
 			    (char_u *)&p_pexpr, PV_NONE, did_set_optexpr, NULL,
 			    {(char_u *)"", (char_u *)0L}
 #else
@@ -2036,6 +2036,8 @@ static struct vimoption options[] =
 			    {
 # ifdef MSWIN
 				(char_u *)"Courier_New:h10",
+# elif defined(FEAT_PRINT_PANGO)
+				(char_u *)"Courier New 10",
 # else
 				(char_u *)"courier",
 # endif

@@ -1,4 +1,4 @@
-*various.txt*	For Vim version 9.2.  Last change: 2026 Jul 29
+*various.txt*	For Vim version 9.2.  Last change: 2026 Aug 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -482,6 +482,7 @@ m  *+perl/dyn*		Perl interface |perl-dynamic| |/dyn|
 N  *+persistent_undo*	Persistent undo |undo-persistence|
 N  *+popupwin*		Popup windows |popup-window|
    *+postscript*	|:hardcopy| writes a PostScript file
+   *+pango*		|:hardcopy| uses Pango and Cairo to render pages
 N  *+printer*		|:hardcopy| command
 H  *+profile*		|:profile| command
 m  *+python*		Python 2 interface |python|
