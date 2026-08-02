@@ -69,7 +69,7 @@ jobs:
             compiler: gcc
             coverage: true
             interface: dynamic
-            extra: [uchar, testgui, use_gtk4]
+            extra: [uchar, testgui, use_gtk3]
           - features: huge
             compiler: gcc
             coverage: true

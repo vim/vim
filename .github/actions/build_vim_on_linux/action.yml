@@ -237,8 +237,8 @@ runs:
         if ${{ contains(fromJSON(inputs.extra), 'testgui') }}; then
           echo "TEST=-C src testgui"
         fi
-        if ${{ contains(fromJSON(inputs.extra), 'use_gtk4') }}; then
-          CONFOPT="${CONFOPT} --enable-gui=gtk4"
+        if ${{ contains(fromJSON(inputs.extra), 'use_gtk3') }}; then
+          CONFOPT="${CONFOPT} --enable-gui=gtk3"
         fi
         if ${{ contains(fromJSON(inputs.extra), 'unittests') }}; then
           echo "TEST=unittests"
