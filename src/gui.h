@@ -22,7 +22,6 @@ typedef void *XtAppContext;
 typedef void  Display;
 typedef unsigned long Window;
 typedef unsigned long Atom;
-typedef GdkEvent GdkEventKey;	// GTK4: GdkEventKey merged into GdkEvent
 # else
 #  include <X11/Intrinsic.h>
 # endif
