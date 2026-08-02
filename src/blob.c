@@ -775,6 +775,117 @@ blob_insert_func(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Extend "b1" with "b2".  "b1" must not be NULL.
+ * If "bef" is equal to the length of b1 append at the end,
+ * otherwise insert before this index.
+ * Caller must check that "bef" is valid.
+ * Returns FAIL when out of memory.
+ */
+    static int
+blob_extend(blob_T *b1, blob_T *b2, int bef)
+{
+    int		len1, len2;
+    char_u	*p1, *p2;
+
+    // NULL blob is equivalent to an empty blob: nothing to do.
+    if (b2 == NULL || b2->bv_ga.ga_len == 0)
+	return OK;
+
+    len1 = b1->bv_ga.ga_len;
+    len2 = b2->bv_ga.ga_len;
+
+    if (ga_grow(&b1->bv_ga, len2) == FAIL)
+	return FAIL;
+
+    p1 = (char_u *)b1->bv_ga.ga_data;
+    p2 = (char_u *)b2->bv_ga.ga_data;
+
+    if (p1 == p2)
+    {
+	// Inserting a blob into itself
+	mch_memmove(p1 + bef, p1, (size_t)len1);
+	if (bef < len1)
+	    memcpy(p1 + bef + len1, p1 + bef * 2, (size_t)len1 - bef);
+    }
+    else
+    {
+	if (bef < len1)
+	    mch_memmove(p1 + bef + len2, p1 + bef, (size_t)len1 - bef);
+
+	memcpy(p1 + bef, p2, (size_t)len2);
+    }
+
+    b1->bv_ga.ga_len += len2;
+
+    return OK;
+}
+
+/*
+ * extend() a Blob. Append Blob argvars[1] to Blob argvars[0] before index
+ * argvars[3] and return the resulting blob in "rettv".  "is_new" is TRUE for
+ * extendnew().
+ */
+    void
+blob_extend_func(
+	typval_T	*argvars,
+	char		*func_name UNUSED,
+	char_u		*arg_errmsg,
+	int		is_new,
+	typval_T	*rettv)
+{
+    blob_T	*b1, *b2;
+    int		before;
+    int		error = FALSE;
+
+    b1 = argvars[0].vval.v_blob;
+    if (b1 == NULL)
+    {
+	emsg(_(e_cannot_extend_null_blob));
+	return;
+    }
+    if (is_new || !value_check_lock(b1->bv_lock, arg_errmsg, TRUE))
+    {
+	if (is_new)
+	{
+	    if (blob_copy(b1, rettv) == FAIL)
+		return;
+	    b1 = rettv->vval.v_blob;
+	}
+
+	b2 = argvars[1].vval.v_blob;
+	if (b2 == NULL)
+	    goto theend;
+
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    before = (long)tv_get_number_chk(&argvars[2], &error);
+	    if (error)
+		goto cleanup;		// type error; errmsg already given
+	    if (before < 0)
+		before = b1->bv_ga.ga_len + before;
+	    if (before < 0 || before > b1->bv_ga.ga_len)
+	    {
+		semsg(_(e_blob_index_out_of_range_nr), before);
+		goto cleanup;
+	    }
+	}
+	else
+	    before = b1->bv_ga.ga_len;
+	blob_extend(b1, b2, before);
+
+
+theend:
+	if (!is_new)
+	    copy_tv(&argvars[0], rettv);
+	return;
+
+cleanup:
+	if (is_new)
+	    blob_unref(b1);
+    }
+}
+
+/*
  * Implementation of reduce() for Blob "argvars[0]" using the function "expr"
  * starting with the optional initial value "argvars[2]" and return the result
  * in "rettv".
