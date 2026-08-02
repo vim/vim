@@ -258,7 +258,9 @@ static int query_pointer_pos(int *x, int *y, GdkModifierType *state);
 static void mainwin_fullscreened_cb(GObject *obj, GParamSpec *pspec, gpointer user_data);
 static void drawarea_realize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_unrealize_cb(GtkWidget *widget, gpointer data);
+#if defined(FEAT_IMAGE)
 static void scale_factor_cb(GdkSurface *surface, GParamSpec *pspec, void *udata);
+#endif
 static void clipboard_changed_cb(GdkClipboard *clipboard, gpointer user_data);
 #ifdef FEAT_MENU
 static void show_menubar_popover(void);
@@ -2130,6 +2132,7 @@ focus_out_event(GtkEventControllerFocus *controller UNUSED,
     static void
 drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 {
+#if defined(FEAT_IMAGE)
     // Use GdkSurface, as that handles fractional scale values.
     GdkSurface *surface = gtk_native_get_surface(
 	    gtk_widget_get_native(gui.drawarea));
@@ -2139,7 +2142,7 @@ drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
     popup_update_scale(old);
     g_signal_connect(G_OBJECT(surface), "notify::scale",
 	    G_CALLBACK(scale_factor_cb), NULL);
-
+#endif
     gui_mch_new_colors();
 }
 
@@ -2151,18 +2154,18 @@ drawarea_unrealize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 #endif
 }
 
+#if defined(FEAT_IMAGE)
     static void
-scale_factor_cb(GdkSurface  *surface,
+scale_factor_cb(GdkSurface  *surface UNUSED,
 	GParamSpec	    *pspec UNUSED,
 	void		    *udata UNUSED)
 {
-#if defined(FEAT_IMAGE)
     double old = gui.scale;
 
     gui.scale = gdk_surface_get_scale(surface);
     popup_update_scale(old);
-#endif
 }
+#endif
 
 typedef enum
 {
