@@ -5361,6 +5361,8 @@ typedef struct {
     char	cts_has_prop_with_text;	// TRUE if a property inserts text
     int		cts_cur_text_width;	// width of current inserted text
     int		cts_prop_lines;		// nr of properties above or below
+    bool	cts_has_below;		// true if a text property below was
+					// counted, its width fills up the line
     int		cts_first_char;		// width text props above the line
     int		cts_above_width;	// width of text props above the line,
 					// kept for the whole line
