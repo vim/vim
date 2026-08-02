@@ -3229,6 +3229,27 @@ func Test_prop_with_text_above_below_empty()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_prop_with_text_below_empty_truncated()
+  " Use a fixed size, the virtual text must be wider than the text area.
+  call NewWindow(12, 40)
+  setlocal number
+  call setline(1, ['11111', '', '33333', '', '55555'])
+
+  call prop_type_add('belowprop', #{highlight: 'Directory'})
+  for ln in range(1, 5)
+    call prop_add(ln, 0, #{type: 'belowprop',
+	  \ text: repeat('+', winwidth(0)), text_align: 'below'})
+  endfor
+  normal! G
+  redraw
+
+  " Every line takes two screen lines: the line and the virtual text below it.
+  call assert_equal(9, winline())
+
+  call prop_type_delete('belowprop')
+  bwipe!
+endfunc
+
 func Test_prop_multiple_lines_above()
   CheckScreendump
   CheckRunVimInTerminal

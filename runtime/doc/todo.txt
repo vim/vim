@@ -51,7 +51,6 @@ without all the help files.
 Virtual text problems:
 -  Virtual text aligned "above": Wrong indentation when using tabs  (Issue
    #12232)
--  truncated Virtual text below an empty line causes display error #12493
 
 Errors when running tests with valgrind:
 - test_gui.vim:

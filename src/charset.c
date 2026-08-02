@@ -921,9 +921,10 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
 	int head = 0;
 	(void)win_lbr_chartabsize(cts, &head, NULL);
 	vcol += cts->cts_cur_text_width + head;
-	// when properties are above or below the empty line must also be
-	// counted
-	if (cts->cts_ptr == cts->cts_line && cts->cts_prop_lines > 0)
+	// When properties are above the empty line must also be counted.  For
+	// a property below the width already includes filling up the line.
+	if (cts->cts_ptr == cts->cts_line && cts->cts_prop_lines > 0
+							 && !cts->cts_has_below)
 	    ++vcol;
 	cts->cts_vcol = vcol > MAXCOL ? MAXCOL : (int)vcol;
     }
@@ -1260,6 +1261,7 @@ win_lbr_chartabsize(
 
 #if defined(FEAT_PROP_POPUP)
     cts->cts_cur_text_width = 0;
+    cts->cts_has_below = false;
     cts->cts_first_char = 0;
 #endif
 
@@ -1373,8 +1375,12 @@ win_lbr_chartabsize(
 #  endif
 		    if (tp->tp_col == MAXCOL && (tp->tp_flags
 				& (TP_FLAG_ALIGN_ABOVE | TP_FLAG_ALIGN_BELOW)))
+		    {
 			// count extra line for property above/below
 			++cts->cts_prop_lines;
+			if (tp->tp_flags & TP_FLAG_ALIGN_BELOW)
+			    cts->cts_has_below = true;
+		    }
 		}
 	    }
 	    if (tp->tp_col != MAXCOL && tp->tp_col - 1 > col)
