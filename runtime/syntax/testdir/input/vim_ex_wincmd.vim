@@ -59,9 +59,14 @@ def Vim9Context()
   var wincmd = 42
   wincmd = 42
   :wincmd =
+
+  # KNOWN: incorrectly match as the Ex command rather than a variable
   wincmd = # comment
-  wincmd = | echo "Foo"
-  # KNOWN: incorrectly matches as the Ex command rather than a variable
+  42
   wincmd =
+  42
+
+  # E1143: Empty expression
+  wincmd = | echo "Foo"
 enddef
 

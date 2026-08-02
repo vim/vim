@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.2.  Last change: 2026 Jul 29
+*syntax.txt*	For Vim version 9.2.  Last change: 2026 Aug 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4156,6 +4156,7 @@ Some folding is now supported with when 'foldmethod' is set to "syntax": >
    g:vimsyn_folding =~# 'P' : fold Python   heredocs
    g:vimsyn_folding =~# 'r' : fold Ruby     heredocs
    g:vimsyn_folding =~# 't' : fold Tcl      heredocs
+   g:vimsyn_folding =~# 'T' : fold :append, :change and :insert
 <
 
 By default, g:vimsyn_folding is unset.  Concatenate the indicated characters
