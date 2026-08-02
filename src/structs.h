@@ -5359,6 +5359,8 @@ typedef struct {
     int		cts_cur_text_width;	// width of current inserted text
     int		cts_prop_lines;		// nr of properties above or below
     int		cts_first_char;		// width text props above the line
+    int		cts_above_width;	// width of text props above the line,
+					// kept for the whole line
     int		cts_with_trailing;	// include size of trailing props with
 					// last character
     int		cts_start_incl;		// prop has true "start_incl" arg

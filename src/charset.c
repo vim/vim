@@ -1285,11 +1285,18 @@ win_lbr_chartabsize(
 
 #if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
     int has_lcs_eol = wp->w_p_list && wp->w_lcs_chars.eol != NUL;
+    // Virtual text above the line is on its own screen line, it does not count
+    // for the size of a Tab.
+    colnr_T tab_vcol = vcol;
+
+# ifdef FEAT_PROP_POPUP
+    tab_vcol -= cts->cts_above_width;
+# endif
 
     /*
      * First get the normal size, without 'linebreak' or text properties
      */
-    size = win_chartabsize(wp, s, vcol);
+    size = win_chartabsize(wp, s, tab_vcol);
 # ifdef FEAT_LINEBREAK
     if (*s == NUL)
     {
@@ -1367,7 +1374,8 @@ win_lbr_chartabsize(
 		    {
 			// tab size changes because of the inserted text
 			size -= tab_size;
-			tab_size = win_chartabsize(wp, s, vcol + size);
+			tab_size = win_chartabsize(wp, s,
+					vcol + size - cts->cts_above_width);
 			size += tab_size;
 		    }
 #  endif
@@ -1549,6 +1557,10 @@ win_lbr_chartabsize(
 	*tailp = size - size_before_lbr;
 
 #  ifdef FEAT_PROP_POPUP
+    if (cts->cts_first_char > 0)
+	// Remember the width for the size of a Tab later in the line.  Use
+	// assignment, this may be called more than once for a character.
+	cts->cts_above_width = cts->cts_first_char;
     size += cts->cts_first_char;
 #  endif
 # endif
