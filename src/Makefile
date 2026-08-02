@@ -4546,7 +4546,7 @@ objects/gui_gtk4.o: auto/osdef.h gui_gtk4.c vim.h protodef.h auto/config.h featu
  ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
- globals.h errors.h gui_gtk4_f.h auto/gui_gtk_gresources.h \
+ globals.h errors.h gui_gtk4_f.h \
  gui_gtk4_cb.h gui_gtk4_da.h gui_gtk4_tb.h gui_gtk4_menu.h
 objects/gui_gtk4_f.o: auto/osdef.h gui_gtk4_f.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
