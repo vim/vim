@@ -2156,7 +2156,7 @@ drawarea_unrealize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 
 #if defined(FEAT_IMAGE)
     static void
-scale_factor_cb(GdkSurface  *surface UNUSED,
+scale_factor_cb(GdkSurface  *surface,
 	GParamSpec	    *pspec UNUSED,
 	void		    *udata UNUSED)
 {

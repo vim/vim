@@ -162,7 +162,9 @@ struct _VimDrawArea
 #endif
 };
 
+#ifdef FEAT_IMAGE_GDK
 static void draw_image_free(DrawImage *dimg);
+#endif
 static void draw_row_init(DrawRow *drow, int row, int cols);
 static void draw_row_clear(DrawRow *drow);
 static void draw_row_dirty_layer(DrawRow *drow, DrawLayerType dlayer_t);
