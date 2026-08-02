@@ -2843,6 +2843,41 @@ def Test_import_autoload_postponed()
   &rtp = save_rtp
 enddef
 
+def Test_import_autoload_func_as_value()
+  var lines =<< trim END
+      vim9script
+      export def Exported(): string
+        return 'exported'
+      enddef
+  END
+  writefile(lines, 'XimportRelFunc.vim', 'D')
+  writefile(lines, 'XimportRelFunc2.vim', 'D')
+
+  # Using the exported function as a value, not calling it.
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRelFunc.vim'
+      def Func()
+        var Fn: func = XimportRelFunc.Exported
+        assert_equal('exported', Fn())
+      enddef
+      Func()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # The script is not loaded yet when compiling, thus the name is only
+  # checked when the function runs.
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRelFunc2.vim'
+      def Func()
+        var Fn: func = XimportRelFunc2.NoSuchFunc
+      enddef
+      Func()
+  END
+  v9.CheckScriptFailure(lines, 'E121: Undefined variable: NoSuchFunc', 1)
+enddef
+
 def Test_import_autoload_override()
   mkdir('Xoverdir/autoload', 'pR')
   var save_rtp = &rtp
