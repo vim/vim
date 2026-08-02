@@ -189,12 +189,10 @@ static int im_preedit_cursor   = 0;	// cursor offset in characters
 static int im_preedit_trailing = 0;	// number of characters after cursor
 
 static unsigned long im_commit_handler_id  = 0;
-#  ifdef USE_GTK4
+#  ifndef USE_GTK4
 static unsigned int  im_activatekey_keyval = GDK_KEY_VoidSymbol;
-#  else
-static unsigned int  im_activatekey_keyval = GDK_VoidSymbol;
-#  endif
 static unsigned int  im_activatekey_state  = 0;
+#  endif
 
 static GtkWidget *preedit_window = NULL;
 static GtkWidget *preedit_label = NULL;
