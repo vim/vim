@@ -1157,7 +1157,7 @@ draw_row_render_special(DrawRow *drow, VimDrawArea *da)
     {
 	dlayer->node = gsk_container_node_new(nodes, 2);
 	// gsk_container_node_new() takes its own ref
-	for (int i = 0; i < ARRAY_LENGTH(nodes); i++)
+	for (int i = 0; i < (int)ARRAY_LENGTH(nodes); i++)
 	    gsk_render_node_unref(nodes[i]);
     }
 

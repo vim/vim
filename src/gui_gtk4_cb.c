@@ -55,7 +55,7 @@ vim_content_provider_class_init(VimContentProviderClass *class)
 }
 
     static void
-vim_content_provider_init(VimContentProvider *self)
+vim_content_provider_init(VimContentProvider *self UNUSED)
 {
 }
 
@@ -76,7 +76,7 @@ vim_content_provider_ref_formats(GdkContentProvider *cp UNUSED)
     // html if user specified 'html' in 'clipboard' option.
     GdkContentFormatsBuilder *builder = gdk_content_formats_builder_new();
 
-    for (int i = 0; i < SUPPORTED_MIMES_LEN; i++)
+    for (size_t i = 0; i < SUPPORTED_MIMES_LEN; i++)
     {
 	if (STRCMP(supported_mimes[i], "text/html") == 0 && !clip_html)
 	    continue;
@@ -190,7 +190,7 @@ vim_content_provider_write_mime_type_async(
 
     static gboolean
 vim_content_provider_write_mime_type_finish(
-	GdkContentProvider  *cp,
+	GdkContentProvider  *cp UNUSED,
 	GAsyncResult	    *result,
 	GError		    **error)
 {

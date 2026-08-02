@@ -1952,7 +1952,7 @@ static double prev_mouse_y = -1.0;
 static GdkModifierType cur_state = 0;
 
     static timeout_cb_type
-mouse_repeat_timer_cb(gpointer data)
+mouse_repeat_timer_cb(gpointer data UNUSED)
 {
     int x, y;
 
@@ -2334,7 +2334,7 @@ gui_gtk_set_dnd_targets(void)
  * Handle textual DND data. Note that this does not finish the drop.
  */
     static void
-drop_read_text(GdkDrop *drop, char_u *text)
+drop_read_text(GdkDrop *drop UNUSED, char_u *text)
 {
     GdkModifierType state;
     char_u	    dropkey[6] = {
@@ -3080,7 +3080,7 @@ on_tab_reordered(
  * Handle selecting an item in the tab line popup menu.
  */
     static void
-tabline_menu_event_cb(VimMenuItem *item, VimMenuItemEvent event, void *udata)
+tabline_menu_event_cb(VimMenuItem *item UNUSED, VimMenuItemEvent event, void *udata)
 {
     if (event == VIM_MENU_ITEM_CLICKED)
 	send_tabline_menu_event(tabpage_hover, GPOINTER_TO_INT(udata));
@@ -3399,7 +3399,7 @@ get_menu_tool_height(void)
 
     int height = 0;
 
-    for (int i = 0; i < ARRAY_LENGTH(widgets); i++)
+    for (int i = 0; i < (int)ARRAY_LENGTH(widgets); i++)
     {
 	GtkRequisition	min;
 	GtkRequisition	nat;
@@ -3777,7 +3777,7 @@ create_toolbar_icon(vimmenu_T *menu)
 
     static void
 menu_button_clicked_cb(
-	VimMenuItem	    *item,
+	VimMenuItem	    *item UNUSED,
 	VimMenuItemEvent    event,
 	vimmenu_T	    *menu)
 {
@@ -4473,7 +4473,7 @@ typedef struct
 } DialogState;
 
     static void
-dialog_button_clicked_cb(GtkButton *button, DialogButtonState *state)
+dialog_button_clicked_cb(GtkButton *button UNUSED, DialogButtonState *state)
 {
     *state->response = state->but_idx;
     *state->done = TRUE;
@@ -4481,9 +4481,9 @@ dialog_button_clicked_cb(GtkButton *button, DialogButtonState *state)
 
     static gboolean
 dialog_key_pressed_cb(
-	GtkEventControllerKey	*controller,
+	GtkEventControllerKey	*controller UNUSED,
 	guint			keyval,
-	guint			keycode,
+	guint			keycode UNUSED,
 	GdkModifierType		state,
 	DialogState		*dstate)
 {
@@ -4499,7 +4499,7 @@ dialog_key_pressed_cb(
 }
 
     static gboolean
-dialog_close_request_cb(GtkWindow *win, gboolean *win_closed)
+dialog_close_request_cb(GtkWindow *win UNUSED, gboolean *win_closed)
 {
     *win_closed = TRUE;
     return FALSE;
@@ -4798,9 +4798,9 @@ entry_changed_cb(GtkWidget *entry, GtkWidget *dialog)
 
     static gboolean
 find_key_pressed_cb(
-	GtkEventControllerKey	*controller,
+	GtkEventControllerKey	*controller UNUSED,
 	guint			keyval,
-	guint			keycode,
+	guint			keycode UNUSED,
 	GdkModifierType		state,
 	SharedFindReplace	*frdp)
 {
