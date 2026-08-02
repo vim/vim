@@ -68,6 +68,11 @@ jobs:
           - features: huge
             compiler: gcc
             coverage: true
+            interface: dynamic
+            extra: [uchar, testgui, use_gtk4]
+          - features: huge
+            compiler: gcc
+            coverage: true
             extra: [unittests]
           - features: huge
             compiler: gcc
