@@ -2035,6 +2035,14 @@ func Test_splitkeep_cmdheight()
 endfunc
 
 func Test_aucmd_win_scroll_multibyte()
+  " The assertion below compares the window topline before and after using
+  " the autocommand window, which assumes the window geometry stays the
+  " same.  In the GUI a resize event from the window manager may be
+  " processed in between and legitimately change the topline, making the
+  " test flaky.  The plines_win_col() logic being tested is not
+  " GUI-specific.
+  CheckNotGui
+
   " Using the autocommand window must not scroll the current window when the
   " cursor is behind multi-byte characters.
   set splitkeep=cursor
