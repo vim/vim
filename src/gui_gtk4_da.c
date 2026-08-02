@@ -1036,6 +1036,7 @@ draw_row_render_text(DrawRow *drow, VimDrawArea *da)
 	    empty_cells++;
 	    continue;
 	}
+#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SIGN_ICONS)
 	else if (dglyphs->font == NULL)
 	{
 	    // Add sign icon
@@ -1057,6 +1058,7 @@ draw_row_render_text(DrawRow *drow, VimDrawArea *da)
 			// loop
 	    continue;
 	}
+#endif
 	else if (dglyphs->font != cur_font || cur_fg != dglyphs->fg_color)
 	{
 	    FLUSH_NODE();

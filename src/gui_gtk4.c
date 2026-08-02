@@ -3693,6 +3693,9 @@ static int last_text_area_h = 0;
  * ============================================================
  */
 
+#ifdef FEAT_MENU
+
+# ifdef FEAT_TOOLBAR
 /*
  * Icon name table for toolbar buttons.
  * Must match toolbar_names[] in menu.c.
@@ -3777,6 +3780,7 @@ create_toolbar_icon(vimmenu_T *menu)
 
     return image;
 }
+# endif
 
     static void
 menu_button_clicked_cb(
@@ -3873,7 +3877,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 {
     vimmenu_T	*parent = menu->parent;
 
-#ifdef FEAT_TOOLBAR
+# ifdef FEAT_TOOLBAR
     if (parent != NULL && menu_is_toolbar(parent->name))
     {
 	if (menu_is_separator(menu->name))
@@ -3907,7 +3911,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	}
 	return;
     }
-#endif
+# endif
 
     // Menu items (non-toolbar)
     if (parent == NULL || parent->submenu_id == NULL)
@@ -4031,6 +4035,8 @@ show_menubar_popover(void)
     g_signal_connect(menu, "closed", G_CALLBACK(popupmenu_closed_cb), NULL);
     gtk_popover_popup(GTK_POPOVER(menu));
 }
+
+#endif // FEAT_MENU
 
 /*
  * ============================================================
