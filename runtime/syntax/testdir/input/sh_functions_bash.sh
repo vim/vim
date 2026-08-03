@@ -3,7 +3,7 @@
 # VIM_TEST_SETUP let g:sh_fold_enabled = 1 + 2 + 4
 # VIM_TEST_SETUP highlight link shFunctionExprRegion Todo
 # VIM_TEST_SETUP highlight link shFunctionSubShRegion Todo
-
+# VIM_TEST_SETUP let g:sh_no_error_rules = ['shDerefWordError']
 
 
 
