@@ -1412,9 +1412,6 @@ gui_update_cursor(
 	    }
 	    break;
 	}
-    // gui_redraw_block() may invalidate the cursor, make sure to validate
-    // it again.
-    gui.cursor_is_valid = true;
 
 # ifndef USE_GTK4
     if ((lig_left || lig_right) && shape->shape != SHAPE_BLOCK)
@@ -1430,6 +1427,9 @@ gui_update_cursor(
 	gui.col = old;
     }
 # endif
+    // gui_redraw_block()/gui_screenchar() may invalidate the cursor, make sure
+    // to validate it again.
+    gui.cursor_is_valid = true;
 #endif
 
     old_hl_mask = gui.highlight_mask;
