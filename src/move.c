@@ -2790,6 +2790,7 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 		)
 	    break;
 
+	linenr_T loff_lnum_before = loff.lnum;
 	// Add one line above
 	topline_back(&loff);
 	if (loff.height == MAXCOL)
@@ -2808,15 +2809,13 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 	    // Count screen lines that are below the window.
 	    scrolled += loff.height;
 	    if (loff.lnum == curwin->w_botline
-#ifdef FEAT_DIFF
-			    && loff.fill == 0
-#endif
-		    )
+		    && loff_lnum_before > curwin->w_botline)
 		scrolled -= curwin->w_empty_rows;
 	}
 
 	if (boff.lnum < curbuf->b_ml.ml_line_count)
 	{
+	    linenr_T boff_lnum_before = boff.lnum;
 	    // Add one line below
 	    botline_forw(&boff);
 	    used += boff.height;
@@ -2835,11 +2834,8 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 		{
 		    // Count screen lines that are below the window.
 		    scrolled += boff.height;
-		    if (boff.lnum == curwin->w_botline
-#ifdef FEAT_DIFF
-			    && boff.fill == 0
-#endif
-			    )
+		    if (boff.lnum >= curwin->w_botline
+			    && boff_lnum_before < curwin->w_botline)
 			scrolled -= curwin->w_empty_rows;
 		}
 	    }
