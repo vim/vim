@@ -3005,9 +3005,12 @@ next_for_item(void *fi_void, char_u *arg)
 	++fi->fi_tuple_idx;
 	++fi->fi_bi;
 	if (skip_assign)
-	    return TRUE;
-	return ex_let_vars(arg, &tv, TRUE, fi->fi_semicolon,
+	    result = TRUE;
+	else
+	    result = ex_let_vars(arg, &tv, TRUE, fi->fi_semicolon,
 					    fi->fi_varcount, flag, NULL) == OK;
+	clear_tv(&tv);
+	return result;
     }
 
     item = fi->fi_lw.lw_item;
