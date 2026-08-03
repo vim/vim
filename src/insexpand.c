@@ -136,6 +136,34 @@ static compl_T    *compl_curr_match = NULL;
 static compl_T    *compl_shown_match = NULL;
 static compl_T    *compl_old_match = NULL;
 
+// Hashtab with the strings of the matches in the list above, except the
+// original-text entries.  Keys are the cp_str.string pointers of the
+// matches.  Used to make the duplicate check O(1) instead of a scan of the
+// whole list.  When matches were added with "adup" the list can hold
+// duplicates; only the first added is present in the hashtab then.
+static hashtab_T  compl_strings_ht;
+static int	  compl_strings_ready = FALSE;
+
+/*
+ * Add the string of "match" to the duplicate-check hashtab, unless an equal
+ * string is already there.
+ */
+    static void
+compl_strings_add(compl_T *match)
+{
+    hashitem_T	*hi;
+
+    if (!compl_strings_ready)
+    {
+	hash_init(&compl_strings_ht);
+	compl_strings_ready = TRUE;
+    }
+    hi = hash_find(&compl_strings_ht, match->cp_str.string);
+    if (HASHITEM_EMPTY(hi))
+	(void)hash_add(&compl_strings_ht, match->cp_str.string,
+							 "completion match");
+}
+
 // list used to store the compl_T which have the max score
 static compl_T	  **compl_best_matches = NULL;
 static int	  compl_num_bests = 0;
@@ -902,6 +930,7 @@ ins_compl_add(
     int		dir = (cdir == 0 ? compl_direction : cdir);
     int		flags = flags_arg;
     int		inserted = FALSE;
+    char_u	*new_str = NULL;
 
     if (flags & CP_FAST)
 	fast_breakcheck();
@@ -915,20 +944,39 @@ ins_compl_add(
     // If the same match is already present, don't add it.
     if (compl_first_match != NULL && !adup)
     {
-	match = compl_first_match;
-	do
+	if (is_nearest_active())
 	{
-	    if (!match_at_original_text(match)
-		    && STRNCMP(match->cp_str.string, str, len) == 0
-		    && ((int)match->cp_str.length <= len
-						 || match->cp_str.string[len] == NUL))
+	    // Scan all matches, an existing match may need its score
+	    // updated.
+	    match = compl_first_match;
+	    do
 	    {
-		if (is_nearest_active() && score > 0 && score < match->cp_score)
-		    match->cp_score = score;
+		if (!match_at_original_text(match)
+			&& STRNCMP(match->cp_str.string, str, len) == 0
+			&& ((int)match->cp_str.length <= len
+					  || match->cp_str.string[len] == NUL))
+		{
+		    if (score > 0 && score < match->cp_score)
+			match->cp_score = score;
+		    return NOTDONE;
+		}
+		match = match->cp_next;
+	    } while (match != NULL && !is_first_match(match));
+	}
+	else if (compl_strings_ready)
+	{
+	    // Look up the string in the hashtab, much faster than scanning
+	    // all matches.  The NUL-terminated copy made for the lookup is
+	    // used for the new match below.
+	    new_str = vim_strnsave(str, len);
+	    if (new_str == NULL)
+		return FAIL;
+	    if (!HASHITEM_EMPTY(hash_find(&compl_strings_ht, new_str)))
+	    {
+		vim_free(new_str);
 		return NOTDONE;
 	    }
-	    match = match->cp_next;
-	} while (match != NULL && !is_first_match(match));
+	}
     }
 
     // Remove any popup menu before changing the list of matches.
@@ -938,14 +986,19 @@ ins_compl_add(
     // Copy the values to the new match structure.
     match = ALLOC_CLEAR_ONE(compl_T);
     if (match == NULL)
+    {
+	vim_free(new_str);
 	return FAIL;
+    }
     match->cp_number = flags & CP_ORIGINAL_TEXT ? 0 : -1;
-    if ((match->cp_str.string = vim_strnsave(str, len)) == NULL)
+    if (new_str == NULL)
+	new_str = vim_strnsave(str, len);
+    if (new_str == NULL)
     {
 	vim_free(match);
 	return FAIL;
     }
-
+    match->cp_str.string = new_str;
     match->cp_str.length = len;
 
     // match-fname is:
@@ -1034,6 +1087,10 @@ ins_compl_add(
     else	// if there's nothing before, it is the first match
 	compl_first_match = match;
     compl_curr_match = match;
+
+    // Keep the hashtab used for the duplicate check up to date.
+    if (!match_at_original_text(match))
+	compl_strings_add(match);
 
     // Find the longest common string if still doing that.
     if (compl_get_longest && (flags & CP_ORIGINAL_TEXT) == 0 && !cot_fuzzy()
@@ -2263,6 +2320,16 @@ find_line_end(char_u *ptr)
     static void
 ins_compl_item_free(compl_T *match)
 {
+    // Remove the match string from the duplicate-check hashtab.  With
+    // duplicate strings in the list only the first added one is in the
+    // hashtab, compare the pointer to only remove that one.
+    if (compl_strings_ready && match->cp_str.string != NULL)
+    {
+	hashitem_T *hi = hash_find(&compl_strings_ht, match->cp_str.string);
+
+	if (!HASHITEM_EMPTY(hi) && hi->hi_key == match->cp_str.string)
+	    hash_remove(&compl_strings_ht, hi, "completion match");
+    }
     VIM_CLEAR_STRING(match->cp_str);
     // several entries may use the same fname, free it just once.
     if (match->cp_flags & CP_FREE_FNAME)
@@ -2302,6 +2369,14 @@ ins_compl_free(void)
     compl_first_match = compl_curr_match = NULL;
     compl_shown_match = NULL;
     compl_old_match = NULL;
+
+    // The removals above emptied the duplicate-check hashtab, shrink its
+    // array back to the initial size.
+    if (compl_strings_ready)
+    {
+	hash_clear(&compl_strings_ht);
+	hash_init(&compl_strings_ht);
+    }
 }
 
 /*
