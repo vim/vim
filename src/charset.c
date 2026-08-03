@@ -408,8 +408,11 @@ transstr(char_u *s)
 	}
 	else
 	{
-	    STRCPY(d, transchar_byte(*p++));
-	    d += STRLEN(d);
+	    char_u	*trs = transchar_byte(*p++);
+	    int		trs_len = (int)STRLEN(trs);
+
+	    mch_memmove(d, trs, (size_t)trs_len);
+	    d += trs_len;
 	}
     }
     *d = NUL;
