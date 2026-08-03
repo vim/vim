@@ -4180,9 +4180,30 @@ exec_instructions(ectx_T *ectx)
 
 		    if (di == NULL)
 		    {
-			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_(e_undefined_variable_str), name);
-			goto on_error;
+			ufunc_T	*ufunc = NULL;
+
+			if (iptr->isn_type == ISN_LOADEXPORT)
+			{
+			    type_T	*type;
+
+			    // Not a variable, it can be an exported function
+			    // used as a value.
+			    (void)find_exported(sid, name, &ufunc, &type,
+							 NULL, NULL, FALSE);
+			}
+			if (ufunc == NULL)
+			{
+			    SOURCING_LNUM = iptr->isn_lnum;
+			    semsg(_(e_undefined_variable_str), name);
+			    goto on_error;
+			}
+			if (GA_GROW_FAILS(&ectx->ec_stack, 1))
+			    goto theend;
+			tv = STACK_TV_BOT(0);
+			tv->v_lock = 0;
+			++ectx->ec_stack.ga_len;
+			tv->v_type = VAR_FUNC;
+			tv->vval.v_string = vim_strsave(ufunc->uf_name);
 		    }
 		    else
 		    {
