@@ -6243,4 +6243,41 @@ func Test_popup_image_clipwindow_scroll()
   call prop_type_delete('imgclipprop')
 endfunc
 
+func Test_popupwin_textprop_redraw()
+  CheckScreendump
+
+  let lines =<< trim END
+    vim9script
+    var buf = bufadd('XpopupProp')
+    bufload(buf)
+    setbufline(buf, 1, 'popup text')
+    prop_type_add('counter', {bufnr: buf, highlight: 'Search'})
+    popup_create(buf, {line: 3, col: 3, minwidth: 30, border: []})
+
+    var counter = 0
+    def g:UpdateProp()
+      counter += 1
+      prop_remove({all: true, type: 'counter', bufnr: buf}, 1)
+      prop_add(1, 0, {
+        bufnr: buf,
+        type: 'counter',
+        text: $'count={counter} ',
+        text_align: 'right',
+      })
+    enddef
+    nnoremap <F3> <ScriptCmd>g:UpdateProp()<CR>
+  END
+  call writefile(lines, 'XtestPopupProp', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupProp', #{rows: 10})
+
+  " Updating only the virtual text of the popup buffer must redraw the popup.
+  call term_sendkeys(buf, "\<F3>")
+  call VerifyScreenDump(buf, 'Test_popupwin_textprop_redraw_1', {})
+
+  call term_sendkeys(buf, "\<F3>")
+  call VerifyScreenDump(buf, 'Test_popupwin_textprop_redraw_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2
