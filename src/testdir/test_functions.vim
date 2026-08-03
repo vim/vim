@@ -212,6 +212,12 @@ func Test_strwidth()
 endfunc
 
 func Test_strtrans()
+  " The default of 'isprint' is platform-dependent: 0x7f and 0x9f are
+  " printable on Win32 and VMS.  Set it so the expectations below hold
+  " everywhere.
+  let save_isprint = &isprint
+  set isprint=@,161-255
+
   " printable ASCII is unchanged
   call assert_equal('', strtrans(''))
   call assert_equal('abc', strtrans('abc'))
@@ -239,6 +245,20 @@ func Test_strtrans()
   " a long string mixing all kinds of characters
   call assert_equal(repeat('a^Bé<9f>', 100),
         \ strtrans(repeat("a\x02é" .. nr2char(0x9f), 100)))
+
+  " the non-multi-byte code path
+  set encoding=latin1
+  set isprint=@,161-255
+  call assert_equal('a^Mb^[c', strtrans("a\rb\ec"))
+  call assert_equal('^A^_^?', strtrans("\x01\x1f\x7f"))
+  " an unprintable byte above 0x7f uses the meta notation
+  call assert_equal('| ', strtrans("\xa0"))
+  " a printable high byte is unchanged
+  call assert_equal("\xe9", strtrans("\xe9"))
+  call assert_equal("x^B\xe9| y", strtrans("x\x02\xe9\xa0y"))
+  set encoding=utf-8
+
+  let &isprint = save_isprint
 endfunc
 
 func Test_str2nr()
