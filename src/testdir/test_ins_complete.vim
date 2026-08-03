@@ -6634,4 +6634,71 @@ func Test_complete_check_mapped_typed_key()
   unlet g:compl_iterations
 endfunc
 
+func GetDedupWords()
+  let g:compl_words = map(complete_info(['items']).items, {_, v -> v.word})
+  return ''
+endfunc
+
+func DoDedupComplete()
+  call complete(1, ['dup', 'dup', 'uniq', 'dup'])
+  return ''
+endfunc
+
+" Test for the duplicate check when adding completion matches
+func Test_ins_complete_dedup()
+  new
+  setl complete=.
+
+  " a word that occurs several times only results in one match
+  call setline(1, ['alpha beta alpha gamma', 'beta alpha delta beta', ''])
+  call cursor(3, 1)
+  call feedkeys("Aal\<C-N>\<C-R>=GetDedupWords()\<CR>\<C-E>\<Esc>", 'tx')
+  call assert_equal(['alpha'], g:compl_words)
+
+  " the duplicate check is case-sensitive
+  %delete _
+  call setline(1, ['Foo foo FOO fooBar Foo foo', ''])
+  call cursor(2, 1)
+  call feedkeys("Afo\<C-N>\<C-R>=GetDedupWords()\<CR>\<C-E>\<Esc>", 'tx')
+  call assert_equal(['foo', 'fooBar'], g:compl_words)
+
+  " with 'ignorecase' and 'infercase' case variants fold into one match
+  setl ignorecase infercase
+  %delete _
+  call setline(1, ['Word word WORD wordy Word', ''])
+  call cursor(2, 1)
+  call feedkeys("Awo\<C-N>\<C-R>=GetDedupWords()\<CR>\<C-E>\<Esc>", 'tx')
+  call assert_equal(['word', 'wordy'], g:compl_words)
+  setl noignorecase noinfercase
+
+  " duplicate dictionary entries only appear once; with 'ignorecase' case
+  " variants all match but stay separate matches
+  call writefile(['apple', 'apple', 'Apple', 'apricot', 'apricot', 'banana'],
+        \ 'Xcompldict', 'D')
+  setl dictionary=Xcompldict
+  set ignorecase
+  %delete _
+  call feedkeys("Aap\<C-X>\<C-K>\<C-R>=GetDedupWords()\<CR>\<C-E>\<Esc>", 'tx')
+  call assert_equal(['apple', 'Apple', 'apricot'], g:compl_words)
+  set noignorecase
+  setl dictionary&
+
+  " duplicate items passed to complete() are only added once
+  %delete _
+  call feedkeys("i\<C-R>=DoDedupComplete()\<CR>"
+        \ .. "\<C-R>=GetDedupWords()\<CR>\<C-E>\<Esc>", 'tx')
+  call assert_equal(['dup', 'uniq'], g:compl_words)
+
+  " restarting a completion rebuilds the matches without duplicates
+  %delete _
+  call setline(1, ['echo edit eecho edit echo', ''])
+  call cursor(2, 1)
+  call feedkeys("Ae\<C-N>\<C-E>\<Esc>", 'tx')
+  call feedkeys("A\<C-N>\<C-R>=GetDedupWords()\<CR>\<C-E>\<Esc>", 'tx')
+  call assert_equal(['echo', 'edit', 'eecho'], g:compl_words)
+
+  bwipe!
+  unlet g:compl_words
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable
