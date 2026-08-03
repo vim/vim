@@ -15,11 +15,11 @@ permissions:
 
 jobs:
   linux:
-    runs-on: ${{ matrix.architecture == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
+    runs-on: ${{ matrix.architecture == 'arm64' && 'ubuntu-26.04-arm' || 'ubuntu-26.04' }}
 
     env:
       CC: ${{ matrix.compiler }}
-      GCC_VER: 14
+      GCC_VER: 15
       CLANG_VER: 22
       TEST: test
       SRCDIR: ./src
