@@ -927,6 +927,42 @@ func Test_usercmd_custom()
   delfunc T2
 endfunc
 
+" Test for a {} block in a command nested in :command or :autocmd
+func Test_usercmd_nested_block()
+  command DefineIt command DoNested {
+        g:didnested = 'yes'
+      }
+  DefineIt
+  DoNested
+  call assert_equal('yes', g:didnested)
+  unlet g:didnested
+  delcommand DoNested
+  delcommand DefineIt
+
+  " a command defined by an autocmd
+  autocmd CursorHold * command DoFromAu {
+        g:didfromau = 'yes'
+      }
+  doautocmd CursorHold
+  DoFromAu
+  call assert_equal('yes', g:didfromau)
+  unlet g:didfromau
+  delcommand DoFromAu
+  au! CursorHold
+
+  " a trailing "{" that is an argument of the command is not a block
+  let lines =<< trim END
+      vim9script
+      command NoBlock normal! {
+      g:after_command = 'reached'
+  END
+  call writefile(lines, 'XcmdTrailingCurly', 'D')
+  source XcmdTrailingCurly
+  call assert_equal('reached', g:after_command)
+  unlet g:after_command
+  delcommand NoBlock
+endfunc
+
 func Test_usercmd_with_block()
   command DoSomething {
         g:didit = 'yes'  # comment

@@ -4070,6 +4070,92 @@ func Test_autocmd_with_block()
   augroup END
 endfunc
 
+" Test for a {} block at script level in an :autocmd nested in another one
+func Test_autocmd_nested_block()
+  let lines =<< trim END
+      vim9script
+      autocmd CursorHold * autocmd BufReadPre * ++once {
+            g:nested_block = 'yes'
+          }
+  END
+  call writefile(lines, 'XautoNestedBlock', 'D')
+  source XautoNestedBlock
+
+  doautocmd CursorHold
+  doautocmd BufReadPre
+  call assert_equal('yes', g:nested_block)
+
+  unlet g:nested_block
+  au! CursorHold
+  au! BufReadPre
+endfunc
+
+" Test for a {} block in an :autocmd nested two levels deep
+func Test_autocmd_nested_block_twice()
+  let lines =<< trim END
+      vim9script
+      autocmd CursorHold * autocmd CursorHoldI * autocmd BufReadPre * ++once {
+            g:nested_twice = 'yes'
+          }
+  END
+  call writefile(lines, 'XautoNestedTwice', 'D')
+  source XautoNestedTwice
+
+  doautocmd CursorHold
+  doautocmd CursorHoldI
+  doautocmd BufReadPre
+  call assert_equal('yes', g:nested_twice)
+
+  unlet g:nested_twice
+  au! CursorHold
+  au! CursorHoldI
+  au! BufReadPre
+endfunc
+
+" Only the :autocmd owning the block uses Vim9 syntax, the one it is nested in
+" keeps the syntax of the script.  The old "nested" is valid in legacy script
+" but an error in Vim9 script, so it tells the two apart.
+func Test_autocmd_nested_block_legacy_script()
+  let lines =<< trim END
+      autocmd CursorHold * autocmd BufReadPre * nested {
+            g:legacy_block = 'yes'
+          }
+  END
+  call writefile(lines, 'XautoNestedLegacy', 'D')
+  source XautoNestedLegacy
+
+  doautocmd CursorHold
+  doautocmd BufReadPre
+  call assert_equal('yes', g:legacy_block)
+
+  unlet g:legacy_block
+  au! CursorHold
+  au! BufReadPre
+endfunc
+
+" A trailing "{" that is an argument of the command does not start a block,
+" the lines after it are not swallowed
+func Test_autocmd_trailing_curly_no_block()
+  let lines =<< trim END
+      vim9script
+      autocmd CursorHold * normal! {
+      g:after_autocmd = 'reached'
+  END
+  call writefile(lines, 'XautoTrailingCurly', 'D')
+  source XautoTrailingCurly
+  call assert_equal('reached', g:after_autocmd)
+
+  new
+  call setline(1, ['one', '', 'two'])
+  call cursor(3, 1)
+  doautocmd CursorHold
+  call assert_equal(2, line('.'))
+
+  bwipe!
+  unlet g:after_autocmd
+  au! CursorHold
+endfunc
+
 func Test_closing_autocmd_window()
   let lines =<< trim END
       edit Xa.txt

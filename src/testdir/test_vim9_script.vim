@@ -485,6 +485,47 @@ def Test_command_block()
   unlet g:someVar
 enddef
 
+" Test for a {} block in an :autocmd nested in another :autocmd
+def Test_nested_autocmd_block_in_def()
+  au CursorHold * autocmd BufNew *.xml {
+        g:nestedVar = 'nested'
+      }
+  doautocmd CursorHold
+  split other.xml
+  assert_equal('nested', g:nestedVar)
+
+  bwipe!
+  au! CursorHold
+  au! BufNew *.xml
+  unlet g:nestedVar
+enddef
+
+" A trailing "{" that is an argument of the command does not start a block.
+" Use a separate script, when the "{" is taken for a block the rest of this
+" file would be swallowed until a line starting with "}".
+def Test_autocmd_trailing_curly_no_block_in_def()
+  var lines =<< trim END
+      vim9script
+      def Setup()
+        au CursorHold * normal! {
+        g:afterCurly = 'reached'
+      enddef
+      Setup()
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal('reached', g:afterCurly)
+
+  new
+  setline(1, ['one', '', 'two'])
+  cursor(3, 1)
+  doautocmd CursorHold
+  assert_equal(2, line('.'))
+
+  bwipe!
+  unlet g:afterCurly
+  au! CursorHold
+enddef
+
 " Test for using heredoc in a :command command block
 def Test_command_block_heredoc()
   var lines =<< trim CODE

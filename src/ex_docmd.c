@@ -2839,6 +2839,68 @@ checkforcmd_noparen(
 }
 
 /*
+ * Find the replacement text of a ":command", the part after the attributes and
+ * the command name.  Returns NULL when there is none.  Does not modify "arg"
+ * and gives no error messages.
+ */
+    static char_u *
+find_ucmd_repl(char_u *arg)
+{
+    char_u	*p = arg;
+
+    // Skip over the attributes.
+    while (*p == '-')
+	p = skipwhite(skiptowhite(p));
+
+    // Skip over the command name.
+    if (!ASCII_ISALPHA(*p))
+	return NULL;
+    while (ASCII_ISALNUM(*p))
+	++p;
+
+    return *p == NUL ? NULL : skipwhite(p);
+}
+
+/*
+ * Find the "{" in "line" that starts a block for ":command" or ":autocmd".
+ * That is the case when the command argument is "{" at the end of the line,
+ * also when the command is nested in another ":command" or ":autocmd".
+ * Returns NULL when the line does not start such a block.
+ */
+    char_u *
+find_cmd_block_start(char_u *line)
+{
+    char_u	*p = skipwhite(line);
+
+    for (;;)
+    {
+	char_u	*arg = p;
+
+	if (*p == '{' && ends_excmd2(p, skipwhite(p + 1)))
+	    return p;
+
+	if (checkforcmd_noparen(&arg, "autocmd", 2))
+	{
+	    if (*arg == '!')
+		arg = skipwhite(arg + 1);
+	    p = au_find_cmd_arg(arg);
+	}
+	else if (checkforcmd_noparen(&arg, "command", 3))
+	{
+	    if (*arg == '!')
+		arg = skipwhite(arg + 1);
+	    p = find_ucmd_repl(arg);
+	}
+	else
+	    return NULL;
+
+	if (p == NULL)
+	    return NULL;
+	p = skipwhite(p);
+    }
+}
+
+/*
  * Parse and skip over command modifiers:
  * - update eap->cmd
  * - store flags in "cmod".
