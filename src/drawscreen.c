@@ -3443,6 +3443,15 @@ redraw_buf_later(buf_T *buf, int type)
 	if (wp->w_buffer == buf)
 	    redraw_win_later(wp, type);
     }
+#ifdef FEAT_PROP_POPUP
+    // popup windows are not in the list of windows
+    FOR_ALL_POPUPWINS(wp)
+	if (wp->w_buffer == buf)
+	    redraw_win_later(wp, type);
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
+	if (wp->w_buffer == buf)
+	    redraw_win_later(wp, type);
+#endif
 #if defined(FEAT_TERMINAL) && defined(FEAT_PROP_POPUP)
     // terminal in popup window is not in list of windows
     if (curwin->w_buffer == buf)
