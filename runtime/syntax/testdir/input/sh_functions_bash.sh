@@ -3,6 +3,11 @@
 # VIM_TEST_SETUP let g:sh_fold_enabled = 1 + 2 + 4
 # VIM_TEST_SETUP highlight link shFunctionExprRegion Todo
 # VIM_TEST_SETUP highlight link shFunctionSubShRegion Todo
+
+
+
+
+
 typeset -i n=0
 doosie() ((n+=1)); doosie
 donee() [[ -n $# ]]; donee
