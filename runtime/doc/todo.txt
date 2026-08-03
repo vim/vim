@@ -1,4 +1,4 @@
-*todo.txt*	For Vim version 9.2.  Last change: 2026 Aug 02
+*todo.txt*	For Vim version 9.2.  Last change: 2026 Aug 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,18 +36,9 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-With 'smoothscroll' the scroll position is lost when a window is temporarily
-squeezed to a couple of lines, for example ":help" followed by ":close".  In
-restore_snapshot_rec() restore more values from the snapshot, instead of
-calling frame_new_height() and frame_new_width(), especially w_skipcol.
-
 When a help item can't be found, then open 'helpfile'.  Search for the tag in
 that file and gtive E149 only when not found.  Helps for a tiny Vim installed
 without all the help files.
-
-Virtual text problems:
--  Virtual text aligned "above": Wrong indentation when using tabs  (Issue
-   #12232)
 
 Errors when running tests with valgrind:
 - test_gui.vim:
