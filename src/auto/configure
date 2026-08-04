@@ -10677,6 +10677,189 @@ fi
 
 
 
+if test -z "$SKIP_GTK3"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --disable-gtktest argument" >&5
+printf %s "checking --disable-gtktest argument... " >&6; }
+  # Check whether --enable-gtktest was given.
+if test ${enable_gtktest+y}
+then :
+  enableval=$enable_gtktest;
+else case e in #(
+  e) enable_gtktest=yes ;;
+esac
+fi
+
+  if test "x$enable_gtktest" = "xyes" ; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: gtk test enabled" >&5
+printf "%s\n" "gtk test enabled" >&6; }
+  else
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: gtk test disabled" >&5
+printf "%s\n" "gtk test disabled" >&6; }
+  fi
+
+  if test "x$PKG_CONFIG" != "xno"; then
+
+      min_gtk_version="3.0.0"
+
+    if test "$PKG_CONFIG" != "no"; then
+    case $min_gtk_version in #(
+  2.*) :
+    gtk_pkg_name="gtk+-2.0" ;; #(
+  3.*) :
+    gtk_pkg_name="gtk+-3.0" ;; #(
+  4.*) :
+    gtk_pkg_name="gtk4" ;; #(
+  *) :
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in '$ac_pwd':" >&5
+printf "%s\n" "$as_me: error: in '$ac_pwd':" >&2;}
+as_fn_error $? "The configure script does not know which pkg-config name to use for GTK $min_gtk_version\"
+See 'config.log' for more details" "$LINENO" 5; } ;;
+esac
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pkg-config $gtk_pkg_name" >&5
+printf %s "checking for pkg-config $gtk_pkg_name... " >&6; }
+    if "$PKG_CONFIG" --exists "$gtk_pkg_name"
+then :
+
+	     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: found" >&5
+printf "%s\n" "found" >&6; }
+	     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GTK - version >= $min_gtk_version" >&5
+printf %s "checking for GTK - version >= $min_gtk_version... " >&6; }
+	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkg_name`
+	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkg_name`
+	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkg_name`
+	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkg_name`
+	     gtk_major_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
+	       sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\1/'`
+	     gtk_minor_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
+	       sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2/'`
+	     gtk_micro_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
+	       sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\3/'`
+	     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes; found version $gtk_major_version.$gtk_minor_version.$gtk_micro_version" >&5
+printf "%s\n" "yes; found version $gtk_major_version.$gtk_minor_version.$gtk_micro_version" >&6; }
+
+else case e in #(
+  e)
+	      GTK_CPPFLAGS=""
+	      GTK_CFLAGS=""
+	      GTK_LIBDIR=""
+	      GTK_LIBS=""
+	      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no; consider installing your distro GTK -dev package" >&5
+printf "%s\n" "no; consider installing your distro GTK -dev package" >&6; }
+	      if test "$fail_if_missing" = "yes" -a "$gui_auto" != "yes"; then
+		as_fn_error $? "pkg-config could not find $gtk_pkg_name" "$LINENO" 5
+	      fi
+	     ;;
+esac
+fi
+  fi
+
+              gtktest_success="yes"
+  if test "$enable_gtktest" = "yes"; then
+  {
+    ac_save_CPPFLAGS="$CPPFLAGS"
+    ac_save_CFLAGS="$CFLAGS"
+    ac_save_LIBS="$LIBS"
+    CPPFLAGS="$CPPFLAGS $GTK_CPPFLAGS"
+    CFLAGS="$CFLAGS $GTK_CFLAGS"
+    LIBS="$LIBS $GTK_LIBS"
+
+                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking ability to compile GTK test program" >&5
+printf %s "checking ability to compile GTK test program... " >&6; }
+    if test "$cross_compiling" = yes
+then :
+  echo $ac_n "cross compiling; assumed OK... $ac_c"
+else case e in #(
+  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <gtk/gtk.h>
+#include <stdio.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+
+int
+main ()
+{
+	int ex_major = $gtk_major_version;
+	int ex_minor = $gtk_minor_version;
+	int ex_micro = $gtk_micro_version;
+
+	#if $gtk_major_version == 2
+	guint ob_major = gtk_major_version;
+	guint ob_minor = gtk_minor_version;
+	guint ob_micro = gtk_micro_version;
+	#else
+	guint ob_major = gtk_get_major_version();
+	guint ob_minor = gtk_get_minor_version();
+	guint ob_micro = gtk_get_micro_version();
+	#endif
+
+	if ((ob_major > ex_major) ||
+		((ob_major == ex_major)
+			&& (ob_minor > ex_minor)) ||
+		((ob_major == ex_major)
+			&& (ob_minor == ex_minor)
+			&& (ob_micro >= ex_micro)))
+		return 0;
+	else
+		return 1;
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"
+then :
+  gtktest_success="yes"; { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+else case e in #(
+  e) gtktest_success="no"; { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; } ;;
+esac
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+esac
+fi
+
+    CPPFLAGS="$ac_save_CPPFLAGS"
+    CFLAGS="$ac_save_CFLAGS"
+    LIBS="$ac_save_LIBS"
+  }
+  fi
+
+  if test "$gtktest_success" = "yes"; then
+    GUI_LIB_LOC="$GTK_LIBDIR"
+		 GTK_LIBNAME="$GTK_LIBS"
+		 GUI_INC_LOC="$GTK_CPPFLAGS"
+  else
+        GTK_CPPFLAGS=""
+    GTK_CFLAGS=""
+    GTK_LIBDIR=""
+    GTK_LIBS=""
+    if test "$fail_if_missing" = "yes" -a "$gui_auto" != "yes"; then
+      as_fn_error $? "Failed to compile GTK test program." "$LINENO" 5
+    fi
+  fi
+
+
+
+
+
+    if test -n "$GTK_CPPFLAGS"; then
+      SKIP_GTK2=YES
+      SKIP_GTK4=YES
+      SKIP_GNOME=YES
+      SKIP_MOTIF=YES
+      GUITYPE=GTK
+
+      printf "%s\n" "#define USE_GTK3 1" >>confdefs.h
+
+    fi
+  fi
+fi
+
 if test -z "$SKIP_GTK4"; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --disable-gtktest argument" >&5
 printf %s "checking --disable-gtktest argument... " >&6; }
@@ -10863,189 +11046,6 @@ fi
             if test "$enable_xim" = "auto"; then
         enable_xim="yes"
       fi
-    fi
-  fi
-fi
-
-if test -z "$SKIP_GTK3"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --disable-gtktest argument" >&5
-printf %s "checking --disable-gtktest argument... " >&6; }
-  # Check whether --enable-gtktest was given.
-if test ${enable_gtktest+y}
-then :
-  enableval=$enable_gtktest;
-else case e in #(
-  e) enable_gtktest=yes ;;
-esac
-fi
-
-  if test "x$enable_gtktest" = "xyes" ; then
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: gtk test enabled" >&5
-printf "%s\n" "gtk test enabled" >&6; }
-  else
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: gtk test disabled" >&5
-printf "%s\n" "gtk test disabled" >&6; }
-  fi
-
-  if test "x$PKG_CONFIG" != "xno"; then
-
-      min_gtk_version="3.0.0"
-
-    if test "$PKG_CONFIG" != "no"; then
-    case $min_gtk_version in #(
-  2.*) :
-    gtk_pkg_name="gtk+-2.0" ;; #(
-  3.*) :
-    gtk_pkg_name="gtk+-3.0" ;; #(
-  4.*) :
-    gtk_pkg_name="gtk4" ;; #(
-  *) :
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in '$ac_pwd':" >&5
-printf "%s\n" "$as_me: error: in '$ac_pwd':" >&2;}
-as_fn_error $? "The configure script does not know which pkg-config name to use for GTK $min_gtk_version\"
-See 'config.log' for more details" "$LINENO" 5; } ;;
-esac
-
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pkg-config $gtk_pkg_name" >&5
-printf %s "checking for pkg-config $gtk_pkg_name... " >&6; }
-    if "$PKG_CONFIG" --exists "$gtk_pkg_name"
-then :
-
-	     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: found" >&5
-printf "%s\n" "found" >&6; }
-	     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GTK - version >= $min_gtk_version" >&5
-printf %s "checking for GTK - version >= $min_gtk_version... " >&6; }
-	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkg_name`
-	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkg_name`
-	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkg_name`
-	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkg_name`
-	     gtk_major_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
-	       sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\1/'`
-	     gtk_minor_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
-	       sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2/'`
-	     gtk_micro_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
-	       sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\3/'`
-	     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes; found version $gtk_major_version.$gtk_minor_version.$gtk_micro_version" >&5
-printf "%s\n" "yes; found version $gtk_major_version.$gtk_minor_version.$gtk_micro_version" >&6; }
-
-else case e in #(
-  e)
-	      GTK_CPPFLAGS=""
-	      GTK_CFLAGS=""
-	      GTK_LIBDIR=""
-	      GTK_LIBS=""
-	      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no; consider installing your distro GTK -dev package" >&5
-printf "%s\n" "no; consider installing your distro GTK -dev package" >&6; }
-	      if test "$fail_if_missing" = "yes" -a "$gui_auto" != "yes"; then
-		as_fn_error $? "pkg-config could not find $gtk_pkg_name" "$LINENO" 5
-	      fi
-	     ;;
-esac
-fi
-  fi
-
-              gtktest_success="yes"
-  if test "$enable_gtktest" = "yes"; then
-  {
-    ac_save_CPPFLAGS="$CPPFLAGS"
-    ac_save_CFLAGS="$CFLAGS"
-    ac_save_LIBS="$LIBS"
-    CPPFLAGS="$CPPFLAGS $GTK_CPPFLAGS"
-    CFLAGS="$CFLAGS $GTK_CFLAGS"
-    LIBS="$LIBS $GTK_LIBS"
-
-                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking ability to compile GTK test program" >&5
-printf %s "checking ability to compile GTK test program... " >&6; }
-    if test "$cross_compiling" = yes
-then :
-  echo $ac_n "cross compiling; assumed OK... $ac_c"
-else case e in #(
-  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <gtk/gtk.h>
-#include <stdio.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#endif
-
-int
-main ()
-{
-	int ex_major = $gtk_major_version;
-	int ex_minor = $gtk_minor_version;
-	int ex_micro = $gtk_micro_version;
-
-	#if $gtk_major_version == 2
-	guint ob_major = gtk_major_version;
-	guint ob_minor = gtk_minor_version;
-	guint ob_micro = gtk_micro_version;
-	#else
-	guint ob_major = gtk_get_major_version();
-	guint ob_minor = gtk_get_minor_version();
-	guint ob_micro = gtk_get_micro_version();
-	#endif
-
-	if ((ob_major > ex_major) ||
-		((ob_major == ex_major)
-			&& (ob_minor > ex_minor)) ||
-		((ob_major == ex_major)
-			&& (ob_minor == ex_minor)
-			&& (ob_micro >= ex_micro)))
-		return 0;
-	else
-		return 1;
-}
-
-_ACEOF
-if ac_fn_c_try_run "$LINENO"
-then :
-  gtktest_success="yes"; { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-else case e in #(
-  e) gtktest_success="no"; { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; } ;;
-esac
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
-esac
-fi
-
-    CPPFLAGS="$ac_save_CPPFLAGS"
-    CFLAGS="$ac_save_CFLAGS"
-    LIBS="$ac_save_LIBS"
-  }
-  fi
-
-  if test "$gtktest_success" = "yes"; then
-    GUI_LIB_LOC="$GTK_LIBDIR"
-		 GTK_LIBNAME="$GTK_LIBS"
-		 GUI_INC_LOC="$GTK_CPPFLAGS"
-  else
-        GTK_CPPFLAGS=""
-    GTK_CFLAGS=""
-    GTK_LIBDIR=""
-    GTK_LIBS=""
-    if test "$fail_if_missing" = "yes" -a "$gui_auto" != "yes"; then
-      as_fn_error $? "Failed to compile GTK test program." "$LINENO" 5
-    fi
-  fi
-
-
-
-
-
-    if test -n "$GTK_CPPFLAGS"; then
-      SKIP_GTK2=YES
-      SKIP_GTK4=YES
-      SKIP_GNOME=YES
-      SKIP_MOTIF=YES
-      GUITYPE=GTK
-
-      printf "%s\n" "#define USE_GTK3 1" >>confdefs.h
-
     fi
   fi
 fi

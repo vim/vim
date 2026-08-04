@@ -2979,6 +2979,36 @@ AC_DEFUN([GNOME_INIT],[
 ])
 
 dnl ---------------------------------------------------------------------------
+dnl Check for GTK3. If it succeeds, skip the check for GTK2/GTK4
+dnl ---------------------------------------------------------------------------
+if test -z "$SKIP_GTK3"; then
+  AC_MSG_CHECKING(--disable-gtktest argument)
+  AC_ARG_ENABLE(gtktest, [  --disable-gtktest       Do not try to compile and run a test GTK program],
+	, enable_gtktest=yes)
+  if test "x$enable_gtktest" = "xyes" ; then
+    AC_MSG_RESULT(gtk test enabled)
+  else
+    AC_MSG_RESULT(gtk test disabled)
+  fi
+
+  if test "x$PKG_CONFIG" != "xno"; then
+    AM_PATH_GTK(3.0.0,
+		[GUI_LIB_LOC="$GTK_LIBDIR"
+		 GTK_LIBNAME="$GTK_LIBS"
+		 GUI_INC_LOC="$GTK_CPPFLAGS"])
+    if test -n "$GTK_CPPFLAGS"; then
+      SKIP_GTK2=YES
+      SKIP_GTK4=YES
+      SKIP_GNOME=YES
+      SKIP_MOTIF=YES
+      GUITYPE=GTK
+      AC_SUBST(GTK_LIBNAME)
+      AC_DEFINE(USE_GTK3)
+    fi
+  fi
+fi
+
+dnl ---------------------------------------------------------------------------
 dnl Check for GTK4. If it succeeds, skip the check for GTK3/GTK2.
 dnl ---------------------------------------------------------------------------
 if test -z "$SKIP_GTK4"; then
@@ -3015,36 +3045,6 @@ if test -z "$SKIP_GTK4"; then
       if test "$enable_xim" = "auto"; then
         enable_xim="yes"
       fi
-    fi
-  fi
-fi
-
-dnl ---------------------------------------------------------------------------
-dnl Check for GTK3. If it succeeds, skip the check for GTK2/GTK4
-dnl ---------------------------------------------------------------------------
-if test -z "$SKIP_GTK3"; then
-  AC_MSG_CHECKING(--disable-gtktest argument)
-  AC_ARG_ENABLE(gtktest, [  --disable-gtktest       Do not try to compile and run a test GTK program],
-	, enable_gtktest=yes)
-  if test "x$enable_gtktest" = "xyes" ; then
-    AC_MSG_RESULT(gtk test enabled)
-  else
-    AC_MSG_RESULT(gtk test disabled)
-  fi
-
-  if test "x$PKG_CONFIG" != "xno"; then
-    AM_PATH_GTK(3.0.0,
-		[GUI_LIB_LOC="$GTK_LIBDIR"
-		 GTK_LIBNAME="$GTK_LIBS"
-		 GUI_INC_LOC="$GTK_CPPFLAGS"])
-    if test -n "$GTK_CPPFLAGS"; then
-      SKIP_GTK2=YES
-      SKIP_GTK4=YES
-      SKIP_GNOME=YES
-      SKIP_MOTIF=YES
-      GUITYPE=GTK
-      AC_SUBST(GTK_LIBNAME)
-      AC_DEFINE(USE_GTK3)
     fi
   fi
 fi
