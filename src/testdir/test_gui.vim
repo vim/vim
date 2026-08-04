@@ -670,6 +670,7 @@ endfunc
 
 func Test_set_guiheadroom()
   CheckX11BasedGui
+  CheckNotFeature gui_gtk4
 
   " Since this script is to be read together with '-U NONE', the default
   " value must be preserved.
