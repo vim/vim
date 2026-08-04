@@ -21,6 +21,7 @@ gui -f
 
 func Test_set_guiheadroom()
   CheckX11BasedGui
+  CheckNotFeature gui_gtk4
 
   " The 'expected' value must be consistent with the value specified with
   " gui_init.vim.
@@ -35,6 +36,7 @@ endfunc
 
 func Test_set_guioptions_for_p()
   CheckX11BasedGui
+  CheckNotFeature gui_gtk4
 
   sleep 200ms
   " Check if the 'p' option is included.
