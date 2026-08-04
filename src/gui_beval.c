@@ -169,6 +169,7 @@ gui_mch_destroy_beval_area(BalloonEval *beval)
     if (beval->vts)
 	vim_free(beval->vts);
 #  endif
+    vim_free(beval->msg);
     vim_free(beval);
 }
 # endif
