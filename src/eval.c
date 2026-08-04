@@ -3189,6 +3189,117 @@ set_context_for_expression(
 }
 
 /*
+ * Cache with the compiled program of the last pattern used by
+ * pattern_match() and the match functions.  Script loops often evaluate the
+ * same pattern many times; reusing the program avoids compiling it for
+ * every evaluation.  The cache owns the program only between uses:
+ * eval_regcomp() hands it to the caller and empties the cache, and
+ * eval_regfree() adopts the program the caller ends up with.  Thus when
+ * executing replaced the program (the automatic engine falling back to
+ * backtracking frees the original) no freed program is left behind in the
+ * cache.
+ * The cache must only be used where the pattern is compiled with
+ * RE_MAGIC + RE_STRING and 'cpoptions' made empty, as every caller here
+ * does: they are not part of the cache key, so a program compiled with
+ * other settings would be reused without being invalidated.
+ */
+static regprog_T    *eval_prog_cache = NULL;
+static char_u	    *eval_prog_pat = NULL;	// pattern it was compiled for
+static char_u	    *eval_prog_enc = NULL;	// 'encoding' when compiled
+static long	    eval_prog_re;		// 'regexpengine' when compiled
+
+/*
+ * Return true when compiling "pat" depends on more state than the cache key
+ * covers: "~" is replaced with the previous substitute string, and bracket
+ * classes like [:alpha:], [=a=] and [.a.] can depend on the locale.
+ */
+    static bool
+eval_prog_volatile(char_u *pat)
+{
+    char_u *p;
+
+    if (vim_strchr(pat, '~') != NULL)
+	return true;
+    for (p = pat; *p != NUL; ++p)
+	if (p[0] == '[' && (p[1] == ':' || p[1] == '=' || p[1] == '.'))
+	    return true;
+    return false;
+}
+
+/*
+ * Compile pattern "pat" like vim_regcomp(pat, RE_MAGIC + RE_STRING) would,
+ * but reuse the cached program when it was compiled for the same pattern.
+ * Free the result with eval_regfree(), not with vim_regfree().
+ */
+    regprog_T *
+eval_regcomp(char_u *pat)
+{
+    if (eval_prog_cache != NULL
+	    && eval_prog_re == p_re
+	    && STRCMP(eval_prog_pat, pat) == 0
+	    && STRCMP(eval_prog_enc, p_enc) == 0)
+    {
+	regprog_T *prog = eval_prog_cache;
+
+	// The caller now owns the program, eval_regfree() adopts the
+	// program the caller ends up with.
+	eval_prog_cache = NULL;
+	return prog;
+    }
+    return vim_regcomp(pat, RE_MAGIC + RE_STRING);
+}
+
+/*
+ * Free program "prog", obtained with eval_regcomp() for pattern "pat", by
+ * keeping it in the cache for the next use.
+ */
+    void
+eval_regfree(char_u *pat, regprog_T *prog)
+{
+    if (prog == NULL)
+	return;
+    if (eval_prog_volatile(pat))
+    {
+	// compiling depends on state the cache key does not cover
+	vim_regfree(prog);
+	return;
+    }
+    if (eval_prog_pat == NULL || STRCMP(eval_prog_pat, pat) != 0
+	    || STRCMP(eval_prog_enc, p_enc) != 0)
+    {
+	char_u	*pat_copy = vim_strsave(pat);
+	char_u	*enc_copy = vim_strsave(p_enc);
+
+	if (pat_copy == NULL || enc_copy == NULL)
+	{
+	    vim_free(pat_copy);
+	    vim_free(enc_copy);
+	    vim_regfree(prog);
+	    return;
+	}
+	vim_free(eval_prog_pat);
+	vim_free(eval_prog_enc);
+	eval_prog_pat = pat_copy;
+	eval_prog_enc = enc_copy;
+    }
+    // A nested evaluation may have filled the cache, keep the most recent.
+    vim_regfree(eval_prog_cache);
+    eval_prog_cache = prog;
+    eval_prog_re = p_re;
+}
+
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_eval_regcomp_cache(void)
+{
+    vim_regfree(eval_prog_cache);
+    eval_prog_cache = NULL;
+    VIM_CLEAR(eval_prog_pat);
+    VIM_CLEAR(eval_prog_enc);
+}
+#endif
+
+/*
  * Return TRUE if "pat" matches "text".
  * Does not use 'cpo' and always uses 'magic'.
  */
@@ -3202,12 +3313,12 @@ pattern_match(char_u *pat, char_u *text, int ic)
     // avoid 'l' flag in 'cpoptions'
     save_cpo = p_cpo;
     p_cpo = empty_option;
-    regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+    regmatch.regprog = eval_regcomp(pat);
     if (regmatch.regprog != NULL)
     {
 	regmatch.rm_ic = ic;
 	matches = vim_regexec_nl(&regmatch, text, (colnr_T)0);
-	vim_regfree(regmatch.regprog);
+	eval_regfree(pat, regmatch.regprog);
     }
     p_cpo = save_cpo;
     return matches;

@@ -435,6 +435,9 @@ free_all_mem(void)
     free_homedir();
     free_users();
     free_search_patterns();
+# ifdef FEAT_EVAL
+    free_eval_regcomp_cache();
+# endif
     free_old_sub();
     free_last_insert();
     free_insexpand_stuff();
