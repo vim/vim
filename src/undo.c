@@ -1816,6 +1816,47 @@ theend:
 	vim_free(file_name);
 }
 
+// Map an uh_seq sequence number to an uhp_table index, used to sort on
+// uh_seq for fast lookup by sequence number when reading an undo file.
+typedef struct
+{
+    long    seq;
+    int	    idx;
+} uhpseq_T;
+
+    static int
+uhpseq_cmp(const void *v1, const void *v2)
+{
+    const uhpseq_T *s1 = (const uhpseq_T *)v1;
+    const uhpseq_T *s2 = (const uhpseq_T *)v2;
+
+    return s1->seq == s2->seq ? 0 : s1->seq > s2->seq ? 1 : -1;
+}
+
+/*
+ * Find "seq" in "tab", which has "tab_len" entries and is sorted on seq.
+ * Return the uhp_table index of the entry or -1 when not found.
+ */
+    static int
+uhpseq_find(uhpseq_T *tab, int tab_len, long seq)
+{
+    int	    lo = 0;
+    int	    hi = tab_len - 1;
+
+    while (lo <= hi)
+    {
+	int mid = lo + (hi - lo) / 2;
+
+	if (tab[mid].seq < seq)
+	    lo = mid + 1;
+	else if (tab[mid].seq > seq)
+	    hi = mid - 1;
+	else
+	    return tab[mid].idx;
+    }
+    return -1;
+}
+
 /*
  * Load the undo tree from an undo file.
  * If "name" is not NULL use it as the undo file name.  This also means being
@@ -1844,6 +1885,8 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
     int		c;
     u_header_T	*uhp;
     u_header_T	**uhp_table = NULL;
+    uhpseq_T	*seq_table = NULL;
+    int		seq_table_len = 0;
     char_u	read_hash[UNDO_HASH_SIZE];
     char_u	magic_buf[UF_START_MAGIC_LEN];
 # ifdef U_DEBUG
@@ -2069,66 +2112,49 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
     // We have put all of the headers into a table. Now we iterate through the
     // table and swizzle each sequence number we have stored in uh_*_seq into
     // a pointer corresponding to the header with that sequence number.
+    // Use a table sorted on uh_seq so each lookup is a binary search instead
+    // of a linear scan, which would be quadratic overall.
+    seq_table = ALLOC_MULT(uhpseq_T, num_head);
+    if (seq_table == NULL)
+	goto error;
+    for (i = 0; i < num_head; i++)
+	if (uhp_table[i] != NULL)
+	{
+	    seq_table[seq_table_len].seq = uhp_table[i]->uh_seq;
+	    seq_table[seq_table_len].idx = i;
+	    ++seq_table_len;
+	}
+    qsort(seq_table, (size_t)seq_table_len, sizeof(uhpseq_T), uhpseq_cmp);
+    for (i = 0; i < seq_table_len - 1; i++)
+	if (seq_table[i].seq == seq_table[i + 1].seq)
+	{
+	    corruption_error("duplicate uh_seq", file_name);
+	    goto error;
+	}
+
+    // A sequence number that is not found or refers to the header itself
+    // resolves to NULL.
+# define SWIZZLE_SEQ(link) \
+    do { \
+	j = uhpseq_find(seq_table, seq_table_len, (link).seq); \
+	if (j >= 0 && j != i) \
+	{ \
+	    (link).ptr = uhp_table[j]; \
+	    SET_FLAG(j); \
+	} \
+	else \
+	    (link).ptr = NULL; \
+    } while (0)
+
     for (i = 0; i < num_head; i++)
     {
 	uhp = uhp_table[i];
 	if (uhp == NULL)
 	    continue;
-	for (j = 0; j < num_head; j++)
-	    if (uhp_table[j] != NULL && i != j
-			      && uhp_table[i]->uh_seq == uhp_table[j]->uh_seq)
-	    {
-		corruption_error("duplicate uh_seq", file_name);
-		goto error;
-	    }
-	{
-	    int seq = uhp->uh_next.seq;
-	    uhp->uh_next.ptr = NULL;
-	    for (j = 0; j < num_head; j++)
-		if (uhp_table[j] != NULL && i != j
-				    && uhp_table[j]->uh_seq == seq)
-		{
-		    uhp->uh_next.ptr = uhp_table[j];
-		    SET_FLAG(j);
-		    break;
-		}
-	}
-	{
-	    int seq = uhp->uh_prev.seq;
-	    uhp->uh_prev.ptr = NULL;
-	    for (j = 0; j < num_head; j++)
-		if (uhp_table[j] != NULL && i != j
-				    && uhp_table[j]->uh_seq == seq)
-		{
-		    uhp->uh_prev.ptr = uhp_table[j];
-		    SET_FLAG(j);
-		    break;
-		}
-	}
-	{
-	    int seq = uhp->uh_alt_next.seq;
-	    uhp->uh_alt_next.ptr = NULL;
-	    for (j = 0; j < num_head; j++)
-		if (uhp_table[j] != NULL && i != j
-				&& uhp_table[j]->uh_seq == seq)
-		{
-		    uhp->uh_alt_next.ptr = uhp_table[j];
-		    SET_FLAG(j);
-		    break;
-		}
-	}
-	{
-	    int seq = uhp->uh_alt_prev.seq;
-	    uhp->uh_alt_prev.ptr = NULL;
-	    for (j = 0; j < num_head; j++)
-		if (uhp_table[j] != NULL && i != j
-				&& uhp_table[j]->uh_seq == seq)
-		{
-		    uhp->uh_alt_prev.ptr = uhp_table[j];
-		    SET_FLAG(j);
-		    break;
-		}
-	}
+	SWIZZLE_SEQ(uhp->uh_next);
+	SWIZZLE_SEQ(uhp->uh_prev);
+	SWIZZLE_SEQ(uhp->uh_alt_next);
+	SWIZZLE_SEQ(uhp->uh_alt_prev);
 	if (old_header_seq > 0 && old_idx < 0 && uhp->uh_seq == old_header_seq)
 	{
 	    old_idx = i;
@@ -2145,6 +2171,8 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
 	    SET_FLAG(i);
 	}
     }
+# undef SWIZZLE_SEQ
+    VIM_CLEAR(seq_table);
 
     // Now that we have read the undo info successfully, free the current undo
     // info and use the info from the file.
@@ -2178,6 +2206,7 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
     goto theend;
 
 error:
+    vim_free(seq_table);
     vim_free(line_ptr.ul_line);
     if (uhp_table != NULL)
     {
