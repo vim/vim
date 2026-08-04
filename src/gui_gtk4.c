@@ -953,6 +953,8 @@ gui_mch_set_shellsize(int width, int height,
     height += gui.decor_height;
 
     gtk_window_set_default_size(GTK_WINDOW(gui.mainwin), width, height);
+
+    gui_mch_update();
 }
 
     void
