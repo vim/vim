@@ -1924,7 +1924,6 @@ PROTO_FILES = \
 	proto/gc.pro \
 	proto/getchar.pro \
 	proto/gui_beval.pro \
-	proto/gui_gtk_gresources.pro \
 	proto/gui_xim.pro \
 	proto/hardcopy.pro \
 	proto/hardcopy_pango.pro \
@@ -2025,6 +2024,7 @@ PROTO_FILES = \
 	proto/wayland.pro \
 	proto/winclip.pro \
 	proto/window.pro \
+	$(GRESOURCE_PRO) \
 	$(ALL_GUI_PRO)
 
 # Default target is making the executable and tools

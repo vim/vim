@@ -3112,6 +3112,7 @@ if test "x$GUITYPE" = "xGTK"; then
 	AC_MSG_RESULT([usable.])
 	AC_DEFINE(USE_GRESOURCE)
 	GRESOURCE_SRC="auto/gui_gtk_gresources.c"
+    GRESOURCE_PRO="proto/gui_gtk_gresources.pro"
 	GRESOURCE_OBJ="objects/gui_gtk_gresources.o"
       fi
     else
@@ -3153,6 +3154,7 @@ if test "x$GUITYPE" = "xGTK"; then
 fi
 AC_SUBST(GLIB_COMPILE_RESOURCES)
 AC_SUBST(GRESOURCE_SRC)
+AC_SUBST(GRESOURCE_PRO)
 AC_SUBST(GRESOURCE_OBJ)
 AC_SUBST(GTK_UPDATE_ICON_CACHE)
 AC_SUBST(UPDATE_DESKTOP_DATABASE)
