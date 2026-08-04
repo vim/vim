@@ -119,6 +119,9 @@ endfunc
 
 func Test_quoteplus()
   CheckX11BasedGui
+  " Doesn't work with GTK4 GUI, because theres no CUT BUFFER in Wayland, meaning
+  " when the GVim that is launched exits, the clipboard is also cleared as well.
+  CheckNotFeature gui_gtk4
 
   let g:test_is_flaky = 1
 
