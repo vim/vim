@@ -327,8 +327,10 @@ vim_toolbar_move_item_to(
 
     from = overflow ? GTK_BOX(self->strip) : GTK_BOX(self->overflow_box);
 
+    g_object_ref(item);
     gtk_box_remove(from, item);
     gtk_box_append(to, item);
+    g_object_unref(item);
 
     if (GTK_IS_SEPARATOR(item))
 	gtk_widget_set_visible(item, !overflow);
