@@ -797,8 +797,7 @@ gui_mch_open(void)
 		     G_CALLBACK(mainwin_destroy_cb), NULL);
     // Resize is handled by GtkForm's size_allocate callback.
 
-    // Not sure if this needed but still do it I guess?
-    gtk_widget_set_visible(gui.mainwin, TRUE);
+    gtk_window_present(GTK_WINDOW(gui.mainwin));
 
     // Make sure the drawing area gets keyboard focus.
     gtk_widget_grab_focus(gui.drawarea);
