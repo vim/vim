@@ -3985,8 +3985,8 @@ gui_mch_destroy_menu(vimmenu_T *menu)
     // For popup menus, unparent the menu as well
     if (menu->name[0] == ']' || menu_is_popup(menu->name))
 	gtk_widget_unparent(menu->submenu_id);
-    else if (menu->parent == NULL)
-	// Remove from menubar
+    else if (menu->parent == NULL && menu->id != NULL)
+	// Remove from menubar, if not NULL.
 	vim_menu_bar_remove(VIM_MENU_BAR(gui.menubar), menu->id);
     // "menu->id" is NULL for window toolbar
     else if (menu->id != NULL)
