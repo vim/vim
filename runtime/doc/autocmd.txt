@@ -1,4 +1,4 @@
-*autocmd.txt*	For Vim version 9.2.  Last change: 2026 May 23
+*autocmd.txt*	For Vim version 9.2.  Last change: 2026 Aug 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -103,6 +103,14 @@ triggered.
 		  setlocal matchpairs+=<:>
 		  /<start
 		}
+<This also works when the `:autocmd` is itself the command of another
+`:autocmd` or `:command`: >
+	au FileType xml au BufWinEnter * ++once {
+		  setlocal matchpairs+=<:>
+		}
+<Note that the "{" must be the whole command, a command that happens to end in
+"{", such as "normal! {", does not start a block.  Nesting the commands works,
+nesting the blocks themselves does not, see |:command-repl|.
 
 The |autocmd_add()| function can be used to add a list of autocmds and autocmd
 groups from a Vim script.  It is preferred if you have anything that would

@@ -1257,14 +1257,7 @@ get_function_body(
 			--end;
 		    is_block = end > p + 2 && end[-1] == '=' && end[0] == '>';
 		    if (!is_block)
-		    {
-			char_u *s = p;
-
-			// check for line starting with "au" for :autocmd or
-			// "com" for :command, these can use a {} block
-			is_block = checkforcmd_noparen(&s, "autocmd", 2)
-				      || checkforcmd_noparen(&s, "command", 3);
-		    }
+			is_block = find_cmd_block_start(p) != NULL;
 
 		    if (is_block)
 		    {
