@@ -476,6 +476,7 @@ endfunction
 " Test the -reverse and +reverse arguments (for GUI only).
 func Test_reverse()
   CheckCanRunGui
+  CheckNotFeature gui_gtk4
   CheckAnyOf Feature:gui_gtk Feature:gui_motif
 
   let after =<< trim [CODE]
