@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Aug 02
+*options.txt*	For Vim version 9.2.  Last change: 2026 Aug 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7341,7 +7341,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    emoji might be rendered beyond the bounding box of drawing
 		    cell.
 
-	Other render types are currently not supported.
+	Other render types are currently not supported.  See also 'guiligatures'.
 
 						*'report'*
 'report'		number	(default 2)

@@ -1,4 +1,4 @@
-*gui.txt*	For Vim version 9.2.  Last change: 2026 Jun 02
+*gui.txt*	For Vim version 9.2.  Last change: 2026 Aug 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1167,7 +1167,7 @@ Examples: >
     :set guifont=Andale_Mono:h7.5:w4.5
     :set guifont=Cascadia_Code:h14:fss19=1:fcalt=1:fliga=1
 
-See also |font-sizes|.
+See also |font-sizes|, 'guiligatures' and 'renderoptions' (MS-Windows only).
 
 Note on Weights: Fonts often come with a variety of weights.  "Normal" weights
 in Windows have a value of 400 and, left unspecified, this is the value that
