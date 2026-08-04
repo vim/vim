@@ -50,8 +50,7 @@ s$/$//$ " comment
 s%/%//% " comment
 s&/&//& " comment
 s'/'//' " comment
-" FIXME - matches vimUserFunc
-" s(/(//( " comment
+s(/(//( " comment
 s)/)//) " comment
 s*/*//* " comment
 s+/+//+ " comment
@@ -84,8 +83,7 @@ s $/$//$ " comment
 s %/%//% " comment
 s &/&//& " comment
 s '/'//' " comment
-" FIXME - matches vimUserFunc
-" s (/(//( " comment
+s (/(//( " comment
 s )/)//) " comment
 s */*//* " comment
 s +/+//+ " comment
@@ -144,17 +142,29 @@ sg42
 sgi42
 :sgi42
 
-" FIXME
+
+" :& and :~
+
 &
 &&
 ~
 ~&
 
-" FIXME
+&  42
+&& 42
+~  42
+~& 42
+
 &cegiInp#lr
 &&cegiInp#lr
 ~cegiInp#lr
 ~&cegiInp#lr
+
+&cegiInp#lr  42
+&&cegiInp#lr 42
+~cegiInp#lr  42
+~&cegiInp#lr 42
+
 
 " 2 and 3 letter repeat-previous variants
 
@@ -197,9 +207,6 @@ s | echo "Foo"
 
 
 " Issue #13883
-
-str[s]
-str(s)
 
 def Test()
   str[s]
