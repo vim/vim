@@ -1184,8 +1184,9 @@ The function is called in two different ways:
 - Later the function is called to actually find the matches.
 
 On the first invocation the arguments are:
-   a:findstart  1
+   a:findstart	1	 (can as |true| in Vim9 script)
    a:base	empty
+
 
 The function must return the column where the completion starts.  It must be a
 number between zero and the cursor column "col('.')".  This involves looking
@@ -1200,7 +1201,7 @@ Negative return values:
    Another negative value: completion starts at the cursor column
 
 On the second invocation the arguments are:
-   a:findstart  0
+   a:findstart	0	 (can as |false| in Vim9 script)
    a:base	the text with which matches should match; the text that was
 		located in the first call (can be empty)
 
