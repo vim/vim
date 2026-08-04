@@ -1308,9 +1308,13 @@ gui_mch_init_font(char_u *font_name, int fontset UNUSED)
     ascii_glyph_table_init();
 
     // im window position depends on cursor size which depends on font metrics
-    // update the position after we've initialized font
-    im_set_position(gui.row, gui.col);
-
+    // update the position after we've initialized font. Make sure to not go out
+    // of bounds of the screen.
+    {
+	int im_row = gui.row < screen_Rows ? gui.row : screen_Rows - 1;
+	int im_col = gui.col < screen_Columns ? gui.col : screen_Columns - 1;
+	im_set_position(im_row, im_col);
+    }
     return OK;
 }
 
