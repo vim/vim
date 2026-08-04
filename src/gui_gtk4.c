@@ -734,6 +734,7 @@ gui_mch_open(void)
     guicolor_T bg_pixel = INVALCOLOR;
     guint pixel_width;
     guint pixel_height;
+    long columns = Columns, rows = Rows;
 
     if (gui.geom != NULL)
     {
@@ -743,12 +744,12 @@ gui_mch_open(void)
 	mask = vim_parse_geometry((char *)gui.geom, &w, &h);
 
 	if (mask & WidthValue)
-	    Columns = w;
+	    columns = Columns = w;
 	if (mask & HeightValue)
 	{
 	    if (p_window > (long)h - 1 || !option_was_set((char_u *)"window"))
 		p_window = h - 1;
-	    Rows = h;
+	    rows = Rows = h;
 	}
 	limit_screen_size();
 
@@ -765,6 +766,12 @@ gui_mch_open(void)
 
     pixel_width = (guint)(gui_get_base_width() + Columns * gui.char_width);
     pixel_height = (guint)(gui_get_base_height() + Rows * gui.char_height);
+
+    pixel_width  += get_menu_tool_width();
+    pixel_height += get_menu_tool_height();
+
+    // Dimensions may be smaller because of client side decorations, we handle
+    // that after we present the window.
     gtk_window_set_default_size(GTK_WINDOW(gui.mainwin),
 	    pixel_width, pixel_height);
 
@@ -798,6 +805,14 @@ gui_mch_open(void)
     // Resize is handled by GtkForm's size_allocate callback.
 
     gtk_window_present(GTK_WINDOW(gui.mainwin));
+
+    // Update so that we get the "gui.decor_height", which we can then use to
+    // set the exact dimensions of the window.
+    gui_mch_update();
+    Columns = columns;
+    Rows = rows;
+    gtk_window_set_default_size(GTK_WINDOW(gui.mainwin),
+	    pixel_width, pixel_height + gui.decor_height);
 
     // Make sure the drawing area gets keyboard focus.
     gtk_widget_grab_focus(gui.drawarea);
