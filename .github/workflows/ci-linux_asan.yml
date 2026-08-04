@@ -19,7 +19,7 @@ jobs:
 
     env:
       CC: clang
-      CLANG_VER: 21
+      CLANG_VER: 22
       SRCDIR: ./src
       LEAK_CFLAGS: -DEXITFREE
       LOG_DIR: ${{ github.workspace }}/logs
