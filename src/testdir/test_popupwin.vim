@@ -3076,11 +3076,12 @@ func Test_popupwin_terminal_buffer()
   call WaitForAssert({-> assert_equal("run", job_status(term_getjob(termbuf)))})
   call WaitForAssert({-> assert_equal('', term_getline(termbuf, '.'))})
 
-  " When typing a character, the cursor is after it.
+  " When typing a character, the cursor is after it.  Some shells echo it
+  " more than once.
   call feedkeys("x", 'xt')
   call term_wait(termbuf)
   redraw
-  call WaitForAssert({-> assert_equal('x', term_getline(termbuf, '.'))})
+  call WaitForAssert({-> assert_match('^x', term_getline(termbuf, '.'))})
   call feedkeys("\<BS>", 'xt')
 
   " Check this doesn't crash
@@ -5480,10 +5481,11 @@ func Test_popup_opacity_terminal_no_freeze()
 
   " Before the fix typing froze Vim: redraw under an opacity popup raised
   " must_redraw every cycle, trapping terminal_loop in its redraw loop.
+  " Some shells echo the character more than once.
   call feedkeys('x', 'xt')
   call term_wait(termbuf)
   redraw
-  call WaitForAssert({-> assert_equal('x', term_getline(termbuf, '.'))})
+  call WaitForAssert({-> assert_match('^x', term_getline(termbuf, '.'))})
 
   call feedkeys("\<BS>", 'xt')
   call feedkeys("exit\<CR>", 'xt')
