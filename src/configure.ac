@@ -3154,20 +3154,28 @@ AC_SUBST(UPDATE_DESKTOP_DATABASE)
 AC_MSG_CHECKING(--enable-hardcopy-pango argument)
 AC_ARG_ENABLE(hardcopy-pango,
 	[  --enable-hardcopy-pango     Use Pango and Cairo for improved hardcopy printing. [default=yes when GTK GUI enabled]],
-	,, enable_hardcopy_pango="no")
+	[],
+	[enable_hardcopy_pango="auto"])
 
 if test "x$have_pango" = "xno" || test "x$have_cairo" = "xno"; then
+  if test "$fail_if_missing" = "yes" -a "$enable_hardcopy_pango" = "yes"; then
+    AC_MSG_ERROR([could not configure hardcopy-pango])
+  fi
+  enable_hardcopy_pango="no"
   AC_MSG_RESULT([no, Pango or Cairo not found])
 else
-  if test "x$GUITYPE" = "xGTK" || test "x$GUITYPE" = "xGTK4"; then
-    enable_hardcopy_pango="yes"
-    AC_MSG_RESULT([yes, GTK GUI enabled])
-  else
-    if test "$enable_hardcopy_pango" = "yes"; then
-      AC_MSG_RESULT([yes])
+  if test "x$enable_hardcopy_pango" = "xauto"; then
+    if test "x$GUITYPE" = "xGTK" || test "x$GUITYPE" = "xGTK4"; then
+      enable_hardcopy_pango="yes"
+      AC_MSG_RESULT([yes, GTK GUI enabled])
     else
+      enable_hardcopy_pango="no"
       AC_MSG_RESULT([no])
     fi
+  elif test "$enable_hardcopy_pango" = "yes"; then
+    AC_MSG_RESULT([yes])
+  else
+    AC_MSG_RESULT([no])
   fi
 fi
 
