@@ -834,6 +834,7 @@ OBJ = \
 	$(OUTDIR)/gc.o \
 	$(OUTDIR)/gui_xim.o \
 	$(OUTDIR)/hardcopy.o \
+	$(OUTDIR)/hardcopy_postscript.o \
 	$(OUTDIR)/hashtab.o \
 	$(OUTDIR)/help.o \
 	$(OUTDIR)/highlight.o \
@@ -1323,6 +1324,8 @@ $(OUTDIR)/ex_cmds2.o: ex_cmds2.c $(INCL) version.h
 $(OUTDIR)/ex_docmd.o: ex_docmd.c $(INCL) ex_cmdidxs.h
 
 $(OUTDIR)/hardcopy.o: hardcopy.c $(INCL) version.h
+
+$(OUTDIR)/hardcopy_postscript.o: hardcopy_postscript.c $(INCL) version.h
 
 $(OUTDIR)/misc1.o: misc1.c $(INCL) version.h
 

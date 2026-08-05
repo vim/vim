@@ -729,6 +729,7 @@ OBJ = \
 	$(OUTDIR)\gc.obj \
 	$(OUTDIR)\gui_xim.obj \
 	$(OUTDIR)\hardcopy.obj \
+	$(OUTDIR)\hardcopy_postscript.obj \
 	$(OUTDIR)\hashtab.obj \
 	$(OUTDIR)\help.obj \
 	$(OUTDIR)\highlight.obj \
@@ -1621,6 +1622,8 @@ $(OUTDIR)/gc.obj: $(OUTDIR) gc.c $(INCL)
 $(OUTDIR)/gui_xim.obj: $(OUTDIR) gui_xim.c $(INCL)
 
 $(OUTDIR)/hardcopy.obj: $(OUTDIR) hardcopy.c $(INCL) version.h
+
+$(OUTDIR)/hardcopy_postscript.obj: $(OUTDIR) hardcopy_postscript.c $(INCL) version.h
 
 $(OUTDIR)/hashtab.obj: $(OUTDIR) hashtab.c $(INCL)
 
