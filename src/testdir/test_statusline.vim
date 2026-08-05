@@ -1091,4 +1091,38 @@ func Test_statusline_vsep_borrow_hl()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_statusline_vsep_borrow_hl_mode_change()
+  CheckScreendump
+
+  " With 'statusline' set, a mode change repaints the status line through
+  " showruler().  The vsep cell must follow without another key press.
+  let lines =<< trim END
+    hi User1 ctermfg=Red ctermbg=Yellow
+    hi User2 ctermfg=Blue ctermbg=Green
+    set laststatus=2
+    func MyStl()
+      return mode() ==# 'i' ? '%1*INSERT' : '%2*NORMAL'
+    endfunc
+    set statusline=%!MyStl()
+    call setline(1, ['aaa', 'bbb'])
+    vsplit
+    wincmd w
+  END
+  call writefile(lines, 'XTest_statusline_vsep_mode', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_statusline_vsep_mode',
+        \ {'rows': 6, 'cols': 78})
+  call term_sendkeys(buf, "\<C-L>")
+  call VerifyScreenDump(buf, 'Test_statusline_vsep_borrow_hl_mode_01', {})
+
+  call term_sendkeys(buf, "i")
+  call VerifyScreenDump(buf, 'Test_statusline_vsep_borrow_hl_mode_02', {})
+
+  " Leaving Insert mode restores the state of the first dump.
+  call term_sendkeys(buf, "\<Esc>")
+  call VerifyScreenDump(buf, 'Test_statusline_vsep_borrow_hl_mode_01', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
