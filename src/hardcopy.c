@@ -20,9 +20,6 @@
 #ifdef FEAT_POSTSCRIPT
 # include "hardcopy_postscript.h"
 #endif
-#ifdef FEAT_PRINT_PANGO
-# include "hardcopy_pango.h"
-#endif
 
 /*
  * To implement printing on a platform, the following functions must be

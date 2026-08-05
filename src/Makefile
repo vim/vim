@@ -1927,6 +1927,8 @@ PROTO_FILES = \
 	proto/gui_gtk_gresources.pro \
 	proto/gui_xim.pro \
 	proto/hardcopy.pro \
+	proto/hardcopy_pango.pro \
+	proto/hardcopy_postscript.pro \
 	proto/hashtab.pro \
 	proto/help.pro \
 	proto/highlight.pro \
@@ -4109,12 +4111,12 @@ objects/hardcopy.o: auto/osdef.h hardcopy.c vim.h protodef.h auto/config.h featu
  ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
- globals.h errors.h version.h hardcopy.h hardcopy_pango.h hardcopy_postscript.h
+ globals.h errors.h version.h hardcopy.h hardcopy_postscript.h
 objects/hardcopy_pango.o: auto/osdef.h hardcopy_pango.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
- globals.h errors.h hardcopy.h hardcopy_pango.h
+ globals.h errors.h hardcopy.h
 objects/hardcopy_postscript.o: auto/osdef.h hardcopy_postscript.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  structs.h regexp.h gui.h libvterm/include/vterm.h \
@@ -4850,6 +4852,8 @@ proto/gui_beval.pro: gui_beval.c
 proto/gui_gtk_gresources.pro: auto/gui_gtk_gresources.c
 proto/gui_xim.pro: gui_xim.c
 proto/hardcopy.pro: hardcopy.c
+proto/hardcopy_pango.pro: hardcopy_pango.c
+proto/hardcopy_postscript.pro: hardcopy_postscript.c
 proto/hashtab.pro: hashtab.c
 proto/help.pro: help.c
 proto/highlight.pro: highlight.c
