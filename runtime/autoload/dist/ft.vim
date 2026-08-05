@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Jul 30
+# Last Change:		2026 Aug 06
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -2326,6 +2326,8 @@ const ft_from_ext = {
   "webmanifest": "json",
   # JSON Lines
   "jsonl": "jsonl",
+  # JSON-LD
+  "jsonld": "jsonld",
   # Jsonnet
   "jsonnet": "jsonnet",
   "libsonnet": "jsonnet",
