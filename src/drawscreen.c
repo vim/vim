@@ -651,6 +651,8 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
  *    over the join without changing visible characters.
  *  - Cells where the vsep char is drawn (stl_connected == FALSE) are left
  *    untouched so the VertSplit highlight is preserved.
+ * Called for every cursor movement, thus only cells whose attribute changed
+ * are written to the screen.
  */
     static void
 borrow_stl_vsep_hl(void)
@@ -713,10 +715,14 @@ borrow_stl_vsep_hl(void)
 
 	for (int r = start; r < end; r++)
 	{
-	    unsigned dst_off = LineOffset[r] + dst_col;
+	    unsigned	dst_off = LineOffset[r] + dst_col;
+	    sattr_T	attr = ScreenAttrs[LineOffset[r] + src_col];
 
-	    ScreenAttrs[dst_off] = ScreenAttrs[LineOffset[r] + src_col];
-	    screen_char(dst_off, r, dst_col);
+	    if (ScreenAttrs[dst_off] != attr)
+	    {
+		ScreenAttrs[dst_off] = attr;
+		screen_char(dst_off, r, dst_col);
+	    }
 	}
     }
 }
@@ -759,7 +765,10 @@ showruler(int always)
     }
 #if defined(FEAT_STL_OPT)
     if ((*p_stl != NUL || *curwin->w_p_stl != NUL) && curwin->w_status_height)
+    {
 	redraw_custom_statusline(curwin);
+	borrow_stl_vsep_hl();
+    }
     else
 #endif
 	win_redr_ruler(curwin, always, FALSE);
