@@ -711,8 +711,8 @@ func Test_term_gettty()
     " Find tty using the tty shell command.
     call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
     call term_sendkeys(buf, "tty\r")
-    call WaitForAssert({-> assert_notequal('', term_getline(buf, 3))})
-    let tty = term_getline(buf, 2)
+    call WaitForAssert({-> assert_equal(gettty, term_getline(buf, 2)[: len(gettty) - 1])})
+    let tty = term_getline(buf, 2)[: len(gettty) - 1]
     call assert_equal(tty, gettty)
   endif
 
