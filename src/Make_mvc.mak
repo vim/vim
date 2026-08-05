@@ -1987,6 +1987,8 @@ proto.h: \
 	proto/gc.pro \
 	proto/gui_xim.pro \
 	proto/hardcopy.pro \
+	proto/hardcopy_pango.pro \
+	proto/hardcopy_postscript.pro \
 	proto/hashtab.pro \
 	proto/help.pro \
 	proto/highlight.pro \

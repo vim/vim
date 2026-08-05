@@ -21,7 +21,6 @@
 #ifdef FEAT_PRINT_PANGO
 
 #include "hardcopy.h"
-#include "hardcopy_pango.h"
 
 #include <cairo/cairo-ps.h>
 #include <cairo/cairo-pdf.h>
