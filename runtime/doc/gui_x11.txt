@@ -304,7 +304,7 @@ If a name is used that exists on other systems, but not in X11, the default
 "arrow" pointer is used.
 
 ==============================================================================
-5. GTK version					*gui-gtk* *GTK+* *GTK* *GTK3*
+5. GTK version			    	*gui-gtk* *GTK+* *GTK* *GTK3* *GTK4*
 
 The GTK version of the GUI works a little bit different.
 
