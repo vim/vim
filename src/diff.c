@@ -4240,8 +4240,12 @@ ex_diffgetput(exarg_T *eap)
 	dfree = NULL;
 	lnum = dp->df_lnum[idx_to];
 	count = dp->df_count[idx_to];
+	// The empty line of an empty buffer is deleted below, include it in
+	// the undo information, otherwise undo leaves a line behind.
+	linenr_T undo_bot = lnum + count + (count == 0 && BUFEMPTY() ? 1 : 0);
+
 	if (dp->df_lnum[idx_cur] + dp->df_count[idx_cur] > eap->line1 + off
-		&& u_save(lnum - 1, lnum + count) != FAIL)
+		&& u_save(lnum - 1, undo_bot) != FAIL)
 	{
 	    // Inside the specified range and saving for undo worked.
 	    start_skip = 0;
