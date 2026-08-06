@@ -378,9 +378,15 @@ mch_print_init(
 	pctx.char_height = (double)(ascent + descent
 		+ (PANGO_SCALE * 15.0) / 16.0) / PANGO_SCALE;
 
+	// Line spacing (line gap) - only available in Pango 1.44+
+#if PANGO_VERSION_CHECK(1,44,0)
 	pctx.line_spacing = (double)
 	    (pango_font_metrics_get_height(metrics) - (ascent + descent))
 	    / PANGO_SCALE;
+#else
+	// Pango < 1.44 doesn't have height metric, default to no line gap
+	pctx.line_spacing = 0.0;
+#endif
 
 	pctx.ul_pos =
 	    (double)pango_font_metrics_get_underline_position(metrics)
