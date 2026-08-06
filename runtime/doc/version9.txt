@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Aug 02
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Aug 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52740,6 +52740,10 @@ Highlighting: ~
 |hl-Popup|		Popup window body.
 |hl-PopupBorder|	Popup window border.
 |hl-PopupTitle|		Popup window title.
+
+Configure Switches: ~
+
+--enable-hardcopy-pango	Enable the pango |:hardcopy| backend |pango-printing|
 
 ==============================================================================
 PATCHES						*patches-9.3* *bug-fixes-9.3*

@@ -2493,12 +2493,18 @@ fi
 AC_MSG_CHECKING(for pango)
 have_pango="no"
 if "$PKG_CONFIG" --exists 'pango' && "$PKG_CONFIG" --exists 'pangocairo'; then
-  have_pango="yes"
-  AC_MSG_RESULT([yes])
+dnl pango_font_metrics_get_height() requires Pango 1.44.
+  if "$PKG_CONFIG" --exists 'pango >= 1.44'; then
+    have_pango="yes"
+    AC_MSG_RESULT([yes])
 
-  PANGO_CFLAGS=`$PKG_CONFIG --cflags-only-other pango pangocairo`
-  PANGO_CPPFLAGS=`$PKG_CONFIG --cflags-only-I pango pangocairo`
-  PANGO_LIBS=`$PKG_CONFIG --libs pango pangocairo`
+    PANGO_CFLAGS=`$PKG_CONFIG --cflags-only-other pango pangocairo`
+    PANGO_CPPFLAGS=`$PKG_CONFIG --cflags-only-I pango pangocairo`
+    PANGO_LIBS=`$PKG_CONFIG --libs pango pangocairo`
+  else
+    have_pango="old"
+    AC_MSG_RESULT([no, version 1.44 or later is required])
+  fi
 else
   AC_MSG_RESULT(no)
 fi
@@ -3153,21 +3159,33 @@ AC_SUBST(UPDATE_DESKTOP_DATABASE)
 
 AC_MSG_CHECKING(--enable-hardcopy-pango argument)
 AC_ARG_ENABLE(hardcopy-pango,
-	[  --enable-hardcopy-pango     Use Pango and Cairo for improved hardcopy printing. [default=yes when GTK GUI enabled]],
-	,, enable_hardcopy_pango="no")
+	[  --enable-hardcopy-pango     Use Pango 1.44 or later and Cairo for improved hardcopy printing. [default=yes when GTK GUI enabled]],
+	[],
+	[enable_hardcopy_pango="auto"])
 
-if test "x$have_pango" = "xno" || test "x$have_cairo" = "xno"; then
-  AC_MSG_RESULT([no, Pango or Cairo not found])
-else
-  if test "x$GUITYPE" = "xGTK" || test "x$GUITYPE" = "xGTK4"; then
-    enable_hardcopy_pango="yes"
-    AC_MSG_RESULT([yes, GTK GUI enabled])
+if test "x$have_pango" != "xyes" || test "x$have_cairo" = "xno"; then
+  if test "$fail_if_missing" = "yes" -a "$enable_hardcopy_pango" = "yes"; then
+    AC_MSG_ERROR([could not configure hardcopy-pango])
+  fi
+  enable_hardcopy_pango="no"
+  if test "x$have_pango" = "xold"; then
+    AC_MSG_RESULT([no, Pango is older than 1.44])
   else
-    if test "$enable_hardcopy_pango" = "yes"; then
-      AC_MSG_RESULT([yes])
+    AC_MSG_RESULT([no, Pango or Cairo not found])
+  fi
+else
+  if test "x$enable_hardcopy_pango" = "xauto"; then
+    if test "x$GUITYPE" = "xGTK" || test "x$GUITYPE" = "xGTK4"; then
+      enable_hardcopy_pango="yes"
+      AC_MSG_RESULT([yes, GTK GUI enabled])
     else
+      enable_hardcopy_pango="no"
       AC_MSG_RESULT([no])
     fi
+  elif test "$enable_hardcopy_pango" = "yes"; then
+    AC_MSG_RESULT([yes])
+  else
+    AC_MSG_RESULT([no])
   fi
 fi
 

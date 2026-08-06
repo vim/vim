@@ -1553,7 +1553,7 @@ Optional Features:
   --disable-gtktest       Do not try to compile and run a test GTK program
   --disable-icon-cache-update        update disabled
   --disable-desktop-database-update  update disabled
-  --enable-hardcopy-pango     Use Pango and Cairo for improved hardcopy printing. default=yes when GTK GUI enabled
+  --enable-hardcopy-pango     Use Pango 1.44 or later and Cairo for improved hardcopy printing. default=yes when GTK GUI enabled
   --disable-largefile     omit support for large files
   --disable-canberra      Do not use libcanberra.
   --disable-libsodium      Do not use libsodium.
@@ -9274,13 +9274,19 @@ fi
 printf %s "checking for pango... " >&6; }
 have_pango="no"
 if "$PKG_CONFIG" --exists 'pango' && "$PKG_CONFIG" --exists 'pangocairo'; then
-  have_pango="yes"
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+  if "$PKG_CONFIG" --exists 'pango >= 1.44'; then
+    have_pango="yes"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
-  PANGO_CFLAGS=`$PKG_CONFIG --cflags-only-other pango pangocairo`
-  PANGO_CPPFLAGS=`$PKG_CONFIG --cflags-only-I pango pangocairo`
-  PANGO_LIBS=`$PKG_CONFIG --libs pango pangocairo`
+    PANGO_CFLAGS=`$PKG_CONFIG --cflags-only-other pango pangocairo`
+    PANGO_CPPFLAGS=`$PKG_CONFIG --cflags-only-I pango pangocairo`
+    PANGO_LIBS=`$PKG_CONFIG --libs pango pangocairo`
+  else
+    have_pango="old"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, version 1.44 or later is required" >&5
+printf "%s\n" "no, version 1.44 or later is required" >&6; }
+  fi
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
@@ -11545,25 +11551,41 @@ printf %s "checking --enable-hardcopy-pango argument... " >&6; }
 if test ${enable_hardcopy_pango+y}
 then :
   enableval=$enable_hardcopy_pango;
+else case e in #(
+  e) enable_hardcopy_pango="auto" ;;
+esac
 fi
 
 
-if test "x$have_pango" = "xno" || test "x$have_cairo" = "xno"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, Pango or Cairo not found" >&5
-printf "%s\n" "no, Pango or Cairo not found" >&6; }
-else
-  if test "x$GUITYPE" = "xGTK" || test "x$GUITYPE" = "xGTK4"; then
-    enable_hardcopy_pango="yes"
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes, GTK GUI enabled" >&5
-printf "%s\n" "yes, GTK GUI enabled" >&6; }
+if test "x$have_pango" != "xyes" || test "x$have_cairo" = "xno"; then
+  if test "$fail_if_missing" = "yes" -a "$enable_hardcopy_pango" = "yes"; then
+    as_fn_error $? "could not configure hardcopy-pango" "$LINENO" 5
+  fi
+  enable_hardcopy_pango="no"
+  if test "x$have_pango" = "xold"; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, Pango is older than 1.44" >&5
+printf "%s\n" "no, Pango is older than 1.44" >&6; }
   else
-    if test "$enable_hardcopy_pango" = "yes"; then
-      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, Pango or Cairo not found" >&5
+printf "%s\n" "no, Pango or Cairo not found" >&6; }
+  fi
+else
+  if test "x$enable_hardcopy_pango" = "xauto"; then
+    if test "x$GUITYPE" = "xGTK" || test "x$GUITYPE" = "xGTK4"; then
+      enable_hardcopy_pango="yes"
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes, GTK GUI enabled" >&5
+printf "%s\n" "yes, GTK GUI enabled" >&6; }
     else
+      enable_hardcopy_pango="no"
       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
     fi
+  elif test "$enable_hardcopy_pango" = "yes"; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+  else
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
   fi
 fi
 
