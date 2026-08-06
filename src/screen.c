@@ -1233,6 +1233,7 @@ skip_opacity:
 			{
 			    ScreenLinesUC[off_to] = c;
 			    ScreenLinesC[0][off_to] = 0;
+			    ScreenLines[off_to] = 0x80; // avoid storing zero
 			}
 			else
 			    ScreenLinesUC[off_to] = 0;
@@ -3081,6 +3082,7 @@ skip_opacity_fill:
 		    {
 			ScreenLinesUC[off] = c;
 			ScreenLinesC[0][off] = 0;
+			ScreenLines[off] = 0x80; // avoid storing zero
 		    }
 		    else
 			ScreenLinesUC[off] = 0;
