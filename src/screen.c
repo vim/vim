@@ -3446,7 +3446,7 @@ give_up:
 			    ScreenAttrs + LineOffset[old_row],
 			    (size_t)len * sizeof(sattr_T));
 		    mch_memmove(new_ScreenCols + new_LineOffset[new_row],
-			    ScreenAttrs + LineOffset[old_row],
+			    ScreenCols + LineOffset[old_row],
 			    (size_t)len * sizeof(colnr_T));
 		}
 	    }
