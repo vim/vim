@@ -1,0 +1,41 @@
+{
+  "keywordsAsKeys": {
+    "@base": null, "@container": null,
+    "@context": null, "@direction": null,
+    "@graph": null, "@id": null,
+    "@import": null, "@included": null,
+    "@index": null, "@json": null,
+    "@language": null, "@list": null,
+    "@nest": null, "@none": null,
+    "@prefix": null, "@propagate": null,
+    "@protected": null, "@reverse": null,
+    "@set": null, "@type": null,
+    "@value": null, "@version": null,
+    "@vocab": null
+  },
+  "keywordsAsValues": [
+    "@base", "@container", "@context", "@direction",
+    "@graph", "@id", "@import", "@included",
+    "@index", "@json", "@language", "@list",
+    "@nest", "@none", "@prefix", "@propagate",
+    "@protected", "@reverse", "@set", "@type",
+    "@value", "@version", "@vocab"
+  ],
+  "nearMisses": {
+    "@identifier": "@thing",
+    "@ID": "prefix@id",
+    "escapedQuote": "prefix\"@id",
+    "@\u0069d": "@\u0069d",
+    "identifier": "@id",
+    "iri": "https://example.com/@id",
+    "compactIri": "schema:name",
+    "blankNode": "_:node"
+  },
+  "ordinaryJson": {
+    "string": "text",
+    "number": -12.5e+2,
+    "boolean": true,
+    "nothing": null,
+    "array": [false, 0, "value"]
+  }
+}
