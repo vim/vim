@@ -181,11 +181,29 @@ endfunc
 
 " Open a terminal with a shell, assign the job to g:job and return the buffer
 " number.
+" Some shells turn on a line editor when they are interactive on a
+" terminal; FreeBSD /bin/sh does.  The editor redraws the line the
+" terminal has already echoed, so a command can land in the buffer
+" twice and shift everything below it.  POSIX shells read $ENV at
+" startup and it produces no output of its own; shells that do not
+" use $ENV ignore the variable.
+let s:shell_env_file = ''
+
+func s:ShellStartupFile()
+  if s:shell_env_file == '' || !filereadable(s:shell_env_file)
+    let s:shell_env_file = tempname()
+    call writefile(['set +o emacs 2>/dev/null', 'set +o vi 2>/dev/null'], s:shell_env_file)
+  endif
+  return s:shell_env_file
+endfunc
+
 func Run_shell_in_terminal(options)
   if has('win32')
     let buf = term_start([&shell, '/D', '/k'], a:options)
   else
-    let buf = term_start(&shell, a:options)
+    let options = copy(a:options)
+    let options.env = extend({'ENV': s:ShellStartupFile()}, get(a:options, 'env', {}))
+    let buf = term_start(&shell, options)
   endif
   let g:test_is_flaky = 1
 
