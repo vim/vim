@@ -2665,6 +2665,7 @@ close_last_window_tabpage(
 	return FALSE;
 
     buf_T	*old_curbuf = curbuf;
+    tabpage_T	*save_lastused = lastused_tabpage;
 
     /*
      * Closing the last window in a tab page.  First go to another tab
@@ -2682,6 +2683,11 @@ close_last_window_tabpage(
     // to the other tab page.
     if (valid_tabpage(prev_curtab) && prev_curtab->tp_firstwin == win)
 	win_close_othertab(win, free_buf, prev_curtab);
+
+    // Entering the other tab page made the closed one the last used tab page.
+    // Restore the previous one when it is still there.
+    if (valid_tabpage(save_lastused) && save_lastused != curtab)
+	lastused_tabpage = save_lastused;
 #ifdef FEAT_JOB_CHANNEL
     entering_window(curwin);
 #endif
