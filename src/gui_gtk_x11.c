@@ -6909,7 +6909,13 @@ gui_mch_wait_for_chars(long wtime)
 	 * situations, sort of race condition).
 	 */
 	if (!input_available())
+	{
 	    g_main_context_iteration(NULL, TRUE);
+#ifdef GDK_WINDOWING_WAYLAND
+    if (gui.is_wayland && clip_star.state == SELECT_IN_PROGRESS)
+	gui_may_flush();
+#endif
+	}
 
 	// Got char, return immediately
 	if (input_available())
