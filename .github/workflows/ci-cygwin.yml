@@ -1,0 +1,118 @@
+name: CI for Cygwin
+
+on:
+  schedule:
+    - cron: '30 23 * * *'  # Run once per day, Cygwin runners are slow
+  workflow_dispatch:
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  # Skip the run when nothing was committed since the previous one.
+  check:
+    runs-on: ubuntu-24.04
+
+    outputs:
+      changed: ${{ steps.check.outputs.changed }}
+
+    steps:
+      - name: Look for commits in the last day
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          date=$(gh api "repos/${{ github.repository }}/commits?sha=${{ github.ref_name }}" \
+            --jq '.[0].commit.committer.date')
+          if [ "$(date -d "${date}" +%s)" -gt "$(date -d '25 hours ago' +%s)" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  cygwin:
+    needs: check
+    if: needs.check.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
+
+    runs-on: windows-2022
+
+    env:
+      # Keep Cygwin out of the Windows PATH: the post-checkout cleanup would
+      # run Cygwin's git on a Windows path and fail.  A login shell sets up
+      # the Cygwin PATH, CHERE_INVOKING keeps it in the workspace.
+      CHERE_INVOKING: 1
+      CYGWIN_NOWINPATH: 1
+      SRCDIR: ./src
+      TERM: xterm
+
+    defaults:
+      run:
+        shell: C:\cygwin\bin\bash.exe --login -eo pipefail -o igncr '{0}'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        features: [tiny, normal, huge]
+
+    steps:
+      # Cygwin cannot run shell scripts checked out with CRLF line endings.
+      - name: Set up git
+        shell: pwsh
+        run: git config --global core.autocrlf input
+
+      - name: Checkout repository from GitHub
+        uses: actions/checkout@v7.0.1
+
+      - name: Install Cygwin
+        uses: cygwin/cygwin-install-action@v6
+        with:
+          add-to-path: false
+          packages: >-
+            diffutils
+            gcc-core
+            gettext-devel
+            libiconv-devel
+            libncurses-devel
+            libtool
+            make
+
+      - name: Set up environment
+        run: |
+          (
+          echo "NPROC=$(getconf _NPROCESSORS_ONLN)"
+          # The script tests need sockets, PowerShell, network access and
+          # POSIX file permissions, which do not work the same under Cygwin.
+          case "${{ matrix.features }}" in
+          tiny)
+            echo "TEST=testtiny"
+            ;;
+          *)
+            echo "TEST=unittests test_libvterm"
+            ;;
+          esac
+          ) >> "${GITHUB_ENV}"
+
+      - name: Configure
+        run: |
+          ./configure --with-features=${{ matrix.features }} --disable-gui
+
+      - name: Build
+        timeout-minutes: 20
+        run: |
+          make -j"${NPROC}"
+
+      - name: Check version
+        run: |
+          "${SRCDIR}"/vim --version
+
+      # Run the tests from the src directory: the top level Makefile also runs
+      # the indent and syntax tests, which the Linux runner already covers.
+      - name: Test
+        timeout-minutes: 40
+        run: |
+          cd "${SRCDIR}"
+          make ${TEST}
+
+      - name: Upload failed test artifacts
+        if: ${{ !cancelled() }}
+        uses: ./.github/actions/test_artifacts
