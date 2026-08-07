@@ -942,6 +942,23 @@ func Test_lastused_tabpage()
   tabonly!
 endfunc
 
+" Closing a tab page must keep the last used tab page when it is another one.
+func Test_lastused_tabpage_close()
+  tabonly!
+  tabnew
+  tabnew
+  tabfirst
+  tablast
+  call assert_equal(1, tabpagenr('#'))
+
+  tabclose
+  call assert_equal(1, tabpagenr('#'))
+  call feedkeys("g\<Tab>", "xt")
+  call assert_equal(1, tabpagenr())
+
+  tabonly!
+endfunc
+
 " Test for tabpage allocation failure
 func Test_tabpage_alloc_failure()
   call test_alloc_fail(GetAllocId('newtabpage_tvars'), 0, 0)
