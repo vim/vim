@@ -698,6 +698,13 @@ func Test_set_completion_string_values()
   call assert_equal('patience', getcompletion('set diffopt+=iblank,algorithm:pat*', 'cmdline')[0])
   call assert_equal('char', getcompletion('set diffopt+=iwhite,inline:ch*', 'cmdline')[0])
 
+  " pumopt
+  call assert_equal(['custom:'], getcompletion('set pumopt=border:c', 'cmdline'))
+  " opacity can be any integer from 0 to 100; no completions are offered.
+  call assert_equal([], getcompletion('set pumopt=opacity:', 'cmdline'))
+  call assert_equal(['ascii', 'custom:', 'double', 'round', 'single'],
+        \ getcompletion('set pumopt=shadow,border:', 'cmdline'))
+
   " highlight: special parsing, including auto-completing highlight groups
   " after ':'
   call assert_equal([escape(&hl, '|'), '8'], getcompletion('set hl=', 'cmdline')[0:1])

@@ -1131,8 +1131,6 @@ did_set_ambiwidth(optset_T *args UNUSED)
     return check_chars_options();
 }
 
-#if defined(FEAT_TABPANEL) || defined(FEAT_DIFF) || defined(FEAT_PROP_POPUP)
-
 // "name" must be a string literal, the length is computed at compile time.
 # define completing_value_for_subopt(args, name) \
 	  completing_value_for_subopt_len(args, name, (int)STRLEN_LITERAL(name))
@@ -1155,7 +1153,6 @@ completing_value_for_subopt_len(optexpand_T *args, char *name, int len)
 
     return STRNCMP(colon - len, name, len) == 0;
 }
-#endif
 
     int
 expand_set_ambiwidth(optexpand_T *args, int *numMatches, char_u ***matches)
@@ -3924,6 +3921,23 @@ error:
     int
 expand_set_pumopt(optexpand_T *args, int *numMatches, char_u ***matches)
 {
+    if (args->oe_xp->xp_pattern > args->oe_set_arg
+	    && *(args->oe_xp->xp_pattern-1) == ':')
+    {
+	if (completing_value_for_subopt(args, "border"))
+	{
+	    static char *(p_pumopt_border_values[]) = {"ascii", "custom:",
+		"double", "round", "single", NULL};
+	    return expand_set_opt_string(
+		    args,
+		    p_pumopt_border_values,
+		    ARRAY_LENGTH(p_pumopt_border_values) - 1,
+		    numMatches,
+		    matches);
+	}
+	return FAIL;
+    }
+
     static char *(p_pumopt_values[]) = {"border:", "height:", "width:",
 	"maxwidth:", "opacity:", "shadow", "margin", NULL};
     return expand_set_opt_string(
