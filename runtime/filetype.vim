@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2026 Jul 18
+" Last Change:		2026 Aug 08
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If the filetype can be detected from extension or file name(the final path component),
@@ -862,7 +862,10 @@ if has("fname_case")
 else
   au BufNewFile,BufRead *.pl				call dist#ft#FTpl()
 endif
-au BufNewFile,BufRead *.plx,*.al,*.psgi			setf perl
+au BufNewFile,BufRead *.plx,*.psgi			setf perl
+
+" Perl AutoLoader or AL (Dynamics 365 Business Central)
+au BufNewFile,BufRead *.al				call dist#ft#FTal()
 
 " Perl, XPM or XPM2
 au BufNewFile,BufRead *.pm
