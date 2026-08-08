@@ -834,6 +834,7 @@ blob_extend_func(
 	typval_T	*rettv)
 {
     blob_T	*b1, *b2;
+    typval_T	newtv;
     int		before;
     int		error = FALSE;
 
@@ -847,9 +848,9 @@ blob_extend_func(
     {
 	if (is_new)
 	{
-	    if (blob_copy(b1, rettv) == FAIL)
+	    if (blob_copy(b1, &newtv) == FAIL)
 		return;
-	    b1 = rettv->vval.v_blob;
+	    b1 = newtv.vval.v_blob;
 	}
 
 	b2 = argvars[1].vval.v_blob;
@@ -873,9 +874,14 @@ blob_extend_func(
 	    before = b1->bv_ga.ga_len;
 	blob_extend(b1, b2, before);
 
-
 theend:
-	if (!is_new)
+	if (is_new)
+	{
+	    copy_tv(&newtv, rettv);
+	    // decrement the refcount because it's 2 here
+	    blob_unref(b1);
+	}
+	else
 	    copy_tv(&argvars[0], rettv);
 	return;
 
