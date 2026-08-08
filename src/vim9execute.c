@@ -2996,7 +2996,8 @@ execute_for(isn_T *iptr, ectx_T *ectx)
 	// changed.
 	if (idxtv->vval.v_number == -1 && blob != NULL)
 	{
-	    blob_copy(blob, ltv);
+	    ltv->v_lock = 0;
+	    ltv->vval.v_blob = blob_copy(blob);
 	    blob_unref(blob);
 	    blob = ltv->vval.v_blob;
 	}
@@ -4740,7 +4741,8 @@ exec_instructions(ectx_T *ectx)
 			tv->vval.v_float = iptr->isn_arg.fnumber;
 			break;
 		    case ISN_PUSHBLOB:
-			blob_copy(iptr->isn_arg.blob, tv);
+			tv->v_type = VAR_BLOB;
+			tv->vval.v_blob = blob_copy(iptr->isn_arg.blob);
 			break;
 		    case ISN_PUSHFUNC:
 			tv->v_type = VAR_FUNC;

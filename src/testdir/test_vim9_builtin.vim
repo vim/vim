@@ -1162,6 +1162,11 @@ def Test_extend_arg_types()
       assert_equal({a: 1, b: 2}, extend({a: 1, b: 2}, {b: 4}, 'keep'))
       assert_equal({a: 1, b: 2}, extend({a: 1, b: 2}, {b: 4}, g:string_keep))
 
+      assert_equal(0z010203, extend(0z0102, 0z03))
+      assert_equal(0z030102, extend(0z0102, 0z03, 0))
+      assert_equal(0z010302, extend(0z0102, 0z03, 1))
+      assert_equal(0z010302, extend(0z0102, 0z03, g:number_one))
+
       # mix of types is OK without a declaration
 
       var res: list<dict<any>>
@@ -1182,13 +1187,16 @@ def Test_extend_arg_types()
   END
   v9.CheckSourceDefAndScriptSuccess(lines)
 
-  v9.CheckSourceDefAndScriptFailure(['extend("a", 1)'], ['E1013: Argument 1: type mismatch, expected list<any> but got string', 'E712: Argument of extend() must be a List or Dictionary'])
-  v9.CheckSourceDefAndScriptFailure(['extend([1, 2], 3)'], ['E1013: Argument 2: type mismatch, expected list<any> but got number', 'E712: Argument of extend() must be a List or Dictionary'])
+  v9.CheckSourceDefAndScriptFailure(['extend("a", 1)'], ['E1013: Argument 1: type mismatch, expected list<any> but got string', 'E896: Argument of extend() must be a List, Dictionary or Blob'])
+  v9.CheckSourceDefAndScriptFailure(['extend([1, 2], 3)'], ['E1013: Argument 2: type mismatch, expected list<any> but got number', 'E896: Argument of extend() must be a List, Dictionary or Blob'])
   v9.CheckSourceDefAndScriptFailure(['var ll = [1, 2]', 'extend(ll, ["x"])'], ['E1013: Argument 2: type mismatch, expected list<number> but got list<string>', 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>'])
   v9.CheckSourceDefFailure(['extend([1, 2], [3], "x")'], 'E1013: Argument 3: type mismatch, expected number but got string')
 
   v9.CheckSourceDefFailure(['extend({a: 1}, 42)'], 'E1013: Argument 2: type mismatch, expected dict<any> but got number')
   v9.CheckSourceDefFailure(['extend({a: 1}, {b: 2}, 1)'], 'E1013: Argument 3: type mismatch, expected string but got number')
+
+  v9.CheckSourceDefFailure(['extend(0z01, 42)'], 'E1013: Argument 2: type mismatch, expected blob but got number')
+  v9.CheckSourceDefFailure(['extend(0z01, 0z02, 1.1)'], 'E1013: Argument 3: type mismatch, expected number but got float')
 
   v9.CheckSourceScriptFailure(['vim9script', 'var l = [1]', 'extend(l, ["b", 1])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<any> in extend()')
 enddef
@@ -1305,6 +1313,19 @@ def Test_extend_const()
   END
   v9.CheckSourceDefSuccess(lines)
 
+  lines =<< trim END
+      const b = 0z0102
+      extend(b, 0z03)
+  END
+  v9.CheckSourceDefFailure(lines, 'E1307: Argument 1: Trying to modify a const blob')
+
+  lines =<< trim END
+      final b = 0z0102
+      extend(b, 0z03)
+      assert_equal(0z010203, b)
+  END
+  v9.CheckSourceDefSuccess(lines)
+
   # item in a for loop is final
   lines =<< trim END
       var l: list<dict<any>> = [{n: 1}]
@@ -1318,11 +1339,14 @@ enddef
 def Test_extendnew()
   assert_equal([1, 2, 'a'], extendnew([1, 2], ['a']))
   assert_equal({one: 1, two: 'a'}, extendnew({one: 1}, {two: 'a'}))
+  assert_equal(0z010203, extendnew(0z0102, 0z03))
 
-  v9.CheckSourceDefAndScriptFailure(['extendnew({a: 1}, 42)'], ['E1013: Argument 2: type mismatch, expected dict<number> but got number', 'E712: Argument of extendnew() must be a List or Dictionary'])
-  v9.CheckSourceDefAndScriptFailure(['extendnew({a: 1}, [42])'], ['E1013: Argument 2: type mismatch, expected dict<number> but got list<number>', 'E712: Argument of extendnew() must be a List or Dictionary'])
-  v9.CheckSourceDefAndScriptFailure(['extendnew([1, 2], "x")'], ['E1013: Argument 2: type mismatch, expected list<number> but got string', 'E712: Argument of extendnew() must be a List or Dictionary'])
-  v9.CheckSourceDefAndScriptFailure(['extendnew([1, 2], {x: 1})'], ['E1013: Argument 2: type mismatch, expected list<number> but got dict<number>', 'E712: Argument of extendnew() must be a List or Dictionary'])
+  v9.CheckSourceDefAndScriptFailure(['extendnew({a: 1}, 42)'], ['E1013: Argument 2: type mismatch, expected dict<number> but got number', 'E896: Argument of extendnew() must be a List, Dictionary or Blob'])
+  v9.CheckSourceDefAndScriptFailure(['extendnew({a: 1}, [42])'], ['E1013: Argument 2: type mismatch, expected dict<number> but got list<number>', 'E896: Argument of extendnew() must be a List, Dictionary or Blob'])
+  v9.CheckSourceDefAndScriptFailure(['extendnew([1, 2], "x")'], ['E1013: Argument 2: type mismatch, expected list<number> but got string', 'E896: Argument of extendnew() must be a List, Dictionary or Blob'])
+  v9.CheckSourceDefAndScriptFailure(['extendnew([1, 2], {x: 1})'], ['E1013: Argument 2: type mismatch, expected list<number> but got dict<number>', 'E896: Argument of extendnew() must be a List, Dictionary or Blob'])
+  v9.CheckSourceDefAndScriptFailure(['extendnew(0z0102, "x")'], ['E1013: Argument 2: type mismatch, expected blob but got string', 'E896: Argument of extendnew() must be a List, Dictionary or Blob'])
+  v9.CheckSourceDefAndScriptFailure(['extendnew(0z0102, [42])'], ['E1013: Argument 2: type mismatch, expected blob but got list<number>', 'E896: Argument of extendnew() must be a List, Dictionary or Blob'])
 enddef
 
 def Test_feedkeys()
