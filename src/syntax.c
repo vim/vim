@@ -79,6 +79,8 @@ typedef struct syn_pattern
 
 #define SYN_ITEMS(buf)	((synpat_T *)((buf)->b_syn_patterns.ga_data))
 
+static unsigned long syntax_change_tick = 0;
+
 #define NONE_IDX	(-2)	// value of sp_sync_idx for "NONE"
 
 /*
@@ -1051,6 +1053,7 @@ syn_stack_free_all(synblock_T *block)
     win_T	*wp;
 #endif
 
+    block->b_syn_change_tick = ++syntax_change_tick;
     syn_stack_free_block(block);
 
 #ifdef FEAT_FOLDING
@@ -3476,6 +3479,7 @@ syn_cmd_iskeyword(exarg_T *eap, int syncing UNUSED)
 	    curwin->w_s->b_syn_isk = curbuf->b_p_isk;
 	    curbuf->b_p_isk = save_isk;
 	}
+	curwin->w_s->b_syn_change_tick = ++syntax_change_tick;
     }
     redraw_win_later(curwin, UPD_NOT_VALID);
 }
@@ -6582,6 +6586,99 @@ syntax_present(win_T *win)
 	    || win->w_s->b_syn_clusters.ga_len != 0
 	    || win->w_s->b_keywtab.ht_used > 0
 	    || win->w_s->b_keywtab_ic.ht_used > 0);
+}
+
+#ifdef FEAT_CONCEAL
+    static bool
+syn_keytab_has_conceal(hashtab_T *ht)
+{
+    hashitem_T	*hi;
+    int		todo = (int)ht->ht_used;
+
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
+    {
+	keyentry_T *kp;
+
+	if (HASHITEM_EMPTY(hi))
+	    continue;
+	--todo;
+	for (kp = HI2KE(hi); kp != NULL; kp = kp->ke_next)
+	    if (kp->flags & (HL_CONCEAL|HL_CONCEALENDS))
+		return true;
+    }
+    return false;
+}
+
+/*
+ * Return whether this syntax block contains an item that can conceal text.
+ */
+    bool
+syntax_has_conceal(win_T *wp)
+{
+    synblock_T	*block = wp->w_s;
+    bool	found = false;
+    int		i;
+
+    if (block->b_syn_conceal_valid
+		    && block->b_syn_conceal_tick == block->b_syn_change_tick)
+	return block->b_syn_has_conceal_item;
+
+    for (i = 0; i < block->b_syn_patterns.ga_len; ++i)
+	if (SYN_ITEMS(block)[i].sp_flags & (HL_CONCEAL|HL_CONCEALENDS))
+	{
+	    found = true;
+	    break;
+	}
+    if (!found)
+	found = syn_keytab_has_conceal(&block->b_keywtab)
+			    || syn_keytab_has_conceal(&block->b_keywtab_ic);
+
+    block->b_syn_conceal_tick = block->b_syn_change_tick;
+    block->b_syn_has_conceal_item = found;
+    block->b_syn_conceal_valid = true;
+    return found;
+}
+#endif
+
+    bool
+conceal_pattern_is_dynamic(char_u *pattern)
+{
+    char *cursor = (char *)pattern;
+
+    while ((cursor = strstr(cursor, "%#")) != NULL && cursor[2] == '=')
+	cursor += 2;
+    return cursor != NULL || strstr((char *)pattern, "%V") != NULL
+				   || strstr((char *)pattern, "%'") != NULL
+				   || strstr((char *)pattern, "%<'") != NULL
+				   || strstr((char *)pattern, "%>'") != NULL;
+}
+
+    bool
+syntax_has_dynamic_pattern(win_T *wp)
+{
+    synblock_T	*block = wp->w_s;
+    bool	found = false;
+    int		i;
+
+    if (block->b_syn_dynamic_valid
+	    && block->b_syn_dynamic_tick == block->b_syn_change_tick)
+	return block->b_syn_has_dynamic_pattern;
+
+    for (i = 0; i < block->b_syn_patterns.ga_len; ++i)
+	if (SYN_ITEMS(block)[i].sp_pattern != NULL
+		&& conceal_pattern_is_dynamic(
+					SYN_ITEMS(block)[i].sp_pattern))
+	{
+	    found = true;
+	    break;
+	}
+    if (!found && block->b_syn_linecont_pat != NULL)
+	found = conceal_pattern_is_dynamic(block->b_syn_linecont_pat);
+
+    block->b_syn_dynamic_tick = block->b_syn_change_tick;
+    block->b_syn_has_dynamic_pattern = found;
+    block->b_syn_dynamic_valid = true;
+    return found;
 }
 
 

@@ -1,5 +1,6 @@
 /* charset.c */
 int init_chartab(void);
+unsigned long get_chartab_generation(void);
 int buf_init_chartab(buf_T *buf, int global);
 int check_isopt(char_u *var);
 void trans_characters(char_u *buf, int bufsize);

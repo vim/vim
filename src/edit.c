@@ -2855,6 +2855,16 @@ beginline(int flags)
  * Return OK when successful, FAIL when we hit a line of file boundary.
  */
 
+    static void
+invalidate_conceal_cursor_pos(void)
+{
+#ifdef FEAT_CONCEAL
+    if (curwin->w_p_wrap
+	    && plines_win_may_conceal(curwin, curwin->w_cursor.lnum))
+	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
+#endif
+}
+
     int
 oneright(void)
 {
@@ -2872,8 +2882,11 @@ oneright(void)
 		    ? ptr2cells(ptr) : 1));
 	curwin->w_set_curswant = true;
 	// Return OK if the cursor moved, FAIL otherwise (at window edge).
-	return (prevpos.col != curwin->w_cursor.col
-		    || prevpos.coladd != curwin->w_cursor.coladd) ? OK : FAIL;
+	if (prevpos.col == curwin->w_cursor.col
+		&& prevpos.coladd == curwin->w_cursor.coladd)
+	    return FAIL;
+	invalidate_conceal_cursor_pos();
+	return OK;
     }
 
     ptr = ml_get_cursor();
@@ -2892,6 +2905,7 @@ oneright(void)
     curwin->w_cursor.col += l;
 
     curwin->w_set_curswant = true;
+    invalidate_conceal_cursor_pos();
     adjust_skipcol();
     return OK;
 }
@@ -2939,6 +2953,7 @@ oneleft(void)
 	}
 
 	curwin->w_set_curswant = true;
+	invalidate_conceal_cursor_pos();
 	adjust_skipcol();
 	return OK;
     }
@@ -2953,6 +2968,7 @@ oneleft(void)
     // character, move to its first byte
     if (has_mbyte)
 	mb_adjust_cursor();
+    invalidate_conceal_cursor_pos();
     adjust_skipcol();
     return OK;
 }

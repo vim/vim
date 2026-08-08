@@ -1631,6 +1631,155 @@ func Test_popup_beval()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_beval_conceallevel_three()
+  CheckRunVimInTerminal
+  CheckFeature balloon_eval_term
+
+  let line = repeat('a', 24)
+        \ .. ' HIDDEN target words after hidden text to force wrapping'
+        \ .. ' and mapping checks'
+  let target_col = stridx(line, 'target') + 1
+  let lines =<< trim END
+	let s:target_col = 0
+	let s:winid = 0
+	call setline(1, LINE)
+	setlocal wrap linebreak breakindent conceallevel=3 concealcursor=nvic
+	      \ signcolumn=no nonumber
+	syntax match Hidden /HIDDEN / conceal
+	set balloonevalterm balloonexpr=BalloonExpr() balloondelay=100
+	func BalloonExpr()
+	  let s:winid = popup_beval(v:beval_text, {})
+	  let pos = popup_getpos(s:winid)
+	  let options = popup_getoptions(s:winid)
+	  call writefile([v:beval_text, string(v:beval_col),
+	        \ string(pos.col), string(options.mousemoved)],
+	        \ 'Xpopup_beval_conceal_hover')
+	  set noballoonevalterm
+	  return ''
+	endfunc
+	func Hover()
+	  let s:target_col = stridx(getline(1), 'target') + 1
+	  let pos = screenpos(0, 1, s:target_col)
+	  call writefile([string(pos.row), string(pos.curscol),
+	        \ string(s:target_col)], 'Xpopup_beval_conceal_pos')
+	  call test_setmouse(pos.row, pos.curscol)
+	  call feedkeys("\<MouseMove>\<Ignore>", "xt")
+	endfunc
+	func MoveInside()
+	  let pos = screenpos(0, 1, s:target_col + 3)
+	  call test_setmouse(pos.row, pos.curscol)
+	  call feedkeys("\<MouseMove>\<Ignore>", "xt")
+	  call writefile([string(get(popup_getpos(s:winid), 'visible', 0))],
+	        \ 'Xpopup_beval_conceal_inside')
+	endfunc
+	func SetupWrappedWord()
+	  call popup_close(s:winid)
+	  let word = repeat('z', 60)
+	  call setline(1, repeat('a', 24) .. ' HIDDEN ' .. word)
+	  redraw
+	  let word_col = stridx(getline(1), word) + 1
+	  let first = screenpos(0, 1, word_col + 20)
+	  let second = screenpos(0, 1, word_col + 25)
+	  call test_setmouse(first.row, first.curscol)
+	  let s:wrapped_row = second.row
+	  let s:wrapped_col = second.curscol
+	  let s:winid = popup_create('wrapped',
+	        \ #{line: 8, col: 1, mousemoved: 'word'})
+	  let options = popup_getoptions(s:winid)
+	  call writefile([string(first.row), string(first.curscol),
+	        \ string(second.row), string(second.curscol),
+	        \ string(options.mousemoved), 'done'],
+	        \ 'Xpopup_beval_conceal_wrapped')
+	endfunc
+	func MoveInsideWrappedWord()
+	  call test_setmouse(s:wrapped_row, s:wrapped_col)
+	  call feedkeys("\<MouseMove>\<Ignore>", "xt")
+	  call writefile([string(get(popup_getpos(s:winid), 'visible', 0)),
+	        \ 'done'], 'Xpopup_beval_conceal_wrapped_inside')
+	endfunc
+	func SetupPlainWrappedWord()
+	  call popup_close(s:winid)
+	  let word = repeat('z', 60)
+	  call setline(1, repeat('a', 24) .. ' ' .. word)
+	  redraw
+	  let word_col = stridx(getline(1), word) + 1
+	  let hover = screenpos(0, 1, word_col + 20)
+	  call test_setmouse(hover.row, hover.curscol)
+	  let s:winid = popup_create('wrapped',
+	        \ #{line: 8, col: 1, mousemoved: 'word'})
+	  let options = popup_getoptions(s:winid)
+	  call writefile([string(hover.row), string(options.mousemoved), 'done'],
+	        \ 'Xpopup_beval_plain_wrapped')
+	endfunc
+  END
+  call map(lines, {_, val -> substitute(val, 'LINE', string(line), '')})
+  call writefile(lines, 'XtestPopupBevalConceal', 'D')
+  call delete('Xpopup_beval_conceal_hover')
+  call delete('Xpopup_beval_conceal_pos')
+  call delete('Xpopup_beval_conceal_inside')
+  call delete('Xpopup_beval_conceal_wrapped')
+  call delete('Xpopup_beval_conceal_wrapped_inside')
+  call delete('Xpopup_beval_plain_wrapped')
+
+  let buf = RunVimInTerminal('-S XtestPopupBevalConceal',
+        \ #{rows: 10, cols: 40})
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, ":call Hover()\<CR>")
+  call WaitFor({-> filereadable('Xpopup_beval_conceal_pos')
+        \ && len(readfile('Xpopup_beval_conceal_pos')) > 0})
+  let screenpos = readfile('Xpopup_beval_conceal_pos')
+  call assert_equal('1', screenpos[0])
+  call assert_true(str2nr(screenpos[1]) < target_col)
+
+  call WaitFor({-> filereadable('Xpopup_beval_conceal_hover')
+        \ && len(readfile('Xpopup_beval_conceal_hover')) > 0})
+  let hover = readfile('Xpopup_beval_conceal_hover')
+  call assert_equal(['target', string(target_col), screenpos[1]], hover[0:2])
+  let mousemoved = eval(hover[3])
+  call assert_equal(str2nr(screenpos[0]) - 1, mousemoved[0])
+  call assert_true(mousemoved[1] <= str2nr(screenpos[1]) - 1)
+  call assert_true(mousemoved[2] >= str2nr(screenpos[1]) - 1 + 3)
+
+  call term_sendkeys(buf, ":call MoveInside()\<CR>")
+  call WaitFor({-> filereadable('Xpopup_beval_conceal_inside')
+        \ && len(readfile('Xpopup_beval_conceal_inside')) > 0})
+  call assert_equal(['1'], readfile('Xpopup_beval_conceal_inside'))
+
+  call term_sendkeys(buf, ":call SetupWrappedWord()\<CR>")
+  call WaitFor({-> filereadable('Xpopup_beval_conceal_wrapped')
+        \ && readfile('Xpopup_beval_conceal_wrapped')[-1:] == ['done']})
+  let wrapped = readfile('Xpopup_beval_conceal_wrapped')
+  call assert_true(str2nr(wrapped[0]) > 1)
+  call assert_equal(wrapped[0], wrapped[2])
+  let wrapped_mousemoved = eval(wrapped[4])
+  call assert_equal(str2nr(wrapped[0]) - 1, wrapped_mousemoved[0])
+  call assert_true(wrapped_mousemoved[1] <= str2nr(wrapped[1]) - 1)
+  call assert_true(wrapped_mousemoved[2] >= str2nr(wrapped[3]) - 1)
+
+  call term_sendkeys(buf, ":call MoveInsideWrappedWord()\<CR>")
+  call WaitFor({-> filereadable('Xpopup_beval_conceal_wrapped_inside')
+        \ && readfile('Xpopup_beval_conceal_wrapped_inside')[-1:]
+        \ == ['done']})
+  call assert_equal('1',
+        \ readfile('Xpopup_beval_conceal_wrapped_inside')[0])
+
+  call term_sendkeys(buf, ":call SetupPlainWrappedWord()\<CR>")
+  call WaitFor({-> filereadable('Xpopup_beval_plain_wrapped')
+        \ && readfile('Xpopup_beval_plain_wrapped')[-1:] == ['done']})
+  let plain_wrapped = readfile('Xpopup_beval_plain_wrapped')
+  call assert_true(str2nr(plain_wrapped[0]) > 1)
+  call assert_equal(str2nr(plain_wrapped[0]) - 1,
+        \ eval(plain_wrapped[1])[0])
+
+  call StopVimInTerminal(buf)
+  call delete('Xpopup_beval_conceal_hover')
+  call delete('Xpopup_beval_conceal_pos')
+  call delete('Xpopup_beval_conceal_inside')
+  call delete('Xpopup_beval_conceal_wrapped')
+  call delete('Xpopup_beval_conceal_wrapped_inside')
+  call delete('Xpopup_beval_plain_wrapped')
+endfunc
+
 func Test_popup_filter()
   new
   call setline(1, 'some text')

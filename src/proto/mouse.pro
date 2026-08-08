@@ -14,6 +14,7 @@ void setmouse(void);
 int mouse_has(int c);
 int mouse_model_popup(void);
 void reset_dragwin(void);
+bool mouse_conceal_col(win_T *wp, linenr_T lnum, int row, int col, colnr_T *colp, colnr_T *coladdp);
 int jump_to_mouse(int flags, int *inclusive, int which_button);
 int do_mousescroll_horiz(long_u leftcol);
 void nv_mousescroll(cmdarg_T *cap);

@@ -5728,6 +5728,14 @@ get_cellwidth(int c UNUSED)
 #endif
 }
 
+static unsigned long cellwidths_generation = 0;
+
+    unsigned long
+get_cellwidths_generation(void)
+{
+    return cellwidths_generation;
+}
+
 #if defined(FEAT_EVAL)
 
 /*
@@ -5918,6 +5926,7 @@ update:
     }
 
     vim_free(cw_table_save);
+    ++cellwidths_generation;
     changed_window_setting_all();
     redraw_all_later(UPD_CLEAR);
 }
