@@ -2938,7 +2938,7 @@ win_line(
 			wlv.n_extra = (int)STRLEN(wlv.p_extra);
 			wlv.c_extra = NUL;
 			wlv.c_final = NUL;
-			if (area_attr == 0 && search_attr == 0)
+			if (search_attr == 0)
 			{
 			    n_attr = wlv.n_extra + 1;
 			    wlv.extra_attr = hl_combine_attr(
@@ -3009,7 +3009,7 @@ win_line(
 			    wlv.c_extra = NUL;
 			    wlv.c_final = NUL;
 			    c = *wlv.p_extra++;
-			    if (area_attr == 0 && search_attr == 0)
+			    if (search_attr == 0)
 			    {
 				n_attr = wlv.n_extra + 1;
 				wlv.extra_attr = hl_combine_attr(
@@ -3266,7 +3266,7 @@ win_line(
 		    else
 			c = (c == ' ') ? wp->w_lcs_chars.space
 					: wp->w_lcs_chars.nbsp;
-		    if (area_attr == 0 && search_attr == 0)
+		    if (search_attr == 0)
 		    {
 			n_attr = 1;
 			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
@@ -3306,13 +3306,11 @@ win_line(
 			c = wp->w_lcs_chars.space;
 
 
-		    if (!attr_pri)
-		    {
-			n_attr = 1;
-			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
-							       HL_ATTR(HLF_8));
-			saved_attr2 = wlv.char_attr; // save current attr
-		    }
+		    n_attr = 1;
+		    wlv.extra_attr = hl_combine_attr(wlv.win_attr,
+							   HL_ATTR(HLF_8));
+		    saved_attr2 = wlv.char_attr; // save current attr
+
 		    mb_c = c;
 		    if (enc_utf8 && utf_char2len(c) > 1)
 		    {
@@ -3544,7 +3542,7 @@ win_line(
 			c = ' ';
 		    lcs_eol_one = -1;
 		    --ptr;	    // put it back at the NUL
-		    if (!attr_pri)
+		    if (search_attr == 0)
 		    {
 			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
 							      HL_ATTR(HLF_AT));
@@ -3595,20 +3593,17 @@ win_line(
 			wlv.n_extra = byte2cells(c) - 1;
 			c = *wlv.p_extra++;
 		    }
-		    if (!attr_pri)
-		    {
-			n_attr = wlv.n_extra + 1;
-			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
-							       HL_ATTR(HLF_8));
+		    n_attr = wlv.n_extra + 1;
+		    wlv.extra_attr = hl_combine_attr(wlv.win_attr,
+			    HL_ATTR(HLF_8));
 #ifdef FEAT_PROP_POPUP
-			if (text_prop_type != NULL &&
-				 text_prop_flags & PT_FLAG_OVERRIDE)
-			    wlv.extra_attr = hl_combine_attr(text_prop_attr,
-							       wlv.extra_attr);
+		    if (text_prop_type != NULL &&
+			    text_prop_flags & PT_FLAG_OVERRIDE)
+			wlv.extra_attr = hl_combine_attr(text_prop_attr,
+				wlv.extra_attr);
 #endif
 
-			saved_attr2 = wlv.char_attr; // save current attr
-		    }
+		    saved_attr2 = wlv.char_attr; // save current attr
 		    mb_utf8 = FALSE;	// don't draw as UTF-8
 		}
 		else if (VIsual_active
@@ -3835,19 +3830,33 @@ win_line(
 	// highlighting, unless text property overrides.
 	// Don't use "wlv.extra_attr" until wlv.n_attr_skip is zero.
 	if (wlv.n_attr_skip == 0 && n_attr > 0
-		&& wlv.draw_state == WL_LINE
-		&& (!attr_pri
+		&& wlv.draw_state == WL_LINE)
+	{
+	    if (!attr_pri
 #ifdef FEAT_PROP_POPUP
 		    || (text_prop_flags & PT_FLAG_OVERRIDE)
 #endif
-		   ))
-	{
+		   )
+	    {
 #ifdef LINE_ATTR
-	    if (wlv.line_attr)
-		wlv.char_attr = hl_combine_attr(wlv.line_attr, wlv.extra_attr);
-	    else
+		if (wlv.line_attr)
+		    wlv.char_attr = hl_combine_attr(wlv.line_attr, wlv.extra_attr);
+		else
 #endif
-		wlv.char_attr = wlv.extra_attr;
+		    wlv.char_attr = wlv.extra_attr;
+	    }
+	    else
+	    {
+#ifdef LINE_ATTR
+		// Combine extra, char and line attributes to make sure
+		// SpecialKey blends with Visual.
+		if (wlv.line_attr)
+		    wlv.char_attr = hl_combine_attr(wlv.line_attr,
+				hl_combine_attr(wlv.char_attr, wlv.extra_attr));
+		else
+#endif
+		    wlv.char_attr = hl_combine_attr(wlv.char_attr, wlv.extra_attr);
+	    }
 #ifdef FEAT_PROP_POPUP
 	    if (reset_extra_attr)
 	    {
