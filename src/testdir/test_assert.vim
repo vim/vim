@@ -383,6 +383,15 @@ endfunc
 
 " Check that a typed assert_equal() doesn't prepend an unnecessary ':'.
 func Test_assert_equal_typed()
+let opts = {
+        \ 'term_rows': get(a:options, 'rows', 20),
+        \ 'term_cols': get(a:options, 'cols', 78),
+        \ 'norestore': 1,
+        \ 'out_mode': 'nl',
+        \ 'in_mode': 'nl',
+        \ }
+  let buf = RunVimInTerminal('', opts)
+
   let after =<< trim END
     call feedkeys(":call assert_equal(0, 1)\<CR>", 't')
     call feedkeys(":call writefile(v:errors, 'Xerrors')\<CR>", 't')
@@ -392,6 +401,10 @@ func Test_assert_equal_typed()
   call assert_equal(['Expected 0 but got 1'], readfile('Xerrors'))
 
   call delete('Xerrors')
+
+call term_sendkeys(buf, ":assert_equal 'foo', 'bar'\<CR>")
+  call WaitForAssert({-> assert_match("Expected 'foo' but got 'bar'", term_getline(buf, 6))})
+  call StopVimInTerminal(buf)
 endfunc
 
 func Test_assert_beeps()
