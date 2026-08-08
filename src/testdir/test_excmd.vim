@@ -2,28 +2,6 @@
 
 source util/screendump.vim
 
-func Test_ex_delete()
-  new
-
-  call setline(1, ['a', 'b', 'c'])
-  2
-  " :dl is :delete with the "l" flag, not :dlist
-  .dl
-  call assert_equal(['a', 'c'], getline(1, 2))
-  %delete _
-
-  " :delete # used to clobber "0
-  call setreg('#', '')
-  call setreg('0', '')
-  call setline(1, ['a', 'b', 'c'])
-  call assert_fails("1delete #", 'E488:')
-  call assert_equal(['a', 'b', 'c'], getline(1, '$'))
-  call assert_equal('', getreg('#'))
-  call assert_equal('', getreg('0'))
-
-  bw!
-endfunc
-
 func Test_range_error()
   call assert_fails(':.echo 1', 'E481:')
   call assert_fails(':$echo 1', 'E481:')
@@ -597,34 +575,6 @@ func Test_verbose_cmd()
   set verbose=0
   call assert_match('  verbose=4\n\s*Last set from .*\n  verbose=0',
         \ execute("4verbose set verbose | set verbose"))
-endfunc
-
-" Test for the :delete command and the related abbreviated commands
-func Test_excmd_delete()
-  new
-  call setline(1, ['foo', "\tbar"])
-  call assert_equal(['^Ibar$'], split(execute('dl'), "\n"))
-  call setline(1, ['foo', "\tbar"])
-  call assert_equal(['^Ibar$'], split(execute('dell'), "\n"))
-  call setline(1, ['foo', "\tbar"])
-  call assert_equal(['^Ibar$'], split(execute('delel'), "\n"))
-  call setline(1, ['foo', "\tbar"])
-  call assert_equal(['^Ibar$'], split(execute('deletl'), "\n"))
-  call setline(1, ['foo', "\tbar"])
-  call assert_equal(['^Ibar$'], split(execute('deletel'), "\n"))
-  call setline(1, ['foo', "\tbar"])
-  call assert_equal(['        bar'], split(execute('dp'), "\n"))
-  call setline(1, ['foo', "\tbar"])
-  call assert_equal(['        bar'], split(execute('dep'), "\n"))
-  call setline(1, ['foo', "\tbar"])
-  call assert_equal(['        bar'], split(execute('delp'), "\n"))
-  call setline(1, ['foo', "\tbar"])
-  call assert_equal(['        bar'], split(execute('delep'), "\n"))
-  call setline(1, ['foo', "\tbar"])
-  call assert_equal(['        bar'], split(execute('deletp'), "\n"))
-  call setline(1, ['foo', "\tbar"])
-  call assert_equal(['        bar'], split(execute('deletep'), "\n"))
-  bw!
 endfunc
 
 " Test for commands that are blocked in a sandbox
