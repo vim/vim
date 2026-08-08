@@ -57,34 +57,39 @@ rettv_blob_set(typval_T *rettv, blob_T *b)
 	++b->bv_refcount;
 }
 
-    int
-blob_copy(blob_T *from, typval_T *to)
+/*
+ * Create a copy of a blob.
+ * The refcount of the new blob is set to 1.
+ * Returns NULL when "orig" is NULL or out of memory.
+ */
+    blob_T *
+blob_copy(blob_T *orig)
 {
     int		len;
+    blob_T	*copy;
 
-    to->v_type = VAR_BLOB;
-    to->v_lock = 0;
-    if (from == NULL)
+    if (orig == NULL)
     {
-	to->vval.v_blob = NULL;
-	return OK;
+	return NULL;
     }
 
-    if (rettv_blob_alloc(to) == FAIL)
-	return FAIL;
+    copy = blob_alloc();
+    if (copy == NULL)
+	return NULL;
+    ++copy->bv_refcount;
 
-    len = from->bv_ga.ga_len;
+    len = orig->bv_ga.ga_len;
     if (len > 0)
     {
-	to->vval.v_blob->bv_ga.ga_data =
-	    vim_memsave(from->bv_ga.ga_data, len);
-	if (to->vval.v_blob->bv_ga.ga_data == NULL)
+	copy->bv_ga.ga_data =
+	    vim_memsave(orig->bv_ga.ga_data, len);
+	if (copy->bv_ga.ga_data == NULL)
 	    len = 0;
     }
-    to->vval.v_blob->bv_ga.ga_len = len;
-    to->vval.v_blob->bv_ga.ga_maxlen = len;
+    copy->bv_ga.ga_len = len;
+    copy->bv_ga.ga_maxlen = len;
 
-    return OK;
+    return copy;
 }
 
     void
@@ -666,7 +671,9 @@ blob_filter_map(
     b_ret = b;
     if (filtermap == FILTERMAP_MAPNEW)
     {
-	if (blob_copy(b, rettv) == FAIL)
+	rettv->v_lock = 0;
+	rettv->vval.v_blob = blob_copy(b);
+	if (rettv->vval.v_blob == NULL)
 	    return;
 	b_ret = rettv->vval.v_blob;
     }
@@ -834,7 +841,6 @@ blob_extend_func(
 	typval_T	*rettv)
 {
     blob_T	*b1, *b2;
-    typval_T	newtv;
     int		before;
     int		error = FALSE;
 
@@ -848,9 +854,9 @@ blob_extend_func(
     {
 	if (is_new)
 	{
-	    if (blob_copy(b1, &newtv) == FAIL)
+	    b1 = blob_copy(b1);
+	    if (b1 == NULL)
 		return;
-	    b1 = newtv.vval.v_blob;
 	}
 
 	b2 = argvars[1].vval.v_blob;
@@ -877,9 +883,9 @@ blob_extend_func(
 theend:
 	if (is_new)
 	{
-	    copy_tv(&newtv, rettv);
-	    // decrement the refcount because it's 2 here
-	    blob_unref(b1);
+	    rettv->v_type = VAR_BLOB;
+	    rettv->v_lock = 0;
+	    rettv->vval.v_blob = b1;
 	}
 	else
 	    copy_tv(&argvars[0], rettv);

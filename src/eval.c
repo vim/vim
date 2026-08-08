@@ -2894,7 +2894,9 @@ eval_for_line(
 
 		    // Make a copy, so that the iteration still works when the
 		    // blob is changed.
-		    blob_copy(tv.vval.v_blob, &btv);
+		    btv.v_type = VAR_BLOB;
+		    btv.v_lock = 0;
+		    btv.vval.v_blob = blob_copy(tv.vval.v_blob);
 		    fi->fi_blob = btv.vval.v_blob;
 		}
 		clear_tv(&tv);
@@ -7714,7 +7716,16 @@ item_copy(
 		ret = FAIL;
 	    break;
 	case VAR_BLOB:
-	    ret = blob_copy(from->vval.v_blob, to);
+	    to->v_type = VAR_BLOB;
+	    to->v_lock = 0;
+	    if (from->vval.v_blob == NULL)
+		to->vval.v_blob = NULL;
+	    else
+	    {
+		to->vval.v_blob = blob_copy(from->vval.v_blob);
+		if (to->vval.v_blob == NULL)
+		    ret = FAIL;
+	    }
 	    break;
 	case VAR_DICT:
 	    to->v_type = VAR_DICT;

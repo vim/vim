@@ -2,7 +2,7 @@
 blob_T *blob_alloc(void);
 int rettv_blob_alloc(typval_T *rettv);
 void rettv_blob_set(typval_T *rettv, blob_T *b);
-int blob_copy(blob_T *from, typval_T *to);
+blob_T *blob_copy(blob_T *orig);
 void blob_free(blob_T *b);
 void blob_unref(blob_T *b);
 long blob_len(blob_T *b);
