@@ -9353,7 +9353,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
 	    goto theend;
     }
 
-    regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+    regmatch.regprog = eval_regcomp(pat);
     if (regmatch.regprog != NULL)
     {
 	regmatch.rm_ic = p_ic;
@@ -9460,7 +9460,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
 		rettv->vval.v_number += (varnumber_T)(str - expr);
 	    }
 	}
-	vim_regfree(regmatch.regprog);
+	eval_regfree(pat, regmatch.regprog);
     }
 
 theend:
@@ -9634,7 +9634,7 @@ f_matchbufline(typval_T *argvars, typval_T *rettv)
     save_cpo = p_cpo;
     p_cpo = empty_option;
 
-    regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+    regmatch.regprog = eval_regcomp(pat);
     if (regmatch.regprog == NULL)
 	goto theend;
     regmatch.rm_ic = p_ic;
@@ -9649,7 +9649,7 @@ f_matchbufline(typval_T *argvars, typval_T *rettv)
     }
 
 cleanup:
-    vim_regfree(regmatch.regprog);
+    eval_regfree(pat, regmatch.regprog);
 
 theend:
     p_cpo = save_cpo;
@@ -9725,7 +9725,7 @@ f_matchstrlist(typval_T *argvars, typval_T *rettv)
     save_cpo = p_cpo;
     p_cpo = empty_option;
 
-    regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+    regmatch.regprog = eval_regcomp(pat);
     if (regmatch.regprog == NULL)
 	goto theend;
     regmatch.rm_ic = p_ic;
@@ -9764,7 +9764,7 @@ f_matchstrlist(typval_T *argvars, typval_T *rettv)
     }
 
 cleanup:
-    vim_regfree(regmatch.regprog);
+    eval_regfree(pat, regmatch.regprog);
 
 theend:
     p_cpo = save_cpo;
@@ -12314,7 +12314,7 @@ f_split(typval_T *argvars, typval_T *rettv)
     if (typeerr)
 	goto theend;
 
-    regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+    regmatch.regprog = eval_regcomp(pat);
     if (regmatch.regprog != NULL)
     {
 	regmatch.rm_ic = FALSE;
@@ -12346,7 +12346,7 @@ f_split(typval_T *argvars, typval_T *rettv)
 	    str = regmatch.endp[0];
 	}
 
-	vim_regfree(regmatch.regprog);
+	eval_regfree(pat, regmatch.regprog);
     }
 
 theend:
