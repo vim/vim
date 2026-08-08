@@ -107,7 +107,7 @@ jobs:
           coverage: ${{ matrix.coverage }}
 
       - name: Test
-        timeout-minutes: 20
+        timeout-minutes: ${{ contains(matrix.extra, 'use_gtk4') && 30 || 20 }}
         run: make ${SHADOWOPT} ${TEST}
 
       # Enable to debug failing tests live and ssh into the CI runners
