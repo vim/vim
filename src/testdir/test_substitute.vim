@@ -921,6 +921,9 @@ endfunc
 
 func Test_substitute()
   call assert_equal('a１a２a３a', substitute('１２３', '\zs', 'a', 'g'))
+  call assert_equal('aXYZcaXYZc', substitute('abcabc', 'b', 'XYZ', 'g'))
+  call assert_equal('acac', substitute('abcabc', 'b', '', 'g'))
+  call assert_equal("x\ny", substitute('xAy', 'A', "\n", ''))
   " Substitute with special keys
   call assert_equal("a\<End>c", substitute('abc', "a.c", "a\<End>c", ''))
 endfunc
