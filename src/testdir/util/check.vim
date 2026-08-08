@@ -301,7 +301,10 @@ endfunc
 " Command to check for X11 based GUI
 command CheckX11BasedGui call CheckX11BasedGui()
 func CheckX11BasedGui()
-  if !g:x11_based_gui
+  " GTK4 is technically not X11 based, but many tests still apply to it. However
+  " don't set g:x11_based_gui to true, because some tests (such as windowid)
+  " don't apply to GTK4.
+  if !g:x11_based_gui && !has('gui_gtk4')
     throw 'Skipped: requires X11 based GUI'
   endif
 endfunc
