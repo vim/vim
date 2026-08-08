@@ -1270,8 +1270,8 @@ func Test_listdict_extend()
   " Pass the same Blob to extend()
   let lines =<< trim END
       VAR b = 0z010203
-      call assert_equal(0z0102030102030, extend(b, b))
-      call assert_equal(0z0102030102030, b)
+      call assert_equal(0z010203010203, extend(b, b))
+      call assert_equal(0z010203010203, b)
 
       LET b = 0z010203
       call assert_equal(0z010203040506, extend(b, 0z040506))
@@ -1298,7 +1298,7 @@ func Test_listdict_extend()
       call assert_equal(0z040506010203, b)
 
       LET b = 0z010203
-      call assert_equal(0z010203, b->extend([]))
+      call assert_equal(0z010203, b->extend(0z))
       call assert_equal(0z010203, b->extend(test_null_blob()))
       call assert_equal(0z010203, b)
   END
