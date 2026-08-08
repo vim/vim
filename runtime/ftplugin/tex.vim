@@ -3,7 +3,8 @@
 " Maintainer:   Benji Fisher, Ph.D. <benji@member.AMS.org>
 " Version:	1.4
 " Last Change:	Wed 19 Apr 2006
-"  URL:		http://www.vim.org/script.php?script_id=411
+"		2026 May 02 by Vim Project (improve b:match_words)
+" URL:		http://www.vim.org/script.php?script_id=411
 
 " Only do this when not done yet for this buffer.
 if exists("b:did_ftplugin")
@@ -37,7 +38,12 @@ let &l:includeexpr = "substitute(v:fname, '^.\\{-}{\\|}.*', '', 'g')"
 " ftplugin/plaintex.vim already defines b:match_skip and b:match_ignorecase
 " and matches \(, \), \[, \], \{, and \} .
 if exists("loaded_matchit")
-  let b:match_words .= ',\\begin\s*\({\a\+\*\=}\):\\end\s*\1'
+  " TODO: Fix \, bug in matchit, https://github.com/vim/vim/issues/1052#issuecomment-4140499396
+  let b:match_words .= '\%(^\|[ (/]\)\@<=\\(' . ':' . '\\)\%($\|[ )/.;\:?!\-]\)\@=' .
+      \ ',' . '\%(^\|[ (/]\)\@<=\\\[' . ':' . '\\\]\%($\|[ )/.;\:?!\-]\)\@=' .
+      \ ',' . '\%(^\|[ (/]\)\@<=\$[^$ ]' . ':' . '[^$ ]\@<=\$\%($\|[ )/.;\:?!\-]\)\@=' .
+      \ ',' . '\%(^\|[ (/]\)\@<=\$\$' . ':' . '\$\$\%($\|[ )/.;\:?!\-]\)\@=' .
+      \ ',' . '\%(^\s*\)\@<=\\begin{\(\w\+\*\?\)}' . ':' . '\%(^\s*\)\@<=\\end{\1}'
 endif " exists("loaded_matchit")
 
 let &cpo = s:save_cpo
