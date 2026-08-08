@@ -1006,7 +1006,8 @@ generate_PUSHBLOB(cctx_T *cctx, blob_T *blob)
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr_type(cctx, ISN_PUSHBLOB, &t_blob)) == NULL)
+    if ((isn = generate_instr_type2(cctx, ISN_PUSHBLOB,
+					&t_blob, &t_blob)) == NULL)
 	return FAIL;
     isn->isn_arg.blob = blob;
 
