@@ -111,11 +111,11 @@ jobs:
         run: make ${SHADOWOPT} ${TEST}
 
       # Enable to debug failing tests live and ssh into the CI runners
-      - name: Setup tmate session
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
-        with:
-          limit-access-to-actor: true
+      # - name: Setup tmate session
+      #   if: ${{ failure() }}
+      #   uses: mxschmitt/action-tmate@v3
+      #   with:
+      #     limit-access-to-actor: true
 
       - name: Upload failed test artifacts
         if: ${{ !cancelled() }}
