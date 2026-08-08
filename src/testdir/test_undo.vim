@@ -1004,4 +1004,114 @@ func Test_corrupted_undofile()
   let &undofile = _uf
 endfunc
 
+" Return the undo tree entries with only the "seq" and "alt" structure, so
+" that trees can be compared while ignoring times and save numbers.
+func UndotreeSeqs(entries)
+  let seqs = []
+  for e in a:entries
+    let item = #{seq: e.seq}
+    if has_key(e, 'alt')
+      let item.alt = UndotreeSeqs(e.alt)
+    endif
+    call add(seqs, item)
+  endfor
+  return seqs
+endfunc
+
+" Test that an undo file with alternate branches round-trips: the tree
+" structure and the text at every sequence number survive :wundo + :rundo.
+func Test_undofile_branches()
+  new Xubranches.txt
+  setl noswapfile
+  set ul=100
+  call setline(1, 'a')
+  for i in range(5)
+    let &undolevels = &undolevels
+    call setline(1, 'main' .. i)
+  endfor
+  " create two alternate branches
+  silent undo 3
+  let &undolevels = &undolevels
+  call setline(1, 'branch-a')
+  silent undo 2
+  let &undolevels = &undolevels
+  call setline(1, 'branch-b')
+
+  write
+  wundo! Xubranches.undo
+  let tree_before = undotree()
+  " remember the text at every undo state
+  let texts = {}
+  for seq in range(1, tree_before.seq_last)
+    exe 'silent undo ' .. seq
+    let texts[seq] = getline(1)
+  endfor
+  bwipe!
+
+  edit Xubranches.txt
+  setl noswapfile
+  rundo Xubranches.undo
+  let tree_after = undotree()
+  call assert_equal(tree_before.seq_last, tree_after.seq_last)
+  call assert_equal(UndotreeSeqs(tree_before.entries),
+        \ UndotreeSeqs(tree_after.entries))
+  for [seq, text] in items(texts)
+    exe 'silent undo ' .. seq
+    call assert_equal(text, getline(1), 'text at undo state ' .. seq)
+  endfor
+
+  bwipe!
+  call delete('Xubranches.txt')
+  call delete('Xubranches.undo')
+  set ul&
+endfunc
+
+" Test that a duplicated sequence number in an undo file is detected.
+func Test_undofile_duplicate_seq()
+  new Xudupseq.txt
+  setl noswapfile
+  set ul=100
+  call setline(1, 'one')
+  let &undolevels = &undolevels
+  call setline(1, 'two')
+  let &undolevels = &undolevels
+  call setline(1, 'three')
+  write
+  wundo! Xudupseq.undo
+
+  " Overwrite the uh_seq of the second header with that of the first.  A
+  " header starts with the magic bytes 0x5f 0xd0, followed by four 4-byte
+  " header references and then the 4-byte uh_seq.  Require the references
+  " and uh_seq to be small numbers, so that a timestamp that happens to
+  " contain the magic bytes is not mistaken for a header.
+  let blob = readfile('Xudupseq.undo', 'B')
+  let headers = []
+  for i in range(len(blob) - 22)
+    if blob[i] == 0x5f && blob[i + 1] == 0xd0
+      let ok = v:true
+      for field in range(5)
+        let off = i + 2 + field * 4
+        if blob[off] != 0 || blob[off + 1] != 0 || blob[off + 2] != 0
+              \ || blob[off + 3] > 8
+          let ok = v:false
+          break
+        endif
+      endfor
+      if ok
+        call add(headers, i)
+      endif
+    endif
+  endfor
+  call assert_true(len(headers) >= 2, 'found undo file headers')
+  let first = headers[0] + 18
+  let second = headers[1] + 18
+  let blob[second : second + 3] = blob[first : first + 3]
+  call writefile(blob, 'Xudupseq.undo', 'D')
+  call assert_fails('rundo Xudupseq.undo', 'E825:')
+
+  bwipe!
+  call delete('Xudupseq.txt')
+  set ul&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
