@@ -2919,8 +2919,6 @@ EXTERN char e_cannot_extend_null_dict[]
 	INIT(= N_("E1133: Cannot extend a null dict"));
 EXTERN char e_cannot_extend_null_list[]
 	INIT(= N_("E1134: Cannot extend a null list"));
-EXTERN char e_cannot_extend_null_blob[]
-	INIT(= N_("EXXXX: Cannot extend a null blob"));
 EXTERN char e_using_string_as_bool_str[]
 	INIT(= N_("E1135: Using a String as a Bool: \"%s\""));
 #endif
@@ -3823,4 +3821,8 @@ EXTERN char e_completeopt_escape_cannot_be_used_with_nargs_underscore[]
 #ifdef FEAT_PROP_POPUP
 EXTERN char e_too_many_text_properties_on_a_single_line[]
 	INIT(= N_("E1580: Too many text properties on a single line"));
+#endif
+#ifdef FEAT_EVAL
+EXTERN char e_cannot_extend_null_blob[]
+	INIT(= N_("E1581: Cannot extend a null blob"));
 #endif
