@@ -130,6 +130,17 @@ jobs:
       - name: Checkout repository from GitHub
         uses: actions/checkout@v7.0.1
 
+      - name: Exclude Workspace and Vim from Windows Defender
+        shell: powershell
+        run: |
+          # Exclude the entire repository directory from scans
+          Add-MpPreference -ExclusionPath $env:GITHUB_WORKSPACE
+          
+          # Exclude the specific executables from being monitored
+          Add-MpPreference -ExclusionProcess "gvim.exe"
+          Add-MpPreference -ExclusionProcess "vim.exe"
+          Add-MpPreference -ExclusionProcess "vimrun.exe"
+
       - name: Create a list of download URLs
         shell: cmd
         run: |
