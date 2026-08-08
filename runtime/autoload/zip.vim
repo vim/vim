@@ -56,12 +56,30 @@ let s:NOTE           = 0
 if !exists("g:zip_zipcmd")
  let g:zip_zipcmd= "zip"
 endif
+if !exists("g:zip_zipcmd_deleteopt")
+ let g:zip_zipcmd_deleteopt= "-d"
+endif
+if !exists("g:zip_zipcmd_updateopt")
+ let g:zip_zipcmd_updateopt= "-u"
+endif
+
 if !exists("g:zip_unzipcmd")
  let g:zip_unzipcmd= "unzip"
 endif
+if !exists("g:zip_unzipcmd_browseopt")
+ let g:zip_unzipcmd_browseopt= "-Z1 --"
+endif
+if !exists("g:zip_unzipcmd_readopt")
+ let g:zip_unzipcmd_readopt= "-p --"
+endif
+
 if !exists("g:zip_extractcmd")
  let g:zip_extractcmd= g:zip_unzipcmd
 endif
+if !exists("g:zip_extractcmd_extractopt")
+ let g:zip_extractcmd_extractopt= "-o"
+endif
+
 if !exists("g:zip_pwsh")
   let g:zip_pwsh=''
 endif
@@ -290,7 +308,7 @@ fun! zip#Browse(zipfile)
  \                '" Select a file with cursor and press ENTER'])
   keepj $
 
-  let gnu_cmd = "keepj sil r! " . g:zip_unzipcmd . " -Z1 -- " . s:Escape(a:zipfile, 1)
+  let gnu_cmd = "keepj sil r! " . g:zip_unzipcmd . " " . g:zip_unzipcmd_browseopt . " " . s:Escape(a:zipfile, 1)
   let ps_cmd = 'keepj sil r! ' . s:ZipBrowsePS(a:zipfile)
   call s:TryExecGnuFallBackToPs(g:zip_unzipcmd, gnu_cmd, ps_cmd)
 
@@ -374,7 +392,7 @@ fun! zip#Read(fname,mode)
   let temp = tempname()
   let fn   = expand('%:p')
 
-  let gnu_cmd = g:zip_unzipcmd . ' -p -- ' . s:Escape(zipfile) . ' ' . s:Escape(fname) . ' > ' . s:Escape(temp)
+  let gnu_cmd = g:zip_unzipcmd . ' ' . g:zip_unzipcmd_readopt . ' ' . s:Escape(zipfile) . ' ' . s:Escape(fname) . ' > ' . s:Escape(temp)
   let gnu_cmd = 'call system(' . string(gnu_cmd) . ')'
   let ps_cmd = 'call system(' . string(s:ZipReadPS(zipfile, fname, temp)) . ')'
   call s:TryExecGnuFallBackToPs(g:zip_unzipcmd, gnu_cmd, ps_cmd)
@@ -448,7 +466,7 @@ fun! zip#Write(fname)
     endif
   endif
   if fname =~ '^[.]\{1,2}/'
-    let gnu_cmd = g:zip_zipcmd . ' -d ' . s:Escape(fnamemodify(zipfile,":p")) . ' ' . s:Escape(fname)
+    let gnu_cmd = g:zip_zipcmd . ' ' . g:zip_zipcmd_deleteopt . ' ' . s:Escape(fnamemodify(zipfile,":p")) . ' ' . s:Escape(fname)
     let gnu_cmd = 'call system(' . string(gnu_cmd) . ')'
     let ps_cmd = $"call system({string(s:ZipDeleteFilePS(zipfile, fname))})"
     call s:TryExecGnuFallBackToPs(g:zip_zipcmd, gnu_cmd, ps_cmd)
@@ -477,7 +495,7 @@ fun! zip#Write(fname)
     let fname = substitute(fname, '[', '[[]', 'g')
   endif
 
-  let gnu_cmd = g:zip_zipcmd . ' -u '. s:Escape(fnamemodify(zipfile,":p")) . ' ' . s:Escape(fname)
+  let gnu_cmd = g:zip_zipcmd . ' ' . g:zip_zipcmd_updateopt . ' ' . s:Escape(fnamemodify(zipfile,":p")) . ' ' . s:Escape(fname)
   let gnu_cmd = 'call system(''' . substitute(gnu_cmd, "'", "''", 'g') . ''')'
   let zip = fnamemodify(zipfile, ':p')
   let ps_cmd = s:ZipUpdatePS(zip, fname)
@@ -581,7 +599,7 @@ fun! zip#Extract()
   endif
 
   " extract the file mentioned under the cursor
-  let gnu_cmd = g:zip_extractcmd . ' -o '. shellescape(b:zipfile) . ' ' . target
+  let gnu_cmd = g:zip_extractcmd . ' ' . g:zip_extractcmd_extractopt . ' ' . shellescape(b:zipfile) . ' ' . target
   let gnu_cmd = 'call system(' . string(gnu_cmd) . ')'
   let ps_cmd = 'call system(' . string(s:ZipExtractFilePS(b:zipfile, fname)) . ')'
   call s:TryExecGnuFallBackToPs(g:zip_extractcmd, gnu_cmd, ps_cmd)
