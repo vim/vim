@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2026 Aug 02
+" Last Change:	   2026 Aug 09
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -1767,8 +1767,13 @@ syn region	vimOperParen
       \ start="#\={"
       \ end="}"
       \ nextgroup=vimSubscriptBrackets,vimSubscriptDot,vimVar
-      \ contains=@vimOperGroup,vimDictColon
-syn match	vimDictColon	contained	":"	skipwhite nextgroup=@vimExprList
+      \ contains=@vimOperGroup,vimDictColon,vimDictKey
+syn match	vimDictKey	contained	"\<[bwglstav]\ze:\%(\s\|$\)"
+syn match	vimDictColon	contained	":"	skipwhite skipnl skipempty nextgroup=vimDictValue
+syn region	vimDictValue	contained transparent
+      \ start="\S"
+      \ end="\ze[,}]"
+      \ contains=@vimOperGroup
 syn region	vimOperParen	contained
       \ matchgroup=vimSep
       \ start="\["
@@ -3026,6 +3031,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimDeleteRegister	Constant
  hi def link vimDelfunction	vimCommand
  hi def link vimDelfunctionBang	vimBang
+ hi def link vimDictKey	vimVar
  hi def link vimDoautocmd	vimCommand
  hi def link vimDoautocmdMod	Special
  hi def link vimDoCommand	vimCommand
