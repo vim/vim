@@ -81,9 +81,8 @@ vim_form_class_init(VimFormClass *class)
 }
 
     static void
-vim_form_init(VimForm *self)
+vim_form_init(VimForm *self UNUSED)
 {
-
 }
 
     GtkWidget *
@@ -229,7 +228,7 @@ vim_form_size_allocate(
 	GtkWidget *widget,
 	int width,
 	int height,
-	int baseline)
+	int baseline UNUSED)
 {
     VimForm *self = VIM_FORM(widget);
 

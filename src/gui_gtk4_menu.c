@@ -881,7 +881,7 @@ vim_menu_init(VimMenu *self)
     // Set all shortcut controllers in the window to not require a modifier for
     // mnemonics.
     controllers = gtk_widget_observe_controllers(GTK_WIDGET(self));
-    for (int i = 0; i < g_list_model_get_n_items(controllers); i++)
+    for (guint i = 0; i < g_list_model_get_n_items(controllers); i++)
     {
 	controller = g_list_model_get_item(controllers, i);
 	if (GTK_IS_SHORTCUT_CONTROLLER(controller))

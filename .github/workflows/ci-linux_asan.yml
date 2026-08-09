@@ -25,6 +25,8 @@ jobs:
       LOG_DIR: ${{ github.workspace }}/logs
       TERM: xterm
       DISPLAY: ":99"
+      WAYLAND_DISPLAY: "/tmp/weston_sock"
+      GTK_A11Y: "none"
       DEBIAN_FRONTEND: noninteractive
 
     strategy:

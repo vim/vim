@@ -688,7 +688,7 @@ EXTERN int	p_guipty;	// 'guipty'
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)
 EXTERN char_u	*p_guiligatures;  // 'guiligatures'
 #endif
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
+#if (defined(FEAT_GUI_GTK) && !defined(USE_GTK4)) || defined(FEAT_GUI_X11)
 EXTERN long	p_ghr;		// 'guiheadroom'
 #endif
 #ifdef CURSOR_SHAPE
