@@ -3094,9 +3094,7 @@ extend(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg, int is_new)
 	dict_extend_func(argvars, type, func_name, arg_errmsg, is_new, rettv);
     }
     else if (argvars[0].v_type == VAR_BLOB && argvars[1].v_type == VAR_BLOB)
-    {
 	blob_extend_func(argvars, func_name, arg_errmsg, is_new, rettv);
-    }
     else
 	semsg(_(e_argument_of_str_must_be_list_dictionary_or_blob), func_name);
 }

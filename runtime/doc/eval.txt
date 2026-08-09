@@ -996,7 +996,7 @@ Two blobs can be concatenated with the "+" operator: >
 A blob can be concatenated with another one in-place using |:let+=| or
 |extend()|: >
 	:let myblob += 0z6677
-	:call exnted(myblob, 0z6677)
+	:call extend(myblob, 0z6677)
 <
 See |blob-modification| below for more about changing a blob in-place.
 

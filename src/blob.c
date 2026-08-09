@@ -805,9 +805,8 @@ blob_extend(blob_T *b1, blob_T *b2, int bef)
 	return FAIL;
 
     p1 = (char_u *)b1->bv_ga.ga_data;
-    p2 = (char_u *)b2->bv_ga.ga_data;
 
-    if (p1 == p2)
+    if (b1 == b2)
     {
 	// Inserting a blob into itself
 	mch_memmove(p1 + bef, p1, (size_t)len1);
@@ -819,7 +818,7 @@ blob_extend(blob_T *b1, blob_T *b2, int bef)
 	if (bef < len1)
 	    mch_memmove(p1 + bef + len2, p1 + bef, (size_t)len1 - bef);
 
-	memcpy(p1 + bef, p2, (size_t)len2);
+	memcpy(p1 + bef, b2->bv_ga.ga_data, (size_t)len2);
     }
 
     b1->bv_ga.ga_len += len2;

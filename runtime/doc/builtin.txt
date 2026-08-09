@@ -191,8 +191,8 @@ extend({expr1}, {expr2} [, {expr3}])
 					insert items of {expr2} into {expr1}
 extendnew({expr1}, {expr2} [, {expr3}])
 				List/Dict/Blob
-					like |extend()| but creates a new List,
-					Dictionary or Blob
+					like |extend()| but creates a new
+					List, Dictionary or Blob
 feedkeys({string} [, {mode}])	none	add key sequence to typeahead buffer
 filecopy({from}, {to})		Number	|TRUE| if copying file {from} to {to}
 					worked
