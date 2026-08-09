@@ -1881,6 +1881,7 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
 								   file_name);
 		verbose_leave();
 	    }
+	    vim_free(file_name);
 	    return;
 	}
 # endif
