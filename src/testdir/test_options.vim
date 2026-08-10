@@ -820,6 +820,32 @@ func Test_set_completion_string_values()
   set ww&
 endfunc
 
+func Test_set_pumopt_and_pumborder_completion()
+  let Chk = {cmd, completions ->
+            \ assert_equal(sort(completions),
+            \              sort(getcompletion(cmd, 'cmdline')))}
+
+  " opacity can be any integer from 0 to 100; no completions are offered.
+  call Chk('set pumopt=opacity:', [])
+
+  set encoding=utf-8 ambiwidth=single
+  call Chk('set pumborder=',
+        \ ['ascii', 'custom:', 'double', 'margin', 'round', 'shadow', 'single'])
+  call Chk('set pumborder=s', ['shadow', 'single'])
+  call Chk('set pumopt=shadow,border:',
+        \ ['ascii', 'custom:', 'double', 'round', 'single'])
+
+  for [&encoding, &ambiwidth] in
+        \ [['utf-8', 'double'], ['latin1', 'single'], ['latin1', 'double']]
+    call Chk('set pumborder=', ['ascii', 'custom:', 'margin', 'shadow'])
+    call Chk('set pumborder=s', ['shadow'])
+    call Chk('set pumopt=shadow,border:', ['ascii', 'custom:'])
+  endfor
+
+  set encoding&
+  set ambiwidth&
+endfunc
+
 func Test_set_option_errors()
   call assert_fails('set scroll=-1', 'E49:')
   call assert_fails('set backupcopy=', 'E474:')

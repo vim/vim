@@ -1131,10 +1131,8 @@ did_set_ambiwidth(optset_T *args UNUSED)
     return check_chars_options();
 }
 
-#if defined(FEAT_TABPANEL) || defined(FEAT_DIFF) || defined(FEAT_PROP_POPUP)
-
 // "name" must be a string literal, the length is computed at compile time.
-# define completing_value_for_subopt(args, name) \
+#define completing_value_for_subopt(args, name) \
 	  completing_value_for_subopt_len(args, name, (int)STRLEN_LITERAL(name))
 
 /*
@@ -1155,7 +1153,6 @@ completing_value_for_subopt_len(optexpand_T *args, char *name, int len)
 
     return STRNCMP(colon - len, name, len) == 0;
 }
-#endif
 
     int
 expand_set_ambiwidth(optexpand_T *args, int *numMatches, char_u ***matches)
@@ -3921,9 +3918,29 @@ error:
     return e_invalid_argument;
 }
 
+    static char_u *
+get_pum_border_style(expand_T *xp UNUSED, int idx)
+{
+    static char *styles[] = {"ascii", "custom:", "single", "double", "round"};
+    return idx < ((enc_utf8 && *p_ambw == 's') ? (int)ARRAY_LENGTH(styles) : 2)
+	    ? (char_u *)styles[idx] : NULL;
+}
+
     int
 expand_set_pumopt(optexpand_T *args, int *numMatches, char_u ***matches)
 {
+    expand_T *xp = args->oe_xp;
+
+    if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
+    {
+	if (completing_value_for_subopt(args, "border"))
+	{
+	    return expand_set_opt_generic(
+		    args, get_pum_border_style, numMatches, matches);
+	}
+	return FAIL;
+    }
+
     static char *(p_pumopt_values[]) = {"border:", "height:", "width:",
 	"maxwidth:", "opacity:", "shadow", "margin", NULL};
     return expand_set_opt_string(
@@ -3996,17 +4013,19 @@ error:
     return e_invalid_argument;
 }
 
+    static char_u *
+get_pumborder_token(expand_T *xp, int idx)
+{
+    return idx == 0 ? (char_u *)"margin"
+	 : idx == 1 ? (char_u *)"shadow"
+	 : get_pum_border_style(xp, idx - 2);
+}
+
     int
 expand_set_pumborder(optexpand_T *args, int *numMatches, char_u ***matches)
 {
-    static char *(p_pb_values[]) = {"single", "double", "round", "ascii",
-	"custom", "shadow", "margin", NULL};
-    return expand_set_opt_string(
-	    args,
-	    p_pb_values,
-	    ARRAY_LENGTH(p_pb_values) - 1,
-	    numMatches,
-	    matches);
+    return expand_set_opt_generic(
+	    args, get_pumborder_token, numMatches, matches);
 }
 
 #if defined(FEAT_STL_OPT)
