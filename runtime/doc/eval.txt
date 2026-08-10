@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.2.  Last change: 2026 Aug 08
+*eval.txt*	For Vim version 9.2.  Last change: 2026 Aug 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1703,7 +1703,7 @@ number
 ------
 number			number constant			*expr-number*
 
-			*0x* *hex-number* *0o* *octal-number* *binary-number*
+			*0x* *hex-number* *0o* *octal-number* *0b* *binary-number*
 Integer numbers can be written in multiple forms:
 
 	{N}		decimal
@@ -1715,15 +1715,15 @@ Integer numbers can be written in multiple forms:
 {N} is a sequence of decimal digits (0-9), hexadecimal digits (0-9, a-f and
 A-F), octal digits (0-7) or binary digits (0 or 1).
 
-Note: A leading "-" or "+" is not part of the number, it is the unary operator
-|expr9| applied to it.
-
 Assuming 64 bit numbers are used (see |v:numbersize|) an unsigned number is
 truncated to 0x7fffffffffffffff or 9223372036854775807.  You can use -1 to get
 0xffffffffffffffff.
 
 In |scriptversion-4| and in |Vim9| script, single quotes may appear between digits
 to improve readability; these are ignored.
+
+A leading "+" or "-" is not part of an integer literal.  E.g., -123 is an
+expression, the unary operator |expr-unary--| applied to the number 123.
 
 Examples:
 	0xDEAD
@@ -1750,6 +1750,10 @@ locale is.
 
 In |scriptversion-4| and in |Vim9| script, single quotes may appear between the
 digits in {N} to improve readability; these are ignored.
+
+A leading "+" or "-" is not part of a floating point literal.  E.g., -1.0e-3
+is an expression, the unary operator |expr-unary--| applied to the float 1.0e-3.
+The "-" in the exponent is part of the literal.
 
 Examples:
 	123.456
