@@ -52587,10 +52587,11 @@ work in progress.
 
 GUI ~
 -----
-- Added support for the GTK 4 GUI (via patch 9.2.0501).  Enable with
-  `--enable-gui=gtk4` configure switch at build time.
+- Added support for the GTK 4 GUI (via patch 9.2.0501), stablized as of
+  patch 9.2.0931.  Enable with `--enable-gui=gtk4` configure switch at build
+  time.
 - Add support for fullscreen mode in the GTK UI |'go-s'|.
-- Enable native printing diaglog for the GTK4 UI using pango library, see
+- Enable native printing dialog for the GTK4 UI using pango library, see
   |pango-printing|.
 
 Popups ~

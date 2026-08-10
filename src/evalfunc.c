@@ -7186,7 +7186,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 		},
 	{"gui_gtk2",
-#if defined(FEAT_GUI_GTK) && !defined(USE_GTK3)
+#if defined(FEAT_GUI_GTK) && !defined(USE_GTK3) && !defined(USE_GTK4)
 		1
 #else
 		0

@@ -664,6 +664,7 @@ PANGO_CPPFLAGS
 PANGO_CFLAGS
 PANGO_LIBS
 GRESOURCE_OBJ
+GRESOURCE_PRO
 GRESOURCE_SRC
 UPDATE_DESKTOP_DATABASE
 GTK_UPDATE_ICON_CACHE
@@ -11388,6 +11389,7 @@ printf "%s\n" "usable." >&6; }
 	printf "%s\n" "#define USE_GRESOURCE 1" >>confdefs.h
 
 	GRESOURCE_SRC="auto/gui_gtk_gresources.c"
+    GRESOURCE_PRO="proto/gui_gtk_gresources.pro"
 	GRESOURCE_OBJ="objects/gui_gtk_gresources.o"
       fi
     else
@@ -11539,6 +11541,7 @@ printf "%s\n" "not found in PATH." >&6; }
 printf "%s\n" "update disabled" >&6; }
   fi
 fi
+
 
 
 

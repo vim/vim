@@ -27,6 +27,8 @@ jobs:
       LOG_DIR: ${{ github.workspace }}/logs
       TERM: xterm
       DISPLAY: ":99"
+      WAYLAND_DISPLAY: "/tmp/weston_sock"
+      GTK_A11Y: "none"
       DEBIAN_FRONTEND: noninteractive
 
     strategy:
@@ -68,6 +70,11 @@ jobs:
           - features: huge
             compiler: gcc
             coverage: true
+            interface: dynamic
+            extra: [uchar, testgui, use_gtk4]
+          - features: huge
+            compiler: gcc
+            coverage: true
             extra: [unittests]
           - features: huge
             compiler: gcc
@@ -100,7 +107,7 @@ jobs:
           coverage: ${{ matrix.coverage }}
 
       - name: Test
-        timeout-minutes: 20
+        timeout-minutes: 30
         run: make ${SHADOWOPT} ${TEST}
 
       # Enable to debug failing tests live and ssh into the CI runners

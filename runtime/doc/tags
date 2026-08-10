@@ -5740,6 +5740,7 @@ GNOME	gui_x11.txt	/*GNOME*
 GTK	gui_x11.txt	/*GTK*
 GTK+	gui_x11.txt	/*GTK+*
 GTK3	gui_x11.txt	/*GTK3*
+GTK4	gui_x11.txt	/*GTK4*
 GUI	gui.txt	/*GUI*
 GUI-X11	gui_x11.txt	/*GUI-X11*
 GUIEnter	autocmd.txt	/*GUIEnter*

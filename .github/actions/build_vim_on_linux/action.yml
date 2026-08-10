@@ -88,7 +88,6 @@ runs:
         sudo cp ci/pinned-pkgs /etc/apt/preferences.d/pinned-pkgs
         echo '::endgroup::'
 
-    # TODO: switch to GTK4 GUI
     - name: Install packages
       shell: bash
       run: |
@@ -103,6 +102,8 @@ runs:
           wayland-utils \
           libgtk-3-dev:${{ inputs.architecture }} \
           libgtk-3-bin:${{ inputs.architecture }} \
+          libgtk-4-dev:${{ inputs.architecture }} \
+          libgtk-4-bin:${{ inputs.architecture }} \
           desktop-file-utils \
           libc6-dbgsym:${{ inputs.architecture }} \
           libtool-bin \
@@ -125,6 +126,8 @@ runs:
           libxcb1-dbgsym:${{ inputs.architecture }} \
           libgtk-3-bin-dbgsym:${{ inputs.architecture }} \
           libgtk-3-0t64-dbgsym:${{ inputs.architecture }} \
+          libgtk-4-bin-dbgsym:${{ inputs.architecture }} \
+          libgtk-4-0t64-dbgsym:${{ inputs.architecture }} \
           libglib2.0-0t64-dbgsym:${{ inputs.architecture }} \
           libglib2.0-bin-dbgsym:${{ inputs.architecture }} \
           libglib2.0-dev-bin-dbgsym:${{ inputs.architecture }} \
@@ -233,6 +236,9 @@ runs:
         if ${{ contains(fromJSON(inputs.extra), 'testgui') }}; then
           echo "TEST=-C src testgui"
         fi
+        if ${{ contains(fromJSON(inputs.extra), 'use_gtk4') }}; then
+          CONFOPT="${CONFOPT} --enable-gui=gtk4"
+        fi
         if ${{ contains(fromJSON(inputs.extra), 'unittests') }}; then
           echo "TEST=unittests"
         fi
@@ -266,6 +272,9 @@ runs:
         sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
         sudo usermod -a -G audio "${USER}"
         sudo bash ci/setup-xvfb.sh
+        if ${{ contains(fromJSON(inputs.extra), 'use_gtk4') }}; then
+          sudo bash ci/setup-weston.sh
+        fi
         echo '::endgroup::'
 
     - name: Check autoconf

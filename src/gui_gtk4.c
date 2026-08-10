@@ -258,7 +258,9 @@ static int query_pointer_pos(int *x, int *y, GdkModifierType *state);
 static void mainwin_fullscreened_cb(GObject *obj, GParamSpec *pspec, gpointer user_data);
 static void drawarea_realize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_unrealize_cb(GtkWidget *widget, gpointer data);
+#if defined(FEAT_IMAGE)
 static void scale_factor_cb(GdkSurface *surface, GParamSpec *pspec, void *udata);
+#endif
 static void clipboard_changed_cb(GdkClipboard *clipboard, gpointer user_data);
 #ifdef FEAT_MENU
 static void show_menubar_popover(void);
@@ -732,6 +734,7 @@ gui_mch_open(void)
     guicolor_T bg_pixel = INVALCOLOR;
     guint pixel_width;
     guint pixel_height;
+    long columns = Columns, rows = Rows;
 
     if (gui.geom != NULL)
     {
@@ -741,12 +744,12 @@ gui_mch_open(void)
 	mask = vim_parse_geometry((char *)gui.geom, &w, &h);
 
 	if (mask & WidthValue)
-	    Columns = w;
+	    columns = Columns = w;
 	if (mask & HeightValue)
 	{
 	    if (p_window > (long)h - 1 || !option_was_set((char_u *)"window"))
 		p_window = h - 1;
-	    Rows = h;
+	    rows = Rows = h;
 	}
 	limit_screen_size();
 
@@ -763,6 +766,12 @@ gui_mch_open(void)
 
     pixel_width = (guint)(gui_get_base_width() + Columns * gui.char_width);
     pixel_height = (guint)(gui_get_base_height() + Rows * gui.char_height);
+
+    pixel_width  += get_menu_tool_width();
+    pixel_height += get_menu_tool_height();
+
+    // Dimensions may be smaller because of client side decorations, we handle
+    // that after we present the window.
     gtk_window_set_default_size(GTK_WINDOW(gui.mainwin),
 	    pixel_width, pixel_height);
 
@@ -795,8 +804,15 @@ gui_mch_open(void)
 		     G_CALLBACK(mainwin_destroy_cb), NULL);
     // Resize is handled by GtkForm's size_allocate callback.
 
-    // Not sure if this needed but still do it I guess?
-    gtk_widget_set_visible(gui.mainwin, TRUE);
+    gtk_window_present(GTK_WINDOW(gui.mainwin));
+
+    // Update so that we get the "gui.decor_height", which we can then use to
+    // set the exact dimensions of the window.
+    gui_mch_update();
+    Columns = columns;
+    Rows = rows;
+    gtk_window_set_default_size(GTK_WINDOW(gui.mainwin),
+	    pixel_width, pixel_height + gui.decor_height);
 
     // Make sure the drawing area gets keyboard focus.
     gtk_widget_grab_focus(gui.drawarea);
@@ -951,6 +967,8 @@ gui_mch_set_shellsize(int width, int height,
     height += gui.decor_height;
 
     gtk_window_set_default_size(GTK_WINDOW(gui.mainwin), width, height);
+
+    gui_mch_update();
 }
 
     void
@@ -1290,9 +1308,13 @@ gui_mch_init_font(char_u *font_name, int fontset UNUSED)
     ascii_glyph_table_init();
 
     // im window position depends on cursor size which depends on font metrics
-    // update the position after we've initialized font
-    im_set_position(gui.row, gui.col);
-
+    // update the position after we've initialized font. Make sure to not go out
+    // of bounds of the screen.
+    {
+	int im_row = gui.row < screen_Rows ? gui.row : screen_Rows - 1;
+	int im_col = gui.col < screen_Columns ? gui.col : screen_Columns - 1;
+	im_set_position(im_row, im_col);
+    }
     return OK;
 }
 
@@ -1952,7 +1974,7 @@ static double prev_mouse_y = -1.0;
 static GdkModifierType cur_state = 0;
 
     static timeout_cb_type
-mouse_repeat_timer_cb(gpointer data)
+mouse_repeat_timer_cb(gpointer data UNUSED)
 {
     int x, y;
 
@@ -2130,6 +2152,7 @@ focus_out_event(GtkEventControllerFocus *controller UNUSED,
     static void
 drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 {
+#if defined(FEAT_IMAGE)
     // Use GdkSurface, as that handles fractional scale values.
     GdkSurface *surface = gtk_native_get_surface(
 	    gtk_widget_get_native(gui.drawarea));
@@ -2139,7 +2162,7 @@ drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
     popup_update_scale(old);
     g_signal_connect(G_OBJECT(surface), "notify::scale",
 	    G_CALLBACK(scale_factor_cb), NULL);
-
+#endif
     gui_mch_new_colors();
 }
 
@@ -2151,18 +2174,18 @@ drawarea_unrealize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 #endif
 }
 
+#if defined(FEAT_IMAGE)
     static void
 scale_factor_cb(GdkSurface  *surface,
 	GParamSpec	    *pspec UNUSED,
 	void		    *udata UNUSED)
 {
-#if defined(FEAT_IMAGE)
     double old = gui.scale;
 
     gui.scale = gdk_surface_get_scale(surface);
     popup_update_scale(old);
-#endif
 }
+#endif
 
 typedef enum
 {
@@ -2334,7 +2357,7 @@ gui_gtk_set_dnd_targets(void)
  * Handle textual DND data. Note that this does not finish the drop.
  */
     static void
-drop_read_text(GdkDrop *drop, char_u *text)
+drop_read_text(GdkDrop *drop UNUSED, char_u *text)
 {
     GdkModifierType state;
     char_u	    dropkey[6] = {
@@ -3080,7 +3103,7 @@ on_tab_reordered(
  * Handle selecting an item in the tab line popup menu.
  */
     static void
-tabline_menu_event_cb(VimMenuItem *item, VimMenuItemEvent event, void *udata)
+tabline_menu_event_cb(VimMenuItem *item UNUSED, VimMenuItemEvent event, void *udata)
 {
     if (event == VIM_MENU_ITEM_CLICKED)
 	send_tabline_menu_event(tabpage_hover, GPOINTER_TO_INT(udata));
@@ -3399,7 +3422,7 @@ get_menu_tool_height(void)
 
     int height = 0;
 
-    for (int i = 0; i < ARRAY_LENGTH(widgets); i++)
+    for (int i = 0; i < (int)ARRAY_LENGTH(widgets); i++)
     {
 	GtkRequisition	min;
 	GtkRequisition	nat;
@@ -3690,6 +3713,9 @@ static int last_text_area_h = 0;
  * ============================================================
  */
 
+#ifdef FEAT_MENU
+
+# ifdef FEAT_TOOLBAR
 /*
  * Icon name table for toolbar buttons.
  * Must match toolbar_names[] in menu.c.
@@ -3774,10 +3800,11 @@ create_toolbar_icon(vimmenu_T *menu)
 
     return image;
 }
+# endif
 
     static void
 menu_button_clicked_cb(
-	VimMenuItem	    *item,
+	VimMenuItem	    *item UNUSED,
 	VimMenuItemEvent    event,
 	vimmenu_T	    *menu)
 {
@@ -3870,7 +3897,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 {
     vimmenu_T	*parent = menu->parent;
 
-#ifdef FEAT_TOOLBAR
+# ifdef FEAT_TOOLBAR
     if (parent != NULL && menu_is_toolbar(parent->name))
     {
 	if (menu_is_separator(menu->name))
@@ -3904,7 +3931,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	}
 	return;
     }
-#endif
+# endif
 
     // Menu items (non-toolbar)
     if (parent == NULL || parent->submenu_id == NULL)
@@ -3969,16 +3996,22 @@ gui_mch_destroy_menu(vimmenu_T *menu)
     // For toolbar buttons and separators, remove from the toolbar box.
     if (menu->parent != NULL && menu_is_toolbar(menu->parent->name))
     {
-	vim_toolbar_remove(VIM_TOOLBAR(gui.toolbar), menu->id);
-	menu->id = NULL;
+	if (menu->id != NULL)
+	{
+	    vim_toolbar_remove(VIM_TOOLBAR(gui.toolbar), menu->id);
+	    menu->id = NULL;
+	}
 	return;
     }
 
     // For popup menus, unparent the menu as well
     if (menu->name[0] == ']' || menu_is_popup(menu->name))
-	gtk_widget_unparent(menu->submenu_id);
-    else if (menu->parent == NULL)
-	// Remove from menubar
+    {
+	if (menu->submenu_id != NULL)
+	    gtk_widget_unparent(menu->submenu_id);
+    }
+    else if (menu->parent == NULL && menu->id != NULL)
+	// Remove from menubar, if not NULL.
 	vim_menu_bar_remove(VIM_MENU_BAR(gui.menubar), menu->id);
     // "menu->id" is NULL for window toolbar
     else if (menu->id != NULL)
@@ -4028,6 +4061,8 @@ show_menubar_popover(void)
     g_signal_connect(menu, "closed", G_CALLBACK(popupmenu_closed_cb), NULL);
     gtk_popover_popup(GTK_POPOVER(menu));
 }
+
+#endif // FEAT_MENU
 
 /*
  * ============================================================
@@ -4473,7 +4508,7 @@ typedef struct
 } DialogState;
 
     static void
-dialog_button_clicked_cb(GtkButton *button, DialogButtonState *state)
+dialog_button_clicked_cb(GtkButton *button UNUSED, DialogButtonState *state)
 {
     *state->response = state->but_idx;
     *state->done = TRUE;
@@ -4481,9 +4516,9 @@ dialog_button_clicked_cb(GtkButton *button, DialogButtonState *state)
 
     static gboolean
 dialog_key_pressed_cb(
-	GtkEventControllerKey	*controller,
+	GtkEventControllerKey	*controller UNUSED,
 	guint			keyval,
-	guint			keycode,
+	guint			keycode UNUSED,
 	GdkModifierType		state,
 	DialogState		*dstate)
 {
@@ -4499,7 +4534,7 @@ dialog_key_pressed_cb(
 }
 
     static gboolean
-dialog_close_request_cb(GtkWindow *win, gboolean *win_closed)
+dialog_close_request_cb(GtkWindow *win UNUSED, gboolean *win_closed)
 {
     *win_closed = TRUE;
     return FALSE;
@@ -4798,9 +4833,9 @@ entry_changed_cb(GtkWidget *entry, GtkWidget *dialog)
 
     static gboolean
 find_key_pressed_cb(
-	GtkEventControllerKey	*controller,
+	GtkEventControllerKey	*controller UNUSED,
 	guint			keyval,
-	guint			keycode,
+	guint			keycode UNUSED,
 	GdkModifierType		state,
 	SharedFindReplace	*frdp)
 {

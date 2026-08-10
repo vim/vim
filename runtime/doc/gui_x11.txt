@@ -1,4 +1,4 @@
-*gui_x11.txt*	For Vim version 9.2.  Last change: 2026 Jul 27
+*gui_x11.txt*	For Vim version 9.2.  Last change: 2026 Aug 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -304,7 +304,7 @@ If a name is used that exists on other systems, but not in X11, the default
 "arrow" pointer is used.
 
 ==============================================================================
-5. GTK version					*gui-gtk* *GTK+* *GTK* *GTK3*
+5. GTK version				*gui-gtk* *GTK+* *GTK* *GTK3* *GTK4*
 
 The GTK version of the GUI works a little bit different.
 
@@ -680,7 +680,11 @@ X11R5 with a library for X11R6 probably doesn't work (although the linking
 won't give an error message, Vim will crash later).
 
 							*gui-wayland*
-Support for the Wayland display server protocol has landed in patch 9.1.0064.
+Support for the Wayland display server protocol has landed in patch 9.1.0064,
+for the GTK3 GUI. It is recommended to use the GTK4 GUI if you want a better
+Wayland experience however, as the GTK3 GUI is heavily built around X11
+specific features and API calls.
+
 
 Note: The Wayland protocol is subject to some restrictions, so the following
 functions won't work: |getwinpos()|, |getwinposx()|, |getwinposy()| and the
