@@ -363,7 +363,10 @@ pum_display(
 	{
 	    int wcol = pum_wcol >= 0 ? pum_wcol : curwin->w_wcol;
 	    // w_wcol includes virtual text "above".
-	    wcol %= curwin->w_width;
+	    if (curwin->w_width > 0)
+		wcol %= curwin->w_width;
+	    else
+		wcol = 0;
 #ifdef FEAT_CONCEAL
 	    // w_wcol does not account for text concealed before the cursor;
 	    // shift by the offset win_line() recorded for the cursor line so the
