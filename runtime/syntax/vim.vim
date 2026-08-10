@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2026 Aug 02
+" Last Change:	   2026 Aug 10
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -569,7 +569,7 @@ syn match	vimAugroupBang	contained	"\a\@1<=!"	skipwhite nextgroup=vimAugroupName
 syn keyword	vimAugroupKey	contained	aug[roup] 	skipwhite nextgroup=vimAugroupBang,vimAugroupName,vimAugroupEnd
 
 " remove
-syn match	vimAugroup	"\<aug\%[roup]!"		skipwhite nextgroup=vimAugroupName contains=vimAugroupKey,vimAugroupBang
+syn match	vimAugroup	contained	"\<aug\%[roup]!"	skipwhite nextgroup=vimAugroupName contains=vimAugroupKey,vimAugroupBang
 
 " list
 VimL syn match	vimAugroup	contained	"\<aug\%[roup]\>\ze\s*\%(["|]\|$\)"	skipwhite nextgroup=vimCmdSep,vimComment  contains=vimAugroupKey
@@ -632,22 +632,22 @@ syn keyword	vimBehaveModel	contained	mswin xterm
 " ================================
 syn keyword	vimBreakaddFunc	contained	func	skipwhite nextgroup=vimBreakpointFunctionLine,vimBreakpointFunction
 syn keyword	vimBreakaddFile	contained	file	skipwhite nextgroup=vimBreakpointFileLine,vimBreakpointFilename
-syn keyword	vimBreakaddHere	contained	here	skipwhite nextgroup=vimComment,vim9Comment,vimSep
+syn keyword	vimBreakaddHere	contained	here	skipwhite nextgroup=vimComment,vim9Comment,vimCmdSep
 syn keyword	vimBreakaddExpr	contained	expr	skipwhite nextgroup=@vimExprList
 
-syn match	vimBreakpointGlob		contained	"*"	skipwhite nextgroup=vimComment,vim9Comment,vimSep
-syn match	vimBreakpointNumber	contained	"\<\d\+\>"	skipwhite nextgroup=vimComment,vim9Comment,vimSep
+syn match	vimBreakpointGlob		contained	"*"	skipwhite nextgroup=vimComment,vim9Comment,vimCmdSep
+syn match	vimBreakpointNumber	contained	"\<\d\+\>"	skipwhite nextgroup=vimComment,vim9Comment,vimCmdSep
 
 syn cluster vimBreakpointArg contains=vimBreakaddFunc,vimBreakaddFile,vimBreakaddHere,vimBreakaddExpr
 
-syn match	vimBreakpointFunction	contained	"\<\%(\*\|\w\)\+\>"	skipwhite nextgroup=vimComment,vim9Comment,vimSep
-syn match	vimBreakpointFilename	contained	"\<\%(\*\|\f\)\+\>"	skipwhite nextgroup=vimComment,vim9Comment,vimSep
+syn match	vimBreakpointFunction	contained	"\<\%(\*\|\w\)\+\>"	skipwhite nextgroup=vimComment,vim9Comment,vimCmdSep
+syn match	vimBreakpointFilename	contained	"\<\%(\*\|\f\)\+\>"	skipwhite nextgroup=vimComment,vim9Comment,vimCmdSep
 syn match	vimBreakpointFunctionLine	contained	"\<\d\+\>"		skipwhite nextgroup=vimBreakpointFunction
 syn match	vimBreakpointFileLine	contained	"\<\d\+\>"		skipwhite nextgroup=vimBreakpointFilename
 
 syn keyword	vimBreakadd	contained	breaka[dd]	skipwhite nextgroup=@vimBreakpointArg
 syn keyword	vimBreakdel	contained	breakd[el]	skipwhite nextgroup=@vimBreakpointArg,vimBreakpointNumber,vimBreakpointGlob
-syn keyword	vimBreaklist	contained	breakl[ist]	skipwhite nextgroup=vimComment,vim9Comment,vimSep
+syn keyword	vimBreaklist	contained	breakl[ist]	skipwhite nextgroup=vimComment,vim9Comment,vimCmdSep
 
 " :buffer {{{3
 " =======
@@ -858,7 +858,8 @@ syn region	vimCatchPattern	contained	matchgroup=Delimiter start="\z([!#$%&'()*+,
 " :export {{{3
 " =======
 if s:vim9script
-  syn keyword	vim9Export	export	skipwhite nextgroup=vim9Abstract,vim9ClassBody,vim9Const,vimDef,vimDefFold,vim9EnumBody,vim9Final,vim9InterfaceBody,vim9Type,vim9Var
+  syn keyword	vim9Export	export	contained
+        \ skipwhite nextgroup=vim9Abstract,vim9ClassBody,vim9Const,vimDef,vimDefFold,vim9EnumBody,vim9Final,vim9InterfaceBody,vim9Type,vim9Var
 endif
 
 " :filetype {{{3
@@ -1082,12 +1083,12 @@ syn keyword	vimImport	contained	imp[ort]		skipwhite nextgroup=vimImportAutoload,
 
 " :language {{{3
 " =========
-syn keyword 	vimLanguage		contained	lan[guage]	skipwhite nextgroup=@vimLanguageName,vimLanguageCategory,vimSep,vimComment,vim9Comment
+syn keyword 	vimLanguage		contained	lan[guage]		skipwhite nextgroup=@vimLanguageName,vimLanguageCategory,vimCmdSep,vimComment,vim9Comment
 syn keyword	vimLanguageCategory	contained	col[late] cty[pe] mes[sages] tim[e]	skipwhite nextgroup=@vimLanguageName
 
 " [language[_territory][.codeset][@modifier]] and the reserved "C" and "POSIX"
-syn match	vimLanguageName		contained	"[[:alnum:]][[:alnum:]._@-]*[[:alnum:]]"	nextgroup=vimSep,vimComment,vim9Comment
-syn keyword	vimLanguageNameReserved	contained	C POSIX			nextgroup=vimSep,vimComment,vim9Comment
+syn match	vimLanguageName		contained	"[[:alnum:]][[:alnum:]._@-]*[[:alnum:]]"	nextgroup=vimCmdSep,vimComment,vim9Comment
+syn keyword	vimLanguageNameReserved	contained	C POSIX			nextgroup=vimCmdSep,vimComment,vim9Comment
 syn cluster	vimLanguageName	contains=vimLanguageName,vimLanguageNameReserved
 
 " :loadkeymap {{{3
@@ -1887,14 +1888,14 @@ syn keyword	vimEndfunction	contained	endf[unction]	skipwhite nextgroup=vimCmdSep
 syn keyword	vimEnddef	contained	enddef	skipwhite nextgroup=vimCmdSep,vim9Comment,vimCommentError
 
 if exists("g:vimsyn_folding") && g:vimsyn_folding =~# 'f'
-  syn region	vimFunctionFold
+  syn region	vimFunctionFold	contained
         \ start="\<fu\%[nction]!"
         "\ assume no dict literal in curly-brace name expressions
         \ start="\<fu\%[nction]\>\s*\%([[:alnum:]_:<>.#]\+\|{.\{-1,}}\)\+\s*("
         \ end="^\s*:\=\s*endf\%[unction]\>"
         \ contains=vimFunction
         \ extend fold keepend transparent
-  syn region	vimDefFold
+  syn region	vimDefFold	contained
         \ start="\<def!"
         "\ assume no dict literal in curly-brace name expressions
         \ start="\<def\>\s*\%([[:alnum:]_:<>.#]\+\|{.\{-1,}}\)\+[<(]"
@@ -2025,7 +2026,7 @@ if s:vim9script
   syn match	vim9SuperClass		contained	"\<\u\w*\>"	skipwhite skipnl nextgroup=vim9Implements
   syn match	vim9ImplementedInterface	contained	"\<\u\w*\>"	skipwhite skipnl nextgroup=vim9InterfaceListComma,vim9Extends
   syn match	vim9InterfaceListComma	contained	","	skipwhite skipnl nextgroup=vim9ImplementedInterface
-  syn keyword	vim9Abstract			abstract	skipwhite skipnl nextgroup=vim9ClassBody,vim9AbstractDef
+  syn keyword	vim9Abstract		contained	abstract	skipwhite skipnl nextgroup=vim9ClassBody,vim9AbstractDef
   syn keyword	vim9Extends		contained	extends	skipwhite skipnl nextgroup=vim9SuperClass
   syn keyword	vim9Implements		contained	implements	skipwhite skipnl nextgroup=vim9ImplementedInterface
   syn keyword	vim9Public		contained	public
@@ -2036,7 +2037,12 @@ if s:vim9script
   " super must be followed by '.'
   syn match	vim9Super		contained	"\.\@1<!\<super\.\@="
 
-  VimFoldc syn region	vim9ClassBody	start="\<class\>" matchgroup=vimCommand end="\<endclass\>" contains=@vim9ClassBodyList transparent
+  VimFoldc syn region	vim9ClassBody	contained
+        \ start="\<class\>"
+        \ matchgroup=vimCommand
+        \ end="\<endclass\>"
+        \ contains=@vim9ClassBodyList
+        \ transparent
 
   " Enums {{{3
   syn cluster	vim9EnumBodyList		contains=vim9Comment,vim9LineComment,@vim9Continue,vim9Enum,@vimExprList,@vim9MethodDef,vim9Public,vim9Static,vim9Const,vim9Final,vim9This,vim9Var
@@ -2089,7 +2095,12 @@ if s:vim9script
         \ skipwhite skipempty nextgroup=vim9EnumImplementedInterfaceComment,vim9EnumValue
         \ contains=@vimCommentGroup,vimCommentString
 
-  VimFolde syn region	vim9EnumBody	start="\<enum\>" matchgroup=vimCommand end="\<endenum\>" contains=@vim9EnumBodyList transparent
+  VimFolde syn region	vim9EnumBody	contained
+        \ start="\<enum\>"
+        \ matchgroup=vimCommand
+        \ end="\<endenum\>"
+        \ contains=@vim9EnumBodyList
+        \ transparent
 
   " Interfaces {{{3
   " TODO: limit to decl only - no init values
@@ -2116,10 +2127,15 @@ if s:vim9script
         \ nextgroup=vim9AbstractDefParams
         \ contains=vim9DefTypeParam
 
-  VimFoldi syn region	vim9InterfaceBody	start="\<interface\>" matchgroup=vimCommand end="\<endinterface\>" contains=@vim9InterfaceBodyList transparent
+  VimFoldi syn region	vim9InterfaceBody	contained
+        \ start="\<interface\>"
+        \ matchgroup=vimCommand
+        \ end="\<endinterface\>"
+        \ contains=@vim9InterfaceBodyList
+        \ transparent
 
   " Type Aliases {{{3
-  syn match	vim9Type		"\<ty\%[pe]\>"	skipwhite nextgroup=vim9TypeAlias,vim9TypeAliasError
+  syn keyword	vim9Type	 contained	ty[pe]	skipwhite nextgroup=vim9TypeAlias,vim9TypeAliasError
   syn match	vim9TypeAlias	 contained	"\<\u\w*\>"	skipwhite nextgroup=vim9TypeEquals
   syn match	vim9TypeEquals	 contained	"="	skipwhite nextgroup=@vimType
   if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_notypealiaserror")
@@ -2388,25 +2404,23 @@ syn match	vimBracket contained	"[\\<>]"
 syn case match
 
 " User Command Highlighting: {{{2
-" syn match vimUsrCmd	'^\s*\zs\u\%(\w*\)\@>\%([<.(#[]\|\s\+\%([-+*/%]\=\|\.\.\)=\)\@!'
-" syn match vimUsrCmd	contained	'\u\%(\w*\)\@>\%([<.(#[]\|\s\+\%([-+*/%]\=\|\.\.\)=\)\@!' nextgroup=vimBang
 syn match vimUsrCmd	contained	'\%#=1\<\u[[:alnum:]]*\%([![:space:]]\|$\)\@=' nextgroup=vimBang
 
 " Vim user commands
 
 " Compiler plugins
-syn match	vimCompilerSet	"\<CompilerSet\>"	skipwhite nextgroup=vimSetArgs
+syn keyword	vimCompilerSet	contained	CompilerSet	skipwhite nextgroup=vimSetArgs
 
 " runtime/makemenu.vim
-syn match	vimSynMenu		"\<SynMenu\>"	skipwhite nextgroup=vimSynMenuPath
+syn keyword	vimSynMenu	contained	SynMenu	skipwhite nextgroup=vimSynMenuPath
 syn match	vimSynMenuPath	contained	".*\ze:"	nextgroup=vimSynMenuColon contains=vimMenuNotation
 syn match	vimSynMenuColon	contained	":"	nextgroup=vimSynMenuName
 syn match	vimSynMenuName	contained	"\w\+"
 
 " runtime/syntax/syncolor.vim
-syn match	vimSynColor		"\<SynColor\>"	skipwhite nextgroup=vimSynColorGroup
+syn keyword	vimSynColor	contained	SynColor	skipwhite nextgroup=vimSynColorGroup
 syn match	vimSynColorGroup	contained	"\<\h\w*\>"	skipwhite nextgroup=vimHiKeyList	contains=vimGroup
-syn match	vimSynLink		"\<SynLink\>"	skipwhite nextgroup=vimSynLinkGroup
+syn keyword	vimSynLink	contained	SynLink	skipwhite nextgroup=vimSynLinkGroup
 syn match	vimSynLinkGroup	contained	"\<\h\w*\>"	skipwhite nextgroup=vimGroup	contains=vimGroup
 
 syn cluster vimExUserCmdList contains=vimCompilerSet,vimSynColor,vimSynLink,vimSynMenu
