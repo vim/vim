@@ -1163,8 +1163,10 @@ endif
 
 all: $(MAIN_TARGET) vimrun.exe xxd/xxd.exe tee/tee.exe install.exe uninstall.exe GvimExt/gvimext.dll
 
+# Coverage instrumentation makes _wsystem() in vimrun hang, and vimrun is not
+# part of Vim itself, so never instrument it.
 vimrun.exe: vimrun.c
-	$(CC) $(CFLAGS) -o vimrun.exe vimrun.c $(LIB)
+	$(CC) $(filter-out --coverage,$(CFLAGS)) -o vimrun.exe vimrun.c $(LIB)
 
 install.exe: dosinst.c dosinst.h version.h
 	$(CC) $(CFLAGS) -o install.exe dosinst.c $(LIB) -lole32 -luuid
