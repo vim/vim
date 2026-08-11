@@ -95,6 +95,7 @@ func Test_hlsearch_clipboard()
   CheckScreendump
   CheckRunVimInTerminal
   CheckFeature clipboard_working
+  CheckClipboardInTerminal
 
   let lines =<< trim END
       set incsearch hlsearch
