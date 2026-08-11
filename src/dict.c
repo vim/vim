@@ -809,11 +809,21 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
     char_u	*s;
     dict_T	*d;
     int		todo;
+    int		prev_lock;
 
     if ((d = tv->vval.v_dict) == NULL)
 	return NULL;
     ga_init2(&ga, sizeof(char), 80);
     ga_append(&ga, '{');
+
+    // Lock the dictionary, so that user code that echo_string_core() below
+    // may invoke, such as the string() method of an object, cannot remove
+    // an item or add one and cause the hash table to be reallocated while
+    // we are iterating over it.
+    prev_lock = d->dv_lock;
+    if (d->dv_lock == 0)
+	d->dv_lock = VAR_LOCKED;
+    hash_lock(&d->dv_hashtab);
 
     todo = (int)d->dv_hashtab.ht_used;
     FOR_ALL_HASHTAB_ITEMS(&d->dv_hashtab, hi, todo)
@@ -845,6 +855,8 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
 
 	}
     }
+    hash_unlock(&d->dv_hashtab);
+    d->dv_lock = prev_lock;
     if (todo > 0)
     {
 	vim_free(ga.ga_data);
