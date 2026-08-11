@@ -222,6 +222,7 @@ runtime/ftplugin/haredoc.vim				@selenebun
 runtime/ftplugin/hcl.vim				@gpanders
 runtime/ftplugin/heex.vim				@cvincent
 runtime/ftplugin/hgcommit.vim				@k-takata
+runtime/ftplugin/hlsl.vim				@habamax
 runtime/ftplugin/hlsplaylist.vim			@avidseeker
 runtime/ftplugin/hog.vim				@wtfbbqhax
 runtime/ftplugin/html.vim				@dkearns
@@ -410,6 +411,7 @@ runtime/indent/haml.vim					@tpope
 runtime/indent/handlebars.vim				@sukima
 runtime/indent/hare.vim					@selenebun
 runtime/indent/hcl.vim					@gpanders
+runtime/indent/hlsl.vim					@habamax
 runtime/indent/hog.vim					@wtfbbqhax
 runtime/indent/idlang.vim				@dkearns
 runtime/indent/j.vim					@glts
@@ -589,6 +591,7 @@ runtime/syntax/help_ru.vim				@RestorerZ
 runtime/syntax/hgcommit.vim				@k-takata
 runtime/syntax/hip.vim					@Young-TW
 runtime/syntax/hitest.vim				@lacygoill
+runtime/syntax/hlsl.vim					@habamax
 runtime/syntax/hog.vim					@wtfbbqhax
 runtime/syntax/hollywood.vim				@sodero
 runtime/syntax/html.vim					@dkearns
