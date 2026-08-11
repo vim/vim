@@ -69,9 +69,7 @@ blob_copy(blob_T *orig)
     blob_T	*copy;
 
     if (orig == NULL)
-    {
 	return NULL;
-    }
 
     copy = blob_alloc();
     if (copy == NULL)
@@ -792,7 +790,7 @@ blob_insert_func(typval_T *argvars, typval_T *rettv)
 blob_extend(blob_T *b1, blob_T *b2, int bef)
 {
     int		len1, len2;
-    char_u	*p1, *p2;
+    char_u	*p1;
 
     // NULL blob is equivalent to an empty blob: nothing to do.
     if (b2 == NULL || b2->bv_ga.ga_len == 0)
@@ -834,7 +832,6 @@ blob_extend(blob_T *b1, blob_T *b2, int bef)
     void
 blob_extend_func(
 	typval_T	*argvars,
-	char		*func_name UNUSED,
 	char_u		*arg_errmsg,
 	int		is_new,
 	typval_T	*rettv)
