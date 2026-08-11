@@ -1106,6 +1106,7 @@ endfunc
 func Test_mksession_winpos()
   " Only applicable in GUI Vim
   CheckGui
+  CheckNotFeature gui_gtk4 " window position does not work in gtk4 gui
 
   set sessionoptions+=winpos
   mksession! Xtest_mks.out
