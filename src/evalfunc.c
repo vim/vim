@@ -9256,6 +9256,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
     list_T	*l = NULL;
     listitem_T	*li = NULL;
     long	idx = 0;
+    int		prev_lock = 0;
     char_u	*tofree = NULL;
 
     // Make 'cpoptions' empty, the 'l' flag should not be used here.
@@ -9357,6 +9358,16 @@ find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
     if (regmatch.regprog != NULL)
     {
 	regmatch.rm_ic = p_ic;
+
+	// Lock the list, so that the item the loop is standing on cannot
+	// be freed by user code that echo_string() below may invoke: the
+	// string() method of an object could remove the item.
+	if (l != NULL)
+	{
+	    prev_lock = l->lv_lock;
+	    if (l->lv_lock == 0)
+		l->lv_lock = VAR_LOCKED;
+	}
 
 	for (;;)
 	{
@@ -9460,6 +9471,8 @@ find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
 		rettv->vval.v_number += (varnumber_T)(str - expr);
 	    }
 	}
+	if (l != NULL)
+	    l->lv_lock = prev_lock;
 	vim_regfree(regmatch.regprog);
     }
 

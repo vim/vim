@@ -1528,6 +1528,7 @@ list_join_inner(
     join_T	*p;
     long	sumlen = 0;
     int		first = TRUE;
+    int		prev_lock;
     char_u	*tofree;
     char_u	numbuf[NUMBUFLEN];
     listitem_T	*item;
@@ -1536,12 +1537,21 @@ list_join_inner(
 
     // Stringify each item in the list.
     CHECK_LIST_MATERIALIZE(l);
+    // Lock the list, so that the item the loop is standing on cannot be
+    // freed by user code that echo_string_core() below may invoke: the
+    // string() method of an object could remove the item.
+    prev_lock = l->lv_lock;
+    if (l->lv_lock == 0)
+	l->lv_lock = VAR_LOCKED;
     for (item = l->lv_first; item != NULL && !got_int; item = item->li_next)
     {
 	s.string = echo_string_core(&item->li_tv, &tofree, numbuf, copyID,
 				      echo_style, restore_copyID, !echo_style);
 	if (s.string == NULL)
+	{
+	    l->lv_lock = prev_lock;
 	    return FAIL;
+	}
 
 	s.length = STRLEN(s.string);
 	sumlen += (long)s.length;
@@ -1565,6 +1575,7 @@ list_join_inner(
 	if (did_echo_string_emsg)  // recursion error, bail out
 	    break;
     }
+    l->lv_lock = prev_lock;
 
     // Allocate result buffer with its total size, avoid re-allocation and
     // multiple copy operations.  Add 2 for a tailing ']' and NUL.
