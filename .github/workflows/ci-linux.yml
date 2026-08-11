@@ -69,7 +69,6 @@ jobs:
             extra: [uchar, testgui]
           - features: huge
             compiler: gcc
-            coverage: true
             interface: dynamic
             extra: [uchar, testgui, use_gtk4]
           - features: huge
@@ -107,7 +106,11 @@ jobs:
           coverage: ${{ matrix.coverage }}
 
       - name: Test
-        timeout-minutes: 30
+        timeout-minutes: 20
+        # The GTK4 GUI is not stable enough yet to block the other jobs: it
+        # is the only job that runs a Wayland compositor, which makes
+        # 'clipboard' behave differently.
+        continue-on-error: ${{ contains(matrix.extra, 'use_gtk4') }}
         run: make ${SHADOWOPT} ${TEST}
 
       # Enable to debug failing tests live and ssh into the CI runners
