@@ -693,7 +693,7 @@ draw_layer_get_texture(
     node = gsk_texture_scale_node_new(texture,
 		&GRAPHENE_RECT_INIT(FILL_X(0), FILL_Y(row),
 		(da->n_cols + bleed) * gui.char_width, gui.char_height + bleed),
-	    GSK_SCALING_FILTER_TRILINEAR);
+	    GSK_SCALING_FILTER_NEAREST);
     if (bleed)
     {
 	GskRenderNode *new;
