@@ -1347,6 +1347,7 @@ def Test_extendnew()
   v9.CheckSourceDefAndScriptFailure(['extendnew([1, 2], {x: 1})'], ['E1013: Argument 2: type mismatch, expected list<number> but got dict<number>', 'E896: Argument of extendnew() must be a List, Dictionary or Blob'])
   v9.CheckSourceDefAndScriptFailure(['extendnew(0z0102, "x")'], ['E1013: Argument 2: type mismatch, expected blob but got string', 'E896: Argument of extendnew() must be a List, Dictionary or Blob'])
   v9.CheckSourceDefAndScriptFailure(['extendnew(0z0102, [42])'], ['E1013: Argument 2: type mismatch, expected blob but got list<number>', 'E896: Argument of extendnew() must be a List, Dictionary or Blob'])
+  v9.CheckSourceDefAndScriptFailure(['extendnew(0z0102, 0z03, 1.1)'], ['E1013: Argument 3: type mismatch, expected number but got float', 'E805: Using a Float as a Number'])
 enddef
 
 def Test_feedkeys()

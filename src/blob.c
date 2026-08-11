@@ -837,7 +837,7 @@ blob_extend_func(
 	typval_T	*rettv)
 {
     blob_T	*b1, *b2;
-    int		before;
+    long	before;
     int		error = FALSE;
 
     b1 = argvars[0].vval.v_blob;

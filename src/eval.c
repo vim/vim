@@ -2890,14 +2890,9 @@ eval_for_line(
 		fi->fi_bi = 0;
 		if (tv.vval.v_blob != NULL)
 		{
-		    typval_T btv;
-
 		    // Make a copy, so that the iteration still works when the
 		    // blob is changed.
-		    btv.v_type = VAR_BLOB;
-		    btv.v_lock = 0;
-		    btv.vval.v_blob = blob_copy(tv.vval.v_blob);
-		    fi->fi_blob = btv.vval.v_blob;
+		    fi->fi_blob = blob_copy(tv.vval.v_blob);
 		}
 		clear_tv(&tv);
 	    }

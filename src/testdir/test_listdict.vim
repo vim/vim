@@ -1309,6 +1309,9 @@ func Test_listdict_extend()
   call assert_fails("call extend(b, 0z040506, -4)", 'E979:')
   call assert_fails("call extend(b, 0z040506, 1.2)", 'E805:')
 
+  lockvar b
+  call assert_fails("call extend(b, 0z040506)", 'E741:')
+
   call assert_fails('call extend(test_null_blob(), test_null_blob())', 'E1581:')
 
   call assert_fails("call extend([1, 2], 1)", 'E896:')
