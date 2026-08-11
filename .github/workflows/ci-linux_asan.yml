@@ -27,6 +27,7 @@ jobs:
       DISPLAY: ":99"
       WAYLAND_DISPLAY: "/tmp/weston_sock"
       GTK_A11Y: "none"
+      GDK_DEBUG: "no-portals"
       DEBIAN_FRONTEND: noninteractive
 
     strategy:

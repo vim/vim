@@ -118,7 +118,7 @@ func Test_printexpr()
   set printexpr=PrintFile(v:fname_in)
 
   help help
-  hardcopy dummy args
+  hardcopy! dummy args
   call assert_equal(['Test printexpr: dummy args'],
   \                 readfile('Xhardcopy_printexpr'))
   call delete('Xhardcopy_printexpr')
@@ -129,7 +129,7 @@ func Test_printexpr()
     return 1
   endfunc
   set printexpr=PrintFails(v:fname_in)
-  call assert_fails('hardcopy', 'E365:')
+  call assert_fails('hardcopy!', 'E365:')
 
   " Using a script-local function
   func s:NewPrintExpr()
@@ -175,7 +175,7 @@ func Test_empty_buffer()
   HasPostscript
 
   new
-  call assert_equal("\nNo text to be printed", execute('hardcopy'))
+  call assert_equal("\nNo text to be printed", execute('hardcopy!'))
   bwipe
 endfunc
 
