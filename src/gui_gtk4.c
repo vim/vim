@@ -959,6 +959,13 @@ gui_mch_set_shellsize(int width, int height,
 	int base_width UNUSED, int base_height UNUSED,
 	int direction UNUSED)
 {
+    // Remember the size the form widget is supposed to get. An allocation
+    // that arrives before the compositor has answered this request still has
+    // the previous size and must not be used.
+    gui.pending_form_w = width;
+    gui.pending_form_h = height;
+    gui.pending_form_skip = 1;
+
     width += get_menu_tool_width();
     height += get_menu_tool_height();
 
