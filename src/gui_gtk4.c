@@ -1278,7 +1278,7 @@ gui_mch_init_font(char_u *font_name, int fontset UNUSED)
     pango_layout_get_size(layout, &width, NULL);
     g_object_unref(layout);
 
-    gui.char_width = (width / 2 + PANGO_SCALE - 1) / PANGO_SCALE;
+    gui.char_width = (width / 2 + PANGO_SCALE / 2) / PANGO_SCALE;
     if (gui.char_width <= 0)
 	gui.char_width = 8;
 
