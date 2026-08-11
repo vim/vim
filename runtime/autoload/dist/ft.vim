@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Aug 08
+# Last Change:		2026 Aug 10
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -2208,6 +2208,8 @@ const ft_from_ext = {
   "hbs": "handlebars",
   # Hare
   "ha": "hare",
+  # HLSL
+  "hlsl": "hlsl",
   # Haskell
   "hs": "haskell",
   "hsc": "haskell",
