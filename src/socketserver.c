@@ -486,7 +486,9 @@ socketserver_get_path(
 	if (new)
 	{
 	    emsg_silent++;
+	    emsg_off++;
 	    channel = channel_open_unix((char *)buf, NULL);
+	    emsg_off--;
 	    emsg_silent--;
 
 	    if (channel != NULL)
