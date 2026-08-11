@@ -2066,6 +2066,14 @@ typedef struct
 {
     listitem_T	*item;
     int		idx;
+    // Sort key precomputed once per item for the numeric compare modes, so
+    // item_compare() does not convert the value on every comparison.  Only
+    // valid when sortinfo->item_compare_keys_ready is set (the sort() path);
+    // uniq() passes a bare listitem_T pointer and must not read this.
+    union {
+	varnumber_T	inum;	// for item_compare_numbers ("N")
+	double		fnum;	// for item_compare_numeric ("n") and _float ("f")
+    } key;
 } sortItem_T;
 
 // struct storing information about current sort
@@ -2081,6 +2089,7 @@ typedef struct
     dict_T	*item_compare_selfdict;
     int		item_compare_func_err;
     int		item_compare_keep_zero;
+    int		item_compare_keys_ready;  // ptrs[].key is precomputed
 } sortinfo_T;
 static sortinfo_T	*sortinfo = NULL;
 #define ITEM_COMPARE_FAIL 999
@@ -2106,18 +2115,33 @@ item_compare(const void *s1, const void *s2)
 
     if (sortinfo->item_compare_numbers)
     {
-	varnumber_T	v1 = tv_to_number(tv1);
-	varnumber_T	v2 = tv_to_number(tv2);
+	varnumber_T	v1 = sortinfo->item_compare_keys_ready
+					? si1->key.inum : tv_to_number(tv1);
+	varnumber_T	v2 = sortinfo->item_compare_keys_ready
+					? si2->key.inum : tv_to_number(tv2);
 
 	return v1 == v2 ? 0 : v1 > v2 ? 1 : -1;
     }
 
     if (sortinfo->item_compare_float)
     {
-	float_T	v1 = tv_get_float(tv1);
-	float_T	v2 = tv_get_float(tv2);
+	float_T	v1 = sortinfo->item_compare_keys_ready
+					? si1->key.fnum : tv_get_float(tv1);
+	float_T	v2 = sortinfo->item_compare_keys_ready
+					? si2->key.fnum : tv_get_float(tv2);
 
 	return v1 == v2 ? 0 : v1 > v2 ? 1 : -1;
+    }
+
+    if (sortinfo->item_compare_numeric && sortinfo->item_compare_keys_ready)
+    {
+	double	n1 = si1->key.fnum;
+	double	n2 = si2->key.fnum;
+
+	res = n1 == n2 ? 0 : n1 > n2 ? 1 : -1;
+	if (res == 0 && !sortinfo->item_compare_keep_zero)
+	    res = si1->idx > si2->idx ? 1 : -1;
+	return res;
     }
 
     // tv2string() puts quotes around a string and allocates memory.  Don't do
@@ -2230,6 +2254,51 @@ item_compare2(const void *s1, const void *s2)
 }
 
 /*
+ * Precompute the numeric sort key of each item, so that item_compare() can
+ * compare the stored value instead of converting the item on every one of the
+ * O(n log n) comparisons.  Only for the builtin numeric compare modes; each
+ * key is computed exactly as item_compare() would have, once per item.
+ */
+    static void
+sort_compute_keys(sortItem_T *ptrs, long len, sortinfo_T *info)
+{
+    long	i;
+
+    if (info->item_compare_numbers)
+    {
+	for (i = 0; i < len; ++i)
+	    ptrs[i].key.inum = tv_to_number(&ptrs[i].item->li_tv);
+    }
+    else if (info->item_compare_float)
+    {
+	for (i = 0; i < len; ++i)
+	    ptrs[i].key.fnum = tv_get_float(&ptrs[i].item->li_tv);
+    }
+    else // info->item_compare_numeric
+    {
+	for (i = 0; i < len; ++i)
+	{
+	    typval_T	*tv = &ptrs[i].item->li_tv;
+
+	    // A string is compared as a single quote in numeric mode, which
+	    // strtod() reads as 0; only numbers contribute a value.
+	    if (tv->v_type == VAR_STRING)
+		ptrs[i].key.fnum = 0.0;
+	    else
+	    {
+		char_u	numbuf[NUMBUFLEN];
+		char_u	*tofree = NULL;
+		char_u	*p = tv2string(tv, &tofree, numbuf, 0);
+
+		ptrs[i].key.fnum = p == NULL ? 0.0 : strtod((char *)p, NULL);
+		vim_free(tofree);
+	    }
+	}
+    }
+    info->item_compare_keys_ready = TRUE;
+}
+
+/*
  * sort() List "l"
  */
     static void
@@ -2257,6 +2326,13 @@ do_sort(list_T *l, sortinfo_T *info)
 
     info->item_compare_func_err = FALSE;
     info->item_compare_keep_zero = FALSE;
+    info->item_compare_keys_ready = FALSE;
+    // For the builtin numeric compares, precompute each item's key once
+    // instead of converting it on every comparison.
+    if (info->item_compare_func == NULL && info->item_compare_partial == NULL
+	    && (info->item_compare_numbers || info->item_compare_float
+						|| info->item_compare_numeric))
+	sort_compute_keys(ptrs, len, info);
     // test the compare function
     if ((info->item_compare_func != NULL
 		|| info->item_compare_partial != NULL)
@@ -2358,6 +2434,7 @@ parse_sort_uniq_args(typval_T *argvars, sortinfo_T *info)
     info->item_compare_func = NULL;
     info->item_compare_partial = NULL;
     info->item_compare_selfdict = NULL;
+    info->item_compare_keys_ready = FALSE;
 
     if (argvars[1].v_type == VAR_UNKNOWN)
 	return OK;
