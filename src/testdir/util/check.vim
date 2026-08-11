@@ -193,6 +193,25 @@ func CheckRunVimInTerminal()
   endif
 endfunc
 
+" Command to check that the Vim started by RunVimInTerminal() can use the
+" clipboard.  Checking 'clipboard_working' of the Vim that runs the tests is
+" not enough: in the GUI that Vim always has a clipboard, while the Vim
+" started in a terminal window may not have one.
+command CheckClipboardInTerminal call CheckClipboardInTerminal()
+func CheckClipboardInTerminal()
+  if !exists('s:clipboard_in_terminal')
+    call delete('Xclipcheck')
+    " "-v" is needed because in a GUI test run the command from "vimcmd"
+    " starts the GUI, which always has a clipboard.
+    call RunVim([], ['call writefile([has("clipboard_working")], "Xclipcheck")', 'qall!'], '-v')
+    let s:clipboard_in_terminal = filereadable('Xclipcheck') && readfile('Xclipcheck')->get(0, '0') == '1'
+    call delete('Xclipcheck')
+  endif
+  if !s:clipboard_in_terminal
+    throw 'Skipped: Vim in a terminal window cannot use the clipboard'
+  endif
+endfunc
+
 " Command to check that we can run the GUI
 command CheckCanRunGui call CheckCanRunGui()
 func CheckCanRunGui()

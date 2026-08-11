@@ -921,6 +921,7 @@ endfunc
 func Test_popup_select()
   CheckScreendump
   CheckFeature clipboard_working
+  CheckClipboardInTerminal
 
   " create a popup with some text to be selected
   let lines =<< trim END
