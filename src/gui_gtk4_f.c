@@ -216,7 +216,21 @@ vim_form_resize_idle_cb(VimForm *self)
 	goto exit;
 
     if (self->last_width > 1 && self->last_height > 1)
+    {
+	// Ignore an allocation that does not answer the size that was last
+	// asked for: it was computed before the request and using it would
+	// compute Rows and Columns from the old size together with the new
+	// base size, losing columns. Give up after one allocation in case
+	// the request is never answered exactly.
+	if (gui.pending_form_w > 0
+		&& (self->last_width != gui.pending_form_w
+		    || self->last_height != gui.pending_form_h)
+		&& --gui.pending_form_skip >= 0)
+	    goto exit;
+
+	gui.pending_form_w = 0;
 	gui_resize_shell(self->last_width, self->last_height);
+    }
 
 exit:
     g_object_unref(self);

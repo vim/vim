@@ -505,6 +505,13 @@ typedef struct Gui
 #if defined(FEAT_GUI_GTK) && defined(USE_GTK4)
     int decor_height;
 
+    // Size of the form widget last asked for with gui_mch_set_shellsize().
+    // "pending_form_skip" counts how many allocations that do not answer it
+    // may still be ignored.
+    int pending_form_w;
+    int pending_form_h;
+    int pending_form_skip;
+
     // Used for clipboard functionality in GTK4 GUI
     GdkContentProvider *regular_provider;
     GdkContentProvider *primary_provider;
