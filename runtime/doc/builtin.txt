@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Jul 25
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Aug 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2526,7 +2526,12 @@ diff_filler({lnum})					*diff_filler()*
 		display but don't exist in the buffer.
 		{lnum} is used like with |getline()|.  Thus "." is the current
 		line, "'m" mark m, etc.
-		Returns 0 if the current window is not in diff mode.
+
+		To get the filler lines after the last buffer line, use: >
+			echo diff_filler(line('$')+1)
+<
+		Returns 0 if the current window is not in diff mode or filler
+		lines have been disabled using 'diffopt'.
 
 		Can also be used as a |method|: >
 			GetLnum()->diff_filler()
