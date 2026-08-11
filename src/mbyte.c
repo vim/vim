@@ -1645,7 +1645,7 @@ utf_ptr2cells(
 	    return 4;
 	// If the char is ASCII it must be an overlong sequence.
 	if (c < 0x80)
-	    return char2cells(c);
+	    return vim_isprintc(c) ? char2cells(c) : 4;
 	return utf_char2cells(c);
     }
     return 1;
@@ -1689,7 +1689,7 @@ utf_ptr2cells_len(char_u *p, int size)
 	    return 4;
 	// If the char is ASCII it must be an overlong sequence.
 	if (c < 0x80)
-	    return char2cells(c);
+	    return vim_isprintc(c) ? char2cells(c) : 4;
 	return utf_char2cells(c);
     }
     return 1;
