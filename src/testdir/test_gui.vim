@@ -1929,6 +1929,11 @@ func Test_geometry_exact_size()
   CheckCanRunGui
   CheckFeature gui_gtk
 
+  if has('gui_gtk4')
+    " Wayland is kinda finicky
+    let g:test_is_flaky = 1
+  endif
+
   let after =<< trim [CODE]
     call writefile([string(&columns), string(&lines)], 'Xtest_geomsize')
     qall
@@ -1954,6 +1959,11 @@ endfunc
 func Test_tabnew_tabclose_size_stable()
   CheckCanRunGui
   CheckFeature gui_gtk
+
+  if has('gui_gtk4')
+    " Wayland is kinda finicky
+    let g:test_is_flaky = 1
+  endif
 
   let after =<< trim [CODE]
     let cols0 = &columns
