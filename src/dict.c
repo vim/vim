@@ -816,10 +816,8 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
     ga_init2(&ga, sizeof(char), 80);
     ga_append(&ga, '{');
 
-    // Lock the dictionary, so that user code that echo_string_core() below
-    // may invoke, such as the string() method of an object, cannot remove
-    // an item or add one and cause the hash table to be reallocated while
-    // we are iterating over it.
+    // Lock the dict, the string() method of an object item could remove an
+    // item or make the hashtab resize while we iterate over it.
     prev_lock = d->dv_lock;
     if (d->dv_lock == 0)
 	d->dv_lock = VAR_LOCKED;

@@ -1537,9 +1537,8 @@ list_join_inner(
 
     // Stringify each item in the list.
     CHECK_LIST_MATERIALIZE(l);
-    // Lock the list, so that the item the loop is standing on cannot be
-    // freed by user code that echo_string_core() below may invoke: the
-    // string() method of an object could remove the item.
+    // Lock the list, the string() method of an object item could remove the
+    // item the loop is standing on.
     prev_lock = l->lv_lock;
     if (l->lv_lock == 0)
 	l->lv_lock = VAR_LOCKED;
