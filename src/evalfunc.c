@@ -9359,9 +9359,8 @@ find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
     {
 	regmatch.rm_ic = p_ic;
 
-	// Lock the list, so that the item the loop is standing on cannot
-	// be freed by user code that echo_string() below may invoke: the
-	// string() method of an object could remove the item.
+	// Lock the list, the string() method of an object item could remove
+	// the item the loop is standing on.
 	if (l != NULL)
 	{
 	    prev_lock = l->lv_lock;
