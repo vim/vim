@@ -32,11 +32,6 @@ struct _VimForm
     GtkWidget parent;
 
     GList *children;
-
-    // See vim_form_size_allocate()
-    guint resize_idle_id;
-    int last_width;
-    int last_height;
 };
 
 G_DEFINE_TYPE(VimForm, vim_form, GTK_TYPE_WIDGET)
@@ -207,36 +202,6 @@ vim_form_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
     }
 }
 
-    static gboolean
-vim_form_resize_idle_cb(VimForm *self)
-{
-    self->resize_idle_id = 0;
-
-    if (gui.drawarea == NULL)
-	goto exit;
-
-    if (self->last_width > 1 && self->last_height > 1)
-    {
-	// Ignore an allocation that does not answer the size that was last
-	// asked for: it was computed before the request and using it would
-	// compute Rows and Columns from the old size together with the new
-	// base size, losing columns. Give up after one allocation in case
-	// the request is never answered exactly.
-	if (gui.pending_form_w > 0
-		&& (self->last_width != gui.pending_form_w
-		    || self->last_height != gui.pending_form_h)
-		&& --gui.pending_form_skip >= 0)
-	    goto exit;
-
-	gui.pending_form_w = 0;
-	gui_resize_shell(self->last_width, self->last_height);
-    }
-
-exit:
-    g_object_unref(self);
-    return G_SOURCE_REMOVE;
-}
-
     static void
 vim_form_size_allocate(
 	GtkWidget *widget,
@@ -249,16 +214,7 @@ vim_form_size_allocate(
     for (GList *ele = self->children; ele != NULL; ele = ele->next)
 	vim_form_position_child(self, ele->data);
 
-    // Notify Vim about size change via idle callback
-    if (width != self->last_width || height != self->last_height)
-    {
-	self->last_width = width;
-	self->last_height = height;
-
-	if (self->resize_idle_id == 0)
-	    self->resize_idle_id = g_idle_add(
-		    (GSourceFunc)vim_form_resize_idle_cb, g_object_ref(self));
-    }
+    gui_resize_shell(width, height);
 }
 
     static void
