@@ -133,6 +133,7 @@ typedef struct
     gboolean draw; // If cursor should be drawn
     int width;
     int height;
+    int n_cells; // Cells covered, 2 for a double width character
     GdkRGBA bg_color;
     GdkRGBA fg_color;
 } DrawCursor;
@@ -1598,6 +1599,9 @@ vim_draw_area_set_cursor(VimDrawArea *self, int w, int h)
     self->cursor.draw = TRUE;
     self->cursor.width = w;
     self->cursor.height = h;
+    // Remember this now: the snapshot runs later, when the drawing position
+    // has moved on.
+    self->cursor.n_cells = 1 + mb_lefthalve(gui.cursor_row, gui.cursor_col);
     self->cursor.bg_color = *gui.bgcolor;
     self->cursor.fg_color = *gui.fgcolor;
 }
@@ -1873,8 +1877,7 @@ vim_draw_area_snapshot_cursor(
 
     if (cursor->width <= 0 && cursor->height <= 0)
     {
-	// Double width if double width character
-	w += gui.char_width * (1 + mb_lefthalve(gui.row, gui.col));
+	w += gui.char_width * cursor->n_cells;
 	h = gui.char_height;
     }
 
