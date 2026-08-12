@@ -2529,8 +2529,9 @@ typedef struct _SharedFindReplace
     GtkAllocation allocation;
 } SharedFindReplace;
 
-static SharedFindReplace find_widgets = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-static SharedFindReplace repl_widgets = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+
+static SharedFindReplace find_widgets = {0};
+static SharedFindReplace repl_widgets = {0};
 
 #ifdef HAVE_GTK3_OVERLAY_DIALOG
 static SharedFindReplace *active_find_replace = NULL;
