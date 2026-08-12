@@ -1226,7 +1226,7 @@ key_press_event(GtkWidget *widget UNUSED,
     key_sym = event->keyval;
     state = event->state;
 #ifdef HAVE_GTK3_OVERLAY_DIALOG
-    if (gui.dialog_active)
+    if (gui.dialog_active || gui.dialog_textentry_active)
 	return FALSE;
 #endif
 #ifdef FEAT_XIM
@@ -4142,17 +4142,27 @@ gui_mch_init(void)
 	    ".vim-overlay {"
 	    "  background-color: @theme_bg_color;"
 	    "}"
-	    ".vim-overlay .entry,"
 	    ".vim-overlay entry {"
 	    "  background-color: @theme_base_color;"
 	    "  color: @theme_text_color;"
 	    "}"
-	    ".vim-overlay entry.selected,"
-	    ".vim-overlay .entry.selected {"
+	    ".vim-overlay entry.selected {"
 	    "  box-shadow: inset 0 0 0 1px @theme_selected_bg_color;"
 	    "}"
 	    ".vim-overlay button.selected {"
 	    "  box-shadow: inset 0 0 0 1px @theme_selected_bg_color;"
+	    "}"
+	    ".vim-overlay button:focus,"
+	    ".vim-overlay entry:focus {"
+	    "  box-shadow: inset 0 0 0 1px @theme_selected_bg_color;"
+	    "}"
+	    ".vim-overlay frame.focused {"
+	    "  outline: 1px solid @theme_selected_bg_color;"
+	    "  outline-offset: -1px;"
+	    "}"
+	    ".vim-overlay checkbutton:focus,"
+	    ".vim-overlay radiobutton:focus {"
+	    "  background-color: alpha(@theme_selected_bg_color, 0.1);"
 	    "}",
 	    -1, NULL);
     gtk_style_context_add_provider_for_screen(
@@ -7007,7 +7017,7 @@ gui_mch_flush(void)
 	dirty_region = NULL;
     }
 #else
-       gdk_display_flush(gtk_widget_get_display(gui.mainwin));
+    gdk_display_flush(gtk_widget_get_display(gui.mainwin));
        return;
 #endif
 }
