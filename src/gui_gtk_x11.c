@@ -3248,6 +3248,10 @@ update_window_manager_hints(int force_width, int force_height)
     {
 	min_width  = width  + MIN_COLUMNS * gui.char_width;
 	min_height = height + MIN_LINES   * gui.char_height;
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
+	// Include the active overlay dialog in the window-manager minimum size.
+	gui_gtk_get_overlay_dialog_min_size(&min_width, &min_height);
+#endif
     }
 
     // Avoid an expose event when the size didn't change.

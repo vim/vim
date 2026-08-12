@@ -1,4 +1,5 @@
 /* gui_gtk.c */
+void gui_gtk_get_overlay_dialog_min_size(int *min_width, int *min_height);
 void gui_gtk_register_stock_icons(void);
 void gui_mch_add_menu(vimmenu_T *menu, int idx);
 void gui_mch_add_menu_item(vimmenu_T *menu, int idx);

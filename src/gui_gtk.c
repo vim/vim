@@ -1430,6 +1430,33 @@ static guint overlay_flash_timer = 0;
 static void overlay_dialog_focus_button(OverlayDialog *dlg, int idx);
 
     static gboolean
+overlay_dialog_get_child_position_cb(
+	GtkOverlay	*overlay UNUSED,
+	GtkWidget	*widget UNUSED,
+	GtkAllocation	*allocation,
+	gpointer	data UNUSED)
+{
+    gtk_widget_get_allocation(gui.drawarea, allocation);
+    return true;
+}
+
+    void
+gui_gtk_get_overlay_dialog_min_size(int *min_width, int *min_height)
+{
+    if (overlay_dialog_flash_widget != NULL)
+    {
+	GtkRequisition minimum;
+
+	gtk_widget_get_preferred_size(overlay_dialog_flash_widget,
+		&minimum, NULL);
+	*min_width = minimum.width;
+	*min_height = minimum.height;
+	*min_width += gui_get_base_width();
+	*min_height += gui_get_base_height() + 2 * gui.char_height;
+    }
+}
+
+    static gboolean
 overlay_dialog_flash_timeout_cb(gpointer data)
 {
     GtkWidget *frame = (GtkWidget *)data;
@@ -1819,6 +1846,8 @@ overlay_dialog_run(OverlayDialog *dlg)
     gtk_grab_add(dlg->root);
     gui.dialog_active = true;
     overlay_dialog_flash_widget = dlg->frame;
+    g_signal_connect(gui.dialog_overlay, "get-child-position",
+	    G_CALLBACK(overlay_dialog_get_child_position_cb), NULL);
 
     if (dlg->textentry != NULL)
 	overlay_dialog_focus_textentry(dlg);
@@ -1848,6 +1877,8 @@ overlay_dialog_run(OverlayDialog *dlg)
 
     gui.dialog_active = false;
     overlay_dialog_flash_widget = NULL;
+    g_signal_handlers_disconnect_by_func(gui.dialog_overlay,
+	    G_CALLBACK(overlay_dialog_get_child_position_cb), NULL);
 
     if (overlay_flash_timer != 0)
     {
