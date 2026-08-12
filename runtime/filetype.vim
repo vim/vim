@@ -125,6 +125,9 @@ au BufNewFile,BufRead *.demo,*.dm{1,2,3,t},*.wxm,maxima-init.mac setf maxima
 " ObjectScript routine or assembly
 au BufNewFile,BufRead *.mac			call dist#ft#FTmac()
 
+" Argo CD configuration
+au BufNewFile,BufRead */argocd/config		setf yaml
+
 " Assembly (all kinds)
 " *.lst is not pure assembly, it has two extra columns (address, byte codes)
 " *.[sS], *.[aA] usually Assembly - GNU
