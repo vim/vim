@@ -5150,6 +5150,7 @@ enddef
 
 func Test_win_gotoid_in_mapping()
   CheckScreendump
+  CheckClipboardInTerminal
 
   " requires a working clipboard and this doesn't work on MacOS
   if has('clipboard_working') && !has('mac')
