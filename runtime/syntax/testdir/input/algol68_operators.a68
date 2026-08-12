@@ -1,5 +1,6 @@
 #
     Algol 68 Operators
+    VIM_TEST_SETUP hi link algol68DefiningOperator Identifier
 #
 
 
@@ -994,4 +995,43 @@ PRIO >/=: = 1; OP >/=: = (INT a, INT b) INT: 42;
 PRIO ><=: = 1; OP ><=: = (INT a, INT b) INT: 42;
 PRIO >==: = 1; OP >==: = (INT a, INT b) INT: 42;
 PRIO >>=: = 1; OP >>=: = (INT a, INT b) INT: 42;
+
+
+#:::::::::::
+Declarations
+:::::::::::#
+
+
+# priority joined definitions #
+
+PRIO LT = 1, LE = 1, EQ = 1;
+PRIO LT = 1,
+     LE = 1,
+     EQ = 1;
+
+# operation joined definitions #
+
+OP LT = (UNICHAR a, b) BOOL: ABS bits OF a LT ABS bits OF b, LE = (UNICHAR a, b) BOOL: ABS bits OF a LE ABS bits OF b, EQ = (UNICHAR a, b) BOOL: ABS bits OF a EQ ABS bits OF b;
+
+OP LT = (UNICHAR a, b) BOOL: ABS bits OF a LT ABS bits OF b,
+   LE = (UNICHAR a, b) BOOL: ABS bits OF a LE ABS bits OF b,
+   EQ = (UNICHAR a, b) BOOL: ABS bits OF a EQ ABS bits OF b;
+
+OP LT = (UNICHAR a, b) BOOL: ABS bits OF a LT ABS bits OF b, # comment #
+   LE = (UNICHAR a, b) BOOL: ABS bits OF a LE ABS bits OF b, # comment #
+   EQ = (UNICHAR a, b) BOOL: ABS bits OF a EQ ABS bits OF b; # comment #
+
+# mixed joined definitions #
+
+OP LT = (UNICHAR a, b) BOOL: ABS bits OF a LT ABS bits OF b, PRIO LT = 1, OP LE = (UNICHAR a, b) BOOL: ABS bits OF a LE ABS bits OF b, PRIO LE = 1;
+
+OP LT = (UNICHAR a, b) BOOL: ABS bits OF a LT ABS bits OF b,
+    PRIO LT = 1,
+    OP LE = (UNICHAR a, b) BOOL: ABS bits OF a LE ABS bits OF b,
+    PRIO LE = 1;
+
+OP LT = (UNICHAR a, b) BOOL: ABS bits OF a LT ABS bits OF b,     # comment #
+    PRIO LT = 1,                                                 # comment #
+    OP LE = (UNICHAR a, b) BOOL: ABS bits OF a LE ABS bits OF b, # comment #
+    PRIO LE = 1;                                                 # comment #
 

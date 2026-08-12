@@ -3,7 +3,12 @@
 " Version:		0.4
 " Maintainer:		Janis Papanagnou
 " Previous Maintainer:	NevilleD.ALGOL_68@sgr-a.net
-" Last Change:		2026 Jun 13
+" Last Change:		2026 Jul 12
+
+" References:
+"  - Revised Report on the Algorithmic Language Algol 68 (1973)
+"  - The Report on the Standard Hardware Representation for Algol 68 (1978)
+"  - Learning Algol 68 Genie (2026)
 
 if exists("b:current_syntax")
   finish
@@ -12,43 +17,39 @@ endif
 syn sync minlines=250 maxlines=500
 
 " Algol68 Final Report, unrevised
-syn keyword algol68PreProc	PRIORITY
-syn keyword algol68Operator	BTB CTB CONJ QUOTE CT CTAB EITHER SIGN
+syn match   algol68Operator	"\<\%(BTB\|CTB\|QUOTE\|CT\|CTAB\|EITHER\)\>"
 
-
-" Algol68 Revised Report
 syn keyword algol68Boolean	TRUE FALSE
-syn keyword algol68Conditional	IF THEN ELSE ELIF FI
-syn keyword algol68Conditional	CASE IN OUT OUSE ESAC
+syn keyword algol68Conditional	THEN ELSE ELIF
+syn keyword algol68Conditional	IN OUT OUSE
 syn keyword algol68Constant	NIL SKIP EMPTY
-syn keyword algol68Statement	MODE PROC
-syn keyword algol68Statement	OP PRIO skipwhite nextgroup=algol68DefiningOperator
-syn keyword algol68Label	GOTO 
+syn keyword algol68Statement	PROC
+syn keyword algol68Label	GOTO
 syn match   algol68Label	"\<GO TO\>"
-syn keyword algol68Operator	ABS REPR ROUND ENTIER ARG BIN LENG SHORTEN ODD
-syn keyword algol68Operator	SHL SHR ROL ROR UP DOWN LEVEL LWB UPB I RE IM
-syn keyword algol68Operator	OVER MOD ELEM SET CLEAR
-syn keyword algol68Operator	LT LE GE GT
-syn keyword algol68Operator	EQ NE
-syn keyword algol68Operator	AND OR XOR NOT
-" Genie short-circuit pseudo operators
-syn keyword algol68Operator	THEF ANDF ANDTH ELSF ORF OREL
-syn keyword algol68Operator	ANDTHEN ORELSE
-syn keyword algol68Operator	MINUSAB PLUSAB TIMESAB DIVAB OVERAB MODAB PLUSTO
-syn keyword algol68Operator	IS ISNT OF AT
-syn keyword algol68Operator	SORT ELEMS
-syn keyword algol68Repeat	FOR FROM BY UPTO DOWNTO TO WHILE DO UNTIL OD
-syn keyword algol68Statement	PAR BEGIN END EXIT
+syn match   algol68Operator	"\<\%(CONJ\|SIGN\)\>"
+syn match   algol68Operator	"\<\%(ABS\|REPR\|ROUND\|ENTIER\|ARG\|BIN\|LENG\|SHORTEN\|ODD\)\>"
+syn match   algol68Operator	"\<\%(SHL\|SHR\|ROL\|ROR\|UP\|DOWN\|LEVEL\|LWB\|UPB\|I\|RE\|IM\)\>"
+syn match   algol68Operator	"\<\%(OVER\|MOD\|ELEM\|SET\|CLEAR\)\>"
+syn match   algol68Operator	"\<\%(LT\|LE\|GE\|GT\)\>"
+syn match   algol68Operator	"\<\%(EQ\|NE\)\>"
+syn match   algol68Operator	"\<\%(AND\|OR\|XOR\|NOT\)\>"
+" short-circuit pseudo operators (Genie extension)
+syn match   algol68Operator	"\<\%(THEF\|ANDF\|ANDTH\|ELSF\|ORF\|OREL\)\>"
+syn match   algol68Operator	"\<\%(ANDTHEN\|ORELSE\)\>"
+syn match   algol68Operator	"\<\%(MINUSAB\|PLUSAB\|TIMESAB\|DIVAB\|OVERAB\|MODAB\|PLUSTO\)\>"
+syn match   algol68Operator	"\<\%(IS\|ISNT\|OF\|AT\)\>"
+syn match   algol68Operator	"\<\%(SORT\|ELEMS\)\>"
+syn keyword algol68Repeat	FOR FROM BY UPTO DOWNTO TO WHILE UNTIL
+syn keyword algol68Statement	PAR EXIT
 syn keyword algol68Struct	STRUCT
 syn keyword algol68PreProc	VECTOR
 syn match   algol68Type		"\<\%(LONG\|SHORT\)\>"
 syn keyword algol68Type		FLEX HEAP LOC REF
 syn keyword algol68Type		VOID BOOL INT REAL COMPL CHAR STRING COMPLEX
 syn keyword algol68Type		BITS BYTES FILE CHANNEL PIPE SEMA SOUND
-syn keyword algol68Type		FORMAT STRUCT UNION 
-" Genie extensions in addition to ROUND and ENTIER
-syn keyword algol68Operator	FLOOR CEIL NINT TRUNC FRAC FIX
-
+syn keyword algol68Type		FORMAT STRUCT UNION
+" in addition to ROUND and ENTIER (Genie extension)
+syn match   algol68Operator	"\<\%(FLOOR\|CEIL\|NINT\|TRUNC\|FRAC\|FIX\)\>"
     " 20011222az: Added new items.
 syn keyword algol68Todo contained	TODO FIXME XXX DEBUG NOTE
 
@@ -66,9 +67,13 @@ syn match   algol68Identifier		"\<[a-z][a-z0-9_]*\>"
 " monadic operator => "[!%&+\-?^~][*/<=>]\?\%(:=\|=:\)\?"
 "  dyadic operator => "\%([!%&+\-?^~]\|[*/<=>]\)[*/<=>]\?\%(:=\|=:\)\?"
 
-" 'becomes' and 'is defined as' symbols
-" syn match   algol68SymbolOperator	":=\|="
-syn match   algol68SymbolOperator	"\%([!%&+\-?^~]\|[*/<=>]\)\@1<!:="
+" 'becomes' symbol
+" syn match   algol68BecomesSymbol	":="
+syn match   algol68BecomesSymbol	"\%([!%&+\-?^~]\|[*/<=>]\)\@1<!:="
+
+" 'equals' symbol
+" TODO: distinguish from is-defined-as
+" syn match   algol68SymbolOperator	"="
 syn match   algol68SymbolOperator	"\%([!%&+\-?^~]\|[*/<=>]\|:\)\@1<!=\%([*/<=>]\|:=\|=:\)\@!"
 
 " NOT, AND
@@ -117,9 +122,111 @@ syn match   algol68SymbolOperator	"+\*\%([*/<=>]\|:=\|=:\)\@!"
 " IS, ISNT
 syn match   algol68SymbolOperator	":/\?=:"
 
-syn match   algol68DefiningOperator	"\u[A-Z0-9]" contained
-syn match   algol68DefiningOperator	"[!%&+\-?^~][*/<=>]\?\%(:=\|=:\)\?" contained
-syn match   algol68DefiningOperator	"\%([!%&+\-?^~]\|[*/<=>]\)[*/<=>]\?\%(:=\|=:\)\?" contained
+
+" includes joined definitions, following and-also
+" '_' (Genie extension)
+syn match   algol68DefiningOperator	"\<\u[A-Z0-9_]*\>"                       contained skipwhite nextgroup=algol68IsDefinedAsSymbol
+syn match   algol68DefiningOperator	"[!%&+\-?^~*/<=>][*/<=>]\?\%(:=\|=:\)\?" contained skipwhite nextgroup=algol68IsDefinedAsSymbol
+syn match   algol68DefiningMode		"\<\u[A-Z0-9_]*\>"			 contained skipwhite nextgroup=algol68IsDefinedAsSymbol
+
+
+syn match   algol68AndAlsoSymbol	"," contained containedin=algol68OperationDeclaration,algol68PriorityDeclaration
+      \ skipwhite skipempty nextgroup=@algol68Declaration,algol68DefiningOperator,algol68AndAlsoOperatorComment
+syn match   algol68AndAlsoSymbol	"," contained containedin=algol68ModeDeclaration
+      \ skipwhite skipempty nextgroup=@algol68Declaration,algol68DefiningMode,algol68AndAlsoModeComment
+
+syn region  algol68AndAlsoOperatorComment
+      \ start="\z(\<CO\%(MMENT\)\=\>\|[#¢£]\)"
+      \ end="\z1"
+      \ skipwhite skipempty
+      \ nextgroup=@algol68Declaration,algol68DefiningOperator,algol68AndAlsoOperatorComment
+      \ contained contains=algol68Todo
+syn region  algol68AndAlsoOperatorComment
+      \ start="{"
+      \ end="}"
+      \ skipwhite skipempty
+      \ nextgroup=@algol68Declaration,algol68DefiningOperator,algol68AndAlsoOperatorComment
+      \ contained contains=algol68Todo
+syn region  algol68AndAlsoModeComment
+      \ start="\z(\<CO\%(MMENT\)\=\>\|[#¢£]\)"
+      \ end="\z1"
+      \ skipwhite skipempty
+      \ nextgroup=@algol68Declaration,algol68DefiningMode,algol68AndAlsoModeComment
+      \ contained contains=algol68Todo
+syn region  algol68AndAlsoModeComment
+      \ start="{"
+      \ end="}"
+      \ skipwhite skipempty
+      \ nextgroup=@algol68Declaration,algol68DefiningMode,algol68AndAlsoModeComment
+      \ contained contains=algol68Todo
+
+syn region  algol68OperationDeclaration
+      \ start="\<OP\>"
+      \ end="\ze;"
+      \ contains=TOP
+      \ transparent
+syn keyword algol68OperatorSymbol	OP contained containedin=algol68OperationDeclaration skipwhite nextgroup=algol68DefiningOperator
+
+syn region  algol68PriorityDeclaration
+      \ start="\<PRIO\%(RITY\)\=\>"
+      \ end="\ze;"
+      \ contains=algol68PrioritySymbol,algol68Comment,algol68PreProc
+      \ transparent
+syn match   algol68PriorityDigit	"[1-9]" contained
+syn keyword algol68PrioritySymbol	PRIO PRIORITY contained skipwhite nextgroup=algol68DefiningOperator
+
+syn region  algol68ModeDeclaration
+      \ start="\<MODE\>"
+      \ end="\ze;"
+      \ contains=TOP
+      \ transparent
+syn keyword algol68ModeSymbol	MODE contained containedin=algol68ModeDeclaration skipwhite skipempty nextgroup=algol68DefiningMode
+
+syn cluster algol68Declaration	contains=algol68ModeDeclaration,algol68OperationDeclaration,algol68PriorityDeclaration
+
+syn match   algol68IsDefinedAsSymbol	"=" contained skipwhite nextgroup=algol68PriorityDigit
+
+" look ahead for is-defined-as rather than skip any mode plan (operation declarations only)
+syn match   algol68DefiningOperator	"\<\u[A-Z0-9_]*\>\ze\s*=\%([*/<=>]\|:=\|=:\)\@!"
+      \ contained containedin=algol68OperationDeclaration skipwhite nextgroup=algol68IsDefinedAsSymbol
+syn match   algol68DefiningOperator	"[!%&+\-?^~*/<=>][*/<=>]\?\%(:=\|=:\)\?\ze\s\+=\%([*/<=>]\|:=\|=:\)\@!"
+      \ contained containedin=algol68OperationDeclaration skipwhite nextgroup=algol68IsDefinedAsSymbol
+
+syn region  algol68BriefPack
+      \ start="("
+      \ end=")"
+      \ contains=TOP
+      \ transparent
+syn region  algol68BriefBracket
+      \ start="\["
+      \ end="]"
+      \ contains=TOP
+      \ transparent
+syn region  algol68BoldPack
+      \ matchgroup=algol68Statement
+      \ start="\<BEGIN\>"
+      \ end="\<END\>"
+      \ contains=TOP
+      \ transparent
+syn region  algol68ConditionalClause
+      \ matchgroup=algol68Conditional
+      \ start="\<IF\>"
+      \ end="\<FI\>"
+      \ contains=TOP
+      \ transparent
+syn region  algol68CaseClause
+      \ matchgroup=algol68Conditional
+      \ start="\<CASE\>"
+      \ end="\<ESAC\>"
+      \ contains=TOP
+      \ transparent
+syn region  algol68DoPart
+      \ matchgroup=algol68Repeat
+      \ start="\<DO\>"
+      \ end="\<OD\>"
+      \ contains=TOP
+      \ transparent
+
 
 syn match  algol68Number	"\<\%(\%(LONG\s\+\)\+\|\%(SHORT\s\+\)\+\)\=\d\+\%(\s\+\d\+\)*\>"
 
@@ -442,7 +549,7 @@ if !exists("algol68_no_preludes")
 
 " Functions from GSL
 
-  syn keyword algol68Operator		CV RV T INV PINV MEAN DET TRACE NORM DYAD BEFORE ABOVE
+  syn match algol68Operator "\<\%(CV\|RV\|T\|INV\|PINV\|MEAN\|DET\|TRACE\|NORM\|DYAD\|BEFORE\|ABOVE\)\>"
   syn match algol68Function "\%(\%([a-z_]\|\l\d\+\)\s\+\)\@8<!\<angle\s*restrict\s*\%(pos\|symm\)\>\%(\s*[a-z0-9]\)\@!"
   syn match algol68Function "\%(\%([a-z_]\|\l\d\+\)\s\+\)\@8<!\<conical\s*p\s*\%([01]\|cylreg\|m\?half\|sph\s*reg\)\>\%(\s*[a-z0-9]\)\@!"
   syn match algol68Function "\%(\%([a-z_]\|\l\d\+\)\s\+\)\@8<!\<cholesky\s*\%(decomp\|solve\)\>\%(\s*[a-z0-9]\)\@!"
@@ -511,6 +618,15 @@ hi def link algol68SymbolOperator	algol68Operator
 hi def link algol68Todo			Todo
 hi def link algol68Type			Type
 hi def link algol68ShowTab		Error
+
+hi def link algol68OperatorSymbol	algol68Statement
+hi def link algol68PriorityDigit	algol68Number
+hi def link algol68PrioritySymbol	algol68Statement
+hi def link algol68ModeSymbol		algol68Statement
+hi def link algol68AndAlsoOperatorComment algol68Comment
+hi def link algol68AndAlsoModeComment	algol68Comment
+hi def link algol68BecomesSymbol	algol68Operator
+hi def link algol68IsDefinedAsSymbol	algol68Operator
 
 let b:current_syntax = "algol68"
 
