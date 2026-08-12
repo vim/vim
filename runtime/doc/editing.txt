@@ -1,4 +1,4 @@
-*editing.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*editing.txt*	For Vim version 9.2.  Last change: 2026 Aug 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -346,7 +346,9 @@ CTRL-^			Edit the alternate file.  Mostly the alternate file is
 				eval.c 40 ~
 
 							*v_gF*
-{Visual}[count]gF	Same as "v_gf".
+{Visual}[count]gF	Same as "v_gf", but if the highlighted text is
+			immediately followed by a colon and a number, then the
+			cursor is positioned on that line in the file.
 
 These commands are used to start editing a single file.  This means that the
 file is read into the buffer and the current file name is set.  The file that
