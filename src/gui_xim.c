@@ -190,6 +190,9 @@ static int im_preedit_trailing = 0;	// number of characters after cursor
 
 static unsigned long im_commit_handler_id  = 0;
 #  ifndef USE_GTK4
+#   ifndef GDK_KEY_VoidSymbol
+#    define GDK_KEY_VoidSymbol GDK_VoidSymbol
+#   endif
 static unsigned int  im_activatekey_keyval = GDK_KEY_VoidSymbol;
 static unsigned int  im_activatekey_state  = 0;
 #  endif
