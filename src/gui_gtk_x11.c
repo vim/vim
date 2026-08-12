@@ -1029,9 +1029,7 @@ gui_mch_start_blink(void)
 	blink_timer = timeout_add(blink_waittime, blink_cb, NULL);
 	blink_state = BLINK_ON;
 	gui_update_cursor(TRUE, FALSE);
-#if !GTK_CHECK_VERSION(3,0,0)
-	gui_mch_flush();
-#endif
+	gui_may_flush();
     }
 }
 
