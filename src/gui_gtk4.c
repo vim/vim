@@ -1896,9 +1896,11 @@ modifiers_gdk2mouse(guint state)
     return modifiers;
 }
 
+// GdkModifierType has no mask covering the mouse buttons only.
+#define ANY_BUTTON_MASK (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK \
+	| GDK_BUTTON3_MASK | GDK_BUTTON4_MASK | GDK_BUTTON5_MASK)
+
 // Track which mouse button is currently pressed for drag detection.
-// GtkEventControllerMotion's modifier state may not include button masks
-// on all backends (e.g. Wayland), so we track it ourselves.
 // -1 means no button is pressed (MOUSE_LEFT is 0x00, so can't use 0).
 static int mouse_pressed_button = -1;
 
@@ -2019,14 +2021,27 @@ mouse_repeat_timer_cb(gpointer data UNUSED)
 motion_notify_event(GtkEventControllerMotion *controller UNUSED,
 	double x, double y, gpointer data UNUSED)
 {
+    GdkEvent *event = gtk_event_controller_get_current_event(
+	    GTK_EVENT_CONTROLLER(controller));
+
+    // The button release event may have gone to another widget, e.g. a modal
+    // dialog. Forget about the pressed button when no button is down anymore,
+    // otherwise moving the mouse would be taken for a drag.
+    if (mouse_pressed_button >= 0 && event != NULL
+	    && !(gdk_event_get_modifier_state(event) & ANY_BUTTON_MASK))
+    {
+	if (motion_repeat_timer != 0)
+	{
+	    timeout_remove(motion_repeat_timer);
+	    motion_repeat_timer = 0;
+	}
+	mouse_pressed_button = -1;
+    }
+
     if (mouse_pressed_button >= 0)
     {
 	GdkModifierType state;
-	GdkEvent	*event;
 	int		w, h;
-
-	event = gtk_event_controller_get_current_event(
-		GTK_EVENT_CONTROLLER(controller));
 
 	if (event != NULL)
 	{
