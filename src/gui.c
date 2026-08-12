@@ -1864,6 +1864,10 @@ gui_set_shellsize(
     limit_screen_size();
     gui.num_cols = Columns;
     gui.num_rows = Rows;
+#ifdef USE_GTK4
+    // Keep the drawing area in sync with the size Vim is going to draw.
+    gui_gtk4_update_size();
+#endif
 
     min_width = base_width + MIN_COLUMNS * gui.char_width;
     min_height = base_height + MIN_LINES * gui.char_height;
