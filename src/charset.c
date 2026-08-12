@@ -383,8 +383,6 @@ transstr(char_u *s)
     if (res == NULL)
 	return NULL;
 
-    // Keep a tail pointer to append to, appending with STRCAT would make
-    // this loop quadratic.
     char_u *d = res;
 
     p = s;
@@ -395,7 +393,6 @@ transstr(char_u *s)
 	    c = (*mb_ptr2char)(p);
 	    if (vim_isprintc(c))
 	    {
-		// append printable multi-byte char
 		mch_memmove(d, p, (size_t)l);
 		d += l;
 	    }
@@ -409,9 +406,9 @@ transstr(char_u *s)
 	else
 	{
 	    char_u	*trs = transchar_byte(*p++);
-	    int		trs_len = (int)STRLEN(trs);
+	    size_t	trs_len = STRLEN(trs);
 
-	    mch_memmove(d, trs, (size_t)trs_len);
+	    mch_memmove(d, trs, trs_len);
 	    d += trs_len;
 	}
     }
