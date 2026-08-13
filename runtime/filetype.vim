@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2026 Aug 08
+" Last Change:		2026 Aug 13
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If the filetype can be detected from extension or file name(the final path component),
@@ -124,6 +124,9 @@ au BufNewFile,BufRead *.demo,*.dm{1,2,3,t},*.wxm,maxima-init.mac setf maxima
 
 " ObjectScript routine or assembly
 au BufNewFile,BufRead *.mac			call dist#ft#FTmac()
+
+" Argo CD configuration
+au BufNewFile,BufRead */argocd/config		setf yaml
 
 " Assembly (all kinds)
 " *.lst is not pure assembly, it has two extra columns (address, byte codes)
