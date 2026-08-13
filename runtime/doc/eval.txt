@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.2.  Last change: 2026 Aug 10
+*eval.txt*	For Vim version 9.2.  Last change: 2026 Aug 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3056,7 +3056,7 @@ v:wayland_display
 		If this is empty, then Vim is not connected to any display.
 
 					*v:windowid* *windowid-variable*
-v:windowid	When any X11/Wayland based GUI is running or when running in a
+v:windowid	When any X11 based GUI is running or when running in a
 		terminal and Vim connects to the X server (|-X|) this will be
 		set to the window ID.
 		When an MS-Windows GUI is running this will be set to the
