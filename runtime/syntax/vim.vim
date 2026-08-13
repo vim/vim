@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2026 Aug 10
+" Last Change:	   2026 Aug 12
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -2404,7 +2404,16 @@ syn match	vimBracket contained	"[\\<>]"
 syn case match
 
 " User Command Highlighting: {{{2
-syn match vimUsrCmd	contained	'\%#=1\<\u[[:alnum:]]*\%([![:space:]]\|$\)\@=' nextgroup=vimBang
+" Note: assumes command runs to EOL, no explicit | support
+
+syn match	vimUsrCmd	contained	'\%#=1\<\u[[:alnum:]]*\%([![:blank:]]\|$\)\@='			skipwhite nextgroup=vimUsrCmdBang,vimUsrCmdArgs
+syn match	vimUsrCmd_	contained	'\%#=1\%(\%(N\%[ext]\|P\%[rint]\|X\)\>\)\@!\u[[:alnum:]]*\%([![:blank:]]\|$\)\@='	skipwhite nextgroup=vimUsrCmdBang,vimUsrCmdArgs
+syn match	vimUsrCmdBang	contained	"\w\@1<=!"		 			skipwhite nextgroup=vimUsrCmdArgs
+syn region	vimUsrCmdArgs	contained
+      \ start="\s\zs\S"
+      \ skip=+\n\s*\%(\\\|["#]\\ \)+
+      \ end="$"
+      \ contains=@vimContinue
 
 " Vim user commands
 
@@ -2423,7 +2432,12 @@ syn match	vimSynColorGroup	contained	"\<\h\w*\>"	skipwhite nextgroup=vimHiKeyLis
 syn keyword	vimSynLink	contained	SynLink	skipwhite nextgroup=vimSynLinkGroup
 syn match	vimSynLinkGroup	contained	"\<\h\w*\>"	skipwhite nextgroup=vimGroup	contains=vimGroup
 
-syn cluster vimExUserCmdList contains=vimCompilerSet,vimSynColor,vimSynLink,vimSynMenu
+" runtime/syntax/vim.vim
+syn keyword	vimVim9	contained	Vim9	skipwhite nextgroup=vimSyntax
+syn keyword	vimVimL	contained	VimL	skipwhite nextgroup=vimSyntax
+syn match	vimVimFold	contained	"\<VimFold\a\>"	skipwhite nextgroup=vimSyntax
+
+syn cluster vimExUserCmdList contains=vimCompilerSet,vimSynColor,vimSynLink,vimSynMenu,vimVimFold,vimVim9,vimVimL
 
 " Errors And Warnings: {{{2
 " ====================
@@ -3342,6 +3356,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimUserCmdKey	vimCommand
  hi def link vimUserFunc	Normal
  hi def link vimUserFuncKey	vimUserFunc
+ hi def link vimUsrCmdBang	vimBang
  hi def link vimVar	Normal
  hi def link vimVarKey	vimVar
  hi def link vimVarScope	Identifier
@@ -3429,10 +3444,13 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimWincmd_	vimWincmd
 
  hi def link vimCompilerSet	vimCommand
- hi def link vimSynColor vimCommand
- hi def link vimSynLink vimCommand
+ hi def link vimSynColor	vimCommand
+ hi def link vimSynLink	vimCommand
  hi def link vimSynMenu	vimCommand
  hi def link vimSynMenuPath	vimMenuName
+ hi def link vimVimFold	vimCommand
+ hi def link vimVim9	vimCommand
+ hi def link vimVimL	vimCommand
 
 endif
 
