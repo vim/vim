@@ -158,6 +158,7 @@ static termrequest_T winpos_status = TERMREQUEST_INIT;
 
 // Request DECRQM (DEC mode) report:
 static termrequest_T decrqm_status = TERMREQUEST_INIT;
+static unsigned int decrqm_pending = 0;
 
 // Request keyboard protocol state:
 static termrequest_T rk_status = TERMREQUEST_INIT;
@@ -5391,10 +5392,12 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	{
 	    MAY_WANT_TO_LOG_THIS;
 	    LOG_TR1("Sending DECRQM requests");
+	    decrqm_pending = 0;
 	    for (int i = 0; i < (int)ARRAY_LENGTH(dec_modes); i++)
 	    {
 		vim_snprintf((char *)IObuff, IOSIZE, "\033[?%d$p", dec_modes[i]);
 		out_str(IObuff);
+		decrqm_pending |= 1U << i;
 	    }
 	    termrequest_sent(&decrqm_status);
 	    need_flush = TRUE;
@@ -5821,10 +5824,15 @@ handle_csi(
 	key_name[1] = (int)KE_IGNORE;
 
 #ifdef FEAT_TERMRESPONSE
-	// Mark the DECRQM request as answered so it is not sent again and
-	// stoptermcap() does not wait for it.
+	// Mark this DECRQM reply received; complete when all replies arrived.
 	if (decrqm_status.tr_progress == STATUS_SENT)
-	    decrqm_status.tr_progress = STATUS_GOT;
+	{
+	    for (int i = 0; i < (int)ARRAY_LENGTH(dec_modes); i++)
+		if (arg[0] == dec_modes[i])
+		    decrqm_pending &= ~(1U << i);
+	    if (decrqm_pending == 0)
+		decrqm_status.tr_progress = STATUS_GOT;
+	}
 #endif
 
 	if (setting >= 0 && setting <= 4)
