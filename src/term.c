@@ -159,6 +159,9 @@ static termrequest_T winpos_status = TERMREQUEST_INIT;
 // Request DECRQM (DEC mode) report:
 static termrequest_T decrqm_status = TERMREQUEST_INIT;
 
+// Request keyboard protocol state:
+static termrequest_T rk_status = TERMREQUEST_INIT;
+
 static termrequest_T *all_termrequests[] = {
     &crv_status,
     &u7_status,
@@ -171,6 +174,7 @@ static termrequest_T *all_termrequests[] = {
     &rcs_status,
     &winpos_status,
     &decrqm_status,
+    &rk_status,
     NULL
 };
 
@@ -3967,6 +3971,10 @@ may_send_t_RK(void)
     {
 	send_t_RK = FALSE;
 	out_str(T_CRK);
+#ifdef FEAT_TERMRESPONSE
+	if (*T_CRK != NUL)
+	    termrequest_sent(&rk_status);
+#endif
 	out_flush();
     }
 }
@@ -5749,8 +5757,13 @@ handle_csi(
     if (first == '>' && (argc == 1 || argc == 2) && trail == 'm')
     {
 	if (arg[0] == 4 && argc == 2)
+	{
 	    modify_otherkeys_state = arg[1] == 2 ? MOKS_ENABLED : MOKS_OFF;
-
+#ifdef FEAT_TERMRESPONSE
+	    if (rk_status.tr_progress == STATUS_SENT)
+		rk_status.tr_progress = STATUS_GOT;
+#endif
+	}
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;
 	*slen = csi_len;
@@ -5903,6 +5916,10 @@ handle_csi(
     // Kitty keyboard protocol status response: CSI ? flags u
     else if (first == '?' && argc == 1 && trail == 'u')
     {
+#ifdef FEAT_TERMRESPONSE
+	if (rk_status.tr_progress == STATUS_SENT)
+	    rk_status.tr_progress = STATUS_GOT;
+#endif
 	// The protocol has various "progressive enhancement flags" values, but
 	// we only check for zero and non-zero here.
 	if (arg[0] == '0')
