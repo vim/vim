@@ -691,8 +691,8 @@ draw_layer_get_texture(
 
     // Scale texture to actual size
     node = gsk_texture_scale_node_new(texture,
-	    &GRAPHENE_RECT_INIT(FILL_X(0), FILL_Y(row),
-		(da->n_cols + bleed) * gui.char_width, gui.char_height),
+		&GRAPHENE_RECT_INIT(FILL_X(0), FILL_Y(row),
+		(da->n_cols + bleed) * gui.char_width, gui.char_height + bleed),
 	    GSK_SCALING_FILTER_NEAREST);
     if (bleed)
     {
@@ -701,7 +701,7 @@ draw_layer_get_texture(
 	new = gsk_clip_node_new(node,
 		&GRAPHENE_RECT_INIT(FILL_X(0), FILL_Y(row),
 		    da->n_cols * gui.char_width + da->bleed_right,
-		    gui.char_height));
+		    gui.char_height + (!GTK_CHECK_VERSION(4,24,0))));
 	gsk_render_node_unref(node);
 	node = new;
     }
@@ -1952,6 +1952,9 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
     // First append everything that should be inverted to another snapshot, then
     // free that snapshot into a node so it can be blended (if needed).
     body_snapshot = gtk_snapshot_new();
+#if GTK_CHECK_VERSION(4,24,0)
+	gtk_snapshot_set_snap(body_snapshot, GSK_RECT_SNAP_ROUND);
+#endif
 
     for (int r = 0; r < self->n_rows; r++)
     {
@@ -1971,7 +1974,13 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 		if (l == DRAW_LAYER_OVERLAY)
 		{
 		    if (invert_snapshot == NULL)
+		    {
 			invert_snapshot = gtk_snapshot_new();
+#if GTK_CHECK_VERSION(4,24,0)
+			    gtk_snapshot_set_snap(invert_snapshot,
+				    GSK_RECT_SNAP_ROUND);
+#endif
+		    }
 		    gtk_snapshot_append_node(invert_snapshot, dlayer->node);
 		}
 		else
