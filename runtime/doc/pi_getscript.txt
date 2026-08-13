@@ -79,6 +79,16 @@ work.
 		(edit GetLatestVimScripts.dat to install your own personal
 		list of desired plugins -- see |GetLatestVimScripts_dat|)
 
+PREVENTING LOADING
+
+	If you want to use plugins, but for some reason don't wish to use
+	getscript, then you can avoid loading both the plugin and the autoload
+	portions of getscript.vim. You may do so by placing the following two
+	lines in your <.vimrc>: >
+
+		:let g:loaded_getscript       = 1
+		:let g:loaded_getscriptPlugin = 1
+<
 
 ==============================================================================
 3. GetLatestVimScripts Usage				*glvs-usage* *:GLVS*
