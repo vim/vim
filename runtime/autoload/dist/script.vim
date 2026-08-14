@@ -4,7 +4,7 @@ vim9script
 # Invoked from "scripts.vim" in 'runtimepath'
 #
 # Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2026 Apr 09
+# Last Change:	2026 Aug 13
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 export def DetectFiletype()
@@ -260,8 +260,16 @@ def DetectFromText(line1: string)
   var line4 = getline(4)
   var line5 = getline(5)
 
+  # Logrotate configuration.  Keep content detection bounded because this is
+  # tried for every otherwise unclassified text file.
+  const logrotate_path = '\%("\%([^"\\]\|\\.\)\+"\|''\%([^''\\]\|\\.\)\+''\|\%(/\|[~]/\)\%([^[:space:]{}#\\]\|\\.\)\+\)'
+  const logrotate_stanza = '^\s*' .. logrotate_path .. '\%(\s\+' .. logrotate_path .. '\)*\s*{\s*\%(#.*\)\?$'
+
+  if strchars(line1) <= 8192 && line1 =~# logrotate_stanza
+    setl ft=logrotate
+
   # Bourne-like shell scripts: sh ksh bash bash2
-  if line1 =~ '^:$'
+  elseif line1 =~ '^:$'
     call dist#ft#SetFileTypeSH(line1)
 
   # Z shell scripts

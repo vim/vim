@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Aug 10
+# Last Change:		2026 Aug 13
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -1738,6 +1738,14 @@ export def Detect_UCI_statements(): bool
   \         )
 enddef
 
+# Detect direct children of a logrotate.d directory.  The autocmd pattern also
+# matches nested paths, so the immediate parent must be checked here.
+export def FTlogrotate()
+  if fnamemodify(expand('<amatch>'), ':h:t') ==# 'logrotate.d'
+    setf logrotate
+  endif
+enddef
+
 export def DetectFromName()
   const amatch = expand("<amatch>")
   const name = fnamemodify(amatch, ':t')
@@ -2430,6 +2438,8 @@ const ft_from_ext = {
   "lt": "lite",
   # Livebook
   "livemd": "livebook",
+  # Logrotate configuration
+  "logrotate": "logrotate",
   # Logtalk
   "lgt": "logtalk",
   # LOTOS
@@ -3372,6 +3382,8 @@ const ft_from_name = {
   "lfrc": "lf",
   # Lilo: Linux loader
   "lilo.conf": "lilo",
+  # Logrotate configuration
+  "logrotate.conf": "logrotate",
   # SBCL implementation of Common Lisp
   "sbclrc": "lisp",
   ".sbclrc": "lisp",

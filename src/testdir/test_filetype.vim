@@ -84,7 +84,8 @@ enddef
 " First one is checking that these files have no filetype.
 def s:GetFilenameChecks(): dict<list<string>>
   return {
-    none: ['bsd', 'some-bsd'],
+    none: ['bsd', 'some-bsd', '/etc/logrotate.d/nested/application',
+      'C:/ProgramData/logrotate/logrotate.d/nested/application', '/var/lib/logrotate/status'],
     8th: ['file.8th'],
     a2ps: ['/etc/a2ps.cfg', '/etc/a2ps/file.cfg', 'a2psrc', '.a2psrc', 'any/etc/a2ps.cfg', 'any/etc/a2ps/file.cfg'],
     a65: ['file.a65'],
@@ -195,7 +196,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     codeowners: ['CODEOWNERS'],
     conaryrecipe: ['file.recipe'],
     concerto: ['file.cto'],
-    conf: ['auto.master', 'file.conf', 'texdoc.cnf', '.x11vncrc', '.chktexrc', '.ripgreprc', 'ripgreprc', 'file.ctags'],
+    conf: ['auto.master', 'file.conf', 'application.conf', 'texdoc.cnf', '.x11vncrc', '.chktexrc', '.ripgreprc', 'ripgreprc', 'file.ctags'],
     config: ['/etc/hostname.file', 'any/etc/hostname.file', 'configure.in', 'configure.ac', 'file.at', 'aclocal.m4'],
     confini: ['pacman.conf', 'paru.conf', 'mpv.conf', 'any/.aws/config', 'any/.aws/credentials', 'any/.aws/cli/alias', 'file.nmconnection',
               'any/.gnuradio/grc.conf', 'any/gnuradio/config.conf', 'any/gnuradio/conf.d/modtool.conf'],
@@ -483,6 +484,9 @@ def s:GetFilenameChecks(): dict<list<string>>
     logcheck: ['/etc/logcheck/file.d-some/file', '/etc/logcheck/file.d/file', 'any/etc/logcheck/file.d-some/file', 'any/etc/logcheck/file.d/file'],
     loginaccess: ['/etc/login.access', 'any/etc/login.access'],
     logindefs: ['/etc/login.defs', 'any/etc/login.defs'],
+    logrotate: ['/etc/logrotate.conf', 'C:/ProgramData/logrotate/logrotate.conf',
+      '/etc/logrotate.d/application', 'C:/ProgramData/logrotate/logrotate.d/application',
+      '/tmp/application.logrotate', '/tmp/application.logrotate.conf'],
     logtalk: ['file.lgt'],
     lotos: ['file.lot', 'file.lotos'],
     lout: ['file.lou', 'file.lout'],
@@ -1078,7 +1082,13 @@ enddef
 " Content lines that should not result in filetype detection
 def s:GetFalsePositiveChecks(): dict<list<list<string>>>
   return {
-      '': [['test execve("/usr/bin/pstree", ["pstree"], 0x7ff0 /* 63 vars */) = 0']],
+      '': [['test execve("/usr/bin/pstree", ["pstree"], 0x7ff0 /* 63 vars */) = 0'],
+           ['application.conf'],
+           ['/var/log/application.log'],
+           ['function deploy() {'],
+           ['logrotate state -- version 1'],
+           ['logrotate state -- version 2'],
+           ['/' .. repeat('\!', 4094) .. 'xx {']],
       }
 enddef
 
@@ -1165,6 +1175,11 @@ def s:GetScriptChecks(): dict<list<list<string>>>
     bpftrace:  [['#!/path/bpftrace']],
     vim:    [['#!/path/vim']],
     ed:     [['#!/usr/bin/ed -f']],
+    logrotate: [['/var/log/application.log {'],
+            ['  ~/logs/application.log { # project policy'],
+            ['"/var/log/application output.log" /var/log/second.log {'],
+            ['/var/log/application\ output.log {'],
+            ['/' .. repeat('\!', 4094) .. 'x {']],
   }
 enddef
 

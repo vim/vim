@@ -64,6 +64,10 @@ au BufNewFile,BufRead */doc/*.txt
 " Detect by name
 au BufNewFile,BufRead *				call dist#ft#DetectFromName()
 
+" Logrotate configuration
+au BufNewFile,BufRead *.logrotate.conf		setf logrotate
+au BufNewFile,BufRead */logrotate.d/*		call dist#ft#FTlogrotate()
+
 " Abaqus or Trasys
 au BufNewFile,BufRead *.inp			call dist#ft#Check_inp()
 
