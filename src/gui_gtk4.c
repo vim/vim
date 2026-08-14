@@ -805,6 +805,8 @@ gui_mch_open(void)
 
     gtk_window_present(GTK_WINDOW(gui.mainwin));
 
+    // Undo the 80x24 clamp above, gui_init() asks for this size next.  Drain
+    // the pending allocation before that, or gui_resize_shell() overwrites it.
     gui_mch_update();
     Columns = columns;
     Rows = rows;
