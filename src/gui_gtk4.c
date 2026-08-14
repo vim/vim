@@ -256,6 +256,7 @@ static void mainwin_destroy_cb(GObject *object, gpointer data);
 static gboolean delete_event_cb(GtkWindow *window, gpointer data);
 static int query_pointer_pos(int *x, int *y, GdkModifierType *state);
 static void mainwin_fullscreened_cb(GObject *obj, GParamSpec *pspec, gpointer user_data);
+static void set_form_size(int width, int height);
 static void drawarea_realize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_unrealize_cb(GtkWidget *widget, gpointer data);
 #if defined(FEAT_IMAGE)
@@ -770,11 +771,6 @@ gui_mch_open(void)
     pixel_width  += get_menu_tool_width();
     pixel_height += get_menu_tool_height();
 
-    // Dimensions may be smaller because of client side decorations, we handle
-    // that after we present the window.
-    gtk_window_set_default_size(GTK_WINDOW(gui.mainwin),
-	    pixel_width, pixel_height);
-
     if (foreground_argument != NULL)
 	fg_pixel = gui_get_color((char_u *)foreground_argument);
     if (fg_pixel == INVALCOLOR)
@@ -804,15 +800,14 @@ gui_mch_open(void)
 		     G_CALLBACK(mainwin_destroy_cb), NULL);
     // Resize is handled by GtkForm's size_allocate callback.
 
+    set_form_size((int)pixel_width - get_menu_tool_width(),
+	    (int)pixel_height - get_menu_tool_height());
+
     gtk_window_present(GTK_WINDOW(gui.mainwin));
 
-    // Update so that we get the "gui.decor_height", which we can then use to
-    // set the exact dimensions of the window.
     gui_mch_update();
     Columns = columns;
     Rows = rows;
-    gtk_window_set_default_size(GTK_WINDOW(gui.mainwin),
-	    pixel_width, pixel_height + gui.decor_height);
 
     // Make sure the drawing area gets keyboard focus.
     gtk_widget_grab_focus(gui.drawarea);
@@ -953,12 +948,19 @@ gui_gtk_init_decor_height(void)
     gui.decor_height = h;
 }
 
-    void
-gui_mch_set_shellsize(int width, int height,
-	int min_width UNUSED, int min_height UNUSED,
-	int base_width UNUSED, int base_height UNUSED,
-	int direction UNUSED)
+/*
+ * Ask for the form widget, and thus the shell, to become "width" by "height"
+ * pixels.
+ */
+    static void
+set_form_size(int width, int height)
 {
+    // Nothing to do when the form widget already has this size: no allocation
+    // would follow and the size request below would never be dropped.
+    if (gtk_widget_get_width(gui.formwin) == width
+	    && gtk_widget_get_height(gui.formwin) == height)
+	return;
+
     // Remember the size the form widget is supposed to get. An allocation
     // that arrives before the compositor has answered this request still has
     // the previous size and must not be used.
@@ -966,14 +968,26 @@ gui_mch_set_shellsize(int width, int height,
     gui.pending_form_h = height;
     gui.pending_form_skip = 1;
 
-    width += get_menu_tool_width();
-    height += get_menu_tool_height();
-
     // GtkWindow default size also includes client side decorations, so must
-    // include it also.
-    height += gui.decor_height;
+    // include it also.  It also keeps the natural width of the toolbar from
+    // deciding the width.
+    gtk_window_set_default_size(GTK_WINDOW(gui.mainwin),
+	    width + get_menu_tool_width(),
+	    height + get_menu_tool_height() + gui.decor_height);
 
-    gtk_window_set_default_size(GTK_WINDOW(gui.mainwin), width, height);
+    // The window drops a request made while it is being presented, and
+    // "gui.decor_height" is not known before that.  A size request on the form
+    // widget is honoured then; it is dropped again once the size was given.
+    gtk_widget_set_size_request(gui.formwin, width, height);
+}
+
+    void
+gui_mch_set_shellsize(int width, int height,
+	int min_width UNUSED, int min_height UNUSED,
+	int base_width UNUSED, int base_height UNUSED,
+	int direction UNUSED)
+{
+    set_form_size(width, height);
 
     gui_mch_update();
 }
