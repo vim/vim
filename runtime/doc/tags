@@ -6752,6 +6752,7 @@ clipboard-providers-no-clipboard	eval.txt	/*clipboard-providers-no-clipboard*
 clipboard-providers-paste	eval.txt	/*clipboard-providers-paste*
 clipboard-providers-plus	eval.txt	/*clipboard-providers-plus*
 clipboard-providers-textlock	eval.txt	/*clipboard-providers-textlock*
+clipboard-providers-wsl	eval.txt	/*clipboard-providers-wsl*
 clipboard-unnamed	options.txt	/*clipboard-unnamed*
 clipboard-unnamedplus	options.txt	/*clipboard-unnamedplus*
 clojure-indent	indent.txt	/*clojure-indent*
