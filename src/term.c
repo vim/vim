@@ -163,22 +163,6 @@ static unsigned int decrqm_pending = 0;
 // Request keyboard protocol state:
 static termrequest_T rk_status = TERMREQUEST_INIT;
 
-static termrequest_T *all_termrequests[] = {
-    &crv_status,
-    &u7_status,
-    &xcc_status,
-# ifdef FEAT_TERMINAL
-    &rfg_status,
-# endif
-    &rbg_status,
-    &rbm_status,
-    &rcs_status,
-    &winpos_status,
-    &decrqm_status,
-    &rk_status,
-    NULL
-};
-
 // The t_8u code may default to a value but get reset when the term response is
 // received.  To avoid redrawing too often, only redraw when t_8u is not reset
 // and it was supposed to be written.  Unless t_8u was set explicitly.
@@ -3146,31 +3130,6 @@ termrequest_sent(termrequest_T *status)
 {
     status->tr_progress = STATUS_SENT;
     status->tr_start = time(NULL);
-}
-
-/*
- * Return TRUE if any of the requests are in STATUS_SENT.
- */
-    static int
-termrequest_any_pending(void)
-{
-    int	    i;
-    time_t  now = time(NULL);
-
-    for (i = 0; all_termrequests[i] != NULL; ++i)
-    {
-	if (all_termrequests[i]->tr_progress == STATUS_SENT)
-	{
-	    if (all_termrequests[i]->tr_start > 0 && now > 0
-				    && all_termrequests[i]->tr_start + 2 < now)
-		// Sent the request more than 2 seconds ago and didn't get a
-		// response, assume it failed.
-		all_termrequests[i]->tr_progress = STATUS_FAIL;
-	    else
-		return TRUE;
-	}
-    }
-    return FALSE;
 }
 
 static int winpos_x = -1;
