@@ -3060,6 +3060,11 @@ compile_assign_list_check_rhs_type(cctx_T *cctx, cac_T *cac)
 		  TYPECHK_TUPLE_OK, -1, 0, cctx, FALSE, FALSE) == FAIL)
 	return FAIL;
 
+    // The check accepts both a list and a tuple. Keep "any", making it a list
+    // would reject a tuple later on.
+    if (stacktype->tt_type == VAR_ANY)
+	set_type_on_stack(cctx, &t_any, 0);
+
     if (stacktype->tt_type == VAR_TUPLE)
     {
 	if (stacktype->tt_argcount != 1)

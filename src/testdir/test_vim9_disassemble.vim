@@ -656,6 +656,7 @@ def Test_disassemble_list_assign()
         '\d\+ CHECKTYPE string stack\[-1\] var 2\_s*' ..
         '\d\+ STORE $1\_s*' ..
         '\d\+ SLICE 2\_s*' ..
+        '\d\+ CHECKTYPE list<any> stack\[-1\] var 3\_s*' ..
         '\d\+ STORE $2\_s*' ..
         '\d\+ RETURN void',
         res)

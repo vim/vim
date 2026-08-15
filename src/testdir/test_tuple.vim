@@ -632,6 +632,47 @@ func Test_multi_assign_from_tuple()
   END
   call v9.CheckSourceSuccess(lines)
 
+  " The rest gets the type of the remaining items, not of the whole tuple
+  let lines =<< trim END
+    vim9script
+    def Fn()
+      var t: tuple<dict<any>, list<any>> = ({}, [])
+      var [a; b] = t
+      assert_equal('tuple<list<any>>', typename(b))
+      b = ([],)
+    enddef
+    Fn()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " The rest of a tuple literal also gets the remaining item types
+  let lines =<< trim END
+    vim9script
+    def Fn()
+      var [a; b] = (true, false, true)
+      assert_equal((false, true), b)
+      assert_equal('tuple<bool, bool>', typename(b))
+    enddef
+    Fn()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " The rest of a value with type "any" can be a tuple
+  let lines =<< trim END
+    vim9script
+    var d: dict<tuple<dict<any>, list<any>>>
+    def Fn(): tuple<dict<any>, list<any>>
+      return ({}, [])
+    enddef
+    def Test()
+      var [a; b] = d->get('a', (-1, {}, []))
+      b = Fn()
+      assert_equal('tuple<dict<any>, list<any>>', typename(b))
+    enddef
+    Test()
+  END
+  call v9.CheckSourceSuccess(lines)
+
   let lines =<< trim END
     VAR [v1, v2] = ('a', 'b', 'c')
   END
