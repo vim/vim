@@ -388,4 +388,22 @@ func Test_overlong_utf8_cells()
   bwipe!
 endfunc
 
+func Test_isprint_leading_byte()
+  new
+  let save_isprint = &isprint
+  " 226 is the leading byte of U+222B, which must not be affected.
+  set isprint+=^226
+  call setline(1, "∫")
+  redraw
+  call assert_equal("∫", ScreenLines(1, 1)[0])
+
+  " U+00E2 has the character value 226 and is still excluded.
+  call setline(1, "â")
+  redraw
+  call assert_equal('<e2>', ScreenLines(1, 4)[0])
+
+  let &isprint = save_isprint
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
