@@ -66,4 +66,7 @@ int cmp_keyvalue_value_n(const void *a, const void *b);
 int cmp_keyvalue_value_i(const void *a, const void *b);
 int cmp_keyvalue_value_ni(const void *a, const void *b);
 void *mergesort_list(void *head, void *(*get_next)(void *), void (*set_next)(void *, void *), void *(*get_prev)(void *), void (*set_prev)(void *, void *), int (*compare)(const void *, const void *));
+long base64_encode_buf(char_u *dst, const char_u *src, size_t len);
+char_u *base64_encode(const char_u *data, size_t len);
+int base64_decode(const char_u *data, size_t len, garray_T *out);
 /* vim: set ft=c : */
