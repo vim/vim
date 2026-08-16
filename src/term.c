@@ -3980,35 +3980,6 @@ may_send_t_RK(void)
     }
 }
 
-#ifdef FEAT_TERMRESPONSE
-/*
- * Flush terminal mode changes and wait for the response to T_CRK.  Since
- * terminal responses are ordered, receiving it also consumes earlier replies.
- */
-    static void
-termresponse_barrier(void)
-{
-    int count = 0;
-
-    send_t_RK = FALSE;
-    if (can_get_termresponse() && *T_CRK != NUL)
-    {
-	out_str(T_CRK);
-	termrequest_sent(&rk_status);
-	out_flush();
-	while (termrequest_any_pending() && count++ < 10)
-	{
-	    (void)vpeekc_nomap();
-	    if (termrequest_any_pending())
-		ui_delay(10L, FALSE);
-	}
-	check_for_codes_from_term();
-    }
-    else
-	out_flush();
-}
-#endif
-
 /*
  * Set the terminal to TMODE_RAW (for Normal mode) or TMODE_COOK (for external
  * commands and Ex mode).
@@ -4035,10 +4006,21 @@ settmode(tmode_T tmode)
      */
     if (tmode != cur_tmode)
     {
-	if (tmode != TMODE_RAW)
+#ifdef FEAT_TERMRESPONSE
+# ifdef FEAT_GUI
+	if (!gui.in_use && !gui.starting)
+# endif
 	{
-	    mch_setmouse(FALSE);	// switch mouse off
+	    // May need to check for T_CRV response and termcodes, it
+	    // doesn't work in Cooked mode, an external program may get
+	    // them.
+	    if (tmode != TMODE_RAW && termrequest_any_pending())
+		(void)vpeekc_nomap();
+	    check_for_codes_from_term();
 	}
+#endif
+	if (tmode != TMODE_RAW)
+	    mch_setmouse(FALSE);	// switch mouse off
 
 	// Disable bracketed paste and modifyOtherKeys in cooked mode.
 	// Avoid doing this too often, on some terminals the codes are not
@@ -4060,18 +4042,11 @@ settmode(tmode_T tmode)
 		out_str_t_TI();	// possibly enables modifyOtherKeys
 	    }
 	}
-#ifdef FEAT_TERMRESPONSE
-	if (tmode != TMODE_RAW)
-	    termresponse_barrier();
-	else
-#endif
-	    out_flush();
-
+	out_flush();
 	mch_settmode(tmode);	// machine specific function
 	cur_tmode = tmode;
 	if (tmode == TMODE_RAW)
 	    setmouse();		// may switch mouse on
-
 	out_flush();
     }
 #ifdef FEAT_TERMRESPONSE
@@ -4124,6 +4099,29 @@ stoptermcap(void)
     if (!termcap_active)
 	return;
 
+#ifdef FEAT_TERMRESPONSE
+# ifdef FEAT_GUI
+    if (!gui.in_use && !gui.starting)
+# endif
+    {
+	// May need to discard T_CRV, T_U7 or T_RBG response.
+	if (termrequest_any_pending())
+	{
+# ifdef UNIX
+	    // Give the terminal a chance to respond.
+	    mch_delay(100L, 0);
+# endif
+# ifdef TCIFLUSH
+	    // Discard data received but not read.
+	    if (exiting)
+		tcflush(fileno(stdin), TCIFLUSH);
+# endif
+	}
+	// Check for termcodes first, otherwise an external program may
+	// get them.
+	check_for_codes_from_term();
+    }
+#endif
     MAY_WANT_TO_LOG_THIS;
 
 #if defined(UNIX) || defined(VMS)
@@ -4134,6 +4132,8 @@ stoptermcap(void)
 
     out_str(T_BD);			// disable bracketed paste mode
     out_str(T_KE);			// stop "keypad transmit" mode
+    out_flush();
+    termcap_active = FALSE;
 
     // Output t_te before t_TE, t_te may switch between main and alternate
     // screen and following codes may work on the active screen only.
@@ -4151,14 +4151,8 @@ stoptermcap(void)
     cursor_on();			// just in case it is still off
     out_str_t_TE();			// stop "raw" mode, modifyOtherKeys and
 					// Kitty keyboard protocol
-#ifdef FEAT_TERMRESPONSE
-    termresponse_barrier();
-#else
-    out_flush();
-#endif
-
-    termcap_active = FALSE;
     screen_start();			// don't know where cursor is now
+    out_flush();
 }
 
 #if defined(FEAT_TERMRESPONSE)
