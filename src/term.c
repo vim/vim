@@ -3981,32 +3981,28 @@ may_send_t_RK(void)
 }
 
 #ifdef FEAT_TERMRESPONSE
-static int barrier_pending = false;
-
 /*
- * Flush terminal mode changes and wait for DA1 response.
-   Term responses are ordered so receiving also consumes earlier replies.
+ * Flush terminal mode changes and wait for the response to T_CRK.  Since
+ * terminal responses are ordered, receiving it also consumes earlier replies.
  */
-static void
+    static void
 termresponse_barrier(void)
 {
     int count = 0;
 
-    send_t_RK = false;
-    if (can_get_termresponse())
+    send_t_RK = FALSE;
+    if (can_get_termresponse() && *T_CRK != NUL)
     {
-	barrier_pending = false;
-	out_str((char_u *)"\033[c");
+	out_str(T_CRK);
+	termrequest_sent(&rk_status);
 	out_flush();
-
-	while (barrier_pending && count++ < 10)
+	while (termrequest_any_pending() && count++ < 10)
 	{
 	    (void)vpeekc_nomap();
-	    if (barrier_pending)
-		ui_delay(10L, false);
+	    if (termrequest_any_pending())
+		ui_delay(10L, FALSE);
 	}
 	check_for_codes_from_term();
-	barrier_pending = false;
     }
     else
 	out_flush();
@@ -5811,9 +5807,7 @@ handle_csi(
     else if (first == '?' && trail == 'c')
     {
 	LOG_TRN("Received DA1 response: %s", tp);
-#ifdef FEAT_TERMRESPONSE
-	barrier_pending = false;
-#endif
+
 	*slen = csi_len;
 #ifdef FEAT_EVAL
 	set_vim_var_string(VV_TERMDA1, tp, *slen);
