@@ -176,9 +176,6 @@ endfunc
 func CheckCopyPaste()
   call setline(1, ['copy this', ''])
   normal 1G0"*y$
-  " The selection may not be available right away after connecting to the X
-  " server, the put below would then throw E353.
-  call WaitForAssert({-> assert_equal('copy this', getreg('*'))})
   normal j"*p
   call assert_equal('copy this', getline(2))
 endfunc
@@ -189,20 +186,15 @@ func Test_xrestore()
 
   let display = $DISPLAY
   new
-  " Restore the display even when a check fails, otherwise the retry runs
-  " without a connection to the X server.
-  try
-    call CheckCopyPaste()
+  call CheckCopyPaste()
 
-    xrestore
-    call CheckCopyPaste()
+  xrestore
+  call CheckCopyPaste()
 
-    exe "xrestore " .. display
-    call CheckCopyPaste()
-  finally
-    exe "xrestore " .. display
-    bwipe!
-  endtry
+  exe "xrestore " .. display
+  call CheckCopyPaste()
+
+  bwipe!
 endfunc
 
 " Test for 'pastetoggle'
