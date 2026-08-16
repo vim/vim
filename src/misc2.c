@@ -3318,7 +3318,7 @@ mergesort_list(
 }
 
 static const char_u base64_table[] =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 static char_u base64_dec_table[256];
 
@@ -3426,7 +3426,7 @@ base64_decode(const char_u *data, size_t len, garray_T *out)
 	int_u sextet_d = base64_dec_table[(char_u)data[i++]];
 
 	if (sextet_a == 0xFF || sextet_b == 0xFF || sextet_c == 0xFF
-							|| sextet_d == 0xFF)
+		|| sextet_d == 0xFF)
 	{
 	    semsg(_(e_invalid_argument_str), data);
 	    ga_clear(out);
@@ -3434,7 +3434,7 @@ base64_decode(const char_u *data, size_t len, garray_T *out)
 	}
 
 	int_u triple = (sextet_a << 18) | (sextet_b << 12)
-						| (sextet_c << 6) | sextet_d;
+	    | (sextet_c << 6) | sextet_d;
 
 	if (j < decoded_len)
 	{
@@ -3452,10 +3452,10 @@ base64_decode(const char_u *data, size_t len, garray_T *out)
 	    j++;
 	}
 
-        if (j == decoded_len)
+	if (j == decoded_len)
 	{
 	    if ((data[len - 2] == '=' && ((sextet_b & 0xF) != 0))
-		|| ((data[len - 1] == '=') && ((sextet_c & 0x3) != 0)))
+		    || ((data[len - 1] == '=') && ((sextet_c & 0x3) != 0)))
 	    {
 		semsg(_(e_invalid_argument_str), data);
 		ga_clear(out);
