@@ -1988,6 +1988,7 @@ normalize_long_options(mparm_T *parmp)
 	    // An argument can add at most one pointer.
 	    normalized_argv = ALLOC_MULT(char *, argc * 2 + 1);
 	    normalized_options = ALLOC_CLEAR_MULT(char *, argc);
+
 	    if (normalized_argv == NULL || normalized_options == NULL)
 		mch_exit(2);
 	    for (j = 0; j <= i; ++j)
@@ -1999,11 +2000,14 @@ normalize_long_options(mparm_T *parmp)
 	if (equal != NULL)
 	{
 	    normalized_options[normalized_option_count] =
-		vim_strnsave((char_u *)argv[i], (size_t)(equal - argv[i]));
+		(char *)vim_strnsave((char_u *)argv[i],
+			(size_t)(equal - argv[i]));
+
 	    if (normalized_options[normalized_option_count] == NULL)
 		mch_exit(2);
+
 	    normalized_argv[j - 1] =
-		(char *)normalized_options[normalized_option_count++];
+		normalized_options[normalized_option_count++];
 	    normalized_argv[j++] = equal + 1;
 	}
 	if (type == LONGOPT_REMOTE)
