@@ -985,6 +985,105 @@ func Test_v_argv()
   call assert_equal(['arg1', '--cmd', 'echo v:argv', '--cmd', 'q'']'], list[idx:])
 endfunc
 
+func s:RunLongOption(cmd, opt, val, eq)
+  let opt = a:opt->shellescape()
+  let val = a:val->shellescape()
+  let arg = a:eq
+    \ ? $'{a:opt}={a:val}'->shellescape()
+    \ : $'{opt} {val}'
+  let output = $'{a:cmd} {arg}'->system()
+
+  return [v:shell_error, output]
+endfunc
+
+func s:RunLongOptionArgv(cmd, args)
+  let argv_file = 'Xlong_option_argv'
+  call delete(argv_file)
+
+  let write_argv = $'call writefile([string(argv())], "{argv_file}")'
+  let write_arg = write_argv->shellescape()
+  let args = copy(a:args)
+  call map(args, 'shellescape(v:val)')
+  let args = join(args, ' ')
+  let output = $'{a:cmd} --cmd {write_arg} {args}'->system()
+  let status = v:shell_error
+  call assert_equal(0, status, output)
+
+  if status != 0 || !filereadable(argv_file)
+    call delete(argv_file)
+
+    return []
+  endif
+  let argv = readfile(argv_file)[0]->eval()
+
+  call delete(argv_file)
+
+  return argv
+endfunc
+
+func Test_longopts_keyval()
+  CheckNotGui
+  let command = printf('%s -es -X -Nu NONE -i NONE -n', GetVimCommand())
+  let quit = printf('-c %s', shellescape('qa!'))
+
+  " regular long option.
+  let separate = s:RunLongOption($'{command} {quit}',
+        \ '--cmd', 'let g:x = 1', v:false)
+  let equal = s:RunLongOption($'{command} {quit}',
+        \ '--cmd', 'let g:x = 1', v:true)
+  call assert_equal(separate, equal, '--cmd')
+  let result = s:RunLongOption($'{command} {quit}', '--cmd',
+        \ 'call writefile(["ok"], "Xlongopt_cmd")', v:true)
+  call assert_equal([0, ''], result)
+  call assert_equal(['ok'], readfile('Xlongopt_cmd'))
+  call delete('Xlongopt_cmd')
+
+  " Keep v:argv as originally invoked.
+  let vargv_file = 'Xlongopt_vargv'
+  let write_vargv = $'call writefile([string(v:argv)], "{vargv_file}")'
+  let result = s:RunLongOption($'{command} {quit}', '--cmd',
+        \ write_vargv, v:true)
+  call assert_equal([0, ''], result)
+  let vargv = readfile(vargv_file)[0]->eval()
+  call assert_true(index(vargv, $'--cmd={write_vargv}') >= 0)
+  call delete(vargv_file)
+
+  " Split on first = only; option names are case-insensitive.
+  let argv = s:RunLongOptionArgv($'{command} {quit}',
+        \ ['--StArTuPtImE=A=B'])
+  call assert_equal([], argv)
+  call assert_true(filereadable('A=B'))
+  call delete('A=B')
+
+  " '--' ends options.
+  let argv = s:RunLongOptionArgv($'{command} {quit}',
+        \ ['--', '--log=Xval'])
+  call assert_equal(['--log=Xval'], argv)
+
+  if has('clientserver')
+    let servername = $'Xlongopts{getpid()}'
+
+    " Early-init long option.
+    let separate = s:RunLongOption($'{command} {quit}',
+          \ '--servername', '', v:false)
+    let equal = s:RunLongOption($'{command} {quit}',
+          \ '--servername', '', v:true)
+    call assert_equal(separate, equal, '--servername')
+    let argv = s:RunLongOptionArgv($'{command} {quit}',
+          \ [$'--servername={servername}', 'Xfile'])
+    call assert_equal(['Xfile'], argv)
+
+    let remote_command = $'{command} --servername {servername} {quit}'
+
+    " --remote-* sub-options.
+    let separate = s:RunLongOption(remote_command,
+          \ '--remote-wait-tab-silent', 'Xval', v:false)
+    let equal = s:RunLongOption(remote_command,
+          \ '--remote-wait-tab-silent', 'Xval', v:true)
+    call assert_equal(separate, equal, 'remote combo')
+  endif
+endfunc
+
 " Test for the "-r" recovery mode option
 func Test_r_arg()
   " Can't catch the output of gvim.
