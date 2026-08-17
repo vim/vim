@@ -43,7 +43,7 @@ _EOVERS
 }
 
 #
-# initialisations
+# initializations
 #
 ($program = $0) =~ s,.*/,,;
 

@@ -26468,7 +26468,7 @@ Solution:   Update #ifdefs. (Ken Takata, closes #9709)
 Files:      src/main.c, src/os_unix.c, src/pty.c, src/vim.h
 
 Patch 8.2.4317
-Problem:    MS-Windows: Vim exits when Python 3 initialisation fails.
+Problem:    MS-Windows: Vim exits when Python 3 initialization fails.
 Solution:   Hook into the exit() function to recover from the failure.
             (Ken Takata, closes #9710)
 Files:      runtime/doc/if_pyth.txt, src/if_python3.c, src/os_win32.c,

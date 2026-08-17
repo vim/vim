@@ -924,7 +924,7 @@ struct ufuncs cw_funcs = { cur_val, 0, 0 };
 struct ufuncs cb_funcs = { cur_val, 0, 1 };
 
 /*
- * VIM_init(): Vim-specific initialisation.
+ * VIM_init(): Vim-specific initialization.
  * Make the magical main::curwin and main::curbuf variables
  */
     static void

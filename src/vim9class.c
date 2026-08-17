@@ -57,7 +57,7 @@ class_cleared(class_T *cl)
  * Parse a member declaration, both object and class member.
  * Returns OK or FAIL.  When OK then "varname_end" is set to just after the
  * variable name and "type_ret" is set to the declared or detected type.
- * "init_expr" is set to the initialisation expression (allocated), if there is
+ * "init_expr" is set to the initialization expression (allocated), if there is
  * one.  For an interface "init_expr" is NULL.
  */
     static int

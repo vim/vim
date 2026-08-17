@@ -102,7 +102,7 @@ main
 #  endif
 
     /*
-     * Do any system-specific initialisations.  These can NOT use IObuff or
+     * Do any system-specific initializations.  These can NOT use IObuff or
      * NameBuff.  Thus emsg2() cannot be called!
      */
     mch_early_init();
@@ -145,7 +145,7 @@ main
 #  endif
 
     /*
-     * Various initialisations #1 shared with tests.
+     * Various initializations #1 shared with tests.
      */
     common_init_1();
 
@@ -190,7 +190,7 @@ main
 #  endif
 
     /*
-     * Various initialisations #2 shared with tests.
+     * Various initializations #2 shared with tests.
      */
     common_init_2(&params);
 
@@ -443,7 +443,7 @@ main
 #  ifdef FEAT_MZSCHEME
     /*
      * Newer version of MzScheme (Racket) require earlier (trampolined)
-     * initialisation via scheme_main_setup.
+     * initialization via scheme_main_setup.
      * Implement this by initialising it as early as possible
      * and splitting off remaining Vim main into vim_main2().
      * Do source startup scripts, so that 'mzschemedll' can be set.
@@ -982,7 +982,7 @@ vim_main2(void)
 }
 
 /*
- * Initialisation #1 shared by main() and some tests.
+ * Initialization #1 shared by main() and some tests.
  */
     void
 common_init_1(void)
@@ -1011,7 +1011,7 @@ common_init_1(void)
 
 
 /*
- * Initialisation #2 shared by main() and some tests.
+ * Initialization #2 shared by main() and some tests.
  */
     void
 common_init_2(mparm_T *paramp)

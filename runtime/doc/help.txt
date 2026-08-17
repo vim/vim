@@ -116,7 +116,7 @@ General subjects ~
 |uganda.txt|	Vim distribution conditions and what to do with your money
 
 Basic editing ~
-|starting.txt|	starting Vim, Vim command arguments, initialisation
+|starting.txt|	starting Vim, Vim command arguments, initialization
 |editing.txt|	editing and writing files
 |motion.txt|	commands for moving around
 |scroll.txt|	scrolling the text in the window

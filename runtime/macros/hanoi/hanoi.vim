@@ -19,7 +19,7 @@ map e "fy2l
 map E "hp
 map F "hy2l
 
-" initialisations:
+" initializations:
 " KM	cleanup buffer
 " Y	create tower of desired height
 " NOQ	copy it and insert a T

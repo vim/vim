@@ -101,7 +101,7 @@ map z ,^,&,*,&<1,*<2
 "
 "  ----- END of macros that can be used by the human -----
 "
-"  ----- Initialisation -----
+"  ----- Initialization -----
 "
 map ,- :s/./-/g
 map ,o oPut 'X's in the left box, then hit 'C' or 'R'
@@ -114,7 +114,7 @@ map )1 o-    JOHN CONWAY     --....................--....................-
 map )2 o-       LIVES        --....................--....................-
 "
 "
-" Initialisation of the pattern/command to execute for working out a square.
+" Initialization of the pattern/command to execute for working out a square.
 " Pattern is: "#<germ><count>"
 " where <germ>   is " " if the current germ is dead, "X" when living.
 "       <count>  is the number of living neighbours (including current germ)
@@ -146,7 +146,7 @@ map ,Iab o=RS =ST =TU =UV =VW =WX =XY =YZ =Z 
 " Insert the searched patterns above the board
 map ,IIN G?^top,Il8,Id8,Il7,Id7,Il6,Id6,Il5,Id5,Il4,Id4,Il3,Id3,Il2,Id2,Il1,Id1,Il0,Id0,Iaa,Iab
 "
-"  ----- END of Initialisation -----
+"  ----- END of Initialization -----
 "
 "  ----- Work out one line -----
 "

@@ -387,7 +387,7 @@ smsg(const char *s, ...)
 {
     if (IObuff == NULL)
     {
-	// Very early in initialisation and already something wrong, just
+	// Very early in initialization and already something wrong, just
 	// give the raw message so the user at least gets a hint.
 	return msg((char *)s);
     }
@@ -405,7 +405,7 @@ smsg_attr(int attr, const char *s, ...)
 {
     if (IObuff == NULL)
     {
-	// Very early in initialisation and already something wrong, just
+	// Very early in initialization and already something wrong, just
 	// give the raw message so the user at least gets a hint.
 	return msg_attr((char *)s, attr);
     }
@@ -423,7 +423,7 @@ smsg_attr_keep(int attr, const char *s, ...)
 {
     if (IObuff == NULL)
     {
-	// Very early in initialisation and already something wrong, just
+	// Very early in initialization and already something wrong, just
 	// give the raw message so the user at least gets a hint.
 	return msg_attr_keep((char *)s, attr, TRUE);
     }
@@ -822,7 +822,7 @@ semsg(const char *s, ...)
 	return TRUE;
 
     if (IObuff == NULL)
-	// Very early in initialisation and already something wrong, just
+	// Very early in initialization and already something wrong, just
 	// give the raw message so the user at least gets a hint.
 	return emsg_core(s);
 
@@ -878,7 +878,7 @@ siemsg(const char *s, ...)
 
     if (IObuff == NULL)
     {
-	// Very early in initialisation and already something wrong, just
+	// Very early in initialization and already something wrong, just
 	// give the raw message so the user at least gets a hint.
 	emsg_core(s);
     }
@@ -4192,7 +4192,7 @@ give_warning2(char_u *message, char_u *a1, int hl)
 {
     if (IObuff == NULL)
     {
-	// Very early in initialisation and already something wrong, just give
+	// Very early in initialization and already something wrong, just give
 	// the raw message so the user at least gets a hint.
 	give_warning(message, hl);
     }

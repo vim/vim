@@ -133,7 +133,7 @@ CVim *CVim::Create(int *pbDoRestart)
     me = new CVim();
     if (me == NULL)
     {
-	MessageBox(0, "Cannot create application object", "Vim Initialisation", 0);
+	MessageBox(0, "Cannot create application object", "Vim Initialization", 0);
 	return NULL;
     }
 
@@ -155,7 +155,7 @@ CVim *CVim::Create(int *pbDoRestart)
 	RegCloseKey(hKey);
 
 	if (MessageBox(0, "Cannot load registered type library.\nDo you want to register Vim now?",
-		    "Vim Initialisation", MB_YESNO | MB_ICONQUESTION) != IDYES)
+		    "Vim Initialization", MB_YESNO | MB_ICONQUESTION) != IDYES)
 	{
 	    delete me;
 	    return NULL;
@@ -168,7 +168,7 @@ CVim *CVim::Create(int *pbDoRestart)
 	if (FAILED(hr))
 	{
 	    MessageBox(0, "You must restart Vim in order for the registration to take effect.",
-						     "Vim Initialisation", 0);
+						     "Vim Initialization", 0);
 	    *pbDoRestart = TRUE;
 	    delete me;
 	    return NULL;
@@ -182,7 +182,7 @@ CVim *CVim::Create(int *pbDoRestart)
     if (FAILED(hr))
     {
 	MessageBox(0, "Cannot get interface type information",
-						     "Vim Initialisation", 0);
+						     "Vim Initialization", 0);
 	delete me;
 	return NULL;
     }
@@ -446,7 +446,7 @@ CVimCF *CVimCF::Create()
     CVimCF *me = new CVimCF();
 
     if (me == NULL)
-	MessageBox(0, "Cannot create class factory", "Vim Initialisation", 0);
+	MessageBox(0, "Cannot create class factory", "Vim Initialization", 0);
 
     return me;
 }
@@ -698,7 +698,7 @@ static void SetKeyAndValue(const char *key, const char *subkey, const char *valu
 }
 
 /*****************************************************************************
- 5. OLE Initialisation and shutdown processing
+ 5. OLE Initialization and shutdown processing
 *****************************************************************************/
 extern "C" void InitOLE(int *pbDoRestart)
 {
@@ -710,7 +710,7 @@ extern "C" void InitOLE(int *pbDoRestart)
     hr = OleInitialize(NULL);
     if (FAILED(hr))
     {
-	MessageBox(0, "Cannot initialise OLE", "Vim Initialisation", 0);
+	MessageBox(0, "Cannot initialize OLE", "Vim Initialization", 0);
 	goto error0;
     }
 
@@ -734,7 +734,7 @@ extern "C" void InitOLE(int *pbDoRestart)
 
     if (FAILED(hr))
     {
-	MessageBox(0, "Cannot register class factory", "Vim Initialisation", 0);
+	MessageBox(0, "Cannot register class factory", "Vim Initialization", 0);
 	goto error1;
     }
 
@@ -747,7 +747,7 @@ extern "C" void InitOLE(int *pbDoRestart)
 
     if (FAILED(hr))
     {
-	MessageBox(0, "Cannot register application object", "Vim Initialisation", 0);
+	MessageBox(0, "Cannot register application object", "Vim Initialization", 0);
 	goto error1;
     }
 

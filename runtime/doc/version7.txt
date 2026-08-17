@@ -12913,7 +12913,7 @@ Files:	    src/ui.c
 
 Patch 7.3.441
 Problem:    Newer versions of MzScheme (Racket) require earlier (trampolined)
-	    initialisation.
+	    initialization.
 Solution:   Call mzscheme_main() early in main(). (Sergey Khorev)
 Files:	    src/Make_mvc.mak, src/if_mzsch.c, src/main.c,
 	    src/proto/if_mzsch.pro

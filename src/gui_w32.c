@@ -5792,7 +5792,7 @@ ole_error(char *arg)
     gui.in_use = mch_is_gui_executable();
 # endif
 
-    // Can't use emsg() here, we have not finished initialisation yet.
+    // Can't use emsg() here, we have not finished initialization yet.
     vim_snprintf(buf, IOSIZE,
 			 _(e_argument_not_supported_str_use_ole_version), arg);
     mch_errmsg(buf);

@@ -3288,7 +3288,7 @@ get_c_indent(void)
 		//   sizeof
 		//	  here
 		// Otherwise check whether it is an enumeration or structure
-		// initialisation (not indented) or a variable declaration
+		// initialization (not indented) or a variable declaration
 		// (indented).
 		terminated = cin_isterminated(l, FALSE, TRUE);
 

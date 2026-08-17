@@ -4380,7 +4380,7 @@ VisVim could still crash on exit. (Erhardt)
 "case a: case b:" (two case statements in one line) aligned with the second
 case.  Now it uses one 'sw' for indent. (Webb)
 
-Font initialisation wasn't right for Athena/Motif GUI.  Moved the call to
+Font initialization wasn't right for Athena/Motif GUI.  Moved the call to
 highlight_gui_started() gui_mch_init() to gui_mch_open(). (Nam)
 
 In Replace mode, backspacing over a TAB before where the replace mode started

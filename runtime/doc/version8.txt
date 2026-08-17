@@ -16807,7 +16807,7 @@ Files:      runtime/doc/if_mzsch.txt, runtime/doc/if_pyth.txt,
             src/testdir/test_viml.vim
 
 Patch 8.0.0361
-Problem:    GUI initialisation is not sufficiently tested.
+Problem:    GUI initialization is not sufficiently tested.
 Solution:   Add the gui_init test. (Kazunobu Kuriyama)
 Files:      src/Makefile, src/testdir/Make_all.mak, src/testdir/Make_dos.mak,
             src/testdir/Make_ming.mak, src/testdir/Makefile,
@@ -19016,7 +19016,7 @@ Files:      src/option.c, src/option.h, src/structs.h
 
 Patch 8.0.0713 (after 8.0.0712)
 Problem:    'termkey' option not fully implemented.
-Solution:   Add initialisation.
+Solution:   Add initialization.
 Files:      src/option.c
 
 Patch 8.0.0714
@@ -20201,7 +20201,7 @@ Solution:   Add the 'nocombine' value to replace attributes instead of
 Files:      runtime/doc/syntax.txt, src/syntax.c, src/vim.h
 
 Patch 8.0.0915
-Problem:    Wrong initialisation of global.
+Problem:    Wrong initialization of global.
 Solution:   Use INIT().
 Files:      src/globals.h
 
@@ -37785,7 +37785,7 @@ Files:	    src/cmdexpand.c, src/misc1.c
 
 Patch 8.1.1898
 Problem:    Crash when out of memory during startup.
-Solution:   When out of memory message given during initialisation bail out.
+Solution:   When out of memory message given during initialization bail out.
             (closes #4842)
 Files:	    src/misc2.c
 

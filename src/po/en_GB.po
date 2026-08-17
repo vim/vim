@@ -353,7 +353,7 @@ msgid "E1010: Type not recognized: %s"
 msgstr "E1010: Type not recognised: %s"
 
 msgid "E1022: Type or initialization required"
-msgstr "E1022: Type or initialisation required"
+msgstr "E1022: Type or initialization required"
 
 #, c-format
 msgid "E1146: Command not recognized: %s"

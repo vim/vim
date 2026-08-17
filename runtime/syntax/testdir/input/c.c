@@ -103,7 +103,7 @@ main
 #endif
 
     /*
-     * Do any system-specific initialisations.  These can NOT use IObuff or
+     * Do any system-specific initializations.  These can NOT use IObuff or
      * NameBuff.  Thus emsg2() cannot be called!
      */
     mch_early_init();
@@ -114,7 +114,7 @@ main
 #if 0
     /*
      * Newer version of MzScheme (Racket) require earlier (trampolined)
-     * initialisation via scheme_main_setup.
+     * initialization via scheme_main_setup.
      */
     return mzscheme_main();
 #else
