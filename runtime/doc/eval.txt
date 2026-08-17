@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.2.  Last change: 2026 Aug 16
+*eval.txt*	For Vim version 9.2.  Last change: 2026 Aug 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5442,4 +5442,19 @@ Below is a sample script that makes use of the clipboard provider feature: >vim
 	    \ }
 	set clipmethod^=test
 <
+						*clipboard-providers-wsl*
+For Windows WSL, try this script: >vim9
+	vim9script
+
+	var Copy = (_, _, lines: list<string>) => system('wl-copy', lines)
+	var Paste = (_) => ('', systemlist('wl-paste --no-newline')
+	    ->map((_, v) => v->trim("\r", 2)))
+
+	v:clipproviders["wslclip"] = {
+	    available: () => executable('wl-copy') && executable('wl-paste'),
+	    copy: { "*": Copy, "+": Copy },
+	    paste: { "*": Paste, "+": Paste }
+	}
+	set clipmethod^=wslclip
+
  vim:tw=78:ts=8:noet:ft=help:norl:
