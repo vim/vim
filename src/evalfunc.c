@@ -413,20 +413,6 @@ arg_bool_or_nr(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 }
 
 /*
- * Check "type" is a bool or a dict of 'any'.
- */
-    static int
-arg_bool_or_dict_any(
-    type_T		*type,
-    type_T		*decl_type UNUSED,
-    argcontext_T	*context)
-{
-    if (type->tt_type == VAR_DICT || type_any_or_unknown(type))
-	return OK;
-    return check_arg_type(&t_bool, type, context);
-}
-
-/*
  * Check "type" is a list of 'any' or a blob.
  */
     static int
@@ -1315,8 +1301,7 @@ static argcheck_T arg2_string_or_list_number[] = {arg_string_or_list_any, arg_nu
 static argcheck_T arg2_string_string_or_number[] = {arg_string, arg_string_or_nr};
 static argcheck_T arg2_blob_dict[] = {arg_blob, arg_dict_any};
 static argcheck_T arg2_list_or_tuple_string[] = {arg_list_or_tuple, arg_string};
-static argcheck_T arg3_any_buffer_bool_or_dict[] = {
-			      arg_any, arg_buffer, arg_bool_or_dict_any};
+static argcheck_T arg3_any_buffer_bool[] = {arg_any, arg_buffer, arg_bool};
 static argcheck_T arg3_any_list_dict[] = {arg_any, arg_list_any, arg_dict_any};
 static argcheck_T arg3_buffer_lnum_lnum[] = {arg_buffer, arg_lnum, arg_lnum};
 static argcheck_T arg3_buffer_number_number[] = {arg_buffer, arg_number, arg_number};
@@ -2530,7 +2515,7 @@ static const funcentry_T global_functions[] =
 			ret_string,	    f_list2str},
     {"list2tuple",	1, 1, FEARG_1,	    arg1_list_any,
 			ret_tuple_any,	    f_list2tuple},
-    {"listener_add",	1, 3, FEARG_2,	    arg3_any_buffer_bool_or_dict,
+    {"listener_add",	1, 3, FEARG_2,	    arg3_any_buffer_bool,
 			ret_number,	    f_listener_add},
     {"listener_flush",	0, 1, FEARG_1,	    arg1_buffer,
 			ret_void,	    f_listener_flush},

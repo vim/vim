@@ -390,7 +390,7 @@ lispindent({lnum})		Number	Lisp indent for line {lnum}
 list2blob({list})		Blob	turn {list} of numbers into a Blob
 list2str({list} [, {utf8}])	String	turn {list} of numbers into a String
 list2tuple({list})		Tuple	turn {list} of items into a tuple
-listener_add({callback} [, {buf} [, {options}]])
+listener_add({callback} [, {buf} [, {unbuffered}]])
 				Number	add a callback to listen to changes
 listener_flush([{buf}])		none	invoke listener callbacks
 listener_remove({id})		Number	remove a listener callback
@@ -6811,7 +6811,7 @@ list2tuple({list})					*list2tuple()*
 		Return type: tuple<{type}> (depending on the given |List|)
 
 
-listener_add({callback} [, {buf} [, {options}]])	*listener_add()*
+listener_add({callback} [, {buf} [, {unbuffered}]])	*listener_add()*
 		Add a callback function that will be invoked when changes have
 		been made to buffer {buf}.
 		{buf} refers to a buffer name or number.  For the accepted
@@ -6848,8 +6848,6 @@ listener_add({callback} [, {buf} [, {options}]])	*listener_add()*
 				the change; one if unknown or the whole line
 				was affected; this is a byte index, first
 				character has a value of one.
-		    text	only present when the "text" option is set,
-				see below
 		When lines are inserted (not when a line is split, e.g. by
 		typing CR in Insert mode) the values are:
 		    lnum	line above which the new line is added
@@ -6868,15 +6866,7 @@ listener_add({callback} [, {buf} [, {options}]])	*listener_add()*
 		    added	0
 		    col		first column with a change or 1
 
-		{options} is a Dictionary with these optional entries:
-		    unbuffered	invoke the {callback} for every single change
-				instead of for a batch of changes
-		    text	include the resulting text in each item of
-				"changes"
-		For backwards compatibility {options} may also be a |Boolean|,
-		which is then used for the "unbuffered" entry.
-
-		When "unbuffered" is |FALSE| or not provided the {callback} is
+		When {unbuffered} is |FALSE| or not provided the {callback} is
 		invoked:
 
 		1. Just before the screen is updated.
@@ -6884,7 +6874,6 @@ listener_add({callback} [, {buf} [, {options}]])	*listener_add()*
 		3. When a change is being made that changes the line count in
 		   a way that causes a line number in the list of changes to
 		   become invalid.
-		4. When "text" is set and a lot of text has been recorded.
 
 		The entries are in the order the changes were made, thus the
 		most recent change is at the end.
@@ -6892,40 +6881,16 @@ listener_add({callback} [, {buf} [, {options}]])	*listener_add()*
 		Because of the third reason for triggering a callback listed
 		above, the line numbers passed to the callback are not
 		guaranteed to be valid. In particular, the end value can be
-		greater than line('$') + 1. If this is a problem then set
-		"unbuffered".
+		greater than line('$') + 1. If this is a problem then make
+		{unbuffered} |TRUE|.
 
-		When "unbuffered" is |TRUE| the {callback} is invoked for every
+		When {unbuffered} is |TRUE| the {callback} is invoked for every
 		single change.  The changes list only holds a single
 		dictionary and the "start", "end" and "added" values in the
 		dictionary are the same as the corresponding callback
 		arguments.  The line numbers are valid when the callback is
 		invoked, but later changes may make them invalid, thus keeping
 		a copy for later might not work.
-
-							*listener-text*
-		When "text" is set each item in "changes" gets a "text" entry,
-		a List with the lines that occupy the changed region right
-		after that change was made: the lines "lnum" up to but not
-		including "end" plus "added".  This List is empty when the
-		change only deleted lines.  Together with "lnum", "end" and
-		"added" the item then fully describes the change: replace the
-		lines "lnum" up to but not including "end" with "text".
-
-		The text is copied at the moment the change is recorded, so it
-		is not affected by later changes.  Without it a buffered
-		{callback} cannot reliably obtain the text of a change: two
-		changes to the same line do not change the line count and are
-		reported together, and by then |getbufline()| can only return
-		the result of the second one.  Setting "unbuffered" avoids
-		that as well, but then the {callback} is invoked for every
-		single change, which is expensive for a command that changes
-		many lines.
-
-		Setting "text" costs a copy of the changed lines for every
-		change.  To keep the memory used by a long sequence of changes
-		bounded, the {callback} is also invoked when a lot of text has
-		been recorded.
 
 		The {callback} is invoked with the text locked, see
 		|textlock|.  If you do need to make changes to the buffer, use

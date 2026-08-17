@@ -207,7 +207,6 @@ clean_listener_list(buf_T *buf, listener_T **list, bool all)
 	{
 	    list_unref(buf->b_recorded_changes);
 	    buf->b_recorded_changes = NULL;
-	    buf->b_recorded_text_size = 0;
 	}
     }
 }
@@ -268,60 +267,6 @@ check_recorded_changes(
     }
 }
 
-// Amount of recorded text after which the listeners are invoked, to bound the
-// memory used by a long sequence of changes.
-#define LISTENER_TEXT_MAX (4 * 1024 * 1024)
-
-/*
- * Return true when any listener in "list" asked for the resulting text.
- */
-    static bool
-listeners_want_text(listener_T *list)
-{
-    listener_T	*lnr;
-
-    for (lnr = list; lnr != NULL; lnr = lnr->lr_next)
-	if (lnr->lr_text)
-	    return true;
-    return false;
-}
-
-/*
- * Store in "dict" the text that occupies the changed region right after the
- * change: the lines from "lnum" up to but not including "lnume" + "xtra".
- * Returns the number of bytes stored.
- */
-    static size_t
-add_change_text(
-    buf_T	*buf,
-    dict_T	*dict,
-    linenr_T	lnum,
-    linenr_T	lnume,
-    long	xtra)
-{
-    list_T	*l = list_alloc();
-    linenr_T	below = lnume + xtra;	// line below the changed region
-    size_t	size = 0;
-
-    if (l == NULL)
-	return 0;
-    if (dict_add_list(dict, "text", l) == FAIL)
-    {
-	list_free(l);
-	return 0;
-    }
-
-    if (below > buf->b_ml.ml_line_count + 1)
-	below = buf->b_ml.ml_line_count + 1;
-    for (linenr_T lp = lnum < 1 ? 1 : lnum; lp < below; ++lp)
-    {
-	if (list_append_string(l, ml_get_buf(buf, lp, FALSE), -1) == FAIL)
-	    break;
-	size += (size_t)ml_get_buf_len(buf, lp) + 1;
-    }
-    return size;
-}
-
 /*
  * Record a change for listeners added with listener_add().
  * Always for the current buffer.
@@ -361,14 +306,8 @@ may_record_change(
     dict_add_number(dict, "end", (varnumber_T)lnume);
     dict_add_number(dict, "added", (varnumber_T)xtra);
     dict_add_number(dict, "col", (varnumber_T)col + 1);
-    if (listeners_want_text(curbuf->b_listener))
-	curbuf->b_recorded_text_size +=
-			  add_change_text(curbuf, dict, lnum, lnume, xtra);
 
     list_append_dict(curbuf->b_recorded_changes, dict);
-
-    if (curbuf->b_recorded_text_size > LISTENER_TEXT_MAX)
-	invoke_listeners(curbuf);
 }
 
 /*
@@ -380,8 +319,7 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
     callback_T	callback;
     listener_T	*lnr;
     buf_T	*buf = curbuf;
-    bool	unbuffered = false;
-    bool	want_text = false;
+    int		unbuffered = 0;
 
     if (check_secure())
 	return;
@@ -394,7 +332,7 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
 
     if (in_vim9script() && (
 	    check_for_opt_buffer_arg(argvars, 1) == FAIL
-	    || check_for_opt_bool_or_dict_arg(argvars, 2) == FAIL))
+	    || check_for_opt_bool_arg(argvars, 2) == FAIL))
 	return;
 
     callback = get_callback(&argvars[0]);
@@ -409,15 +347,8 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
 	    free_callback(&callback);
 	    return;
 	}
-	if (argvars[2].v_type == VAR_DICT)
-	{
-	    dict_T *d = argvars[2].vval.v_dict;
-
-	    unbuffered = dict_get_bool(d, "unbuffered", false);
-	    want_text = dict_get_bool(d, "text", false);
-	}
-	else if (argvars[2].v_type != VAR_UNKNOWN)
-	    unbuffered = tv_get_bool(&argvars[2]);
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	    unbuffered = (int)tv_get_bool(&argvars[2]);
     }
 
     lnr = ALLOC_CLEAR_ONE(listener_T);
@@ -446,7 +377,6 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
 
     set_callback(&lnr->lr_callback, &callback);
 
-    lnr->lr_text = want_text;
     lnr->lr_id = ++next_listener_id;
     rettv->vval.v_number = lnr->lr_id;
 }
@@ -643,8 +573,6 @@ invoke_sync_listeners(
     dict_add_number(dict, "end", (varnumber_T)end);
     dict_add_number(dict, "added", (varnumber_T)added);
     dict_add_number(dict, "col", (varnumber_T)col + 1);
-    if (listeners_want_text(buf->b_sync_listener))
-	(void)add_change_text(buf, dict, start, end, added);
     list_append_dict(recorded_changes, dict);
 
     invoke_listener_set(
@@ -688,7 +616,6 @@ invoke_listeners(buf_T *buf)
 
     list_unref(buf->b_recorded_changes);
     buf->b_recorded_changes = NULL;
-    buf->b_recorded_text_size = 0;
 }
 
 /*
