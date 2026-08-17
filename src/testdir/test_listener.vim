@@ -801,6 +801,185 @@ func Test_listener_blockwise_paste()
   bwipe!
 endfunc
 
+func s:StoreChanges(l)
+  call add(s:changes, deepcopy(a:l))
+endfunc
+
+" The "text" option makes each change self-contained.
+func Test_listener_text()
+  new
+  call setline(1, ['one', 'two', 'three'])
+  let s:changes = []
+  let id = listener_add({b, s, e, a, l -> s:StoreChanges(l)},
+      \ bufnr(), #{text: v:true})
+
+  " Two changes to the same line do not change the line count, so they are
+  " reported together. Each one still carries the text it resulted in.
+  call setline(1, 'first')
+  call setline(1, 'second')
+  call listener_flush()
+  call assert_equal([[
+      \ {'lnum': 1, 'end': 2, 'col': 1, 'added': 0, 'text': ['first']},
+      \ {'lnum': 1, 'end': 2, 'col': 1, 'added': 0, 'text': ['second']}]],
+      \ s:changes)
+
+  " Inserted lines are reported as the text that was inserted.
+  let s:changes = []
+  call append(1, ['a', 'b'])
+  call listener_flush()
+  call assert_equal([[
+      \ {'lnum': 2, 'end': 2, 'col': 1, 'added': 2, 'text': ['a', 'b']}]],
+      \ s:changes)
+
+  " Deleting lines leaves an empty text.
+  let s:changes = []
+  2,3del
+  call listener_flush()
+  call assert_equal([[
+      \ {'lnum': 2, 'end': 4, 'col': 1, 'added': -2, 'text': []}]],
+      \ s:changes)
+
+  " Deleting and inserting at the same spot keeps both entries apart.
+  let s:changes = []
+  call setline(1, ['one', 'two', 'three'])
+  call listener_flush()
+  let s:changes = []
+  1del
+  call append(0, 'zero')
+  call listener_flush()
+  call assert_equal([
+      \ [{'lnum': 1, 'end': 2, 'col': 1, 'added': -1, 'text': []}],
+      \ [{'lnum': 1, 'end': 1, 'col': 1, 'added': 1, 'text': ['zero']}]],
+      \ s:changes)
+
+  call listener_remove(id)
+  bwipe!
+endfunc
+
+" Deleting every line and undoing it are each reported as one change.
+func Test_listener_text_whole_buffer()
+  new
+  call setline(1, range(1, 3000)->map({_, v -> 'line ' .. v}))
+  let s:changes = []
+  let id = listener_add({b, s, e, a, l -> s:StoreChanges(l)},
+      \ bufnr(), #{text: v:true})
+  let &undolevels = &undolevels
+
+  " Nothing is left, so no text is copied.
+  %delete _
+  call listener_flush()
+  call assert_equal([[
+      \ {'lnum': 1, 'end': 3001, 'col': 1, 'added': -3000, 'text': []}]],
+      \ s:changes)
+
+  " The undo restores all the lines, so they are all copied.
+  let s:changes = []
+  undo
+  call listener_flush()
+  call assert_equal(1, len(s:changes))
+  call assert_equal(1, len(s:changes[0]))
+  let change = s:changes[0][0]
+  call assert_equal(1, change.lnum)
+  call assert_equal(2, change.end)
+  call assert_equal(2999, change.added)
+  call assert_equal(3000, len(change.text))
+  call assert_equal('line 1', change.text[0])
+  call assert_equal('line 3000', change.text[-1])
+
+  call listener_remove(id)
+  bwipe!
+endfunc
+
+" A lot of recorded text invokes the callback without waiting for a flush.
+func Test_listener_text_size_limit()
+  new
+  call setline(1, 'one')
+  let s:changes = []
+  let id = listener_add({b, s, e, a, l -> s:StoreChanges(l)},
+      \ bufnr(), #{text: v:true})
+
+  " Below the limit the change is only reported when flushed.
+  call setline(1, repeat('x', 1024 * 1024))
+  call assert_equal([], s:changes)
+  call listener_flush()
+  call assert_equal(1, len(s:changes))
+
+  " Above the limit the callback is invoked right away.
+  let s:changes = []
+  call setline(1, repeat('y', 5 * 1024 * 1024))
+  call assert_equal(1, len(s:changes))
+  call assert_equal(1, len(s:changes[0]))
+  call assert_equal(5 * 1024 * 1024, len(s:changes[0][0].text[0]))
+
+  " The size is reset, so the next change waits for a flush again.
+  let s:changes = []
+  call setline(1, 'small')
+  call assert_equal([], s:changes)
+  call listener_flush()
+  call assert_equal(1, len(s:changes))
+
+  call listener_remove(id)
+  bwipe!
+endfunc
+
+" The "text" option also applies to an unbuffered listener.
+func Test_listener_text_unbuffered()
+  new
+  call setline(1, ['one', 'two', 'three'])
+  let s:changes = []
+  let id = listener_add({b, s, e, a, l -> s:StoreChanges(l)},
+      \ bufnr(), #{unbuffered: v:true, text: v:true})
+
+  call setline(2, 'two two')
+  call assert_equal([[
+      \ {'lnum': 2, 'end': 3, 'col': 1, 'added': 0, 'text': ['two two']}]],
+      \ s:changes)
+
+  call listener_remove(id)
+  bwipe!
+endfunc
+
+" Without the "text" option there is no "text" entry.
+func Test_listener_no_text_by_default()
+  new
+  call setline(1, ['one', 'two'])
+  let s:changes = []
+  let id = listener_add({b, s, e, a, l -> s:StoreChanges(l)},
+      \ bufnr(), #{unbuffered: v:true})
+
+  call setline(1, 'one one')
+  call assert_equal([[
+      \ {'lnum': 1, 'end': 2, 'col': 1, 'added': 0}]], s:changes)
+
+  call listener_remove(id)
+  bwipe!
+endfunc
+
+" The third argument keeps accepting a Boolean.
+func Test_listener_options_argument()
+  new
+  call setline(1, ['one', 'two'])
+  let s:changes = []
+  let id = listener_add({b, s, e, a, l -> s:StoreChanges(l)}, bufnr(), v:true)
+  call setline(1, 'one one')
+  call assert_equal([[
+      \ {'lnum': 1, 'end': 2, 'col': 1, 'added': 0}]], s:changes)
+  call listener_remove(id)
+
+  " An empty Dictionary is the same as not passing the argument.
+  let s:changes = []
+  let id = listener_add({b, s, e, a, l -> s:StoreChanges(l)}, bufnr(), {})
+  call setline(1, 'one two')
+  call assert_equal([], s:changes)
+  call listener_flush()
+  call assert_equal([[
+      \ {'lnum': 1, 'end': 2, 'col': 1, 'added': 0}]], s:changes)
+  call listener_remove(id)
+
+  call assert_fails('call listener_add("Foo", bufnr(), [])', 'E745:')
+  bwipe!
+endfunc
+
 func Test_listener_add_in_sandbox()
   call assert_fails(
     \ 'sandbox call redraw_listener_add({"on_start": function("tr")})',
