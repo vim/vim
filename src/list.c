@@ -3472,7 +3472,7 @@ f_reduce(typval_T *argvars, typval_T *rettv)
     else if (argvars[1].v_type == VAR_PARTIAL)
 	func_name = partial_name(argvars[1].vval.v_partial);
     else
-	func_name = tv_get_string(&argvars[1]);
+	func_name = tv_get_string_strict(&argvars[1]);
     if (func_name == NULL || *func_name == NUL)
     {
 	emsg(_(e_missing_function_argument));

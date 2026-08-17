@@ -1043,9 +1043,14 @@ string_reduce(
     for ( ; *p != NUL; p += len)
     {
 	argv[0] = *rettv;
+	rettv->v_type = VAR_UNKNOWN;
+
 	len = copy_first_char_to_tv(p, &argv[1]);
 	if (len < 0)
+	{
+	    *rettv = argv[0];
 	    break;
+	}
 
 	r = eval_expr_typval(expr, TRUE, argv, 2, fc, rettv);
 
