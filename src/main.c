@@ -34,6 +34,7 @@ static int file_owned(char *fname);
 static void mainerr(int, char_u *);
 static void early_arg_scan(mparm_T *parmp);
 #ifndef NO_VIM_MAIN
+static void normalize_long_options(mparm_T *parmp);
 static void usage(void);
 static void parse_command_name(mparm_T *parmp);
 static void command_line_scan(mparm_T *parmp);
@@ -83,6 +84,9 @@ static void *s_vbuf = NULL;		// buffer for setvbuf()
 # ifndef NO_VIM_MAIN	// skip this for unittests
 
 static char_u *start_dir = NULL;	// current working dir on startup
+static char **normalized_argv = NULL;
+static char **normalized_options = NULL;
+static int normalized_option_count = 0;
 
 static int has_dash_c_arg = FALSE;
 
@@ -99,6 +103,10 @@ main
 {
 #  if defined(STARTUPTIME) || defined(CLEAN_RUNTIMEPATH)
     int		i;
+#  endif
+#  ifdef FEAT_EVAL
+    int		original_argc;
+    char	**original_argv;
 #  endif
 
     /*
@@ -123,6 +131,8 @@ main
     params.argv = argv;
     params.want_full_screen = TRUE;
 #  ifdef FEAT_EVAL
+    original_argc = argc;
+    original_argv = argv;
     params.use_debug_break_level = -1;
 #  endif
     params.window_count = -1;
@@ -148,6 +158,9 @@ main
      * Various initialisations #1 shared with tests.
      */
     common_init_1();
+    normalize_long_options(&params);
+    argc = params.argc;
+    argv = params.argv;
 
 #  if defined(STARTUPTIME) || defined(FEAT_JOB_CHANNEL)
     // Need to find "--startuptime" and "--log" before actually parsing
@@ -193,6 +206,10 @@ main
      * Various initialisations #2 shared with tests.
      */
     common_init_2(&params);
+#  ifdef FEAT_EVAL
+    // Keep v:argv as it was before normalizing long options.
+    set_argv_var(original_argv, original_argc);
+#  endif
 
 #  ifdef VIMDLL
     // Check if the current executable file is for the GUI subsystem.
@@ -1861,6 +1878,12 @@ getout(int exitval)
     if (garbage_collect_at_exit)
 	garbage_collect(FALSE);
 #endif
+#ifndef NO_VIM_MAIN
+    while (normalized_option_count > 0)
+	vim_free(normalized_options[--normalized_option_count]);
+    vim_free(normalized_options);
+    vim_free(normalized_argv);
+#endif
 #ifdef MSWIN
     free_cmd_argsW();
 #endif
@@ -1869,6 +1892,143 @@ getout(int exitval)
 
     mch_exit(exitval);
 }
+
+#ifndef NO_VIM_MAIN
+typedef enum
+{
+    LONGOPT_NONE,
+    LONGOPT_ARG,
+    LONGOPT_REMOTE
+} longopt_arg_T;
+
+/*
+ * Return type of long option which takes an argument. "*equal" is set
+ * to '=' in "--option=value", or NULL when option uses a separate argument.
+ */
+    static longopt_arg_T
+long_option_arg_type(char *arg, char **equal)
+{
+    size_t	len;
+    char	*p;
+    char	*end;
+
+    *equal = NULL;
+    if (arg[0] != '-' || arg[1] != '-')
+	return LONGOPT_NONE;
+
+    *equal = strchr(arg + 2, '=');
+    len = *equal == NULL ? STRLEN(arg) : (size_t)(*equal - arg);
+#define LONGOPT(name) (len == STRLEN_LITERAL(name) \
+				&& STRNICMP(arg, name, len) == 0)
+    if (LONGOPT("--clientserver")
+	    || LONGOPT("--cmd")
+	    || LONGOPT("--display")
+	    || LONGOPT("--gui-dialog-file")
+	    || LONGOPT("--log")
+	    || LONGOPT("--remote-expr")
+	    || LONGOPT("--remote-send")
+	    || LONGOPT("--role")
+	    || LONGOPT("--servername")
+	    || LONGOPT("--serversend")
+	    || LONGOPT("--socketid")
+	    || LONGOPT("--startuptime")
+	    || LONGOPT("--windowid"))
+	return LONGOPT_ARG;
+#undef LONGOPT
+
+    // --remote accepts -wait, -silent and -tab in any order.
+    if (len < 8 || STRNICMP(arg, "--remote", 8) != 0)
+	return LONGOPT_NONE;
+    p = arg + 8;
+    end = arg + len;
+    while (p < end)
+    {
+	if (end - p >= 5 && STRNICMP(p, "-wait", 5) == 0)
+	    p += 5;
+	else if (end - p >= 7 && STRNICMP(p, "-silent", 7) == 0)
+	    p += 7;
+	else if (end - p >= 4 && STRNICMP(p, "-tab", 4) == 0)
+	    p += 4;
+	else
+	    return LONGOPT_NONE;
+    }
+    return LONGOPT_REMOTE;
+}
+
+/*
+ * Normalize "--option=value" to "--option", "value"
+ * Do not inspect values of options with a
+ * separate argument, or file names following a --remote option.
+ */
+    static void
+normalize_long_options(mparm_T *parmp)
+{
+    int		argc = parmp->argc;
+    char	**argv = parmp->argv;
+    int		i;
+    int		j;
+    longopt_arg_T type;
+    char	*equal;
+
+    for (i = 1, j = 0; i < argc; ++i)
+    {
+	if (STRCMP(argv[i], "--") == 0)
+	{
+	    if (normalized_argv != NULL)
+		while (i < argc)
+		    normalized_argv[j++] = argv[i++];
+	    break;
+	}
+
+	type = long_option_arg_type(argv[i], &equal);
+	if (normalized_argv != NULL)
+	    normalized_argv[j++] = argv[i];
+	else if (type != LONGOPT_NONE && equal != NULL)
+	{
+	    // An argument can add at most one pointer.
+	    normalized_argv = ALLOC_MULT(char *, argc * 2 + 1);
+	    normalized_options = ALLOC_CLEAR_MULT(char *, argc);
+	    if (normalized_argv == NULL || normalized_options == NULL)
+		mch_exit(2);
+	    for (j = 0; j <= i; ++j)
+		normalized_argv[j] = argv[j];
+	}
+
+	if (type == LONGOPT_NONE)
+	    continue;
+	if (equal != NULL)
+	{
+	    normalized_options[normalized_option_count] =
+		vim_strnsave((char_u *)argv[i], (size_t)(equal - argv[i]));
+	    if (normalized_options[normalized_option_count] == NULL)
+		mch_exit(2);
+	    normalized_argv[j - 1] =
+		(char *)normalized_options[normalized_option_count++];
+	    normalized_argv[j++] = equal + 1;
+	}
+	if (type == LONGOPT_REMOTE)
+	{
+	    if (normalized_argv != NULL)
+		while (++i < argc)
+		    normalized_argv[j++] = argv[i];
+	    break;
+	}
+	if (equal == NULL && i + 1 < argc)
+	{
+	    if (normalized_argv != NULL)
+		normalized_argv[j++] = argv[++i];
+	    else
+		++i;
+	}
+    }
+    if (normalized_argv == NULL)
+	return;
+
+    normalized_argv[j] = NULL;
+    parmp->argc = j;
+    parmp->argv = normalized_argv;
+}
+#endif
 
 /*
  * Get the name of the display, before gui_prepare() removes it from
