@@ -4,7 +4,7 @@ vim9script
 # Language: Odin
 # Maintainer: Maxim Kim <habamax@gmail.com>
 # Website: https://github.com/habamax/vim-odin
-# Last Change: 2026-06-01
+# Last Change: 2026 Aug 16
 
 if exists("b:current_syntax")
   finish
@@ -55,11 +55,13 @@ syntax match odinEscape display contained /\\\([abefnrtv\\'"]\|\o\{3}\|x\x\{2}\|
 
 syntax match odinProcedure "\v<\w*>(\s*::\s*proc)@="
 
-syntax match odinAttribute "@\ze\<\w\+\>" display
-syntax region odinAttribute
+syntax match odinAttribute "@" display nextgroup=odinAttributeName,odinAttributeBraces
+syntax match odinAttributeName "\<\w\+\>" display contained
+syntax region odinAttributeBraces
       \ matchgroup=odinAttribute
-      \ start="@\ze(" end="\ze)"
+      \ start="(\w\+" end=")"
       \ transparent oneline
+      \ contained
 
 syntax match odinInteger "\v-?<[0-9]+%(_[0-9]+)*>" display
 syntax match odinFloat "\v-?<[0-9]+%(_[0-9]+)*%(\.[0-9]+%(_[0-9]+)*)%([eE][+-]=[0-9]+%(_[0-9]+)*)=" display
@@ -98,13 +100,14 @@ highlight def link odinBlockComment Comment
 
 highlight def link odinTodo Todo
 
-highlight def link odinAttribute Statement
+highlight def link odinAttribute PreProc
+highlight def link odinAttributeName odinAttribute
 highlight def link odinType Type
 highlight def link odinBool Boolean
 highlight def link odinNull Constant
 highlight def link odinUninitialized Constant
-highlight def link odinInteger Number
 highlight def link odinFloat Float
+highlight def link odinInteger Number
 highlight def link odinHex Number
 highlight def link odinOct Number
 highlight def link odinBin Number
