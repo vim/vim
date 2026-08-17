@@ -4277,7 +4277,7 @@ struct window_S
     // visible under the new frame's transparent pixels.
     bool	w_popup_image_px_dirty;
 #  ifdef FEAT_IMAGE_SIXEL
-    char_u	*w_popup_image_seq;	// cached sixel DCS sequence (terminal)
+    char_u	*w_popup_image_seq;	// cached sixel DCS sequence
     int		w_popup_image_seq_w;	// pixel width of cached seq
     int		w_popup_image_seq_h;	// pixel height used for cached seq;
 					// -1 means cache is invalid
@@ -4285,10 +4285,10 @@ struct window_S
     int		w_popup_image_seq_crop_y; // pixel offset (top) into source
     int		w_popup_image_seq_cells_w; // cell width  spanning seq pixels
     int		w_popup_image_seq_cells_h; // cell height spanning seq pixels
-    int		w_popup_image_seq_zindex;  // zindex encoded into seq (kitty z=)
-    bool	w_popup_image_emit_valid;  // true while the kitty placement
-					   // emitted at w_popup_image_emit_*
-					   // is still on the terminal
+#  endif
+#  ifdef FEAT_IMAGE_KITTY
+    bool	w_popup_image_transmit;	    // If image has been transmitted to
+					    // terminal
 #  endif
 #  ifdef FEAT_IMAGE_GDI
     // Pre-built Windows GUI image cache.  The bitmap is a 32-bit top-down

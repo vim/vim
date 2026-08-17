@@ -13,163 +13,136 @@
  *	    The popup's image bytes are sent in 4096-byte chunks of base64
  *	    inside `\e_G...;<chunk>\e\\` envelopes.
  *	    Spec: https://sw.kovidgoyal.net/kitty/graphics-protocol/
- *	    No external dependency; the base64 alphabet is inlined here.
+ *	    Base64 encoding is shared with misc2 base64_encode()/decode()
  */
 
 #include "vim.h"
 
 #if defined(FEAT_IMAGE_KITTY) || defined(PROTO)
 
-static const char_u kitty_b64_table[] =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+// Max base64 chars per envelope, per the kitty graphics protocol.
+#define KITTY_CHUNK_B64		4096
+// Source bytes that encode into KITTY_CHUNK_B64 base64 chars.
+#define KITTY_CHUNK_SRC		(KITTY_CHUNK_B64 * 3 / 4)
+// header + base64 chunk + "\033\\" trailer + NUL. Use 128 extra bytes padding
+// for header, should be more than enough.
+#define KITTY_BUF_SIZE		(128 + KITTY_CHUNK_B64 + 2 + 1)
 
 /*
- * Append a NUL-terminated string to "ga".  Returns OK / FAIL so the caller
- * can abort on allocation failure (unlike ga_concat(), which silently no-ops
- * and would leave a truncated, invalid kitty APC sequence behind).
+ * Return the kitty image id to use for window id "id".  Kitty image ids are
+ * global to the terminal, so mix in the process id: another Vim in the same
+ * terminal would otherwise use the same ids and its "a=d,d=I" would free our
+ * image data.
  */
     static int
-kitty_ga_concat(garray_T *ga, const char_u *s)
+kitty_image_id(int id)
 {
-    int	    len = (int)STRLEN(s);
+    static int	base = 0;
 
-    if (len == 0)
-	return OK;
-    if (ga_grow(ga, len) == FAIL)
-	return FAIL;
-    mch_memmove((char_u *)ga->ga_data + ga->ga_len, s, (size_t)len);
-    ga->ga_len += len;
-    return OK;
+    if (base == 0)
+	base = (((int)mch_get_pid() & 0x7fff) + 1) << 16;
+    return base | (id & 0xffff);
 }
 
 /*
- * Append base64-encoded bytes from "src[len]" to growarray "ga".
- * Returns OK / FAIL so the caller can propagate OOM.
+ * Transmit an RGB(A) image to the terminal (does not display it!). It will
+ * have an id of "id", so that it can be placed later.
  */
-    static int
-kitty_b64_append(garray_T *ga, char_u *src, long len)
+    int
+kitty_transmit(image_rgb_T *img, int id)
 {
-    long    i;
-    long    out_len = ((len + 2) / 3) * 4;
-    char_u  *dst;
+    static char buf[KITTY_BUF_SIZE];
 
-    if (out_len == 0)
-	return OK;
-    if (ga_grow(ga, (int)out_len) == FAIL)
-	return FAIL;
-    dst = (char_u *)ga->ga_data + ga->ga_len;
-    for (i = 0; i < len; i += 3)
-    {
-	unsigned a = src[i];
-	unsigned b = (i + 1 < len) ? src[i + 1] : 0;
-	unsigned c = (i + 2 < len) ? src[i + 2] : 0;
-	unsigned triple = (a << 16) | (b << 8) | c;
-
-	*dst++ = kitty_b64_table[(triple >> 18) & 0x3f];
-	*dst++ = kitty_b64_table[(triple >> 12) & 0x3f];
-	*dst++ = (i + 1 < len)
-			    ? kitty_b64_table[(triple >> 6) & 0x3f] : '=';
-	*dst++ = (i + 2 < len)
-			    ? kitty_b64_table[triple & 0x3f]	    : '=';
-    }
-    ga->ga_len += (int)out_len;
-    return OK;
-}
-
-/*
- * Encode an RGB(A) image into a kitty graphics protocol APC sequence.
- * Returns a malloced char_u* containing the full sequence
- * (one or more `\e_G...\e\\` envelopes), or NULL on OOM.
- *
- * The sequence is emitted with `a=T` (transmit + display), `q=2` (no
- * status responses), `f=24` for RGB or `f=32` for RGBA, and chunked
- * via `m=1`/`m=0` so the per-envelope payload stays under kitty's
- * 4096-byte limit.  When "id" is non-zero it is sent as `i=<id>` so
- * the resulting placement can later be removed via kitty_delete().
- * "zindex" is sent as `z=<zindex>` so overlapping placements stack in
- * popup zindex order no matter in which order they were (re)created.
- */
-    char_u *
-kitty_encode(image_rgb_T *img, int id, int zindex)
-{
-    garray_T	ga;
     long	pix_bytes;
     long	payload_len;
-    long	b64_total;
     long	offset = 0;
     int		fmt;
     int		first = TRUE;
-    char_u	hdr[80];
 
     if (img == NULL || img->data == NULL || img->width <= 0 || img->height <= 0)
-	return NULL;
+	return FAIL;
 
     pix_bytes = img->has_alpha ? 4 : 3;
     payload_len = (long)img->width * img->height * pix_bytes;
-    b64_total = ((payload_len + 2) / 3) * 4;
     fmt = img->has_alpha ? 32 : 24;
 
-    ga_init2(&ga, 1, (int)b64_total + 256);
-
-    // Emit one envelope per 4096 base64 chars.  The first envelope
-    // carries the full geometry/format header; later envelopes only
-    // need the chunk-continuation marker `m=`.
-    while (offset < b64_total)
+    // Emit one envelope per KITTY_CHUNK_SRC source bytes (= 4096 base64
+    // chars).  The first envelope carries the full geometry/format
+    // header; later envelopes only need the chunk-continuation marker
+    // `m=`.
+    while (offset < payload_len)
     {
-	long	this_chunk = b64_total - offset;
+	long	this_chunk = payload_len - offset;
 	int	more;
+	int	hdr_len;
+	long	b64_len;
 
-	if (this_chunk > 4096)
-	    this_chunk = 4096;
-	more = (offset + this_chunk < b64_total);
+	if (this_chunk > KITTY_CHUNK_SRC)
+	    this_chunk = KITTY_CHUNK_SRC;
+	more = (offset + this_chunk < payload_len);
 
 	if (first)
 	{
-	    if (id != 0)
-		vim_snprintf((char *)hdr, sizeof(hdr),
-			"\033_Ga=T,f=%d,s=%d,v=%d,i=%d,z=%d,q=2,m=%d;",
-			fmt, img->width, img->height, id, zindex,
-			more ? 1 : 0);
-	    else
-		vim_snprintf((char *)hdr, sizeof(hdr),
-			"\033_Ga=T,f=%d,s=%d,v=%d,z=%d,q=2,m=%d;",
-			fmt, img->width, img->height, zindex, more ? 1 : 0);
+	    hdr_len = vim_snprintf(buf, sizeof(buf),
+		    "\033_Ga=t,i=%d,f=%d,s=%d,v=%d,q=2,m=%d;",
+		    kitty_image_id(id), fmt, img->width,
+		    img->height, more ? 1 : 0);
 	    first = FALSE;
 	}
 	else
-	{
-	    vim_snprintf((char *)hdr, sizeof(hdr),
-		    "\033_Gm=%d;", more ? 1 : 0);
-	}
-	if (kitty_ga_concat(&ga, hdr) == FAIL)
-	    goto fail;
+	    hdr_len = vim_snprintf(buf, sizeof(buf), "\033_Gm=%d;",
+		    more ? 1 : 0);
 
-	// Encode the matching slice of the source bytes.  Each base64
-	// chunk consumes (this_chunk / 4) base64 quartets, which means
-	// (this_chunk * 3 / 4) source bytes.
-	{
-	    long	src_offset = offset * 3 / 4;
-	    long	src_len = this_chunk * 3 / 4;
+	b64_len = base64_encode_buf((char_u *)buf + hdr_len,
+					img->data + offset, this_chunk);
 
-	    if (src_offset + src_len > payload_len)
-		src_len = payload_len - src_offset;
-	    if (kitty_b64_append(&ga, img->data + src_offset, src_len) == FAIL)
-		goto fail;
-	}
+	buf[hdr_len + b64_len] = '\033';
+	buf[hdr_len + b64_len + 1] = '\\';
+	buf[hdr_len + b64_len + 2] = NUL;
 
-	if (kitty_ga_concat(&ga, (char_u *)"\033\\") == FAIL)
-	    goto fail;
-
+	out_str((char_u *)buf);
 	offset += this_chunk;
     }
 
-    if (ga_append(&ga, NUL) == FAIL)
-	goto fail;
-    return (char_u *)ga.ga_data;
+    out_flush();
+    return OK;
+}
 
-fail:
-    ga_clear(&ga);
-    return NULL;
+/*
+ * Place the image with the given id, which should have already been
+ * transmitted. Its placement id will always be its image id, so that the image
+ * is moved if it was previously placed.
+ */
+    void
+kitty_place(int id, int row, int col, int src_x, int src_y, int w, int h, int z)
+{
+    vim_snprintf((char *)IObuff, IOSIZE,
+	    "\033_Ga=p,i=%d,p=%d,x=%d,y=%d,w=%d,h=%d,z=%d,q=2\033\\",
+	    kitty_image_id(id), kitty_image_id(id), src_x, src_y, w, h, z);
+
+    term_windgoto(row, col);
+    out_str((char_u *)IObuff);
+    screen_start();
+    setcursor_mayforce(TRUE);
+    out_flush();
+}
+
+/*
+ * Delete image placement with image id "id" (which is also its placement id).
+ * If "del_data" is true, then its data will be freed by the terminal (see
+ * https://sw.kovidgoyal.net/kitty/graphics-protocol/#deleting-images).
+ */
+    void
+kitty_delete(int id, bool del_data)
+{
+    char d_key = del_data ? 'I' : 'i';
+
+    vim_snprintf((char *)IObuff, IOSIZE,
+	    "\033_Ga=d,d=%c,i=%d,p=%d,q=2\033\\", d_key, kitty_image_id(id),
+	    kitty_image_id(id));
+
+    out_str((char_u *)IObuff);
+    out_flush();
 }
 
 /*
@@ -238,27 +211,6 @@ kitty_probe_parse(char *buf, int n)
 
     // A positive kitty reply contains the literal "_Gi=31;OK".
     return strstr(buf, "_Gi=31;OK") != NULL;
-}
-
-/*
- * Build a kitty "delete image" APC sequence for the placement created
- * by kitty_encode() with the matching `id`.  The caller must
- * vim_free() the returned buffer.  Returns NULL on OOM or id <= 0.
- *
- * Sequence: `\e_Ga=d,i=<id>,q=2\e\\`
- *	a=d  -> action: delete
- *	i=   -> image id (target placement)
- *	q=2  -> suppress status reply
- */
-    char_u *
-kitty_delete(int id)
-{
-    char_u  buf[40];
-
-    if (id <= 0)
-	return NULL;
-    vim_snprintf((char *)buf, sizeof(buf), "\033_Ga=d,i=%d,q=2\033\\", id);
-    return vim_strsave(buf);
 }
 
 #endif // FEAT_IMAGE_KITTY || PROTO
