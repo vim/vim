@@ -3356,7 +3356,7 @@ spell_soundfold_sal(slang_T *slang, char_u *inword, char_u *res)
 	if (n >= 0)
 	{
 	    // check all rules for the same letter
-	    for (; (s = smp[n].sm_lead)[0] == c; ++n)
+	    for (; n < slang->sl_sal.ga_len && (s = smp[n].sm_lead)[0] == c; ++n)
 	    {
 		// Quickly skip entries that don't match the word.  Most
 		// entries are less than three chars, optimize for that.
@@ -3646,7 +3646,8 @@ spell_soundfold_wsal(slang_T *slang, char_u *inword, char_u *res)
 	    // Check all rules for the same index byte.
 	    // If c is 0x300 need extra check for the end of the array, as
 	    // (c & 0xff) is NUL.
-	    for (; ((ws = smp[n].sm_lead_w)[0] & 0xff) == (c & 0xff)
+	    for (; n < slang->sl_sal.ga_len
+			&& ((ws = smp[n].sm_lead_w)[0] & 0xff) == (c & 0xff)
 							 && ws[0] != NUL; ++n)
 	    {
 		// Quickly skip entries that don't match the word.  Most
