@@ -694,8 +694,8 @@ draw_layer_get_texture(
 
     // Scale texture to actual size
     node = gsk_texture_scale_node_new(texture,
-	    &GRAPHENE_RECT_INIT(FILL_X(0), FILL_Y(row),
-		(da->n_cols + bleed) * gui.char_width, gui.char_height),
+		&GRAPHENE_RECT_INIT(FILL_X(0), FILL_Y(row),
+		(da->n_cols + bleed) * gui.char_width, gui.char_height + bleed),
 	    GSK_SCALING_FILTER_NEAREST);
     if (bleed)
     {
@@ -704,7 +704,7 @@ draw_layer_get_texture(
 	new = gsk_clip_node_new(node,
 		&GRAPHENE_RECT_INIT(FILL_X(0), FILL_Y(row),
 		    da->n_cols * gui.char_width + da->bleed_right,
-		    gui.char_height));
+		    gui.char_height + 1));
 	gsk_render_node_unref(node);
 	node = new;
     }
