@@ -578,6 +578,18 @@ check_for_opt_bool_or_number_arg(typval_T *args, int idx)
 }
 
 /*
+ * Check for an optional bool or dict argument at 'idx'.
+ * Return FAIL if the type is wrong.
+ */
+    int
+check_for_opt_bool_or_dict_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type == VAR_UNKNOWN || args[idx].v_type == VAR_DICT)
+	return OK;
+    return check_for_bool_arg(args, idx);
+}
+
+/*
  * Give an error and return FAIL unless "args[idx]" is a blob.
  */
     int

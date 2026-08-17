@@ -2657,6 +2657,7 @@ enddef
 
 def Test_listener_add()
   v9.CheckSourceDefAndScriptFailure(['listener_add("1", true)'], ['E1013: Argument 2: type mismatch, expected string but got bool', 'E1220: String or Number required for argument 2'])
+  v9.CheckSourceDefAndScriptFailure(['listener_add("1", 1, [1])'], ['E1013: Argument 3: type mismatch, expected bool but got list<number>', 'E1212: Bool required for argument 3'])
 enddef
 
 def Test_listener_flush()
