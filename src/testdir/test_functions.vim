@@ -4601,6 +4601,9 @@ func Test_base64_encoding()
     call assert_equal(0z00, base64_decode("===="))
     call assert_equal(0z, base64_decode(""))
 
+    #" a zero byte in the last group is not padding
+    call assert_equal('AQAC', base64_encode(0z010002))
+
     #" Test for invalid padding
     call assert_equal('Hello', g:Blob2Str(base64_decode("SGVsbG8=")))
     call assert_fails('call base64_decode("SGVsbG9=")', 'E475:')
