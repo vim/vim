@@ -671,14 +671,18 @@ func Test_clientserver_serverlist_list()
 
   " Don't use channel:2000, because previous tests use that and it may take a
   " while for the channel to fully close.
-  let actual = cmd .. ' --servername XVIMTEST'
+  " Use a name of its own: when a server of another test is still running Vim
+  " appends a number to the name.
+  let actual = cmd .. ' --servername XVIMSRVLIST'
 
   let job = job_start(actual, {'stoponexit': 'kill', 'out_io': 'null'})
 
-  call WaitForAssert({-> assert_match('XVIMTEST', serverlist())})
+  call WaitForAssert({-> assert_match('XVIMSRVLIST', serverlist())})
 
-  call assert_equal('list<string>', typename(serverlist(#{list: v:true})))
-  call assert_true(serverlist(#{list: v:true})->index('XVIMTEST') != -1)
+  " Use a pattern, the name may have a number appended to it.
+  let servers = serverlist(#{list: v:true})
+  call assert_equal('list<string>', typename(servers))
+  call assert_notequal(-1, match(servers, '^XVIMSRVLIST'))
 
   if has('win32')
     call job_stop(job, 'kill')
