@@ -11887,4 +11887,21 @@ def Test_colon_whitespace()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" A closure in the initializer of an object variable, with the constructor
+" called without arguments.
+def Test_class_member_closure()
+  var lines =<< trim END
+    vim9script
+    class C
+      def F(): number
+        return 7
+      enddef
+      var A = () => this.F()
+    endclass
+    var c = C.new()
+    assert_equal(7, c.A())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
