@@ -8942,6 +8942,7 @@ list-repeat	windows.txt	/*list-repeat*
 list2blob()	builtin.txt	/*list2blob()*
 list2str()	builtin.txt	/*list2str()*
 list2tuple()	builtin.txt	/*list2tuple()*
+listener-text	builtin.txt	/*listener-text*
 listener_add()	builtin.txt	/*listener_add()*
 listener_flush()	builtin.txt	/*listener_flush()*
 listener_remove()	builtin.txt	/*listener_remove()*
