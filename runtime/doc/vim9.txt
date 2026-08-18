@@ -914,8 +914,16 @@ Notes:
 	echo [1, 2]
 		[3, 4]
 - In some cases it is difficult for Vim to parse a command, especially when
-  commands are used as an argument to another command, such as `:windo`.  In
-  those cases the line continuation with a backslash has to be used.
+  commands are used as an argument to another command, such as `:windo`,
+  `:command` or `:autocmd`.  In those cases the line continuation with a
+  backslash has to be used.  For example: >
+	command! Foo call Bar('x', {
+	      \ 'key': 'value',
+	      \ })
+	autocmd BufWritePre * call Bar('x', {
+	      \ 'key': 'value',
+	      \ })
+<
 
 
 White space ~
