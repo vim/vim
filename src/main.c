@@ -2265,11 +2265,11 @@ command_line_scan(mparm_T *parmp)
 # ifdef FEAT_CLIENTSERVER
 		else if (STRNICMP(argv[0] + argv_idx, "serverlist", 10) == 0)
 		    ; // already processed -- no arg
-		else if (STRNICMP(argv[0] + argv_idx, "servername", 10) == 0
-		       || STRNICMP(argv[0] + argv_idx, "serversend", 10) == 0
+		else if (STRICMP(argv[0] + argv_idx, "servername") == 0
+		       || STRICMP(argv[0] + argv_idx, "serversend") == 0
 		       // Don't put this under FEAT_CLIENTSERVER_BACKENDS, just
 		       // let it be ignored. Makes tests less complicated
-		       || STRNICMP(argv[0] + argv_idx, "clientserver", 12) == 0
+		       || STRICMP(argv[0] + argv_idx, "clientserver") == 0
 		       )
 		{
 		    // already processed -- snatch the following arg

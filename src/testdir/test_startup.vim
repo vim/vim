@@ -985,6 +985,18 @@ func Test_v_argv()
   call assert_equal(['arg1', '--cmd', 'echo v:argv', '--cmd', 'q'']'], list[idx:])
 endfunc
 
+func Test_longopt_prefix_not_accepted()
+  CheckNotGui
+  CheckFeature clientserver
+
+  let command = printf('%s -es -X -Nu NONE -i NONE -n',
+    \ GetVimCommand())
+  let output = system($'{command} --servername=test --clientserver socket 2>&1')
+
+  call assert_notequal(0, v:shell_error)
+  call assert_match('Unknown option', output)
+endfunc
+
 " Test for the "-r" recovery mode option
 func Test_r_arg()
   " Can't catch the output of gvim.
