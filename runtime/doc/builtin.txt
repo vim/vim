@@ -187,12 +187,12 @@ expand({expr} [, {nosuf} [, {list}]])
 expandcmd({string} [, {options}])
 				String	expand {string} like with `:edit`
 extend({expr1}, {expr2} [, {expr3}])
-				List/Dict
+				List/Dict/Blob
 					insert items of {expr2} into {expr1}
 extendnew({expr1}, {expr2} [, {expr3}])
-				List/Dict
-					like |extend()| but creates a new List
-					or Dictionary
+				List/Dict/Blob
+					like |extend()| but creates a new
+					List, Dictionary or Blob
 feedkeys({string} [, {mode}])	none	add key sequence to typeahead buffer
 filecopy({from}, {to})		Number	|TRUE| if copying file {from} to {to}
 					worked
@@ -633,8 +633,8 @@ simplify({filename})		String	simplify filename as much as possible
 sin({expr})			Float	sine of {expr}
 sinh({expr})			Float	hyperbolic sine of {expr}
 slice({expr}, {start} [, {end}])
-				String/List/Blob
-					slice of a String, List or Blob
+				String/List/Blob/Tuple
+					slice of a String, List, Blob or Tuple
 sort({list} [, {how} [, {dict}]])
 				List	sort {list}, compare with {how}
 sound_clear()			none	stop playing all sounds
@@ -3130,24 +3130,27 @@ expandcmd({string} [, {options}])			*expandcmd()*
 
 
 extend({expr1}, {expr2} [, {expr3}])			*extend()*
-		{expr1} and {expr2} must be both |Lists| or both
-		|Dictionaries|.
+		{expr1} and {expr2} must be both |Lists|, |Dictionaries| or
+		|Blobs|.
 
-		If they are |Lists|: Append {expr2} to {expr1}.
+		If they are |Lists| or |Blobs|: Append {expr2} to {expr1}.
 		If {expr3} is given insert the items of {expr2} before the
-		item with index {expr3} in {expr1}.  When {expr3} is zero
+		item with index/byte {expr3} in {expr1}.  When {expr3} is zero
 		insert before the first item.  When {expr3} is equal to
 		len({expr1}) then {expr2} is appended.
 		Examples: >
 			:echo sort(extend(mylist, [7, 5]))
 			:call extend(mylist, [2, 3], 1)
-<		When {expr1} is the same List as {expr2} then the number of
-		items copied is equal to the original length of the List.
+<		When {expr1} is the same List or Blob as {expr2} then the
+		number of items copied is equal to the original length of the
+		List or the Blob.
 		E.g., when {expr3} is 1 you get N new copies of the first item
 		(where N is the original length of the List).
-		Use |add()| to concatenate one item to a list.  To concatenate
-		two lists into a new list use the + operator: >
+		Use |add()| to concatenate one item to a list or a blob.
+		To concatenate two lists or blobs into a new one use the +
+		operator: >
 			:let newlist = [1, 2, 3] + [4, 5]
+			:let newblob = 0z1122 + 0z3344
 <
 		If they are |Dictionaries|:
 		Add all entries from {expr2} to {expr1}.
@@ -3160,7 +3163,7 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 
 		{expr1} is changed when {expr2} is not empty.  If necessary
 		make a copy of {expr1} first or use |extendnew()| to return a
-		new List/Dictionary.
+		new List/Dictionary/Blob.
 		{expr2} remains unchanged.
 		When {expr1} is locked and {expr2} is not empty the operation
 		fails.
@@ -3169,17 +3172,17 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 		Can also be used as a |method|: >
 			mylist->extend(otherlist)
 <
-		Return type: list<{type}> or dict<{type}> depending on {expr1}
-		and {expr2}, in case of error: |Number|
+		Return type: list<{type}>, dict<{type}> or blob depending on
+		{expr1} and {expr2}, in case of error: |Number|
 
 
 extendnew({expr1}, {expr2} [, {expr3}])			*extendnew()*
 		Like |extend()| but instead of adding items to {expr1} a new
-		List or Dictionary is created and returned.  {expr1} remains
-		unchanged.
+		List, Dictionary or Blob is created and returned.  {expr1}
+		remains unchanged.
 
-		Return type: list<{type}> or dict<{type}> depending on {expr1}
-		and {expr2}, in case of error: |Number|
+		Return type: list<{type}>, dict<{type}> or blob depending on
+		{expr1} and {expr2}, in case of error: |Number|
 
 
 feedkeys({string} [, {mode}])				*feedkeys()*
@@ -10731,7 +10734,7 @@ slice({expr}, {start} [, {end}])			*slice()*
 		Can also be used as a |method|: >
 			GetList()->slice(offset)
 <
-		Return type: list<{type}> or tuple<{type}>
+		Return type: |String|, list<{type}>, blob or tuple<{type}>
 
 
 sort({list} [, {how} [, {dict}]])			*sort()* *E702*

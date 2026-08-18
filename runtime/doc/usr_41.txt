@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.2.  Last change: 2026 Jun 09
+*usr_41.txt*	For Vim version 9.2.  Last change: 2026 Aug 18
 
 
 		     VIM USER MANUAL	by Bram Moolenaar
@@ -921,11 +921,28 @@ Floating point computation:				*float-functions*
 	isnan()			check for not a number
 
 Blob manipulation:					*blob-functions*
+	get()			get a byte without error for wrong index
+	len()			number of bytes in a Blob
+	empty()			check if Blob is empty
+	insert()		insert a byte somewhere in a Blob
+	add()			append a byte to a Blob
+	extend()		append a Blob to a Blob
+	extendnew()		make a new Blob and append bytes
+	remove()		remove one or more bytes from a Blob
+	copy()			make a copy of a Blob
+	filter()		remove selected bytes from a Blob
+	map()			change each byte of a Blob
+	mapnew()		make a new Blob with changed bytes
+	foreach()		apply function to Blob bytes
+	reduce()		reduce a Blob to a value
+	slice()			take a slice of a Blob
 	blob2list()		get a list of numbers from a blob
 	list2blob()		get a blob from a list of numbers
 	reverse()		reverse the order of numbers in a blob
+	string()		String representation of a Blob
 	index()			index of a value in a Blob
 	indexof()		index in a Blob where an expression is true
+	repeat()		repeat a Blob multiple times
 	items()			get List of Blob index-value pairs
 
 Other computation:					*bitwise-function*

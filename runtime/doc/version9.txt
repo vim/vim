@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Aug 16
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Aug 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52700,6 +52700,9 @@ Changed ~
 - |serverlist()| can return a list of all available server names.
 - Improve visual appearance when the terminal does not support colors.
 - Improve diff highlighting for terminals with 256 or less colors.
+- |listener_add()| accepts a Dictionary of options and can include the
+  resulting text of a change |listener-text|.
+- |extend()| and |extendnew()| also accept |Blobs|.
 
 
 							*added-9.3*

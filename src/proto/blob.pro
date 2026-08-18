@@ -2,7 +2,7 @@
 blob_T *blob_alloc(void);
 int rettv_blob_alloc(typval_T *rettv);
 void rettv_blob_set(typval_T *rettv, blob_T *b);
-int blob_copy(blob_T *from, typval_T *to);
+blob_T *blob_copy(blob_T *orig);
 void blob_free(blob_T *b);
 void blob_unref(blob_T *b);
 long blob_len(blob_T *b);
@@ -23,6 +23,7 @@ void blob_add(typval_T *argvars, typval_T *rettv);
 void blob_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg);
 void blob_filter_map(blob_T *blob_arg, filtermap_T filtermap, typval_T *expr, char_u *arg_errmsg, typval_T *rettv);
 void blob_insert_func(typval_T *argvars, typval_T *rettv);
+void blob_extend_func(typval_T *argvars, char_u *arg_errmsg, int is_new, typval_T *rettv);
 void blob_reduce(typval_T *argvars, typval_T *expr, typval_T *rettv);
 void blob_reverse(blob_T *b, typval_T *rettv);
 void f_blob2list(typval_T *argvars, typval_T *rettv);

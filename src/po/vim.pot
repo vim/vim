@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-07-29 19:37+0000\n"
+"POT-Creation-Date: 2026-08-18 20:22+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8900,6 +8900,9 @@ msgid "E1579: -completeopt=escape cannot be used with -nargs=_"
 msgstr ""
 
 msgid "E1580: Too many text properties on a single line"
+msgstr ""
+
+msgid "E1581: Cannot extend a null blob"
 msgstr ""
 
 #. type of cmdline window or 0

@@ -627,34 +627,6 @@ arg_string_or_blob(
 }
 
 /*
- * Check "type" is a list of 'any' or a dict of 'any'.
- */
-    static int
-arg_list_or_dict(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
-{
-    if (type->tt_type == VAR_LIST
-	    || type->tt_type == VAR_DICT
-	    || type_any_or_unknown(type))
-	return OK;
-    arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
-    return FAIL;
-}
-
-/*
- * Check "type" is a list of 'any' or a dict of 'any'.  And modifiable.
- */
-    static int
-arg_list_or_dict_mod(
-	type_T	     *type,
-	type_T	     *decl_type,
-	argcontext_T *context)
-{
-    if (arg_list_or_dict(type, decl_type, context) == FAIL)
-	return FAIL;
-    return arg_type_modifiable(type, context->arg_idx + 1);
-}
-
-/*
  * Check "type" is a list of 'any', a tuple of 'any' or dict of 'any'.
  */
     static int
@@ -674,10 +646,9 @@ arg_list_or_tuple_or_dict(
 
 /*
  * Check "type" is a list of 'any', a dict of 'any' or a blob.
- * Also check if "type" is modifiable.
  */
     static int
-arg_list_or_dict_or_blob_mod(
+arg_list_or_dict_or_blob(
 	type_T	     *type,
 	type_T	     *decl_type UNUSED,
 	argcontext_T *context)
@@ -686,9 +657,24 @@ arg_list_or_dict_or_blob_mod(
 	    || type->tt_type == VAR_DICT
 	    || type->tt_type == VAR_BLOB
 	    || type_any_or_unknown(type))
-	return arg_type_modifiable(type, context->arg_idx + 1);
+	return OK;
     arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
     return FAIL;
+}
+
+/*
+ * Check "type" is a list of 'any', a dict of 'any' or a blob.
+ * Also check if "type" is modifiable.
+ */
+    static int
+arg_list_or_dict_or_blob_mod(
+	type_T	     *type,
+	type_T	     *decl_type,
+	argcontext_T *context)
+{
+    if (arg_list_or_dict_or_blob(type, decl_type, context) == FAIL)
+	return FAIL;
+    return arg_type_modifiable(type, context->arg_idx + 1);
 }
 
 /*
@@ -1107,7 +1093,7 @@ arg_extend3(type_T *type, type_T *decl_type, argcontext_T *context)
 {
     type_T *first_type = context->arg_types[context->arg_idx - 2].type_curr;
 
-    if (first_type->tt_type == VAR_LIST)
+    if (first_type->tt_type == VAR_LIST || first_type->tt_type == VAR_BLOB)
 	return arg_number(type, decl_type, context);
     if (first_type->tt_type == VAR_DICT)
 	return arg_string(type, decl_type, context);
@@ -1359,8 +1345,8 @@ static argcheck_T arg13_cursor[] = {arg_cursor1, arg_number, arg_number};
 static argcheck_T arg12_deepcopy[] = {arg_any, arg_bool};
 static argcheck_T arg12_execute[] = {arg_string_or_list_string, arg_string};
 static argcheck_T arg12_getchar[] = {arg_bool_or_nr, arg_dict_any};
-static argcheck_T arg23_extend[] = {arg_list_or_dict_mod, arg_same_as_prev, arg_extend3};
-static argcheck_T arg23_extendnew[] = {arg_list_or_dict, arg_same_struct_as_prev, arg_extend3};
+static argcheck_T arg23_extend[] = {arg_list_or_dict_or_blob_mod, arg_same_as_prev, arg_extend3};
+static argcheck_T arg23_extendnew[] = {arg_list_or_dict_or_blob, arg_same_struct_as_prev, arg_extend3};
 static argcheck_T arg23_get[] = {arg_get1, arg_string_or_nr, arg_any};
 static argcheck_T arg14_glob[] = {arg_string, arg_bool, arg_bool, arg_bool};
 static argcheck_T arg25_globpath[] = {arg_string, arg_string, arg_bool, arg_bool, arg_bool};
@@ -1665,6 +1651,8 @@ ret_extend(int argcount,
 		return &t_list_any;
 	    if (argtypes[0].type_curr->tt_type == VAR_DICT)
 		return &t_dict_any;
+	    if (argtypes[0].type_curr->tt_type == VAR_BLOB)
+		return &t_blob;
 	}
 	return argtypes[0].type_curr;
     }

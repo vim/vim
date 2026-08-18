@@ -1193,7 +1193,7 @@ func Test_listdict_compare_complex()
   call v9.CheckLegacyAndVim9Success(lines)
 endfunc
 
-" Test for extending lists and dictionaries
+" Test for extending lists, dictionaries and blobs
 func Test_listdict_extend()
   " Test extend() with lists
 
@@ -1273,8 +1273,59 @@ func Test_listdict_extend()
   call assert_fails("call extend(d, {'b': 0, 'c':'C'}, 1.2)", 'E475:')
   call assert_equal({'a': 'A', 'b': 'B'}, d)
 
-  call assert_fails("call extend([1, 2], 1)", 'E712:')
-  call assert_fails("call extend([1, 2], {})", 'E712:')
+  " Test extend() with blobs
+
+  " Pass the same Blob to extend()
+  let lines =<< trim END
+      VAR b = 0z010203
+      call assert_equal(0z010203010203, extend(b, b))
+      call assert_equal(0z010203010203, b)
+
+      LET b = 0z010203
+      call assert_equal(0z010203040506, extend(b, 0z040506))
+      call assert_equal(0z010203040506, b)
+
+      LET b = 0z010203
+      call extend(b, 0z040506, 0)
+      call assert_equal(0z040506010203, b)
+
+      LET b = 0z010203
+      call extend(b, 0z040506, 1)
+      call assert_equal(0z010405060203, b)
+
+      LET b = 0z010203
+      call extend(b, 0z040506, 3)
+      call assert_equal(0z010203040506, b)
+
+      LET b = 0z010203
+      call extend(b, 0z040506, -1)
+      call assert_equal(0z010204050603, b)
+
+      LET b = 0z010203
+      call extend(b, 0z040506, -3)
+      call assert_equal(0z040506010203, b)
+
+      LET b = 0z010203
+      call assert_equal(0z010203, b->extend(0z))
+      call assert_equal(0z010203, b->extend(test_null_blob()))
+      call assert_equal(0z010203, b)
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+
+  let b = 0z010203
+  call assert_fails("call extend(b, 0z040506, 4)", 'E979:')
+  call assert_fails("call extend(b, 0z040506, -4)", 'E979:')
+  call assert_fails("call extend(b, 0z040506, 1.2)", 'E805:')
+
+  lockvar b
+  call assert_fails("call extend(b, 0z040506)", 'E741:')
+  unlockvar b
+
+  call assert_fails('call extend(test_null_blob(), test_null_blob())', 'E1581:')
+  call assert_fails('call extendnew(test_null_blob(), 0z01)', 'E1581:')
+
+  call assert_fails("call extend([1, 2], 1)", 'E896:')
+  call assert_fails("call extend([1, 2], {})", 'E896:')
 
   " Extend g: dictionary with an invalid variable name
   call assert_fails("call extend(g:, {'-!' : 10})", 'E461:')
@@ -1293,6 +1344,23 @@ func Test_listdict_extend()
       LET l = [1, 5, 7]
       call extend(l, l, 3)
       call assert_equal([1, 5, 7, 1, 5, 7], l)
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+
+  " Extend a blob with itself.
+  let lines =<< trim END
+      VAR b = 0z010507
+      call extend(b, b, 0)
+      call assert_equal(0z010507010507, b)
+      LET b = 0z010507
+      call extend(b, b, 1)
+      call assert_equal(0z010105070507, b)
+      LET b = 0z010507
+      call extend(b, b, 2)
+      call assert_equal(0z010501050707, b)
+      LET b = 0z010507
+      call extend(b, b, 3)
+      call assert_equal(0z010507010507, b)
   END
   call v9.CheckLegacyAndVim9Success(lines)
 endfunc
@@ -1321,6 +1389,18 @@ func Test_listdict_extendnew()
   let d2['c'] = 'C'
   call assert_equal({'a': {'b': 'B'}, 'c': 'C'}, d2)
   call assert_equal({'a': {'b': 'B'}}, d)
+
+  " Test extendnew() with blobs
+  let b = 0z010203
+  call assert_equal(0z0102030405, extendnew(b, 0z0405))
+  call assert_equal(0z010203, b)
+  lockvar b
+  call assert_equal(0z0102030405, extendnew(b, 0z0405))
+  let b2 = extendnew(b, test_null_blob())
+  call assert_equal(0z010203, b2)
+  let b2 += 0z04
+  call assert_equal(0z01020304, b2)
+  call assert_equal(0z010203, b)
 endfunc
 
 func s:check_scope_dict(x, fixed)
@@ -1606,6 +1686,7 @@ func Test_extendnew_leak()
   " This used to leak memory
   for i in range(100) | silent! call extendnew([], [], []) | endfor
   for i in range(100) | silent! call extendnew({}, {}, {}) | endfor
+  for i in range(100) | silent! call extendnew(0z, 0z, 0z) | endfor
 endfunc
 
 " Test for comparing deeply nested List/Dict values

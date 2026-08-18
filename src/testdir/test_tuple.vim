@@ -1755,9 +1755,9 @@ func Test_tuple_extend()
     call extendnew(t, (4, 5))
   END
   call v9.CheckSourceLegacyAndVim9Failure(lines, [
-        \ 'E712: Argument of extend() must be a List or Dictionary',
+        \ 'E896: Argument of extend() must be a List, Dictionary or Blob',
         \ 'E1013: Argument 1: type mismatch, expected list<any> but got tuple<number, number, number>',
-        \ 'E712: Argument of extend() must be a List or Dictionary'])
+        \ 'E896: Argument of extend() must be a List, Dictionary or Blob'])
 endfunc
 
 " Test for filter() with a tuple

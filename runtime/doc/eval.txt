@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.2.  Last change: 2026 Aug 17
+*eval.txt*	For Vim version 9.2.  Last change: 2026 Aug 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -993,8 +993,10 @@ Two blobs can be concatenated with the "+" operator: >
 	:let longblob = myblob + 0z4455
 	:let longblob = 0z4455 + myblob
 <
-A blob can be concatenated with another one in-place using |:let+=|: >
+A blob can be concatenated with another one in-place using |:let+=| or
+|extend()|: >
 	:let myblob += 0z6677
+	:call extend(myblob, 0z6677)
 <
 See |blob-modification| below for more about changing a blob in-place.
 
@@ -1039,9 +1041,11 @@ To change part of a blob you can specify the first and last byte to be
 modified.  The value must have the same number of bytes in the range: >
 	:let blob[3:5] = 0z334455
 
-To add items to a Blob in-place, you can use |:let+=| (|blob-concatenation|): >
+To add items to a Blob in-place, you can use |:let+=| or |extend()|
+(|blob-concatenation|): >
 	:let blobA = 0z1122
 	:let blobA += 0z3344
+	:call extend(blobA, 0z5566)
 <
 When two variables refer to the same Blob, changing one Blob in-place will
 cause the referenced Blob to be changed in-place: >
