@@ -46,6 +46,110 @@ func Test_setpos()
   let twowin = win_getid()
   call setline(1, ['aaa', 'bbb', 'ccc'])
 
+  " setpos() uses the same buffer-relative visual marks as getpos()
+  new Xvisual
+  call setline(1, 'hello world')
+  for normal_cmd in ["normal! gg0vw\<Esc>", "normal! gg0vwo\<Esc>"]
+    execute normal_cmd
+    call setpos("'<", [0, 1, 2, 0])
+    call assert_equal([[0, 1, 2, 0], [0, 1, 7, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+    call setpos("'>", [0, 1, 6, 0])
+    call assert_equal([[0, 1, 2, 0], [0, 1, 6, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+
+    execute normal_cmd
+    call setpos("'>", [0, 1, 6, 0])
+    call assert_equal([[0, 1, 1, 0], [0, 1, 6, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+
+    " Crossing either end changes the ordering of the logical marks.
+    call setpos("'<", [0, 1, 8, 0])
+    call assert_equal([[0, 1, 6, 0], [0, 1, 8, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+    call setpos("'>", [0, 1, 10, 0])
+    call assert_equal([[0, 1, 6, 0], [0, 1, 10, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+    call setpos("'>", [0, 1, 4, 0])
+    call assert_equal([[0, 1, 4, 0], [0, 1, 6, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+    call setpos("'<", [0, 1, 2, 0])
+    call assert_equal([[0, 1, 2, 0], [0, 1, 6, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+
+    " Deleting and recreating either end preserves the other end.
+    execute normal_cmd
+    call setpos("'<", [0, 0, 0, 0])
+    call assert_equal([[0, 1, 7, 0], [0, 1, 7, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+    call setpos("'<", [0, 1, 2, 0])
+    call assert_equal([[0, 1, 2, 0], [0, 1, 7, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+    normal! gvy
+    call assert_equal('ello w', getreg('"'), normal_cmd)
+
+    execute normal_cmd
+    call setpos("'>", [0, 0, 0, 0])
+    call assert_equal([[0, 1, 1, 0], [0, 1, 1, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+    call setpos("'>", [0, 1, 6, 0])
+    call assert_equal([[0, 1, 1, 0], [0, 1, 6, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+    normal! gvy
+    call assert_equal('hello ', getreg('"'), normal_cmd)
+  endfor
+
+  " While Visual mode is active the marks still refer to the last completed
+  " selection.  Leaving Visual mode replaces them with the current selection.
+  execute "normal! gg0vwo\<Esc>"
+  call feedkeys("gg02lv2l", 'xt')
+  call assert_equal('v', mode())
+  call setpos("'<", [0, 1, 2, 0])
+  call assert_equal([[0, 1, 2, 0], [0, 1, 7, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call feedkeys("\<Esc>", 'xt')
+  call assert_equal([[0, 1, 3, 0], [0, 1, 5, 0]],
+        \ [getpos("'<"), getpos("'>")])
+
+  " Moving one logical mark past the other must not discard the old range.
+  %delete _
+  call setline(1, ['one', 'two', 'three'])
+  normal! 2GVjy
+  call setpos("'>", [0, 1, 1, 0])
+  call assert_equal([[0, 1, 1, 0], [0, 2, v:maxcol, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  '<,'>d
+  call assert_equal(['three'], getline(1, '$'))
+
+  " Check crossing the line boundary in the other direction as well.
+  call setline(1, ['one', 'two', 'three'])
+  normal! ggVjy
+  call setpos("'<", [0, 3, 1, 0])
+  call assert_equal([[0, 2, 1, 0], [0, 3, v:maxcol, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  '<,'>d
+  call assert_equal(['one'], getline(1, '$'))
+  bwipe!
+
+  " visual marks can still be initialized independently
+  new Xvisual
+  call setline(1, 'hello world')
+  call setpos("'<", [0, 1, 2, 0])
+  call setpos("'>", [0, 1, 4, 0])
+  call assert_equal([[0, 1, 2, 0], [0, 1, 4, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  bwipe!
+
+  " setcharpos() uses the same visual mark path
+  new Xvisual
+  call setline(1, 'aβcδεz')
+  execute "normal! gg0v$\<Esc>"
+  call setcharpos("'<", [0, 1, 2, 0])
+  call setcharpos("'>", [0, 1, 5, 0])
+  call assert_equal([[0, 1, 2, 0], [0, 1, 5, 0]],
+        \ [getcharpos("'<"), getcharpos("'>")])
+  bwipe!
+
   " for the cursor the buffer number is ignored
   call setpos(".", [0, 2, 1, 0])
   call assert_equal([0, 2, 1, 0], getpos("."))
