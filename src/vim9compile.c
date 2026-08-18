@@ -2265,8 +2265,10 @@ compile_lhs_set_member_type(
 	lhs->lhs_varlen = after - var_start;
 	lhs->lhs_dest = dest_expr;
 	// We don't know the type before evaluating the expression,
-	// use "any" until then.
+	// use "any" until then.  The member index is for the first name,
+	// not for the last index.
 	lhs->lhs_type = &t_any;
+	lhs->lhs_member_idx = -1;
     }
 
     int use_class = lhs->lhs_type != NULL
@@ -2623,7 +2625,17 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 
     if (lhs->lhs_has_index)
     {
-	int range = FALSE;
+	int	range = FALSE;
+	type_T	*type = get_type_on_stack(cctx, 0);
+
+	// A member of an object or class is not obtained by indexing it.
+	if (type->tt_type == VAR_CLASS
+		|| (type->tt_type == VAR_OBJECT && type != &t_object_any))
+	{
+	    char_u *p = var_start + lhs->lhs_varlen;
+
+	    return compile_class_object_index(cctx, &p, type);
+	}
 
 	// Get member from list or dict.  First compile the
 	// index value.
@@ -2673,7 +2685,10 @@ compile_assign_unlet(
 	return FAIL;
     }
 
-    if (lhs->lhs_type == NULL || lhs->lhs_type == &t_any)
+    // For "expr[idx]" the index is compiled before the expression, thus the
+    // resulting type cannot be used here.
+    if (lhs->lhs_dest == dest_expr
+	    || lhs->lhs_type == NULL || lhs->lhs_type == &t_any)
     {
 	// Index on variable of unknown type: check at runtime.
 	dest_type = VAR_ANY;
