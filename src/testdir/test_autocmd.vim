@@ -4070,6 +4070,24 @@ func Test_autocmd_with_block()
   augroup END
 endfunc
 
+" Test for a backslash line continuation in an :autocmd command
+func Test_autocmd_line_continuation()
+  let lines =<< trim END
+      vim9script
+      def Bar(label: string, value: any): void
+        g:result = [label, value]
+      enddef
+      autocmd BufWritePre * call Bar('x', {
+            \ 'key': 'value',
+            \ })
+      doautocmd BufWritePre
+      assert_equal(['x', {'key': 'value'}], g:result)
+  END
+  call v9.CheckScriptSuccess(lines)
+  unlet g:result
+  au! BufWritePre
+endfunc
+
 " Test for a {} block at script level in an :autocmd nested in another one
 func Test_autocmd_nested_block()
   let lines =<< trim END

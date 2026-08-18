@@ -927,6 +927,24 @@ func Test_usercmd_custom()
   delfunc T2
 endfunc
 
+" Test for a backslash line continuation in a :command replacement
+func Test_usercmd_line_continuation()
+  let lines =<< trim END
+      vim9script
+      def Bar(label: string, value: any): void
+        g:result = [label, value]
+      enddef
+      command! Foo call Bar('x', {
+            \ 'key': 'value',
+            \ })
+      Foo
+      assert_equal(['x', {'key': 'value'}], g:result)
+  END
+  call v9.CheckScriptSuccess(lines)
+  unlet g:result
+  delcommand Foo
+endfunc
+
 " Test for a {} block in a command nested in :command or :autocmd
 func Test_usercmd_nested_block()
   command DefineIt command DoNested {
