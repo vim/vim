@@ -1028,12 +1028,16 @@ func Test_terminal_visual_empty_listchars()
   \ ]
   call writefile(lines, 'XtermStart1', 'D')
   let buf = RunVimInTerminal('-S XtermStart1', #{rows: 15})
-  call term_wait(buf)
+  " Wait for the job to finish, otherwise the keys go to the shell.
+  call WaitForAssert({-> assert_match('\[finished\]', term_getline(buf, 7))})
   call term_sendkeys(buf, "V2k")
+  call term_wait(buf)
   call VerifyScreenDump(buf, 'Test_terminal_empty_listchars', {})
   call term_sendkeys(buf, "\<esc>")
   call term_sendkeys(buf, ":set nu\<cr>")
+  call term_wait(buf)
   call term_sendkeys(buf, "ggV2j")
+  call term_wait(buf)
   call VerifyScreenDump(buf, 'Test_terminal_empty_listchars2', {})
 
   call StopVimInTerminal(buf)
@@ -1051,7 +1055,7 @@ func Test_terminal_normal_mode_colored_empty_line()
 	\ 'Xterm_colored.sh', 'D')
   call writefile([':term sh ./Xterm_colored.sh'], 'XtermColored', 'D')
   let buf = RunVimInTerminal('-S XtermColored', #{rows: 10})
-  call term_wait(buf)
+  call WaitForAssert({-> assert_match('\[finished\]', term_getline(buf, 5))})
   call VerifyScreenDump(buf, 'Test_terminal_colored_empty_1', {})
 
   " Enter Terminal-Normal mode: the empty lines must still be gray.
@@ -1075,11 +1079,40 @@ func Test_terminal_visual_colored_empty_line()
   call writefile([':set listchars=', ':term sh ./Xterm_colored.sh'],
 	\ 'XtermColored', 'D')
   let buf = RunVimInTerminal('-S XtermColored', #{rows: 10})
-  call term_wait(buf)
+  call WaitForAssert({-> assert_match('\[finished\]', term_getline(buf, 5))})
 
   call term_sendkeys(buf, "\<C-W>NggVG")
   call term_wait(buf)
   call VerifyScreenDump(buf, 'Test_terminal_visual_colored_empty', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_terminal_hl_terminal_empty_line()
+  CheckScreendump
+  CheckRunVimInTerminal
+  CheckUnix
+
+  " When a background color is set with hl-terminal the empty lines must use
+  " it as well, both while the job runs and in Terminal-Normal mode.
+  let lines = [
+  \ 'highlight Terminal ctermbg=darkred',
+  \ 'set listchars=',
+  \ ':term sh -c "printf ''one\\n\\ntwo\\n\\n''"'
+  \ ]
+  call writefile(lines, 'XtermHlTerm', 'D')
+  let buf = RunVimInTerminal('-S XtermHlTerm', #{rows: 10})
+  call WaitForAssert({-> assert_match('\[finished\]', term_getline(buf, 5))})
+  call VerifyScreenDump(buf, 'Test_terminal_hl_empty_1', {})
+
+  call term_sendkeys(buf, "\<C-W>N")
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_terminal_hl_empty_2', {})
+
+  " The Visual selection must still show on the first cell of an empty line.
+  call term_sendkeys(buf, "ggVG")
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_terminal_hl_empty_3', {})
 
   call StopVimInTerminal(buf)
 endfunc
