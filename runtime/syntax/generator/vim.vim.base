@@ -1669,7 +1669,7 @@ syn region	vimOperParen
       \ end="}"
       \ nextgroup=vimSubscriptBrackets,vimSubscriptDot,vimVar
       \ contains=@vimOperGroup,vimDictColon,vimDictKey
-syn match	vimDictKey	contained	"\<[bwglstav]\ze:\%(\s\|$\)"
+syn match	vimDictKey	contained	"\<[[:alnum:]_-]\+\ze:\%(\s\|$\)"
 syn match	vimDictColon	contained	":"	skipwhite skipnl skipempty nextgroup=vimDictValue
 syn region	vimDictValue	contained transparent
       \ start="\S"
