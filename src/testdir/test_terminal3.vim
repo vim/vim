@@ -1396,4 +1396,27 @@ func Test_terminal_negative_col_oob()
   endfor
 endfunc
 
+" This caused a hang
+func Test_terminal_rep_no_preceding_char()
+  CheckUnix
+  CheckExecutable printf
+
+  " REP repeats the preceding graphic character.  When none was printed yet
+  " the repeat width in libvterm is zero, so the cursor never reached the end
+  " column and Vim looped forever while rendering the sequence.
+  let buf = term_start([&shell, &shellcmdflag, 'printf "%s" ' .. shellescape("\<ESC>[9b")],
+        \ #{term_rows: 10, term_cols: 40})
+  call TermWait(buf)
+  " Getting here without a hang is the test.
+  call assert_true(bufexists(buf))
+  exe 'bwipe! ' .. buf
+
+  " REP after a graphic character still repeats it.
+  let buf = term_start([&shell, &shellcmdflag, 'printf "%s" ' .. shellescape("X\<ESC>[4b")],
+        \ #{term_rows: 10, term_cols: 40})
+  call TermWait(buf)
+  call WaitForAssert({-> assert_equal('XXXXX', term_getline(buf, 1))})
+  exe 'bwipe! ' .. buf
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
