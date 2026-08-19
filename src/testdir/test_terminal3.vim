@@ -1338,7 +1338,6 @@ endfunc
 
 " This caused a Crash
 func Test_terminal_csi_resize_oob()
-  return
   CheckUnix
   CheckExecutable printf
 
