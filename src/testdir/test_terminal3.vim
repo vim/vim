@@ -1088,6 +1088,35 @@ func Test_terminal_visual_colored_empty_line()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_terminal_hl_terminal_empty_line()
+  CheckScreendump
+  CheckRunVimInTerminal
+  CheckUnix
+
+  " When a background color is set with hl-terminal the empty lines must use
+  " it as well, both while the job runs and in Terminal-Normal mode.
+  let lines = [
+  \ 'highlight Terminal ctermbg=darkred',
+  \ 'set listchars=',
+  \ ':term sh -c "printf ''one\\n\\ntwo\\n\\n''"'
+  \ ]
+  call writefile(lines, 'XtermHlTerm', 'D')
+  let buf = RunVimInTerminal('-S XtermHlTerm', #{rows: 10})
+  call WaitForAssert({-> assert_match('\[finished\]', term_getline(buf, 5))})
+  call VerifyScreenDump(buf, 'Test_terminal_hl_empty_1', {})
+
+  call term_sendkeys(buf, "\<C-W>N")
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_terminal_hl_empty_2', {})
+
+  " The Visual selection must still show on the first cell of an empty line.
+  call term_sendkeys(buf, "ggVG")
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_terminal_hl_empty_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_terminal_ansi_color_windows_cui()
   if !has('win32') || has('gui_running')
     throw 'Skipped: only for the Windows CUI'
