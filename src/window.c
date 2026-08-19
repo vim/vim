@@ -1378,10 +1378,13 @@ win_split_ins(
 	if (flags & (WSP_TOP | WSP_BOT))
 	{
 	    // set height and row of new window to full height
+	    // no status line when 'laststatus' is zero
+	    int stl_height = p_ls > 0 ? statusline_height(curfrp->fr_win) : 0;
+
 	    wp->w_winrow = tabline_height();
-	    win_new_height(wp, curfrp->fr_height
-		    - statusline_height(curfrp->fr_win) - WINBAR_HEIGHT(wp));
-	    wp->w_status_height = statusline_height(curfrp->fr_win);
+	    win_new_height(wp, curfrp->fr_height - stl_height
+							  - WINBAR_HEIGHT(wp));
+	    wp->w_status_height = stl_height;
 	}
 	else
 	{

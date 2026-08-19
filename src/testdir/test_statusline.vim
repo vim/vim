@@ -1250,4 +1250,61 @@ func Test_statusline_vsep_borrow_hl_mode_change()
   call StopVimInTerminal(buf)
 endfunc
 
+" Creating a full-height vertical split must not add a status line when
+" 'laststatus' is zero.
+func Test_window_cmd_ls0_splitmove()
+  set laststatus=0
+  let avail = &lines - &cmdheight
+
+  " CTRL-W H and CTRL-W L move a window into a full-height vertical split.
+  for cmd in ['H', 'L']
+    split
+    exe 'wincmd ' .. cmd
+    call assert_equal([0, 0],
+          \ map(range(1, winnr('$')), 'avail - winheight(v:val)'),
+          \ 'wincmd ' .. cmd)
+    only!
+  endfor
+
+  " The same when the full-height vertical split is created directly, which
+  " does not go through win_splitmove().
+  for cmd in ['vert topleft new', 'vert botright new',
+        \ 'topleft vsplit', 'botright vsplit']
+    exe cmd
+    call assert_equal([0, 0],
+          \ map(range(1, winnr('$')), 'avail - winheight(v:val)'), cmd)
+    only!
+  endfor
+
+  " With a horizontal split next to it the new window still spans the full
+  " height; the status line between the stacked windows remains.
+  for cmd in ['split | split | wincmd H', 'split | vert topleft new']
+    exe cmd
+    call assert_equal(0, avail - winheight(1), cmd .. ', left window')
+    call assert_equal(1, avail - winheight(2) - winheight(3),
+          \ cmd .. ', right column')
+    only!
+  endfor
+
+  " The reverse still adds a status line to the upper window.
+  vsplit
+  wincmd K
+  call assert_equal(1, avail - winheight(1) - winheight(2))
+  only!
+
+  " With 'laststatus' set every window does get a status line.
+  for ls in [1, 2]
+    exe 'set laststatus=' .. ls
+    split
+    wincmd H
+    call assert_equal([1, 1],
+          \ map(range(1, winnr('$')), 'avail - winheight(v:val)'),
+          \ 'laststatus=' .. ls)
+    only!
+  endfor
+
+  set laststatus&vim
+  %bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
