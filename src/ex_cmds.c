@@ -4417,6 +4417,7 @@ ex_substitute(exarg_T *eap)
 	    int		do_again;	// do it again after joining lines
 	    int		skip_match = FALSE;
 	    linenr_T	sub_firstlnum;	// nr of first sub line
+	    bool	did_split = false;	// "\r" split the line
 #ifdef FEAT_PROP_POPUP
 	    int		apc_flags = APC_SAVE_FOR_UNDO | APC_SUBSTITUTE;
 	    colnr_T	total_added =  0;
@@ -5124,6 +5125,7 @@ ex_substitute(exarg_T *eap)
 			    ++sub_firstlnum;
 			    ++lnum;
 			    ++line2;
+			    did_split = true;
 			    // move the cursor to the new line, like Vi
 			    ++curwin->w_cursor.lnum;
 			    // copy the rest
@@ -5166,9 +5168,12 @@ skip:
 		 * match, otherwise "\@<=" won't work.
 		 * When the match starts below where we start searching also
 		 * need to replace the line first (using \zs after \n).
+		 * When asking, undo is synced at every match, so a line split
+		 * by "\r" must be replaced in the same undo block.
 		 */
 		if (lastone
 			|| nmatch_tl > 0
+			|| (subflags.do_ask && did_split)
 			|| (nmatch = vim_regexec_multi(&regmatch, curwin,
 							curbuf, sub_firstlnum,
 						    matchcol, NULL)) == 0
@@ -5247,6 +5252,7 @@ skip:
 			prev_matchcol = (colnr_T)(sub_firstline.length
 							      - prev_matchcol);
 			copycol = 0;
+			did_split = false;
 		    }
 		    if (nmatch == -1 && !lastone)
 			nmatch = vim_regexec_multi(&regmatch, curwin, curbuf,

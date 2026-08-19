@@ -1526,4 +1526,27 @@ func Test_substitute_expr_cpo()
   delfunc XSubExpr
 endfunc
 
+" Test that undo after a confirmed substitution restores the state right
+" before the confirmed match, also when "\r" splits the line (issue #4798)
+func Test_sub_undo_after_confirm()
+  new
+  call setline(1, 'foofoo')
+  call feedkeys(":s/foo/bar\\r/gc\<CR>yy", 'xt')
+  call assert_equal(['bar', 'bar', ''], getline(1, '$'))
+  call feedkeys('u', 'xt')
+  call assert_equal(['bar', 'foo'], getline(1, '$'))
+  call feedkeys('u', 'xt')
+  call assert_equal(['foofoo'], getline(1, '$'))
+  bwipe!
+
+  " Without "\r" all the matches in one line are still undone at once.
+  new
+  call setline(1, 'aXbXcXd')
+  call feedkeys(":s/X/-/gc\<CR>yyy", 'xt')
+  call assert_equal(['a-b-c-d'], getline(1, '$'))
+  call feedkeys('u', 'xt')
+  call assert_equal(['aXbXcXd'], getline(1, '$'))
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
