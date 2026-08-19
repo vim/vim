@@ -575,6 +575,9 @@ au BufNewFile,BufRead */.sway/config		setf swayconfig
 " IDL (Interface Description Language)
 au BufNewFile,BufRead *.idl			call dist#ft#FTidl()
 
+" iCalendar
+au BufNewFile,BufRead *.ics			setf icalendar
+
 " Icewm menu
 au BufNewFile,BufRead */.icewm/menu		setf icemenu
 

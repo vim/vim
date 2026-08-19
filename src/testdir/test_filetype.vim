@@ -400,6 +400,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     hyprlang: ['hyprlock.conf', 'hyprland.conf', 'hypridle.conf', 'hyprpaper.conf', '/hypr/foo.conf'],
     i3config: ['/home/user/.i3/config', '/home/user/.config/i3/config', '/etc/i3/config', '/etc/xdg/i3/config'],
     ibasic: ['file.iba', 'file.ibi'],
+    icalendar: ['file.ics'],
     icemenu: ['/.icewm/menu', 'any/.icewm/menu'],
     icon: ['file.icn'],
     idris2: ['file.idr'],
