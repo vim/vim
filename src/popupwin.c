@@ -5847,6 +5847,13 @@ popup_do_filter(int c)
 	return FALSE;
 #endif
 
+    // Vim is waiting for a key at a prompt of its own, the key is not meant
+    // for a popup filter. MODE_HITRETURN includes MODE_NORMAL, thus the
+    // filter mode check below would match.
+    if (State == MODE_HITRETURN || State == MODE_ASKMORE
+	    || State == MODE_CONFIRM || State == MODE_EXTERNCMD)
+	return FALSE;
+
     if (recursive)
 	return FALSE;
     recursive = TRUE;

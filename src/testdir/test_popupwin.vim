@@ -1786,11 +1786,12 @@ func Test_popup_filter_win_execute_error()
   call writefile(lines, 'XtestPopupWinExecuteError', 'D')
   let buf = RunVimInTerminal('-S XtestPopupWinExecuteError', #{rows: 10, wait_for_ruler: 0})
 
+  " The CR is consumed by the hit-enter prompt, the key after it reaches the
+  " popup filter.
   call WaitFor({-> term_getline(buf, 9) =~ 'Not an editor command: invalidCommand'})
   call term_sendkeys(buf, "\<CR>")
-  call WaitFor({-> term_getline(buf, 9) =~ 'Unknown function: invalidfilter'})
-  call term_sendkeys(buf, "\<CR>")
-  call WaitFor({-> term_getline(buf, 9) =~ 'Not allowed in a popup window'})
+  call term_sendkeys(buf, "x")
+  call WaitFor({-> term_getline(buf, 10) =~ 'Unknown function: invalidfilter'})
   call term_sendkeys(buf, "\<CR>")
   call term_sendkeys(buf, "\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_win_execute', {})
@@ -6279,6 +6280,35 @@ func Test_popupwin_textprop_redraw()
 
   call term_sendkeys(buf, "\<F3>")
   call VerifyScreenDump(buf, 'Test_popupwin_textprop_redraw_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_popup_no_filter_at_hit_enter()
+  CheckScreendump
+
+  let lines =<< trim END
+      call setline(1, range(1, 20))
+      func MyFilter(id, key)
+        call popup_close(a:id)
+        return 1
+      endfunc
+      func ShowPopup()
+        call popup_create(['one'], #{line: 8, col: 5, filter: 'MyFilter'})
+        redraw
+        echomsg repeat('x', &columns * 2)
+      endfunc
+      nnoremap <F3> <Cmd>call ShowPopup()<CR>
+  END
+  call writefile(lines, 'XtestPopupHitEnter', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupHitEnter', #{rows: 15})
+  call term_sendkeys(buf, "\<F3>")
+  call VerifyScreenDump(buf, 'Test_popupwin_hit_enter_1', {})
+
+  " The key goes to the hit-enter prompt, not to the popup filter, thus the
+  " popup is still there.
+  call term_sendkeys(buf, "\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_hit_enter_2', {})
 
   call StopVimInTerminal(buf)
 endfunc
