@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Aug 18
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Aug 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -9984,9 +9984,13 @@ setbufline({buf}, {lnum}, {text})			*setbufline()*
 setbufvar({buf}, {varname}, {val})			*setbufvar()*
 		Set option or local variable {varname} in buffer {buf} to
 		{val}.
-		This also works for a global or local window option, but it
-		doesn't work for a global or local window variable.
-		For a local window option the global value is unchanged.
+		This also works for a global option or a window-local option,
+		but it doesn't work for a global or local window variable.  A
+		window-local option is set in a window of the current tab page
+		that displays {buf}, and the global value is unchanged.  When
+		no window in the current tab page displays {buf} the option is
+		not set and no error is given; use |setwinvar()| or
+		|win_execute()| for that.
 		For the use of {buf}, see |bufname()| above.
 		The {varname} argument is a string.
 		Note that the variable name without "b:" must be used.
