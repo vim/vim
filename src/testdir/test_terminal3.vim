@@ -1419,4 +1419,31 @@ func Test_terminal_rep_no_preceding_char()
   exe 'bwipe! ' .. buf
 endfunc
 
+" This caused a Crash
+func Test_terminal_scrollregion_resize_oob()
+  CheckUnix
+  CheckExecutable printf
+
+  " A scroll region set before the terminal was made smaller kept its old top
+  " row, since on_resize() only clamped the bottom row.  Every scroll after
+  " that used a rectangle that ends before it starts, which made libvterm pass
+  " a negative size to memmove().
+
+  " Sequences: set the scroll region to rows 5-9, shrink the terminal to three
+  " rows with CSI 8 ; rows ; cols t, then
+  " 1 SU, 2 SD, 3 a line feed at the bottom of the stale region
+  let seqs = ["\<ESC>[5;9r\<ESC>[8;3;40t\<ESC>[5S",
+        \ "\<ESC>[5;9r\<ESC>[8;3;40t\<ESC>[5T",
+        \ "\<ESC>[5;9r\<ESC>[8;3;40t\n\n\n"]
+
+  for seq in seqs
+    let buf = term_start([&shell, &shellcmdflag, 'printf "%s" ' .. shellescape(seq)],
+          \ #{term_rows: 10, term_cols: 40})
+    call TermWait(buf)
+    " Getting here without a crash (and no ASAN report) is the test.
+    call assert_true(bufexists(buf))
+    exe 'bwipe! ' .. buf
+  endfor
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
