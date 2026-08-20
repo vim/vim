@@ -1921,7 +1921,7 @@ early_arg_scan(mparm_T *parmp UNUSED)
 #  endif
 	}
 #  ifdef FEAT_CLIENTSERVER_BACKENDS
-	else if (STRNICMP(argv[i], "--clientserver", 14) == 0)
+	else if (STRICMP(argv[i], "--clientserver") == 0)
 	{
 	    char_u *arg;
 	    if (i == argc - 1)
