@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Aug 18
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Aug 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52703,6 +52703,8 @@ Changed ~
 - |listener_add()| accepts a Dictionary of options and can include the
   resulting text of a change |listener-text|.
 - |extend()| and |extendnew()| also accept |Blobs|.
+- events like |CursorMoved| are no longer triggered for what happened while
+  they were ignored with 'eventignore'.
 
 
 							*added-9.3*

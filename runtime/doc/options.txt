@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Aug 19
+*options.txt*	For Vim version 9.2.  Last change: 2026 Aug 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3583,6 +3583,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	To ignore all but some events, a "-" prefix can be used: >
 	    :set ei=all,-WinLeave
 <
+	Events that are triggered by comparing the current state against a
+	stored one, such as |CursorMoved| and |TextChanged|, are not triggered
+	afterwards for what happened while they were ignored.
+
 						*'eventignorewin'* *'eiw'*
 'eventignorewin' 'eiw'	string	(default "")
 			window-local

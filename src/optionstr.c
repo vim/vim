@@ -2411,9 +2411,24 @@ expand_set_encoding(optexpand_T *args, int *numMatches, char_u ***matches)
 did_set_eventignore(optset_T *args)
 {
     char_u	**varp = (char_u **)args->os_varp;
+    char_u	*oldval = args->os_oldval.string;
+    char_u	*newval;
 
     if (check_ei(*varp) == FAIL)
 	return e_invalid_argument;
+
+    if (oldval == NULL || STRCMP(oldval, *varp) == 0)
+	return NULL;
+
+    // Deal with the events that are triggered by comparing against a stored
+    // state, with the old value in effect: what happened while an event was
+    // ignored must not be reported once it is not ignored anymore, and what
+    // happened before must still be reported.
+    newval = *varp;
+    *varp = oldval;
+    may_trigger_deferred_events();
+    *varp = newval;
+
     return NULL;
 }
 

@@ -5951,6 +5951,169 @@ func Test_eventignore_subtract()
   %bw!
 endfunc
 
+" A cursor move made while CursorMoved is ignored is not reported once the
+" event is not ignored anymore.
+func Test_eventignore_cursormoved()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, range(1, 300))
+    let g:moved = 0
+    autocmd CursorMoved * let g:moved += 1
+
+    func MoveWhileIgnored()
+      set eventignore=all
+      call cursor(100, 1)
+      call cursor(200, 1)
+      set eventignore=
+    endfunc
+
+    func MoveThenIgnore()
+      call cursor(50, 1)
+      set eventignore=all
+      set eventignore=
+    endfunc
+
+    func MoveExWhileIgnored()
+      set eventignore=all
+      100
+      200
+      set eventignore=
+    endfunc
+
+    " The move under "all" is not reported, the one under "WinEnter" is.
+    func MoveWithTwoStages()
+      set eventignore=all
+      call cursor(100, 1)
+      set eventignore=WinEnter
+      call cursor(200, 1)
+      set eventignore=
+    endfunc
+  END
+  call writefile(lines, 'XTest_eventignore_cm', 'D')
+  let buf = RunVimInTerminal('-S XTest_eventignore_cm', {'rows': 10})
+
+  " Reset the counter in the same command line as the move, so that the main
+  " loop only runs once the move has been made.
+  call term_sendkeys(buf, ":let g:moved = 0 | call MoveWhileIgnored()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'moved:' g:moved\<CR>")
+  call WaitForAssert({-> assert_match('^moved: 0\>', term_getline(buf, 10))}, 1000)
+
+  " A move made before the event was ignored is still reported.
+  call term_sendkeys(buf, ":let g:moved = 0 | call MoveThenIgnore()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'moved:' g:moved\<CR>")
+  call WaitForAssert({-> assert_match('^moved: 1\>', term_getline(buf, 10))}, 1000)
+
+  " Same as the first check, but moving with an Ex line address.
+  call term_sendkeys(buf, ":let g:moved = 0 | call MoveExWhileIgnored()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'moved:' g:moved\<CR>")
+  call WaitForAssert({-> assert_match('^moved: 0\>', term_getline(buf, 10))}, 1000)
+
+  " Only the move made while CursorMoved was not ignored is reported.
+  call term_sendkeys(buf, ":let g:moved = 0 | call MoveWithTwoStages()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'moved:' g:moved\<CR>")
+  call WaitForAssert({-> assert_match('^moved: 1\>', term_getline(buf, 10))}, 1000)
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Same as Test_eventignore_cursormoved(), but driven from Python, which
+" updates the screen after every command.
+func Test_eventignore_cursormoved_python()
+  CheckFeature python3
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, range(1, 300))
+    let g:moved = 0
+    autocmd CursorMoved * let g:moved += 1
+    py3 << PYEOF
+    import vim
+    def Fun():
+        vim.command('set ei=all')
+        vim.command('100')
+        vim.command('200')
+        vim.command('echom "set ei: line = " .. line(".")')
+        vim.command('set ei=')
+    PYEOF
+  END
+  call writefile(lines, 'XTest_eventignore_cm_py', 'D')
+  let buf = RunVimInTerminal('-S XTest_eventignore_cm_py', {'rows': 10})
+
+  call term_sendkeys(buf, ":let g:moved = 0 | py3 Fun()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'moved:' g:moved\<CR>")
+  call WaitForAssert({-> assert_match('^moved: 0\>', term_getline(buf, 10))}, 1000)
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" The other events that are triggered by comparing against a stored value.
+func Test_eventignore_deferred_events()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, range(1, 300))
+    let g:textchanged = 0
+    let g:winscrolled = 0
+    autocmd TextChanged * let g:textchanged += 1
+    autocmd WinScrolled * let g:winscrolled += 1
+
+    func ChangeWhileIgnored()
+      set eventignore=all
+      call setline(1, 'changed')
+      set eventignore=
+    endfunc
+
+    func ScrollWhileIgnored()
+      set eventignore=all
+      call winrestview({'topline': 100, 'lnum': 100})
+      set eventignore=
+    endfunc
+
+    func ChangeThenIgnore()
+      call setline(2, 'changed too')
+      set eventignore=all
+      set eventignore=
+    endfunc
+
+    func ScrollThenIgnore()
+      call winrestview({'topline': 150, 'lnum': 150})
+      set eventignore=all
+      set eventignore=
+    endfunc
+  END
+  call writefile(lines, 'XTest_eventignore_deferred', 'D')
+  let buf = RunVimInTerminal('-S XTest_eventignore_deferred', {'rows': 10})
+
+  call term_sendkeys(buf, ":let g:textchanged = 0 | call ChangeWhileIgnored()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'textchanged:' g:textchanged\<CR>")
+  call WaitForAssert({-> assert_match('^textchanged: 0\>', term_getline(buf, 10))}, 1000)
+
+  call term_sendkeys(buf, ":let g:winscrolled = 0 | call ScrollWhileIgnored()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'winscrolled:' g:winscrolled\<CR>")
+  call WaitForAssert({-> assert_match('^winscrolled: 0\>', term_getline(buf, 10))}, 1000)
+
+  " What happened before the events were ignored is still reported.
+  call term_sendkeys(buf, ":let g:textchanged = 0 | call ChangeThenIgnore()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'textchanged:' g:textchanged\<CR>")
+  call WaitForAssert({-> assert_match('^textchanged: 1\>', term_getline(buf, 10))}, 1000)
+
+  call term_sendkeys(buf, ":let g:winscrolled = 0 | call ScrollThenIgnore()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'winscrolled:' g:winscrolled\<CR>")
+  call WaitForAssert({-> assert_match('^winscrolled: 1\>', term_getline(buf, 10))}, 1000)
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_VimResized_and_window_width_not_equalized()
   CheckRunVimInTerminal
 
