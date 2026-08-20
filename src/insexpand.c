@@ -110,8 +110,8 @@ struct compl_S
     int		cp_number;		// sequence number
     int		cp_score;		// fuzzy match score or proximity score
     int		cp_in_match_array;	// collected by compl_match_array
-    int		cp_user_abbr_hlattr;	// highlight attribute for abbr
-    int		cp_user_kind_hlattr;	// highlight attribute for kind
+    int		cp_user_abbr_hl_id;	// highlight group ID for abbr
+    int		cp_user_kind_hl_id;	// highlight group ID for kind
     int		cp_cpt_source_idx;	// index of this match's source in 'cpt' option
 };
 
@@ -1047,8 +1047,8 @@ ins_compl_add(
     else
 	match->cp_fname = NULL;
     match->cp_flags = flags;
-    match->cp_user_abbr_hlattr = user_hl ? user_hl[0] : -1;
-    match->cp_user_kind_hlattr = user_hl ? user_hl[1] : -1;
+    match->cp_user_abbr_hl_id = user_hl ? user_hl[0] : 0;
+    match->cp_user_kind_hl_id = user_hl ? user_hl[1] : 0;
     match->cp_score = score;
     match->cp_cpt_source_idx = cpt_sources_index;
 
@@ -1743,6 +1743,20 @@ sort_compl_match_list(int (*compare)(const void *, const void *))
 }
 
 /*
+ * Return the attribute for highlight group "hl_id", -1 when it has none.
+ */
+    static int
+get_user_highlight_attr(int hl_id)
+{
+    int	    attr;
+
+    if (hl_id <= 0)
+	return -1;
+    attr = syn_id2attr(hl_id);
+    return attr > 0 ? attr : -1;
+}
+
+/*
  * Build a popup menu to show the completion matches.
  * Returns the popup menu entry that should be selected. Returns -1 if nothing
  * should be selected.
@@ -1905,8 +1919,10 @@ ins_compl_build_pum(void)
 	compl_match_array[i].pum_kind = compl->cp_text[CPT_KIND];
 	compl_match_array[i].pum_info = compl->cp_text[CPT_INFO];
 	compl_match_array[i].pum_cpt_source_idx = compl->cp_cpt_source_idx;
-	compl_match_array[i].pum_user_abbr_hlattr = compl->cp_user_abbr_hlattr;
-	compl_match_array[i].pum_user_kind_hlattr = compl->cp_user_kind_hlattr;
+	compl_match_array[i].pum_user_abbr_hlattr =
+			get_user_highlight_attr(compl->cp_user_abbr_hl_id);
+	compl_match_array[i].pum_user_kind_hlattr =
+			get_user_highlight_attr(compl->cp_user_kind_hl_id);
 	compl_match_array[i++].pum_extra = compl->cp_text[CPT_MENU] != NULL
 			    ? compl->cp_text[CPT_MENU] : compl->cp_fname;
 	match_next = compl->cp_match_next;
@@ -3850,11 +3866,11 @@ theend:
 #if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
 
     static inline int
-get_user_highlight_attr(char_u *hlname)
+get_user_highlight_id(char_u *hlname)
 {
     if (hlname != NULL && *hlname != NUL)
-	return syn_name2attr(hlname);
-    return -1;
+	return syn_check_group(hlname, STRLEN(hlname));
+    return 0;
 }
 /*
  * Add a match to the list of matches from a typeval_T.
@@ -3875,7 +3891,7 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
     int		status;
     char_u	*user_abbr_hlname;
     char_u	*user_kind_hlname;
-    int		user_hl[2] = { -1, -1 };
+    int		user_hl[2] = { 0, 0 };
 
     user_data.v_type = VAR_UNKNOWN;
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
@@ -3887,10 +3903,10 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
 	cptext[CPT_INFO] = dict_get_string(tv->vval.v_dict, "info", FALSE);
 
 	user_abbr_hlname = dict_get_string(tv->vval.v_dict, "abbr_hlgroup", FALSE);
-	user_hl[0] = get_user_highlight_attr(user_abbr_hlname);
+	user_hl[0] = get_user_highlight_id(user_abbr_hlname);
 
 	user_kind_hlname = dict_get_string(tv->vval.v_dict, "kind_hlgroup", FALSE);
-	user_hl[1] = get_user_highlight_attr(user_kind_hlname);
+	user_hl[1] = get_user_highlight_id(user_kind_hlname);
 
 	dict_get_tv(tv->vval.v_dict, "user_data", &user_data);
 	if (dict_get_string(tv->vval.v_dict, "icase", FALSE) != NULL
@@ -4184,6 +4200,8 @@ fill_complete_info_dict(dict_T *di, compl_T *match, int add_match)
     dict_add_string(di, "menu", match->cp_text[CPT_MENU]);
     dict_add_string(di, "kind", match->cp_text[CPT_KIND]);
     dict_add_string(di, "info", match->cp_text[CPT_INFO]);
+    dict_add_string(di, "abbr_hlgroup", syn_id2name(match->cp_user_abbr_hl_id));
+    dict_add_string(di, "kind_hlgroup", syn_id2name(match->cp_user_kind_hl_id));
     if (add_match)
 	dict_add_bool(di, "match", match->cp_in_match_array);
     if (match->cp_user_data.v_type == VAR_UNKNOWN)
