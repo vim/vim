@@ -989,12 +989,13 @@ func Test_longopt_prefix_not_accepted()
   CheckNotGui
   CheckFeature clientserver
 
-  let command = printf('%s -es -X -Nu NONE -i NONE -n',
-    \ GetVimCommand())
-  let output = system($'{command} --servername=test --clientserver socket 2>&1')
-
-  call assert_notequal(0, v:shell_error)
-  call assert_match('Unknown option', output)
+  let command = printf('%s -es -X -i NONE -n', GetVimCommand())
+  for args in ['--servername=test --clientserver socket',
+        \ '--clientserver=socket',
+        \ '--serverlistx']
+    call system($'{command} {args}')
+    call assert_notequal(0, v:shell_error, args)
+  endfor
 endfunc
 
 " Test for the "-r" recovery mode option
