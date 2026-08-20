@@ -2263,7 +2263,7 @@ command_line_scan(mparm_T *parmp)
 		    argv_idx += 3;
 		}
 # ifdef FEAT_CLIENTSERVER
-		else if (STRNICMP(argv[0] + argv_idx, "serverlist", 10) == 0)
+		else if (STRICMP(argv[0] + argv_idx, "serverlist") == 0)
 		    ; // already processed -- no arg
 		else if (STRICMP(argv[0] + argv_idx, "servername") == 0
 		       || STRICMP(argv[0] + argv_idx, "serversend") == 0
