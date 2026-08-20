@@ -1323,6 +1323,13 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
 
   case 0x62: { // REP - ECMA-48 8.3.103
     const int row_width = THISROWWIDTH(state);
+
+    // ECMA-48 repeats the preceding graphic character; when none was
+    // printed yet "combine_width" is zero and the loop below would never
+    // advance the cursor.  Ignore the control then, like xterm does.
+    if(state->combine_width < 1)
+      break;
+
     count = CSI_ARG_COUNT(args[0]);
     col = state->pos.col + count;
     UBOUND(col, row_width);
