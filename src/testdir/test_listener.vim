@@ -2,6 +2,8 @@
 " listener_add() and listener_remove()
 " redraw_listener_add() and redraw_listener_remove()
 
+import './util/vim9.vim' as v9
+
 func s:StoreList(s, e, a, l)
   let s:start = a:s
   let s:end = a:e
@@ -989,6 +991,28 @@ func Test_listener_add_in_sandbox()
     \ 'E48:')
   call assert_fails('sandbox call listener_flush()', 'E48:')
   call assert_fails('sandbox call listener_remove(1)', 'E48:')
+endfunc
+
+" Using listener_add() with only the callback, from Vim9 script.  The check on
+" the third argument used to look at it even when the second one was not there.
+func Test_listener_add_one_arg_vim9()
+  let lines =<< trim END
+      vim9script
+      var seen = 0
+      def Listen(bufnr: number, start: number, end: number, added: number,
+		 changes: list<dict<any>>)
+	seen += 1
+      enddef
+      new
+      var id = listener_add(Listen)
+      assert_true(id > 0)
+      setline(1, 'x')
+      listener_flush()
+      assert_equal(1, seen)
+      listener_remove(id)
+      bwipe!
+  END
+  call v9.CheckScriptSuccess(lines)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
