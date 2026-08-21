@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.2.  Last change: 2026 Aug 18
+*vim9.txt*	For Vim version 9.2.  Last change: 2026 Aug 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -928,7 +928,6 @@ Notes:
 	      \ })
 <
 
-
 White space ~
 	*vim9-white-space* *E1004* *E1068* *E1069* *E1074* *E1127* *E1202*
 Vim9 script enforces proper use of white space.  This is no longer allowed: >
@@ -1493,55 +1492,91 @@ Using ++var or --var in an expression is not supported yet.
 You may also find this wiki useful.  It was written by an early adopter of
 Vim9 script: https://github.com/lacygoill/wiki/blob/master/vim/vim9.md
 
-If the script the `:def` function is defined in is Vim9 script, script-local
-variables must be accessed without using the "s:" prefix.  They must be
-defined before the function is compiled.  Using |exists()|, which is evaluated
-at runtime, cannot be used conditionally to skip undeclared variables, though
-|exists_compiled()|, which is evaluated at compile time, may be used.
-For example:
+							*vim9-s:var*
+When referencing a script-local variable, the context determines whether using
+the "s:" prefix is either mandatory, optional, or gives |E1268|.  The context
+factors are whether the script version is Vim9 script or legacy Vim script and
+whether the reference is at the script-local level, within a `:def` function,
+or within a `:function`.  The three rules are:
+
+ 1. In a `:function`, "s:" is always mandatory.  This is regardless of the
+    script type or the function's parent context (such as nested within
+    another function).  Similarly, "s:" is also mandatory in the script-local
+    scope of a legacy Vim script.
+ 2. In a Vim9 script, "s:" always gives |E1268| when used in a `:def` function,
+    regardless of the function's parent context.  Similarly, it gives E1268 in
+    the script-local scope of a Vim9 script.
+ 3. In a legacy Vim script, "s:" is optional in a `:def` function, regardless
+    of the function's parent context.
+
+The following three scripts demonstrate these rules:
+>vim
+	" 1. In a :function, "s:" is always mandatory.  It is also mandatory
+	" in a legacy Vim script's script-local scope
+	let s:MyVar = v:true
+	echo s:MyVar		| " v:true
+	" echo MyVar		  (Would give E121: Undefined variable: MyVar)
+	vim9cmd echo MyVar	  # true
+	function! MyFunc()
+	  echo s:MyVar		| " v:true
+	  " echo MyVar		  (Would give E121: Undefined variable: MyVar)
+	  vim9cmd echo MyVar	  # true
+	endfunction
+	call MyFunc()
+< >vim9
+	vim9script
+	# 2. In a Vim9 script, "s:" gives E1268 when used in any :def function
+	# and in the script-local scope
+	var MyVar: bool = true
+	echo MyVar		  # true
+	# echo s:MyVar		  (Would give E1268: Cannot use s: in Vim9...)
+	legacy echo s:MyVar	| # v:true
+	def MyFunc()
+	  echo MyVar		# true
+	  # echo s:MyVar	  (Would give E1268: Cannot use s: in Vim9...)
+	  legacy echo s:MyVar	| # v:true
+	enddef
+	MyFunc()
+< >vim
+	" 3. In a legacy Vim script, "s:" is optional in a :def function
+	let s:MyVar = v:true
+	function! Outer()
+	  def! MyFunc()
+	    echo MyVar		# true
+	    echo s:MyVar	# true
+	  enddef
+	  call MyFunc()
+	endfunction
+	call Outer()
+<
+Using |exists()|, which is evaluated at runtime, cannot be used conditionally
+to skip undeclared variables, though |exists_compiled()|, which is evaluated at
+compile time, may be used.  For example:
 >vim9
 	vim9script
-	def MyVim9def()
-	  # echo s:one		# This would be E1268 (Cannot use s: in Vim9)
-	  if exists_compiled('one')  # true at compile time
-	    echo one		# 1
+	def MyDef()
+	  if exists_compiled('MyVar')	# evaluated at compile time
+	    echo $"MyVar = {MyVar}"	# MyVar = 1
 	  endif
-	  if exists('two')	# Evaluated at runtime
-	    # echo two		# This would be E1001 (Variable not found)
+	  if exists_compiled('MyVar2')	# evaluated at compile time
+	    echo $"MyVar2 = {MyVar2}"	# not reached
+	  else
+	    echo "MyVar2 does not exist at compile time"
 	  endif
-	  if exists_compiled('two')	# false at compile time
-	    echo two
+	  if exists('MyVar')		# evaluated at runtime
+	    echo $"MyVar = {MyVar}"	# MyVar = 1
+	  endif
+	  if exists('MyVar2')		# evaluated at runtime
+	    # The following would give E1001: Variable not found: MyVar2
+	    # echo MyVar2
+	  else
+	    echo "MyVar2 does not exist at runtime"
 	  endif
 	enddef
-	var one: number = 1
-	MyVim9def()	# MyVim9def is compiled (NB: 'two' does not exist yet)
-	var two: number = 2
+	var MyVar: number = 1	# Declared before MyDef() is compiled
+	MyDef()
+	var MyVar2: number = 2	# Declared after MyDef() is compiled
 <
-If the script the `:def` function is defined in is legacy Vim script,
-script-local variables may be accessed with or without the "s:" prefix.
-However, using "s:" may defer variable resolution to runtime, avoiding
-compilation errors for variables that may not exist yet, as this example
-demonstrates:
->vim
-	" legacy Vim script
-	def! MyLegacyDef(): void
-	  echo [one, s:one]	# [1, 1]
-	  # (If uncommented) First sourcing of 'echo s:two' is E121 and
-	  # causes a compilation error; subsequent sourcing echoes 2:
-	  # echo s:two
-	  if exists("s:two")
-	    # First sourcing: echo is skipped; subsequent sourcing: echoes 2
-	    echo s:two
-	  endif
-	  if exists("two")
-	    # (If uncommented) First sourcing of 'echo two' is E1001 and
-	    # causes a compilation error; subsequent sourcing echoes 2:
-	    # echo two
-	  endif
-	enddef
-	let s:one = 1
-	call MyLegacyDef()	" Calls MyLegacyDef() and compiles if it isn't
-	let s:two = 2
 <							*E1269*
 Script-local variables in a Vim9 script must be declared at the script
 level.  They cannot be created in a `:def` function and may not be declared
@@ -2632,7 +2667,7 @@ present.  For example:
 Using |extend()| and |extendnew()| is similar, i.e., a list literal may use
 the former, so, this is okay:
 >vim9
-	vim9cmd echo [1, 2]->extend(['3'])	# [1, 2, 3]
+	vim9cmd echo [1, 2]->extend(['3'])	# [1, 2, '3']
 <
 whereas, this is not:
 >vim9

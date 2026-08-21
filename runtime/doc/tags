@@ -2690,7 +2690,6 @@ $quote	eval.txt	/*$quote*
 :execute	eval.txt	/*:execute*
 :exi	editing.txt	/*:exi*
 :exit	editing.txt	/*:exit*
-:exp	vim9.txt	/*:exp*
 :export	vim9.txt	/*:export*
 :exu	helphelp.txt	/*:exu*
 :exusage	helphelp.txt	/*:exusage*
@@ -11712,6 +11711,7 @@ vim9-boolean	vim9.txt	/*vim9-boolean*
 vim9-class	vim9class.txt	/*vim9-class*
 vim9-class-type	vim9.txt	/*vim9-class-type*
 vim9-classes	vim9.txt	/*vim9-classes*
+vim9-closure	vim9.txt	/*vim9-closure*
 vim9-const	vim9.txt	/*vim9-const*
 vim9-curly	vim9.txt	/*vim9-curly*
 vim9-debug	repeat.txt	/*vim9-debug*
@@ -11743,6 +11743,7 @@ vim9-partial-declaration	vim9.txt	/*vim9-partial-declaration*
 vim9-rationale	vim9.txt	/*vim9-rationale*
 vim9-reload	vim9.txt	/*vim9-reload*
 vim9-s-namespace	vim9.txt	/*vim9-s-namespace*
+vim9-s:var	vim9.txt	/*vim9-s:var*
 vim9-scopes	vim9.txt	/*vim9-scopes*
 vim9-string-index	vim9.txt	/*vim9-string-index*
 vim9-typealias-type	vim9.txt	/*vim9-typealias-type*
