@@ -128,6 +128,7 @@ SRC += \
 	getchar.c \
 	gc.c \
 	hardcopy.c \
+	hardcopy_postscript.c \
 	hashtab.c \
 	help.c \
 	highlight.c \

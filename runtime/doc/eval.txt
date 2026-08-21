@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.2.  Last change: 2026 May 31
+*eval.txt*	For Vim version 9.2.  Last change: 2026 Aug 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -993,8 +993,10 @@ Two blobs can be concatenated with the "+" operator: >
 	:let longblob = myblob + 0z4455
 	:let longblob = 0z4455 + myblob
 <
-A blob can be concatenated with another one in-place using |:let+=|: >
+A blob can be concatenated with another one in-place using |:let+=| or
+|extend()|: >
 	:let myblob += 0z6677
+	:call extend(myblob, 0z6677)
 <
 See |blob-modification| below for more about changing a blob in-place.
 
@@ -1039,9 +1041,11 @@ To change part of a blob you can specify the first and last byte to be
 modified.  The value must have the same number of bytes in the range: >
 	:let blob[3:5] = 0z334455
 
-To add items to a Blob in-place, you can use |:let+=| (|blob-concatenation|): >
+To add items to a Blob in-place, you can use |:let+=| or |extend()|
+(|blob-concatenation|): >
 	:let blobA = 0z1122
 	:let blobA += 0z3344
+	:call extend(blobA, 0z5566)
 <
 When two variables refer to the same Blob, changing one Blob in-place will
 cause the referenced Blob to be changed in-place: >
@@ -1703,36 +1707,70 @@ number
 ------
 number			number constant			*expr-number*
 
-			*0x* *hex-number* *0o* *octal-number* *binary-number*
-Decimal, Hexadecimal (starting with 0x or 0X), Binary (starting with 0b or 0B)
-and Octal (starting with 0, 0o or 0O).
+					*0x* *hex-number* *0o* *octal-number*
+					*0b* *binary-number*
+Integer numbers can be written in multiple forms:
+
+	{N}		decimal
+	0x{N} or 0X{N}	hexadecimal
+	0o{N} or 0O{N}	octal
+	0{N}		octal (decimal in |scriptversion-4| and |Vim9|)
+	0b{N} or 0B{N}	binary
+
+{N} is a sequence of decimal digits (0-9), hexadecimal digits (0-9, a-f and
+A-F), octal digits (0-7) or binary digits (0 or 1).
 
 Assuming 64 bit numbers are used (see |v:numbersize|) an unsigned number is
 truncated to 0x7fffffffffffffff or 9223372036854775807.  You can use -1 to get
 0xffffffffffffffff.
 
+In |scriptversion-4| and in |Vim9| script, single quotes may appear between
+digits to improve readability; these are ignored.
+
+A leading "+" or "-" is not part of an integer literal.  E.g., -123 is an
+expression, the unary operator |expr-unary--| applied to the number 123.
+
+Examples:
+	0xDEAD
+	57005
+	0b1101111010101101
+	0o157255
+	0xBE'EF			|scriptversion-4| and |Vim9|
+	48'879			|scriptversion-4| and |Vim9|
+	0o137'357		|scriptversion-4| and |Vim9|
+	0b1011'1110'1110'1111	|scriptversion-4| and |Vim9|
+
 						*floating-point-format*
 Floating point numbers can be written in two forms:
 
-	[-+]{N}.{M}
-	[-+]{N}.{M}[eE][-+]{exp}
+	{N}.{M}
+	{N}.{M}[eE][-+]{exp}
 
-{N} and {M} are numbers.  Both {N} and {M} must be present and can only
-contain digits, except that in |Vim9| script in {N} single quotes between
-digits are ignored.
-[-+] means there is an optional plus or minus sign.
+{N} and {M} are sequences of decimal digits.  In |scriptversion-1| (the
+default) {N} and {M} must be present.  In |scriptversion-2| or higher and in
+|Vim9| script {N} is optional.
 {exp} is the exponent, power of 10.
 Only a decimal point is accepted, not a comma.  No matter what the current
 locale is.
 
+In |scriptversion-4| and in |Vim9| script, single quotes may appear between the
+digits in {N} to improve readability; these are ignored.
+
+A leading "+" or "-" is not part of a floating point literal.  E.g., -1.0e-3
+is an expression, the unary operator |expr-unary--| applied to the float
+1.0e-3.  The "-" in the exponent is part of the literal.
+
 Examples:
 	123.456
-	+0.0001
+	0.0001
 	55.0
-	-0.123
+	0.123
 	1.234e03
 	1.0E-6
-	-3.1416e+88
+	3.1416e+88
+
+	.123		|scriptversion-2| and |Vim9|
+	123'456.0	|scriptversion-4| and |Vim9|
 
 These are INVALID:
 	3.		empty {M}
@@ -3023,7 +3061,7 @@ v:wayland_display
 		If this is empty, then Vim is not connected to any display.
 
 					*v:windowid* *windowid-variable*
-v:windowid	When any X11/Wayland based GUI is running or when running in a
+v:windowid	When any X11 based GUI is running or when running in a
 		terminal and Vim connects to the X server (|-X|) this will be
 		set to the window ID.
 		When an MS-Windows GUI is running this will be set to the
@@ -5408,4 +5446,19 @@ Below is a sample script that makes use of the clipboard provider feature: >vim
 	    \ }
 	set clipmethod^=test
 <
+						*clipboard-providers-wsl*
+For Windows WSL, try this script: >vim9
+	vim9script
+
+	var Copy = (_, _, lines: list<string>) => system('wl-copy', lines)
+	var Paste = (_) => ('', systemlist('wl-paste --no-newline')
+	    ->map((_, v) => v->trim("\r", 2)))
+
+	v:clipproviders["wslclip"] = {
+	    available: () => executable('wl-copy') && executable('wl-paste'),
+	    copy: { "*": Copy, "+": Copy },
+	    paste: { "*": Paste, "+": Paste }
+	}
+	set clipmethod^=wslclip
+
  vim:tw=78:ts=8:noet:ft=help:norl:

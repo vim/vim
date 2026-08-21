@@ -1,4 +1,4 @@
-*pi_zip.txt*	For Vim version 9.2.  Last change: 2026 Jun 20
+*pi_zip.txt*	For Vim version 9.2.  Last change: 2026 Aug 19
 
 				+====================+
 				| Zip File Interface |
@@ -49,20 +49,30 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
    automatically maximized when opened.
 
 							*g:zip_unzipcmd*
-   Use this option to specify the program which does the duty of "unzip".
-   It's used during browsing. By default: >
+   Use these options to specify the program which does the duty of "unzip" and
+   the required argument switches.
+   It's used during browsing.  By default: >
 	let g:zip_unzipcmd= "unzip"
+	let g:zip_unzipcmd_browseopt= "-Z1"
+	let g:zip_unzipcmd_readopt= "-p"
 <
+   Note: a `--` is appended after the g:zip_unzipcmd_browseopt and
+   g:zip_unzipcmd_readopt settings to indicate the end of options.
+
 							*g:zip_zipcmd*
-   Use this option to specify the program which does the duty of "zip".
+   Use these options to specify the program which does the duty of "zip" and
+   the required argument switches.
    It's used during the writing (updating) of a file already in a zip
    file; by default: >
 	let g:zip_zipcmd= "zip"
+	let g:zip_zipcmd_deleteopt= "-d"
+	let g:zip_zipcmd_updateopt= "-u"
 <
 							*g:zip_extractcmd*
    This option specifies the program (and any options needed) used to
    extract a file from a zip archive.  By default, >
 	let g:zip_extractcmd= g:zip_unzipcmd
+	let g:zip_extractcmd_extractopt= "-o"
 <
 							*g:zip_exec*
    For security reasons, one may prevent that Vim runs executables
@@ -71,16 +81,22 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
    "0": >
 	let g:zip_exec=0
 <
-   FALLBACK TO POWERSHELL CORE~
+   FALLBACK TO POWERSHELL~
 
+							*g:zip_pwsh*
    This plugin will first attempt to use the (more capable) GNU zip/unzip
    commands.  If these commands are not available or fail, and the user is
-   using PowerShell Core (i.e., the 'shell' option matches "pwsh"), the
-   plugin will fall back to a PowerShell Core cmdlet.  The PowerShell Core
-   cmdlets are limited: they cannot write or extract files within
-   subdirectories of a zip archive.  The advantage, however, is that no
-   separate unzip binary needs to be installed.
-
+   using PowerShell, the plugin will fall back to a PowerShell cmdlet.
+   The PowerShell cmdlets are limited: they cannot write or extract files
+   within subdirectories of a zip archive.  The advantage, however, is that
+   no separate unzip binary needs to be installed.  The 'shell' option will
+   be checked whether to choose "pwsh" or "powershell", or set `g:zip_pwsh`.
+   If both are available, this plugin will prefer pwsh. Default value of
+   "g:zip_pwsh" is an empty string, which would not overwrite the 'shell'
+   option configuration.  This functionality is not turned on by default on
+   MS-Windows, since the default 'shell' is "cmd.exe". For example: >
+	let g:zip_pwsh='powershell'
+<
    PREVENTING LOADING~
 
    If for some reason you do not wish to use vim to examine zipped files,
@@ -116,6 +132,7 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
 ==============================================================================
 4. History							*zip-history* {{{1
    unreleased:
+       Jul 25, 2026 * support both Windows PowerShell 5 and pwsh 7+
        Sep 19, 2025 * support PowerShell Core
        Jul 12, 2025 * drop ../ on write to prevent path traversal attacks
        Mar 11, 2025 * handle filenames with leading '-' correctly

@@ -9,8 +9,6 @@
 
 #include "vim.h"
 
-#ifdef USE_GTK4_SNAPSHOT
-
 #include <gtk/gtk.h>
 #include "gui_gtk4_da.h"
 
@@ -135,6 +133,7 @@ typedef struct
     gboolean draw; // If cursor should be drawn
     int width;
     int height;
+    int n_cells; // Cells covered, 2 for a double width character
     GdkRGBA bg_color;
     GdkRGBA fg_color;
 } DrawCursor;
@@ -164,7 +163,9 @@ struct _VimDrawArea
 #endif
 };
 
+#ifdef FEAT_IMAGE_GDK
 static void draw_image_free(DrawImage *dimg);
+#endif
 static void draw_row_init(DrawRow *drow, int row, int cols);
 static void draw_row_clear(DrawRow *drow);
 static void draw_row_dirty_layer(DrawRow *drow, DrawLayerType dlayer_t);
@@ -693,8 +694,8 @@ draw_layer_get_texture(
 
     // Scale texture to actual size
     node = gsk_texture_scale_node_new(texture,
-	    &GRAPHENE_RECT_INIT(FILL_X(0), FILL_Y(row),
-		(da->n_cols + bleed) * gui.char_width, gui.char_height),
+		&GRAPHENE_RECT_INIT(FILL_X(0), FILL_Y(row),
+		(da->n_cols + bleed) * gui.char_width, gui.char_height + bleed),
 	    GSK_SCALING_FILTER_NEAREST);
     if (bleed)
     {
@@ -703,7 +704,7 @@ draw_layer_get_texture(
 	new = gsk_clip_node_new(node,
 		&GRAPHENE_RECT_INIT(FILL_X(0), FILL_Y(row),
 		    da->n_cols * gui.char_width + da->bleed_right,
-		    gui.char_height));
+		    gui.char_height + 1));
 	gsk_render_node_unref(node);
 	node = new;
     }
@@ -914,7 +915,12 @@ draw_row_ensure_decor(DrawRow *drow, int flags)
 	int x_start = FILL_X(0);
 	int x_end = FILL_X(drow->n_cells);
 
-	// GskPath was added in GSK 4.14, otherwise use cairo
+	// Instead of rendering the entire pattern, use a repeating node to
+	// render a single cycle of the undercurl, taking advantage of the GPU
+	// (if using opengl or vulkan renderer).
+	GskRenderNode *child = NULL;
+
+	// GskPath was added in GSK 4.14, otherwise use Cairo
 #if GTK_CHECK_VERSION(4, 14, 0)
 	GskPathBuilder	*builder;
 	GskPath		*path;
@@ -924,52 +930,52 @@ draw_row_ensure_decor(DrawRow *drow, int flags)
 
 	builder = gsk_path_builder_new();
 
-	gsk_path_builder_move_to(builder,
-		x_start + 1,
-		y - 2 + 0.5);
+	// Start at X = -1 (val[7]) to ensure a fully formed stroke at X = 0
+	gsk_path_builder_move_to(builder, -1, y - val[7] + 0.5);
+	gsk_path_builder_line_to(builder, 0, y - val[0] + 0.5);
 
-	for (int i = x_start + 1; i < x_end; i++)
-	{
-	    int offset = val[i % 8];
+	for (int i = 1; i < 8; i++)
+	    gsk_path_builder_line_to(builder, i, y - val[i] + 0.5);
 
-	    gsk_path_builder_line_to(builder,
-		    i, y - offset + 0.5);
-	}
+	// Extend to X = 9 (val[1]) to ensure a fully formed stroke at X = 8
+	gsk_path_builder_line_to(builder, 8, y - val[0] + 0.5);
+	gsk_path_builder_line_to(builder, 9, y - val[1] + 0.5);
 
 	path = gsk_path_builder_free_to_path(builder);
-
 	stroke = gsk_stroke_new(1.0);
 
-	gsk_path_get_stroke_bounds (path, stroke, &bounds);
+	gsk_path_get_stroke_bounds(path, stroke, &bounds);
 	color_node = gsk_color_node_new(&white_rgba, &bounds);
+	child = gsk_stroke_node_new(color_node, path, stroke);
 
-	drow->underc_mask = gsk_stroke_node_new(color_node, path, stroke);
 	gsk_stroke_free(stroke);
 	gsk_path_unref(path);
 	gsk_render_node_unref(color_node);
 #else
-	cairo_t		*cr;
-	GskRenderNode	*node;
+	cairo_t *cr;
 
-	node = gsk_cairo_node_new(
-		&GRAPHENE_RECT_INIT(x_start, y - 3, x_end - x_start, 5));
-	cr = gsk_cairo_node_get_draw_context(node);
+	child = gsk_cairo_node_new(&GRAPHENE_RECT_INIT(-2, y - 4, 12, 7));
+	cr = gsk_cairo_node_get_draw_context(child);
 
 	cairo_set_line_width(cr, 1.0);
 	cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
 
-	cairo_move_to(cr, x_start + 1, y - 2 + 0.5);
+	cairo_move_to(cr, -1, y - val[7] + 0.5);
+	cairo_line_to(cr, 0, y - val[0] + 0.5);
 
-	for (int i = x_start + 1; i < x_end; ++i)
-	{
-	    int offset = val[i % 8];
-	    cairo_line_to(cr, i, y - offset + 0.5);
-	}
+	for (int i = 1; i < 8; ++i)
+	    cairo_line_to(cr, i, y - val[i] + 0.5);
+
+	cairo_line_to(cr, 8, y - val[0] + 0.5);
+	cairo_line_to(cr, 9, y - val[1] + 0.5);
 
 	cairo_stroke(cr);
 	cairo_destroy(cr);
-	drow->underc_mask = node;
 #endif
+	drow->underc_mask = gsk_repeat_node_new(
+		&GRAPHENE_RECT_INIT(x_start, y - 3, x_end - x_start, 5),
+		child, &GRAPHENE_RECT_INIT(0.0f, y - 3, 8.0f, 5.0f));
+	gsk_render_node_unref(child);
     }
 }
 
@@ -1031,6 +1037,7 @@ draw_row_render_text(DrawRow *drow, VimDrawArea *da)
 	    empty_cells++;
 	    continue;
 	}
+#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SIGN_ICONS)
 	else if (dglyphs->font == NULL)
 	{
 	    // Add sign icon
@@ -1052,6 +1059,7 @@ draw_row_render_text(DrawRow *drow, VimDrawArea *da)
 			// loop
 	    continue;
 	}
+#endif
 	else if (dglyphs->font != cur_font || cur_fg != dglyphs->fg_color)
 	{
 	    FLUSH_NODE();
@@ -1154,7 +1162,7 @@ draw_row_render_special(DrawRow *drow, VimDrawArea *da)
     {
 	dlayer->node = gsk_container_node_new(nodes, 2);
 	// gsk_container_node_new() takes its own ref
-	for (int i = 0; i < ARRAY_LENGTH(nodes); i++)
+	for (int i = 0; i < (int)ARRAY_LENGTH(nodes); i++)
 	    gsk_render_node_unref(nodes[i]);
     }
 
@@ -1591,6 +1599,9 @@ vim_draw_area_set_cursor(VimDrawArea *self, int w, int h)
     self->cursor.draw = TRUE;
     self->cursor.width = w;
     self->cursor.height = h;
+    // Remember this now: the snapshot runs later, when the drawing position
+    // has moved on.
+    self->cursor.n_cells = 1 + mb_lefthalve(gui.cursor_row, gui.cursor_col);
     self->cursor.bg_color = *gui.bgcolor;
     self->cursor.fg_color = *gui.fgcolor;
 }
@@ -1752,7 +1763,8 @@ vim_draw_area_queue_image(VimDrawArea *self, GList *link)
  * (src_x, src_y, draw_w, draw_h) describe which pixel sub-rect of the source
  * texture should be drawn. If there is an image that has the same id, then it
  * is re-rendered with the new texture. If zindex of an image changed, then the
- * queue will be updated accordingly.
+ * queue will be updated accordingly. Note that the dimensions/positions are to
+ * be in physical pixels!!!
  */
     void
 vim_draw_area_add_image(
@@ -1760,15 +1772,15 @@ vim_draw_area_add_image(
 	GdkTexture  *image,
 	int	    row,
 	int	    col,
-	int	    src_x,
-	int	    src_y,
-	int	    draw_w,
-	int	    draw_h,
+	double	    src_x,
+	double	    src_y,
+	double	    draw_w,
+	double	    draw_h,
 	int	    zindex,
 	int	    id)
 {
     GskRenderNode   *node, *old;
-    int		    w, h;
+    double	    w, h;
     graphene_rect_t clip;
     GList	    *link;
     DrawImage	    *dimg;
@@ -1778,12 +1790,16 @@ vim_draw_area_add_image(
 		|| col >= self->n_cols))
 	return;
 
-    w = gdk_texture_get_width(image);
-    h = gdk_texture_get_height(image);
+    w = PHY2LOG(gdk_texture_get_width(image));
+    h = PHY2LOG(gdk_texture_get_height(image));
+    src_x = PHY2LOG(src_x);
+    src_y = PHY2LOG(src_y);
+    draw_w = PHY2LOG(draw_w);
+    draw_h = PHY2LOG(draw_h);
 
-    node = gsk_texture_node_new(image,
+    node = gsk_texture_scale_node_new(image,
 	    &GRAPHENE_RECT_INIT(FILL_X(col) - src_x, FILL_Y(row) - src_y,
-		w, h));
+		w, h), GSK_SCALING_FILTER_TRILINEAR);
 
     if (node != NULL)
     {
@@ -1861,8 +1877,7 @@ vim_draw_area_snapshot_cursor(
 
     if (cursor->width <= 0 && cursor->height <= 0)
     {
-	// Double width if double width character
-	w += gui.char_width * (1 + mb_lefthalve(gui.row, gui.col));
+	w += gui.char_width * cursor->n_cells;
 	h = gui.char_height;
     }
 
@@ -2014,5 +2029,3 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
     }
 #endif
 }
-
-#endif // USE_GTK4_SNAPSHOT

@@ -1131,17 +1131,28 @@ did_set_ambiwidth(optset_T *args UNUSED)
     return check_chars_options();
 }
 
-#if defined(FEAT_TABPANEL) || defined(FEAT_DIFF) || defined(FEAT_PROP_POPUP)
-    static bool
-completing_value_for_subopt(optexpand_T *args, char *name_suffix)
-{
-    char_u *colon = args->oe_xp->xp_pattern - 1;
-    int len = (int)STRLEN(name_suffix);
+// "name" must be a string literal, the length is computed at compile time.
+#define completing_value_for_subopt(args, name) \
+	  completing_value_for_subopt_len(args, name, (int)STRLEN_LITERAL(name))
 
-    return colon - args->oe_set_arg >= len
-	   && STRNCMP(colon - len, name_suffix, len) == 0;
+/*
+ * Return true when completing the value of the sub-option "name" with length
+ * "len", e.g. the value after "close:" in 'completepopup'.
+ */
+    static bool
+completing_value_for_subopt_len(optexpand_T *args, char *name, int len)
+{
+    char_u  *colon = args->oe_xp->xp_pattern - 1;
+    int	    off = (int)(colon - args->oe_set_arg);
+
+    if (off < len)
+	return false;
+    // The name must follow a comma when it does not start the option value.
+    if (off > len && *(colon - len - 1) != ',')
+	return false;
+
+    return STRNCMP(colon - len, name, len) == 0;
 }
-#endif
 
     int
 expand_set_ambiwidth(optexpand_T *args, int *numMatches, char_u ***matches)
@@ -2400,9 +2411,24 @@ expand_set_encoding(optexpand_T *args, int *numMatches, char_u ***matches)
 did_set_eventignore(optset_T *args)
 {
     char_u	**varp = (char_u **)args->os_varp;
+    char_u	*oldval = args->os_oldval.string;
+    char_u	*newval;
 
     if (check_ei(*varp) == FAIL)
 	return e_invalid_argument;
+
+    if (oldval == NULL || STRCMP(oldval, *varp) == 0)
+	return NULL;
+
+    // Deal with the events that are triggered by comparing against a stored
+    // state, with the old value in effect: what happened while an event was
+    // ignored must not be reported once it is not ignored anymore, and what
+    // happened before must still be reported.
+    newval = *varp;
+    *varp = oldval;
+    may_trigger_deferred_events();
+    *varp = newval;
+
     return NULL;
 }
 
@@ -3907,9 +3933,29 @@ error:
     return e_invalid_argument;
 }
 
+    static char_u *
+get_pum_border_style(expand_T *xp UNUSED, int idx)
+{
+    static char *styles[] = {"ascii", "custom:", "single", "double", "round"};
+    return idx < ((enc_utf8 && *p_ambw == 's') ? (int)ARRAY_LENGTH(styles) : 2)
+	    ? (char_u *)styles[idx] : NULL;
+}
+
     int
 expand_set_pumopt(optexpand_T *args, int *numMatches, char_u ***matches)
 {
+    expand_T *xp = args->oe_xp;
+
+    if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
+    {
+	if (completing_value_for_subopt(args, "border"))
+	{
+	    return expand_set_opt_generic(
+		    args, get_pum_border_style, numMatches, matches);
+	}
+	return FAIL;
+    }
+
     static char *(p_pumopt_values[]) = {"border:", "height:", "width:",
 	"maxwidth:", "opacity:", "shadow", "margin", NULL};
     return expand_set_opt_string(
@@ -3982,17 +4028,19 @@ error:
     return e_invalid_argument;
 }
 
+    static char_u *
+get_pumborder_token(expand_T *xp, int idx)
+{
+    return idx == 0 ? (char_u *)"margin"
+	 : idx == 1 ? (char_u *)"shadow"
+	 : get_pum_border_style(xp, idx - 2);
+}
+
     int
 expand_set_pumborder(optexpand_T *args, int *numMatches, char_u ***matches)
 {
-    static char *(p_pb_values[]) = {"single", "double", "round", "ascii",
-	"custom", "shadow", "margin", NULL};
-    return expand_set_opt_string(
-	    args,
-	    p_pb_values,
-	    ARRAY_LENGTH(p_pb_values) - 1,
-	    numMatches,
-	    matches);
+    return expand_set_opt_generic(
+	    args, get_pumborder_token, numMatches, matches);
 }
 
 #if defined(FEAT_STL_OPT)

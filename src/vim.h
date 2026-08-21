@@ -577,6 +577,7 @@ extern char *(*dyn_libintl_bindtextdomain)(const char *domainname, const char *d
 extern char *(*dyn_libintl_bind_textdomain_codeset)(const char *domainname, const char *codeset);
 extern char *(*dyn_libintl_textdomain)(const char *domainname);
 extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
+extern int *dyn_libintl_nl_msg_cat_cntr;
 #endif
 
 
@@ -2779,6 +2780,12 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 # endif
 #endif
 
+#if defined(FEAT_PRINT_PANGO) && defined(FEAT_GUI_GTK) && defined(USE_GTK4)
+# if GTK_CHECK_VERSION(4, 14, 0)
+#  define USE_GTK4_PRINT_DIALOG
+# endif
+#endif
+
 #ifndef FEAT_NETBEANS_INTG
 # undef NBDEBUG
 #endif
@@ -2902,6 +2909,15 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 # define MAX_OPEN_CHANNELS 10
 #else
 # define MAX_OPEN_CHANNELS 0
+#endif
+
+// Maximum number of simultaneously accepted socketserver client channels.
+// Bounds the channels (and file descriptors) added to the select()/poll()
+// sets so a connection flood cannot overflow the fd_set / pollfd arrays.
+#ifdef FEAT_SOCKETSERVER
+# define MAX_CLIENT_CHANNELS 100
+#else
+# define MAX_CLIENT_CHANNELS 0
 #endif
 
 #if defined(MSWIN)

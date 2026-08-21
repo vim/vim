@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.2.  Last change: 2026 Jul 23
+*vim9.txt*	For Vim version 9.2.  Last change: 2026 Aug 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -498,7 +498,7 @@ And with autocommands: >
 Although using a :def function probably works better.
 
 				*E1022* *E1103* *E1130* *E1131* *E1133*
-				*E1134*
+				*E1134* *E1581*
 Declaring a variable with a type but without an initializer will initialize to
 false (for bool), empty (for string, list, dict, etc.) or zero (for number,
 any, etc.).  This matters especially when using the "any" type, the value will
@@ -585,6 +585,15 @@ possible.  Each variable can have a type or infer it from the value: >
 	var [v1: number, v2] = GetValues()
 Use this only when there is a list with values, declaring one variable per
 line is much easier to read and change later.
+
+The type of a variable that does not have a declared type is the type of the
+value it gets.  The variable after the ";" gets the remaining items: for a
+list this is a list of the same member type, for a tuple this is a tuple of
+the types of the remaining items: >
+	var [v1; v2] = [1, 2, 3]          # v2 has type list<number>
+	var [v3; v4] = (1, 'a', true)     # v4 has type tuple<string, bool>
+When the value has type "any" the item types are not known and every variable
+gets type "any".
 
 
 Constants ~
@@ -726,6 +735,10 @@ characters, e.g.: >
 	     return 'value'
 	   })
 No command can follow the "{", only a comment can be used there.
+
+Since the block ends at the first line starting with "}", the closing "}" of a
+dictionary inside the block must not be at the start of a line.  See
+|command-block| for an example and the workaround.
 
 						*command-block* *E1026*
 The block can also be used for defining a user command.  Inside the block Vim9
@@ -904,8 +917,16 @@ Notes:
 	echo [1, 2]
 		[3, 4]
 - In some cases it is difficult for Vim to parse a command, especially when
-  commands are used as an argument to another command, such as `:windo`.  In
-  those cases the line continuation with a backslash has to be used.
+  commands are used as an argument to another command, such as `:windo`,
+  `:command` or `:autocmd`.  In those cases the line continuation with a
+  backslash has to be used.  For example: >
+	command! Foo call Bar('x', {
+	      \ 'key': 'value',
+	      \ })
+	autocmd BufWritePre * call Bar('x', {
+	      \ 'key': 'value',
+	      \ })
+<
 
 
 White space ~

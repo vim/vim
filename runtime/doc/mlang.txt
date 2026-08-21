@@ -1,4 +1,4 @@
-*mlang.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*mlang.txt*	For Vim version 9.2.  Last change: 2026 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -121,6 +121,10 @@ where "xx" is the abbreviation of the language (mostly two letters).
 If you write your own translations you need to generate the .po file and
 convert it to a .mo file.  You need to get the source distribution and read
 the file "src/po/README.txt".
+
+The language of the messages comes from the display language of Windows, not
+from the regional format.  The other locale categories, such as the one used
+for |strftime()|, do follow the regional format.
 
 To overrule the automatic choice of the language, set the $LANG variable to
 the language of your choice.  use "en" to disable translations. >

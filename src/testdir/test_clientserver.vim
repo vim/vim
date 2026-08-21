@@ -373,6 +373,113 @@ func Test_client_server_socketserver_address()
   endtry
 endfunc
 
+" A flood of client connections must not crash the socketserver: connections
+" beyond the accept cap are refused instead of overflowing the fd_set / pollfd
+" sets, and the server keeps working once they are closed again.
+func Test_client_server_socketserver_connection_flood()
+  CheckFeature socketserver
+  CheckNotMSWindows
+
+  let g:test_is_flaky = 1
+  let cmd = GetVimCommand()
+  if cmd == ''
+    throw 'GetVimCommand() failed'
+  endif
+
+  let actual = cmd .. ' --clientserver socket --servername channel:2001'
+  let job = job_start(actual, {'stoponexit': 'kill', 'out_io': 'null'})
+  call WaitForAssert({-> assert_equal("run", job_status(job))})
+  call WaitForAssert({-> assert_match('channel:2001',
+        \ system(actual .. ' --remote-expr "v:servername"'))})
+
+  " Open many more connections than the server accepts.
+  let channels = []
+  for i in range(150)
+    let ch = ch_open('localhost:2001', {'mode': 'raw', 'waittime': 100})
+    if ch_status(ch) == 'open'
+      call add(channels, ch)
+    endif
+  endfor
+
+  " The server must survive, and must have refused the excess connections.
+  call assert_equal("run", job_status(job))
+  call WaitForAssert({-> assert_inrange(1, 100,
+        \ len(filter(copy(channels), {_, c -> ch_status(c) == 'open'})))})
+
+  " Close them again.  Afterwards the server must accept connections once
+  " more, which also verifies the client count is decremented.
+  for ch in channels
+    if ch_status(ch) == 'open'
+      call ch_close(ch)
+    endif
+  endfor
+  call WaitForAssert({-> assert_match('channel:2001',
+        \ system(actual .. ' --remote-expr "v:servername"'))})
+
+  call system(actual .. " --remote-expr 'execute(\"qa!\")'")
+  try
+    call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  finally
+    if job_status(job) != 'dead'
+      call assert_report('Server did not exit')
+      call job_stop(job, 'kill')
+    endif
+  endtry
+endfunc
+
+" An invalid JSON message that spans two socketserver read buffers must not
+" crash the server: the parse buffer is refilled (and freed) mid-string, and
+" the error path must not report the position from the stale, freed cursor.
+func Test_client_server_socketserver_json_refill()
+  CheckFeature socketserver
+  CheckNotMSWindows
+
+  let g:test_is_flaky = 1
+  let cmd = GetVimCommand()
+  if cmd == ''
+    throw 'GetVimCommand() failed'
+  endif
+
+  let actual = cmd .. ' --clientserver socket --servername channel:2002'
+  let job = job_start(actual, {'stoponexit': 'kill', 'out_io': 'null'})
+  call WaitForAssert({-> assert_equal("run", job_status(job))})
+  call WaitForAssert({-> assert_match('channel:2002',
+        \ system(actual .. ' --remote-expr "v:servername"'))})
+
+  let ch = test_null_channel()
+  for _ in range(50)
+    let ch = ch_open('127.0.0.1:2002', {'mode': 'raw', 'waittime': 100})
+    if ch_status(ch) == 'open'
+      break
+    endif
+    sleep 100m
+  endfor
+  call assert_equal('open', ch_status(ch))
+
+  " The server reads at most MAXMSGSIZE (4096) bytes per read, so a single
+  " message longer than that is split across two read buffers. Keep the JSON
+  " string open past the split to force a refill (which frees the first
+  " buffer), then end in an invalid \u escape so the parse fails.
+  call ch_sendraw(ch, '{"k":"' .. repeat('A', 4200) .. '\uZZZZ')
+  sleep 500m
+
+  " The server must survive the invalid message and stay responsive.
+  call assert_equal("run", job_status(job))
+  call assert_match('channel:2002',
+        \ system(actual .. ' --remote-expr "v:servername"'))
+
+  call ch_close(ch)
+  call system(actual .. " --remote-expr 'execute(\"qa!\")'")
+  try
+    call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  finally
+    if job_status(job) != 'dead'
+      call assert_report('Server did not exit')
+      call job_stop(job, 'kill')
+    endif
+  endtry
+endfunc
+
 " Test if --remote-wait works properly with multiple files
 func Test_client_server_multiple_remote_wait()
   CheckRunVimInTerminal
@@ -564,14 +671,18 @@ func Test_clientserver_serverlist_list()
 
   " Don't use channel:2000, because previous tests use that and it may take a
   " while for the channel to fully close.
-  let actual = cmd .. ' --servername XVIMTEST'
+  " Use a name of its own: when a server of another test is still running Vim
+  " appends a number to the name.
+  let actual = cmd .. ' --servername XVIMSRVLIST'
 
   let job = job_start(actual, {'stoponexit': 'kill', 'out_io': 'null'})
 
-  call WaitForAssert({-> assert_match('XVIMTEST', serverlist())})
+  call WaitForAssert({-> assert_match('XVIMSRVLIST', serverlist())})
 
-  call assert_equal('list<string>', typename(serverlist(#{list: v:true})))
-  call assert_true(serverlist(#{list: v:true})->index('XVIMTEST') != -1)
+  " Use a pattern, the name may have a number appended to it.
+  let servers = serverlist(#{list: v:true})
+  call assert_equal('list<string>', typename(servers))
+  call assert_notequal(-1, match(servers, '^XVIMSRVLIST'))
 
   if has('win32')
     call job_stop(job, 'kill')

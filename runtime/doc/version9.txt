@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Jul 22
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Aug 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52587,9 +52587,11 @@ work in progress.
 
 GUI ~
 -----
-- Added support for the GTK 4 GUI (via patch 9.2.0501).  Enable with
-  `--enable-gui=gtk4` configure switch at build time.
+- Added experimental support for the GTK 4 GUI (via patch 9.2.0501 and many
+  following), enable with `--enable-gui=gtk4` configure switch at build time.
 - Add support for fullscreen mode in the GTK UI |'go-s'|.
+- Enable native printing dialog for the GTK4 UI using Pango library, see
+  |pango-printing|.
 
 Popups ~
 ------
@@ -52663,8 +52665,7 @@ Platform specific ~
 -----------------
 - support OpenType font features in 'guifont' for DirectWrite (Win32)
 - Include strptime() fallback for MS-Windows
-- Hardware-accelerated rendering for the GTK4 GUI via |gtk4-hwaccel|.
-- The NSIS installer has been reworked (Win32): 
+- The NSIS installer has been reworked (Win32):
   - Support per-user and per-machine install.
   - Change the install directory structure.
   - Replace the batch files with the Vim launchers.
@@ -52699,6 +52700,11 @@ Changed ~
 - |serverlist()| can return a list of all available server names.
 - Improve visual appearance when the terminal does not support colors.
 - Improve diff highlighting for terminals with 256 or less colors.
+- |listener_add()| accepts a Dictionary of options and can include the
+  resulting text of a change |listener-text|.
+- |extend()| and |extendnew()| also accept |Blobs|.
+- events like |CursorMoved| are no longer triggered for what happened while
+  they were ignored with 'eventignore'.
 
 
 							*added-9.3*
@@ -52739,6 +52745,10 @@ Highlighting: ~
 |hl-Popup|		Popup window body.
 |hl-PopupBorder|	Popup window border.
 |hl-PopupTitle|		Popup window title.
+
+Configure Switches: ~
+
+--enable-hardcopy-pango	Enable the Pango |:hardcopy| backend |pango-printing|
 
 ==============================================================================
 PATCHES						*patches-9.3* *bug-fixes-9.3*

@@ -3133,11 +3133,16 @@ set_cmd_context(
     int		old_char = NUL;
     char_u	*nextcomm;
 
-    // Avoid a UMR warning from Purify, only save the character if it has been
-    // written before.
+    // Only save and overwrite the character when it is not the NUL terminator
+    // already.  "str" may be a read-only empty string: tv_get_string() falls
+    // back to a "" literal for a NULL string or on a type error, and writing
+    // at "col" would then crash.
+    // This also avoids a UMR warning from Purify.
     if (col < len)
+    {
 	old_char = str[col];
-    str[col] = NUL;
+	str[col] = NUL;
+    }
     nextcomm = str;
 
 #ifdef FEAT_EVAL
@@ -3168,7 +3173,8 @@ set_cmd_context(
     xp->xp_line = str;
     xp->xp_col = col;
 
-    str[col] = old_char;
+    if (col < len)
+	str[col] = old_char;
 }
 
 /*

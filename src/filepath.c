@@ -586,6 +586,10 @@ repeat:
 	    }
 	    *fnamelen = l;
 	}
+
+	// The name was replaced by the short name, "tail" points into the
+	// previous name.
+	tail = gettail(*fnamep);
     }
 #endif // MSWIN
 
@@ -3574,6 +3578,7 @@ dos_expandpath(
     char_u		*matchname;
     int			ok;
     char_u		*p_alt;
+    int			use_short_name;
 
     // Expanding "**" may take a long time, check for CTRL-C.
     if (stardepth > 0)
@@ -3668,6 +3673,10 @@ dos_expandpath(
     // remember the pattern or file name being looked for
     matchname = vim_strsave(s);
 
+    // Only match against the alternate (8.3) file name when the pattern looks
+    // like a short name, it contains a '~'.
+    use_short_name = vim_strchr(s, '~') != NULL;
+
     len = (size_t)(s - buf);
     // If "**" is by itself, this is the first time we encounter it and more
     // is following then find matches without any directory.
@@ -3697,7 +3706,8 @@ dos_expandpath(
 	// Do not use the alternate filename when the file name ends in '~',
 	// because it picks up backup files: short name for "foo.vim~" is
 	// "foo~1.vim", which matches "*.vim".
-	if (*wfb.cAlternateFileName == NUL || p[STRLEN(p) - 1] == '~')
+	if (!use_short_name || *wfb.cAlternateFileName == NUL
+						  || p[STRLEN(p) - 1] == '~')
 	    p_alt = NULL;
 	else
 	    p_alt = utf16_to_enc(wfb.cAlternateFileName, NULL);

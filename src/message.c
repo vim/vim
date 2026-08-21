@@ -1346,7 +1346,7 @@ wait_return(int redraw)
 		// at the hit-enter prompt.  Use CTRL-Y, because the same is
 		// used in Cmdline-mode and it's harmless when there is no
 		// selection.
-		if (c == Ctrl_Y && clip_star.state == SELECT_DONE)
+		if (KeyTyped && c == Ctrl_Y && clip_star.state == SELECT_DONE)
 		{
 		    clip_copy_modeless_selection(TRUE);
 		    c = K_IGNORE;
@@ -1359,7 +1359,7 @@ wait_return(int redraw)
 		* screen, to avoid that typing one 'j' too many makes the
 		* messages disappear.
 		*/
-		if (p_more && !p_cp)
+		if (KeyTyped && p_more && !p_cp)
 		{
 		    if (c == 'b' || c == Ctrl_B || c == 'k' || c == 'u' || c == 'g'
 						|| c == K_UP || c == K_PAGEUP)
@@ -1419,8 +1419,8 @@ wait_return(int redraw)
 	    if (c == K_LEFTMOUSE || c == K_MIDDLEMOUSE || c == K_RIGHTMOUSE
 					|| c == K_X1MOUSE || c == K_X2MOUSE)
 		(void)jump_to_mouse(MOUSE_SETPOS, NULL, 0);
-	    else if (vim_strchr((char_u *)"\r\n ", c) == NULL && c != Ctrl_C
-		    && c != 'q')
+	    else if (!KeyTyped || (vim_strchr((char_u *)"\r\n ", c) == NULL
+						   && c != Ctrl_C && c != 'q'))
 	    {
 		// Put the character back in the typeahead buffer.  Don't use
 		// the stuff buffer, because lmaps wouldn't work.

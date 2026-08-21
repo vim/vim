@@ -657,7 +657,14 @@ GUI_LIB_LOC
 GUI_INC_LOC
 NARROW_PROTO
 MOTIF_LIBNAME
+CAIRO_CPPFLAGS
+CAIRO_CFLAGS
+CAIRO_LIBS
+PANGO_CPPFLAGS
+PANGO_CFLAGS
+PANGO_LIBS
 GRESOURCE_OBJ
+GRESOURCE_PRO
 GRESOURCE_SRC
 UPDATE_DESKTOP_DATABASE
 GTK_UPDATE_ICON_CACHE
@@ -862,7 +869,6 @@ enable_gui
 enable_gtk2_check
 enable_gnome_check
 enable_gtk4_check
-enable_gtk4_hwaccel
 enable_gtk3_check
 enable_motif_check
 enable_gtktest
@@ -871,6 +877,7 @@ with_gnome_libs
 with_gnome
 enable_icon_cache_update
 enable_desktop_database_update
+enable_hardcopy_pango
 with_motif_lib
 with_tlib
 enable_largefile
@@ -1542,12 +1549,12 @@ Optional Features:
   --enable-gtk2-check     If auto-select GUI, check for GTK+ 2 default=yes
   --enable-gnome-check    If GTK GUI, check for GNOME default=no
   --enable-gtk4-check     If auto-select GUI, check for GTK 4 default=yes
-  --enable-gtk4-hwaccel  Use hardware accelerated rendering backend for GTK4 default=no
   --enable-gtk3-check     If auto-select GUI, check for GTK+ 3 default=yes
   --enable-motif-check    If auto-select GUI, check for Motif default=yes
   --disable-gtktest       Do not try to compile and run a test GTK program
   --disable-icon-cache-update        update disabled
   --disable-desktop-database-update  update disabled
+  --enable-hardcopy-pango     Use Pango 1.44 or later and Cairo for improved hardcopy printing. default=yes when GTK GUI enabled
   --disable-largefile     omit support for large files
   --disable-canberra      Do not use libcanberra.
   --disable-libsodium      Do not use libsodium.
@@ -9177,37 +9184,6 @@ fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enable_fontset" >&5
 printf "%s\n" "$enable_fontset" >&6; }
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if shm_open is available" >&5
-printf %s "checking if shm_open is available... " >&6; }
-cppflags_save=$CPPFLAGS
-CPPFLAGS="$CPPFLAGS $X_CFLAGS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <sys/mman.h>
-		    #include <sys/stat.h>
-		    #include <fcntl.h>
-int
-main (void)
-{
-shm_open("/test", O_CREAT, 0600);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }; printf "%s\n" "#define HAVE_SHM_OPEN 1" >>confdefs.h
-
-else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; } ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-CPPFLAGS=$cppflags_save
-
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --with-wayland argument" >&5
 printf %s "checking --with-wayland argument... " >&6; }
 
@@ -9269,6 +9245,52 @@ printf "%s\n" "no" >&6; }
   fi
 CPPFLAGS=$cppflags_save
 CFLAGS=$cflags_save
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for cairo" >&5
+printf %s "checking for cairo... " >&6; }
+have_cairo="no"
+if "$PKG_CONFIG" --exists 'cairo-ps'; then
+  if "$PKG_CONFIG" --exists 'cairo-pdf'; then
+    have_cairo="yes"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+    CAIRO_CFLAGS=`$PKG_CONFIG --cflags-only-other cairo-ps cairo-pdf`
+    CAIRO_CPPFLAGS=`$PKG_CONFIG --cflags-only-I cairo-ps cairo-pdf`
+    CAIRO_LIBS=`$PKG_CONFIG --libs cairo-ps cairo-pdf`
+  else
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+  fi
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pango" >&5
+printf %s "checking for pango... " >&6; }
+have_pango="no"
+if "$PKG_CONFIG" --exists 'pango' && "$PKG_CONFIG" --exists 'pangocairo'; then
+  if "$PKG_CONFIG" --exists 'pango >= 1.44'; then
+    have_pango="yes"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+    PANGO_CFLAGS=`$PKG_CONFIG --cflags-only-other pango pangocairo`
+    PANGO_CPPFLAGS=`$PKG_CONFIG --cflags-only-I pango pangocairo`
+    PANGO_LIBS=`$PKG_CONFIG --libs pango pangocairo`
+  else
+    have_pango="old"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, version 1.44 or later is required" >&5
+printf "%s\n" "no, version 1.44 or later is required" >&6; }
+  fi
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
 fi
 
 if test "x$enable_gui" = "xgtk4"; then
@@ -10611,28 +10633,6 @@ printf "%s\n" "$enable_gtk4_check" >&6; }
   fi
 fi
 
-if test "x$SKIP_GTK4" != "xYES" -a "$enable_gui_canon" = "gtk4"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-gtk4-hwaccel argument" >&5
-printf %s "checking --enable-gtk4-hwaccel argument... " >&6; }
-  # Check whether --enable-gtk4-hwaccel was given.
-if test ${enable_gtk4_hwaccel+y}
-then :
-  enableval=$enable_gtk4_hwaccel;
-else case e in #(
-  e) enable_gtk4_hwaccel="no" ;;
-esac
-fi
-
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enable_gtk4_hwaccel" >&5
-printf "%s\n" "$enable_gtk4_hwaccel" >&6; }
-
-  if test "x$enable_gtk4_hwaccel" = "xyes"; then
-    printf "%s\n" "#define USE_GTK4_SNAPSHOT 1" >>confdefs.h
-
-  fi
-fi
-
-
 if test "x$SKIP_GTK3" != "xYES" -a "$enable_gui_canon" != "gtk3"; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether or not to look for GTK+ 3" >&5
 printf %s "checking whether or not to look for GTK+ 3... " >&6; }
@@ -11389,6 +11389,7 @@ printf "%s\n" "usable." >&6; }
 	printf "%s\n" "#define USE_GRESOURCE 1" >>confdefs.h
 
 	GRESOURCE_SRC="auto/gui_gtk_gresources.c"
+    GRESOURCE_PRO="proto/gui_gtk_gresources.pro"
 	GRESOURCE_OBJ="objects/gui_gtk_gresources.o"
       fi
     else
@@ -11544,6 +11545,75 @@ fi
 
 
 
+
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-hardcopy-pango argument" >&5
+printf %s "checking --enable-hardcopy-pango argument... " >&6; }
+# Check whether --enable-hardcopy-pango was given.
+if test ${enable_hardcopy_pango+y}
+then :
+  enableval=$enable_hardcopy_pango;
+else case e in #(
+  e) enable_hardcopy_pango="auto" ;;
+esac
+fi
+
+
+if test "x$have_pango" != "xyes" || test "x$have_cairo" = "xno"; then
+  if test "$fail_if_missing" = "yes" -a "$enable_hardcopy_pango" = "yes"; then
+    as_fn_error $? "could not configure hardcopy-pango" "$LINENO" 5
+  fi
+  enable_hardcopy_pango="no"
+  if test "x$have_pango" = "xold"; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, Pango is older than 1.44" >&5
+printf "%s\n" "no, Pango is older than 1.44" >&6; }
+  else
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, Pango or Cairo not found" >&5
+printf "%s\n" "no, Pango or Cairo not found" >&6; }
+  fi
+else
+  if test "x$enable_hardcopy_pango" = "xauto"; then
+    if test "x$GUITYPE" = "xGTK" || test "x$GUITYPE" = "xGTK4"; then
+      enable_hardcopy_pango="yes"
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes, GTK GUI enabled" >&5
+printf "%s\n" "yes, GTK GUI enabled" >&6; }
+    else
+      enable_hardcopy_pango="no"
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    fi
+  elif test "$enable_hardcopy_pango" = "yes"; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+  else
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+  fi
+fi
+
+if test "$enable_hardcopy_pango" = "yes"; then
+  cppflags_save=$CPPFLAGS
+  cflags_save=$CFLAGS
+
+  printf "%s\n" "#define FEAT_PRINT_PANGO 1" >>confdefs.h
+
+
+  CPPFLAGS="$CPPFLAGS $PANGO_CPPFLAGS"
+  CFLAGS="$CFLAGS $PANGO_CFLAGS"
+
+
+
+
+  CPPFLAGS="$CPPFLAGS $CAIRO_CPPFLAGS"
+  CFLAGS="$CFLAGS $CAIRO_CFLAGS"
+
+
+
+
+  CPPFLAGS=$cppflags_save
+  CFLAGS=$cflags_save
+fi
 
 
 

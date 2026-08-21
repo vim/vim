@@ -696,6 +696,7 @@ char *(*dyn_libintl_bindtextdomain)(const char *, const char *)
 char *(*dyn_libintl_bind_textdomain_codeset)(const char *, const char *)
 				       = null_libintl_bind_textdomain_codeset;
 int (*dyn_libintl_wputenv)(const wchar_t *) = null_libintl_wputenv;
+int *dyn_libintl_nl_msg_cat_cntr = NULL;
 
     int
 dyn_libintl_init(void)
@@ -770,6 +771,11 @@ dyn_libintl_init(void)
     if (dyn_libintl_wputenv == NULL || dyn_libintl_wputenv == _wputenv)
 	dyn_libintl_wputenv = null_libintl_wputenv;
 
+    // The _nl_msg_cat_cntr variable is optional.  It is used to make gettext
+    // drop the translations it cached.
+    dyn_libintl_nl_msg_cat_cntr = (int *)GetProcAddress(hLibintlDLL,
+							 "_nl_msg_cat_cntr");
+
     return 1;
 }
 
@@ -785,6 +791,7 @@ dyn_libintl_end(void)
     dyn_libintl_bindtextdomain	= null_libintl_bindtextdomain;
     dyn_libintl_bind_textdomain_codeset = null_libintl_bind_textdomain_codeset;
     dyn_libintl_wputenv		= null_libintl_wputenv;
+    dyn_libintl_nl_msg_cat_cntr	= NULL;
 }
 
     static char *

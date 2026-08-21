@@ -1514,6 +1514,7 @@ $quote	eval.txt	/*$quote*
 +num64	various.txt	/*+num64*
 +ole	various.txt	/*+ole*
 +packages	various.txt	/*+packages*
++pango	various.txt	/*+pango*
 +path_extra	various.txt	/*+path_extra*
 +perl	various.txt	/*+perl*
 +perl/dyn	various.txt	/*+perl\/dyn*
@@ -1954,6 +1955,7 @@ $quote	eval.txt	/*$quote*
 09.2	usr_09.txt	/*09.2*
 09.3	usr_09.txt	/*09.3*
 09.4	usr_09.txt	/*09.4*
+0b	eval.txt	/*0b*
 0o	eval.txt	/*0o*
 0x	eval.txt	/*0x*
 10.1	usr_10.txt	/*10.1*
@@ -4788,6 +4790,7 @@ E1576	tagsrch.txt	/*E1576*
 E1577	options.txt	/*E1577*
 E1578	spell.txt	/*E1578*
 E158	sign.txt	/*E158*
+E1581	vim9.txt	/*E1581*
 E159	sign.txt	/*E159*
 E16	cmdline.txt	/*E16*
 E160	sign.txt	/*E160*
@@ -5738,6 +5741,7 @@ GNOME	gui_x11.txt	/*GNOME*
 GTK	gui_x11.txt	/*GTK*
 GTK+	gui_x11.txt	/*GTK+*
 GTK3	gui_x11.txt	/*GTK3*
+GTK4	gui_x11.txt	/*GTK4*
 GUI	gui.txt	/*GUI*
 GUI-X11	gui_x11.txt	/*GUI-X11*
 GUIEnter	autocmd.txt	/*GUIEnter*
@@ -6749,6 +6753,7 @@ clipboard-providers-no-clipboard	eval.txt	/*clipboard-providers-no-clipboard*
 clipboard-providers-paste	eval.txt	/*clipboard-providers-paste*
 clipboard-providers-plus	eval.txt	/*clipboard-providers-plus*
 clipboard-providers-textlock	eval.txt	/*clipboard-providers-textlock*
+clipboard-providers-wsl	eval.txt	/*clipboard-providers-wsl*
 clipboard-unnamed	options.txt	/*clipboard-unnamed*
 clipboard-unnamedplus	options.txt	/*clipboard-unnamedplus*
 clojure-indent	indent.txt	/*clojure-indent*
@@ -8075,6 +8080,7 @@ g:zipPlugin_ext	pi_zip.txt	/*g:zipPlugin_ext*
 g:zip_exec	pi_zip.txt	/*g:zip_exec*
 g:zip_extractcmd	pi_zip.txt	/*g:zip_extractcmd*
 g:zip_nomax	pi_zip.txt	/*g:zip_nomax*
+g:zip_pwsh	pi_zip.txt	/*g:zip_pwsh*
 g:zip_unzipcmd	pi_zip.txt	/*g:zip_unzipcmd*
 g:zip_zipcmd	pi_zip.txt	/*g:zip_zipcmd*
 g;	motion.txt	/*g;*
@@ -8260,8 +8266,8 @@ gt	tabpage.txt	/*gt*
 gtk-css	gui_x11.txt	/*gtk-css*
 gtk-tooltip-colors	gui_x11.txt	/*gtk-tooltip-colors*
 gtk3-slow	gui_x11.txt	/*gtk3-slow*
-gtk4-hwaccel	gui_x11.txt	/*gtk4-hwaccel*
 gtk4-menu-navigation	gui_x11.txt	/*gtk4-menu-navigation*
+gtk4-print	print.txt	/*gtk4-print*
 gtk4-slow	gui_x11.txt	/*gtk4-slow*
 gu	change.txt	/*gu*
 gugu	change.txt	/*gugu*
@@ -8937,6 +8943,7 @@ list-repeat	windows.txt	/*list-repeat*
 list2blob()	builtin.txt	/*list2blob()*
 list2str()	builtin.txt	/*list2str()*
 list2tuple()	builtin.txt	/*list2tuple()*
+listener-text	builtin.txt	/*listener-text*
 listener_add()	builtin.txt	/*listener_add()*
 listener_flush()	builtin.txt	/*listener_flush()*
 listener_remove()	builtin.txt	/*listener_remove()*
@@ -9717,6 +9724,7 @@ page-up	intro.txt	/*page-up*
 page_down	intro.txt	/*page_down*
 page_up	intro.txt	/*page_up*
 pager	message.txt	/*pager*
+pango-printing	print.txt	/*pango-printing*
 papp.vim	syntax.txt	/*papp.vim*
 paragraph	motion.txt	/*paragraph*
 partial	builtin.txt	/*partial*

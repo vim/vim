@@ -11887,4 +11887,82 @@ def Test_colon_whitespace()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" A closure in the initializer of an object variable, with the constructor
+" called without arguments.
+def Test_class_member_closure()
+  var lines =<< trim END
+    vim9script
+    class C
+      def F(): number
+        return 7
+      enddef
+      var A = () => this.F()
+    endclass
+    var c = C.new()
+    assert_equal(7, c.A())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Using a compound operator on an object variable of an object variable.
+def Test_nested_object_member_op_assign()
+  var lines =<< trim END
+    vim9script
+    class A
+      public var n = 1
+      public var s = 'x'
+    endclass
+    class B
+      var a: A = A.new()
+      def Add()
+        this.a.n += 2
+        this.a.s ..= 'y'
+      enddef
+    endclass
+    var b = B.new()
+    b.Add()
+    assert_equal(3, b.a.n)
+    assert_equal('xy', b.a.s)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Also when the object is in a local variable.
+  lines =<< trim END
+    vim9script
+    class A
+      public var n = 1
+    endclass
+    class B
+      var a: A = A.new()
+    endclass
+    def F(): number
+      var b = B.new()
+      b.a.n += 2
+      return b.a.n
+    enddef
+    assert_equal(3, F())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # A plain assignment must use the last name, not the first one.
+  lines =<< trim END
+    vim9script
+    class A
+      public var n = 1
+      public var s = 'x'
+    endclass
+    class B
+      var a: A = A.new()
+      def Set()
+        this.a.s = 'y'
+      enddef
+    endclass
+    var b = B.new()
+    b.Set()
+    assert_equal(1, b.a.n)
+    assert_equal('y', b.a.s)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

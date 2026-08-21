@@ -1,4 +1,4 @@
-*todo.txt*	For Vim version 9.2.  Last change: 2026 Jun 23
+*todo.txt*	For Vim version 9.2.  Last change: 2026 Aug 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,38 +36,11 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Mapping with modifier is not recognized after a partial mapping.  Probably
-because the typeahead was simplified when looking for a matching mapping.
-Need to somehow undo the simplification.  #12002
-
-Windows scroll when using the autocmd window.  #12085
-in restore_snapshot_rec() restore more values from the snapshot, instead of
-calling frame_new_height() and frame_new_width(), especially w_topline and
-w_skipcol.
-
-Check places that source "path/*.vim" to not match other extensions, e.g.
-.vim9, on MS-Windows (short file name match, gets expanded to long file name).
-E.g. for startup files, plugins, packs, etc.
-
 When a help item can't be found, then open 'helpfile'.  Search for the tag in
 that file and gtive E149 only when not found.  Helps for a tiny Vim installed
 without all the help files.
 
-Virtual text problems:
--  Virtual text aligned "above": Wrong indentation when using tabs  (Issue
-   #12232)
--  truncated Virtual text below an empty line causes display error #12493
-
-When 'virtualedit' is "all" and 'cursorcolumn' is set, the wrong column may be
-highlighted. (van-de-bugger, 2018 Jan 23, #2576)
-
-With 'smoothscroll' set and "lastline" in 'display', moving the cursor to a
-wrapping line that makes the display scroll up may scroll much more than
-needed, thus jump-scrolling. (part of issue 12411)
 Errors when running tests with valgrind:
-- test_codestyle.vim:  e.g.:
-    command line..script /home/mool/vim/vim91/src/testdir/runtest.vim[569]..function RunTheTest[52]..Test_test_files line 6: keycode_check.vim: space before tab: Expected 0 but got 7
-    command line..script /home/mool/vim/vim91/src/testdir/runtest.vim[569]..function RunTheTest[52]..Test_test_files line 10: setup.vim: trailing white space: Expected 0 but got 23
 - test_gui.vim:
     Found errors in Test_gui_mouse_event():
 

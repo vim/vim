@@ -536,6 +536,7 @@ SRC = \
  gc.c \
  gui_xim.c \
  hardcopy.c \
+ hardcopy_postscript.c \
  hashtab.c \
  help.c \
  highlight.c \
@@ -676,6 +677,7 @@ OBJ = \
  [.$(DEST)]gc.obj \
  [.$(DEST)]gui_xim.obj \
  [.$(DEST)]hardcopy.obj \
+ [.$(DEST)]hardcopy_postscript.obj \
  [.$(DEST)]hashtab.obj \
  [.$(DEST)]help.obj \
  [.$(DEST)]highlight.obj \
@@ -1167,6 +1169,10 @@ lua_env :
  gui.h beval.h option.h ex_cmds.h proto.h \
  errors.h globals.h
 [.$(DEST)]hardcopy.obj : hardcopy.c vim.h [.$(DEST)]config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
+ gui.h beval.h option.h ex_cmds.h proto.h \
+ errors.h globals.h version.h
+[.$(DEST)]hardcopy_postscript.obj : hardcopy_postscript.c vim.h [.$(DEST)]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h option.h ex_cmds.h proto.h \
  errors.h globals.h version.h

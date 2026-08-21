@@ -78,6 +78,7 @@ static int	KeyNoremap = 0;	    // remapping flags
 #define RM_NONE		1	// tb_noremap: don't remap
 #define RM_SCRIPT	2	// tb_noremap: remap local script mappings
 #define RM_ABBR		4	// tb_noremap: don't remap, do abbrev.
+#define RM_SIMPLIFIED	8	// tb_noremap: modifiers merged into the key
 
 // typebuf.tb_buf has three parts: room in front (for result of mappings), the
 // middle for typeahead and room for new characters (which needs to be 3 *
@@ -2770,6 +2771,7 @@ check_simplify_modifier(int max_offset)
 	    {
 		char_u	new_string[MB_MAXBYTES];
 		int	len;
+		int	key_offset = offset;
 
 		if (offset == 0)
 		{
@@ -2797,10 +2799,17 @@ check_simplify_modifier(int max_offset)
 		else
 		{
 		    tp[2] = modifier;
-		    if (put_string_in_typebuf(offset + 3, 1, new_string, len,
+		    key_offset = offset + 3;
+		    if (put_string_in_typebuf(key_offset, 1, new_string, len,
 							NULL, 0, NULL) == FAIL)
 			return -1;
 		}
+
+		// A mapping for the simplified key can be used for it even
+		// when the key protocol is enabled.
+		for (int i = 0; i < len; ++i)
+		    typebuf.tb_noremap[typebuf.tb_off + key_offset + i]
+							    |= RM_SIMPLIFIED;
 		return len;
 	    }
 	}
@@ -2939,7 +2948,9 @@ handle_mapping(
 	    if (mp->m_keys[0] == tb_c1
 		    && (mp->m_mode & local_State)
 		    && !(mp->m_simplified && key_protocol_enabled()
-						     && typebuf.tb_maplen == 0)
+			    && typebuf.tb_maplen == 0
+			    && (typebuf.tb_noremap[typebuf.tb_off]
+							& RM_SIMPLIFIED) == 0)
 		    && ((mp->m_mode & MODE_LANGMAP) == 0
 						    || typebuf.tb_maplen == 0))
 	    {
@@ -3002,7 +3013,7 @@ handle_mapping(
 		    // If only script-local mappings are allowed, check if the
 		    // mapping starts with K_SNR.
 		    s = typebuf.tb_noremap + typebuf.tb_off;
-		    if (*s == RM_SCRIPT
+		    if ((*s & ~RM_SIMPLIFIED) == RM_SCRIPT
 			    && (mp->m_keys[0] != K_SPECIAL
 				|| mp->m_keys[1] != KS_EXTRA
 				|| mp->m_keys[2] != KE_SNR))
@@ -3126,8 +3137,8 @@ handle_mapping(
 	if (in_osc || no_mapping == 0 || allow_keys != 0)
 	{
 	    if (in_osc || ((typebuf.tb_maplen == 0
-			    || (p_remap && typebuf.tb_noremap[
-						    typebuf.tb_off] == RM_YES))
+			    || (p_remap && (typebuf.tb_noremap[typebuf.tb_off]
+						& ~RM_SIMPLIFIED) == RM_YES))
 		    && !*timedout))
 		keylen = check_termcode(max_mlen + 1, NULL, 0, NULL);
 	    else
@@ -3635,7 +3646,8 @@ vgetorpeek(int advance)
 				gotchars(typebuf.tb_buf
 						 + typebuf.tb_off, 1);
 			    }
-			    KeyNoremap = typebuf.tb_noremap[typebuf.tb_off];
+			    KeyNoremap = typebuf.tb_noremap[typebuf.tb_off]
+							    & ~RM_SIMPLIFIED;
 			    del_typebuf(1, 0);
 			}
 			break;  // got character, break the for loop

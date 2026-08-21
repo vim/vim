@@ -921,6 +921,7 @@ endfunc
 func Test_popup_select()
   CheckScreendump
   CheckFeature clipboard_working
+  CheckClipboardInTerminal
 
   " create a popup with some text to be selected
   let lines =<< trim END
@@ -1785,11 +1786,12 @@ func Test_popup_filter_win_execute_error()
   call writefile(lines, 'XtestPopupWinExecuteError', 'D')
   let buf = RunVimInTerminal('-S XtestPopupWinExecuteError', #{rows: 10, wait_for_ruler: 0})
 
+  " The CR is consumed by the hit-enter prompt, the key after it reaches the
+  " popup filter.
   call WaitFor({-> term_getline(buf, 9) =~ 'Not an editor command: invalidCommand'})
   call term_sendkeys(buf, "\<CR>")
-  call WaitFor({-> term_getline(buf, 9) =~ 'Unknown function: invalidfilter'})
-  call term_sendkeys(buf, "\<CR>")
-  call WaitFor({-> term_getline(buf, 9) =~ 'Not allowed in a popup window'})
+  call term_sendkeys(buf, "x")
+  call WaitFor({-> term_getline(buf, 10) =~ 'Unknown function: invalidfilter'})
   call term_sendkeys(buf, "\<CR>")
   call term_sendkeys(buf, "\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_win_execute', {})
@@ -2196,6 +2198,44 @@ func Test_popup_wrap_with_maxwidth()
   let p = popup_create(repeat('w', 40), #{
 	\ line: 5, col: col, pos: 'botleft'})
   call s:VerifyPosition(p, 'wrap without maxwidth shifts left',
+	\ 5, col - maxw, 40, 1)
+  call popup_close(p)
+
+  call popup_clear()
+  %bwipe!
+endfunc
+
+func Test_popup_nowrap_with_maxwidth()
+  " When wrap is off and maxwidth is explicitly set, a popup near the right
+  " edge of the screen must not get wider than maxwidth by shifting left.
+  let maxw = 20
+  let col = &columns - maxw + 1
+
+  " Text longer than maxwidth is truncated, no shift is needed.
+  let p = popup_create(repeat('x', 40), #{
+	\ line: 5, col: col, maxwidth: maxw, wrap: 0})
+  call s:VerifyPosition(p, 'nowrap with maxwidth at right edge',
+	\ 5, col, maxw, 1)
+  call popup_close(p)
+
+  " Not enough space at the right: shift left, but only up to maxwidth.
+  let p = popup_create(repeat('y', 40), #{
+	\ line: 5, col: &columns - 5, maxwidth: maxw, wrap: 0})
+  call s:VerifyPosition(p, 'nowrap with maxwidth shifts up to maxwidth',
+	\ 5, col, maxw, 1)
+  call popup_close(p)
+
+  " Same with a border and padding.
+  let p = popup_create(repeat('z', 40), #{
+	\ line: 5, col: &columns - 5, maxwidth: maxw, wrap: 0,
+	\ border: [], padding: [0, 1, 0, 1]})
+  call assert_equal(maxw, popup_getpos(p).core_width)
+  call popup_close(p)
+
+  " When maxwidth is not set, shift-left uses the whole text width.
+  let p = popup_create(repeat('w', 40), #{
+	\ line: 5, col: col, wrap: 0})
+  call s:VerifyPosition(p, 'nowrap without maxwidth shifts left',
 	\ 5, col - maxw, 40, 1)
   call popup_close(p)
 
@@ -3038,11 +3078,12 @@ func Test_popupwin_terminal_buffer()
   call WaitForAssert({-> assert_equal("run", job_status(term_getjob(termbuf)))})
   call WaitForAssert({-> assert_equal('', term_getline(termbuf, '.'))})
 
-  " When typing a character, the cursor is after it.
+  " When typing a character, the cursor is after it.  Some shells echo it
+  " more than once.
   call feedkeys("x", 'xt')
   call term_wait(termbuf)
   redraw
-  call WaitForAssert({-> assert_equal('x', term_getline(termbuf, '.'))})
+  call WaitForAssert({-> assert_match('^x', term_getline(termbuf, '.'))})
   call feedkeys("\<BS>", 'xt')
 
   " Check this doesn't crash
@@ -4685,6 +4726,37 @@ func Test_popup_clipwindow_hide_when_prop_off_screen()
   call prop_type_delete('clipprop')
 endfunc
 
+func Test_popup_clipwindow_opacity_negative_winrow()
+  " A "clipwindow" popup with "opacity" whose textprop anchor scrolls above
+  " the window top must not index the opacity mask out of bounds.
+  call prop_type_add('clipprop', {})
+  new
+  call setline(1, range(1, 200)->mapnew({_, v -> 'line ' .. v}))
+  call prop_add(5, 1, #{type: 'clipprop', length: 5})
+  let host = win_getid()
+
+  let id = popup_create(['aaa', 'bbb', 'ccc', 'ddd', 'eee'], #{
+        \ textprop: 'clipprop',
+        \ textpropwin: host,
+        \ wrap: v:false,
+        \ fixed: v:true,
+        \ clipwindow: v:true,
+        \ opacity: 50,
+        \ })
+  call assert_true(id > 0)
+  redraw
+
+  " Scroll so the prop (line 5) sits a couple of lines above the top, so the
+  " popup is clipped at the host window's top edge.
+  call win_execute(host, 'normal! 8Gzt')
+  redraw
+  redraw
+
+  call popup_close(id)
+  bwipe!
+  call prop_type_delete('clipprop')
+endfunc
+
 func Test_popup_clipwindow_top_clip()
   CheckScreendump
 
@@ -5352,6 +5424,50 @@ func Test_popup_opacity_terminal_move_no_leftover()
   exe buf .. 'bwipe!'
 endfunc
 
+func s:do_test_popup_opacity_terminal_close_no_leftover(tabpage)
+  CheckScreendump
+  CheckFeature terminal
+  CheckUnix
+
+  " A semi-transparent popup over a terminal used to leave the old popup
+  " cells behind when it closed.
+  let lines =<< eval trim END
+    set shell=/bin/sh noruler
+    unlet $PROMPT_COMMAND
+    let $PS1 = 'vim> '
+    terminal ++curwin
+    call popup_create('ABC',
+        \ #{{line: 5, col: 10, highlight: 'None', opacity: 30, tabpage: {a:tabpage}}})
+    func CloseIt()
+      let id = popup_list()[0]
+      call popup_close(id)
+    endfunc
+  END
+  call writefile(lines, 'XtestPopupOpacityTermClose', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupOpacityTermClose',
+	\ #{rows: 12, wait_for_ruler: 0})
+  call WaitForAssert({-> assert_match('ABC', term_getline(buf, 5))})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_term_close_1', {})
+
+  " Close the popup: the old "ABC" cells must be cleared.
+  call term_sendkeys(buf, "\<C-W>:call CloseIt()\<CR>")
+  call WaitForAssert({-> assert_equal('', term_getline(buf, 5)->trim())})
+  call VerifyScreenDump(buf, 'Test_popupwin_opacity_term_close_2', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<C-W>:qa!\<CR>")
+  call WaitForAssert({-> assert_equal("finished", term_getstatus(buf))})
+  exe buf .. 'bwipe!'
+endfunc
+
+function Test_popup_opacity_global_terminal_close_no_leftover()
+  call s:do_test_popup_opacity_terminal_close_no_leftover(-1)
+endfunction
+
+function Test_popup_opacity_tablocal_terminal_close_no_leftover()
+  call s:do_test_popup_opacity_terminal_close_no_leftover(0)
+endfunction
+
 func Test_popup_opacity_terminal_no_freeze()
   CheckFeature terminal
   CheckUnix
@@ -5367,10 +5483,11 @@ func Test_popup_opacity_terminal_no_freeze()
 
   " Before the fix typing froze Vim: redraw under an opacity popup raised
   " must_redraw every cycle, trapping terminal_loop in its redraw loop.
+  " Some shells echo the character more than once.
   call feedkeys('x', 'xt')
   call term_wait(termbuf)
   redraw
-  call WaitForAssert({-> assert_equal('x', term_getline(termbuf, '.'))})
+  call WaitForAssert({-> assert_match('^x', term_getline(termbuf, '.'))})
 
   call feedkeys("\<BS>", 'xt')
   call feedkeys("exit\<CR>", 'xt')
@@ -6128,6 +6245,72 @@ func Test_popup_image_clipwindow_scroll()
   call popup_close(id)
   bwipe!
   call prop_type_delete('imgclipprop')
+endfunc
+
+func Test_popupwin_textprop_redraw()
+  CheckScreendump
+
+  let lines =<< trim END
+    vim9script
+    var buf = bufadd('XpopupProp')
+    bufload(buf)
+    setbufline(buf, 1, 'popup text')
+    prop_type_add('counter', {bufnr: buf, highlight: 'Search'})
+    popup_create(buf, {line: 3, col: 3, minwidth: 30, border: []})
+
+    var counter = 0
+    def g:UpdateProp()
+      counter += 1
+      prop_remove({all: true, type: 'counter', bufnr: buf}, 1)
+      prop_add(1, 0, {
+        bufnr: buf,
+        type: 'counter',
+        text: $'count={counter} ',
+        text_align: 'right',
+      })
+    enddef
+    nnoremap <F3> <ScriptCmd>g:UpdateProp()<CR>
+  END
+  call writefile(lines, 'XtestPopupProp', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupProp', #{rows: 10})
+
+  " Updating only the virtual text of the popup buffer must redraw the popup.
+  call term_sendkeys(buf, "\<F3>")
+  call VerifyScreenDump(buf, 'Test_popupwin_textprop_redraw_1', {})
+
+  call term_sendkeys(buf, "\<F3>")
+  call VerifyScreenDump(buf, 'Test_popupwin_textprop_redraw_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_popup_no_filter_at_hit_enter()
+  CheckScreendump
+
+  let lines =<< trim END
+      call setline(1, range(1, 20))
+      func MyFilter(id, key)
+        call popup_close(a:id)
+        return 1
+      endfunc
+      func ShowPopup()
+        call popup_create(['one'], #{line: 8, col: 5, filter: 'MyFilter'})
+        redraw
+        echomsg repeat('x', &columns * 2)
+      endfunc
+      nnoremap <F3> <Cmd>call ShowPopup()<CR>
+  END
+  call writefile(lines, 'XtestPopupHitEnter', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupHitEnter', #{rows: 15})
+  call term_sendkeys(buf, "\<F3>")
+  call VerifyScreenDump(buf, 'Test_popupwin_hit_enter_1', {})
+
+  " The key goes to the hit-enter prompt, not to the popup filter, thus the
+  " popup is still there.
+  call term_sendkeys(buf, "\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_hit_enter_2', {})
+
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2

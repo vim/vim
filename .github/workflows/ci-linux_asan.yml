@@ -19,12 +19,15 @@ jobs:
 
     env:
       CC: clang
-      CLANG_VER: 21
+      CLANG_VER: 22
       SRCDIR: ./src
       LEAK_CFLAGS: -DEXITFREE
       LOG_DIR: ${{ github.workspace }}/logs
       TERM: xterm
       DISPLAY: ":99"
+      WAYLAND_DISPLAY: "/tmp/weston_sock"
+      GTK_A11Y: "none"
+      GDK_DEBUG: "no-portals"
       DEBIAN_FRONTEND: noninteractive
 
     strategy:
@@ -37,7 +40,7 @@ jobs:
 
     steps:
       - name: Checkout repository from GitHub
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7.0.1
 
       - name: Build
         timeout-minutes: 15

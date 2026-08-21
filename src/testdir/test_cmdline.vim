@@ -1024,6 +1024,11 @@ func Test_getcompletiontype()
   call assert_equal('var', getcompletiontype('let v:n'))
   call assert_equal('function', getcompletiontype('call tag'))
   call assert_equal('help', getcompletiontype('help '))
+  " must not write into a read-only empty string
+  call assert_equal('command', getcompletiontype(test_null_string()))
+  call assert_equal(getcompletion('', 'cmdline'),
+    \ getcompletion(test_null_string(), 'cmdline'))
+  call assert_fails('call getcompletion([], "cmdline")', 'E730:')
 endfunc
 
 func Test_multibyte_expression()
@@ -4691,6 +4696,32 @@ func Test_rulerformat_function()
 
   " clean up
   call StopVimInTerminal(buf)
+endfunc
+
+func s:BumpRulerCounter(timer)
+  let g:ruler_counter = 2
+  redrawstatus
+endfunc
+
+" When the last window has no status line the ruler is drawn in the last
+" screen line.  ":redrawstatus" must update it there as well.
+func Test_rulerformat_redrawstatus()
+  CheckFeature timers
+
+  let save_ruf = &rulerformat
+  set ruler laststatus=0
+  let g:ruler_counter = 1
+  set rulerformat=%20(count:\ %{g:ruler_counter}%)
+  redraw!
+  call assert_match('count: 1', Screenline(&lines))
+
+  " The ruler must be updated without any key being typed.
+  call timer_start(10, function('s:BumpRulerCounter'))
+  call WaitForAssert({-> assert_match('count: 2', Screenline(&lines))})
+
+  let &rulerformat = save_ruf
+  unlet g:ruler_counter
+  set ruler& laststatus&
 endfunc
 
 func Test_getcompletion_usercmd()

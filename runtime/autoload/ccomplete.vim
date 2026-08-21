@@ -599,8 +599,11 @@ def StructMembers( # {{{1
       if complete_check()
         return []
       endif
+      # Match "typename" literally (\V): escaping alone is not enough, as e.g.
+      # an unclosed "[" makes vimgrep's pattern skipping fail and the rest of
+      # the tag value is then parsed as Ex commands.
       execute 'silent! keepjumps noautocmd '
-        .. n .. 'vimgrep ' .. '/\t' .. escape(typename, '/\') .. '\(\t\|$\)/j '
+        .. n .. 'vimgrep ' .. '/\t\V' .. escape(typename, '/\') .. '\m\(\t\|$\)/j '
         .. fnames
 
       qflist = getqflist()

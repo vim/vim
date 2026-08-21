@@ -5,6 +5,7 @@ void do_augroup(char_u *arg, int del_group);
 void autocmd_init(void);
 void free_all_autocmds(void);
 int is_aucmd_win(win_T *win);
+char_u *au_find_cmd_arg(char_u *arg);
 int event_ignored(event_T event, char_u *ei);
 int check_ei(char_u *ei);
 char_u *au_event_disable(char *what);

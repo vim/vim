@@ -1322,16 +1322,16 @@ fail:
 }
 
 /*
- * If "p" starts with "{" then read a block of commands until "}".
+ * If "p" starts a block of commands, read it until "}".
  * Used for ":command" and ":autocmd".
  */
     char_u *
 may_get_cmd_block(exarg_T *eap, char_u *p, char_u **tofree, int *flags)
 {
     char_u *retp = p;
+    char_u *block = find_cmd_block_start(p);
 
-    if (*p == '{' && ends_excmd2(eap->arg, skipwhite(p + 1))
-						    && eap->ea_getline != NULL)
+    if (block != NULL && eap->ea_getline != NULL)
     {
 	garray_T    ga;
 	char_u	    *line = NULL;
@@ -1364,7 +1364,10 @@ may_get_cmd_block(exarg_T *eap, char_u *p, char_u **tofree, int *flags)
 	if (retp == NULL)
 	    retp = p;
 	ga_clear_strings(&ga);
-	*flags |= UC_VIM9;
+	// Only the command owning the block uses Vim9 syntax.  A command with
+	// the block nested in it keeps the syntax of its script.
+	if (block == p)
+	    *flags |= UC_VIM9;
     }
     return retp;
 }

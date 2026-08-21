@@ -758,6 +758,13 @@ prop_add_one(
 	proplen = get_text_props(buf, lnum, &props, TRUE);
 	textlen = ml_get_buf_len(buf, lnum) + 1;
 
+	// prop_count is a uint16_t; stop before proplen + 1 wraps to zero.
+	if (proplen >= 0xffff)
+	{
+	    emsg(_(e_too_many_text_properties_on_a_single_line));
+	    goto theend;
+	}
+
 	if (lnum == start_lnum)
 	    col = start_col;
 	else

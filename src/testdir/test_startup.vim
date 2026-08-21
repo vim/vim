@@ -461,6 +461,7 @@ endfunc
 " Test the --echo-wid argument (for GTK GUI only).
 func Test_echo_wid()
   CheckCanRunGui
+  CheckNotFeature gui_gtk4
   CheckFeature gui_gtk
 
   if RunVim([], [], '-g --echo-wid -cq >Xtest_echo_wid')
@@ -475,6 +476,7 @@ endfunction
 " Test the -reverse and +reverse arguments (for GUI only).
 func Test_reverse()
   CheckCanRunGui
+  CheckNotFeature gui_gtk4
   CheckAnyOf Feature:gui_gtk Feature:gui_motif
 
   let after =<< trim [CODE]
@@ -983,6 +985,28 @@ func Test_v_argv()
   call assert_equal(['arg1', '--cmd', 'echo v:argv', '--cmd', 'q'']'], list[idx:])
 endfunc
 
+func Test_longopt_prefix_not_accepted()
+  CheckNotGui
+  CheckFeature clientserver
+
+  let command = printf('%s -es -X -i NONE -n', GetVimCommand())
+  for args in ['--serverlistx',
+        \ '--servername=XtestName',
+        \ '--serversend=foo',
+        \ '--clientserver=socket']
+    let out = system($'{command} {args}')
+    call assert_notequal(0, v:shell_error, args)
+    call assert_match('Unknown option', out, args)
+  endfor
+
+  " The documented forms still work.
+  for args in ['--servername XtestName --serverlist',
+        \ '--servername XtestName -c quit']
+    call system($'{command} {args}')
+    call assert_equal(0, v:shell_error, args)
+  endfor
+endfunc
+
 " Test for the "-r" recovery mode option
 func Test_r_arg()
   " Can't catch the output of gvim.
@@ -1427,7 +1451,9 @@ func Test_progname()
       "       Class: XmCascadeButton
       "       Illegal mnemonic character;  Could not convert X KEYSYM to a keycode
       " So don't check that stderr is empty with GUI Motif.
-      if run_with_gui && !has('gui_motif')
+      "
+      " GTK4 also can output warnings, so don't do it as well
+      if run_with_gui && !has('gui_motif') && !has('gui_gtk4')
         call assert_equal('', stdout_stderr, progname)
       endif
       call assert_equal(expectations[progname], readfile('Xprogname_out'), progname)

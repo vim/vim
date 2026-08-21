@@ -449,6 +449,24 @@ def Test_block_local_vars_with_func()
       assert_equal(['foo', 'bar'], Func())
   END
   v9.CheckScriptSuccess(lines)
+
+  # also when the variables are used in a lambda inside the function
+  lines =<< trim END
+      vim9script
+      if true
+        var foo = 'foo'
+        if true
+          var bar = 'bar'
+          def Func(): list<string>
+            var Lambda = () => [foo, bar]
+            return Lambda()
+          enddef
+          defcompile
+        endif
+      endif
+      assert_equal(['foo', 'bar'], Func())
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 " legacy func for command that's defined later
@@ -465,6 +483,47 @@ def Test_command_block()
 
   delcommand SomeCommand
   unlet g:someVar
+enddef
+
+" Test for a {} block in an :autocmd nested in another :autocmd
+def Test_nested_autocmd_block_in_def()
+  au CursorHold * autocmd BufNew *.xml {
+        g:nestedVar = 'nested'
+      }
+  doautocmd CursorHold
+  split other.xml
+  assert_equal('nested', g:nestedVar)
+
+  bwipe!
+  au! CursorHold
+  au! BufNew *.xml
+  unlet g:nestedVar
+enddef
+
+" A trailing "{" that is an argument of the command does not start a block.
+" Use a separate script, when the "{" is taken for a block the rest of this
+" file would be swallowed until a line starting with "}".
+def Test_autocmd_trailing_curly_no_block_in_def()
+  var lines =<< trim END
+      vim9script
+      def Setup()
+        au CursorHold * normal! {
+        g:afterCurly = 'reached'
+      enddef
+      Setup()
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal('reached', g:afterCurly)
+
+  new
+  setline(1, ['one', '', 'two'])
+  cursor(3, 1)
+  doautocmd CursorHold
+  assert_equal(2, line('.'))
+
+  bwipe!
+  unlet g:afterCurly
+  au! CursorHold
 enddef
 
 " Test for using heredoc in a :command command block
@@ -2897,6 +2956,36 @@ def Test_for_loop_with_closure()
         assert_equal(3 .. 'd', lv_list[i]())
         assert_equal(i .. c, copy_list[i]())
       endfor
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # assigning to a variable declared in the loop from a closure
+  lines =<< trim END
+      for i in range(3)
+        var inloop = 0
+        var F = () => {
+              inloop = i + 1
+            }
+        F()
+        assert_equal(i + 1, inloop)
+      endfor
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # same in a nested loop
+  lines =<< trim END
+      var result: list<number>
+      for i in range(2)
+        for j in range(2)
+          var inloop = 0
+          var F = () => {
+                inloop = i * 10 + j
+              }
+          F()
+          result += [inloop]
+        endfor
+      endfor
+      assert_equal([0, 1, 10, 11], result)
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef

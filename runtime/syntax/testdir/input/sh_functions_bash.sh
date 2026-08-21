@@ -1,6 +1,11 @@
 #!/bin/bash
 # VIM_TEST_SETUP setlocal fen fdc=2 fdl=8 fdm=syntax
 # VIM_TEST_SETUP let g:sh_fold_enabled = 1 + 2 + 4
+# VIM_TEST_SETUP highlight link shFunctionExprRegion Todo
+# VIM_TEST_SETUP highlight link shFunctionSubShRegion Todo
+# VIM_TEST_SETUP let g:sh_no_error_rules = ['shDerefWordError']
+
+
 
 
 typeset -i n=0
@@ -85,6 +90,32 @@ function f=() (
     }; f\=f $*
 ); f= f\= f= f=
 
+#function() {
+#   echo "$1"
+#}
+
+function function {
+    set -- ${*/\
+#./}
+    set -- `printf %\
+#.f\  $* 2>/dev/null`;: # FIXME: Not a comment (%\)
+    set -- ${*%.}
+    local IFS=+
+    echo $((("${*\
+#function()}") / ${\
+#} + 16\
+#0\
+));: # FIXME: Not a comment (16\)
+}; eval "\function" $@
+
+function function#function () {
+    echo "$1"
+}; eval "function#function" "$1"
+
+function# () {
+    echo "$1"
+}; function# "$1"
+
 # Parens are not escaped, hence this is invalid variable assignment.
 f=f()
 {
@@ -93,4 +124,10 @@ f=f()
         f=f=f()
         if :; then :; fi
     )
+}
+
+# Identifiers cannot have a leading "#" in their names unless the shell
+# option "interactive_comments" is unset and is in effect.
+function #function() {
+    echo "$1"
 }

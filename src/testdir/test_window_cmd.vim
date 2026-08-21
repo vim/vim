@@ -2034,6 +2034,47 @@ func Test_splitkeep_cmdheight()
   set splitkeep& cmdheight&
 endfunc
 
+func Test_splitkeep_screen_smoothscroll()
+  set splitkeep=screen
+  setlocal smoothscroll
+  call setline(1, [repeat('x', 3000)] + repeat(['line'], 10))
+  exe "normal! gg10\<C-E>"
+  redraw
+  let skipcol = winsaveview().skipcol
+  call assert_notequal(0, skipcol)
+
+  " Keeping the same screen lines also keeps the position in a long line.
+  split
+  close
+  redraw
+  call assert_equal(skipcol, winsaveview().skipcol)
+
+  %bwipeout!
+  set splitkeep&
+endfunc
+
+func Test_aucmd_win_scroll_multibyte()
+  " Using the autocommand window must not scroll the current window when the
+  " cursor is behind multi-byte characters.
+  set splitkeep=cursor
+  " Use a window with a fixed size, the size of the screen may change while
+  " the test is running.
+  call NewWindow(11, 40)
+  call setline(1, repeat([repeat(nr2char(0x3042), 100)], 20))
+  normal! G050l
+  redraw
+  let topline = line('w0')
+
+  for i in range(3)
+    call bufload(bufadd(''))
+  endfor
+  call assert_equal(topline, line('w0'))
+
+  %bwipeout!
+  only!
+  set splitkeep&
+endfunc
+
 func Test_splitkeep_cursor()
   CheckScreendump
   let lines =<< trim END
@@ -2479,6 +2520,23 @@ func Test_winfixheight_resize_wmh_zero()
 
   cclose
   set winminheight& laststatus&
+endfunc
+
+" Splitting the only window while it has 'winfixheight' set and 'laststatus' is
+" one must not leave a screen line unused.
+func Test_winfixheight_split_only_window()
+  set laststatus=1
+  new
+  only!
+  setlocal winfixheight
+  split
+  " Two windows, both with a status line, and the command line.
+  call assert_equal(&lines - &cmdheight - 2, winheight(1) + winheight(2))
+
+  only!
+  setlocal winfixheight&
+  set laststatus&
+  bwipe!
 endfunc
 
 " Test that setting 'laststatus' from 0 to 2 gives all windows in a vertical

@@ -222,6 +222,7 @@ runtime/ftplugin/haredoc.vim				@selenebun
 runtime/ftplugin/hcl.vim				@gpanders
 runtime/ftplugin/heex.vim				@cvincent
 runtime/ftplugin/hgcommit.vim				@k-takata
+runtime/ftplugin/hlsl.vim				@habamax
 runtime/ftplugin/hlsplaylist.vim			@avidseeker
 runtime/ftplugin/hog.vim				@wtfbbqhax
 runtime/ftplugin/html.vim				@dkearns
@@ -410,6 +411,7 @@ runtime/indent/haml.vim					@tpope
 runtime/indent/handlebars.vim				@sukima
 runtime/indent/hare.vim					@selenebun
 runtime/indent/hcl.vim					@gpanders
+runtime/indent/hlsl.vim					@habamax
 runtime/indent/hog.vim					@wtfbbqhax
 runtime/indent/idlang.vim				@dkearns
 runtime/indent/j.vim					@glts
@@ -544,6 +546,7 @@ runtime/syntax/dot.vim					@mmottl
 runtime/syntax/doxygen.vim				@frogonwheels
 runtime/syntax/dtd.vim					@chrisbra
 runtime/syntax/dts.vim					@zonque
+runtime/syntax/ed.vim					@dkearns
 runtime/syntax/editorconfig.vim				@gpanders
 runtime/syntax/eiffel.vim				@jocelyn
 runtime/syntax/erlang.vim				@hcs42
@@ -588,6 +591,7 @@ runtime/syntax/help_ru.vim				@RestorerZ
 runtime/syntax/hgcommit.vim				@k-takata
 runtime/syntax/hip.vim					@Young-TW
 runtime/syntax/hitest.vim				@lacygoill
+runtime/syntax/hlsl.vim					@habamax
 runtime/syntax/hog.vim					@wtfbbqhax
 runtime/syntax/hollywood.vim				@sodero
 runtime/syntax/html.vim					@dkearns
@@ -629,6 +633,7 @@ runtime/syntax/m3quake.vim				@dkearns
 runtime/syntax/mailcap.vim				@dkearns
 runtime/syntax/mallard.vim				@jhradilek
 runtime/syntax/markdown.vim				@tpope
+runtime/syntax/marko.vim				@briancarbone
 runtime/syntax/mason.vim				@petdance
 runtime/syntax/mbsync.vim				@fymyte
 runtime/syntax/mediawiki.vim				@avidseeker

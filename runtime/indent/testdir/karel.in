@@ -23,18 +23,39 @@ VAR
 i1 :integer
 b1 :boolean
 fhCh :file
-ROUTINE prg1()
+ROUTINE WAITFOR(strucvar : MyStruct; STATUS : BOOLEAN; timeout : INTEGER) : BOOLEAN FROM otherkarel
+ROUTINE WAITFOR2 : BOOLEAN FROM otherkarel
+ROUTINE WAITFOR3 FROM otherkarel
+ROUTINE prg1(b:BOOLEAN)
 VAR
 i :integer
 BEGIN
         --
 END prg1
-ROUTINE fcnt1( s :string ) :string
+ROUTINE prg2
+VAR
+i :integer
+BEGIN
+        --
+END prg2
+ROUTINE fcnt1 ( s :string ) :string
 VAR
 i :integer
 BEGIN
 RETURN ' '
 END fcnt1
+ROUTINE fcnt2 :string
+VAR
+i :integer
+BEGIN
+RETURN ' '
+END fcnt2
+ROUTINE fcnt3:string
+VAR
+i :integer
+BEGIN
+RETURN ' '
+END fcnt3
 BEGIN
 IF b1 THEN
         --
@@ -93,18 +114,39 @@ var
 i1 :integer
 b1 :boolean
 fhCh :file
-routine prg1()
+routine WAITFOR(strucvar : MyStruct; STATUS : BOOLEAN; timeout : INTEGER) : BOOLEAN from otherkarel
+routine WAITFOR2 : BOOLEAN from otherkarel
+routine WAITFOR3 from otherkarel
+routine prg1(b:BOOLEAN)
 var
 i :integer
 begin
         --
 end prg1
-routine fcnt1( s :string ) :string
+routine prg2
+var
+i :integer
+begin
+        --
+end prg2
+routine fcnt1 ( s :string ) :string
 var
 i :integer
 begin
 return ' '
 end fcnt1
+routine fcnt2 :string
+var
+i :integer
+begin
+return ' '
+end fcnt2
+routine fcnt3:string
+var
+i :integer
+begin
+return ' '
+end fcnt3
 begin
 if b1 then
         --
@@ -163,18 +205,39 @@ Var
 i1 :integer
 b1 :boolean
 fhCh :file
-Routine prg1()
+Routine WAITFOR(strucvar : MyStruct; STATUS : BOOLEAN; timeout : INTEGER) : BOOLEAN From otherkarel
+Routine WAITFOR2 : BOOLEAN From otherkarel
+Routine WAITFOR3 From otherkarel
+Routine prg1(b:BOOLEAN)
 Var
 i :integer
 Begin
         --
 End prg1
-Routine fcnt1( s :string ) :string
+Routine prg2
+Var
+i :integer
+Begin
+        --
+End prg2
+Routine fcnt1 ( s :string ) :string
 Var
 i :integer
 Begin
 Return ' '
 End fcnt1
+Routine fcnt2 :string
+Var
+i :integer
+Begin
+Return ' '
+End fcnt2
+Routine fcnt3:string
+Var
+i :integer
+Begin
+Return ' '
+End fcnt3
 Begin
 If b1 Then
         --

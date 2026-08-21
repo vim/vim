@@ -778,25 +778,7 @@ draw_event(GtkWidget *widget UNUSED,
 				// for GTK+ 3, may induce other draw events.
 
     cairo_set_source_surface(cr, gui.surface, 0, 0);
-
-    {
-	cairo_rectangle_list_t *list = NULL;
-
-	list = cairo_copy_clip_rectangle_list(cr);
-	if (list->status != CAIRO_STATUS_CLIP_NOT_REPRESENTABLE)
-	{
-	    int i;
-
-	    for (i = 0; i < list->num_rectangles; i++)
-	    {
-		const cairo_rectangle_t *rect = &list->rectangles[i];
-		cairo_rectangle(cr, rect->x, rect->y,
-						    rect->width, rect->height);
-		cairo_fill(cr);
-	    }
-	}
-	cairo_rectangle_list_destroy(list);
-    }
+    cairo_paint(cr);
 
     return FALSE;
 }
@@ -836,6 +818,14 @@ scale_factor_event(GtkWidget *widget,
     gui.force_redraw = 1;
     gui_resize_shell(w, usable_height);
     gui_gtk_form_thaw(GTK_FORM(gui.formwin));
+#  ifdef FEAT_IMAGE
+    {
+	double old = gui.scale;
+
+	gui.scale = gtk_widget_get_scale_factor(widget);
+	popup_update_scale(old);
+    }
+#  endif
 
     return TRUE;
 }
@@ -996,9 +986,7 @@ gui_mch_stop_blink(int may_call_gui_update_cursor)
     if (blink_state == BLINK_OFF && may_call_gui_update_cursor)
     {
 	gui_update_cursor(TRUE, FALSE);
-#if !GTK_CHECK_VERSION(3,0,0)
-	gui_mch_flush();
-#endif
+	gui_may_flush();
     }
     blink_state = BLINK_NONE;
 }
@@ -1018,9 +1006,7 @@ blink_cb(gpointer data UNUSED)
 	blink_state = BLINK_ON;
 	blink_timer = timeout_add(blink_ontime, blink_cb, NULL);
     }
-#if !GTK_CHECK_VERSION(3,0,0)
-    gui_mch_flush();
-#endif
+    gui_may_flush();
 
     return FALSE;		// don't happen again
 }
@@ -1043,9 +1029,7 @@ gui_mch_start_blink(void)
 	blink_timer = timeout_add(blink_waittime, blink_cb, NULL);
 	blink_state = BLINK_ON;
 	gui_update_cursor(TRUE, FALSE);
-#if !GTK_CHECK_VERSION(3,0,0)
-	gui_mch_flush();
-#endif
+	gui_may_flush();
     }
 }
 
@@ -1080,7 +1064,17 @@ focus_in_event(GtkWidget *widget,
 	       GdkEventFocus *event UNUSED,
 	       gpointer data UNUSED)
 {
-    gui_focus_change(TRUE);
+#ifdef FEAT_GUI_DIALOG
+    if (gui.dialog_focus_pending > 0)
+    {
+	--gui.dialog_focus_pending;
+	++hold_gui_events;
+	gui_focus_change(TRUE);
+	--hold_gui_events;
+    }
+    else
+#endif
+	gui_focus_change(TRUE);
 
     if (blink_state == BLINK_NONE)
 	gui_mch_start_blink();
@@ -1098,6 +1092,11 @@ focus_out_event(GtkWidget *widget UNUSED,
 		GdkEventFocus *event UNUSED,
 		gpointer data UNUSED)
 {
+#ifdef FEAT_GUI_DIALOG
+    if (gui.dialogs_active > 0)
+	++gui.dialog_focus_pending;
+#endif
+
     gui_focus_change(FALSE);
 
     if (blink_state != BLINK_NONE)
@@ -2215,6 +2214,20 @@ button_release_event(GtkWidget *widget UNUSED,
     }
 
     return TRUE;
+}
+
+/*
+ * Another widget, e.g. a modal dialog, was shadowing us with a GTK grab. The
+ * button release went to that widget, thus forget about the pressed button to
+ * avoid that the next mouse move is taken for a drag.
+ */
+    static void
+grab_notify_event(GtkWidget *widget UNUSED,
+		  gboolean  was_grabbed,
+		  gpointer  data UNUSED)
+{
+    if (!was_grabbed)
+	dragging_button_state = 0;
 }
 
 
@@ -3745,54 +3758,6 @@ gui_gtk_set_dnd_targets(void)
 		      GDK_ACTION_COPY | GDK_ACTION_MOVE);
 }
 
-#ifdef GDK_WINDOWING_WAYLAND
-static struct {
-    int left;
-    int top;
-    int right;
-    int bottom;
-    bool active;
-} wl_dirty_rect = {0, 0, 0, 0, false};
-
-    static void
-wl_queue_dirty_area(int x, int y, int width, int height)
-{
-    if (!wl_dirty_rect.active)
-    {
-	wl_dirty_rect.left = x;
-	wl_dirty_rect.top = y;
-	wl_dirty_rect.right = x + width;
-	wl_dirty_rect.bottom = y + height;
-	wl_dirty_rect.active = true;
-    }
-    else
-    {
-	// Expand to append further changes
-	if (x < wl_dirty_rect.left)   wl_dirty_rect.left = x;
-	if (y < wl_dirty_rect.top)    wl_dirty_rect.top = y;
-	if (x + width > wl_dirty_rect.right)  wl_dirty_rect.right = x + width;
-	if (y + height > wl_dirty_rect.bottom) wl_dirty_rect.bottom = y + height;
-    }
-}
-
-    static void
-wl_flush(void)
-{
-    if (!wl_dirty_rect.active)
-	return;
-    int draw_x = wl_dirty_rect.left;
-    int draw_y = wl_dirty_rect.top;
-    int draw_w = wl_dirty_rect.right - wl_dirty_rect.left;
-    int draw_h = wl_dirty_rect.bottom - wl_dirty_rect.top;
-
-    if (draw_w > 0 && draw_h > 0)
-    {
-	gtk_widget_queue_draw_area(gui.drawarea, draw_x, draw_y, draw_w, draw_h);
-    }
-    wl_dirty_rect.active = false;
-}
-#endif
-
 /*
  * Initialize the GUI.	Create all the windows, set up all the callbacks etc.
  * Returns OK for success, FAIL when the GUI can't be started.
@@ -4136,6 +4101,7 @@ gui_mch_init(void)
 #if GTK_CHECK_VERSION(3,4,0)
     if (GDK_IS_X11_DISPLAY(gdk_display_get_default()))
     {
+	gui.is_x11 = true;
 	// for X11, if we were using smooth scroll events, we
 	// would get an scroll without deltas on the very first user scroll* and
 	// get both "unsmooth" scroll and smooth scroll events after
@@ -4270,6 +4236,8 @@ gui_mch_init(void)
 		     G_CALLBACK(button_press_event), NULL);
     g_signal_connect(G_OBJECT(gui.drawarea), "button-release-event",
 		     G_CALLBACK(button_release_event), NULL);
+    g_signal_connect(G_OBJECT(gui.drawarea), "grab-notify",
+		     G_CALLBACK(grab_notify_event), NULL);
     g_signal_connect(G_OBJECT(gui.drawarea), "scroll-event",
 		     G_CALLBACK(scroll_event), NULL);
 
@@ -4284,6 +4252,10 @@ gui_mch_init(void)
 	g_signal_connect(gtk_settings, "notify::gtk-xft-dpi",
 			   G_CALLBACK(gtk_settings_xft_dpi_changed_cb), NULL);
     }
+
+#if defined(FEAT_IMAGE) && GTK_CHECK_VERSION(3,10,0)
+    gui.scale = gtk_widget_get_scale_factor(gui.formwin);
+#endif
 
     return OK;
 }
@@ -6269,20 +6241,28 @@ gui_gtk_draw_string(int row, int col, char_u *s, int len, int flags)
     return len_sum;
 }
 
+#if GTK_CHECK_VERSION(3,0,0)
+static cairo_region_t *dirty_region = NULL;
+
     static void
-queue_draw_area(
-	int	x,
-	int	y,
-	int	width,
-	int	height)
+queue_draw_area(int x, int y, int width, int height)
 {
-#ifdef GDK_WINDOWING_WAYLAND
-    if (gui.is_wayland)
-	wl_queue_dirty_area(x, y, width, height);
+    cairo_rectangle_int_t rect;
+
+    if (width <= 0 || height <= 0 || gui.drawarea == NULL)
+	return;
+
+    rect.x = x;
+    rect.y = y;
+    rect.width = width;
+    rect.height = height;
+
+    if (dirty_region == NULL)
+	dirty_region = cairo_region_create_rectangle(&rect);
     else
-#endif
-	gtk_widget_queue_draw_area(gui.drawarea, x, y, width, height);
+	cairo_region_union_rectangle(dirty_region, &rect);
 }
+#endif
 
     int
 gui_gtk_draw_string_ext(
@@ -6536,8 +6516,8 @@ skipitall:
 
 #if GTK_CHECK_VERSION(3,0,0)
     cairo_destroy(cr);
-    queue_draw_area(area.x, area.y,
-	    area.width, area.height);
+    queue_draw_area(FILL_X(col), FILL_Y(row),
+	    column_offset * gui.char_width + 1, gui.char_height);
 #else
     gdk_gc_set_clip_rectangle(gui.text_gc, NULL);
 #endif
@@ -6680,8 +6660,7 @@ gui_mch_invert_rectangle(int r, int c, int nr, int nc)
 
     cairo_destroy(cr);
 
-    queue_draw_area(rect.x, rect.y,
-	    rect.width, rect.height);
+    queue_draw_area(rect.x, rect.y, rect.width, rect.height);
 #else
     GdkGCValues values;
     GdkGC *invert_gc;
@@ -6834,17 +6813,14 @@ gui_mch_update(void)
 {
     int cnt = 0;	// prevent endless loop
     while (g_main_context_pending(NULL) && !vim_is_input_buf_full()
-								&& ++cnt < 100)
+	    && ++cnt < 100)
     {
-#ifdef GDK_WINDOWING_WAYLAND
-	if (gui.is_wayland)
-	{
-	    int prio = 0;
-	    g_main_context_prepare(NULL, &prio);
-	    // peek internal scheduling of redraw
-	    if (prio == GDK_PRIORITY_REDRAW)
-		gui_may_flush(); // prepares redraw: g_main_context_iteration
-	}
+#if GTK_CHECK_VERSION(3,0,0)
+	int prio = 0;
+	g_main_context_prepare(NULL, &prio);
+	// peek internal scheduling of redraw
+	if (prio == GDK_PRIORITY_REDRAW)
+	    gui_may_flush(); // prepares redraw: g_main_context_iteration
 #endif
 	g_main_context_iteration(NULL, TRUE);
     }
@@ -6943,7 +6919,13 @@ gui_mch_wait_for_chars(long wtime)
 	 * situations, sort of race condition).
 	 */
 	if (!input_available())
+	{
 	    g_main_context_iteration(NULL, TRUE);
+#ifdef GDK_WINDOWING_WAYLAND
+    if (gui.is_wayland && clip_star.state == SELECT_IN_PROGRESS)
+	gui_may_flush();
+#endif
+	}
 
 	// Got char, return immediately
 	if (input_available())
@@ -6979,18 +6961,19 @@ theend:
     void
 gui_mch_flush(void)
 {
-    if (gui.mainwin != NULL && gtk_widget_get_realized(gui.mainwin))
+    if (gui.mainwin == NULL || !gtk_widget_get_realized(gui.mainwin))
+	return;
+#if GTK_CHECK_VERSION(3,0,0)
+    if (dirty_region != NULL && gui.drawarea != NULL)
     {
-#ifdef GDK_WINDOWING_WAYLAND
-	if (gui.is_wayland)
-	    return wl_flush();
-#endif
-#if GTK_CHECK_VERSION(2,4,0)
-	gdk_display_flush(gtk_widget_get_display(gui.mainwin));
-#else
-	gdk_display_sync(gtk_widget_get_display(gui.mainwin));
-#endif
+	gtk_widget_queue_draw_region(gui.drawarea, dirty_region);
+	cairo_region_destroy(dirty_region);
+	dirty_region = NULL;
     }
+#else
+       gdk_display_flush(gtk_widget_get_display(gui.mainwin));
+       return;
+#endif
 }
 
 /*
@@ -7042,8 +7025,7 @@ gui_mch_clear_block(int row1arg, int col1arg, int row2arg, int col2arg)
 	cairo_fill(cr);
 	cairo_destroy(cr);
 
-	queue_draw_area(
-		rect.x, rect.y, rect.width, rect.height);
+	queue_draw_area(rect.x, rect.y, rect.width, rect.height);
     }
 #else // !GTK_CHECK_VERSION(3,0,0)
     gdk_gc_set_foreground(gui.text_gc, &color);
@@ -7079,8 +7061,7 @@ gui_gtk_window_clear(GdkWindow *win)
     cairo_fill(cr);
     cairo_destroy(cr);
 
-    queue_draw_area(
-	    rect.x, rect.y, rect.width, rect.height);
+    queue_draw_area(rect.x, rect.y, rect.width, rect.height);
 }
 #else
 # define gui_gtk_window_clear(win)  gdk_window_clear(win)
@@ -7138,8 +7119,7 @@ gui_mch_draw_popup_image(
 # if GTK_CHECK_VERSION(3,0,0)
     cairo_popup_image_paint(wp, gui.surface, x, y,
 	    src_x, src_y, draw_w, draw_h);
-    if (gui.drawarea != NULL)
-	queue_draw_area(x, y, draw_w, draw_h);
+    queue_draw_area(x, y, draw_w, draw_h);
 # else
     cairo_popup_image_paint(wp, gui.drawarea->window, x, y,
 	    src_x, src_y, draw_w, draw_h);

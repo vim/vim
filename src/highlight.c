@@ -3466,14 +3466,18 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 	    else
 	    {
 		// blend_fg=FALSE: popup text is opaque.  Replace the
-		// underlying cell's attribute flags, fg and special
-		// color with the popup's, so the underlying syntax
+		// underlying cell's attribute flags, fg, special color
+		// and font with the popup's, so the underlying syntax
 		// highlighting and any decoration (textprop undercurl,
 		// ...) do not bleed through.
 		new_en.ae_attr = popup_aep->ae_attr;
 		// fallback correctly to Normal fg color if fg_color == INVALCOLOR
 		new_en.ae_u.gui.fg_color = popup_aep->ae_u.gui.fg_color;
 		new_en.ae_u.gui.sp_color = popup_aep->ae_u.gui.sp_color;
+		new_en.ae_u.gui.font = popup_aep->ae_u.gui.font;
+# ifdef FEAT_XFONTSET
+		new_en.ae_u.gui.fontset = popup_aep->ae_u.gui.fontset;
+# endif
 	    }
 	    // Blend background color: blend popup bg toward underlying bg
 	    {
@@ -3547,8 +3551,8 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 	    if (!blend_fg)
 	    {
 		// blend_fg=FALSE: popup text is opaque.  Replace the
-		// underlying cell's attribute flags, fg and underline
-		// color with the popup's, so the underlying syntax
+		// underlying cell's attribute flags, fg, underline color
+		// and font with the popup's, so the underlying syntax
 		// highlighting and any decoration (textprop undercurl,
 		// ...) do not bleed through.  When the popup has no fg
 		// (e.g. "guifg=NONE") fall back to Normal's fg so the
@@ -3564,6 +3568,7 @@ hl_blend_attr(int char_attr, int popup_attr, int blend, int blend_fg UNUSED)
 		    // black-ish or white-ish
 		    new_en.ae_u.cterm.fg_color = (*p_bg == 'l') ? 1 : 16;
 		new_en.ae_u.cterm.ul_color = popup_aep->ae_u.cterm.ul_color;
+		new_en.ae_u.cterm.font = popup_aep->ae_u.cterm.font;
 #ifdef FEAT_TERMGUICOLORS
 		new_en.ae_u.cterm.ul_rgb = popup_aep->ae_u.cterm.ul_rgb;
 #endif

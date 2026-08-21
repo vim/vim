@@ -169,6 +169,7 @@ gui_mch_destroy_beval_area(BalloonEval *beval)
     if (beval->vts)
 	vim_free(beval->vts);
 #  endif
+    vim_free(beval->msg);
     vim_free(beval);
 }
 # endif
@@ -303,7 +304,7 @@ removeEventHandler(BalloonEval *beval)
 
 #  ifdef USE_GTK4
     static gboolean
-event_cb(GtkEventController *controller, GdkEvent *event, BalloonEval *beval)
+event_cb(GtkEventController *controller UNUSED, GdkEvent *event, BalloonEval *beval)
 {
     int type = gdk_event_get_event_type(event);
 

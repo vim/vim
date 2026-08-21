@@ -26,12 +26,6 @@
 
 #include "os_unixx.h"	    // unix includes for os_unix.c only
 
-#ifdef HAVE_SHM_OPEN
-# include <sys/mman.h>
-# include <sys/stat.h>
-# include <fcntl.h>
-#endif
-
 #ifdef USE_XSMP
 # include <X11/SM/SMlib.h>
 #endif
@@ -6798,7 +6792,7 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 # endif
 # ifndef HAVE_SELECT
 			// each channel may use in, out and err
-	struct pollfd   fds[7 + 3 * MAX_OPEN_CHANNELS];
+	struct pollfd   fds[7 + 3 * MAX_OPEN_CHANNELS + 2 * MAX_CLIENT_CHANNELS];
 	int		nfd;
 #  ifdef FEAT_WAYLAND_CLIPBOARD
 	int             wayland_idx = -1;
@@ -9168,44 +9162,3 @@ start_timeout(long msec)
 }
 # endif // PROF_NSEC
 #endif  // FEAT_RELTIME
-
-/*
- * Create an anonymous/temporary file/object and return its file descriptor.
- * Returns -1 on error.
- */
-    int
-mch_create_anon_file(void)
-{
-    int fd = -1;
-#ifdef HAVE_SHM_OPEN
-    const char template[] = "/vimXXXXXX";
-
-    for (int i = 0; i < 100; i++)
-    {
-	mch_get_random((char_u*)template + 4, 6);
-
-	errno = 0;
-	fd = shm_open(template, O_CREAT | O_RDWR | O_EXCL, 0600);
-
-	if (fd >= 0 || errno != EEXIST)
-	    break;
-    }
-    // Remove object name from namespace
-    shm_unlink(template);
-#endif
-    // Last resort
-    if (fd == -1)
-    {
-	char_u	*tempname;
-	// get a name for the temp file
-	if ((tempname = vim_tempname('w', FALSE)) == NULL)
-	{
-	    emsg(_(e_cant_get_temp_file_name));
-	    return -1;
-	}
-	fd = mch_open((char *)tempname, O_CREAT | O_RDWR | O_EXCL, 0600);
-	mch_remove(tempname);
-	vim_free(tempname);
-    }
-    return fd;
-}
