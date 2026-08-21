@@ -2034,6 +2034,8 @@ def Test_no_insert_xit()
   v9.CheckDefExecFailure(['a = 1'], 'E1100:')
   v9.CheckDefExecFailure(['c = 1'], 'E1100:')
   v9.CheckDefExecFailure(['i = 1'], 'E1100:')
+  v9.CheckDefExecFailure(['k = 1'], 'E1100:')
+  v9.CheckDefExecFailure(['o = 1'], 'E1100:')
   v9.CheckDefExecFailure(['t = 1'], 'E1100:')
   v9.CheckDefExecFailure(['x = 1'], 'E1100:')
 
@@ -2043,11 +2045,14 @@ def Test_no_insert_xit()
   v9.CheckScriptFailure(['vim9script', 'c'], 'E1100:')
   v9.CheckScriptFailure(['vim9script', 'i = 1'], 'E488:')
   v9.CheckScriptFailure(['vim9script', 'i'], 'E1100:')
+  v9.CheckScriptFailure(['vim9script', 'k = 1'], 'E1100:')
+  v9.CheckScriptFailure(['vim9script', 'k'], 'E1100:')
   v9.CheckScriptFailure(['vim9script', 'o = 1'], 'E1100:')
   v9.CheckScriptFailure(['vim9script', 'o'], 'E1100:')
-  v9.CheckScriptFailure(['vim9script', 't'], 'E1100:')
   v9.CheckScriptFailure(['vim9script', 't = 1'], 'E1100:')
+  v9.CheckScriptFailure(['vim9script', 't'], 'E1100:')
   v9.CheckScriptFailure(['vim9script', 'x = 1'], 'E1100:')
+  v9.CheckScriptFailure(['vim9script', 'x'], 'E1100:')
 enddef
 
 def s:IfElse(what: number): string
@@ -4844,6 +4849,11 @@ def Test_unsupported_commands()
       :1k a
   END
   v9.CheckDefAndScriptFailure(lines, 'E481:')
+
+  lines =<< trim END
+    o
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1100:')
 
   lines =<< trim END
     t
