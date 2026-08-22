@@ -9929,7 +9929,8 @@ server2client({clientid}, {string})			*server2client()*
 serverlist([{dict}])					*serverlist()*
 		Return a list of available server names, one per line.
 		When there are no servers or the information is not available
-		an empty string is returned.
+		an empty string is returned, or an empty |List| when the
+		"list" option below is used.
 		{only available when compiled with the |+clientserver| feature}
 
 		If {dict} is given, then it is a |Dictionary| supporting the
