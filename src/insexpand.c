@@ -1714,14 +1714,14 @@ set_fuzzy_score(void)
     static void
 sort_compl_match_list(int (*compare)(const void *, const void *))
 {
-    compl_T     *compl;
+    compl_T	*compl = NULL;
 
     if (!compl_first_match || is_first_match(compl_first_match->cp_next))
 	return;
 
     compl = compl_first_match->cp_prev;
     ins_compl_make_linear();
-    if (compl_shows_dir_forward())
+    if (match_at_original_text(compl_first_match))
     {
 	compl_first_match->cp_next->cp_prev = NULL;
 	compl_first_match->cp_next = mergesort_list(compl_first_match->cp_next,
