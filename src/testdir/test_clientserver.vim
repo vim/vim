@@ -708,20 +708,24 @@ func Test_clientserver_serverlist_without_x11()
     throw 'GetVimCommand() failed'
   endif
 
-  " This test verifies that serverlist() fails with error E240 when a
+  " This test verifies that serverlist() returns an empty result when a
   " connection to X11 cannot be established. It must be executed with the
   " CLIENTSERVER backend set to x11 and in a state where the X11 server is
   " unreachable.
   "
   " To achieve this, the `VIM_CLIENTSERVER` and `DISPLAY` environment
-  " variables must be unset before running Vim as a child process. Within the
-  " child process, `assert_fails()` and `v:errors` are used to confirm that
-  " E240 occurred; if E240 is raised as expected, `v:errors` remains empty,
-  " whereas if the call succeeds or a different error occurs, `v:errors` will
-  " contain one or more errors.
+  " variables must be unset before running Vim as a child process. The child
+  " process reports the number of `v:errors` as its exit code. The calls are
+  " wrapped in a try/catch, because an error would otherwise skip the
+  " assertion without adding anything to `v:errors`.
 
   call writefile([
-        \ "call assert_fails('let x = serverlist()', 'E240:')",
+        \ "try",
+        \ "  call assert_equal('', serverlist())",
+        \ "  call assert_equal([], serverlist(#{list: v:true}))",
+        \ "catch",
+        \ "  call add(v:errors, 'unexpected exception: ' .. v:exception)",
+        \ "endtry",
         \ "execute 'cq! ' .. len(v:errors)"
         \ ], 'Xtest', 'D')
 
