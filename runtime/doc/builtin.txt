@@ -1291,7 +1291,7 @@ balloon_split({msg})					*balloon_split()*
 <		{only available when compiled with the |+balloon_eval_term|
 		feature}
 
-		Return type: list<any> or list<string>
+		Return type: list<string>
 
 
 base64_decode({string})					*base64_decode()*
@@ -1354,7 +1354,7 @@ blob2list({blob})					*blob2list()*
 		Can also be used as a |method|: >
 			GetBlob()->blob2list()
 <
-		Return type: list<any> or list<number>
+		Return type: list<number>
 
 
 blob2str({blob} [, {options}])				*blob2str()*
@@ -2515,8 +2515,8 @@ diff({fromlist}, {tolist} [, {options}])		*diff()*
 		Can also be used as a |method|: >
 			GetFromList->diff(to_list)
 <
-		Return type: |String| or list<dict<number>> or list<any>
-		depending on {options}
+		Return type: |String| or list<dict<number>> depending on
+		{options}
 
 
 diff_filler({lnum})					*diff_filler()*
@@ -4808,7 +4808,7 @@ getmarklist([{buf}])					*getmarklist()*
 		Can also be used as a |method|: >
 			GetBufnr()->getmarklist()
 <
-		Return type: list<dict<any>> or list<any>
+		Return type: list<dict<any>>
 
 
 getmatches([{win}])					*getmatches()*
@@ -4836,7 +4836,7 @@ getmatches([{win}])					*getmatches()*
 			'pattern': 'FIXME', 'priority': 10, 'id': 2}] >
 			:unlet m
 <
-		Return type: list<dict<any>> or list<any>
+		Return type: list<dict<any>>
 
 
 getmousepos()						*getmousepos()*
@@ -5576,8 +5576,7 @@ glob({expr} [, {nosuf} [, {list} [, {alllinks}]]])	*glob()*
 		Can also be used as a |method|: >
 			GetExpr()->glob()
 <
-		Return type: |String| or list<string> or list<any> depending
-		on {list}
+		Return type: |String| or list<string> depending on {list}
 
 
 glob2regpat({string})					*glob2regpat()*
@@ -5637,8 +5636,7 @@ globpath({path}, {expr} [, {nosuf} [, {list} [, {alllinks}]]])
 		second argument: >
 			GetExpr()->globpath(&rtp)
 <
-		Return type: |String| or list<string> or list<any> depending
-		on {list}
+		Return type: |String| or list<string> depending on {list}
 
 
 has({feature} [, {check}])				*has()*
@@ -6453,7 +6451,7 @@ items({expr})						*items()*
 		Can also be used as a |method|: >
 			mydict->items()
 <
-		Return type: list<list<any>> or list<any>
+		Return type: list<list<any>>
 
 
 job_ functions are documented here: |job-functions-details|
@@ -7567,7 +7565,7 @@ matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict}])	*matchbufline()*
 		Can also be used as a |method|: >
 			GetBuffer()->matchbufline('mypat', 1, '$')
 <
-		Return type: list<dict<any>> or list<any>
+		Return type: list<dict<any>>
 
 
 matchdelete({id} [, {win})			*matchdelete()* *E802* *E803*
@@ -7672,7 +7670,7 @@ matchfuzzy({list}, {str} [, {dict}])			*matchfuzzy()*
 						\ {'matchseq': 1})
 <		results in ['two one'].
 
-		Return type: list<string> or list<any>
+		Return type: list<string>
 
 
 matchfuzzypos({list}, {str} [, {dict}])			*matchfuzzypos()*
@@ -7715,7 +7713,7 @@ matchlist({expr}, {pat} [, {start} [, {count}]])	*matchlist()*
 		Can also be used as a |method|: >
 			GetText()->matchlist('word')
 <
-		Return type: list<string> or list<any>
+		Return type: list<string>
 
 
 matchstrlist({list}, {pat} [, {dict}])			*matchstrlist()*
@@ -7757,7 +7755,7 @@ matchstrlist({list}, {pat} [, {dict}])			*matchstrlist()*
 		Can also be used as a |method|: >
 			GetListOfStrings()->matchstrlist('mypat')
 <
-		Return type: list<dict<any>> or list<any>
+		Return type: list<dict<any>>
 
 
 matchstr({expr}, {pat} [, {start} [, {count}]])		*matchstr()*
@@ -8835,7 +8833,7 @@ readdir({directory} [, {expr} [, {dict}]])		*readdir()*
 		Can also be used as a |method|: >
 			GetDirName()->readdir()
 <
-		Return type: list<string> or list<any>
+		Return type: list<string>
 
 
 readdirex({directory} [, {expr} [, {dict}]])		*readdirex()*
@@ -8897,7 +8895,7 @@ readdirex({directory} [, {expr} [, {dict}]])		*readdirex()*
 		Can also be used as a |method|: >
 			GetDirName()->readdirex()
 <
-		Return type: list<dict<any>> or list<any>
+		Return type: list<dict<any>>
 
 
 readfile({fname} [, {type} [, {max}]])			*readfile()*
@@ -8937,7 +8935,7 @@ readfile({fname} [, {type} [, {max}]])			*readfile()*
 		Can also be used as a |method|: >
 			GetFileName()->readfile()
 <
-		Return type: list<string> or list<any>
+		Return type: list<string>
 
 
 redraw_listener_add({opts})				*redraw_listener_add()*
@@ -9437,7 +9435,7 @@ screenchars({row}, {col})				*screenchars()*
 		Can also be used as a |method|: >
 			GetRow()->screenchars(col)
 <
-		Return type: list<number> or list<any>
+		Return type: list<number>
 
 
 screencol()						*screencol()*
@@ -9488,7 +9486,7 @@ screenpos({winid}, {lnum}, {col})			*screenpos()*
 		Can also be used as a |method|: >
 			GetWinid()->screenpos(lnum, col)
 <
-		Return type: dict<number> or dict<any>
+		Return type: dict<number>
 
 
 screenrow()						*screenrow()*
@@ -10970,7 +10968,7 @@ spellsuggest({word} [, {max} [, {capital}]])		*spellsuggest()*
 		Can also be used as a |method|: >
 			GetWord()->spellsuggest()
 <
-		Return type: list<string> or list<any>
+		Return type: list<string>
 
 
 split({string} [, {pattern} [, {keepempty}]])		*split()*
@@ -11816,7 +11814,7 @@ synstack({lnum}, {col})					*synstack()*
 		character in a line and the first column in an empty line are
 		valid positions.
 
-		Return type: list<number> or list<any>
+		Return type: list<number>
 
 
 system({expr} [, {input}])				*system()* *E677*
@@ -12033,7 +12031,7 @@ tagfiles()						*tagfiles()*
 		Returns a |List| with the file names used to search for tags
 		for the current buffer.  This is the 'tags' option expanded.
 
-		Return type: list<string> or list<any>
+		Return type: list<string>
 
 
 taglist({expr} [, {filename}])				*taglist()*
@@ -12082,7 +12080,7 @@ taglist({expr} [, {filename}])				*taglist()*
 		Can also be used as a |method|: >
 			GetTagpattern()->taglist()
 <
-		Return type: list<dict<any>> or list<any>
+		Return type: list<dict<any>>
 
 
 tan({expr})						*tan()*
@@ -12202,7 +12200,7 @@ timer_info([{id}])					*timer_info()*
 		Can also be used as a |method|: >
 			GetTimer()->timer_info()
 <
-		Return type: list<dict<any>> or list<any>
+		Return type: list<dict<any>>
 
 		{only available when compiled with the |+timers| feature}
 
