@@ -1639,6 +1639,10 @@ from the server request message.  Example: >
     let resp.result = 1
     call ch_sendexpr(ch, resp)
 
+A request whose "id" is a String cannot be answered this way.  The request is
+delivered with the "id" the server sent, but |ch_sendexpr()| takes only a
+Number there, so copying it fails.
+
 The JSON-RPC notification messages from the server are delivered through the
 |channel-callback| function.
 
