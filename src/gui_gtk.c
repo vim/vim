@@ -1036,6 +1036,9 @@ gui_mch_set_scrollbar_thumb(scrollbar_T *sb, long val, long size, long max)
 
     g_signal_handler_unblock(G_OBJECT(adjustment),
 	    (gulong)sb->handler_id);
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
+    gui_gtk_update_find_replace_overlap();
+#endif
 }
 
     void
@@ -2525,7 +2528,9 @@ typedef struct _SharedFindReplace
     GtkWidget *replace;	// 'Replace With' action button
     GtkWidget *all;	// 'Replace All' action button
     GtkWidget *close;	// Close action button
-    bool bottom;		// place overlay in bottom-right corner
+    bool searched;	// a search was performed while the overlay was visible
+    win_T *match_win;	// window containing the current match
+    pos_T match_pos;	// buffer position of the current match
     GtkAllocation allocation;
 } SharedFindReplace;
 
@@ -2609,8 +2614,13 @@ find_replace_overlay_visibility_cb(
 	GParamSpec *pspec UNUSED,
 	gpointer data)
 {
+    bool was_visible = active_find_replace != NULL;
+
     gui.dialog_textentry_active = gtk_widget_get_visible(widget);
     active_find_replace = gui.dialog_textentry_active ? data : NULL;
+    if (!was_visible && active_find_replace != NULL)
+	active_find_replace->searched = false;
+    gui_gtk_update_find_replace_overlap();
 }
 
     static gboolean
@@ -2658,11 +2668,45 @@ find_replace_get_child_position_cb(
     allocation->height = natural.height < area.height
 					  ? natural.height : area.height;
     allocation->x = area.x + area.width - allocation->width;
-    allocation->y = area.y + (frdp->bottom
-				 ? area.height - allocation->height : 0);
+    allocation->y = area.y;
     frdp->allocation = *allocation;
     return true;
 }
+
+    void
+gui_gtk_update_find_replace_overlap(void)
+{
+    SharedFindReplace *sfr = active_find_replace;
+    GtkStyleContext *context;
+    bool overlap;
+    int cursor_x;
+    int cursor_y;
+    int row;
+    int scol;
+    int ccol;
+    int ecol;
+
+    if (sfr == NULL)
+	return;
+
+    row = scol = ccol = ecol = 0;
+    if (sfr->searched)
+	textpos2screenpos(sfr->match_win, &sfr->match_pos,
+		&row, &scol, &ccol, &ecol);
+    cursor_x = FILL_X(ccol - 1);
+    cursor_y = FILL_Y(row - 1);
+    overlap = row > 0 && ccol > 0
+	    && cursor_x < sfr->allocation.x + sfr->allocation.width
+	    && cursor_x + gui.char_width > sfr->allocation.x
+	    && cursor_y < sfr->allocation.y + sfr->allocation.height
+	    && cursor_y + gui.char_height > sfr->allocation.y;
+    context = gtk_widget_get_style_context(sfr->dialog);
+    if (overlap)
+	gtk_style_context_add_class(context, "match-overlap");
+    else
+	gtk_style_context_remove_class(context, "match-overlap");
+}
+
 #endif
 
     static GtkWidget *
@@ -3221,15 +3265,10 @@ find_replace_cb(GtkWidget *widget UNUSED, gpointer data)
     find_text = CONVERT_FROM_UTF8(find_text);
     gui_do_findrepl(flags, find_text, repl_text, direction_down);
 #ifdef HAVE_GTK3_OVERLAY_DIALOG
-    if (FILL_X(gui.cursor_col) < sfr->allocation.x + sfr->allocation.width
-		&& FILL_X(gui.cursor_col) + gui.char_width > sfr->allocation.x
-		&& FILL_Y(gui.cursor_row) < sfr->allocation.y
-						+ sfr->allocation.height
-		&& FILL_Y(gui.cursor_row) + gui.char_height > sfr->allocation.y)
-    {
-	sfr->bottom = !sfr->bottom;
-	gtk_widget_queue_resize(gui.dialog_overlay);
-    }
+    sfr->searched = true;
+    sfr->match_win = curwin;
+    sfr->match_pos = curwin->w_cursor;
+    gui_gtk_update_find_replace_overlap();
 #endif
     CONVERT_FROM_UTF8_FREE(repl_text);
     CONVERT_FROM_UTF8_FREE(find_text);
