@@ -5120,6 +5120,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
     {
 	dict_T		*d;
 	dictitem_T	*di;
+	char		*key = ch_mode == CH_MODE_LSP ? "id" : "seq";
 
 	// return an empty dict by default
 	if (rettv_dict_alloc(rettv) == FAIL)
@@ -5129,21 +5130,19 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	    return;
 
 	d = argvars[1].vval.v_dict;
-	if (ch_mode == CH_MODE_LSP)
-	    di = dict_find(d, (char_u *)"id", -1);
-	else
-	    di = dict_find(d, (char_u *)"seq", -1);
-	if (di != NULL && di->di_tv.v_type != VAR_NUMBER)
+	di = dict_find(d, (char_u *)key, -1);
+	if (argvars[2].v_type == VAR_DICT
+		&& dict_has_key(argvars[2].vval.v_dict, "callback"))
+	    callback_present = TRUE;
+
+	// The id is what a reply is matched by, so it must be a number when
+	// one is waited for.
+	if (di != NULL && di->di_tv.v_type != VAR_NUMBER
+		&& (ch_mode == CH_MODE_DAP || eval || callback_present))
 	{
-	    // only number type is supported for the 'id' or 'seq' item
-	    semsg(_(e_invalid_value_for_argument_str),
-		    ch_mode == CH_MODE_LSP ? "id" : "seq");
+	    semsg(_(e_invalid_value_for_argument_str), key);
 	    return;
 	}
-
-	if (argvars[2].v_type == VAR_DICT)
-	    if (dict_has_key(argvars[2].vval.v_dict, "callback"))
-		callback_present = TRUE;
 
 	if (ch_mode == CH_MODE_DAP)
 	{
@@ -5169,7 +5168,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	    // When sending an expression, if the message has an 'id' item,
 	    // then use it.
 	    id = 0;
-	    if (di != NULL)
+	    if (di != NULL && di->di_tv.v_type == VAR_NUMBER)
 		id = di->di_tv.vval.v_number;
 	}
 	if (ch_mode == CH_MODE_LSP && !dict_has_key(d, "jsonrpc"))

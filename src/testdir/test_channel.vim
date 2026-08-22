@@ -2809,9 +2809,20 @@ func LspTests(port)
   "       \ 'result': {'method': 'echo', 'jsonrpc': '2.0',
   "       \ 'params': {'m': 'raw-message'}}}], g:lspNotif)
 
+  " Test for sending a message with a String id, which is what answering a
+  " request from a server that named it with one takes
+  let g:lspNotif = []
+  call ch_sendexpr(ch, #{method: 'echo', id: 'e8a1-4c2f',
+        \ params: #{s: 'msg-with-string-id'}})
+  " Send a ping to wait for all the notification messages to arrive
+  call assert_equal('alive', ch_evalexpr(ch, #{method: 'ping'}).result)
+  call assert_equal([#{jsonrpc: '2.0', result:
+        \ #{method: 'echo', jsonrpc: '2.0', id: 'e8a1-4c2f',
+        \ params: #{s: 'msg-with-string-id'}}}], g:lspNotif)
+
   " Invalid arguments to ch_evalexpr() and ch_sendexpr()
-  call assert_fails('call ch_sendexpr(ch, #{method: "cookie", id: "cookie"})',
-        \ 'E475:')
+  call assert_fails('call ch_sendexpr(ch, #{method: "cookie", id: "cookie"},'
+        \ .. ' #{callback: "LspOtCb"})', 'E475:')
   call assert_fails('call ch_evalexpr(ch, #{method: "ping", id: [{}]})', 'E475:')
   call assert_fails('call ch_evalexpr(ch, [1, 2, 3])', 'E1206:')
   call assert_fails('call ch_sendexpr(ch, "abc")', 'E1206:')
