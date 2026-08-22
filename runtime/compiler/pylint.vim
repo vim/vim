@@ -1,9 +1,9 @@
 " Vim compiler file
-" Compiler:     Pylint for Python
-" Maintainer:   Daniel Moch <daniel@danielmoch.com>
-" Last Change:  2024 Nov 07 by The Vim Project (added params variable)
-"		2024 Nov 19 by the Vim Project (properly escape makeprg setting)
-"		2025 Nov 06 by the Vim Project (do not set buffer-local makeprg)
+" Compiler:             Pylint for Python
+" Previous Maintainer:  Daniel Moch <daniel@danielmoch.com>
+" Last Change:          2024 Nov 07 by The Vim Project (added params variable)
+"		        2024 Nov 19 by the Vim Project (properly escape makeprg setting)
+"		        2025 Nov 06 by the Vim Project (do not set buffer-local makeprg)
 
 if exists("current_compiler") | finish | endif
 let current_compiler = "pylint"
