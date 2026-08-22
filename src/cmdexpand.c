@@ -4135,7 +4135,7 @@ expand_shellcmd(
 		// Do not match directories inside a $PATH item.
 		flags &= ~EW_DIR;
 
-	    seplen = !after_pathsep(s, e) ? STRLEN_LITERAL(PATHSEPSTR) : 0;
+	    seplen = !after_pathsep(s, e) ? sizeof(PATHSEP) : 0;
 	}
 
 	// Make sure that the pathed pattern (ie the path and pattern concatenated
