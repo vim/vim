@@ -1696,6 +1696,17 @@ overlay_dialog_focus_button(OverlayDialog *dlg, int idx)
 	    "selected");
 }
 
+    static void
+overlay_set_bg_style(GtkWidget *dlg)
+{
+    GtkStyleContext *context = gtk_widget_get_style_context(dlg);
+
+    if (STRCMP(p_bg, "light") == 0)
+	gtk_style_context_add_class(context, "light");
+    else
+	gtk_style_context_remove_class(context, "light");
+}
+
     static GtkWidget *
 create_overlay_dialog(
 	int type,
@@ -1727,6 +1738,7 @@ create_overlay_dialog(
     dlg->frame = gtk_frame_new(NULL);
     gtk_style_context_add_class(gtk_widget_get_style_context(dlg->frame),
 	    "vim-overlay");
+    overlay_set_bg_style(dlg->frame);
     gtk_widget_set_halign(dlg->frame, GTK_ALIGN_CENTER);
     gtk_widget_set_valign(dlg->frame, GTK_ALIGN_CENTER);
 
@@ -2842,6 +2854,9 @@ find_replace_dialog_create(char_u *arg, int do_replace)
      */
     if (frdp->dialog)
     {
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
+	overlay_set_bg_style(frdp->dialog);
+#endif
 	if (entry_text != NULL)
 	{
 	    gtk_entry_set_text(GTK_ENTRY(frdp->what), (char *)entry_text);
@@ -2871,6 +2886,7 @@ find_replace_dialog_create(char_u *arg, int do_replace)
     frdp->dialog = gtk_frame_new(NULL);
     gtk_style_context_add_class(gtk_widget_get_style_context(frdp->dialog),
 	    "vim-overlay");
+    overlay_set_bg_style(frdp->dialog);
     gtk_overlay_add_overlay(GTK_OVERLAY(gui.dialog_overlay), frdp->dialog);
     g_signal_connect(gui.dialog_overlay, "get-child-position",
 	    G_CALLBACK(find_replace_get_child_position_cb), frdp);
