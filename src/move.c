@@ -1477,7 +1477,8 @@ curs_columns(
     curwin->w_valid |= VALID_WCOL|VALID_WROW|VALID_VIRTCOL;
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP)
+#if defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP) \
+	|| defined(HAVE_GTK3_OVERLAY_DIALOG)
 /*
  * Compute the screen position of text character at "pos" in window "wp"
  * The resulting values are one-based, zero when character is not visible.
