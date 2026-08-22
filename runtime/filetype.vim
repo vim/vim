@@ -305,6 +305,9 @@ if has("fname_case")
    au BufNewFile,BufRead *.EU,*.EW,*.EX,*.EXU,*.EXW  call dist#ft#EuphoriaCheck()
 endif
 
+" Evcxr history
+au BufNewFile,BufRead */evcxr/history.txt		setf rust
+
 " Execline (s6) scripts
 au BufNewFile,BufRead *s6*/\(up\|down\|run\|finish\)    setf execline
 
@@ -1622,6 +1625,11 @@ au BufNewFile,BufRead */etc/xinetd.d/*		call s:StarSetf('xinetd')
 
 " yum conf (close enough to dosini)
 au BufNewFile,BufRead */etc/yum.repos.d/*	call s:StarSetf('dosini')
+
+" Zathura history
+au BufNewFile,BufRead */zathura/history		setf dosini
+" similar as vim
+au BufNewFile,BufRead */zathura/input-history	setf vim
 
 " Z-Shell script ending in a star
 au BufNewFile,BufRead .zsh*,.zlog*,.zcompdump*  call s:StarSetf('zsh')
