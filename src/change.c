@@ -403,7 +403,8 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
 
     if (in_vim9script() && (
 	    check_for_opt_buffer_arg(argvars, 1) == FAIL
-	    || check_for_opt_bool_or_dict_arg(argvars, 2) == FAIL))
+	    || (argvars[1].v_type != VAR_UNKNOWN
+		&& check_for_opt_bool_or_dict_arg(argvars, 2) == FAIL)))
 	return;
 
     callback = get_callback(&argvars[0]);
