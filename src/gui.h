@@ -169,6 +169,12 @@ typedef GdkEvent GdkEventKey;	// GTK4: GdkEventKey merged into GdkEvent
 				// is no console input possible
 #endif
 
+#if defined(USE_GTK3)
+# if GTK_CHECK_VERSION(3,2,0)
+#  define HAVE_GTK3_OVERLAY_DIALOG
+# endif
+#endif
+
 typedef struct GuiScrollbar
 {
     long	ident;		// Unique identifier for each scrollbar
@@ -432,6 +438,11 @@ typedef struct Gui
 # endif
 # ifdef FEAT_IMAGE
     double	scale;		    // Current scaling (may be fractional)
+# endif
+# ifdef HAVE_GTK3_OVERLAY_DIALOG
+    GtkWidget *dialog_overlay;
+    bool	dialog_active; // "do not open another dialog"
+    bool	dialog_textentry_active; // key input
 # endif
 #endif	// FEAT_GUI_GTK
 
