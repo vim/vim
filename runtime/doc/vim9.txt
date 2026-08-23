@@ -2046,7 +2046,7 @@ For commands that have an argument that is a list of commands, a | character
 	`:def` and restored after the `:enddef`.
 
 							*E1097*
-A continued, incomplete line will give E1097: 
+A continued, incomplete line will give E1097:
 >vim9
 	vim9script
 	def F1097(): void
@@ -2667,7 +2667,7 @@ script scope comparisons to show the same behavior:
 	echo l1 is l2			# true (same instance)
 	legacy echo s:l1 is s:l2 |	# 1
 	echo l1 is []			# false (different instance)
-	legacy echo s:l1 is [] | 	# 0
+	legacy echo s:l1 is [] |	# 0
 	echo l1 is null_list		# false (different instance)
 <
 Comparing a `Funcref` variable is almost the same as comparing container
@@ -3269,7 +3269,7 @@ legacy Vim script.  For example:
 >vim
 	g /[-:.]pattern/p | " This prints the three vim9cmd lines above
 <
-whereas in Vim9 script: 
+whereas in Vim9 script:
 >vim9
 	vim9cmd g /[-:.]pattern/p  # E1242: No whitespace allowed before sepa…
 <
