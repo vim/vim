@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.2.  Last change: 2026 Aug 18
+*eval.txt*	For Vim version 9.2.  Last change: 2026 Aug 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -182,10 +182,29 @@ to Float, printf() for Float to String and float2nr() for Float to Number.
 
 					*E362* *E891* *E892* *E893* *E894*
 					*E907* *E911* *E914* *E1521*
-When expecting a Float a Number can also be used, but nothing else.
+When comparing with a Float, or when a builtin function expects a Float, a
+Number can be used instead.  Aside from `v:null`, anything else gives an
+error.  Examples:
+>vim
+	let f = 8.0
+	let Fr = function("abs")
+	echo f == 8		|" 1
+	echo f == v:null	|" 0
+	echo f == v:false	|" E362: Using a boolean value as a Float
+	echo sort([f, Fr], "f")	|" E891: Using a funcref as a Float
+	echo f == "8"		|" E892: Using a String as a Float
+	echo sort([f, []], "f")	|" E893: Using a List as a Float
+	echo sort([f, {}], "f")	|" E894: Using a Dictionary as a Float
+	echo f == v:none	|" E907: Using a special value as a Float
+	echo f == (8, 0)	|" E1521: Can only compare Tuple with Tuple
+<
+	Note: Using a `job` gives E911 and using a `channel` gives E914.
+	In Vim9 script, all the `==` comparison equivalents give |E1072|.
 
 						*no-type-checking*
-You will not get an error if you try to change the type of a variable.
+Changing the type of a variable is allowed in legacy Vim script.  In Vim9
+script, type mismatch error |E1012| is given when attempting to change the
+type of a variable.
 
 
 1.2 Function references ~
@@ -524,12 +543,12 @@ String.  Example: >
 List functions ~
 						*E714*
 Functions that are useful with a List: >
-	:let r = call(funcname, list)	" call a function with an argument list
+	:let r = call(funcname, list)	" call a function with argument list
 	:if empty(list)			" check if list is empty
 	:let l = len(list)		" number of items in list
 	:let big = max(list)		" maximum value in list
 	:let small = min(list)		" minimum value in list
-	:let xs = count(list, 'x')	" count nr of times 'x' appears in list
+	:let xs = count(list, 'x')	" count nr times 'x' appears in list
 	:let i = index(list, 'x')	" index of first 'x' in list
 	:let lines = getline(1, 10)	" get ten text lines from buffer
 	:call append('$', lines)	" append text lines in buffer
@@ -1392,7 +1411,8 @@ because 'x' converted to a Number is zero.  However: >
 	0
 Inside a List or Tuple or Dictionary this conversion is not used.
 
-In |Vim9| script the types must match.
+In |Vim9| script, except when comparing a number with a float, the types must
+match - see |vim9-comparators|.
 
 When comparing two Strings, this is done with strcmp() or stricmp().  This
 results in the mathematical difference (comparing byte values), not
@@ -1551,18 +1571,18 @@ recognize multibyte encodings, see `byteidx()` for an alternative, or use
 byte under the cursor: >
 	:let c = getline(".")[col(".") - 1]
 
-In |Vim9| script:					*E1147* *E1148*
-If expr10 is a String this results in a String that contains the expr1'th
-single character (including any composing characters) from expr10.  To use
-byte indexes use |strpart()|.
-
-Index zero gives the first byte or character.  Careful: text column numbers
-start with one!
-
-If the length of the String is less than the index, the result is an empty
-String.  A negative index always results in an empty string (reason: backward
-compatibility).  Use [-1:] to get the last byte or character.
-In Vim9 script a negative index is used like with a list: count from the end.
+In |Vim9| script:
+- If expr10 is a String this results in a String that contains the expr1'th
+  single character (including any composing characters) from expr10.  To use
+  byte indexes use |strpart()|.
+- Index zero gives the first byte or character.  Careful: text column numbers
+  start with one!
+- If the length of the String is less than the index, the result is an empty
+  String.  A negative index always results in an empty string (reason:
+  backward compatibility).  Use [-1:] to get the last byte or character.
+- A negative index is used like with a list: count from the end.
+- Attempting to assign to or modify a string with an index within a `:def`
+  function gives |E1148|.
 
 If expr10 is a |List| then it results the item at index expr1.  See
 |list-index| for possible index values.  If the index is out of range this
@@ -1735,10 +1755,10 @@ Examples:
 	57005
 	0b1101111010101101
 	0o157255
-	0xBE'EF			|scriptversion-4| and |Vim9|
-	48'879			|scriptversion-4| and |Vim9|
-	0o137'357		|scriptversion-4| and |Vim9|
-	0b1011'1110'1110'1111	|scriptversion-4| and |Vim9|
+	0xBE'EF			|scriptversion-4| and |Vim9| script
+	48'879			|scriptversion-4| and |Vim9| script
+	0o137'357		|scriptversion-4| and |Vim9| script
+	0b1011'1110'1110'1111	|scriptversion-4| and |Vim9| script
 
 						*floating-point-format*
 Floating point numbers can be written in two forms:
@@ -1769,8 +1789,8 @@ Examples:
 	1.0E-6
 	3.1416e+88
 
-	.123		|scriptversion-2| and |Vim9|
-	123'456.0	|scriptversion-4| and |Vim9|
+	.123		|scriptversion-2| or higher and |Vim9| script
+	123'456.0	|scriptversion-4| and |Vim9| script
 
 These are INVALID:
 	3.		empty {M}
@@ -2006,16 +2026,18 @@ the following ways:
 
 1. The body of the lambda expression is an |expr1| and not a sequence of |Ex|
    commands.
-2. The prefix "a:" should not be used for arguments.  E.g.: >
-	:let F = {arg1, arg2 -> arg1 - arg2}
-	:echo F(5, 2)
-<	3
-
-The arguments are optional.  Example: >
-	:let F = {-> 'error function'}
-	:echo F('ignored')
-<	error function
-
+2. The prefix "a:" should not be used for arguments.  E.g.:
+>vim
+	let F = {arg1, arg2 -> arg1 - arg2}
+	echo F(5, 2)
+	" 3
+<
+The arguments are optional.  Example:
+>vim
+	let F = {-> 'error function'}
+	echo F('ignored')
+	" error function
+<
 The |Vim9| lambda does not only use a different syntax, it also adds type
 checking and can be split over multiple lines, see |vim9-lambda|.
 
@@ -2023,41 +2045,53 @@ checking and can be split over multiple lines, see |vim9-lambda|.
 Lambda expressions can access outer scope variables and arguments.  This is
 often called a closure.  Example where "i" and "a:arg" are used in a lambda
 while they already exist in the function scope.  They remain valid even after
-the function returns: >
-	:function Foo(arg)
-	:  let i = 3
-	:  return {x -> x + i - a:arg}
-	:endfunction
-	:let Bar = Foo(4)
-	:echo Bar(6)
-<	5
-
+the function returns:
+>vim
+	function Foo(arg)
+	  let i = 3
+	  return {x -> x + i - a:arg}
+	endfunction
+	let Bar = Foo(4)
+	echo Bar(6)
+	" 5
+<
 Note that the variables must exist in the outer scope before the lambda is
-defined for this to work.  See also |:func-closure|.
+defined for this to work.  See also |:func-closure|.  For Vim9 script
+closures, see |vim9-closure|.
 
 Lambda and closure support can be checked with: >
 	if has('lambda')
 
-Examples for using a lambda expression with |sort()|, |map()| and |filter()|: >
-	:echo map([1, 2, 3], {idx, val -> val + 1})
-<	[2, 3, 4] >
-	:echo sort([3,7,2,1,4], {a, b -> a - b})
-<	[1, 2, 3, 4, 7]
+Examples, using legacy Vim script and Vim9 script, for using a lambda
+expression with |sort()|, |map()| and |filter()|:
+>vim
+	echo sort([3, 2, 1, 4], {a, b -> a - b})		| " [1, 2, 3, 4]
+	vim9cmd echo [3, 2, 1, 4]->sort((a, b) => a - b)	  # [1, 2, 3, 4]
 
-The lambda expression is also useful for Channel, Job and timer: >
-	:let timer = timer_start(500,
-			\ {-> execute("echo 'Handler called'", "")},
-			\ {'repeat': 3})
-<	Handler called
-	Handler called
-	Handler called
+	echo map([1, 2, 3], {idx, val -> val + 1})		| " [2, 3, 4]
+	vim9cmd echo [1, 2, 3]->map((_, val) => val + 1)	  # [2, 3, 4]
 
+	echo filter([1, 2, 3], {idx, val -> val > 1})		| " [2, 3]
+	vim9cmd echo [1, 2, 3]->filter((_, val) => val > 1)	  # [2, 3]
+
+The lambda expression is also useful for Channel, Job and timer:
+>vim
+	echowindow "Handler calling..."
+	let b:count = 0
+	let timer = timer_start(1000,
+		\ {-> execute("let b:count += 1 | " ..
+		\ "echowindow 'Handler called ' .. b:count", "")},
+		\ {'repeat': 3})
+	" Handler called 1
+	" Handler called 2
+	" Handler called 3
+<
 Note that it is possible to cause memory to be used and not freed if the
 closure is referenced by the context it depends on: >
 	function Function()
-	   let x = 0
-	   let F = {-> x}
-	 endfunction
+	  let x = 0
+	  let F = {-> x}
+	endfunction
 The closure uses "x" from the function scope, and "F" in that same scope
 refers to the closure.  This cycle results in the memory not being freed.
 Recommendation: don't do this.
@@ -3106,36 +3140,42 @@ name.  So in the above example, if the variable "adjective" was set to
 "adjective" was set to "quiet", then it would be to "my_quiet_variable".
 
 One application for this is to create a set of variables governed by an option
-value.  For example, the statement >
-	echo my_{&background}_message
-
-would output the contents of "my_dark_message" or "my_light_message" depending
-on the current value of 'background'.
-
+value.  An example with the 'background' option:
+>vim
+	let my_light_msg = 'Do you like your light background?'
+	let my_dark_msg = 'Do you like your dark background?'
+	echo my_{&background}_msg
+<
 You can use multiple brace pairs: >
 	echo my_{adverb}_{adjective}_message
-..or even nest them: >
+...or even nest them: >
 	echo my_{ad{end_of_word}}_message
 where "end_of_word" is either "verb" or "jective".
 
 However, the expression inside the braces must evaluate to a valid single
-variable name, e.g. this is invalid: >
-	:let foo='a + b'
-	:echo c{foo}d
-.. since the result of expansion is "ca + bd", which is not a variable name.
-
+variable name.  So, the following example's expansion is invalid because
+"ca + bd" is not a valid single variable name: >
+>vim
+	let foo='a + b'
+	echo c{foo}d
+	" E121: Undefined variable: ca + bd
+<
+Curly braces also cannot be used with a |register-variable|.  For example:
+>vim
+	let i = 'a'
+	let @{i} = false	|" E15: invalid expression
+<
 						*curly-braces-function-names*
-You can call and define functions by an evaluated name in a similar way.
-Example: >
-	:let func_end='whizz'
-	:call my_func_{func_end}(parameter)
-
-This would call the function "my_func_whizz(parameter)".
-
-This does NOT work: >
-  :let i = 3
-  :let @{i} = ''  " error
-  :echo @{i}      " error
+You can call and define functions by an evaluated name in a similar way as
+with a variable.  This only works in legacy Vim script, not in |Vim9| script.
+Example:
+>vim
+	let low_line = '_'
+	function F_curly()
+	  return 'F{low_line}curly() is a working curly-braces-function-name'
+	endfunction
+	echo F{low_line}curly()
+<
 
 ==============================================================================
 7. Commands						*expression-commands*
@@ -3476,7 +3516,7 @@ text...
 				:let x = 1
 				:lockvar! x
 <			NOTE: in Vim9 script `:const` works differently, see
-			|vim9-const|
+			|vim9-declaration| and |vim9-const|.
 			This is useful if you want to make sure the variable
 			is not modified.  If the value is a List or Dictionary
 			literal then the items also cannot be changed: >
@@ -3700,6 +3740,7 @@ text...
 
 			In |Vim9| script `:continue` cannot be shortened, to
 			improve script readability.
+
 						*:break* *:brea* *E587*
 :brea[k]		When used inside a `:while` or `:for` loop, skips to
 			the command after the matching `:endwhile` or
@@ -4267,15 +4308,26 @@ This displays >
 	Caught "oops" in function Foo, line 10
 	Nothing caught
 
-A practical example:  The following command ":LineNumber" displays the line
-number in the script or function where it has been used: >
-
-	:function! LineNumber()
-	:    return substitute(v:throwpoint, '.*\D\(\d\+\).*', '\1', "")
-	:endfunction
-	:command! LineNumber try | throw "" | catch | echo LineNumber() | endtry
-<
-							*try-nested*
+A practical Vim9 script example:  The following command, "LineNumber",
+displays the line number in the script or function where it has been used:
+>vim9
+	vim9script
+	def Thrower(): void
+	  echo "In Thrower()"
+	  throw 'This line is the throwpoint.'
+	enddef
+	const TLN: func = (): string =>  # TLN is 'Thrown Line Number'
+	  substitute(v:throwpoint, '.*\D\(\d\+\).*', '\1', "")
+	command! LineNumber {
+	  try
+	    Thrower()
+	  catch
+	    echo $"Error on line {TLN()}"
+	  endtry
+	}
+	# Echoes "In Thrower()" then "Error on line 2":
+	LineNumber
+<							*try-nested*
 An exception that is not caught by a try conditional can be caught by
 a surrounding try conditional: >
 
@@ -5067,23 +5119,28 @@ The input is in the variable "line", the results in the variables "file",
 "lnum" and "col". (idea from Michael Geddes)
 
 
-getting the scriptnames in a Dictionary ~
+Getting the scriptnames in a Dictionary ~
 						*scriptnames-dictionary*
 The `:scriptnames` command can be used to get a list of all script files that
 have been sourced.  There is also the `getscriptinfo()` function, but the
-information returned is not exactly the same.  In case you need to manipulate
-the list, this code can be used as a base: >
-
-    # Create or update scripts dictionary, indexed by SNR, and return it.
-    def Scripts(scripts: dict<string> = {}): dict<string>
-      for info in getscriptinfo()
-        if scripts->has_key(info.sid)
-          continue
-        endif
-        scripts[info.sid] = info.name
-      endfor
-      return scripts
-    enddef
+information returned is not exactly the same.  If you need to use the list,
+this Vim9 script can be used as a base.  It builds a dictionary with each
+script's `<SNR>` and filepath:
+>vim9
+	vim9script
+	# Build a scripts dictionary, indexed by SNR, and return it.
+	def Scripts(scripts: dict<string> = {}): dict<string>
+	  for info in getscriptinfo()
+	    if scripts->has_key(info.sid)
+	      continue
+	    endif
+	    scripts[info.sid] = info.name
+	  endfor
+	  return scripts
+	enddef
+	# Example usage: echo the SNRs of the loaded vimrc and gvimrc (if any)
+	echo Scripts()->filter((_, v) => v =~ '\v[._]g?vimrc')
+<
 
 ==============================================================================
 10. Vim script versions		*vimscript-version* *vimscript-versions*
@@ -5447,7 +5504,8 @@ Below is a sample script that makes use of the clipboard provider feature: >vim
 	set clipmethod^=test
 <
 						*clipboard-providers-wsl*
-For Windows WSL, try this script: >vim9
+For Windows WSL, try this script:
+>vim9
 	vim9script
 
 	var Copy = (_, _, lines: list<string>) => system('wl-copy', lines)
@@ -5460,5 +5518,5 @@ For Windows WSL, try this script: >vim9
 	    paste: { "*": Paste, "+": Paste }
 	}
 	set clipmethod^=wslclip
-
+<
  vim:tw=78:ts=8:noet:ft=help:norl:
