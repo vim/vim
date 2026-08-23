@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Aug 20
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Aug 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52705,7 +52705,8 @@ Changed ~
 - |extend()| and |extendnew()| also accept |Blobs|.
 - events like |CursorMoved| are no longer triggered for what happened while
   they were ignored with 'eventignore'.
-
+- |ch_sendexpr()| accepts a non-Number "id" in "lsp" mode when no response is
+  expected, so a request from the server can be answered.
 
 							*added-9.3*
 Added ~

@@ -812,6 +812,13 @@ ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
 		If a response message is not expected for {expr}, then don't
 		specify the "callback" item in {options}.
 
+		In "lsp" mode an "id" item in {expr} is sent as it is when no
+		response is expected, which is how a request from the server
+		is answered; it may be of any type the server used.  When a
+		response is expected, with |ch_evalexpr()| or with the
+		"callback" item, Vim assigns the ID itself and the item must
+		be a |Number|.
+
 		Can also be used as a |method|: >
 			GetChannel()->ch_sendexpr(expr)
 <
