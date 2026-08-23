@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Aug 20
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Aug 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -9929,7 +9929,11 @@ server2client({clientid}, {string})			*server2client()*
 serverlist([{dict}])					*serverlist()*
 		Return a list of available server names, one per line.
 		When there are no servers or the information is not available
-		an empty string is returned.
+		an empty string is returned, or an empty |List| when the
+		"list" option below is used.
+
+		When the server cannot be reached, no error will be given and
+		the result is an empty string or |List|.
 		{only available when compiled with the |+clientserver| feature}
 
 		If {dict} is given, then it is a |Dictionary| supporting the
