@@ -1,4 +1,4 @@
-*sign.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*sign.txt*	For Vim version 9.2.  Last change: 2026 Aug 23
 
 
 		  VIM REFERENCE MANUAL	  by Gordon Prieur
@@ -690,7 +690,7 @@ sign_placelist({list})				*sign_placelist()*
 		Can also be used as a |method|: >
 			GetSignlist()->sign_placelist()
 <
-		Return type: |Number|
+		Return type: list<number> or list<any>
 
 
 sign_undefine([{name}])					*sign_undefine()*
