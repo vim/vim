@@ -2824,7 +2824,7 @@ mch_FullName(
 						   && STRCMP(fname, ".") != 0)
 	{
 	    STRCPY(buf + buflen, PATHSEPSTR);
-	    buflen += STRLEN_LITERAL(PATHSEPSTR);
+	    buflen += sizeof(PATHSEP);
 	}
 #endif
     }

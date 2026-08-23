@@ -5472,8 +5472,11 @@ typedef struct {
 #endif
 } spellvars_T;
 
-// Return the length of a string literal
-#define STRLEN_LITERAL(s) (sizeof(s) - 1)
+// Return the length of a string literal.
+// This macro only computes a string's length for a string-literal token; for
+// anything else, including a char*, compilation will fail (note "" following
+// s).
+#define STRLEN_LITERAL(s) (sizeof(s "") - 1)
 
 // Store a key/value (string) pair
 typedef struct

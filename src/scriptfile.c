@@ -667,7 +667,7 @@ do_in_path(
 		    && !after_pathsep(buf.string, buf.string + buf.length))
 		{
 		    STRCPY(buf.string + buf.length, PATHSEPSTR);
-		    buf.length += STRLEN_LITERAL(PATHSEPSTR);
+		    buf.length += sizeof(PATHSEP);
 		}
 		STRCPY(buf.string + buf.length, prefix);
 		buf.length += prefixlen;
