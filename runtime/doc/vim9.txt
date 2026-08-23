@@ -1189,7 +1189,7 @@ give errors when trying to add to/extend variables initialized to them:
 	nb->add(0xF0)			# E1131: Cannot add to null_blob
 <
 Note: Similar errors should not be encountered with:
-- `null_tuple` (because |tuples| are immutable, neither adding to nor
+- `null_tuple` (because |Tuples| are immutable, neither adding to nor
   extending them is permitted), and
 - `null_string` (which is one of the |null-anomalies|), for example:
 >vim9
