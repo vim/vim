@@ -997,4 +997,26 @@ func Test_write_with_xattr_support()
   bw!
 endfunc
 
+
+func Test_backupcopy_auto_restrictive_umask()
+  CheckUnix
+  set backupskip=
+  call writefile(['FOO'], 'Xumaskfile', 'D')
+  call setfperm('Xumaskfile', 'rw-r--r--')
+  let inode_before = split(system('ls -i Xumaskfile'))[0]
+  call writefile([
+	\ 'set backupcopy=auto writebackup nobackup backupskip=',
+	\ 'edit Xumaskfile',
+	\ 'call setline(1, ["BAR"])',
+	\ 'write',
+	\ 'quit',
+	\ ], 'Xumaskscript', 'D')
+  call system('umask 0077; ' .. GetVimCommand()
+	\ .. ' -u NONE -U NONE -i NONE -n -S Xumaskscript')
+  call assert_equal(0, v:shell_error)
+  call assert_equal(['BAR'], readfile('Xumaskfile'))
+  call assert_equal('rw-r--r--', getfperm('Xumaskfile'))
+  call assert_notequal(inode_before, split(system('ls -i Xumaskfile'))[0])
+  set backupskip&
+endfunc
 " vim: shiftwidth=2 sts=2 expandtab
