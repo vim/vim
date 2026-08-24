@@ -400,6 +400,27 @@ get_winnr(tabpage_T *tp, typval_T *argvar)
 }
 
 /*
+ * Returns lines
+ */
+    static list_T *
+get_winlines(win_T *wp)
+{
+    list_T	*l = list_alloc();
+
+    if (l == NULL)
+	return NULL;
+
+    for (int i = 0; i < wp->w_lines_valid; i++)
+	if (wp->w_lines[i].wl_valid
+		&& list_append_number(l, wp->w_lines[i].wl_lnum) == FAIL)
+	{
+	    list_free(l);
+	    return NULL;
+	}
+    return l;
+}
+
+/*
  * Returns information about a window as a dictionary.
  */
     static dict_T *
@@ -442,6 +463,9 @@ get_win_info(win_T *wp, short tpnr, short winnr)
 
     // Add a reference to window variables
     dict_add_dict(dict, "variables", wp->w_vars);
+
+    // Add a reference to window variables
+    dict_add_list(dict, "lines", get_winlines(wp));
 
     return dict;
 }

@@ -227,4 +227,15 @@ func Test_getwininfo_status_height()
   bwipe!
 endfunc
 
+func Test_getwininfo_lines()
+  call setline(1, repeat(['xxx'], 10))
+  redraw
+  call assert_equal(range(1, 10), getwininfo(win_getid())[0].lines)
+  normal zf3j
+  redraw
+  call assert_equal([1] + range(5, 10), getwininfo(win_getid())[0].lines)
+  call setline(1, repeat('x', 100))
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

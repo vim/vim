@@ -5449,6 +5449,10 @@ getwininfo([{winid}])					*getwininfo()*
 			height		window height (excluding winbar)
 			leftcol		first column displayed; only used when
 					'wrap' is off
+			lines		A list of lines that was shown.
+					Note: A window in another tab is not
+					shown. So value is empty.
+					{only with the +quickfix feature}
 			loclist		1 if showing a location list
 					{only with the +quickfix feature}
 			quickfix	1 if quickfix or location list window
