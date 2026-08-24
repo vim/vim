@@ -997,7 +997,6 @@ func Test_write_with_xattr_support()
   bw!
 endfunc
 
-
 func Test_backupcopy_auto_restrictive_umask()
   CheckUnix
   set backupskip=
@@ -1019,4 +1018,5 @@ func Test_backupcopy_auto_restrictive_umask()
   call assert_notequal(inode_before, split(system('ls -i Xumaskfile'))[0])
   set backupskip&
 endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
