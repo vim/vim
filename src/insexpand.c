@@ -252,6 +252,8 @@ static buf_T	  *compl_curr_buf = NULL;  // buf where completion is active
 // longer fixed timeout is used (COMPL_FUNC_TIMEOUT_MS or
 // COMPL_FUNC_TIMEOUT_NON_KW_MS). - girish
 static int	  compl_autocomplete = FALSE;	    // whether autocompletion is active
+static bool	  compl_autostarted = false;	    // Vim started this completion
+static bool	  compl_autostart_pending = false;  // the trigger armed one
 static bool	  compl_autocomplete_pending = false;
 #ifdef ELAPSED_FUNC
 static elapsed_T  compl_autocomplete_start_tv;	    // when the delay was armed
@@ -2452,6 +2454,7 @@ ins_compl_clear(void)
     cpt_sources_clear();
     compl_autocomplete = FALSE;
     compl_from_nonkeyword = FALSE;
+    compl_autostarted = false;
     compl_num_bests = 0;
 #ifdef FEAT_EVAL
     // clear v:completed_item
@@ -2819,6 +2822,7 @@ ins_compl_restart(void)
     cpt_sources_clear();
     compl_autocomplete = FALSE;
     compl_from_nonkeyword = FALSE;
+    compl_autostarted = false;
     compl_num_bests = 0;
 }
 
@@ -3187,6 +3191,7 @@ ins_compl_stop(int c, int prev_mode, int retval)
     }
     compl_autocomplete = FALSE;
     compl_from_nonkeyword = FALSE;
+    compl_autostarted = false;
     compl_num_bests = 0;
     compl_ins_end_col = 0;
 
@@ -4226,11 +4231,13 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 # define CI_WHAT_COMPLETED	    0x10
 # define CI_WHAT_MATCHES		    0x20
 # define CI_WHAT_PREINSERTED_TEXT    0x40
+# define CI_WHAT_AUTO		    0x80
 # define CI_WHAT_ALL		    0xff
     int		what_flag;
 
     if (what_list == NULL)
-	what_flag = CI_WHAT_ALL & ~(CI_WHAT_MATCHES | CI_WHAT_COMPLETED);
+	what_flag = CI_WHAT_ALL
+	    & ~(CI_WHAT_MATCHES | CI_WHAT_COMPLETED | CI_WHAT_AUTO);
     else
     {
 	what_flag = 0;
@@ -4253,6 +4260,8 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 		what_flag |= CI_WHAT_PREINSERTED_TEXT;
 	    else if (STRCMP(what, "matches") == 0)
 		what_flag |= CI_WHAT_MATCHES;
+	    else if (STRCMP(what, "auto") == 0)
+		what_flag |= CI_WHAT_AUTO;
 	}
     }
 
@@ -4266,6 +4275,9 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 
     if (ret == OK && (what_flag & CI_WHAT_PUM_VISIBLE))
 	ret = dict_add_number(retdict, "pum_visible", pum_visible());
+
+    if (ret == OK && (what_flag & CI_WHAT_AUTO))
+	ret = dict_add_number(retdict, "auto", compl_autostarted);
 
     if (ret == OK && (what_flag & CI_WHAT_PREINSERTED_TEXT))
     {
@@ -7419,6 +7431,9 @@ ins_complete(int c, int enable_pum)
 
     if (!compl_started)
     {
+	// Only what the automatic trigger armed counts as started by Vim.
+	compl_autostarted = compl_autostart_pending;
+	compl_autostart_pending = false;
 	if (ins_compl_start() == FAIL)
 	    return FAIL;
     }
@@ -7500,6 +7515,25 @@ ins_compl_enable_autocomplete(void)
     compl_autocomplete = TRUE;
     compl_get_longest = FALSE;
 #endif
+}
+
+/*
+ * Remember that Vim is about to start a completion by itself, rather than
+ * because a key was typed to ask for one.
+ */
+    void
+ins_compl_arm_autostart(void)
+{
+    compl_autostart_pending = true;
+}
+
+/*
+ * Forget what the automatic trigger armed, another key was typed since.
+ */
+    void
+ins_compl_disarm_autostart(void)
+{
+    compl_autostart_pending = false;
 }
 
 /*
