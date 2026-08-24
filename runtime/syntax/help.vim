@@ -2,7 +2,7 @@
 " Language:		Vim help file
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:		2026 Aug 02
+" Last Change:		2026 Aug 24
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -177,6 +177,7 @@ syn match helpString		"\t[* ]String\t\+[a-z].*"
 syn match helpCharacter		"\t[* ]Character\t\+[a-z].*"
 syn match helpNumber		"\t[* ]Number\t\+[a-z].*"
 syn match helpBoolean		"\t[* ]Boolean\t\+[a-z].*"
+syn match helpRegexp		"\t[* ]Regexp\t\+[a-z].*"
 syn match helpFloat		"\t[* ]Float\t\+[a-z].*"
 syn match helpIdentifier	"\t[* ]Identifier\t\+[a-z].*"
 syn match helpFunction		"\t[* ]Function\t\+[a-z].*"
@@ -271,6 +272,7 @@ hi def link helpString		String
 hi def link helpCharacter	Character
 hi def link helpNumber		Number
 hi def link helpBoolean		Boolean
+hi def link helpRegexp		Regexp
 hi def link helpFloat		Float
 hi def link helpIdentifier	Identifier
 hi def link helpFunction	Function
