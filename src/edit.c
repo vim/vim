@@ -108,6 +108,7 @@ static int	dont_sync_undo = FALSE;	// CTRL-G U prevents syncing undo for
 	update_screen(UPD_VALID);  /* Show char (deletion) immediately */ \
 	out_flush();				\
 	ins_compl_enable_autocomplete();	\
+	ins_compl_arm_autostart();		\
 	if (!ins_compl_arm_autocomplete_delay())\
 	    goto docomplete;			\
     } while (0)
@@ -631,6 +632,7 @@ edit(
 		    if (vim_isprintc(c))
 		    {
 			ins_compl_enable_autocomplete();
+			ins_compl_arm_autostart();
 			ins_compl_init_get_longest();
 #ifdef FEAT_RIGHTLEFT
 			if (p_hkmap)
@@ -678,8 +680,11 @@ edit(
 	// Don't want K_CURSORHOLD for the second key, e.g., after CTRL-V.
 	did_cursorhold = TRUE;
 	if (c != K_CURSORHOLD && c != K_COMPLETE_DELAY)
+	{
 	    // Don't want delayed autocompletion from the previous key either.
 	    ins_compl_clear_autocomplete_delay();
+	    ins_compl_disarm_autostart();
+	}
 
 #ifdef FEAT_RIGHTLEFT
 	if (p_hkmap && KeyTyped)
@@ -1189,6 +1194,7 @@ doESCkey:
 	    // The completion may have been cleared while waiting, so re-enable
 	    // autocomplete to match a zero delay.
 	    ins_compl_enable_autocomplete();
+	    ins_compl_arm_autostart();
 	    goto docomplete;
 
 #ifdef FEAT_GUI_MSWIN
