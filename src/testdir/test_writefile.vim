@@ -999,24 +999,22 @@ endfunc
 
 func Test_backupcopy_auto_restrictive_umask()
   CheckUnix
-  set backupskip=
   call writefile(['FOO'], 'Xumaskfile', 'D')
   call setfperm('Xumaskfile', 'rw-r--r--')
-  let inode_before = split(system('ls -i Xumaskfile'))[0]
+  let inode_before = systemlist('ls -i Xumaskfile')[0]->matchstr('^\s*\zs\d\+')
   call writefile([
 	\ 'set backupcopy=auto writebackup nobackup backupskip=',
 	\ 'edit Xumaskfile',
 	\ 'call setline(1, ["BAR"])',
 	\ 'write',
-	\ 'quit',
+	\ 'qall!'
 	\ ], 'Xumaskscript', 'D')
-  call system('umask 0077; ' .. GetVimCommand()
-	\ .. ' -u NONE -U NONE -i NONE -n -S Xumaskscript')
+  call system('umask 0077; ' .. GetVimCommand() .. ' -i NONE -n -S Xumaskscript')
   call assert_equal(0, v:shell_error)
   call assert_equal(['BAR'], readfile('Xumaskfile'))
   call assert_equal('rw-r--r--', getfperm('Xumaskfile'))
-  call assert_notequal(inode_before, split(system('ls -i Xumaskfile'))[0])
-  set backupskip&
+  call assert_notequal(inode_before,
+	\ systemlist('ls -i Xumaskfile')[0]->matchstr('^\s*\zs\d\+'))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

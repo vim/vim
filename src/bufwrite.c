@@ -1241,7 +1241,7 @@ buf_write(
 		    vim_ignored = fchown(fd, st_old.st_uid, st_old.st_gid);
 #  endif
 #  ifdef HAVE_FCHMOD
-		    vim_ignored = fchmod(fd, perm);
+		    (void)mch_fsetperm(fd, perm);
 #  else
 		    (void)mch_setperm(tmp_fname, perm);
 #  endif
