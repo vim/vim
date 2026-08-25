@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Aug 10
+# Last Change:		2026 Aug 25
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -1851,6 +1851,8 @@ const ft_from_ext = {
   "ibi": "ibasic",
   # FreeBasic file (similar to QBasic)
   "fb": "freebasic",
+  # Bazel rc file
+  "bazelrc": "bazelrc",
   # Batch file for MSDOS. See dist#ft#FTsys for *.sys
   "bat": "dosbatch",
   # BC calculator

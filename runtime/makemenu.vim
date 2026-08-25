@@ -2,7 +2,7 @@ vim9script
 
 # Script to define the syntax menu in synmenu.vim
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Aug 06
+# Last Change:		2026 Aug 25
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # This is used by "make menu" in the src directory.
@@ -119,6 +119,7 @@ SynMenu AB.Basic.QBasic:basic
 SynMenu AB.Basic.Visual\ Basic:vb
 SynMenu AB.Bazaar\ commit\ file:bzr
 SynMenu AB.Bazel:bzl
+SynMenu AB.Bazel\ rc\ file:bazelrc
 SynMenu AB.BC\ calculator:bc
 SynMenu AB.BDF\ font:bdf
 SynMenu AB.Beancount:beancount
