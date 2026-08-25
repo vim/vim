@@ -52709,6 +52709,7 @@ Changed ~
   expected, so a request from the server can be answered.
 - |complete_info()| can distinguish between manual and automatic triggered
   completions via the "auto" item.
+- fold functions take an optional {winid} parameter.
 
 							*added-9.3*
 Added ~
