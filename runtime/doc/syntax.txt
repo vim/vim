@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.2.  Last change: 2026 Aug 13
+*syntax.txt*	For Vim version 9.2.  Last change: 2026 Aug 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -230,6 +230,7 @@ you can see the actual color, except for "Ignore"):
 	 Character	a character constant: 'c', '\n'
 	 Number		a number constant: 234, 0xff
 	 Boolean	a boolean constant: TRUE, false
+	 Regexp		a regular expression constant: /ab*c/
 	 Float		a floating point constant: 2.3e10
 
 	*Identifier	any variable name

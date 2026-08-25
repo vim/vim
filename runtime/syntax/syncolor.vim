@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2026 Jul 22
+" Last Change:	2026 Aug 24
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " This file sets up the default methods for highlighting.
@@ -72,6 +72,7 @@ SynLink String		Constant
 SynLink Character	Constant
 SynLink Number		Constant
 SynLink Boolean		Constant
+SynLink Regexp		Constant
 SynLink Float		Number
 SynLink Function	Identifier
 SynLink Conditional	Statement
