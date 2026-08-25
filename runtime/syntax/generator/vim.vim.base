@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2026 Aug 22
+" Last Change:	   2026 Aug 26
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -1481,7 +1481,14 @@ syn region	vimSynRegion	contained
 syn match	vimSynRegOpt	contained	"\%#=1\<\%(conceal\%(ends\)\=\|transparent\|contained\|excludenl\|skipempty\|skipwhite\|display\|keepend\|oneline\|extend\|skipnl\|fold\)\>"
 syn match	vimSynReg	contained	"\<\%(start\|skip\|end\)="	nextgroup=vimSynRegPat
 syn match	vimSynMtchGrp	contained	"matchgroup="	nextgroup=vimGroup,vimHLGroup
-syn region	vimSynRegPat	contained extend	start="\z([-`~!@#$%^&*_=+;:'",./?]\)"  skip=/\\\\\|\\\z1\|\n\s*\%(\\\|"\\ \)/  end="\z1"  contains=@vimSynRegPatGroup skipwhite nextgroup=vimSynPatMod,vimSynReg
+syn region	vimSynRegPat	contained
+      \ matchgroup=Delimiter
+      \ start="\z([-`~!@#$%^&*_=+;:'",./?]\)"
+      \ skip=/\\\\\|\\\z1\|\n\s*\%(\\\|"\\ \)/
+      \ end="\z1"
+      \ skipwhite nextgroup=vimSynPatMod,vimSynReg
+      \ contains=@vimSynRegPatGroup
+      \ extend
 syn match	vimSynPatMod	contained	"\%#=1\%(hs\|ms\|me\|hs\|he\|rs\|re\)=[se]\%([-+]\d\+\)\="
 syn match	vimSynPatMod	contained	"\%#=1\%(hs\|ms\|me\|hs\|he\|rs\|re\)=[se]\%([-+]\d\+\)\=," nextgroup=vimSynPatMod
 syn match	vimSynPatMod	contained	"lc=\d\+"
@@ -2884,6 +2891,7 @@ if !exists("skip_vim_syntax_inits")
 
  hi def link vimAbb	vimCommand
  hi def link vimAddress	Constant
+ hi def link vimAddressPattern	Regexp
  hi def link vimAddressOffset	Type
  hi def link vimAddressSlashEscape		Special
  hi def link vimAddressQuestionEscape	Special
@@ -2920,6 +2928,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimCall	vimCommand
  hi def link vimCall_	vimCall
  hi def link vimCatch	vimCommand
+ hi def link vimCatchPattern	Regexp
  hi def link vimChangeBang	vimBang
  hi def link vimChangeCount	vimCount
  hi def link vimCd	vimCommand
@@ -2987,6 +2996,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimEval	vimCommand
  hi def link vimExFilter	vimCommand
  hi def link vimExFilterBang	vimBang
+ hi def link vimExFilterPattern	Regexp
  hi def link vimFBVar	vimVar
  hi def link vimFgBgAttrib	vimHiAttrib
  hi def link vimFuncEcho	vimCommand
@@ -3000,11 +3010,13 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimFunctionComment	vimComment
  hi def link vimFuncName	Function
  hi def link vimFunctionMod	Special
+ hi def link vimFunctionPattern	Regexp
  hi def link vimFunctionParam	vimVar
  hi def link vimFunctionParamEquals	vimOper
  hi def link vimFunctionScope	vimVarScope
  hi def link vimFunctionSID	vimNotation
  hi def link vimGlobal	vimCommand
+ hi def link vimGlobalPattern	Regexp
  hi def link vimGrep	vimCommand
  hi def link vimGrep_	vimGrep
  hi def link vimGrepadd	vimCommand
@@ -3021,6 +3033,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimHelp	vimCommand
  hi def link vimHelpBang	vimBang
  hi def link vimHelpgrep	vimCommand
+ hi def link vimHelpgrepPattern	Regexp
  hi def link vimHiAttrib	PreProc
  hi def link vimHiBang	vimBang
  hi def link vimHiClear	Type
@@ -3082,6 +3095,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimMatch_	vimMatch
  hi def link vimMatchGroup	vimGroup
  hi def link vimMatchNone	vimGroup
+ hi def link vimMatchPattern	Regexp
  hi def link vimMenuBang	vimBang
  hi def link vimMenuClear	Special
  hi def link vimMenuMod	vimMapMod
@@ -3177,6 +3191,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimSort_	vimSort
  hi def link vimSortBang	vimBang
  hi def link vimSortOptions	Special
+ hi def link vimSortPattern	Regexp
  hi def link vimSpecFile	Identifier
  hi def link vimSpecFileMod	vimSpecFile
  hi def link vimSpecial	Type
@@ -3187,6 +3202,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimSubstCount	Number
  hi def link vimSubstDelim	Delimiter
  hi def link vimSubstFlags	Special
+ hi def link vimSubstPat	Regexp
  hi def link vimSubstSubstr	SpecialChar
  hi def link vimSubstTwoBS	vimString
  hi def link vimSubst	vimCommand
@@ -3221,7 +3237,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimSynPatRange	vimString
  hi def link vimSynReg	Type
  hi def link vimSynRegOpt	vimSynOption
- hi def link vimSynRegPat	vimString
+ hi def link vimSynRegPat	Regexp
  hi def link vimSynSpell	Type
  hi def link vimSyntax	vimCommand
  hi def link vimSynType	vimSpecial
@@ -3247,6 +3263,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimUniq_	vimUniq
  hi def link vimUniqBang	vimBang
  hi def link vimUniqOptions	Special
+ hi def link vimUniqPattern	Regexp
  hi def link vimUnlet	vimCommand
  hi def link vimUnletBang	vimBang
  hi def link vimUnlockvar	vimCommand
@@ -3274,6 +3291,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimVimgrepadd_	vimVimgrepadd
  hi def link vimVimgrepBang	vimBang
  hi def link vimVimgrepFlags	Special
+ hi def link vimVimgrepPattern	Regexp
  hi def link vimVimVar	Identifier
  hi def link vimVimVarName	Identifier
  hi def link vimWarn	WarningMsg
