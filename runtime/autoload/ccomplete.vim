@@ -3,7 +3,7 @@ vim9script noclear
 # Vim completion script
 # Language:	C
 # Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2026 Feb 18
+# Last Change:	2026 Aug 25
 #		Rewritten in Vim9 script by github user lacygoill
 # Former Maintainer:   Bram Moolenaar <Bram@vim.org>
 
@@ -575,7 +575,7 @@ def StructMembers( # {{{1
 
   # Todo: What about local structures?
   var fnames: string = tagfiles()
-    ->map((_, v: string) => escape(v, ' \#%'))
+    ->map((_, v: string) => escape(v, ' \#%|'))
     ->join()
   if fnames == ''
     return []
