@@ -7592,6 +7592,21 @@ eval_isdictc(int c)
 }
 
 /*
+ * Return true when "p" points to "->" followed by a method name or a lambda.
+ * Only called for Vim9 script.
+ */
+    static bool
+method_call_follows(char_u *p)
+{
+    if (p[0] != '-' || p[1] != '>')
+	return false;
+
+    char_u	*after = skipwhite(p + 2);
+
+    return ASCII_ISALPHA(*after) || *after == '(';
+}
+
+/*
  * Handle:
  * - expr[expr], expr[expr:expr] subscript
  * - ".name" lookup
@@ -7619,7 +7634,7 @@ handle_subscript(
 
     while (ret == OK)
     {
-	// When at the end of the line and ".name" or "->{" or "->X" follows in
+	// When at the end of the line and ".name" or a method call follows in
 	// the next line then consume the line break.
 	p = eval_next_non_blank(*arg, evalarg, &getnext);
 	if (getnext
@@ -7627,9 +7642,7 @@ handle_subscript(
 		    && ((rettv->v_type == VAR_DICT && eval_isdictc(p[1]))
 			|| rettv->v_type == VAR_CLASS
 			|| rettv->v_type == VAR_OBJECT))
-		|| (p[0] == '-' && p[1] == '>' && (p[2] == '{'
-			|| ASCII_ISALPHA(in_vim9script() ? *skipwhite(p + 2)
-								    : p[2])))))
+		|| method_call_follows(p)))
 	{
 	    *arg = eval_next_line(*arg, evalarg);
 	    p = *arg;

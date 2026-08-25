@@ -3964,6 +3964,14 @@ def Test_expr9_method_call()
       var sorted = [3, 1, 2]
                     -> sort()
       assert_equal([1, 2, 3], sorted)
+
+      var nrs = [1, 2]
+                    ->((x) => x)()
+      assert_equal([1, 2], nrs)
+
+      nrs = [3, 4]
+                    -> ((x) => x)()
+      assert_equal([3, 4], nrs)
   END
   v9.CheckDefAndScriptSuccess(lines)
 

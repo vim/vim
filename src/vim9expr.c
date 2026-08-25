@@ -2550,7 +2550,7 @@ compile_subscript(
 	    if (next != NULL &&
 		    ((next[0] == '-' && next[1] == '>'
 				 && (next[2] == '{'
-				       || next[2] == '('
+				       || *skipwhite(next + 2) == '('
 				       || ASCII_ISALPHA(*skipwhite(next + 2))))
 		    || (next[0] == '.' && eval_isdictc(next[1]))))
 	    {
