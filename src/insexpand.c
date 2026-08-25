@@ -622,6 +622,23 @@ is_first_match(compl_T *match)
 }
 
 /*
+ * Return the entry holding the original text, NULL if not found.
+ * It is the first item, or the last one for backward completion.
+ */
+    static compl_T *
+find_original_text_match(void)
+{
+    if (compl_first_match == NULL)
+	return NULL;
+    if (match_at_original_text(compl_first_match))
+	return compl_first_match;
+    if (compl_first_match->cp_prev != NULL
+	    && match_at_original_text(compl_first_match->cp_prev))
+	return compl_first_match->cp_prev;
+    return NULL;
+}
+
+/*
  * Return TRUE when character "c" is part of the item currently being
  * completed.  Used to decide whether to abandon complete mode when the menu
  * is visible.
@@ -1711,19 +1728,22 @@ set_fuzzy_score(void)
 }
 
 /*
- * Sort completion matches, excluding the node that contains the leader.
+ * Sort completion matches, leaving the entry with the original text in place.
  */
     static void
 sort_compl_match_list(int (*compare)(const void *, const void *))
 {
-    compl_T     *compl;
+    compl_T	*orig_text;
 
     if (!compl_first_match || is_first_match(compl_first_match->cp_next))
 	return;
 
-    compl = compl_first_match->cp_prev;
+    orig_text = find_original_text_match();
+    if (orig_text == NULL)
+	return;
+
     ins_compl_make_linear();
-    if (compl_shows_dir_forward())
+    if (orig_text == compl_first_match)
     {
 	compl_first_match->cp_next->cp_prev = NULL;
 	compl_first_match->cp_next = mergesort_list(compl_first_match->cp_next,
@@ -1732,14 +1752,16 @@ sort_compl_match_list(int (*compare)(const void *, const void *))
     }
     else
     {
-	compl->cp_prev->cp_next = NULL;
+	compl_T	*tail;
+
+	orig_text->cp_prev->cp_next = NULL;
 	compl_first_match = mergesort_list(compl_first_match, cp_get_next,
 		cp_set_next, cp_get_prev, cp_set_prev, compare);
-	compl_T	*tail = compl_first_match;
+	tail = compl_first_match;
 	while (tail->cp_next != NULL)
 	    tail = tail->cp_next;
-	tail->cp_next = compl;
-	compl->cp_prev = tail;
+	tail->cp_next = orig_text;
+	orig_text->cp_prev = tail;
     }
     (void)ins_compl_make_cyclic();
 }
@@ -2832,30 +2854,20 @@ ins_compl_restart(void)
     static void
 ins_compl_set_original_text(char_u *str, size_t len)
 {
+    compl_T	*match = find_original_text_match();
+    char_u	*p;
+
     // Replace the original text entry.
-    // The CP_ORIGINAL_TEXT flag is either at the first item or might possibly
-    // be at the last item for backward completion
-    if (match_at_original_text(compl_first_match))	// safety check
-    {
-	char_u	*p = vim_strnsave(str, len);
-	if (p != NULL)
-	{
-	    VIM_CLEAR_STRING(compl_first_match->cp_str);
-	    compl_first_match->cp_str.string = p;
-	    compl_first_match->cp_str.length = len;
-	}
-    }
-    else if (compl_first_match->cp_prev != NULL
-	    && match_at_original_text(compl_first_match->cp_prev))
-    {
-	char_u *p = vim_strnsave(str, len);
-	if (p != NULL)
-	{
-	    VIM_CLEAR_STRING(compl_first_match->cp_prev->cp_str);
-	    compl_first_match->cp_prev->cp_str.string = p;
-	    compl_first_match->cp_prev->cp_str.length = len;
-	}
-    }
+    if (match == NULL)
+	return;
+
+    p = vim_strnsave(str, len);
+    if (p == NULL)
+	return;
+
+    VIM_CLEAR_STRING(match->cp_str);
+    match->cp_str.string = p;
+    match->cp_str.length = len;
 }
 
 /*
