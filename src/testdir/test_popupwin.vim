@@ -2309,6 +2309,36 @@ func Test_adjust_left_past_screen_width()
   %bwipe!
 endfunc
 
+func Test_popupwin_border_at_screen_edge()
+  CheckScreendump
+
+  let lines =<< trim END
+      call setline(1, range(1, 20))
+      func ShowScrollbarPopup()
+	call popup_clear()
+	call popup_create(map(range(12), {-> repeat('a', 9)}), #{
+	      \ pos: 'botleft', line: 5, col: 33, fixed: v:true,
+	      \ maxwidth: 80, padding: [0, 1, 0, 1], border: []})
+      endfunc
+      func ShowRightAlignedPopup()
+	call popup_clear()
+	call popup_create(map(range(6), {-> repeat('abcdefghij', 4)}), #{
+	      \ pos: 'botright', line: 15, col: 30, fixed: v:true,
+	      \ maxwidth: 80, padding: [0, 1, 0, 1], border: []})
+      endfunc
+      call ShowScrollbarPopup()
+  END
+  call writefile(lines, 'XtestPopupBorderEdge', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupBorderEdge', #{rows: 16, cols: 45})
+  call VerifyScreenDump(buf, 'Test_popupwin_border_edge_1', {})
+
+  call term_sendkeys(buf, ":call ShowRightAlignedPopup()\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_border_edge_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_popup_moved()
   new
   call test_override('char_avail', 1)
