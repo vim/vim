@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Aug 20
+*options.txt*	For Vim version 9.2.  Last change: 2026 Aug 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -10522,7 +10522,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  exacttext	When this flag is present, search pattern completion
 			(e.g., in |/|, |?|, |:s|, |:g|, |:v|, and |:vim|)
 			shows exact buffer text as menu items, without
-			preserving regex artifacts like position
+			preserving regexp artifacts like position
 			anchors (e.g., |/\<|).  This provides more intuitive
 			menu items that match the actual buffer text.
 			However, searches may be less accurate since the
