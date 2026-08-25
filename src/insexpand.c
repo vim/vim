@@ -333,6 +333,7 @@ static void ins_compl_add_dict(dict_T *dict);
 static int get_userdefined_compl_info(colnr_T curs_col, callback_T *cb, int *startcol);
 static void get_cpt_func_completion_matches(callback_T *cb);
 static callback_T *get_callback_if_cpt_func(char_u *p, int idx);
+static void fill_complete_info_dict(dict_T *di, compl_T *match, int add_match);
 #endif
 static int setup_cpt_sources(void);
 static int is_cpt_func_refresh_always(void);
@@ -1509,17 +1510,7 @@ ins_compl_dict_alloc(compl_T *match)
 
     if (dict == NULL)
 	return NULL;
-
-    dict_add_string_len(dict, "word", match->cp_str.string, (int)match->cp_str.length);
-    dict_add_string(dict, "abbr", match->cp_text[CPT_ABBR]);
-    dict_add_string(dict, "menu", match->cp_text[CPT_MENU]);
-    dict_add_string(dict, "kind", match->cp_text[CPT_KIND]);
-    dict_add_string(dict, "info", match->cp_text[CPT_INFO]);
-    if (match->cp_user_data.v_type == VAR_UNKNOWN)
-	dict_add_string_len(dict, "user_data", (char_u *)"", 0);
-    else
-	dict_add_tv(dict, "user_data", &match->cp_user_data);
-
+    fill_complete_info_dict(dict, match, FALSE);
     return dict;
 }
 
