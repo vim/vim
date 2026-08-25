@@ -1,4 +1,4 @@
-*insert.txt*	For Vim version 9.2.  Last change: 2026 Aug 23
+*insert.txt*	For Vim version 9.2.  Last change: 2026 Aug 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1798,9 +1798,9 @@ autoload/syntaxcomplete.vim) to add items.  Looking at the output from
     htmlArg,htmlTag,htmlTagName,javaScriptStatement,javaScriptGlobalObjects
 
 To pick up any JavaScript and HTML keyword syntax groups while editing a PHP
-file, you can use 3 different regexs, one for each language.  Or you can
+file, you can use 3 different regexps, one for each language.  Or you can
 simply restrict the include groups to a particular value, without using
-a regex string: >
+a regexp string: >
     let g:omni_syntax_group_include_php = 'php\w\+,javaScript\w\+,html\w\+'
     let g:omni_syntax_group_include_php = 'phpFunctions,phpMethods'
 <

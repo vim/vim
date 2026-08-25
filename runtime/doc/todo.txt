@@ -1,4 +1,4 @@
-*todo.txt*	For Vim version 9.2.  Last change: 2026 Aug 03
+*todo.txt*	For Vim version 9.2.  Last change: 2026 Aug 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1199,7 +1199,7 @@ Regexp problems:
   character, search fails.  E.g. "รรีบ" in "การรีบรักใคร". (agguser, #2312)
 - [:space:] only matches ASCII spaces.  Add [:white:] for all space-like
   characters, esp. including 0xa0.  Use character class zero.
-- Since 7.4.704 the old regex engine fails to match [[:print:]] in 0xf6.
+- Since 7.4.704 the old regexp engine fails to match [[:print:]] in 0xf6.
   (Manuel Ortega, 2016 Apr 24)
   Test fails on Mac.  Avoid using isalpha(), isalnum(), etc?  Depends on
   LC_CTYPE
@@ -1637,8 +1637,8 @@ Patch to support 'u' in interactive substitute. (Christian Brabandt, 2012 Sep
 
 Dialog is too big on Linux too. (David Fishburn, 2013 Sep 2)
 
--   Add regex for 'paragraphs' and 'sections': 'parare' and 'sectre'.  Combine
-    the two into a regex for searching. (Ned Konz)
+-   Add regexp for 'paragraphs' and 'sections': 'parare' and 'sectre'.
+    Combine the two into a regexp for searching. (Ned Konz)
 Patch by Christian Brabandt, 2013 Apr 20, unfinished.
 
 Bug: findfile("any", "file:///tmp;") does not work.
@@ -6077,7 +6077,7 @@ From Elvis:
 
 From xvi:
 -   CTRL-_ : swap 8th bit of character.
--   Add egrep-like regex type, like xvi (Ned Konz) or Perl (Emmanuel Mogenet)
+-   Add egrep-like regexp type, like xvi (Ned Konz) or Perl (Emmanuel Mogenet)
 
 
 From vile:
