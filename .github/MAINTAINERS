@@ -150,6 +150,7 @@ runtime/ftplugin/asy.vim				@avidseeker
 runtime/ftplugin/autohotkey.vim				@telemachus
 runtime/ftplugin/awk.vim				@dkearns
 runtime/ftplugin/basic.vim				@dkearns
+runtime/ftplugin/bazelrc.vim				@barrettruth
 runtime/ftplugin/beancount.vim				@nathangrigg
 runtime/ftplugin/bicep.vim				@scottmckendry
 runtime/ftplugin/bicep-params.vim			@scottmckendry
@@ -508,6 +509,7 @@ runtime/syntax/asy.vim					@avidseeker
 runtime/syntax/autohotkey.vim				@mmikeww
 runtime/syntax/awk.vim					@dkearns
 runtime/syntax/basic.vim				@dkearns
+runtime/syntax/bazelrc.vim				@barrettruth
 runtime/syntax/beancount.vim				@nathangrigg
 runtime/syntax/bpftrace.vim				@sgruszka
 runtime/syntax/bst.vim					@tpope

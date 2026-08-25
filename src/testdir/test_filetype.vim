@@ -136,6 +136,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     b: ['file.mch', 'file.ref', 'file.imp'],
     basic: ['file.bas', 'file.bi', 'file.bm'],
     bass: ['file.bass'],
+    bazelrc: ['.bazelrc', 'user.bazelrc', 'file.bazelrc', '/tools/bazel.rc', 'any/tools/bazel.rc'],
     bc: ['file.bc'],
     bdf: ['file.bdf'],
     beancount: ['file.beancount', 'file.bean'],

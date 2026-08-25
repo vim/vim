@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2026 Aug 13
+" Last Change:		2026 Aug 25
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If the filetype can be detected from extension or file name(the final path component),
@@ -184,6 +184,9 @@ if has("fname_case")
   " There is another check for BUILD and BUCK further below.
   au BufNewFile,BufRead *.BUILD,BUILD,BUCK		setf bzl
 endif
+
+" Bazel rc file, the workspace location used before Bazel 0.17
+au BufNewFile,BufRead */tools/bazel.rc			setf bazelrc
 
 " Bundle config
 au BufNewFile,BufRead */.bundle/config			setf yaml
