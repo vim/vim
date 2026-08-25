@@ -3715,6 +3715,7 @@ f_foldclosedend(typval_T *argvars, typval_T *rettv)
     foldclosed_both(argvars, rettv, TRUE);
 }
 
+# ifdef FEAT_FOLDING
 /*
  * Return fold level at line number "lnum" in the current window.
  */
@@ -3736,6 +3737,7 @@ foldLevel(linenr_T lnum)
 
     return foldLevelWin(curwin, lnum);
 }
+# endif
 
 /*
  * "foldlevel()" function
