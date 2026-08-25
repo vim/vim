@@ -1568,9 +1568,8 @@ popup_height(win_T *wp)
     int
 popup_width(win_T *wp)
 {
-    // w_leftcol is how many columns of the core are left of the screen
     // w_popup_rightoff is how many columns of the core are right of the screen
-    return wp->w_width + wp->w_leftcol
+    return wp->w_width
 	    + popup_extra_width(wp)
 	    + wp->w_popup_rightoff;
 }
@@ -2766,13 +2765,10 @@ popup_adjust_position(win_T *wp)
 	    wp->w_wincol = leftoff;
 	else if (wp->w_popup_fixed)
 	{
-	    // "col" specifies the right edge, but popup doesn't fit, skip some
-	    // columns when displaying the window, minus left border and
-	    // padding.
-	    if (-leftoff > left_extra)
-		wp->w_leftcol = -leftoff - left_extra;
+	    // "col" specifies the right edge, but the popup doesn't fit.
+	    // Scroll the text instead of moving the border off the screen.
+	    wp->w_leftcol = -leftoff;
 	    wp->w_width -= wp->w_leftcol;
-	    wp->w_popup_leftoff = -leftoff;
 	    if (wp->w_width < 0)
 		wp->w_width = 0;
 	}
@@ -2882,6 +2878,10 @@ popup_adjust_position(win_T *wp)
 	    wp->w_has_scrollbar = true;
 	    if (width_with_scrollbar > 0)
 		wp->w_width = width_with_scrollbar;
+	    else
+		// The width and the position were computed without the
+		// scrollbar, reserve a column for it.
+		++extra_width;
 	}
     }
 
@@ -7881,7 +7881,7 @@ update_popups(void (*win_update)(win_T *wp))
 	    if (do_padding && cl.eff_padding[1] > 0)
 	    {
 		int pad_col_start = wincol + wp->w_popup_border[3]
-			+ wp->w_popup_padding[3] + wp->w_width + wp->w_leftcol;
+			+ wp->w_popup_padding[3] + wp->w_width;
 		int pad_col_end = pad_col_start + wp->w_popup_padding[1];
 
 		if (screen_opacity_popup != NULL && saved_screen.lines != NULL)
