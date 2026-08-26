@@ -4,7 +4,7 @@
 " Repository: https://github.com/chrisbra/vim-xml-ftplugin
 " Previous Maintainer: Johannes Zellner <johannes@zellner.org>
 " Author: Daniel Amyot <damyot@site.uottawa.ca>
-" Last Changed:	Sept 24, 2019
+" Last Changed:	26 Aug 2026
 " Filenames: *.dtd
 "
 " REFERENCES:
@@ -112,7 +112,7 @@ syn region dtdEnum matchgroup=dtdType start="(" end=")" matchgroup=NONE contains
 syn keyword dtdAttrType NMTOKEN  ENTITIES  NMTOKENS  ID  CDATA
 syn keyword dtdAttrType IDREF  IDREFS
 " ENTITY has to treated special for not overriding <!ENTITY
-syn match   dtdAttrType +[^!]\<ENTITY+
+syn match   dtdAttrType +\%(!\)\@1<!\<ENTITY+
 
 "Attribute Definitions
 syn match  dtdAttrDef   "#REQUIRED"
