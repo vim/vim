@@ -684,6 +684,9 @@ edit(
 	    // Don't want delayed autocompletion from the previous key either.
 	    ins_compl_clear_autocomplete_delay();
 	    ins_compl_disarm_autostart();
+	    // A completion already on screen goes on being what it was.
+	    if (!ins_compl_active())
+		ins_compl_disable_autocomplete();
 	}
 
 #ifdef FEAT_RIGHTLEFT

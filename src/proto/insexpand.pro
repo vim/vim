@@ -76,6 +76,7 @@ void ins_compl_insert(int move_cursor, int insert_prefix);
 void ins_compl_check_keys(int frequency, int in_compl_func);
 int ins_complete(int c, int enable_pum);
 void ins_compl_enable_autocomplete(void);
+void ins_compl_disable_autocomplete(void);
 void ins_compl_arm_autostart(void);
 void ins_compl_disarm_autostart(void);
 bool ins_compl_arm_autocomplete_delay(void);
