@@ -969,7 +969,7 @@ settings.  The option is a comma-separated list of values:
 
 Example: >
 	:set previewpopup=height:10,width:60
-	:set previewpopup=border:single,borderhilight:PmenuBorder
+	:set previewpopup=border:single,borderhighlight:PmenuBorder
 	:set previewpopup=border:custom:─;│;─;│;┌;┐;┘;└
 	:set previewpopup=border:round,opacity:80
 
