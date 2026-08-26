@@ -4,7 +4,7 @@
 " Repository: https://github.com/chrisbra/vim-xml-ftplugin
 " Previous Maintainer: Johannes Zellner <johannes@zellner.org>
 " Author: Paul Siegmann <pauls@euronet.nl>
-" Last Changed:	30 Jun 2026
+" Last Changed:	26 Aug 2026
 " Filenames:	*.xml
 " Last Change:
 " 20190923 - Fix xmlEndTag to match xmlTag (vim/vim#884)
@@ -12,6 +12,7 @@
 " 20191103 - Enable spell checking globally
 " 20210428 - Improve syntax synchronizing
 " 20260630 - Improve performance
+" 20260826 - Improve performance
 
 " CONFIGURATION:
 "   syntax folding can be turned on by
@@ -78,7 +79,8 @@ syn region  xmlString contained start=+'+ end=+'+ contains=xmlEntity,@Spell disp
 " punctuation (within attributes) e.g. <tag xml:foo.attribute ...>
 "                                              ^   ^
 " syn match   xmlAttribPunct +[-:._]+ contained display
-syn match   xmlAttribPunct +[:.]+ contained display
+syn match   xmlAttribPunct +:+ contained display
+syn match   xmlAttribPunct +\.+ contained display
 
 " no highlighting for xmlEqual (xmlEqual has no highlighting group)
 syn match   xmlEqual +=+ display
