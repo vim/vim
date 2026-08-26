@@ -1449,7 +1449,7 @@ unserialize_uep(bufinfo_T *bi, int *error, char_u *file_name)
     uep->ue_size = undo_read_4c(bi);
     if (uep->ue_size > 0)
     {
-	if (uep->ue_size < LONG_MAX / (int)sizeof(char_u *))
+	if (uep->ue_size < LONG_MAX / (long)sizeof(undoline_T))
 	    array = U_ALLOC_LINE(sizeof(undoline_T) * uep->ue_size);
 	if (array == NULL)
 	{
