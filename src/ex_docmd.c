@@ -3847,8 +3847,10 @@ find_ex_command(
 		//	name[idx] = val
 		//	name[idx].member = val
 		//	etc.
+		// Not emsg_silent: that would still let what skip_expr()
+		// makes of an expression it cannot follow reach "v:errmsg".
 		eap->cmdidx = CMD_eval;
-		++emsg_silent;
+		++emsg_off;
 		if (skip_expr(&after, NULL) == OK)
 		{
 		    after = skipwhite(after);
@@ -3857,7 +3859,7 @@ find_ex_command(
 							   && after[2] == '='))
 			eap->cmdidx = CMD_var;
 		}
-		--emsg_silent;
+		--emsg_off;
 		return eap->cmd;
 	    }
 

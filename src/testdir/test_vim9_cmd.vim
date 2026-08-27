@@ -2251,4 +2251,21 @@ def Test_delfunction_dict_funcref()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Looking ahead at a line that starts with a dict member, to tell an
+" assignment from an expression, must not leave an error behind.
+def Test_no_error_from_looking_ahead()
+  var lines =<< trim END
+      vim9script
+      var d = {Fn: (m: string) => 0}
+      def F(b: bool)
+        d.Fn(b ? 'one'
+               : 'two')
+      enddef
+      v:errmsg = ''
+      defcompile
+      assert_equal('', v:errmsg)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
