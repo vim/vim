@@ -260,7 +260,7 @@ def s:GetFilenameChecks(): dict<list<string>>
              '.alsoftrc', 'alsoft.conf', 'alsoft.ini', 'alsoftrc.sample',
              '/etc/wireguard/wg0.conf',
              '.notmuch-config', '.notmuch-config.myprofile',
-             '~/.config/notmuch/myprofile/config'] + WhenConfigHome('$XDG_CONFIG_HOME/notmuch/myprofile/config'),
+             '~/.config/notmuch/myprofile/config', 'any/.local/share/zathura/history'] + WhenConfigHome('$XDG_CONFIG_HOME/notmuch/myprofile/config'),
     dot: ['file.dot', 'file.gv'],
     dracula: ['file.drac', 'file.drc', 'file.lvs', 'file.lpe', 'drac.file'],
     dtd: ['file.dtd'],
