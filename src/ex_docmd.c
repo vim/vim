@@ -3848,7 +3848,7 @@ find_ex_command(
 		//	name[idx].member = val
 		//	etc.
 		eap->cmdidx = CMD_eval;
-		++emsg_silent;
+		++emsg_off;
 		if (skip_expr(&after, NULL) == OK)
 		{
 		    after = skipwhite(after);
@@ -3857,7 +3857,7 @@ find_ex_command(
 							   && after[2] == '='))
 			eap->cmdidx = CMD_var;
 		}
-		--emsg_silent;
+		--emsg_off;
 		return eap->cmd;
 	    }
 
