@@ -207,6 +207,9 @@ au BufNewFile,BufRead *.toc
 " Cdrdao config
 au BufNewFile,BufRead */etc/cdrdao.conf,*/etc/defaults/cdrdao,*/etc/default/cdrdao,.cdrdao	setf cdrdaoconf
 
+" CFF (https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-citation-files)
+au BufNewFile,BufRead *.cff						setf yaml
+
 " Containers config files
 au BufNewFile,BufRead */containers/containers.conf{,.d/*.conf}		setf toml
 au BufNewFile,BufRead */containers/containers.conf.modules/*.conf	setf toml
