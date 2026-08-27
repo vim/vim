@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.2.  Last change: 2026 Jun 26
+*terminal.txt*	For Vim version 9.2.  Last change: 2026 Aug 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -866,6 +866,8 @@ term_setapi({buf}, {expr})				*term_setapi()*
 <
 		The default is "Tapi_".  When {expr} is an empty string then
 		no |terminal-api| function can be used for {buf}.
+		Setting the API only affects the "call" part, "drop" is always
+		allowed.
 
 		When used as a method the base is used for {buf}: >
 			GetBufnr()->term_setapi({expr})
@@ -1080,6 +1082,11 @@ encodes a command that Vim understands.  Example of such a message: >
 The body is always a list, making it easy to find the end: ]<07>.
 The <Esc>]51;msg<07> sequence is reserved by xterm for "Emacs shell", which is
 similar to what we are doing here.
+
+Note that any output appearing in a terminal window is checked for this
+escape sequence, thus the job can make Vim open a file with the "drop"
+command below.  |term_setapi()| only restricts which functions the "call"
+command may use, it does not affect the "drop" API.
 
 Currently supported commands:
 
