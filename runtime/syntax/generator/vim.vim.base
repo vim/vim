@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2026 Aug 26
+" Last Change:	   2026 Aug 27
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -3113,7 +3113,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimNonText	NonText
  hi def link vimNormal	vimCommand
  hi def link vimNotation	Special
- hi def link vimNotPatSep	vimString
+ hi def link vimNotPatSep	Regexp
  hi def link vimNumber	Number
  hi def link vimOperError	Error
  hi def link vimOper	Operator
@@ -3128,7 +3128,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimPatSepErr	vimError
  hi def link vimPatSepR	vimPatSep
  hi def link vimPatSep	SpecialChar
- hi def link vimPatSepZone	vimString
+ hi def link vimPatSepZone	Regexp
  hi def link vimPatSepZ	vimPatSep
  hi def link vimPattern	Type
  hi def link vimPerl	vimCommand
@@ -3204,7 +3204,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimSubstFlags	Special
  hi def link vimSubstPat	Regexp
  hi def link vimSubstSubstr	SpecialChar
- hi def link vimSubstTwoBS	vimString
+ hi def link vimSubstTwoBS	Regexp
  hi def link vimSubst	vimCommand
  hi def link vimSubst_	vimSubst
  hi def link vimSynCase	Type
@@ -3234,7 +3234,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimSynNextgroup	vimSynOption
  hi def link vimSynNotPatRange	vimSynRegPat
  hi def link vimSynOption	Special
- hi def link vimSynPatRange	vimString
+ hi def link vimSynPatRange	Regexp
  hi def link vimSynReg	Type
  hi def link vimSynRegOpt	vimSynOption
  hi def link vimSynRegPat	Regexp
