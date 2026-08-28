@@ -25,6 +25,13 @@ if exists("c_autodoc")
   unlet b:current_syntax
 endif
 
+" In VMS C keywords contain '$' characters.
+if has("vms")
+  syn iskeyword @,48-57,_,192-255,$
+else
+  syn iskeyword @,48-57,_,192-255
+endif
+
 " A bunch of useful C keywords
 syn keyword	cStatement	goto break return continue asm
 syn keyword	cLabel		case default
