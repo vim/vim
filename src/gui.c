@@ -3186,7 +3186,7 @@ gui_wait_for_chars_buf(
     retval = inchar_loop(buf, maxlen, wtime, tb_change_cnt,
 			 gui_wait_for_chars_or_timer, NULL);
 
-    // Keep blinking when CursorHold wakes the input loop.
+    // Keep blinking when CursorHold wakes the input loop. (See PR #21115)
     keep_blinking = retval == 3 && buf != NULL
 	&& buf[0] == K_SPECIAL && buf[1] == KS_EXTRA
 	&& buf[2] == (int)KE_CURSORHOLD;
