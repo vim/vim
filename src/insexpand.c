@@ -4232,8 +4232,8 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 # define CI_WHAT_ITEMS		    0x04
 # define CI_WHAT_SELECTED	    0x08
 # define CI_WHAT_COMPLETED	    0x10
-# define CI_WHAT_MATCHES		    0x20
-# define CI_WHAT_PREINSERTED_TEXT    0x40
+# define CI_WHAT_MATCHES	    0x20
+# define CI_WHAT_PREINSERTED_TEXT   0x40
 # define CI_WHAT_AUTO		    0x80
 # define CI_WHAT_ALL		    0xff
     int		what_flag;
@@ -7518,6 +7518,15 @@ ins_compl_enable_autocomplete(void)
     compl_autocomplete = TRUE;
     compl_get_longest = FALSE;
 #endif
+}
+
+/*
+ * Disable autocompletion
+ */
+    void
+ins_compl_disable_autocomplete(void)
+{
+    compl_autocomplete = FALSE;
 }
 
 /*
