@@ -311,6 +311,7 @@ runtime/ftplugin/python.vim				@tpict
 runtime/ftplugin/qb64.vim				@dkearns
 runtime/ftplugin/qml.vim				@ChaseKnowlden
 runtime/ftplugin/racket.vim				@benknoble
+runtime/ftplugin/radvd.vim				@mdspan
 runtime/ftplugin/rasi.vim				@fymyte
 runtime/ftplugin/readline.vim				@dkearns
 runtime/ftplugin/remind.vim				@joereynolds
@@ -684,6 +685,7 @@ runtime/syntax/pymanifest.vim				@ObserverOfTime
 runtime/syntax/qb64.vim					@dkearns
 runtime/syntax/qml.vim					@ChaseKnowlden
 runtime/syntax/racket.vim				@benknoble
+runtime/syntax/radvd.vim				@mdspan
 runtime/syntax/raml.vim					@in3d
 runtime/syntax/rapid.vim				@KnoP-01
 runtime/syntax/rasi.vim					@fymyte
