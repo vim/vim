@@ -2412,7 +2412,6 @@ did_set_eventignore(optset_T *args)
 {
     char_u	**varp = (char_u **)args->os_varp;
     char_u	*oldval = args->os_oldval.string;
-    char_u	*newval;
 
     if (check_ei(*varp) == FAIL)
 	return e_invalid_argument;
@@ -2424,10 +2423,24 @@ did_set_eventignore(optset_T *args)
     // state, with the old value in effect: what happened while an event was
     // ignored must not be reported once it is not ignored anymore, and what
     // happened before must still be reported.
-    newval = *varp;
-    *varp = oldval;
-    may_trigger_deferred_events();
-    *varp = newval;
+    // Use a copy, the caller owns "oldval" and autocommands may free it.
+    char_u	*save_ei = vim_strsave(oldval);
+    if (save_ei != NULL)
+    {
+	char_u	*newval = *varp;
+	win_T	*wp = is_window_local_option(args->os_idx) ? curwin : NULL;
+
+	*varp = save_ei;
+	// "varp" points into "wp" for 'eventignorewin'.
+	if (wp != NULL)
+	    ++wp->w_locked;
+	may_trigger_deferred_events();
+	if (wp != NULL)
+	    --wp->w_locked;
+
+	free_string_option(*varp);
+	*varp = newval;
+    }
 
     return NULL;
 }
