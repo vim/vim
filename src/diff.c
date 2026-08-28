@@ -1191,7 +1191,9 @@ theend:
     if (had_diffs || curtab->tp_first_diff != NULL)
     {
 	diff_redraw(TRUE);
+	window_layout_lock();
 	apply_autocmds(EVENT_DIFFUPDATED, NULL, NULL, FALSE, curbuf);
+	window_layout_unlock();
     }
 }
 
@@ -4444,7 +4446,9 @@ theend:
     {
 	// Also need to redraw the other buffers.
 	diff_redraw(FALSE);
+	window_layout_lock();
 	apply_autocmds(EVENT_DIFFUPDATED, NULL, NULL, FALSE, curbuf);
+	window_layout_unlock();
     }
 }
 

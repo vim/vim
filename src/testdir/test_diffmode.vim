@@ -3671,4 +3671,35 @@ func Test_diff_cursorbind_after_undo()
   %bw!
 endfunc
 
+func Test_diffupdated_close_window_fails()
+  new
+  only
+  call setline(1, ['one', 'two', 'three'])
+  let w1 = win_getid()
+  vnew
+  call setline(1, ['one', 'Two', 'three'])
+  windo diffthis
+  call win_gotoid(w1)
+
+  augroup TestDiffUpdated
+    autocmd!
+    autocmd DiffUpdated * bw!
+  augroup END
+
+  try
+  diffupdate
+  catch
+  endtry
+
+  augroup TestDiffUpdated
+    autocmd!
+  augroup END
+  augroup! TestDiffUpdated
+
+  call assert_equal(2, winnr('$'))
+
+  diffoff!
+  %bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
