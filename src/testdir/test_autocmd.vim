@@ -6114,6 +6114,61 @@ func Test_eventignore_deferred_events()
   call StopVimInTerminal(buf)
 endfunc
 
+" Changing 'eventignore' from an autocommand that is triggered by setting
+" 'eventignore' must not crash.
+func Test_eventignore_changed_while_triggering()
+  new
+  call setline(1, range(1, 10))
+  augroup testing
+    autocmd!
+    autocmd CursorMoved * set eventignore=WinLeave
+  augroup END
+
+  " The pending cursor move is reported when the option changes.
+  set eventignore=WinNew
+  normal! j
+  set eventignore=all
+  call assert_equal('all', &eventignore)
+
+  augroup testing
+    autocmd!
+    autocmd CursorMoved * noautocmd echo ''
+  augroup END
+  set eventignore=WinNew
+  normal! j
+  set eventignore=all
+  call assert_equal('all', &eventignore)
+
+  set eventignore=
+  call CleanUpTestAuGroup()
+  %bw!
+endfunc
+
+" An autocommand that is triggered by setting 'eventignorewin' cannot close
+" the window that holds the option.
+func Test_eventignorewin_window_not_closed_while_triggering()
+  new
+  call setline(1, range(1, 10))
+  split
+  let nwin = winnr('$')
+  let s:tried = 0
+  augroup testing
+    autocmd!
+    autocmd CursorMoved * if !s:tried | let s:tried = 1 | close | endif
+  augroup END
+
+  normal! j
+  set eventignorewin=WinLeave
+  call assert_equal(1, s:tried)
+  call assert_equal(nwin, winnr('$'))
+  call assert_equal('WinLeave', &eventignorewin)
+
+  set eventignorewin=
+  unlet s:tried
+  call CleanUpTestAuGroup()
+  %bw!
+endfunc
+
 func Test_VimResized_and_window_width_not_equalized()
   CheckRunVimInTerminal
 
