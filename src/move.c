@@ -3383,7 +3383,13 @@ pagescroll(int dir, long count, int half)
 	}
     }
 
-    if (get_scrolloff_value() > 0)
+    // With 'scrolloffpad', correcting the cursor when scrolling did not change
+    // anything could move it in the opposite direction.
+    if (get_scrolloff_value() > 0
+	    && (!use_scrolloffpad()
+		|| did_move
+		|| prev_col != curwin->w_cursor.col
+		|| prev_lnum != curwin->w_cursor.lnum))
 	cursor_correct();
 #ifdef FEAT_FOLDING
     // Move cursor to first line of closed fold.

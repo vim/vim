@@ -1760,6 +1760,24 @@ func Test_scrolloffpad_paging_to_eof()
   bwipe!
 endfunc
 
+func Test_scrolloffpad_ctrl_d_at_eof()
+  new
+  resize 12
+  setlocal scroll=6 scrolloff=999
+  call setline(1, map(range(1, 80), 'printf("line %d", v:val)'))
+
+  for sop in [0, 1]
+    let &l:scrolloffpad = sop
+    normal! ggG
+    let view_before = winsaveview()
+
+    call assert_beeps('execute "normal! \<C-D>"')
+    call assert_equal(view_before, winsaveview())
+  endfor
+
+  bwipe!
+endfunc
+
 func Test_scrolloffpad_autocmd_append_at_eof()
   let states = {}
   for sop in [0, 1]
