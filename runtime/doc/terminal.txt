@@ -381,6 +381,10 @@ job.  That includes the cursor position.  Typed keys are sent to the job.
 The terminal contents can change at any time.  This is called Terminal-Job
 mode.
 
+The 'ruler' and the position shown by 'statusline' do not follow it: what the
+terminal shows reaches the buffer only when Vim takes over, so there is no
+position in the buffer to report until then.
+
 Use CTRL-W N (or 'termwinkey' N) to switch to Terminal-Normal mode.  Now the
 contents of the terminal window is under control of Vim, the job output is
 suspended.  CTRL-\ CTRL-N does the same.
