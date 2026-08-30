@@ -5960,8 +5960,14 @@ nfa_regmatch(
 	for (listidx = 0; listidx < thislist->n; ++listidx)
 	{
 	    // If the list gets very long there probably is something wrong.
-	    // At least allow interrupting with CTRL-C.
-	    fast_breakcheck();
+	    // At least allow interrupting with CTRL-C.  Only check once in a
+	    // while, calling ui_breakcheck() for every state is too slow.
+	    static int	breakcheck_count = 0;  // using "static" makes it faster
+	    if (unlikely(++breakcheck_count >= 100000))
+	    {
+		ui_breakcheck();
+		breakcheck_count = 0;
+	    }
 	    if (got_int)
 		break;
 #ifdef FEAT_RELTIME
