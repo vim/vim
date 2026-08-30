@@ -34,7 +34,7 @@ for [s:lang, s:syntax] in g:help_example_languages->items()
   unlet! b:current_syntax
 
   if s:lang == "vim9"
-    let b:vimsyn_force_vim9 = v:true
+    let b:vimsyn_force_vim9script = v:true
   endif
 
   " silent! to prevent E403
@@ -42,7 +42,7 @@ for [s:lang, s:syntax] in g:help_example_languages->items()
         \ $'syntax/{s:syntax}.vim'
 
   if s:lang == "vim9"
-    unlet b:vimsyn_force_vim9
+    unlet b:vimsyn_force_vim9script
   endif
 
   execute $'syn region helpExampleHighlight_{s:lang} matchgroup=helpIgnore'
@@ -56,7 +56,7 @@ unlet! s:lang s:syntax
 if has_key(g:help_example_languages, "vim9")
   " for example at :help vim9-mix
   syn region vim9LegacyHeader_HelpExample
-	\ start=+" legacy Vim script comments may go here+
+	\ start=+" _legacy Vim script_ comments are placed here+
 	\ end="^\ze\s*vim9s\%[cript]\>"
 	\ contains=@vimLegacyTop,vimComment,vimLineComment,vimLineStart
   syn cluster helpExampleHighlight_vim9 add=vim9LegacyHeader_HelpExample
