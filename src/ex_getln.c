@@ -1006,7 +1006,7 @@ cmdline_wildchar_complete(
 	    res = nextwild(xp, WILD_LONGEST, options, escape);
 	else
 	{
-	    if (wim_noselect || wim_list)
+	    if (wim_noselect || (wim_list && !wim_full))
 		options |= WILD_NOSELECT;
 	    if (wim_noinsert)
 		options |= WILD_NOINSERT;
