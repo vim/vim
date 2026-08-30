@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Aug 25
+*options.txt*	For Vim version 9.2.  Last change: 2026 Aug 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5400,9 +5400,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	expand "$HOME/.viminfo".  Maybe you should change 'iskeyword' instead.
 
 						*'iskeyword'* *'isk'*
-'iskeyword' 'isk'	string (Vim default for Win32:
-					    "@,48-57,_,128-167,224-235"
-				   otherwise:  "@,48-57,_,192-255"
+'iskeyword' 'isk'	string (Vim default: "@,48-57,_,192-255"
 				Vi default: "@,48-57,_")
 			local to buffer
 	Keywords are used in searching and recognizing with many commands:
