@@ -2707,11 +2707,11 @@ popup_adjust_position(win_T *wp)
     {
 	++right_extra;
 	++extra_width;
-	// make space for the scrollbar if needed, when lines wrap and when
-	// applying minwidth
+	// give up the right padding when the popup would not fit, when lines
+	// wrap and when applying minwidth
 	if (maxwidth + right_extra >= maxspace
 		&& (used_maxwidth || (minwidth > 0 && wp->w_width < minwidth)))
-	    maxwidth -= wp->w_popup_padding[1] + 1;
+	    maxwidth -= wp->w_popup_padding[1];
     }
 
     if (wp->w_popup_title != NULL && *wp->w_popup_title != NUL)
@@ -2875,13 +2875,17 @@ popup_adjust_position(win_T *wp)
 	if (wp->w_buffer->b_term == NULL || term_is_finished(wp->w_buffer))
 #endif
 	{
-	    wp->w_has_scrollbar = true;
-	    if (width_with_scrollbar > 0)
-		wp->w_width = width_with_scrollbar;
-	    else
-		// The width and the position were computed without the
-		// scrollbar, reserve a column for it.
-		++extra_width;
+	    // The width already accounts for a scrollbar that was there.
+	    if (!wp->w_has_scrollbar)
+	    {
+		wp->w_has_scrollbar = true;
+		if (width_with_scrollbar > 0)
+		    wp->w_width = width_with_scrollbar;
+		else
+		    // The width and the position were computed without the
+		    // scrollbar, reserve a column for it.
+		    ++extra_width;
+	    }
 	}
     }
 
