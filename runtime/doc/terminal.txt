@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.2.  Last change: 2026 Aug 27
+*terminal.txt*	For Vim version 9.2.  Last change: 2026 Aug 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -380,6 +380,11 @@ When the job is running the contents of the terminal is under control of the
 job.  That includes the cursor position.  Typed keys are sent to the job.
 The terminal contents can change at any time.  This is called Terminal-Job
 mode.
+
+In Terminal-Job mode the cursor position you see belongs to the terminal job,
+not to Vim.  The window's cursor position is only updated when Vim takes over
+in |Terminal-Normal| mode, so the 'ruler' and the 'statusline' show a stale
+cursor position.
 
 Use CTRL-W N (or 'termwinkey' N) to switch to Terminal-Normal mode.  Now the
 contents of the terminal window is under control of Vim, the job output is
