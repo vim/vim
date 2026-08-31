@@ -725,6 +725,7 @@ runtime/syntax/sshdconfig.vim				@Jakuje
 runtime/syntax/sshpublickey.vim				@fionn
 runtime/syntax/sshknownhosts.vim			@fionn
 runtime/syntax/sudoers.vim				@e-kwsm
+runtime/syntax/svelte.vim				@231tr0n
 runtime/syntax/svn.vim					@hdima
 runtime/syntax/swayconfig.vim				@jamespeapen
 runtime/syntax/swig.vim					@jmarrec

@@ -84,7 +84,8 @@ syn cluster xmlTagHook	add=htmlMathTagName,htmlSvgTagName
 syn keyword htmlArg contained action
 syn keyword htmlArg contained align alink alt archive background bgcolor
 syn keyword htmlArg contained border bordercolor cellpadding
-syn keyword htmlArg contained cellspacing checked class clear code codebase color
+syn keyword htmlArg contained cellspacing checked clear code codebase color
+syn match    htmlArg contained "\<class\>"
 syn keyword htmlArg contained cols colspan content coords enctype face
 syn keyword htmlArg contained gutter height href hspace id
 syn keyword htmlArg contained link lowsrc marginheight
@@ -179,7 +180,8 @@ syn keyword htmlArg contained cite classid codetype compact data datetime
 syn keyword htmlArg contained declare defer dir disabled for frame
 syn keyword htmlArg contained headers hreflang label lang language longdesc
 syn keyword htmlArg contained multiple nohref nowrap object profile readonly
-syn keyword htmlArg contained rules scheme scope span standby style
+syn keyword htmlArg contained rules scheme scope span standby
+syn match    htmlArg contained "\<style\>"
 syn keyword htmlArg contained summary tabindex valuetype version
 
 " html 5 arg names
