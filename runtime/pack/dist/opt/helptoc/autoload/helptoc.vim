@@ -3,7 +3,7 @@ vim9script noclear
 # the Vim HelpTOC plugin, creates a table of contents in a popup
 # Maintainer: Vim project
 # Original Author: @lacygoill
-# Latest Change: 2025 Oct 17
+# Latest Change: 2026 Aug 31
 #
 # Config {{{1
 # g:helptoc {{{2
@@ -1124,9 +1124,9 @@ def FuzzySearch(winid: number) #{{{2
             ->get(0, [])
             ->map((i: number, match: dict<any>) => ({
                 text: match.text,
-                props: pos[i]->copy()->map((_, col: number) => ({
-                    col: col + 1,
-                    length: 1,
+                props: pos[i]->copy()->map((_, cp: number) => ({
+                    col: byteidx(match.text, cp) + 1,
+                    length: byteidx(match.text, cp + 1) - byteidx(match.text, cp),
                     type: 'help-fuzzy-toc',
                 }))}))
     endif
