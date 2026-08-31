@@ -4553,7 +4553,8 @@ addstate(
     nfa_state_T		*state,	    // state to update
     regsubs_T		*subs_arg,  // pointers to subexpressions
     nfa_pim_T		*pim,	    // postponed look-behind match
-    int			off_arg)    // byte offset, when -1 go to next line
+    int			off_arg,    // byte offset, when -1 go to next line
+    int			depth)	    // recursion depth
 {
     int			subidx;
     int			off = off_arg;
@@ -4572,7 +4573,6 @@ addstate(
 #ifdef ENABLE_LOG
     int			did_print = FALSE;
 #endif
-    static int		depth = 0;
 
 #ifdef FEAT_RELTIME
     if (nfa_did_time_out())
@@ -4581,11 +4581,8 @@ addstate(
 
     // This function is called recursively.  When the depth is too much we run
     // out of stack and crash, limit recursiveness here.
-    if (++depth >= 5000 || subs == NULL)
-    {
-	--depth;
+    if (depth >= 5000 || subs == NULL)
 	return NULL;
-    }
 
     if (off_arg <= -ADDSTATE_HERE_OFFSET)
     {
@@ -4697,7 +4694,6 @@ skip_add:
 			    abs(state->id), l->id, state->c, code,
 			    pim == NULL ? "NULL" : "yes", l->has_pim, found);
 #endif
-			--depth;
 			return subs;
 		    }
 		}
@@ -4719,7 +4715,6 @@ skip_add:
 		if ((long)(newsize >> 10) >= p_mmp)
 		{
 		    emsg(_(e_pattern_uses_more_memory_than_maxmempattern));
-		    --depth;
 		    return NULL;
 		}
 		if (subs != &temp_subs)
@@ -4738,7 +4733,6 @@ skip_add:
 		if (newt == NULL)
 		{
 		    // out of memory
-		    --depth;
 		    return NULL;
 		}
 		l->t = newt;
@@ -4778,14 +4772,14 @@ skip_add:
 
 	case NFA_SPLIT:
 	    // order matters here
-	    subs = addstate(l, state->out, subs, pim, off_arg);
-	    subs = addstate(l, state->out1, subs, pim, off_arg);
+	    subs = addstate(l, state->out, subs, pim, off_arg, depth + 1);
+	    subs = addstate(l, state->out1, subs, pim, off_arg, depth + 1);
 	    break;
 
 	case NFA_EMPTY:
 	case NFA_NOPEN:
 	case NFA_NCLOSE:
-	    subs = addstate(l, state->out, subs, pim, off_arg);
+	    subs = addstate(l, state->out, subs, pim, off_arg, depth + 1);
 	    break;
 
 	case NFA_MOPEN:
@@ -4885,7 +4879,7 @@ skip_add:
 		sub->list.line[subidx].start = rex.input + off;
 	    }
 
-	    subs = addstate(l, state->out, subs, pim, off_arg);
+	    subs = addstate(l, state->out, subs, pim, off_arg, depth + 1);
 	    if (subs == NULL)
 		break;
 	    // "subs" may have changed, need to set "sub" again
@@ -4913,7 +4907,7 @@ skip_add:
 			: subs->norm.list.line[0].end != NULL))
 	    {
 		// Do not overwrite the position set by \ze.
-		subs = addstate(l, state->out, subs, pim, off_arg);
+		subs = addstate(l, state->out, subs, pim, off_arg, depth + 1);
 		break;
 	    }
 	    // FALLTHROUGH
@@ -4987,7 +4981,7 @@ skip_add:
 		CLEAR_FIELD(save_multipos);
 	    }
 
-	    subs = addstate(l, state->out, subs, pim, off_arg);
+	    subs = addstate(l, state->out, subs, pim, off_arg, depth + 1);
 	    if (subs == NULL)
 		break;
 	    // "subs" may have changed, need to set "sub" again
@@ -5005,7 +4999,6 @@ skip_add:
 	    sub->in_use = save_in_use;
 	    break;
     }
-    --depth;
     return subs;
 }
 
@@ -5031,7 +5024,7 @@ addstate_here(
     // First add the state(s) at the end, so that we know how many there are.
     // Pass the listidx as offset (avoids adding another argument to
     // addstate()).
-    r = addstate(l, state, subs, pim, -listidx - ADDSTATE_HERE_OFFSET);
+    r = addstate(l, state, subs, pim, -listidx - ADDSTATE_HERE_OFFSET, 0);
     if (r == NULL)
 	return NULL;
 
@@ -5871,10 +5864,10 @@ nfa_regmatch(
 	else
 	    m->norm.list.line[0].start = rex.input;
 	m->norm.in_use = 1;
-	r = addstate(thislist, start->out, m, NULL, 0);
+	r = addstate(thislist, start->out, m, NULL, 0, 0);
     }
     else
-	r = addstate(thislist, start, m, NULL, 0);
+	r = addstate(thislist, start, m, NULL, 0, 0);
     if (r == NULL)
     {
 	nfa_match = NFA_TOO_EXPENSIVE;
@@ -7178,7 +7171,7 @@ nfa_regmatch(
 								pim, &listidx);
 		else
 		{
-		    r = addstate(nextlist, add_state, &t->subs, pim, add_off);
+		    r = addstate(nextlist, add_state, &t->subs, pim, add_off, 0);
 		    if (add_count > 0)
 			nextlist->t[nextlist->n - 1].count = add_count;
 		}
@@ -7266,7 +7259,7 @@ nfa_regmatch(
 		    }
 		    else
 			m->norm.list.line[0].start = rex.input + clen;
-		    if (addstate(nextlist, start->out, m, NULL, clen) == NULL)
+		    if (addstate(nextlist, start->out, m, NULL, clen, 0) == NULL)
 		    {
 			nfa_match = NFA_TOO_EXPENSIVE;
 			goto theend;
@@ -7294,7 +7287,7 @@ nfa_regmatch(
 		    }
 		}
 
-		r = addstate(nextlist, start, m, NULL, clen);
+		r = addstate(nextlist, start, m, NULL, clen, 0);
 
 		rex.line = save_line;
 		rex.input = save_input;
