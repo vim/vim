@@ -2242,7 +2242,7 @@ cosh({expr})						*cosh()*
 			:echo cosh(0.5)
 <			1.127626 >
 			:echo cosh(-0.5)
-<			-1.127626
+<			1.127626
 
 		Can also be used as a |method|: >
 			Compute()->cosh()
