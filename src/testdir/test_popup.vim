@@ -1161,11 +1161,11 @@ func Test_popup_complete_info_02()
     \   'mode': 'function',
     \   'pum_visible': 1,
     \   'items': [
-    \     {'word': 'Jan', 'menu': 'January', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''},
-    \     {'word': 'Feb', 'menu': 'February', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''},
-    \     {'word': 'Mar', 'menu': 'March', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''},
-    \     {'word': 'Apr', 'menu': 'April', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''},
-    \     {'word': 'May', 'menu': 'May', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''}
+    \     {'word': 'Jan', 'menu': 'January', 'kind_hlgroup': '', 'abbr_hlgroup': '', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''},
+    \     {'word': 'Feb', 'menu': 'February', 'kind_hlgroup': '', 'abbr_hlgroup': '', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''},
+    \     {'word': 'Mar', 'menu': 'March', 'kind_hlgroup': '', 'abbr_hlgroup': '', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''},
+    \     {'word': 'Apr', 'menu': 'April', 'kind_hlgroup': '', 'abbr_hlgroup': '', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''},
+    \     {'word': 'May', 'menu': 'May', 'kind_hlgroup': '', 'abbr_hlgroup': '', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''}
     \   ],
     \   'preinserted_text': '',
     \   'selected': 0,
@@ -1282,6 +1282,24 @@ func Test_pum_getpos()
 
   call assert_false( pumvisible() )
   call assert_equal( {}, pum_getpos() )
+  bw!
+  unlet g:pum_pos
+endfunc
+
+" The popup menu is also used on a terminal without colors (issue #20800)
+func Test_pum_without_colors()
+  CheckNotGui
+
+  new
+  let save_t_Co = &t_Co
+  set t_Co=0
+  inoremap <buffer><F5> <C-R>=GetPumPosition()<CR>
+  call setline(1, ['hello', 'help', ''])
+  call cursor(3, 1)
+  call feedkeys("ih\<C-N>\<F5>\<Esc>", 'tx')
+  call assert_equal(2, g:pum_pos.size)
+
+  let &t_Co = save_t_Co
   bw!
   unlet g:pum_pos
 endfunc
@@ -2688,9 +2706,52 @@ func Test_pumopt_opacity_pmenu_cleared()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_pum_opacity_lowcolor()
+  CheckScreendump
+
+  let lines =<< trim END
+  set pumopt=opacity:50
+  call setline(1, '')
+  for i in range(5)
+    call append(line('$'), 'under under under')
+  endfor
+  normal gg
+  inoremap <F5> <Cmd>call complete(col('.'),
+        \ ['item', 'another item', 'and a last one'])<CR>
+  END
+  call writefile(lines, 'XtestPumOpacityLowcolor', 'D')
+  let buf = RunVimInTerminal('-S XtestPumOpacityLowcolor', #{rows: 12, cols: 60, tcolors: 16})
+
+  call term_sendkeys(buf, "i\<F5>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pum_opacity_lowcolor', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_popup_sandbox()
   call assert_fails('sandbox call popup_create("hello", {})', 'E48:')
   call assert_fails('sandbox call popup_setoptions(1, {})', 'E48:')
+endfunc
+
+func Test_pum_display_with_zero_width_window()
+  " Force curwin to width 0 (like Test_window_minimal_size does for
+  " win_ensure_size itself), then start completion via a non-typed,
+  " stuffed key sequence so KeyTyped stays FALSE and the repair is
+  " skipped.  pum_display() must not divide by curwin->w_width in that
+  " state (would SIGFPE).
+  set winminwidth=0
+  vert new
+  call win_execute(win_getid(2), 'wincmd |')
+  call assert_equal(0, winwidth(0))
+
+  call setline(1, ['foo', 'foobar', 'foo'])
+  call feedkeys("A\<C-N>\<Esc>", 'x')
+  call assert_equal(0, winwidth(0))
+
+  bwipe!
+  bwipe!
+  set winminwidth&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

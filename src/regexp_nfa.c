@@ -5960,8 +5960,14 @@ nfa_regmatch(
 	for (listidx = 0; listidx < thislist->n; ++listidx)
 	{
 	    // If the list gets very long there probably is something wrong.
-	    // At least allow interrupting with CTRL-C.
-	    fast_breakcheck();
+	    // At least allow interrupting with CTRL-C.  Only check once in a
+	    // while, calling ui_breakcheck() for every state is too slow.
+	    static int	breakcheck_count = 0;  // using "static" makes it faster
+	    if (unlikely(++breakcheck_count >= 100000))
+	    {
+		ui_breakcheck();
+		breakcheck_count = 0;
+	    }
 	    if (got_int)
 		break;
 #ifdef FEAT_RELTIME
@@ -7269,7 +7275,32 @@ nfa_regmatch(
 	    }
 	    else
 	    {
-		if (addstate(nextlist, start, m, NULL, clen) == NULL)
+		char_u	    *save_line = rex.line;
+		char_u	    *save_input = rex.input;
+		linenr_T    save_lnum = rex.lnum;
+
+		// At the end of a line the match can only start on the next
+		// line, use that position instead of the line break.
+		if (REG_MULTI && clen == 0 && nfa_endp != NULL
+					 && rex.lnum < nfa_endp->se_u.pos.lnum)
+		{
+		    char_u  *next_line = reg_getline(rex.lnum + 1);
+
+		    if (next_line != NULL)
+		    {
+			rex.line = next_line;
+			rex.input = rex.line;
+			++rex.lnum;
+		    }
+		}
+
+		r = addstate(nextlist, start, m, NULL, clen);
+
+		rex.line = save_line;
+		rex.input = save_input;
+		rex.lnum = save_lnum;
+
+		if (r == NULL)
 		{
 		    nfa_match = NFA_TOO_EXPENSIVE;
 		    goto theend;

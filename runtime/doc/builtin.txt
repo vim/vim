@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Jul 19
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Aug 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -187,12 +187,12 @@ expand({expr} [, {nosuf} [, {list}]])
 expandcmd({string} [, {options}])
 				String	expand {string} like with `:edit`
 extend({expr1}, {expr2} [, {expr3}])
-				List/Dict
+				List/Dict/Blob
 					insert items of {expr2} into {expr1}
 extendnew({expr1}, {expr2} [, {expr3}])
-				List/Dict
-					like |extend()| but creates a new List
-					or Dictionary
+				List/Dict/Blob
+					like |extend()| but creates a new
+					List, Dictionary or Blob
 feedkeys({string} [, {mode}])	none	add key sequence to typeahead buffer
 filecopy({from}, {to})		Number	|TRUE| if copying file {from} to {to}
 					worked
@@ -213,11 +213,13 @@ floor({expr})			Float	round {expr} down
 fmod({expr1}, {expr2})		Float	remainder of {expr1} / {expr2}
 fnameescape({fname})		String	escape special characters in {fname}
 fnamemodify({fname}, {mods})	String	modify file name
-foldclosed({lnum})		Number	first line of fold at {lnum} if closed
-foldclosedend({lnum})		Number	last line of fold at {lnum} if closed
-foldlevel({lnum})		Number	fold level at {lnum}
+foldclosed({lnum} [, {winid}])	Number	first line of fold at {lnum} if closed
+foldclosedend({lnum} [, {winid}]))
+				Number	last line of fold at {lnum} if closed
+foldlevel({lnum} [, {winid}]))	Number	fold level at {lnum}
 foldtext()			String	line displayed for closed fold
-foldtextresult({lnum})		String	text for closed fold at {lnum}
+foldtextresult({lnum} [, {winid}]))
+				String	text for closed fold at {lnum}
 foreach({expr1}, {expr2})	List/Tuple/Dict/Blob/String
 					for each item in {expr1} call {expr2}
 foreground()			none	bring the Vim window to the foreground
@@ -390,7 +392,7 @@ lispindent({lnum})		Number	Lisp indent for line {lnum}
 list2blob({list})		Blob	turn {list} of numbers into a Blob
 list2str({list} [, {utf8}])	String	turn {list} of numbers into a String
 list2tuple({list})		Tuple	turn {list} of items into a tuple
-listener_add({callback} [, {buf} [, {unbuffered}]])
+listener_add({callback} [, {buf} [, {options}]])
 				Number	add a callback to listen to changes
 listener_flush([{buf}])		none	invoke listener callbacks
 listener_remove({id})		Number	remove a listener callback
@@ -633,8 +635,8 @@ simplify({filename})		String	simplify filename as much as possible
 sin({expr})			Float	sine of {expr}
 sinh({expr})			Float	hyperbolic sine of {expr}
 slice({expr}, {start} [, {end}])
-				String/List/Blob
-					slice of a String, List or Blob
+				String/List/Blob/Tuple
+					slice of a String, List, Blob or Tuple
 sort({list} [, {how} [, {dict}]])
 				List	sort {list}, compare with {how}
 sound_clear()			none	stop playing all sounds
@@ -2059,12 +2061,20 @@ complete_info([{what}])					*complete_info()*
 		Returns a |Dictionary| with information about Insert mode
 		completion.  See |ins-completion|.
 		The items are:
+		   auto		|TRUE| when Vim started this completion by
+				itself, which is what 'autocomplete' does,
+				and |FALSE| when a key asked for it, such as
+				|i_CTRL-X_CTRL-O|.  A |complete-functions|
+				function can read this to tell the two apart.
+				Returned only when asked for in {what}.
 		   completed	Return a dictionary containing the entries of
 				the currently selected index item.
 		   items	List of all completion candidates.  Each item
 				is a dictionary containing the entries "word",
-				"abbr", "menu", "kind", "info" and
-				"user_data".
+				"abbr", "menu", "kind", "info", "abbr_hlgroup",
+				"kind_hlgroup" and "user_data".  The highlight
+				group entries hold the name that the item was
+				added with, or an empty string.
 				See |complete-items|.
 		   matches	Same as "items", but only returns items that
 				are matching current query.  If both "matches"
@@ -2526,7 +2536,12 @@ diff_filler({lnum})					*diff_filler()*
 		display but don't exist in the buffer.
 		{lnum} is used like with |getline()|.  Thus "." is the current
 		line, "'m" mark m, etc.
-		Returns 0 if the current window is not in diff mode.
+
+		To get the filler lines after the last buffer line, use: >
+			echo diff_filler(line('$')+1)
+<
+		Returns 0 if the current window is not in diff mode or filler
+		lines have been disabled using 'diffopt'.
 
 		Can also be used as a |method|: >
 			GetLnum()->diff_filler()
@@ -3099,6 +3114,10 @@ expandcmd({string} [, {options}])			*expandcmd()*
 		like with |expand()|, and environment variables, anywhere in
 		{string}.  "~user" and "~/path" are only expanded at the
 		start.
+		The expansion is done in two steps: the special keywords are
+		evaluated first, then "~" and environment variables are
+		expanded in the result.  Thus `expand('%:~')` keeps the "~",
+		while `expandcmd('%:~')` returns the full path.
 
 		The following items are supported in the {options} Dict
 		argument:
@@ -3121,24 +3140,27 @@ expandcmd({string} [, {options}])			*expandcmd()*
 
 
 extend({expr1}, {expr2} [, {expr3}])			*extend()*
-		{expr1} and {expr2} must be both |Lists| or both
-		|Dictionaries|.
+		{expr1} and {expr2} must be both |Lists|, |Dictionaries| or
+		|Blobs|.
 
-		If they are |Lists|: Append {expr2} to {expr1}.
+		If they are |Lists| or |Blobs|: Append {expr2} to {expr1}.
 		If {expr3} is given insert the items of {expr2} before the
-		item with index {expr3} in {expr1}.  When {expr3} is zero
+		item with index/byte {expr3} in {expr1}.  When {expr3} is zero
 		insert before the first item.  When {expr3} is equal to
 		len({expr1}) then {expr2} is appended.
 		Examples: >
 			:echo sort(extend(mylist, [7, 5]))
 			:call extend(mylist, [2, 3], 1)
-<		When {expr1} is the same List as {expr2} then the number of
-		items copied is equal to the original length of the List.
+<		When {expr1} is the same List or Blob as {expr2} then the
+		number of items copied is equal to the original length of the
+		List or the Blob.
 		E.g., when {expr3} is 1 you get N new copies of the first item
 		(where N is the original length of the List).
-		Use |add()| to concatenate one item to a list.  To concatenate
-		two lists into a new list use the + operator: >
+		Use |add()| to concatenate one item to a list or a blob.
+		To concatenate two lists or blobs into a new one use the +
+		operator: >
 			:let newlist = [1, 2, 3] + [4, 5]
+			:let newblob = 0z1122 + 0z3344
 <
 		If they are |Dictionaries|:
 		Add all entries from {expr2} to {expr1}.
@@ -3151,7 +3173,7 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 
 		{expr1} is changed when {expr2} is not empty.  If necessary
 		make a copy of {expr1} first or use |extendnew()| to return a
-		new List/Dictionary.
+		new List/Dictionary/Blob.
 		{expr2} remains unchanged.
 		When {expr1} is locked and {expr2} is not empty the operation
 		fails.
@@ -3160,17 +3182,17 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 		Can also be used as a |method|: >
 			mylist->extend(otherlist)
 <
-		Return type: list<{type}> or dict<{type}> depending on {expr1}
-		and {expr2}, in case of error: |Number|
+		Return type: list<{type}>, dict<{type}> or blob depending on
+		{expr1} and {expr2}, in case of error: |Number|
 
 
 extendnew({expr1}, {expr2} [, {expr3}])			*extendnew()*
 		Like |extend()| but instead of adding items to {expr1} a new
-		List or Dictionary is created and returned.  {expr1} remains
-		unchanged.
+		List, Dictionary or Blob is created and returned.  {expr1}
+		remains unchanged.
 
-		Return type: list<{type}> or dict<{type}> depending on {expr1}
-		and {expr2}, in case of error: |Number|
+		Return type: list<{type}>, dict<{type}> or blob depending on
+		{expr1} and {expr2}, in case of error: |Number|
 
 
 feedkeys({string} [, {mode}])				*feedkeys()*
@@ -3534,33 +3556,43 @@ fnamemodify({fname}, {mods})				*fnamemodify()*
 		Return type: |String|
 
 
-foldclosed({lnum})					*foldclosed()*
+foldclosed({lnum} [, {winid}])				*foldclosed()*
 		The result is a Number.  If the line {lnum} is in a closed
 		fold, the result is the number of the first line in that fold.
 		If the line {lnum} is not in a closed fold, -1 is returned.
 		{lnum} is used like with |getline()|.  Thus "." is the current
 		line, "'m" mark m, etc.
 
+		With the optional {winid} argument the values are obtained for
+		that window instead of the current window.  If {winid} is
+		invalid, return -2.
+
 		Can also be used as a |method|: >
 			GetLnum()->foldclosed()
+			GetLnum()->foldclosed(winid)
 <
 		Return type: |Number|
 
 
-foldclosedend({lnum})					*foldclosedend()*
+foldclosedend({lnum} [, {winid}])			*foldclosedend()*
 		The result is a Number.  If the line {lnum} is in a closed
 		fold, the result is the number of the last line in that fold.
 		If the line {lnum} is not in a closed fold, -1 is returned.
 		{lnum} is used like with |getline()|.  Thus "." is the current
 		line, "'m" mark m, etc.
 
+		With the optional {winid} argument the values are obtained for
+		that window instead of the current window.  If {winid} is
+		invalid, return -2.
+
 		Can also be used as a |method|: >
 			GetLnum()->foldclosedend()
+			GetLnum()->foldclosedend(winid)
 <
 		Return type: |Number|
 
 
-foldlevel({lnum})					*foldlevel()*
+foldlevel({lnum} [, {winid}])				*foldlevel()*
 		The result is a Number, which is the foldlevel of line {lnum}
 		in the current buffer.  For nested folds the deepest level is
 		returned.  If there is no fold at line {lnum}, zero is
@@ -3572,8 +3604,13 @@ foldlevel({lnum})					*foldlevel()*
 		{lnum} is used like with |getline()|.  Thus "." is the current
 		line, "'m" mark m, etc.
 
+		With the optional {winid} argument the values are obtained for
+		that window instead of the current window.  If {winid} is
+		invalid, return -2.
+
 		Can also be used as a |method|: >
 			GetLnum()->foldlevel()
+			GetLnum()->foldlevel(winid)
 <
 		Return type: |Number|
 
@@ -3599,7 +3636,7 @@ foldtext()						*foldtext()*
 		{not available when compiled without the |+folding| feature}
 
 
-foldtextresult({lnum})					*foldtextresult()*
+foldtextresult({lnum} [, {winid}])			*foldtextresult()*
 		Returns the text that is displayed for the closed fold at line
 		{lnum}.  Evaluates 'foldtext' in the appropriate context.
 		When there is no closed fold at {lnum} an empty string is
@@ -3609,9 +3646,13 @@ foldtextresult({lnum})					*foldtextresult()*
 		Useful when exporting folded text, e.g., to HTML.
 		{not available when compiled without the |+folding| feature}
 
+		With the optional {winid} argument the values are obtained for
+		that window instead of the current window.  If {winid} is
+		invalid, an empty string is returned.
 
 		Can also be used as a |method|: >
 			GetLnum()->foldtextresult()
+			GetLnum()->foldtextresult(winid)
 <
 		Return type: |String|
 
@@ -6802,7 +6843,7 @@ list2tuple({list})					*list2tuple()*
 		Return type: tuple<{type}> (depending on the given |List|)
 
 
-listener_add({callback} [, {buf} [, {unbuffered}]])	*listener_add()*
+listener_add({callback} [, {buf} [, {options}]])	*listener_add()*
 		Add a callback function that will be invoked when changes have
 		been made to buffer {buf}.
 		{buf} refers to a buffer name or number.  For the accepted
@@ -6839,6 +6880,8 @@ listener_add({callback} [, {buf} [, {unbuffered}]])	*listener_add()*
 				the change; one if unknown or the whole line
 				was affected; this is a byte index, first
 				character has a value of one.
+		    text	only present when the "text" option is set
+				for at least one listener, see below
 		When lines are inserted (not when a line is split, e.g. by
 		typing CR in Insert mode) the values are:
 		    lnum	line above which the new line is added
@@ -6857,7 +6900,15 @@ listener_add({callback} [, {buf} [, {unbuffered}]])	*listener_add()*
 		    added	0
 		    col		first column with a change or 1
 
-		When {unbuffered} is |FALSE| or not provided the {callback} is
+		{options} is a Dictionary with these optional entries:
+		    unbuffered	invoke the {callback} for every single change
+				instead of for a batch of changes
+		    text	include the resulting text as a |List| of
+				Strings in each item of "changes"
+		For backwards compatibility {options} may also be a |Boolean|,
+		which is then used for the "unbuffered" entry.
+
+		When "unbuffered" is |FALSE| or not provided the {callback} is
 		invoked:
 
 		1. Just before the screen is updated.
@@ -6865,23 +6916,58 @@ listener_add({callback} [, {buf} [, {unbuffered}]])	*listener_add()*
 		3. When a change is being made that changes the line count in
 		   a way that causes a line number in the list of changes to
 		   become invalid.
+		4. When "text" is set and a lot of text has been recorded.
 
 		The entries are in the order the changes were made, thus the
 		most recent change is at the end.
 
+		Reasons three and four make the {callback} run while another
+		command is executing, carrying the changes made before it.  Do
+		not assume that what a {callback} receives was caused by the
+		command that is running.
+
 		Because of the third reason for triggering a callback listed
 		above, the line numbers passed to the callback are not
 		guaranteed to be valid. In particular, the end value can be
-		greater than line('$') + 1. If this is a problem then make
-		{unbuffered} |TRUE|.
+		greater than line('$') + 1. If this is a problem then set
+		"unbuffered".
 
-		When {unbuffered} is |TRUE| the {callback} is invoked for every
+		When "unbuffered" is |TRUE| the {callback} is invoked for every
 		single change.  The changes list only holds a single
 		dictionary and the "start", "end" and "added" values in the
 		dictionary are the same as the corresponding callback
 		arguments.  The line numbers are valid when the callback is
 		invoked, but later changes may make them invalid, thus keeping
 		a copy for later might not work.
+
+							*listener-text*
+		When "text" is set each item in "changes" gets a "text" entry,
+		a List with the lines that occupy the changed region right
+		after that change was made: the lines "lnum" up to but not
+		including "end" plus "added".  This List is empty when the
+		change only deleted lines.  Together with "lnum", "end" and
+		"added" the item then fully describes the change: replace the
+		lines "lnum" up to but not including "end" with "text".
+
+		The text is copied at the moment the change is recorded, so it
+		is not affected by later changes.  Without it a buffered
+		{callback} cannot reliably obtain the text of a change: two
+		changes to the same line do not change the line count and are
+		reported together, and by then |getbufline()| can only return
+		the result of the second one.  Setting "unbuffered" avoids
+		that as well, but then the {callback} is invoked for every
+		single change, which is expensive for a command that changes
+		many lines.
+
+		Setting "text" costs a copy of the changed lines for every
+		change.  To keep the memory used by a long sequence of changes
+		bounded, the {callback} is also invoked when a lot of text has
+		been recorded.
+
+		The recorded changes are kept per buffer and shared by all
+		listeners for that buffer.  Therefore, when at least one
+		listener for the buffer sets "text", every {callback} for that
+		buffer gets the "text" entry.
 
 		The {callback} is invoked with the text locked, see
 		|textlock|.  If you do need to make changes to the buffer, use
@@ -7023,7 +7109,7 @@ map({expr1}, {expr2})					*map()*
 		Note that {expr2} is the result of an expression and is then
 		used as an expression again.  Often it is good to use a
 		|literal-string| to avoid having to double backslashes.  You
-		still have to double ' quotes
+		still have to double single (') quotes, though.
 
 		If {expr2} is a |Funcref| it is called with two arguments:
 			1. The key or the index of the current item.
@@ -8741,7 +8827,7 @@ readdir({directory} [, {expr} [, {dict}]])		*readdir()*
 		Each time {expr} is evaluated |v:val| is set to the entry name.
 		When {expr} is a function the name is passed as the argument.
 		For example, to get a list of files ending in ".txt": >
-		  readdir(dirname, {n -> n =~ '.txt$'})
+		  readdir(dirname, {n -> n =~ '\.txt$'})
 <		To skip hidden and backup files: >
 		  readdir(dirname, {n -> n !~ '^\.\|\~$'})
 <								*E857*
@@ -9872,7 +9958,11 @@ server2client({clientid}, {string})			*server2client()*
 serverlist([{dict}])					*serverlist()*
 		Return a list of available server names, one per line.
 		When there are no servers or the information is not available
-		an empty string is returned.
+		an empty string is returned, or an empty |List| when the
+		"list" option below is used.
+
+		When the server cannot be reached, no error will be given and
+		the result is an empty string or |List|.
 		{only available when compiled with the |+clientserver| feature}
 
 		If {dict} is given, then it is a |Dictionary| supporting the
@@ -9927,9 +10017,13 @@ setbufline({buf}, {lnum}, {text})			*setbufline()*
 setbufvar({buf}, {varname}, {val})			*setbufvar()*
 		Set option or local variable {varname} in buffer {buf} to
 		{val}.
-		This also works for a global or local window option, but it
-		doesn't work for a global or local window variable.
-		For a local window option the global value is unchanged.
+		This also works for a global option or a window-local option,
+		but it doesn't work for a global or local window variable.  A
+		window-local option is set in a window of the current tab page
+		that displays {buf}, and the global value is unchanged.  When
+		no window in the current tab page displays {buf} the option is
+		not set and no error is given; use |setwinvar()| or
+		|win_execute()| for that.
 		For the use of {buf}, see |bufname()| above.
 		The {varname} argument is a string.
 		Note that the variable name without "b:" must be used.
@@ -10677,7 +10771,7 @@ slice({expr}, {start} [, {end}])			*slice()*
 		Can also be used as a |method|: >
 			GetList()->slice(offset)
 <
-		Return type: list<{type}> or tuple<{type}>
+		Return type: |String|, list<{type}>, blob or tuple<{type}>
 
 
 sort({list} [, {how} [, {dict}]])			*sort()* *E702*

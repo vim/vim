@@ -2,8 +2,7 @@
 " Language:		Vim help file
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:		2025 Nov 13
-" 2026 Apr 09 by Vim project: improve pattern for translated syntaxt.txt #19942
+" Last Change:		2026 Aug 24
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -35,7 +34,7 @@ for [s:lang, s:syntax] in g:help_example_languages->items()
   unlet! b:current_syntax
 
   if s:lang == "vim9"
-    let b:vimsyn_force_vim9 = v:true
+    let b:vimsyn_force_vim9script = v:true
   endif
 
   " silent! to prevent E403
@@ -43,7 +42,7 @@ for [s:lang, s:syntax] in g:help_example_languages->items()
         \ $'syntax/{s:syntax}.vim'
 
   if s:lang == "vim9"
-    unlet b:vimsyn_force_vim9
+    unlet b:vimsyn_force_vim9script
   endif
 
   execute $'syn region helpExampleHighlight_{s:lang} matchgroup=helpIgnore'
@@ -57,9 +56,9 @@ unlet! s:lang s:syntax
 if has_key(g:help_example_languages, "vim9")
   " for example at :help vim9-mix
   syn region vim9LegacyHeader_HelpExample
-	\ start=+" legacy Vim script comments may go here+
+	\ start=+" _legacy Vim script_ comments are placed here+
 	\ end="^\ze\s*vim9s\%[cript]\>"
-	\ contains=@vimLegacyTop,vimComment,vimLineComment
+	\ contains=@vimLegacyTop,vimComment,vimLineComment,vimLineStart
   syn cluster helpExampleHighlight_vim9 add=vim9LegacyHeader_HelpExample
 endif
 
@@ -178,6 +177,7 @@ syn match helpString		"\t[* ]String\t\+[a-z].*"
 syn match helpCharacter		"\t[* ]Character\t\+[a-z].*"
 syn match helpNumber		"\t[* ]Number\t\+[a-z].*"
 syn match helpBoolean		"\t[* ]Boolean\t\+[a-z].*"
+syn match helpRegexp		"\t[* ]Regexp\t\+[a-z].*"
 syn match helpFloat		"\t[* ]Float\t\+[a-z].*"
 syn match helpIdentifier	"\t[* ]Identifier\t\+[a-z].*"
 syn match helpFunction		"\t[* ]Function\t\+[a-z].*"
@@ -272,6 +272,7 @@ hi def link helpString		String
 hi def link helpCharacter	Character
 hi def link helpNumber		Number
 hi def link helpBoolean		Boolean
+hi def link helpRegexp		Regexp
 hi def link helpFloat		Float
 hi def link helpIdentifier	Identifier
 hi def link helpFunction	Function

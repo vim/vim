@@ -55,6 +55,8 @@ autocmd foogroup BufRead *.txt {
   echo "Bar"
 }
 
+autocmd BufRead *.txt {| echo "Foo" |}
+
 
 " Multiline {cmd} arg
 

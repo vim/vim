@@ -493,7 +493,7 @@ endfunc
 
 func Test_highlight_eol_on_diff()
   call setline(1, ['abcd', ''])
-  call matchadd('Search', '\n')
+  call matchadd('ErrorMsg', '\n')
   let attrs0 = ScreenAttrs(1, 10)[0]
 
   diffthis
@@ -504,7 +504,7 @@ func Test_highlight_eol_on_diff()
   " '  abcd    '
   "  ^^           sign
   "    ^^^^ ^^^   'DiffAdd' highlight
-  "        ^      'Search' highlight
+  "        ^      'ErrorMsg' highlight
   let attrs = ScreenAttrs(1, 10)[0]
   call assert_equal(repeat([attrs[0]], 2), attrs[0:1])
   call assert_equal(repeat([attrs[2]], 4), attrs[2:5])
@@ -618,6 +618,30 @@ func Test_cursorcolumn_insert_on_tab()
   call term_sendkeys(buf, 'i')
   call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_cursorcolumn_insert_on_tab_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" The column highlighted with 'cursorcolumn' must be the column of the cursor,
+" also after a command that moved the cursor into virtual space and back.
+func Test_cursorcolumn_virtualedit()
+  CheckScreendump
+
+  let lines =<< trim END
+    set virtualedit=all
+    set cursorcolumn
+    call setline(1, ['', '', ''])
+    call cursor(3, 1)
+  END
+  call writefile(lines, 'Xcuc_virtualedit', 'D')
+
+  let buf = RunVimInTerminal('-S Xcuc_virtualedit', #{rows: 8})
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_cursorcolumn_virtualedit_1', {})
+
+  call term_sendkeys(buf, "\<Del>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_cursorcolumn_virtualedit_1', {})
 
   call StopVimInTerminal(buf)
 endfunc

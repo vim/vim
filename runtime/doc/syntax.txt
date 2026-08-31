@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.2.  Last change: 2026 Jun 21
+*syntax.txt*	For Vim version 9.2.  Last change: 2026 Aug 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -230,6 +230,7 @@ you can see the actual color, except for "Ignore"):
 	 Character	a character constant: 'c', '\n'
 	 Number		a number constant: 234, 0xff
 	 Boolean	a boolean constant: TRUE, false
+	 Regexp		a regular expression constant: /ab*c/
 	 Float		a floating point constant: 2.3e10
 
 	*Identifier	any variable name
@@ -1407,18 +1408,20 @@ are using the "b:docbk_type" variable should be set.  Vim does this for you
 automatically if it can recognize the type.  When Vim can't guess it the type
 defaults to XML.
 You can set the type manually: >
-	:let docbk_type = "sgml"
+	:let b:docbk_type = "sgml"
 or: >
-	:let docbk_type = "xml"
+	:let b:docbk_type = "xml"
 You need to do this before loading the syntax file, which is complicated.
 Simpler is setting the filetype to "docbkxml" or "docbksgml": >
 	:set filetype=docbksgml
 or: >
 	:set filetype=docbkxml
 
-You can specify the DocBook version: >
-	:let docbk_ver = 3
-When not set 4 is used.
+You can specify the DocBook version for the current buffer: >
+	:let b:docbk_ver = 3
+When "b:docbk_ver" is not set, "g:docbk_ver" is used as a global fallback: >
+	:let g:docbk_ver = 3
+When neither variable is set, version 4 is used.
 
 
 DOSBATCH				*dosbatch.vim* *ft-dosbatch-syntax*
@@ -3705,12 +3708,15 @@ reduce this, the "sh_maxlines" internal variable can be set.  Example: >
 The default is to use the twice sh_minlines.  Set it to a smaller number to
 speed up displaying.  The disadvantage is that highlight errors may appear.
 
-syntax/sh.vim tries to flag certain problems as errors; usually things like
-unmatched "]", "done", "fi", etc.  If you find the error handling problematic
-for your purposes, you may suppress such error highlighting by putting
-the following line in your .vimrc: >
+Unmatched "]", "done", "fi", etc., are highlighted as errors by default.  If
+you find this error handling problematic, you may suppress it with: >
 
-	let g:sh_no_error= 1
+	let g:sh_no_error = 1
+<
+As a refinement, you may suppress particular classes of errors by looking up
+their syntax rule names and listing them with: >
+
+	let g:sh_no_error_rules = ["shCurlyError", "shParenError"]
 <
 
 						*sh-embed*  *sh-awk*
@@ -4156,6 +4162,7 @@ Some folding is now supported with when 'foldmethod' is set to "syntax": >
    g:vimsyn_folding =~# 'P' : fold Python   heredocs
    g:vimsyn_folding =~# 'r' : fold Ruby     heredocs
    g:vimsyn_folding =~# 't' : fold Tcl      heredocs
+   g:vimsyn_folding =~# 'T' : fold :append, :change and :insert
 <
 
 By default, g:vimsyn_folding is unset.  Concatenate the indicated characters
@@ -5870,6 +5877,8 @@ font={font-name}					*highlight-font*
 	When setting the font for the "Normal" group, this becomes the default
 	font (until the 'guifont' option is changed; the last one set is
 	used).
+	In the GTK GUI, a font can only be set for the "Normal" group; for
+	other groups it is accepted but has no effect.
 	The following only works with Motif, not with other GUIs:
 	When setting the font for the "Menu" group, the menus will be changed.
 	When setting the font for the "Tooltip" group, the tooltips will be
@@ -5880,7 +5889,7 @@ font={font-name}					*highlight-font*
 	To use a font name with an embedded space or other special character,
 	put it in single quotes.  The single quote cannot be used then.
 	Example: >
-	    :hi comment font='Monospace 10'
+	    :hi Normal font='Monospace 10'
 
 guifg={color-name}					*highlight-guifg*
 guibg={color-name}					*highlight-guibg*

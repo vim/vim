@@ -1431,7 +1431,9 @@ item_end:
 	res->v_type = VAR_SPECIAL;
 	res->vval.v_number = VVAL_NONE;
     }
-    semsg(_(e_json_decode_error_at_str), p);
+    // "p" may dangle into a buffer freed by a js_fill() refill in
+    // json_decode_string(); report the position from the current reader.
+    semsg(_(e_json_decode_error_at_str), reader->js_buf + reader->js_used);
 
 theend:
     for (i = 0; i < stack.ga_len; i++)

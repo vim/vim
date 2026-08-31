@@ -3309,7 +3309,7 @@ update_search_stat(
 	stat->cnt = cnt;
 	stat->exact_match = exact_match;
 	stat->incomplete = incomplete;
-	stat->last_maxcount = p_msc;
+	stat->last_maxcount = last_maxcount;
 	return;
     }
     last_maxcount = maxcount;

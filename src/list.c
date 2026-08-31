@@ -1528,6 +1528,7 @@ list_join_inner(
     join_T	*p;
     long	sumlen = 0;
     int		first = TRUE;
+    int		prev_lock;
     char_u	*tofree;
     char_u	numbuf[NUMBUFLEN];
     listitem_T	*item;
@@ -1536,12 +1537,20 @@ list_join_inner(
 
     // Stringify each item in the list.
     CHECK_LIST_MATERIALIZE(l);
+    // Lock the list, the string() method of an object item could remove the
+    // item the loop is standing on.
+    prev_lock = l->lv_lock;
+    if (l->lv_lock == 0)
+	l->lv_lock = VAR_LOCKED;
     for (item = l->lv_first; item != NULL && !got_int; item = item->li_next)
     {
 	s.string = echo_string_core(&item->li_tv, &tofree, numbuf, copyID,
 				      echo_style, restore_copyID, !echo_style);
 	if (s.string == NULL)
+	{
+	    l->lv_lock = prev_lock;
 	    return FAIL;
+	}
 
 	s.length = STRLEN(s.string);
 	sumlen += (long)s.length;
@@ -1565,6 +1574,7 @@ list_join_inner(
 	if (did_echo_string_emsg)  // recursion error, bail out
 	    break;
     }
+    l->lv_lock = prev_lock;
 
     // Allocate result buffer with its total size, avoid re-allocation and
     // multiple copy operations.  Add 2 for a tailing ']' and NUL.
@@ -2066,6 +2076,13 @@ typedef struct
 {
     listitem_T	*item;
     int		idx;
+    // Sort key precomputed once per item for the numeric compare modes.
+    // Only valid when sortinfo->item_compare_keys_ready is set (the sort()
+    // path); uniq() passes a bare listitem_T pointer and must not read this.
+    union {
+	varnumber_T	inum;	// for "N"
+	double		fnum;	// for "n" and "f"
+    } key;
 } sortItem_T;
 
 // struct storing information about current sort
@@ -2081,6 +2098,7 @@ typedef struct
     dict_T	*item_compare_selfdict;
     int		item_compare_func_err;
     int		item_compare_keep_zero;
+    int		item_compare_keys_ready;  // ptrs[].key is precomputed
 } sortinfo_T;
 static sortinfo_T	*sortinfo = NULL;
 #define ITEM_COMPARE_FAIL 999
@@ -2106,18 +2124,33 @@ item_compare(const void *s1, const void *s2)
 
     if (sortinfo->item_compare_numbers)
     {
-	varnumber_T	v1 = tv_to_number(tv1);
-	varnumber_T	v2 = tv_to_number(tv2);
+	varnumber_T	v1 = sortinfo->item_compare_keys_ready
+					? si1->key.inum : tv_to_number(tv1);
+	varnumber_T	v2 = sortinfo->item_compare_keys_ready
+					? si2->key.inum : tv_to_number(tv2);
 
 	return v1 == v2 ? 0 : v1 > v2 ? 1 : -1;
     }
 
     if (sortinfo->item_compare_float)
     {
-	float_T	v1 = tv_get_float(tv1);
-	float_T	v2 = tv_get_float(tv2);
+	float_T	v1 = sortinfo->item_compare_keys_ready
+					? si1->key.fnum : tv_get_float(tv1);
+	float_T	v2 = sortinfo->item_compare_keys_ready
+					? si2->key.fnum : tv_get_float(tv2);
 
 	return v1 == v2 ? 0 : v1 > v2 ? 1 : -1;
+    }
+
+    if (sortinfo->item_compare_numeric && sortinfo->item_compare_keys_ready)
+    {
+	double	n1 = si1->key.fnum;
+	double	n2 = si2->key.fnum;
+
+	res = n1 == n2 ? 0 : n1 > n2 ? 1 : -1;
+	if (res == 0 && !sortinfo->item_compare_keep_zero)
+	    res = si1->idx > si2->idx ? 1 : -1;
+	return res;
     }
 
     // tv2string() puts quotes around a string and allocates memory.  Don't do
@@ -2230,6 +2263,49 @@ item_compare2(const void *s1, const void *s2)
 }
 
 /*
+ * Precompute the numeric sort key of each item.  Only for the builtin numeric
+ * compare modes; each key is computed exactly as item_compare() would have.
+ */
+    static void
+sort_compute_keys(sortItem_T *ptrs, long len, sortinfo_T *info)
+{
+    long	i;
+
+    if (info->item_compare_numbers)
+    {
+	for (i = 0; i < len; ++i)
+	    ptrs[i].key.inum = tv_to_number(&ptrs[i].item->li_tv);
+    }
+    else if (info->item_compare_float)
+    {
+	for (i = 0; i < len; ++i)
+	    ptrs[i].key.fnum = tv_get_float(&ptrs[i].item->li_tv);
+    }
+    else // info->item_compare_numeric
+    {
+	for (i = 0; i < len; ++i)
+	{
+	    typval_T	*tv = &ptrs[i].item->li_tv;
+
+	    // A string is compared as a single quote in numeric mode, which
+	    // strtod() reads as 0.
+	    if (tv->v_type == VAR_STRING)
+		ptrs[i].key.fnum = 0.0;
+	    else
+	    {
+		char_u	numbuf[NUMBUFLEN];
+		char_u	*tofree = NULL;
+		char_u	*p = tv2string(tv, &tofree, numbuf, 0);
+
+		ptrs[i].key.fnum = p == NULL ? 0.0 : strtod((char *)p, NULL);
+		vim_free(tofree);
+	    }
+	}
+    }
+    info->item_compare_keys_ready = TRUE;
+}
+
+/*
  * sort() List "l"
  */
     static void
@@ -2257,6 +2333,12 @@ do_sort(list_T *l, sortinfo_T *info)
 
     info->item_compare_func_err = FALSE;
     info->item_compare_keep_zero = FALSE;
+    info->item_compare_keys_ready = FALSE;
+
+    if (info->item_compare_func == NULL && info->item_compare_partial == NULL
+	    && (info->item_compare_numbers || info->item_compare_float
+						|| info->item_compare_numeric))
+	sort_compute_keys(ptrs, len, info);
     // test the compare function
     if ((info->item_compare_func != NULL
 		|| info->item_compare_partial != NULL)
@@ -2358,6 +2440,7 @@ parse_sort_uniq_args(typval_T *argvars, sortinfo_T *info)
     info->item_compare_func = NULL;
     info->item_compare_partial = NULL;
     info->item_compare_selfdict = NULL;
+    info->item_compare_keys_ready = FALSE;
 
     if (argvars[1].v_type == VAR_UNKNOWN)
 	return OK;
@@ -3093,13 +3176,16 @@ extend(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg, int is_new)
 	    type = argvars[0].vval.v_dict->dv_type;
 	dict_extend_func(argvars, type, func_name, arg_errmsg, is_new, rettv);
     }
+    else if (argvars[0].v_type == VAR_BLOB && argvars[1].v_type == VAR_BLOB)
+	blob_extend_func(argvars, arg_errmsg, is_new, rettv);
     else
-	semsg(_(e_argument_of_str_must_be_list_or_dictionary), func_name);
+	semsg(_(e_argument_of_str_must_be_list_dictionary_or_blob), func_name);
 }
 
 /*
  * "extend(list, list [, idx])" function
  * "extend(dict, dict [, action])" function
+ * "extend(blob, blob [, idx])" function
  */
     void
 f_extend(typval_T *argvars, typval_T *rettv)
@@ -3112,6 +3198,7 @@ f_extend(typval_T *argvars, typval_T *rettv)
 /*
  * "extendnew(list, list [, idx])" function
  * "extendnew(dict, dict [, action])" function
+ * "extendnew(blob, blob [, idx])" function
  */
     void
 f_extendnew(typval_T *argvars, typval_T *rettv)
@@ -3389,7 +3476,7 @@ f_reduce(typval_T *argvars, typval_T *rettv)
     else if (argvars[1].v_type == VAR_PARTIAL)
 	func_name = partial_name(argvars[1].vval.v_partial);
     else
-	func_name = tv_get_string(&argvars[1]);
+	func_name = tv_get_string_strict(&argvars[1]);
     if (func_name == NULL || *func_name == NUL)
     {
 	emsg(_(e_missing_function_argument));

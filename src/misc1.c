@@ -439,7 +439,7 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
 
 /*
  * Like plines_win(), but only reports the number of physical screen lines
- * used from the start of the line to the given column number.
+ * used from the start of the line to the given byte column.
  */
     int
 plines_win_col(win_T *wp, linenr_T lnum, long column)
@@ -465,7 +465,8 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 
     init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
-    while (*cts.cts_ptr != NUL && --column >= 0)
+    // "column" is a byte index, advance the pointer until it is reached.
+    while (*cts.cts_ptr != NUL && cts.cts_ptr < line + column)
     {
 	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL, NULL);
 	MB_PTR_ADV(cts.cts_ptr);
@@ -2294,6 +2295,11 @@ prepare_to_exit(void)
     {
 	windgoto((int)Rows - 1, cmdline_col_off);
 
+	// When "full_screen" was reset, e.g. by deathtrap(), settmode() below
+	// returns without switching the mouse off, so do it here.
+	if (!full_screen)
+	    mch_setmouse(FALSE);
+
 	/*
 	 * Switch terminal mode back now, so messages end up on the "normal"
 	 * screen (if there are two screens).
@@ -2429,8 +2435,9 @@ get_cmd_output(
     if (check_restricted() || check_secure())
 	return NULL;
 
-    // get a name for the temp file
-    if ((tempname = vim_tempname('o', FALSE)) == NULL)
+    // Keep the file reserved until the shell opens it.  On MS-Windows,
+    // deleting it here would let another Vim process reuse the same name.
+    if ((tempname = vim_tempname('o', TRUE)) == NULL)
     {
 	emsg(_(e_cant_get_temp_file_name));
 	return NULL;
@@ -2477,7 +2484,6 @@ get_cmd_output(
     if (buffer != NULL)
 	i = (int)fread((char *)buffer, (size_t)1, (size_t)len, fd);
     fclose(fd);
-    mch_remove(tempname);
     if (buffer == NULL)
 	goto done;
 # ifdef VMS
@@ -2501,6 +2507,7 @@ get_cmd_output(
 	*ret_len = len;
 
 done:
+    mch_remove(tempname);
     vim_free(tempname);
     return buffer;
 }
@@ -2954,4 +2961,3 @@ trim_to_int(vimlong_T x)
 {
     return x > INT_MAX ? INT_MAX : x < INT_MIN ? INT_MIN : x;
 }
-

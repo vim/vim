@@ -96,6 +96,11 @@ static char *(features[]) =
 #else
 	"-acl",
 #endif
+#ifdef FEAT_ARABIC
+	"+arabic",
+#else
+	"-arabic",
+#endif
 #ifdef AMIGA		// only for Amiga systems
 # ifdef FEAT_ARP
 	"+ARP",
@@ -103,17 +108,12 @@ static char *(features[]) =
 	"-ARP",
 # endif
 #endif
-#ifdef FEAT_ARABIC
-	"+arabic",
+#ifdef FEAT_AUTOCHDIR
+	"+autochdir",
 #else
-	"-arabic",
+	"-autochdir",
 #endif
 	"+autocmd",
-#ifdef FEAT_AUTOCHDIR
-       "+autochdir",
-#else
-       "-autochdir",
-#endif
 #ifdef FEAT_AUTOSERVERNAME
 	"+autoservername",
 #else
@@ -275,6 +275,36 @@ static char *(features[]) =
 #else
 	"-iconv",
 #endif
+#ifdef FEAT_IMAGE
+	"+image",
+#else
+	"-image",
+#endif
+#ifdef FEAT_IMAGE_CAIRO
+	"+image_cairo",
+#else
+	"-image_cairo",
+#endif
+#ifdef FEAT_IMAGE_GDI
+	"+image_gdi",
+#else
+	"-image_gdi",
+#endif
+#ifdef FEAT_IMAGE_GDK
+	"+image_gdk",
+#else
+	"-image_gdk",
+#endif
+#ifdef FEAT_IMAGE_KITTY
+	"+image_kitty",
+#else
+	"-image_kitty",
+#endif
+#ifdef FEAT_IMAGE_SIXEL
+	"+image_sixel",
+#else
+	"-image_sixel",
+#endif
 	"+insert_expand",
 #ifdef FEAT_IPV6
 	"+ipv6",
@@ -336,12 +366,6 @@ static char *(features[]) =
 #endif
 	"+modify_fname",
 	"+mouse",
-#ifdef FEAT_MOUSESHAPE
-	"+mouseshape",
-#else
-	"-mouseshape",
-#endif
-
 #if defined(UNIX) || defined(VMS)
 # ifdef FEAT_MOUSE_DEC
 	"+mouse_dec",
@@ -391,6 +415,11 @@ static char *(features[]) =
 # endif
 	"+mouse_xterm",
 #endif
+#ifdef FEAT_MOUSESHAPE
+	"+mouseshape",
+#else
+	"-mouseshape",
+#endif
 
 #ifdef FEAT_MBYTE_IME
 # ifdef DYNAMIC_IME
@@ -432,6 +461,11 @@ static char *(features[]) =
 	"+packages",
 #else
 	"-packages",
+#endif
+#ifdef FEAT_PRINT_PANGO
+	"+pango",
+#else
+	"-pango",
 #endif
 	"+path_extra",
 #ifdef FEAT_PERL
@@ -535,36 +569,6 @@ static char *(features[]) =
 #else
 	"-sodium",
 #endif
-#ifdef FEAT_IMAGE
-	"+image",
-#else
-	"-image",
-#endif
-#ifdef FEAT_IMAGE_SIXEL
-	"+image_sixel",
-#else
-	"-image_sixel",
-#endif
-#ifdef FEAT_IMAGE_KITTY
-	"+image_kitty",
-#else
-	"-image_kitty",
-#endif
-#ifdef FEAT_IMAGE_GDI
-	"+image_gdi",
-#else
-	"-image_gdi",
-#endif
-#ifdef FEAT_IMAGE_CAIRO
-	"+image_cairo",
-#else
-	"-image_cairo",
-#endif
-#ifdef FEAT_IMAGE_GDK
-	"+image_gdk",
-#else
-	"-image_gdk",
-#endif
 #ifdef FEAT_SOUND
 	"+sound",
 #else
@@ -600,9 +604,9 @@ static char *(features[]) =
 #else
 	"-tabpanel",
 #endif
+	"-tag_any_white",
 	"+tag_binary",
 	"-tag_old_static",
-	"-tag_any_white",
 #ifdef FEAT_TCL
 # ifdef DYNAMIC_TCL
 	"+tcl/dyn",
@@ -759,6 +763,420 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1025,
+/**/
+    1024,
+/**/
+    1023,
+/**/
+    1022,
+/**/
+    1021,
+/**/
+    1020,
+/**/
+    1019,
+/**/
+    1018,
+/**/
+    1017,
+/**/
+    1016,
+/**/
+    1015,
+/**/
+    1014,
+/**/
+    1013,
+/**/
+    1012,
+/**/
+    1011,
+/**/
+    1010,
+/**/
+    1009,
+/**/
+    1008,
+/**/
+    1007,
+/**/
+    1006,
+/**/
+    1005,
+/**/
+    1004,
+/**/
+    1003,
+/**/
+    1002,
+/**/
+    1001,
+/**/
+    1000,
+/**/
+    999,
+/**/
+    998,
+/**/
+    997,
+/**/
+    996,
+/**/
+    995,
+/**/
+    994,
+/**/
+    993,
+/**/
+    992,
+/**/
+    991,
+/**/
+    990,
+/**/
+    989,
+/**/
+    988,
+/**/
+    987,
+/**/
+    986,
+/**/
+    985,
+/**/
+    984,
+/**/
+    983,
+/**/
+    982,
+/**/
+    981,
+/**/
+    980,
+/**/
+    979,
+/**/
+    978,
+/**/
+    977,
+/**/
+    976,
+/**/
+    975,
+/**/
+    974,
+/**/
+    973,
+/**/
+    972,
+/**/
+    971,
+/**/
+    970,
+/**/
+    969,
+/**/
+    968,
+/**/
+    967,
+/**/
+    966,
+/**/
+    965,
+/**/
+    964,
+/**/
+    963,
+/**/
+    962,
+/**/
+    961,
+/**/
+    960,
+/**/
+    959,
+/**/
+    958,
+/**/
+    957,
+/**/
+    956,
+/**/
+    955,
+/**/
+    954,
+/**/
+    953,
+/**/
+    952,
+/**/
+    951,
+/**/
+    950,
+/**/
+    949,
+/**/
+    948,
+/**/
+    947,
+/**/
+    946,
+/**/
+    945,
+/**/
+    944,
+/**/
+    943,
+/**/
+    942,
+/**/
+    941,
+/**/
+    940,
+/**/
+    939,
+/**/
+    938,
+/**/
+    937,
+/**/
+    936,
+/**/
+    935,
+/**/
+    934,
+/**/
+    933,
+/**/
+    932,
+/**/
+    931,
+/**/
+    930,
+/**/
+    929,
+/**/
+    928,
+/**/
+    927,
+/**/
+    926,
+/**/
+    925,
+/**/
+    924,
+/**/
+    923,
+/**/
+    922,
+/**/
+    921,
+/**/
+    920,
+/**/
+    919,
+/**/
+    918,
+/**/
+    917,
+/**/
+    916,
+/**/
+    915,
+/**/
+    914,
+/**/
+    913,
+/**/
+    912,
+/**/
+    911,
+/**/
+    910,
+/**/
+    909,
+/**/
+    908,
+/**/
+    907,
+/**/
+    906,
+/**/
+    905,
+/**/
+    904,
+/**/
+    903,
+/**/
+    902,
+/**/
+    901,
+/**/
+    900,
+/**/
+    899,
+/**/
+    898,
+/**/
+    897,
+/**/
+    896,
+/**/
+    895,
+/**/
+    894,
+/**/
+    893,
+/**/
+    892,
+/**/
+    891,
+/**/
+    890,
+/**/
+    889,
+/**/
+    888,
+/**/
+    887,
+/**/
+    886,
+/**/
+    885,
+/**/
+    884,
+/**/
+    883,
+/**/
+    882,
+/**/
+    881,
+/**/
+    880,
+/**/
+    879,
+/**/
+    878,
+/**/
+    877,
+/**/
+    876,
+/**/
+    875,
+/**/
+    874,
+/**/
+    873,
+/**/
+    872,
+/**/
+    871,
+/**/
+    870,
+/**/
+    869,
+/**/
+    868,
+/**/
+    867,
+/**/
+    866,
+/**/
+    865,
+/**/
+    864,
+/**/
+    863,
+/**/
+    862,
+/**/
+    861,
+/**/
+    860,
+/**/
+    859,
+/**/
+    858,
+/**/
+    857,
+/**/
+    856,
+/**/
+    855,
+/**/
+    854,
+/**/
+    853,
+/**/
+    852,
+/**/
+    851,
+/**/
+    850,
+/**/
+    849,
+/**/
+    848,
+/**/
+    847,
+/**/
+    846,
+/**/
+    845,
+/**/
+    844,
+/**/
+    843,
+/**/
+    842,
+/**/
+    841,
+/**/
+    840,
+/**/
+    839,
+/**/
+    838,
+/**/
+    837,
+/**/
+    836,
+/**/
+    835,
+/**/
+    834,
+/**/
+    833,
+/**/
+    832,
+/**/
+    831,
+/**/
+    830,
+/**/
+    829,
+/**/
+    828,
+/**/
+    827,
+/**/
+    826,
+/**/
+    825,
+/**/
+    824,
+/**/
+    823,
+/**/
+    822,
+/**/
+    821,
+/**/
+    820,
+/**/
+    819,
 /**/
     818,
 /**/
@@ -2744,11 +3162,7 @@ list_version(void)
     msg_puts(_("without GUI."));
 #elif defined(FEAT_GUI_GTK)
 # if defined(USE_GTK4)
-#  ifdef USE_GTK4_SNAPSHOT
-    msg_puts(_("with GTK4 GUI (hwaccel)."));
-#  else
     msg_puts(_("with GTK4 GUI."));
-#  endif
 # elif defined(USE_GTK3)
     msg_puts(_("with GTK3 GUI."));
 # elif defined(FEAT_GUI_GNOME)

@@ -5,7 +5,7 @@ vim9script
 #               Shane-XB-Qian
 #               Andrew Radev
 #               thinca
-# Last Change:  2026 Mar 30
+# Last Change:  2026 Aug 02
 #
 # Vim script to handle jumping to the targets of several types of Vim commands
 # (:import, :packadd, :runtime, :colorscheme), and to autoloaded functions of
@@ -37,7 +37,12 @@ export def Find(editcmd: string) #{{{2
         return
     endif
 
-    var curfunc = FindCurfunc()
+    if curline =~ '^\s*py\%(thon\)\=3\s\+\%(from\|import\)\s'
+      HandlePythonImportLine(editcmd, curline)
+      return
+    endif
+
+    var curfunc = ExpandCurWord('#')
 
     if stridx(curfunc, '#') >= 0
         var parts = split(curfunc, '#')
@@ -171,6 +176,48 @@ def HandleImportLine(editcmd: string, curline: string) #{{{2
     execute how_to_split .. ' ' .. fnameescape(filepath)
 enddef
 
+def HandlePythonImportLine(editcmd: string, curline: string) #{{{2
+  # from ftplugin/python.vim
+  var grandparent_match: string = '^\(.\.\)\(\.*\)'
+  var grandparent_sub: string = '\=submatch(1)."/".repeat("../",strlen(submatch(2)))'
+
+  var parent_match: string = '^\.\(\.\)\@!'
+  var parent_sub: string = './'
+
+  var child_match: string = '\(\w\)\.\(\w\)'
+  var child_sub: string = '\1/\2'
+
+  var fname: string
+
+  if curline =~ '\<from\>' || curline =~ '\<as\>'
+    fname = curline->matchstr('^\s*py\%(thon\)\=3\s\+\%(from\|import\)\s\+\zs\S\+')
+  else
+    fname = ExpandCurWord('.')
+  endif
+
+  fname = fname
+    ->substitute(grandparent_match, grandparent_sub, '')
+    ->substitute(parent_match, parent_sub, '')
+    ->substitute(child_match, child_sub, 'g')
+    .. '.py'
+
+  var filepath: string = globpath(&runtimepath, 'python/' .. fname, true, true)
+    ->get(0, '')
+
+  if !filepath->filereadable()
+    printf('E447: Can''t find file "%s" in path', fname)
+      ->Error()
+    return
+  endif
+
+  var how_to_split: string = {
+    gF: 'edit',
+    "\<C-W>F": 'split',
+    "\<C-W>gF": 'tab split',
+  }[editcmd]
+  execute how_to_split .. ' ' .. fnameescape(filepath)
+enddef
+
 def Open(target: any, editcmd: string, search_pattern: string = '') #{{{2
     var split: string = editcmd[0] == 'g' ? 'edit' : editcmd[1] == 'g' ? 'tabedit' : 'split'
     var fname: string
@@ -220,12 +267,12 @@ def Fallback(editcmd: string) #{{{2
     endtry
 enddef
 
-def FindCurfunc(): string #{{{2
+def ExpandCurWord(char: string): string #{{{2
     var curfunc = ''
     var saved_iskeyword = &iskeyword
 
     try
-        set iskeyword+=#
+        execute 'set iskeyword+=' .. char
         curfunc = expand('<cword>')
     finally
         &iskeyword = saved_iskeyword

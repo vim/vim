@@ -1,4 +1,4 @@
-*os_win32.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*os_win32.txt*	For Vim version 9.2.  Last change: 2026 Jul 22
 
 
 		  VIM REFERENCE MANUAL	  by George Reilly
@@ -48,7 +48,7 @@ For compiling see "src/INSTALLpc.txt".			*win32-compiling*
 							*WSL*
 When using Vim on WSL (Windows Subsystem for Linux) the remarks here do not
 apply, `has('win32')` will return false then.  In case you need to know
-whether Vim is running on WSL you can use `exists('$WSLENV')`.
+whether Vim is running on WSL you can use `exists('$WSL_DISTRO_NAME')`.
 
 ==============================================================================
 1. Known problems					*win32-problems*

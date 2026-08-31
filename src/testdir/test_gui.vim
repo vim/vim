@@ -119,6 +119,9 @@ endfunc
 
 func Test_quoteplus()
   CheckX11BasedGui
+  " Doesn't work with GTK4 GUI, because theres no CUT BUFFER in Wayland, meaning
+  " when the GVim that is launched exits, the clipboard is also cleared as well.
+  CheckNotFeature gui_gtk4
 
   let g:test_is_flaky = 1
 
@@ -667,6 +670,7 @@ endfunc
 
 func Test_set_guiheadroom()
   CheckX11BasedGui
+  CheckNotFeature gui_gtk4
 
   " Since this script is to be read together with '-U NONE', the default
   " value must be preserved.
@@ -1925,6 +1929,11 @@ func Test_geometry_exact_size()
   CheckCanRunGui
   CheckFeature gui_gtk
 
+  if has('gui_gtk4')
+    " Wayland is kinda finicky
+    let g:test_is_flaky = 1
+  endif
+
   let after =<< trim [CODE]
     call writefile([string(&columns), string(&lines)], 'Xtest_geomsize')
     qall
@@ -1950,6 +1959,11 @@ endfunc
 func Test_tabnew_tabclose_size_stable()
   CheckCanRunGui
   CheckFeature gui_gtk
+
+  if has('gui_gtk4')
+    " Wayland is kinda finicky
+    let g:test_is_flaky = 1
+  endif
 
   let after =<< trim [CODE]
     let cols0 = &columns

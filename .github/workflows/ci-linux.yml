@@ -27,6 +27,9 @@ jobs:
       LOG_DIR: ${{ github.workspace }}/logs
       TERM: xterm
       DISPLAY: ":99"
+      WAYLAND_DISPLAY: "/tmp/weston_sock"
+      GTK_A11Y: "none"
+      GDK_DEBUG: "no-portals"
       DEBIAN_FRONTEND: noninteractive
 
     strategy:
@@ -67,6 +70,10 @@ jobs:
             extra: [uchar, testgui]
           - features: huge
             compiler: gcc
+            interface: dynamic
+            extra: [uchar, testgui, use_gtk4]
+          - features: huge
+            compiler: gcc
             coverage: true
             extra: [unittests]
           - features: huge
@@ -83,7 +90,7 @@ jobs:
 
     steps:
       - name: Checkout repository from GitHub
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7.0.1
 
       - name: Build
         timeout-minutes: 15
@@ -101,6 +108,10 @@ jobs:
 
       - name: Test
         timeout-minutes: 20
+        # The GTK4 GUI is not stable enough yet to block the other jobs: it
+        # is the only job that runs a Wayland compositor, which makes
+        # 'clipboard' behave differently.
+        continue-on-error: ${{ contains(matrix.extra, 'use_gtk4') }}
         run: make ${SHADOWOPT} ${TEST}
 
       # Enable to debug failing tests live and ssh into the CI runners

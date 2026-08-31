@@ -57,34 +57,37 @@ rettv_blob_set(typval_T *rettv, blob_T *b)
 	++b->bv_refcount;
 }
 
-    int
-blob_copy(blob_T *from, typval_T *to)
+/*
+ * Create a copy of a blob.
+ * The refcount of the new blob is set to 1.
+ * Returns NULL when "orig" is NULL or out of memory.
+ */
+    blob_T *
+blob_copy(blob_T *orig)
 {
     int		len;
+    blob_T	*copy;
 
-    to->v_type = VAR_BLOB;
-    to->v_lock = 0;
-    if (from == NULL)
-    {
-	to->vval.v_blob = NULL;
-	return OK;
-    }
+    if (orig == NULL)
+	return NULL;
 
-    if (rettv_blob_alloc(to) == FAIL)
-	return FAIL;
+    copy = blob_alloc();
+    if (copy == NULL)
+	return NULL;
+    ++copy->bv_refcount;
 
-    len = from->bv_ga.ga_len;
+    len = orig->bv_ga.ga_len;
     if (len > 0)
     {
-	to->vval.v_blob->bv_ga.ga_data =
-	    vim_memsave(from->bv_ga.ga_data, len);
-	if (to->vval.v_blob->bv_ga.ga_data == NULL)
+	copy->bv_ga.ga_data =
+	    vim_memsave(orig->bv_ga.ga_data, len);
+	if (copy->bv_ga.ga_data == NULL)
 	    len = 0;
     }
-    to->vval.v_blob->bv_ga.ga_len = len;
-    to->vval.v_blob->bv_ga.ga_maxlen = len;
+    copy->bv_ga.ga_len = len;
+    copy->bv_ga.ga_maxlen = len;
 
-    return OK;
+    return copy;
 }
 
     void
@@ -666,7 +669,9 @@ blob_filter_map(
     b_ret = b;
     if (filtermap == FILTERMAP_MAPNEW)
     {
-	if (blob_copy(b, rettv) == FAIL)
+	rettv->v_lock = 0;
+	rettv->vval.v_blob = blob_copy(b);
+	if (rettv->vval.v_blob == NULL)
 	    return;
 	b_ret = rettv->vval.v_blob;
     }
@@ -772,6 +777,121 @@ blob_insert_func(typval_T *argvars, typval_T *rettv)
     ++b->bv_ga.ga_len;
 
     copy_tv(&argvars[0], rettv);
+}
+
+/*
+ * Extend "b1" with "b2".  "b1" must not be NULL.
+ * If "bef" is equal to the length of b1 append at the end,
+ * otherwise insert before this index.
+ * Caller must check that "bef" is valid.
+ * Returns FAIL when out of memory.
+ */
+    static int
+blob_extend(blob_T *b1, blob_T *b2, long bef)
+{
+    int		len1, len2;
+    char_u	*p1;
+
+    // NULL blob is equivalent to an empty blob: nothing to do.
+    if (b2 == NULL || b2->bv_ga.ga_len == 0)
+	return OK;
+
+    len1 = b1->bv_ga.ga_len;
+    len2 = b2->bv_ga.ga_len;
+
+    if (ga_grow(&b1->bv_ga, len2) == FAIL)
+	return FAIL;
+
+    p1 = (char_u *)b1->bv_ga.ga_data;
+
+    if (b1 == b2)
+    {
+	// Inserting a blob into itself
+	mch_memmove(p1 + bef, p1, (size_t)len1);
+	if (bef < len1)
+	    memcpy(p1 + bef + len1, p1 + bef * 2, (size_t)(len1 - bef));
+    }
+    else
+    {
+	if (bef < len1)
+	    mch_memmove(p1 + bef + len2, p1 + bef, (size_t)(len1 - bef));
+
+	memcpy(p1 + bef, b2->bv_ga.ga_data, (size_t)len2);
+    }
+
+    b1->bv_ga.ga_len += len2;
+
+    return OK;
+}
+
+/*
+ * extend() a Blob. Append Blob argvars[1] to Blob argvars[0] before index
+ * argvars[3] and return the resulting blob in "rettv".  "is_new" is TRUE for
+ * extendnew().
+ */
+    void
+blob_extend_func(
+	typval_T	*argvars,
+	char_u		*arg_errmsg,
+	int		is_new,
+	typval_T	*rettv)
+{
+    blob_T	*b1, *b2;
+    long	before;
+    int		error = FALSE;
+
+    b1 = argvars[0].vval.v_blob;
+    if (b1 == NULL)
+    {
+	emsg(_(e_cannot_extend_null_blob));
+	return;
+    }
+    if (is_new || !value_check_lock(b1->bv_lock, arg_errmsg, TRUE))
+    {
+	if (is_new)
+	{
+	    b1 = blob_copy(b1);
+	    if (b1 == NULL)
+		return;
+	}
+
+	b2 = argvars[1].vval.v_blob;
+	if (b2 == NULL)
+	    goto theend;
+
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    before = (long)tv_get_number_chk(&argvars[2], &error);
+	    if (error)
+		goto cleanup;		// type error; errmsg already given
+	    if (before < 0)
+		before = b1->bv_ga.ga_len + before;
+	    if (before < 0 || before > b1->bv_ga.ga_len)
+	    {
+		semsg(_(e_blob_index_out_of_range_nr), before);
+		goto cleanup;
+	    }
+	}
+	else
+	    before = b1->bv_ga.ga_len;
+	if (blob_extend(b1, b2, before) == FAIL)
+	    goto cleanup;
+
+theend:
+	if (is_new)
+	{
+	    rettv->v_type = VAR_BLOB;
+	    rettv->v_lock = 0;
+	    rettv->vval.v_blob = b1;
+	}
+	else
+	    copy_tv(&argvars[0], rettv);
+	return;
+
+cleanup:
+	if (is_new)
+	    blob_unref(b1);
+    }
 }
 
 /*

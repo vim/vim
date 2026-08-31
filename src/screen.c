@@ -1233,6 +1233,7 @@ skip_opacity:
 			{
 			    ScreenLinesUC[off_to] = c;
 			    ScreenLinesC[0][off_to] = 0;
+			    ScreenLines[off_to] = 0x80; // avoid storing zero
 			}
 			else
 			    ScreenLinesUC[off_to] = 0;
@@ -3081,6 +3082,7 @@ skip_opacity_fill:
 		    {
 			ScreenLinesUC[off] = c;
 			ScreenLinesC[0][off] = 0;
+			ScreenLines[off] = 0x80; // avoid storing zero
 		    }
 		    else
 			ScreenLinesUC[off] = 0;
@@ -3446,7 +3448,7 @@ give_up:
 			    ScreenAttrs + LineOffset[old_row],
 			    (size_t)len * sizeof(sattr_T));
 		    mch_memmove(new_ScreenCols + new_LineOffset[new_row],
-			    ScreenAttrs + LineOffset[old_row],
+			    ScreenCols + LineOffset[old_row],
 			    (size_t)len * sizeof(colnr_T));
 		}
 	    }
@@ -3634,11 +3636,6 @@ screenclear2(int doclear)
 	if (suppressed_cells != NULL)
 	    vim_memset(suppressed_cells, 0,
 			       (size_t)suppressed_rows * suppressed_cols);
-#endif
-#if defined(FEAT_IMAGE_SIXEL) || defined(FEAT_IMAGE_KITTY)
-	// Clearing the display removes kitty image placements; force the
-	// next redraw to retransmit popup images.
-	popup_images_invalidate();
 #endif
     }
     else

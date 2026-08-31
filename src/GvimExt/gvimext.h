@@ -85,7 +85,7 @@ protected:
 
 public:
     CShellExtClassFactory();
-    ~CShellExtClassFactory();
+    virtual ~CShellExtClassFactory();
 
     //IUnknown members
     STDMETHODIMP		QueryInterface(REFIID, LPVOID FAR *);
@@ -133,7 +133,7 @@ public:
     int		 m_cntOfHWnd;
     HWND	 m_hWnd[MAX_HWND];
     CShellExt();
-    ~CShellExt();
+    virtual ~CShellExt();
 
     //IUnknown members
     STDMETHODIMP QueryInterface(REFIID, LPVOID FAR *);

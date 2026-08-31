@@ -224,6 +224,11 @@ func Test_termwinscroll()
   exe 'set termwinscroll=' . &lines
   let buf = term_start('/bin/sh')
   call TermWait(buf)
+  " Some shells enable a line editor when interactive on a terminal,
+  " which echoes the typed line a second time; "+o" is a no-op on
+  " shells that have none.
+  call feedkeys("set +o emacs\<CR>", 'xt')
+  call TermWait(buf)
   for i in range(1, &lines)
     call feedkeys("echo " . i . "\<CR>", 'xt')
     call WaitForAssert({-> assert_match(string(i), term_getline(buf, term_getcursor(buf)[0] - 1))})

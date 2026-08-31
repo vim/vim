@@ -1,5 +1,5 @@
 #
-# Common Makefile, defines the list of tests to run and other things.
+# Common Makefile - shared platform independent
 #
 
 # Argument for running ctags.

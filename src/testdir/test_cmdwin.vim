@@ -171,6 +171,10 @@ func Test_cmdwin_jump_to_win()
   set modified
   call assert_fails('call feedkeys("q/:qall\<CR>", "xt")', ['E37:', 'E162:'])
   close!
+  new
+  set modified
+  call assert_fails('call feedkeys("q/:quitall\<CR>", "xt")', ['E37:', 'E162:'])
+  close!
   call feedkeys("q/:close\<CR>", "xt")
   call assert_equal(1, winnr('$'))
   call feedkeys("q/:exit\<CR>", "xt")

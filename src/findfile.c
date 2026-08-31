@@ -2678,7 +2678,7 @@ uniquefy_paths(
 	    continue;
 	}
 
-	rel_pathsize = 1 + STRLEN_LITERAL(PATHSEPSTR) + STRLEN(short_name) + 1;
+	rel_pathsize = 1 + sizeof(PATHSEP) + STRLEN(short_name) + 1;
 	rel_path = alloc(rel_pathsize);
 	if (rel_path == NULL)
 	    goto theend;

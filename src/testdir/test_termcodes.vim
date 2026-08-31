@@ -2298,6 +2298,30 @@ func Test_modifyOtherKeys_mapped()
   set timeoutlen&
 endfunc
 
+func Test_modifyOtherKeys_after_partial_mapping()
+  new
+  set timeoutlen=10
+  imap <C-J> x
+  imap ab y
+  call setline(1, '')
+
+  " "a" is a partial match for the "ab" mapping, CTRL-J is simplified while
+  " looking for that mapping and must still match the <C-J> mapping.
+  call feedkeys("aa" .. GetEscCodeCSI27('J', 5) .. "\<Esc>", 'Lx!')
+  call assert_equal('ax', getline(1))
+
+  " A NL that was not simplified from the key protocol does not use the
+  " mapping for CTRL-J.
+  %d _
+  call feedkeys("aa\<NL>\<Esc>", 'Lx!')
+  call assert_equal(['a', ''], getline(1, '$'))
+
+  iunmap <C-J>
+  iunmap ab
+  set timeoutlen&
+  bwipe!
+endfunc
+
 func Test_modifyOtherKeys_ambiguous_mapping()
   new
   set timeoutlen=10

@@ -98,6 +98,12 @@ extern int _stricoll(char *a, char *b);
 # include "gc.pro"
 # include "gui_xim.pro"
 # include "hardcopy.pro"
+# ifdef FEAT_PRINT_PANGO
+#  include "hardcopy_pango.pro"
+# endif
+# ifdef FEAT_POSTSCRIPT
+#  include "hardcopy_postscript.pro"
+# endif
 # include "hashtab.pro"
 # include "help.pro"
 # include "highlight.pro"

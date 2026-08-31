@@ -1297,6 +1297,97 @@ work_pending(void)
     return op_pending() || !is_safe_now();
 }
 
+#ifdef FEAT_CONCEAL
+static linenr_T	conceal_old_cursor_line = 0;
+static linenr_T	conceal_new_cursor_line = 0;
+static int	conceal_update_lines = FALSE;
+#endif
+
+/*
+ * Trigger the events that are not triggered where they happen, but by
+ * comparing the current state against the state stored when they were last
+ * triggered. Also updates what depends on the cursor having moved, which is
+ * not affected by 'eventignore'.
+ * Called from the main loop and when 'eventignore(win)' changes, so that what
+ * happened with an event ignored is not reported once it is not ignored
+ * anymore.
+ */
+    void
+may_trigger_deferred_events(void)
+{
+    static bool	recursive = false;
+
+    if (recursive)
+	return;
+    recursive = true;
+
+#ifdef FEAT_CONCEAL
+    if (curwin->w_p_cole == 0)
+	conceal_update_lines = FALSE;
+#endif
+
+    // Trigger CursorMoved if the cursor moved.
+    if (!finish_op && (has_cursormoved()
+#ifdef FEAT_PROP_POPUP
+		|| popup_visible
+#endif
+#ifdef FEAT_CONCEAL
+		|| curwin->w_p_cole > 0
+#endif
+		) && !EQUAL_POS(last_cursormoved, curwin->w_cursor))
+    {
+	if (has_cursormoved())
+	    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL, FALSE, curbuf);
+#ifdef FEAT_PROP_POPUP
+	if (popup_visible)
+	    popup_check_cursor_pos();
+#endif
+#ifdef FEAT_CONCEAL
+	if (curwin->w_p_cole > 0)
+	{
+	    conceal_old_cursor_line = last_cursormoved.lnum;
+	    conceal_new_cursor_line = curwin->w_cursor.lnum;
+	    conceal_update_lines = TRUE;
+	}
+#endif
+	last_cursormoved = curwin->w_cursor;
+    }
+
+#ifdef FEAT_CONCEAL
+    if (conceal_update_lines
+	    && (conceal_old_cursor_line != conceal_new_cursor_line
+		|| conceal_cursor_line(curwin)
+		|| need_cursor_line_redraw))
+    {
+	if (conceal_old_cursor_line != conceal_new_cursor_line
+		&& conceal_old_cursor_line != 0
+		&& conceal_old_cursor_line <= curbuf->b_ml.ml_line_count)
+	    redrawWinline(curwin, conceal_old_cursor_line);
+	redrawWinline(curwin, conceal_new_cursor_line);
+	curwin->w_valid &= ~VALID_CROW;
+	need_cursor_line_redraw = FALSE;
+    }
+#endif
+
+    // Trigger TextChanged if b:changedtick differs.
+    if (!finish_op && has_textchanged()
+	    && curbuf->b_last_changedtick != CHANGEDTICK(curbuf))
+    {
+	apply_autocmds(EVENT_TEXTCHANGED, NULL, NULL, FALSE, curbuf);
+	curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
+    }
+
+    // Ensure curwin->w_topline and curwin->w_leftcol are up to date before
+    // triggering a WinScrolled autocommand.
+    update_topline();
+    validate_cursor();
+
+    if (!finish_op)
+	may_trigger_win_scrolled_resized();
+
+    recursive = false;
+}
+
 
 /*
  * Main loop: Execute Normal mode commands until exiting Vim.
@@ -1313,12 +1404,6 @@ main_loop(
     oparg_T	oa;		// operator arguments
     oparg_T	*prev_oap;	// operator arguments
     volatile int previous_got_int = FALSE;	// "got_int" was TRUE
-#ifdef FEAT_CONCEAL
-    // these are static to avoid a compiler warning
-    static linenr_T	conceal_old_cursor_line = 0;
-    static linenr_T	conceal_new_cursor_line = 0;
-    static int		conceal_update_lines = FALSE;
-#endif
 
     prev_oap = current_oap;
     current_oap = &oa;
@@ -1413,72 +1498,7 @@ main_loop(
 	    // locked, this would be a good time to handle the drop.
 	    handle_any_postponed_drop();
 #endif
-#ifdef FEAT_CONCEAL
-	    if (curwin->w_p_cole == 0)
-		conceal_update_lines = FALSE;
-#endif
-
-	    // Trigger CursorMoved if the cursor moved.
-	    if (!finish_op && (has_cursormoved()
-#ifdef FEAT_PROP_POPUP
-				|| popup_visible
-#endif
-#ifdef FEAT_CONCEAL
-				|| curwin->w_p_cole > 0
-#endif
-			      )
-		    && !EQUAL_POS(last_cursormoved, curwin->w_cursor))
-	    {
-		if (has_cursormoved())
-		    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL,
-							       FALSE, curbuf);
-#ifdef FEAT_PROP_POPUP
-		if (popup_visible)
-		    popup_check_cursor_pos();
-#endif
-#ifdef FEAT_CONCEAL
-		if (curwin->w_p_cole > 0)
-		{
-		    conceal_old_cursor_line = last_cursormoved.lnum;
-		    conceal_new_cursor_line = curwin->w_cursor.lnum;
-		    conceal_update_lines = TRUE;
-		}
-#endif
-		last_cursormoved = curwin->w_cursor;
-	    }
-
-#if defined(FEAT_CONCEAL)
-	    if (conceal_update_lines
-		    && (conceal_old_cursor_line != conceal_new_cursor_line
-			|| conceal_cursor_line(curwin)
-			|| need_cursor_line_redraw))
-	    {
-		if (conceal_old_cursor_line != conceal_new_cursor_line
-			&& conceal_old_cursor_line != 0
-			&& conceal_old_cursor_line
-						<= curbuf->b_ml.ml_line_count)
-		    redrawWinline(curwin, conceal_old_cursor_line);
-		redrawWinline(curwin, conceal_new_cursor_line);
-		curwin->w_valid &= ~VALID_CROW;
-		need_cursor_line_redraw = FALSE;
-	    }
-#endif
-
-	    // Trigger TextChanged if b:changedtick differs.
-	    if (!finish_op && has_textchanged()
-		    && curbuf->b_last_changedtick != CHANGEDTICK(curbuf))
-	    {
-		apply_autocmds(EVENT_TEXTCHANGED, NULL, NULL, FALSE, curbuf);
-		curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
-	    }
-
-	    // Ensure curwin->w_topline and curwin->w_leftcol are up to date
-	    // before triggering a WinScrolled autocommand.
-	    update_topline();
-	    validate_cursor();
-
-	    if (!finish_op)
-		may_trigger_win_scrolled_resized();
+	    may_trigger_deferred_events();
 
 	    // If nothing is pending and we are going to wait for the user to
 	    // type a character, trigger SafeState.
@@ -1921,7 +1941,7 @@ early_arg_scan(mparm_T *parmp UNUSED)
 #  endif
 	}
 #  ifdef FEAT_CLIENTSERVER_BACKENDS
-	else if (STRNICMP(argv[i], "--clientserver", 14) == 0)
+	else if (STRICMP(argv[i], "--clientserver") == 0)
 	{
 	    char_u *arg;
 	    if (i == argc - 1)
@@ -1965,13 +1985,13 @@ early_arg_scan(mparm_T *parmp UNUSED)
 	    else
 #  ifdef FEAT_GUI_MSWIN
 		win_socket_id = id;
-#  else
+#  elif !defined(USE_GTK4)
 		gtk_socket_id = id;
 #  endif
 	    i++;
 	}
 # endif
-# ifdef FEAT_GUI_GTK
+# if defined(FEAT_GUI_GTK) && !defined(USE_GTK4)
 	else if (STRICMP(argv[i], "--echo-wid") == 0)
 	    echo_wid_arg = TRUE;
 # endif
@@ -2263,13 +2283,13 @@ command_line_scan(mparm_T *parmp)
 		    argv_idx += 3;
 		}
 # ifdef FEAT_CLIENTSERVER
-		else if (STRNICMP(argv[0] + argv_idx, "serverlist", 10) == 0)
+		else if (STRICMP(argv[0] + argv_idx, "serverlist") == 0)
 		    ; // already processed -- no arg
-		else if (STRNICMP(argv[0] + argv_idx, "servername", 10) == 0
-		       || STRNICMP(argv[0] + argv_idx, "serversend", 10) == 0
+		else if (STRICMP(argv[0] + argv_idx, "servername") == 0
+		       || STRICMP(argv[0] + argv_idx, "serversend") == 0
 		       // Don't put this under FEAT_CLIENTSERVER_BACKENDS, just
 		       // let it be ignored. Makes tests less complicated
-		       || STRNICMP(argv[0] + argv_idx, "clientserver", 12) == 0
+		       || STRICMP(argv[0] + argv_idx, "clientserver") == 0
 		       )
 		{
 		    // already processed -- snatch the following arg
@@ -3812,17 +3832,25 @@ usage(void)
     main_msg(_("-xrm <resource>\tSet the specified resource"));
 # endif // FEAT_GUI_X11
 # ifdef FEAT_GUI_GTK
+#  ifdef USE_GTK4
+    mch_msg(_("\nArguments recognised by gvim (GTK4 version):\n"));
+#  else
     mch_msg(_("\nArguments recognised by gvim (GTK+ version):\n"));
+#  endif
     main_msg(_("-background <color>\tUse <color> for the background (also: -bg)"));
     main_msg(_("-foreground <color>\tUse <color> for normal text (also: -fg)"));
     main_msg(_("-font <font>\t\tUse <font> for normal text (also: -fn)"));
     main_msg(_("-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"));
+#  ifdef USE_GTK4
+    main_msg("--prg-name <name>\tSet GTK program name");
+#  else
     main_msg(_("-iconic\t\tStart Vim iconified"));
     main_msg(_("-reverse\t\tUse reverse video (also: -rv)"));
     main_msg(_("-display <display>\tRun Vim on <display> (also: --display)"));
     main_msg(_("--role <role>\tSet a unique role to identify the main window"));
     main_msg(_("--socketid <xid>\tOpen Vim inside another GTK widget"));
     main_msg(_("--echo-wid\t\tMake gvim echo the Window ID on stdout"));
+#  endif
 # endif
 # ifdef FEAT_GUI_MSWIN
 #  ifdef VIMDLL

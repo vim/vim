@@ -2900,7 +2900,7 @@ func Test_normal_8g8()
   " With invalid byte.
   call setline(1, "___\xff___")
   norm! 1G08g8g
-  call assert_equal([0, 1, 4, 0, 1], getcurpos())
+  call assert_equal([0, 1, 4, 0, 4], getcurpos())
 
   " With invalid byte before the cursor.
   call setline(1, "___\xff___")
@@ -2910,12 +2910,12 @@ func Test_normal_8g8()
   " With truncated sequence.
   call setline(1, "___\xE2\x82___")
   norm! 1G08g8g
-  call assert_equal([0, 1, 4, 0, 1], getcurpos())
+  call assert_equal([0, 1, 4, 0, 4], getcurpos())
 
   " With overlong sequence.
   call setline(1, "___\xF0\x82\x82\xAC___")
   norm! 1G08g8g
-  call assert_equal([0, 1, 4, 0, 1], getcurpos())
+  call assert_equal([0, 1, 4, 0, 4], getcurpos())
 
   " With valid utf8.
   call setline(1, "café")
@@ -4397,13 +4397,18 @@ func Test_single_line_filler_zb()
 endfunc
 
 " Test for zb with fewer buffer lines than window height, non-zero 'scrolloff'
-" and cursor on fold.
-func Test_zb_with_cursor_on_fold()
+" and cursor on or just above a fold.
+func Test_zb_with_cursor_on_or_just_above_fold()
   15new
   call setline(1, range(1, 5) + ['', 'foo{{{', 'bar}}}', '', 'baz'])
   setlocal foldmethod=marker scrolloff=1
   call assert_equal(8, foldclosedend(7))
+
   call cursor(7, 1)
+  normal! zb
+  call assert_equal(1, line('w0'))
+
+  call cursor(6, 1)
   normal! zb
   call assert_equal(1, line('w0'))
 

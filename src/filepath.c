@@ -586,6 +586,10 @@ repeat:
 	    }
 	    *fnamelen = l;
 	}
+
+	// The name was replaced by the short name, "tail" points into the
+	// previous name.
+	tail = gettail(*fnamep);
     }
 #endif // MSWIN
 
@@ -3196,7 +3200,7 @@ vim_fnamencmp(char_u *x, char_u *y, size_t len)
     char_u  *
 concat_fnames(char_u *fname1, size_t fname1len, char_u *fname2, size_t fname2len, int sep, string_T *ret)
 {
-    ret->string = alloc(fname1len + (sep ? STRLEN_LITERAL(PATHSEPSTR) : 0) + fname2len + 1);
+    ret->string = alloc(fname1len + (sep ? sizeof(PATHSEP) : 0) + fname2len + 1);
     if (ret->string == NULL)
 	ret->length = 0;
     else
@@ -3206,7 +3210,7 @@ concat_fnames(char_u *fname1, size_t fname1len, char_u *fname2, size_t fname2len
 	if (sep && *ret->string != NUL && !after_pathsep(ret->string, ret->string + ret->length))
 	{
 	    STRCPY(ret->string + ret->length, PATHSEPSTR);
-	    ret->length += STRLEN_LITERAL(PATHSEPSTR);
+	    ret->length += sizeof(PATHSEP);
 	}
 	STRCPY(ret->string + ret->length, fname2);
 	ret->length += fname2len;
@@ -3574,6 +3578,7 @@ dos_expandpath(
     char_u		*matchname;
     int			ok;
     char_u		*p_alt;
+    int			use_short_name;
 
     // Expanding "**" may take a long time, check for CTRL-C.
     if (stardepth > 0)
@@ -3668,6 +3673,10 @@ dos_expandpath(
     // remember the pattern or file name being looked for
     matchname = vim_strsave(s);
 
+    // Only match against the alternate (8.3) file name when the pattern looks
+    // like a short name, it contains a '~'.
+    use_short_name = vim_strchr(s, '~') != NULL;
+
     len = (size_t)(s - buf);
     // If "**" is by itself, this is the first time we encounter it and more
     // is following then find matches without any directory.
@@ -3697,7 +3706,8 @@ dos_expandpath(
 	// Do not use the alternate filename when the file name ends in '~',
 	// because it picks up backup files: short name for "foo.vim~" is
 	// "foo~1.vim", which matches "*.vim".
-	if (*wfb.cAlternateFileName == NUL || p[STRLEN(p) - 1] == '~')
+	if (!use_short_name || *wfb.cAlternateFileName == NUL
+						  || p[STRLEN(p) - 1] == '~')
 	    p_alt = NULL;
 	else
 	    p_alt = utf16_to_enc(wfb.cAlternateFileName, NULL);

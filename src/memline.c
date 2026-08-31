@@ -810,6 +810,12 @@ ml_open_file(buf_T *buf)
 	// and creating it, another Vim creates the file.  In that case the
 	// creation will fail and we will use another directory.
 	fname = findswapname(buf, &dirp, NULL); // allocates fname
+	// autocmd may have freed mfp, grr!
+	if (buf->b_ml.ml_mfp != mfp)
+	{
+	    vim_free(fname);
+	    return;
+	}
 	if (dirp == NULL)
 	    break;  // out of memory
 	if (fname == NULL)

@@ -2890,12 +2890,9 @@ eval_for_line(
 		fi->fi_bi = 0;
 		if (tv.vval.v_blob != NULL)
 		{
-		    typval_T btv;
-
 		    // Make a copy, so that the iteration still works when the
 		    // blob is changed.
-		    blob_copy(tv.vval.v_blob, &btv);
-		    fi->fi_blob = btv.vval.v_blob;
+		    fi->fi_blob = blob_copy(tv.vval.v_blob);
 		}
 		clear_tv(&tv);
 	    }
@@ -3005,9 +3002,12 @@ next_for_item(void *fi_void, char_u *arg)
 	++fi->fi_tuple_idx;
 	++fi->fi_bi;
 	if (skip_assign)
-	    return TRUE;
-	return ex_let_vars(arg, &tv, TRUE, fi->fi_semicolon,
+	    result = TRUE;
+	else
+	    result = ex_let_vars(arg, &tv, TRUE, fi->fi_semicolon,
 					    fi->fi_varcount, flag, NULL) == OK;
+	clear_tv(&tv);
+	return result;
     }
 
     item = fi->fi_lw.lw_item;
@@ -3186,6 +3186,178 @@ set_context_for_expression(
 }
 
 /*
+ * Cache with the compiled program of the last pattern used by
+ * pattern_match() and the match functions.  Script loops often evaluate the
+ * same pattern many times; reusing the program avoids compiling it for
+ * every evaluation.  The cache owns the program only between uses:
+ * eval_regcomp() hands it to the caller and empties the cache, and
+ * eval_regfree() adopts the program the caller ends up with.  Thus when
+ * executing replaced the program (the automatic engine falling back to
+ * backtracking frees the original) no freed program is left behind in the
+ * cache.
+ * Adopting the caller's program also means that after a fallback the
+ * backtracking program stays cached until the pattern or an option in the
+ * key changes; the automatic engine is not tried again for it.
+ * The cache must only be used where the pattern is compiled with
+ * RE_MAGIC + RE_STRING and 'cpoptions' made empty, as every caller here
+ * does; both functions check these conditions and fall back to plain
+ * compilation and freeing when they do not hold.
+ * eval_prog_pat and eval_prog_enc are non-NULL whenever eval_prog_cache is
+ * non-NULL.
+ */
+static regprog_T    *eval_prog_cache = NULL;
+static char_u	    *eval_prog_pat = NULL;	// pattern it was compiled for
+static char_u	    *eval_prog_enc = NULL;	// 'encoding' when compiled
+static long	    eval_prog_re;		// 'regexpengine' when compiled
+// State sampled by eval_regcomp() for the eval_regfree() call that gives the
+// program back: user code run in between, e.g. an object's string() method
+// invoked by match() on a list, can change these options, and then the
+// program must not be cached under the changed values.  eval_compile_enc is
+// only ever compared against p_enc, never dereferenced.
+static long	    eval_compile_re;
+static char_u	    *eval_compile_enc;
+static int	    eval_prog_busy = 0;	// programs eval_regcomp() handed out
+					// that were not given back yet
+static int	    eval_prog_reentered = FALSE;  // eval_regcomp() ran while
+						  // a program was handed out
+
+/*
+ * Return true when compiling "pat" depends on more state than the cache key
+ * covers: "~" is replaced with the previous substitute string, bracket
+ * classes like [:alpha:], [=a=] and [.a.] can depend on the locale, the
+ * cursor-relative atoms \%.l, \%.c and \%.v compile the current cursor
+ * position into the program, and a "\%#=" engine prefix makes vim_regcomp()
+ * report E864 for a bad value on every compilation.  The check is
+ * intentionally over-approximate, e.g. a literal "~" or "%." also matches;
+ * such a pattern is compiled every time, which is never wrong.
+ */
+    static bool
+eval_prog_volatile(char_u *pat)
+{
+    char_u *p;
+
+    if (STRNCMP(pat, "\\%#=", 4) == 0)
+	return true;
+    for (p = pat; *p != NUL; ++p)
+	if (*p == '~'
+		|| (p[0] == '[' && (p[1] == ':' || p[1] == '=' || p[1] == '.'))
+		|| (p[0] == '%' && (p[1] == '.'
+			|| ((p[1] == '<' || p[1] == '>') && p[2] == '.'))))
+	    return true;
+    return false;
+}
+
+/*
+ * Compile pattern "pat" like vim_regcomp(pat, RE_MAGIC + RE_STRING) would,
+ * but reuse the cached program when it was compiled for the same pattern.
+ * Free the result with eval_regfree(), not with vim_regfree().
+ */
+    regprog_T *
+eval_regcomp(char_u *pat)
+{
+    regprog_T	*prog;
+
+    // Sample the option state the key covers, eval_regfree() checks that it
+    // did not change while the caller was using the program.
+    eval_compile_re = p_re;
+    eval_compile_enc = p_enc;
+    if (eval_prog_busy > 0)
+	// The samples above no longer describe the program already handed
+	// out: its eval_regfree() must drop it instead of caching it.
+	eval_prog_reentered = TRUE;
+
+    if (eval_prog_cache != NULL
+	    && *p_cpo == NUL
+	    && eval_prog_cache->re_flags == RE_MAGIC + RE_STRING
+	    && eval_prog_re == p_re
+	    && STRCMP(eval_prog_pat, pat) == 0
+	    && STRCMP(eval_prog_enc, p_enc) == 0)
+    {
+	prog = eval_prog_cache;
+	// The caller now owns the program, eval_regfree() adopts the
+	// program the caller ends up with.
+	eval_prog_cache = NULL;
+    }
+    else
+	prog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+    if (prog != NULL)
+	++eval_prog_busy;	// paired with the eval_regfree() call
+    return prog;
+}
+
+/*
+ * Free program "prog", obtained with eval_regcomp() for pattern "pat", by
+ * keeping it in the cache for the next use.  "pat" must be the same string
+ * the program was compiled for and must still be valid.
+ */
+    void
+eval_regfree(char_u *pat, regprog_T *prog)
+{
+    int	    reentered = eval_prog_reentered;
+
+    if (eval_prog_busy > 0 && --eval_prog_busy == 0)
+	eval_prog_reentered = FALSE;
+    if (prog == NULL)
+	return;
+    if (reentered || *p_cpo != NUL
+	    || eval_compile_re != p_re || eval_compile_enc != p_enc)
+    {
+	// 'cpoptions' is not empty, an option in the cache key changed, or
+	// another program was handed out while the caller was using this
+	// one: the samples may not describe this program, do not cache it.
+	vim_regfree(prog);
+	return;
+    }
+    if (eval_prog_pat == NULL || STRCMP(eval_prog_pat, pat) != 0
+	    || STRCMP(eval_prog_enc, p_enc) != 0)
+    {
+	char_u	*pat_copy;
+	char_u	*enc_copy;
+
+	// A cached pattern is known not to be volatile, thus the scan is
+	// only needed when installing a new key.
+	if (eval_prog_volatile(pat))
+	{
+	    // compiling depends on state the cache key does not cover
+	    vim_regfree(prog);
+	    return;
+	}
+	pat_copy = vim_strsave(pat);
+	enc_copy = vim_strsave(p_enc);
+	if (pat_copy == NULL || enc_copy == NULL)
+	{
+	    vim_free(pat_copy);
+	    vim_free(enc_copy);
+	    vim_regfree(prog);
+	    return;
+	}
+	vim_free(eval_prog_pat);
+	vim_free(eval_prog_enc);
+	eval_prog_pat = pat_copy;
+	eval_prog_enc = enc_copy;
+    }
+    // On a cache miss eval_regcomp() left the previous program in the
+    // cache, and a nested evaluation may have stored another one: keep the
+    // most recent program.
+    vim_regfree(eval_prog_cache);
+    eval_prog_cache = prog;
+    eval_prog_re = eval_compile_re;
+}
+
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_eval_regcomp_cache(void)
+{
+    vim_regfree(eval_prog_cache);
+    eval_prog_cache = NULL;
+    VIM_CLEAR(eval_prog_pat);
+    VIM_CLEAR(eval_prog_enc);
+    eval_prog_busy = 0;
+    eval_prog_reentered = FALSE;
+}
+#endif
+
+/*
  * Return TRUE if "pat" matches "text".
  * Does not use 'cpo' and always uses 'magic'.
  */
@@ -3199,12 +3371,12 @@ pattern_match(char_u *pat, char_u *text, int ic)
     // avoid 'l' flag in 'cpoptions'
     save_cpo = p_cpo;
     p_cpo = empty_option;
-    regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+    regmatch.regprog = eval_regcomp(pat);
     if (regmatch.regprog != NULL)
     {
 	regmatch.rm_ic = ic;
 	matches = vim_regexec_nl(&regmatch, text, (colnr_T)0);
-	vim_regfree(regmatch.regprog);
+	eval_regfree(pat, regmatch.regprog);
     }
     p_cpo = save_cpo;
     return matches;
@@ -7420,6 +7592,21 @@ eval_isdictc(int c)
 }
 
 /*
+ * Return true when "p" points to "->" followed by a method name or a lambda.
+ * Only called for Vim9 script.
+ */
+    static bool
+method_call_follows(char_u *p)
+{
+    if (p[0] != '-' || p[1] != '>')
+	return false;
+
+    char_u	*after = skipwhite(p + 2);
+
+    return ASCII_ISALPHA(*after) || *after == '(';
+}
+
+/*
  * Handle:
  * - expr[expr], expr[expr:expr] subscript
  * - ".name" lookup
@@ -7447,7 +7634,7 @@ handle_subscript(
 
     while (ret == OK)
     {
-	// When at the end of the line and ".name" or "->{" or "->X" follows in
+	// When at the end of the line and ".name" or a method call follows in
 	// the next line then consume the line break.
 	p = eval_next_non_blank(*arg, evalarg, &getnext);
 	if (getnext
@@ -7455,9 +7642,7 @@ handle_subscript(
 		    && ((rettv->v_type == VAR_DICT && eval_isdictc(p[1]))
 			|| rettv->v_type == VAR_CLASS
 			|| rettv->v_type == VAR_OBJECT))
-		|| (p[0] == '-' && p[1] == '>' && (p[2] == '{'
-			|| ASCII_ISALPHA(in_vim9script() ? *skipwhite(p + 2)
-								    : p[2])))))
+		|| method_call_follows(p)))
 	{
 	    *arg = eval_next_line(*arg, evalarg);
 	    p = *arg;
@@ -7711,7 +7896,16 @@ item_copy(
 		ret = FAIL;
 	    break;
 	case VAR_BLOB:
-	    ret = blob_copy(from->vval.v_blob, to);
+	    to->v_type = VAR_BLOB;
+	    to->v_lock = 0;
+	    if (from->vval.v_blob == NULL)
+		to->vval.v_blob = NULL;
+	    else
+	    {
+		to->vval.v_blob = blob_copy(from->vval.v_blob);
+		if (to->vval.v_blob == NULL)
+		    ret = FAIL;
+	    }
 	    break;
 	case VAR_DICT:
 	    to->v_type = VAR_DICT;

@@ -58,6 +58,7 @@ endfunc
 " "no_clean" - if non-zero then remove "--clean" from the command
 " "cmd"  - run any other command, e.g. "xxd" (used in xxd test)
 " "env"  - additional environment variables, e.g. $TERM variable
+" "tcolor"  - terminal color number (256 by default)
 func RunVimInTerminal(arguments, options)
   " If Vim doesn't exit a swap file remains, causing other tests to fail.
   " Remove it here.
@@ -76,8 +77,11 @@ func RunVimInTerminal(arguments, options)
   split
   vsplit
 
-  " Always do this with 256 colors and a light background.
-  set t_Co=256 background=light
+  " Always do this with light background.
+  set background=light
+  " and 256 colors by default
+  let tcolors = get(a:options, 'tcolors', 256)
+  let &t_Co=tcolors
   hi Normal ctermfg=NONE ctermbg=NONE
 
   " Make the window 20 lines high and 75 columns, unless told otherwise or
@@ -177,11 +181,29 @@ endfunc
 
 " Open a terminal with a shell, assign the job to g:job and return the buffer
 " number.
+" Some shells turn on a line editor when they are interactive on a
+" terminal; FreeBSD /bin/sh does.  The editor redraws the line the
+" terminal has already echoed, so a command can land in the buffer
+" twice and shift everything below it.  POSIX shells read $ENV at
+" startup and it produces no output of its own; shells that do not
+" use $ENV ignore the variable.
+let s:shell_env_file = ''
+
+func s:ShellStartupFile()
+  if s:shell_env_file == '' || !filereadable(s:shell_env_file)
+    let s:shell_env_file = tempname()
+    call writefile(['set +o emacs 2>/dev/null', 'set +o vi 2>/dev/null'], s:shell_env_file)
+  endif
+  return s:shell_env_file
+endfunc
+
 func Run_shell_in_terminal(options)
   if has('win32')
     let buf = term_start([&shell, '/D', '/k'], a:options)
   else
-    let buf = term_start(&shell, a:options)
+    let options = copy(a:options)
+    let options.env = extend({'ENV': s:ShellStartupFile()}, get(a:options, 'env', {}))
+    let buf = term_start(&shell, options)
   endif
   let g:test_is_flaky = 1
 

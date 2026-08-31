@@ -372,4 +372,38 @@ func Test_print_overlong()
   bwipe!
 endfunc
 
+" The cell count of an overlong encoded character must match what is drawn.
+func Test_overlong_utf8_cells()
+  call assert_equal(4, strdisplaywidth("\xc0\x81"))     " <01>
+  call assert_equal(4, strdisplaywidth("\xe0\x80\x81")) " <01>, three bytes
+  call assert_equal(4, strdisplaywidth("\xc1\xbf"))     " <7f>
+  call assert_equal(4, strdisplaywidth("\xc0\x89"))     " <09>, not a Tab
+
+  new
+  call setline(1, "\xc1\x81\xc0\x81\xc0\x80")
+  call assert_equal('A<01><00>', ScreenLines(1, 9)[0])
+  normal! $
+  call assert_equal(5, col('.'))
+  call assert_equal([6, 9], virtcol('.', v:true))
+  bwipe!
+endfunc
+
+func Test_isprint_leading_byte()
+  new
+  let save_isprint = &isprint
+  " 226 is the leading byte of U+222B, which must not be affected.
+  set isprint+=^226
+  call setline(1, "∫")
+  redraw
+  call assert_equal("∫", ScreenLines(1, 1)[0])
+
+  " U+00E2 has the character value 226 and is still excluded.
+  call setline(1, "â")
+  redraw
+  call assert_equal('<e2>', ScreenLines(1, 4)[0])
+
+  let &isprint = save_isprint
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

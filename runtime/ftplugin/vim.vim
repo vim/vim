@@ -7,6 +7,7 @@
 "                    @tpope (s:Help())
 "                    @lacygoill
 " Last Change:       2026 Jun 27
+" 2026 Aug 02 by Vim project: Update 'path' setting #20908
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -135,7 +136,7 @@ endif
 
 " set 'path' to common Vim directories
 setlocal path-=/usr/include
-setlocal path+=pack/**,runtime/**,autoload/**,colors/**,compiler/**,ftplugin/**,indent/**,keymap/**,macros/**,plugin/**,syntax/**,after/**
+setlocal path+=pack/**,runtime/**,autoload/**,colors/**,compiler/**,ftplugin/**,indent/**,keymap/**,macros/**,plugin/**,syntax/**,after/**,python/**
 
 if !exists("no_plugin_maps") && !exists("no_vim_maps")
   let b:did_add_maps = 1

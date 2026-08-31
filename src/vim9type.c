@@ -2373,7 +2373,8 @@ get_item_type(type_T *type)
 	    return type->tt_args[0];
     }
 
-    return type->tt_member;
+    // For "any" the item type is not known.
+    return type->tt_member == NULL ? &t_any : type->tt_member;
 }
 
 /*

@@ -6,7 +6,7 @@ If you create a pull request on GitHub it will be
 forwarded to the vim-dev mailing list. You can also send your patch there
 directly (but please note, the initial posting is subject to moderation).
 In that case an attachment with a unified diff format is preferred.
-Information about the mailing list can be found [on the Vim website][0]
+Information about the mailing list can be found [on the Vim website][0].
 
 A pull request has the advantage that it will trigger the Continuous
 Integration tests, you will be warned of problems (you can ignore the coverage
@@ -86,7 +86,7 @@ features).
 
 If you find a problem with one of these files or have a suggestion for
 improvement, please first try to contact the maintainer directly.
-Look in the header of the file for the name, email address, github handle and/or
+Look in the header of the file for the name, email address, GitHub handle and/or
 upstream repository. You may also check the [MAINTAINERS][11] file.
 
 The maintainer will take care of issues and send updates to the Vim project for
@@ -113,10 +113,10 @@ PR with your changes against this repository here. For new filetypes, do not for
 - to add a new [filetype test][12] (keep it similar to the other filetype tests).
 - all configuration switches should be documented
   (check [filetype.txt][13] and/or [syntax.txt][14] for filetype and syntax plugins)
-- add yourself as Maintainer to the top of file (again, keep the header similar to
-  other runtime files)
+- add yourself as Maintainer to the top of the file (again, keep the header similar
+  to other runtime files)
 - add yourself to the [MAINTAINERS][11] file.
-- add a guard `if has('vim9script')` if you like to maintain Neovim
+- add a guard `if has('vim9script')` if you would like to maintain Neovim
   compatibility but want to use Vim9 script (or restrict yourself to legacy Vim
   script)
 
@@ -147,9 +147,9 @@ For the recommended documentation style, please check [helphelp.txt][16].
 # I have a question
 
 If you have some question on the style guide, please contact the [vim-dev][0]
-mailing list. For other questions you can join [`#vim`][19], use the 
-[Vi Stack Exchange][8] website, the [vim-use][9] mailing list or make use of the 
-[discussion][10] feature here at github.
+mailing list. For other questions you can join [`#vim`][19], use the
+[Vi Stack Exchange][8] website, the [vim-use][9] mailing list or make use of the
+[discussion][10] feature here at GitHub.
 
 [todo list]: https://github.com/vim/vim/blob/master/runtime/doc/todo.txt
 [0]: http://www.vim.org/maillist.php#vim-dev

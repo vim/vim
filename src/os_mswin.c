@@ -2053,10 +2053,15 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	    // Remember who sent this, for <client>
 	    clientWindow = sender;
 
-	    // Add the received keys to the input buffer.  The loop waiting
-	    // for the user to do something should check the input buffer.
+	    // Add the received keys to the input buffer.
 	    str = serverConvert(client_enc, (char_u *)data->lpData, &tofree);
-	    server_to_input_buf(str);
+# ifdef FEAT_GUI
+	    if (gui.in_use)
+		// The GUI may get here re-entrantly, so insert the keys later.
+		server_add_input(str);
+	    else
+# endif
+		server_to_input_buf(str);
 	    vim_free(tofree);
 
 # ifdef FEAT_GUI

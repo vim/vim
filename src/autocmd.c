@@ -807,6 +807,56 @@ find_end_event(
 }
 
 /*
+ * Find the command of an ":autocmd" with argument "arg", the part after the
+ * events, the pattern and any "++once"/"++nested".  Returns NULL when there is
+ * no command.  Does not modify "arg" and gives no error messages.
+ */
+    char_u *
+au_find_cmd_arg(char_u *arg)
+{
+    char_u	*pat;
+    char_u	*cmd;
+    int		group;
+
+    if (*arg == '|')
+	return NULL;
+
+    // Errors are reported when the autocommand is actually defined.
+    ++emsg_off;
+    group = au_get_grouparg(&arg);
+    pat = group == AUGROUP_ERROR
+			  ? NULL : find_end_event(arg, group != AUGROUP_ALL);
+    --emsg_off;
+    if (pat == NULL)
+	return NULL;
+
+    pat = skipwhite(pat);
+    if (*pat == NUL || *pat == '|')
+	return NULL;
+
+    // White space in the pattern can be escaped with a backslash.
+    cmd = pat;
+    while (*cmd != NUL
+	    && (!VIM_ISWHITE(*cmd) || (cmd > pat && *(cmd - 1) == '\\')))
+	++cmd;
+    cmd = skipwhite(cmd);
+
+    // "++once" and "++nested" can come in any order.
+    for (int i = 0; i < 2; ++i)
+    {
+	if (STRNCMP(cmd, "++once", 6) == 0 && VIM_ISWHITE(cmd[6]))
+	    cmd = skipwhite(cmd + 6);
+	if (STRNCMP(cmd, "++nested", 8) == 0 && VIM_ISWHITE(cmd[8]))
+	    cmd = skipwhite(cmd + 8);
+	if (!in_vim9script() && STRNCMP(cmd, "nested", 6) == 0
+						       && VIM_ISWHITE(cmd[6]))
+	    cmd = skipwhite(cmd + 6);
+    }
+
+    return *cmd == NUL ? NULL : cmd;
+}
+
+/*
  * Return TRUE if "event" is included in 'eventignore(win)'.
  */
     int

@@ -56,7 +56,7 @@ static int find_key_option(char_u *arg_arg, int has_lt);
 static void showoptions(int all, int opt_flags);
 static int optval_default(struct vimoption *, char_u *varp, int compatible);
 static void showoneopt(struct vimoption *, int opt_flags);
-static int put_setstring(FILE *fd, char *cmd, char *name, char_u **valuep, long_u flags);
+static int put_setstring(FILE *fd, bool legacy, char *cmd, char *name, char_u **valuep, long_u flags);
 static int put_setnum(FILE *fd, char *cmd, char *name, long *valuep);
 static int put_setbool(FILE *fd, char *cmd, char *name, int value);
 static int istermoption(struct vimoption *p);
@@ -323,7 +323,7 @@ set_init_default_printencoding(void)
 #endif
 }
 
-#ifdef FEAT_POSTSCRIPT
+#if defined(FEAT_POSTSCRIPT) || defined(FEAT_PRINT_PANGO)
 /*
  * Initialize the 'printexpr' option to a default value.
  */
@@ -494,6 +494,64 @@ set_init_expand_env(void)
     }
 }
 
+#if defined(MSWIN) && defined(FEAT_GETTEXT)
+/*
+ * Get the display language of Windows and the languages to fall back on, as a
+ * colon separated list for gettext, e.g. "ja_JP:en_US".  The list stops after
+ * English, untranslated messages are English already.
+ * Returns NULL when it cannot be obtained.  The result must be freed.
+ */
+    static char_u *
+get_ui_langs(void)
+{
+    ULONG	num_languages = 0;
+    ULONG	bufsize = 0;
+    WCHAR	*buffer;
+    char_u	*langs = NULL;
+
+    if (!GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &num_languages, NULL,
+								    &bufsize)
+	    || bufsize == 0)
+	return NULL;
+
+    buffer = ALLOC_MULT(WCHAR, bufsize);
+    if (buffer == NULL)
+	return NULL;
+
+    if (GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &num_languages, buffer,
+								    &bufsize))
+    {
+	// The list is NUL separated, the result needs the same room.
+	langs = alloc(bufsize);
+	if (langs != NULL)
+	{
+	    char_u	*d = langs;
+	    WCHAR	*s = buffer;
+
+	    while (*s != L'\0')
+	    {
+		bool	english = s[0] == L'e' && s[1] == L'n'
+					&& (s[2] == L'\0' || s[2] == L'-');
+
+		if (d > langs)
+		    *d++ = ':';
+		// Locale names are ASCII, "en-US" becomes "en_US".
+		for ( ; *s != L'\0'; ++s)
+		    *d++ = *s == L'-' ? '_' : (char_u)*s;
+		++s;
+
+		if (english)
+		    break;
+	    }
+	    *d = NUL;
+	}
+    }
+    vim_free(buffer);
+
+    return langs;
+}
+#endif
+
 /*
  * Initialize the 'LANG' environment variable to a default value.
  */
@@ -501,32 +559,27 @@ set_init_expand_env(void)
 set_init_lang_env(void)
 {
 #if defined(MSWIN) && defined(FEAT_GETTEXT)
-    // If $LANG isn't set, try to get a good value for it.  This makes the
-    // right language be used automatically.  Don't do this for English.
-    if (mch_getenv((char_u *)"LANG") == NULL)
+    // If the language isn't set in the environment, use the display language
+    // of Windows.  Not the regional format, which is what the CRT would use
+    // for setlocale(LC_ALL, "").
+    if (mch_getenv((char_u *)"LANG") == NULL
+	    && mch_getenv((char_u *)"LANGUAGE") == NULL
+	    && mch_getenv((char_u *)"LC_ALL") == NULL
+	    && mch_getenv((char_u *)"LC_MESSAGES") == NULL)
     {
-	char	buf[20];
-	long_u	n;
+	char_u	*langs = get_ui_langs();
 
-	// Could use LOCALE_SISO639LANGNAME, but it's not in Win95.
-	// LOCALE_SABBREVLANGNAME gives us three letters, like "enu", we use
-	// only the first two.
-	n = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SABBREVLANGNAME,
-							     (LPTSTR)buf, 20);
-	if (n >= 2 && STRNICMP(buf, "en", 2) != 0)
+	if (langs != NULL && *langs != NUL)
 	{
-	    // There are a few exceptions (probably more)
-	    if (STRNICMP(buf, "cht", 3) == 0 || STRNICMP(buf, "zht", 3) == 0)
-		STRCPY(buf, "zh_TW");
-	    else if (STRNICMP(buf, "chs", 3) == 0
-					      || STRNICMP(buf, "zhc", 3) == 0)
-		STRCPY(buf, "zh_CN");
-	    else if (STRNICMP(buf, "jp", 2) == 0)
-		STRCPY(buf, "ja");
-	    else
-		buf[2] = NUL;		// truncate to two-letter code
-	    vim_setenv((char_u *)"LANG", (char_u *)buf);
+	    char_u	*colon = vim_strchr(langs, ':');
+
+	    // $LANGUAGE is the list gettext picks from, $LANG the language.
+	    vim_setenv((char_u *)"LANGUAGE", langs);
+	    if (colon != NULL)
+		*colon = NUL;
+	    vim_setenv((char_u *)"LANG", langs);
 	}
+	vim_free(langs);
     }
 #elif defined(MACOS_CONVERT)
     // Moved to os_mac_conv.c to avoid dependency problems.
@@ -671,7 +724,7 @@ set_init_1(int clean_arg)
     set_init_default_maxmemtot();
     set_init_default_cdpath();
     set_init_default_printencoding();
-#ifdef FEAT_POSTSCRIPT
+#if defined(FEAT_POSTSCRIPT) || defined(FEAT_PRINT_PANGO)
     set_init_default_printexpr();
 #endif
 
@@ -3436,6 +3489,9 @@ insecure_flag(win_T *wp, int opt_idx, int opt_flags)
 #  ifdef FEAT_FIND_ID
 	    case PV_INEX:	return &wp->w_buffer->b_p_inex_flags;
 #  endif
+#  ifdef FEAT_COMPL_FUNC
+	    case PV_CPT:	return &wp->w_buffer->b_p_cpt_flags;
+#  endif
 # endif
 	}
     else
@@ -3523,6 +3579,36 @@ set_option_sctx_idx(int opt_idx, int opt_flags, sctx_T script_ctx)
 								new_script_ctx;
 	}
     }
+}
+
+/*
+ * Returns true if an option value will be evaluated as a Vim9 script.
+ * Checks stored script context for the option.  For options that have values in
+ * multiple contexts, opt_flags selects the desired context with OPT_GLOBAL, or
+ * OPT_LOCAL, selecting global or buffer/window context, respectively.
+ */
+    bool
+is_option_value_vim9(int opt_idx, int opt_flags)
+{
+    int		indir = (int)options[opt_idx].indir;
+    sctx_T	*sctx = NULL;
+
+    if ((opt_flags & OPT_GLOBAL) || (indir & (PV_BUF|PV_WIN)) == 0)
+	sctx = &options[opt_idx].script_ctx;
+
+    if ((opt_flags & OPT_LOCAL) || (indir & (PV_BUF|PV_WIN)))
+    {
+	if (indir & PV_BUF)
+	    sctx = &curbuf->b_p_script_ctx[indir & PV_MASK];
+	else if (indir & PV_WIN)
+	    sctx = &curwin->w_p_script_ctx[indir & PV_MASK];
+    }
+
+    // If "sc_sid" is not set, it means the option value was not modified from
+    // the default yet.  As we move towards Vim9 all the default values should
+    // be valid Vim9.
+    return !SCRIPT_ID_VALID(sctx->sc_sid) ||
+	sctx->sc_version >= SCRIPT_VERSION_VIM9;
 }
 
 /*
@@ -6507,6 +6593,19 @@ makeset(FILE *fd, int opt_flags, int local_only)
 		else    // P_STRING
 		{
 		    int		do_endif = FALSE;
+		    bool	legacy;
+
+#ifdef FEAT_EVAL
+		    legacy = !is_option_value_vim9(p - &options[0],
+			    round == 1 ? opt_flags | OPT_GLOBAL : OPT_LOCAL);
+#else
+		    // I think none of the options that require expression
+		    // evaluation will be present if expression evaluation is
+		    // disabled.  For example, 'includeexpr' is set to NULL if
+		    // FEAT_EVAL is not present.  So it should be safe to use
+		    // normal "set" and "setlocal" in the session file.
+		    legacy = false;
+#endif
 
 		    // Don't set 'syntax' and 'filetype' again if the value is
 		    // already right, avoids reloading the syntax file.
@@ -6522,8 +6621,8 @@ makeset(FILE *fd, int opt_flags, int local_only)
 			    return FAIL;
 			do_endif = TRUE;
 		    }
-		    if (put_setstring(fd, cmd, p->fullname, (char_u **)varp,
-							     p->flags) == FAIL)
+		    if (put_setstring(fd, legacy, cmd, p->fullname,
+					    (char_u **)varp, p->flags) == FAIL)
 			return FAIL;
 		    if (do_endif)
 		    {
@@ -6545,14 +6644,23 @@ makeset(FILE *fd, int opt_flags, int local_only)
     int
 makefoldset(FILE *fd)
 {
-    if (put_setstring(fd, "setlocal", "fdm", &curwin->w_p_fdm, 0) == FAIL
 # ifdef FEAT_EVAL
-	    || put_setstring(fd, "setlocal", "fde", &curwin->w_p_fde, 0)
-								       == FAIL
+    sctx_T	*fde_script_ctx = &curwin->w_p_script_ctx[WV_FDE];
+    // Similarly to the check in is_option_value_vim9(), if "sc_id" is not set
+    // we have a default value, so it is safe to avoid the ":legacy" prefix.
+    bool	fde_is_legacy = SCRIPT_ID_VALID(fde_script_ctx->sc_sid)
+			&& fde_script_ctx->sc_version < SCRIPT_VERSION_VIM9;
 # endif
-	    || put_setstring(fd, "setlocal", "fmr", &curwin->w_p_fmr, 0)
+
+    if (put_setstring(fd, false, "setlocal", "fdm", &curwin->w_p_fdm, 0)
 								       == FAIL
-	    || put_setstring(fd, "setlocal", "fdi", &curwin->w_p_fdi, 0)
+# ifdef FEAT_EVAL
+	    || put_setstring(fd, fde_is_legacy, "setlocal", "fde",
+						  &curwin->w_p_fde, 0) == FAIL
+# endif
+	    || put_setstring(fd, false, "setlocal", "fmr", &curwin->w_p_fmr, 0)
+								       == FAIL
+	    || put_setstring(fd, false, "setlocal", "fdi", &curwin->w_p_fdi, 0)
 								       == FAIL
 	    || put_setnum(fd, "setlocal", "fdl", &curwin->w_p_fdl) == FAIL
 	    || put_setnum(fd, "setlocal", "fml", &curwin->w_p_fml) == FAIL
@@ -6568,6 +6676,7 @@ makefoldset(FILE *fd)
     static int
 put_setstring(
     FILE	*fd,
+    bool	legacy,
     char	*cmd,
     char	*name,
     char_u	**valuep,
@@ -6578,6 +6687,8 @@ put_setstring(
     char_u	*part = NULL;
     char_u	*p;
 
+    if (legacy && fprintf(fd, "legacy ") < 0)
+	return FAIL;
     if (fprintf(fd, "%s %s=", cmd, name) < 0)
 	return FAIL;
     if (*valuep != NULL)
@@ -6620,6 +6731,8 @@ put_setstring(
 		p = buf;
 		while (*p != NUL)
 		{
+		    if (legacy && fprintf(fd, "legacy ") < 0)
+			return FAIL;
 		    // for each comma separated option part, append value to
 		    // the option, :set rtp+=value
 		    if (fprintf(fd, "%s %s+=", cmd, name) < 0)
@@ -7676,6 +7789,8 @@ clear_winopt(winopt_T *wop UNUSED)
 // Index into the options table for a buffer-local option enum.
 static int buf_opt_idx[BV_COUNT];
 # define COPY_OPT_SCTX(buf, bv) buf->b_p_script_ctx[bv] = options[buf_opt_idx[bv]].script_ctx
+# define COPY_OPT_INSECURE(flagsfield, bv) \
+	(flagsfield) = (options[buf_opt_idx[bv]].flags & P_INSECURE)
 
 /*
  * Initialize buf_opt_idx[] if not done already.
@@ -7695,6 +7810,7 @@ init_buf_opt_idx(void)
 }
 #else
 # define COPY_OPT_SCTX(buf, bv)
+# define COPY_OPT_INSECURE(flagsfield, bv)
 #endif
 
 /*
@@ -7817,6 +7933,7 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_cpt = vim_strsave(p_cpt);
 	    COPY_OPT_SCTX(buf, BV_CPT);
 #ifdef FEAT_COMPL_FUNC
+	    COPY_OPT_INSECURE(buf->b_p_cpt_flags, BV_CPT);
 	    set_buflocal_cpt_callbacks(buf);
 #endif
 #ifdef BACKSLASH_IN_FILENAME
@@ -7910,6 +8027,7 @@ buf_copy_options(buf_T *buf, int flags)
 #if defined(FEAT_EVAL)
 	    buf->b_p_inde = vim_strsave(p_inde);
 	    COPY_OPT_SCTX(buf, BV_INDE);
+	    COPY_OPT_INSECURE(buf->b_p_inde_flags, BV_INDE);
 	    buf->b_p_indk = vim_strsave(p_indk);
 	    COPY_OPT_SCTX(buf, BV_INDK);
 #endif
@@ -7917,6 +8035,7 @@ buf_copy_options(buf_T *buf, int flags)
 #if defined(FEAT_EVAL)
 	    buf->b_p_fex = vim_strsave(p_fex);
 	    COPY_OPT_SCTX(buf, BV_FEX);
+	    COPY_OPT_INSECURE(buf->b_p_fex_flags, BV_FEX);
 #endif
 #ifdef FEAT_CRYPT
 	    buf->b_p_key = vim_strsave(p_key);
@@ -7971,6 +8090,7 @@ buf_copy_options(buf_T *buf, int flags)
 # ifdef FEAT_EVAL
 	    buf->b_p_inex = vim_strsave(p_inex);
 	    COPY_OPT_SCTX(buf, BV_INEX);
+	    COPY_OPT_INSECURE(buf->b_p_inex_flags, BV_INEX);
 # endif
 #endif
 	    buf->b_p_cot = empty_option;

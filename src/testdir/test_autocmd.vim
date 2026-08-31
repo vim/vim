@@ -4070,6 +4070,110 @@ func Test_autocmd_with_block()
   augroup END
 endfunc
 
+" Test for a backslash line continuation in an :autocmd command
+func Test_autocmd_line_continuation()
+  let lines =<< trim END
+      vim9script
+      def Bar(label: string, value: any): void
+        g:result = [label, value]
+      enddef
+      autocmd BufWritePre * call Bar('x', {
+            \ 'key': 'value',
+            \ })
+      doautocmd BufWritePre
+      assert_equal(['x', {'key': 'value'}], g:result)
+  END
+  call v9.CheckScriptSuccess(lines)
+  unlet g:result
+  au! BufWritePre
+endfunc
+
+" Test for a {} block at script level in an :autocmd nested in another one
+func Test_autocmd_nested_block()
+  let lines =<< trim END
+      vim9script
+      autocmd CursorHold * autocmd BufReadPre * ++once {
+            g:nested_block = 'yes'
+          }
+  END
+  call writefile(lines, 'XautoNestedBlock', 'D')
+  source XautoNestedBlock
+
+  doautocmd CursorHold
+  doautocmd BufReadPre
+  call assert_equal('yes', g:nested_block)
+
+  unlet g:nested_block
+  au! CursorHold
+  au! BufReadPre
+endfunc
+
+" Test for a {} block in an :autocmd nested two levels deep
+func Test_autocmd_nested_block_twice()
+  let lines =<< trim END
+      vim9script
+      autocmd CursorHold * autocmd CursorHoldI * autocmd BufReadPre * ++once {
+            g:nested_twice = 'yes'
+          }
+  END
+  call writefile(lines, 'XautoNestedTwice', 'D')
+  source XautoNestedTwice
+
+  doautocmd CursorHold
+  doautocmd CursorHoldI
+  doautocmd BufReadPre
+  call assert_equal('yes', g:nested_twice)
+
+  unlet g:nested_twice
+  au! CursorHold
+  au! CursorHoldI
+  au! BufReadPre
+endfunc
+
+" Only the :autocmd owning the block uses Vim9 syntax, the one it is nested in
+" keeps the syntax of the script.  The old "nested" is valid in legacy script
+" but an error in Vim9 script, so it tells the two apart.
+func Test_autocmd_nested_block_legacy_script()
+  let lines =<< trim END
+      autocmd CursorHold * autocmd BufReadPre * nested {
+            g:legacy_block = 'yes'
+          }
+  END
+  call writefile(lines, 'XautoNestedLegacy', 'D')
+  source XautoNestedLegacy
+
+  doautocmd CursorHold
+  doautocmd BufReadPre
+  call assert_equal('yes', g:legacy_block)
+
+  unlet g:legacy_block
+  au! CursorHold
+  au! BufReadPre
+endfunc
+
+" A trailing "{" that is an argument of the command does not start a block,
+" the lines after it are not swallowed
+func Test_autocmd_trailing_curly_no_block()
+  let lines =<< trim END
+      vim9script
+      autocmd CursorHold * normal! {
+      g:after_autocmd = 'reached'
+  END
+  call writefile(lines, 'XautoTrailingCurly', 'D')
+  source XautoTrailingCurly
+  call assert_equal('reached', g:after_autocmd)
+
+  new
+  call setline(1, ['one', '', 'two'])
+  call cursor(3, 1)
+  doautocmd CursorHold
+  call assert_equal(2, line('.'))
+
+  bwipe!
+  unlet g:after_autocmd
+  au! CursorHold
+endfunc
+
 func Test_closing_autocmd_window()
   let lines =<< trim END
       edit Xa.txt
@@ -5843,6 +5947,224 @@ func Test_eventignore_subtract()
 
   set eventignore&
   unlet! s:triggered
+  call CleanUpTestAuGroup()
+  %bw!
+endfunc
+
+" A cursor move made while CursorMoved is ignored is not reported once the
+" event is not ignored anymore.
+func Test_eventignore_cursormoved()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, range(1, 300))
+    let g:moved = 0
+    autocmd CursorMoved * let g:moved += 1
+
+    func MoveWhileIgnored()
+      set eventignore=all
+      call cursor(100, 1)
+      call cursor(200, 1)
+      set eventignore=
+    endfunc
+
+    func MoveThenIgnore()
+      call cursor(50, 1)
+      set eventignore=all
+      set eventignore=
+    endfunc
+
+    func MoveExWhileIgnored()
+      set eventignore=all
+      100
+      200
+      set eventignore=
+    endfunc
+
+    " The move under "all" is not reported, the one under "WinEnter" is.
+    func MoveWithTwoStages()
+      set eventignore=all
+      call cursor(100, 1)
+      set eventignore=WinEnter
+      call cursor(200, 1)
+      set eventignore=
+    endfunc
+  END
+  call writefile(lines, 'XTest_eventignore_cm', 'D')
+  let buf = RunVimInTerminal('-S XTest_eventignore_cm', {'rows': 10})
+
+  " Reset the counter in the same command line as the move, so that the main
+  " loop only runs once the move has been made.
+  call term_sendkeys(buf, ":let g:moved = 0 | call MoveWhileIgnored()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'moved:' g:moved\<CR>")
+  call WaitForAssert({-> assert_match('^moved: 0\>', term_getline(buf, 10))}, 1000)
+
+  " A move made before the event was ignored is still reported.
+  call term_sendkeys(buf, ":let g:moved = 0 | call MoveThenIgnore()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'moved:' g:moved\<CR>")
+  call WaitForAssert({-> assert_match('^moved: 1\>', term_getline(buf, 10))}, 1000)
+
+  " Same as the first check, but moving with an Ex line address.
+  call term_sendkeys(buf, ":let g:moved = 0 | call MoveExWhileIgnored()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'moved:' g:moved\<CR>")
+  call WaitForAssert({-> assert_match('^moved: 0\>', term_getline(buf, 10))}, 1000)
+
+  " Only the move made while CursorMoved was not ignored is reported.
+  call term_sendkeys(buf, ":let g:moved = 0 | call MoveWithTwoStages()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'moved:' g:moved\<CR>")
+  call WaitForAssert({-> assert_match('^moved: 1\>', term_getline(buf, 10))}, 1000)
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Same as Test_eventignore_cursormoved(), but driven from Python, which
+" updates the screen after every command.
+func Test_eventignore_cursormoved_python()
+  CheckFeature python3
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, range(1, 300))
+    let g:moved = 0
+    autocmd CursorMoved * let g:moved += 1
+    py3 << PYEOF
+    import vim
+    def Fun():
+        vim.command('set ei=all')
+        vim.command('100')
+        vim.command('200')
+        vim.command('echom "set ei: line = " .. line(".")')
+        vim.command('set ei=')
+    PYEOF
+  END
+  call writefile(lines, 'XTest_eventignore_cm_py', 'D')
+  let buf = RunVimInTerminal('-S XTest_eventignore_cm_py', {'rows': 10})
+
+  call term_sendkeys(buf, ":let g:moved = 0 | py3 Fun()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'moved:' g:moved\<CR>")
+  call WaitForAssert({-> assert_match('^moved: 0\>', term_getline(buf, 10))}, 1000)
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" The other events that are triggered by comparing against a stored value.
+func Test_eventignore_deferred_events()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, range(1, 300))
+    let g:textchanged = 0
+    let g:winscrolled = 0
+    autocmd TextChanged * let g:textchanged += 1
+    autocmd WinScrolled * let g:winscrolled += 1
+
+    func ChangeWhileIgnored()
+      set eventignore=all
+      call setline(1, 'changed')
+      set eventignore=
+    endfunc
+
+    func ScrollWhileIgnored()
+      set eventignore=all
+      call winrestview({'topline': 100, 'lnum': 100})
+      set eventignore=
+    endfunc
+
+    func ChangeThenIgnore()
+      call setline(2, 'changed too')
+      set eventignore=all
+      set eventignore=
+    endfunc
+
+    func ScrollThenIgnore()
+      call winrestview({'topline': 150, 'lnum': 150})
+      set eventignore=all
+      set eventignore=
+    endfunc
+  END
+  call writefile(lines, 'XTest_eventignore_deferred', 'D')
+  let buf = RunVimInTerminal('-S XTest_eventignore_deferred', {'rows': 10})
+
+  call term_sendkeys(buf, ":let g:textchanged = 0 | call ChangeWhileIgnored()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'textchanged:' g:textchanged\<CR>")
+  call WaitForAssert({-> assert_match('^textchanged: 0\>', term_getline(buf, 10))}, 1000)
+
+  call term_sendkeys(buf, ":let g:winscrolled = 0 | call ScrollWhileIgnored()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'winscrolled:' g:winscrolled\<CR>")
+  call WaitForAssert({-> assert_match('^winscrolled: 0\>', term_getline(buf, 10))}, 1000)
+
+  " What happened before the events were ignored is still reported.
+  call term_sendkeys(buf, ":let g:textchanged = 0 | call ChangeThenIgnore()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'textchanged:' g:textchanged\<CR>")
+  call WaitForAssert({-> assert_match('^textchanged: 1\>', term_getline(buf, 10))}, 1000)
+
+  call term_sendkeys(buf, ":let g:winscrolled = 0 | call ScrollThenIgnore()\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":echo 'winscrolled:' g:winscrolled\<CR>")
+  call WaitForAssert({-> assert_match('^winscrolled: 1\>', term_getline(buf, 10))}, 1000)
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Changing 'eventignore' from an autocommand that is triggered by setting
+" 'eventignore' must not crash.
+func Test_eventignore_changed_while_triggering()
+  new
+  call setline(1, range(1, 10))
+  augroup testing
+    autocmd!
+    autocmd CursorMoved * set eventignore=WinLeave
+  augroup END
+
+  " The pending cursor move is reported when the option changes.
+  set eventignore=WinNew
+  normal! j
+  set eventignore=all
+  call assert_equal('all', &eventignore)
+
+  augroup testing
+    autocmd!
+    autocmd CursorMoved * noautocmd echo ''
+  augroup END
+  set eventignore=WinNew
+  normal! j
+  set eventignore=all
+  call assert_equal('all', &eventignore)
+
+  set eventignore=
+  call CleanUpTestAuGroup()
+  %bw!
+endfunc
+
+" An autocommand that is triggered by setting 'eventignorewin' cannot close
+" the window that holds the option.
+func Test_eventignorewin_window_not_closed_while_triggering()
+  new
+  call setline(1, range(1, 10))
+  split
+  let nwin = winnr('$')
+  let s:tried = 0
+  augroup testing
+    autocmd!
+    autocmd CursorMoved * if !s:tried | let s:tried = 1 | close | endif
+  augroup END
+
+  normal! j
+  set eventignorewin=WinLeave
+  call assert_equal(1, s:tried)
+  call assert_equal(nwin, winnr('$'))
+  call assert_equal('WinLeave', &eventignorewin)
+
+  set eventignorewin=
+  unlet s:tried
   call CleanUpTestAuGroup()
   %bw!
 endfunc

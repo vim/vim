@@ -729,6 +729,7 @@ OBJ = \
 	$(OUTDIR)\gc.obj \
 	$(OUTDIR)\gui_xim.obj \
 	$(OUTDIR)\hardcopy.obj \
+	$(OUTDIR)\hardcopy_postscript.obj \
 	$(OUTDIR)\hashtab.obj \
 	$(OUTDIR)\help.obj \
 	$(OUTDIR)\highlight.obj \
@@ -1622,6 +1623,8 @@ $(OUTDIR)/gui_xim.obj: $(OUTDIR) gui_xim.c $(INCL)
 
 $(OUTDIR)/hardcopy.obj: $(OUTDIR) hardcopy.c $(INCL) version.h
 
+$(OUTDIR)/hardcopy_postscript.obj: $(OUTDIR) hardcopy_postscript.c $(INCL) version.h
+
 $(OUTDIR)/hashtab.obj: $(OUTDIR) hashtab.c $(INCL)
 
 $(OUTDIR)/help.obj: $(OUTDIR) help.c $(INCL)
@@ -1987,6 +1990,8 @@ proto.h: \
 	proto/gc.pro \
 	proto/gui_xim.pro \
 	proto/hardcopy.pro \
+	proto/hardcopy_pango.pro \
+	proto/hardcopy_postscript.pro \
 	proto/hashtab.pro \
 	proto/help.pro \
 	proto/highlight.pro \

@@ -1209,7 +1209,7 @@ buf_write(
 		char_u	tmp_fname[MAXPATHL];
 		int	i;
 
-		// Check if we can create a file and set the owner/group to
+		// Check if we can create a file and set the owner/group/mode to
 		// the ones from the original file.
 		// First find a file name that doesn't exist yet (use some
 		// arbitrary numbers).
@@ -1239,6 +1239,11 @@ buf_write(
 # ifdef UNIX
 #  ifdef HAVE_FCHOWN
 		    vim_ignored = fchown(fd, st_old.st_uid, st_old.st_gid);
+#  endif
+#  ifdef HAVE_FCHMOD
+		    (void)mch_fsetperm(fd, perm);
+#  else
+		    (void)mch_setperm(tmp_fname, perm);
 #  endif
 		    if (mch_stat((char *)tmp_fname, &st) < 0
 			    || st.st_uid != st_old.st_uid

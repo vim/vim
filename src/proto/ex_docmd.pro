@@ -10,6 +10,7 @@ char *ex_errmsg(char *msg, char_u *arg);
 char *ex_range_without_command(exarg_T *eap);
 int checkforcmd(char_u **pp, char *cmd, int len);
 int checkforcmd_noparen(char_u **pp, char *cmd, int len);
+char_u *find_cmd_block_start(char_u *line);
 int parse_command_modifiers(exarg_T *eap, char **errormsg, cmdmod_T *cmod, int skip_only);
 int has_cmdmod(cmdmod_T *cmod, int ignore_silent);
 int cmdmod_error(int ignore_silent);
