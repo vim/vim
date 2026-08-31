@@ -119,7 +119,7 @@ syn keyword javaConditional	if else switch
 syn keyword javaRepeat		while for do
 syn keyword javaBoolean		true false
 syn keyword javaConstant	null
-syn keyword javaTypedef		this super
+syn keyword javaTypedef		this super _
 syn keyword javaOperator	new instanceof
 syn match   javaOperator	"\<var\>\%(\s*(\)\@!"
 

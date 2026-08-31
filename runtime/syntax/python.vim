@@ -313,7 +313,7 @@ if !exists("python_no_builtin_highlight")
   " constants added by the `site` module
   syn keyword pythonBuiltin	quit exit copyright credits license
   " built-in functions
-  syn keyword pythonBuiltin	abs all any ascii bin bool breakpoint bytearray
+  syn keyword pythonBuiltin	abs aiter all anext any ascii bin bool breakpoint bytearray
   syn keyword pythonBuiltin	bytes callable chr classmethod compile complex
   syn keyword pythonBuiltin	delattr dict dir divmod enumerate eval exec
   syn keyword pythonBuiltin	filter float format frozenset getattr globals
@@ -337,7 +337,8 @@ endif
 " http://docs.python.org/library/exceptions.html
 if !exists("python_no_exception_highlight")
   " builtin base exceptions (used mostly as base classes for other exceptions)
-  syn keyword pythonExceptions	BaseException Exception
+  syn keyword pythonExceptions	BaseException BaseExceptionGroup
+  syn keyword pythonExceptions	Exception ExceptionGroup
   syn keyword pythonExceptions	ArithmeticError BufferError LookupError
   " builtin exceptions (actually raised)
   syn keyword pythonExceptions	AssertionError AttributeError EOFError
