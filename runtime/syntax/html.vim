@@ -36,8 +36,8 @@ syn region  htmlString	 contained start=+'+ end=+'+ contains=htmlSpecialChar,jav
 syn match   htmlValue	 contained "=[\t ]*[^'" \t>][^ \t>]*"hs=s+1   contains=javaScriptExpression,@htmlPreproc
 syn region  htmlEndTag		   start=+</+	   end=+>+ contains=htmlTagN,htmlTagError
 syn region  htmlTag		   start=+<[^/]+   end=+>+ fold contains=htmlTagN,htmlString,htmlArg,htmlValue,htmlTagError,htmlEvent,htmlCssDefinition,@htmlPreproc,@htmlArgCluster
-syn match   htmlTagN	 contained +<\s*[-a-zA-Z0-9]\++hs=s+1 contains=htmlTagName,htmlSpecialTagName,@htmlTagNameCluster
-syn match   htmlTagN	 contained +</\s*[-a-zA-Z0-9]\++hs=s+2 contains=htmlTagName,htmlSpecialTagName,@htmlTagNameCluster
+syn match   htmlTagN	 contained +<\s*[-a-zA-Z0-9]\++hs=s+1 contains=htmlTagName,htmlSpecialTagName,htmlSvgTagName,htmlMathTagName,@htmlTagNameCluster
+syn match   htmlTagN	 contained +</\s*[-a-zA-Z0-9]\++hs=s+2 contains=htmlTagName,htmlSpecialTagName,htmlSvgTagName,htmlMathTagName,@htmlTagNameCluster
 syn match   htmlTagError contained "[^>]<"ms=s+1
 
 " tag names
@@ -60,17 +60,22 @@ syn keyword htmlTagName contained object optgroup q s tbody tfoot thead
 syn keyword htmlTagName contained article aside audio bdi canvas data
 syn keyword htmlTagName contained datalist details dialog embed figcaption
 syn keyword htmlTagName contained figure footer header hgroup keygen main
-syn keyword htmlTagName contained mark menuitem meter nav output picture
+syn keyword htmlTagName contained mark menuitem meter nav output picture selectedcontent
 syn keyword htmlTagName contained progress rb rp rt rtc ruby search section
 syn keyword htmlTagName contained slot source summary template time track
-syn keyword htmlTagName contained video wbr
+syn keyword htmlTagName contained fencedframe video wbr
 
 " svg and math tags
 syn keyword htmlMathTagName contained math
 syn keyword htmlSvgTagName  contained svg
 
-syn region  htmlMath start="<math>" end="</math>" contains=@htmlXml transparent keepend
-syn region  htmlSvg  start="<svg>"  end="</svg>"  contains=@htmlXml transparent keepend
+" Generic catch-all: any tag name not in the keyword lists above still gets
+" highlighted.  Vim keywords always take priority over matches, so known tags
+" keep their specific highlight groups (htmlStatement, Exception, etc.).
+syn match htmlTagName contained #[-a-zA-Z0-9]\+#
+
+syn region  htmlMath start=+<math\_[^>]*>+ end=+</math>+ contains=@htmlTop transparent keepend
+syn region  htmlSvg  start=+<svg\_[^>]*>+  end=+</svg>+  contains=@htmlTop transparent keepend
 
 syn cluster xmlTagHook	add=htmlMathTagName,htmlSvgTagName
 
@@ -153,6 +158,10 @@ call extend(s:aria, s:aria_deprecated)
 exe 'syn match htmlArg contained "\%#=1\<aria-\%(' .. s:aria->join('\|') .. '\)\>"'
 unlet s:aria s:aria_deprecated
 " }}}
+
+" Catch-all for attribute names not in the keyword list (e.g. SVG, MathML).
+" Any word followed by = inside a tag gets the htmlArg highlight.
+syn match htmlArg contained "[-a-zA-Z0-9_:]\+\ze=" containedin=htmlTag,htmlEndTag
 
 " Netscape extensions
 syn keyword htmlTagName contained frame noframes frameset nobr blink
