@@ -6376,4 +6376,30 @@ func Test_popup_no_filter_at_hit_enter()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popupwin_close_and_redraw_keeps_cursor()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, repeat(['some text'], 8))
+      call cursor(3, 2)
+      let g:id = popup_atcursor(['a popup'], #{moved: 'any'})
+      func CloseIt()
+        call popup_close(g:id)
+        redraw
+      endfunc
+      autocmd ModeChanged * ++once call CloseIt()
+  END
+  call writefile(lines, 'XtestPopupCursor', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupCursor', #{rows: 10})
+  call WaitForAssert({-> assert_equal([3, 2], term_getcursor(buf)[0:1])})
+
+  " With the operator waiting, nothing after the redraw puts the cursor back.
+  call term_sendkeys(buf, "c")
+  call TermWait(buf, 100)
+  call assert_equal([3, 2], term_getcursor(buf)[0:1])
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2
