@@ -10463,6 +10463,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			doesn't extend the input, the next 'wildmode' part is
 			used.
 	"list"		If multiple matches are found, list all of them.
+			When the same press shows 'wildmenu', the menu takes
+			the place of the list.
 	"lastused"	When completing buffer names, sort them by most
 			recently used (excluding the current buffer).  Only
 			applies to buffer name completion.

@@ -3346,6 +3346,30 @@ func Test_wildmenu_pum_info_async_update()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test that "list" and "full" in the same 'wildmode' phase show the wildmenu
+func Test_wildmenu_with_list_full()
+  call writefile([], 'XwildA', 'D')
+  call writefile([], 'XwildB', 'D')
+  cnoremap <expr> <F2> wildmenumode()
+  set wildmenu wildmode=list:full
+
+  for wop in ['pum', '']
+    execute 'set wildoptions=' .. wop
+    call feedkeys(":e Xwild\<Tab>\<F2>\<C-B>\"\<CR>", 'xt')
+    call assert_equal('"e XwildA1', @:, 'wildoptions=' .. wop)
+  endfor
+
+  " Without 'wildmenu' the matches are listed as before.
+  set nowildmenu wildoptions=
+  let g:Sline = ''
+  call feedkeys(":e Xwild\<Tab>\<F4>\<F2>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('XwildA  XwildB', g:Sline)
+  call assert_equal('"e XwildA0', @:)
+
+  cunmap <F2>
+  set nowildmenu wildoptions& wildmode&
+endfunc
+
 " Test for wildmenumode() with the cmdline popup menu
 func Test_wildmenumode_with_pum()
   set wildmenu

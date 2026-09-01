@@ -1063,7 +1063,9 @@ cmdline_wildchar_complete(
 	    {
 		if (wim_list || (p_wmnu && (wim_full || wim_noselect
 				|| wim_noinsert)))
-		    (void)showmatches(xp, p_wmnu, wim_list,
+		    // The menu stands where the matches would be listed.
+		    (void)showmatches(xp, p_wmnu,
+			    wim_list && !(p_wmnu && wim_full),
 			    p_wmnu ? wim_flags[0] : 0);
 		else
 		    vim_beep(BO_WILD);
