@@ -85,6 +85,8 @@ comp_botline(win_T *wp)
     int		n;
     linenr_T	lnum;
     int		done;
+    int		i = 0;
+    int		use_cache;
 #ifdef FEAT_FOLDING
     linenr_T    last;
     int		folded;
@@ -95,6 +97,20 @@ comp_botline(win_T *wp)
      * Otherwise have to start at w_topline.
      */
     check_cursor_moved(wp);
+
+    // The wl_size values computed for the previous redraw give the height of
+    // each displayed line.  When the display is up-to-date they are equal to
+    // what plines_correct_topline() would compute, so reuse them to avoid
+    // walking every line to measure its width on each scroll (like curs_rows()
+    // does).  Only trust them when actually redrawing, the buffer was not
+    // changed, no "$" is displayed for a change and w_lines[] starts at or
+    // above w_topline.
+    use_cache = redrawing()
+		    && !wp->w_buffer->b_mod_set
+		    && dollar_vcol == -1
+		    && wp->w_lines_valid > 0
+		    && wp->w_lines[0].wl_lnum <= wp->w_topline;
+
     if (wp->w_valid & VALID_CROW)
     {
 	lnum = wp->w_cursor.lnum;
@@ -106,20 +122,54 @@ comp_botline(win_T *wp)
 	done = 0;
     }
 
-    for ( ; lnum <= wp->w_buffer->b_ml.ml_line_count; ++lnum)
+    // Find the w_lines[] entry for the starting line.
+    if (use_cache)
+	while (i < wp->w_lines_valid && wp->w_lines[i].wl_lnum < lnum)
+	    ++i;
+
+    for ( ; lnum <= wp->w_buffer->b_ml.ml_line_count; ++i)
     {
+	int	valid = FALSE;
+
 #ifdef FEAT_FOLDING
 	last = lnum;
 	folded = FALSE;
-	if (hasFoldingWin(wp, lnum, NULL, &last, TRUE, NULL))
+#endif
+	// Try to use the size from the previous redraw.
+	if (use_cache && i < wp->w_lines_valid)
 	{
-	    n = 1;
-	    folded = TRUE;
+	    if (wp->w_lines[i].wl_lnum < lnum || !wp->w_lines[i].wl_valid)
+		continue;		// skip changed or deleted lines
+	    if (wp->w_lines[i].wl_lnum == lnum)
+		valid = TRUE;
+	    else // wl_lnum > lnum
+		--i;			// hold at inserted lines
+	}
+
+	if (valid && (lnum != wp->w_topline
+			|| (wp->w_skipcol == 0
+#ifdef FEAT_DIFF
+			    && !wp->w_p_diff
+#endif
+			)))
+	{
+	    n = wp->w_lines[i].wl_size;
+#ifdef FEAT_FOLDING
+	    folded = wp->w_lines[i].wl_folded;
+	    last = wp->w_lines[i].wl_lastlnum;
+#endif
 	}
 	else
-#endif
 	{
-	    n = plines_correct_topline(wp, lnum, TRUE);
+#ifdef FEAT_FOLDING
+	    if (hasFoldingWin(wp, lnum, NULL, &last, TRUE, NULL))
+	    {
+		n = 1;
+		folded = TRUE;
+	    }
+	    else
+#endif
+		n = plines_correct_topline(wp, lnum, TRUE);
 	}
 	if (
 #ifdef FEAT_FOLDING
@@ -141,7 +191,9 @@ comp_botline(win_T *wp)
 	    break;
 	done += n;
 #ifdef FEAT_FOLDING
-	lnum = last;
+	lnum = last + 1;
+#else
+	++lnum;
 #endif
     }
 
