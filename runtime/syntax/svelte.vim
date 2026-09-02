@@ -40,15 +40,17 @@ syntax match svelteComponent "\v<svelte:(head|body|window|document|options|eleme
 syntax match svelteRune "\$\w\+" containedin=javaScript,svelteScriptTS
 
 " Interpolation and expressions: { expr }
+" Only match inside HTML tag content or attribute values, not inside <script>
+" blocks where { are JavaScript block delimiters.
 syntax region svelteMustache matchgroup=svelteBraces
       \ start=+\v\{+ end=+\v\}+
-      \ containedin=htmlString,htmlValue keepend
+      \ containedin=htmlTag,htmlValue,htmlString keepend
 
 " Control-flow and special blocks.  Covers both legacy Svelte and Svelte 5:
 "   {#if} {:else} {/if} {#each} {:then} {:catch} {/each}
 "   {#await} {#key} {#snippet} {@html} {@const} {@debug} {@render}
 syntax region svelteBlock matchgroup=svelteKeyword
-      \ start=+\v\{[#/:@]\w*+ end=+\v\}+ keepend
+      \ start=+\v\{[#/:@]\w*+ end=+\v\}+ containedin=htmlTag,htmlValue keepend
 
 " Element directives:
 "   on:click bind:value class:active use:foo transition:fade in:/out:/animate:
