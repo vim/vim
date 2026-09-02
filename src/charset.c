@@ -913,13 +913,32 @@ linetabsize_no_outer(win_T *wp, linenr_T lnum)
 win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
 {
     vimlong_T vcol = cts->cts_vcol;
+#if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
+    // Fast path: when win_lbr_chartabsize() would just return
+    // win_nolbr_chartabsize() (wrap on; no 'linebreak'/'breakindent'/
+    // 'showbreak'/inserted text properties), call it directly.
+    int simple_width = cts->cts_win->w_p_wrap
+# ifdef FEAT_LINEBREAK
+	&& !cts->cts_win->w_p_lbr && !cts->cts_win->w_p_bri
+	&& *get_showbreak_value(cts->cts_win) == NUL
+# endif
+# ifdef FEAT_PROP_POPUP
+	&& !cts->cts_has_prop_with_text
+# endif
+	;
+#endif
 #ifdef FEAT_PROP_POPUP
     cts->cts_with_trailing = len == MAXCOL;
 #endif
     for ( ; *cts->cts_ptr != NUL && (len == MAXCOL || cts->cts_ptr < cts->cts_line + len);
 						      MB_PTR_ADV(cts->cts_ptr))
     {
-	vcol += win_lbr_chartabsize(cts, NULL, NULL);
+#if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
+	if (simple_width)
+	    vcol += win_nolbr_chartabsize(cts, NULL);
+	else
+#endif
+	    vcol += win_lbr_chartabsize(cts, NULL, NULL);
 	if (vcol > MAXCOL)
 	{
 	    cts->cts_vcol = MAXCOL;
