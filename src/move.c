@@ -3113,8 +3113,9 @@ cursor_correct(void)
     if (curwin->w_botline == curbuf->b_ml.ml_line_count + 1
 	    && mouse_dragging == 0)
     {
-	if (!use_scrolloffpad())
-		below_wanted = 0;
+	// Missing context below EOF must not move the cursor up.  Automatic
+	// scrolling handles the centering for 'scrolloffpad'.
+	below_wanted = 0;
 	max_off = (curwin->w_height - 1) / 2;
 	if (above_wanted > max_off)
 	    above_wanted = max_off;
