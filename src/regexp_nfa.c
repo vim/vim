@@ -5891,8 +5891,19 @@ nfa_regmatch(
 
 	if (has_mbyte)
 	{
-	    curc = (*mb_ptr2char)(rex.input);
-	    clen = (*mb_ptr2len)(rex.input);
+	    // Fast path for an ASCII byte not followed by a composing
+	    // character, matching the check in utfc_ptr2len().  Avoids two
+	    // indirect calls for the common case.
+	    if (rex.input[0] != NUL && rex.input[0] < 0x80 && rex.input[1] < 0x80)
+	    {
+		curc = rex.input[0];
+		clen = 1;
+	    }
+	    else
+	    {
+		curc = (*mb_ptr2char)(rex.input);
+		clen = (*mb_ptr2len)(rex.input);
+	    }
 	}
 	else
 	{
