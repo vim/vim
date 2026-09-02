@@ -12182,6 +12182,7 @@ terminalprops()						*terminalprops()*
 		   mouse		mouse type supported
 		   kitty		whether Kitty terminal was detected
 		   decrqm		whether sending DECRQM sequences work
+		   rgb			whether true color is supported  **
 
 		** value 'u' for unknown, 'y' for yes, 'n' for no
 
@@ -12203,6 +12204,9 @@ terminalprops()						*terminalprops()*
 
 		If "decrqm" is 'y', then Vim will query support for the
 		'termsync' and 'termresize' ("inband") options.
+
+		If "rgb" is 'y', then the terminal supports true color.  See
+		|xterm-true-color|.
 
 		Also see:
 		- 'ambiwidth' - detected by using |t_u7|.

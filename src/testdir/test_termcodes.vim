@@ -1720,6 +1720,7 @@ func Test_xx01_term_style_response()
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
+        \ rgb: 'u',
         \ decrqm: 'u'
         \ }, terminalprops())
 
@@ -1756,6 +1757,7 @@ func Test_xx02_iTerm2_response()
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
+        \ rgb: 'u',
         \ decrqm: 'y'
         \ }, terminalprops())
 
@@ -1777,6 +1779,7 @@ func Run_libvterm_konsole_response(code)
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
+        \ rgb: 'u',
         \ decrqm: 'u'
         \ }, terminalprops())
 endfunc
@@ -1821,6 +1824,7 @@ func Test_xx04_Mac_Terminal_response()
         \ underline_rgb: 'y',
         \ mouse: 's',
         \ kitty: 'u',
+        \ rgb: 'u',
         \ decrqm: 'n'
         \ }, terminalprops())
   call assert_equal("\<Esc>[58;2;%lu;%lu;%lum", &t_8u)
@@ -1853,6 +1857,7 @@ func Test_xx05_mintty_response()
         \ underline_rgb: 'y',
         \ mouse: 's',
         \ kitty: 'u',
+        \ rgb: 'u',
         \ decrqm: 'u'
         \ }, terminalprops())
 
@@ -1890,6 +1895,7 @@ func Test_xx06_screen_response()
         \ underline_rgb: 'y',
         \ mouse: 's',
         \ kitty: 'u',
+        \ rgb: 'u',
         \ decrqm: 'n'
         \ }, terminalprops())
 
@@ -1916,6 +1922,7 @@ func Do_check_t_8u_set_reset(set_by_user)
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
+        \ rgb: 'u',
         \ decrqm: 'u'
         \ }, terminalprops())
   call assert_equal(a:set_by_user ? default_value : '', &t_8u)
@@ -1956,6 +1963,7 @@ func Test_xx07_xterm_response()
         \ underline_rgb: 'y',
         \ mouse: 'u',
         \ kitty: 'u',
+        \ rgb: 'u',
         \ decrqm: 'u'
         \ }, terminalprops())
 
@@ -1973,6 +1981,7 @@ func Test_xx07_xterm_response()
         \ underline_rgb: 'u',
         \ mouse: '2',
         \ kitty: 'u',
+        \ rgb: 'u',
         \ decrqm: 'u'
         \ }, terminalprops())
 
@@ -1990,6 +1999,7 @@ func Test_xx07_xterm_response()
         \ underline_rgb: 'u',
         \ mouse: 's',
         \ kitty: 'u',
+        \ rgb: 'u',
         \ decrqm: 'u'
         \ }, terminalprops())
 
@@ -2020,6 +2030,7 @@ func Test_xx08_kitty_response()
         \ underline_rgb: 'y',
         \ mouse: 's',
         \ kitty: 'y',
+        \ rgb: 'u',
         \ decrqm: 'y'
         \ }, terminalprops())
 
@@ -2981,6 +2992,41 @@ func Test_term_response_osc()
   " Test small OSC responses
   call feedkeys("\<Esc>]15;hello world!\x07", 'Lx!')
   call assert_equal("\<Esc>]15;hello world!\x07", v:termosc)
+endfunc
+
+" Test if XTGETTCAP RGB response enables rgb termprop
+func Test_term_response_true_color()
+  " Termresponse is only parsed when t_RV is not empty.
+  set t_RV=x
+  call test_override('term_props', 1)
+
+  " ensure terminalprop rgb is unknown
+  call feedkeys("\<Esc>[>0;0;0c", 'Lx!')
+  call assert_equal('u', terminalprops().rgb)
+
+  let g:got_rgb_resp = 'no'
+  augroup testRespRGB
+    autocmd!
+    autocmd TermResponseAll * if expand('<amatch>') == 'rgb' | let g:got_rgb_resp = 'yes' | endif
+  augroup END
+
+  " Test negative response
+  " also try some out-of-spec formats to make sure 0 or 1 status is checked
+  call feedkeys("\<Esc>P0+r\<Esc>\\", 'Lx!')
+  call feedkeys("\<Esc>P0+r524742\<Esc>\\", 'Lx!')
+  call feedkeys("\<Esc>P0+r524742=38\<Esc>\\", 'Lx!')
+  call assert_equal('u', terminalprops().rgb)
+  call assert_equal('no', g:got_rgb_resp)
+
+  " Test positive response
+  call feedkeys("\<Esc>P1+r524742=38\<Esc>\\", 'Lx!')
+  call assert_equal('y', terminalprops().rgb)
+  call assert_equal('yes', g:got_rgb_resp)
+
+  autocmd! testRespRGB
+
+  set t_RV=
+  call test_override('term_props', 0)
 endfunc
 
 " Test if xOSC key is emitted.

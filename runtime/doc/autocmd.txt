@@ -1325,12 +1325,12 @@ TermResponse			After the response to |t_RV| is received from
 				takes time is involved.
 							*TermResponseAll*
 TermResponseAll			After the response to |t_RV|, |t_RC|, |t_RS|,
-				|t_u7| or any OSC command are received from
-				the terminal.  The value of |v:termresponse|,
-				|v:termblinkresp|, |v:termstyleresp|,
-				|v:termu7resp|, and |v:termosc|
-				correspondingly, can be used.  <amatch> will
-				be set to any of:
+				|t_u7|, to any OSC command or to true color
+				support are received from the terminal.  The
+				value of |v:termresponse|, |v:termblinkresp|,
+				|v:termstyleresp|, |v:termu7resp|, |v:termosc|
+				and |terminalprops()|.rgb correspondingly, can
+				be used.  <amatch> will be set to any of:
 				    "ambiguouswidth" (|t_u7|),
 				    "background" (|t_RB|),
 				    "cursorblink" (|t_RC|),
@@ -1339,6 +1339,7 @@ TermResponseAll			After the response to |t_RV|, |t_RC|, |t_RS|,
 				    "da1",
 				    "osc",
 				    "version" (|t_RV|)
+				    "rgb" (|xterm-true-color|)
 				Note that this event may be triggered halfway
 				executing another event, especially if file
 				I/O, a shell command or anything else that
