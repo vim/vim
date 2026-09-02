@@ -1083,6 +1083,9 @@ func Test_svelte_typescript_script()
 	\ 'var y = 2;',
 	\ '</script>',
 	\ ])
+  " Force a complete, deterministic re-parse before asserting the rune.
+  redraw!
+  syntax sync fromstart
   " The "number" type is TypeScript-only and must be highlighted by the
   " typescript syntax inside a <script lang="ts"> block.
   call assert_equal('typescriptPredefinedType', synIDattr(synID(2, 8, 0), 'name'), 'svelte ts: number type')
@@ -1321,6 +1324,12 @@ func Test_svelte_runes_in_script()
 	\ '  let el = $bindable();',
 	\ '</script>',
 	\ ])
+
+  " Force a complete, deterministic re-parse before asserting.  Without this
+  " the syntax state from a previous buffer can linger and report a stale
+  " group (e.g. svelteMustache) for the runes inside <script>.
+  redraw!
+  syntax sync fromstart
 
   " $state rune inside <script>
   call assert_equal('svelteRune', synIDattr(synID(2, 19, 0), 'name'), 'svelte $state rune')
