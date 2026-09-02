@@ -2612,6 +2612,7 @@ static char_u	*old_termrfgresp = NULL;
 static char_u	*old_termstyleresp = NULL;
 static char_u	*old_termda1 = NULL;
 static char_u	*old_termosc = NULL;
+static int	 old_term_is_rgb = 0;
 #endif
 
 /*
@@ -2633,6 +2634,7 @@ block_autocmds(void)
 	old_termstyleresp = get_vim_var_str(VV_TERMSTYLERESP);
 	old_termda1 = get_vim_var_str(VV_TERMDA1);
 	old_termosc = get_vim_var_str(VV_TERMOSC);
+	old_term_is_rgb = term_is_rgb();
     }
 #endif
     ++autocmd_blocked;
@@ -2681,6 +2683,13 @@ unblock_autocmds(void)
 	if (get_vim_var_str(VV_TERMOSC) != old_termosc)
 	{
 	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"osc", NULL, FALSE, curbuf);
+	}
+	// The "rgb" event should only fire when the terminal responds
+	// positively to RGB request, which turns term_is_rgb() from FALSE to
+	// TRUE.
+	if (!old_term_is_rgb && term_is_rgb())
+	{
+	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"rgb", NULL, FALSE, curbuf);
 	}
     }
 #endif

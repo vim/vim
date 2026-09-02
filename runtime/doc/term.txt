@@ -710,6 +710,23 @@ equivalent hence `l` modifier) invoked with the t_ option value and three
 unsigned long integers that may have any value between 0 and 255 (inclusive)
 representing red, green and blue colors respectively.
 
+Some terminal descriptions set 't_Co' to 16777216 to indicate that the
+terminal supports true color.  The terminal itself may report support for true
+color by sending a valid |xterm-codes| RGB response, and in that case the
+|TermResponseAll| autocommand event is fired, with <amatch> set to "rgb" and
+|terminalprops()|.rgb set to 'y'.
+
+Vim does not automatically enable 'termguicolors' when it detects that the
+terminal supports true color.  You can use 't_Co' and |TermResponseAll|, as
+described above, to set the option yourself: >
+    if &t_Co == '16777216'
+	set termguicolors
+    endif
+    autocmd TermResponseAll *
+	\   if expand('<amatch>') == 'rgb'
+	\ |	set termguicolors
+	\ | endif
+<
 							*xterm-resize*
 Window resizing with xterm only works if the allowWindowOps resource is
 enabled.  On some systems and versions of xterm it's disabled by default
