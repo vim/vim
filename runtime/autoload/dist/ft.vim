@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Aug 26
+# Last Change:		2026 Sep 02
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -1979,6 +1979,8 @@ const ft_from_ext = {
   "cob": "cobol",
   # Coco/R
   "atg": "coco",
+  # Citation files
+  "cff": "yaml",
   # Cold Fusion
   "cfm": "cf",
   "cfi": "cf",
