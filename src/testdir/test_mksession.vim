@@ -1961,4 +1961,35 @@ func Test_mksession_winminwidth()
   only
 endfunc
 
+" Test for avoiding options relying on lambdas in the session file.
+func Test_mksession_avoid_lambda_options()
+  set sessionoptions+=options
+  set sessionoptions+=localoptions
+
+  " Set global and local options that rely on a lambda function.
+  let Lambda = {-> 'dummy function'}
+  let &opfunc = Lambda
+  let &completefunc = Lambda
+
+  mksession! Xtest_mks.out
+
+  " Test restoring session
+  const msg = 'Option relying on lambda function should not be restored'
+  try
+    set opfunc&
+    set completefunc&
+    source Xtest_mks.out
+    call assert_true(empty(&opfunc), msg)
+    call assert_true(empty(&completefunc), msg)
+  catch /^Vim\%((\S\+)\)\=:E700:/
+    call assert_report(msg)
+  endtry
+
+  " clean up
+  set opfunc&
+  set completefunc&
+  call delete('Xtest_mks.out')
+  set sessionoptions&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
