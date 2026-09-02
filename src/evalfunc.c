@@ -6407,6 +6407,7 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
     int		inclusive = TRUE;
     int		region_type = -1;
     int		allow_eol = FALSE;
+    int		bounds_only = FALSE;
     oparg_T	oa;
     int		lnum;
 
@@ -6421,15 +6422,38 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 	return;
 
     if (argvars[2].v_type == VAR_DICT)
-	allow_eol = dict_get_bool(argvars[2].vval.v_dict, "eol", FALSE);
-
-    for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
     {
-	pos_T	ret_p1, ret_p2;
+	allow_eol = dict_get_bool(argvars[2].vval.v_dict, "eol", FALSE);
+	bounds_only = dict_get_bool(argvars[2].vval.v_dict, "bounds", FALSE);
+    }
 
-	getregionpos_line(lnum, p1, p2, inclusive, region_type, &oa,
+    if (bounds_only)
+    {
+	// Only the outer bounds of the region are wanted, so the lines in
+	// between do not have to be visited.
+	pos_T	start_pos, end_pos;
+
+	getregionpos_line(p1.lnum, p1, p2, inclusive, region_type, &oa,
+					   allow_eol, &start_pos, &end_pos);
+	if (p2.lnum != p1.lnum)
+	{
+	    pos_T	unused;
+
+	    getregionpos_line(p2.lnum, p1, p2, inclusive, region_type, &oa,
+					      allow_eol, &unused, &end_pos);
+	}
+	add_regionpos_range(rettv, start_pos, end_pos);
+    }
+    else
+    {
+	for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
+	{
+	    pos_T	ret_p1, ret_p2;
+
+	    getregionpos_line(lnum, p1, p2, inclusive, region_type, &oa,
 					      allow_eol, &ret_p1, &ret_p2);
-	add_regionpos_range(rettv, ret_p1, ret_p2);
+	    add_regionpos_range(rettv, ret_p1, ret_p2);
+	}
     }
 
     // getregionpos() may change curbuf and virtual_op
