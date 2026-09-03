@@ -20,7 +20,7 @@ setl commentstring=#\ %s
 setl comments=fb:*,fb:-,fb:+,b:#,b:\:
 
 setl formatoptions+=nql
-setl formatlistpat=^\\s*\\(\\(\\d\\|\\a\\)\\+[.)]\\|[+-]\\)\\s\\+
+setl formatlistpat=^\\s*\\(\\(\\d\\\|\\a\\)\\+[.)]\\\|[+-]\\)\\s\\+
 
 function OrgFoldExpr()
     let l:depth = match(getline(v:lnum), '\(^\*\+\)\@<=\( .*$\)\@=')
