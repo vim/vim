@@ -70,22 +70,13 @@ syn keyword htmlTagName contained fencedframe video wbr
 syn keyword htmlMathTagName contained math
 syn keyword htmlSvgTagName  contained svg
 
-" Generic catch-all: any tag name not in the keyword lists above still gets
-" highlighted.  Vim keywords always take priority over matches, so known tags
-" keep their specific highlight groups (htmlStatement, Exception, etc.).
-syn match htmlTagName contained #[-a-zA-Z0-9]\+#
-
-syn region  htmlMath start=+<math\_[^>]*>+ end=+</math>+ contains=@htmlTop transparent keepend
-syn region  htmlSvg  start=+<svg\_[^>]*>+  end=+</svg>+  contains=@htmlTop transparent keepend
-
 syn cluster xmlTagHook	add=htmlMathTagName,htmlSvgTagName
 
 " legal arg names
 syn keyword htmlArg contained action
 syn keyword htmlArg contained align alink alt archive background bgcolor
 syn keyword htmlArg contained border bordercolor cellpadding
-syn keyword htmlArg contained cellspacing checked clear code codebase color
-syn match    htmlArg contained "\<class\>"
+syn keyword htmlArg contained cellspacing checked class clear code codebase color
 syn keyword htmlArg contained cols colspan content coords enctype face
 syn keyword htmlArg contained gutter height href hspace id
 syn keyword htmlArg contained link lowsrc marginheight
@@ -159,10 +150,6 @@ exe 'syn match htmlArg contained "\%#=1\<aria-\%(' .. s:aria->join('\|') .. '\)\
 unlet s:aria s:aria_deprecated
 " }}}
 
-" Catch-all for attribute names not in the keyword list (e.g. SVG, MathML).
-" Any word followed by = inside a tag gets the htmlArg highlight.
-syn match htmlArg contained "[-a-zA-Z0-9_:]\+\ze=" containedin=htmlTag,htmlEndTag
-
 " Netscape extensions
 syn keyword htmlTagName contained frame noframes frameset nobr blink
 syn keyword htmlTagName contained layer ilayer nolayer spacer
@@ -180,8 +167,7 @@ syn keyword htmlArg contained cite classid codetype compact data datetime
 syn keyword htmlArg contained declare defer dir disabled for frame
 syn keyword htmlArg contained headers hreflang label lang language longdesc
 syn keyword htmlArg contained multiple nohref nowrap object profile readonly
-syn keyword htmlArg contained rules scheme scope span standby
-syn match    htmlArg contained "\<style\>"
+syn keyword htmlArg contained rules scheme scope span standby style
 syn keyword htmlArg contained summary tabindex valuetype version
 
 " html 5 arg names
