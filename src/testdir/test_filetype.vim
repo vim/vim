@@ -729,7 +729,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     ruby: ['.irbrc', 'irbrc', '.irb_history', 'irb_history', 'file.rb', 'file.rbi', 'file.rbw', 'file.gemspec', 'file.ru', 'Gemfile', 'file.builder',
            'file.rxml', 'file.rjs', 'file.rant', 'file.rake', 'rakefile', 'Rakefile', 'rantfile', 'Rantfile', 'rakefile-file', 'Rakefile-file',
            'Puppetfile', 'Vagrantfile', 'Brewfile'],
-    rust: ['file.rs'],
+    rust: ['file.rs', 'any/.config/evcxr/history.txt'],
     sage: ['file.sage'],
     salt: ['file.sls'],
     samba: ['smb.conf'],

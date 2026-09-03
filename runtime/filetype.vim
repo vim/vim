@@ -308,6 +308,9 @@ if has("fname_case")
    au BufNewFile,BufRead *.EU,*.EW,*.EX,*.EXU,*.EXW  call dist#ft#EuphoriaCheck()
 endif
 
+" Evcxr history
+au BufNewFile,BufRead */evcxr/history.txt		setf rust
+
 " Execline (s6) scripts
 au BufNewFile,BufRead *s6*/\(up\|down\|run\|finish\)    setf execline
 
