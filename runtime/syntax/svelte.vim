@@ -50,7 +50,7 @@ syntax region svelteString contained start=+'+ skip=+\\'+ end=+'+ contains=@svel
 " <script> holds JavaScript, <script lang="ts"> holds TypeScript and
 " <style> holds CSS.  They are defined after the generic tag so that they win
 " over svelteTag and the whole region (including its content) is recognized.
-syntax region svelteScriptJava matchgroup=svelteScriptTag
+syntax region svelteScriptJS matchgroup=svelteScriptTag
       \ start=+<script\>\_[^>]*>+ keepend
       \ end=+</script\_[^>]*>+me=s-1
       \ contains=@svelteJavaScript,sveltePreProc,svelteScriptTag,@sveltePreProc
@@ -77,7 +77,7 @@ syntax match sveltePreProc contained "\%(<!--\|-->\)"
 syntax match svelteComponent "\v<svelte:(head|body|window|document|options|element|boundary|component|fragment|self)>" containedin=svelteTagN
 
 " Svelte 5 runes (and store auto-subscriptions) inside <script> blocks.
-syntax match svelteRune "\$\w\+" containedin=svelteScriptJava,svelteScriptTS
+syntax match svelteRune "\$\w\+" containedin=svelteScriptJS,svelteScriptTS
 
 " Interpolation and expressions: { expr }
 " Only match inside tags or attribute values, not inside <script> blocks, where
