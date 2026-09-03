@@ -1626,6 +1626,9 @@ au BufNewFile,BufRead */etc/xinetd.d/*		call s:StarSetf('xinetd')
 " yum conf (close enough to dosini)
 au BufNewFile,BufRead */etc/yum.repos.d/*	call s:StarSetf('dosini')
 
+" Zathura history
+au BufNewFile,BufRead */zathura/history		setf dosini
+
 " Z-Shell script ending in a star
 au BufNewFile,BufRead .zsh*,.zlog*,.zcompdump*  call s:StarSetf('zsh')
 au BufNewFile,BufRead zsh*,zlog*		call s:StarSetf('zsh')
