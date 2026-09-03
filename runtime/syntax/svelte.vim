@@ -99,20 +99,20 @@ syntax match svelteDirective
       \ "\v(on|bind|class|use|transition|in|out|animate|let|slot|style):[a-zA-Z0-9_-]+(\|[a-zA-Z0-9_-]+)*"
       \ containedin=svelteTag contained
 
-highlight default link svelteTag	 Function
-highlight default link svelteEndTag	 Identifier
-highlight default link svelteTagName	 Statement
-highlight default link svelteArg	 Type
-highlight default link svelteEqual	 NONE
-highlight default link svelteValue	 String
-highlight default link svelteString	 String
-highlight default link svelteScriptTag	 Function
-highlight default link svelteStyleTag	 Function
-highlight default link sveltePreProc	 Comment
-highlight default link svelteComponent	 svelteTagName
-highlight default link svelteRune	 Statement
-highlight default link svelteBraces	 Delimiter
-highlight default link svelteKeyword	 Statement
-highlight default link svelteDirective	 Type
+highlight default link svelteTag Function
+highlight default link svelteEndTag Identifier
+highlight default link svelteTagName Statement
+highlight default link svelteArg Type
+highlight default link svelteEqual NONE
+highlight default link svelteValue String
+highlight default link svelteString String
+highlight default link svelteScriptTag Function
+highlight default link svelteStyleTag Function
+highlight default link sveltePreProc Comment
+highlight default link svelteComponent svelteTagName
+highlight default link svelteRune Statement
+highlight default link svelteBraces Delimiter
+highlight default link svelteKeyword Statement
+highlight default link svelteDirective Type
 
 let b:current_syntax = "svelte"
