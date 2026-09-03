@@ -375,8 +375,7 @@ mch_print_init(
 	descent = pango_font_metrics_get_descent(metrics);
 
 	pctx.char_ascent = (double)ascent / PANGO_SCALE;
-	pctx.char_height = (double)(ascent + descent
-		+ (PANGO_SCALE * 15.0) / 16.0) / PANGO_SCALE;
+	pctx.char_height = (double)(ascent + descent) / PANGO_SCALE;
 
 	pctx.line_spacing = (double)
 	    (pango_font_metrics_get_height(metrics) - (ascent + descent))

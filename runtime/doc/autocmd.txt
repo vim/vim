@@ -1,4 +1,4 @@
-*autocmd.txt*	For Vim version 9.2.  Last change: 2026 Aug 04
+*autocmd.txt*	For Vim version 9.2.  Last change: 2026 Sep 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -812,6 +812,7 @@ DiffUpdated			After diffs have been updated.  Depending on
 				what kind of diff is being used (internal or
 				external) this can be triggered on every
 				change or when doing |:diffupdate|.
+				It is not allowed to change the window layout.
 							*DirChangedPre*
 DirChangedPre			The working directory is going to be changed,
 				as with |DirChanged|.  The pattern is like

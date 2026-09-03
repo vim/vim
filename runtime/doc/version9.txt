@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Aug 25
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Sep 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52710,6 +52710,8 @@ Changed ~
 - |complete_info()| can distinguish between manual and automatic triggered
   completions via the "auto" item.
 - fold functions take an optional {winid} parameter.
+- It is no longer allowed to change the window layout during a |DiffUpdated|
+  autocommand.
 
 							*added-9.3*
 Added ~

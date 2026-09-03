@@ -1037,8 +1037,10 @@ cmdline_wildchar_complete(
 	    if (wim_longest)
 	    {
 		int found_longest_prefix = (ccline.cmdpos != cmdpos_before);
-		if (wim_list || (p_wmnu && wim_full))
-		    (void)showmatches(xp, p_wmnu, wim_list, WIM_NOSELECT);
+		int show_menu = p_wmnu && wim_full;
+
+		if (wim_list || show_menu)
+		    (void)showmatches(xp, show_menu, wim_list, WIM_NOSELECT);
 		else if (!found_longest_prefix)
 		{
 		    int wim_list_next = (wim_flags[1] & WIM_LIST);
@@ -1051,7 +1053,8 @@ cmdline_wildchar_complete(
 			if (wim_full_next && !wim_noselect_next && !wim_noinsert_next)
 			    nextwild(xp, WILD_NEXT, options, escape);
 			else
-			    (void)showmatches(xp, p_wmnu, wim_list_next,
+			    (void)showmatches(xp, p_wmnu && (wim_noselect_next
+					|| wim_noinsert_next), wim_list_next,
 				    p_wmnu ? wim_flags[1] : 0);
 
 			if (wim_list_next)
@@ -1061,9 +1064,11 @@ cmdline_wildchar_complete(
 	    }
 	    else
 	    {
-		if (wim_list || (p_wmnu && (wim_full || wim_noselect
-				|| wim_noinsert)))
-		    (void)showmatches(xp, p_wmnu, wim_list,
+		int show_menu = p_wmnu && (wim_full || wim_noselect
+							    || wim_noinsert);
+
+		if (wim_list || show_menu)
+		    (void)showmatches(xp, show_menu, wim_list,
 			    p_wmnu ? wim_flags[0] : 0);
 		else
 		    vim_beep(BO_WILD);
@@ -2194,7 +2199,9 @@ getcmdline_int(
 			    || p_wmnu))
 		{
 		    // Trigger the popup menu when wildoptions=pum
-		    showmatches(&xpc, p_wmnu, wim_flags[wim_index] & WIM_LIST,
+		    int list = wim_flags[wim_index] & WIM_LIST;
+
+		    showmatches(&xpc, p_wmnu && !list, list,
 			    p_wmnu ? wim_flags[0] : 0);
 		}
 		if (nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK

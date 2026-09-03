@@ -9043,6 +9043,8 @@ redraw_cmd(int clear)
     validate_cursor();
     update_topline();
     update_screen(clear ? UPD_CLEAR : VIsual_active ? UPD_INVERTED : 0);
+    if ((State & MODE_CMDLINE) == 0)
+	setcursor(); // put cursor back where it belongs
     if (need_maketitle)
 	maketitle();
 #if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))

@@ -1479,6 +1479,30 @@ showmatches_oneline(
 }
 
 /*
+ * Show the matches in a popup menu, with the first one selected unless
+ * "noselect" is set.
+ */
+    static int
+show_pum_matches(
+	cmdline_info_T	*ccline,
+	expand_T	*xp,
+	char_u		**matches,
+	int		numMatches,
+	int		showtail,
+	int		noselect)
+{
+    int	retval = cmdline_pum_create(ccline, xp, matches, numMatches, showtail);
+
+    if (retval == EXPAND_OK)
+    {
+	compl_selected = noselect ? -1 : 0;
+	pum_clear();
+	cmdline_pum_display();
+    }
+    return retval;
+}
+
+/*
  * Display completion matches.
  * Returns EXPAND_NOTHING when the character that triggered expansion should be
  *   inserted as a normal character.
@@ -1522,17 +1546,8 @@ showmatches(
 
     if (display_wildmenu && !display_list
 	    && vim_strchr(p_wop, WOP_PUM) != NULL)
-    {
-	int retval = cmdline_pum_create(ccline, xp, matches, numMatches,
-		showtail && !cmdline_unchanged);
-	if (retval == EXPAND_OK)
-	{
-	    compl_selected = noselect ? -1 : 0;
-	    pum_clear();
-	    cmdline_pum_display();
-	}
-	return retval;
-    }
+	return show_pum_matches(ccline, xp, matches, numMatches,
+		showtail && !cmdline_unchanged, noselect);
 
     if (display_list)
     {
@@ -1607,6 +1622,18 @@ showmatches(
 	// we redraw the command below the lines that we have just listed
 	// This is a bit tricky, but it saves a lot of screen updating.
 	cmdline_row = msg_row;	// will put it back later
+    }
+
+    // "list" and "full" in the same 'wildmode' phase: the matches are listed
+    // above and shown in the menu as well.
+    if (display_wildmenu && display_list)
+    {
+	if (vim_strchr(p_wop, WOP_PUM) != NULL)
+	    (void)show_pum_matches(ccline, xp, matches, numMatches,
+		    showtail && !cmdline_unchanged, noselect);
+	else
+	    win_redr_status_matches(xp, numMatches, matches,
+		    noselect ? -1 : 0, showtail);
     }
 
     if (xp->xp_numfiles == -1)
