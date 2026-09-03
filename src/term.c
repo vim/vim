@@ -3859,12 +3859,8 @@ set_shellsize(int width, int height, int mustset)
     if (width < 0 || height < 0)    // just checking...
 	return;
 
-    if (State == MODE_HITRETURN || State == MODE_SETWSIZE)
-    {
-	// postpone the resizing
-	State = MODE_SETWSIZE;
+    if (State == MODE_SETWSIZE)
 	return;
-    }
 
     // Avoid recursiveness.  This can happen when setting the window size
     // causes another window-changed signal or when two SIGWINCH signals come
