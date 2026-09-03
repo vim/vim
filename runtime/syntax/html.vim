@@ -37,8 +37,8 @@ syn region  htmlString	 contained start=+'+ end=+'+ contains=htmlSpecialChar,jav
 syn match   htmlValue	 contained "=[\t ]*[^'" \t>][^ \t>]*"hs=s+1   contains=javaScriptExpression,@htmlPreproc
 syn region  htmlEndTag		   start=+</+	   end=+>+ contains=htmlTagN,htmlTagError
 syn region  htmlTag		   start=+<[^/]+   end=+>+ fold contains=htmlTagN,htmlString,htmlArg,htmlValue,htmlTagError,htmlEvent,htmlCssDefinition,@htmlPreproc,@htmlArgCluster
-syn match   htmlTagN	 contained +<\s*[-a-zA-Z0-9]\++hs=s+1 contains=htmlTagName,htmlSpecialTagName,htmlSvgTagName,htmlMathTagName,@htmlTagNameCluster
-syn match   htmlTagN	 contained +</\s*[-a-zA-Z0-9]\++hs=s+2 contains=htmlTagName,htmlSpecialTagName,htmlSvgTagName,htmlMathTagName,@htmlTagNameCluster
+syn match   htmlTagN	 contained +<\s*[-a-zA-Z0-9]\++hs=s+1 contains=htmlTagName,htmlSpecialTagName,@htmlTagNameCluster
+syn match   htmlTagN	 contained +</\s*[-a-zA-Z0-9]\++hs=s+2 contains=htmlTagName,htmlSpecialTagName,@htmlTagNameCluster
 syn match   htmlTagError contained "[^>]<"ms=s+1
 
 " tag names
@@ -69,6 +69,9 @@ syn keyword htmlTagName contained fencedframe video wbr
 " svg and math tags
 syn keyword htmlMathTagName contained math
 syn keyword htmlSvgTagName  contained svg
+
+syn region  htmlMath start="<math>" end="</math>" contains=@htmlXml transparent keepend
+syn region  htmlSvg  start="<svg>"  end="</svg>"  contains=@htmlXml transparent keepend
 
 syn cluster xmlTagHook	add=htmlMathTagName,htmlSvgTagName
 
