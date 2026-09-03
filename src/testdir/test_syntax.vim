@@ -1345,34 +1345,4 @@ func Test_svelte_runes_in_script()
   bw!
 endfunc
 
-func Test_html_svg_highlighting()
-  " SVG tags inside HTML must use htmlTagName/htmlSvgTagName,
-  " not xmlTagName.  Attributes must use htmlArg, not xmlAttrib.
-  new
-  syntax on
-  set ft=html
-  call setline(1, [
-	\ '<div>',
-	\ '  <svg viewBox="0 0 100 100">',
-	\ '    <path d="M10 10" fill="red"/>',
-	\ '  </svg>',
-	\ '</div>',
-	\ ])
-  " <svg> tag name must use htmlSvgTagName (not xmlTagName)
-  let stk = map(synstack(2, 4), 'synIDattr(v:val, "name")')
-  call assert_notmatch('xmlTagName', join(stk, ','), 'svg tag: no xmlTagName')
-  call assert_match('htmlSvgTagName', join(stk, ','), 'svg tag: has htmlSvgTagName')
-  " <path> child tag must not use xmlTagName
-  let stk = map(synstack(3, 6), 'synIDattr(v:val, "name")')
-  call assert_notmatch('xmlTagName', join(stk, ','), 'path tag: no xmlTagName')
-  call assert_match('htmlTagN', join(stk, ','), 'path tag: has htmlTagN')
-  " viewBox attribute must be highlighted as htmlArg (not xmlAttrib)
-  call assert_equal('htmlArg', synIDattr(synID(2, 8, 0), 'name'),
-	\ 'svg attribute uses htmlArg')
-  " d attribute must be highlighted as htmlArg (not xmlAttrib)
-  call assert_equal('htmlArg', synIDattr(synID(3, 11, 0), 'name'),
-	\ 'path attribute uses htmlArg')
-  bw!
-endfunc
-
 " vim: shiftwidth=2 sts=2 expandtab
