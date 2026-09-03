@@ -218,6 +218,31 @@
 				//	\%( subexpr.
 #define NCLOSE		151	//	Analogous to NOPEN.
 
+// Match forward to the delimiter that closes the nesting level the match is
+// on.  F_* includes that delimiter in the match, like the "f" motion, T_*
+// stops just before it, like "t".  Both groups list the delimiters in the
+// same order, so that "op - F_PCLOSE" and "op - T_PCLOSE" index the pair.
+// Four higher is the "\_" form of the same atom, which also matches over
+// line breaks; DELIM_NL is to the delimiter opcodes what ADD_NL is to the
+// character classes.
+#define DELIM_NL	4
+#define F_PCLOSE	180	//	\%f) and \%)
+#define F_QCLOSE	181	//	\%f] and \%]
+#define F_RCLOSE	182	//	\%f} and \%}
+#define F_ACLOSE	183	//	\%f> and \%>
+#define F_PCLOSE_NL	184	//	\_%f) and \_%)
+#define F_QCLOSE_NL	185	//	\_%f] and \_%]
+#define F_RCLOSE_NL	186	//	\_%f} and \_%}
+#define F_ACLOSE_NL	187	//	\_%f> and \_%>
+#define T_PCLOSE	190	//	\%t)
+#define T_QCLOSE	191	//	\%t]
+#define T_RCLOSE	192	//	\%t}
+#define T_ACLOSE	193	//	\%t>
+#define T_PCLOSE_NL	194	//	\_%t)
+#define T_QCLOSE_NL	195	//	\_%t]
+#define T_RCLOSE_NL	196	//	\_%t}
+#define T_ACLOSE_NL	197	//	\_%t>
+
 #define MULTIBYTECODE	200	// mbc	Match one multi-byte character
 #define RE_BOF		201	//	Match "" at beginning of file.
 #define RE_EOF		202	//	Match "" at end of file.
@@ -1250,6 +1275,7 @@ regatom(int *flagp)
     int		    c;
     char_u	    *p;
     int		    extra = 0;
+    int		    delim_nl = FALSE;
     int		    save_prev_at_start = prev_at_start;
 
     *flagp = WORST;		// Tentatively.
@@ -1278,6 +1304,18 @@ regatom(int *flagp)
 
       case Magic('_'):
 	c = no_Magic(getchr());
+	if (c == '%')
+	{
+	    // "\_%)" and "\_%f)" etc: like "\%)" but matching over line
+	    // breaks.  No other "\%" atom takes a "\_" prefix.
+	    delim_nl = TRUE;
+	    c = no_Magic(getchr());
+	    if (c == ')' || c == ']' || c == '}' || c == '>'
+						 || c == 'f' || c == 't')
+		goto delimiter_atom;
+	    EMSG2_RET_NULL(_(e_invalid_character_after_str),
+						      reg_magic == MAGIC_ALL);
+	}
 	if (c == '^')		// "\_^" is start-of-line
 	{
 	    ret = regnode(BOL);
@@ -1620,6 +1658,58 @@ regatom(int *flagp)
 			      break;
 			  }
 
+		// Match to the delimiter that closes the current nesting
+		// level.  \%f) includes the delimiter, \%t) stops before it,
+		// a bare \%) is short for \%f).  \%> is handled further down,
+		// since the position atoms \%>123l and friends share it.
+		case ')':
+		case ']':
+		case '}':
+		case 'f':
+		case 't':
+delimiter_atom:
+		    {
+			int	base = F_PCLOSE;
+			int	idx;
+
+			if (c == 'f' || c == 't')
+			{
+			    if (c == 't')
+				base = T_PCLOSE;
+			    c = no_Magic(getchr());
+			}
+			switch (c)
+			{
+			    case ')': idx = 0; break;
+			    case ']': idx = 1; break;
+			    case '}': idx = 2; break;
+			    case '>': idx = 3; break;
+			    default:  EMSG2_RET_NULL(
+					    _(e_invalid_character_after_str),
+					    reg_magic == MAGIC_ALL);
+			}
+			if (delim_nl)
+			{
+			    // the "\_" form also matches over line breaks
+			    idx += DELIM_NL;
+			    *flagp |= HASNL;
+			}
+			ret = regnode(base + idx);
+
+			// \%f always moves over at least the delimiter,
+			// \%t matches nothing when already on it.
+			if (base == F_PCLOSE)
+			    *flagp |= HASWIDTH;
+		    }
+		    break;
+
+		case '>':
+		    // \%>123l, \%>23c, \%>.c and \%>'m are position atoms and
+		    // are handled below, only a bare \%> closes a level.
+		    if (!VIM_ISDIGIT(*regparse) && *regparse != '\''
+							   && *regparse != '.')
+			goto delimiter_atom;
+		    // FALLTHROUGH
 		default:
 			  if (VIM_ISDIGIT(c) || c == '<' || c == '>'
 						|| c == '\'' || c == '.')
@@ -4417,6 +4507,87 @@ regmatch(
 	    status = RA_MATCH;	// Success!
 	    break;
 
+	  case F_PCLOSE:
+	  case F_QCLOSE:
+	  case F_RCLOSE:
+	  case F_ACLOSE:
+	  case F_PCLOSE_NL:
+	  case F_QCLOSE_NL:
+	  case F_RCLOSE_NL:
+	  case F_ACLOSE_NL:
+	  case T_PCLOSE:
+	  case T_QCLOSE:
+	  case T_RCLOSE:
+	  case T_ACLOSE:
+	  case T_PCLOSE_NL:
+	  case T_QCLOSE_NL:
+	  case T_RCLOSE_NL:
+	  case T_ACLOSE_NL:
+	    {
+		int	till = op >= T_PCLOSE;
+		int	idx = op - (till ? T_PCLOSE : F_PCLOSE);
+		int	with_nl = idx >= DELIM_NL;
+		int	oc;			// opening delimiter
+		int	cc;			// closing delimiter
+		int	level = 1;
+		char_u	*s = rex.input;
+		linenr_T save_lnum = rex.lnum;
+		colnr_T	save_col = (colnr_T)(rex.input - rex.line);
+
+		if (with_nl)
+		    idx -= DELIM_NL;
+		oc = "([{<"[idx];
+		cc = ")]}>"[idx];
+
+		// Count nested pairs until the level we start on is closed.
+		// Only the "\_" form continues on the following lines, with
+		// the line breaks part of the match.
+		for (;;)
+		{
+		    if (*s == NUL)
+		    {
+			if (!with_nl || !REG_MULTI || rex.reg_line_lbr
+					       || rex.lnum >= rex.reg_maxline)
+			    break;		// no more text
+			// The old "s" is invalid after reg_nextline().
+			reg_nextline();
+			s = rex.input;
+			if (got_int)
+			    break;
+			// a line break is not a delimiter
+			continue;
+		    }
+		    if (*s == oc)
+			++level;
+		    else if (*s == cc)
+			--level;
+		    // Step over a whole character: in a double-byte encoding
+		    // a trail byte can have the same value as a delimiter.
+		    if (*s < 0x80)
+			++s;
+		    else
+			s += (*mb_ptr2len)(s);
+		    if (level < 1)
+			break;
+		}
+		if (level >= 1)
+		{
+		    // No closing delimiter, undo moving to another line.
+		    if (REG_MULTI && rex.lnum != save_lnum)
+		    {
+			rex.lnum = save_lnum;
+			rex.line = reg_getline(rex.lnum);
+		    }
+		    rex.input = rex.line + save_col;
+		    status = RA_NOMATCH;
+		}
+		else
+		    // "s - 1" is on the closing delimiter, which was found on
+		    // the line rex.line points at now.
+		    rex.input = till ? s - 1 : s;
+	    }
+	    break;
+
 	  default:
 	    iemsg(e_corrupted_regexp_program);
 #ifdef DEBUG
@@ -5680,6 +5851,54 @@ regprop(char_u *op)
       case BRACE_COMPLEX + 9:
 	buflen += vim_snprintf(buf + buflen, sizeof(buf) - buflen, "BRACE_COMPLEX%d", OP(op) - BRACE_COMPLEX);
 	p = NULL;
+	break;
+      case F_PCLOSE:
+	p = "F_PCLOSE";
+	break;
+      case F_QCLOSE:
+	p = "F_QCLOSE";
+	break;
+      case F_RCLOSE:
+	p = "F_RCLOSE";
+	break;
+      case F_ACLOSE:
+	p = "F_ACLOSE";
+	break;
+      case F_PCLOSE_NL:
+	p = "F_PCLOSE_NL";
+	break;
+      case F_QCLOSE_NL:
+	p = "F_QCLOSE_NL";
+	break;
+      case F_RCLOSE_NL:
+	p = "F_RCLOSE_NL";
+	break;
+      case F_ACLOSE_NL:
+	p = "F_ACLOSE_NL";
+	break;
+      case T_PCLOSE:
+	p = "T_PCLOSE";
+	break;
+      case T_QCLOSE:
+	p = "T_QCLOSE";
+	break;
+      case T_RCLOSE:
+	p = "T_RCLOSE";
+	break;
+      case T_ACLOSE:
+	p = "T_ACLOSE";
+	break;
+      case T_PCLOSE_NL:
+	p = "T_PCLOSE_NL";
+	break;
+      case T_QCLOSE_NL:
+	p = "T_QCLOSE_NL";
+	break;
+      case T_RCLOSE_NL:
+	p = "T_RCLOSE_NL";
+	break;
+      case T_ACLOSE_NL:
+	p = "T_ACLOSE_NL";
 	break;
       case MULTIBYTECODE:
 	p = "MULTIBYTECODE";

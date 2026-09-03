@@ -578,6 +578,13 @@ Character classes:					*/character-classes*
 
 |/[]|	[]	\[]	any character specified inside the []
 |/\%[]|	\%[]	\%[]	a sequence of optionally matched atoms
+|/\%)|	\%)	\%)	up to the ")" closing this nesting level; also
+			\%] \%} and \%>
+|/\%f)|	\%f)	\%f)	same as "\%)"; also \%f] \%f} and \%f>
+|/\%t)|	\%t)	\%t)	up to just before that delimiter; also \%t]
+			\%t} and \%t>
+|/\_%)|	\_%)	\_%)	like \%) but also over line breaks; likewise
+			\_%f) and \_%t) for each delimiter
 
 |/\c|	\c	\c	ignore case, do not use the 'ignorecase' option
 |/\C|	\C	\C	match case, do not use the 'ignorecase' option
@@ -1039,6 +1046,9 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 <	Column 17 is highlighted by 'hlsearch' because there is another match
 	where ".*" matches zero characters.
 
+Note that "\%>" is only a position atom when a digit, a "." or a "'"
+follows.  On its own it matches up to a closing ">", see |/\%>|.
+
 
 Character classes:
 \i	identifier character (see 'isident' option)	*/\i*
@@ -1267,6 +1277,51 @@ x	A single character, with no special meaning, matches itself
 		/index\%[[[]0[]]]
 <	matches "index" "index[", "index[0" and "index[0]".
 	{not available when compiled without the |+syntax| feature}
+
+					*/\%)* */\%]* */\%}* */\%>*
+					   */\_%)* */\_%f)* */\_%t)*
+\%)	Matches the text up to and including the ")" that closes the nesting
+	level the match is on.  Nested "()" pairs are counted, so the match
+	does not stop at the first ")".  The opening "(" is not part of the
+	atom, it is normally matched just before it: >
+		/(\%)
+<	matches "(a(b)c)" in "f(a(b)c)d", where "([^)]*)" would only match
+	"(a(b)".
+	The other delimiter pairs work the same way: "\%]" for "[]", "\%}"
+	for "{}" and "\%>" for "<>".
+	Note that "\%>" is this atom only when it is not followed by a digit,
+	a "." or a "'".  "\%>23l" and friends are position atoms, see
+	|/\%>l|.
+	The search stops at the end of the line.  Prepending "\_" makes it
+	continue on the following lines, so that a block spanning lines is
+	matched as a whole: >
+		/{\_%f}
+<	matches a "{" block in a C program including its "}", however many
+	lines it covers, while "/{\%f}" only matches a block that is closed on
+	the line it starts on.  When the nesting level is never closed there
+	is no match.
+	The "\_" forms are "\_%)", "\_%]", "\_%}", "\_%>" and likewise
+	"\_%f)" and "\_%t)" for each delimiter.  "\_" cannot be used with any
+	other "\%" item.
+	Note that "\_" makes an unclosed delimiter expensive: every position
+	it is tried at scans ahead to the end of the buffer.  CTRL-C
+	interrupts it.
+	See also |searchpair()| and the |%| command, which find a matching
+	delimiter without using a pattern.
+
+						*/\%f)* */\%t)*
+\%f)	The same as "\%)".  The "f" is for "find", as in the |f| command: the
+	closing delimiter is included in the match.  Also "\%f]", "\%f}" and
+	"\%f>".
+\%t)	Like "\%f)", but stops just before the closing delimiter, as the |t|
+	command does.  Also "\%t]", "\%t}" and "\%t>".  Example: >
+		/{\%t}
+<	matches "{a{b}c" in "x{a{b}c}y".
+	Unlike "\%f)" this can match nothing, when the match is already on the
+	closing delimiter.  With "\_%t)", when the delimiter is the first
+	character of a later line, the match ends just before it in the first
+	column of that line.
+	An invalid character after "\%f" or "\%t" gives an error, see |E71|.
 
 				*/\%d* */\%x* */\%o* */\%u* */\%U* *E678*
 
