@@ -810,6 +810,9 @@ get_buffer_lines(
     }
     else
     {
+	list_T		*l;
+	listitem_T	*li;
+
 	if (end < start)
 	    return;
 
@@ -817,13 +820,24 @@ get_buffer_lines(
 	    start = 1;
 	if (end > buf->b_ml.ml_line_count)
 	    end = buf->b_ml.ml_line_count;
-	while (start <= end)
+	if (end < start)
+	    return;
+
+	// The number of lines is known, so allocate the list and its items
+	// in one allocation.
+	l = list_alloc_with_items((int)(end - start + 1));
+	if (l == NULL)
+	    return;
+	list_unref(rettv->vval.v_list);
+	rettv_list_set(rettv, l);
+
+	// The items are already linked and zeroed, so only the string needs
+	// to be filled in.
+	for (li = l->lv_first; start <= end; ++start, li = li->li_next)
 	{
-	    if (list_append_string(rettv->vval.v_list,
-		ml_get_buf(buf, start, FALSE),
-		(int)ml_get_buf_len(buf, start)) == FAIL)
-		break;
-	    ++start;
+	    li->li_tv.v_type = VAR_STRING;
+	    li->li_tv.vval.v_string = vim_strnsave(ml_get_buf(buf, start, FALSE),
+						   ml_get_buf_len(buf, start));
 	}
     }
 }
