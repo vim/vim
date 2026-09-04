@@ -860,12 +860,9 @@ clip_process_selection(
 	printf("Selection ended: (%ld,%d) to (%ld,%d)\n", cb->start.lnum,
 		cb->start.col, cb->end.lnum, cb->end.col);
 # endif
-	if (clip_isautosel_star() || clip_isautosel_plus()
-		|| (
-# ifdef FEAT_GUI
-		    gui.in_use ? (vim_strchr(p_go, GO_ASELML) != NULL) :
-# endif
-		    clip_autoselectml))
+	if ((clip_isautosel_star() || clip_isautosel_plus())
+		&& ((gui.in_use && vim_strchr(p_go, GO_ASELML))
+		    || (!gui.in_use && clip_autoselectml)))
 	    clip_copy_modeless_selection(FALSE);
 # ifdef FEAT_GUI
 	if (gui.in_use)
