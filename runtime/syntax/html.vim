@@ -61,10 +61,10 @@ syn keyword htmlTagName contained object optgroup q s tbody tfoot thead
 syn keyword htmlTagName contained article aside audio bdi canvas data
 syn keyword htmlTagName contained datalist details dialog embed figcaption
 syn keyword htmlTagName contained figure footer header hgroup keygen main
-syn keyword htmlTagName contained mark menuitem meter nav output picture selectedcontent
+syn keyword htmlTagName contained mark menuitem meter nav output picture
 syn keyword htmlTagName contained progress rb rp rt rtc ruby search section
 syn keyword htmlTagName contained slot source summary template time track
-syn keyword htmlTagName contained fencedframe video wbr
+syn keyword htmlTagName contained video wbr
 
 " svg and math tags
 syn keyword htmlMathTagName contained math
