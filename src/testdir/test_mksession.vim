@@ -602,7 +602,7 @@ func Test_mksession_terminal_shared_windows()
       call assert_match('exe '':terminal ++curwin ++cols='' \.\. ((&columns \* \d\+ + \d\+) \/ \d\+) \.\. '' ++rows='' \.\. ((&lines \* \d\+ + \d\+) \/ \d\+)', line)
     elseif line =~ $"^var term_buf_{term_buf}: number = bufnr()$"
       let found_var = 1
-    elseif line =~ "^execute 'buffer ' . term_buf_" . term_buf . "$"
+    elseif line =~ "^execute 'buffer ' \\.\\. term_buf_" . term_buf . "$"
       let found_use = 1
     endif
   endfor
@@ -610,6 +610,9 @@ func Test_mksession_terminal_shared_windows()
   call assert_true(found_creation && found_use && found_var)
 
   call StopShellInTerminal(term_buf)
+
+  source Xtest_mks.out
+
   call delete('Xtest_mks.out')
 endfunc
 
