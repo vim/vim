@@ -1134,25 +1134,10 @@ win_split_ins(
 	if (oldwin->w_p_wfw)
 	    win_setwidth_win(oldwin->w_width + new_size + 1, oldwin);
 
-	// Only make all windows the same width if one of them (except oldwin)
-	// is wider than one of the split windows.
+	// Make all windows the same width if 'equalalways' is set
 	if (!do_equal && p_ea && size == 0 && *p_ead != 'v'
-					 && oldwin->w_frame->fr_parent != NULL)
-	{
-	    frp = oldwin->w_frame->fr_parent->fr_child;
-	    while (frp != NULL)
-	    {
-		if (frp->fr_win != oldwin && frp->fr_win != NULL
-			&& (frp->fr_win->w_width > new_size
-			    || frp->fr_win->w_width > oldwin->w_width
-							      - new_size - 1))
-		{
-		    do_equal = TRUE;
-		    break;
-		}
-		frp = frp->fr_next;
-	    }
-	}
+		&& oldwin->w_frame->fr_parent != NULL)
+	    do_equal = TRUE;
     }
     else
     {
@@ -1236,25 +1221,10 @@ win_split_ins(
 	    oldwin_height = oldwin->w_height;
 	}
 
-	// Only make all windows the same height if one of them (except oldwin)
-	// is higher than one of the split windows.
+	// Make all windows the same width if 'equalalways' is set
 	if (!do_equal && p_ea && size == 0 && *p_ead != 'h'
-	   && oldwin->w_frame->fr_parent != NULL)
-	{
-	    frp = oldwin->w_frame->fr_parent->fr_child;
-	    while (frp != NULL)
-	    {
-		if (frp->fr_win != oldwin && frp->fr_win != NULL
-			&& (frp->fr_win->w_height > new_size
-			    || frp->fr_win->w_height > oldwin_height - new_size
-						- statusline_height(oldwin)))
-		{
-		    do_equal = TRUE;
-		    break;
-		}
-		frp = frp->fr_next;
-	    }
-	}
+		&& oldwin->w_frame->fr_parent != NULL)
+	    do_equal = TRUE;
     }
 
     /*
