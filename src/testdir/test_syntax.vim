@@ -1070,4 +1070,279 @@ func Test_syn_sync_grouphere_shorter_next_line()
   bw!
 endfunc
 
+func Test_svelte_typescript_script()
+  new
+  syntax on
+  set ft=svelte
+  call setline(1, [
+	\ '<script lang="ts">',
+	\ 'let n: number = 1;',
+	\ 'let items: string[] = $state([]);',
+	\ '</script>',
+	\ '<script>',
+	\ 'var y = 2;',
+	\ '</script>',
+	\ ])
+  " Force a complete, deterministic re-parse before asserting the rune.
+  redraw!
+  syntax sync fromstart
+  " The "number" type is TypeScript-only and must be highlighted by the
+  " typescript syntax inside a <script lang="ts"> block.
+  call assert_equal('typescriptPredefinedType', synIDattr(synID(2, 8, 0), 'name'), 'svelte ts: number type')
+  " A Svelte 5 rune inside the TS block must be highlighted as svelteRune.
+  call assert_equal('svelteRune', synIDattr(synID(3, 23, 0), 'name'), 'svelte ts: rune')
+  " A plain <script> block must not use TypeScript highlighting.
+  call assert_notmatch('^typescript', synIDattr(synID(6, 2, 0), 'name'), 'svelte js: not typescript')
+  bw!
+endfunc
+
+func Test_svelte_runes_in_svelte_module()
+  " A .svelte.ts module is detected as 'typescript' and must highlight runes.
+  let ts = tempname() .. '.svelte.ts'
+  call writefile(['let items = $state([]);'], ts)
+  exe 'edit ' .. ts
+  syntax on
+  call assert_equal('typescript', &filetype, 'svelte.ts filetype')
+  call assert_equal('svelteRune', synIDattr(synID(1, 13, 0), 'name'), 'svelte.ts rune')
+  bw!
+  call delete(ts)
+
+  " A .svelte.js module is detected as 'javascript' and must highlight runes.
+  let js = tempname() .. '.svelte.js'
+  call writefile(['let items = $state([]);'], js)
+  exe 'edit ' .. js
+  syntax on
+  call assert_equal('javascript', &filetype, 'svelte.js filetype')
+  call assert_equal('svelteRune', synIDattr(synID(1, 13, 0), 'name'), 'svelte.js rune')
+  bw!
+  call delete(js)
+
+  " A plain .ts module must NOT highlight $state as a Svelte rune.
+  let plain = tempname() .. '.ts'
+  call writefile(['let items = $state([]);'], plain)
+  exe 'edit ' .. plain
+  syntax on
+  call assert_notmatch('^svelteRune', synIDattr(synID(1, 13, 0), 'name'), 'plain ts: not rune')
+  bw!
+  call delete(plain)
+endfunc
+
+func Test_svelte_control_flow_blocks()
+  new
+  syntax on
+  set ft=svelte
+  call setline(1, [
+	\ '{#if condition}',
+	\ '  <p>Hello</p>',
+	\ '{:else}',
+	\ '  <p>World</p>',
+	\ '{/if}',
+	\ '{#each items as item}',
+	\ '  <p>{item}</p>',
+	\ '{/each}',
+	\ '{#await promise}',
+	\ '  <p>Loading</p>',
+	\ '{:then value}',
+	\ '  <p>{value}</p>',
+	\ '{:catch error}',
+	\ '  <p>Error</p>',
+	\ '{/await}',
+	\ '{#snippet name}',
+	\ '  <p>Content</p>',
+	\ '{/snippet}',
+	\ '{#key value}',
+	\ '  <p>Keyed</p>',
+	\ '{/key}',
+	\ '{@html rawHtml}',
+	\ '{@const x = 1}',
+	\ '{@debug variable}',
+	\ '{@render snippet()}',
+	\ ])
+
+  " {#if} opening: {#if is svelteKeyword
+  call assert_equal('svelteKeyword', synIDattr(synID(1, 1, 0), 'name'), 'svelte {#if: {')
+  call assert_equal('svelteKeyword', synIDattr(synID(1, 2, 0), 'name'), 'svelte {#if: #')
+  call assert_equal('svelteKeyword', synIDattr(synID(1, 3, 0), 'name'), 'svelte {#if: i')
+  call assert_equal('svelteKeyword', synIDattr(synID(1, 4, 0), 'name'), 'svelte {#if: f')
+  " {#if} closing } is svelteKeyword via matchgroup
+  call assert_equal('svelteKeyword', synIDattr(synID(1, 15, 0), 'name'), 'svelte {#if: }')
+
+  " {:else} opening
+  call assert_equal('svelteKeyword', synIDattr(synID(3, 1, 0), 'name'), 'svelte {:else: {')
+  call assert_equal('svelteKeyword', synIDattr(synID(3, 3, 0), 'name'), 'svelte {:else: :')
+
+  " {/if} closing block
+  call assert_equal('svelteKeyword', synIDattr(synID(5, 1, 0), 'name'), 'svelte {/if: {')
+  call assert_equal('svelteKeyword', synIDattr(synID(5, 3, 0), 'name'), 'svelte {/if: /')
+
+  " {#each} opening
+  call assert_equal('svelteKeyword', synIDattr(synID(6, 1, 0), 'name'), 'svelte {#each: {')
+  call assert_equal('svelteKeyword', synIDattr(synID(6, 3, 0), 'name'), 'svelte {#each: e')
+
+  " {/each} closing
+  call assert_equal('svelteKeyword', synIDattr(synID(8, 1, 0), 'name'), 'svelte {/each: {')
+  call assert_equal('svelteKeyword', synIDattr(synID(8, 3, 0), 'name'), 'svelte {/each: /')
+
+  " {#await} opening
+  call assert_equal('svelteKeyword', synIDattr(synID(9, 1, 0), 'name'), 'svelte {#await: {')
+
+  " {:then} and {:catch}
+  call assert_equal('svelteKeyword', synIDattr(synID(11, 1, 0), 'name'), 'svelte {:then: {')
+  call assert_equal('svelteKeyword', synIDattr(synID(13, 1, 0), 'name'), 'svelte {:catch: {')
+
+  " {/await} closing
+  call assert_equal('svelteKeyword', synIDattr(synID(15, 1, 0), 'name'), 'svelte {/await: {')
+
+  " {#snippet} and {/snippet}
+  call assert_equal('svelteKeyword', synIDattr(synID(16, 1, 0), 'name'), 'svelte {#snippet: {')
+  call assert_equal('svelteKeyword', synIDattr(synID(18, 1, 0), 'name'), 'svelte {/snippet: {')
+
+  " {#key} and {/key}
+  call assert_equal('svelteKeyword', synIDattr(synID(19, 1, 0), 'name'), 'svelte {#key: {')
+  call assert_equal('svelteKeyword', synIDattr(synID(21, 1, 0), 'name'), 'svelte {/key: {')
+
+  " {@html}, {@const}, {@debug}, {@render}
+  call assert_equal('svelteKeyword', synIDattr(synID(22, 1, 0), 'name'), 'svelte {@html: {')
+  call assert_equal('svelteKeyword', synIDattr(synID(22, 2, 0), 'name'), 'svelte {@html: @')
+  call assert_equal('svelteKeyword', synIDattr(synID(23, 1, 0), 'name'), 'svelte {@const: {')
+  call assert_equal('svelteKeyword', synIDattr(synID(24, 1, 0), 'name'), 'svelte {@debug: {')
+  call assert_equal('svelteKeyword', synIDattr(synID(25, 1, 0), 'name'), 'svelte {@render: {')
+
+  bw!
+endfunc
+
+func Test_svelte_directives()
+  new
+  syntax on
+  set ft=svelte
+  call setline(1, [
+	\ '<button on:click={handler}>Click</button>',
+	\ '<input bind:value={name}>',
+	\ '<div class:active={isActive}>',
+	\ '<div use:tooltip={options}>',
+	\ '<div transition:fade={params}>',
+	\ '<div in:slide={params}>',
+	\ '<div out:fade={params}>',
+	\ '<div animate:flip={params}>',
+	\ '<slot let:item={value}>',
+	\ '<div style:color={color}>',
+	\ '<button on:click|once={handler}>Click</button>',
+	\ ])
+
+  " on:click directive
+  call assert_equal('svelteDirective', synIDattr(synID(1, 9, 0), 'name'), 'svelte on:click')
+  " bind:value directive
+  call assert_equal('svelteDirective', synIDattr(synID(2, 8, 0), 'name'), 'svelte bind:value')
+  " class:active directive
+  call assert_equal('svelteDirective', synIDattr(synID(3, 7, 0), 'name'), 'svelte class:active')
+  " use:tooltip directive
+  call assert_equal('svelteDirective', synIDattr(synID(4, 7, 0), 'name'), 'svelte use:tooltip')
+  " transition:fade directive
+  call assert_equal('svelteDirective', synIDattr(synID(5, 7, 0), 'name'), 'svelte transition:fade')
+  " in:slide directive
+  call assert_equal('svelteDirective', synIDattr(synID(6, 7, 0), 'name'), 'svelte in:slide')
+  " out:fade directive
+  call assert_equal('svelteDirective', synIDattr(synID(7, 7, 0), 'name'), 'svelte out:fade')
+  " animate:flip directive
+  call assert_equal('svelteDirective', synIDattr(synID(8, 7, 0), 'name'), 'svelte animate:flip')
+  " let:item directive
+  call assert_equal('svelteDirective', synIDattr(synID(9, 7, 0), 'name'), 'svelte let:item')
+  " style:color directive
+  call assert_equal('svelteDirective', synIDattr(synID(10, 7, 0), 'name'), 'svelte style:color')
+  " on:click|once with modifier
+  call assert_equal('svelteDirective', synIDattr(synID(11, 9, 0), 'name'), 'svelte on:click|once')
+
+  bw!
+endfunc
+
+func Test_svelte_component_elements()
+  new
+  syntax on
+  set ft=svelte
+  call setline(1, [
+	\ '<svelte:head>',
+	\ '  <title>Page</title>',
+	\ '</svelte:head>',
+	\ '<svelte:window on:load={handler}>',
+	\ '<svelte:body on:mouseenter={handler}>',
+	\ '<svelte:component this={component}>',
+	\ '<svelte:boundary>',
+	\ '  <p>Content</p>',
+	\ '</svelte:boundary>',
+	\ '<svelte:fragment>',
+	\ '  <p>Fragment</p>',
+	\ '</svelte:fragment>',
+	\ '<svelte:self>',
+	\ ])
+
+  " <svelte:head> component tag
+  call assert_equal('svelteComponent', synIDattr(synID(1, 2, 0), 'name'), 'svelte:head tag')
+  " <svelte:window> component tag
+  call assert_equal('svelteComponent', synIDattr(synID(4, 2, 0), 'name'), 'svelte:window tag')
+  " <svelte:body> component tag
+  call assert_equal('svelteComponent', synIDattr(synID(5, 2, 0), 'name'), 'svelte:body tag')
+  " <svelte:component> component tag
+  call assert_equal('svelteComponent', synIDattr(synID(6, 2, 0), 'name'), 'svelte:component tag')
+  " <svelte:boundary> component tag
+  call assert_equal('svelteComponent', synIDattr(synID(7, 2, 0), 'name'), 'svelte:boundary tag')
+  " <svelte:fragment> component tag
+  call assert_equal('svelteComponent', synIDattr(synID(10, 2, 0), 'name'), 'svelte:fragment tag')
+  " <svelte:self> component tag
+  call assert_equal('svelteComponent', synIDattr(synID(13, 2, 0), 'name'), 'svelte:self tag')
+
+  bw!
+endfunc
+
+func Test_svelte_mustache_interpolation()
+  new
+  syntax on
+  set ft=svelte
+  call setline(1, [
+	\ '<div title="{name}">',
+	\ '  <p>{message}</p>',
+	\ '</div>',
+	\ ])
+
+  " Mustache braces inside attribute value: { starts svelteMustache region
+  call assert_equal('svelteMustache', synIDattr(synID(1, 15, 0), 'name'), 'svelte mustache attr {')
+  " Mustache braces inside element content: { starts svelteMustache region
+  call assert_equal('svelteMustache', synIDattr(synID(2, 7, 0), 'name'), 'svelte mustache content {')
+
+  bw!
+endfunc
+
+func Test_svelte_runes_in_script()
+  new
+  syntax on
+  set ft=svelte
+  call setline(1, [
+	\ '<script>',
+	\ '  let count = $state(0);',
+	\ '  let doubled = $derived(count * 2);',
+	\ '  let props = $props();',
+	\ '  $effect(() => { console.log(count); });',
+	\ '  let el = $bindable();',
+	\ '</script>',
+	\ ])
+
+  " Force a complete, deterministic re-parse before asserting.  Without this
+  " the syntax state from a previous buffer can linger and report a stale
+  " group (e.g. svelteMustache) for the runes inside <script>.
+  redraw!
+  syntax sync fromstart
+
+  " $state rune inside <script>
+  call assert_equal('svelteRune', synIDattr(synID(2, 19, 0), 'name'), 'svelte $state rune')
+  " $derived rune inside <script>
+  call assert_equal('svelteRune', synIDattr(synID(3, 22, 0), 'name'), 'svelte $derived rune')
+  " $props rune inside <script>
+  call assert_equal('svelteRune', synIDattr(synID(4, 19, 0), 'name'), 'svelte $props rune')
+  " $effect rune inside <script>
+  call assert_equal('svelteRune', synIDattr(synID(5, 4, 0), 'name'), 'svelte $effect rune')
+  " $bindable rune inside <script>
+  call assert_equal('svelteRune', synIDattr(synID(6, 18, 0), 'name'), 'svelte $bindable rune')
+
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
