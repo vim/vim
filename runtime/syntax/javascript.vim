@@ -144,7 +144,7 @@ if main_syntax == 'javascript'
 endif
 
 " Svelte 5 runes ($state, $derived, $props, ...) inside .svelte.js modules.
-if expand('%:t') =~# '\.svelte\.'
+if expand('%:t') =~# '\.svelte\.js$'
   syntax match svelteRune "\$\w\+" containedin=ALL
   highlight default link svelteRune Statement
 endif

@@ -44,7 +44,7 @@ if main_syntax == 'typescript'
 endif
 
 " Svelte 5 runes ($state, $derived, $props, ...) inside .svelte.ts modules.
-if expand('%:t') =~# '\.svelte\.'
+if expand('%:t') =~# '\.svelte\.ts$'
   syntax match svelteRune "\$\w\+" containedin=ALL
   highlight default link svelteRune Statement
 endif
