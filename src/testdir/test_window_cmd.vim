@@ -609,6 +609,36 @@ func Test_equalalways_on_close()
   set equalalways&
 endfunc
 
+func Test_equalalways_on_open()
+  set equalalways
+  vsplit
+  split
+  wincmd l
+  windo vsplit
+
+  let height_1 = winwidth(1)
+  let height_2 = winwidth(2)
+  let height_3 = winwidth(3)
+  let height_4 = winwidth(4)
+  let height_5 = winwidth(5)
+  let height_6 = winwidth(6)
+
+  let diff12 = abs(height_1 - height_2)
+  let diff23 = abs(height_2 - height_3)
+  let diff34 = abs(height_3 - height_4)
+  let diff45 = abs(height_4 - height_5)
+  let diff56 = abs(height_5 - height_6)
+
+  call assert_true(diff12 <= 1)
+  call assert_true(diff23 <= 1)
+  call assert_true(diff34 <= 1)
+  call assert_true(diff45 <= 1)
+  call assert_true(diff56 <= 1)
+
+  only
+  set equalalways&
+endfunc
+
 func Test_win_screenpos()
   CheckFeature quickfix
 
