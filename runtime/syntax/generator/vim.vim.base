@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2026 Aug 29
+" Last Change:	   2026 Sep 10
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -253,7 +253,7 @@ Vim9 syn keyword vim9Boolean	true false
 " =======
 syn case ignore
 syn match	vimNumber	"\<\d\+\%('\d\+\)*"		skipwhite nextgroup=@vimComment,vimSubscriptBrackets
-syn match	vimNumber	"\<\d\+\%('\d\+\)*\.\d\+\%(e[+-]\=\d\+\)\="	skipwhite nextgroup=@vimComment
+syn match	vimNumber	"\%#=1\<\d\+\%('\d\+\)*\.\d\+\%(e[+-]\=\d\+\)\="	skipwhite nextgroup=@vimComment
 syn match	vimNumber	"\<0b[01]\+\%('[01]\+\)*"		skipwhite nextgroup=@vimComment,vimSubscriptBrackets
 syn match	vimNumber	"\<0o\=\o\+\%('\o\+\)*"		skipwhite nextgroup=@vimComment,vimSubscriptBrackets
 syn match	vimNumber	"\<0x\x\+\%('\x\+\)*"		skipwhite nextgroup=@vimComment,vimSubscriptBrackets
@@ -271,23 +271,29 @@ syn region vimSubscriptBrackets	contained
       \ contains=@vimExprList
 syn match  vimSubscriptDot	contained	"\."	nextgroup=vimVar,vimVarKey,vimUserFunc,vimUserFuncKey
 
-syn match vimVar	      contained	"\<\h[a-zA-Z0-9#_]*\>"	nextgroup=vimSubscriptBrackets,vimSubscriptDot contains=vim9Super,vim9This
+syn match vimVar	      contained	"\%#=1\<\h\w*\>"		nextgroup=vimSubscriptBrackets,vimSubscriptDot contains=vim9Super,vim9This
 " dict-key only
 syn match vimVarKey     contained	"\<\d\w*\>"		nextgroup=vimSubscriptBrackets,vimSubscriptDot
-syn match vimVar		"\<[bwglstav]:\h[a-zA-Z0-9#_]*\>"	nextgroup=vimSubscriptBrackets,vimSubscriptDot contains=vimVarScope
-syn match vimVar		"\<a:\%(000\|1\=[0-9]\|20\)\>"	nextgroup=vimSubscriptBrackets,vimSubscriptDot contains=vimVarScope
-syn match vimFBVar      contained	"\<[bwglsta]:\h[a-zA-Z0-9#_]*\>"	nextgroup=vimSubscriptBrackets,vimSubscriptDot contains=vimVarScope
+syn match vimVar		"\%#=1\<[bwglstav]:\h\w*\>"	nextgroup=vimSubscriptBrackets,vimSubscriptDot contains=vimVarScope
+" autoload prefix
+syn match vimVar
+      \ "\%#=1\<\%(g:\)\=\h\w*\%(#\w\+\)\+\>"		nextgroup=vimSubscriptBrackets,vimSubscriptDot contains=vimVarScope
+syn match vimVar		"\%#=1\<a:\%(000\|1\=[0-9]\|20\)\>"	nextgroup=vimSubscriptBrackets,vimSubscriptDot contains=vimVarScope
+syn match vimFBVar      contained	"\%#=1\<[bwglsta]:\h\w*\>"	nextgroup=vimSubscriptBrackets,vimSubscriptDot contains=vimVarScope
+" autoload prefix
+syn match vimFBVar      contained
+      \ "\%#=1\<\%(g:\)\=\h\w*\%(#\w\+\)\+\>"		nextgroup=vimSubscriptBrackets,vimSubscriptDot contains=vimVarScope
 
 " match the scope prefix independently of the retrofitted scope dictionary
 syn match vimVarScope   contained	"\<[bwglstav]:"
-syn match vimVimVar     contained	"\<[bwglstav]:\%(\h\|\d\)\@!"	nextgroup=vimSubscriptBrackets,vimSubscriptDot
+syn match vimVimVar     contained	"\%#=1\<[bwglstav]:\%(\h\|\d\)\@!"	nextgroup=vimSubscriptBrackets,vimSubscriptDot
 
 syn match vimVarNameError contained "\<\h\w*\>"		nextgroup=vimSubscriptBrackets,vimSubscriptDot " TODO: just abort highlighting rather than match nextgroup?
 syn match vimVimVar	"\<v:"		nextgroup=vimSubscriptBrackets,vimSubscriptDot,vimVimVarName,vimVarNameError
 syn match vimOptionVar	"&\%([lg]:\)\="		nextgroup=vimSubscriptBrackets,vimSubscriptDot,vimOptionVarName,vimVarNameError
 syn cluster vimSpecialVar	contains=vimEnvvar,vimLetRegister,vimOptionVar,vimVimVar
 
-Vim9 syn match	vimVar	contained	 "\<\h\w*\ze<"		nextgroup=vim9TypeArgs
+Vim9 syn match	vimVar	contained	 "\%#=1\<\h\w*\ze<"		nextgroup=vim9TypeArgs
 
 syn cluster vimExprList	contains=@vimSpecialVar,@vimFunc,vimNumber,vimOper,vimOperParen,vimLambda,vimString,vimVar,@vim9ExprList
 syn cluster vim9ExprList	contains=vim9Boolean,vim9LambdaParams,vim9Null
@@ -1659,12 +1665,12 @@ syn match   vimCommand contained	"\<z[-+^.=]\=\>"
 " Operators: {{{2
 " =========
 syn cluster	vimOperGroup	contains=@vimContinue,@vimExprList,vim9Comment,vim9LineComment,vimContinueString
-syn match	vimOper	"\a\@<!!"			skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimSpecFile
+syn match	vimOper	"\%#=1\a\@<!!"			skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimSpecFile
 syn match	vimOper	"||\|&&\|[-+*/%.]"		skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimSpecFile
 " syn match	vimOper	"?"			skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimContinueString
-syn match	vimOper	"\s\@1<=?\ze\s\|\s\@1<=?$"		skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimContinueString
+syn match	vimOper	"\%#=1\s\@1<=?\ze\s\|\s\@1<=?$"		skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimContinueString
 " distinguish ternary : from ex-colon
-syn match	vimOper	"\s\@1<=:\ze\s\|\s\@1<=:$"		skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimContinueString
+syn match	vimOper	"\%#=1\s\@1<=:\ze\s\|\s\@1<=:$"		skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimContinueString
 syn match	vimOper	"??"			skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimContinueString
 syn match	vimOper	"="			skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimContinueString,vimSpecFile
 syn match	vimOper	"\%#=1\%(==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\)[?#]\="	skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimContinueString,vimSpecFile
@@ -1678,7 +1684,7 @@ syn region	vimOperParen
       \ contains=@vimOperGroup
 syn region	vimOperParen
       \ matchgroup=vimSep
-      \ start="#\={"
+      \ start="\%#=1#\={"
       \ end="}"
       \ nextgroup=vimSubscriptBrackets,vimSubscriptDot,vimVar
       \ contains=@vimOperGroup,vimDictColon
@@ -2144,10 +2150,10 @@ syn match	vimStringInterpolationBrace contained "{{"
 syn match	vimStringInterpolationBrace contained "}}"
 syn cluster	vimStringInterpolation contains=vimStringInterpolationExpr,vimStringInterpolationBrace
 
-syn region	vimContinueString	contained	matchgroup=vimContinueString start=+"+  skip=+\n\s*\%(\\\|["#]\\ \)+ end=+"+ end="$" skipwhite nextgroup=vimSubscriptBrackets,vimComment,vimOper contains=@vimContinue,@vimStringGroup
-syn region	vimContinueString	contained	matchgroup=vimContinueString start=+'+  skip=+\n\s*\%(\\\|["#]\\ \)+ end=+'+ end="$" skipwhite nextgroup=vimSubscriptBrackets,vimComment,vimOper contains=@vimContinue,vimQuoteEscape
-syn region	vimContinueString	contained	matchgroup=vimContinueString start=+$"+ skip=+\n\s*\%(\\\|["#]\\ \)+ end=+"+ end="$" skipwhite nextgroup=vimSubscriptBrackets,vimComment,vimOper contains=@vimContinue,@vimStringInterpolation,@vimStringGroup
-syn region	vimContinueString	contained	matchgroup=vimContinueString start=+$'+ skip=+\n\s*\%(\\\|["#]\\ \)+ end=+'+ end="$" skipwhite nextgroup=vimSubscriptBrackets,vimComment,vimOper contains=@vimContinue,@vimStringInterpolation,vimQuoteEscape
+syn region	vimContinueString	contained	matchgroup=vimContinueString start=+"+  skip=+\%#=1\n\s*\%(\\\|["#]\\ \)+ end=+"+ end="$" skipwhite nextgroup=vimSubscriptBrackets,vimComment,vimOper contains=@vimContinue,@vimStringGroup
+syn region	vimContinueString	contained	matchgroup=vimContinueString start=+'+  skip=+\%#=1\n\s*\%(\\\|["#]\\ \)+ end=+'+ end="$" skipwhite nextgroup=vimSubscriptBrackets,vimComment,vimOper contains=@vimContinue,vimQuoteEscape
+syn region	vimContinueString	contained	matchgroup=vimContinueString start=+$"+ skip=+\%#=1\n\s*\%(\\\|["#]\\ \)+ end=+"+ end="$" skipwhite nextgroup=vimSubscriptBrackets,vimComment,vimOper contains=@vimContinue,@vimStringInterpolation,@vimStringGroup
+syn region	vimContinueString	contained	matchgroup=vimContinueString start=+$'+ skip=+\%#=1\n\s*\%(\\\|["#]\\ \)+ end=+'+ end="$" skipwhite nextgroup=vimSubscriptBrackets,vimComment,vimOper contains=@vimContinue,@vimStringInterpolation,vimQuoteEscape
 
 " Registers, Addresses, Filters: {{{2
 syn match	vimLetRegister	contained	'@["@0-9\-a-zA-Z:.%#=*+~_/]'
@@ -2165,7 +2171,7 @@ syn region	vimVarList	contained
       \ start="\[" end="]"
       \ skipwhite nextgroup=vimLetHeredoc
       \ contains=@vimContinue,@vimSpecialVar,vimVar
-syn match	vimLetVar	 contained	"\<\%([bwglstav]:\)\=\h[a-zA-Z0-9#_]*\>\ze\%(\[.*]\)\=\s*=<<"	skipwhite nextgroup=vimLetVarSubscript,vimLetHeredoc	contains=vimVarScope,vimSubscriptBrackets
+syn match	vimLetVar	 contained	"\%#=1\<\%([bwglstav]:\)\=\h[a-zA-Z0-9#_]*\>\ze\%(\[.*]\)\=\s*=<<"	skipwhite nextgroup=vimLetVarSubscript,vimLetHeredoc	contains=vimVarScope,vimSubscriptBrackets
 
 syn region	vimLetVarSubscript contained
       \ matchgroup=vimSubscriptBracket
@@ -2747,13 +2753,13 @@ syn match	vim9CommentTitleLeader	'#\s\+'ms=s+1	contained
 
 " TODO: remove Vim9 prefix command, nextgroup after SOL etc.
 "     : parameterize patterns with no nextgroup
-Vim9 syn match	vim9LhsVariable	contained	transparent "\s\=\%([bwgstv]:\|&\%([lg]:\)\=\|\$\)\=\h[a-zA-Z0-9#_]*\ze\s\+[-+/*%]\==\%(\s\|$\)"		     contains=vimVar,vimVarScope,@vimSpecialVar,vimEnvvar
-Vim9 syn match	vim9LhsVariable	contained	transparent "\s\=\%([bwgstv]:\|&\%([lg]:\)\=\|\$\)\=\h[a-zA-Z0-9#_]*\ze\s\+\.\.=\%(\s\|$\)"		     contains=vimVar,vimVarScope,@vimSpecialVar,vimEnvvar
-Vim9 syn match	vim9LhsVariable	contained	transparent "\s\=\%([bwgstv]:\|&\%([lg]:\)\=\|\$\)\=\h[a-zA-Z0-9#_]*\ze\s\+=<<"	skipwhite nextgroup=vimLetHeredoc	     contains=vimVar,vimVarScope,@vimSpecialVar,vimEnvvar
-Vim9 syn match	vim9LhsVariable	contained	transparent "\s\=\%([bwgstv]:\|&\%([lg]:\)\=\|\$\)\=\h[a-zA-Z0-9#_]*\ze\s*->"			     contains=vimVar,vimVarScope,@vimSpecialVar,vimEnvvar,vim9Super,vim9This
-Vim9 syn match	vim9LhsVariable	contained	transparent "\s\=\%([bwgstv]:\|&\%([lg]:\)\=\|\$\)\=\h[a-zA-Z0-9#_]*\ze\["        	          nextgroup=vimSubscriptBrackets contains=vimVar,vimVarScope,@vimSpecialVar,vimEnvvar
+Vim9 syn match	vim9LhsVariable	contained	transparent "\%#=1\s\=\%([bwgstv]:\|&\%([lg]:\)\=\|\$\)\=\h[a-zA-Z0-9#_]*\ze\s\+[-+/*%]\==\%(\s\|$\)"		     contains=vimVar,vimVarScope,@vimSpecialVar,vimEnvvar
+Vim9 syn match	vim9LhsVariable	contained	transparent "\%#=1\s\=\%([bwgstv]:\|&\%([lg]:\)\=\|\$\)\=\h[a-zA-Z0-9#_]*\ze\s\+\.\.=\%(\s\|$\)"		     contains=vimVar,vimVarScope,@vimSpecialVar,vimEnvvar
+Vim9 syn match	vim9LhsVariable	contained	transparent "\%#=1\s\=\%([bwgstv]:\|&\%([lg]:\)\=\|\$\)\=\h[a-zA-Z0-9#_]*\ze\s\+=<<"	skipwhite nextgroup=vimLetHeredoc	     contains=vimVar,vimVarScope,@vimSpecialVar,vimEnvvar
+Vim9 syn match	vim9LhsVariable	contained	transparent "\%#=1\s\=\%([bwgstv]:\|&\%([lg]:\)\=\|\$\)\=\h[a-zA-Z0-9#_]*\ze\s*->"			     contains=vimVar,vimVarScope,@vimSpecialVar,vimEnvvar,vim9Super,vim9This
+Vim9 syn match	vim9LhsVariable	contained	transparent "\%#=1\s\=\%([bwgstv]:\|&\%([lg]:\)\=\|\$\)\=\h[a-zA-Z0-9#_]*\ze\["        	          nextgroup=vimSubscriptBrackets contains=vimVar,vimVarScope,@vimSpecialVar,vimEnvvar
 " TODO: remove these in favour of funccall handling?
-Vim9 syn match	vim9LhsVariable	contained	transparent "\s\=\%([bwgtv]:\|&\%([lg]:\)\=\|\$\)\=\h[a-zA-Z0-9#_]*\ze\."	          nextgroup=vimSubscriptDot	     contains=vimVar,vimVarScope,@vimSpecialVar,vimEnvvar,vim9Super,vim9This
+Vim9 syn match	vim9LhsVariable	contained	transparent "\%#=1\s\=\%([bwgtv]:\|&\%([lg]:\)\=\|\$\)\=\h[a-zA-Z0-9#_]*\ze\."	          nextgroup=vimSubscriptDot	     contains=vimVar,vimVarScope,@vimSpecialVar,vimEnvvar,vim9Super,vim9This
 
 Vim9 syn match vim9LhsVariableList	contained	"\[\_[^]]\+]\ze\s\+[-+/*%]\=="			contains=vimVar,@vimSpecialVar
 Vim9 syn match vim9LhsVariableList	contained	"\[\_[^]]\+]\ze\s\+=<<"	skipwhite nextgroup=vimLetHeredoc	contains=vimVar,@vimSpecialVar
@@ -2791,7 +2797,7 @@ Vim9 syn match	vim9UserFunc	"^\s*\%([sgbwtv]:\|<[sS][iI][dD]>\)\=\h\w*\ze[(<]"		
 Vim9 syn match	vim9UserFunc	"^\s*\%(g:\)\=\%(\h\w*#\)\+\h\w*\ze[(<]"		skipwhite nextgroup=vimOperParen		   contains=vimVarScope,vimWhitespace
 Vim9 syn match	vim9Func	"^\s*\l\w*\ze("				skipwhite nextgroup=vimOperParen		   contains=vimFuncName,vimWhitespace
 
-Vim9 syn match	vim9Wincmd	contained 	"\s\=\<winc\%[md]\>\ze\s\+=\s*\%([#|]\|$\)"	skipwhite nextgroup=vimWincmdArg	contains=vimWhitespace
+Vim9 syn match	vim9Wincmd	contained 	"\%#=1\s\=\<winc\%[md]\>\ze\s\+=\s*\%([#|]\|$\)"	skipwhite nextgroup=vimWincmdArg	contains=vimWhitespace
 Vim9 syn match	vim9Wincmd		"^\s*\<winc\%[md]\>\ze\s\+=\s*\%([#|]\|$\)"	skipwhite nextgroup=vimWincmdArg	contains=vimWhitespace
 
 " allowed anywhere in the file
@@ -2804,18 +2810,18 @@ syn match	vimShebang	"\%^#!.*" display
 " Function Call Highlighting: {{{2
 " (following Gautam Iyer's suggestion)
 " ==========================
-syn match	vimFunc	contained	"\<\l\w*\ze\s*("					skipwhite nextgroup=vimOperParen		contains=vimFuncName
+syn match	vimFunc	contained	"\%#=1\<\l\w*\ze\s*("			skipwhite nextgroup=vimOperParen		contains=vimFuncName
 " dict-key only
-syn match	vimUserFuncKey	contained	"\%(\l\|\d\)\w*\ze\%(\s*(\|<.*>(\)"				skipwhite nextgroup=vimOperParen,vim9TypeArgs	contains=vim9MethodName
-syn match	vimUserFunc	contained	"\<[[:upper:]_]\w*\ze\%(\s*(\|<.*>(\)"			skipwhite nextgroup=vimOperParen,vim9TypeArgs	contains=vim9MethodName,vim9Super,vim9This
-syn match	vimUserFunc	contained	"\<\%(g:\)\=\%(\h\w*#\)\+\h\w*\ze\%(\s*(\|<.*>(\)"			skipwhite nextgroup=vimOperParen		contains=vimVarScope
-syn match	vimUserFunc	contained	"\%(\<[sgbwtlav]:\|<[sS][iI][dD]>\)\h\w*\ze\%(\s*(\|<.*>(\)"		skipwhite nextgroup=vimOperParen,vim9TypeArgs	contains=vimVarScope,vimNotation
+syn match	vimUserFuncKey	contained	"\%(\l\|\d\)\w*\ze\%(\s*(\|<.*>(\)"			skipwhite nextgroup=vimOperParen,vim9TypeArgs	contains=vim9MethodName
+syn match	vimUserFunc	contained	"\<[[:upper:]_]\w*\ze\%(\s*(\|<.*>(\)"		skipwhite nextgroup=vimOperParen,vim9TypeArgs	contains=vim9MethodName,vim9Super,vim9This
+syn match	vimUserFunc	contained	"\<\%(g:\)\=\%(\h\w*#\)\+\h\w*\ze\%(\s*(\|<.*>(\)"		skipwhite nextgroup=vimOperParen		contains=vimVarScope
+syn match	vimUserFunc	contained	"\%(\<[sgbwtlav]:\|<[sS][iI][dD]>\)\h\w*\ze\%(\s*(\|<.*>(\)"	skipwhite nextgroup=vimOperParen,vim9TypeArgs	contains=vimVarScope,vimNotation
 
-Vim9 syn match	vim9UserFunc	contained	"\s\=\%([sgbwtv]:\|<[sS][iI][dD]>\)\=\h\w*\ze[(<]"			skipwhite nextgroup=vimOperParen,vim9TypeArgs	contains=vimVarScope,vimNotation,vim9MethodName,vim9Super,vim9This,vimWhitespace
-Vim9 syn match	vim9UserFunc	contained	"\s\=\%(g:\)\=\%(\h\w*#\)\+\h\w*\ze[(<]"			skipwhite nextgroup=vimOperParen		contains=vimVarScope,vimWhitespace
-Vim9 syn match	vim9Func	contained	"\l\w*\ze("					skipwhite nextgroup=vimOperParen		contains=vimFuncName
+Vim9 syn match	vim9UserFunc	contained	"\s\=\%([sgbwtv]:\|<[sS][iI][dD]>\)\=\h\w*\ze[(<]"		skipwhite nextgroup=vimOperParen,vim9TypeArgs	contains=vimVarScope,vimNotation,vim9MethodName,vim9Super,vim9This,vimWhitespace
+Vim9 syn match	vim9UserFunc	contained	"\s\=\%(g:\)\=\%(\h\w*#\)\+\h\w*\ze[(<]"		skipwhite nextgroup=vimOperParen		contains=vimVarScope,vimWhitespace
+Vim9 syn match	vim9Func	contained	"\l\w*\ze("				skipwhite nextgroup=vimOperParen		contains=vimFuncName
 " higher priority for matches in command position
-Vim9 syn match	vim9FuncWrap	contained	"\s\+\l\w*\ze("					contains=vim9Func transparent
+Vim9 syn match	vim9FuncWrap	contained	"\s\+\l\w*\ze("				contains=vim9Func transparent
 
 syn cluster	vimFunc	contains=vimFunc,vimUserFunc
 syn cluster	vim9Func	contains=vim9FuncWrap,vim9UserFunc
@@ -2854,12 +2860,19 @@ endif
 " Synchronize (speed) {{{2
 "============
 
+syn sync clear
+
 exe "syn sync minlines=" .. get(g:, "vimsyn_minlines", 100)
 exe "syn sync maxlines=" .. get(g:, "vimsyn_maxlines", 200)
 
-syn sync linecont	"^\s\+\\"
+syn sync linecont	"\n\s*\%(\\\|["#]\\ \)"
 syn sync linebreaks=2
-syn sync match vimAugroupSyncA	groupthere NONE	"\<aug\%[roup]\>\s\+[eE][nN][dD]"
+
+syn sync match	vimSyncBlockEnd	grouphere NONE	"^aug\%[roup]\s\+[eE][nN][dD]\>"
+syn sync match	vimSyncBlockEnd	grouphere NONE	"^end\%(fun\%[ction]\|def\)\>"
+if s:vim9script
+  syn sync match	vim9SyncBlockEnd	grouphere NONE	"^end\%(class\|enum\|interface\)\>"
+endif
 
 " ====================
 " Highlighting Settings {{{2
