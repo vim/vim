@@ -1877,6 +1877,10 @@ popup_adjust_position(win_T *wp)
 	    {
 		if ((wp->w_popup_flags & POPF_HIDDEN) == 0)
 		{
+#ifdef FEAT_IMAGE
+		    if (wp->w_popup_imagep != NULL)
+			image_placement_clear(wp->w_popup_imagep);
+#endif
 		    popup_hide_for_textprop(wp);
 		    if (wp->w_winrow + popup_height(wp) >= cmdline_row)
 			clear_cmdline = TRUE;
@@ -2398,6 +2402,13 @@ popup_adjust_position(win_T *wp)
     // leaving stray decorations behind.
     if (popup_compute_clipwindow_offsets(wp))
     {
+#ifdef FEAT_IMAGE
+	if (!(wp->w_popup_flags & POPF_HIDDEN))
+	    // Clear placement before hiding, like popup_hide()
+	    if (wp->w_popup_imagep != NULL)
+		image_placement_clear(wp->w_popup_imagep);
+#endif
+
 	popup_hide_for_textprop(wp);
 	return;
     }
@@ -3725,6 +3736,11 @@ popup_hide(win_T *wp)
 	return;
 
     popup_save_area(wp, &old_area);
+
+#ifdef FEAT_IMAGE
+    if (wp->w_popup_imagep != NULL)
+	image_placement_clear(wp->w_popup_imagep);
+#endif
 
     wp->w_popup_flags |= POPF_HIDDEN;
 
