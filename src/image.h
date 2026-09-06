@@ -21,12 +21,12 @@ typedef unsigned int imgpx_T;
  */
 typedef enum
 {
-    IMAGE_BACKEND_NONE,
     IMAGE_BACKEND_CAIRO,
     IMAGE_BACKEND_GDI,
     IMAGE_BACKEND_GDK,
     IMAGE_BACKEND_KITTY,
-    IMAGE_BACKEND_SIXEL
+    IMAGE_BACKEND_SIXEL,
+    IMAGE_BACKEND_NONE
 } image_backend_T;
 
 /*

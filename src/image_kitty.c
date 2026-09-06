@@ -92,9 +92,30 @@ transmit_image(image_kitty_T *img)
     out_flush();
 }
 
-    void
-image_kitty_draw(image_T *img, image_geometry_T *geometry, int id)
+    image_placement_T *
+image_placement_kitty_alloc(void)
 {
+    return ALLOC_CLEAR_ONE(image_placement_T);
+}
+
+    void
+image_placement_kitty_init(image_placement_T *place UNUSED)
+{
+}
+
+    void
+image_placement_kitty_uninit(image_placement_T *place)
+{
+    image_placement_kitty_clear(place);
+}
+
+
+    void
+image_placement_kitty_draw(image_placement_T *place)
+{
+    image_T		*img = place->img;
+    image_geometry_T	*geometry = &place->geometry;
+
     transmit_image(IMG(img));
 
     // Since we send the image id and the placement id, the existing
@@ -117,7 +138,7 @@ image_kitty_draw(image_T *img, image_geometry_T *geometry, int id)
     vim_snprintf(
 	    (char *)IObuff, IOSIZE,
 	    "\033_Ga=p,i=%d,p=%d,x=%u,y=%u,w=%u,h=%u,z=%d,C=1,q=2\033\\",
-	    img->id, id, geometry->crop.x, geometry->crop.y,
+	    img->id, place->id, geometry->crop.x, geometry->crop.y,
 	    geometry->crop.width, geometry->crop.height,
 	    geometry->zindex);
 
@@ -129,10 +150,10 @@ image_kitty_draw(image_T *img, image_geometry_T *geometry, int id)
 }
 
     void
-image_kitty_clear(image_T *img, int id)
+image_placement_kitty_clear(image_placement_T *place)
 {
     vim_snprintf((char *)IObuff, IOSIZE,
-	    "\033_Ga=d,d=I,i=%d,p=%d,q=2\033\\", img->id, id);
+	    "\033_Ga=d,d=i,i=%d,p=%d,q=2\033\\", place->img->id, place->id);
 
     out_str((char_u *)IObuff);
     out_flush();

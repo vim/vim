@@ -11,9 +11,62 @@
 
 #ifdef FEAT_IMAGE
 
+typedef struct
+{
+    bool available;
+
+    struct
+    {
+	image_T *(*alloc)(void);
+	void (*init)(image_T *);
+	void (*uninit)(image_T *);
+    } image;
+
+    struct
+    {
+	image_placement_T *(*alloc)(void);
+	void (*init)(image_placement_T *);
+	void (*uninit)(image_placement_T *);
+	void (*draw)(image_placement_T *);
+	void (*clear)(image_placement_T *);
+    } placement;
+} image_backend_handler_T;
+
+static image_backend_handler_T backends[] = {
+    [IMAGE_BACKEND_CAIRO] = {
+    },
+    [IMAGE_BACKEND_GDI] = {
+    },
+    [IMAGE_BACKEND_GDK] = {
+    },
+#ifdef FEAT_IMAGE_KITTY
+    [IMAGE_BACKEND_KITTY] = {
+	.available = true,
+	.image = {
+	    .alloc = image_kitty_alloc,
+	    .init = image_kitty_init,
+	    .uninit = image_kitty_uninit
+	},
+	.placement = {
+	    .alloc = image_placement_kitty_alloc,
+	    .init = image_placement_kitty_init,
+	    .uninit = image_placement_kitty_uninit,
+	    .draw = image_placement_kitty_draw,
+	    .clear = image_placement_kitty_clear
+	}
+    },
+#endif
+    [IMAGE_BACKEND_SIXEL] = {
+    },
+    [IMAGE_BACKEND_NONE] = {.available = false}
+};
+
 static image_T *images = NULL;
 static image_placement_T *placements = NULL;
 static image_backend_T backend = IMAGE_BACKEND_KITTY; // Temporary TODO
+
+#define IMG_FUNC(t, f) (backends[t].image.f)
+#define PLACE_FUNC(t, f) (backends[t].placement.f)
 
 # define FOR_ALL_IMAGES(img) \
     for ((img) = images; (img) != NULL; (img) = (img)->next)
@@ -21,84 +74,16 @@ static image_backend_T backend = IMAGE_BACKEND_KITTY; // Temporary TODO
     for ((place) = placements; (place) != NULL; (place) = (place)->next)
 
 /*
- * Allocate new image structure for backend. Returns NULL on failure.
+ * Return true if the current image backend is available.
  */
-    static image_T *
-image_backend_alloc(void)
+    static bool
+backend_avail(void)
 {
-    switch (backend)
-    {
-	case IMAGE_BACKEND_CAIRO:
-	    return NULL;
-	case IMAGE_BACKEND_GDI:
-	    return NULL;
-	case IMAGE_BACKEND_GDK:
-	    return NULL;
-	case IMAGE_BACKEND_KITTY:
-#ifdef FEAT_IMAGE_KITTY
-	    return image_kitty_alloc();
-#endif
-	case IMAGE_BACKEND_SIXEL:
-	    return NULL;
-	default:
-	    emsg(_(e_no_image_backend_available));
-	    return NULL;
-    }
-}
+    bool avail = backends[backend].available;
 
-/*
- * Initialize the image backend
- */
-    static void
-image_backend_init(image_T *img)
-{
-    switch (backend)
-    {
-	case IMAGE_BACKEND_CAIRO:
-	    break;
-	case IMAGE_BACKEND_GDI:
-	    break;
-	case IMAGE_BACKEND_GDK:
-	    break;
-	case IMAGE_BACKEND_KITTY:
-#ifdef FEAT_IMAGE_KITTY
-	    image_kitty_init(img);
-#endif
-	    break;
-	case IMAGE_BACKEND_SIXEL:
-	    break;
-	default:
-	    emsg(_(e_no_image_backend_available));
-	    break;
-    }
-}
-
-/*
- * Uninitialize the image backend. Note that this is not guaranteed to clear any
- * existing placements for this image.
- */
-    static void
-image_backend_uninit(image_T *img)
-{
-    switch (backend)
-    {
-	case IMAGE_BACKEND_CAIRO:
-	    break;
-	case IMAGE_BACKEND_GDI:
-	    break;
-	case IMAGE_BACKEND_GDK:
-	    break;
-	case IMAGE_BACKEND_KITTY:
-#ifdef FEAT_IMAGE_KITTY
-	    image_kitty_uninit(img);
-#endif
-	    break;
-	case IMAGE_BACKEND_SIXEL:
-	    break;
-	default:
-	    emsg(_(e_no_image_backend_available));
-	    break;
-    }
+    if (!avail)
+	emsg(_(e_no_image_backend_available));
+    return avail;
 }
 
 /*
@@ -111,13 +96,16 @@ image_new(uint8_t *data, imgpx_T width, imgpx_T height, image_format_T fmt)
 {
     image_T *img;
 
+    if (!backend_avail())
+	return NULL;
+
     FOR_ALL_IMAGES(img)
 	if (img->width == width && img->height == height &&
 		img->fmt == fmt &&
 		memcmp(img->data, data, (size_t)width * height * fmt) == 0)
 	    return image_ref(img);
 
-    img = image_backend_alloc();
+    img = IMG_FUNC(backend, alloc)();
     if (img == NULL)
 	return NULL;
 
@@ -145,7 +133,7 @@ image_new(uint8_t *data, imgpx_T width, imgpx_T height, image_format_T fmt)
     img->prev = images;
     images = img;
 
-    image_backend_init(img);
+    IMG_FUNC(backend, init)(img);
 
     return img;
 }
@@ -160,7 +148,10 @@ image_ref(image_T *img)
     static void
 image_free(image_T *img)
 {
-    image_backend_uninit(img);
+    if (!backend_avail())
+	return;
+
+    IMG_FUNC(backend, uninit)(img);
 
     if (img->prev != NULL)
 	img->prev->next = img->next;
@@ -192,60 +183,6 @@ image_cell_size(image_T *img, colnr_T *cw, linenr_T *ch)
 }
 
 /*
- * Draw the image placement to the screen using the image backend
- */
-    static void
-image_placement_backend_draw(image_placement_T *place)
-{
-    switch (backend)
-    {
-	case IMAGE_BACKEND_CAIRO:
-	    break;
-	case IMAGE_BACKEND_GDI:
-	    break;
-	case IMAGE_BACKEND_GDK:
-	    break;
-	case IMAGE_BACKEND_KITTY:
-#ifdef FEAT_IMAGE_KITTY
-	    image_kitty_draw(place->img, &place->geometry, place->id);
-#endif
-	    break;
-	case IMAGE_BACKEND_SIXEL:
-	    break;
-	default:
-	    emsg(_(e_no_image_backend_available));
-	    break;
-    }
-}
-
-/*
- * Clear the image placement from the screen using the image backend
- */
-    static void
-image_placement_backend_clear(image_placement_T *place)
-{
-    switch (backend)
-    {
-	case IMAGE_BACKEND_CAIRO:
-	    break;
-	case IMAGE_BACKEND_GDI:
-	    break;
-	case IMAGE_BACKEND_GDK:
-	    break;
-	case IMAGE_BACKEND_KITTY:
-#ifdef FEAT_IMAGE_KITTY
-	    image_kitty_clear(place->img, place->id);
-#endif
-	    break;
-	case IMAGE_BACKEND_SIXEL:
-	    break;
-	default:
-	    emsg(_(e_no_image_backend_available));
-	    break;
-    }
-}
-
-/*
  * Initialize geometry to default values (top left corner, no crop).
  */
     static void
@@ -266,8 +203,12 @@ image_geometry_init(image_geometry_T *geometry, imgpx_T width, imgpx_T height)
     image_placement_T *
 image_placement_new(image_T *img)
 {
-    image_placement_T *place = ALLOC_CLEAR_ONE(image_placement_T);
+    image_placement_T *place;
 
+    if (!backend_avail())
+	return NULL;
+
+    place = PLACE_FUNC(backend, alloc)();
     if (place == NULL)
 	return NULL;
 
@@ -280,6 +221,8 @@ image_placement_new(image_T *img)
 
     image_geometry_init(&place->geometry, img->width, img->height);
 
+    PLACE_FUNC(backend, init)(place);
+
     if (placements != NULL)
 	placements->next = place;
     place->prev = placements;
@@ -291,6 +234,9 @@ image_placement_new(image_T *img)
     void
 image_placement_free(image_placement_T *place)
 {
+    if (!backend_avail())
+	return;
+
     if (place->prev != NULL)
 	place->prev->next = place->next;
     if (place->next != NULL)
@@ -298,7 +244,8 @@ image_placement_free(image_placement_T *place)
     if (placements == place)
 	placements = place->prev;
 
-    image_placement_clear(place);
+    // This should clear placement from screen as well.
+    PLACE_FUNC(backend, uninit)(place);
     image_unref(place->img);
     free(place);
 }
@@ -315,7 +262,9 @@ image_placement_dirty(image_placement_T *place)
     void
 image_placement_clear(image_placement_T *place)
 {
-    image_placement_backend_clear(place);
+    if (!backend_avail())
+	return;
+    PLACE_FUNC(backend, clear)(place);
     image_placement_dirty(place);
 }
 
@@ -325,10 +274,10 @@ image_placement_clear(image_placement_T *place)
     void
 image_placement_draw(image_placement_T *place)
 {
-    if (!place->dirty)
+    if (!place->dirty || !backend_avail())
 	return;
 
-    image_placement_backend_draw(place);
+    PLACE_FUNC(backend, draw)(place);
     place->dirty = false;
 }
 
