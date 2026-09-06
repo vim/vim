@@ -2509,6 +2509,31 @@ else
   AC_MSG_RESULT(no)
 fi
 
+AC_MSG_CHECKING(for libsixel)
+if "$PKG_CONFIG" --exists 'libsixel'; then
+  AC_MSG_RESULT(yes)
+
+  SIXEL_LIBS=`$PKG_CONFIG --libs libsixel`
+  SIXEL_CFLAGS=`$PKG_CONFIG --cflags-only-other libsixel`
+  SIXEL_CPPFLAGS=`$PKG_CONFIG --cflags-only-I libsixel`
+
+  cppflags_save=$CPPFLAGS
+  cflags_save=$CFLAGS
+
+  AC_DEFINE(HAVE_SIXEL)
+
+  CPPFLAGS="$CPPFLAGS $PANGO_CPPFLAGS"
+  CFLAGS="$CFLAGS $PANGO_CFLAGS"
+  AC_SUBST(SIXEL_LIBS)
+  AC_SUBST(SIXEL_CFLAGS)
+  AC_SUBST(SIXEL_CPPFLAGS)
+
+  CPPFLAGS=$cppflags_save
+  CFLAGS=$cflags_save
+else
+  AC_MSG_RESULT(no)
+fi
+
 dnl GTK4 does not use X11 APIs directly, so skip X11 detection entirely.
 dnl This avoids pulling libICE/libSM/libX11/libXt into build dependencies
 dnl for GTK4-only builds, even when --with-x=yes is passed (e.g. by a

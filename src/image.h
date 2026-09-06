@@ -56,6 +56,14 @@ struct image_S
     image_T *prev;
 };
 
+typedef struct
+{
+    imgpx_T x;
+    imgpx_T y;
+    imgpx_T width;
+    imgpx_T height;
+} image_crop_T;
+
 /*
  * Represents positioning and cropping of image
  */
@@ -67,13 +75,7 @@ typedef struct
     colnr_T	col;
     int		zindex;
 
-    struct
-    {
-	imgpx_T x;
-	imgpx_T y;
-	imgpx_T width;
-	imgpx_T height;
-    } crop;
+    image_crop_T crop;
 } image_geometry_T;
 
 /*

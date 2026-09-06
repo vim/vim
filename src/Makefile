@@ -1419,6 +1419,7 @@ ALL_LIBS = \
 	   $(WAYLAND_LIBS) \
 	   $(CAIRO_LIBS) \
 	   $(PANGO_LIBS) \
+	   $(SIXEL_LIBS) \
 	   $(X_EXTRA_LIBS) \
 	   $(MZSCHEME_LIBS) \
 	   $(LIBS) \
@@ -1554,6 +1555,7 @@ BASIC_SRC = \
 	if_xcmdsrv.c \
 	image.c \
 	image_kitty.c \
+	image_sixel.c \
 	indent.c \
 	insexpand.c \
 	json.c \
@@ -1741,6 +1743,7 @@ OBJ_COMMON = \
 	objects/if_xcmdsrv.o \
 	objects/image.o \
 	objects/image_kitty.o \
+	objects/image_sixel.o \
 	objects/indent.o \
 	objects/insexpand.o \
 	objects/linematch.o \
@@ -3496,6 +3499,9 @@ objects/image.o: image.c
 objects/image_kitty.o: image_kitty.c
 	$(CCC) -o $@ image_kitty.c
 
+objects/image_sixel.o: image_sixel.c
+	$(CCC) $(SIXEL_CFLAGS) $(SIXEL_CPPFLAGS) -o $@ image_sixel.c
+
 objects/indent.o: indent.c
 	$(CCC) -o $@ indent.c
 
@@ -4145,6 +4151,11 @@ objects/image.o: auto/osdef.h image.c vim.h protodef.h auto/config.h feature.h o
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h image.h
 objects/image_kitty.o: auto/osdef.h image_kitty.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h image.h
+objects/image_sixel.o: auto/osdef.h image_sixel.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
@@ -4854,6 +4865,7 @@ proto/if_tcl.pro: if_tcl.c
 proto/if_xcmdsrv.pro: if_xcmdsrv.c
 proto/image.pro: image.c
 proto/image_kitty.pro: image_kitty.c
+proto/image_sixel.pro: image_sixel.c
 proto/indent.pro: indent.c
 proto/insexpand.pro: insexpand.c
 proto/job.pro: job.c
