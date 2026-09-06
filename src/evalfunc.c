@@ -10363,10 +10363,54 @@ f_range(typval_T *argvars, typval_T *rettv)
 	emsg(_(e_stride_is_zero));
 	return;
     }
-    if (stride > 0 ? end + 1 < start : end - 1 > start)
+
+    // The stride is stored in "lv_stride", which is an int.
+    if (stride < INT_MIN || stride > INT_MAX)
     {
-	emsg(_(e_start_past_end));
+	char	buf[NUMBUFLEN];
+
+	vim_snprintf(buf, sizeof(buf), "%lld", stride);
+	semsg(_(e_val_too_large), buf);
 	return;
+    }
+
+    uvarnumber_T	len;
+
+    if (stride > 0 ? end < start : end > start)
+    {
+	// One step before the start gives an empty list, further away is
+	// an error.  Subtract unsigned to avoid an overflow.
+	uvarnumber_T	back = stride > 0
+				  ? (uvarnumber_T)start - (uvarnumber_T)end
+				  : (uvarnumber_T)end - (uvarnumber_T)start;
+
+	if (back > 1)
+	{
+	    emsg(_(e_start_past_end));
+	    return;
+	}
+	len = 0;
+    }
+    else
+    {
+	varnumber_T	astride = stride > 0 ? stride : -stride;
+	uvarnumber_T	span = stride > 0
+				  ? (uvarnumber_T)end - (uvarnumber_T)start
+				  : (uvarnumber_T)start - (uvarnumber_T)end;
+	uvarnumber_T	count = span / (uvarnumber_T)astride;
+
+	// The number of items is "count" + 1 and must fit in "lv_len".
+	if (count >= (uvarnumber_T)INT_MAX)
+	{
+	    char	buf[NUMBUFLEN];
+
+	    // "count + 1" can wrap around.
+	    vim_snprintf(buf, sizeof(buf), "%llu",
+			      count < UVARNUM_MAX ? count + 1 : UVARNUM_MAX);
+	    semsg(_(e_val_too_large), buf);
+	    return;
+	}
+	len = count + 1;
     }
 
     list_T *list = rettv->vval.v_list;
@@ -10377,11 +10421,8 @@ f_range(typval_T *argvars, typval_T *rettv)
     list->lv_first = &range_list_item;
     list->lv_u.nonmat.lv_start = start;
     list->lv_u.nonmat.lv_end = end;
-    list->lv_u.nonmat.lv_stride = stride;
-    if (stride > 0 ? end < start : end > start)
-	list->lv_len = 0;
-    else
-	list->lv_len = (end - start) / stride + 1;
+    list->lv_u.nonmat.lv_stride = (int)stride;
+    list->lv_len = (int)len;
 }
 
 /*
