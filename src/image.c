@@ -114,17 +114,18 @@ image_new(uint8_t *data, imgpx_T width, imgpx_T height, image_format_T fmt)
     FOR_ALL_IMAGES(img)
 	if (img->width == width && img->height == height &&
 		img->fmt == fmt &&
-		memcmp(img->data, data, fmt * width * height) == 0)
+		memcmp(img->data, data, (size_t)width * height * fmt) == 0)
 	    return image_ref(img);
 
     img = image_backend_alloc();
     if (img == NULL)
 	return NULL;
 
-    img->data = vim_memsave(data, width * height * fmt);
+    img->data = vim_memsave(data, (size_t)width * height * fmt);
     if (img->data == NULL)
     {
-	semsg(_(e_out_of_memory_allocating_nr_bytes), width * height * fmt);
+	semsg(_(e_out_of_memory_allocating_nr_bytes),
+		(size_t)width * height * fmt);
 	vim_free(img);
 	return NULL;
     }
