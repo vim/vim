@@ -1552,6 +1552,8 @@ BASIC_SRC = \
 	highlight.c \
 	if_cscope.c \
 	if_xcmdsrv.c \
+	image.c \
+	image_kitty.c \
 	indent.c \
 	insexpand.c \
 	json.c \
@@ -1591,9 +1593,6 @@ BASIC_SRC = \
 	session.c \
 	sha256.c \
 	sign.c \
-	sixel.c \
-	kitty.c \
-	cairo.c \
 	socketserver.c \
 	sound.c \
 	spell.c \
@@ -1740,6 +1739,8 @@ OBJ_COMMON = \
 	objects/highlight.o \
 	objects/if_cscope.o \
 	objects/if_xcmdsrv.o \
+	objects/image.o \
+	objects/image_kitty.o \
 	objects/indent.o \
 	objects/insexpand.o \
 	objects/linematch.o \
@@ -1775,9 +1776,6 @@ OBJ_COMMON = \
 	objects/session.o \
 	objects/sha256.o \
 	objects/sign.o \
-	objects/sixel.o \
-	objects/kitty.o \
-	objects/cairo.o \
 	objects/socketserver.o \
 	objects/sound.o \
 	objects/spell.o \
@@ -1985,10 +1983,6 @@ PROTO_FILES = \
 	proto/session.pro \
 	proto/sha256.pro \
 	proto/sign.pro \
-	proto/sixel.pro \
-	proto/kitty.pro \
-	proto/cairo.pro \
-	proto/socketserver.pro \
 	proto/sound.pro \
 	proto/spell.pro \
 	proto/spellfile.pro \
@@ -3496,6 +3490,12 @@ objects/if_ruby.o: if_ruby.c
 objects/if_tcl.o: if_tcl.c
 	$(CCC_NF) $(TCL_CFLAGS) $(ALL_CFLAGS) $(TCL_CFLAGS_EXTRA) -o $@ if_tcl.c
 
+objects/image.o: image.c
+	$(CCC) -o $@ image.c
+
+objects/image_kitty.o: image_kitty.c
+	$(CCC) -o $@ image_kitty.c
+
 objects/indent.o: indent.c
 	$(CCC) -o $@ indent.c
 
@@ -3645,15 +3645,6 @@ objects/sha256.o: sha256.c
 
 objects/sign.o: sign.c
 	$(CCC) -o $@ sign.c
-
-objects/sixel.o: sixel.c
-	$(CCC) -o $@ sixel.c
-
-objects/kitty.o: kitty.c
-	$(CCC) -o $@ kitty.c
-
-objects/cairo.o: cairo.c
-	$(CCC) -o $@ cairo.c
 
 objects/socketserver.o: socketserver.c
 	$(CCC) -o $@ socketserver.c
@@ -4148,6 +4139,16 @@ objects/if_xcmdsrv.o: auto/osdef.h if_xcmdsrv.c vim.h protodef.h auto/config.h f
  beval.h structs.h regexp.h gui.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
  ex_cmds.h spell.h proto.h globals.h errors.h version.h
+objects/image.o: auto/osdef.h image.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h image.h
+objects/image_kitty.o: auto/osdef.h image_kitty.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h image.h
 objects/indent.o: auto/osdef.h indent.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  structs.h regexp.h gui.h libvterm/include/vterm.h \
@@ -4339,21 +4340,6 @@ objects/sha256.o: auto/osdef.h sha256.c vim.h protodef.h auto/config.h feature.h
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h
 objects/sign.o: auto/osdef.h sign.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- ascii.h keymap.h termdefs.h macros.h option.h beval.h \
- structs.h regexp.h gui.h libvterm/include/vterm.h \
- libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
- globals.h errors.h
-objects/sixel.o: auto/osdef.h sixel.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- ascii.h keymap.h termdefs.h macros.h option.h beval.h \
- structs.h regexp.h gui.h libvterm/include/vterm.h \
- libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
- globals.h errors.h
-objects/kitty.o: auto/osdef.h kitty.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- ascii.h keymap.h termdefs.h macros.h option.h beval.h \
- structs.h regexp.h gui.h libvterm/include/vterm.h \
- libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
- globals.h errors.h
-objects/cairo.o: auto/osdef.h cairo.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
@@ -4866,6 +4852,8 @@ proto/if_python3.pro: if_python3.c
 proto/if_ruby.pro: if_ruby.c
 proto/if_tcl.pro: if_tcl.c
 proto/if_xcmdsrv.pro: if_xcmdsrv.c
+proto/image.pro: image.c
+proto/image_kitty.pro: image_kitty.c
 proto/indent.pro: indent.c
 proto/insexpand.pro: insexpand.c
 proto/job.pro: job.c
@@ -4912,9 +4900,6 @@ proto/search.pro: search.c
 proto/session.pro: session.c
 proto/sha256.pro: sha256.c
 proto/sign.pro: sign.c
-proto/sixel.pro: sixel.c
-proto/kitty.pro: kitty.c
-proto/cairo.pro: cairo.c
 proto/socketserver.pro: socketserver.c
 proto/sound.pro: sound.c
 proto/spell.pro: spell.c

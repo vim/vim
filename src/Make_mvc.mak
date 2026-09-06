@@ -773,9 +773,6 @@ OBJ = \
 	$(OUTDIR)\session.obj \
 	$(OUTDIR)\sha256.obj \
 	$(OUTDIR)\sign.obj \
-	$(OUTDIR)\sixel.obj \
-	$(OUTDIR)\kitty.obj \
-	$(OUTDIR)\cairo.obj \
 	$(OUTDIR)\socketserver.obj \
 	$(OUTDIR)\spell.obj \
 	$(OUTDIR)\spellfile.obj \
@@ -1773,12 +1770,6 @@ $(OUTDIR)/session.obj: $(OUTDIR) session.c $(INCL)
 $(OUTDIR)/sha256.obj: $(OUTDIR) sha256.c $(INCL)
 
 $(OUTDIR)/sign.obj: $(OUTDIR) sign.c $(INCL)
-
-$(OUTDIR)/sixel.obj: $(OUTDIR) sixel.c $(INCL)
-
-$(OUTDIR)/kitty.obj: $(OUTDIR) kitty.c $(INCL)
-
-$(OUTDIR)/cairo.obj: $(OUTDIR) cairo.c $(INCL)
 
 $(OUTDIR)/socketserver.obj: $(OUTDIR) socketserver.c $(INCL)
 

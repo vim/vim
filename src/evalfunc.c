@@ -7111,48 +7111,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"image",
-#ifdef FEAT_IMAGE
-		1
-#else
-		0
-#endif
-		},
-	{"image_cairo",
-#ifdef FEAT_IMAGE_CAIRO
-		1
-#else
-		0
-#endif
-		},
-	{"image_gdi",
-#ifdef FEAT_IMAGE_GDI
-		1
-#else
-		0
-#endif
-		},
-	{"image_gdk",
-#ifdef FEAT_IMAGE_GDK
-		1
-#else
-		0
-#endif
-		},
-	{"image_kitty",
-#ifdef FEAT_IMAGE_KITTY
-		1
-#else
-		0
-#endif
-		},
-	{"image_sixel",
-#ifdef FEAT_IMAGE_SIXEL
-		1
-#else
-		0
-#endif
-		},
 	{"insert_expand", 1},
 	{"ipv6",
 #ifdef FEAT_IPV6

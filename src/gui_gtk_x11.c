@@ -818,14 +818,6 @@ scale_factor_event(GtkWidget *widget,
     gui.force_redraw = 1;
     gui_resize_shell(w, usable_height);
     gui_gtk_form_thaw(GTK_FORM(gui.formwin));
-#  ifdef FEAT_IMAGE
-    {
-	double old = gui.scale;
-
-	gui.scale = gtk_widget_get_scale_factor(widget);
-	popup_update_scale(old);
-    }
-#  endif
 
     return TRUE;
 }
@@ -4253,10 +4245,6 @@ gui_mch_init(void)
 			   G_CALLBACK(gtk_settings_xft_dpi_changed_cb), NULL);
     }
 
-#if defined(FEAT_IMAGE) && GTK_CHECK_VERSION(3,10,0)
-    gui.scale = gtk_widget_get_scale_factor(gui.formwin);
-#endif
-
     return OK;
 }
 
@@ -7073,98 +7061,6 @@ gui_mch_clear_all(void)
     if (gtk_widget_get_window(gui.drawarea) != NULL)
 	gui_gtk_window_clear(gtk_widget_get_window(gui.drawarea));
 }
-
-#ifdef FEAT_IMAGE_CAIRO
-/*
- * Thin GTK wrappers around the shared cairo backend in src/cairo.c.
- * The heavy lifting (surface build / pixel conversion / composite)
- * is generic Cairo code so a future GTK4 port can reuse the same
- * src/cairo.c without copy-pasting.
- */
-    void
-gui_mch_free_popup_image(win_T *wp)
-{
-    cairo_popup_image_free(wp);
-}
-
-    bool
-gui_mch_update_popup_image_pixels(win_T *wp)
-{
-    return cairo_popup_image_update(wp);
-}
-
-    void
-gui_mch_draw_popup_image(
-	win_T	*wp,
-	int	 row,
-	int	 col,
-	int	 src_x,
-	int	 src_y,
-	int	 draw_w,
-	int	 draw_h)
-{
-    int x, y;
-
-    if (wp->w_popup_image_data == NULL
-	    || wp->w_popup_image_w <= 0 || wp->w_popup_image_h <= 0
-	    || draw_w <= 0 || draw_h <= 0
-# if GTK_CHECK_VERSION(3,0,0)
-	    || gui.surface == NULL
-# endif
-       )
-	return;
-
-    x = FILL_X(col);
-    y = FILL_Y(row);
-# if GTK_CHECK_VERSION(3,0,0)
-    cairo_popup_image_paint(wp, gui.surface, x, y,
-	    src_x, src_y, draw_w, draw_h);
-    queue_draw_area(x, y, draw_w, draw_h);
-# else
-    cairo_popup_image_paint(wp, gui.drawarea->window, x, y,
-	    src_x, src_y, draw_w, draw_h);
-# endif
-}
-#endif // FEAT_IMAGE_CAIRO
-
-#if !GTK_CHECK_VERSION(3,0,0)
-/*
- * Redraw any text revealed by scrolling up/down.
- */
-    static void
-check_copy_area(void)
-{
-    GdkEvent	*event;
-    int		expose_count;
-
-    if (gui.visibility != GDK_VISIBILITY_PARTIAL)
-	return;
-
-    // Avoid redrawing the cursor while scrolling or it'll end up where
-    // we don't want it to be.	I'm not sure if it's correct to call
-    // gui_dont_update_cursor() at this point but it works as a quick
-    // fix for now.
-    gui_dont_update_cursor(TRUE);
-
-    do
-    {
-	// Wait to check whether the scroll worked or not.
-	event = gdk_event_get_graphics_expose(gui.drawarea->window);
-
-	if (event == NULL)
-	    break; // received NoExpose event
-
-	gui_redraw(event->expose.area.x, event->expose.area.y,
-		   event->expose.area.width, event->expose.area.height);
-
-	expose_count = event->expose.count;
-	gdk_event_free(event);
-    }
-    while (expose_count > 0); // more events follow
-
-    gui_can_update_cursor();
-}
-#endif // !GTK_CHECK_VERSION(3,0,0)
 
 #if GTK_CHECK_VERSION(3,0,0)
     static void
