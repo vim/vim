@@ -2,8 +2,7 @@
 int vwl_connection_flush(vwl_connection_T *self);
 int vwl_connection_dispatch(vwl_connection_T *self);
 int vwl_connection_roundtrip(vwl_connection_T *self);
-vwl_seat_T *vwl_connection_get_seat(vwl_connection_T *self, const char *label);
-int wayland_init_connection(const char *display);
+vwl_seat_T *vwl_connection_get_seat(vwl_connection_T *self, const char *label); int wayland_init_connection(const char *display);
 void wayland_uninit_connection(void);
 int wayland_prepare_read(void);
 int wayland_update(void);

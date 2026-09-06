@@ -1189,7 +1189,8 @@ EXTERN char e_invalid_argument_str[]
 	INIT(= N_("E475: Invalid argument: %s"));
 EXTERN char e_invalid_value_for_argument_str[]
 	INIT(= N_("E475: Invalid value for argument %s"));
-#if defined(FEAT_JOB_CHANNEL) || defined(FEAT_PROP_POPUP) || defined(FEAT_EVAL)
+#if defined(FEAT_JOB_CHANNEL) || defined(FEAT_PROP_POPUP) \
+	|| defined(FEAT_EVAL) || defined(FEAT_IMAGE)
 EXTERN char e_invalid_value_for_argument_str_str[]
 	INIT(= N_("E475: Invalid value for argument %s: %s"));
 #endif
@@ -3831,4 +3832,10 @@ EXTERN char e_not_started_with_stdio_channel[]
 	INIT(= N_("E1582: Not started with --stdio-channel"));
 EXTERN char e_cannot_open_stdio_channel[]
 	INIT(= N_("E1583: Cannot open stdio channel"));
+#endif
+#ifdef FEAT_IMAGE
+EXTERN char e_invalid_image_dimensions[]
+	INIT(= N_("E1584: Image dimensions are invalid"));
+EXTERN char e_no_image_backend_available[]
+	INIT(= N_("E1585: No image backend available"));
 #endif
