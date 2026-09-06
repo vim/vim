@@ -1890,6 +1890,9 @@ getout(int exitval)
 #ifdef FEAT_CSCOPE
     cs_end();
 #endif
+#ifdef FEAT_IMAGE_SIXEL
+    sixel_uninit();
+#endif
 #ifdef FEAT_EVAL
     if (garbage_collect_at_exit)
 	garbage_collect(FALSE);

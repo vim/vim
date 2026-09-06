@@ -222,6 +222,9 @@ void mbyte_im_set_active(int active_arg);
 #  ifdef FEAT_IMAGE_KITTY
 #   include "image_kitty.pro"
 #  endif
+#  ifdef FEAT_IMAGE_SIXEL
+#   include "image_sixel.pro"
+#  endif
 # endif
 # include "testing.pro"
 # include "textobject.pro"

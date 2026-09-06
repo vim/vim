@@ -39,8 +39,8 @@ static image_backend_handler_T backends[] = {
     },
     [IMAGE_BACKEND_GDK] = {
     },
-#ifdef FEAT_IMAGE_KITTY
     [IMAGE_BACKEND_KITTY] = {
+#ifdef FEAT_IMAGE_KITTY
 	.available = true,
 	.image = {
 	    .alloc = image_kitty_alloc,
@@ -54,16 +54,35 @@ static image_backend_handler_T backends[] = {
 	    .draw = image_placement_kitty_draw,
 	    .clear = image_placement_kitty_clear
 	}
-    },
+#else
+	.available = false
 #endif
+    },
     [IMAGE_BACKEND_SIXEL] = {
+#ifdef FEAT_IMAGE_SIXEL
+	.available = true,
+	.image = {
+	    .alloc = image_sixel_alloc,
+	    .init = image_sixel_init,
+	    .uninit = image_sixel_uninit
+	},
+	.placement = {
+	    .alloc = image_placement_sixel_alloc,
+	    .init = image_placement_sixel_init,
+	    .uninit = image_placement_sixel_uninit,
+	    .draw = image_placement_sixel_draw,
+	    .clear = image_placement_sixel_clear
+	}
+#else
+	.available = false
+#endif
     },
     [IMAGE_BACKEND_NONE] = {.available = false}
 };
 
 static image_T *images = NULL;
 static image_placement_T *placements = NULL;
-static image_backend_T backend = IMAGE_BACKEND_KITTY; // Temporary TODO
+static image_backend_T backend = IMAGE_BACKEND_SIXEL; // Temporary TODO
 
 #define IMG_FUNC(t, f) (backends[t].image.f)
 #define PLACE_FUNC(t, f) (backends[t].placement.f)
