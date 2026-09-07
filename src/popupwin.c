@@ -6257,7 +6257,7 @@ popup_draw_image(win_T *wp)
     if (crop_width > visible_width * cell_width)
 	crop_width = visible_width * cell_width;
     if (crop_height > visible_height * cell_height)
-        crop_height = visible_height * cell_height;
+	crop_height = visible_height * cell_height;
 
     image_placement_set_z(wp->w_popup_imagep, wp->w_zindex);
     image_placement_set_position(wp->w_popup_imagep, row, col);
