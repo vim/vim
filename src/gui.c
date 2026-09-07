@@ -154,11 +154,16 @@ gui_start(char_u *arg UNUSED)
 	    emsg(msg);
 #endif
     }
-#ifdef HAVE_CLIPMETHOD
     else
+    {
+#ifdef HAVE_CLIPMETHOD
 	// Reset clipmethod to CLIPMETHOD_NONE
 	choose_clipmethod();
 #endif
+#ifdef FEAT_IMAGE
+	update_image_backend();
+#endif
+    }
 
 #if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)
     // Enable fullscreen mode
