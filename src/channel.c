@@ -838,6 +838,10 @@ channel_open_unix(
 	return NULL;
     }
 
+#ifdef MSWIN
+    channel_init_winsock();
+#endif
+
     channel = add_channel();
     if (channel == NULL)
     {
@@ -1639,6 +1643,10 @@ channel_listen_unix(
 	semsg(_(e_invalid_argument_str), path);
 	return NULL;
     }
+
+#ifdef MSWIN
+    channel_init_winsock();
+#endif
 
     channel = add_channel();
     if (channel == NULL)
