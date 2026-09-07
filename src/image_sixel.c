@@ -236,7 +236,27 @@ image_placement_sixel_draw(image_placement_T *place)
     void
 image_placement_sixel_clear(image_placement_T *place UNUSED)
 {
-    redraw_all_later(UPD_NOT_VALID);
+    image_crop_T    *crop = &place->geometry.crop;
+    linenr_T	    cell_rows = (crop->height + cell_height - 1) / cell_height;
+    linenr_T	    first_row = place->geometry.row;
+    linenr_T	    last_row = first_row + cell_rows - 1;
+    win_T	    *wp;
+
+    FOR_ALL_WINDOWS(wp)
+    {
+	linenr_T    ov_first, ov_last;
+	int	    height = wp->w_winrow + wp->w_height - 1;
+
+	// Skip windows that don't overlap the placement's row range at all.
+	if (last_row < wp->w_winrow
+		|| first_row > height)
+	    continue;
+
+	ov_first = first_row > wp->w_winrow ? first_row : wp->w_winrow;
+	ov_last  = last_row < height ? last_row : height;
+
+	redraw_win_range_later(wp, ov_first, ov_last);
+    }
 }
 
 #endif // FEAT_IMAGE_SIXEL
