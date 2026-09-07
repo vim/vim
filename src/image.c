@@ -456,7 +456,7 @@ exit:
     vim_free(buf);
     return ret;
 }
- 
+
 /*
  * Update the current image backend to use depending on 'imageprotocol' and if
  * GUI is being used. Returns OK on success and FAIL on failure.
