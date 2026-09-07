@@ -6245,12 +6245,12 @@ popup_draw_image(win_T *wp)
     crop_height = wp->w_popup_imagep->img->height - crop_y
 	- clip.clip_bot_content * cell_height;
 
-    // "clipwindow" also clips the top and bottom borders, must account for
-    // that.
-    row = MAX(0, row - clip.clip_top_content
-	    - (clip.eff_border[0] > 0 ? 0 : wp->w_popup_border[0])
-	    - (clip.eff_padding[0] > 0 ? 0 : wp->w_popup_padding[0]));
-    col += clip.clip_left_content;
+    // Must account for border and padding (only cells that have been clipped).
+    row -= wp->w_popup_border[0] - clip.eff_border[0];
+    row -= wp->w_popup_padding[0] - clip.eff_padding[0];
+
+    col -= wp->w_popup_border[3] - clip.eff_border[3];
+    col -= wp->w_popup_padding[3] - clip.eff_padding[3];
 
     // Clamp to the popup's actual visible cell box in pixels, so the
     // crop can never claim more cells than the popup has
