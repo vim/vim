@@ -36,13 +36,16 @@ image_kitty_init(image_T *img)
     void
 image_kitty_uninit(image_T *img)
 {
-    // Delete image data from terminal
-    vim_snprintf((char *)IObuff, IOSIZE,
-	    "\033_Ga=d,d=I,i=%d,q=2\033\\", img->id);
+    if (IMG(img)->transmitted)
+    {
+	// Delete image data from terminal
+	vim_snprintf((char *)IObuff, IOSIZE,
+		"\033_Ga=d,d=I,i=%d,q=2\033\\", img->id);
 
-    out_str((char_u *)IObuff);
-    out_flush();
-    IMG(img)->transmitted = false;
+	out_str((char_u *)IObuff);
+	out_flush();
+	IMG(img)->transmitted = false;
+    }
 }
 
 /*

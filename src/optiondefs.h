@@ -1414,6 +1414,10 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 #endif
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
+    {"imageprotocol", "ipc",P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP|P_COLON,
+			    (char_u *)&p_ipc, PV_NONE, did_set_imageprotocol, expand_set_imageprotocol,
+			    {(char_u *)"kitty:kitty,foot:sixel,ghostty:kitty,wezterm:kitty,xterm:sixel", (char_u *)0L}
+			    SCTX_INIT},
     {"imcmdline",   "imc",  P_BOOL|P_VI_DEF,
 			    (char_u *)&p_imcmdline, PV_NONE, NULL, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
