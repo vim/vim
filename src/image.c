@@ -13,7 +13,8 @@
 
 typedef struct
 {
-    bool available;
+    const char	*name;
+    bool	available;
 
     struct
     {
@@ -35,12 +36,16 @@ typedef struct
 
 static image_backend_handler_T backends[] = {
     [IMAGE_BACKEND_CAIRO] = {
+	.name = "cairo",
     },
     [IMAGE_BACKEND_GDI] = {
+	.name = "gdi",
     },
     [IMAGE_BACKEND_GDK] = {
+	.name = "gdk",
     },
     [IMAGE_BACKEND_KITTY] = {
+	.name = "kitty",
 #ifdef FEAT_IMAGE_KITTY
 	.available = true,
 	.image = {
@@ -60,6 +65,7 @@ static image_backend_handler_T backends[] = {
 #endif
     },
     [IMAGE_BACKEND_SIXEL] = {
+	.name = "sixel",
 #ifdef FEAT_IMAGE_SIXEL
 	.available = true,
 	.image = {
@@ -78,7 +84,10 @@ static image_backend_handler_T backends[] = {
 	.available = false
 #endif
     },
-    [IMAGE_BACKEND_NONE] = {.available = false}
+    [IMAGE_BACKEND_NONE] = {
+	.name = "none",
+	.available = false
+    }
 };
 
 static image_T *images = NULL;
@@ -386,7 +395,7 @@ add_image(dict_T *dict)
     return image_new(data->bv_ga.ga_data, w, h, fmt);
 }
 
-    int
+    static int
 match_imageprotocol(image_backend_T *backend)
 {
     int		    len = (int)STRLEN(p_ipc) + 1;
@@ -455,6 +464,8 @@ exit:
    int
 update_image_backend(void)
 {
+    int ret = OK;
+
     if (image_backend == IMAGE_BACKEND_CAIRO
 	    || image_backend == IMAGE_BACKEND_GDI
 	    || image_backend == IMAGE_BACKEND_GDK)
@@ -481,13 +492,13 @@ update_image_backend(void)
     if (gui.in_use)
     {
 # if defined(FEAT_IMAGE_CAIRO)
-	backend = IMAGE_BACKEND_CAIRO;
+	image_backend = IMAGE_BACKEND_CAIRO;
 # elif defined(FEAT_IMAGE_GDI)
-	backend = IMAGE_BACKEND_GDI;
+	image_backend = IMAGE_BACKEND_GDI;
 # elif defined(FEAT_IMAGE_GDK)
 	image_backend = IMAGE_BACKEND_GDK;
 # endif
-	return OK;
+	goto exit;
     }
 #endif
 
@@ -498,7 +509,14 @@ update_image_backend(void)
     if (image_backend != IMAGE_BACKEND_NONE)
 	return OK;
 
-    return match_imageprotocol(&image_backend);
+    ret = match_imageprotocol(&image_backend);
+
+exit:
+#ifdef FEAT_EVAL
+    set_vim_var_string(VV_IMAGEBACKEND,
+	    (char_u *)backends[image_backend].name, -1);
+#endif
+    return ret;
 }
 
 #endif // FEAT_IMAGE
