@@ -6266,6 +6266,34 @@ popup_draw_image(win_T *wp)
 	    crop_width, crop_height);
 
     image_placement_draw(wp->w_popup_imagep);
+
+    // The image just painted over every cell of the emitted rectangle,
+    // including cells that a higher zindex popup draws on top of this image.
+    // Invalidate those cells in ScreenLines so the higher popup's draw, later
+    // in this same update_popups() walk, actually rewrites them to the terminal
+    // instead of skipping them as unchanged.
+    for (int rr = row; rr < row + wp->w_height; ++rr)
+    {
+	if (rr < 0 || rr >= screen_Rows)
+	    continue;
+
+	int off_base = LineOffset[rr];
+
+	for (int cc = col; cc < col + wp->w_width; ++cc)
+	{
+	    if (cc < 0 || cc >= screen_Columns)
+		continue;
+	    if (popup_mask[rr * screen_Columns + cc] > wp->w_zindex)
+		continue;
+
+	    int off = off_base + cc;
+
+	    ScreenLines[off] = ' ';
+	    if (enc_utf8 && ScreenLinesUC != NULL)
+		ScreenLinesUC[off] = 0;
+	    ScreenAttrs[off] = -1;
+	}
+    }
 }
 #endif
 
@@ -6323,6 +6351,7 @@ update_popups(void (*win_update)(win_T *wp))
     base_screen_rows = 0;
     base_screen_cols = 0;
 #endif
+
     while ((wp = find_next_popup(TRUE, POPUP_HANDLED_5)) != NULL)
     {
 	int	    title_len = 0;

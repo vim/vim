@@ -29,10 +29,6 @@ typedef struct
     // Cached sixel sequence
     char_u  *cache;
     int	    cache_len;
-
-    // Crop used for the previous redraw. If this has been changed, the cache is
-    // invalidated and the image is re-encoded.
-    image_crop_T crop;
 } image_placement_sixel_T;
 
 static sixel_allocator_t    *sixel_allocator;
@@ -150,22 +146,17 @@ image_placement_sixel_uninit(image_placement_T *place)
     vim_free(PLACE(place)->cache);
 }
 
-    static bool
-crop_equal(image_crop_T *a, image_crop_T *b)
-{
-    return a->height == b->height && a->width == b->width && a->x == b->x &&
-	a->y == b->y;
-}
-
     void
 image_placement_sixel_draw(image_placement_T *place)
 {
+
     if (IMG(place->img)->dither == NULL)
 	return;
 
     // Encode image if we haven't, or if crop rectangle has changed.
     if (PLACE(place)->cache == NULL
-	    || !crop_equal(&place->geometry.crop, &PLACE(place)->crop))
+	    || (place->old_init && !image_crop_equal(&place->geometry.crop,
+		    &place->old_geometry.crop)))
     {
 	image_crop_T	*crop = &place->geometry.crop;
 	sixel_frame_t	*frame;
@@ -229,8 +220,15 @@ image_placement_sixel_draw(image_placement_T *place)
     setcursor_mayforce(TRUE);
     cursor_on();
     out_flush();
+}
 
-    PLACE(place)->crop = place->geometry.crop;
+/*
+ * Return true if rectangle "a" overlaps rectangle "b".
+ */
+    static bool
+rect_intercept(int ax, int ay, int aw, int ah, int bx, int by, int bw, int bh)
+{
+    return ax < bx + bw && bx < ax + aw && ay < by + bh && by < ay + ah;
 }
 
     void
@@ -238,22 +236,24 @@ image_placement_sixel_clear(image_placement_T *place UNUSED)
 {
     image_crop_T    *crop = &place->geometry.crop;
     linenr_T	    cell_rows = (crop->height + cell_height - 1) / cell_height;
+    colnr_T	    cell_cols = (crop->width + cell_width - 1) / cell_width;
     linenr_T	    first_row = place->geometry.row;
     linenr_T	    last_row = first_row + cell_rows - 1;
+    colnr_T	    first_col = place->geometry.col;
     win_T	    *wp;
 
     FOR_ALL_WINDOWS(wp)
     {
 	linenr_T    ov_first, ov_last;
-	int	    height = wp->w_winrow + wp->w_height - 1;
+	int	    wp_last_row = wp->w_winrow + wp->w_height - 1;
 
-	// Skip windows that don't overlap the placement's row range at all.
-	if (last_row < wp->w_winrow
-		|| first_row > height)
+	// Skip windows that don't overlap the placement's region
+	if (!rect_intercept(wp->w_wincol, wp->w_winrow, wp->w_width, wp->w_height,
+		    first_row, first_col, cell_cols, cell_rows))
 	    continue;
 
 	ov_first = first_row > wp->w_winrow ? first_row : wp->w_winrow;
-	ov_last  = last_row < height ? last_row : height;
+	ov_last  = last_row < wp_last_row ? last_row : wp_last_row;
 
 	redraw_win_range_later(wp, ov_first, ov_last);
     }
