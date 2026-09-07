@@ -6204,6 +6204,7 @@ fill_opacity_padding(
 		    start_col, end_col);
 }
 
+#ifdef FEAT_IMAGE
 /*
  * Draw the image associated with this popup window (if any).
  */
@@ -6266,6 +6267,7 @@ popup_draw_image(win_T *wp)
 
     image_placement_draw(wp->w_popup_imagep);
 }
+#endif
 
 /*
  * Update popup windows.  They are drawn on top of normal windows.

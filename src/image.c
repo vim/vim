@@ -511,7 +511,9 @@ update_image_backend(void)
 
     ret = match_imageprotocol(&image_backend);
 
+#ifdef FEAT_GUI
 exit:
+#endif
 #ifdef FEAT_EVAL
     set_vim_var_string(VV_IMAGEBACKEND,
 	    (char_u *)backends[image_backend].name, -1);
