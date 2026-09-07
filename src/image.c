@@ -314,6 +314,44 @@ image_placement_draw(image_placement_T *place)
 
     PLACE_FUNC(image_backend, draw)(place);
     place->dirty = false;
+
+    // Invalidate the old geometry if it has changed
+    if (place->old_init && !image_geometry_equal(&place->geometry,
+		&place->old_geometry))
+    {
+	image_geometry_T    *old = &place->old_geometry;
+	colnr_T		    cwidth;
+	linenr_T	    cheight;
+
+	image_crop_cell_size(&old->crop, &cwidth, &cheight);
+
+	for (int r = old->row; r < old->row + cheight; r++)
+	{
+	    int off_base;
+
+	    if (r < 0 || r >= screen_Rows)
+		continue;
+
+	    off_base = LineOffset[r];
+
+	    for (int c = old->col; c < old->col + cwidth; ++c)
+	    {
+		int off;
+
+		if (c < 0 || c >= screen_Columns)
+		    continue;
+
+		off = off_base + c;
+		ScreenLines[off] = ' ';
+		if (enc_utf8 && ScreenLinesUC != NULL)
+		    ScreenLinesUC[off] = 0;
+		ScreenAttrs[off] = -1;
+	    }
+	}
+    }
+
+    place->old_geometry = place->geometry;
+    place->old_init = true;
 }
 
     void
@@ -347,6 +385,31 @@ image_placement_crop(
     place->geometry.crop.width = width;
     place->geometry.crop.height = height;
     image_placement_dirty(place);
+}
+
+/*
+ * Get crop region width and height in cells.
+ */
+    void
+image_crop_cell_size(image_crop_T *crop, colnr_T *cw, linenr_T *ch)
+{
+    // Always round upwards
+    *cw = (crop->width + cell_width - 1) / cell_width;
+    *ch = (crop->height + cell_height- 1) / cell_height;
+}
+
+    bool
+image_crop_equal(image_crop_T *a, image_crop_T *b)
+{
+    return a->height == b->height && a->width == b->width && a->x == b->x &&
+	a->y == b->y;
+}
+
+    bool
+image_geometry_equal(image_geometry_T *a, image_geometry_T *b)
+{
+    return a->row == b->row && a->col == b->col && a->zindex == b->zindex
+	&& image_crop_equal(&a->crop, &b->crop);
 }
 
 /*
@@ -461,7 +524,7 @@ exit:
  * Update the current image backend to use depending on 'imageprotocol' and if
  * GUI is being used. Returns OK on success and FAIL on failure.
  */
-   int
+    int
 update_image_backend(void)
 {
     int ret = OK;

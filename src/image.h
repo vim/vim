@@ -94,6 +94,10 @@ struct image_placement_S
     image_geometry_T geometry;
     bool dirty; // If placement should be redrawn
 
+    // Geometry used for the previous redraw.
+    image_geometry_T	old_geometry;
+    bool		old_init; // If there was old geometry
+
     image_placement_T *next;
     image_placement_T *prev;
 };
