@@ -968,6 +968,10 @@ vim_main2(void)
     }
 # endif
 
+#ifdef FEAT_IMAGE
+    (void)update_image_backend();
+#endif
+
     // Redraw at least once, also when 'lazyredraw' is set, to make sure the
     // window title gets updated.
     do_redraw = TRUE;

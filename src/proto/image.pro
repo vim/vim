@@ -12,4 +12,5 @@ void image_placement_set_z(image_placement_T *place, int zindex);
 void image_placement_set_position(image_placement_T *place, linenr_T row, colnr_T col);
 void image_placement_crop(image_placement_T *place, imgpx_T x, imgpx_T y, imgpx_T width, imgpx_T height);
 image_T *add_image(dict_T *dict);
+int update_image_backend(void);
 /* vim: set ft=c : */

@@ -19,7 +19,8 @@ typedef struct
     {
 	image_T *(*alloc)(void);
 	void (*init)(image_T *);
-	void (*uninit)(image_T *);
+	void (*uninit)(image_T *); // Note that this is not guaranteed to clear
+				   // all image placements from the screen.
     } image;
 
     struct
@@ -82,7 +83,7 @@ static image_backend_handler_T backends[] = {
 
 static image_T *images = NULL;
 static image_placement_T *placements = NULL;
-static image_backend_T backend = IMAGE_BACKEND_SIXEL; // Temporary TODO
+static image_backend_T image_backend = IMAGE_BACKEND_NONE;
 
 #define IMG_FUNC(t, f) (backends[t].image.f)
 #define PLACE_FUNC(t, f) (backends[t].placement.f)
@@ -98,7 +99,7 @@ static image_backend_T backend = IMAGE_BACKEND_SIXEL; // Temporary TODO
     static bool
 backend_avail(void)
 {
-    bool avail = backends[backend].available;
+    bool avail = backends[image_backend].available;
 
     if (!avail)
 	emsg(_(e_no_image_backend_available));
@@ -124,7 +125,7 @@ image_new(uint8_t *data, imgpx_T width, imgpx_T height, image_format_T fmt)
 		memcmp(img->data, data, (size_t)width * height * fmt) == 0)
 	    return image_ref(img);
 
-    img = IMG_FUNC(backend, alloc)();
+    img = IMG_FUNC(image_backend, alloc)();
     if (img == NULL)
 	return NULL;
 
@@ -152,7 +153,7 @@ image_new(uint8_t *data, imgpx_T width, imgpx_T height, image_format_T fmt)
     img->prev = images;
     images = img;
 
-    IMG_FUNC(backend, init)(img);
+    IMG_FUNC(image_backend, init)(img);
 
     return img;
 }
@@ -165,12 +166,18 @@ image_ref(image_T *img)
 }
 
     static void
+image_free_struct(image_T *img)
+{
+    vim_free(img);
+}
+
+    static void
 image_free(image_T *img)
 {
     if (!backend_avail())
 	return;
 
-    IMG_FUNC(backend, uninit)(img);
+    IMG_FUNC(image_backend, uninit)(img);
 
     if (img->prev != NULL)
 	img->prev->next = img->next;
@@ -180,7 +187,7 @@ image_free(image_T *img)
 	images = img->prev;
 
     vim_free(img->data);
-    vim_free(img);
+    image_free_struct(img);
 }
 
     void
@@ -227,7 +234,7 @@ image_placement_new(image_T *img)
     if (!backend_avail())
 	return NULL;
 
-    place = PLACE_FUNC(backend, alloc)();
+    place = PLACE_FUNC(image_backend, alloc)();
     if (place == NULL)
 	return NULL;
 
@@ -240,7 +247,7 @@ image_placement_new(image_T *img)
 
     image_geometry_init(&place->geometry, img->width, img->height);
 
-    PLACE_FUNC(backend, init)(place);
+    PLACE_FUNC(image_backend, init)(place);
 
     if (placements != NULL)
 	placements->next = place;
@@ -264,7 +271,7 @@ image_placement_free(image_placement_T *place)
 	placements = place->prev;
 
     // This should clear placement from screen as well.
-    PLACE_FUNC(backend, uninit)(place);
+    PLACE_FUNC(image_backend, uninit)(place);
     image_unref(place->img);
     free(place);
 }
@@ -283,7 +290,7 @@ image_placement_clear(image_placement_T *place)
 {
     if (!backend_avail())
 	return;
-    PLACE_FUNC(backend, clear)(place);
+    PLACE_FUNC(image_backend, clear)(place);
     image_placement_dirty(place);
 }
 
@@ -296,7 +303,7 @@ image_placement_draw(image_placement_T *place)
     if (!place->dirty || !backend_avail())
 	return;
 
-    PLACE_FUNC(backend, draw)(place);
+    PLACE_FUNC(image_backend, draw)(place);
     place->dirty = false;
 }
 
@@ -377,6 +384,121 @@ add_image(dict_T *dict)
     }
 
     return image_new(data->bv_ga.ga_data, w, h, fmt);
+}
+
+    int
+match_imageprotocol(image_backend_T *backend)
+{
+    int		    len = (int)STRLEN(p_ipc) + 1;
+    char_u	    *buf = alloc(len);
+    char_u	    *p = p_ipc;
+    int		    ret = FAIL;
+
+    if (buf == NULL)
+	return FAIL;
+
+    *backend = IMAGE_BACKEND_NONE;
+
+    while (*p != NUL)
+    {
+	char_u *colon;
+	image_backend_T prot;
+
+	// Isolate one comma separated item.
+	(void)copy_option_part(&p, buf, len, ",");
+
+	colon = vim_strchr(buf, ':');
+	if (colon == NULL || colon == buf || colon[1] == NUL)
+	    goto exit;
+
+	*colon = NUL;
+
+	// Note: Keep this in sync with p_ipc_protocol_values.
+	if (STRCMP(colon + 1, "none") == 0)
+	    prot = IMAGE_BACKEND_NONE;
+	else if (STRCMP(colon + 1, "kitty") == 0)
+	    prot = IMAGE_BACKEND_KITTY;
+	else if (STRCMP(colon + 1, "sixel") == 0)
+	    prot = IMAGE_BACKEND_SIXEL;
+	else
+	    goto exit;
+
+	regmatch_T regmatch;
+	CLEAR_FIELD(regmatch);
+	regmatch.rm_ic = TRUE;
+	regmatch.regprog = vim_regcomp(buf, RE_MAGIC);
+	if (regmatch.regprog == NULL)
+	    goto exit;
+
+	bool match = T_NAME != NULL
+	    && vim_regexec(&regmatch, T_NAME, (colnr_T)0);
+
+	vim_regfree(regmatch.regprog);
+	if (match)
+	{
+	    *backend = prot;
+	    break;
+	}
+
+    }
+
+    ret = OK;
+exit:
+    vim_free(buf);
+    return ret;
+}
+ 
+/*
+ * Update the current image backend to use depending on 'imageprotocol' and if
+ * GUI is being used. Returns OK on success and FAIL on failure.
+ */
+   int
+update_image_backend(void)
+{
+    if (image_backend == IMAGE_BACKEND_CAIRO
+	    || image_backend == IMAGE_BACKEND_GDI
+	    || image_backend == IMAGE_BACKEND_GDK)
+	return OK;
+
+    // If we are switching from a different image backend, must clear the images
+    // created with that backend first. This is important when switching from
+    // terminal to GUI via `:gui`
+    if (image_backend != IMAGE_BACKEND_NONE)
+    {
+	image_T		    *img;
+	image_placement_T   *place;
+
+	// Delete placements first, since they may depend on their associated
+	// images.
+	FOR_ALL_PLACEMENTS(place)
+	    PLACE_FUNC(image_backend, uninit)(place);
+
+	FOR_ALL_IMAGES(img)
+	    IMG_FUNC(image_backend, uninit)(img);
+    }
+
+#ifdef FEAT_GUI
+    if (gui.in_use)
+    {
+# if defined(FEAT_IMAGE_CAIRO)
+	backend = IMAGE_BACKEND_CAIRO;
+# elif defined(FEAT_IMAGE_GDI)
+	backend = IMAGE_BACKEND_GDI;
+# elif defined(FEAT_IMAGE_GDK)
+	image_backend = IMAGE_BACKEND_GDK;
+# endif
+	return OK;
+    }
+#endif
+
+    // Do nothing if switch from a terminal backend to another terminal backend
+    // (kitty <-> sixel). Theres nothing stopping us from being able to switch
+    // image protocols in place, however it would take a bit of work with little
+    // benefit.
+    if (image_backend != IMAGE_BACKEND_NONE)
+	return OK;
+
+    return match_imageprotocol(&image_backend);
 }
 
 #endif // FEAT_IMAGE
