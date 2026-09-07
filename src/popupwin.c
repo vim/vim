@@ -6207,6 +6207,7 @@ fill_opacity_padding(
 		    start_col, end_col);
 }
 
+#ifdef FEAT_IMAGE
 /*
  * Draw the image associated with this popup window (if any).
  */
@@ -6556,6 +6557,7 @@ update_popup_images_rect(int left, int top, int right, int bottom)
 =======
     image_placement_draw(wp->w_popup_imagep);
 }
+#endif
 
 >>>>>>> df497f3dd (initial commit)
 /*
