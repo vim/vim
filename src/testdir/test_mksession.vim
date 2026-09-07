@@ -613,6 +613,12 @@ func Test_mksession_terminal_shared_windows()
 
   source Xtest_mks.out
 
+  let restored = bufnr()
+  call assert_equal('terminal', getbufvar(restored, '&buftype'))
+  call WaitForAssert({-> assert_match('running', term_getstatus(restored))})
+  call StopShellInTerminal(restored)
+
+  %bwipe!
   call delete('Xtest_mks.out')
 endfunc
 
