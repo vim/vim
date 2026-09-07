@@ -47,7 +47,7 @@ static garray_T		    sixel_buf; // Temporary buffer used to store sixel
 sixel_write(char *data, int size, void *udata UNUSED)
 {
     ga_concat_len(&sixel_buf, (char_u *)data, (size_t)size);
-    
+
     // No idea what the return value is supposed to be. Looking through
     // libsixel source code, it seems to be unused?
     return 0;
@@ -62,16 +62,16 @@ sixel_init(void)
 {
     if (sixel_allocator == NULL)
     {
-        if (sixel_allocator_new(&sixel_allocator, alloc, calloc, realloc,
+	if (sixel_allocator_new(&sixel_allocator, alloc, calloc, realloc,
 		    vim_free) == SIXEL_FALSE)
 	    return FAIL;
     }
 
     if (sixel_output == NULL)
     {
-        if (sixel_output_new(&sixel_output, sixel_write, NULL,
+	if (sixel_output_new(&sixel_output, sixel_write, NULL,
 		    sixel_allocator) == SIXEL_FALSE)
-            return FAIL;
+	    return FAIL;
     }
 
     return OK;
@@ -154,7 +154,7 @@ image_placement_sixel_uninit(image_placement_T *place)
 crop_equal(image_crop_T *a, image_crop_T *b)
 {
     return a->height == b->height && a->width == b->width && a->x == b->x &&
-           a->y == b->y;
+	a->y == b->y;
 }
 
     void
@@ -171,7 +171,7 @@ image_placement_sixel_draw(image_placement_T *place)
 	sixel_frame_t	*frame;
 	uint8_t		*copy;
 
-        copy = vim_memsave(place->img->data,
+	copy = vim_memsave(place->img->data,
 		(size_t)place->img->width * place->img->height * place->img->fmt);
 	if (copy == NULL)
 	{
@@ -179,36 +179,36 @@ image_placement_sixel_draw(image_placement_T *place)
 	    return;
 	}
 
-        if (sixel_frame_new(&frame, sixel_allocator) == SIXEL_FALSE)
+	if (sixel_frame_new(&frame, sixel_allocator) == SIXEL_FALSE)
 	{
 	    vim_free(copy);
 	    return;
 	}
 
 	// Note that sixel_frame_init() takes ownership of "copy"
-        if (sixel_frame_init(frame, copy, place->img->width,
+	if (sixel_frame_init(frame, copy, place->img->width,
 		    place->img->height, IMG(place->img)->sixel_fmt,
 		    NULL, 0) == SIXEL_FALSE
 		|| sixel_frame_clip(frame, crop->x, crop->y, crop->width,
 		    crop->height) == SIXEL_FALSE)
-        {
-            sixel_frame_unref(frame);
-            return;
-        }
+	{
+	    sixel_frame_unref(frame);
+	    return;
+	}
 
-        ga_init2(&sixel_buf, 1, 4096);
+	ga_init2(&sixel_buf, 1, 4096);
 
-        if (sixel_encode(sixel_frame_get_pixels(frame),
-                     sixel_frame_get_width(frame),
-                     sixel_frame_get_height(frame), 0, IMG(place->img)->dither,
-                     sixel_output) == SIXEL_FALSE)
+	if (sixel_encode(sixel_frame_get_pixels(frame),
+		    sixel_frame_get_width(frame),
+		    sixel_frame_get_height(frame), 0, IMG(place->img)->dither,
+		    sixel_output) == SIXEL_FALSE)
 	{
 	    sixel_frame_unref(frame);
 	    ga_clear(&sixel_buf);
 	    return;
 	}
 
-        sixel_frame_unref(frame);
+	sixel_frame_unref(frame);
 
 	if (ga_append(&sixel_buf, NUL) == FAIL)
 	{
