@@ -5441,7 +5441,12 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		out_str(IObuff);
 	    }
 	    termrequest_sent(&decrqm_status);
+#ifdef FEAT_IMAGE_SIXEL
+	    // Disable sixel scrolling using DECSDM
+	    out_str((char_u *)"\033[?80l");
+#endif
 	    need_flush = TRUE;
+
 	}
 
 	if (need_flush)
