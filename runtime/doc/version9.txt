@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Sep 07
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Sep 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52660,6 +52660,7 @@ Other ~
 - Generated Session and View files are written in Vim9 script, see |:mksession|,
   |:mkview| and |:mkvimrc|
 - The "term_finish" option of term_start() supports a "noclose" value.
+- Control Vim via a channel using stdin/stdout |channel-stdio|.
 
 Platform specific ~
 -----------------
@@ -52753,6 +52754,10 @@ Highlighting: ~
 |hl-Popup|		Popup window body.
 |hl-PopupBorder|	Popup window border.
 |hl-PopupTitle|		Popup window title.
+
+Vim Arguments: ~
+|--stdio-channel|	Control Vim via a channel using stdin/stdout
+			|channel-stdio|
 
 Configure Switches: ~
 

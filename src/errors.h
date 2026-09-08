@@ -3826,3 +3826,9 @@ EXTERN char e_too_many_text_properties_on_a_single_line[]
 EXTERN char e_cannot_extend_null_blob[]
 	INIT(= N_("E1581: Cannot extend a null blob"));
 #endif
+#ifdef FEAT_JOB_CHANNEL
+EXTERN char e_not_started_with_stdio_channel[]
+	INIT(= N_("E1582: Not started with --stdio-channel"));
+EXTERN char e_cannot_open_stdio_channel[]
+	INIT(= N_("E1583: Cannot open stdio channel"));
+#endif

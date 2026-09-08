@@ -64,6 +64,7 @@ typedef struct sockaddr_un {
 static void channel_read(channel_T *channel, ch_part_T part, char *func);
 static ch_mode_T channel_get_mode(channel_T *channel, ch_part_T part);
 static int channel_get_timeout(channel_T *channel, ch_part_T part);
+static channel_T *channel_open_stdio(void);
 static ch_part_T channel_part_send(channel_T *channel);
 static ch_part_T channel_part_read(channel_T *channel);
 
@@ -1346,6 +1347,7 @@ channel_open_func(typval_T *argvars)
     int		port = 0;
     int		is_ipv6 = FALSE;
     int		is_unix = FALSE;
+    int		is_stdio = FALSE;
     jobopt_T    opt;
     channel_T	*channel = NULL;
 
@@ -1365,7 +1367,9 @@ channel_open_func(typval_T *argvars)
 	return NULL;
     }
 
-    if (STRNCMP(address, "unix:", 5) == 0)
+    if (STRCMP(address, "stdio") == 0)
+	is_stdio = TRUE;
+    else if (STRNCMP(address, "unix:", 5) == 0)
     {
 	is_unix = TRUE;
 	address += 5;
@@ -1392,7 +1396,7 @@ channel_open_func(typval_T *argvars)
 	}
     }
 
-    if (!is_unix)
+    if (!is_unix && !is_stdio)
     {
 	port = strtol((char *)(p + 1), &rest, 10);
 	if (port <= 0 || port >= 65536 || *rest != NUL)
@@ -1416,7 +1420,7 @@ channel_open_func(typval_T *argvars)
     opt.jo_timeout = 2000;
     if (get_job_options(&argvars[1], &opt,
 	    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL
-		+ (is_unix? 0 : JO_WAITTIME), 0) == FAIL)
+		+ (is_unix || is_stdio ? 0 : JO_WAITTIME), 0) == FAIL)
 	goto theend;
     if (opt.jo_timeout < 0)
     {
@@ -1424,17 +1428,138 @@ channel_open_func(typval_T *argvars)
 	goto theend;
     }
 
-    if (is_unix)
+    if (is_stdio)
+	channel = channel_open_stdio();
+    else if (is_unix)
 	channel = channel_open_unix((char *)address, NULL);
     else
 	channel = channel_open((char *)address, port, opt.jo_waittime, NULL);
     if (channel != NULL)
     {
+	int	user_set = opt.jo_set;
+
 	opt.jo_set = JO_ALL;
+	if (is_stdio)
+	    // "mode" and "timeout" apply to both reading and writing, unless
+	    // given for a part specifically.
+	    opt.jo_set &= ~((JO_IN_MODE | JO_OUT_MODE | JO_ERR_MODE
+				| JO_OUT_TIMEOUT | JO_ERR_TIMEOUT) & ~user_set);
 	channel_set_options(channel, &opt);
     }
 theend:
     free_job_options(&opt);
+    return channel;
+}
+
+// The channel on the stdin and stdout of Vim, see --stdio-channel.
+static channel_T *stdio_channel = NULL;
+
+/*
+ * Open a channel that reads from the stdin of Vim and writes to its stdout.
+ * Only when started with --stdio-channel, and only once.
+ * Returns the channel for success.
+ * Returns NULL for failure.
+ */
+    static channel_T *
+channel_open_stdio(void)
+{
+    channel_T	*channel;
+    sock_T	in_fd;		// our stdin, the channel reads from it
+    sock_T	out_fd;		// our stdout, the channel writes to it
+
+    if (!use_stdio_channel)
+    {
+	emsg(_(e_not_started_with_stdio_channel));
+	return NULL;
+    }
+    if (stdio_channel != NULL)
+    {
+	emsg(_(e_cannot_open_stdio_channel));
+	return NULL;
+    }
+
+    // Point the original stdin and stdout at the null device, so that neither
+    // Vim nor the commands it starts can use the channel.
+#ifdef MSWIN
+    {
+	HANDLE	proc = GetCurrentProcess();
+	HANDLE	hin;
+	HANDLE	hout;
+	HANDLE	hnul;
+	int	nul_fd;
+
+	if (!DuplicateHandle(proc, GetStdHandle(STD_INPUT_HANDLE), proc, &hin,
+					      0, FALSE, DUPLICATE_SAME_ACCESS))
+	{
+	    emsg(_(e_cannot_open_stdio_channel));
+	    return NULL;
+	}
+	if (!DuplicateHandle(proc, GetStdHandle(STD_OUTPUT_HANDLE), proc,
+				       &hout, 0, FALSE, DUPLICATE_SAME_ACCESS))
+	{
+	    CloseHandle(hin);
+	    emsg(_(e_cannot_open_stdio_channel));
+	    return NULL;
+	}
+	hnul = CreateFile("NUL", GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0,
+		NULL);
+	if (hnul != INVALID_HANDLE_VALUE)
+	{
+	    SetStdHandle(STD_INPUT_HANDLE, hnul);
+	    SetStdHandle(STD_OUTPUT_HANDLE, hnul);
+	}
+	// The C runtime keeps its own stdout, used for messages.
+	nul_fd = _open("NUL", _O_RDWR);
+	if (nul_fd >= 0)
+	{
+	    _dup2(nul_fd, 1);
+	    _close(nul_fd);
+	}
+	in_fd = (sock_T)hin;
+	out_fd = (sock_T)hout;
+    }
+#else
+    {
+	int	nul_fd;
+
+	in_fd = dup(0);
+	out_fd = dup(1);
+	if (in_fd < 0 || out_fd < 0)
+	{
+	    if (in_fd >= 0)
+		close(in_fd);
+	    if (out_fd >= 0)
+		close(out_fd);
+	    emsg(_(e_cannot_open_stdio_channel));
+	    return NULL;
+	}
+	(void)fcntl(in_fd, F_SETFD, FD_CLOEXEC);
+	(void)fcntl(out_fd, F_SETFD, FD_CLOEXEC);
+	nul_fd = open("/dev/null", O_RDWR);
+	if (nul_fd >= 0)
+	{
+	    dup2(nul_fd, 0);
+	    dup2(nul_fd, 1);
+	    close(nul_fd);
+	}
+    }
+#endif
+
+    channel = add_channel();
+    if (channel == NULL)
+    {
+	ch_error(NULL, "Cannot allocate channel.");
+	fd_close(in_fd);
+	fd_close(out_fd);
+	return NULL;
+    }
+    channel_set_pipes(channel, out_fd, in_fd, INVALID_FD);
+    ch_log(channel, "Using stdin and stdout as a channel");
+
+    // Keep a reference for channel_stdio_loop().
+    ++channel->ch_refcount;
+    stdio_channel = channel;
     return channel;
 }
 
@@ -5511,6 +5636,69 @@ channel_select_check(int ret_in, void *rfds_in, void *wfds_in)
     return ret;
 }
 #endif // !MSWIN && HAVE_SELECT
+
+/*
+ * Wait up to "msec" for something to read on any channel and read it.
+ * For channel_stdio_loop(), which has no terminal to wait for.
+ */
+    static void
+channel_wait_any(long msec)
+{
+#ifdef MSWIN
+    // A pipe cannot be waited for, channel_wait() polls it.
+    if (stdio_channel->CH_OUT_FD != INVALID_FD)
+	(void)channel_wait(stdio_channel, stdio_channel->CH_OUT_FD,
+						(int)(msec > 20 ? 20 : msec));
+    channel_handle_events(FALSE);
+#elif defined(HAVE_SELECT)
+    fd_set		rfds;
+    fd_set		wfds;
+    struct timeval	tv;
+    struct timeval	*tvp = &tv;
+    int			maxfd;
+    int			ret;
+
+    FD_ZERO(&rfds);
+    FD_ZERO(&wfds);
+    tv.tv_sec = msec / 1000;
+    tv.tv_usec = (msec % 1000) * 1000;
+    maxfd = channel_select_setup(-1, &rfds, &wfds, &tv, &tvp);
+    ret = select(maxfd + 1, &rfds, &wfds, NULL, tvp);
+    if (ret >= 0)
+	(void)channel_select_check(ret, &rfds, &wfds);
+#else
+    struct pollfd	fds[4 * MAX_OPEN_CHANNELS + MAX_CLIENT_CHANNELS];
+    int			nfd;
+    int			towait = (int)msec;
+    int			ret;
+
+    nfd = channel_poll_setup(0, fds, &towait);
+    ret = poll(fds, nfd, towait);
+    if (ret >= 0)
+	(void)channel_poll_check(ret, fds);
+#endif
+}
+
+/*
+ * Wait for messages on the stdio channel and handle them, until the channel
+ * is closed.  Takes the place of the main loop with --stdio-channel.
+ */
+    void
+channel_stdio_loop(void)
+{
+    while (stdio_channel != NULL && channel_is_open(stdio_channel))
+    {
+	long	msec = 1000;
+#ifdef FEAT_TIMERS
+	long	due_time = check_due_timer();
+
+	if (due_time > 0 && due_time < msec)
+	    msec = due_time;
+#endif
+	channel_wait_any(msec);
+	parse_queued_messages();
+    }
+}
 
 /*
  * Execute queued up commands.

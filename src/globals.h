@@ -1198,6 +1198,11 @@ EXTERN int	sandbox INIT(= 0);
 EXTERN int	silent_mode INIT(= FALSE);
 				// set to TRUE when "-s" commandline argument
 				// used for ex
+#ifdef FEAT_JOB_CHANNEL
+EXTERN int	use_stdio_channel INIT(= FALSE);
+				// set to TRUE for the "--stdio-channel"
+				// commandline argument
+#endif
 
 EXTERN pos_T	VIsual;		// start position of active Visual selection
 EXTERN int	VIsual_active INIT(= FALSE);
