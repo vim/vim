@@ -3492,7 +3492,7 @@ replace_do_bs(int limit_col)
 	    for (i = 0; i < ins_len; ++i)
 	    {
 		vcol += chartabsize(p + i, vcol);
-		i += (*mb_ptr2len)(p) - 1;
+		i += (*mb_ptr2len)(p + i) - 1;
 	    }
 	    vcol -= start_vcol;
 
