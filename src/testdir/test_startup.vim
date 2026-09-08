@@ -1224,6 +1224,147 @@ func Test_io_not_a_terminal()
         \ 'Vim: Warning: Input is not from a terminal'], l)
 endfunc
 
+" Tests for MS-Windows using the console device when a standard handle is a
+" pipe rather than the console.  A parent process is free to hand a child
+" pipes, and some shells do so for the programs they start.  See mch_init_c()
+" in os_win32.c.
+"
+" system() with a List bypasses the shell, so the child gets pipes for its
+" standard handles while this Vim's console stays attached, which is the state
+" under test.  "--ttyfail" makes Vim exit(1) from check_tty() before sourcing
+" anything, so a build that does not reach the console device leaves no result
+" file rather than hanging on a screen it cannot draw.
+"
+" A console must be attached, so these are skipped in the GUI.  Running them
+" with no console attached at all would fail rather than skip.
+func s:WriteTtyProbe()
+  call writefile([
+        \ 'call writefile([has("ttyout") .. " " .. has("ttyin")'
+        \    .. ' .. " " .. has("vcon")], "Xttyresult")',
+        \ 'qall!',
+        \ ], 'Xttyprobe.vim')
+endfunc
+
+" A pipe on the standard handles is replaced by the console device.
+func Test_mswin_console_for_piped_stdio()
+  CheckMSWindows
+  CheckNotGui
+
+  call s:WriteTtyProbe()
+  call delete('Xttyresult')
+  call system([v:progpath, '-u', 'NONE', '-i', 'NONE', '--ttyfail',
+        \ '-S', 'Xttyprobe.vim'])
+
+  call assert_true(filereadable('Xttyresult'),
+        \ 'Vim exited early: the console device was not used for a pipe')
+  let res = split(readfile('Xttyresult')[0])
+  call assert_equal('1', res[0], 'has("ttyout")')
+  if has('vtp')
+    " vtp_flag_init() must probe the console, not the standard handle.
+    call assert_equal('1', res[2], 'has("vcon")')
+  endif
+
+  call delete('Xttyresult')
+  call delete('Xttyprobe.vim')
+endfunc
+
+" A pipe on standard input is replaced by the console device.  This goes
+" through a shell pipeline: system() with a List leaves the child's standard
+" input as something isatty() already accepts, so it would not exercise this.
+" The trailing pipe is needed too, so that standard output is a pipe rather
+" than the file system() would otherwise redirect it to.
+func Test_mswin_console_for_piped_stdin()
+  CheckMSWindows
+  CheckNotGui
+
+  call s:WriteTtyProbe()
+  call delete('Xttyresult')
+  call system('echo hi | ' .. v:progpath
+        \ .. ' -u NONE -i NONE --ttyfail -S Xttyprobe.vim | sort')
+
+  call assert_true(filereadable('Xttyresult'),
+        \ 'Vim exited early: the console device was not used for piped stdin')
+  let res = split(readfile('Xttyresult')[0])
+  call assert_equal('1', res[1], 'has("ttyin")')
+
+  call delete('Xttyresult')
+  call delete('Xttyprobe.vim')
+endfunc
+
+" With no console attached there is no console device to fall back to, so the
+" pipes are left alone and Vim reports that it has no terminal.  This needs a
+" helper: Vim script cannot start a process with DETACHED_PROCESS.
+func Test_mswin_console_absent()
+  CheckMSWindows
+  CheckNotGui
+  CheckEnglish
+
+  let python = PythonProg()
+  if python == ''
+    throw 'Skipped: python program missing'
+  endif
+
+  let out = system(python .. ' test_mswin_console.py "' .. v:progpath .. '"')
+  call assert_equal('exit=1 out_warn=1 in_warn=1 reached=0', trim(out))
+endfunc
+
+" A handle redirected to a file is what the caller asked for: not replaced.
+func Test_mswin_console_not_used_for_file()
+  CheckMSWindows
+  CheckNotGui
+
+  call s:WriteTtyProbe()
+  call delete('Xttyresult')
+  " Through the shell, so that stdout is a file rather than a pipe.
+  call system(v:progpath
+        \ .. ' -u NONE -i NONE --ttyfail -S Xttyprobe.vim > Xttyout')
+
+  call assert_equal(1, v:shell_error)
+  call assert_false(filereadable('Xttyresult'),
+        \ 'a handle redirected to a file must not be replaced')
+
+  call delete('Xttyout')
+  call delete('Xttyprobe.vim')
+endfunc
+
+" Ex and silent mode read and write streams instead of drawing a screen, so
+" the console device is not used even when the handles are pipes.
+func Test_mswin_console_not_used_for_ex_mode()
+  CheckMSWindows
+  CheckNotGui
+
+  call s:WriteTtyProbe()
+  call delete('Xttyresult')
+  call system([v:progpath, '-u', 'NONE', '-i', 'NONE', '-es',
+        \ '-S', 'Xttyprobe.vim'])
+
+  call assert_true(filereadable('Xttyresult'))
+  let res = split(readfile('Xttyresult')[0])
+  call assert_equal('0', res[0], 'has("ttyout") must stay 0 in Ex mode')
+
+  call delete('Xttyresult')
+  call delete('Xttyprobe.vim')
+endfunc
+
+" "vim -" still reads the text to edit from the pipe on stdin.
+func Test_mswin_dash_still_reads_stdin()
+  CheckMSWindows
+  CheckNotGui
+
+  call writefile([
+        \ 'call writefile(getline(1, "$"), "Xttybuf")',
+        \ 'qall!',
+        \ ], 'Xstdinprobe.vim')
+  call delete('Xttybuf')
+  call system([v:progpath, '-u', 'NONE', '-i', 'NONE',
+        \ '-S', 'Xstdinprobe.vim', '-'], "hello from stdin\n")
+
+  call assert_equal(['hello from stdin'], readfile('Xttybuf'))
+
+  call delete('Xttybuf')
+  call delete('Xstdinprobe.vim')
+endfunc
+
 " Test for --not-a-term avoiding escape codes.
 func Test_not_a_term()
   CheckUnix

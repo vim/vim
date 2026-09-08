@@ -165,7 +165,7 @@ mch_input_isatty(void)
 	return TRUE;	    // GUI always has a tty
 #endif
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
-    if (isatty(read_cmd_fd))
+    if (isatty(read_cmd_fd) || mch_input_from_console())
 	return TRUE;
     return FALSE;
 #endif
