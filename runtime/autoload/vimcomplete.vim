@@ -3,7 +3,7 @@ vim9script
 # Vim completion script
 # Language:    Vim script
 # Maintainer:  Maxim Kim <habamax@gmail.com>
-# Last Change: 2026 Sep 07
+# Last Change: 2026 Sep 08
 #
 # Usage:
 # setlocal omnifunc=vimcomplete#Complete
@@ -30,7 +30,7 @@ def GetTrigger(line: string): list<any>
     elseif line =~ '[lvgsb]:\k*$'
         result = 'var'
         result_len = 2
-    elseif line !~ '^\s*$'
+    elseif line !~ '^\s*$' && !complete_info(["auto"]).auto
         result = getcompletiontype(line) ?? 'cmdline'
     endif
     return [result, result_len]
