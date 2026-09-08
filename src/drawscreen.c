@@ -400,6 +400,10 @@ update_screen(int type_arg)
 	update_popups(win_update);
 #endif
 
+#ifdef FEAT_IMAGE
+    draw_image_placements();
+#endif
+
 #ifdef FEAT_TERMINAL
     FOR_ALL_WINDOWS(wp)
 	// If this window contains a terminal, after redrawing all windows, the

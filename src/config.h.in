@@ -525,3 +525,6 @@
 
 /* Define if libsixel library is available */
 #undef HAVE_SIXEL
+
+/* Define if pixman library is available */
+#undef HAVE_PIXMAN

@@ -9,94 +9,78 @@
 
 #ifdef FEAT_IMAGE
 
-// Used for image dimensions
-typedef unsigned int imgpx_T;
+#include <pixman.h>
 
-/*
- * Cairo - GTK3/2 GUI
- * GDI - MS-Windows GUI
- * GDK - GTK4 GUI
- * Kitty - Kitty graphics protocol (terminal)
- * Sixel - Six pixels (terminal)
- */
+#define PLACEMENT_ID_INC 1000
+
 typedef enum
 {
-    IMAGE_BACKEND_CAIRO,
-    IMAGE_BACKEND_GDI,
-    IMAGE_BACKEND_GDK,
-    IMAGE_BACKEND_KITTY,
-    IMAGE_BACKEND_SIXEL,
-    IMAGE_BACKEND_NONE
+    IMAGE_BACKEND_NONE = -1,
+    IMAGE_BACKEND_GUI = 0,
+    IMAGE_BACKEND_KITTY = 1,
+    IMAGE_BACKEND_SIXEL = 2
 } image_backend_T;
 
 /*
- * Enums represent the amount of bytes a single pixel takes up
+ * Enum value is the number of bytes a pixel takes up
  */
 typedef enum
 {
-    IMAGE_FORMAT_RGB = 3ULL,
-    IMAGE_FORMAT_RGBA = 4ULL
+    IMAGE_FORMAT_RGB = 3,
+    IMAGE_FORMAT_RGBA = 4
 } image_format_T;
 
 /*
- * Base class of images, which backends subclass.
+ *
  */
 typedef struct image_S image_T;
 struct image_S
 {
-    int id; /// Unique ID used for this image
+    int id;
     int refcount;
 
-    uint8_t	    *data;
-    imgpx_T	    width;
-    imgpx_T	    height;
+    pixman_image_t  *image;
     image_format_T  fmt;
+
+    void *backend_data;
 
     image_T *next;
     image_T *prev;
 };
 
-typedef struct
-{
-    imgpx_T x;
-    imgpx_T y;
-    imgpx_T width;
-    imgpx_T height;
-} image_crop_T;
-
 /*
- * Represents positioning and cropping of image
- */
-typedef struct
-{
-    // Note that the position uses the final cropped image, not the top left of
-    // the original image.
-    linenr_T	row;
-    colnr_T	col;
-    int		zindex;
-
-    image_crop_T crop;
-} image_geometry_T;
-
-/*
- * Represents a placement of an image, that is rendered onto the screen. An
- * image can have multiple placements, each showing a different part of the
- * image (possibly) at different positions.
+ *
  */
 typedef struct image_placement_S image_placement_T;
 struct image_placement_S
 {
     int	    id;
-    image_T *img;
+    image_T *img; // May be NULL, if so then only "bounding_box" is relevant (and
+		  // the position + zindex).
+    bool    hidden; // If image should not be drawn for the next redraw. Reset
+		    // when the redraw is done.
 
-    // Should not be modified directly, do it via the image_placement_*
-    // methods.
-    image_geometry_T geometry;
-    bool dirty; // If placement should be redrawn
+    void *backend_data;
 
-    // Geometry used for the previous redraw.
-    image_geometry_T	old_geometry;
-    bool		old_init; // If there was old geometry
+    // Note that positioning uses the top left of the final cropped image
+    linenr_T	row;
+    colnr_T	col;
+    int		zindex;
+    bool	dirty; // If image positioning/geometry has been modified
+
+    pixman_box32_t crop_box; // In pixels
+
+    // The bounding box represents a region that images (including their
+    // bounding boxes) under it with lower zindexes will have their overlapping
+    // region not be rendered at all. This is used to render text (e.g. borders)
+    // ontop of images.
+    pixman_box32_t bounding_box; // In cells
+
+    // Cached region that represents the parts of the image that have been drawn
+    // to the screen. Used to check if image should be redrawn at all (if
+    // nothing has been changed).
+    pixman_region32_t	visible;    // In pixels
+    bool		valid;	    // If "visible" is valid
 
     image_placement_T *next;
     image_placement_T *prev;

@@ -161,7 +161,7 @@ gui_start(char_u *arg UNUSED)
 	choose_clipmethod();
 #endif
 #ifdef FEAT_IMAGE
-	update_image_backend();
+	/* update_image_backend(); */
 #endif
     }
 

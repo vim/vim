@@ -969,7 +969,7 @@ vim_main2(void)
 # endif
 
 #ifdef FEAT_IMAGE
-    (void)update_image_backend();
+    /* (void)update_image_backend(); */
 #endif
 
     // Redraw at least once, also when 'lazyredraw' is set, to make sure the
@@ -1895,7 +1895,7 @@ getout(int exitval)
     cs_end();
 #endif
 #ifdef FEAT_IMAGE_SIXEL
-    sixel_uninit();
+    /* sixel_uninit(); */
 #endif
 #ifdef FEAT_EVAL
     if (garbage_collect_at_exit)

@@ -918,8 +918,7 @@ apply_general_options(win_T *wp, dict_T *dict)
     {
 	image_T		    *img = add_image(di->di_tv.vval.v_dict);
 	image_placement_T   *place;
-	colnr_T		    cw;
-	linenr_T	    ch;
+	int		    cw, ch;
 
 	if (img == NULL)
 	    return FAIL;
@@ -937,7 +936,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    image_placement_free(wp->w_popup_imagep);
 	wp->w_popup_imagep = place;
 
-	image_cell_size(img, &cw, &ch);
+	image_get_cell_dimensions(img, &cw, &ch);
 
 	// Set the dimensions of the popup that were not specified by the user.
 	if (dict_find(dict, (char_u *)"minwidth", -1) == NULL)
@@ -1879,7 +1878,7 @@ popup_adjust_position(win_T *wp)
 		{
 #ifdef FEAT_IMAGE
 		    if (wp->w_popup_imagep != NULL)
-			image_placement_clear(wp->w_popup_imagep);
+			image_placement_hide(wp->w_popup_imagep, true);
 #endif
 		    popup_hide_for_textprop(wp);
 		    if (wp->w_winrow + popup_height(wp) >= cmdline_row)
@@ -2406,7 +2405,7 @@ popup_adjust_position(win_T *wp)
 	if (!(wp->w_popup_flags & POPF_HIDDEN))
 	    // Clear placement before hiding, like popup_hide()
 	    if (wp->w_popup_imagep != NULL)
-		image_placement_clear(wp->w_popup_imagep);
+		image_placement_hide(wp->w_popup_imagep, true);
 #endif
 
 	popup_hide_for_textprop(wp);
@@ -3739,7 +3738,7 @@ popup_hide(win_T *wp)
 
 #ifdef FEAT_IMAGE
     if (wp->w_popup_imagep != NULL)
-	image_placement_clear(wp->w_popup_imagep);
+	image_placement_hide(wp->w_popup_imagep, true);
 #endif
 
     wp->w_popup_flags |= POPF_HIDDEN;
@@ -6212,10 +6211,12 @@ fill_opacity_padding(
  * Draw the image associated with this popup window (if any).
  */
     static void
-popup_draw_image(win_T *wp)
+popup_position_image(win_T *wp)
 {
     linenr_T	    row;
     colnr_T	    col;
+
+    int iw, ih;
 
     // Visible cell width and height of popup itself (not image!)
     int	visible_width;
@@ -6242,12 +6243,12 @@ popup_draw_image(win_T *wp)
     if (visible_width <= 0 || visible_height <= 0)
 	return;
 
+    image_get_dimensions(wp->w_popup_imagep->img, &iw, &ih);
+
     crop_x = clip.clip_left_content * cell_width;
     crop_y = clip.clip_top_content * cell_height;
-    crop_width = wp->w_popup_imagep->img->width - crop_x
-	- clip.clip_right_content * cell_width;
-    crop_height = wp->w_popup_imagep->img->height - crop_y
-	- clip.clip_bot_content * cell_height;
+    crop_width = iw - crop_x - clip.clip_right_content * cell_width;
+    crop_height = ih - crop_y - clip.clip_bot_content * cell_height;
 
     // Must account for border and padding (only cells that have been clipped).
     row -= wp->w_popup_border[0] - clip.eff_border[0];
@@ -6263,331 +6264,15 @@ popup_draw_image(win_T *wp)
     if (crop_height > visible_height * cell_height)
 	crop_height = visible_height * cell_height;
 
-    image_placement_set_z(wp->w_popup_imagep, wp->w_zindex);
+    image_placement_set_zindex(wp->w_popup_imagep, wp->w_zindex);
     image_placement_set_position(wp->w_popup_imagep, row, col);
-    image_placement_crop(wp->w_popup_imagep, crop_x, crop_y,
+    image_placement_set_crop(wp->w_popup_imagep, crop_x, crop_y,
 	    crop_width, crop_height);
-
-<<<<<<< HEAD
-	visible_w = wp->w_width - cl.clip_left_content - cl.clip_right_content;
-	visible_h = wp->w_height - cl.clip_top_content - cl.clip_bot_content;
-
-	if (visible_w <= 0 || visible_h <= 0)
-	    return;
-
-	row += cl.clip_top_content;
-	col += cl.clip_left_content;
-
-	src_x = cl.clip_left_content * cell_x;
-	src_y = cl.clip_top_content * cell_y;
-	w = wp->w_popup_image_w - src_x - cl.clip_right_content * cell_x;
-	h = wp->w_popup_image_h - src_y - cl.clip_bot_content * cell_y;
-
-	// Clamp to the popup's actual visible cell box in pixels, so the
-	// crop can never claim more cells than the popup has
-	if (w > visible_w * cell_x)
-	    w = visible_w * cell_x;
-	if (h > visible_h * cell_y)
-	    h = visible_h * cell_y;
-
-	if (w <= 0 || h <= 0)
-	    return;
-
-	// Transmit the image to the terminal if it hasn't already
-	if (!wp->w_popup_image_transmit)
-	{
-	    image_rgb_T si;
-
-	    si.data = wp->w_popup_image_data;
-	    si.width = wp->w_popup_image_w;
-	    si.height = wp->w_popup_image_h;
-	    si.has_alpha = wp->w_popup_image_alpha;
-
-	    if (kitty_transmit(&si, wp->w_id) == FAIL)
-		return;
-	    wp->w_popup_image_transmit = true;
-	}
-
-	// One placement for each rectangle that no higher popup covers; a
-	// placement of the previous emit that is not used again is deleted.
-	{
-	    garray_T	rects;
-	    int		count;
-
-	    ga_init2(&rects, sizeof(image_rect_T), 4);
-	    popup_image_visible_rects(wp, row, col, (h + cell_y - 1) / cell_y,
-					    (w + cell_x - 1) / cell_x, &rects);
-	    for (int i = 0; i < rects.ga_len; ++i)
-	    {
-		image_rect_T	*rect = ((image_rect_T *)rects.ga_data) + i;
-		int		off_x = (rect->col - col) * cell_x;
-		int		off_y = (rect->row - row) * cell_y;
-
-		kitty_place(wp->w_id, i + 1, rect->row, rect->col,
-			src_x + off_x, src_y + off_y,
-			MIN(rect->cols * cell_x, w - off_x),
-			MIN(rect->rows * cell_y, h - off_y), wp->w_zindex);
-	    }
-	    count = rects.ga_len;
-	    ga_clear(&rects);
-	    for (int i = count + 1; i <= wp->w_popup_image_placements; ++i)
-		kitty_delete_placement(wp->w_id, i);
-	    wp->w_popup_image_placements = count;
-	}
-
-	wp->w_popup_image_emit_row = row;
-	wp->w_popup_image_emit_col = col;
-	wp->w_popup_image_emit_cells_w = (w + cell_x - 1) / cell_x;
-	wp->w_popup_image_emit_cells_h = (h + cell_y - 1) / cell_y;
-	wp->w_popup_image_px_dirty = false;
-	return;
-    }
-# endif
-# ifdef FEAT_IMAGE_SIXEL
-    if (wp->w_popup_image_seq == NULL)
-	return;
-    // For "clipwindow" popups the encoded sequence already covers only the
-    // visible (cropped) sub-image, so emit it at the visible top-left corner
-    // -- the original top-left can be above/left of the host window (negative
-    // row/col) when the popup is partially scrolled past the host edge.
-    {
-	popup_clip_T cl;
-
-	popup_compute_clip(wp, &cl);
-	row += cl.clip_top_content;
-	col += cl.clip_left_content;
-    }
-    if (row < 0 || col < 0)
-	return;
-    // Hide the cursor across the move + image emit, then restore it to
-    // the current text-cursor position before showing it; otherwise the
-    // cursor can briefly flicker below its scrolled-to position because
-    // the next setcursor() from the redraw loop only happens later.
-    // screen_start() forces the following windgoto to be absolute --
-    // both sixel and kitty leave the real cursor below the image while
-    // vim still thinks it is at the image origin, so the relative-move
-    // optimisation would otherwise place the cursor on the line just
-    // after the image.
-    cursor_off();
-    term_windgoto(row, col);
-    out_str(wp->w_popup_image_seq);
-    screen_start();
-    setcursor_mayforce(TRUE);
-    cursor_on();
-    out_flush();
-
-    // The sixel bytes just painted over every cell of the emitted rectangle,
-    // including cells that a higher zindex popup draws on top of this image.
-    // Invalidate those cells in ScreenLines so the higher popup's draw,
-    // later in this same update_popups() walk, actually rewrites them to
-    // the terminal instead of skipping them as unchanged.
-
-    for (int rr = row; rr < row + wp->w_popup_image_seq_cells_h; ++rr)
-    {
-	if (rr < 0 || rr >= screen_Rows)
-	    continue;
-
-	int off_base = LineOffset[rr];
-
-	for (int cc = col; cc < col + wp->w_popup_image_seq_cells_w; ++cc)
-	{
-	    if (cc < 0 || cc >= screen_Columns)
-		continue;
-	    if (popup_mask[rr * screen_Columns + cc] <= wp->w_zindex)
-		continue;
-
-	    int off = off_base + cc;
-
-	    ScreenLines[off] = ' ';
-	    if (enc_utf8 && ScreenLinesUC != NULL)
-		ScreenLinesUC[off] = 0;
-	    ScreenAttrs[off] = -1;
-	}
-    }
-
-    // Remember where the image was emitted so the next redraw can invalidate
-    // ScreenLines/ScreenAttrs for cells that move out from under the image
-    // (e.g. body -> top padding when the clip shrinks).  Otherwise screen_fill
-    // sees the same ' '+popup_attr already in ScreenLines and skips the
-    // terminal write, leaving sixel pixels visible in the padding.
-    wp->w_popup_image_emit_row = row;
-    wp->w_popup_image_emit_col = col;
-    wp->w_popup_image_emit_cells_w = wp->w_popup_image_seq_cells_w;
-    wp->w_popup_image_emit_cells_h = wp->w_popup_image_seq_cells_h;
-    wp->w_popup_image_px_dirty = false;
-# endif
-}
-
-# ifdef FEAT_IMAGE_KITTY
-/*
- * Remove the kitty image placement for "wp".  Called when the popup goes
- * away.
- * When "del_data" is true the terminal also frees the transmitted image.
- */
-    static void
-popup_image_clear_kitty(win_T *wp, bool del_data)
-{
-#  ifdef FEAT_GUI
-    if (gui.in_use)
-	return;
-#  endif
-
-    if (wp == NULL || wp->w_popup_image_data == NULL || wp->w_id <= 0)
-	return;
-
-    if (popup_image_backend() != IMAGE_BACKEND_KITTY)
-	return;
-    kitty_delete(wp->w_id, del_data);
-    wp->w_popup_image_placements = 0;
-    if (del_data)
-	wp->w_popup_image_transmit = false;
-}
-# endif
-
-# ifdef POPUP_IMAGE_CLEAR_GUI
-/*
- * Redraw the area the image of "wp" was drawn in, the popup goes away.
- */
-    static void
-popup_image_clear_gui(win_T *wp)
-{
-    if (!gui.in_use
-	    || wp->w_popup_image_emit_cells_w <= 0
-	    || wp->w_popup_image_emit_cells_h <= 0)
-	return;
-
-    gui_redraw_block(wp->w_popup_image_emit_row,
-	    wp->w_popup_image_emit_col,
-	    wp->w_popup_image_emit_row + wp->w_popup_image_emit_cells_h - 1,
-	    wp->w_popup_image_emit_col + wp->w_popup_image_emit_cells_w - 1,
-	    GUI_MON_NOCLEAR);
-
-    wp->w_popup_image_emit_cells_w = 0;
-    wp->w_popup_image_emit_cells_h = 0;
-}
-# endif
-
-/*
- * Re-paint every popup's image after the rest of the screen update has
- * settled.  Only needed for the GUI, where the cursor redraw and other
- * late blits paint directly onto the canvas and can damage the images.
- * Walk the popups in zindex order, lowest first, so that where images
- * overlap the higher zindex popup's image ends up on top.
- * In terminal mode there is nothing to repair: everything drawn after
- * update_popups() goes through ScreenLines writers that respect
- * popup_mask, so the images emitted there are still intact.  Re-emitting
- * here would instead paint a lower zindex image over the cells of a
- * higher zindex popup drawn on top of it.
- */
-# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO) \
-    || defined(FEAT_IMAGE_GDK)
-    void
-update_popup_images(void)
-{
-    win_T   *wp;
-
-    if (!gui.in_use)
-	return;
-    popup_reset_handled(POPUP_HANDLED_5);
-    while ((wp = find_next_popup(TRUE, POPUP_HANDLED_5)) != NULL)
-	popup_emit_image(wp);
-}
-# endif
-
-# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO)
-    static void
-popup_maybe_emit_image_rect(
-	win_T	*wp,
-	int	 left,
-	int	 top,
-	int	 right,
-	int	 bottom)
-{
-    int row, col;
-    int img_left, img_top, img_right, img_bottom;
-    int src_x, src_y, draw_w, draw_h;
-
-    // This is called for every popup, also the hidden ones: the cursor undraw
-    // and WM_PAINT paths do not go through find_next_popup().
-    if (!gui.in_use || (wp->w_popup_flags & POPF_HIDDEN)
-	    || wp->w_popup_image_data == NULL
-	    || wp->w_popup_image_w <= 0 || wp->w_popup_image_h <= 0)
-	return;
-
-    row = wp->w_winrow + wp->w_popup_border[0] + wp->w_popup_padding[0];
-    col = wp->w_wincol + wp->w_popup_border[3] + wp->w_popup_padding[3];
-
-    popup_image_gui_clip(wp, &row, &col,
-				    &src_x, &src_y, &draw_w, &draw_h);
-    if (row < 0 || col < 0 || draw_w <= 0 || draw_h <= 0)
-	return;
-
-    img_left = FILL_X(col);
-    img_top = FILL_Y(row);
-    img_right = img_left + draw_w;
-    img_bottom = img_top + draw_h;
-    if (img_right <= left || right <= img_left
-	    || img_bottom <= top || bottom <= img_top)
-	return;
-
-    popup_image_draw_gui(wp, row, col, src_x, src_y, draw_w, draw_h);
-}
-
-/*
- * Re-paint popup images that overlap a GUI paint rectangle.  Used by the
- * Windows GUI WM_PAINT path, where gui_redraw() restores text cells but does
- * not know about popup image overlays.
- */
-    void
-update_popup_images_rect(int left, int top, int right, int bottom)
-{
-    win_T   *wp;
-
-    if (!gui.in_use)
-	return;
-
-    FOR_ALL_POPUPWINS(wp)
-	popup_maybe_emit_image_rect(wp, left, top, right, bottom);
-    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
-	popup_maybe_emit_image_rect(wp, left, top, right, bottom);
-}
-# endif
-#endif
-
-=======
-    image_placement_draw(wp->w_popup_imagep);
-
-    // The image just painted over every cell of the emitted rectangle,
-    // including cells that a higher zindex popup draws on top of this image.
-    // Invalidate those cells in ScreenLines so the higher popup's draw, later
-    // in this same update_popups() walk, actually rewrites them to the terminal
-    // instead of skipping them as unchanged.
-    for (int rr = row; rr < row + wp->w_height; ++rr)
-    {
-	if (rr < 0 || rr >= screen_Rows)
-	    continue;
-
-	int off_base = LineOffset[rr];
-
-	for (int cc = col; cc < col + wp->w_width; ++cc)
-	{
-	    if (cc < 0 || cc >= screen_Columns)
-		continue;
-	    if (popup_mask[rr * screen_Columns + cc] > wp->w_zindex)
-		continue;
-
-	    int off = off_base + cc;
-
-	    ScreenLines[off] = ' ';
-	    if (enc_utf8 && ScreenLinesUC != NULL)
-		ScreenLinesUC[off] = 0;
-	    ScreenAttrs[off] = -1;
-	}
-    }
+    image_placement_set_bounding_box(wp->w_popup_imagep,
+	    wp->w_winrow, wp->w_wincol, clip.eff_height, clip.eff_width);
 }
 #endif
 
->>>>>>> df497f3dd (initial commit)
 /*
  * Update popup windows.  They are drawn on top of normal windows.
  * "win_update" is called for each popup window, lowest zindex first.
@@ -7173,7 +6858,7 @@ update_popups(void (*win_update)(win_T *wp))
 	    pop_highlight_overrides();
 
 #ifdef FEAT_IMAGE
-	popup_draw_image(wp);
+	popup_position_image(wp);
 #endif
     }
 

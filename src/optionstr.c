@@ -3107,8 +3107,8 @@ did_set_imactivatekey(optset_T *args UNUSED)
     char *
 did_set_imageprotocol(optset_T *args UNUSED)
 {
-    if (update_image_backend() == FAIL)
-	return e_invalid_argument;
+    /* if (update_image_backend() == FAIL) */
+	/* return e_invalid_argument; */
     return NULL;
 }
 
