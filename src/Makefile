@@ -1420,6 +1420,7 @@ ALL_LIBS = \
 	   $(CAIRO_LIBS) \
 	   $(PANGO_LIBS) \
 	   $(SIXEL_LIBS) \
+	   $(PIXMAN_LIBS) \
 	   $(X_EXTRA_LIBS) \
 	   $(MZSCHEME_LIBS) \
 	   $(LIBS) \
@@ -3494,7 +3495,7 @@ objects/if_tcl.o: if_tcl.c
 	$(CCC_NF) $(TCL_CFLAGS) $(ALL_CFLAGS) $(TCL_CFLAGS_EXTRA) -o $@ if_tcl.c
 
 objects/image.o: image.c
-	$(CCC) -o $@ image.c
+	$(CCC) $(PIXMAN_CFLAGS) $(PIXMAN_CPPFLAGS) -o $@ image.c
 
 objects/image_kitty.o: image_kitty.c
 	$(CCC) -o $@ image_kitty.c

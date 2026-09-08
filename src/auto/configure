@@ -683,6 +683,9 @@ X_PRE_LIBS
 X_CFLAGS
 XMKMF
 xmkmfpath
+PIXMAN_CPPFLAGS
+PIXMAN_CFLAGS
+PIXMAN_LIBS
 SIXEL_CPPFLAGS
 SIXEL_CFLAGS
 SIXEL_LIBS
@@ -9312,8 +9315,37 @@ printf "%s\n" "yes" >&6; }
   printf "%s\n" "#define HAVE_SIXEL 1" >>confdefs.h
 
 
-  CPPFLAGS="$CPPFLAGS $PANGO_CPPFLAGS"
-  CFLAGS="$CFLAGS $PANGO_CFLAGS"
+  CPPFLAGS="$CPPFLAGS $SIXEL_CPPFLAGS"
+  CFLAGS="$CFLAGS $SIXEL_CFLAGS"
+
+
+
+
+  CPPFLAGS=$cppflags_save
+  CFLAGS=$cflags_save
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pixman" >&5
+printf %s "checking for pixman... " >&6; }
+if "$PKG_CONFIG" --exists 'pixman-1'; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+  PIXMAN_LIBS=`$PKG_CONFIG --libs pixman-1`
+  PIXMAN_CFLAGS=`$PKG_CONFIG --cflags-only-other pixman-1`
+  PIXMAN_CPPFLAGS=`$PKG_CONFIG --cflags-only-I pixman-1`
+
+  cppflags_save=$CPPFLAGS
+  cflags_save=$CFLAGS
+
+  printf "%s\n" "#define HAVE_PIXMAN 1" >>confdefs.h
+
+
+  CPPFLAGS="$CPPFLAGS $PIXMAN_CPPFLAGS"
+  CFLAGS="$CFLAGS $PIXMAN_CFLAGS"
 
 
 

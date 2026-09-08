@@ -2522,11 +2522,36 @@ if "$PKG_CONFIG" --exists 'libsixel'; then
 
   AC_DEFINE(HAVE_SIXEL)
 
-  CPPFLAGS="$CPPFLAGS $PANGO_CPPFLAGS"
-  CFLAGS="$CFLAGS $PANGO_CFLAGS"
+  CPPFLAGS="$CPPFLAGS $SIXEL_CPPFLAGS"
+  CFLAGS="$CFLAGS $SIXEL_CFLAGS"
   AC_SUBST(SIXEL_LIBS)
   AC_SUBST(SIXEL_CFLAGS)
   AC_SUBST(SIXEL_CPPFLAGS)
+
+  CPPFLAGS=$cppflags_save
+  CFLAGS=$cflags_save
+else
+  AC_MSG_RESULT(no)
+fi
+
+AC_MSG_CHECKING(for pixman)
+if "$PKG_CONFIG" --exists 'pixman-1'; then
+  AC_MSG_RESULT(yes)
+
+  PIXMAN_LIBS=`$PKG_CONFIG --libs pixman-1`
+  PIXMAN_CFLAGS=`$PKG_CONFIG --cflags-only-other pixman-1`
+  PIXMAN_CPPFLAGS=`$PKG_CONFIG --cflags-only-I pixman-1`
+
+  cppflags_save=$CPPFLAGS
+  cflags_save=$CFLAGS
+
+  AC_DEFINE(HAVE_PIXMAN)
+
+  CPPFLAGS="$CPPFLAGS $PIXMAN_CPPFLAGS"
+  CFLAGS="$CFLAGS $PIXMAN_CFLAGS"
+  AC_SUBST(PIXMAN_LIBS)
+  AC_SUBST(PIXMAN_CFLAGS)
+  AC_SUBST(PIXMAN_CPPFLAGS)
 
   CPPFLAGS=$cppflags_save
   CFLAGS=$cflags_save

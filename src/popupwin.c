@@ -918,8 +918,7 @@ apply_general_options(win_T *wp, dict_T *dict)
     {
 	image_T		    *img = add_image(di->di_tv.vval.v_dict);
 	image_placement_T   *place;
-	colnr_T		    cw;
-	linenr_T	    ch;
+	int		    cw, ch;
 
 	if (img == NULL)
 	    return FAIL;
@@ -937,7 +936,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    image_placement_free(wp->w_popup_imagep);
 	wp->w_popup_imagep = place;
 
-	image_cell_size(img, &cw, &ch);
+	image_get_cell_dimensions(img, &cw, &ch);
 
 	// Set the dimensions of the popup that were not specified by the user.
 	if (dict_find(dict, (char_u *)"minwidth", -1) == NULL)
@@ -1879,7 +1878,7 @@ popup_adjust_position(win_T *wp)
 		{
 #ifdef FEAT_IMAGE
 		    if (wp->w_popup_imagep != NULL)
-			image_placement_clear(wp->w_popup_imagep);
+			image_placement_hide(wp->w_popup_imagep, true);
 #endif
 		    popup_hide_for_textprop(wp);
 		    if (wp->w_winrow + popup_height(wp) >= cmdline_row)
@@ -2406,7 +2405,7 @@ popup_adjust_position(win_T *wp)
 	if (!(wp->w_popup_flags & POPF_HIDDEN))
 	    // Clear placement before hiding, like popup_hide()
 	    if (wp->w_popup_imagep != NULL)
-		image_placement_clear(wp->w_popup_imagep);
+		image_placement_hide(wp->w_popup_imagep, true);
 #endif
 
 	popup_hide_for_textprop(wp);
@@ -3739,7 +3738,7 @@ popup_hide(win_T *wp)
 
 #ifdef FEAT_IMAGE
     if (wp->w_popup_imagep != NULL)
-	image_placement_clear(wp->w_popup_imagep);
+	image_placement_hide(wp->w_popup_imagep, true);
 #endif
 
     wp->w_popup_flags |= POPF_HIDDEN;
@@ -6209,10 +6208,12 @@ fill_opacity_padding(
  * Draw the image associated with this popup window (if any).
  */
     static void
-popup_draw_image(win_T *wp)
+popup_position_image(win_T *wp)
 {
     linenr_T	    row;
     colnr_T	    col;
+
+    int iw, ih;
 
     // Visible cell width and height of popup itself (not image!)
     int	visible_width;
@@ -6239,12 +6240,12 @@ popup_draw_image(win_T *wp)
     if (visible_width <= 0 || visible_height <= 0)
 	return;
 
+    image_get_dimensions(wp->w_popup_imagep->img, &iw, &ih);
+
     crop_x = clip.clip_left_content * cell_width;
     crop_y = clip.clip_top_content * cell_height;
-    crop_width = wp->w_popup_imagep->img->width - crop_x
-	- clip.clip_right_content * cell_width;
-    crop_height = wp->w_popup_imagep->img->height - crop_y
-	- clip.clip_bot_content * cell_height;
+    crop_width = iw - crop_x - clip.clip_right_content * cell_width;
+    crop_height = ih - crop_y - clip.clip_bot_content * cell_height;
 
     // Must account for border and padding (only cells that have been clipped).
     row -= wp->w_popup_border[0] - clip.eff_border[0];
@@ -6260,40 +6261,12 @@ popup_draw_image(win_T *wp)
     if (crop_height > visible_height * cell_height)
 	crop_height = visible_height * cell_height;
 
-    image_placement_set_z(wp->w_popup_imagep, wp->w_zindex);
+    image_placement_set_zindex(wp->w_popup_imagep, wp->w_zindex);
     image_placement_set_position(wp->w_popup_imagep, row, col);
-    image_placement_crop(wp->w_popup_imagep, crop_x, crop_y,
+    image_placement_set_crop(wp->w_popup_imagep, crop_x, crop_y,
 	    crop_width, crop_height);
-
-    image_placement_draw(wp->w_popup_imagep);
-
-    // The image just painted over every cell of the emitted rectangle,
-    // including cells that a higher zindex popup draws on top of this image.
-    // Invalidate those cells in ScreenLines so the higher popup's draw, later
-    // in this same update_popups() walk, actually rewrites them to the terminal
-    // instead of skipping them as unchanged.
-    for (int rr = row; rr < row + wp->w_height; ++rr)
-    {
-	if (rr < 0 || rr >= screen_Rows)
-	    continue;
-
-	int off_base = LineOffset[rr];
-
-	for (int cc = col; cc < col + wp->w_width; ++cc)
-	{
-	    if (cc < 0 || cc >= screen_Columns)
-		continue;
-	    if (popup_mask[rr * screen_Columns + cc] > wp->w_zindex)
-		continue;
-
-	    int off = off_base + cc;
-
-	    ScreenLines[off] = ' ';
-	    if (enc_utf8 && ScreenLinesUC != NULL)
-		ScreenLinesUC[off] = 0;
-	    ScreenAttrs[off] = -1;
-	}
-    }
+    image_placement_set_bounding_box(wp->w_popup_imagep,
+	    wp->w_winrow, wp->w_wincol, clip.eff_height, clip.eff_width);
 }
 #endif
 
@@ -6882,7 +6855,7 @@ update_popups(void (*win_update)(win_T *wp))
 	    pop_highlight_overrides();
 
 #ifdef FEAT_IMAGE
-	popup_draw_image(wp);
+	popup_position_image(wp);
 #endif
     }
 
