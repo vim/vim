@@ -3517,7 +3517,11 @@ regmatch(
 	  case BOW:	// \<word; rex.input points to w
 	    if (c == NUL)	// Can't match at end of line
 		status = RA_NOMATCH;
-	    else if (has_mbyte)
+	    // An ASCII byte under UTF-8 gets the same result from the cheaper
+	    // non-mbyte branch below.
+	    else if (has_mbyte
+		    && !(enc_utf8 && c < 0x80
+			&& (rex.input == rex.line || rex.input[-1] < 0x80)))
 	    {
 		int this_class;
 
@@ -3539,7 +3543,9 @@ regmatch(
 	  case EOW:	// word\>; rex.input points after d
 	    if (rex.input == rex.line)    // Can't match at start of line
 		status = RA_NOMATCH;
-	    else if (has_mbyte)
+	    // ASCII fast path, see BOW above.
+	    else if (has_mbyte
+		    && !(enc_utf8 && c < 0x80 && rex.input[-1] < 0x80))
 	    {
 		int this_class, prev_class;
 

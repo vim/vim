@@ -710,4 +710,39 @@ func Test_lookbehind_submatch_on_second_line()
   bwipe!
 endfunc
 
+" Test \< and \> where an ASCII byte meets a multi-byte character.  This is
+" what the ASCII fast path in the BOW/EOW handling must get right: the byte
+" before the current one may be a multi-byte tail, so the class of the
+" neighbour still has to be considered.
+func Test_word_boundary_ascii_multibyte()
+  new
+  let save_re = &regexpengine
+  for engine in [0, 1, 2]
+    let &regexpengine = engine
+    let msg = 're' .. engine
+
+    " Latin-1 and Cyrillic letters have the same word class as ASCII letters,
+    " so an ASCII byte next to them is inside the same word: no boundary.
+    call setline(1, 'abcé déf')
+    call assert_equal('|abcé |déf', substitute(getline(1), '\<', '|', 'g'), msg)
+    call assert_equal('abcé| déf|', substitute(getline(1), '\>', '|', 'g'), msg)
+    call setline(1, 'aФ Фb ab')
+    call assert_equal('|aФ |Фb |ab', substitute(getline(1), '\<', '|', 'g'), msg)
+    call assert_equal('aФ| Фb| ab|', substitute(getline(1), '\>', '|', 'g'), msg)
+
+    " CJK characters have a different word class, so the ASCII/CJK border is a
+    " word boundary.
+    call setline(1, 'test日本word 文字')
+    call assert_equal('|test|日本|word |文字', substitute(getline(1), '\<', '|', 'g'), msg)
+    call assert_equal('test|日本|word| 文字|', substitute(getline(1), '\>', '|', 'g'), msg)
+
+    " A composing character attaches to its ASCII base, no boundary there.
+    call setline(1, "cafe\u0301 nai\u0308ve xy")
+    call assert_equal("|cafe\u0301 |nai\u0308ve |xy", substitute(getline(1), '\<', '|', 'g'), msg)
+    call assert_equal("cafe\u0301| nai\u0308ve| xy|", substitute(getline(1), '\>', '|', 'g'), msg)
+  endfor
+  let &regexpengine = save_re
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
