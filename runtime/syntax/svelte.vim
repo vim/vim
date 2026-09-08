@@ -77,7 +77,9 @@ syntax match sveltePreProc contained "\%(<!--\|-->\)"
 syntax match svelteComponent "\v<svelte:(head|body|window|document|options|element|boundary|component|fragment|self)>" containedin=svelteTagN
 
 " Svelte 5 runes (and store auto-subscriptions) inside <script> blocks.
-syntax match svelteRune "\$\w\+" containedin=svelteScriptJS,svelteScriptTS
+" Also matches dot-notation rune variants: $state.raw, $derived.by,
+" $effect.pre, $effect.tracking, $effect.pending, $effect.root, $props.id
+syntax match svelteRune "\$\w\+\%(\.\w\+\)\?" containedin=svelteScriptJS,svelteScriptTS
 
 " Interpolation and expressions: { expr }
 " Only match inside tags or attribute values, not inside <script> blocks, where
