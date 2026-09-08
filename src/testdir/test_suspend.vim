@@ -1,5 +1,8 @@
 " Test :suspend
 
+" Use the shell's default prompt, which should match the '[$#] $' pattern.
+silent! unlet $PS1
+
 func CheckSuspended(buf, fileExists)
   call WaitForAssert({-> assert_match('[$#] $', term_getline(a:buf, '.'))})
 
