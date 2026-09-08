@@ -1549,8 +1549,10 @@ typedef struct {
 #define TPR_KITTY		    4
 // can send DECRQM requests to terminal
 #define TPR_DECRQM		    5
+// supports true color
+#define TPR_RGB			    6
 // table size
-#define TPR_COUNT		    6
+#define TPR_COUNT		    7
 
 static termprop_T term_props[TPR_COUNT];
 
@@ -1576,6 +1578,8 @@ init_term_props(int all)
     term_props[TPR_KITTY].tpr_set_by_termresponse = FALSE;
     term_props[TPR_DECRQM].tpr_name = "decrqm";
     term_props[TPR_DECRQM].tpr_set_by_termresponse = TRUE;
+    term_props[TPR_RGB].tpr_name = "rgb";
+    term_props[TPR_RGB].tpr_set_by_termresponse = TRUE;
 
     for (i = 0; i < TPR_COUNT; ++i)
 	if (all || term_props[i].tpr_set_by_termresponse)
@@ -1605,6 +1609,12 @@ f_terminalprops(typval_T *argvars UNUSED, typval_T *rettv)
 # endif
 }
 #endif
+
+    int
+term_is_rgb(void)
+{
+    return term_props[TPR_RGB].tpr_status == TPR_YES;
+}
 
 /*
  * Find the builtin termcap entries for "term".
@@ -1747,13 +1757,6 @@ set_color_count(int nr)
 	sprintf((char *)nr_colors, "%d", t_colors);
     else
 	*nr_colors = NUL;
-#if 0
-# ifdef FEAT_TERMGUICOLORS
-    // xterm-direct, enable termguicolors, when it wasn't set yet
-    if (t_colors == 0x1000000 && !p_tgc_set)
-	set_option_value((char_u *)"termguicolors", 1L, NULL, 0);
-# endif
-#endif
     set_string_option_direct((char_u *)"t_Co", -1, nr_colors, OPT_FREE, 0);
 }
 
@@ -1787,11 +1790,9 @@ may_adjust_color_count(int val)
 static char *(key_names[]) =
 {
 # ifdef FEAT_TERMRESPONSE
-    // Do those ones first, both may cause a screen redraw.
-    "Co",
-    // disabled, because it switches termguicolors, but that
-    // is noticeable and confuses users
-    // "RGB",
+    // Do those ones first.  "Co" may cause a redraw, "RGB" may
+    // trigger an autocommand that causes a redraw.
+    "Co", "RGB",
 # endif
     "ku", "kd", "kr", "kl",
     "#2", "#4", "%i", "*7",
@@ -1901,7 +1902,10 @@ get_term_entries(int *height, int *width)
      * get key codes
      */
     for (i = 0; key_names[i] != NULL; ++i)
-	if (find_termcode((char_u *)key_names[i]) == NULL)
+	// "RGB" is obtained from the terminal.
+	// Termcap doesn't support 3-character names.
+	if (key_names[i][2] == NUL &&
+		find_termcode((char_u *)key_names[i]) == NULL)
 	{
 	    char_u *p = TGETSTR(key_names[i], &tp);
 
@@ -7636,25 +7640,25 @@ got_code_from_term(char_u *code, int len)
 # endif
 		may_adjust_color_count(val);
 	    }
-# if 0
-#  ifdef FEAT_TERMGUICOLORS
-	    // when RGB result comes back, it is supported when the result contains an '='
+	    // When RGB result comes back, it is supported when the result contains an '='.
+	    // Direct color uses the same sequence no matter what the RGB value here is,
+	    // so don't check the value.
 	    else if (name[0] == 'R' && name[1] == 'G' && name[2] == 'B' && code[9] == '=')
 	    {
-		int val = atoi((char *)str);
-		// only enable it, if termguicolors hasn't been set yet and
-		// there are 8 bits per color channel
-		if (val == 8 && !p_tgc_set)
-		{
-#   ifdef FEAT_EVAL
-		    ch_log(NULL, "got_code_from_term(RGB): xterm-direct colors detected");
-#   endif
-		    // RGB capability set, enable termguicolors
-		    set_option_value((char_u *)"termguicolors", 1L, NULL, 0);
-		}
-	    }
-#  endif
+# ifdef FEAT_EVAL
+		ch_log(NULL, "got_code_from_term(RGB): xterm-direct colors detected");
 # endif
+		term_props[TPR_RGB].tpr_status = TPR_YES;
+# ifdef FEAT_TERMGUICOLORS
+		int savetgc = p_tgc;
+# endif
+		apply_autocmds(EVENT_TERMRESPONSEALL,
+					(char_u *)"rgb", NULL, FALSE, curbuf);
+# ifdef FEAT_TERMGUICOLORS
+		if (p_tgc != savetgc)
+		    redraw_asap(UPD_CLEAR);
+# endif
+	    }
 	    else
 	    {
 		i = find_term_bykeys(str, NULL);

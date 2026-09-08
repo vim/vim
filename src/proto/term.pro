@@ -3,6 +3,7 @@ guicolor_T termgui_get_color(char_u *name);
 guicolor_T termgui_mch_get_rgb(guicolor_T color);
 void init_term_props(int all);
 void f_terminalprops(typval_T *argvars, typval_T *rettv);
+int term_is_rgb(void);
 void apply_keyprotocol(char_u *term, keyprot_T prot);
 void set_color_count(int nr);
 keyprot_T match_keyprotocol(char_u *term);
