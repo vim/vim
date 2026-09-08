@@ -1303,7 +1303,8 @@ list_slice(list_T *ol, long n1, long n2)
 	return NULL;
     for (item = list_find(ol, n1); n1 <= n2; ++n1)
     {
-	if (list_append_tv(l, &item->li_tv) == FAIL)
+	// "item" is NULL when materializing "ol" stopped early.
+	if (item == NULL || list_append_tv(l, &item->li_tv) == FAIL)
 	{
 	    list_free(l);
 	    return NULL;

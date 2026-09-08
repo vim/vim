@@ -223,14 +223,14 @@ typedef struct {
 
 #if defined(FEAT_SIGNS) || defined(FEAT_FOLDING)
 /*
- * Return TRUE if CursorLineSign highlight is to be used.
+ * Return TRUE if CursorLineSign / CursorLineFold highlight is to be used.
+ * This depends only on 'cursorline', not on 'cursorlineopt'.
  */
     static int
 use_cursor_line_highlight(win_T *wp, linenr_T lnum)
 {
     return wp->w_p_cul
-	    && lnum == wp->w_cursor.lnum
-	    && (wp->w_p_culopt_flags & CULOPT_NBR);
+	    && lnum == wp->w_cursor.lnum;
 }
 #endif
 

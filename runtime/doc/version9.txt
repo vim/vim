@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Sep 01
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Sep 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52712,6 +52712,8 @@ Changed ~
 - fold functions take an optional {winid} parameter.
 - It is no longer allowed to change the window layout during a |DiffUpdated|
   autocommand.
+- The highlighting groups |hl-CursorLineFold| and |hl-CursorLineSign| are
+  always used when 'cursorline' is set.
 
 							*added-9.3*
 Added ~

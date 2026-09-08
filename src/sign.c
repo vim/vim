@@ -261,6 +261,10 @@ insert_sign(buf_T *buf, // buffer to store sign in
     {
         prev->se_next = newsign;
     }
+
+    // Remember the newly inserted sign so a following insert on a later line
+    // can resume the search from here.
+    buf->b_sign_finger = newsign;
 }
 
 /*
@@ -418,7 +422,16 @@ buf_addsign(buf_T *buf, // buffer to store sign in
 {
     sign_entry_T *sign = NULL; // a sign in the signlist
     sign_entry_T *prev = NULL; // the previous sign
-    FOR_ALL_SIGNS_IN_BUF(buf, sign)
+
+    // The list is sorted by line number.  When the last inserted sign is on a
+    // strictly earlier line, resume the search from there instead of the head;
+    // this makes placing many signs on distinct, ascending lines close to
+    // linear.  Signs on the same line fall back to a scan from the head.
+    if (buf->b_sign_finger != NULL && buf->b_sign_finger->se_lnum < lnum)
+        prev = buf->b_sign_finger;
+
+    for (sign = (prev == NULL) ? buf->b_signlist : prev->se_next; sign != NULL;
+         sign = sign->se_next)
     {
         if (lnum == sign->se_lnum && id == sign->se_id &&
             sign_in_group(sign, groupname))
@@ -568,6 +581,7 @@ buf_delsign(buf_T *buf, // buffer sign is stored in
             int id, // sign id
             char_u *group) // sign group
 {
+    buf->b_sign_finger = NULL; // a removal invalidates the insertion finger
     // pointer to pointer to current sign
     sign_entry_T **lastp = &buf->b_signlist;
     sign_entry_T *next = NULL; // the next sign in a b_signlist
@@ -732,6 +746,7 @@ buf_signcount(buf_T *buf, linenr_T lnum)
 void
 buf_delete_signs(buf_T *buf, char_u *group)
 {
+    buf->b_sign_finger = NULL; // a removal invalidates the insertion finger
     // When deleting the last sign need to redraw the windows to remove the
     // sign column. Not when curwin is NULL (this means we're exiting).
     if (buf->b_signlist != NULL && curwin != NULL)
@@ -829,6 +844,7 @@ sign_mark_adjust(
     long        amount,
     long        amount_after)
 {
+    curbuf->b_sign_finger = NULL; // line changes may reorder, drop the finger
     sign_entry_T *sign = NULL; // a sign in a b_signlist
     FOR_ALL_SIGNS_IN_BUF(curbuf, sign)
     {

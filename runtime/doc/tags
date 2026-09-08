@@ -10046,6 +10046,7 @@ quickfix-valid	quickfix.txt	/*quickfix-valid*
 quickfix-window	quickfix.txt	/*quickfix-window*
 quickfix-window-ID	quickfix.txt	/*quickfix-window-ID*
 quickfix-window-function	quickfix.txt	/*quickfix-window-function*
+quickfix-winfixbuf	quickfix.txt	/*quickfix-winfixbuf*
 quickfix.txt	quickfix.txt	/*quickfix.txt*
 quickref	quickref.txt	/*quickref*
 quickref.txt	quickref.txt	/*quickref.txt*

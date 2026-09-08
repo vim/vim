@@ -3713,6 +3713,8 @@ struct file_buffer
 
 #ifdef FEAT_SIGNS
     sign_entry_T *b_signlist;	   // list of placed signs
+    sign_entry_T *b_sign_finger;   // last sign inserted, used to speed up
+				   // inserting signs in ascending line order
 # ifdef FEAT_NETBEANS_INTG
     bool	b_has_sign_column; // Flag that is set when a first sign is
 				   // added and remains set until the end of

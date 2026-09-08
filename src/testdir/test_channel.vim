@@ -2900,6 +2900,39 @@ func Test_listen_info_no_hostname()
     call ch_close(ch)
 endfunc
 
+" A Unix domain socket must work when it is the first socket used in a Vim
+" process, so run it in a separate Vim.
+func Test_listen_unix_first_socket()
+  let sockpath = fnamemodify('Xlistensock', ':p')
+  if len(sockpath) >= 100
+    throw 'Skipped: socket path is too long'
+  endif
+  let after =<< trim eval [CODE]
+    func OnAccept(ch, addr)
+      call ch_setoptions(a:ch, #{{mode: 'raw'}})
+      call add(g:result, 'accept ' .. a:addr)
+    endfunc
+    let g:result = []
+    let server = ch_listen('unix:{sockpath}', #{{callback: 'OnAccept'}})
+    call add(g:result, 'listen ' .. ch_status(server))
+    let client = ch_open('unix:{sockpath}', #{{mode: 'raw'}})
+    call add(g:result, 'open ' .. ch_status(client))
+    let cnt = 0
+    while len(g:result) < 3 && cnt < 500
+      sleep 10m
+      let cnt += 1
+    endwhile
+    call writefile(g:result, 'Xlistenresult')
+    qall!
+  [CODE]
+  if RunVim([], after, '')
+    call assert_equal(['accept unix:anonymous', 'listen open', 'open open'],
+          \ sort(readfile('Xlistenresult')))
+  endif
+  call delete('Xlistenresult')
+  call delete('Xlistensock')
+endfunc
+
 func Test_channel_lsp_mode()
   " The channel lsp mode test is flaky and gives the same error.
   let g:giveup_same_error = 0

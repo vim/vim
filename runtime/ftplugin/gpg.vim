@@ -2,7 +2,7 @@
 " Language:             gpg(1) configuration file
 " Maintainer:           This runtime file is looking for a new maintainer.
 " Previous Maintainer:  Nikolai Weibull <now@bitwi.se>
-" Latest Revision:      2025-07-22 (use :hor term #17822)
+" Latest Revision:      2026 Sep 01
 
 if exists("b:did_ftplugin")
   finish
@@ -16,7 +16,7 @@ let b:undo_ftplugin = "setl com< cms< fo<"
 
 setlocal comments=:# commentstring=#\ %s formatoptions-=t formatoptions+=croql
 
-if has('unix') && executable('less') && exists(':terminal') == 2
+if has('unix') && executable('less') && has('terminal')
   command -buffer -nargs=1 GpgKeywordPrg
         \ silent exe ':hor term ' . 'env LESS= MANPAGER="less --pattern=''' . escape('^\s+--' . <q-args> . '\b', '\') . ''' --hilite-search" man ' . 'gpg'
   setlocal iskeyword+=-

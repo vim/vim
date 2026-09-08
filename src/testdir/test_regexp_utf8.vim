@@ -1,5 +1,33 @@
 " Tests for regexp in utf8 encoding
 
+func Test_regexp_literal_byte_search()
+  let save_encoding = &encoding
+  let save_re = &regexpengine
+  try
+    for enc in ['latin1', 'utf-8']
+      let &encoding = enc
+      for engine in [1, 2]
+        let &regexpengine = engine
+        let chars = ['z', nr2char(0x7f), nr2char(0xff)]
+        if enc == 'utf-8'
+          call add(chars, nr2char(0x100))
+        endif
+        for c in chars
+          let prefix = repeat('x', 4096)
+          call assert_equal(-1, match('', c))
+          call assert_equal(-1, match(prefix, c))
+          call assert_equal(0, match(c .. prefix, c))
+          call assert_equal(4096, match(prefix .. c, c))
+        endfor
+        call assert_equal(-1, match('xxx', '\%d0'))
+      endfor
+    endfor
+  finally
+    let &encoding = save_encoding
+    let &regexpengine = save_re
+  endtry
+endfunc
+
 func s:equivalence_test()
   let str = "AÀÁÂÃÄÅĀĂĄǍǞǠǺȂȦȺḀẠẢẤẦẨẪẬẮẰẲẴẶ BƁɃḂḄḆ CÇĆĈĊČƇȻḈꞒ DĎĐƊḊḌḎḐḒ EÈÉÊËĒĔĖĘĚȄȆȨɆḔḖḘḚḜẸẺẼẾỀỂỄỆ FƑḞꞘ GĜĞĠĢƓǤǦǴḠꞠ HĤĦȞḢḤḦḨḪⱧ IÌÍÎÏĨĪĬĮİƗǏȈȊḬḮỈỊ JĴɈ KĶƘǨḰḲḴⱩꝀ LĹĻĽĿŁȽḶḸḺḼⱠ MḾṀṂ NÑŃŅŇǸṄṆṈṊꞤ OÒÓÔÕÖØŌŎŐƟƠǑǪǬǾȌȎȪȬȮȰṌṎṐṒỌỎỐỒỔỖỘỚỜỞỠỢ PƤṔṖⱣ QɊ RŔŖŘȐȒɌṘṚṜṞⱤꞦ SŚŜŞŠȘṠṢṤṦṨⱾꞨ TŢŤŦƬƮȚȾṪṬṮṰ UÙÚÛÜŨŪŬŮŰƯǕǙǛǓǗȔȖɄṲṴṶṸṺỤỦỨỪỬỮỰ  VƲṼṾ WŴẀẂẄẆẈ XẊẌ YÝŶŸƳȲɎẎỲỴỶỸ ZŹŻŽƵẐẒẔⱫ aàáâãäåāăąǎǟǡǻȃȧᶏḁẚạảấầẩẫậắằẳẵặⱥ bƀɓᵬᶀḃḅḇ cçćĉċčƈȼḉꞓꞔ dďđɗᵭᶁᶑḋḍḏḑḓ eèéêëēĕėęěȅȇȩɇᶒḕḗḙḛḝẹẻẽếềểễệ fƒᵮᶂḟꞙ gĝğġģǥǧǵɠᶃḡꞡ hĥħȟḣḥḧḩḫẖⱨꞕ iìíîïĩīĭįǐȉȋɨᶖḭḯỉị jĵǰɉ kķƙǩᶄḱḳḵⱪꝁ lĺļľŀłƚḷḹḻḽⱡ mᵯḿṁṃ nñńņňŉǹᵰᶇṅṇṉṋꞥ oòóôõöøōŏőơǒǫǭǿȍȏȫȭȯȱɵṍṏṑṓọỏốồổỗộớờởỡợ pƥᵱᵽᶈṕṗ qɋʠ rŕŗřȑȓɍɽᵲᵳᶉṛṝṟꞧ sśŝşšșȿᵴᶊṡṣṥṧṩꞩ tţťŧƫƭțʈᵵṫṭṯṱẗⱦ uùúûüũūŭůűųǚǖưǔǘǜȕȗʉᵾᶙṳṵṷṹṻụủứừửữự vʋᶌṽṿ wŵẁẃẅẇẉẘ xẋẍ yýÿŷƴȳɏẏẙỳỵỷỹ zźżžƶᵶᶎẑẓẕⱬ"
   let groups = split(str)
@@ -361,6 +389,12 @@ func Run_regexp_ignore_case()
   call assert_equal('iIx', substitute('iIİ', '\c\(\%u0130\)', 'x', 'g'))
   call assert_equal('iIx', substitute('iIİ', '\c\([\u0130]\)', 'x', 'g'))
   call assert_equal('iIx', substitute('iIİ', '\c\([\u012f-\u0131]\)', 'x', 'g'))
+
+  " Ignoring case in a literal string that starts with a character longer
+  " than a following one must still match.
+  call assert_equal('Über', matchstr('Überraschung', '\cüber'))
+  call assert_equal('Ünder', matchstr('Ünderdog', '\cünder'))
+  call assert_equal('αaaa', matchstr('αaaaa', '\cαaaa'))
 endfunc
 
 func Test_regexp_ignore_case()

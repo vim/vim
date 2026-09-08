@@ -1759,7 +1759,7 @@ cstrncmp(char_u *s1, char_u *s2, int *n)
 	// count the number of characters for byte-length of s1
 	while (n1 > 0 && *p != NUL)
 	{
-	    n1 -= mb_ptr2len(s1);
+	    n1 -= mb_ptr2len(p);
 	    MB_PTR_ADV(p);
 	    n2++;
 	}

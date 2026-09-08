@@ -13,21 +13,6 @@
 
 #include "vim.h"
 
-/*
- * Return TRUE when currently using Vim9 script syntax.
- * Does not go up the stack, a ":function" inside vim9script uses legacy
- * syntax.
- */
-    int
-in_vim9script(void)
-{
-    // "sc_version" is also set when compiling a ":def" function in legacy
-    // script.
-    return (current_sctx.sc_version == SCRIPT_VERSION_VIM9
-					 || (cmdmod.cmod_flags & CMOD_VIM9CMD))
-		&& !(cmdmod.cmod_flags & CMOD_LEGACY);
-}
-
 #if defined(FEAT_EVAL)
 /*
  * Return TRUE when currently in a script with script version smaller than

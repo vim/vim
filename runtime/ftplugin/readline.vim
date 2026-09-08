@@ -5,6 +5,7 @@
 " Last Change:		2024 Sep 19 (simplify keywordprg #15696)
 " 2024 Jul 22 by Vim project (use :hor term #17822)
 " 2026 May 04 by Vim Project: fix typo
+" 2026 Sep 01 by Vim Project: use correct terminal feature test
 
 if exists("b:did_ftplugin")
   finish
@@ -36,7 +37,7 @@ if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
   let b:undo_ftplugin ..= " | unlet! b:browsefilter"
 endif
 
-if has('unix') && executable('less') && exists(':terminal') == 2
+if has('unix') && executable('less') && has('terminal')
   command -buffer -nargs=1 ReadlineKeywordPrg
         \ silent exe 'hor term ' . 'env LESS= MANPAGER="less --pattern=''' . escape('^\s+' . <q-args> . '\b', '\') . ''' --hilite-search" man ' . '3 readline'
   setlocal iskeyword+=-
