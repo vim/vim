@@ -2262,7 +2262,7 @@ getdigits(char_u **pp)
     long	retval;
 
     p = *pp;
-    retval = atol((char *)p);
+    retval = strtol((char *)p, NULL, 10);
     if (*p == '-')		// skip negative sign
 	++p;
     p = skipdigits(p);		// skip to next non-digit
