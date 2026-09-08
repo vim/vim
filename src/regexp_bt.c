@@ -3188,7 +3188,7 @@ regstack_push(regstate_T state, char_u *scan)
 	emsg(_(e_pattern_uses_more_memory_than_maxmempattern));
 	return NULL;
     }
-    if (ga_grow(&regstack, sizeof(regitem_T)) == FAIL)
+    if (GA_GROW_FAILS(&regstack, (int)sizeof(regitem_T)))
 	return NULL;
 
     rp = (regitem_T *)((char *)regstack.ga_data + regstack.ga_len);
@@ -3924,7 +3924,7 @@ regmatch(
 		if (i == backpos.ga_len)
 		{
 		    // First time at this BACK, make room to store the pos.
-		    if (ga_grow(&backpos, 1) == FAIL)
+		    if (GA_GROW_FAILS(&backpos, 1))
 			status = RA_FAIL;
 		    else
 		    {
@@ -4324,7 +4324,7 @@ regmatch(
 			emsg(_(e_pattern_uses_more_memory_than_maxmempattern));
 			status = RA_FAIL;
 		    }
-		    else if (ga_grow(&regstack, sizeof(regstar_T)) == FAIL)
+		    else if (GA_GROW_FAILS(&regstack, (int)sizeof(regstar_T)))
 			status = RA_FAIL;
 		    else
 		    {
@@ -4369,7 +4369,7 @@ regmatch(
 		emsg(_(e_pattern_uses_more_memory_than_maxmempattern));
 		status = RA_FAIL;
 	    }
-	    else if (ga_grow(&regstack, sizeof(regbehind_T)) == FAIL)
+	    else if (GA_GROW_FAILS(&regstack, (int)sizeof(regbehind_T)))
 		status = RA_FAIL;
 	    else
 	    {
