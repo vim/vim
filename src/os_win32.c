@@ -34,6 +34,10 @@
 #include <winternl.h>
 #include <direct.h>
 
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
+# include "iscygpty.h"
+#endif
+
 #if !defined(FEAT_GUI_MSWIN)
 # include <shellapi.h>
 #endif
@@ -2331,12 +2335,14 @@ conio_replaceable(HANDLE h)
 
 /*
  * Return TRUE when Vim uses the console for the screen.  Not in Ex or silent
- * mode, which use streams, and not with "--not-a-term".
+ * mode, which use streams, not with "--not-a-term", and not in a Cygwin or
+ * MSYS pty, which check_tty() refuses to run in.
  */
     static int
 want_console_io(void)
 {
-    return !is_not_a_term() && !silent_mode && !exmode_active;
+    return !is_not_a_term() && !silent_mode && !exmode_active
+						    && !is_cygpty_used();
 }
 
 /*
