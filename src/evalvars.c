@@ -1128,6 +1128,36 @@ ex_let(exarg_T *eap)
 	return;
     }
 
+    if (source_dryrun && vim9script && (flags & ASSIGN_NO_DECL) == 0)
+    {
+	// ":source ++dryrun": skip the expression, it may span lines, and only
+	// declare the variables.
+	int	save_skip = eap->skip;
+
+	eap->skip = TRUE;
+	if (expr[0] == '=' && expr[1] == '<' && expr[2] == '<')
+	{
+	    list_T *l = heredoc_get(eap, expr + 3, FALSE, FALSE);
+
+	    if (l != NULL)
+		list_free(l);
+	}
+	else
+	{
+	    evalarg_T	evalarg;
+
+	    ++emsg_skip;
+	    fill_evalarg_from_eap(&evalarg, eap, TRUE);
+	    expr = skipwhite_and_linebreak(expr + 1, &evalarg);
+	    (void)eval0(expr, &rettv, eap, &evalarg);
+	    --emsg_skip;
+	    clear_evalarg(&evalarg, eap);
+	}
+	eap->skip = save_skip;
+	vim9_declare_dryrun(arg, flags & (ASSIGN_CONST | ASSIGN_FINAL));
+	return;
+    }
+
     if (expr[0] == '=' && expr[1] == '<' && expr[2] == '<')
     {
 	list_T	*l = NULL;

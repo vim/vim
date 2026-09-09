@@ -1428,7 +1428,8 @@ add_class_members(class_T *cl, exarg_T *eap, garray_T *type_list_gap)
     {
 	ocmember_T	*m = &cl->class_class_members[i];
 	typval_T	*tv = &cl->class_members_tv[i];
-	if (m->ocm_init != NULL)
+	// With ":source ++dryrun" the value is not needed, only the type.
+	if (m->ocm_init != NULL && !source_dryrun)
 	{
 	    sctx_T	save_current_sctx = current_sctx;
 
@@ -3841,6 +3842,11 @@ can_free_enum(class_T *cl)
 	    // If all of those members are no longer referenced, then the enum
 	    // may be freed.
 	    return TRUE;
+
+	// With ":source ++dryrun" the enum values were not created.
+	if (tv->v_type == VAR_OBJECT ? tv->vval.v_object == NULL
+						   : tv->vval.v_list == NULL)
+	    continue;
 
 	if (tv->v_type == VAR_LIST
 		&& tv->vval.v_list->lv_type->tt_member->tt_type == VAR_OBJECT

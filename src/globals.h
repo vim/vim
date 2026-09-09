@@ -327,6 +327,9 @@ EXTERN sctx_T	current_sctx
 // whether inside compile_def_function()
 EXTERN int	estack_compiling INIT(= FALSE);
 
+// whether sourcing with ":source ++dryrun": only definitions are executed
+EXTERN int	source_dryrun INIT(= FALSE);
+
 EXTERN int	ex_nesting_level INIT(= 0);	// nesting level
 EXTERN int	debug_break_level INIT(= -1);	// break below this level
 EXTERN int	debug_did_msg INIT(= FALSE);	// did "debug mode" message

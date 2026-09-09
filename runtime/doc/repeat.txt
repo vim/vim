@@ -239,6 +239,32 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			will be adjusted to the start and end of the fold,
 			but only if a two line specifiers range was used.
 
+						*:source-dryrun*
+:so[urce] ++dryrun {file}
+:[range]so[urce] ++dryrun
+			Read the script without running it: only what
+			defines something is executed, then every |:def|
+			function in it is compiled and the errors are reported
+			as usual.
+			What is executed: `vim9script`, `import`, `def`,
+			`function`, `class`, `interface`, `enum`, `type` and a
+			declaration with `var`, `const` or `final`.  The
+			declared variable gets the type from the declaration,
+			or "any" when there is none, and a zero value; the
+			expression is not evaluated.  A static class variable
+			is treated the same way and an enum value is not
+			created.
+			Everything else is skipped, also `finish` and the
+			condition of an `if`, `while` or `for`; a definition
+			inside such a block is executed whether the condition
+			holds or not.  A function may therefore be defined
+			twice, the last definition counts.
+			A script that is imported is read the same way, but an
+			autoload script is not loaded.  No |SourceCmd|,
+			|SourcePre| or |SourcePost| autocommand is triggered.
+			Note: An error in a definition does not stop the
+			reading, the rest of the script is read as well.
+
 							*:source!*
 :so[urce]! {file}	Read Vim commands from {file}.  These are commands
 			that are executed from Normal mode, like you type
