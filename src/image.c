@@ -341,6 +341,7 @@ image_placement_clear(image_placement_T *place)
 		&& image_backends[image_backend].placement.blit)
 	    overwrite_region(&place->visible_abs);
 	image_backends[image_backend].placement.clear(place);
+	place->dirty = true;
     }
 }
 
@@ -390,6 +391,8 @@ image_placement_set_zindex(image_placement_T *place, int zindex)
     void
 image_placement_set_position(image_placement_T *place, int row, int col)
 {
+    if (place->row == row && place->col == col)
+	return;
     place->row = row;
     place->col = col;
     place->dirty = true;
@@ -398,6 +401,10 @@ image_placement_set_position(image_placement_T *place, int row, int col)
     void
 image_placement_set_crop(image_placement_T *place, int x, int y, int w, int h)
 {
+    if (place->crop_box.x1 == x && place->crop_box.y1 == y
+	    && place->crop_box.x2 == x + w && place->crop_box.y2 == y + h)
+	return;
+
     place->crop_box.x1 = x;
     place->crop_box.y1 = y;
 
@@ -414,6 +421,11 @@ image_placement_set_bounding_box(
 	int 		    row_height,
 	int 		    col_width)
 {
+    if (place->bounding_box.x1 == col && place->bounding_box.y1 == row
+	    && place->bounding_box.x2 == col + col_width
+	    && place->bounding_box.y2 == row + row_height)
+	return;
+
     place->bounding_box.x1 = col;
     place->bounding_box.y1 = row;
 
@@ -630,6 +642,21 @@ draw_image_placements(void)
 
     vim_free(pending_placements);
     pixman_region32_fini(&subtract_region);
+}
+
+/*
+ * Dirty all image placements. If "only_blit" is true, then only clear if the
+ * current image backend blits to the screen.
+ */
+    void
+dirty_image_placements(bool only_blit)
+{
+    if (only_blit && !image_backends[image_backend].placement.blit)
+	return;
+    for (image_placement_T *place = placements;
+	    place != NULL;
+	    place = place->next)
+	place->dirty = true;
 }
 
 /*

@@ -14,5 +14,6 @@ void image_placement_set_crop(image_placement_T *place, int x, int y, int w, int
 void image_placement_set_bounding_box(image_placement_T *place, int row, int col, int row_height, int col_width);
 void image_placement_get_subrect_pos(image_placement_T *place, pixman_box32_t rect, int *row, int *col);
 void draw_image_placements(void);
+void dirty_image_placements(bool only_blit);
 image_T *add_image(dict_T *dict);
 /* vim: set ft=c : */
