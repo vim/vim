@@ -10256,10 +10256,13 @@ f_rand(typval_T *argvars, typval_T *rettv)
 	ly = list_find(l, 1L);
 	lz = list_find(l, 2L);
 	lw = list_find(l, 3L);
-	if (lx->li_tv.v_type != VAR_NUMBER) goto theend;
-	if (ly->li_tv.v_type != VAR_NUMBER) goto theend;
-	if (lz->li_tv.v_type != VAR_NUMBER) goto theend;
-	if (lw->li_tv.v_type != VAR_NUMBER) goto theend;
+	if (lx == NULL || ly == NULL || lz == NULL || lw == NULL)
+	    goto theend;
+	if (lx->li_tv.v_type != VAR_NUMBER
+		|| ly->li_tv.v_type != VAR_NUMBER
+		|| lz->li_tv.v_type != VAR_NUMBER
+		|| lw->li_tv.v_type != VAR_NUMBER)
+	    goto theend;
 	x = (UINT32_T)lx->li_tv.vval.v_number;
 	y = (UINT32_T)ly->li_tv.vval.v_number;
 	z = (UINT32_T)lz->li_tv.vval.v_number;
