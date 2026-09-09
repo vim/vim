@@ -1053,7 +1053,7 @@ string_reduce(
 	clear_tv(&argv[0]);
 	clear_tv(&argv[1]);
 	if (r == FAIL || called_emsg != called_emsg_start)
-	    return;
+	    break;
     }
 
     if (fc != NULL)

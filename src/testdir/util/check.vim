@@ -309,6 +309,14 @@ func CheckNotAsan()
   endif
 endfunc
 
+" Command to check for running under ASAN
+command CheckAsan call CheckAsan()
+func CheckAsan()
+  if execute('version') !~# '-fsanitize=[a-z,]*\<address\>'
+    throw 'Skipped: requires an ASAN build'
+  endif
+endfunc
+
 " Command to check for not running under valgrind
 command CheckNotValgrind call CheckNotValgrind()
 func CheckNotValgrind()
