@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Sep 06
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Sep 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -12196,6 +12196,7 @@ terminalprops()						*terminalprops()*
 		   mouse		mouse type supported
 		   kitty		whether Kitty terminal was detected
 		   decrqm		whether sending DECRQM sequences work
+		   rgb			whether the terminal has true color  **
 
 		** value 'u' for unknown, 'y' for yes, 'n' for no
 
@@ -12217,6 +12218,9 @@ terminalprops()						*terminalprops()*
 
 		If "decrqm" is 'y', then Vim will query support for the
 		'termsync' and 'termresize' ("inband") options.
+
+		"rgb" is 'y' when 't_Co' is 16777216, as it is for the
+		"xterm-direct" terminal entry.  See |xterm-true-color|.
 
 		Also see:
 		- 'ambiwidth' - detected by using |t_u7|.

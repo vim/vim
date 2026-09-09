@@ -1,4 +1,4 @@
-*term.txt*	For Vim version 9.2.  Last change: 2026 Jul 25
+*term.txt*	For Vim version 9.2.  Last change: 2026 Sep 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -689,6 +689,15 @@ and |highlight-guibg|), given that the terminal supports this.  To make this
 work the 'termguicolors' option needs to be set.
 See https://github.com/termstandard/colors for a list of terminals that
 support true colors.
+
+The entry of a direct color terminal, such as "xterm-direct", has 16777216
+colors.  Then 't_Co' is 16777216 and |terminalprops()| reports "rgb" as 'y'.
+Vim does not set 'termguicolors' by itself.  To have it set for such a
+terminal, put this in the vimrc: >
+	if terminalprops().rgb == 'y'
+	  set termguicolors
+	endif
+<
 
 For telling the terminal what RGB color to use the |t_8f|, |t_8b|, and |t_8u|
 termcap entries are used.  These are set by default to values that work for
