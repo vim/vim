@@ -36,6 +36,16 @@ image_kitty_init(image_T *img)
     void
 image_kitty_uninit(image_T *img)
 {
+    if (((image_kitty_T *)img->backend_data)->transmitted)
+    {
+	// Delete image data from terminal
+	vim_snprintf((char *)IObuff, IOSIZE,
+		"\033_Ga=d,d=I,i=%d,q=2\033\\", img->id);
+
+	out_str((char_u *)IObuff);
+	out_flush();
+	((image_kitty_T *)img->backend_data)->transmitted = false;
+    }
     vim_free(img->backend_data);
 }
 
@@ -148,12 +158,25 @@ image_placement_kitty_draw(image_placement_T *place, garray_T *buf UNUSED)
 				     // "place->id + i".
 	int row, col;
 
-	// Each rectangle position and dimensions *should* be a multiple of
-	// "cell_width" and "cell_height".
-	pixel2cells(rect.x1, rect.y1, &col, &row);
-	row += place->row;
-	col += place->col;
+	image_placement_get_subrect_pos(place, rect, &row, &col);
 
+	// Since we send the image id and the placement id, the existing
+	// placement (if any) will be replaced by this one (essentially moving
+	// it).
+	//
+	// Add C=1 (don't move the cursor), since as said in the specification:
+	// ``` After placing an image on the screen the cursor must be moved to
+	// the right by the number of cols in the image placement rectangle and
+	// down by the number of rows in the image placement rectangle. If
+	// either of these cause the cursor to leave either the screen or the
+	// scroll area, the exact positioning of the cursor is undefined, and up
+	// to implementations. The client can ask the terminal emulator to not
+	// move the cursor at all by specifying C=1 in the command, which sets
+	// the cursor movement policy to no movement for placing the current
+	// image. ```
+	//
+	// On kitty terminal it seems to scroll the terminal, messing up the
+	// screen.
 	vim_snprintf(
 		(char *)IObuff, IOSIZE,
 		"\033_Ga=p,i=%d,p=%d,x=%u,y=%u,w=%u,h=%u,z=0,q=2,C=1\033\\",

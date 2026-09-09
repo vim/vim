@@ -28,10 +28,35 @@ struct
 
 	void (*draw)(image_placement_T *, garray_T *);
 	void (*clear)(image_placement_T *);
+
+	// If backend blits the image pixels to the screen. Images are not
+	// treated as "objects".
+	bool blit;
     } placement;
 } image_backends[] = {
 #ifdef FEAT_IMAGE_GUI
     [IMAGE_BACKEND_GUI] = {
+	.image = {
+	    .init = NULL,
+	    .uninit = NULL
+	},
+	.placement = {
+	    .init = NULL,
+	    .uninit = NULL,
+	    .draw = NULL,
+	    .clear = NULL,
+# ifdef FEAT_GUI_GTK
+#  ifdef USE_GTK4
+	    .blit = false
+#  else
+		.blit = true
+#  endif
+# elif FEAT_GUI_MSWIN
+		.blit = true
+# else
+		.blit = false
+# endif
+	}
     },
 #endif
 #ifdef FEAT_IMAGE_KITTY
@@ -44,22 +69,37 @@ struct
 	    .init = image_placement_kitty_init,
 	    .uninit = image_placement_kitty_uninit,
 	    .draw = image_placement_kitty_draw,
-	    .clear = image_placement_kitty_clear
+	    .clear = image_placement_kitty_clear,
+	    .blit = false
 	}
     },
 #endif
 #ifdef FEAT_IMAGE_SIXEL
     [IMAGE_BACKEND_SIXEL] = {
+	.image = {
+	    .init = image_sixel_init,
+	    .uninit = image_sixel_uninit
+	},
+	.placement = {
+	    .init = image_placement_sixel_init,
+	    .uninit = image_placement_sixel_uninit,
+	    .draw = image_placement_sixel_draw,
+	    .clear = image_placement_sixel_clear,
+	    .blit = true
+	}
     }
 #endif
 };
 
 // Current image backend being used
-static image_backend_T image_backend = IMAGE_BACKEND_KITTY; // Temporary
+static image_backend_T image_backend = IMAGE_BACKEND_SIXEL; // Temporary
 
 static image_T *images = NULL;
 // Sorted from highest zindex to lowest zindex
-static image_placement_T *placements = NULL;
+static image_placement_T    *placements = NULL;
+static int		    n_placements = 0;
+
+static void overwrite_region(pixman_region32_t *region);
 
 /*
  * Return true if the there image backend is ready, otherwise emit error.
@@ -172,11 +212,18 @@ image_ref(image_T *img)
 }
 
     void
-pixel2cells(int x, int y, int *rx, int *ry)
+pixels2cells(int x, int y, int *rx, int *ry)
 {
     // Always round upwards
     *rx = (x + cell_width - 1) / cell_width;
     *ry = (y + cell_height - 1) / cell_height;
+}
+
+    static void
+pixels2cells_floor(int x, int y, int *rx, int *ry)
+{
+    *rx = x / cell_width;
+    *ry = y / cell_height;
 }
 
     static void
@@ -192,7 +239,7 @@ cells2pixels(int row, int col, int *x, int *y)
     void
 image_get_cell_dimensions(image_T *img, int *cw, int *ch)
 {
-    pixel2cells(pixman_image_get_width(img->image),
+    pixels2cells(pixman_image_get_width(img->image),
 	    pixman_image_get_height(img->image), cw, ch);
 }
 
@@ -212,6 +259,7 @@ image_placement_unlink(image_placement_T *place)
 	place->next->prev = place->prev;
     if (placements == place)
 	placements = place->next;
+    n_placements--;
 }
 
     static void
@@ -237,6 +285,7 @@ image_placement_link(image_placement_T *place)
     }
     if (p == placements)
 	placements = place;
+    n_placements++;
 }
 
 /*
@@ -268,7 +317,8 @@ image_placement_new(image_T *img)
     place->crop_box.x2 = pixman_image_get_width(img->image);
     place->crop_box.y2 = pixman_image_get_height(img->image);
     // Bounding box is in cells
-    image_get_cell_dimensions(img, &place->bounding_box.x2, &place->bounding_box.y2);
+    image_get_cell_dimensions(img,
+	    &place->bounding_box.x2, &place->bounding_box.y2);
 
     if (image_backends[image_backend].placement.init(place) == FAIL)
     {
@@ -286,7 +336,12 @@ image_placement_new(image_T *img)
 image_placement_clear(image_placement_T *place)
 {
     if (backend_available() && place->img != NULL)
+    {
+	if (place->valid
+		&& image_backends[image_backend].placement.blit)
+	    overwrite_region(&place->visible_abs);
 	image_backends[image_backend].placement.clear(place);
+    }
 }
 
     void
@@ -299,7 +354,10 @@ image_placement_free(image_placement_T *place)
     }
 
     if (place->valid)
+    {
 	pixman_region32_fini(&place->visible);
+	pixman_region32_fini(&place->visible_abs);
+    }
     image_placement_unlink(place);
 
     image_unref(place->img);
@@ -365,6 +423,22 @@ image_placement_set_bounding_box(
 }
 
 /*
+ * Rectangle position and dimensions *should* be a multiple of "cell_width" and
+ * "cell_height".
+ */
+    void
+image_placement_get_subrect_pos(
+	image_placement_T   *place,
+	pixman_box32_t	    rect,
+	int		    *row,
+	int 		    *col)
+{
+    pixels2cells(rect.x1, rect.y1, col, row);
+    *row += place->row;
+    *col += place->col;
+}
+
+/*
  * Convert a box measured in cells to pixels
  */
     static pixman_box32_t
@@ -378,47 +452,84 @@ cell_box_to_pixels(pixman_box32_t box)
 }
 
 /*
+ * Redraw the characters in "region" (which is in pixels), so that the region is
+ * overwritten.
+ */
+    static void
+overwrite_region(pixman_region32_t *region)
+{
+    pixman_box32_t  *rects;
+    int		    n_rects;
+
+    rects = pixman_region32_rectangles(region, &n_rects);
+    if (rects == NULL)
+	return;
+
+    for (int i = 0; i < n_rects; i++)
+    {
+	pixman_box32_t rect = rects[i];
+
+	// Do not round up when converting the top left corner, because when
+	// moving up or right, that pushes the invalidated region inwards,
+	// skipping cells that should have been redrawn.
+	pixels2cells_floor(rect.x1, rect.y1, &rect.x1, &rect.y1);
+	pixels2cells(rect.x2, rect.y2, &rect.x2, &rect.y2);
+
+	for (int r = rect.y1; r < rect.y2; r++)
+	{
+	    if (r >= screen_Rows)
+		break;
+
+	    for (int c = rect.x1; c < rect.x2; c++)
+	    {
+		if (c >= screen_Columns)
+		    break;
+
+		screen_char(LineOffset[r] + c, r, c);
+	    }
+	}
+    }
+}
+
+/*
  * Draw all image placements to the screen. This should be done after all text
  * have been drawn to the screen.
  */
     void
 draw_image_placements(void)
 {
-    garray_T	buf;
-    garray_T	bounding_ga; // In pixels
-    bool	has_img = false;
+    pixman_region32_t	subtract_region; // In pixels
+    image_placement_T	**pending_placements;
+    int			pending_len = 0;
 
-    // Do a quick check if all placements are bounding images (have no
-    // associated images).
-    for (image_placement_T *place = placements;
-	    place != NULL;
-	    place = place->next)
-	if (place->img != NULL)
-	{
-	    has_img = true;
-	    break;
-	}
-
-    if (!has_img)
+    if (n_placements == 0)
 	return;
 
-    ga_init2(&buf, 1, 32768);
-    ga_init2(&bounding_ga, sizeof(pixman_box32_t), 16);
+    pending_placements = ALLOC_CLEAR_MULT(image_placement_T *, n_placements);
+    if (pending_placements == NULL)
+	return;
+
+    pixman_region32_init(&subtract_region);
 
     // Go through each image placement, from highest to lowests zindex. For each
     // image, subtract the bounding boxes of the images with higher zindexes
     // from its own image region. The result is a region containing rectangles
     // that represent only the visible regions of the image that should be
     // drawn.
+    //
+    // We must do two passes, one to find what images need to be redrawn, and
+    // also what regions are stale and need to be overwritten. If we did
+    // everything in one pass, stale regions of one image that overlap another
+    // image with a higher index, would overwrite the overlapping image.
     for (image_placement_T *place = placements;
 	    place != NULL;
 	    place = place->next)
     {
 	image_T *img = place->img;
 
-	pixman_region32_t subtract_region;
-	pixman_region32_t image_region;
-	pixman_region32_t visible_region;
+	pixman_region32_t   image_region;
+	pixman_region32_t   visible_region;
+	pixman_box32_t	    bounding_box;
 
 	int x, y;
 
@@ -430,9 +541,7 @@ draw_image_placements(void)
 
 	if (img != NULL)
 	{
-	    if (!pixman_region32_init_rects(&subtract_region,
-			bounding_ga.ga_data, bounding_ga.ga_len))
-		continue;
+	    pixman_region32_t visible_abs;
 
 	    cells2pixels(place->row, place->col, &x, &y);
 
@@ -442,11 +551,14 @@ draw_image_placements(void)
 		    place->crop_box.y2 - place->crop_box.y1);
 
 	    pixman_region32_init(&visible_region);
+	    pixman_region32_init(&visible_abs);
+
 	    if (!pixman_region32_subtract(&visible_region,
-			&image_region, &subtract_region))
+			&image_region, &subtract_region)
+		    || !pixman_region32_copy(&visible_abs, &visible_region))
 	    {
 		pixman_region32_fini(&visible_region);
-		goto cont;
+		continue;
 	    }
 
 	    // The visible region is in absolute coordinates, must convert it
@@ -465,28 +577,59 @@ draw_image_placements(void)
 		    pixman_region32_fini(&place->visible);
 		place->visible = visible_region;
 
-		image_backends[image_backend].placement.draw(place, &buf);
+		if (image_backends[image_backend].placement.blit
+			&& place->valid)
+		{
+		    // Must overwrite the stale regions that will not be
+		    // composited over (for this specific image).
+		    pixman_region32_t stale_region; // In pixels
+
+		    pixman_region32_init(&stale_region);
+
+		    if (pixman_region32_subtract(&stale_region,
+				&place->visible_abs, &visible_abs))
+			overwrite_region(&stale_region);
+		    pixman_region32_fini(&stale_region);
+		}
+		if (place->valid)
+		    pixman_region32_fini(&place->visible_abs);
+		place->visible_abs = visible_abs;
+
+		pending_placements[pending_len++] = place;
 		place->valid = true;
 		place->dirty = false;
 	    }
 	    else
+	    {
 		pixman_region32_fini(&visible_region);
+		pixman_region32_fini(&visible_abs);
+	    }
 	}
 
-	if (ga_grow(&bounding_ga, 1) == FAIL)
-	    goto cont;
-
-	((pixman_box32_t *)bounding_ga.ga_data)[bounding_ga.ga_len++]
-	    = cell_box_to_pixels(place->bounding_box);
-
-cont:
-	if (img != NULL)
-	    pixman_region32_fini(&subtract_region);
-	buf.ga_len = 0;
+	bounding_box = cell_box_to_pixels(place->bounding_box);
+	pixman_region32_union_rect(&subtract_region, &subtract_region,
+		bounding_box.x1, bounding_box.y1,
+		bounding_box.x2 - bounding_box.x1,
+		bounding_box.y2 - bounding_box.y1);
     }
 
-    ga_clear(&buf);
-    ga_clear(&bounding_ga);
+    if (pending_len > 0)
+    {
+	garray_T buf;
+
+	ga_init2(&buf, 1, 32768);
+
+	for (int i = 0; i < pending_len; i++)
+	{
+	    image_backends[image_backend].placement.draw(
+		    pending_placements[i], &buf);
+	    buf.ga_len = 0;
+	}
+	ga_clear(&buf);
+    }
+
+    vim_free(pending_placements);
+    pixman_region32_fini(&subtract_region);
 }
 
 /*
