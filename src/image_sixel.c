@@ -17,17 +17,33 @@ typedef struct
 {
     // Palette for this image
     sixel_dither_t *dither;
-    int		    sixel_fmt;
 } image_sixel_T;
+
+typedef struct
+{
+    // These are offsets relative to the top left of the image.
+    int	    row_off;
+    int	    col_off;
+    char_u  *seq;
+} sixel_chunk_T;
+
+typedef struct
+{
+    pixman_region32_t	visible_region; // Region used for the previous redraw
+    bool		visible_init;
+    sixel_chunk_T	*chunks;    // Cached sixel sequence (stored as multiple
+				    // chunks). Length is number of rects in
+				    // "visible_region".
+} image_placement_sixel_T;
 
 static sixel_allocator_t    *sixel_allocator;
 static sixel_output_t	    *sixel_output;
+static garray_T		    sixel_buf;
 
     static int
 sixel_write(char *data, int size, void *udata UNUSED)
 {
-    for (int i = 0; i < size; i++)
-	out_char(data[i]);
+    ga_concat_len(&sixel_buf, (char_u *)data, size);
 
     // No idea what the return value is supposed to be. Looking through
     // libsixel source code, it seems to be unused?
@@ -66,7 +82,8 @@ sixel_uninit(void)
     int
 image_sixel_init(image_T *img)
 {
-    image_sixel_T *ctx;
+    image_sixel_T   *ctx;
+    int		    sixel_fmt;
 
     if (sixel_init() == FAIL)
 	return FAIL;
@@ -79,10 +96,10 @@ image_sixel_init(image_T *img)
     switch (img->fmt)
     {
 	case IMAGE_FORMAT_RGB:
-	    ctx->sixel_fmt = SIXEL_PIXELFORMAT_RGB888;
+	    sixel_fmt = SIXEL_PIXELFORMAT_RGB888;
 	    break;
 	case IMAGE_FORMAT_RGBA:
-	    ctx->sixel_fmt = SIXEL_PIXELFORMAT_RGBA8888;
+	    sixel_fmt = SIXEL_PIXELFORMAT_RGBA8888;
 	    break;
     }
 
@@ -92,12 +109,12 @@ image_sixel_init(image_T *img)
 	return FAIL;
     }
 
+
     if (sixel_dither_initialize(ctx->dither,
 		(uint8_t *)pixman_image_get_data(img->image),
 		pixman_image_get_width(img->image),
 		pixman_image_get_height(img->image),
-		ctx->sixel_fmt,
-		SIXEL_LARGE_AUTO,
+		sixel_fmt, SIXEL_LARGE_AUTO,
 		SIXEL_REP_AUTO, SIXEL_QUALITY_HIGH) == SIXEL_FALSE)
     {
 	sixel_dither_unref(ctx->dither);
@@ -120,25 +137,75 @@ image_sixel_uninit(image_T *img)
 }
 
     int
-image_placement_sixel_init(image_placement_T *place UNUSED)
+image_placement_sixel_init(image_placement_T *place)
 {
+    image_placement_sixel_T *ctx = ALLOC_CLEAR_ONE(image_placement_sixel_T);
+
+    if (ctx == NULL)
+	return FAIL;
+    place->backend_data = ctx;
     return OK;
+}
+
+    static void
+clear_chunks(image_placement_sixel_T *ctx)
+{
+    if (ctx->chunks == NULL)
+	return;
+
+    for (int i = 0; i < pixman_region32_n_rects(&ctx->visible_region); i++)
+	vim_free(ctx->chunks[i].seq);
+    VIM_CLEAR(ctx->chunks);
 }
 
     void
 image_placement_sixel_uninit(image_placement_T *place UNUSED)
 {
+    image_placement_sixel_T *ctx = place->backend_data;
+
+    if (ctx->visible_init)
+    {
+	pixman_region32_fini(&ctx->visible_region);
+
+    }
+    clear_chunks(ctx);
+    vim_free(ctx);
 }
 
     void
 image_placement_sixel_draw(image_placement_T *place, garray_T *buf)
 {
     image_T		    *img = place->img;
+    image_placement_sixel_T *ctx = place->backend_data;
     pixman_box32_t	    *rects;
     int			    n_rects;
 
+    // Check if visible region is still the same, if so then use the cached
+    // sixel sequences.
+    if (ctx->visible_init
+	    && pixman_region32_equal(&ctx->visible_region, &place->visible))
+    {
+	for (int i = 0; i < pixman_region32_n_rects(&ctx->visible_region); i++)
+	{
+	    sixel_chunk_T *chunk = ctx->chunks + i;
+
+	    term_windgoto(
+		    place->row + chunk->row_off, place->col + chunk->col_off);
+	    out_str(chunk->seq);
+	}
+	goto exit;
+    }
+
     rects = pixman_region32_rectangles(&place->visible, &n_rects);
-    if (rects == NULL)
+    if (rects == NULL || n_rects == 0)
+	return;
+
+    ga_init2(&sixel_buf, 1, 4096);
+
+    clear_chunks(ctx);
+    ctx->chunks = ALLOC_CLEAR_MULT(sixel_chunk_T, n_rects);
+
+    if (ctx->chunks == NULL)
 	return;
 
     cursor_off();
@@ -150,6 +217,7 @@ image_placement_sixel_draw(image_placement_T *place, garray_T *buf)
 	int		w, h;
 	int		size;
 	pixman_image_t  *tmp_image;
+	sixel_chunk_T	*chunk = ctx->chunks + i;
 
 	// Each rectangle position and dimensions *should* be a multiple of
 	// "cell_width" and "cell_height".
@@ -161,28 +229,48 @@ image_placement_sixel_draw(image_placement_T *place, garray_T *buf)
 	// Crop the image into "buf"
 	size = w * h * img->fmt;
 	if (ga_grow(buf, size) == FAIL)
-	    goto exit;
+	    continue;
 
 	// Create temporary image to composite image into
 	tmp_image = pixman_image_create_bits(
 		pixman_image_get_format(img->image),
 		w, h, buf->ga_data, w * img->fmt);
 	if (tmp_image == NULL)
-	    goto exit;
+	    continue;
 
 	pixman_image_composite32(PIXMAN_OP_SRC,
 		img->image, NULL, tmp_image, rect.x1, rect.y1, 0, 0,
 		0, 0, w, h);
 
 	term_windgoto(row, col);
-	(void)sixel_encode(buf->ga_data, w, h, 0,
-		((image_sixel_T *)img->backend_data)->dither, sixel_output);
+	if (sixel_encode(buf->ga_data, w, h, 0,
+		    ((image_sixel_T *)img->backend_data)->dither,
+		    sixel_output) == SIXEL_FALSE)
+	    continue;
+
+	if (ga_append(&sixel_buf, NUL) == FAIL)
+	{
+	    sixel_buf.ga_len = 0;
+	    continue;
+	}
+	out_str(sixel_buf.ga_data);
 
 	pixman_image_unref(tmp_image);
 	buf->ga_len = 0;
+
+	chunk->row_off = row - place->row;
+	chunk->col_off = col - place->col;
+	chunk->seq = sixel_buf.ga_data;
+	ga_init(&sixel_buf);
     }
 
+    if (ctx->visible_init)
+	pixman_region32_clear(&ctx->visible_region);
+    pixman_region32_copy(&ctx->visible_region, &place->visible);
+    ctx->visible_init = true;
+
 exit:
+    ga_clear(&sixel_buf);
     screen_start();
     setcursor_mayforce(TRUE);
     cursor_on();
