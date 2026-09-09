@@ -263,7 +263,9 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			autoload script is not loaded.  No |SourceCmd|,
 			|SourcePre| or |SourcePost| autocommand is triggered.
 			Note: An error in a definition does not stop the
-			reading, the rest of the script is read as well.
+			reading, the rest of the script is read as well.  And
+			an error in a line of a function does not stop
+			compiling it, every line with an error is reported.
 
 							*:source!*
 :so[urce]! {file}	Read Vim commands from {file}.  These are commands

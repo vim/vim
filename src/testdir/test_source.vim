@@ -780,6 +780,51 @@ func Test_source_dryrun()
   call assert_match('E1010:', msgs)
   call assert_match('function <SNR>\d\+_Bad:\_.*E1012:', msgs)
   call assert_match('function <SNR>\d\+_Later:\_.*E1012:', msgs)
+
+  " every line with an error in a function is reported, the error does not
+  " lead to more errors and the function is not compiled
+  %d _
+  let lines =<< trim END
+    vim9script
+    def Many(): number
+      var a: number = 'one'
+      var b: nosuchtype = 1
+      echo b
+      var c = NoSuchFunc()
+      echo c
+      if UndefinedVar
+        var d: string = 2
+      else
+        echo undefined_e
+      endif
+      for i in NoSuchList()
+        echo i
+      endfor
+      while UndefinedCond
+      endwhile
+      nosuchcommand
+      def Nested(): string
+        return 7
+      enddef
+      return 'nine'
+    enddef
+  END
+  call setline(1, lines)
+  redir => msgs
+  silent! %source ++dryrun
+  redir END
+  " with ":silent!" E1028 is given as well, the errors did not count
+  let found = []
+  for line in split(msgs, "\n")
+    if line =~ '^line'
+      let lnum = str2nr(matchstr(line, '\d\+'))
+    elseif line =~ '^E\d\+:' && line !~ '^E1028:'
+      call add(found, [lnum, matchstr(line, '^E\d\+:')])
+    endif
+  endfor
+  call assert_equal([[1, 'E1012:'], [2, 'E1010:'], [4, 'E117:'], [6, 'E1001:'],
+        \ [7, 'E1012:'], [9, 'E1001:'], [11, 'E117:'], [14, 'E1001:'],
+        \ [16, 'E476:'], [1, 'E1012:'], [20, 'E1012:']], found)
   bwipe!
 
   " a legacy script defines its functions, they are not compiled; the

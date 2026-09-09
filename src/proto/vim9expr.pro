@@ -13,6 +13,7 @@ int get_lambda_tv_and_compile(char_u **arg, typval_T *rettv, int types_optional,
 exprtype_T get_compare_type(char_u *p, int *len, int *type_is);
 void skip_expr_cctx(char_u **arg, cctx_T *cctx);
 int bool_on_stack(cctx_T *cctx);
+int recover_expr(char_u **arg, type_T *type, cctx_T *cctx);
 void error_white_both(char_u *op, int len);
 int compile_expr1(char_u **arg, cctx_T *cctx, ppconst_T *ppconst);
 int compile_expr0_ext(char_u **arg, cctx_T *cctx, int *is_const);
