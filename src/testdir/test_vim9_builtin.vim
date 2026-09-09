@@ -3514,6 +3514,14 @@ def Test_reduce()
   v9.CheckSourceDefAndScriptFailure(['reduce({a: 10}, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got dict<number>', 'E1253: String, List, Tuple or Blob required for argument 1'])
   assert_equal(6, [1, 2, 3]->reduce((r, c) => r + c, 0))
   assert_equal(11, 0z0506->reduce((r, c) => r + c, 0))
+
+  # A closure that fails part way through a String must not leave the
+  # funccall_T behind on the current_funccal chain.
+  var lines =<< trim END
+      vim9script
+      echo reduce('abc', (acc, c) => [][0])
+  END
+  v9.CheckScriptFailure(lines, 'E684:')
 enddef
 
 def Test_reltime()
