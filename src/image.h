@@ -79,8 +79,13 @@ struct image_placement_S
     // Cached region that represents the parts of the image that have been drawn
     // to the screen. Used to check if image should be redrawn at all (if
     // nothing has been changed).
-    pixman_region32_t	visible;    // In pixels
-    bool		valid;	    // If "visible" is valid
+    pixman_region32_t	visible;	// In pixels
+    pixman_region32_t	visible_abs;    // In pixels, uses absolute coordinates
+					// (only used for composited image
+					// backends),
+					// TODO scale region when cell size
+					// changes.
+    bool		valid;		// If "visible" is valid
 
     image_placement_T *next;
     image_placement_T *prev;

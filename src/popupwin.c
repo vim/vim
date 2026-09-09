@@ -6205,7 +6205,7 @@ fill_opacity_padding(
 
 #ifdef FEAT_IMAGE
 /*
- * Draw the image associated with this popup window (if any).
+ * Position the image associated with this popup window (if any).
  */
     static void
 popup_position_image(win_T *wp)
