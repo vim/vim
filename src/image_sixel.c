@@ -47,7 +47,7 @@ sixel_write(char *data, int size, void *udata UNUSED)
 
     // No idea what the return value is supposed to be. Looking through
     // libsixel source code, it seems to be unused?
-    return 0;
+    return SIXEL_OK;
 }
 
 /*
@@ -108,7 +108,6 @@ image_sixel_init(image_T *img)
 	vim_free(ctx);
 	return FAIL;
     }
-
 
     if (sixel_dither_initialize(ctx->dither,
 		(uint8_t *)pixman_image_get_data(img->image),
@@ -173,16 +172,17 @@ image_placement_sixel_uninit(image_placement_T *place UNUSED)
 }
 
     void
-image_placement_sixel_draw(image_placement_T *place, garray_T *buf)
+image_placement_sixel_draw(image_placement_T *place)
 {
     image_T		    *img = place->img;
     image_placement_sixel_T *ctx = place->backend_data;
     pixman_box32_t	    *rects;
     int			    n_rects;
+    garray_T		    buf;
 
     // Check if visible region is still the same, if so then use the cached
     // sixel sequences.
-    if (ctx->visible_init
+    if (false && ctx->visible_init
 	    && pixman_region32_equal(&ctx->visible_region, &place->visible))
     {
 	for (int i = 0; i < pixman_region32_n_rects(&ctx->visible_region); i++)
@@ -200,13 +200,14 @@ image_placement_sixel_draw(image_placement_T *place, garray_T *buf)
     if (rects == NULL || n_rects == 0)
 	return;
 
-    ga_init2(&sixel_buf, 1, 4096);
-
     clear_chunks(ctx);
     ctx->chunks = ALLOC_CLEAR_MULT(sixel_chunk_T, n_rects);
 
     if (ctx->chunks == NULL)
 	return;
+
+    ga_init2(&sixel_buf, 1, 4096);
+    ga_init2(&buf, 1, 32768);
 
     cursor_off();
 
@@ -217,6 +218,7 @@ image_placement_sixel_draw(image_placement_T *place, garray_T *buf)
 	int		w, h;
 	int		size;
 	pixman_image_t  *tmp_image;
+	sixel_dither_t	*dither;
 	sixel_chunk_T	*chunk = ctx->chunks + i;
 
 	// Each rectangle position and dimensions *should* be a multiple of
@@ -228,35 +230,54 @@ image_placement_sixel_draw(image_placement_T *place, garray_T *buf)
 
 	// Crop the image into "buf"
 	size = w * h * img->fmt;
-	if (ga_grow(buf, size) == FAIL)
+	if (ga_grow(&buf, size) == FAIL)
 	    continue;
 
-	// Create temporary image to composite image into
+	// Create temporary image to composite the image into
 	tmp_image = pixman_image_create_bits(
 		pixman_image_get_format(img->image),
-		w, h, buf->ga_data, w * img->fmt);
+		w, h, buf.ga_data, w * img->fmt);
 	if (tmp_image == NULL)
 	    continue;
 
 	pixman_image_composite32(PIXMAN_OP_SRC,
 		img->image, NULL, tmp_image, rect.x1, rect.y1, 0, 0,
 		0, 0, w, h);
+	pixman_image_unref(tmp_image);
 
-	term_windgoto(row, col);
-	if (sixel_encode(buf->ga_data, w, h, 0,
-		    ((image_sixel_T *)img->backend_data)->dither,
-		    sixel_output) == SIXEL_FALSE)
+	if (sixel_dither_new(&dither, 256, sixel_allocator) == SIXEL_FALSE)
 	    continue;
+
+	// We have to create a new dither for each subrect, because creating a
+	// singular one based on the entire image seems to mess up the final
+	// sixel result. Probably something to do with libsixel?
+        if (sixel_dither_initialize(
+                dither, buf.ga_data, w, h,
+		img->fmt == IMAGE_FORMAT_RGB
+		? SIXEL_PIXELFORMAT_RGB888 : SIXEL_PIXELFORMAT_RGBA8888,
+                SIXEL_LARGE_AUTO, SIXEL_REP_AUTO,
+                SIXEL_QUALITY_HIGH) == SIXEL_FALSE)
+	{
+	    sixel_dither_unref(dither);
+	    continue;
+	}
+
+	if (sixel_encode(buf.ga_data, w, h, 0, dither, sixel_output)
+		== SIXEL_FALSE)
+	{
+	    sixel_dither_unref(dither);
+	    continue;
+	}
+	sixel_dither_unref(dither);
 
 	if (ga_append(&sixel_buf, NUL) == FAIL)
 	{
 	    sixel_buf.ga_len = 0;
 	    continue;
 	}
-	out_str(sixel_buf.ga_data);
 
-	pixman_image_unref(tmp_image);
-	buf->ga_len = 0;
+	term_windgoto(row, col);
+	out_str(sixel_buf.ga_data);
 
 	chunk->row_off = row - place->row;
 	chunk->col_off = col - place->col;
@@ -269,8 +290,9 @@ image_placement_sixel_draw(image_placement_T *place, garray_T *buf)
     pixman_region32_copy(&ctx->visible_region, &place->visible);
     ctx->visible_init = true;
 
-exit:
     ga_clear(&sixel_buf);
+    ga_clear(&buf);
+exit:
     screen_start();
     setcursor_mayforce(TRUE);
     cursor_on();

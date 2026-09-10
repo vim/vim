@@ -85,7 +85,7 @@ struct image_placement_S
 					// backends),
 					// TODO scale region when cell size
 					// changes.
-    bool		valid;		// If "visible" is valid
+    bool		visible_init;	// If "visible" is valid
 
     image_placement_T *next;
     image_placement_T *prev;
