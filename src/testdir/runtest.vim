@@ -63,6 +63,9 @@ if has('gui_running')
 
   func s:SetDefaultOptionsForGUIBuilds()
     set columns=80 lines=25
+    " The GUI may postpone resizing the shell until after a redraw; a test
+    " that measures windows must not see the resize land halfway.
+    redraw
   endfunc
 else
   func s:SetDefaultOptionsForGUIBuilds()
