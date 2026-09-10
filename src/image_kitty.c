@@ -129,11 +129,8 @@ clear_placement(int id, int place_id)
     out_str((char_u *)IObuff);
 }
 
-/*
- * Don't need to use "buf", because we can just tell the terminal what to crop.
- */
     void
-image_placement_kitty_draw(image_placement_T *place, garray_T *buf UNUSED)
+image_placement_kitty_draw(image_placement_T *place)
 {
     image_T		    *img = place->img;
     image_placement_kitty_T *ctx = place->backend_data;

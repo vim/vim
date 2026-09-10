@@ -26,7 +26,7 @@ struct
 	int (*init)(image_placement_T *);
 	void (*uninit)(image_placement_T *);
 
-	void (*draw)(image_placement_T *, garray_T *);
+	void (*draw)(image_placement_T *);
 	void (*clear)(image_placement_T *);
 
 	// If backend blits the image pixels to the screen. Images are not
@@ -337,7 +337,7 @@ image_placement_clear(image_placement_T *place)
 {
     if (backend_available() && place->img != NULL)
     {
-	if (place->valid
+	if (place->visible_init
 		&& image_backends[image_backend].placement.blit)
 	    overwrite_region(&place->visible_abs);
 	image_backends[image_backend].placement.clear(place);
@@ -354,7 +354,7 @@ image_placement_free(image_placement_T *place)
 	image_backends[image_backend].placement.uninit(place);
     }
 
-    if (place->valid)
+    if (place->visible_init)
     {
 	pixman_region32_fini(&place->visible);
 	pixman_region32_fini(&place->visible_abs);
@@ -581,16 +581,16 @@ draw_image_placements(void)
 
 	    // Only redraw the image if it has changed (or if we haven't drawn
 	    // it yet).
-	    if (place->dirty || (place->valid
+	    if (place->dirty || (place->visible_init
 			&& !pixman_region32_equal(
 			    &visible_region, &place->visible)))
 	    {
-		if (place->valid)
+		if (place->visible_init)
 		    pixman_region32_fini(&place->visible);
 		place->visible = visible_region;
 
 		if (image_backends[image_backend].placement.blit
-			&& place->valid)
+			&& place->visible_init)
 		{
 		    // Must overwrite the stale regions that will not be
 		    // composited over (for this specific image).
@@ -603,12 +603,12 @@ draw_image_placements(void)
 			overwrite_region(&stale_region);
 		    pixman_region32_fini(&stale_region);
 		}
-		if (place->valid)
+		if (place->visible_init)
 		    pixman_region32_fini(&place->visible_abs);
 		place->visible_abs = visible_abs;
 
 		pending_placements[pending_len++] = place;
-		place->valid = true;
+		place->visible_init = true;
 		place->dirty = false;
 	    }
 	    else
@@ -627,17 +627,8 @@ draw_image_placements(void)
 
     if (pending_len > 0)
     {
-	garray_T buf;
-
-	ga_init2(&buf, 1, 32768);
-
 	for (int i = 0; i < pending_len; i++)
-	{
-	    image_backends[image_backend].placement.draw(
-		    pending_placements[i], &buf);
-	    buf.ga_len = 0;
-	}
-	ga_clear(&buf);
+	    image_backends[image_backend].placement.draw(pending_placements[i]);
     }
 
     vim_free(pending_placements);
