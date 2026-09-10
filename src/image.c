@@ -332,7 +332,7 @@ image_placement_new(image_T *img)
     return place;
 }
 
-    static void
+    void
 image_placement_clear(image_placement_T *place)
 {
     if (backend_available() && place->img != NULL)
@@ -363,13 +363,6 @@ image_placement_free(image_placement_T *place)
 
     image_unref(place->img);
     vim_free(place);
-}
-
-    void
-image_placement_hide(image_placement_T *place, bool state)
-{
-    image_placement_clear(place);
-    place->hidden = state;
 }
 
     void
@@ -411,6 +404,12 @@ image_placement_set_crop(image_placement_T *place, int x, int y, int w, int h)
     place->crop_box.x2 = x + w;
     place->crop_box.y2 = y + h;
     place->dirty = true;
+}
+
+    void
+image_placement_do_draw(image_placement_T *place)
+{
+    place->draw = true;
 }
 
     void
@@ -483,7 +482,7 @@ overwrite_region(pixman_region32_t *region)
 
 	// Do not round up when converting the top left corner, because when
 	// moving up or right, that pushes the invalidated region inwards,
-	// skipping cells that should have been redrawn.
+	// skipping cells that should have been overwritten.
 	pixels2cells_floor(rect.x1, rect.y1, &rect.x1, &rect.y1);
 	pixels2cells(rect.x2, rect.y2, &rect.x2, &rect.y2);
 
@@ -545,11 +544,9 @@ draw_image_placements(void)
 
 	int x, y;
 
-	if (place->hidden)
-	{
-	    place->hidden = false;
+	if (!place->draw)
 	    continue;
-	}
+	place->draw = false;
 
 	if (img != NULL)
 	{

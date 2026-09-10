@@ -57,8 +57,8 @@ struct image_placement_S
     int	    id;
     image_T *img; // May be NULL, if so then only "bounding_box" is relevant (and
 		  // the position + zindex).
-    bool    hidden; // If image should not be drawn for the next redraw. Reset
-		    // when the redraw is done.
+    bool    draw; // If image should be drawn for the next redraw. Reset when
+		  // the redraw is done.
 
     void *backend_data;
 
