@@ -1692,6 +1692,7 @@ struct itf2class_S {
 #define CLASS_EXTENDED	    0x2	    // another class extends this one
 #define CLASS_ABSTRACT	    0x4	    // abstract class
 #define CLASS_ENUM	    0x8	    // enum
+#define CLASS_DRYRUN	    0x10    // defined by ":source ++dryrun"
 
 // "class_T": used for v_class of typval of VAR_CLASS
 // Also used for an interface (class_flags has CLASS_INTERFACE).

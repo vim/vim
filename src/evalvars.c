@@ -3961,8 +3961,12 @@ delete_autoload_export_vars(char_u *prefix)
 	    dictitem_T	*di = HI2DI(hi);
 
 	    --todo;
-	    // Keep a class or enum: existing objects still refer to it.
-	    if (di->di_tv.v_type != VAR_CLASS
+	    // Keep a class or enum: existing objects still refer to it.  Not
+	    // in a dry run, nor one a dry run defined: no object was made.
+	    if ((di->di_tv.v_type != VAR_CLASS || source_dryrun
+			|| (di->di_tv.vval.v_class != NULL
+			    && (di->di_tv.vval.v_class->class_flags
+							     & CLASS_DRYRUN)))
 		    && STRNCMP(di->di_key, prefix, prefixlen) == 0)
 		delete_var(&globvarht, hi);
 	}

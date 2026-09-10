@@ -2136,6 +2136,8 @@ early_ret:
 	cl->class_flags = CLASS_INTERFACE;
     else if (is_abstract)
 	cl->class_flags = CLASS_ABSTRACT;
+    if (source_dryrun)
+	cl->class_flags |= CLASS_DRYRUN;
 
     cl->class_refcount = 1;
     cl->class_name.length = (size_t)(name_end - name_start);

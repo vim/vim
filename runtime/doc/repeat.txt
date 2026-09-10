@@ -262,6 +262,9 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			A script that is imported is read the same way, but an
 			autoload script is not loaded.  No |SourceCmd|,
 			|SourcePre| or |SourcePost| autocommand is triggered.
+			A class or enum in an autoload script is defined again
+			by a dry run, and after one by a normal load, since no
+			object was made from it; see |vim9-reload|.
 			Note: An error in a definition does not stop the
 			reading, the rest of the script is read as well.  And
 			an error in a line of a function does not stop

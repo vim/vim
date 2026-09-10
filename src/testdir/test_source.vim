@@ -635,6 +635,12 @@ func Test_source_buffer_vim9()
   %bw!
 endfunc
 
+" What the class and the enum of Xdryrun/autoload/xshape.vim give; a legacy
+" function cannot reach them by their autoload name.
+def s:DryrunShapeInfo(): list<any>
+  return [xshape#Shape.new().Area(), xshape#Color.Blue.name]
+enddef
+
 " Test for ":source ++dryrun": only definitions are executed, then the
 " functions are compiled.
 func Test_source_dryrun()
@@ -874,6 +880,29 @@ func Test_source_dryrun()
   unlet g:dryrun_events
   autocmd! DryrunAutocmds
   augroup! DryrunAutocmds
+
+  " a class in an autoload script can be defined again by a dry run, and
+  " after one by a normal source: no object was made from it
+  call mkdir('Xdryrun/autoload', 'pR')
+  let lines =<< trim END
+    vim9script
+    export class Shape
+      var width: number = 1
+      def Area(): number
+        return this.width
+      enddef
+    endclass
+    export enum Color
+      Red,
+      Blue
+    endenum
+  END
+  call writefile(lines, 'Xdryrun/autoload/xshape.vim')
+  source ++dryrun Xdryrun/autoload/xshape.vim
+  source ++dryrun Xdryrun/autoload/xshape.vim
+  source Xdryrun/autoload/xshape.vim
+  call assert_equal([1, 'Blue'], s:DryrunShapeInfo())
+  call assert_fails('source Xdryrun/autoload/xshape.vim', 'E1041:')
 
   " a normal source afterwards runs the script level
   let lines =<< trim END
