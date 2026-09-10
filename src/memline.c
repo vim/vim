@@ -684,6 +684,13 @@ ml_setname(buf_T *buf)
 	if (*dirp == NUL)	    // tried all directories, fail
 	    break;
 	fname = findswapname(buf, &dirp, mfp->mf_fname);
+	// autocmd may have freed mfp if findswapname creates
+	// different swapfile name
+	if (buf->b_ml.ml_mfp != mfp)
+	{
+	    vim_free(fname);
+	    return;
+	}
 						    // alloc's fname
 	if (dirp == NULL)	    // out of memory
 	    break;
