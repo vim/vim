@@ -1,4 +1,4 @@
-*term.txt*	For Vim version 9.2.  Last change: 2026 Sep 09
+*term.txt*	For Vim version 9.2.  Last change: 2026 Sep 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -694,7 +694,7 @@ The entry of a direct color terminal, such as "xterm-direct", has 16777216
 colors.  Then 't_Co' is 16777216 and |terminalprops()| reports "rgb" as 'y'.
 Vim does not set 'termguicolors' by itself.  To have it set for such a
 terminal, put this in the vimrc: >
-	if terminalprops().rgb == 'y'
+	if get(terminalprops(), 'rgb', 'n')  == 'y'
 	  set termguicolors
 	endif
 <
