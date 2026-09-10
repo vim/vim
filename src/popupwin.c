@@ -1878,7 +1878,7 @@ popup_adjust_position(win_T *wp)
 		{
 #ifdef FEAT_IMAGE
 		    if (wp->w_popup_imagep != NULL)
-			image_placement_hide(wp->w_popup_imagep, true);
+			image_placement_clear(wp->w_popup_imagep);
 #endif
 		    popup_hide_for_textprop(wp);
 		    if (wp->w_winrow + popup_height(wp) >= cmdline_row)
@@ -2405,7 +2405,7 @@ popup_adjust_position(win_T *wp)
 	if (!(wp->w_popup_flags & POPF_HIDDEN))
 	    // Clear placement before hiding, like popup_hide()
 	    if (wp->w_popup_imagep != NULL)
-		image_placement_hide(wp->w_popup_imagep, true);
+		image_placement_clear(wp->w_popup_imagep);
 #endif
 
 	popup_hide_for_textprop(wp);
@@ -3738,7 +3738,7 @@ popup_hide(win_T *wp)
 
 #ifdef FEAT_IMAGE
     if (wp->w_popup_imagep != NULL)
-	image_placement_hide(wp->w_popup_imagep, true);
+	image_placement_clear(wp->w_popup_imagep);
 #endif
 
     wp->w_popup_flags |= POPF_HIDDEN;
@@ -6267,6 +6267,7 @@ popup_position_image(win_T *wp)
 	    crop_width, crop_height);
     image_placement_set_bounding_box(wp->w_popup_imagep,
 	    wp->w_winrow, wp->w_wincol, clip.eff_height, clip.eff_width);
+    image_placement_do_draw(wp->w_popup_imagep);
 }
 #endif
 

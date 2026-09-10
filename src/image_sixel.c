@@ -182,7 +182,7 @@ image_placement_sixel_draw(image_placement_T *place)
 
     // Check if visible region is still the same, if so then use the cached
     // sixel sequences.
-    if (false && ctx->visible_init
+    if (ctx->visible_init
 	    && pixman_region32_equal(&ctx->visible_region, &place->visible))
     {
 	for (int i = 0; i < pixman_region32_n_rects(&ctx->visible_region); i++)
@@ -249,8 +249,8 @@ image_placement_sixel_draw(image_placement_T *place)
 	    continue;
 
 	// We have to create a new dither for each subrect, because creating a
-	// singular one based on the entire image seems to mess up the final
-	// sixel result. Probably something to do with libsixel?
+	// single one based on the entire image seems to mess up the final sixel
+	// result. Probably something to do with libsixel?
         if (sixel_dither_initialize(
                 dither, buf.ga_data, w, h,
 		img->fmt == IMAGE_FORMAT_RGB
