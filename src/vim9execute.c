@@ -2495,7 +2495,8 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    if (lidx < list->lv_len)
 	    {
 		listitem_T *li = list_find(list, lidx);
-
+		if (li == NULL)
+		    return FAIL;
 		if (error_if_locked(li->li_tv.v_lock,
 					     e_cannot_change_locked_list_item))
 		    return FAIL;
@@ -2945,7 +2946,8 @@ execute_for(isn_T *iptr, ectx_T *ectx)
 	{
 	    listitem_T *li = list_find(list,
 					 idxtv->vval.v_number);
-
+	    if (li == NULL)
+		return FAIL;
 	    copy_tv(&li->li_tv, STACK_TV_BOT(0));
 	    ++ectx->ec_stack.ga_len;
 	}
