@@ -163,10 +163,7 @@ image_placement_sixel_uninit(image_placement_T *place UNUSED)
     image_placement_sixel_T *ctx = place->backend_data;
 
     if (ctx->visible_init)
-    {
 	pixman_region32_fini(&ctx->visible_region);
-
-    }
     clear_chunks(ctx);
     vim_free(ctx);
 }
@@ -253,12 +250,12 @@ image_placement_sixel_draw(image_placement_T *place)
 	// We have to create a new dither for each subrect, because creating a
 	// single one based on the entire image seems to mess up the final sixel
 	// result. Probably something to do with libsixel?
-        if (sixel_dither_initialize(
-                dither, buf.ga_data, w, h,
-		img->fmt == IMAGE_FORMAT_RGB
-		? SIXEL_PIXELFORMAT_RGB888 : SIXEL_PIXELFORMAT_RGBA8888,
-                SIXEL_LARGE_AUTO, SIXEL_REP_AUTO,
-                SIXEL_QUALITY_HIGH) == SIXEL_FALSE)
+	if (sixel_dither_initialize(
+		    dither, buf.ga_data, w, h,
+		    img->fmt == IMAGE_FORMAT_RGB
+		    ? SIXEL_PIXELFORMAT_RGB888 : SIXEL_PIXELFORMAT_RGBA8888,
+		    SIXEL_LARGE_AUTO, SIXEL_REP_AUTO,
+		    SIXEL_QUALITY_HIGH) == SIXEL_FALSE)
 	{
 	    sixel_dither_unref(dither);
 	    continue;

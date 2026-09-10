@@ -68,6 +68,7 @@ struct image_placement_S
     int		zindex;
     bool	dirty; // If image positioning/geometry has been modified
 
+    // TODO do everything in cells, then convert to pixels when cropping image
     pixman_box32_t crop_box; // In pixels
 
     // The bounding box represents a region that images (including their
