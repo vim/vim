@@ -3213,6 +3213,18 @@ if test "$enable_hardcopy_pango" = "yes"; then
   CFLAGS=$cflags_save
 fi
 
+AC_MSG_CHECKING(--enable-popup-image argument)
+AC_ARG_ENABLE(popup-image,
+	[  --enable-popup-iamge     Render images using popup windows [default=no]],
+	,, enable_popup_image="no")
+
+if test "$enable_popup_image" = "yes"; then
+  AC_DEFINE(FEAT_IMAGE)
+  AC_MSG_RESULT([yes])
+else
+  AC_MSG_RESULT([no])
+fi
+
 
 dnl Check for Motif include files location.
 dnl The LAST one found is used, this makes the highest version to be used,
