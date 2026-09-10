@@ -266,25 +266,28 @@ image_placement_unlink(image_placement_T *place)
 image_placement_link(image_placement_T *place)
 {
     image_placement_T *p = placements;
+    image_placement_T *prev = NULL;
 
     // Add image before the image with the same or lower zindex.
     while (p != NULL)
     {
 	if (p->zindex <= place->zindex)
 	    break;
+	prev = p;
 	p = p->next;
     }
 
     place->next = p;
-    place->prev = p == NULL ? NULL : p->prev;
+    place->prev = prev;
+
     if (p != NULL)
-    {
-	if (p->prev != NULL)
-	    p->prev->next = place;
 	p->prev = place;
-    }
-    if (p == placements)
+
+    if (prev != NULL)
+	prev->next = place;
+    else
 	placements = place;
+
     n_placements++;
 }
 
@@ -444,7 +447,7 @@ image_placement_get_subrect_pos(
 	int		    *row,
 	int 		    *col)
 {
-    pixels2cells(rect.x1, rect.y1, col, row);
+    pixels2cells_floor(rect.x1, rect.y1, col, row);
     *row += place->row;
     *col += place->col;
 }
