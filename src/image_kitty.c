@@ -177,7 +177,8 @@ image_placement_kitty_draw(image_placement_T *place)
 	vim_snprintf(
 		(char *)IObuff, IOSIZE,
 		"\033_Ga=p,i=%d,p=%d,x=%u,y=%u,w=%u,h=%u,z=0,q=2,C=1\033\\",
-		img->id, rect_id, rect.x1, rect.y1,
+		img->id, rect_id,
+		rect.x1 + place->crop_box.x1, rect.y1 + place->crop_box.y1,
 		rect.x2 - rect.x1, rect.y2 - rect.y1);
 
 	term_windgoto(row, col);

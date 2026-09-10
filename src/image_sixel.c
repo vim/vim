@@ -241,7 +241,9 @@ image_placement_sixel_draw(image_placement_T *place)
 	    continue;
 
 	pixman_image_composite32(PIXMAN_OP_SRC,
-		img->image, NULL, tmp_image, rect.x1, rect.y1, 0, 0,
+		img->image, NULL, tmp_image,
+		rect.x1 + place->crop_box.x1, rect.y1 + place->crop_box.y1,
+		0, 0,
 		0, 0, w, h);
 	pixman_image_unref(tmp_image);
 

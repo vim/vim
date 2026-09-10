@@ -554,8 +554,10 @@ draw_image_placements(void)
 
 	    cells2pixels(place->row, place->col, &x, &y);
 
+	    // Don't add the crop_box x1 and y1, because "row" and "col" use the
+	    // top left of the final cropped image.
 	    pixman_region32_init_rect(&image_region,
-		    x + place->crop_box.x1, y + place->crop_box.y1,
+		    x, y,
 		    place->crop_box.x2 - place->crop_box.x1,
 		    place->crop_box.y2 - place->crop_box.y1);
 
@@ -572,9 +574,7 @@ draw_image_placements(void)
 
 	    // The visible region is in absolute coordinates, must convert it
 	    // into image relative coordinates.
-	    pixman_region32_translate(&visible_region,
-		    -(x + place->crop_box.x1),
-		    -(y + place->crop_box.y1));
+	    pixman_region32_translate(&visible_region, -x, -y);
 
 	    // Only redraw the image if it has changed (or if we haven't drawn
 	    // it yet).
