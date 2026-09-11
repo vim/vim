@@ -107,6 +107,11 @@ endif
 
 " C++ 23 extensions
 if !exists("cpp_no_cpp23")
+  syn match cppNumber		display contained "\<0\([Zz]\|[Zz][Uu]\|[Uu][Zz]\)\>"
+  syn match cppNumber		display contained "\<[1-9]\('\=\d\+\)*\([Zz]\|[Zz][Uu]\|[Uu][Zz]\)\>"
+  syn match cppNumber		display contained "\<0\o\+\([Zz]\|[Zz][Uu]\|[Uu][Zz]\)\>"
+  syn match cppNumber		display contained "\<0[Bb][01]\('\=[01]\+\)*\([Zz]\|[Zz][Uu]\|[Uu][Zz]\)\>"
+  syn match cppNumber		display contained "\<0[Xx]\x\('\=\x\+\)*\([Zz]\|[Zz][Uu]\|[Uu][Zz]\)\>"
   syn keyword cppType		float16_t float32_t float64_t float128_t bfloat16_t
 endif
 
