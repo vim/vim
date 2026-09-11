@@ -474,7 +474,7 @@ invalidate_region(pixman_region32_t *region)
 
 /*
  * Draw all image placements to the screen. This should be done after all text
- * have been drawn to the screen.
+ * have been drawn to the screen, and image placements positioned correctly.
  */
     void
 draw_image_placements(void)
@@ -620,7 +620,7 @@ draw_image_placements(void)
 mark_dirty_region_for_images(int row, int col, int row_height, int col_width)
 {
     // This function may be called in mch_exit().
-    if (dirty_region_finalized)
+    if (dirty_region_finalized || n_placements == 0)
 	return;
     if (!dirty_region_init)
     {
