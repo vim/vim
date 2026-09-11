@@ -101,6 +101,13 @@ func Test_syntax_after_reload()
   call delete('Xsomefile')
 endfunc
 
+func Test_syntax_filetype_syntax()
+  set filetype=syntax
+  syntax on
+  syntax off
+  set filetype= syntax=
+endfunc
+
 func Test_syntime()
   CheckFeature profile
 
@@ -1069,5 +1076,6 @@ func Test_syn_sync_grouphere_shorter_next_line()
 
   bw!
 endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
