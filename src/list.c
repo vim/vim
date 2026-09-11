@@ -1147,7 +1147,7 @@ list2items(typval_T *argvars, typval_T *rettv)
 	    break;
 	if (list_append_list(rettv->vval.v_list, l2) == FAIL)
 	{
-	    vim_free(l2);
+	    list_free(l2);
 	    break;
 	}
 	if (list_append_number(l2, idx) == FAIL
@@ -1183,7 +1183,7 @@ string2items(typval_T *argvars, typval_T *rettv)
 	    break;
 	if (list_append_list(rettv->vval.v_list, l2) == FAIL)
 	{
-	    vim_free(l2);
+	    list_free(l2);
 	    break;
 	}
 	if (list_append_number(l2, idx) == FAIL
