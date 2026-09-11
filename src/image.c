@@ -7,6 +7,13 @@
  * See README.txt for an overview of the Vim source code.
  */
 
+/*
+ * Abstracts each image backend into a common interface. This common interface
+ * works around the idea of images being blitted to the screen, similar to how
+ * characters are written to the terminal/GUI. For backends that do not natively
+ * blit pixels ("images" are objects), the behaviour is emulated.
+ */
+
 #include "vim.h"
 
 #ifdef FEAT_IMAGE
