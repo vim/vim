@@ -3838,4 +3838,6 @@ EXTERN char e_invalid_image_dimensions[]
 	INIT(= N_("E1584: Image dimensions are invalid"));
 EXTERN char e_no_image_backend_available[]
 	INIT(= N_("E1585: No image backend available"));
+EXTERN char e_changing_image_backend_failed[]
+	INIT(= N_("E1586: Failed changing image backends"));
 #endif

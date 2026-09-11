@@ -167,13 +167,7 @@ image_placement_sixel_draw(image_placement_T *place)
 	sixel_dither_t	*dither;
 	sixel_chunk_T	*chunk = ctx->chunks + i;
 
-	row = place->row + rect.y1;
-	col = place->col + rect.x1;
-
-	x = (rect.x1 + place->crop_box.x1) * cell_width;
-	y = (rect.y1 + place->crop_box.y1) * cell_height;
-	w = (rect.x2 - rect.x1) * cell_width;
-	h = (rect.y2 - rect.y1) * cell_height;
+	image_placement_subrect(place, rect, &row, &col, &x, &y, &w, &h);
 
 	// Crop the image into "buf"
 	size = w * h * img->fmt;
