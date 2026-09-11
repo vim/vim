@@ -301,10 +301,11 @@ image_placement_link(image_placement_T *place)
     image_placement_T *p = placements;
     image_placement_T *prev = NULL;
 
-    // Add image before the image with the same or lower zindex.
+    // Add image before the image with the lower zindex. Add after the last
+    // image with the same zindex (if any), to match popup window behaviour.
     while (p != NULL)
     {
-	if (p->zindex <= place->zindex)
+	if (p->zindex < place->zindex)
 	    break;
 	prev = p;
 	p = p->next;
