@@ -15,12 +15,6 @@
 
 typedef struct
 {
-    // Palette for this image
-    sixel_dither_t *dither;
-} image_sixel_T;
-
-typedef struct
-{
     // These are offsets relative to the top left of the image.
     int	    row_off;
     int	    col_off;
@@ -80,59 +74,14 @@ sixel_uninit(void)
 }
 
     int
-image_sixel_init(image_T *img)
+image_sixel_init(image_T *img UNUSED)
 {
-    image_sixel_T   *ctx;
-    int		    sixel_fmt;
-
-    if (sixel_init() == FAIL)
-	return FAIL;
-
-
-    ctx = ALLOC_CLEAR_ONE(image_sixel_T);
-    if (ctx == NULL)
-	return FAIL;
-
-    switch (img->fmt)
-    {
-	case IMAGE_FORMAT_RGB:
-	    sixel_fmt = SIXEL_PIXELFORMAT_RGB888;
-	    break;
-	case IMAGE_FORMAT_RGBA:
-	    sixel_fmt = SIXEL_PIXELFORMAT_RGBA8888;
-	    break;
-    }
-
-    if (sixel_dither_new(&ctx->dither, 256, sixel_allocator) == SIXEL_FALSE)
-    {
-	vim_free(ctx);
-	return FAIL;
-    }
-
-    if (sixel_dither_initialize(ctx->dither,
-		(uint8_t *)pixman_image_get_data(img->image),
-		pixman_image_get_width(img->image),
-		pixman_image_get_height(img->image),
-		sixel_fmt, SIXEL_LARGE_AUTO,
-		SIXEL_REP_AUTO, SIXEL_QUALITY_HIGH) == SIXEL_FALSE)
-    {
-	sixel_dither_unref(ctx->dither);
-	vim_free(ctx);
-	return FAIL;
-    }
-
-    img->backend_data = ctx;
-    return OK;
+    return sixel_init();
 }
 
     void
-image_sixel_uninit(image_T *img)
+image_sixel_uninit(image_T *img UNUSED)
 {
-    image_sixel_T *ctx = img->backend_data;
-
-    if (ctx->dither != NULL)
-	sixel_dither_unref(ctx->dither);
-    vim_free(ctx);
 }
 
     int
