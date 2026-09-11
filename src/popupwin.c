@@ -6240,7 +6240,7 @@ popup_position_image(win_T *wp)
     if (visible_width <= 0 || visible_height <= 0)
 	return;
 
-    image_get_dimensions(wp->w_popup_imagep->img, &iw, &ih);
+    image_get_cell_dimensions(wp->w_popup_imagep->img, &iw, &ih);
 
     crop_x = clip.clip_left_content;
     crop_y = clip.clip_top_content;
