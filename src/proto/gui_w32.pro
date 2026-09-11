@@ -1,4 +1,4 @@
-/* gui_w32.c */
+// gui_w32.c
 int gui_mch_set_rendering_options(char_u *s);
 int gui_mch_is_blinking(void);
 int gui_mch_is_blink_off(void);
@@ -104,4 +104,4 @@ BalloonEval *gui_mch_create_beval_area(void *target, char_u *mesg, void (*mesgCB
 void gui_mch_destroy_beval_area(BalloonEval *beval);
 void netbeans_draw_multisign_indicator(int row);
 int test_gui_w32_sendevent(char_u *event, dict_T *args);
-/* vim: set ft=c : */
+// vim: ft=c

@@ -1,4 +1,4 @@
-/* hardcopy_pango.c */
+// hardcopy_pango.c
 int mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit);
 int mch_print_begin(prt_settings_T *psettings);
 void mch_print_end(prt_settings_T *psettings);
@@ -11,4 +11,4 @@ void mch_print_set_font(int bold, int italic, int underline);
 void mch_print_set_bg(long_u bgcol);
 void mch_print_set_fg(long_u fgcol);
 void mch_print_cleanup(void);
-/* vim: set ft=c : */
+// vim: ft=c

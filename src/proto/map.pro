@@ -1,4 +1,4 @@
-/* map.c */
+// map.c
 mapblock_T *get_maphash_list(int state, int c);
 mapblock_T *get_buf_maphash_list(int state, int c);
 int is_maphash_valid(void);
@@ -32,4 +32,4 @@ void ex_map(exarg_T *eap);
 void ex_unmap(exarg_T *eap);
 void ex_mapclear(exarg_T *eap);
 void ex_abclear(exarg_T *eap);
-/* vim: set ft=c : */
+// vim: ft=c

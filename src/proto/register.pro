@@ -1,4 +1,4 @@
-/* register.c */
+// register.c
 yankreg_T *get_y_regs(void);
 yankreg_T *get_y_register(int reg);
 yankreg_T *get_y_current(void);
@@ -39,4 +39,4 @@ void write_reg_contents(int name, char_u *str, int maxlen, int must_append);
 void write_reg_contents_lst(int name, char_u **strings, int maxlen, int must_append, int yank_type, long block_len);
 void write_reg_contents_ex(int name, char_u *str, int maxlen, int must_append, int yank_type, long block_len);
 void str_to_reg(yankreg_T *y_ptr, int yank_type, char_u *str, long len, long blocklen, int str_list);
-/* vim: set ft=c : */
+// vim: ft=c

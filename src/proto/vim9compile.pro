@@ -1,4 +1,4 @@
-/* vim9compile.c */
+// vim9compile.c
 int lookup_local(char_u *name, size_t len, lvar_T *lvar, cctx_T *cctx);
 int arg_exists(char_u *name, size_t len, int *idxp, type_T **type, int *gen_load_outer, cctx_T *cctx);
 void update_script_var_block_id(char_u *name, int block_id);
@@ -33,4 +33,4 @@ void set_function_type(ufunc_T *ufunc);
 void unlink_def_function(ufunc_T *ufunc);
 void link_def_function(ufunc_T *ufunc);
 void free_def_functions(void);
-/* vim: set ft=c : */
+// vim: ft=c

@@ -1,4 +1,4 @@
-/* gui_haiku.cc - hand crafted */
+// manually generated from gui_haiku.cc
 
 void gui_mch_prepare(int *argc, char **argv);
 int gui_mch_init(void);
@@ -95,3 +95,4 @@ void gui_mch_set_tabline_pos(int x, int y, int w, int h);
 int gui_mch_showing_tabline(void);
 void gui_mch_update_tabline(void);
 void gui_mch_set_curtab(int nr);
+// vim: ft=c

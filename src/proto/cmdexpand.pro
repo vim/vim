@@ -1,4 +1,4 @@
-/* cmdexpand.c */
+// cmdexpand.c
 int cmdline_fuzzy_complete(char_u *fuzzystr);
 int nextwild(expand_T *xp, int type, int options, int escape);
 void cmdline_pum_display(void);
@@ -28,4 +28,4 @@ void wildmenu_cleanup(cmdline_info_T *cclp);
 void f_getcompletion(typval_T *argvars, typval_T *rettv);
 void f_getcompletiontype(typval_T *argvars, typval_T *rettv);
 void f_cmdcomplete_info(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

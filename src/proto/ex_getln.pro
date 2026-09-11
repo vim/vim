@@ -1,4 +1,4 @@
-/* ex_getln.c */
+// ex_getln.c
 int parse_pattern_and_range(pos_T *incsearch_start, int *search_delim, int *skiplen, int *patlen);
 void cmdline_init(void);
 char_u *getcmdline(int firstc, long count, int indent, getline_opt_T do_concat);
@@ -47,4 +47,4 @@ int is_in_cmdwin(void);
 char_u *script_get(exarg_T *eap, char_u *cmd);
 void get_user_input(typval_T *argvars, typval_T *rettv, int inputdialog, int secret);
 void f_wildtrigger(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

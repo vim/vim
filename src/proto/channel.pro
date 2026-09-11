@@ -1,4 +1,4 @@
-/* channel.c */
+// channel.c
 channel_T *add_channel(void);
 int has_any_channel(void);
 int channel_still_useful(channel_T *channel);
@@ -68,4 +68,4 @@ void f_ch_setoptions(typval_T *argvars, typval_T *rettv);
 void f_ch_status(typval_T *argvars, typval_T *rettv);
 char_u *channel_to_string_buf(typval_T *varp, char_u *buf);
 channel_T *channel_find(int ch_id);
-/* vim: set ft=c : */
+// vim: ft=c

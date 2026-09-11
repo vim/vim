@@ -1,4 +1,4 @@
-/* gui_gtk_x11.c */
+// gui_gtk_x11.c
 void gui_mch_prepare(int *argc, char **argv);
 void gui_mch_free_all(void);
 int gui_mch_is_blinking(void);
@@ -82,4 +82,4 @@ void mch_set_mouse_shape(int shape);
 void gui_mch_drawsign(int row, int col, int typenr);
 void *gui_mch_register_sign(char_u *signfile);
 void gui_mch_destroy_sign(void *sign);
-/* vim: set ft=c : */
+// vim: ft=c

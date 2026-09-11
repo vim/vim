@@ -1,4 +1,4 @@
-/* message.c */
+// message.c
 int msg(char *s);
 int verb_msg(char *s);
 int msg_attr(char *s, int attr);
@@ -79,4 +79,4 @@ int do_dialog(int type, char_u *title, char_u *message, char_u *buttons, int dfl
 int vim_dialog_yesno(int type, char_u *title, char_u *message, int dflt);
 int vim_dialog_yesnocancel(int type, char_u *title, char_u *message, int dflt);
 int vim_dialog_yesnoallcancel(int type, char_u *title, char_u *message, int dflt);
-/* vim: set ft=c : */
+// vim: ft=c

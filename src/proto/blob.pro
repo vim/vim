@@ -1,4 +1,4 @@
-/* blob.c */
+// blob.c
 blob_T *blob_alloc(void);
 int rettv_blob_alloc(typval_T *rettv);
 void rettv_blob_set(typval_T *rettv, blob_T *b);
@@ -28,4 +28,4 @@ void blob_reduce(typval_T *argvars, typval_T *expr, typval_T *rettv);
 void blob_reverse(blob_T *b, typval_T *rettv);
 void f_blob2list(typval_T *argvars, typval_T *rettv);
 void f_list2blob(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

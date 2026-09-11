@@ -1,4 +1,4 @@
-/* misc2.c */
+// misc2.c
 int virtual_active(void);
 int getviscol(void);
 int coladvance_force(colnr_T wcol);
@@ -69,4 +69,4 @@ void *mergesort_list(void *head, void *(*get_next)(void *), void (*set_next)(voi
 long base64_encode_buf(char_u *dst, const char_u *src, size_t len);
 char_u *base64_encode(const char_u *data, size_t len);
 int base64_decode(const char_u *data, size_t len, garray_T *out);
-/* vim: set ft=c : */
+// vim: ft=c

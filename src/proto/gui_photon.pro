@@ -1,4 +1,4 @@
-/* gui_photon.c */
+// gui_photon.c
 void gui_ph_encoding_changed(int new_encoding);
 void gui_mch_prepare(int *argc, char **argv);
 int gui_mch_init(void);
@@ -69,4 +69,4 @@ GuiFont gui_mch_get_font(char_u *vim_font_name, int report_error);
 char_u *gui_mch_get_fontname(GuiFont font, char_u *name);
 void gui_mch_set_font(GuiFont font);
 void gui_mch_free_font(GuiFont font);
-/* vim: set ft=c : */
+// vim: ft=c

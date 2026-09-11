@@ -1,4 +1,4 @@
-/* usercmd.c */
+// usercmd.c
 char_u *find_ucmd(exarg_T *eap, char_u *p, int *full, expand_T *xp, int *complp);
 char_u *set_context_in_user_cmd(expand_T *xp, char_u *arg_in);
 char_u *set_context_in_user_cmdarg(char_u *cmd, char_u *arg, long argt, int context, expand_T *xp, int forceit);
@@ -22,4 +22,4 @@ void ex_delcommand(exarg_T *eap);
 size_t add_win_cmd_modifiers(char_u *buf, cmdmod_T *cmod, int *multi_mods);
 size_t produce_cmdmods(char_u *buf, cmdmod_T *cmod, int quote);
 void do_ucmd(exarg_T *eap);
-/* vim: set ft=c : */
+// vim: ft=c

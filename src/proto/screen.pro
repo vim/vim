@@ -1,4 +1,4 @@
-/* screen.c */
+// screen.c
 int conceal_cursor_line(win_T *wp);
 void conceal_check_cursor_line(int was_concealed);
 int get_win_attr(win_T *wp);
@@ -61,4 +61,4 @@ char *set_listchars_option(win_T *wp, char_u *val, int apply, char *errbuf, size
 char_u *get_fillchars_name(expand_T *xp, int idx);
 char_u *get_listchars_name(expand_T *xp, int idx);
 char *check_chars_options(void);
-/* vim: set ft=c : */
+// vim: ft=c

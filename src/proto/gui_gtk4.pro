@@ -1,4 +1,4 @@
-/* gui_gtk4.c */
+// gui_gtk4.c
 void gui_mch_prepare(int *argc, char **argv);
 void gui_mch_free_all(void);
 int gui_mch_is_blinking(void);
@@ -111,4 +111,4 @@ void gui_mch_replace_dialog(exarg_T *eap);
 void ex_helpfind(exarg_T *eap);
 char_u *gui_gtk4_print_dialog(prt_settings_T *psettings, char_u *jobname, double *page_width, double *page_height);
 void gui_gtk4_print_finish(void);
-/* vim: set ft=c : */
+// vim: ft=c

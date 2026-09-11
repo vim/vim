@@ -1,4 +1,4 @@
-/* vim9instr.c */
+// vim9instr.c
 isn_T *generate_instr(cctx_T *cctx, isntype_T isn_type);
 isn_T *generate_instr_drop(cctx_T *cctx, isntype_T isn_type, int drop);
 isn_T *generate_instr_type(cctx_T *cctx, isntype_T isn_type, type_T *type);
@@ -86,4 +86,4 @@ int generate_SCRIPTCTX_SET(cctx_T *cctx, sctx_T new_sctx);
 void may_generate_prof_end(cctx_T *cctx, int prof_lnum);
 void delete_instr(isn_T *isn);
 void clear_instr_ga(garray_T *gap);
-/* vim: set ft=c : */
+// vim: ft=c

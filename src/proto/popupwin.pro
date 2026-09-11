@@ -1,4 +1,4 @@
-/* popupwin.c */
+// popupwin.c
 int popup_on_border(win_T *wp, int row, int col);
 int popup_close_if_on_X(win_T *wp, int row, int col);
 void popup_start_drag(win_T *wp, int row, int col);
@@ -86,4 +86,4 @@ void end_echowindow(void);
 int popup_win_closed(win_T *win);
 void popup_set_title(win_T *wp);
 void popup_update_preview_title(void);
-/* vim: set ft=c : */
+// vim: ft=c

@@ -1,4 +1,4 @@
-/* evalvars.c */
+// evalvars.c
 void evalvars_init(void);
 void evalvars_clear(void);
 int garbage_collect_globvars(int copyID);
@@ -112,4 +112,4 @@ void set_callback(callback_T *dest, callback_T *src);
 void copy_callback(callback_T *dest, callback_T *src);
 void expand_autload_callback(callback_T *cb);
 void free_callback(callback_T *callback);
-/* vim: set ft=c : */
+// vim: ft=c

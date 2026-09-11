@@ -1,4 +1,4 @@
-/* float.c */
+// float.c
 int string2float(char_u *text, float_T *value, int skip_quotes);
 void f_abs(typval_T *argvars, typval_T *rettv);
 void f_acos(typval_T *argvars, typval_T *rettv);
@@ -26,4 +26,4 @@ void f_str2float(typval_T *argvars, typval_T *rettv);
 void f_tan(typval_T *argvars, typval_T *rettv);
 void f_tanh(typval_T *argvars, typval_T *rettv);
 void f_trunc(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

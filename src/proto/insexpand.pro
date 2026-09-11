@@ -1,4 +1,4 @@
-/* insexpand.c */
+// insexpand.c
 void ins_ctrl_x(void);
 int ctrl_x_mode_none(void);
 int ctrl_x_mode_normal(void);
@@ -85,4 +85,4 @@ bool ins_compl_autocomplete_pending(void);
 long ins_compl_autocomplete_elapsed(void);
 void free_insexpand_stuff(void);
 void f_preinserted(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

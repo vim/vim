@@ -1,4 +1,4 @@
-/* option.c */
+// option.c
 void set_init_1(int clean_arg);
 void set_fencs_unicode(void);
 void set_string_default(char *name, char_u *val);
@@ -157,4 +157,4 @@ int fill_culopt_flags(char_u *val, win_T *wp);
 int magic_isset(void);
 int option_set_callback_func(char_u *optval, callback_T *optcb);
 char *did_set_showtabpanel(optset_T *args);
-/* vim: set ft=c : */
+// vim: ft=c

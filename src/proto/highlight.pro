@@ -1,4 +1,4 @@
-/* highlight.c */
+// highlight.c
 int highlight_num_groups(void);
 char_u *highlight_group_name(int id);
 int highlight_link_id(int id);
@@ -56,4 +56,4 @@ void pop_highlight_overrides(void);
 char *update_winhighlight(win_T *wp, char_u *opt);
 int hlf_get_id(win_T *wp, int hlf);
 char *update_wincolor(win_T *wp, char_u *opt);
-/* vim: set ft=c : */
+// vim: ft=c

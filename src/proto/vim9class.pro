@@ -1,4 +1,4 @@
-/* vim9class.c */
+// vim9class.c
 int object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl);
 int is_valid_builtin_obj_methodname(char_u *funcname);
 ufunc_T *class_get_builtin_method(class_T *cl, class_builtin_T builtin_method, int *method_idx);
@@ -44,4 +44,4 @@ int object_equal(object_T *o1, object_T *o2, int ic);
 char_u *object2string(object_T *obj, char_u *numbuf, int copyID, int echo_style, int restore_copyID, int composite_val);
 int class_instance_of(class_T *cl, class_T *other_cl);
 void f_instanceof(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

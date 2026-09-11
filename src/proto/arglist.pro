@@ -1,4 +1,4 @@
-/* arglist.c */
+// arglist.c
 void alist_clear(alist_T *al);
 void alist_init(alist_T *al);
 void alist_unlink(alist_T *al);
@@ -30,4 +30,4 @@ void f_argc(typval_T *argvars, typval_T *rettv);
 void f_argidx(typval_T *argvars, typval_T *rettv);
 void f_arglistid(typval_T *argvars, typval_T *rettv);
 void f_argv(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c
