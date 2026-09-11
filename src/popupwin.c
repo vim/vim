@@ -6237,7 +6237,9 @@ popup_position_image(win_T *wp)
     visible_height =
 	wp->w_height - clip.clip_top_content - clip.clip_bot_content;
 
-    if (visible_width <= 0 || visible_height <= 0)
+    // If visible width or height is zero, still continue so that image
+    // placement is marked as dirty, and is cleared from the screen.
+    if (visible_width < 0 || visible_height < 0)
 	return;
 
     image_get_cell_dimensions(wp->w_popup_imagep->img, &iw, &ih);

@@ -204,6 +204,9 @@ image_placement_kitty_clear(image_placement_T *place)
 {
     image_placement_kitty_T *ctx = place->backend_data;
 
+    if (ctx->n_ids == 0)
+	return;
+
     for (int i = 0; i < ctx->n_ids; i++)
 	clear_placement(place->img->id, place->id + i);
     out_flush();
