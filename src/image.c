@@ -597,7 +597,25 @@ draw_image_placements(void)
 	int x, y;
 
 	if (!place->draw)
+	{
+	    pixman_region32_t intersect;
+
+	    pixman_region32_init(&intersect);
+
+	    // Make sure placement is cleared from screen. This fixes popup
+	    // image not disappearing after switching tab pages, when using KGP
+	    // and GDK backends. Only do this if dirty region overlaps with
+	    // visible region
+	    if (!PLACEMENT_FUNC(image_backend, blit)
+		    && place->visible_init
+		    &&  pixman_region32_intersect(&intersect,
+			&place->visible_abs, &dirty_region)
+		    && pixman_region32_not_empty(&intersect))
+		image_placement_clear(place);
+
+	    pixman_region32_fini(&intersect);
 	    continue;
+	}
 	place->draw = false;
 
 	if (img != NULL)
@@ -634,7 +652,8 @@ draw_image_placements(void)
 	    // Check if visible region touches the current global dirty region.
 	    // If it does, then redraw the image.
 	    pixman_region32_init(&dirty);
-	    (void)pixman_region32_intersect(&dirty, &visible_abs, &dirty_region);
+	    (void)pixman_region32_intersect(&dirty,
+		    &visible_abs, &dirty_region);
 	    has_dirty_cells = pixman_region32_not_empty(&dirty);
 	    pixman_region32_fini(&dirty);
 
