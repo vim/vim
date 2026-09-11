@@ -639,8 +639,8 @@ draw_image_placements(void)
 
 	    // Only redraw the image if it has changed (or if we haven't drawn
 	    // it yet).
-	    if (place->dirty || has_dirty_cells || (place->visible_init
-			&& !pixman_region32_equal(
+	    if (place->dirty || has_dirty_cells
+		    || (place->visible_init && !pixman_region32_equal(
 			    &visible_region, &place->visible)))
 	    {
 		if (place->visible_init)
@@ -745,7 +745,8 @@ mark_dirty_region_for_images(int row, int col, int row_height, int col_width)
 
     pixman_region32_union_rect(&dirty_region, &dirty_region,
 	    col, row, col_width, row_height);
-    redraw_all_later(UPD_VALID);
+    if (!updating_screen)
+	redraw_all_later(UPD_VALID);
 }
 
 /*
