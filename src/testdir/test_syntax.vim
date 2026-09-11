@@ -1077,5 +1077,4 @@ func Test_syn_sync_grouphere_shorter_next_line()
   bw!
 endfunc
 
-
 " vim: shiftwidth=2 sts=2 expandtab
