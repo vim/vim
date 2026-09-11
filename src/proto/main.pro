@@ -1,4 +1,4 @@
-/* main.c */
+// main.c
 int vim_main2(void);
 void common_init_1(void);
 void common_init_2(mparm_T *paramp);
@@ -18,4 +18,4 @@ void getout_preserve_modified(int exitval);
 void getout(int exitval);
 int process_env(char_u *env, int is_viminit);
 void mainerr_arg_missing(char_u *str);
-/* vim: set ft=c : */
+// vim: ft=c

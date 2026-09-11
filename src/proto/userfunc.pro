@@ -1,4 +1,4 @@
-/* userfunc.c */
+// userfunc.c
 void func_init(void);
 hashtab_T *func_tbl_get(void);
 char_u *make_ufunc_name_readable(char_u *name, char_u *buf, size_t bufsize);
@@ -95,4 +95,4 @@ int set_ref_in_call_stack(int copyID);
 int set_ref_in_functions(int copyID);
 int set_ref_in_func_args(int copyID);
 int set_ref_in_func(char_u *name, ufunc_T *fp_in, int copyID);
-/* vim: set ft=c : */
+// vim: ft=c

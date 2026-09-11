@@ -1,4 +1,4 @@
-/* undo.c */
+// undo.c
 int u_save_cursor(void);
 int u_save(linenr_T top, linenr_T bot);
 int u_savesub(linenr_T lnum);
@@ -28,4 +28,4 @@ int curbufIsChanged(void);
 void f_undofile(typval_T *argvars, typval_T *rettv);
 void u_undofile_reset_and_delete(buf_T *buf);
 void f_undotree(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

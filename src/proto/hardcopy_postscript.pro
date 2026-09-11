@@ -1,4 +1,4 @@
-/* hardcopy_postscript.c */
+// hardcopy_postscript.c
 void mch_print_cleanup(void);
 int mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit);
 int mch_print_begin(prt_settings_T *psettings);
@@ -11,4 +11,4 @@ int mch_print_text_out(char_u *textp, int len);
 void mch_print_set_font(int iBold, int iItalic, int iUnderline);
 void mch_print_set_bg(long_u bgcol);
 void mch_print_set_fg(long_u fgcol);
-/* vim: set ft=c : */
+// vim: ft=c

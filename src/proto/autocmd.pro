@@ -1,4 +1,4 @@
-/* autocmd.c */
+// autocmd.c
 void aubuflocal_remove(buf_T *buf);
 int au_has_group(char_u *name);
 void do_augroup(char_u *arg, int del_group);
@@ -51,4 +51,4 @@ int au_exists(char_u *arg);
 void f_autocmd_add(typval_T *argvars, typval_T *rettv);
 void f_autocmd_delete(typval_T *argvars, typval_T *rettv);
 void f_autocmd_get(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

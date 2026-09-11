@@ -1,4 +1,4 @@
-/* profiler.c */
+// profiler.c
 void profile_start(proftime_T *tm);
 void profile_end(proftime_T *tm);
 void profile_sub(proftime_T *tm, proftime_T *tm2);
@@ -32,4 +32,4 @@ void profile_dump(void);
 void script_line_start(void);
 void script_line_exec(void);
 void script_line_end(void);
-/* vim: set ft=c : */
+// vim: ft=c

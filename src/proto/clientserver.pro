@@ -1,4 +1,4 @@
-/* clientserver.c */
+// clientserver.c
 void server_to_input_buf(char_u *str);
 char_u *eval_client_expr_to_string(char_u *expr);
 int sendToLocalVim(char_u *cmd, int asExpr, char_u **result);
@@ -14,4 +14,4 @@ void f_remote_startserver(typval_T *argvars, typval_T *rettv);
 void f_server2client(typval_T *argvars, typval_T *rettv);
 void f_serverlist(typval_T *argvars, typval_T *rettv);
 void check_clientserver_method_env(void);
-/* vim: set ft=c : */
+// vim: ft=c

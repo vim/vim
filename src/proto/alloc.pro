@@ -1,4 +1,4 @@
-/* alloc.c */
+// alloc.c
 void vim_mem_profile_dump(void);
 int alloc_does_fail(size_t size);
 void *alloc(size_t size);
@@ -28,4 +28,4 @@ void ga_concat(garray_T *gap, char_u *s);
 void ga_concat_len(garray_T *gap, char_u *s, size_t len);
 int ga_append(garray_T *gap, int c);
 void append_ga_line(garray_T *gap);
-/* vim: set ft=c : */
+// vim: ft=c

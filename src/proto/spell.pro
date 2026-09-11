@@ -1,4 +1,4 @@
-/* spell.c */
+// spell.c
 int spell_check(win_T *wp, char_u *ptr, hlf_T *attrp, int *capcol, int docount);
 int match_checkcompoundpattern(char_u *ptr, int wlen, garray_T *gap);
 int can_compound(slang_T *slang, char_u *word, char_u *flags);
@@ -48,4 +48,4 @@ int valid_spelllang(char_u *val);
 int valid_spellfile(char_u *val);
 char *did_set_spell_option(void);
 char *compile_cap_prog(synblock_T *synblock);
-/* vim: set ft=c : */
+// vim: ft=c

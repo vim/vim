@@ -1,4 +1,4 @@
-/* typval.c */
+// typval.c
 typval_T *alloc_tv(void);
 typval_T *alloc_string_tv(char_u *s);
 void free_tv(typval_T *varp);
@@ -92,4 +92,4 @@ linenr_T tv_get_lnum(typval_T *argvars);
 linenr_T tv_get_lnum_buf(typval_T *argvars, buf_T *buf);
 buf_T *tv_get_buf(typval_T *tv, int curtab_only);
 buf_T *tv_get_buf_from_arg(typval_T *tv);
-/* vim: set ft=c : */
+// vim: ft=c

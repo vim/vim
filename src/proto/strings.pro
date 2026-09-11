@@ -1,4 +1,4 @@
-/* strings.c */
+// strings.c
 char_u *vim_strsave(char_u *string);
 char_u *vim_strnsave(char_u *string, size_t len);
 char_u *vim_strsave_escaped(char_u *string, char_u *esc_chars);
@@ -54,4 +54,4 @@ void f_tr(typval_T *argvars, typval_T *rettv);
 void f_trim(typval_T *argvars, typval_T *rettv);
 void f_uridecode(typval_T *argvars, typval_T *rettv);
 void f_uriencode(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c
