@@ -54,7 +54,7 @@ void gui_mch_settitle(char_u *title, char_u *icon);
 void gui_mch_draw_hollow_cursor(guicolor_T color);
 void gui_mch_draw_part_cursor(int w, int h, guicolor_T color);
 void gui_mch_update(void);
-int gui_mch_wait_for_chars(int wtime);
+int gui_mch_wait_for_chars(long wtime);
 void gui_mch_clear_block(int row1, int col1, int row2, int col2);
 void gui_mch_clear_all(void);
 void gui_mch_delete_lines(int row, int num_lines);
