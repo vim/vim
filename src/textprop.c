@@ -257,8 +257,8 @@ um_add_prop(unpacked_memline_T *um, textprop_T *prop)
 {
     if (um->buf == NULL)
 	return;
-    if (!um->detached)
-	um_detach(um);
+    if (!um->detached && !um_detach(um))
+	return;
     if (!um_grow_props(um, 1))
     {
 	um->buf = NULL;
