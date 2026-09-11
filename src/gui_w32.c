@@ -2666,7 +2666,7 @@ server_flush_input(void)
  * or FAIL otherwise.
  */
     int
-gui_mch_wait_for_chars(int wtime)
+gui_mch_wait_for_chars(long wtime)
 {
     int		focus;
 

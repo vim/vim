@@ -1353,7 +1353,7 @@ gui_mch_update(void)
 }
 
     int
-gui_mch_wait_for_chars(int wtime)
+gui_mch_wait_for_chars(long wtime)
 {
     is_timeout = FALSE;
 

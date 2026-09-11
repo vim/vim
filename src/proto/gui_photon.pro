@@ -6,7 +6,7 @@ int gui_mch_init_check(void);
 int gui_mch_open(void);
 void gui_mch_exit(int rc);
 void gui_mch_update(void);
-int gui_mch_wait_for_chars(int wtime);
+int gui_mch_wait_for_chars(long wtime);
 char_u *gui_mch_browse(int saving, char_u *title, char_u *default_name, char_u *ext, char_u *initdir, char_u *filter);
 int gui_mch_dialog(int type, char_u *title, char_u *message, char_u *buttons, int default_button, char_u *textfield, int ex_cmd);
 int gui_mch_get_winpos(int *x, int *y);
