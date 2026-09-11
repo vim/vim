@@ -42,7 +42,8 @@ struct image_S
     pixman_image_t  *image;
     image_format_T  fmt;
 
-    void *backend_data;
+    image_backend_T backend;
+    void	    *backend_data;
 
     image_T *next;
     image_T *prev;
@@ -60,7 +61,8 @@ struct image_placement_S
     bool    draw; // If image should be processed for the next redraw. Reset
 		  // when the redraw is done.
 
-    void *backend_data;
+    image_backend_T backend;
+    void	    *backend_data;
 
     // Note that positioning uses the top left of the final cropped image
     linenr_T	row;

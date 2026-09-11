@@ -13,6 +13,8 @@
 
 struct
 {
+    const char *name;
+
     struct
     {
 	// Return OK on success and FAIL on failure
@@ -36,6 +38,7 @@ struct
 } image_backends[] = {
 #ifdef FEAT_IMAGE_GUI
     [IMAGE_BACKEND_GUI] = {
+	.name = "gui",
 	.image = {
 	    .init = NULL,
 	    .uninit = NULL
@@ -61,6 +64,7 @@ struct
 #endif
 #ifdef FEAT_IMAGE_KITTY
     [IMAGE_BACKEND_KITTY] = {
+	.name = "kitty",
 	.image = {
 	    .init = image_kitty_init,
 	    .uninit = image_kitty_uninit
@@ -76,6 +80,7 @@ struct
 #endif
 #ifdef FEAT_IMAGE_SIXEL
     [IMAGE_BACKEND_SIXEL] = {
+	.name = "sixel",
 	.image = {
 	    .init = image_sixel_init,
 	    .uninit = image_sixel_uninit
@@ -92,7 +97,7 @@ struct
 };
 
 // Current image backend being used
-static image_backend_T image_backend = IMAGE_BACKEND_SIXEL; // Temporary
+static image_backend_T image_backend = IMAGE_BACKEND_NONE;
 
 static image_T *images = NULL;
 // Sorted from highest zindex to lowest zindex
@@ -104,7 +109,20 @@ static pixman_region32_t    dirty_region; // In cells
 static bool		    dirty_region_init = false;
 static bool		    dirty_region_finalized = false;
 
+#define FOR_ALL_IMAGES(v) for ((v) = images; (v) != NULL; (v) = (v)->next)
+#define FOR_ALL_PLACEMENTS(v) \
+    for ((v) = placements; (v) != NULL; (v) = (v)->next)
+
+#define IMAGE_FUNC(b, n) (image_backends[b].image.n)
+#define PLACEMENT_FUNC(b, n) (image_backends[b].placement.n)
+
 static void redraw_region(pixman_region32_t *region);
+
+    void
+init_image_state(void)
+{
+    (void)update_image_backend();
+}
 
     void
 uninit_image_state(void)
@@ -121,11 +139,12 @@ uninit_image_state(void)
  * Return true if the there image backend is ready, otherwise emit error.
  */
     static bool
-backend_available(void)
+backend_available(bool msg)
 {
     if (image_backend == IMAGE_BACKEND_NONE)
     {
-	emsg(_(e_no_image_backend_available));
+	if (msg)
+	    emsg(_(e_no_image_backend_available));
 	return false;
     }
     return true;
@@ -148,7 +167,7 @@ image_new(uint8_t *data, int width, int height, image_format_T fmt)
     uint32_t	*copy;
     static int	id;
 
-    if (!backend_available())
+    if (!backend_available(true))
 	return NULL;
 
     img = ALLOC_CLEAR_ONE(image_T);
@@ -181,7 +200,9 @@ image_new(uint8_t *data, int width, int height, image_format_T fmt)
     img->id = ((((int)mch_get_pid() & 0x7fff) + 1) << 16) | (id++ & 0xffff);
     img->refcount = 1;
 
-    if (image_backends[image_backend].image.init(img) == FAIL)
+    img->backend = image_backend;
+
+    if (IMAGE_FUNC(image_backend, init)(img) == FAIL)
     {
 	pixman_image_unref(img->image);
 	vim_free(img);
@@ -199,8 +220,8 @@ image_new(uint8_t *data, int width, int height, image_format_T fmt)
     static void
 image_free(image_T *img)
 {
-    if (backend_available())
-	image_backends[image_backend].image.uninit(img);
+    if (backend_available(false))
+	IMAGE_FUNC(image_backend, uninit)(img);
 
     if (img->prev != NULL)
 	img->prev->next = img->next;
@@ -304,7 +325,7 @@ image_placement_new(image_T *img)
     image_placement_T	*place;
     static int		id = 1; // Kitty placements id must be > 1
 
-    if (!backend_available())
+    if (!backend_available(true))
 	return NULL;
 
     place = ALLOC_CLEAR_ONE(image_placement_T);
@@ -325,7 +346,9 @@ image_placement_new(image_T *img)
     place->crop_box.x2 = place->bounding_box.x2;
     place->crop_box.y2 = place->bounding_box.y2;
 
-    if (image_backends[image_backend].placement.init(place) == FAIL)
+    place->backend = image_backend;
+
+    if (PLACEMENT_FUNC(image_backend, init)(place) == FAIL)
     {
 	id -= 1000;
 	vim_free(place);
@@ -340,12 +363,11 @@ image_placement_new(image_T *img)
     void
 image_placement_clear(image_placement_T *place)
 {
-    if (backend_available() && place->img != NULL)
+    if (backend_available(false) && place->img != NULL)
     {
-	if (place->visible_init
-		&& image_backends[image_backend].placement.blit)
+	if (place->visible_init && PLACEMENT_FUNC(image_backend, blit))
 	    redraw_region(&place->visible_abs);
-	image_backends[image_backend].placement.clear(place);
+	PLACEMENT_FUNC(image_backend, clear)(place);
 	place->dirty = true;
 	redraw_all_later(UPD_VALID);
     }
@@ -354,10 +376,10 @@ image_placement_clear(image_placement_T *place)
     void
 image_placement_free(image_placement_T *place)
 {
-    if (backend_available())
+    if (backend_available(false))
     {
 	image_placement_clear(place);
-	image_backends[image_backend].placement.uninit(place);
+	PLACEMENT_FUNC(image_backend, uninit)(place);
     }
 
     if (place->visible_init)
@@ -422,9 +444,9 @@ image_placement_do_draw(image_placement_T *place)
 image_placement_set_bounding_box(
 	image_placement_T   *place,
 	int		    row,
-	int 		    col,
-	int 		    row_height,
-	int 		    col_width)
+	int		    col,
+	int		    row_height,
+	int		    col_width)
 {
     if (place->bounding_box.x1 == col && place->bounding_box.y1 == row
 	    && place->bounding_box.x2 == col + col_width
@@ -438,6 +460,41 @@ image_placement_set_bounding_box(
     place->bounding_box.y2 = row + row_height;
     place->dirty = true;
 }
+
+    void
+image_placement_subrect(
+	image_placement_T   *place,
+	pixman_box32_t	    rect,
+	int		    *row,
+	int		    *col,
+	int		    *x,
+	int		    *y,
+	int		    *w,
+	int		    *h)
+{
+    int iw, ih;
+
+    iw = pixman_image_get_width(place->img->image);
+    ih = pixman_image_get_height(place->img->image);
+
+    *row = place->row + rect.y1;
+    *col = place->col + rect.x1;
+
+    *x = (rect.x1 + place->crop_box.x1) * cell_width;
+    *y = (rect.y1 + place->crop_box.y1) * cell_height;
+    *w = (rect.x2 - rect.x1) * cell_width;
+    *h = (rect.y2 - rect.y1) * cell_height;
+
+    // Make that all the values are valid
+    *row = MIN(*row, Rows);
+    *col = MIN(*col, Columns);
+
+    *x = MIN(iw, MAX(*x, 0));
+    *y = MIN(ih, MAX(*y, 0));
+    *w = MIN(iw, *w);
+    *h = MIN(ih, *h);
+}
+
 
 /*
  * Redraw the cells in the given region. This is only relevant for image
@@ -457,6 +514,15 @@ redraw_region(pixman_region32_t *region)
     {
 	pixman_box32_t rect = rects[i];
 
+	// If we are currently updating the screen, redraw the characters now.
+	// Otherwise defer it later
+	if (updating_screen)
+	{
+	    screen_draw_rectangle(rect.y1, rect.x1,
+		    rect.y2 - rect.y1, rect.x2 - rect.x1, FALSE);
+	    continue;
+	}
+
 	for (int r = rect.y1; r < rect.y2; r++)
 	{
 	    if (r >= screen_Rows)
@@ -467,10 +533,12 @@ redraw_region(pixman_region32_t *region)
 		if (c >= screen_Columns)
 		    break;
 
-		screen_char(LineOffset[r] + c, r, c);
+		ScreenAttrs[LineOffset[r] + c] = (sattr_T)-1;
 	    }
 	}
     }
+    if (!updating_screen)
+	redraw_all_later(UPD_VALID);
 }
 
 /*
@@ -480,9 +548,13 @@ redraw_region(pixman_region32_t *region)
     void
 draw_image_placements(void)
 {
+    image_placement_T	*place;
     pixman_region32_t	subtract_region; // In pixels
     image_placement_T	**pending_placements;
     int			pending_len = 0;
+
+    if (!backend_available(false))
+	return;
 
     if (n_placements == 0)
 	return;
@@ -503,9 +575,7 @@ draw_image_placements(void)
     // also what regions are stale and redraw them. If we did everything in one
     // pass, stale regions of one image that overlap another image with a higher
     // index, would overwrite the overlapping image.
-    for (image_placement_T *place = placements;
-	    place != NULL;
-	    place = place->next)
+    FOR_ALL_PLACEMENTS(place)
     {
 	image_T *img = place->img;
 
@@ -566,8 +636,7 @@ draw_image_placements(void)
 		    pixman_region32_fini(&place->visible);
 		place->visible = visible_region;
 
-		if (image_backends[image_backend].placement.blit
-			&& place->visible_init)
+		if (PLACEMENT_FUNC(image_backend, blit) && place->visible_init)
 		{
 		    // Must redraw the stale regions that will not be composited
 		    // over (for this specific image).
@@ -611,7 +680,7 @@ draw_image_placements(void)
     if (pending_len > 0)
     {
 	for (int i = 0; i < pending_len; i++)
-	    image_backends[image_backend].placement.draw(pending_placements[i]);
+	    PLACEMENT_FUNC(image_backend, draw)(pending_placements[i]);
     }
 
     vim_free(pending_placements);
@@ -685,6 +754,167 @@ add_image(dict_T *dict)
     }
 
     return image_new(data->bv_ga.ga_data, w, h, fmt);
+}
+
+    static int
+match_imageprotocol(image_backend_T *backend)
+{
+    int		    len = (int)STRLEN(p_ipc) + 1;
+    char_u	    *buf = alloc(len);
+    char_u	    *p = p_ipc;
+    int		    ret = FAIL;
+
+    if (buf == NULL)
+	return FAIL;
+
+    *backend = IMAGE_BACKEND_NONE;
+
+    while (*p != NUL)
+    {
+	char_u		*colon;
+	regmatch_T	regmatch;
+	image_backend_T prot = IMAGE_BACKEND_NONE;
+
+	// Isolate one comma separated item.
+	(void)copy_option_part(&p, buf, len, ",");
+
+	colon = vim_strchr(buf, ':');
+	if (colon == NULL || colon == buf || colon[1] == NUL)
+	    goto exit;
+
+	*colon = NUL;
+
+	// Note: Keep this in sync with p_ipc_protocol_values.
+	if (STRCMP(colon + 1, "none") == 0)
+	    prot = IMAGE_BACKEND_NONE;
+	else if (STRCMP(colon + 1, "kitty") == 0)
+	{
+#ifdef FEAT_IMAGE_KITTY
+	    prot = IMAGE_BACKEND_KITTY;
+#endif
+	}
+	else if (STRCMP(colon + 1, "sixel") == 0)
+	{
+#ifdef FEAT_IMAGE_SIXEL
+	    prot = IMAGE_BACKEND_SIXEL;
+#endif
+	}
+	else
+	    goto exit;
+
+	if (prot == IMAGE_BACKEND_NONE)
+	    continue;
+
+	CLEAR_FIELD(regmatch);
+	regmatch.rm_ic = TRUE;
+	regmatch.regprog = vim_regcomp(buf, RE_MAGIC);
+
+	if (regmatch.regprog == NULL)
+	    goto exit;
+
+	bool match = T_NAME != NULL
+	    && vim_regexec(&regmatch, T_NAME, (colnr_T)0);
+
+	vim_regfree(regmatch.regprog);
+	if (match)
+	{
+	    *backend = prot;
+	    break;
+	}
+
+    }
+
+    ret = OK;
+exit:
+    vim_free(buf);
+    return ret;
+}
+
+/*
+ * Update the current image backend to use depending on 'imageprotocol' and if
+ * GUI is being used. Returns OK on success and FAIL on failure.
+ */
+    int
+update_image_backend(void)
+{
+    image_backend_T new;
+
+    image_T		*img;
+    image_placement_T	*place;
+
+#ifdef FEAT_IMAGE_GUI
+    if (gui.in_use)
+	new = IMAGE_BACKEND_GUI;
+    else
+#endif
+    {
+	if (match_imageprotocol(&new) == FAIL)
+	    return FAIL;
+    }
+
+    if (image_backend == new)
+	return OK;
+
+    // Must uninit the backends of every image/placement, then init the new
+    // backend for each.
+    FOR_ALL_IMAGES(img)
+    {
+	if (image_backend != IMAGE_BACKEND_NONE)
+	    IMAGE_FUNC(image_backend, uninit)(img);
+	img->backend_data = NULL;
+	if (new != IMAGE_BACKEND_NONE)
+	{
+	    if (IMAGE_FUNC(new, init)(img) == FAIL)
+		goto fail;
+	    img->backend = new;
+	}
+    }
+    FOR_ALL_PLACEMENTS(place)
+    {
+	image_placement_clear(place);
+	if (image_backend != IMAGE_BACKEND_NONE)
+	    PLACEMENT_FUNC(image_backend, uninit)(place);
+	place->backend_data = NULL;
+	if (new != IMAGE_BACKEND_NONE)
+	{
+	    if (PLACEMENT_FUNC(new, init)(place) == FAIL)
+		goto fail;
+	    place->backend = new;
+	}
+    }
+
+    redraw_all_later(UPD_VALID);
+    image_backend = new;
+
+    if (new == IMAGE_BACKEND_NONE)
+	set_vim_var_string(VV_IMAGEBACKEND, (char_u *)"none", -1);
+    else
+	set_vim_var_string(VV_IMAGEBACKEND,
+		(char_u *)image_backends[image_backend].name, -1);
+
+    return OK;
+fail:
+    FOR_ALL_IMAGES(img)
+	if (img->backend != IMAGE_BACKEND_NONE)
+	{
+	    IMAGE_FUNC(img->backend, uninit)(img);
+	    img->backend = IMAGE_BACKEND_NONE;
+	}
+
+    FOR_ALL_PLACEMENTS(place)
+	if (img->backend != IMAGE_BACKEND_NONE)
+	{
+	    image_placement_clear(place);
+	    PLACEMENT_FUNC(place->backend, uninit)(place);
+	    place->backend = IMAGE_BACKEND_NONE;
+	}
+
+    redraw_all_later(UPD_VALID);
+
+    image_backend = IMAGE_BACKEND_NONE;
+    set_vim_var_string(VV_IMAGEBACKEND, (char_u *)"none", -1);
+    emsg(_(e_changing_image_backend_failed));
+    return FAIL;
 }
 
 #endif // FEAT_IMAGE
