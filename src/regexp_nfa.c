@@ -5744,6 +5744,68 @@ find_match_text(colnr_T *startcol, int regstart, char_u *match_text)
 }
 
 /*
+ * Check whether the composing characters at the current input position match
+ * the NFA composing sub-expression that starts at "sta" (the first state
+ * after NFA_COMPOSING).  "curc" is the base character and "clen" its byte
+ * length.
+ * Returns OK when it matches, FAIL otherwise.
+ */
+    static int
+match_composing(nfa_state_T *sta, int curc, int clen)
+{
+    int		mc = curc;
+    int		len = 0;
+    int		cchars[MAX_MCO];
+    int		ccount = 0;
+    int		j;
+
+    if (utf_iscomposing(sta->c))
+	// Only match composing character(s), ignore base character.  Used
+	// for ".{composing}" and "{composing}" (no preceding character).
+	len += mb_char2len(mc);
+
+    if (rex.reg_icombine && len == 0)
+	// If \Z was present, then ignore composing characters.  When
+	// ignoring the base character this always matches.
+	return sta->c == curc ? OK : FAIL;
+
+    // Check base character matches first, unless ignored.
+    if (len == 0 && mc != sta->c)
+	return FAIL;
+
+    if (len == 0)
+    {
+	len += mb_char2len(mc);
+	sta = sta->out;
+    }
+
+    // We don't care about the order of composing characters.  Get them into
+    // cchars[] first.
+    while (len < clen)
+    {
+	mc = mb_ptr2char(rex.input + len);
+	cchars[ccount++] = mc;
+	len += mb_char2len(mc);
+	if (ccount == MAX_MCO)
+	    break;
+    }
+
+    // Check that each composing char in the pattern matches a composing char
+    // in the text.  We do not check if all composing chars are matched.
+    while (sta->c != NFA_END_COMPOSING)
+    {
+	for (j = 0; j < ccount; ++j)
+	    if (cchars[j] == sta->c)
+		break;
+	if (j == ccount)
+	    return FAIL;
+	sta = sta->out;
+    }
+
+    return OK;
+}
+
+/*
  * Main matching routine.
  *
  * Run NFA to determine whether it matches rex.input.
@@ -6400,74 +6462,9 @@ nfa_regmatch(
 
 	    case NFA_COMPOSING:
 	    {
-		int	    mc = curc;
-		int	    len = 0;
 		nfa_state_T *end;
-		nfa_state_T *sta;
-		int	    cchars[MAX_MCO];
-		int	    ccount = 0;
-		int	    j;
 
-		sta = t->state->out;
-		len = 0;
-		if (utf_iscomposing(sta->c))
-		{
-		    // Only match composing character(s), ignore base
-		    // character.  Used for ".{composing}" and "{composing}"
-		    // (no preceding character).
-		    len += mb_char2len(mc);
-		}
-		if (rex.reg_icombine && len == 0)
-		{
-		    // If \Z was present, then ignore composing characters.
-		    // When ignoring the base character this always matches.
-		    if (sta->c != curc)
-			result = FAIL;
-		    else
-			result = OK;
-		    while (sta->c != NFA_END_COMPOSING)
-			sta = sta->out;
-		}
-
-		// Check base character matches first, unless ignored.
-		else if (len > 0 || mc == sta->c)
-		{
-		    if (len == 0)
-		    {
-			len += mb_char2len(mc);
-			sta = sta->out;
-		    }
-
-		    // We don't care about the order of composing characters.
-		    // Get them into cchars[] first.
-		    while (len < clen)
-		    {
-			mc = mb_ptr2char(rex.input + len);
-			cchars[ccount++] = mc;
-			len += mb_char2len(mc);
-			if (ccount == MAX_MCO)
-			    break;
-		    }
-
-		    // Check that each composing char in the pattern matches a
-		    // composing char in the text.  We do not check if all
-		    // composing chars are matched.
-		    result = OK;
-		    while (sta->c != NFA_END_COMPOSING)
-		    {
-			for (j = 0; j < ccount; ++j)
-			    if (cchars[j] == sta->c)
-				break;
-			if (j == ccount)
-			{
-			    result = FAIL;
-			    break;
-			}
-			sta = sta->out;
-		    }
-		}
-		else
-		    result = FAIL;
+		result = match_composing(t->state->out, curc, clen);
 
 		end = t->state->out1;	    // NFA_END_COMPOSING
 		ADD_STATE_IF_MATCH(end);
@@ -6512,74 +6509,10 @@ nfa_regmatch(
 		{
 		    if (state->c == NFA_COMPOSING)
 		    {
-			int	    mc = curc;
-			int	    len = 0;
 			nfa_state_T *end;
-			nfa_state_T *sta;
-			int	    cchars[MAX_MCO];
-			int	    ccount = 0;
-			int	    j;
 
-			sta = t->state->out->out;
-			len = 0;
-			if (utf_iscomposing(sta->c))
-			{
-			    // Only match composing character(s), ignore base
-			    // character.  Used for ".{composing}" and "{composing}"
-			    // (no preceding character).
-			    len += mb_char2len(mc);
-			}
-			if (rex.reg_icombine && len == 0)
-			{
-			    // If \Z was present, then ignore composing characters.
-			    // When ignoring the base character this always matches.
-			    if (sta->c != curc)
-				result = FAIL;
-			    else
-				result = OK;
-			    while (sta->c != NFA_END_COMPOSING)
-				sta = sta->out;
-			}
-			// Check base character matches first, unless ignored.
-			else if (len > 0 || mc == sta->c)
-//			if (len > 0 || mc == sta->c)
-			{
-			    if (len == 0)
-			    {
-				len += mb_char2len(mc);
-				sta = sta->out;
-			    }
-
-			    // We don't care about the order of composing characters.
-			    // Get them into cchars[] first.
-			    while (len < clen)
-			    {
-				mc = mb_ptr2char(rex.input + len);
-				cchars[ccount++] = mc;
-				len += mb_char2len(mc);
-				if (ccount == MAX_MCO)
-				    break;
-			    }
-
-			    // Check that each composing char in the pattern matches a
-			    // composing char in the text.  We do not check if all
-			    // composing chars are matched.
-			    result = OK;
-			    while (sta->c != NFA_END_COMPOSING)
-			    {
-				for (j = 0; j < ccount; ++j)
-				    if (cchars[j] == sta->c)
-					break;
-				if (j == ccount)
-				{
-				    result = FAIL;
-				    break;
-				}
-				sta = sta->out;
-			    }
-			}
-			else
-			    result = FAIL;
+			result = match_composing(t->state->out->out, curc,
+									clen);
 
 			if (t->state->out->out1 != NULL
 				&& t->state->out->out1->c == NFA_END_COMPOSING)
