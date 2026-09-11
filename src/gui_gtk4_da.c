@@ -22,6 +22,12 @@ typedef struct
 {
     int id;
     int zindex;
+    // The cells the image covers, to remove it when one of them is cleared
+    // or moved.
+    int row;
+    int col;
+    int rows;
+    int cols;
     GskRenderNode *node; // Cached clip node, which has the texture node as its
 			 // child. May be NULL
 } DrawImage;
@@ -165,6 +171,8 @@ struct _VimDrawArea
 
 #ifdef FEAT_IMAGE_GDK
 static void draw_image_free(DrawImage *dimg);
+static void vim_draw_area_remove_images_in(VimDrawArea *self, int row1,
+	int col1, int row2, int col2);
 #endif
 static void draw_row_init(DrawRow *drow, int row, int cols);
 static void draw_row_clear(DrawRow *drow);
@@ -1523,6 +1531,9 @@ vim_draw_area_clear_block(
 		|| col2 >= self->n_cols))
 	return;
 
+#ifdef FEAT_IMAGE_GDK
+    vim_draw_area_remove_images_in(self, row1, col1, row2, col2);
+#endif
     for (int r = row1; r <= row2; r++)
 	draw_row_fill(self->rows + r, col1, col2, NULL, NULL, &self->cursor);
 }
@@ -1564,6 +1575,10 @@ vim_draw_area_move_block(
     assert(col2 >= col1);
     assert(row1 != to);
 
+#ifdef FEAT_IMAGE_GDK
+    vim_draw_area_remove_images_in(self, MIN(row1, to), col1,
+					       MAX(row2, to + offset), col2);
+#endif
     if (row1 > to)
     {
 	// "row1" is below "to", start moving rows starting at "row1". Rows are
@@ -1828,15 +1843,20 @@ vim_draw_area_add_image(
 
 	gsk_render_node_unref(dimg->node);
 	dimg->node = node;
-
-	if (dimg->zindex == zindex)
-	    return;
-	else
-	{
-	    dimg->zindex = zindex;
-	    g_queue_unlink(self->images, link);
-	}
     }
+    dimg->row = row;
+    dimg->col = col;
+    dimg->rows = (int)((draw_h - 1) / gui.char_height) + 1;
+    dimg->cols = (int)((draw_w - 1) / gui.char_width) + 1;
+
+    if (dimg->zindex != zindex)
+    {
+	dimg->zindex = zindex;
+	g_queue_unlink(self->images, link);
+    }
+    else if (link->prev != NULL || self->images->head == link)
+	// Already queued at the right position.
+	return;
 
     vim_draw_area_queue_image(self, link);
 }
@@ -1854,6 +1874,34 @@ vim_draw_area_remove_image(VimDrawArea *self, int id)
 
     draw_image_free(link->data);
     g_queue_delete_link(self->images, link);
+}
+
+/*
+ * Remove the images that cover a cell in the block (inclusive).
+ */
+    static void
+vim_draw_area_remove_images_in(
+	VimDrawArea *self,
+	int	    row1,
+	int	    col1,
+	int	    row2,
+	int	    col2)
+{
+    GList *s = self->images->head;
+
+    while (s != NULL)
+    {
+	GList	    *next = s->next;
+	DrawImage   *dimg = s->data;
+
+	if (dimg->row <= row2 && dimg->row + dimg->rows > row1
+		&& dimg->col <= col2 && dimg->col + dimg->cols > col1)
+	{
+	    draw_image_free(dimg);
+	    g_queue_delete_link(self->images, s);
+	}
+	s = next;
+    }
 }
 #endif
 
