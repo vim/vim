@@ -1895,7 +1895,7 @@ getout(int exitval)
     cs_end();
 #endif
 #ifdef FEAT_IMAGE_SIXEL
-    sixel_uninit();
+    uninit_image_state();
 #endif
 #ifdef FEAT_EVAL
     if (garbage_collect_at_exit)
