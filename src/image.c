@@ -92,14 +92,30 @@ struct
 };
 
 // Current image backend being used
-static image_backend_T image_backend = IMAGE_BACKEND_KITTY; // Temporary
+static image_backend_T image_backend = IMAGE_BACKEND_SIXEL; // Temporary
 
 static image_T *images = NULL;
 // Sorted from highest zindex to lowest zindex
 static image_placement_T    *placements = NULL;
 static int		    n_placements = 0;
 
+//
+static pixman_region32_t    dirty_region; // In cells
+static bool		    dirty_region_init = false;
+static bool		    dirty_region_finalized = false;
+
 static void invalidate_region(pixman_region32_t *region);
+
+    void
+uninit_image_state(void)
+{
+#ifdef FEAT_IMAGE_SIXEL
+    sixel_uninit();
+#endif
+    if (dirty_region_init)
+	pixman_region32_fini(&dirty_region);
+    dirty_region_finalized = true;
+}
 
 /*
  * Return true if the there image backend is ready, otherwise emit error.
@@ -503,7 +519,9 @@ draw_image_placements(void)
 
 	if (img != NULL)
 	{
-	    pixman_region32_t visible_abs;
+	    pixman_region32_t	visible_abs;
+	    pixman_region32_t	dirty;
+	    bool		has_dirty_cells;
 
 	    x = place->col;
 	    y = place->row;
@@ -530,9 +548,16 @@ draw_image_placements(void)
 	    // into image relative coordinates.
 	    pixman_region32_translate(&visible_region, -x, -y);
 
+	    // Check if visible region touches the current global dirty region.
+	    // If it does, then redraw the image.
+	    pixman_region32_init(&dirty);
+	    (void)pixman_region32_intersect(&dirty, &visible_abs, &dirty_region);
+	    has_dirty_cells = pixman_region32_empty(&dirty);
+	    pixman_region32_fini(&dirty);
+
 	    // Only redraw the image if it has changed (or if we haven't drawn
 	    // it yet).
-	    if (place->dirty || (place->visible_init
+	    if (place->dirty || has_dirty_cells || (place->visible_init
 			&& !pixman_region32_equal(
 			    &visible_region, &place->visible)))
 	    {
@@ -583,21 +608,29 @@ draw_image_placements(void)
 
     vim_free(pending_placements);
     pixman_region32_fini(&subtract_region);
+
+    if (dirty_region_init)
+	pixman_region32_clear(&dirty_region);
 }
 
 /*
- * Dirty all image placements. If "only_blit" is true, then only clear if the
- * current image backend blits to the screen.
+ * Mark the given region as dirty (text has been drawn over it).
  */
     void
-dirty_image_placements(bool only_blit)
+mark_dirty_region_for_images(int row, int col, int row_height, int col_width)
 {
-    if (only_blit && !image_backends[image_backend].placement.blit)
+    // This function may be called in mch_exit().
+    if (dirty_region_finalized)
 	return;
-    for (image_placement_T *place = placements;
-	    place != NULL;
-	    place = place->next)
-	place->dirty = true;
+    if (!dirty_region_init)
+    {
+	pixman_region32_init(&dirty_region);
+	dirty_region_init = true;
+    }
+
+    pixman_region32_union_rect(&dirty_region, &dirty_region,
+	    col, row, col_width, row_height);
+    redraw_all_later(UPD_VALID);
 }
 
 /*

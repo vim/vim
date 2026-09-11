@@ -2632,6 +2632,10 @@ screen_char(unsigned off, int row, int col)
 	    out_char(ScreenLines2[off]);
     }
 
+#ifdef FEAT_IMAGE
+    mark_dirty_region_for_images(row, col, 1, 1);
+#endif
+
     screen_cur_col++;
 }
 
@@ -3647,13 +3651,6 @@ screenclear2(int doclear)
     }
 
     screen_cleared = TRUE;	// can use contents of ScreenLines now
-
-#ifdef FEAT_IMAGE
-    // Must dirty all image placements so that they are redrawn. Only do this
-    // for image backends that blit to the screen. The other image backends
-    // (kitty, GTK4/GDK), images are always rendered ontop of text.
-    dirty_image_placements(true);
-#endif
 
     win_rest_invalid(firstwin);	// redraw all regular windows
     redraw_cmdline = TRUE;
