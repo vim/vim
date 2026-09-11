@@ -710,4 +710,48 @@ func Test_lookbehind_submatch_on_second_line()
   bwipe!
 endfunc
 
+" Tests for \%f) and \%t) with multibyte text.  The delimiters are always
+" ASCII, but the text between them need not be, and \%t) has to back up over
+" exactly the one-byte delimiter rather than a whole character.
+func s:delimiter_atom_mb_test()
+  call assert_equal('(αβγ)', matchstr('x(αβγ)y', '(\%f)'))
+  call assert_equal('(αβγ', matchstr('x(αβγ)y', '(\%t)'))
+  call assert_equal('[日本語]', matchstr('a[日本語]b', '\[\%f]'))
+  call assert_equal('[日本語', matchstr('a[日本語]b', '\[\%t]'))
+  call assert_equal('{é(è)ê}', matchstr('{é(è)ê}', '{\%f}'))
+  call assert_equal('<€€>', matchstr('p<€€>q', '<\%f>'))
+
+  " Nesting counts delimiter pairs, not bytes
+  call assert_equal('(α(β)γ)', matchstr('f(α(β)γ)d', '(\%f)'))
+  call assert_equal('(α(β)γ', matchstr('f(α(β)γ)d', '(\%t)'))
+
+  " \%t) must leave the position exactly on the closing delimiter, so that
+  " the next atom in the pattern can match it.
+  call assert_equal('(αβγ)', matchstr('x(αβγ)y', '(\%t))'))
+
+  " No closing delimiter, no match
+  call assert_equal('', matchstr('(αβγ', '(\%f)'))
+
+  " across a line break with "\_", with multibyte text on both sides
+  new
+  call setline(1, ['(α', 'β)'])
+  call assert_equal([2, 3], searchpos('(\_%f)', 'cnWe'))
+  call assert_equal([2, 1], searchpos('(\_%t)', 'cnWe'))
+  call assert_equal([0, 0], searchpos('(\%f)', 'cnW'))
+  bwipe!
+endfunc
+
+func Test_delimiter_atoms_mb_re1()
+  set re=1
+  call s:delimiter_atom_mb_test()
+  set re=0
+endfunc
+
+func Test_delimiter_atoms_mb_re2()
+  set re=2
+  call s:delimiter_atom_mb_test()
+  set re=0
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab

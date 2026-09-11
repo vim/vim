@@ -100,7 +100,9 @@ func Test_column_success_failure()
   %s/\%>0v./A/
   call assert_equal('Abar', getline(1))
   call assert_fails('/\%v', 'E71:')
-  call assert_fails('/\%>v', 'E71:')
+  " \%> is an atom of its own now (match through the closing '>'), so '/\%>v'
+  " is a valid pattern that simply finds nothing.  Both engines agree.
+  call assert_fails('/\%>v', 'E486:')
   call assert_fails('/\%c', 'E71:')
   call assert_fails('/\%<c', 'E71:')
   call assert_fails('/\%l', 'E71:')
@@ -108,7 +110,7 @@ func Test_column_success_failure()
   %s/\%>0v./B/
   call assert_equal('Bbar', getline(1))
   call assert_fails('/\%v', 'E1273:')
-  call assert_fails('/\%>v', 'E1273:')
+  call assert_fails('/\%>v', 'E486:')
   call assert_fails('/\%c', 'E1273:')
   call assert_fails('/\%<c', 'E1273:')
   call assert_fails('/\%l', 'E1273:')
@@ -116,6 +118,238 @@ func Test_column_success_failure()
   set re=0
   bwipe!
 endfunc
+
+" Tests for \%) \%] \%} \%> and their \%f / \%t spellings: match forward to
+" the delimiter that closes the nesting level the match is on.
+func s:delimiter_atom_test()
+  " The opening delimiter is matched by the pattern, the atom runs to its
+  " partner.  Nested pairs are counted, so it does not stop at the first one.
+  call assert_equal('(a(b)c)', matchstr('f(a(b)c)d', '(\%f)'))
+  call assert_equal('[a[b]c]', matchstr('x[a[b]c]y', '\[\%f]'))
+  call assert_equal('{a{b}c}', matchstr('x{a{b}c}y', '{\%f}'))
+  call assert_equal('<b<c>d>', matchstr('a<b<c>d>e', '<\%f>'))
+  call assert_equal('(((x)))', matchstr('(((x)))', '(\%f)'))
+  call assert_equal('(((x))', matchstr('(((x)))', '((\%f)'))
+
+  " A bare \%) is short for \%f)
+  call assert_equal('(a(b)c)', matchstr('f(a(b)c)d', '(\%)'))
+  call assert_equal('[a[b]c]', matchstr('x[a[b]c]y', '\[\%]'))
+  call assert_equal('{a{b}c}', matchstr('x{a{b}c}y', '{\%}'))
+  call assert_equal('<b<c>d>', matchstr('a<b<c>d>e', '<\%>'))
+
+  " \%t stops just before the closing delimiter
+  call assert_equal('(a(b)c', matchstr('f(a(b)c)d', '(\%t)'))
+  call assert_equal('[a[b]c', matchstr('x[a[b]c]y', '\[\%t]'))
+  call assert_equal('{a{b}c', matchstr('x{a{b}c}y', '{\%t}'))
+  call assert_equal('<b<c>d', matchstr('a<b<c>d>e', '<\%t>'))
+
+  " Used without an opening delimiter it runs to the end of the level it is on
+  call assert_equal('b)', matchstr('a(b)c', '\%f)'))
+  call assert_equal('b', matchstr('a(b)c', '\%t)'))
+  call assert_equal('x)', matchstr('x)y', '\%f)'))
+
+  " \%f always moves over at least the delimiter, \%t can match nothing
+  call assert_equal(')', matchstr(')', '\%f)'))
+  call assert_equal('', matchstr(')', '\%t)'))
+  call assert_equal('(', matchstr('()', '(\%t)'))
+  call assert_equal('()', matchstr('()', '(\%f)'))
+
+  " No closing delimiter: no match
+  call assert_equal('', matchstr('f(a(b(c', '(\%f)'))
+  call assert_equal('', matchstr('((', '(\%f)'))
+  call assert_equal('', matchstr('abc', '\%f)'))
+  call assert_equal('', matchstr('', '(\%f)'))
+
+  " Without "\_" the search stops at the end of the line
+  new
+  call setline(1, ['a(b', 'c)d'])
+  call assert_equal([0, 0], searchpos('(\%f)', 'cnW'))
+  bwipe!
+
+  " "\_" only accepts these atoms, no other \% item
+  call assert_fails('call matchstr("abc", "\\_%V")', 'E71:')
+  call assert_fails('call matchstr("abc", "\\_%d123")', 'E71:')
+  call assert_fails('call matchstr("abc", "\\_%fz")', 'E71:')
+
+  " on a single line the "\_" form behaves like the plain one
+  call assert_equal('(a(b)c)', matchstr('f(a(b)c)d', '(\_%f)'))
+  call assert_equal('(a(b)c', matchstr('f(a(b)c)d', '(\_%t)'))
+  call assert_equal('(a(b)c)', matchstr('f(a(b)c)d', '(\_%)'))
+  call assert_equal('[a[b]c]', matchstr('x[a[b]c]y', '\[\_%]'))
+  call assert_equal('{a{b}c}', matchstr('x{a{b}c}y', '{\_%}'))
+  call assert_equal('<bb>', matchstr('a<bb>c', '<\_%>'))
+  call assert_equal('(a(b)c)', matchstr('f(a(b)c)d', '\v\(\_%f)'))
+
+  " Unbalanced at the first "(" but balanced at a later one
+  call assert_equal('(b)', matchstr('f(a(b)c', '(\%f)'))
+  call assert_equal(3, match('f(a(b)c', '(\%f)'))
+
+  " Combines with the rest of the pattern
+  call assert_equal('c', matchstr('a(b)c(d)e', '(\%f)\zsc'))
+  call assert_equal('(b)', matchstr('a(b)c(d)e', 'a\zs(\%f)'))
+  call assert_equal('((a))', matchstr('((a))((b))', '\((\%f)\)'))
+  call assert_equal('(a)(b)', matchstr('(a)(b)', '(\%f)(\%f)'))
+  call assert_equal('(a)', matchstr('(a)x', '(\%f)\|zzz'))
+  call assert_equal('xx(a)', matchstr('xx(a)', '^xx(\%f)'))
+  call assert_equal('(a)xx', matchstr('(a)xx', '(\%f)xx$'))
+  call assert_equal('<a>(b)', matchstr('<a>(b)', '<\%f>(\%f)'))
+
+  " With a multi.  \%f) has width, \%t) can match empty.
+  call assert_equal('a)', matchstr('(a)(b)(c)', '\%f)\+'))
+  call assert_equal('a', matchstr('(a)(b)(c)', '\%t)\+'))
+  call assert_equal('', matchstr('(a)(b)(c)', '\%f)*'))
+  call assert_equal('', matchstr('(a)(b)(c)', '\%t)*'))
+  call assert_equal('((x)))', matchstr('(((x)))', '\%f)\{1,3}'))
+  call assert_equal('a]', matchstr('[a][b]', '\%f]\+'))
+  call assert_equal('(a)(b)(c)', matchstr('(a)(b)(c)', '\((\%f)\)\+'))
+  call assert_equal('(a)(b)', matchstr('(a)(b)(c)', '\((\%f)\)\{2}'))
+
+  " In the other magic modes
+  call assert_equal('(a(b)c)', matchstr('f(a(b)c)d', '\v\(%f)'))
+  call assert_equal('(a(b)c', matchstr('f(a(b)c)d', '\v\(%t)'))
+  call assert_equal('<bb>', matchstr('a<bb>c', '\v\<%f>'))
+  call assert_equal('{a{b}c}', matchstr('x{a{b}c}y', '\v\{%f}'))
+  call assert_equal('(a(b)c)', matchstr('f(a(b)c)d', '\v\(%)'))
+  call assert_equal('(a(b)c)', matchstr('f(a(b)c)d', '\M(\%f)'))
+  call assert_equal('(a(b)c)', matchstr('f(a(b)c)d', '\V(\%f)'))
+
+  " An invalid character after \%f or \%t is an error
+  call assert_fails('call matchstr("abc", "\\%fz")', 'E71:')
+  call assert_fails('call matchstr("abc", "\\%tz")', 'E71:')
+  call assert_fails('call matchstr("abc", "\\%f")', 'E71:')
+  call assert_fails('call matchstr("abc", "\\%t")', 'E71:')
+  call assert_fails('call matchstr("abc", "\\%f(")', 'E71:')
+  call assert_fails('call matchstr("abc", "\\%t[")', 'E71:')
+  call assert_fails('call matchstr("abc", "\\_%f")', 'E71:')
+
+  " \%> is only this atom when no digit, "." or "'" follows: the position
+  " atoms keep working.
+  new
+  call setline(1, ['aaa', 'bbb', 'ccc'])
+  call assert_equal(2, search('\%>1lbbb', 'nw'))
+  call assert_equal(3, search('\%>2lccc', 'nw'))
+  call assert_equal(1, search('\%<2laaa', 'nw'))
+  bwipe!
+  new
+  call setline(1, 'abcdef')
+  call assert_equal([1, 4], searchpos('\%>3cd', 'nw'))
+  call assert_equal([1, 2], searchpos('\%<3cb', 'nw'))
+  call assert_equal([1, 4], searchpos('\%>3vd', 'nw'))
+  bwipe!
+  new
+  call setline(1, ['x1', 'x2', 'x3'])
+  call cursor(2, 1)
+  call assert_equal(3, search('\%>.lx3', 'nw'))
+  call assert_equal(1, search('\%<.lx1', 'nw'))
+  bwipe!
+endfunc
+
+func Test_delimiter_atoms_re1()
+  set re=1
+  call s:delimiter_atom_test()
+  set re=0
+endfunc
+
+func Test_delimiter_atoms_re2()
+  set re=2
+  call s:delimiter_atom_test()
+  set re=0
+endfunc
+
+
+" With a "\_" prefix the delimiter atoms keep searching on the following
+" lines, so a block that spans lines is matched as a whole.
+func s:delimiter_atom_multiline_test()
+  " closing delimiter on the next line
+  new
+  call setline(1, ['a(b', 'c)d'])
+  call assert_equal([1, 2], searchpos('(\_%f)', 'cnW'))
+  call assert_equal([2, 2], searchpos('(\_%f)', 'cnWe'))
+  call assert_equal([2, 1], searchpos('(\_%t)', 'cnWe'))
+  bwipe!
+
+  " closing delimiter in the first column of the next line: \%f) includes it,
+  " \%t) ends just before it
+  new
+  call setline(1, ['a(b', ')d'])
+  call assert_equal([2, 1], searchpos('(\_%f)', 'cnWe'))
+  call assert_equal([1, 4], searchpos('(\_%t)', 'cnWe'))
+  bwipe!
+
+  " a brace block, the main use for this
+  new
+  call setline(1, ['f() {', ' x;', '}'])
+  call assert_equal([1, 5], searchpos('{\_%f}', 'cnW'))
+  call assert_equal([3, 1], searchpos('{\_%f}', 'cnWe'))
+  call assert_equal([2, 4], searchpos('{\_%t}', 'cnWe'))
+  bwipe!
+
+  " nesting is counted across lines
+  new
+  call setline(1, ['(a', '(b)', ')'])
+  call assert_equal([1, 1], searchpos('(\_%f)', 'cnW'))
+  call assert_equal([3, 1], searchpos('(\_%f)', 'cnWe'))
+  bwipe!
+  new
+  call setline(1, ['(', '(', '(', ')', ')', ')'])
+  call assert_equal([6, 1], searchpos('(\_%f)', 'cnWe'))
+  bwipe!
+
+  " empty lines in between
+  new
+  call setline(1, ['a(', '', '', ')b'])
+  call assert_equal([4, 1], searchpos('(\_%f)', 'cnWe'))
+  bwipe!
+
+  " never closed before the end of the buffer: no match
+  new
+  call setline(1, ['(a', 'b', 'c'])
+  call assert_equal([0, 0], searchpos('(\_%f)', 'cnW'))
+  bwipe!
+
+  " the whole block can be replaced
+  new
+  call setline(1, ['f() {', ' x;', '}'])
+  %s/{\_%f}/BLOCK/
+  call assert_equal(['f() BLOCK'], getline(1, '$'))
+  bwipe!
+  new
+  call setline(1, ['a(b', 'c)d'])
+  %s/(\_%f)/[&]/
+  call assert_equal(['a[(b', 'c)]d'], getline(1, '$'))
+  bwipe!
+endfunc
+
+func Test_delimiter_atoms_multiline_re1()
+  set re=1
+  call s:delimiter_atom_multiline_test()
+  set re=0
+endfunc
+
+func Test_delimiter_atoms_multiline_re2()
+  set re=2
+  call s:delimiter_atom_multiline_test()
+  set re=0
+endfunc
+
+" In a double-byte encoding a trail byte can have the same value as a
+" delimiter, it must not be counted as one.
+func Test_delimiter_atoms_dbcs()
+  %bw!
+  let enc = &enc
+  set encoding=cp932
+  " 0x81 0x5d is one character, its trail byte looks like a "]".
+  let text = '[' .. "\x81\x5d" .. 'x]'
+  for e in [1, 2]
+    exe 'set re=' .. e
+    call assert_equal(4, len(matchstr(text, '\[\%t]')), 'engine ' .. e)
+    call assert_equal(5, len(matchstr(text, '\[\%f]')), 'engine ' .. e)
+  endfor
+  set re=0
+  let &encoding = enc
+  bw!
+endfunc
+
 
 func Test_recursive_addstate()
   " This will call addstate() recursively until it runs into the limit.

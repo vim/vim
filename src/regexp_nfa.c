@@ -32,6 +32,10 @@
 // Added to NFA_ANY - NFA_NUPPER_IC to include a NL.
 #define NFA_ADD_NL		31
 
+// Added to a delimiter node to get its "\_" form, which also matches over
+// line breaks.  What NFA_ADD_NL is to the character classes.
+#define NFA_DELIM_NL		4
+
 enum
 {
     NFA_SPLIT = -1024,
@@ -112,6 +116,32 @@ enum
     NFA_ZREF9,			    // \z9
 #endif
     NFA_SKIP,			    // Skip characters
+    NFA_SKIP_NL,		    // Skip characters, may cross line breaks
+
+    // Match forward to the delimiter that closes the nesting level the match
+    // is on.  NFA_F_* includes that delimiter in the match, like the "f"
+    // motion, NFA_T_* stops just before it, like "t".  Both groups list the
+    // delimiters in the same order, so that "c - NFA_F_PCLOSE" and
+    // "c - NFA_T_PCLOSE" index the pair.  Four higher is the "\_" form of the
+    // same atom, which also matches over line breaks.  Like a backreference
+    // these consume a variable number of characters, so each is followed by an
+    // NFA_SKIP, or an NFA_SKIP_NL for the "\_" form.
+    NFA_F_PCLOSE,		    // \%f) and \%)
+    NFA_F_QCLOSE,		    // \%f] and \%]
+    NFA_F_RCLOSE,		    // \%f} and \%}
+    NFA_F_ACLOSE,		    // \%f> and \%>
+    NFA_F_PCLOSE_NL,		    // \_%f) and \_%)
+    NFA_F_QCLOSE_NL,		    // \_%f] and \_%]
+    NFA_F_RCLOSE_NL,		    // \_%f} and \_%}
+    NFA_F_ACLOSE_NL,		    // \_%f> and \_%>
+    NFA_T_PCLOSE,		    // \%t)
+    NFA_T_QCLOSE,		    // \%t]
+    NFA_T_RCLOSE,		    // \%t}
+    NFA_T_ACLOSE,		    // \%t>
+    NFA_T_PCLOSE_NL,		    // \_%t)
+    NFA_T_QCLOSE_NL,		    // \_%t]
+    NFA_T_RCLOSE_NL,		    // \_%t}
+    NFA_T_ACLOSE_NL,		    // \_%t>
 
     NFA_MOPEN,
     NFA_MOPEN1,
@@ -1305,6 +1335,7 @@ nfa_regatom(void)
     char_u	*endp;
     char_u	*old_regparse = regparse;
     int		extra = 0;
+    int		delim_nl = FALSE;
     int		emit_range;
     int		negated;
     int		result;
@@ -1341,6 +1372,18 @@ nfa_regatom(void)
 	    if (c == NUL)
 		EMSG_RET_FAIL(_(e_nfa_regexp_end_encountered_prematurely));
 
+	    if (c == '%')
+	    {
+		// "\_%)" and "\_%f)" etc: like "\%)" but matching over line
+		// breaks.  No other "\%" atom takes a "\_" prefix.
+		delim_nl = TRUE;
+		c = no_Magic(getchr());
+		if (c == ')' || c == ']' || c == '}' || c == '>'
+						 || c == 'f' || c == 't')
+		    goto delimiter_atom;
+		EMSG2_RET_FAIL(_(e_invalid_character_after_str),
+						      reg_magic == MAGIC_ALL);
+	    }
 	    if (c == '^')	// "\_^" is start-of-line
 	    {
 		EMIT(NFA_BOL);
@@ -1645,6 +1688,53 @@ nfa_regatom(void)
 			break;
 		    }
 
+		// Match to the delimiter that closes the current nesting
+		// level.  \%f) includes the delimiter, \%t) stops before it,
+		// a bare \%) is short for \%f).  \%> is handled further down,
+		// since the position atoms \%>123l and friends share it.
+		case ')':
+		case ']':
+		case '}':
+		case 'f':
+		case 't':
+delimiter_atom:
+		    {
+			int	base = NFA_F_PCLOSE;
+			int	idx;
+
+			if (c == 'f' || c == 't')
+			{
+			    if (c == 't')
+				base = NFA_T_PCLOSE;
+			    c = no_Magic(getchr());
+			}
+			switch (c)
+			{
+			    case ')': idx = 0; break;
+			    case ']': idx = 1; break;
+			    case '}': idx = 2; break;
+			    case '>': idx = 3; break;
+			    default:  EMSG2_RET_FAIL(
+					    _(e_invalid_character_after_str),
+					    reg_magic == MAGIC_ALL);
+			}
+			if (delim_nl)
+			{
+			    // the "\_" form also matches over line breaks
+			    idx += NFA_DELIM_NL;
+			    regflags |= RF_HASNL;
+			}
+			EMIT(base + idx);
+		    }
+		    break;
+
+		case '>':
+		    // \%>123l, \%>23c, \%>.c and \%>'m are position atoms and
+		    // are handled below, only a bare \%> closes a level.
+		    if (!VIM_ISDIGIT(*regparse) && *regparse != '\''
+							   && *regparse != '.')
+			goto delimiter_atom;
+		    // FALLTHROUGH
 		default:
 		    {
 			long_u	n = 0;
@@ -2639,6 +2729,39 @@ nfa_set_code(int c)
 	case NFA_ZREF9:	    STRCPY(code, "NFA_ZREF9"); break;
 # endif
 	case NFA_SKIP:	    STRCPY(code, "NFA_SKIP"); break;
+	case NFA_SKIP_NL:   STRCPY(code, "NFA_SKIP_NL"); break;
+	case NFA_F_PCLOSE:
+			    STRCPY(code, "NFA_F_PCLOSE"); break;
+	case NFA_F_QCLOSE:
+			    STRCPY(code, "NFA_F_QCLOSE"); break;
+	case NFA_F_RCLOSE:
+			    STRCPY(code, "NFA_F_RCLOSE"); break;
+	case NFA_F_ACLOSE:
+			    STRCPY(code, "NFA_F_ACLOSE"); break;
+	case NFA_F_PCLOSE_NL:
+			    STRCPY(code, "NFA_F_PCLOSE_NL"); break;
+	case NFA_F_QCLOSE_NL:
+			    STRCPY(code, "NFA_F_QCLOSE_NL"); break;
+	case NFA_F_RCLOSE_NL:
+			    STRCPY(code, "NFA_F_RCLOSE_NL"); break;
+	case NFA_F_ACLOSE_NL:
+			    STRCPY(code, "NFA_F_ACLOSE_NL"); break;
+	case NFA_T_PCLOSE:
+			    STRCPY(code, "NFA_T_PCLOSE"); break;
+	case NFA_T_QCLOSE:
+			    STRCPY(code, "NFA_T_QCLOSE"); break;
+	case NFA_T_RCLOSE:
+			    STRCPY(code, "NFA_T_RCLOSE"); break;
+	case NFA_T_ACLOSE:
+			    STRCPY(code, "NFA_T_ACLOSE"); break;
+	case NFA_T_PCLOSE_NL:
+			    STRCPY(code, "NFA_T_PCLOSE_NL"); break;
+	case NFA_T_QCLOSE_NL:
+			    STRCPY(code, "NFA_T_QCLOSE_NL"); break;
+	case NFA_T_RCLOSE_NL:
+			    STRCPY(code, "NFA_T_RCLOSE_NL"); break;
+	case NFA_T_ACLOSE_NL:
+			    STRCPY(code, "NFA_T_ACLOSE_NL"); break;
 
 	case NFA_PREV_ATOM_NO_WIDTH:
 			    STRCPY(code, "NFA_PREV_ATOM_NO_WIDTH"); break;
@@ -3293,8 +3416,25 @@ nfa_max_width(nfa_state_T *startstate, int depth)
 	    case NFA_ZREF8:
 	    case NFA_ZREF9:
 #endif
+	    case NFA_F_PCLOSE:
+	    case NFA_F_QCLOSE:
+	    case NFA_F_RCLOSE:
+	    case NFA_F_ACLOSE:
+	    case NFA_F_PCLOSE_NL:
+	    case NFA_F_QCLOSE_NL:
+	    case NFA_F_RCLOSE_NL:
+	    case NFA_F_ACLOSE_NL:
+	    case NFA_T_PCLOSE:
+	    case NFA_T_QCLOSE:
+	    case NFA_T_RCLOSE:
+	    case NFA_T_ACLOSE:
+	    case NFA_T_PCLOSE_NL:
+	    case NFA_T_QCLOSE_NL:
+	    case NFA_T_RCLOSE_NL:
+	    case NFA_T_ACLOSE_NL:
 	    case NFA_NEWL:
 	    case NFA_SKIP:
+	    case NFA_SKIP_NL:
 		// unknown width
 		return -1;
 
@@ -3836,6 +3976,41 @@ post2nfa(int *postfix, int *end, int nfa_calc_size)
 	    if (s == NULL)
 		goto theend;
 	    s1 = alloc_state(NFA_SKIP, NULL, NULL);
+	    if (s1 == NULL)
+		goto theend;
+	    patch(list1(&s->out), s1);
+	    PUSH(frag(s, list1(&s1->out)));
+	    break;
+
+	case NFA_F_PCLOSE:
+	case NFA_F_QCLOSE:
+	case NFA_F_RCLOSE:
+	case NFA_F_ACLOSE:
+	case NFA_F_PCLOSE_NL:
+	case NFA_F_QCLOSE_NL:
+	case NFA_F_RCLOSE_NL:
+	case NFA_F_ACLOSE_NL:
+	case NFA_T_PCLOSE:
+	case NFA_T_QCLOSE:
+	case NFA_T_RCLOSE:
+	case NFA_T_ACLOSE:
+	case NFA_T_PCLOSE_NL:
+	case NFA_T_QCLOSE_NL:
+	case NFA_T_RCLOSE_NL:
+	case NFA_T_ACLOSE_NL:
+	    // Consumes a variable number of characters, like a backreference,
+	    // so it is followed by a skip state to step over them.  The "\_"
+	    // forms may run over line breaks and need NFA_SKIP_NL for that.
+	    if (nfa_calc_size == TRUE)
+	    {
+		nstate += 2;
+		break;
+	    }
+	    s = alloc_state(*p, NULL, NULL);
+	    if (s == NULL)
+		goto theend;
+	    s1 = alloc_state((*p - NFA_F_PCLOSE) & NFA_DELIM_NL
+				? NFA_SKIP_NL : NFA_SKIP, NULL, NULL);
 	    if (s1 == NULL)
 		goto theend;
 	    patch(list1(&s->out), s1);
@@ -4504,7 +4679,17 @@ match_follows(nfa_state_T *startstate, int depth)
 	    case NFA_START_COLL:
 	    case NFA_START_NEG_COLL:
 	    case NFA_NEWL:
-		// state will advance input
+	    case NFA_F_PCLOSE:
+	    case NFA_F_QCLOSE:
+	    case NFA_F_RCLOSE:
+	    case NFA_F_ACLOSE:
+	    case NFA_F_PCLOSE_NL:
+	    case NFA_F_QCLOSE_NL:
+	    case NFA_F_RCLOSE_NL:
+	    case NFA_F_ACLOSE_NL:
+		// state will advance input.  NFA_T_* is not here: it matches
+		// nothing when already on the closing delimiter, so it goes
+		// through the "possibly zero-width" default below.
 		return FALSE;
 
 	    default:
@@ -4665,7 +4850,8 @@ addstate(
 	    // endless loop for "\(\)*"
 
 	default:
-	    if (state->lastlist[nfa_ll_index] == l->id && state->c != NFA_SKIP)
+	    if (state->lastlist[nfa_ll_index] == l->id && state->c != NFA_SKIP
+						 && state->c != NFA_SKIP_NL)
 	    {
 		// This state is already in the list, don't add it again,
 		// unless it is an MOPEN that is used for a backreference or
@@ -5623,6 +5809,25 @@ failure_chance(nfa_state_T *state, int depth)
 	    // backreferences don't match in many places
 	    return 94;
 
+	case NFA_F_PCLOSE:
+	case NFA_F_QCLOSE:
+	case NFA_F_RCLOSE:
+	case NFA_F_ACLOSE:
+	case NFA_F_PCLOSE_NL:
+	case NFA_F_QCLOSE_NL:
+	case NFA_F_RCLOSE_NL:
+	case NFA_F_ACLOSE_NL:
+	case NFA_T_PCLOSE:
+	case NFA_T_QCLOSE:
+	case NFA_T_RCLOSE:
+	case NFA_T_ACLOSE:
+	case NFA_T_PCLOSE_NL:
+	case NFA_T_QCLOSE_NL:
+	case NFA_T_RCLOSE_NL:
+	case NFA_T_ACLOSE_NL:
+	    // needs a closing delimiter
+	    return 90;
+
 	case NFA_LNUM_GT:
 	case NFA_LNUM_LT:
 	case NFA_COL_GT:
@@ -5741,6 +5946,69 @@ find_match_text(colnr_T *startcol, int regstart, char_u *match_text)
 
     *startcol = col;
     return 0L;
+}
+
+/*
+ * Scan forward from "rex.input" for the delimiter "cc" that closes the nesting
+ * level the match is on, counting "oc"/"cc" pairs on the way.  Continues on
+ * the following lines.
+ * When "with_nl" is set the search continues on the following lines and a
+ * line break counts as one byte, otherwise it stops at the end of the line.
+ * Returns the number of bytes from "rex.input" up to and including that
+ * delimiter, or -1 when there is none.
+ * "rex.line" and "rex.input" are left unchanged.
+ */
+    static int
+nfa_close_delimiter_len(int oc, int cc, int with_nl)
+{
+    int		level = 1;
+    int		bytelen = 0;
+    int		found = FALSE;
+    colnr_T	col = (colnr_T)(rex.input - rex.line);
+    linenr_T	lnum = rex.lnum;
+    char_u	*s = rex.input;
+    char_u	*ls = rex.input;    // where counting on this line started
+
+    for (;;)
+    {
+	while (*s != NUL)
+	{
+	    if (*s == oc)
+		++level;
+	    else if (*s == cc)
+		--level;
+	    // Step over a whole character: in a double-byte encoding a trail
+	    // byte can have the same value as a delimiter.
+	    if (*s < 0x80)
+		++s;
+	    else
+		s += (*mb_ptr2len)(s);
+	    if (level < 1)
+	    {
+		found = TRUE;
+		break;
+	    }
+	}
+	bytelen += (int)(s - ls);
+	if (found || !with_nl || !REG_MULTI || rex.reg_line_lbr
+						 || lnum >= rex.reg_maxline)
+	    break;
+	++bytelen;			// count the line break
+	ls = s = reg_getline(++lnum);
+	if (s == NULL)
+	    break;
+	fast_breakcheck();
+	if (got_int)
+	    break;
+    }
+
+    if (lnum != rex.lnum)
+    {
+	// reg_getline() may have invalidated rex.line
+	rex.line = reg_getline(rex.lnum);
+	rex.input = rex.line + col;
+    }
+    return found ? bytelen : -1;
 }
 
 /*
@@ -6891,8 +7159,115 @@ nfa_regmatch(
 		}
 		break;
 	      }
+	    case NFA_F_PCLOSE:
+	    case NFA_F_QCLOSE:
+	    case NFA_F_RCLOSE:
+	    case NFA_F_ACLOSE:
+	    case NFA_F_PCLOSE_NL:
+	    case NFA_F_QCLOSE_NL:
+	    case NFA_F_RCLOSE_NL:
+	    case NFA_F_ACLOSE_NL:
+	    case NFA_T_PCLOSE:
+	    case NFA_T_QCLOSE:
+	    case NFA_T_RCLOSE:
+	    case NFA_T_ACLOSE:
+	    case NFA_T_PCLOSE_NL:
+	    case NFA_T_QCLOSE_NL:
+	    case NFA_T_RCLOSE_NL:
+	    case NFA_T_ACLOSE_NL:
+		// \%f) \%t) and friends
+	      {
+		int	till = t->state->c >= NFA_T_PCLOSE;
+		int	idx = t->state->c
+				     - (till ? NFA_T_PCLOSE : NFA_F_PCLOSE);
+		int	with_nl = idx >= NFA_DELIM_NL;
+		int	bytelen;
+
+		if (with_nl)
+		    idx -= NFA_DELIM_NL;
+		bytelen = nfa_close_delimiter_len("([{<"[idx], ")]}>"[idx],
+								     with_nl);
+
+		if (bytelen < 0)
+		    break;			// no closing delimiter
+		if (till)
+		    --bytelen;
+
+		if (bytelen == 0)
+		{
+		    // empty match always works, output of NFA_SKIP_NL to be
+		    // used next
+		    add_here = TRUE;
+		    add_state = t->state->out->out;
+		}
+		else if (curc == NUL)
+		{
+		    // At the end of the line: the main loop only moves to the
+		    // next line when told to, and the line break does not count
+		    // as a character there, so do both here.
+		    go_to_nextline = TRUE;
+		    add_off = -1;		// start of the next line
+		    if (bytelen <= 1)
+			add_state = t->state->out->out;
+		    else
+		    {
+			add_state = t->state->out;
+			add_count = bytelen - 1;
+		    }
+		}
+		else if (bytelen <= clen)
+		{
+		    // match current character, jump ahead to out of
+		    // NFA_SKIP_NL
+		    add_state = t->state->out->out;
+		    add_off = clen;
+		}
+		else
+		{
+		    // skip over the matched characters, set character
+		    // count in NFA_SKIP_NL
+		    add_state = t->state->out;
+		    add_off = bytelen;
+		    add_count = bytelen - clen;
+		}
+		break;
+	      }
+
+	    case NFA_SKIP_NL:
+	      // Like NFA_SKIP, but the count may still hold line breaks, which
+	      // the main loop neither counts nor crosses on its own.
+	      if (curc == NUL)
+	      {
+		  if (!REG_MULTI || rex.reg_line_lbr
+					       || rex.lnum >= rex.reg_maxline)
+		      break;			// no more text
+		  go_to_nextline = TRUE;
+		  add_off = -1;			// start of the next line
+		  if (t->count - 1 <= 0)
+		      add_state = t->state->out;
+		  else
+		  {
+		      add_state = t->state;
+		      add_count = t->count - 1;
+		  }
+	      }
+	      else if (t->count - clen <= 0)
+	      {
+		  // end of match, go to what follows
+		  add_state = t->state->out;
+		  add_off = clen;
+	      }
+	      else
+	      {
+		  // add state again with decremented count
+		  add_state = t->state;
+		  add_off = 0;
+		  add_count = t->count - clen;
+	      }
+	      break;
+
 	    case NFA_SKIP:
-	      // character of previous matching \1 .. \9  or \@>
+	      // character of previous matching \1 .. \9, \@> or \%f)
 	      if (t->count - clen <= 0)
 	      {
 		  // end of match, go to what follows
