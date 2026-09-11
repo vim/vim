@@ -18,11 +18,11 @@ void foo()
     int c = 0B101;
     int d = 0b101;
 
-    // size_t (C++23)
+    // size_t suffix (since C++23)
     {
-        auto dec = 123z;
-        auto bin = 0B101ZU;
-        auto oct = 0750Uz;
-        auto hex = 0xABzU;
+        auto dec = 123Z;
+        auto bin = 0B10'10ZU;
+        auto oct = 01'750Uz;
+        auto hex = 0x12'EFz;
     }
 }
