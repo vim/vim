@@ -5116,9 +5116,6 @@ leave_tabpage(
 	    return FAIL;
     }
 
-#ifdef FEAT_IMAGE
-    popup_leave_tabpage(tp);
-#endif
     reset_dragwin();
 #if defined(FEAT_GUI)
     // Remove the scrollbars.  They may be added back later.

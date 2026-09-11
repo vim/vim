@@ -4036,43 +4036,6 @@ popup_close(int id, int force)
     return FAIL;
 }
 
-#ifdef FEAT_IMAGE
-/*
- * Remove the images of the popups local to tabpage "tp", it is about to be
- * left.  The popups are not drawn in another tabpage, their images stay until
- * they are removed.  They are emitted again when the tabpage is entered.
- */
-    void
-popup_leave_tabpage(tabpage_T *tp)
-{
-    win_T	*wp;
-
-    FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
-    {
-	if ((wp->w_popup_flags & POPF_HIDDEN) || wp->w_popup_image_data == NULL)
-	    continue;
-# ifdef FEAT_IMAGE_KITTY
-	popup_image_clear_kitty(wp, false);
-# endif
-# ifdef FEAT_IMAGE_GDK
-	if (gui.in_use)
-	    gui_gtk4_remove_image(wp);
-# endif
-# ifdef POPUP_IMAGE_CLEAR_GUI
-	popup_image_clear_gui(wp);
-# endif
-# ifdef FEAT_IMAGE_SIXEL
-	// Sixel pixels only go away with a clear of the screen.
-#  ifdef FEAT_GUI
-	if (!gui.in_use)
-#  endif
-	    if (popup_image_backend() == IMAGE_BACKEND_SIXEL)
-		redraw_later_clear();
-# endif
-    }
-}
-#endif
-
 /*
  * Close a popup window with Window-id "id" in tabpage "tp".
  */
