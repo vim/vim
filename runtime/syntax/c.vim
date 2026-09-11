@@ -238,6 +238,11 @@ else
   syn match	cOctalZero	display contained "\<0"
 endif
 
+if !exists("c_no_c29") && !s:in_cpp_family
+  " XXX: 0-prefixed octal literals e.g. 0123 are obsolescent since C29
+  syn match	cOctal		display contained "0[Oo]\o\+\%('\o\+\)*\%(u\=l\{0,2}\|ll\=u\|u\=wb\|wbu\=\)\>"
+endif
+
 "floating point number, with dot, optional exponent
 syn match	cFloat		display contained "\d\+\.\d*\%(e[-+]\=\d\+\)\=[fl]\="
 "floating point number, starting with a dot, optional exponent
