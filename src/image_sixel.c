@@ -212,18 +212,19 @@ image_placement_sixel_draw(image_placement_T *place)
     {
 	pixman_box32_t	rect = rects[i];
 	int		row, col;
-	int		w, h;
+	int		x, y, w, h;
 	int		size;
 	pixman_image_t  *tmp_image;
 	sixel_dither_t	*dither;
 	sixel_chunk_T	*chunk = ctx->chunks + i;
 
-	// Each rectangle position and dimensions *should* be a multiple of
-	// "cell_width" and "cell_height".
-	image_placement_get_subrect_pos(place, rect, &row, &col);
+	row = place->row + rect.y1;
+	col = place->col + rect.x1;
 
-	w = rect.x2 - rect.x1;
-	h = rect.y2 - rect.y1;
+	x = (rect.x1 + place->crop_box.x1) * cell_width;
+	y = (rect.y1 + place->crop_box.y1) * cell_height;
+	w = (rect.x2 - rect.x1) * cell_width;
+	h = (rect.y2 - rect.y1) * cell_height;
 
 	// Crop the image into "buf"
 	size = w * h * img->fmt;
@@ -238,10 +239,7 @@ image_placement_sixel_draw(image_placement_T *place)
 	    continue;
 
 	pixman_image_composite32(PIXMAN_OP_SRC,
-		img->image, NULL, tmp_image,
-		rect.x1 + place->crop_box.x1, rect.y1 + place->crop_box.y1,
-		0, 0,
-		0, 0, w, h);
+		img->image, NULL, tmp_image, x, y, 0, 0, 0, 0, w, h);
 	pixman_image_unref(tmp_image);
 
 	if (sixel_dither_new(&dither, 256, sixel_allocator) == SIXEL_FALSE)
@@ -278,8 +276,8 @@ image_placement_sixel_draw(image_placement_T *place)
 	term_windgoto(row, col);
 	out_str(sixel_buf.ga_data);
 
-	chunk->row_off = row - place->row;
-	chunk->col_off = col - place->col;
+	chunk->row_off = rect.y1;
+	chunk->col_off = rect.x1;
 	chunk->seq = sixel_buf.ga_data;
 	ga_init(&sixel_buf);
     }
