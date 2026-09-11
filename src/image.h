@@ -68,8 +68,7 @@ struct image_placement_S
     int		zindex;
     bool	dirty; // If image positioning/geometry has been modified
 
-    // TODO do everything in cells, then convert to pixels when cropping image
-    pixman_box32_t crop_box; // In pixels
+    pixman_box32_t crop_box; // In cells
 
     // The bounding box represents a region that images (including their
     // bounding boxes) under it with lower zindexes will have their overlapping
@@ -80,12 +79,10 @@ struct image_placement_S
     // Cached region that represents the parts of the image that have been drawn
     // to the screen. Used to check if image should be redrawn at all (if
     // nothing has been changed).
-    pixman_region32_t	visible;	// In pixels
-    pixman_region32_t	visible_abs;    // In pixels, uses absolute coordinates
+    pixman_region32_t	visible;	// In cells
+    pixman_region32_t	visible_abs;    // In cells, uses absolute coordinates
 					// (only used for composited image
 					// backends),
-					// TODO scale region when cell size
-					// changes.
     bool		visible_init;	// If "visible" is valid
 
     image_placement_T *next;

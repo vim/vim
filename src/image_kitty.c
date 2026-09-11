@@ -154,8 +154,15 @@ image_placement_kitty_draw(image_placement_T *place)
 	int rect_id = place->id + i; // The placement id of each rect is
 				     // "place->id + i".
 	int row, col;
+	int x, y, w, h;
 
-	image_placement_get_subrect_pos(place, rect, &row, &col);
+	row = place->row + rect.y1;
+	col = place->col + rect.x1;
+
+	x = (rect.x1 + place->crop_box.x1) * cell_width;
+	y = (rect.y1 + place->crop_box.y1) * cell_height;
+	w = (rect.x2 - rect.x1) * cell_width;
+	h = (rect.y2 - rect.y1) * cell_height;
 
 	// Since we send the image id and the placement id, the existing
 	// placement (if any) will be replaced by this one (essentially moving
@@ -178,8 +185,7 @@ image_placement_kitty_draw(image_placement_T *place)
 		(char *)IObuff, IOSIZE,
 		"\033_Ga=p,i=%d,p=%d,x=%u,y=%u,w=%u,h=%u,z=0,q=2,C=1\033\\",
 		img->id, rect_id,
-		rect.x1 + place->crop_box.x1, rect.y1 + place->crop_box.y1,
-		rect.x2 - rect.x1, rect.y2 - rect.y1);
+		x, y, w, h);
 
 	term_windgoto(row, col);
 	out_str((char_u *)IObuff);

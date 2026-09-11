@@ -92,14 +92,14 @@ struct
 };
 
 // Current image backend being used
-static image_backend_T image_backend = IMAGE_BACKEND_SIXEL; // Temporary
+static image_backend_T image_backend = IMAGE_BACKEND_KITTY; // Temporary
 
 static image_T *images = NULL;
 // Sorted from highest zindex to lowest zindex
 static image_placement_T    *placements = NULL;
 static int		    n_placements = 0;
 
-static void overwrite_region(pixman_region32_t *region);
+static void invalidate_region(pixman_region32_t *region);
 
 /*
  * Return true if the there image backend is ready, otherwise emit error.
@@ -211,26 +211,12 @@ image_ref(image_T *img)
     return img;
 }
 
-    void
+    static void
 pixels2cells(int x, int y, int *rx, int *ry)
 {
     // Always round upwards
     *rx = (x + cell_width - 1) / cell_width;
     *ry = (y + cell_height - 1) / cell_height;
-}
-
-    static void
-pixels2cells_floor(int x, int y, int *rx, int *ry)
-{
-    *rx = x / cell_width;
-    *ry = y / cell_height;
-}
-
-    static void
-cells2pixels(int row, int col, int *x, int *y)
-{
-    *x = col * cell_width;
-    *y = row * cell_height;
 }
 
 /*
@@ -317,11 +303,11 @@ image_placement_new(image_T *img)
     place->img = img;
     place->dirty = true;
 
-    place->crop_box.x2 = pixman_image_get_width(img->image);
-    place->crop_box.y2 = pixman_image_get_height(img->image);
     // Bounding box is in cells
     image_get_cell_dimensions(img,
 	    &place->bounding_box.x2, &place->bounding_box.y2);
+    place->crop_box.x2 = place->bounding_box.x2;
+    place->crop_box.y2 = place->bounding_box.y2;
 
     if (image_backends[image_backend].placement.init(place) == FAIL)
     {
@@ -342,9 +328,10 @@ image_placement_clear(image_placement_T *place)
     {
 	if (place->visible_init
 		&& image_backends[image_backend].placement.blit)
-	    overwrite_region(&place->visible_abs);
+	    invalidate_region(&place->visible_abs);
 	image_backends[image_backend].placement.clear(place);
 	place->dirty = true;
+	redraw_all_later(UPD_VALID);
     }
 }
 
@@ -437,40 +424,10 @@ image_placement_set_bounding_box(
 }
 
 /*
- * Rectangle position and dimensions *should* be a multiple of "cell_width" and
- * "cell_height".
- */
-    void
-image_placement_get_subrect_pos(
-	image_placement_T   *place,
-	pixman_box32_t	    rect,
-	int		    *row,
-	int 		    *col)
-{
-    pixels2cells_floor(rect.x1, rect.y1, col, row);
-    *row += place->row;
-    *col += place->col;
-}
-
-/*
- * Convert a box measured in cells to pixels
- */
-    static pixman_box32_t
-cell_box_to_pixels(pixman_box32_t box)
-{
-    pixman_box32_t res;
-
-    cells2pixels(box.y1, box.x1, &res.x1, &res.y1);
-    cells2pixels(box.y2, box.x2, &res.x2, &res.y2);
-    return res;
-}
-
-/*
- * Redraw the characters in "region" (which is in pixels), so that the region is
- * overwritten.
+ *
  */
     static void
-overwrite_region(pixman_region32_t *region)
+invalidate_region(pixman_region32_t *region)
 {
     pixman_box32_t  *rects;
     int		    n_rects;
@@ -482,12 +439,6 @@ overwrite_region(pixman_region32_t *region)
     for (int i = 0; i < n_rects; i++)
     {
 	pixman_box32_t rect = rects[i];
-
-	// Do not round up when converting the top left corner, because when
-	// moving up or right, that pushes the invalidated region inwards,
-	// skipping cells that should have been overwritten.
-	pixels2cells_floor(rect.x1, rect.y1, &rect.x1, &rect.y1);
-	pixels2cells(rect.x2, rect.y2, &rect.x2, &rect.y2);
 
 	for (int r = rect.y1; r < rect.y2; r++)
 	{
@@ -532,9 +483,9 @@ draw_image_placements(void)
     // drawn.
     //
     // We must do two passes, one to find what images need to be redrawn, and
-    // also what regions are stale and need to be overwritten. If we did
-    // everything in one pass, stale regions of one image that overlap another
-    // image with a higher index, would overwrite the overlapping image.
+    // also what regions are stale and redraw them. If we did everything in one
+    // pass, stale regions of one image that overlap another image with a higher
+    // index, would overwrite the overlapping image.
     for (image_placement_T *place = placements;
 	    place != NULL;
 	    place = place->next)
@@ -543,7 +494,6 @@ draw_image_placements(void)
 
 	pixman_region32_t   image_region;
 	pixman_region32_t   visible_region;
-	pixman_box32_t	    bounding_box;
 
 	int x, y;
 
@@ -555,7 +505,8 @@ draw_image_placements(void)
 	{
 	    pixman_region32_t visible_abs;
 
-	    cells2pixels(place->row, place->col, &x, &y);
+	    x = place->col;
+	    y = place->row;
 
 	    // Don't add the crop_box x1 and y1, because "row" and "col" use the
 	    // top left of the final cropped image.
@@ -592,15 +543,15 @@ draw_image_placements(void)
 		if (image_backends[image_backend].placement.blit
 			&& place->visible_init)
 		{
-		    // Must overwrite the stale regions that will not be
-		    // composited over (for this specific image).
-		    pixman_region32_t stale_region; // In pixels
+		    // Must redraw the stale regions that will not be composited
+		    // over (for this specific image).
+		    pixman_region32_t stale_region;
 
 		    pixman_region32_init(&stale_region);
 
 		    if (pixman_region32_subtract(&stale_region,
 				&place->visible_abs, &visible_abs))
-			overwrite_region(&stale_region);
+			invalidate_region(&stale_region);
 		    pixman_region32_fini(&stale_region);
 		}
 		if (place->visible_init)
@@ -618,11 +569,10 @@ draw_image_placements(void)
 	    }
 	}
 
-	bounding_box = cell_box_to_pixels(place->bounding_box);
 	pixman_region32_union_rect(&subtract_region, &subtract_region,
-		bounding_box.x1, bounding_box.y1,
-		bounding_box.x2 - bounding_box.x1,
-		bounding_box.y2 - bounding_box.y1);
+		place->bounding_box.x1, place->bounding_box.y1,
+		place->bounding_box.x2 - place->bounding_box.x1,
+		place->bounding_box.y2 - place->bounding_box.y1);
     }
 
     if (pending_len > 0)
