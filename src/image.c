@@ -104,7 +104,7 @@ static pixman_region32_t    dirty_region; // In cells
 static bool		    dirty_region_init = false;
 static bool		    dirty_region_finalized = false;
 
-static void invalidate_region(pixman_region32_t *region);
+static void redraw_region(pixman_region32_t *region);
 
     void
 uninit_image_state(void)
@@ -344,7 +344,7 @@ image_placement_clear(image_placement_T *place)
     {
 	if (place->visible_init
 		&& image_backends[image_backend].placement.blit)
-	    invalidate_region(&place->visible_abs);
+	    redraw_region(&place->visible_abs);
 	image_backends[image_backend].placement.clear(place);
 	place->dirty = true;
 	redraw_all_later(UPD_VALID);
@@ -440,10 +440,11 @@ image_placement_set_bounding_box(
 }
 
 /*
- *
+ * Redraw the cells in the given region. This is only relevant for image
+ * backends that blit pixels.
  */
     static void
-invalidate_region(pixman_region32_t *region)
+redraw_region(pixman_region32_t *region)
 {
     pixman_box32_t  *rects;
     int		    n_rects;
@@ -576,7 +577,14 @@ draw_image_placements(void)
 
 		    if (pixman_region32_subtract(&stale_region,
 				&place->visible_abs, &visible_abs))
-			invalidate_region(&stale_region);
+		    {
+			// Also subtract "subtract_region", so we don't
+			// redundantly redraw cells that will have images
+			// painted over them after.
+			(void)pixman_region32_subtract(&stale_region,
+				&stale_region, &subtract_region);
+			redraw_region(&stale_region);
+		    }
 		    pixman_region32_fini(&stale_region);
 		}
 		if (place->visible_init)

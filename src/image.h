@@ -57,8 +57,8 @@ struct image_placement_S
     int	    id;
     image_T *img; // May be NULL, if so then only "bounding_box" is relevant (and
 		  // the position + zindex).
-    bool    draw; // If image should be drawn for the next redraw. Reset when
-		  // the redraw is done.
+    bool    draw; // If image should be processed for the next redraw. Reset
+		  // when the redraw is done.
 
     void *backend_data;
 
@@ -81,8 +81,7 @@ struct image_placement_S
     // nothing has been changed).
     pixman_region32_t	visible;	// In cells
     pixman_region32_t	visible_abs;    // In cells, uses absolute coordinates
-					// (only used for composited image
-					// backends),
+					// (only used for blit image backends),
     bool		visible_init;	// If "visible" is valid
 
     image_placement_T *next;
