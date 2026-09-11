@@ -3877,7 +3877,7 @@ theend:
 get_user_highlight_id(char_u *hlname)
 {
     if (hlname != NULL && *hlname != NUL)
-	return syn_check_group(hlname, STRLEN(hlname));
+	return syn_check_group(hlname, (int)STRLEN(hlname));
     return 0;
 }
 /*
