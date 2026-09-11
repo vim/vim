@@ -2606,7 +2606,7 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 	char_u *dot = vim_strchr(var_start, '.');
 	if (dot == NULL)
 	{
-	    check_type_is_value(lhs->lhs_type);
+	    (void)check_type_is_value(lhs->lhs_type);
 	    return FAIL;
 	}
 
