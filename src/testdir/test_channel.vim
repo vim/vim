@@ -2977,6 +2977,66 @@ func Test_stdio_channel()
   call job_stop(job)
 endfunc
 
+" A message that is only partly read when Vim gets busy with blocking reads
+" on another channel is not dropped: the rest of it was there to be read.
+func Test_lsp_incomplete_message_while_blocked()
+  if has('win32') && has('gui_running')
+    throw 'Skipped: gvim.exe cannot run without the GUI'
+  endif
+  let lines =<< trim END
+    func OnMessage(ch, msg)
+      if a:msg.method == 'quick'
+        call timer_start(10, {-> ch_sendexpr(a:ch, #{id: a:msg.id, result: 1})})
+      endif
+    endfunc
+    call ch_open('stdio', #{mode: 'lsp', callback: 'OnMessage'})
+  END
+  call writefile(lines, 'Xstdio_child.vim', 'D')
+  let lines =<< trim END
+    let notes = 0
+    let child = job_start([v:progpath, '--clean', '--stdio-channel',
+          \ '-S', 'Xstdio_child.vim'], #{in_mode: 'lsp', out_mode: 'lsp'})
+    func Block(timer)
+      for i in range(30)
+        call ch_evalexpr(g:child, #{method: 'quick'}, #{timeout: 5000})
+      endfor
+    endfunc
+    func OnMessage(ch, msg)
+      if a:msg.method == 'note'
+        let g:notes += 1
+      elseif a:msg.method == 'count'
+        call ch_sendexpr(a:ch, #{id: a:msg.id, result: g:notes})
+      elseif a:msg.method == 'block'
+        call ch_sendexpr(a:ch, #{id: a:msg.id, result: 'ok'})
+        call timer_start(10, 'Block')
+      endif
+    endfunc
+    call ch_open('stdio', #{mode: 'lsp', callback: 'OnMessage'})
+  END
+  call writefile(lines, 'Xstdio_busy.vim', 'D')
+  let job = job_start([GetVimProg(), '--clean', '--stdio-channel',
+        \ '-S', 'Xstdio_busy.vim'], #{in_mode: 'lsp', out_mode: 'lsp'})
+  call assert_equal('run', job_status(job))
+
+  " The first half of a notification is read before the blocking reads
+  " start, the second half arrives while they go on.
+  call ch_evalexpr(job, #{method: 'block'}, #{timeout: 5000})
+  let body = json_encode(#{method: 'note', jsonrpc: '2.0',
+        \ params: #{text: repeat('x', 1000)}})
+  let framed = 'Content-Length: ' .. strlen(body) .. "\r\n\r\n" .. body
+  let half = strlen(framed) / 2
+  call ch_sendraw(job, framed[: half - 1])
+  sleep 50m
+  call ch_sendraw(job, framed[half :])
+  sleep 500m
+  let resp = ch_evalexpr(job, #{method: 'count'}, #{timeout: 5000})
+  call assert_equal(1, resp->get('result', resp))
+
+  call ch_close(job)
+  call WaitForAssert({-> assert_equal('dead', job_status(job))})
+  call job_stop(job)
+endfunc
+
 func Test_channel_lsp_mode()
   " The channel lsp mode test is flaky and gives the same error.
   let g:giveup_same_error = 0

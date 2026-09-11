@@ -62,6 +62,7 @@ typedef struct sockaddr_un {
 #endif
 
 static void channel_read(channel_T *channel, ch_part_T part, char *func);
+static void channel_wait_any(long msec);
 static ch_mode_T channel_get_mode(channel_T *channel, ch_part_T part);
 static int channel_get_timeout(channel_T *channel, ch_part_T part);
 static channel_T *channel_open_stdio(void);
@@ -4642,6 +4643,23 @@ channel_in_blocking_wait(void)
 }
 
 /*
+ * Wait up to "timeout" msec for something to read on "fd" of "channel", and
+ * read what arrives on any channel meanwhile.
+ */
+    static void
+channel_wait_reading(channel_T *channel UNUSED, sock_T fd UNUSED, int timeout)
+{
+#ifdef MSWIN
+    // A pipe cannot be waited for, channel_wait() polls it; the other
+    // channels are looked at every 10 msec.
+    (void)channel_wait(channel, fd, timeout > 10 ? 10 : timeout);
+    channel_handle_events(FALSE);
+#else
+    channel_wait_any(timeout);
+#endif
+}
+
+/*
  * Read one JSON message with ID "id" from "channel"/"part" and store the
  * result in "rettv".
  * When "id" is -1 accept any message;
@@ -4663,6 +4681,11 @@ channel_read_json_block(
     chanpart_T	*chanpart = &channel->ch_part[part];
     ch_mode_T	mode = channel->ch_part[part].ch_mode;
     int		retval = FAIL;
+#ifdef ELAPSED_FUNC
+    elapsed_T	start_tv;
+
+    ELAPSED_INIT(start_tv);
+#endif
 
     ch_log(channel, "Blocking read JSON for id %d", id);
     ++channel_blocking_wait;
@@ -4705,48 +4728,46 @@ channel_read_json_block(
 	    if (readahead_ptr != NULL && readahead_ptr != prev_readahead_ptr)
 		continue;
 
-	    // Wait for up to the timeout.  If there was an incomplete message
-	    // use the deadline for that.
+	    // Wait for up to what is left of the timeout.
 	    timeout = timeout_arg;
+#ifdef ELAPSED_FUNC
+	    timeout -= (int)ELAPSED_FUNC(start_tv);
+#endif
+	    fd = chanpart->ch_fd;
+	    if (timeout <= 0 || fd == INVALID_FD)
+	    {
+		if (fd != INVALID_FD)
+		    ch_log(channel, "Timed out on id %d", id);
+		break;
+	    }
+	    // If there was an incomplete message use the deadline for that.
 	    if (chanpart->ch_wait_len > 0)
 	    {
+		int	left;
 #ifdef MSWIN
-		timeout = chanpart->ch_deadline - GetTickCount() + 1;
+		left = chanpart->ch_deadline - GetTickCount() + 1;
 #else
 		{
 		    struct timeval now_tv;
 
 		    gettimeofday(&now_tv, NULL);
-		    timeout = (chanpart->ch_deadline.tv_sec
-						       - now_tv.tv_sec) * 1000
-			+ (chanpart->ch_deadline.tv_usec
-						     - now_tv.tv_usec) / 1000
-			+ 1;
+		    left = (chanpart->ch_deadline.tv_sec - now_tv.tv_sec) * 1000
+			+ (chanpart->ch_deadline.tv_usec - now_tv.tv_usec)
+								    / 1000 + 1;
 		}
 #endif
-		if (timeout < 0)
-		{
+		if (left < 0)
 		    // Something went wrong, channel_parse_json() didn't
 		    // discard message.  Cancel waiting.
 		    chanpart->ch_wait_len = 0;
-		    timeout = timeout_arg;
-		}
-		else if (timeout > timeout_arg)
-		    timeout = timeout_arg;
+		else if (left < timeout)
+		    timeout = left;
 	    }
-	    fd = chanpart->ch_fd;
-	    if (fd == INVALID_FD
-			    || channel_wait(channel, fd, timeout) != CW_READY)
-	    {
-		if (timeout == timeout_arg)
-		{
-		    if (fd != INVALID_FD)
-			ch_log(channel, "Timed out on id %d", id);
-		    break;
-		}
-	    }
-	    else
-		channel_read(channel, part, "channel_read_json_block");
+	    channel_wait_reading(channel, fd, timeout);
+#ifndef ELAPSED_FUNC
+	    // Without a clock the wait counts as the whole timeout.
+	    timeout_arg = 0;
+#endif
 	}
     }
     if (id >= 0)
