@@ -55,7 +55,7 @@ fun! s:SynSet()
     " Load the syntax file(s).  When there are several, separated by dots,
     " load each in sequence.  Skip empty entries.
     for name in split(s, '\.')
-      if !empty(name)
+      if !empty(name) && name !=# 'syntax'
 	exe "runtime! syntax/" . name . ".vim syntax/" . name . "/*.vim"
       endif
     endfor
