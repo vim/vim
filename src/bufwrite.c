@@ -965,15 +965,16 @@ buf_write(
 	}
 
 	// The autocommands may have changed the name of the buffer, which may
-	// be kept in fname, ffname and sfname.
+	// be kept in fname, ffname and sfname.  A ":cd" may also have dropped
+	// the short name, then b_fname is the full name.
 	if (buf_ffname)
 	    ffname = buf->b_ffname;
 	if (buf_sfname)
-	    sfname = buf->b_sfname;
+	    sfname = buf->b_fname;
 	if (buf_fname_f)
 	    fname = buf->b_ffname;
 	if (buf_fname_s)
-	    fname = buf->b_sfname;
+	    fname = buf->b_fname;
     }
 
     if (cmdmod.cmod_flags & CMOD_LOCKMARKS)
