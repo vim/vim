@@ -38,7 +38,6 @@ void f_popup_settext(typval_T *argvars, typval_T *rettv);
 void f_popup_setbuf(typval_T *argvars, typval_T *rettv);
 int error_if_popup_window(int also_with_term);
 int popup_close(int id, int force);
-void popup_leave_tabpage(tabpage_T *tp);
 int popup_close_tabpage(tabpage_T *tp, int id, int force);
 void close_all_popups(int force);
 void f_popup_move(typval_T *argvars, typval_T *rettv);
