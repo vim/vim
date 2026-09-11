@@ -248,22 +248,32 @@ image_ref(image_T *img)
     return img;
 }
 
-    static void
-pixels2cells(int x, int y, int *rx, int *ry)
-{
-    // Always round upwards
-    *rx = (x + cell_width - 1) / cell_width;
-    *ry = (y + cell_height - 1) / cell_height;
-}
-
 /*
- * Get image width and height in cells.
+ * Get image width and height in cells, rounding up so that every pixel is
+ * covered.
  */
     void
 image_get_cell_dimensions(image_T *img, int *cw, int *ch)
 {
-    pixels2cells(pixman_image_get_width(img->image),
-	    pixman_image_get_height(img->image), cw, ch);
+    int w = pixman_image_get_width(img->image);
+    int h = pixman_image_get_height(img->image);
+
+    *cw = (w + cell_width - 1) / cell_width;
+    *ch = (h + cell_height - 1) / cell_height;
+}
+
+/*
+ * Similar, but return the dimensions of all cells that are *fully* covered by
+ * pixels. Pixels that are partially covered are not counted.
+ */
+    static void
+image_get_cell_dimensions_min(image_T *img, int *cw, int *ch)
+{
+    int w = pixman_image_get_width(img->image);
+    int h = pixman_image_get_height(img->image);
+
+    *cw = w / cell_width;
+    *ch = h / cell_height;
 }
 
     void
@@ -474,8 +484,7 @@ image_placement_subrect(
 {
     int iw, ih;
 
-    iw = pixman_image_get_width(place->img->image);
-    ih = pixman_image_get_height(place->img->image);
+    image_get_dimensions(place->img, &iw, &ih);
 
     *row = place->row + rect.y1;
     *col = place->col + rect.x1;
@@ -485,7 +494,9 @@ image_placement_subrect(
     *w = (rect.x2 - rect.x1) * cell_width;
     *h = (rect.y2 - rect.y1) * cell_height;
 
-    // Make that all the values are valid
+    // Make that all the values are valid. "w" and "h" can especially be
+    // invalid, because the image dimensions (in pixels) are converted to cells,
+    // rounding *up*.
     *row = MIN(*row, Rows);
     *col = MIN(*col, Columns);
 
@@ -519,7 +530,7 @@ redraw_region(pixman_region32_t *region)
 	if (updating_screen)
 	{
 	    screen_draw_rectangle(rect.y1, rect.x1,
-		    rect.y2 - rect.y1, rect.x2 - rect.x1, FALSE);
+		    rect.y2 - rect.y1, rect.x2 - rect.x1, FALSE, TRUE);
 	    continue;
 	}
 
@@ -623,7 +634,7 @@ draw_image_placements(void)
 	    // If it does, then redraw the image.
 	    pixman_region32_init(&dirty);
 	    (void)pixman_region32_intersect(&dirty, &visible_abs, &dirty_region);
-	    has_dirty_cells = pixman_region32_empty(&dirty);
+	    has_dirty_cells = pixman_region32_not_empty(&dirty);
 	    pixman_region32_fini(&dirty);
 
 	    // Only redraw the image if it has changed (or if we haven't drawn
@@ -647,11 +658,38 @@ draw_image_placements(void)
 		    if (pixman_region32_subtract(&stale_region,
 				&place->visible_abs, &visible_abs))
 		    {
+			int		    min_w, min_h;
+			pixman_region32_t   min_region;
+
 			// Also subtract "subtract_region", so we don't
 			// redundantly redraw cells that will have images
 			// painted over them after.
 			(void)pixman_region32_subtract(&stale_region,
 				&stale_region, &subtract_region);
+
+			// The visible region is guaranteed to cover every
+			// single pixel. However if the visible region is
+			// converted to pixels, that means the resulting
+			// rectangles may be bigger than the image itself.
+			//
+			// We clamp the values in image_placement_subrect(),
+			// however that means partially covered cells will not
+			// be drawn over, and therefore could contain stale
+			// content. As such, subtract the minimum region
+			// from the visible region to get the resulting region
+			// containing partially covered cells that may have
+			// stale pixels still on them.
+			image_get_cell_dimensions_min(img, &min_w, &min_h);
+
+			pixman_region32_init_rect(&min_region,
+				x, y, min_w, min_h);
+
+			(void)pixman_region32_subtract(&min_region,
+				&visible_abs, &min_region);
+			(void)pixman_region32_union(&stale_region,
+				&stale_region, &min_region);
+			pixman_region32_fini(&min_region);
+
 			redraw_region(&stale_region);
 		    }
 		    pixman_region32_fini(&stale_region);
