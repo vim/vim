@@ -33,8 +33,8 @@ typedef struct
     uint8_t min_g, max_g;
     uint8_t min_b, max_b;
 
-    int_u start;
-    int_u count;
+    int start;
+    int count;
 } color_box_T;
 
 typedef struct
