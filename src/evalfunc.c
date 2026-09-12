@@ -5008,6 +5008,11 @@ f_exists_info(typval_T *argvars, typval_T *rettv)
 	(void)ex_command_info(p + 1, rettv->vval.v_dict);
 	return;
     }
+    if (*p == '&' || *p == '+')
+    {
+	(void)option_info(p + 1, *p == '+', rettv->vval.v_dict);
+	return;
+    }
     // Otherwise a builtin function: "*funcname" for one that is implemented,
     // "?funcname" for one that may not be.
     if (*p != '*' && *p != '?')
