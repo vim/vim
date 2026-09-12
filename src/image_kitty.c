@@ -9,7 +9,7 @@
 
 #include "vim.h"
 
-#ifdef FEAT_IMAGE_KITTY
+#if defined(FEAT_IMAGE_KITTY) || defined(PROTO)
 
 typedef struct
 {
@@ -213,4 +213,4 @@ image_placement_kitty_clear(image_placement_T *place)
     ctx->n_ids = 0;
 }
 
-#endif // FEAT_IMAGE_KITTY
+#endif // FEAT_IMAGE_KITTY || PROTO
