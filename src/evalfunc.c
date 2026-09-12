@@ -5670,7 +5670,7 @@ f_getchangelist(typval_T *argvars, typval_T *rettv)
 	return;
     if (list_append_list(rettv->vval.v_list, l) == FAIL)
     {
-	vim_free(l);
+	list_free(l);
 	return;
     }
 
@@ -5910,7 +5910,7 @@ f_getjumplist(typval_T *argvars, typval_T *rettv)
 	return;
     if (list_append_list(rettv->vval.v_list, l) == FAIL)
     {
-	vim_free(l);
+	list_free(l);
 	return;
     }
 

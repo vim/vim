@@ -1104,7 +1104,7 @@ add_defer_item(int var_idx, int argcount, ectx_T *ectx)
     listval.v_lock = 0;
     if (list_insert_tv(defer_l, &listval, defer_l->lv_first) == FAIL)
     {
-	vim_free(l);
+	list_free(l);
 	return NULL;
     }
 
