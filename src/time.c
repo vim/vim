@@ -595,6 +595,8 @@ check_due_timer(void)
 	    vgetc_busy = save_vgetc_busy;
 	    if (uncaught_emsg > prev_uncaught_emsg)
 		++timer->tr_emsg_count;
+	    else
+		timer->tr_emsg_count = 0;
 	    did_emsg = save_did_emsg;
 	    called_emsg = save_called_emsg;
 	    exception_state_restore(&estate);
