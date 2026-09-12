@@ -3020,6 +3020,7 @@ exists_info({expr} [, {opts}])				*exists_info()*
 				arguments are of type "any", "void" when there
 				is none.  Also "any" when the type depends on
 				the number of arguments.
+
 			Example: >
 				echo exists_info('*strlen')
 <				{'name': 'strlen', 'kind': 'builtin',
@@ -3039,6 +3040,44 @@ exists_info({expr} [, {opts}])				*exists_info()*
 				echo exists_info('*sort', opts).returns
 <				list<number>
 
+		*Funcname	user defined function, when there is no
+				built-in function with that name.  "s:Func"
+				finds a script-local function in that script,
+				its "<SNR>12_Func" name from anywhere.
+			name	the name of the function, "<SNR>12_Func" for a
+				script-local one
+			kind	"function" for |:function|, "def" for |:def|
+			args	a List with a Dict for each argument:
+				name	the name of the argument
+				type	the type for "def", "any" for
+					"function"
+				default	the expression for the default value,
+					missing when there is none
+			varargs	only when the function accepts more arguments:
+				a Dict with "name", empty for "...", and
+				"type", "list<any>" for "function"
+			returns	the return type for "def", "any" for
+				"function"
+			abort	|TRUE| when the function aborts on an error,
+				see |:func-abort|
+			range	|TRUE| when the function takes a range, see
+				|:func-range|
+			dict	|TRUE| for a |Dictionary-function|
+			closure	|TRUE| for a closure, see |:func-closure|
+			sid	the script ID where the function was defined
+			lnum	the line number in that script
+
+			Example: >
+				def g:Twice(n: number): number
+				  return n * 2
+				enddef
+				echo exists_info('*g:Twice')
+<				{'name': 'Twice', 'kind': 'def',
+				'args': [{'name': 'n', 'type': 'number'}],
+				'returns': 'number', 'abort': v:false,
+				'range': v:false, 'dict': v:false,
+				'closure': v:false, 'sid': 1, 'lnum': 1}
+
 		v:name		predefined Vim variable, see |v:var|
 			name	the name of the variable, with the "v:"
 			type	the type of the variable, see |vim9-types|
@@ -3046,6 +3085,7 @@ exists_info({expr} [, {opts}])				*exists_info()*
 				|TRUE| when the variable cannot be set
 			compat	|TRUE| when the variable can also be used
 				without the "v:", like "count" for v:count
+
 			Example: >
 				echo exists_info('v:count')
 <				{'name': 'v:count', 'type': 'number',
@@ -3075,6 +3115,7 @@ exists_info({expr} [, {opts}])				*exists_info()*
 				|:command-addr|; a builtin command can also
 				have "none", "tabs_relative", "quickfix_valid"
 				or "unsigned"
+
 			Only for "user":
 			buffer	|TRUE| for a buffer-local command
 			complete
@@ -3084,11 +3125,13 @@ exists_info({expr} [, {opts}])				*exists_info()*
 				the replacement text
 			sid	the script ID where the command was defined
 			lnum	the line number in that script
+
 			With the "vim9" item of {opts}, |TRUE| finds the
 			command as in |Vim9| script, where an abbreviation is
 			not accepted and some commands do not exist, |FALSE|
 			as in legacy Vim script.  Without it the context of
 			the caller is used.
+
 			Example: >
 				echo exists_info(':s')
 <				{'name': 'substitute', 'kind': 'builtin',
@@ -3109,6 +3152,7 @@ exists_info({expr} [, {opts}])				*exists_info()*
 			scope	"global", "window", "buffer", "global-window"
 				or "global-buffer", see |global-local|
 			default	the default value
+
 			Example: >
 				echo exists_info('+tw')
 <				{'name': 'textwidth', 'shortname': 'tw',

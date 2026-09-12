@@ -413,10 +413,39 @@ func Test_exists_info()
   call assert_equal({}, exists_info('*nosuchfunction'))
   call assert_equal({}, exists_info('*'))
   call assert_equal({}, exists_info(''))
-  func s:NotBuiltin()
+
+  " A user defined function, a script-local one also by its <SNR> name.
+  func s:Legacy(a, b = 2, ...) abort range dict
   endfunc
-  call assert_equal({}, exists_info('*s:NotBuiltin'))
-  delfunc s:NotBuiltin
+  let info = exists_info('*s:Legacy')
+  let sid = str2nr(matchstr(expand('<SID>'), '\d\+'))
+  call assert_equal({'name': printf('<SNR>%d_Legacy', sid), 'kind': 'function',
+        \ 'args': [{'name': 'a', 'type': 'any'},
+        \ {'name': 'b', 'type': 'any', 'default': '2'}],
+        \ 'varargs': {'name': '', 'type': 'list<any>'}, 'returns': 'any',
+        \ 'abort': v:true, 'range': v:true, 'dict': v:true, 'closure': v:false,
+        \ 'sid': sid, 'lnum': info.lnum}, info)
+  call assert_true(info.lnum > 0)
+  call assert_equal(info, exists_info(printf('*<SNR>%d_Legacy', sid)))
+  def g:Def9(x: number, y: string = 'a', ...rest: list<string>): string
+    return ''
+  enddef
+  let info = exists_info('*g:Def9')
+  call assert_equal(['Def9', 'def', 'string'],
+        \ [info.name, info.kind, info.returns])
+  call assert_equal([{'name': 'x', 'type': 'number'},
+        \ {'name': 'y', 'type': 'string', 'default': "'a'"}], info.args)
+  call assert_equal({'name': 'rest', 'type': 'list<string>'}, info.varargs)
+  call assert_equal([v:false, v:false], [info.abort, info.range])
+  call assert_false(has_key(exists_info('*Test_exists_info'), 'varargs'))
+  call assert_equal('any', exists_info('*Test_exists_info').returns)
+  " A builtin function with the same name is found first, "?" is only for a
+  " builtin function.
+  call assert_equal('builtin', exists_info('*strlen').kind)
+  call assert_equal({}, exists_info('?g:Def9'))
+  call assert_equal({}, exists_info('*g:Def9 x'))
+  delfunc s:Legacy
+  delfunc g:Def9
 
   " "?funcname" also gives a builtin that is not implemented in this Vim.
   let info = exists_info('?strlen')
@@ -527,6 +556,17 @@ func Test_exists_info()
     assert_equal('number', exists_info('+tw').type)
   END
   call v9.CheckDefAndScriptSuccess(lines)
+  " A function in Vim9 script is script-local.
+  let lines =<< trim END
+    vim9script
+    def Local(n: number): bool
+      return true
+    enddef
+    var info = exists_info('*Local')
+    assert_equal(['def', 'bool'], [info.kind, info.returns])
+    assert_match('^<SNR>\d\+_Local$', info.name)
+  END
+  call v9.CheckScriptSuccess(lines)
   call v9.CheckDefAndScriptFailure(['exists_info(1)'], ['E1013:', 'E1174:'])
   call v9.CheckDefAndScriptFailure(['exists_info("*sort", "list<string>")'],
         \ ['E1013:', 'E1206:'])
