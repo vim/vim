@@ -5606,7 +5606,7 @@ vim_tempname(
     // randomize the name to avoid collisions
     i = mch_get_pid() + extra_char;
     buf4[1] = chartab[i % 36];
-    buf4[2] = chartab[101 * i % 36];
+    buf4[2] = chartab[(i / 36) % 36];
     if (GetTempFileNameW(wszTempFile, buf4, 0, itmp) == 0)
 	return NULL;
     if (!keep)
