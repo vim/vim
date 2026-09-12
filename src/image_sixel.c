@@ -58,7 +58,7 @@ typedef struct
 static image_T	*cur_img = NULL; // Current image to generate palette for
 static int	colour_off;
 
-static int
+    static int
 pixel_compare_func(const void *a, const void *b)
 {
     const int *ai = a, *bi = b;
