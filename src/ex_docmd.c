@@ -2528,10 +2528,13 @@ do_one_cmd(
 
 	    // commands that read a block of lines
 	    case CMD_abstract:
+	    case CMD_append:
 	    case CMD_autocmd:
+	    case CMD_change:
 	    case CMD_class:
 	    case CMD_command:
 	    case CMD_enum:
+	    case CMD_insert:
 	    case CMD_interface:
 	    case CMD_loadkeymap:
 				break;
