@@ -181,8 +181,7 @@ execute({command})		String	execute {command} and get the output
 exepath({expr})			String	full path of the command {expr}
 exists({expr})			Number	|TRUE| if {expr} exists
 exists_compiled({expr})		Number	|TRUE| if {expr} exists at compile time
-exists_info({expr} [, {argtypes}])
-				Dict	information about what {expr} names
+exists_info({expr} [, {opts}])	Dict	information about what {expr} names
 exp({expr})			Float	exponential of {expr}
 expand({expr} [, {nosuf} [, {list}]])
 				any	expand special keywords in {expr}
@@ -2988,11 +2987,13 @@ exists_compiled({expr})					*exists_compiled()*
 		Return type: |Number|
 
 
-exists_info({expr} [, {argtypes}])			*exists_info()*
+exists_info({expr} [, {opts}])				*exists_info()*
 		Return a Dict with information about what {expr} names.
 		{expr} uses the notation of `exists()`.  The result is an
 		empty Dict when {expr} does not exist or when its notation is
-		not supported.  What the Dict holds depends on the notation:
+		not supported.  What the Dict holds, and which items of the
+		optional Dict {opts} are used, depends on the notation.  An
+		item of {opts} for another notation is an error.
 
 		*funcname	built-in function that is implemented
 		?funcname	built-in function, also one that is not
@@ -3026,17 +3027,16 @@ exists_info({expr} [, {argtypes}])			*exists_info()*
 				'args': [{'types': ['string', 'number']}],
 				'returns': 'number'}
 
-			With {argtypes}, a List of |vim9-types| for the
-			arguments, "returns" is the type for arguments of
-			those types, the same as what a |:def| function is
-			compiled with.  Required arguments that are not in
-			{argtypes} are of type "any".  It is an error to give
-			more types than the maximum number of arguments or a
-			type that is not recognized, or to give {argtypes}
-			with another notation.  The types are not checked
-			against "args".  Example: >
-				let i = exists_info('*sort', ['list<number>'])
-				echo i.returns
+			With the "argtypes" item of {opts}, a List of
+			|vim9-types| for the arguments, "returns" is the type
+			for arguments of those types, the same as what a |:def|
+			function is compiled with.  Required arguments that are
+			not in the List are of type "any".  It is an error to
+			give more types than the maximum number of arguments
+			or a type that is not recognized.  The types are not
+			checked against "args".  Example: >
+				let opts = {'argtypes': ['list<number>']}
+				echo exists_info('*sort', opts).returns
 <				list<number>
 
 		v:name		predefined Vim variable, see |v:var|
@@ -3084,6 +3084,11 @@ exists_info({expr} [, {argtypes}])			*exists_info()*
 				the replacement text
 			sid	the script ID where the command was defined
 			lnum	the line number in that script
+			With the "vim9" item of {opts}, |TRUE| finds the
+			command as in |Vim9| script, where an abbreviation is
+			not accepted and some commands do not exist, |FALSE|
+			as in legacy Vim script.  Without it the context of
+			the caller is used.
 			Example: >
 				echo exists_info(':s')
 <				{'name': 'substitute', 'kind': 'builtin',
