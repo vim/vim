@@ -24,10 +24,6 @@
  *   2. sixel_image8_crop()     8bpp image -> a stride-based view (sixel_view_T),
  *                              no pixel data is copied
  *   3. sixel_encode_view()     view -> sixel DCS byte sequence
- *
- * sixel_encode() is kept as a thin convenience wrapper that quantizes the
- * whole image and encodes it uncropped, for callers that don't need the
- * split.
  */
 
 #include "vim.h"
@@ -120,15 +116,12 @@ static int		sixel_fixed_tables_ready = FALSE;
 static sixel_state_T	sixel_state;
 
 /*
- * Release all module-level allocations cached by the sixel encoder.  Called
- * from free_all_mem() on shutdown when EXITFREE is defined; the encoder
- * reuses these buffers across invocations, so they otherwise live until
- * process exit and show up as leaks under tools like ccmalloc/valgrind.
+ * Release all module-level allocations cached by the sixel encoder.
  */
     void
 sixel_uninit(void)
 {
-    sixel_band_T    *band = &sixel_state.band;
+    sixel_band_T *band = &sixel_state.band;
 
     VIM_CLEAR(sixel_state.keys);
     VIM_CLEAR(sixel_state.vals);
