@@ -305,17 +305,25 @@ image_placement_unlink(image_placement_T *place)
     n_placements--;
 }
 
+/*
+ * If "first" is true, then always place the placement before placements with
+ * the same zindex.
+ */
     static void
-image_placement_link(image_placement_T *place)
+image_placement_link(image_placement_T *place, bool first)
 {
     image_placement_T *p = placements;
     image_placement_T *prev = NULL;
 
-    // Add image before the image with the lower zindex. Add after the last
-    // image with the same zindex (if any), to match popup window behaviour.
+    // Add placement before the placement with the lower zindex.
     while (p != NULL)
     {
-	if (p->zindex < place->zindex)
+	if (first)
+	{
+	    if (p->zindex <= place->zindex)
+		break;
+	}
+	else if (p->zindex < place->zindex)
 	    break;
 	prev = p;
 	p = p->next;
@@ -338,7 +346,8 @@ image_placement_link(image_placement_T *place)
 /*
  * Create a new placement for the image, taking ownership of it. By default it
  * will be at the top left corner of the screen, no crop, zindex of 0, and the
- * bounding box will cover the entire image. Returns NULL on failure.
+ * bounding box will cover the entire image. "img" may be NULL to create a
+ * placement with no backing image. Returns NULL on failure.
  */
     image_placement_T *
 image_placement_new(image_T *img)
@@ -361,22 +370,27 @@ image_placement_new(image_T *img)
     place->img = img;
     place->dirty = true;
 
-    // Bounding box is in cells
-    image_get_cell_dimensions(img,
-	    &place->bounding_box.x2, &place->bounding_box.y2);
-    place->crop_box.x2 = place->bounding_box.x2;
-    place->crop_box.y2 = place->bounding_box.y2;
-
-    place->backend = image_backend;
-
-    if (PLACEMENT_FUNC(image_backend, init)(place) == FAIL)
+    if (img != NULL)
     {
-	id -= 1000;
-	vim_free(place);
-	return NULL;
-    }
+	place->backend = image_backend;
 
-    image_placement_link(place);
+	// Bounding box is in cells
+	image_get_cell_dimensions(img,
+		&place->bounding_box.x2, &place->bounding_box.y2);
+	place->crop_box.x2 = place->bounding_box.x2;
+	place->crop_box.y2 = place->bounding_box.y2;
+
+	if (PLACEMENT_FUNC(image_backend, init)(place) == FAIL)
+	{
+	    id -= 1000;
+	    vim_free(place);
+	    return NULL;
+	}
+    }
+    else
+	place->backend = IMAGE_BACKEND_NONE;
+
+    image_placement_link(place, false);
 
     return place;
 }
@@ -390,14 +404,15 @@ image_placement_clear(image_placement_T *place)
 	    redraw_region(&place->visible_abs);
 	PLACEMENT_FUNC(image_backend, clear)(place);
 	place->dirty = true;
-	redraw_all_later(UPD_VALID);
+	if (!updating_screen)
+	    redraw_all_later(UPD_VALID);
     }
 }
 
     void
 image_placement_free(image_placement_T *place)
 {
-    if (backend_available(false))
+    if (backend_available(false) && place->backend_data != NULL)
     {
 	image_placement_clear(place);
 	PLACEMENT_FUNC(image_backend, uninit)(place);
@@ -410,12 +425,16 @@ image_placement_free(image_placement_T *place)
     }
     image_placement_unlink(place);
 
-    image_unref(place->img);
+    if (place->img != NULL)
+	image_unref(place->img);
     vim_free(place);
 }
 
+/*
+ * See "image_placement_link" for "first"
+ */
     void
-image_placement_set_zindex(image_placement_T *place, int zindex)
+image_placement_set_zindex(image_placement_T *place, int zindex, bool first)
 {
     if (place->zindex == zindex)
 	return;
@@ -424,7 +443,7 @@ image_placement_set_zindex(image_placement_T *place, int zindex)
 
     // Must re-add the placement back so it is in the correct order
     image_placement_unlink(place);
-    image_placement_link(place);
+    image_placement_link(place, first);
 }
 
 /*
@@ -459,6 +478,8 @@ image_placement_set_crop(image_placement_T *place, int x, int y, int w, int h)
 image_placement_do_draw(image_placement_T *place)
 {
     place->draw = true;
+    if (!updating_screen)
+	redraw_all_later(UPD_VALID);
 }
 
     void
@@ -573,7 +594,18 @@ draw_image_placements(void)
     image_placement_T	*place;
     pixman_region32_t	subtract_region; // In pixels
     image_placement_T	**pending_placements;
-    int			pending_len = 0;
+    int			pending_len = -1;
+
+    // Check if all placements have no backing image. If so, then do nothing
+    FOR_ALL_PLACEMENTS(place)
+	if (place->img != NULL)
+	{
+	    pending_len = 0;
+	    break;
+	}
+
+    if (pending_len == -1)
+	return;
 
     if (!backend_available(false))
 	return;
@@ -957,10 +989,10 @@ update_image_backend(void)
     FOR_ALL_PLACEMENTS(place)
     {
 	image_placement_clear(place);
-	if (image_backend != IMAGE_BACKEND_NONE)
+	if (image_backend != IMAGE_BACKEND_NONE && place->img != NULL)
 	    PLACEMENT_FUNC(image_backend, uninit)(place);
 	place->backend_data = NULL;
-	if (new != IMAGE_BACKEND_NONE)
+	if (new != IMAGE_BACKEND_NONE && place->img != NULL)
 	{
 	    if (PLACEMENT_FUNC(new, init)(place) == FAIL)
 		goto fail;

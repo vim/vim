@@ -2500,6 +2500,10 @@ screen_char(unsigned off, int row, int col)
     if (row >= screen_Rows || col >= screen_Columns)
 	return;
 
+#ifdef FEAT_IMAGE
+    mark_dirty_region_for_images(row, col, 1, 1);
+#endif
+
 #ifdef FEAT_PROP_POPUP
     // If this cell is under a higher-zindex opacity popup, suppress
     // output to prevent flicker.  The higher popup's redraw will
@@ -2631,10 +2635,6 @@ screen_char(unsigned off, int row, int col)
 	if (enc_dbcs == DBCS_JPNU && ScreenLines[off] == 0x8e)
 	    out_char(ScreenLines2[off]);
     }
-
-#ifdef FEAT_IMAGE
-    mark_dirty_region_for_images(row, col, 1, 1);
-#endif
 
     screen_cur_col++;
 }

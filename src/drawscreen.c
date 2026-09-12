@@ -401,6 +401,7 @@ update_screen(int type_arg)
 #endif
 
 #ifdef FEAT_IMAGE
+    // Make sure to do this last!
     draw_image_placements();
 #endif
 

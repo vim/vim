@@ -9,7 +9,7 @@ void image_get_dimensions(image_T *img, int *w, int *h);
 void image_placement_clear(image_placement_T *place);
 image_placement_T *image_placement_new(image_T *img);
 void image_placement_free(image_placement_T *place);
-void image_placement_set_zindex(image_placement_T *place, int zindex);
+void image_placement_set_zindex(image_placement_T *place, int zindex, bool first);
 void image_placement_set_position(image_placement_T *place, int row, int col);
 void image_placement_set_crop(image_placement_T *place, int x, int y, int w, int h);
 void image_placement_do_draw(image_placement_T *place);

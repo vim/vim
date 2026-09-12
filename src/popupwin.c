@@ -948,6 +948,20 @@ apply_general_options(win_T *wp, dict_T *dict)
 	if (dict_find(dict, (char_u *)"maxheight", -1) == NULL)
 	    wp->w_maxheight = ch;
     }
+    else
+    {
+	// Create a image placement with no backing images. This is so that it
+	// will affect the calculations of other popup images.
+	if (wp->w_popup_imagep != NULL)
+	    image_placement_free(wp->w_popup_imagep);
+	wp->w_popup_imagep = image_placement_new(NULL);
+
+	// Not really needed because we always update the position before
+	// drawing, but do it anyways.
+	if (wp->w_popup_imagep != NULL)
+	    image_placement_set_bounding_box(wp->w_popup_imagep,
+		    wp->w_winrow, wp->w_wincol, wp->w_height, wp->w_width);
+    }
 #endif
 
     di = dict_find(dict, (char_u *)"close", -1);
@@ -6195,6 +6209,10 @@ popup_position_image(win_T *wp)
 
     popup_compute_clip(wp, &clip);
 
+    if (wp->w_popup_imagep->img == NULL)
+	// Just set the bounding box
+	goto exit;
+
     visible_width =
 	wp->w_width - clip.clip_left_content - clip.clip_right_content;
     visible_height =
@@ -6226,10 +6244,13 @@ popup_position_image(win_T *wp)
     if (crop_height > visible_height)
 	crop_height = visible_height;
 
-    image_placement_set_zindex(wp->w_popup_imagep, wp->w_zindex);
-    image_placement_set_position(wp->w_popup_imagep, row, col);
     image_placement_set_crop(wp->w_popup_imagep, crop_x, crop_y,
 	    crop_width, crop_height);
+exit:
+    // Add after the last placement with the same zindex (if any), to match
+    // popup window behaviour.
+    image_placement_set_zindex(wp->w_popup_imagep, wp->w_zindex, false);
+    image_placement_set_position(wp->w_popup_imagep, row, col);
     image_placement_set_bounding_box(wp->w_popup_imagep,
 	    wp->w_winrow, wp->w_wincol, clip.eff_height, clip.eff_width);
     image_placement_do_draw(wp->w_popup_imagep);
