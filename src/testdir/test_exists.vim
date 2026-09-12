@@ -343,6 +343,235 @@ func Test_exists_funcarg()
   call FuncArg_Tests("arg1", "arg2")
 endfunc
 
+func Test_exists_info()
+  call assert_equal({'name': 'strlen', 'kind': 'builtin', 'minargs': 1,
+        \ 'maxargs': 1, 'method': 1,
+        \ 'args': [{'types': ['string', 'number']}], 'returns': 'number'},
+        \ exists_info('*strlen'))
+
+  " No arguments, no argument checks and not usable as a method.
+  call assert_equal({'name': 'argidx', 'kind': 'builtin', 'minargs': 0,
+        \ 'maxargs': 0, 'method': 0, 'args': [], 'returns': 'number'},
+        \ exists_info('*argidx'))
+
+  " An argument that accepts several types, and one that is checked against
+  " another argument.
+  let info = exists_info('*get')
+  call assert_equal([2, 3, 1], [info.minargs, info.maxargs, info.method])
+  call assert_equal(['blob', 'list<any>', 'tuple<any>', 'dict<any>', 'func'],
+        \ info.args[0].types)
+  call assert_equal(['string', 'number'], info.args[1].types)
+  call assert_equal(['any'], info.args[2].types)
+  call assert_equal('any', info.returns)
+  call assert_equal(['any'], exists_info('*extend').args[1].types)
+
+  " The base of a method call is the second argument.
+  call assert_equal(2, exists_info('*append').method)
+
+  " No maximum number of arguments: the last item is for the rest.
+  let info = exists_info('*instanceof')
+  call assert_equal(-1, info.maxargs)
+  call assert_equal([{'types': ['object<any>']}, {'types': ['class']}],
+        \ info.args)
+
+  " The type depends on the number of arguments, and no value at all.
+  call assert_equal('any', exists_info('*getline').returns)
+  call assert_equal('void', exists_info('*bufload').returns)
+
+  " The type returned for arguments of the given types, or that number of
+  " arguments.  Missing required arguments are "any".
+  let Types = {types -> exists_info('*sort', {'argtypes': types}).returns}
+  call assert_equal('list<number>', Types(['list<number>']))
+  call assert_equal('any', Types([]))
+  let Types = {f, types -> exists_info(f, {'argtypes': types}).returns}
+  call assert_equal('list<string>', Types('*values', ['dict<string>']))
+  call assert_equal('number', Types('*remove', ['list<number>', 'number']))
+  call assert_equal('list<number>',
+        \ Types('*remove', ['list<number>', 'number', 'number']))
+  call assert_equal('string', Types('*getline', ['number']))
+  call assert_equal('list<string>', Types('*getline', ['number', 'string']))
+  call assert_equal('any', Types('*get', ['blob']))
+  call assert_equal('number', Types('*strlen', ['string']))
+  call assert_equal(exists_info('*strlen'),
+        \ exists_info('*strlen', {'argtypes': ['string']}))
+  call assert_equal(exists_info('*strlen'), exists_info('*strlen', {}))
+  call assert_equal({}, exists_info('*nosuchfunction', {'argtypes': ['x']}))
+  call assert_fails("call Types('*strlen', ['string', 'string'])", 'E118:')
+  call assert_fails("call Types('*strlen', ['nosuchtype'])", 'E1010:')
+  call assert_fails("call Types('*strlen', ['string x'])", 'E1010:')
+  call assert_fails("call exists_info('*strlen', {'argtypes': 'string'})",
+        \ 'E475: Invalid argument: argtypes')
+  call assert_fails("call exists_info('*strlen', {'vim9': 1})",
+        \ 'E475: Invalid argument: vim9')
+  call assert_fails("call exists_info('*strlen', {'other': 1})",
+        \ 'E475: Invalid argument: other')
+  call assert_fails("call exists_info('v:count', {'argtypes': []})",
+        \ 'E475: Invalid argument: argtypes')
+  call assert_fails("call exists_info('*strlen', 'string')", 'E1206:')
+
+  " Not a builtin function, or not a function at all.
+  call assert_equal({}, exists_info('*nosuchfunction'))
+  call assert_equal({}, exists_info('*'))
+  call assert_equal({}, exists_info(''))
+
+  " A user defined function, a script-local one also by its <SNR> name.
+  func s:Legacy(a, b = 2, ...) abort range dict
+  endfunc
+  let info = exists_info('*s:Legacy')
+  let sid = str2nr(matchstr(expand('<SID>'), '\d\+'))
+  call assert_equal({'name': printf('<SNR>%d_Legacy', sid), 'kind': 'function',
+        \ 'args': [{'name': 'a', 'type': 'any'},
+        \ {'name': 'b', 'type': 'any', 'default': '2'}],
+        \ 'varargs': {'name': '', 'type': 'list<any>'}, 'returns': 'any',
+        \ 'abort': v:true, 'range': v:true, 'dict': v:true, 'closure': v:false,
+        \ 'sid': sid, 'lnum': info.lnum}, info)
+  call assert_true(info.lnum > 0)
+  call assert_equal(info, exists_info(printf('*<SNR>%d_Legacy', sid)))
+  def g:Def9(x: number, y: string = 'a', ...rest: list<string>): string
+    return ''
+  enddef
+  let info = exists_info('*g:Def9')
+  call assert_equal(['Def9', 'def', 'string'],
+        \ [info.name, info.kind, info.returns])
+  call assert_equal([{'name': 'x', 'type': 'number'},
+        \ {'name': 'y', 'type': 'string', 'default': "'a'"}], info.args)
+  call assert_equal({'name': 'rest', 'type': 'list<string>'}, info.varargs)
+  call assert_equal([v:false, v:false], [info.abort, info.range])
+  call assert_false(has_key(exists_info('*Test_exists_info'), 'varargs'))
+  call assert_equal('any', exists_info('*Test_exists_info').returns)
+  " A builtin function with the same name is found first, "?" is only for a
+  " builtin function.
+  call assert_equal('builtin', exists_info('*strlen').kind)
+  call assert_equal({}, exists_info('?g:Def9'))
+  call assert_equal({}, exists_info('*g:Def9 x'))
+  delfunc s:Legacy
+  delfunc g:Def9
+
+  " "?funcname" also gives a builtin that is not implemented in this Vim.
+  let info = exists_info('?strlen')
+  call assert_equal(v:true, info.available)
+  call assert_equal(exists_info('*strlen'), filter(info, 'v:key != "available"'))
+  let info = exists_info('?mzeval')
+  call assert_equal('mzeval', info.name)
+  call assert_equal(exists('*mzeval') ? v:true : v:false, info.available)
+  call assert_equal(exists('*mzeval') ? 'mzeval' : '',
+        \ get(exists_info('*mzeval'), 'name', ''))
+  call assert_equal({}, exists_info('?nosuchfunction'))
+
+  " A predefined Vim variable: its declared type and how it can be used.
+  call assert_equal({'name': 'v:count', 'type': 'number',
+        \ 'readonly': v:true, 'compat': v:true}, exists_info('v:count'))
+  let info = exists_info('v:lnum')
+  call assert_equal([v:false, v:false], [info.readonly, info.compat])
+  call assert_equal('list<string>', exists_info('v:errors').type)
+  call assert_equal('bool', exists_info('v:true').type)
+  call assert_equal('dict<any>', exists_info('v:event').type)
+  call assert_equal({}, exists_info('v:nosuchvariable'))
+  call assert_equal({}, exists_info('v:'))
+
+  " An Ex command, also by an abbreviation, with the attributes of :command.
+  call assert_equal({'name': 'substitute', 'kind': 'builtin', 'nargs': '*',
+        \ 'range': '.', 'count': v:false, 'bang': v:false, 'bar': v:false,
+        \ 'register': v:false, 'addr': 'lines'}, exists_info(':s'))
+  let info = exists_info(':write')
+  call assert_equal(['%', '?', v:true, v:true],
+        \ [info.range, info.nargs, info.bang, info.bar])
+  let info = exists_info(':delete')
+  call assert_equal([0, v:true, 'none'],
+        \ [info.count, info.register, exists_info(':echo').addr])
+  let info = exists_info(':bo')
+  call assert_equal(['botright', 'modifier'], [info.name, info.kind])
+  let info = exists_info(':2match')
+  call assert_equal(['match', 'other'], [info.name, info.addr])
+  call assert_equal({}, exists_info(':3buffer'))
+  " The context: an abbreviation is not accepted in Vim9 script and some
+  " commands do not exist there.
+  call assert_equal('while', exists_info(':whi').name)
+  call assert_equal('while', exists_info(':whi', {'vim9': v:false}).name)
+  call assert_equal({}, exists_info(':whi', {'vim9': v:true}))
+  call assert_equal('while', exists_info(':while', {'vim9': v:true}).name)
+  call assert_equal('append', exists_info(':append').name)
+  call assert_equal({}, exists_info(':append', {'vim9': v:true}))
+  call assert_equal({}, exists_info(':nosuchcommand'))
+  call assert_equal({}, exists_info(':s garbage'))
+  call assert_equal({}, exists_info(':'))
+
+  command! -nargs=1 -range=% -bang -bar -register -complete=file MyCmd echo 1
+  let info = exists_info(':MyCmd')
+  let sid = str2nr(matchstr(expand('<SID>'), '\d\+'))
+  call assert_equal({'name': 'MyCmd', 'kind': 'user', 'nargs': '1',
+        \ 'range': '%', 'count': v:false, 'bang': v:true, 'bar': v:true,
+        \ 'register': v:true, 'addr': 'lines', 'buffer': v:false,
+        \ 'complete': 'file', 'definition': 'echo 1', 'sid': sid,
+        \ 'lnum': info.lnum}, info)
+  call assert_true(info.lnum > 0)
+  command! -buffer -nargs=* -count=5 -addr=buffers MyBufCmd echo 2
+  let info = exists_info(':MyBufCmd')
+  call assert_equal(['*', 5, '.', 'buffers', v:true, ''],
+        \ [info.nargs, info.count, info.range, info.addr, info.buffer,
+        \ info.complete])
+  command! -nargs=+ -complete=custom,MyCompl MyCustom echo 3
+  call assert_equal('custom,MyCompl', exists_info(':MyCustom').complete)
+  " An ambiguous abbreviation.
+  call assert_equal({}, exists_info(':My'))
+  delcommand MyCmd
+  delcommand MyBufCmd
+  delcommand MyCustom
+
+  " An option, also by the short name; "&opt" also gives a hidden option.
+  call assert_equal({'name': 'textwidth', 'shortname': 'tw', 'type': 'number',
+        \ 'scope': 'buffer', 'default': 0}, exists_info('+tw'))
+  let info = exists_info('+number')
+  call assert_equal(['bool', 'window', v:false],
+        \ [info.type, info.scope, info.default])
+  call assert_equal('global-buffer', exists_info('+autoread').scope)
+  call assert_equal('global-window', exists_info('+scrolloff').scope)
+  let info = exists_info('+shortmess')
+  call assert_equal(['string', 'global', &shortmess],
+        \ [info.type, info.scope, info.default])
+  call assert_equal('', exists_info('+debug').shortname)
+  call assert_equal(exists_info('+tw'), exists_info('+l:textwidth'))
+  call assert_equal({}, exists_info('+autoprint'))
+  let info = exists_info('&autoprint')
+  call assert_equal(['autoprint', v:false], [info.name, info.available])
+  call assert_equal(v:true, exists_info('&tw').available)
+  call assert_equal(exists_info('+tw'),
+        \ filter(exists_info('&g:tw'), 'v:key != "available"'))
+  call assert_equal({}, exists_info('+nonumber'))
+  call assert_equal({}, exists_info('+tw-'))
+  call assert_equal({}, exists_info('+'))
+
+  " What is not supported yet.
+  call assert_equal({}, exists_info('$HOME'))
+
+  call assert_equal('number', '*strlen'->exists_info().returns)
+  let lines =<< trim END
+    assert_equal('string', exists_info('*printf').returns)
+    assert_equal(-1, exists_info('*instanceof').maxargs)
+    assert_equal('list<string>',
+                 exists_info('*sort', {argtypes: ['list<string>']}).returns)
+    assert_equal('substitute', exists_info(':s').name)
+    assert_equal({}, exists_info(':whi'))
+    assert_equal('while', exists_info(':whi', {vim9: false}).name)
+    assert_equal('number', exists_info('+tw').type)
+  END
+  call v9.CheckDefAndScriptSuccess(lines)
+  " A function in Vim9 script is script-local.
+  let lines =<< trim END
+    vim9script
+    def Local(n: number): bool
+      return true
+    enddef
+    var info = exists_info('*Local')
+    assert_equal(['def', 'bool'], [info.kind, info.returns])
+    assert_match('^<SNR>\d\+_Local$', info.name)
+  END
+  call v9.CheckScriptSuccess(lines)
+  call v9.CheckDefAndScriptFailure(['exists_info(1)'], ['E1013:', 'E1174:'])
+  call v9.CheckDefAndScriptFailure(['exists_info("*sort", "list<string>")'],
+        \ ['E1013:', 'E1206:'])
+endfunc
+
 " Test for using exists() with class and object variables and methods.
 func Test_exists_class_object()
   let lines =<< trim END

@@ -181,6 +181,7 @@ execute({command})		String	execute {command} and get the output
 exepath({expr})			String	full path of the command {expr}
 exists({expr})			Number	|TRUE| if {expr} exists
 exists_compiled({expr})		Number	|TRUE| if {expr} exists at compile time
+exists_info({expr} [, {opts}])	Dict	information about what {expr} names
 exp({expr})			Float	exponential of {expr}
 expand({expr} [, {nosuf} [, {list}]])
 				any	expand special keywords in {expr}
@@ -2984,6 +2985,186 @@ exists_compiled({expr})					*exists_compiled()*
 		This does not work to check for arguments or local variables.
 
 		Return type: |Number|
+
+
+exists_info({expr} [, {opts}])				*exists_info()*
+		Return a Dict with information about what {expr} names.
+		{expr} uses the notation of `exists()`.  The result is an
+		empty Dict when {expr} does not exist or when its notation is
+		not supported.  What the Dict holds, and which items of the
+		optional Dict {opts} are used, depends on the notation.  An
+		item of {opts} for another notation is an error.
+
+		*funcname	built-in function that is implemented
+		?funcname	built-in function, also one that is not
+				implemented in this Vim
+			name	the name of the function
+			kind	"builtin"
+			available
+				only with "?funcname": |TRUE| when the
+				function is implemented in this Vim
+			minargs	the number of arguments that are required
+			maxargs	the maximum number of arguments, -1 when there
+				is no maximum
+			method	the number of the argument that the base of a
+				|method| call fills in, zero when the function
+				cannot be used as a method
+			args	a List with a Dict for each argument:
+				types	the types the argument accepts, a List
+					of |vim9-types|; "any" for an argument
+					that is not checked or is checked
+					against another argument
+				For a function without a maximum the last item
+				is for all the remaining arguments.
+			returns	the type of the returned value when the
+				arguments are of type "any", "void" when there
+				is none.  Also "any" when the type depends on
+				the number of arguments.
+
+			Example: >
+				echo exists_info('*strlen')
+<				{'name': 'strlen', 'kind': 'builtin',
+				'minargs': 1, 'maxargs': 1, 'method': 1,
+				'args': [{'types': ['string', 'number']}],
+				'returns': 'number'}
+
+			With the "argtypes" item of {opts}, a List of
+			|vim9-types| for the arguments, "returns" is the type
+			for arguments of those types, the same as what a |:def|
+			function is compiled with.  Required arguments that are
+			not in the List are of type "any".  It is an error to
+			give more types than the maximum number of arguments
+			or a type that is not recognized.  The types are not
+			checked against "args".  Example: >
+				let opts = {'argtypes': ['list<number>']}
+				echo exists_info('*sort', opts).returns
+<				list<number>
+
+		*Funcname	user defined function, when there is no
+				built-in function with that name.  "s:Func"
+				finds a script-local function in that script,
+				its "<SNR>12_Func" name from anywhere.
+			name	the name of the function, "<SNR>12_Func" for a
+				script-local one
+			kind	"function" for |:function|, "def" for |:def|
+			args	a List with a Dict for each argument:
+				name	the name of the argument
+				type	the type for "def", "any" for
+					"function"
+				default	the expression for the default value,
+					missing when there is none
+			varargs	only when the function accepts more arguments:
+				a Dict with "name", empty for "...", and
+				"type", "list<any>" for "function"
+			returns	the return type for "def", "any" for
+				"function"
+			abort	|TRUE| when the function aborts on an error,
+				see |:func-abort|
+			range	|TRUE| when the function takes a range, see
+				|:func-range|
+			dict	|TRUE| for a |Dictionary-function|
+			closure	|TRUE| for a closure, see |:func-closure|
+			sid	the script ID where the function was defined
+			lnum	the line number in that script
+
+			Example: >
+				def g:Twice(n: number): number
+				  return n * 2
+				enddef
+				echo exists_info('*g:Twice')
+<				{'name': 'Twice', 'kind': 'def',
+				'args': [{'name': 'n', 'type': 'number'}],
+				'returns': 'number', 'abort': v:false,
+				'range': v:false, 'dict': v:false,
+				'closure': v:false, 'sid': 1, 'lnum': 1}
+
+		v:name		predefined Vim variable, see |v:var|
+			name	the name of the variable, with the "v:"
+			type	the type of the variable, see |vim9-types|
+			readonly
+				|TRUE| when the variable cannot be set
+			compat	|TRUE| when the variable can also be used
+				without the "v:", like "count" for v:count
+
+			Example: >
+				echo exists_info('v:count')
+<				{'name': 'v:count', 'type': 'number',
+				'readonly': v:true, 'compat': v:true}
+
+		:cmd		Ex command, also with an abbreviation; a user
+				defined command is found first, as with
+				`exists()`.  The Dict is empty for an ambiguous
+				abbreviation.
+			name	the full name of the command
+			kind	"builtin", "modifier" for a command modifier
+				like `:silent`, or "user" for a user defined
+				command
+			nargs	the arguments as for |:command-nargs|: "0",
+				"1", "_", "*", "?" or "+"
+			range	|FALSE| when a range is not allowed, otherwise
+				the default: "." for the cursor line, "%" for
+				the whole buffer or a Number as with
+				|:command-range|
+			count	|FALSE| when a count is not allowed, otherwise
+				the default count
+			bang	|TRUE| when a "!" after the name is allowed
+			bar	|TRUE| when "|" ends the command, see |:bar|
+			register
+				|TRUE| when a register name is accepted
+			addr	what a range refers to, as for
+				|:command-addr|; a builtin command can also
+				have "none", "tabs_relative", "quickfix_valid"
+				or "unsigned"
+
+			Only for "user":
+			buffer	|TRUE| for a buffer-local command
+			complete
+				the completion as for |:command-complete|,
+				empty when there is none
+			definition
+				the replacement text
+			sid	the script ID where the command was defined
+			lnum	the line number in that script
+
+			With the "vim9" item of {opts}, |TRUE| finds the
+			command as in |Vim9| script, where an abbreviation is
+			not accepted and some commands do not exist, |FALSE|
+			as in legacy Vim script.  Without it the context of
+			the caller is used.
+
+			Example: >
+				echo exists_info(':s')
+<				{'name': 'substitute', 'kind': 'builtin',
+				'nargs': '*', 'range': '.', 'count': v:false,
+				'bang': v:false, 'bar': v:false,
+				'register': v:false, 'addr': 'lines'}
+
+		+opt		option that is supported in this Vim
+		&opt		option, also one that is not supported in this
+				Vim, see |hidden-options|
+			name	the full name of the option
+			shortname
+				the abbreviation, empty when there is none
+			available
+				only with "&opt": |TRUE| when the option is
+				supported in this Vim
+			type	"bool", "number" or "string"
+			scope	"global", "window", "buffer", "global-window"
+				or "global-buffer", see |global-local|
+			default	the default value
+
+			Example: >
+				echo exists_info('+tw')
+<				{'name': 'textwidth', 'shortname': 'tw',
+				'type': 'number', 'scope': 'buffer',
+				'default': 0}
+
+		The other notations of `exists()` are not supported yet.
+
+		Can also be used as a |method|: >
+			GetName()->exists_info()
+<
+		Return type: dict<any>
 
 
 exp({expr})						*exp()*
