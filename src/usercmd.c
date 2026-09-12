@@ -429,6 +429,35 @@ get_user_command_name(int idx, int cmdidx)
     }
     return NULL;
 }
+
+/*
+ * Add what exists_info() reports for the user command "idx" to "d".
+ * "cmdidx" is CMD_USER or CMD_USER_BUF.
+ * Returns FAIL when the command is not found.
+ */
+    int
+user_command_info(int idx, int cmdidx, dict_T *d)
+{
+    garray_T	*gap = cmdidx == CMD_USER_BUF
+				? &prevwin_curwin()->w_buffer->b_ucmds : &ucmds;
+    ucmd_T	*uc;
+    char_u	*compl;
+
+    if (idx >= gap->ga_len)
+	return FAIL;
+    uc = USER_CMD_GA(gap, idx);
+    dict_add_string(d, "name", uc->uc_name);
+    dict_add_string(d, "kind", (char_u *)"user");
+    ex_command_attrs(d, uc->uc_argt, uc->uc_addr_type, uc->uc_def);
+    dict_add_bool(d, "buffer", cmdidx == CMD_USER_BUF);
+    compl = cmdcomplete_type_to_str(uc->uc_compl, uc->uc_compl_arg);
+    dict_add_string(d, "complete", compl == NULL ? (char_u *)"" : compl);
+    vim_free(compl);
+    dict_add_string(d, "definition", uc->uc_rep);
+    dict_add_number(d, "sid", uc->uc_script_ctx.sc_sid);
+    dict_add_number(d, "lnum", uc->uc_script_ctx.sc_lnum);
+    return OK;
+}
 #endif
 
 /*

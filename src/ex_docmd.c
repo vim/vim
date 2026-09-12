@@ -4261,6 +4261,99 @@ cmd_exists(char_u *name)
 }
 
 /*
+ * Add the attributes of an Ex command to "d" in the terms of ":command":
+ * "argt" are the EX_ flags, "addr_type" the address type and "def" the
+ * default for a range or count, -1 when there is none.
+ */
+    void
+ex_command_attrs(dict_T *d, long_u argt, cmd_addr_T addr_type, long def)
+{
+    static char *addr_names[] = {
+	"lines", "windows", "arguments", "loaded_buffers", "buffers", "tabs",
+	"tabs_relative", "quickfix_valid", "quickfix", "unsigned", "other",
+	"none"
+    };
+    char	*nargs;
+
+    if (!(argt & EX_EXTRA))
+	nargs = "0";
+    else if (!(argt & EX_NOSPC))
+	nargs = (argt & EX_NEEDARG) ? "+" : "*";
+    else if (!(argt & EX_NEEDARG))
+	nargs = "?";
+    else
+	nargs = (argt & EX_ARGSPACE) ? "_" : "1";
+    dict_add_string(d, "nargs", (char_u *)nargs);
+
+    if (!(argt & EX_RANGE))
+	dict_add_bool(d, "range", FALSE);
+    else if (argt & EX_DFLALL)
+	dict_add_string(d, "range", (char_u *)"%");
+    else if (def >= 0 && !(argt & EX_COUNT))
+	dict_add_number(d, "range", def);
+    else
+	dict_add_string(d, "range", (char_u *)".");
+    if (!(argt & EX_COUNT))
+	dict_add_bool(d, "count", FALSE);
+    else
+	dict_add_number(d, "count", def < 0 ? 0 : def);
+    dict_add_bool(d, "bang", (argt & EX_BANG) != 0);
+    dict_add_bool(d, "bar", (argt & EX_TRLBAR) != 0);
+    dict_add_bool(d, "register", (argt & EX_REGSTR) != 0);
+    dict_add_string(d, "addr", (char_u *)addr_names[addr_type]);
+}
+
+/*
+ * Add what exists_info() reports for the Ex command "name", without the ":",
+ * to "d".  Returns FAIL when there is no such command or the abbreviation is
+ * ambiguous.
+ */
+    int
+ex_command_info(char_u *name, dict_T *d)
+{
+    exarg_T	ea;
+    char_u	*p;
+    int		i;
+    int		j;
+
+    // An abbreviation of a command modifier, like ":bo" for ":botright".
+    for (i = 0; i < (int)ARRAY_LENGTH(cmdmod_info_tab); ++i)
+    {
+	for (j = 0; name[j] != NUL; ++j)
+	    if (name[j] != cmdmod_info_tab[i].name[j])
+		break;
+	if (name[j] == NUL && j >= cmdmod_info_tab[i].minlen)
+	{
+	    name = (char_u *)cmdmod_info_tab[i].name;
+	    break;
+	}
+    }
+
+    // For ":2match" and ":3match" we need to skip the number.
+    ea.cmd = (*name == '2' || *name == '3') ? name + 1 : name;
+    ea.cmdidx = (cmdidx_T)0;
+    ea.flags = 0;
+    ea.addr_count = 0;
+    ++emsg_silent;  // don't complain about using "en" in Vim9 script
+    p = find_ex_command(&ea, NULL, NULL, NULL);
+    --emsg_silent;
+    if (p == NULL || ea.cmdidx == CMD_SIZE
+	    || (vim_isdigit(*name) && ea.cmdidx != CMD_match)
+	    || *skipwhite(p) != NUL)
+	return FAIL;
+
+    if (IS_USER_CMDIDX(ea.cmdidx))
+	return user_command_info(ea.useridx, ea.cmdidx, d);
+    dict_add_string(d, "name", cmdnames[ea.cmdidx].cmd_name);
+    dict_add_string(d, "kind", (char_u *)(
+		cmdnames[ea.cmdidx].cmd_func == ex_wrongmodifier
+						    ? "modifier" : "builtin"));
+    ex_command_attrs(d, cmdnames[ea.cmdidx].cmd_argt,
+				       cmdnames[ea.cmdidx].cmd_addr_type, -1);
+    return OK;
+}
+
+/*
  * "fullcommand" function
  */
     void

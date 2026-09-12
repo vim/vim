@@ -22,6 +22,8 @@ int number_method(char_u *cmd);
 char_u *find_ex_command(exarg_T *eap, int *full, int (*lookup)(char_u *, size_t, int cmd, cctx_T *), cctx_T *cctx);
 int modifier_len(char_u *cmd);
 int cmd_exists(char_u *name);
+void ex_command_attrs(dict_T *d, long_u argt, cmd_addr_T addr_type, long def);
+int ex_command_info(char_u *name, dict_T *d);
 void f_fullcommand(typval_T *argvars, typval_T *rettv);
 cmdidx_T excmd_get_cmdidx(char_u *cmd, int len);
 long excmd_get_argt(cmdidx_T idx);

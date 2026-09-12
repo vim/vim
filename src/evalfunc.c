@@ -5003,8 +5003,13 @@ f_exists_info(typval_T *argvars, typval_T *rettv)
 	(void)vim_var_info(p + 2, rettv->vval.v_dict);
 	return;
     }
-    // Otherwise only a builtin function is supported so far: "*funcname" for
-    // one that is implemented, "?funcname" for one that may not be.
+    if (*p == ':')
+    {
+	(void)ex_command_info(p + 1, rettv->vval.v_dict);
+	return;
+    }
+    // Otherwise a builtin function: "*funcname" for one that is implemented,
+    // "?funcname" for one that may not be.
     if (*p != '*' && *p != '?')
 	return;
     idx = find_internal_func_opt(p + 1, *p == '*');

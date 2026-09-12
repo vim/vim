@@ -435,9 +435,49 @@ func Test_exists_info()
   call assert_equal({}, exists_info('v:nosuchvariable'))
   call assert_equal({}, exists_info('v:'))
 
+  " An Ex command, also by an abbreviation, with the attributes of :command.
+  call assert_equal({'name': 'substitute', 'kind': 'builtin', 'nargs': '*',
+        \ 'range': '.', 'count': v:false, 'bang': v:false, 'bar': v:false,
+        \ 'register': v:false, 'addr': 'lines'}, exists_info(':s'))
+  let info = exists_info(':write')
+  call assert_equal(['%', '?', v:true, v:true],
+        \ [info.range, info.nargs, info.bang, info.bar])
+  let info = exists_info(':delete')
+  call assert_equal([0, v:true, 'none'],
+        \ [info.count, info.register, exists_info(':echo').addr])
+  let info = exists_info(':bo')
+  call assert_equal(['botright', 'modifier'], [info.name, info.kind])
+  let info = exists_info(':2match')
+  call assert_equal(['match', 'other'], [info.name, info.addr])
+  call assert_equal({}, exists_info(':3buffer'))
+  call assert_equal({}, exists_info(':nosuchcommand'))
+  call assert_equal({}, exists_info(':s garbage'))
+  call assert_equal({}, exists_info(':'))
+
+  command! -nargs=1 -range=% -bang -bar -register -complete=file MyCmd echo 1
+  let info = exists_info(':MyCmd')
+  let sid = str2nr(matchstr(expand('<SID>'), '\d\+'))
+  call assert_equal({'name': 'MyCmd', 'kind': 'user', 'nargs': '1',
+        \ 'range': '%', 'count': v:false, 'bang': v:true, 'bar': v:true,
+        \ 'register': v:true, 'addr': 'lines', 'buffer': v:false,
+        \ 'complete': 'file', 'definition': 'echo 1', 'sid': sid,
+        \ 'lnum': info.lnum}, info)
+  call assert_true(info.lnum > 0)
+  command! -buffer -nargs=* -count=5 -addr=buffers MyBufCmd echo 2
+  let info = exists_info(':MyBufCmd')
+  call assert_equal(['*', 5, '.', 'buffers', v:true, ''],
+        \ [info.nargs, info.count, info.range, info.addr, info.buffer,
+        \ info.complete])
+  command! -nargs=+ -complete=custom,MyCompl MyCustom echo 3
+  call assert_equal('custom,MyCompl', exists_info(':MyCustom').complete)
+  " An ambiguous abbreviation.
+  call assert_equal({}, exists_info(':My'))
+  delcommand MyCmd
+  delcommand MyBufCmd
+  delcommand MyCustom
+
   " What is not supported yet.
   call assert_equal({}, exists_info('+textwidth'))
-  call assert_equal({}, exists_info(':substitute'))
 
   call assert_equal('number', '*strlen'->exists_info().returns)
   let lines =<< trim END
@@ -445,6 +485,7 @@ func Test_exists_info()
     assert_equal(-1, exists_info('*instanceof').maxargs)
     assert_equal('list<string>',
                  exists_info('*sort', ['list<string>']).returns)
+    assert_equal('substitute', exists_info(':s').name)
   END
   call v9.CheckDefAndScriptSuccess(lines)
   call v9.CheckDefAndScriptFailure(['exists_info(1)'], ['E1013:', 'E1174:'])

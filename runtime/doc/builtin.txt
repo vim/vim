@@ -3051,6 +3051,46 @@ exists_info({expr} [, {argtypes}])			*exists_info()*
 <				{'name': 'v:count', 'type': 'number',
 				'readonly': v:true, 'compat': v:true}
 
+		:cmd		Ex command, also with an abbreviation; a user
+				defined command is found first, as with
+				`exists()`.  The Dict is empty for an ambiguous
+				abbreviation.
+			name	the full name of the command
+			kind	"builtin", "modifier" for a command modifier
+				like `:silent`, or "user" for a user defined
+				command
+			nargs	the arguments as for |:command-nargs|: "0",
+				"1", "_", "*", "?" or "+"
+			range	|FALSE| when a range is not allowed, otherwise
+				the default: "." for the cursor line, "%" for
+				the whole buffer or a Number as with
+				|:command-range|
+			count	|FALSE| when a count is not allowed, otherwise
+				the default count
+			bang	|TRUE| when a "!" after the name is allowed
+			bar	|TRUE| when "|" ends the command, see |:bar|
+			register
+				|TRUE| when a register name is accepted
+			addr	what a range refers to, as for
+				|:command-addr|; a builtin command can also
+				have "none", "tabs_relative", "quickfix_valid"
+				or "unsigned"
+			Only for "user":
+			buffer	|TRUE| for a buffer-local command
+			complete
+				the completion as for |:command-complete|,
+				empty when there is none
+			definition
+				the replacement text
+			sid	the script ID where the command was defined
+			lnum	the line number in that script
+			Example: >
+				echo exists_info(':s')
+<				{'name': 'substitute', 'kind': 'builtin',
+				'nargs': '*', 'range': '.', 'count': v:false,
+				'bang': v:false, 'bar': v:false,
+				'register': v:false, 'addr': 'lines'}
+
 		The other notations of `exists()` are not supported yet.
 
 		Can also be used as a |method|: >
