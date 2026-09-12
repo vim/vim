@@ -343,6 +343,85 @@ func Test_exists_funcarg()
   call FuncArg_Tests("arg1", "arg2")
 endfunc
 
+func Test_exists_info()
+  call assert_equal({'name': 'strlen', 'kind': 'builtin', 'minargs': 1,
+        \ 'maxargs': 1, 'method': 1,
+        \ 'args': [{'types': ['string', 'number']}], 'returns': 'number'},
+        \ exists_info('*strlen'))
+
+  " No arguments, no argument checks and not usable as a method.
+  call assert_equal({'name': 'argidx', 'kind': 'builtin', 'minargs': 0,
+        \ 'maxargs': 0, 'method': 0, 'args': [], 'returns': 'number'},
+        \ exists_info('*argidx'))
+
+  " An argument that accepts several types, and one that is checked against
+  " another argument.
+  let info = exists_info('*get')
+  call assert_equal([2, 3, 1], [info.minargs, info.maxargs, info.method])
+  call assert_equal(['blob', 'list<any>', 'tuple<any>', 'dict<any>', 'func'],
+        \ info.args[0].types)
+  call assert_equal(['string', 'number'], info.args[1].types)
+  call assert_equal(['any'], info.args[2].types)
+  call assert_equal('any', info.returns)
+  call assert_equal(['any'], exists_info('*extend').args[1].types)
+
+  " The base of a method call is the second argument.
+  call assert_equal(2, exists_info('*append').method)
+
+  " No maximum number of arguments: the last item is for the rest.
+  let info = exists_info('*instanceof')
+  call assert_equal(-1, info.maxargs)
+  call assert_equal([{'types': ['object<any>']}, {'types': ['class']}],
+        \ info.args)
+
+  " The type depends on the number of arguments, and no value at all.
+  call assert_equal('any', exists_info('*getline').returns)
+  call assert_equal('void', exists_info('*bufload').returns)
+
+  " Not a builtin function, or not a function at all.
+  call assert_equal({}, exists_info('*nosuchfunction'))
+  call assert_equal({}, exists_info('*'))
+  call assert_equal({}, exists_info(''))
+  func s:NotBuiltin()
+  endfunc
+  call assert_equal({}, exists_info('*s:NotBuiltin'))
+  delfunc s:NotBuiltin
+
+  " "?funcname" also gives a builtin that is not implemented in this Vim.
+  let info = exists_info('?strlen')
+  call assert_equal(v:true, info.available)
+  call assert_equal(exists_info('*strlen'), filter(info, 'v:key != "available"'))
+  let info = exists_info('?mzeval')
+  call assert_equal('mzeval', info.name)
+  call assert_equal(exists('*mzeval') ? v:true : v:false, info.available)
+  call assert_equal(exists('*mzeval') ? 'mzeval' : '',
+        \ get(exists_info('*mzeval'), 'name', ''))
+  call assert_equal({}, exists_info('?nosuchfunction'))
+
+  " A predefined Vim variable: its declared type and how it can be used.
+  call assert_equal({'name': 'v:count', 'type': 'number',
+        \ 'readonly': v:true, 'compat': v:true}, exists_info('v:count'))
+  let info = exists_info('v:lnum')
+  call assert_equal([v:false, v:false], [info.readonly, info.compat])
+  call assert_equal('list<string>', exists_info('v:errors').type)
+  call assert_equal('bool', exists_info('v:true').type)
+  call assert_equal('dict<any>', exists_info('v:event').type)
+  call assert_equal({}, exists_info('v:nosuchvariable'))
+  call assert_equal({}, exists_info('v:'))
+
+  " What is not supported yet.
+  call assert_equal({}, exists_info('+textwidth'))
+  call assert_equal({}, exists_info(':substitute'))
+
+  call assert_equal('number', '*strlen'->exists_info().returns)
+  let lines =<< trim END
+    assert_equal('string', exists_info('*printf').returns)
+    assert_equal(-1, exists_info('*instanceof').maxargs)
+  END
+  call v9.CheckDefAndScriptSuccess(lines)
+  call v9.CheckDefAndScriptFailure(['exists_info(1)'], ['E1013:', 'E1174:'])
+endfunc
+
 " Test for using exists() with class and object variables and methods.
 func Test_exists_class_object()
   let lines =<< trim END

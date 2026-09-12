@@ -181,6 +181,7 @@ execute({command})		String	execute {command} and get the output
 exepath({expr})			String	full path of the command {expr}
 exists({expr})			Number	|TRUE| if {expr} exists
 exists_compiled({expr})		Number	|TRUE| if {expr} exists at compile time
+exists_info({expr})		Dict	information about what {expr} names
 exp({expr})			Float	exponential of {expr}
 expand({expr} [, {nosuf} [, {list}]])
 				any	expand special keywords in {expr}
@@ -2984,6 +2985,64 @@ exists_compiled({expr})					*exists_compiled()*
 		This does not work to check for arguments or local variables.
 
 		Return type: |Number|
+
+
+exists_info({expr})					*exists_info()*
+		Return a Dict with information about what {expr} names.
+		{expr} uses the notation of `exists()`.  The result is an
+		empty Dict when {expr} does not exist or when its notation is
+		not supported.  What the Dict holds depends on the notation:
+
+		*funcname	built-in function that is implemented
+		?funcname	built-in function, also one that is not
+				implemented in this Vim
+			name	the name of the function
+			kind	"builtin"
+			available
+				only with "?funcname": |TRUE| when the
+				function is implemented in this Vim
+			minargs	the number of arguments that are required
+			maxargs	the maximum number of arguments, -1 when there
+				is no maximum
+			method	the number of the argument that the base of a
+				|method| call fills in, zero when the function
+				cannot be used as a method
+			args	a List with a Dict for each argument:
+				types	the types the argument accepts, a List
+					of |vim9-types|; "any" for an argument
+					that is not checked or is checked
+					against another argument
+				For a function without a maximum the last item
+				is for all the remaining arguments.
+			returns	the type of the returned value when the
+				arguments are of type "any", "void" when there
+				is none.  Also "any" when the type depends on
+				the number of arguments.
+			Example: >
+				echo exists_info('*strlen')
+<				{'name': 'strlen', 'kind': 'builtin',
+				'minargs': 1, 'maxargs': 1, 'method': 1,
+				'args': [{'types': ['string', 'number']}],
+				'returns': 'number'}
+
+		v:name		predefined Vim variable, see |v:var|
+			name	the name of the variable, with the "v:"
+			type	the type of the variable, see |vim9-types|
+			readonly
+				|TRUE| when the variable cannot be set
+			compat	|TRUE| when the variable can also be used
+				without the "v:", like "count" for v:count
+			Example: >
+				echo exists_info('v:count')
+<				{'name': 'v:count', 'type': 'number',
+				'readonly': v:true, 'compat': v:true}
+
+		The other notations of `exists()` are not supported yet.
+
+		Can also be used as a |method|: >
+			GetName()->exists_info()
+<
+		Return type: dict<any>
 
 
 exp({expr})						*exp()*
