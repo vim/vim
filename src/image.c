@@ -674,51 +674,54 @@ draw_image_placements(void)
 		    pixman_region32_fini(&place->visible);
 		place->visible = visible_region;
 
-		if (PLACEMENT_FUNC(image_backend, blit) && place->visible_init)
+		if (PLACEMENT_FUNC(image_backend, blit))
 		{
 		    // Must redraw the stale regions that will not be composited
 		    // over (for this specific image).
-		    pixman_region32_t stale_region;
+		    pixman_region32_t	stale_region;
+		    int			min_w, min_h;
+		    pixman_region32_t   min_region;
 
 		    pixman_region32_init(&stale_region);
 
-		    if (pixman_region32_subtract(&stale_region,
-				&place->visible_abs, &visible_abs))
+		    if (place->visible_init)
 		    {
-			int		    min_w, min_h;
-			pixman_region32_t   min_region;
+			(void)pixman_region32_subtract(&stale_region,
+				&place->visible_abs, &visible_abs);
 
 			// Also subtract "subtract_region", so we don't
 			// redundantly redraw cells that will have images
-			// painted over them after.
+			// painted over them after. Make sure to do this before
+			// we check partially covered cells, since
+			// "subtract_region" may also have partially covered
+			// cells.
 			(void)pixman_region32_subtract(&stale_region,
 				&stale_region, &subtract_region);
-
-			// The visible region is guaranteed to cover every
-			// single pixel. However if the visible region is
-			// converted to pixels, that means the resulting
-			// rectangles may be bigger than the image itself.
-			//
-			// We clamp the values in image_placement_subrect(),
-			// however that means partially covered cells will not
-			// be drawn over, and therefore could contain stale
-			// content. As such, subtract the minimum region
-			// from the visible region to get the resulting region
-			// containing partially covered cells that may have
-			// stale pixels still on them.
-			image_get_cell_dimensions_min(img, &min_w, &min_h);
-
-			pixman_region32_init_rect(&min_region,
-				x, y, min_w, min_h);
-
-			(void)pixman_region32_subtract(&min_region,
-				&visible_abs, &min_region);
-			(void)pixman_region32_union(&stale_region,
-				&stale_region, &min_region);
-			pixman_region32_fini(&min_region);
-
-			redraw_region(&stale_region);
 		    }
+
+		    // The visible region is guaranteed to cover every single
+		    // pixel. However if the visible region is converted to
+		    // pixels, that means the resulting rectangles may be bigger
+		    // than the image itself.
+		    //
+		    // We clamp the values in image_placement_subrect(), however
+		    // that means partially covered cells will not be drawn
+		    // over, and therefore could contain stale content. As such,
+		    // subtract the minimum region from the visible region to
+		    // get the resulting region containing partially covered
+		    // cells that may have stale pixels still on them.
+		    image_get_cell_dimensions_min(img, &min_w, &min_h);
+
+		    pixman_region32_init_rect(&min_region,
+			    x, y, min_w, min_h);
+
+		    (void)pixman_region32_subtract(&min_region,
+			    &visible_abs, &min_region);
+		    (void)pixman_region32_union(&stale_region,
+			    &stale_region, &min_region);
+		    pixman_region32_fini(&min_region);
+
+		    redraw_region(&stale_region);
 		    pixman_region32_fini(&stale_region);
 		}
 		if (place->visible_init)
