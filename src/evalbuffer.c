@@ -794,7 +794,7 @@ get_buffer_lines(
     if (buf == NULL || buf->b_ml.ml_mfp == NULL || start < 0)
     {
 	if (retlist)
-	    rettv_list_alloc(rettv);
+	    (void)rettv_list_alloc(rettv);
 	return;
     }
 
@@ -836,7 +836,7 @@ get_buffer_lines(
     return;
 
 nolist:
-    rettv_list_alloc(rettv);
+    (void)rettv_list_alloc(rettv);
 }
 
 /*
