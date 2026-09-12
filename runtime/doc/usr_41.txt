@@ -1461,7 +1461,7 @@ Various:					*various-functions*
 	visualmode()		last visual mode used
 	exists()		check if a variable, function, etc. exists
 	exists_compiled()	like exists() but check at compile time
-	exists_info()		information about a builtin function
+	exists_info()		information about what exists() accepts
 	has()			check if a feature is supported in Vim
 	changenr()		return number of most recent change
 	cscope_connection()	check if a cscope connection exists
