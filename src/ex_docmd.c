@@ -2526,6 +2526,12 @@ do_one_cmd(
 	    case CMD_def:
 				break;
 
+	    // commands that read the lines that follow
+	    case CMD_append:
+	    case CMD_change:
+	    case CMD_insert:
+				break;
+
 	    // Commands that handle '|' themselves.  Check: A command should
 	    // either have the EX_TRLBAR flag, appear in this list or appear in
 	    // the list at ":help :bar".
