@@ -5035,12 +5035,17 @@ f_exists_info(typval_T *argvars, typval_T *rettv)
 	return;
     }
     // Otherwise a builtin function: "*funcname" for one that is implemented,
-    // "?funcname" for one that may not be.
+    // "?funcname" for one that may not be.  A user defined function only
+    // with "*funcname".
     if (*p != '*' && *p != '?')
 	return;
     idx = find_internal_func_opt(p + 1, *p == '*');
     if (idx < 0)
+    {
+	if (*p == '*')
+	    (void)user_func_info(p + 1, rettv->vval.v_dict);
 	return;
+    }
 
     fe = &global_functions[idx];
     ga_init2(&type_gap, sizeof(type_T *), 10);
