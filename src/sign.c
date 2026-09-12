@@ -1329,13 +1329,10 @@ sign_jump(int sign_id, char_u *sign_group, buf_T *buf)
             emsg(_(e_cannot_jump_to_buffer_that_does_not_have_name));
             return -1;
         }
-        char_u *cmd = alloc(STRLEN(buf->b_fname) + 25);
-        if (cmd == NULL)
+        setpcmark();
+        if (do_ecmd(buf->b_fnum, NULL, NULL, NULL, lnum,
+                    buf_hide(curbuf) ? ECMD_HIDE : 0, curwin) == FAIL)
             return -1;
-
-        sprintf((char *)cmd, "e +%ld %s", (long)lnum, buf->b_fname);
-        do_cmdline_cmd(cmd);
-        vim_free(cmd);
     }
 # ifdef FEAT_FOLDING
     foldOpenCursor();
