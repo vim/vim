@@ -7072,7 +7072,7 @@ check_copy_area(void)
     GdkEvent        *event;
     int                expose_count;
     if (gui.visibility != GDK_VISIBILITY_PARTIAL)
-        return;
+	return;
     // Avoid redrawing the cursor while scrolling or it'll end up where
     // we don't want it to be.        I'm not sure if it's correct to call
     // gui_dont_update_cursor() at this point but it works as a quick
@@ -7080,14 +7080,14 @@ check_copy_area(void)
     gui_dont_update_cursor(TRUE);
     do
     {
-        // Wait to check whether the scroll worked or not.
-        event = gdk_event_get_graphics_expose(gui.drawarea->window);
-        if (event == NULL)
-            break; // received NoExpose event
-        gui_redraw(event->expose.area.x, event->expose.area.y,
-                   event->expose.area.width, event->expose.area.height);
-        expose_count = event->expose.count;
-        gdk_event_free(event);
+	// Wait to check whether the scroll worked or not.
+	event = gdk_event_get_graphics_expose(gui.drawarea->window);
+	if (event == NULL)
+	    break; // received NoExpose event
+	gui_redraw(event->expose.area.x, event->expose.area.y,
+		event->expose.area.width, event->expose.area.height);
+	expose_count = event->expose.count;
+	gdk_event_free(event);
     }
     while (expose_count > 0); // more events follow
     gui_can_update_cursor();
