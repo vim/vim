@@ -6729,7 +6729,7 @@ libcallnr({libname}, {funcname}, {argument})		*libcallnr()*
 		third argument: >
 			GetValue()->libcallnr("libc.so", "printf")
 <
-		Return type: |String|
+		Return type: |Number|
 
 
 line({expr} [, {winid}])				*line()*
@@ -8218,7 +8218,7 @@ pow({x}, {y})						*pow()*
 		Can also be used as a |method|: >
 			Compute()->pow(3)
 <
-		Return type: |Number|
+		Return type: |Float|
 
 
 preinserted()						*preinserted()*
@@ -8674,7 +8674,7 @@ pum_getpos()						*pum_getpos()*
 		The values are the same as in |v:event| during
 		|CompleteChanged|.
 
-		Return type: dict<any>
+		Return type: dict<number>
 
 
 pumvisible()						*pumvisible()*
