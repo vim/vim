@@ -1483,6 +1483,14 @@ ret_list_items(int argcount UNUSED,
     return &t_list_list_any;
 }
     static type_T *
+ret_list_list_any(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type)
+{
+    *decl_type = &t_list_any;
+    return &t_list_list_any;
+}
+    static type_T *
 ret_list_string_items(int argcount UNUSED,
 	type2_T *argtypes UNUSED,
 	type_T	**decl_type)
@@ -1686,6 +1694,34 @@ ret_first_cont(int argcount,
     }
     return &t_any;
 }
+// for get(): the type of the item when a missing item has the same type
+    static type_T *
+ret_get(int argcount,
+	type2_T *argtypes,
+	type_T	**decl_type)
+{
+    if (argcount > 0)
+    {
+	type_T	*t = argtypes[0].type_curr;
+	type_T	*item = NULL;
+
+	if (t->tt_type == VAR_BLOB)
+	    item = &t_number;
+	else if (t->tt_type == VAR_LIST || t->tt_type == VAR_DICT)
+	    item = t->tt_member;
+	// A missing item gives {default} when present, otherwise zero.
+	if (item != NULL && (argcount == 3
+			? equal_type(item, argtypes[2].type_curr, 0)
+			: item->tt_type == VAR_NUMBER))
+	{
+	    if (t->tt_type != VAR_BLOB
+			    && argtypes[0].type_decl->tt_type == t->tt_type)
+		*decl_type = argtypes[0].type_decl->tt_member;
+	    return item;
+	}
+    }
+    return &t_any;
+}
 // for getline()
     static type_T *
 ret_getline(int argcount,
@@ -1697,16 +1733,63 @@ ret_getline(int argcount,
     *decl_type = &t_list_any;
     return &t_list_string;
 }
-// for finddir()
+// A string with fewer than N arguments, otherwise it depends on the value of
+// the last one: a string or a list of strings.
     static type_T *
-ret_finddir(int argcount,
+ret_string_or_any_1(int argcount,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    if (argcount < 1)
+	return &t_string;
+    return &t_any;
+}
+    static type_T *
+ret_string_or_any_2(int argcount,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    if (argcount < 2)
+	return &t_string;
+    return &t_any;
+}
+    static type_T *
+ret_string_or_any_3(int argcount,
 	type2_T *argtypes UNUSED,
 	type_T	**decl_type UNUSED)
 {
     if (argcount < 3)
 	return &t_string;
-    // Depending on the count would be a string or a list of strings.
     return &t_any;
+}
+    static type_T *
+ret_string_or_any_4(int argcount,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    if (argcount < 4)
+	return &t_string;
+    return &t_any;
+}
+// for abs()
+    static type_T *
+ret_abs(int argcount,
+	type2_T *argtypes,
+	type_T	**decl_type UNUSED)
+{
+    if (argcount > 0 && argtypes[0].type_curr->tt_type == VAR_FLOAT)
+	return &t_float;
+    return &t_number;
+}
+// for sign_define()
+    static type_T *
+ret_sign_define(int argcount,
+	type2_T *argtypes,
+	type_T	**decl_type UNUSED)
+{
+    if (argcount > 0 && argtypes[0].type_curr->tt_type == VAR_LIST)
+	return &t_list_number;
+    return &t_number;
 }
 // for values(): list of member of first argument
     static type_T *
@@ -1947,7 +2030,7 @@ typedef struct
 static const funcentry_T global_functions[] =
 {
     {"abs",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_any,	    f_abs},
+			ret_abs,	    f_abs},
     {"acos",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    f_acos},
     {"add",		2, 2, FEARG_1,	    arg2_listblobmod_item,
@@ -1999,9 +2082,9 @@ static const funcentry_T global_functions[] =
     {"atan2",		2, 2, FEARG_1,	    arg2_float_or_nr,
 			ret_float,	    f_atan2},
     {"autocmd_add",	1, 1, FEARG_1,	    arg1_list_any,
-			ret_number_bool,    f_autocmd_add},
+			ret_bool,	    f_autocmd_add},
     {"autocmd_delete",	1, 1, FEARG_1,	    arg1_list_any,
-			ret_number_bool,    f_autocmd_delete},
+			ret_bool,	    f_autocmd_delete},
     {"autocmd_get",	0, 1, FEARG_1,	    arg1_dict_any,
 			ret_list_dict_any,  f_autocmd_get},
     {"balloon_gettext",	0, 0, 0,	    NULL,
@@ -2173,7 +2256,7 @@ static const funcentry_T global_functions[] =
     {"did_filetype",	0, 0, 0,	    NULL,
 			ret_number_bool,    f_did_filetype},
     {"diff",		2, 3, FEARG_1,	    arg3_diff,
-			ret_any,  f_diff},
+			ret_string_or_any_3,  f_diff},
     {"diff_filler",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_diff_filler},
     {"diff_hlID",	2, 2, FEARG_1,	    arg2_lnum_number,
@@ -2213,7 +2296,7 @@ static const funcentry_T global_functions[] =
     {"exp",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    f_exp},
     {"expand",		1, 3, FEARG_1,	    arg3_string_bool_bool,
-			ret_any,	    f_expand},
+			ret_string_or_any_3,	    f_expand},
     {"expandcmd",	1, 2, FEARG_1,	    arg2_string_dict,
 			ret_string,	    f_expandcmd},
     {"extend",		2, 3, FEARG_1,	    arg23_extend,
@@ -2233,9 +2316,9 @@ static const funcentry_T global_functions[] =
     {"filter",		2, 2, FEARG_1,	    arg2_filter,
 			ret_first_arg,	    f_filter},
     {"finddir",		1, 3, FEARG_1,	    arg3_string_string_number,
-			ret_finddir,	    f_finddir},
+			ret_string_or_any_3,	    f_finddir},
     {"findfile",	1, 3, FEARG_1,	    arg3_string_string_number,
-			ret_any,	    f_findfile},
+			ret_string_or_any_3,	    f_findfile},
     {"flatten",		1, 2, FEARG_1,	    arg2_list_any_number,
 			ret_list_any,	    f_flatten},
     {"flattennew",	1, 2, FEARG_1,	    arg2_list_any_number,
@@ -2273,7 +2356,7 @@ static const funcentry_T global_functions[] =
     {"garbagecollect",	0, 1, 0,	    arg1_bool,
 			ret_void,	    f_garbagecollect},
     {"get",		2, 3, FEARG_1,	    arg23_get,
-			ret_any,	    f_get},
+			ret_get,	    f_get},
     {"getbgcolor",	0, 0, 0,	    NULL,
 			ret_list_any,	    f_getbgcolor},
     {"getbufinfo",	0, 1, FEARG_1,	    arg1_buffer_or_dict_any,
@@ -2395,11 +2478,11 @@ static const funcentry_T global_functions[] =
     {"getwinvar",	2, 3, FEARG_1,	    arg3_number_string_any,
 			ret_any,	    f_getwinvar},
     {"glob",		1, 4, FEARG_1,	    arg14_glob,
-			ret_any,	    f_glob},
+			ret_string_or_any_3,	    f_glob},
     {"glob2regpat",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_glob2regpat},
     {"globpath",	2, 5, FEARG_2,	    arg25_globpath,
-			ret_any,	    f_globpath},
+			ret_string_or_any_4,	    f_globpath},
     {"has",		1, 2, 0,	    arg2_string_bool,
 			ret_number_bool,    f_has},
     {"has_key",		2, 2, FEARG_1,	    arg2_dict_any_string_or_nr,
@@ -2551,7 +2634,7 @@ static const funcentry_T global_functions[] =
     {"mapset",		1, 3, FEARG_1,	    arg3_string_or_dict_bool_dict,
 			ret_void,	    f_mapset},
     {"match",		2, 4, FEARG_1,	    arg24_match_func,
-			ret_any,	    f_match},
+			ret_number,	    f_match},
     {"matchadd",	2, 5, FEARG_1,	    arg25_matchadd,
 			ret_number,	    f_matchadd},
     {"matchaddpos",	2, 5, FEARG_1,	    arg25_matchaddpos,
@@ -2567,7 +2650,7 @@ static const funcentry_T global_functions[] =
     {"matchfuzzy",	2, 3, FEARG_1,	    arg3_list_string_dict,
 			ret_list_any,	    f_matchfuzzy},
     {"matchfuzzypos",	2, 3, FEARG_1,	    arg3_list_string_dict,
-			ret_list_any,	    f_matchfuzzypos},
+			ret_list_list_any,  f_matchfuzzypos},
     {"matchlist",	2, 4, FEARG_1,	    arg24_match_func,
 			ret_list_string,    f_matchlist},
     {"matchstr",	2, 4, FEARG_1,	    arg24_match_func,
@@ -2753,7 +2836,7 @@ static const funcentry_T global_functions[] =
     {"reg_recording",	0, 0, 0,	    NULL,
 			ret_string,	    f_reg_recording},
     {"reltime",		0, 2, FEARG_1,	    arg2_list_number,
-			ret_list_any,	    f_reltime},
+			ret_list_number,    f_reltime},
     {"reltimefloat",	1, 1, FEARG_1,	    arg1_list_number,
 			ret_float,	    f_reltimefloat},
     {"reltimestr",	1, 1, FEARG_1,	    arg1_list_number,
@@ -2807,7 +2890,7 @@ static const funcentry_T global_functions[] =
     {"search",		1, 5, FEARG_1,	    arg15_search,
 			ret_number,	    f_search},
     {"searchcount",	0, 1, FEARG_1,	    arg1_dict_any,
-			ret_dict_any,	    f_searchcount},
+			ret_dict_number,    f_searchcount},
     {"searchdecl",	1, 3, FEARG_1,	    arg3_string_bool_bool,
 			ret_number_bool,    f_searchdecl},
     {"searchpair",	3, 7, 0,	    arg37_searchpair,
@@ -2819,7 +2902,7 @@ static const funcentry_T global_functions[] =
     {"server2client",	2, 2, FEARG_1,	    arg2_string,
 			ret_number_bool,    f_server2client},
     {"serverlist",	0, 1, 0,	    arg1_dict_any,
-			ret_any,	    f_serverlist},
+			ret_string_or_any_1,	    f_serverlist},
     {"setbufline",	3, 3, FEARG_3,	    arg3_setbufline,
 			ret_number_bool,    f_setbufline},
     {"setbufvar",	3, 3, FEARG_3,	    arg3_buffer_string_any,
@@ -2873,7 +2956,7 @@ static const funcentry_T global_functions[] =
     {"shiftwidth",	0, 1, FEARG_1,	    arg1_number,
 			ret_number,	    f_shiftwidth},
     {"sign_define",	1, 2, FEARG_1,	    arg2_string_or_list_dict,
-			ret_any,	    SIGN_FUNC(f_sign_define)},
+			ret_sign_define,	    SIGN_FUNC(f_sign_define)},
     {"sign_getdefined",	0, 1, FEARG_1,	    arg1_string,
 			ret_list_dict_any,  SIGN_FUNC(f_sign_getdefined)},
     {"sign_getplaced",	0, 2, FEARG_1,	    arg02_sign_getplaced,
@@ -2973,7 +3056,7 @@ static const funcentry_T global_functions[] =
     {"strwidth",	1, 1, FEARG_1,	    arg1_string,
 			ret_number,	    f_strwidth},
     {"submatch",	1, 2, FEARG_1,	    arg2_number_bool,
-			ret_string,	    f_submatch},
+			ret_string_or_any_2,	    f_submatch},
     {"substitute",	4, 4, FEARG_1,	    arg4_string_string_any_string,
 			ret_string,	    f_substitute},
     {"swapfilelist",	0, 0, 0,	    NULL,
