@@ -17,4 +17,12 @@ void foo()
 
     int c = 0B101;
     int d = 0b101;
+
+    // size_t (C++23)
+    {
+        auto dec = 123z;
+        auto bin = 0B101ZU;
+        auto oct = 0750Uz;
+        auto hex = 0xABzU;
+    }
 }
