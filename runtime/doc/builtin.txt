@@ -3091,6 +3091,25 @@ exists_info({expr} [, {argtypes}])			*exists_info()*
 				'bang': v:false, 'bar': v:false,
 				'register': v:false, 'addr': 'lines'}
 
+		+opt		option that is supported in this Vim
+		&opt		option, also one that is not supported in this
+				Vim, see |hidden-options|
+			name	the full name of the option
+			shortname
+				the abbreviation, empty when there is none
+			available
+				only with "&opt": |TRUE| when the option is
+				supported in this Vim
+			type	"bool", "number" or "string"
+			scope	"global", "window", "buffer", "global-window"
+				or "global-buffer", see |global-local|
+			default	the default value
+			Example: >
+				echo exists_info('+tw')
+<				{'name': 'textwidth', 'shortname': 'tw',
+				'type': 'number', 'scope': 'buffer',
+				'default': 0}
+
 		The other notations of `exists()` are not supported yet.
 
 		Can also be used as a |method|: >

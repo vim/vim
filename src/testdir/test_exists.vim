@@ -476,8 +476,31 @@ func Test_exists_info()
   delcommand MyBufCmd
   delcommand MyCustom
 
+  " An option, also by the short name; "&opt" also gives a hidden option.
+  call assert_equal({'name': 'textwidth', 'shortname': 'tw', 'type': 'number',
+        \ 'scope': 'buffer', 'default': 0}, exists_info('+tw'))
+  let info = exists_info('+number')
+  call assert_equal(['bool', 'window', v:false],
+        \ [info.type, info.scope, info.default])
+  call assert_equal('global-buffer', exists_info('+autoread').scope)
+  call assert_equal('global-window', exists_info('+scrolloff').scope)
+  let info = exists_info('+shortmess')
+  call assert_equal(['string', 'global', &shortmess],
+        \ [info.type, info.scope, info.default])
+  call assert_equal('', exists_info('+debug').shortname)
+  call assert_equal(exists_info('+tw'), exists_info('+l:textwidth'))
+  call assert_equal({}, exists_info('+autoprint'))
+  let info = exists_info('&autoprint')
+  call assert_equal(['autoprint', v:false], [info.name, info.available])
+  call assert_equal(v:true, exists_info('&tw').available)
+  call assert_equal(exists_info('+tw'),
+        \ filter(exists_info('&g:tw'), 'v:key != "available"'))
+  call assert_equal({}, exists_info('+nonumber'))
+  call assert_equal({}, exists_info('+tw-'))
+  call assert_equal({}, exists_info('+'))
+
   " What is not supported yet.
-  call assert_equal({}, exists_info('+textwidth'))
+  call assert_equal({}, exists_info('$HOME'))
 
   call assert_equal('number', '*strlen'->exists_info().returns)
   let lines =<< trim END
@@ -486,6 +509,7 @@ func Test_exists_info()
     assert_equal('list<string>',
                  exists_info('*sort', ['list<string>']).returns)
     assert_equal('substitute', exists_info(':s').name)
+    assert_equal('number', exists_info('+tw').type)
   END
   call v9.CheckDefAndScriptSuccess(lines)
   call v9.CheckDefAndScriptFailure(['exists_info(1)'], ['E1013:', 'E1174:'])

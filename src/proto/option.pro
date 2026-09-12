@@ -123,6 +123,7 @@ void unset_global_local_option(char_u *name, void *from);
 char_u *get_option_varp_scope(int opt_idx, int scope);
 char_u *get_option_var(int opt_idx);
 char_u *get_option_fullname(int opt_idx);
+int option_info(char_u *name, int working, dict_T *d);
 opt_did_set_cb_T get_option_did_set_cb(int opt_idx);
 char_u *get_equalprg(void);
 char_u *get_findfunc(void);
