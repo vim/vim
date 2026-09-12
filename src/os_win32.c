@@ -34,6 +34,10 @@
 #include <winternl.h>
 #include <direct.h>
 
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
+# include "iscygpty.h"
+#endif
+
 #if !defined(FEAT_GUI_MSWIN)
 # include <shellapi.h>
 #endif
@@ -2306,6 +2310,54 @@ create_conin(void)
 }
 
 /*
+ * Create the console output.  Used when writing to stdout doesn't work.
+ * GENERIC_READ is also needed, the console screen buffer is read back for the
+ * text attributes and, on an older console, to save the screen contents.
+ */
+    static void
+create_conout(void)
+{
+    g_hConOut =	CreateFile("CONOUT$", GENERIC_READ|GENERIC_WRITE,
+			FILE_SHARE_READ|FILE_SHARE_WRITE,
+			(LPSECURITY_ATTRIBUTES) NULL,
+			OPEN_EXISTING, 0, (HANDLE)NULL);
+}
+
+/*
+ * Return TRUE when "h" is a pipe, and thus does not lead to the console.
+ * A console handle or a redirection to a file is left alone.
+ */
+    static int
+conio_replaceable(HANDLE h)
+{
+    return GetFileType(h) == FILE_TYPE_PIPE;
+}
+
+/*
+ * Return TRUE when Vim uses the console for the screen.  Not in Ex or silent
+ * mode, which use streams, not with "--not-a-term", and not in a Cygwin or
+ * MSYS pty, which check_tty() refuses to run in.
+ */
+    static int
+want_console_io(void)
+{
+    return !is_not_a_term() && !silent_mode && !exmode_active
+						    && !is_cygpty_used();
+}
+
+/*
+ * Return TRUE if Vim reads its keys from the console device.  That device has
+ * no file descriptor, so isatty() cannot see it.
+ */
+    int
+mch_input_from_console(void)
+{
+    DWORD	mode;
+
+    return GetConsoleMode(g_hConIn, &mode) != 0;
+}
+
+/*
  * Get a keystroke or a mouse event, use a blocking wait.
  */
     static WCHAR
@@ -3469,12 +3521,31 @@ mch_init_c(void)
     _fmode = O_BINARY;		// we do our own CR-LF translation
     out_flush();
 
-    // Obtain handles for the standard Console I/O devices
-    if (read_cmd_fd == 0)
-	g_hConIn =  GetStdHandle(STD_INPUT_HANDLE);
-    else
+    /*
+     * Obtain handles for the standard Console I/O devices.  A parent process
+     * may pass a pipe instead of the console; the console API fails on that,
+     * so use the console device.  Without a console the open fails.
+     */
+    if (read_cmd_fd != 0		// "vim -": stdin is the text to edit
+	    || (want_console_io()
+		    && conio_replaceable(GetStdHandle(STD_INPUT_HANDLE))))
 	create_conin();
-    g_hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    else
+	g_hConIn = GetStdHandle(STD_INPUT_HANDLE);
+
+    if (want_console_io()
+		    && conio_replaceable(GetStdHandle(STD_OUTPUT_HANDLE)))
+    {
+	create_conout();
+	if (g_hConOut == INVALID_HANDLE_VALUE)
+	    g_hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	else
+	    // "stdout_isatty" was set in common_init_2(), which runs before
+	    // mch_init(), from a handle that is still a pipe.
+	    stdout_isatty = TRUE;
+    }
+    else
+	g_hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
     wt_init();
     vtp_flag_init();
@@ -9148,7 +9219,9 @@ vtp_flag_init(void)
     if (!gui.in_use)
 # endif
     {
-	out = GetStdHandle(STD_OUTPUT_HANDLE);
+	// Use the console Vim draws on, a pipe has no console mode.
+	out = (g_hConOut != INVALID_HANDLE_VALUE)
+			  ? g_hConOut : GetStdHandle(STD_OUTPUT_HANDLE);
 
 	vtp_working = (win_version >= VTP_FIRST_SUPPORT_BUILD) ? 1 : 0;
 	GetConsoleMode(out, &mode);

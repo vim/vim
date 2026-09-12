@@ -15,6 +15,7 @@ int test_mswin_event(char_u *event, dict_T *args);
 void mch_update_cursor(void);
 int mch_char_avail(void);
 int mch_check_messages(void);
+int mch_input_from_console(void);
 int mch_inchar(char_u *buf, int maxlen, long time, int tb_change_cnt);
 void mch_init(void);
 void mch_exit(int r);
