@@ -4467,7 +4467,10 @@ did_set_splitkeep(optset_T *args UNUSED)
     win_T	*wp;
     tabpage_T	*tp;
     FOR_ALL_TAB_WINDOWS(tp, wp)
+    {
 	wp->w_prev_height = wp->w_height;
+	wp->w_prev_winrow = wp->w_winrow;
+    }
     return did_set_opt_strings(p_spk, p_spk_values, FALSE);
 }
 
