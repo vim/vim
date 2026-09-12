@@ -1419,7 +1419,6 @@ ALL_LIBS = \
 	   $(WAYLAND_LIBS) \
 	   $(CAIRO_LIBS) \
 	   $(PANGO_LIBS) \
-	   $(SIXEL_LIBS) \
 	   $(PIXMAN_LIBS) \
 	   $(X_EXTRA_LIBS) \
 	   $(MZSCHEME_LIBS) \
@@ -3501,7 +3500,7 @@ objects/image_kitty.o: image_kitty.c
 	$(CCC) -o $@ image_kitty.c
 
 objects/image_sixel.o: image_sixel.c
-	$(CCC) $(SIXEL_CFLAGS) $(SIXEL_CPPFLAGS) -o $@ image_sixel.c
+	$(CCC) -o $@ image_sixel.c
 
 objects/indent.o: indent.c
 	$(CCC) -o $@ indent.c
