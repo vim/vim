@@ -2804,6 +2804,32 @@ get_vim_var_type(int idx, garray_T *type_list)
 }
 
 /*
+ * Add what exists_info() reports for the v: variable "name", without the
+ * "v:", to "d".  Returns FAIL when there is no such variable.
+ */
+    int
+vim_var_info(char_u *name, dict_T *d)
+{
+    int		di_flags;
+    int		idx = find_vim_var(name, &di_flags);
+    garray_T	type_list;
+    char	*tofree;
+
+    if (idx < 0)
+	return FAIL;
+    vim_snprintf((char *)IObuff, IOSIZE, "v:%s", vimvars[idx].vv_name);
+    dict_add_string(d, "name", IObuff);
+    ga_init2(&type_list, sizeof(type_T *), 10);
+    char *type = type_name(get_vim_var_type(idx, &type_list), &tofree);
+    dict_add_string(d, "type", (char_u *)type);
+    vim_free(tofree);
+    clear_type_list(&type_list);
+    dict_add_bool(d, "readonly", (vimvars[idx].vv_flags & VV_RO) != 0);
+    dict_add_bool(d, "compat", (vimvars[idx].vv_flags & VV_COMPAT) != 0);
+    return OK;
+}
+
+/*
  * Set v: variable to "tv".  Only accepts the same type.
  * Takes over the value of "tv".
  */

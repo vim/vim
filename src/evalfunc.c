@@ -54,6 +54,7 @@ static void f_eval(typval_T *argvars, typval_T *rettv);
 static void f_eventhandler(typval_T *argvars, typval_T *rettv);
 static void f_execute(typval_T *argvars, typval_T *rettv);
 static void f_exists_compiled(typval_T *argvars, typval_T *rettv);
+static void f_exists_info(typval_T *argvars, typval_T *rettv);
 static void f_expand(typval_T *argvars, typval_T *rettv);
 static void f_expandcmd(typval_T *argvars, typval_T *rettv);
 static void f_feedkeys(typval_T *argvars, typval_T *rettv);
@@ -2210,6 +2211,8 @@ static const funcentry_T global_functions[] =
 			ret_number_bool,    f_exists},
     {"exists_compiled",	1, 1, FEARG_1,	    arg1_string,
 			ret_number_bool,    f_exists_compiled},
+    {"exists_info",	1, 1, FEARG_1,	    arg1_string,
+			ret_dict_any,	    f_exists_info},
     {"exp",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    f_exp},
     {"expand",		1, 3, FEARG_1,	    arg3_string_bool_bool,
@@ -4785,6 +4788,243 @@ f_exists(typval_T *argvars, typval_T *rettv)
 f_exists_compiled(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
     emsg(_(e_exists_compiled_can_only_be_used_in_def_function));
+}
+
+/*
+ * The types each argument check function accepts, for exists_info().  A check
+ * that depends on another argument accepts "any".
+ */
+static struct
+{
+    argcheck_T	func;
+    char	*types;	    // separated by commas
+} argcheck_types[] =
+{
+    {arg_any,			"any"},
+    {arg_blob,			"blob"},
+    {arg_bool,			"bool,number"},
+    {arg_bool_or_dict_any,	"bool,number,dict<any>"},
+    {arg_bool_or_nr,		"bool,number"},
+    {arg_buffer,		"string,number"},
+    {arg_buffer_or_dict_any,	"string,number,dict<any>"},
+    {arg_chan_or_job,		"channel,job"},
+    {arg_cursor1,		"number,string,list<any>"},
+    {arg_dict_any,		"dict<any>"},
+    {arg_dict_any_or_string,	"dict<any>,string"},
+    {arg_extend3,		"number,string"},
+    {arg_filter_func,		"string,func"},
+    {arg_float_or_nr,		"float,number"},
+    {arg_foreach_func,		"string,func"},
+    {arg_get1,			"blob,list<any>,tuple<any>,dict<any>,func"},
+    {arg_item_of_prev,		"any"},
+    {arg_job,			"job"},
+    {arg_len1,
+	    "string,number,blob,list<any>,tuple<any>,dict<any>,object<any>"},
+    {arg_list_any,		"list<any>"},
+    {arg_list_any_mod,		"list<any>"},
+    {arg_list_number,		"list<number>"},
+    {arg_list_or_blob,		"list<any>,blob"},
+    {arg_list_or_blob_mod,	"list<any>,blob"},
+    {arg_list_or_dict_or_blob,	"list<any>,dict<any>,blob"},
+    {arg_list_or_dict_or_blob_mod, "list<any>,dict<any>,blob"},
+    {arg_list_or_dict_or_blob_or_string, "list<any>,dict<any>,blob,string"},
+    {arg_list_or_dict_or_blob_or_string_mod,
+					"list<any>,dict<any>,blob,string"},
+    {arg_list_or_tuple,		"list<any>,tuple<any>"},
+    {arg_list_or_tuple_or_blob,	"list<any>,tuple<any>,blob"},
+    {arg_list_or_tuple_or_dict,	"list<any>,tuple<any>,dict<any>"},
+    {arg_list_string,		"list<string>"},
+    {arg_list_tuple_dict_blob_or_string,
+				"list<any>,tuple<any>,dict<any>,blob,string"},
+    {arg_lnum,			"string,number"},
+    {arg_map_func,		"string,func"},
+    {arg_number,		"number"},
+    {arg_object,		"object<any>"},
+    {arg_remove2,		"number,string"},
+    {arg_repeat1,		"string,number,blob,list<any>,tuple<any>"},
+    {arg_reverse,		"list<any>,tuple<any>,blob,string"},
+    {arg_same_as_prev,		"any"},
+    {arg_same_struct_as_prev,	"any"},
+    {arg_slice1,		"list<any>,tuple<any>,blob,string"},
+    {arg_sort_how,		"string,func"},
+    {arg_str_or_nr_or_list,	"string,number,list<any>"},
+    {arg_string,		"string"},
+    {arg_string_list_tuple_or_blob, "string,list<any>,tuple<any>,blob"},
+    {arg_string_list_tuple_or_dict, "string,list<any>,tuple<any>,dict<any>"},
+    {arg_string_or_blob,	"string,blob"},
+    {arg_string_or_dict_any,	"string,dict<any>"},
+    {arg_string_or_func,	"string,func,bool,number"},
+    {arg_string_or_list_any,	"string,list<any>"},
+    {arg_string_or_list_string,	"string,list<string>"},
+    {arg_string_or_nr,		"string,number"},
+    {arg_tuple_any,		"tuple<any>"},
+    {varargs_class,		"class"},
+};
+
+/*
+ * The types argument check "check" accepts as a List of strings, or NULL when
+ * out of memory.
+ */
+    static list_T *
+argcheck_type_list(argcheck_T check)
+{
+    list_T	*l = list_alloc();
+    char	*types = "any";
+
+    if (l == NULL)
+	return NULL;
+    for (int i = 0; i < (int)ARRAY_LENGTH(argcheck_types); ++i)
+	if (argcheck_types[i].func == check)
+	{
+	    types = argcheck_types[i].types;
+	    break;
+	}
+    for (char *p = types; ; )
+    {
+	char	*end = (char *)vim_strchr((char_u *)p, ',');
+	int	len = end == NULL ? (int)STRLEN(p) : (int)(end - p);
+
+	if (list_append_string(l, (char_u *)p, len) == FAIL)
+	{
+	    list_free(l);
+	    return NULL;
+	}
+	if (end == NULL)
+	    break;
+	p = end + 1;
+    }
+    return l;
+}
+
+/*
+ * The name of the type builtin function "idx" returns when called with
+ * "argcount" arguments of type "any".  "tofree" is set to what to free.
+ */
+    static char *
+builtin_ret_type_name(
+	int	    idx,
+	int	    argcount,
+	garray_T    *type_gap,
+	char	    **tofree)
+{
+    type2_T	argtypes[MAX_FUNC_ARGS];
+    type_T	*decl_type;
+    type_T	*ret;
+
+    for (int i = 0; i < argcount && i < MAX_FUNC_ARGS; ++i)
+    {
+	argtypes[i].type_curr = &t_any;
+	argtypes[i].type_decl = &t_any;
+    }
+    ret = internal_func_ret_type(idx, argcount, argtypes, &decl_type,
+								    type_gap);
+    return type_name(ret, tofree);
+}
+
+/*
+ * "exists_info()" function
+ */
+    static void
+f_exists_info(typval_T *argvars, typval_T *rettv)
+{
+    char_u		*p;
+    int			idx;
+    const funcentry_T	*fe;
+    dict_T		*d;
+    list_T		*args;
+    garray_T		type_gap;
+    char		*ret_name;
+    char		*tofree;
+
+    if (rettv_dict_alloc(rettv) == FAIL)
+	return;
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    p = tv_get_string(&argvars[0]);
+    if (STRNCMP(p, "v:", 2) == 0)
+    {
+	(void)vim_var_info(p + 2, rettv->vval.v_dict);
+	return;
+    }
+    // Otherwise only a builtin function is supported so far: "*funcname" for
+    // one that is implemented, "?funcname" for one that may not be.
+    if (*p != '*' && *p != '?')
+	return;
+    idx = find_internal_func_opt(p + 1, *p == '*');
+    if (idx < 0)
+	return;
+
+    fe = &global_functions[idx];
+    d = rettv->vval.v_dict;
+    dict_add_string(d, "name", (char_u *)fe->f_name);
+    dict_add_string(d, "kind", (char_u *)"builtin");
+    if (*p == '?')
+	dict_add_bool(d, "available", fe->f_func != NULL);
+    dict_add_number(d, "minargs", fe->f_min_argc);
+    dict_add_number(d, "maxargs", fe->f_max_argc == VARGS
+						    ? -1 : fe->f_max_argc);
+    dict_add_number(d, "method", fe->f_argtype & FEARG_MASK);
+
+    args = list_alloc();
+    if (args == NULL || dict_add_list(d, "args", args) == FAIL)
+	return;
+    for (int i = 0; ; ++i)
+    {
+	argcheck_T  check;
+	dict_T	    *arg;
+	list_T	    *types;
+
+	if (fe->f_argcheck == NULL)
+	{
+	    // Every argument is "any"; one item stands for all of them when
+	    // there is no maximum.
+	    if (i >= (fe->f_max_argc == VARGS ? 1 : fe->f_max_argc))
+		break;
+	    check = arg_any;
+	}
+	else
+	{
+	    // One check per argument up to the maximum; without a maximum the
+	    // checks end with NULL.
+	    if ((fe->f_max_argc != VARGS && i >= fe->f_max_argc)
+						|| fe->f_argcheck[i] == NULL)
+		break;
+	    check = fe->f_argcheck[i];
+	}
+	arg = dict_alloc();
+	types = argcheck_type_list(check);
+	if (arg == NULL || types == NULL
+		|| dict_add_list(arg, "types", types) == FAIL
+		|| list_append_dict(args, arg) == FAIL)
+	{
+	    if (arg != NULL)
+		dict_unref(arg);
+	    return;
+	}
+    }
+
+    // The type returned for arguments of type "any"; "any" when it differs with
+    // the number of arguments.
+    ga_init2(&type_gap, sizeof(type_T *), 10);
+    ret_name = builtin_ret_type_name(idx, fe->f_min_argc, &type_gap, &tofree);
+    if (fe->f_max_argc != VARGS && fe->f_max_argc != fe->f_min_argc)
+    {
+	char	*tofree_max;
+	char	*max_name = builtin_ret_type_name(idx, fe->f_max_argc,
+						    &type_gap, &tofree_max);
+
+	if (STRCMP(ret_name, max_name) != 0)
+	{
+	    vim_free(tofree);
+	    tofree = NULL;
+	    ret_name = "any";
+	}
+	vim_free(tofree_max);
+    }
+    dict_add_string(d, "returns", (char_u *)ret_name);
+    vim_free(tofree);
+    clear_type_list(&type_gap);
 }
 
 /*
