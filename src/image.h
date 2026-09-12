@@ -39,7 +39,10 @@ struct image_S
     int id;
     int refcount;
 
-    pixman_image_t  *image;
+    pixman_image_t  *image; // Remove later
+    uint8_t	    *data;
+    int		    width;
+    int		    height;
     image_format_T  fmt;
 
     image_backend_T backend;

@@ -134,9 +134,6 @@ init_image_state(void)
     void
 uninit_image_state(void)
 {
-#ifdef FEAT_IMAGE_SIXEL
-    sixel_uninit();
-#endif
     if (dirty_region_init)
 	pixman_region32_fini(&dirty_region);
     dirty_region_finalized = true;
@@ -201,6 +198,9 @@ image_new(uint8_t *data, int width, int height, image_format_T fmt)
     // pixman_image_t does not take ownership of the data
     pixman_image_set_destroy_function(img->image, pixman_destroy_func, copy);
 
+    img->data = (uint8_t *)copy;
+    img->width = width;
+    img->height = height;
     img->fmt = fmt;
 
     // Mix in PID to prevent ID collisions when using kitty graphics protocol
@@ -510,8 +510,8 @@ image_placement_subrect(
 
     *x = MIN(iw, MAX(*x, 0));
     *y = MIN(ih, MAX(*y, 0));
-    *w = MIN(iw, *w);
-    *h = MIN(ih, *h);
+    *w = MIN(*w, iw - *x);
+    *h = MIN(*h, ih - *y);
 }
 
 
