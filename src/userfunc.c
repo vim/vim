@@ -5514,10 +5514,11 @@ define_function(
 	    int dead = fp != NULL && (fp->uf_flags & FC_DEAD);
 
 	    // Function can be replaced with "function!" and when sourcing the
-	    // same script again, but only once.
+	    // same script again, but only once.  With ":source ++dryrun" both
+	    // branches of an ":if" define their function.
 	    // A name that is used by an import can not be overruled.
 	    if (import != NULL
-		    || (!dead && !eap->forceit
+		    || (!dead && !eap->forceit && !source_dryrun
 			&& (fp->uf_script_ctx.sc_sid != current_sctx.sc_sid
 			  || fp->uf_script_ctx.sc_seq == current_sctx.sc_seq)))
 	    {

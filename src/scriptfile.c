@@ -23,7 +23,7 @@ static garray_T		ga_loaded = {0, 0, sizeof(char_u *), 4, NULL};
 static int		last_current_SID_seq = 0;
 #endif
 
-static int do_source_ext(char_u *fname, int check_other, int is_vimrc, int *ret_sid, exarg_T *eap, int clearvars);
+static int do_source_ext(char_u *fname, int check_other, int is_vimrc, int *ret_sid, exarg_T *eap, int clearvars, int dryrun);
 
 /*
  * Initialize the execution stack.
@@ -1398,6 +1398,7 @@ ExpandPackAddDir(
 cmd_source(char_u *fname, exarg_T *eap)
 {
     int clearvars = FALSE;
+    int dryrun = FALSE;
 
     if (*fname != NUL && STRNCMP(fname, "++clear", 7) == 0)
     {
@@ -1409,6 +1410,12 @@ cmd_source(char_u *fname, exarg_T *eap)
 	    semsg(_(e_invalid_argument_str), eap->arg);
 	    return;
 	}
+    }
+    else if (STRNCMP(fname, "++dryrun", 8) == 0
+				    && (fname[8] == NUL || fname[8] == ' '))
+    {
+	dryrun = TRUE;
+	fname = skipwhite(fname + 8);
     }
 
     if (*fname != NUL && eap != NULL && eap->addr_count > 0)
@@ -1425,7 +1432,7 @@ cmd_source(char_u *fname, exarg_T *eap)
 	    emsg(_(e_argument_required));
 	else
 	    // source ex commands from the current buffer
-	    do_source_ext(NULL, FALSE, DOSO_NONE, NULL, eap, clearvars);
+	    do_source_ext(NULL, FALSE, DOSO_NONE, NULL, eap, clearvars, dryrun);
     }
     else if (eap != NULL && eap->forceit)
 	// ":source!": read Normal mode commands
@@ -1442,7 +1449,8 @@ cmd_source(char_u *fname, exarg_T *eap)
 						 );
 
     // ":source" read ex commands
-    else if (do_source(fname, FALSE, DOSO_NONE, NULL) == FAIL)
+    else if (do_source_ext(fname, FALSE, DOSO_NONE, NULL, NULL, FALSE, dryrun)
+								       == FAIL)
 	semsg(_(e_cant_open_file_str), fname);
 }
 
@@ -1639,7 +1647,8 @@ do_source_ext(
     int		is_vimrc,	    // DOSO_ value
     int		*ret_sid UNUSED,
     exarg_T	*eap,
-    int		clearvars UNUSED)
+    int		clearvars UNUSED,
+    int		dryrun UNUSED)
 {
     source_cookie_T	    cookie;
     char_u		    *p;
@@ -1647,7 +1656,11 @@ do_source_ext(
     char_u		    *fname_exp = NULL;
     char_u		    *firstline = NULL;
     int			    retval = FAIL;
+    int			    source_autocmds = TRUE;
     sctx_T		    save_current_sctx;
+#ifdef FEAT_EVAL
+    int			    save_source_dryrun = source_dryrun;
+#endif
 #ifdef STARTUPTIME
     struct timeval	    tv_rel;
     struct timeval	    tv_start;
@@ -1703,8 +1716,16 @@ do_source_ext(
     }
 #endif
 
+#ifdef FEAT_EVAL
+    // Also applies to the scripts this one imports.
+    if (dryrun)
+	source_dryrun = TRUE;
+    // Nothing is sourced in a dry run, no Source* autocommand either.
+    source_autocmds = !source_dryrun;
+#endif
+
     // Apply SourceCmd autocommands, they should get the file and source it.
-    if (has_autocmd(EVENT_SOURCECMD, fname_exp, NULL)
+    if (source_autocmds && has_autocmd(EVENT_SOURCECMD, fname_exp, NULL)
 	    && apply_autocmds(EVENT_SOURCECMD, fname_exp, fname_exp,
 							       FALSE, curbuf))
     {
@@ -1721,7 +1742,8 @@ do_source_ext(
     }
 
     // Apply SourcePre autocommands, they may get the file.
-    apply_autocmds(EVENT_SOURCEPRE, fname_exp, fname_exp, FALSE, curbuf);
+    if (source_autocmds)
+	apply_autocmds(EVENT_SOURCEPRE, fname_exp, fname_exp, FALSE, curbuf);
 
     if (!cookie.source_from_buf)
     {
@@ -1954,6 +1976,18 @@ do_source_ext(
 				     DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_REPEAT);
     retval = OK;
 
+#ifdef FEAT_EVAL
+    if (dryrun)
+    {
+	exarg_T	ea;
+
+	// Compile what was defined.
+	CLEAR_FIELD(ea);
+	ea.arg = (char_u *)"";
+	ex_defcompile(&ea);
+    }
+#endif
+
 #ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
     {
@@ -1993,7 +2027,7 @@ do_source_ext(
     }
 #endif
 
-    if (!got_int)
+    if (!got_int && source_autocmds)
 	trigger_source_post = TRUE;
 
 #ifdef FEAT_EVAL
@@ -2085,6 +2119,7 @@ theend:
     sticky_cmdmod_flags = save_sticky_cmdmod_flags;
 #ifdef FEAT_EVAL
     estack_compiling = save_estack_compiling;
+    source_dryrun = save_source_dryrun;
 #endif
     return retval;
 }
@@ -2096,7 +2131,8 @@ do_source(
     int		is_vimrc,	    // DOSO_ value
     int		*ret_sid)
 {
-    return do_source_ext(fname, check_other, is_vimrc, ret_sid, NULL, FALSE);
+    return do_source_ext(fname, check_other, is_vimrc, ret_sid, NULL, FALSE,
+									FALSE);
 }
 
 

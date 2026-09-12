@@ -14,6 +14,8 @@
 #include "vim.h"
 
 #if defined(FEAT_EVAL)
+static void declare_scriptvar_zero(char_u *name, type_T *type, int flags);
+
 /*
  * Return TRUE when currently in a script with script version smaller than
  * "max_version" or command modifiers forced it.
@@ -416,7 +418,9 @@ handle_import(
     }
 
     // The name of the file can be an expression, which must evaluate to a
-    // string.
+    // string.  With ":source ++dryrun" no function is called for it.
+    if (source_dryrun && vim_strchr(arg, '(') != NULL)
+	return NULL;
     ret = eval0_retarg(arg, &tv, NULL, evalarg, &expr_end);
     if (ret == FAIL)
 	goto erret;
@@ -787,7 +791,6 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
     char_u	    *name;
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     type_T	    *type;
-    typval_T	    init_tv;
 
     if (eap->cmdidx == CMD_final || eap->cmdidx == CMD_const)
     {
@@ -832,17 +835,75 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 	return p;
     }
 
-    // Create the variable with 0/NULL value.
+    declare_scriptvar_zero(name, type, 0);
+
+    vim_free(name);
+    return p;
+}
+
+/*
+ * Create the variable "name" with "type" and a 0/NULL value.  "flags" can
+ * have ASSIGN_CONST or ASSIGN_FINAL.
+ */
+    static void
+declare_scriptvar_zero(char_u *name, type_T *type, int flags)
+{
+    typval_T	init_tv;
+
     CLEAR_FIELD(init_tv);
     if (type->tt_type == VAR_ANY)
 	// A variable of type "any" is not possible, just use zero instead
 	init_tv.v_type = VAR_NUMBER;
     else
 	init_tv.v_type = type->tt_type;
-    set_var_const(name, 0, type, &init_tv, FALSE, ASSIGN_INIT, 0);
+    set_var_const(name, 0, type, &init_tv, FALSE, ASSIGN_INIT | flags, 0);
+}
 
-    vim_free(name);
-    return p;
+/*
+ * ":source ++dryrun": declare the variables of a ":var", ":const" or ":final"
+ * command with "arg" pointing at the first name, without evaluating the
+ * expression.  Each gets the declared type or "any", and a 0/NULL value.
+ */
+    void
+vim9_declare_dryrun(char_u *arg, int flags)
+{
+    scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
+    char_u	    *p = arg;
+    int		    in_list = *p == '[';
+
+    if (in_list)
+	++p;
+    for (;;)
+    {
+	char_u	*name_start;
+	char_u	*name;
+	type_T	*type = &t_any;
+
+	p = skipwhite(p);
+	if (!eval_isnamec1(*p))
+	    break;
+	name_start = p;
+	for (p = p + 1; *p != NUL && eval_isnamec(*p); MB_PTR_ADV(p))
+	    if (*p == ':' && (VIM_ISWHITE(p[1]) || p != name_start + 1))
+		break;
+	name = vim_strnsave(name_start, p - name_start);
+	if (name == NULL)
+	    break;
+	if (*p == ':')
+	{
+	    p = skipwhite(p + 1);
+	    type = parse_type(&p, &si->sn_type_list, NULL, NULL, TRUE);
+	}
+	if (type != NULL && check_reserved_name(name, FALSE) == OK)
+	    declare_scriptvar_zero(name, type, flags);
+	vim_free(name);
+	if (type == NULL || !in_list)
+	    break;
+	p = skipwhite(p);
+	if (*p != ',' && *p != ';')
+	    break;
+	++p;
+    }
 }
 
 /*

@@ -52661,6 +52661,8 @@ Other ~
   |:mkview| and |:mkvimrc|
 - The "term_finish" option of term_start() supports a "noclose" value.
 - Control Vim via a channel using stdin/stdout |channel-stdio|.
+- Add the "++dryrun" argument to |:source| so a script can be sourced without
+  executing it to check for errors |:source-dryrun|.
 
 Platform specific ~
 -----------------

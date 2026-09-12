@@ -1128,6 +1128,36 @@ ex_let(exarg_T *eap)
 	return;
     }
 
+    if (source_dryrun && vim9script && (flags & ASSIGN_NO_DECL) == 0)
+    {
+	// ":source ++dryrun": skip the expression, it may span lines, and only
+	// declare the variables.
+	int	save_skip = eap->skip;
+
+	eap->skip = TRUE;
+	if (expr[0] == '=' && expr[1] == '<' && expr[2] == '<')
+	{
+	    list_T *l = heredoc_get(eap, expr + 3, FALSE, FALSE);
+
+	    if (l != NULL)
+		list_free(l);
+	}
+	else
+	{
+	    evalarg_T	evalarg;
+
+	    ++emsg_skip;
+	    fill_evalarg_from_eap(&evalarg, eap, TRUE);
+	    expr = skipwhite_and_linebreak(expr + 1, &evalarg);
+	    (void)eval0(expr, &rettv, eap, &evalarg);
+	    --emsg_skip;
+	    clear_evalarg(&evalarg, eap);
+	}
+	eap->skip = save_skip;
+	vim9_declare_dryrun(arg, flags & (ASSIGN_CONST | ASSIGN_FINAL));
+	return;
+    }
+
     if (expr[0] == '=' && expr[1] == '<' && expr[2] == '<')
     {
 	list_T	*l = NULL;
@@ -3931,8 +3961,12 @@ delete_autoload_export_vars(char_u *prefix)
 	    dictitem_T	*di = HI2DI(hi);
 
 	    --todo;
-	    // Keep a class or enum: existing objects still refer to it.
-	    if (di->di_tv.v_type != VAR_CLASS
+	    // Keep a class or enum: existing objects still refer to it.  Not
+	    // in a dry run, nor one a dry run defined: no object was made.
+	    if ((di->di_tv.v_type != VAR_CLASS || source_dryrun
+			|| (di->di_tv.vval.v_class != NULL
+			    && (di->di_tv.vval.v_class->class_flags
+							     & CLASS_DRYRUN)))
 		    && STRNCMP(di->di_key, prefix, prefixlen) == 0)
 		delete_var(&globvarht, hi);
 	}
