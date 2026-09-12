@@ -378,6 +378,32 @@ func Test_exists_info()
   call assert_equal('any', exists_info('*getline').returns)
   call assert_equal('void', exists_info('*bufload').returns)
 
+  " The type returned for arguments of the given types, or that number of
+  " arguments.  Missing required arguments are "any".
+  call assert_equal('list<number>',
+        \ exists_info('*sort', ['list<number>']).returns)
+  call assert_equal('list<string>',
+        \ exists_info('*values', ['dict<string>']).returns)
+  call assert_equal('number',
+        \ exists_info('*remove', ['list<number>', 'number']).returns)
+  call assert_equal('list<number>',
+        \ exists_info('*remove', ['list<number>', 'number', 'number']).returns)
+  call assert_equal('string', exists_info('*getline', ['number']).returns)
+  call assert_equal('list<string>',
+        \ exists_info('*getline', ['number', 'string']).returns)
+  call assert_equal('any', exists_info('*sort', []).returns)
+  call assert_equal('any', exists_info('*get', ['blob']).returns)
+  call assert_equal('number', exists_info('*strlen', ['string']).returns)
+  call assert_equal(exists_info('*strlen'), exists_info('*strlen', ['string']))
+  call assert_equal({}, exists_info('*nosuchfunction', ['string']))
+  call assert_fails("call exists_info('v:count', ['string'])", 'E118:')
+  call assert_fails("call exists_info('+textwidth', ['string'])", 'E118:')
+  call assert_fails("call exists_info('*strlen', ['string', 'string'])",
+        \ 'E118:')
+  call assert_fails("call exists_info('*strlen', ['nosuchtype'])", 'E1010:')
+  call assert_fails("call exists_info('*strlen', ['string x'])", 'E1010:')
+  call assert_fails("call exists_info('*strlen', 'string')", 'E1211:')
+
   " Not a builtin function, or not a function at all.
   call assert_equal({}, exists_info('*nosuchfunction'))
   call assert_equal({}, exists_info('*'))
@@ -417,9 +443,13 @@ func Test_exists_info()
   let lines =<< trim END
     assert_equal('string', exists_info('*printf').returns)
     assert_equal(-1, exists_info('*instanceof').maxargs)
+    assert_equal('list<string>',
+                 exists_info('*sort', ['list<string>']).returns)
   END
   call v9.CheckDefAndScriptSuccess(lines)
   call v9.CheckDefAndScriptFailure(['exists_info(1)'], ['E1013:', 'E1174:'])
+  call v9.CheckDefAndScriptFailure(['exists_info("*sort", "list<string>")'],
+        \ ['E1013:', 'E1211:'])
 endfunc
 
 " Test for using exists() with class and object variables and methods.

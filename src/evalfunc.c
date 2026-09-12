@@ -1296,6 +1296,7 @@ static argcheck_T arg2_string_bool[] = {arg_string, arg_bool};
 static argcheck_T arg2_string_chan_or_job[] = {arg_string, arg_chan_or_job};
 static argcheck_T arg2_string_dict[] = {arg_string, arg_dict_any};
 static argcheck_T arg2_string_list_number[] = {arg_string, arg_list_number};
+static argcheck_T arg2_string_list_string[] = {arg_string, arg_list_string};
 static argcheck_T arg2_string_number[] = {arg_string, arg_number};
 static argcheck_T arg2_string_or_list_dict[] = {arg_string_or_list_any, arg_dict_any};
 static argcheck_T arg2_string_or_list_number[] = {arg_string_or_list_any, arg_number};
@@ -2211,7 +2212,7 @@ static const funcentry_T global_functions[] =
 			ret_number_bool,    f_exists},
     {"exists_compiled",	1, 1, FEARG_1,	    arg1_string,
 			ret_number_bool,    f_exists_compiled},
-    {"exists_info",	1, 1, FEARG_1,	    arg1_string,
+    {"exists_info",	1, 2, FEARG_1,	    arg2_string_list_string,
 			ret_dict_any,	    f_exists_info},
     {"exp",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    f_exp},
@@ -4897,27 +4898,72 @@ argcheck_type_list(argcheck_T check)
 }
 
 /*
+ * Fill "argtypes" with the types in list "l" for builtin function "fe", the
+ * "{argtypes}" argument of exists_info().  Arguments that are required but
+ * not in "l" get type "any".
+ * Returns the number of arguments, -1 for an error.
+ */
+    static int
+exists_info_argtypes(
+	list_T			*l,
+	const funcentry_T	*fe,
+	type2_T			*argtypes,
+	garray_T		*type_gap)
+{
+    listitem_T	*li;
+    int		argcount = 0;
+
+    if (l != NULL)
+	FOR_ALL_LIST_ITEMS(l, li)
+	{
+	    char_u  *s = tv_get_string_chk(&li->li_tv);
+	    char_u  *p = s;
+	    type_T  *type;
+
+	    if (s == NULL)
+		return -1;
+	    if (argcount >= fe->f_max_argc || argcount >= MAX_FUNC_ARGS)
+	    {
+		semsg(_(e_too_many_arguments_for_function_str), fe->f_name);
+		return -1;
+	    }
+	    type = parse_type(&p, type_gap, NULL, NULL, TRUE);
+	    if (type == NULL)
+		return -1;
+	    if (*skipwhite(p) != NUL)
+	    {
+		semsg(_(e_type_not_recognized_str), s);
+		return -1;
+	    }
+	    argtypes[argcount].type_curr = type;
+	    argtypes[argcount].type_decl = type;
+	    ++argcount;
+	}
+    for ( ; argcount < fe->f_min_argc && argcount < MAX_FUNC_ARGS; ++argcount)
+    {
+	argtypes[argcount].type_curr = &t_any;
+	argtypes[argcount].type_decl = &t_any;
+    }
+    return argcount;
+}
+
+/*
  * The name of the type builtin function "idx" returns when called with
- * "argcount" arguments of type "any".  "tofree" is set to what to free.
+ * "argcount" arguments of the types in "argtypes".  "tofree" is set to what
+ * to free.
  */
     static char *
 builtin_ret_type_name(
 	int	    idx,
 	int	    argcount,
+	type2_T	    *argtypes,
 	garray_T    *type_gap,
 	char	    **tofree)
 {
-    type2_T	argtypes[MAX_FUNC_ARGS];
     type_T	*decl_type;
-    type_T	*ret;
+    type_T	*ret = internal_func_ret_type(idx, argcount, argtypes,
+							&decl_type, type_gap);
 
-    for (int i = 0; i < argcount && i < MAX_FUNC_ARGS; ++i)
-    {
-	argtypes[i].type_curr = &t_any;
-	argtypes[i].type_decl = &t_any;
-    }
-    ret = internal_func_ret_type(idx, argcount, argtypes, &decl_type,
-								    type_gap);
     return type_name(ret, tofree);
 }
 
@@ -4933,6 +4979,8 @@ f_exists_info(typval_T *argvars, typval_T *rettv)
     dict_T		*d;
     list_T		*args;
     garray_T		type_gap;
+    type2_T		argtypes[MAX_FUNC_ARGS];
+    int			argcount;
     char		*ret_name;
     char		*tofree;
 
@@ -4940,8 +4988,16 @@ f_exists_info(typval_T *argvars, typval_T *rettv)
 	return;
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
+    if (check_for_opt_list_arg(argvars, 1) == FAIL)
+	return;
 
     p = tv_get_string(&argvars[0]);
+    // {argtypes} is only for a function.
+    if (*p != '*' && *p != '?' && argvars[1].v_type != VAR_UNKNOWN)
+    {
+	semsg(_(e_too_many_arguments_for_function_str), "exists_info");
+	return;
+    }
     if (STRNCMP(p, "v:", 2) == 0)
     {
 	(void)vim_var_info(p + 2, rettv->vval.v_dict);
@@ -4956,6 +5012,15 @@ f_exists_info(typval_T *argvars, typval_T *rettv)
 	return;
 
     fe = &global_functions[idx];
+    ga_init2(&type_gap, sizeof(type_T *), 10);
+    argcount = exists_info_argtypes(argvars[1].v_type == VAR_UNKNOWN
+				? NULL : argvars[1].vval.v_list,
+				fe, argtypes, &type_gap);
+    if (argcount < 0)
+    {
+	clear_type_list(&type_gap);
+	return;
+    }
     d = rettv->vval.v_dict;
     dict_add_string(d, "name", (char_u *)fe->f_name);
     dict_add_string(d, "kind", (char_u *)"builtin");
@@ -4968,7 +5033,10 @@ f_exists_info(typval_T *argvars, typval_T *rettv)
 
     args = list_alloc();
     if (args == NULL || dict_add_list(d, "args", args) == FAIL)
+    {
+	clear_type_list(&type_gap);
 	return;
+    }
     for (int i = 0; ; ++i)
     {
 	argcheck_T  check;
@@ -5000,18 +5068,27 @@ f_exists_info(typval_T *argvars, typval_T *rettv)
 	{
 	    if (arg != NULL)
 		dict_unref(arg);
+	    clear_type_list(&type_gap);
 	    return;
 	}
     }
 
-    // The type returned for arguments of type "any"; "any" when it differs with
-    // the number of arguments.
-    ga_init2(&type_gap, sizeof(type_T *), 10);
-    ret_name = builtin_ret_type_name(idx, fe->f_min_argc, &type_gap, &tofree);
-    if (fe->f_max_argc != VARGS && fe->f_max_argc != fe->f_min_argc)
+    // The type returned for arguments of the given types.  Without them "any"
+    // when it differs with the number of arguments.
+    ret_name = builtin_ret_type_name(idx, argcount, argtypes, &type_gap,
+								    &tofree);
+    if (argvars[1].v_type == VAR_UNKNOWN
+	    && fe->f_max_argc != VARGS && fe->f_max_argc != fe->f_min_argc)
     {
 	char	*tofree_max;
-	char	*max_name = builtin_ret_type_name(idx, fe->f_max_argc,
+	char	*max_name;
+
+	for (int i = argcount; i < fe->f_max_argc && i < MAX_FUNC_ARGS; ++i)
+	{
+	    argtypes[i].type_curr = &t_any;
+	    argtypes[i].type_decl = &t_any;
+	}
+	max_name = builtin_ret_type_name(idx, fe->f_max_argc, argtypes,
 						    &type_gap, &tofree_max);
 
 	if (STRCMP(ret_name, max_name) != 0)

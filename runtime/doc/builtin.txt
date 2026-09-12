@@ -181,7 +181,8 @@ execute({command})		String	execute {command} and get the output
 exepath({expr})			String	full path of the command {expr}
 exists({expr})			Number	|TRUE| if {expr} exists
 exists_compiled({expr})		Number	|TRUE| if {expr} exists at compile time
-exists_info({expr})		Dict	information about what {expr} names
+exists_info({expr} [, {argtypes}])
+				Dict	information about what {expr} names
 exp({expr})			Float	exponential of {expr}
 expand({expr} [, {nosuf} [, {list}]])
 				any	expand special keywords in {expr}
@@ -2987,7 +2988,7 @@ exists_compiled({expr})					*exists_compiled()*
 		Return type: |Number|
 
 
-exists_info({expr})					*exists_info()*
+exists_info({expr} [, {argtypes}])			*exists_info()*
 		Return a Dict with information about what {expr} names.
 		{expr} uses the notation of `exists()`.  The result is an
 		empty Dict when {expr} does not exist or when its notation is
@@ -3024,6 +3025,19 @@ exists_info({expr})					*exists_info()*
 				'minargs': 1, 'maxargs': 1, 'method': 1,
 				'args': [{'types': ['string', 'number']}],
 				'returns': 'number'}
+
+			With {argtypes}, a List of |vim9-types| for the
+			arguments, "returns" is the type for arguments of
+			those types, the same as what a |:def| function is
+			compiled with.  Required arguments that are not in
+			{argtypes} are of type "any".  It is an error to give
+			more types than the maximum number of arguments or a
+			type that is not recognized, or to give {argtypes}
+			with another notation.  The types are not checked
+			against "args".  Example: >
+				let i = exists_info('*sort', ['list<number>'])
+				echo i.returns
+<				list<number>
 
 		v:name		predefined Vim variable, see |v:var|
 			name	the name of the variable, with the "v:"
