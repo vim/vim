@@ -16,7 +16,7 @@
 
 #include "vim.h"
 
-#ifdef FEAT_IMAGE
+#if defined(FEAT_IMAGE) || defined(PROTO)
 
 struct
 {
@@ -134,6 +134,9 @@ init_image_state(void)
     void
 uninit_image_state(void)
 {
+#ifdef FEAT_IMAGE_SIXEL
+    sixel_uninit();
+#endif
     if (dirty_region_init)
 	pixman_region32_fini(&dirty_region);
     dirty_region_finalized = true;
@@ -697,6 +700,13 @@ draw_image_placements(void)
 			// cells.
 			(void)pixman_region32_subtract(&stale_region,
 				&stale_region, &subtract_region);
+
+			// Since pixels may be translucent/transparent, we must
+			// redraw the cells behind the image every time, so that
+			// no stale pixels remain from the previous redraw.
+			if (img->fmt == IMAGE_FORMAT_RGBA)
+			    (void)pixman_region32_union(&stale_region,
+				    &stale_region, &place->visible_abs);
 		    }
 
 		    // The visible region is guaranteed to cover every single
@@ -710,16 +720,22 @@ draw_image_placements(void)
 		    // subtract the minimum region from the visible region to
 		    // get the resulting region containing partially covered
 		    // cells that may have stale pixels still on them.
-		    image_get_cell_dimensions_min(img, &min_w, &min_h);
+		    //
+		    // Not needed for RGBA images, because we redraw the visible
+		    // region everytime anyways.
+		    if (!place->visible_init || img->fmt != IMAGE_FORMAT_RGBA)
+		    {
+			image_get_cell_dimensions_min(img, &min_w, &min_h);
 
-		    pixman_region32_init_rect(&min_region,
-			    x, y, min_w, min_h);
+			pixman_region32_init_rect(&min_region,
+				x, y, min_w, min_h);
 
-		    (void)pixman_region32_subtract(&min_region,
-			    &visible_abs, &min_region);
-		    (void)pixman_region32_union(&stale_region,
-			    &stale_region, &min_region);
-		    pixman_region32_fini(&min_region);
+			(void)pixman_region32_subtract(&min_region,
+				&visible_abs, &min_region);
+			(void)pixman_region32_union(&stale_region,
+				&stale_region, &min_region);
+			pixman_region32_fini(&min_region);
+		    }
 
 		    redraw_region(&stale_region);
 		    pixman_region32_fini(&stale_region);
@@ -986,4 +1002,4 @@ fail:
     return FAIL;
 }
 
-#endif // FEAT_IMAGE
+#endif // FEAT_IMAGE || PROTO
