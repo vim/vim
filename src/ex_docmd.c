@@ -4305,16 +4305,26 @@ ex_command_attrs(dict_T *d, long_u argt, cmd_addr_T addr_type, long def)
 
 /*
  * Add what exists_info() reports for the Ex command "name", without the ":",
- * to "d".  Returns FAIL when there is no such command or the abbreviation is
+ * to "d".  "vim9" is TRUE to find the command as in Vim9 script, FALSE as in
+ * legacy script, -1 for the context of the caller.
+ * Returns FAIL when there is no such command or the abbreviation is
  * ambiguous.
  */
     int
-ex_command_info(char_u *name, dict_T *d)
+ex_command_info(char_u *name, int vim9, dict_T *d)
 {
     exarg_T	ea;
     char_u	*p;
     int		i;
     int		j;
+    int		save_cmod_flags = cmdmod.cmod_flags;
+    int		ret = OK;
+
+    if (vim9 != -1)
+    {
+	cmdmod.cmod_flags &= ~(CMOD_VIM9CMD | CMOD_LEGACY);
+	cmdmod.cmod_flags |= vim9 ? CMOD_VIM9CMD : CMOD_LEGACY;
+    }
 
     // An abbreviation of a command modifier, like ":bo" for ":botright".
     for (i = 0; i < (int)ARRAY_LENGTH(cmdmod_info_tab); ++i)
@@ -4334,23 +4344,31 @@ ex_command_info(char_u *name, dict_T *d)
     ea.cmdidx = (cmdidx_T)0;
     ea.flags = 0;
     ea.addr_count = 0;
-    ++emsg_silent;  // don't complain about using "en" in Vim9 script
+    // Don't complain about using "en" or ":let" in Vim9 script.
+    ++emsg_silent;
     p = find_ex_command(&ea, NULL, NULL, NULL);
-    --emsg_silent;
     if (p == NULL || ea.cmdidx == CMD_SIZE
 	    || (vim_isdigit(*name) && ea.cmdidx != CMD_match)
-	    || *skipwhite(p) != NUL)
-	return FAIL;
+	    || *skipwhite(p) != NUL
+	    || not_in_vim9(&ea) == FAIL)
+	ret = FAIL;
+    --emsg_silent;
 
-    if (IS_USER_CMDIDX(ea.cmdidx))
-	return user_command_info(ea.useridx, ea.cmdidx, d);
-    dict_add_string(d, "name", cmdnames[ea.cmdidx].cmd_name);
-    dict_add_string(d, "kind", (char_u *)(
-		cmdnames[ea.cmdidx].cmd_func == ex_wrongmodifier
+    if (ret == FAIL)
+	;
+    else if (IS_USER_CMDIDX(ea.cmdidx))
+	ret = user_command_info(ea.useridx, ea.cmdidx, d);
+    else
+    {
+	dict_add_string(d, "name", cmdnames[ea.cmdidx].cmd_name);
+	dict_add_string(d, "kind", (char_u *)(
+		    cmdnames[ea.cmdidx].cmd_func == ex_wrongmodifier
 						    ? "modifier" : "builtin"));
-    ex_command_attrs(d, cmdnames[ea.cmdidx].cmd_argt,
+	ex_command_attrs(d, cmdnames[ea.cmdidx].cmd_argt,
 				       cmdnames[ea.cmdidx].cmd_addr_type, -1);
-    return OK;
+    }
+    cmdmod.cmod_flags = save_cmod_flags;
+    return ret;
 }
 
 /*

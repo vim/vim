@@ -1296,7 +1296,6 @@ static argcheck_T arg2_string_bool[] = {arg_string, arg_bool};
 static argcheck_T arg2_string_chan_or_job[] = {arg_string, arg_chan_or_job};
 static argcheck_T arg2_string_dict[] = {arg_string, arg_dict_any};
 static argcheck_T arg2_string_list_number[] = {arg_string, arg_list_number};
-static argcheck_T arg2_string_list_string[] = {arg_string, arg_list_string};
 static argcheck_T arg2_string_number[] = {arg_string, arg_number};
 static argcheck_T arg2_string_or_list_dict[] = {arg_string_or_list_any, arg_dict_any};
 static argcheck_T arg2_string_or_list_number[] = {arg_string_or_list_any, arg_number};
@@ -2212,7 +2211,7 @@ static const funcentry_T global_functions[] =
 			ret_number_bool,    f_exists},
     {"exists_compiled",	1, 1, FEARG_1,	    arg1_string,
 			ret_number_bool,    f_exists_compiled},
-    {"exists_info",	1, 2, FEARG_1,	    arg2_string_list_string,
+    {"exists_info",	1, 2, FEARG_1,	    arg2_string_dict,
 			ret_dict_any,	    f_exists_info},
     {"exp",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    f_exp},
@@ -4980,7 +4979,9 @@ f_exists_info(typval_T *argvars, typval_T *rettv)
     list_T		*args;
     garray_T		type_gap;
     type2_T		argtypes[MAX_FUNC_ARGS];
+    list_T		*argtypes_list = NULL;
     int			argcount;
+    int			vim9 = -1;	// -1: the context of the caller
     char		*ret_name;
     char		*tofree;
 
@@ -4988,15 +4989,35 @@ f_exists_info(typval_T *argvars, typval_T *rettv)
 	return;
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
-    if (check_for_opt_list_arg(argvars, 1) == FAIL)
+    if (check_for_opt_dict_arg(argvars, 1) == FAIL)
 	return;
 
     p = tv_get_string(&argvars[0]);
-    // {argtypes} is only for a function.
-    if (*p != '*' && *p != '?' && argvars[1].v_type != VAR_UNKNOWN)
+    if (argvars[1].v_type != VAR_UNKNOWN && argvars[1].vval.v_dict != NULL)
     {
-	semsg(_(e_too_many_arguments_for_function_str), "exists_info");
-	return;
+	// Each item of {opts} is for one notation.
+	dict_T	    *opts = argvars[1].vval.v_dict;
+	hashitem_T  *hi;
+	int	    todo = (int)opts->dv_hashtab.ht_used;
+
+	FOR_ALL_HASHTAB_ITEMS(&opts->dv_hashtab, hi, todo)
+	{
+	    if (HASHITEM_EMPTY(hi))
+		continue;
+	    --todo;
+	    dictitem_T *di = HI2DI(hi);
+
+	    if (STRCMP(di->di_key, "argtypes") == 0 && (*p == '*' || *p == '?')
+		    && di->di_tv.v_type == VAR_LIST)
+		argtypes_list = di->di_tv.vval.v_list;
+	    else if (STRCMP(di->di_key, "vim9") == 0 && *p == ':')
+		vim9 = tv_get_bool(&di->di_tv);
+	    else
+	    {
+		semsg(_(e_invalid_argument_str), di->di_key);
+		return;
+	    }
+	}
     }
     if (STRNCMP(p, "v:", 2) == 0)
     {
@@ -5005,7 +5026,7 @@ f_exists_info(typval_T *argvars, typval_T *rettv)
     }
     if (*p == ':')
     {
-	(void)ex_command_info(p + 1, rettv->vval.v_dict);
+	(void)ex_command_info(p + 1, vim9, rettv->vval.v_dict);
 	return;
     }
     if (*p == '&' || *p == '+')
@@ -5023,9 +5044,7 @@ f_exists_info(typval_T *argvars, typval_T *rettv)
 
     fe = &global_functions[idx];
     ga_init2(&type_gap, sizeof(type_T *), 10);
-    argcount = exists_info_argtypes(argvars[1].v_type == VAR_UNKNOWN
-				? NULL : argvars[1].vval.v_list,
-				fe, argtypes, &type_gap);
+    argcount = exists_info_argtypes(argtypes_list, fe, argtypes, &type_gap);
     if (argcount < 0)
     {
 	clear_type_list(&type_gap);
@@ -5087,7 +5106,7 @@ f_exists_info(typval_T *argvars, typval_T *rettv)
     // when it differs with the number of arguments.
     ret_name = builtin_ret_type_name(idx, argcount, argtypes, &type_gap,
 								    &tofree);
-    if (argvars[1].v_type == VAR_UNKNOWN
+    if (argtypes_list == NULL
 	    && fe->f_max_argc != VARGS && fe->f_max_argc != fe->f_min_argc)
     {
 	char	*tofree_max;

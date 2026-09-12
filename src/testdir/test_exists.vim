@@ -380,29 +380,34 @@ func Test_exists_info()
 
   " The type returned for arguments of the given types, or that number of
   " arguments.  Missing required arguments are "any".
+  let Types = {types -> exists_info('*sort', {'argtypes': types}).returns}
+  call assert_equal('list<number>', Types(['list<number>']))
+  call assert_equal('any', Types([]))
+  let Types = {f, types -> exists_info(f, {'argtypes': types}).returns}
+  call assert_equal('list<string>', Types('*values', ['dict<string>']))
+  call assert_equal('number', Types('*remove', ['list<number>', 'number']))
   call assert_equal('list<number>',
-        \ exists_info('*sort', ['list<number>']).returns)
-  call assert_equal('list<string>',
-        \ exists_info('*values', ['dict<string>']).returns)
-  call assert_equal('number',
-        \ exists_info('*remove', ['list<number>', 'number']).returns)
-  call assert_equal('list<number>',
-        \ exists_info('*remove', ['list<number>', 'number', 'number']).returns)
-  call assert_equal('string', exists_info('*getline', ['number']).returns)
-  call assert_equal('list<string>',
-        \ exists_info('*getline', ['number', 'string']).returns)
-  call assert_equal('any', exists_info('*sort', []).returns)
-  call assert_equal('any', exists_info('*get', ['blob']).returns)
-  call assert_equal('number', exists_info('*strlen', ['string']).returns)
-  call assert_equal(exists_info('*strlen'), exists_info('*strlen', ['string']))
-  call assert_equal({}, exists_info('*nosuchfunction', ['string']))
-  call assert_fails("call exists_info('v:count', ['string'])", 'E118:')
-  call assert_fails("call exists_info('+textwidth', ['string'])", 'E118:')
-  call assert_fails("call exists_info('*strlen', ['string', 'string'])",
-        \ 'E118:')
-  call assert_fails("call exists_info('*strlen', ['nosuchtype'])", 'E1010:')
-  call assert_fails("call exists_info('*strlen', ['string x'])", 'E1010:')
-  call assert_fails("call exists_info('*strlen', 'string')", 'E1211:')
+        \ Types('*remove', ['list<number>', 'number', 'number']))
+  call assert_equal('string', Types('*getline', ['number']))
+  call assert_equal('list<string>', Types('*getline', ['number', 'string']))
+  call assert_equal('any', Types('*get', ['blob']))
+  call assert_equal('number', Types('*strlen', ['string']))
+  call assert_equal(exists_info('*strlen'),
+        \ exists_info('*strlen', {'argtypes': ['string']}))
+  call assert_equal(exists_info('*strlen'), exists_info('*strlen', {}))
+  call assert_equal({}, exists_info('*nosuchfunction', {'argtypes': ['x']}))
+  call assert_fails("call Types('*strlen', ['string', 'string'])", 'E118:')
+  call assert_fails("call Types('*strlen', ['nosuchtype'])", 'E1010:')
+  call assert_fails("call Types('*strlen', ['string x'])", 'E1010:')
+  call assert_fails("call exists_info('*strlen', {'argtypes': 'string'})",
+        \ 'E475: Invalid argument: argtypes')
+  call assert_fails("call exists_info('*strlen', {'vim9': 1})",
+        \ 'E475: Invalid argument: vim9')
+  call assert_fails("call exists_info('*strlen', {'other': 1})",
+        \ 'E475: Invalid argument: other')
+  call assert_fails("call exists_info('v:count', {'argtypes': []})",
+        \ 'E475: Invalid argument: argtypes')
+  call assert_fails("call exists_info('*strlen', 'string')", 'E1206:')
 
   " Not a builtin function, or not a function at all.
   call assert_equal({}, exists_info('*nosuchfunction'))
@@ -450,6 +455,14 @@ func Test_exists_info()
   let info = exists_info(':2match')
   call assert_equal(['match', 'other'], [info.name, info.addr])
   call assert_equal({}, exists_info(':3buffer'))
+  " The context: an abbreviation is not accepted in Vim9 script and some
+  " commands do not exist there.
+  call assert_equal('while', exists_info(':whi').name)
+  call assert_equal('while', exists_info(':whi', {'vim9': v:false}).name)
+  call assert_equal({}, exists_info(':whi', {'vim9': v:true}))
+  call assert_equal('while', exists_info(':while', {'vim9': v:true}).name)
+  call assert_equal('append', exists_info(':append').name)
+  call assert_equal({}, exists_info(':append', {'vim9': v:true}))
   call assert_equal({}, exists_info(':nosuchcommand'))
   call assert_equal({}, exists_info(':s garbage'))
   call assert_equal({}, exists_info(':'))
@@ -507,14 +520,16 @@ func Test_exists_info()
     assert_equal('string', exists_info('*printf').returns)
     assert_equal(-1, exists_info('*instanceof').maxargs)
     assert_equal('list<string>',
-                 exists_info('*sort', ['list<string>']).returns)
+                 exists_info('*sort', {argtypes: ['list<string>']}).returns)
     assert_equal('substitute', exists_info(':s').name)
+    assert_equal({}, exists_info(':whi'))
+    assert_equal('while', exists_info(':whi', {vim9: false}).name)
     assert_equal('number', exists_info('+tw').type)
   END
   call v9.CheckDefAndScriptSuccess(lines)
   call v9.CheckDefAndScriptFailure(['exists_info(1)'], ['E1013:', 'E1174:'])
   call v9.CheckDefAndScriptFailure(['exists_info("*sort", "list<string>")'],
-        \ ['E1013:', 'E1211:'])
+        \ ['E1013:', 'E1206:'])
 endfunc
 
 " Test for using exists() with class and object variables and methods.
