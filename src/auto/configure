@@ -686,9 +686,6 @@ xmkmfpath
 PIXMAN_CPPFLAGS
 PIXMAN_CFLAGS
 PIXMAN_LIBS
-SIXEL_CPPFLAGS
-SIXEL_CFLAGS
-SIXEL_LIBS
 WAYLAND_OBJ
 WAYLAND_SRC
 WAYLAND_LIBS
@@ -9294,35 +9291,6 @@ printf "%s\n" "yes" >&6; }
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, version 1.44 or later is required" >&5
 printf "%s\n" "no, version 1.44 or later is required" >&6; }
   fi
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libsixel" >&5
-printf %s "checking for libsixel... " >&6; }
-if "$PKG_CONFIG" --exists 'libsixel'; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-
-  SIXEL_LIBS=`$PKG_CONFIG --libs libsixel`
-  SIXEL_CFLAGS=`$PKG_CONFIG --cflags-only-other libsixel`
-  SIXEL_CPPFLAGS=`$PKG_CONFIG --cflags-only-I libsixel`
-
-  cppflags_save=$CPPFLAGS
-  cflags_save=$CFLAGS
-
-  printf "%s\n" "#define HAVE_SIXEL 1" >>confdefs.h
-
-
-  CPPFLAGS="$CPPFLAGS $SIXEL_CPPFLAGS"
-  CFLAGS="$CFLAGS $SIXEL_CFLAGS"
-
-
-
-
-  CPPFLAGS=$cppflags_save
-  CFLAGS=$cflags_save
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }

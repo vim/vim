@@ -523,8 +523,5 @@
 /* Define if you want to load libgpm dynamically */
 #undef DYNAMIC_GPM
 
-/* Define if libsixel library is available */
-#undef HAVE_SIXEL
-
 /* Define if pixman library is available */
 #undef HAVE_PIXMAN

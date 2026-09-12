@@ -1120,9 +1120,7 @@
 #endif
 
 #if defined(FEAT_IMAGE) && !defined(ALWAYS_USE_GUI)
-# ifdef HAVE_SIXEL
-#  define FEAT_IMAGE_SIXEL
-# endif
+# define FEAT_IMAGE_SIXEL
 # define FEAT_IMAGE_KITTY
 #endif
 
