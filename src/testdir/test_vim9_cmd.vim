@@ -1510,6 +1510,25 @@ def Test_user_command_comment()
   delcommand Foo
 enddef
 
+" A name with an underscore is not a command with an argument: "ch_log" is
+" not ":change".
+def Test_command_name_with_underscore()
+  var lines =<< trim END
+      vim9script
+      ch_log
+  END
+  v9.CheckScriptFailure(lines, 'E492: Not an editor command: ch_log')
+  lines =<< trim END
+      vim9script
+      command Foo echo 'Foo'
+      Foo_bar
+  END
+  v9.CheckScriptFailure(lines, 'E492: Not an editor command: Foo_bar')
+  delcommand Foo
+  v9.CheckDefFailure(['ch_log'], 'E476: Invalid command: ch_log')
+  v9.CheckDefFailure(['echo_x'], 'E476: Invalid command: echo_x')
+enddef
+
 def Test_star_command()
   var lines =<< trim END
     vim9script
