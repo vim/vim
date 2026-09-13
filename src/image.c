@@ -16,7 +16,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_IMAGE) || defined(PROTO)
+#if defined(FEAT_IMAGE)
 
 struct
 {
