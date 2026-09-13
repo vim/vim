@@ -9,7 +9,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_IMAGE_KITTY) || defined(PROTO)
+#if defined(FEAT_IMAGE_KITTY)
 
 typedef struct
 {

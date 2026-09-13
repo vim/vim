@@ -28,7 +28,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_IMAGE_SIXEL) || defined(PROTO)
+#if defined(FEAT_IMAGE_SIXEL)
 
 // Palette size cap (sixel allows up to 256 color registers; index 0 is
 // reserved as a transparent key, so usable colors are 1..MAX_COLORS).
