@@ -126,11 +126,52 @@ static int parse_diffanchors(int check_only, buf_T *buf, linenr_T *anchors, int 
 # define FOR_ALL_DIFFBLOCKS_IN_TAB(tp, dp) \
     for ((dp) = (tp)->tp_first_diff; (dp) != NULL; (dp) = (dp)->df_next)
 
+// Cursor into the diff block list for diff_infold() and
+// diff_check_with_linestatus(): both scan blocks in ascending df_lnum order,
+// usually with an increasing "lnum" during redraw.  Remembering the last block
+// at or before "lnum" lets the next call resume there instead of from the head.
+// Cleared when a block is freed, allocated or line-shifted (see below).
+static diff_T	    *diff_finger_dp = NULL;
+static tabpage_T    *diff_finger_tp = NULL;
+static int	    diff_finger_idx = -1;
+static linenr_T	    diff_finger_lnum = 0;
+
     static void
 clear_diffblock(diff_T *dp)
 {
+    if (dp == diff_finger_dp)
+	diff_finger_dp = NULL;		// don't leave a dangling finger
     ga_clear(&dp->df_changes);
     vim_free(dp);
+}
+
+/*
+ * Return the diff block to start a forward scan for line "lnum" in tab "tp",
+ * buffer index "idx".  Resumes from the finger when it is still valid and
+ * "lnum" did not move backwards, else starts at the first block.
+ */
+    static diff_T *
+diff_scan_start(tabpage_T *tp, int idx, linenr_T lnum)
+{
+    if (diff_finger_dp != NULL
+	    && diff_finger_tp == tp
+	    && diff_finger_idx == idx
+	    && lnum >= diff_finger_lnum)
+	return diff_finger_dp;
+    return tp->tp_first_diff;
+}
+
+/*
+ * Remember "dp" as the finger for the next scan: the last block with
+ * df_lnum[idx] <= "lnum" seen by the scan, or NULL when there is none.
+ */
+    static void
+diff_scan_remember(tabpage_T *tp, int idx, linenr_T lnum, diff_T *dp)
+{
+    diff_finger_tp = tp;
+    diff_finger_idx = idx;
+    diff_finger_lnum = lnum;
+    diff_finger_dp = dp != NULL ? dp : tp->tp_first_diff;
 }
 
 /*
@@ -336,6 +377,8 @@ diff_mark_adjust_tp(
     linenr_T	last;
     linenr_T	lnum_deleted = line1;	// lnum of remaining deletion
     int		check_unchanged;
+
+    diff_finger_dp = NULL;		// may shift df_lnum, invalidate the finger
 
     if (diff_internal())
     {
@@ -606,6 +649,7 @@ diff_alloc_new(tabpage_T *tp, diff_T *dprev, diff_T *dp)
     dnew = ALLOC_CLEAR_ONE(diff_T);
     if (dnew == NULL)
 	return NULL;
+    diff_finger_dp = NULL;		// list changed, invalidate the finger
 
     dnew->is_linematched = FALSE;
     dnew->df_next = dp;
@@ -1075,6 +1119,8 @@ diff_try_update(
 
 	if (anchor_i != 0)
 	{
+	    diff_finger_dp = NULL;	// df_lnum shifted, invalidate the finger
+
 	    // Combine the new diff blocks with the existing ones
 	    for (diff_T *dp = curtab->tp_first_diff; dp != NULL; dp = dp->df_next)
 	    {
@@ -2475,10 +2521,17 @@ diff_check_with_linestatus(win_T *wp, linenr_T lnum, int *linestatus)
 	return 0;
 # endif
 
-    // search for a change that includes "lnum" in the list of diffblocks.
-    FOR_ALL_DIFFBLOCKS_IN_TAB(curtab, dp)
+    // Search for a change that includes "lnum" in the list of diffblocks.
+    // Resume from the scan finger to avoid restarting at the first block.
+    diff_T	*le = NULL;		// last block with df_lnum[idx] <= lnum
+    for (dp = diff_scan_start(curtab, idx, lnum); dp != NULL; dp = dp->df_next)
+    {
+	if (dp->df_lnum[idx] <= lnum)
+	    le = dp;
 	if (lnum <= dp->df_lnum[idx] + dp->df_count[idx])
 	    break;
+    }
+    diff_scan_remember(curtab, idx, lnum, le);
     if (dp == NULL || lnum < dp->df_lnum[idx])
 	return 0;
 
@@ -4009,16 +4062,25 @@ diff_infold(win_T *wp, linenr_T lnum)
     if (curtab->tp_first_diff == NULL)
 	return TRUE;
 
-    FOR_ALL_DIFFBLOCKS_IN_TAB(curtab, dp)
+    // Resume from the scan finger to avoid restarting at the first block.
+    diff_T	*le = NULL;		// last block with df_lnum[idx] <= lnum
+    int		result = TRUE;
+    for (dp = diff_scan_start(curtab, idx, lnum); dp != NULL; dp = dp->df_next)
     {
+	if (dp->df_lnum[idx] <= lnum)
+	    le = dp;
 	// If this change is below the line there can't be any further match.
 	if (dp->df_lnum[idx] - diff_context > lnum)
 	    break;
 	// If this change ends before the line we have a match.
 	if (dp->df_lnum[idx] + dp->df_count[idx] + diff_context > lnum)
-	    return FALSE;
+	{
+	    result = FALSE;
+	    break;
+	}
     }
-    return TRUE;
+    diff_scan_remember(curtab, idx, lnum, le);
+    return result;
 }
 # endif
 
