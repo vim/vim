@@ -3019,14 +3019,15 @@ func Test_lsp_incomplete_message_while_blocked()
   call assert_equal('run', job_status(job))
 
   " The first half of a notification is read before the blocking reads
-  " start, the second half arrives while they go on.
+  " start, the second half arrives while they go on, well within the 100
+  " msec an incomplete message is kept.
   call ch_evalexpr(job, #{method: 'block'}, #{timeout: 5000})
   let body = json_encode(#{method: 'note', jsonrpc: '2.0',
         \ params: #{text: repeat('x', 1000)}})
   let framed = 'Content-Length: ' .. strlen(body) .. "\r\n\r\n" .. body
   let half = strlen(framed) / 2
   call ch_sendraw(job, framed[: half - 1])
-  sleep 50m
+  sleep 20m
   call ch_sendraw(job, framed[half :])
   sleep 500m
   let resp = ch_evalexpr(job, #{method: 'count'}, #{timeout: 5000})
