@@ -392,6 +392,32 @@ TERM_DEPS = \
 	libvterm/src/vterm_internal.h
 !ENDIF
 
+#
+# Pixman library support (used by the +image feature)
+# PIXMAN=[path to pixman directory] (default is no)
+#   Expects $(PIXMAN)\include\pixman-1 for headers and
+#   $(PIXMAN)\lib\pixman-1.lib for the import/static library.
+#
+!IFNDEF PIXMAN
+PIXMAN = no
+!ENDIF
+
+!IF "$(PIXMAN)" != "no"
+IMAGE_DEFS = -DHAVE_PIXMAN
+IMAGE_INC = /I "$(PIXMAN)\include\pixman-1"
+IMAGE_LIB = "$(PIXMAN)\lib\pixman-1.lib"
+IMAGE_OBJ = $(OUTDIR)/image.obj $(OUTDIR)/image_kitty.obj \
+	$(OUTDIR)/image_sixel.obj
+!ENDIF
+
+!IF "$(PIXMAN)" != "no"
+IMAGE_DEFS = -DHAVE_PIXMAN
+IMAGE_INC = /I "$(PIXMAN)\include\pixman-1"
+IMAGE_LIB = "$(PIXMAN)\lib\pixman-1.lib"
+IMAGE_OBJ = $(OUTDIR)/image.obj $(OUTDIR)/image_kitty.obj \
+	$(OUTDIR)/image_sixel.obj
+!ENDIF
+
 !IFNDEF SOUND
 ! IF "$(FEATURES)" == "HUGE"
 SOUND = yes
@@ -530,6 +556,7 @@ CON_LIB = $(CON_LIB) /DELAYLOAD:comdlg32.dll /DELAYLOAD:ole32.dll DelayImp.lib
 CFLAGS = -c /W3 /GF /nologo -I. -Iproto -DHAVE_PATHDEF -DWIN32 -DHAVE_STDINT_H \
 	$(CSCOPE_DEFS) $(TERM_DEFS) $(SOUND_DEFS) $(NETBEANS_DEFS) \
 	$(NBDEBUG_DEFS) $(XPM_DEFS) $(SOD_DEFS) $(SOD_INC) $(CHANNEL_DEFS) \
+	$(IMAGE_DEFS) $(IMAGE_INC) \
 	$(DEFINES) $(CI_CFLAGS) -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
 	/utf-8
 
@@ -806,6 +833,10 @@ OBJ = \
 	$(OUTDIR)\viminfo.obj \
 	$(OUTDIR)\winclip.obj \
 	$(OUTDIR)\window.obj \
+
+!IF "$(PIXMAN)" != "no"
+OBJ = $(OBJ) $(IMAGE_OBJ)
+!ENDIF
 
 !IF "$(VIMDLL)" == "yes"
 OBJ = $(OBJ) $(OUTDIR)\os_w32dll.obj $(OUTDIR)\vimd.res
@@ -1248,7 +1279,7 @@ LINKARGS1 = /nologo
 LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(LIBC) $(OLE_LIB) \
 	$(LUA_LIB) $(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) \
 	$(PYTHON3_LIB) $(RUBY_LIB) $(TCL_LIB) $(SOUND_LIB) \
-	$(NETBEANS_LIB) $(XPM_LIB) $(SOD_LIB) $(LINK_PDB)
+	$(NETBEANS_LIB) $(XPM_LIB) $(SOD_LIB) $(IMAGE_LIB) $(LINK_PDB)
 
 !IFDEF NODEBUG
 # Add /opt:ref to remove unreferenced functions and data even when /DEBUG is
@@ -1641,6 +1672,12 @@ $(OUTDIR)/gui_w32.obj: $(OUTDIR) gui_w32.c $(INCL) $(GUI_INCL) version.h
 $(OUTDIR)/gui_dwrite.obj: $(OUTDIR) gui_dwrite.cpp gui_dwrite.h
 
 $(OUTDIR)/if_cscope.obj: $(OUTDIR) if_cscope.c $(INCL)
+
+$(OUTDIR)/image.obj: $(OUTDIR) image.c $(INCL)
+
+$(OUTDIR)/image_kitty.obj: $(OUTDIR) image_kitty.c $(INCL)
+
+$(OUTDIR)/image_sixel.obj: $(OUTDIR) image_sixel.c $(INCL)
 
 $(OUTDIR)/if_lua.obj: $(OUTDIR) if_lua.c $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(LUA_INC) if_lua.c
