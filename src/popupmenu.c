@@ -49,6 +49,10 @@ static int pum_border = 0;
 static int pum_margin = 0;	// margin of 1 cell on left and right
 static int pum_shadow = 0;
 
+#ifdef FEAT_IMAGE
+static image_placement_T *pum_imagep = NULL;
+#endif
+
 // Border characters
 static struct {
     int top;
@@ -1002,6 +1006,20 @@ pum_redraw(void)
     // synchronized output frame to avoid flicker.
     term_set_sync_output(TERM_SYNC_OUTPUT_ENABLE);
 
+#ifdef FEAT_IMAGE
+    // Create a image placement so that other images are clipped correctly
+    if (pum_imagep == NULL)
+	pum_imagep = image_placement_new(NULL);
+    if (pum_imagep != NULL)
+    {
+	image_placement_set_zindex(pum_imagep, POPUPMENU_ZINDEX, false);
+	image_placement_set_position(pum_imagep, pum_row, pum_col);
+	image_placement_set_bounding_box(pum_imagep, pum_row, pum_col,
+		pum_height, pum_width);
+	image_placement_do_draw(pum_imagep);
+    }
+#endif
+
     hlf_T	hlfsNorm[3];
     hlf_T	hlfsSel[3];
     // "word"/"abbr"
@@ -1616,6 +1634,13 @@ pum_set_selected(int n, int repeat UNUSED)
     void
 pum_undisplay(void)
 {
+#ifdef FEAT_IMAGE
+    if (pum_imagep != NULL)
+    {
+	image_placement_free(pum_imagep);
+	pum_imagep = NULL;
+    }
+#endif
     pum_free_bg();
     pum_array = NULL;
     redraw_all_later(UPD_NOT_VALID);

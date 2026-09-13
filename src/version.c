@@ -275,36 +275,6 @@ static char *(features[]) =
 #else
 	"-iconv",
 #endif
-#ifdef FEAT_IMAGE
-	"+image",
-#else
-	"-image",
-#endif
-#ifdef FEAT_IMAGE_CAIRO
-	"+image_cairo",
-#else
-	"-image_cairo",
-#endif
-#ifdef FEAT_IMAGE_GDI
-	"+image_gdi",
-#else
-	"-image_gdi",
-#endif
-#ifdef FEAT_IMAGE_GDK
-	"+image_gdk",
-#else
-	"-image_gdk",
-#endif
-#ifdef FEAT_IMAGE_KITTY
-	"+image_kitty",
-#else
-	"-image_kitty",
-#endif
-#ifdef FEAT_IMAGE_SIXEL
-	"+image_sixel",
-#else
-	"-image_sixel",
-#endif
 	"+insert_expand",
 #ifdef FEAT_IPV6
 	"+ipv6",

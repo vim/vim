@@ -3738,6 +3738,36 @@ win_new_shellsize(void)
     }
 }
 
+#ifdef FEAT_IMAGE
+    void
+update_cell_size(void)
+{
+# ifdef FEAT_GUI
+    if (gui.in_use)
+    {
+	cell_width = gui.char_width;
+	cell_height = gui.char_height;
+    }
+    else
+# endif
+    {
+	struct cellsize cell_sz;
+
+	mch_calc_cell_size(&cell_sz);
+	if (cell_sz.cs_xpixel < 0 || cell_sz.cs_ypixel < 0)
+	{
+	    cell_width = 8;
+	    cell_height = 16;
+	}
+	else
+	{
+	    cell_width = cell_sz.cs_xpixel;
+	    cell_height = cell_sz.cs_ypixel;
+	}
+    }
+}
+#endif
+
 /*
  * Call this function when the Vim shell has been resized in any way.
  * Will obtain the current size and redraw (also when size didn't change).
@@ -3745,6 +3775,9 @@ win_new_shellsize(void)
     void
 shell_resized(void)
 {
+#ifdef FEAT_IMAGE
+    update_cell_size();
+#endif
     set_shellsize(0, 0, FALSE);
 }
 
@@ -5408,7 +5441,12 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		out_str(IObuff);
 	    }
 	    termrequest_sent(&decrqm_status);
+#ifdef FEAT_IMAGE_SIXEL
+	    // Disable sixel scrolling using DECSDM
+	    out_str((char_u *)"\033[?80l");
+#endif
 	    need_flush = TRUE;
+
 	}
 
 	if (need_flush)

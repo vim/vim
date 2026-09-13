@@ -2509,6 +2509,31 @@ else
   AC_MSG_RESULT(no)
 fi
 
+AC_MSG_CHECKING(for pixman)
+if "$PKG_CONFIG" --exists 'pixman-1'; then
+  AC_MSG_RESULT(yes)
+
+  PIXMAN_LIBS=`$PKG_CONFIG --libs pixman-1`
+  PIXMAN_CFLAGS=`$PKG_CONFIG --cflags-only-other pixman-1`
+  PIXMAN_CPPFLAGS=`$PKG_CONFIG --cflags-only-I pixman-1`
+
+  cppflags_save=$CPPFLAGS
+  cflags_save=$CFLAGS
+
+  AC_DEFINE(HAVE_PIXMAN)
+
+  CPPFLAGS="$CPPFLAGS $PIXMAN_CPPFLAGS"
+  CFLAGS="$CFLAGS $PIXMAN_CFLAGS"
+  AC_SUBST(PIXMAN_LIBS)
+  AC_SUBST(PIXMAN_CFLAGS)
+  AC_SUBST(PIXMAN_CPPFLAGS)
+
+  CPPFLAGS=$cppflags_save
+  CFLAGS=$cflags_save
+else
+  AC_MSG_RESULT(no)
+fi
+
 dnl GTK4 does not use X11 APIs directly, so skip X11 detection entirely.
 dnl This avoids pulling libICE/libSM/libX11/libXt into build dependencies
 dnl for GTK4-only builds, even when --with-x=yes is passed (e.g. by a

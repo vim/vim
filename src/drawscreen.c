@@ -449,12 +449,9 @@ update_screen(int type_arg)
     }
 #endif
 
-#if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO) \
-    || defined(FEAT_IMAGE_GDK)
-    // GUI only: the cursor redraw and other late blits paint directly onto
-    // the canvas and may damage the popup images blitted by update_popups();
-    // restore the image layer.  No-op in terminal mode.
-    update_popup_images();
+#ifdef FEAT_IMAGE
+    // Make sure to do this last!
+    draw_image_placements();
 #endif
 
 #ifdef FEAT_EVAL
@@ -2779,10 +2776,10 @@ win_update(win_T *wp)
 		if ((*mb_off2cells)(LineOffset[k] + topframe->fr_width - 2,
 					   LineOffset[k] + screen_Columns) > 1)
 		    screen_draw_rectangle(k, topframe->fr_width - 2, 1, 2,
-			    FALSE);
+			    FALSE, FALSE);
 		else
 		    screen_draw_rectangle(k, topframe->fr_width - 1, 1, 1,
-			    FALSE);
+			    FALSE, FALSE);
 	    else
 		screen_char(LineOffset[k] + topframe->fr_width - 1, k,
 			cmdline_width - 1);

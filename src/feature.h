@@ -1098,6 +1098,7 @@
 # define FEAT_PROP_POPUP
 #endif
 
+
 /*
  * +image		RGB image rendering inside popup windows.
  * +image_sixel		terminal backend: emit DEC sixel DCS sequences.
@@ -1114,7 +1115,7 @@
  * shared RGB plumbing; at least one backend has to be enabled to actually
  * paint anything.
  */
-#if defined(FEAT_HUGE) && defined(FEAT_PROP_POPUP)
+#if defined(FEAT_HUGE) && defined(FEAT_PROP_POPUP) && defined(HAVE_PIXMAN)
 # define FEAT_IMAGE
 #endif
 
@@ -1123,16 +1124,8 @@
 # define FEAT_IMAGE_KITTY
 #endif
 
-#if defined(FEAT_IMAGE) && defined(FEAT_GUI_MSWIN)
-# define FEAT_IMAGE_GDI
-#endif
-
-#if defined(FEAT_IMAGE) && defined(FEAT_GUI_GTK)
-# ifdef USE_GTK4
-#  define FEAT_IMAGE_GDK
-# else
-#  define FEAT_IMAGE_CAIRO
-# endif
+#if defined(FEAT_IMAGE) && (defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN))
+# define FEAT_IMAGE_GUI
 #endif
 
 /*

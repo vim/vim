@@ -102,6 +102,10 @@ SRC_ALL =	\
 		src/hashtab.c \
 		src/help.c \
 		src/highlight.c \
+		src/image.c \
+		src/image.h \
+		src/image_kitty.c \
+		src/image_sixel.c \
 		src/indent.c \
 		src/insexpand.c \
 		src/job.c \
@@ -155,9 +159,6 @@ SRC_ALL =	\
 		src/session.c \
 		src/sha256.c \
 		src/sign.c \
-		src/sixel.c \
-		src/kitty.c \
-		src/cairo.c \
 		src/socketserver.c \
 		src/sound.c \
 		src/spell.c \
@@ -322,6 +323,9 @@ SRC_ALL =	\
 		src/proto/hashtab.pro \
 		src/proto/help.pro \
 		src/proto/highlight.pro \
+		src/proto/image.pro \
+		src/proto/image_kitty.pro \
+		src/proto/image_sixel.pro \
 		src/proto/indent.pro \
 		src/proto/insexpand.pro \
 		src/proto/job.pro \

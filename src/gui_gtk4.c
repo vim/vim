@@ -259,9 +259,6 @@ static void mainwin_fullscreened_cb(GObject *obj, GParamSpec *pspec, gpointer us
 static void set_form_size(int width, int height);
 static void drawarea_realize_cb(GtkWidget *widget, gpointer data);
 static void drawarea_unrealize_cb(GtkWidget *widget, gpointer data);
-#if defined(FEAT_IMAGE)
-static void scale_factor_cb(GdkSurface *surface, GParamSpec *pspec, void *udata);
-#endif
 static void clipboard_changed_cb(GdkClipboard *clipboard, gpointer user_data);
 #ifdef FEAT_MENU
 static void show_menubar_popover(void);
@@ -1541,137 +1538,6 @@ gui_mch_clear_all(void)
 	gtk_widget_queue_draw(gui.drawarea);
 }
 
-#ifdef FEAT_IMAGE_GDK
-    void
-gui_gtk4_remove_image(win_T *wp)
-{
-    vim_draw_area_remove_image(VIM_DRAW_AREA(gui.drawarea), wp->w_id);
-}
-
-    void
-gui_mch_free_popup_image(win_T *wp)
-{
-    if (wp->w_popup_image_texture != NULL)
-	g_clear_object(&wp->w_popup_image_texture);
-}
-
-/*
- * If "wp->w_popup_image_texture" is NULL or "force" is TRUE, then create the
- * cached GdkTexture object.
- */
-    static void
-maybe_set_image_texture(win_T *wp, gboolean force)
-{
-    GdkMemoryFormat fmt;
-    size_t	    stride;
-    GdkTexture	    *texture;
-    GBytes	    *bytes;
-    size_t	    size;
-
-    if (!force && wp->w_popup_image_texture != NULL)
-	return;
-
-    if (wp->w_popup_image_alpha)
-    {
-	fmt = GDK_MEMORY_A8R8G8B8;
-	size = wp->w_popup_image_w * wp->w_popup_image_h * 4;
-	stride = wp->w_popup_image_w * 4;
-    }
-    else
-    {
-	fmt = GDK_MEMORY_R8G8B8;
-	size = wp->w_popup_image_w * wp->w_popup_image_h * 3;
-	stride = wp->w_popup_image_w * 3;
-    }
-
-    bytes = g_bytes_new(wp->w_popup_image_data, size);
-    texture = gdk_memory_texture_new(wp->w_popup_image_w,
-	    wp->w_popup_image_h, fmt, bytes, stride);
-    g_bytes_unref(bytes);
-
-    if (wp->w_popup_image_texture != NULL)
-	g_object_unref(wp->w_popup_image_texture);
-    wp->w_popup_image_texture = texture;
-}
-
-    bool
-gui_mch_update_popup_image_pixels(win_T *wp)
-{
-    if (wp->w_popup_image_texture == NULL || wp->w_popup_image_data == NULL)
-	return false;
-    maybe_set_image_texture(wp, TRUE);
-    return true;
-}
-
-    void
-gui_mch_draw_popup_image(
-	win_T	*wp,
-	int	 row,
-	int	 col,
-	int	 src_x,
-	int	 src_y,
-	int	 draw_w,
-	int	 draw_h)
-{
-    if (wp->w_popup_image_data == NULL
-	    || wp->w_popup_image_w <= 0 || wp->w_popup_image_h <= 0
-	    || draw_w <= 0 || draw_h <= 0)
-	return;
-
-    maybe_set_image_texture(wp, FALSE);
-    if (gui.drawarea != NULL)
-    {
-	vim_draw_area_add_image(VIM_DRAW_AREA(gui.drawarea),
-		wp->w_popup_image_texture, row, col, src_x, src_y,
-		draw_w, draw_h, wp->w_zindex, wp->w_id);
-
-	gtk_widget_queue_draw(gui.drawarea);
-    }
-}
-#endif
-
-#ifdef FEAT_IMAGE_CAIRO
-    void
-gui_mch_free_popup_image(win_T *wp)
-{
-    cairo_popup_image_free(wp);
-}
-
-    bool
-gui_mch_update_popup_image_pixels(win_T *wp)
-{
-    return cairo_popup_image_update(wp);
-}
-
-    void
-gui_mch_draw_popup_image(
-	win_T	*wp,
-	int	 row,
-	int	 col,
-	int	 src_x,
-	int	 src_y,
-	int	 draw_w,
-	int	 draw_h)
-{
-    int x, y;
-
-    if (wp->w_popup_image_data == NULL
-	    || wp->w_popup_image_w <= 0 || wp->w_popup_image_h <= 0
-	    || draw_w <= 0 || draw_h <= 0
-	    || gui.surface == NULL
-	    )
-	return;
-
-    x = FILL_X(col);
-    y = FILL_Y(row);
-    cairo_popup_image_paint(wp, gui.surface, x, y,
-					    src_x, src_y, draw_w, draw_h);
-
-    if (gui.drawarea != NULL)
-	gtk_widget_queue_draw(gui.drawarea);
-}
-#endif // FEAT_IMAGE_CAIRO
-
     void
 gui_mch_delete_lines(int row, int num_lines)
 {
@@ -2190,17 +2056,6 @@ focus_out_event(GtkEventControllerFocus *controller UNUSED,
     static void
 drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 {
-#if defined(FEAT_IMAGE)
-    // Use GdkSurface, as that handles fractional scale values.
-    GdkSurface *surface = gtk_native_get_surface(
-	    gtk_widget_get_native(gui.drawarea));
-    double old = gui.scale;
-
-    gui.scale = gdk_surface_get_scale(surface);
-    popup_update_scale(old);
-    g_signal_connect(G_OBJECT(surface), "notify::scale",
-	    G_CALLBACK(scale_factor_cb), NULL);
-#endif
     gui_mch_new_colors();
 }
 
@@ -2211,19 +2066,6 @@ drawarea_unrealize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
     im_shutdown();
 #endif
 }
-
-#if defined(FEAT_IMAGE)
-    static void
-scale_factor_cb(GdkSurface  *surface,
-	GParamSpec	    *pspec UNUSED,
-	void		    *udata UNUSED)
-{
-    double old = gui.scale;
-
-    gui.scale = gdk_surface_get_scale(surface);
-    popup_update_scale(old);
-}
-#endif
 
 typedef enum
 {

@@ -878,9 +878,6 @@ OBJ = \
 	$(OUTDIR)/session.o \
 	$(OUTDIR)/sha256.o \
 	$(OUTDIR)/sign.o \
-	$(OUTDIR)/sixel.o \
-	$(OUTDIR)/kitty.o \
-	$(OUTDIR)/cairo.o \
 	$(OUTDIR)/socketserver.o \
 	$(OUTDIR)/spell.o \
 	$(OUTDIR)/spellfile.o \
