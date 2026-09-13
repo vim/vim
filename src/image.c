@@ -111,10 +111,13 @@ static image_T *images = NULL;
 static image_placement_T    *placements = NULL;
 static int		    n_placements = 0;
 
-//
-static pixman_region32_t    dirty_region; // In cells
-static bool		    dirty_region_init = false;
-static bool		    dirty_region_finalized = false;
+static pixman_region32_t    drawn_region; // In cells, represents all cells that
+					  // have image pixels over them for the
+					  // current redraw cycle.
+static pixman_region32_t    dirty_region; // In cells, represents all cells that
+					  // have new chars drawn on them for
+					  // the current redraw cycle.
+static bool		    global_region_finalized = false;
 
 #define FOR_ALL_IMAGES(v) for ((v) = images; (v) != NULL; (v) = (v)->next)
 #define FOR_ALL_PLACEMENTS(v) \
@@ -128,6 +131,8 @@ static void redraw_region(pixman_region32_t *region);
     void
 init_image_state(void)
 {
+    pixman_region32_init(&drawn_region);
+    pixman_region32_init(&dirty_region);
     (void)update_image_backend();
 }
 
@@ -137,9 +142,10 @@ uninit_image_state(void)
 #ifdef FEAT_IMAGE_SIXEL
     sixel_uninit();
 #endif
-    if (dirty_region_init)
-	pixman_region32_fini(&dirty_region);
-    dirty_region_finalized = true;
+
+    pixman_region32_fini(&drawn_region);
+    pixman_region32_fini(&dirty_region);
+    global_region_finalized = true;
 }
 
 /*
@@ -598,6 +604,8 @@ draw_image_placements(void)
 
     pixman_region32_init(&subtract_region);
 
+    pixman_region32_clear(&drawn_region);
+
     // Go through each image placement, from highest to lowests zindex. For each
     // image, subtract the bounding boxes of the images with higher zindexes
     // from its own image region. The result is a region containing rectangles
@@ -643,7 +651,7 @@ draw_image_placements(void)
 	{
 	    pixman_region32_t	visible_abs;
 	    pixman_region32_t	dirty;
-	    bool		has_dirty_cells;
+	    bool		has_dirty_cells = false;
 
 	    x = place->col;
 	    y = place->row;
@@ -671,12 +679,16 @@ draw_image_placements(void)
 	    pixman_region32_translate(&visible_region, -x, -y);
 
 	    // Check if visible region touches the current global dirty region.
-	    // If it does, then redraw the image.
-	    pixman_region32_init(&dirty);
-	    (void)pixman_region32_intersect(&dirty,
-		    &visible_abs, &dirty_region);
-	    has_dirty_cells = pixman_region32_not_empty(&dirty);
-	    pixman_region32_fini(&dirty);
+	    // If it does, then redraw the image. Only needed for image backends
+	    // that blit pixels.
+	    if (PLACEMENT_FUNC(image_backend, blit))
+	    {
+		pixman_region32_init(&dirty);
+		(void)pixman_region32_intersect(&dirty,
+			&visible_abs, &dirty_region);
+		has_dirty_cells = pixman_region32_not_empty(&dirty);
+		pixman_region32_fini(&dirty);
+	    }
 
 	    // Only redraw the image if it has changed (or if we haven't drawn
 	    // it yet).
@@ -764,6 +776,10 @@ draw_image_placements(void)
 		pixman_region32_fini(&visible_region);
 		pixman_region32_fini(&visible_abs);
 	    }
+
+	    if (place->visible_init)
+		pixman_region32_union(&drawn_region, &drawn_region,
+			&place->visible_abs);
 	}
 
 	pixman_region32_union_rect(&subtract_region, &subtract_region,
@@ -781,8 +797,7 @@ draw_image_placements(void)
     vim_free(pending_placements);
     pixman_region32_fini(&subtract_region);
 
-    if (dirty_region_init)
-	pixman_region32_clear(&dirty_region);
+    pixman_region32_clear(&dirty_region);
 }
 
 /*
@@ -792,18 +807,25 @@ draw_image_placements(void)
 mark_dirty_region_for_images(int row, int col, int row_height, int col_width)
 {
     // This function may be called in mch_exit().
-    if (dirty_region_finalized || n_placements == 0)
+    if (global_region_finalized || n_placements == 0)
 	return;
-    if (!dirty_region_init)
-    {
-	pixman_region32_init(&dirty_region);
-	dirty_region_init = true;
-    }
 
     pixman_region32_union_rect(&dirty_region, &dirty_region,
 	    col, row, col_width, row_height);
+
     if (!updating_screen)
-	redraw_all_later(UPD_VALID);
+    {
+	// Only queue a redraw if the dirty region intersects any drawn images.
+	pixman_box32_t rect;
+	
+	rect.x1 = col;
+	rect.y1 = row;
+	rect.x2 = col + col_width;
+	rect.y2 = row + row_height;
+	if (pixman_region32_contains_rectangle(&drawn_region, &rect)
+		!= PIXMAN_REGION_OUT)
+	    redraw_all_later(UPD_VALID);
+    }
 }
 
 /*
