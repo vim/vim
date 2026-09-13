@@ -1190,7 +1190,6 @@ win_line(
     int		skipped_cells = 0;	// nr of skipped cells for virtual text
 					// to be added to wlv.vcol later
     int		fromcol_prev = -2;	// start of inverting after cursor
-    int		noinvcur = FALSE;	// don't invert the cursor
     int		lnum_in_visual_area = FALSE;
     pos_T	pos;
     long	v;
@@ -1955,23 +1954,8 @@ win_line(
 #endif
     }
 
-    // Correct highlighting for cursor that can't be disabled.
-    // Avoids having to check this for each character.
     if (wlv.fromcol >= 0)
     {
-	if (noinvcur)
-	{
-	    if ((colnr_T)wlv.fromcol == wp->w_virtcol)
-	    {
-		// highlighting starts at cursor, let it start just after the
-		// cursor
-		fromcol_prev = wlv.fromcol;
-		wlv.fromcol = -1;
-	    }
-	    else if ((colnr_T)wlv.fromcol < wp->w_virtcol)
-		// restart highlighting after the cursor
-		fromcol_prev = wp->w_virtcol;
-	}
 	if (wlv.fromcol >= wlv.tocol)
 	    wlv.fromcol = -1;
     }
@@ -2511,9 +2495,7 @@ win_line(
 			&& vcol_prev < wlv.vcol	// not at margin
 			&& wlv.vcol < wlv.tocol))
 		*area_attr_p = vi_attr;		// start highlighting
-	    else if (*area_attr_p != 0
-		    && (wlv.vcol == wlv.tocol
-			|| (noinvcur && (colnr_T)wlv.vcol == wp->w_virtcol)))
+	    else if (*area_attr_p != 0 && wlv.vcol == wlv.tocol)
 		*area_attr_p = 0;		// stop highlighting
 
 	    if (wlv.n_extra == 0)
@@ -2687,7 +2669,6 @@ win_line(
 			      || wlv.vcol >= wlv.tocol))
 	    {
 		// Use wlv.line_attr when not in the Visual or 'incsearch' area
-		// (area_attr may be 0 when "noinvcur" is set).
 # ifdef FEAT_SYN_HL
 		wlv.char_attr = hl_combine_attr(syntax_attr, wlv.line_attr);
 # else
@@ -3489,10 +3470,7 @@ win_line(
 #ifdef FEAT_RIGHTLEFT
 				    wp->w_p_rl ? (wlv.col >= 0) :
 #endif
-				    (wlv.col < wp->w_width))
-				&& !(noinvcur
-				    && lnum == wp->w_cursor.lnum
-				    && (colnr_T)wlv.vcol == wp->w_virtcol)))
+				    (wlv.col < wp->w_width))))
 			&& lcs_eol_one > 0)
 		{
 		    // Display a '$' after the line or highlight an extra
