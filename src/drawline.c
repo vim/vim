@@ -1189,7 +1189,6 @@ win_line(
 					// w_skipcol or concealing
     int		skipped_cells = 0;	// nr of skipped cells for virtual text
 					// to be added to wlv.vcol later
-    int		fromcol_prev = -2;	// start of inverting after cursor
     int		lnum_in_visual_area = FALSE;
     pos_T	pos;
     long	v;
@@ -2491,7 +2490,7 @@ win_line(
 			&& ((wlv.n_extra == 0 && (*mb_ptr2cells)(ptr) > 1)
 			    || (wlv.n_extra > 0 && wlv.p_extra != NULL
 				&& (*mb_ptr2cells)(wlv.p_extra) > 1)))
-		    || ((int)vcol_prev == fromcol_prev
+		    || ((int)vcol_prev == -2
 			&& vcol_prev < wlv.vcol	// not at margin
 			&& wlv.vcol < wlv.tocol))
 		*area_attr_p = vi_attr;		// start highlighting
@@ -2665,7 +2664,7 @@ win_line(
 	    else if (wlv.line_attr != 0
 		    && ((wlv.fromcol == -10 && wlv.tocol == MAXCOL)
 			      || wlv.vcol < wlv.fromcol
-			      || vcol_prev < fromcol_prev
+			      || vcol_prev < -2
 			      || wlv.vcol >= wlv.tocol))
 	    {
 		// Use wlv.line_attr when not in the Visual or 'incsearch' area
@@ -3463,7 +3462,7 @@ win_line(
 		else if (c == NUL
 			&& wlv.n_extra == 0
 			&& (wp->w_p_list
-			    || ((wlv.fromcol >= 0 || fromcol_prev >= 0)
+			    || (wlv.fromcol >= 0
 				&& wlv.tocol > wlv.vcol
 				&& VIsual_mode != Ctrl_V
 				&& (
