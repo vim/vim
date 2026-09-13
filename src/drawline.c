@@ -1952,11 +1952,8 @@ win_line(
 #endif
     }
 
-    if (wlv.fromcol >= 0)
-    {
-	if (wlv.fromcol >= wlv.tocol)
-	    wlv.fromcol = -1;
-    }
+    if (wlv.fromcol >= wlv.tocol)
+	wlv.fromcol = -1;
 
 #ifdef FEAT_SEARCH_EXTRA
     if (number_only == 0)
