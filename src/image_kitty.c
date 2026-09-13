@@ -44,7 +44,6 @@ image_kitty_uninit(image_T *img)
 
 	out_str((char_u *)IObuff);
 	out_flush();
-	((image_kitty_T *)img->backend_data)->transmitted = false;
     }
     vim_free(img->backend_data);
 }
