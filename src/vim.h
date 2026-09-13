@@ -2715,6 +2715,16 @@ in_vim9script(void)
 			    // multiple signs exist on the line
 #endif
 
+#if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE)
+// Logical pixels to physical pixels
+# define LOG2PHY(l) (gui.in_use ? (double)(l) * gui.scale : (l))
+ // Physical pixels to logical pixels
+# define PHY2LOG(p) (gui.in_use ? (double)(p) / gui.scale : (p))
+#else
+# define LOG2PHY(l) (l)
+# define PHY2LOG(p) (p)
+#endif
+
 #if defined(FEAT_GUI) && defined(FEAT_XCLIPBOARD)
 # ifdef FEAT_GUI_GTK
    // Avoid using a global variable for the X display.  It's ugly

@@ -819,6 +819,10 @@ scale_factor_event(GtkWidget *widget,
     gui_resize_shell(w, usable_height);
     gui_gtk_form_thaw(GTK_FORM(gui.formwin));
 
+#  if defined(FEAT_IMAGE) && GTK_CHECK_VERSION(3,10,0)
+    gui.scale = gtk_widget_get_scale_factor(widget);
+#  endif
+
     return TRUE;
 }
 # endif // GTK_CHECK_VERSION(3,10,0)
@@ -4244,6 +4248,10 @@ gui_mch_init(void)
 	g_signal_connect(gtk_settings, "notify::gtk-xft-dpi",
 			   G_CALLBACK(gtk_settings_xft_dpi_changed_cb), NULL);
     }
+
+#if defined(FEAT_IMAGE) && GTK_CHECK_VERSION(3,10,0)
+    gui.scale = gtk_widget_get_scale_factor(gui.formwin);
+#endif
 
     return OK;
 }
@@ -7787,3 +7795,185 @@ gui_mch_destroy_sign(void *sign)
 }
 
 #endif // FEAT_SIGN_ICONS
+
+#if defined(FEAT_IMAGE) && defined(FEAT_IMAGE_GUI)
+
+typedef struct
+{
+    cairo_surface_t *surf;
+} image_cairo_T;
+
+/*
+ * Convert the popup's RGB / RGBA pixel buffer into the cached cairo surface's
+ * pixel layout.  Cairo's CAIRO_FORMAT_ARGB32 / RGB24 wants native-endian uint32
+ * quartets shaped as 0xAARRGGBB, with ARGB32 pixels premultiplied; we build the
+ * integer per pixel so the resulting bytes come out correct on either
+ * endianness.
+ */
+    static void
+fill_image_surface(image_T *img, cairo_surface_t *surf)
+{
+    uint8_t *src = img->data;
+    uint8_t *dst;
+    int	    w = img->width;
+    int	    h = img->height;
+    int	    stride;
+    int	    x, y;
+
+    cairo_surface_flush(surf);
+    dst = cairo_image_surface_get_data(surf);
+    stride = cairo_image_surface_get_stride(surf);
+
+    if (img->fmt == IMAGE_FORMAT_RGBA)
+    {
+	for (y = 0; y < h; ++y)
+	{
+	    unsigned int *p = (unsigned int *)(dst + y * stride);
+
+	    for (x = 0; x < w; ++x)
+	    {
+		int	idx = (y * w + x) * 4;
+		uint8_t r = src[idx + 0];
+		uint8_t g = src[idx + 1];
+		uint8_t b = src[idx + 2];
+		uint8_t a = src[idx + 3];
+
+		// Premultiply alpha for ARGB32.
+		r = (r * a + 127) / 255;
+		g = (g * a + 127) / 255;
+		b = (b * a + 127) / 255;
+		p[x] = ((int_u)a << 24) | ((int_u)r << 16) | ((int_u)g << 8) | b;
+	    }
+	}
+    }
+    else
+    {
+	for (y = 0; y < h; ++y)
+	{
+	    unsigned int *p = (unsigned int *)(dst + y * stride);
+
+	    for (x = 0; x < w; ++x)
+	    {
+		int	idx = (y * w + x) * 3;
+		uint8_t r = src[idx + 0];
+		uint8_t g = src[idx + 1];
+		uint8_t b = src[idx + 2];
+
+		// RGB24's high byte is unused but conventionally 0xff.
+		p[x] = (0xffu << 24) | (r << 16) | (g << 8) | b;
+	    }
+	}
+    }
+    cairo_surface_mark_dirty(surf);
+}
+
+    int
+image_gui_init(image_T *img)
+{
+    // We only support GTK3
+#if GTK_CHECK_VERSION(3,0,0)
+    image_cairo_T *ctx = ALLOC_CLEAR_ONE(image_cairo_T);
+
+    if (ctx == NULL)
+	return FAIL;
+
+    ctx->surf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+	    img->width, img->height);
+
+    if (cairo_surface_status(ctx->surf) != CAIRO_STATUS_SUCCESS)
+    {
+	cairo_surface_destroy(ctx->surf);
+	goto fail;
+    }
+
+    fill_image_surface(img, ctx->surf);
+    img->backend_data = ctx;
+
+    // Set the device scale of the surface later before every redraw. This iso
+    // that the GUI scale factor is used automatically.
+    return OK;
+fail:
+    vim_free(ctx);
+    return FAIL;
+#else
+    return FAIL;
+#endif
+}
+
+    void
+image_gui_uninit(image_T *img)
+{
+#if GTK_CHECK_VERSION(3,0,0)
+    image_cairo_T *ctx = img->backend_data;
+
+    cairo_surface_destroy(ctx->surf);
+    vim_free(ctx);
+#endif
+}
+
+    int
+image_placement_gui_init(image_placement_T *place UNUSED)
+{
+#if GTK_CHECK_VERSION(3,0,0)
+    return OK;
+#else
+    return FAIL;
+#endif
+}
+
+    void
+image_placement_gui_uninit(image_placement_T *place UNUSED)
+{
+}
+
+    void
+image_placement_gui_draw(image_placement_T *place)
+{
+#if GTK_CHECK_VERSION(3,0,0)
+    image_T		    *img = place->img;
+    image_cairo_T	    *ictx = img->backend_data;
+    pixman_box32_t	    *rects;
+    int			    n_rects;
+    cairo_t		    *cr;
+
+    rects = pixman_region32_rectangles(&place->visible, &n_rects);
+    if (rects == NULL || n_rects == 0)
+	return;
+
+    out_flush();
+
+    cairo_surface_set_device_scale(ictx->surf, gui.scale, gui.scale);
+    cr = cairo_create(gui.surface);
+
+    for (int i = 0; i < n_rects; i++)
+    {
+	pixman_box32_t	rect = rects[i];
+	int		row, col;
+	int		posx, posy;
+	int		x, y, w, h;
+
+	// We set the device scale for the surface, so we need logical pixel
+	// dimensions because cairo will handle the converting stuff.
+	image_placement_subrect(place, rect, &row, &col, &x, &y, &w, &h, false);
+	posx = FILL_X(col);
+	posy = FILL_Y(row);
+
+	cairo_save(cr);
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+	cairo_set_source_surface(cr, ictx->surf, posx - x, posy - y);
+	cairo_rectangle(cr, posx, posy, w, h);
+	cairo_fill(cr);
+	cairo_restore(cr);
+
+	queue_draw_area(posx, posy, w, h);
+    }
+    cairo_destroy(cr);
+#endif
+}
+
+    void
+image_placement_gui_clear(image_placement_T *place UNUSED)
+{
+}
+
+#endif // FEAT_IMAGE

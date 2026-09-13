@@ -2188,7 +2188,8 @@ EXTERN int	add_last_insert INIT(= 0);
 #endif
 
 #ifdef FEAT_IMAGE
-// Cached value, re calculated when window size changes. Defaults to 8x16 pixels
+// Cached value, re calculated when window size changes. Defaults to 8x16
+// pixels. Note that these are in logical pixels (when using GUI).
 EXTERN int cell_width INIT(= 8);
 EXTERN int cell_height INIT(= 16);
 #endif

@@ -153,7 +153,7 @@ image_placement_kitty_draw(image_placement_T *place)
 	int row, col;
 	int x, y, w, h;
 
-	image_placement_subrect(place, rect, &row, &col, &x, &y, &w, &h);
+	image_placement_subrect(place, rect, &row, &col, &x, &y, &w, &h, false);
 
 	// Since we send the image id and the placement id, the existing
 	// placement (if any) will be replaced by this one (essentially moving

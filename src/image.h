@@ -40,8 +40,8 @@ struct image_S
     int refcount;
 
     uint8_t	    *data;
-    int		    width;
-    int		    height;
+    int		    width;  // In physical pixels
+    int		    height; // In physical pixels
     image_format_T  fmt;
 
     image_backend_T backend;

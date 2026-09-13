@@ -161,7 +161,7 @@ gui_start(char_u *arg UNUSED)
 	choose_clipmethod();
 #endif
 #ifdef FEAT_IMAGE
-	/* update_image_backend(); */
+	update_image_backend();
 #endif
     }
 
@@ -681,6 +681,9 @@ gui_init(void)
      * Create the GUI shell.
      */
     gui.in_use = true;		// Must be set after menus have been set up
+#if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE)
+    gui.scale = 1.0; // Default value
+#endif
     if (gui_mch_init() == FAIL)
 	goto error;
 
