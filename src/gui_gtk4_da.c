@@ -1960,7 +1960,7 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
     // free that snapshot into a node so it can be blended (if needed).
     body_snapshot = gtk_snapshot_new();
 #if GTK_CHECK_VERSION(4,24,0)
-	gtk_snapshot_set_snap(body_snapshot, GSK_RECT_SNAP_ROUND);
+    gtk_snapshot_set_snap(body_snapshot, GSK_RECT_SNAP_ROUND);
 #endif
 
     for (int r = 0; r < self->n_rows; r++)
@@ -1984,8 +1984,8 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 		    {
 			invert_snapshot = gtk_snapshot_new();
 #if GTK_CHECK_VERSION(4,24,0)
-			    gtk_snapshot_set_snap(invert_snapshot,
-				    GSK_RECT_SNAP_ROUND);
+			gtk_snapshot_set_snap(invert_snapshot,
+				GSK_RECT_SNAP_ROUND);
 #endif
 		    }
 		    gtk_snapshot_append_node(invert_snapshot, dlayer->node);
