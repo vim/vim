@@ -2964,7 +2964,8 @@ gui_mch_draw_popup_image(
 	int	 src_x,
 	int	 src_y,
 	int	 draw_w,
-	int	 draw_h)
+	int	 draw_h,
+	int	 part UNUSED)
 {
     if (wp->w_popup_image_data == NULL || s_hdc == NULL
 	    || wp->w_popup_image_w <= 0 || wp->w_popup_image_h <= 0

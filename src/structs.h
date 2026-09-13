@@ -4297,6 +4297,7 @@ struct window_S
 #  ifdef FEAT_IMAGE_KITTY
     bool	w_popup_image_transmit;	    // If image has been transmitted to
 					    // terminal
+    int		w_popup_image_placements;   // kitty placements on screen
 #  endif
 #  ifdef FEAT_IMAGE_GDI
     // Pre-built Windows GUI image cache.  The bitmap is a 32-bit top-down

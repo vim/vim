@@ -110,15 +110,24 @@ kitty_transmit(image_rgb_T *img, int id)
 
 /*
  * Place the image with the given id, which should have already been
- * transmitted. Its placement id will always be its image id, so that the image
- * is moved if it was previously placed.
+ * transmitted, as placement "placement" (1 and up).  A placement that exists
+ * is moved.
  */
     void
-kitty_place(int id, int row, int col, int src_x, int src_y, int w, int h, int z)
+kitty_place(
+	int	id,
+	int	placement,
+	int	row,
+	int	col,
+	int	src_x,
+	int	src_y,
+	int	w,
+	int	h,
+	int	z)
 {
     vim_snprintf((char *)IObuff, IOSIZE,
 	    "\033_Ga=p,i=%d,p=%d,x=%d,y=%d,w=%d,h=%d,z=%d,q=2\033\\",
-	    kitty_image_id(id), kitty_image_id(id), src_x, src_y, w, h, z);
+	    kitty_image_id(id), placement, src_x, src_y, w, h, z);
 
     term_windgoto(row, col);
     out_str((char_u *)IObuff);
@@ -128,7 +137,7 @@ kitty_place(int id, int row, int col, int src_x, int src_y, int w, int h, int z)
 }
 
 /*
- * Delete image placement with image id "id" (which is also its placement id).
+ * Delete all placements of the image with id "id".
  * If "del_data" is true, then its data will be freed by the terminal (see
  * https://sw.kovidgoyal.net/kitty/graphics-protocol/#deleting-images).
  */
@@ -138,8 +147,21 @@ kitty_delete(int id, bool del_data)
     char d_key = del_data ? 'I' : 'i';
 
     vim_snprintf((char *)IObuff, IOSIZE,
-	    "\033_Ga=d,d=%c,i=%d,p=%d,q=2\033\\", d_key, kitty_image_id(id),
-	    kitty_image_id(id));
+	    "\033_Ga=d,d=%c,i=%d,q=2\033\\", d_key, kitty_image_id(id));
+
+    out_str((char_u *)IObuff);
+    out_flush();
+}
+
+/*
+ * Delete placement "placement" of the image with id "id", the terminal keeps
+ * the image.
+ */
+    void
+kitty_delete_placement(int id, int placement)
+{
+    vim_snprintf((char *)IObuff, IOSIZE,
+	    "\033_Ga=d,d=i,i=%d,p=%d,q=2\033\\", kitty_image_id(id), placement);
 
     out_str((char_u *)IObuff);
     out_flush();

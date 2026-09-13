@@ -6950,6 +6950,124 @@ popup_image_gui_clip(
 }
 # endif
 
+# if defined(FEAT_IMAGE_KITTY) || defined(FEAT_IMAGE_GDI) \
+	|| defined(FEAT_IMAGE_CAIRO) || defined(FEAT_IMAGE_GDK)
+// A rectangle of cells of a popup's image that no popup with a higher zindex
+// covers.
+typedef struct
+{
+    int	row;
+    int	col;
+    int	rows;
+    int	cols;
+} image_rect_T;
+
+/*
+ * Split the "rows" by "cols" cells of the image of "wp" at "row", "col" into
+ * the rectangles that no popup with a higher zindex covers, according to
+ * popup_mask, and append them to "gap" (image_rect_T).  The visible cells of
+ * a row form runs; a run with the same columns as one on the row above joins
+ * that rectangle, so one popup on top gives at most four.
+ */
+    static void
+popup_image_visible_rects(
+	win_T	    *wp,
+	int	    row,
+	int	    col,
+	int	    rows,
+	int	    cols,
+	garray_T    *gap)
+{
+    for (int r = row; r < row + rows && r < screen_Rows; ++r)
+    {
+	int c = col;
+
+	while (c < col + cols && c < screen_Columns)
+	{
+	    int		    start;
+	    image_rect_T    *rect = NULL;
+
+	    // Skip the cells a higher popup covers, then take the run of
+	    // visible cells.
+	    while (c < col + cols && c < screen_Columns && popup_mask != NULL
+		    && popup_mask[r * screen_Columns + c] > wp->w_zindex)
+		++c;
+	    start = c;
+	    while (c < col + cols && c < screen_Columns && (popup_mask == NULL
+		    || popup_mask[r * screen_Columns + c] <= wp->w_zindex))
+		++c;
+	    if (c == start)
+		continue;
+
+	    for (int i = 0; i < gap->ga_len; ++i)
+	    {
+		image_rect_T *known = ((image_rect_T *)gap->ga_data) + i;
+
+		if (known->col == start && known->cols == c - start
+			&& known->row + known->rows == r)
+		{
+		    rect = known;
+		    break;
+		}
+	    }
+	    if (rect != NULL)
+		++rect->rows;
+	    else if (ga_grow(gap, 1) == OK)
+	    {
+		rect = ((image_rect_T *)gap->ga_data) + gap->ga_len++;
+		rect->row = r;
+		rect->col = start;
+		rect->rows = 1;
+		rect->cols = c - start;
+	    }
+	}
+    }
+}
+# endif
+
+# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO) \
+	|| defined(FEAT_IMAGE_GDK)
+/*
+ * Draw the image of "wp" in the GUI: the sub-rectangle "src_x", "src_y",
+ * "draw_w", "draw_h" of the pixels at "row", "col", leaving out what a popup
+ * with a higher zindex covers.
+ */
+    static void
+popup_image_draw_gui(
+	win_T	*wp,
+	int	row,
+	int	col,
+	int	src_x,
+	int	src_y,
+	int	draw_w,
+	int	draw_h)
+{
+    int		cell_x = gui.char_width > 0 ? gui.char_width : 8;
+    int		cell_y = gui.char_height > 0 ? gui.char_height : 16;
+    garray_T	rects;
+
+#  ifdef FEAT_IMAGE_GDK
+    // The parts of the previous draw, there may be fewer this time.
+    gui_gtk4_remove_image(wp);
+#  endif
+    ga_init2(&rects, sizeof(image_rect_T), 4);
+    popup_image_visible_rects(wp, row, col, (draw_h + cell_y - 1) / cell_y,
+					(draw_w + cell_x - 1) / cell_x, &rects);
+    for (int i = 0; i < rects.ga_len; ++i)
+    {
+	image_rect_T	*rect = ((image_rect_T *)rects.ga_data) + i;
+	int		off_x = (rect->col - col) * cell_x;
+	int		off_y = (rect->row - row) * cell_y;
+
+	gui_mch_draw_popup_image(wp, rect->row, rect->col,
+		src_x + off_x, src_y + off_y,
+		MIN(rect->cols * cell_x, draw_w - off_x),
+		MIN(rect->rows * cell_y, draw_h - off_y), i + 1);
+    }
+    ga_clear(&rects);
+}
+# endif
+
 /*
  * If the popup's image was emitted on the previous redraw and its rectangle
  * is about to change (move or resize), zero out ScreenLines / ScreenAttrs
@@ -7115,8 +7233,7 @@ popup_emit_image(win_T *wp)
 				    &src_x, &src_y, &draw_w, &draw_h);
 	if (row < 0 || col < 0 || draw_w <= 0 || draw_h <= 0)
 	    return;
-	gui_mch_draw_popup_image(wp, row, col,
-					    src_x, src_y, draw_w, draw_h);
+	popup_image_draw_gui(wp, row, col, src_x, src_y, draw_w, draw_h);
 
 	// Remember where the image was painted on gui.surface so the next
 	// redraw can invalidate ScreenLines/ScreenAttrs for cells that move
@@ -7207,7 +7324,33 @@ popup_emit_image(win_T *wp)
 		return;
 	    wp->w_popup_image_transmit = true;
 	}
-	kitty_place(wp->w_id, row, col, src_x, src_y, w, h, wp->w_zindex);
+
+	// One placement for each rectangle that no higher popup covers; a
+	// placement of the previous emit that is not used again is deleted.
+	{
+	    garray_T	rects;
+	    int		count;
+
+	    ga_init2(&rects, sizeof(image_rect_T), 4);
+	    popup_image_visible_rects(wp, row, col, (h + cell_y - 1) / cell_y,
+					    (w + cell_x - 1) / cell_x, &rects);
+	    for (int i = 0; i < rects.ga_len; ++i)
+	    {
+		image_rect_T	*rect = ((image_rect_T *)rects.ga_data) + i;
+		int		off_x = (rect->col - col) * cell_x;
+		int		off_y = (rect->row - row) * cell_y;
+
+		kitty_place(wp->w_id, i + 1, rect->row, rect->col,
+			src_x + off_x, src_y + off_y,
+			MIN(rect->cols * cell_x, w - off_x),
+			MIN(rect->rows * cell_y, h - off_y), wp->w_zindex);
+	    }
+	    count = rects.ga_len;
+	    ga_clear(&rects);
+	    for (int i = count + 1; i <= wp->w_popup_image_placements; ++i)
+		kitty_delete_placement(wp->w_id, i);
+	    wp->w_popup_image_placements = count;
+	}
 
 	wp->w_popup_image_emit_row = row;
 	wp->w_popup_image_emit_col = col;
@@ -7312,6 +7455,7 @@ popup_image_clear_kitty(win_T *wp, bool del_data)
     if (popup_image_backend() != IMAGE_BACKEND_KITTY)
 	return;
     kitty_delete(wp->w_id, del_data);
+    wp->w_popup_image_placements = 0;
     if (del_data)
 	wp->w_popup_image_transmit = false;
 }
@@ -7403,7 +7547,7 @@ popup_maybe_emit_image_rect(
 	    || img_bottom <= top || bottom <= img_top)
 	return;
 
-    gui_mch_draw_popup_image(wp, row, col, src_x, src_y, draw_w, draw_h);
+    popup_image_draw_gui(wp, row, col, src_x, src_y, draw_w, draw_h);
 }
 
 /*
