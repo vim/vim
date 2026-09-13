@@ -3344,7 +3344,7 @@ eval_regfree(char_u *pat, regprog_T *prog)
     eval_prog_re = eval_compile_re;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_eval_regcomp_cache(void)
 {

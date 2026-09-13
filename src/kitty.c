@@ -18,7 +18,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_IMAGE_KITTY) || defined(PROTO)
+#if defined(FEAT_IMAGE_KITTY)
 
 // Max base64 chars per envelope, per the kitty graphics protocol.
 #define KITTY_CHUNK_B64		4096
@@ -213,4 +213,4 @@ kitty_probe_parse(char *buf, int n)
     return strstr(buf, "_Gi=31;OK") != NULL;
 }
 
-#endif // FEAT_IMAGE_KITTY || PROTO
+#endif // FEAT_IMAGE_KITTY
