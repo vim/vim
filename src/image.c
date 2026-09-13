@@ -57,14 +57,14 @@ struct
 	    .clear = image_placement_gui_clear,
 # ifdef FEAT_GUI_GTK
 #  ifdef USE_GTK4
-	    .blit = false
+	    .blit = false,
 #  else
-		.blit = true
+	    .blit = true,
 #  endif
 # elif FEAT_GUI_MSWIN
-		.blit = true
+	    .blit = true,
 # else
-		.blit = false
+	    .blit = false,
 # endif
 	}
     },
@@ -562,8 +562,6 @@ redraw_region(pixman_region32_t *region, bool now)
     {
 	pixman_box32_t rect = rects[i];
 
-	// If we are currently updating the screen, redraw the characters now.
-	// Otherwise defer it later
 	if (now)
 	{
 	    screen_draw_rectangle(rect.y1, rect.x1,
