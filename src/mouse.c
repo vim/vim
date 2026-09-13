@@ -1396,7 +1396,7 @@ ins_mousescroll(int dir)
     }
 }
 
-#if defined(FEAT_PROP_POPUP) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP)
 /*
  * Command-line mode implementation for scrolling in direction "dir", which is
  * one of the MSCR_ values.  Scrolls the completion info popup when the mouse

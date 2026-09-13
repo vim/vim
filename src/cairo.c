@@ -23,7 +23,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_IMAGE_CAIRO) || defined(PROTO)
+#if defined(FEAT_IMAGE_CAIRO)
 # include <cairo.h>
 
 /*
@@ -208,4 +208,4 @@ cairo_popup_image_paint(
     cairo_destroy(cr);
 }
 
-#endif // FEAT_IMAGE_CAIRO || PROTO
+#endif // FEAT_IMAGE_CAIRO

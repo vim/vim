@@ -4874,7 +4874,7 @@ mch_calc_cell_size(struct cellsize *cs_out)
     }
 }
 
-# if defined(FEAT_IMAGE_KITTY) || defined(PROTO)
+# if defined(FEAT_IMAGE_KITTY)
 /*
  * Synchronously probe the host terminal for kitty graphics protocol
  * support.  Windows console counterpart of popup_kitty_probe() in

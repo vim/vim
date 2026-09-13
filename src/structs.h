@@ -5502,7 +5502,7 @@ struct cellsize {
 };
 #endif
 
-#if defined(FEAT_IMAGE) || defined(PROTO)
+#if defined(FEAT_IMAGE)
 // RGB(A) image input shared by all popup image backends.
 // "data" points to width*height*3 bytes of tightly packed R,G,B triples
 // when has_alpha is FALSE, or width*height*4 R,G,B,A quadruples otherwise.
