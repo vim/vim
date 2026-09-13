@@ -673,6 +673,13 @@ draw_layer_get_texture(
     GBytes	    *bytes;
     GdkTexture	    *texture;
     GskRenderNode   *node;
+    int		    height;
+
+#if GTK_CHECK_VERSION(4,24,0)
+    height = gui.char_height;
+#else
+    height = gui.char_height + 1;
+#endif
 
     if (bleed)
     {
@@ -703,8 +710,7 @@ draw_layer_get_texture(
 
 	new = gsk_clip_node_new(node,
 		&GRAPHENE_RECT_INIT(FILL_X(0), FILL_Y(row),
-		    da->n_cols * gui.char_width + da->bleed_right,
-		    gui.char_height + (!GTK_CHECK_VERSION(4,24,0))));
+		    da->n_cols * gui.char_width + da->bleed_right, height));
 	gsk_render_node_unref(node);
 	node = new;
     }
