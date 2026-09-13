@@ -952,7 +952,6 @@ match_imageprotocol(image_backend_T *backend)
 	    *backend = prot;
 	    break;
 	}
-
     }
 
     ret = OK;
