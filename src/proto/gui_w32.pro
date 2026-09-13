@@ -107,4 +107,10 @@ BalloonEval *gui_mch_create_beval_area(void *target, char_u *mesg, void (*mesgCB
 void gui_mch_destroy_beval_area(BalloonEval *beval);
 void netbeans_draw_multisign_indicator(int row);
 int test_gui_w32_sendevent(char_u *event, dict_T *args);
+int image_gui_init(image_T *img);
+void image_gui_uninit(image_T *img);
+int image_placement_gui_init(image_placement_T *place);
+void image_placement_gui_uninit(image_placement_T *place);
+void image_placement_gui_draw(image_placement_T *place);
+void image_placement_gui_clear(image_placement_T *place);
 // vim: ft=c

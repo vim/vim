@@ -410,14 +410,6 @@ IMAGE_OBJ = $(OUTDIR)/image.obj $(OUTDIR)/image_kitty.obj \
 	$(OUTDIR)/image_sixel.obj
 !ENDIF
 
-!IF "$(PIXMAN)" != "no"
-IMAGE_DEFS = -DHAVE_PIXMAN
-IMAGE_INC = /I "$(PIXMAN)\include\pixman-1"
-IMAGE_LIB = "$(PIXMAN)\lib\pixman-1.lib"
-IMAGE_OBJ = $(OUTDIR)/image.obj $(OUTDIR)/image_kitty.obj \
-	$(OUTDIR)/image_sixel.obj
-!ENDIF
-
 !IFNDEF SOUND
 ! IF "$(FEATURES)" == "HUGE"
 SOUND = yes

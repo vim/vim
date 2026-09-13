@@ -9530,3 +9530,185 @@ test_gui_w32_sendevent(char_u *event, dict_T *args)
     }
 }
 #endif
+
+#if defined(FEAT_IMAGE_GUI)
+
+typedef struct
+{
+    HBITMAP hbm;
+    HDC	    hdc;
+} image_gdi_T;
+
+/*
+ * Convert the popup's RGB(A) pixel buffer into a 32-bit BGRX buffer. "dst" must
+ * be large enough for iw * ih * 4 bytes.  When has_alpha is true, the source
+ * has 4 bytes per pixel and the alpha channel is flattened onto the GUI window
+ * background colour (pre-multiplied blend).
+ */
+    static void
+upload_popup_image_pixels(uint8_t *dst, uint8_t *src, int iw, int ih, image_format_T fmt)
+{
+    int		y, x;
+    int		stride = iw * 4;
+    int		src_bpp = fmt == IMAGE_FORMAT_RGBA ? 4 : 3;
+    COLORREF	bg = fmt == IMAGE_FORMAT_RGBA ? gui_mch_get_rgb(gui.back_pixel) : 0;
+    BYTE	bg_r = GetRValue(bg);
+    BYTE	bg_g = GetGValue(bg);
+    BYTE	bg_b = GetBValue(bg);
+
+    for (y = 0; y < ih; y++)
+    {
+	uint8_t *s = src + (size_t)y * iw * src_bpp;
+	uint8_t *d = dst + (size_t)y * stride;
+
+	for (x = 0; x < iw; x++)
+	{
+	    if (fmt == IMAGE_FORMAT_RGBA)
+	    {
+		int a = s[3];
+
+		if (a == 255)
+		{
+		    d[0] = s[2];
+		    d[1] = s[1];
+		    d[2] = s[0];
+		}
+		else if (a == 0)
+		{
+		    d[0] = (uint8_t )bg_b;
+		    d[1] = (uint8_t)bg_g;
+		    d[2] = (uint8_t)bg_r;
+		}
+		else
+		{
+		    d[0] = (uint8_t)((s[2] * a + bg_b * (255 - a)) / 255);
+		    d[1] = (uint8_t)((s[1] * a + bg_g * (255 - a)) / 255);
+		    d[2] = (uint8_t)((s[0] * a + bg_r * (255 - a)) / 255);
+		}
+	    }
+	    else
+	    {
+		d[0] = s[2];	// B
+		d[1] = s[1];	// G
+		d[2] = s[0];	// R
+	    }
+	    d[3] = 0;
+	    s += src_bpp;
+	    d += 4;
+	}
+    }
+}
+
+    int
+image_gui_init(image_T *img)
+{
+    image_gdi_T *ctx = ALLOC_CLEAR_ONE(image_gdi_T);
+    BITMAPINFO	bmi;
+    HBITMAP	hbm;
+    HDC		mem_dc;
+    int		iw, ih;
+    void	*bits = NULL;
+
+    if (ctx == NULL)
+	return FAIL;
+
+    image_get_dimensions(img, &iw, &ih);
+
+    CLEAR_FIELD(bmi);
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = iw;
+    bmi.bmiHeader.biHeight = -ih; // Top-down
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+
+    hbm = CreateDIBSection(s_hdc, &bmi, DIB_RGB_COLORS, &bits, NULL, 0);
+    if (hbm == NULL || bits == NULL)
+    {
+	if (hbm != NULL)
+	    DeleteObject(hbm);
+	return false;
+    }
+
+    mem_dc = CreateCompatibleDC(s_hdc);
+    if (mem_dc == NULL)
+    {
+	DeleteObject(hbm);
+	return false;
+    }
+
+    SelectObject(mem_dc, hbm);
+    upload_popup_image_pixels((uint8_t *)bits, img->data, iw, ih, img->fmt);
+
+    ctx->hbm = hbm;
+    ctx->hdc = mem_dc;
+
+    img->backend_data = ctx;
+    return OK;
+}
+
+    void
+image_gui_uninit(image_T *img)
+{
+    image_gdi_T *ctx = img->backend_data;
+
+    DeleteObject(ctx->hbm);
+    DeleteDC(ctx->hdc);
+    vim_free(ctx);
+}
+
+    int
+image_placement_gui_init(image_placement_T *place UNUSED)
+{
+    return OK;
+}
+
+    void
+image_placement_gui_uninit(image_placement_T *place UNUSED)
+{
+}
+
+    void
+image_placement_gui_draw(image_placement_T *place)
+{
+    image_T	    *img = place->img;
+    image_gdi_T	    *ictx = img->backend_data;
+    pixman_box32_t  *rects;
+    int		    n_rects;
+
+    rects = pixman_region32_rectangles(&place->visible, &n_rects);
+    if (rects == NULL || n_rects == 0)
+	return;
+
+    out_flush();
+#if defined(FEAT_DIRECTX)
+    // Commit any pending DirectWrite output so popup text and borders are on
+    // s_hdc before we blit on top.
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
+
+    for (int i = 0; i < n_rects; i++)
+    {
+	pixman_box32_t	rect = rects[i];
+	int		row, col;
+	int		posx, posy;
+	int		x, y, w, h;
+
+	// We set the device scale for the surface, so we need logical pixel
+	// dimensions because cairo will handle the converting stuff.
+	image_placement_subrect(place, rect, &row, &col, &x, &y, &w, &h, true);
+	posx = FILL_X(col);
+	posy = FILL_Y(row);
+
+	BitBlt(s_hdc, posx, posy, w, h, ictx->hdc, x, y, SRCCOPY);
+
+    }
+}
+
+    void
+image_placement_gui_clear(image_placement_T *place UNUSED)
+{
+}
+
+#endif // FEAT_IMAGE_GUI
