@@ -858,6 +858,25 @@ func Test_listener_text()
   bwipe!
 endfunc
 
+" Joining lines reports the joined line, then the deleted line.
+func Test_listener_text_join()
+  new
+  call setline(1, ['one', 'two', 'three'])
+  let s:changes = []
+  let id = listener_add({b, s, e, a, l -> s:StoreChanges(l)},
+      \ bufnr(), #{text: v:true})
+
+  normal! J
+  call listener_flush()
+  call assert_equal([
+      \ [{'lnum': 1, 'end': 2, 'col': 4, 'added': 0, 'text': ['one two']}],
+      \ [{'lnum': 2, 'end': 3, 'col': 1, 'added': -1, 'text': []}]],
+      \ s:changes)
+
+  call listener_remove(id)
+  bwipe!
+endfunc
+
 " Deleting every line and undoing it are each reported as one change.
 func Test_listener_text_whole_buffer()
   new
