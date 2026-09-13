@@ -880,7 +880,7 @@ peekchr(void)
 		     * Next character can never be (made) magic?
 		     * Then backslashing it won't do anything.
 		     */
-		    if (has_mbyte)
+		    if (has_mbyte && c >= 0x80)
 			curchr = (*mb_ptr2char)(regparse + 1);
 		    else
 			curchr = c;
@@ -889,7 +889,9 @@ peekchr(void)
 	    }
 
 	default:
-	    if (has_mbyte)
+	    // curchr already holds regparse[0]; only a multi-byte lead byte
+	    // needs decoding.
+	    if (has_mbyte && curchr >= 0x80)
 		curchr = (*mb_ptr2char)(regparse);
     }
 
@@ -910,8 +912,14 @@ skipchr(void)
     if (regparse[prevchr_len] != NUL)
     {
 	if (enc_utf8)
-	    // exclude composing chars that mb_ptr2len does include
-	    prevchr_len += utf_ptr2len(regparse + prevchr_len);
+	{
+	    // Exclude composing chars that mb_ptr2len does include.  A byte
+	    // below 0x80 is always a single character.
+	    if (regparse[prevchr_len] < 0x80)
+		++prevchr_len;
+	    else
+		prevchr_len += utf_ptr2len(regparse + prevchr_len);
+	}
 	else if (has_mbyte)
 	    prevchr_len += (*mb_ptr2len)(regparse + prevchr_len);
 	else
