@@ -7860,7 +7860,8 @@ fill_image_surface(image_T *img, cairo_surface_t *surf)
 		uint8_t b = src[idx + 2];
 
 		// RGB24's high byte is unused but conventionally 0xff.
-		p[x] = (0xffu << 24) | (r << 16) | (g << 8) | b;
+		p[x] = (0xffu << 24) |
+		    ((int_u)r << 16) | ((int_u)g << 8) | (int_u)b;
 	    }
 	}
     }
