@@ -494,10 +494,10 @@ sixel_image_quantize(image_T *img, sixel_image8_T *out)
 	    return FAIL;
     }
 
-    out->idx = vim_memsave(idx, img->width * img->height);
+    out->idx = vim_memsave(idx, (size_t)img->width * img->height);
     out->width = img->width;
     out->height = img->height;
-    out->pal = vim_memsave(pal, npal * 3);
+    out->pal = vim_memsave(pal, (size_t)npal * 3);
     out->npal = npal;
 
     if (out->pal == NULL || out->idx == NULL)
