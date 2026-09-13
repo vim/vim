@@ -841,7 +841,7 @@ text_prop_position(
     return (below && col_with_padding > win_col_off(wp) && !wp->w_p_wrap);
 }
 
-# if defined(FEAT_LINEBREAK) || defined(PROTO)
+# if defined(FEAT_LINEBREAK)
 /*
  * no 'showbreak' before "below" text property
  * or after "above" or "right" text property
