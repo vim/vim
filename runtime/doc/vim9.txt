@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.2.  Last change: 2026 Aug 21
+*vim9.txt*	For Vim version 9.2.  Last change: 2026 Aug 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7,7 +7,7 @@
 Vim9 script commands and expressions.			*Vim9* *vim9*
 
 Most expression help is in |eval.txt|.  This file is about the new syntax and
-features in Vim9 script, including more than 150 sourceable scripts.
+features in Vim9 script, including more than 200 sourceable scripts.
 
 For a short primer on Vim9 script, other resources may be helpful too, e.g.,
 https://learnxinyminutes.com/vim9script/.
@@ -153,100 +153,193 @@ rewrite old scripts, they keep working as before.  You may want to use a few
 
 Overview ~
 							*E1146*
-Brief summary of the differences you will most often encounter when using Vim9
-script and `:def` functions; details are below:
-- Comments start with #, not ": >
-	echo "hello"   # comment
-- Using a backslash for line continuation is hardly ever needed: >
-	echo "hello "
-	     .. yourName
-	     .. ", how are you?"
-- White space is required in many places to improve readability,
-  see |vim9-white-space|.
-- Assign values without `:let` *E1126* , declare variables with `:var`: >
+The following list is a brief summary of some key differences between legacy
+Vim script and Vim9 script, including `:def` functions:
+
+- Comments start with #, not ":
+>vim9
+	vim9script
+	# Comments start with a number sign (#), not a quotation mark (")
+<
+- Using a backslash (i.e., \, a reverse solidus) for line continuation is
+  rarely needed:
+>vim9
+	vim9script
+	echo $"Your $HOME directory is {$HOME}\n" ..
+	  $"Your $VIMRUNTIME environment variable is {$VIMRUNTIME}"
+<
+- White space is required in many places, improving readability.
+  See |vim9-white-space|.
+							*E1126*
+- Declare variables with `:var` and assign values without `:let` (which is
+  not allowed):
+>vim9
+	vim9script
 	var count = 0
-	count += 3
-- Constants can be declared with `:final` and `:const`: >
-	final matches = []		  # add to the list later
-	const names = ['Betty', 'Peter']  # cannot be changed
-- `:final` cannot be used as an abbreviation of `:finally`.
-- Variables and functions are script-local by default.
-- Functions are declared with argument types and return type: >
-	def CallMe(count: number, message: string): bool
-- Call functions without `:call`: >
-	writefile(['done'], 'file.txt')
-- You cannot use old Ex commands:
-	`:Print`
-	`:append`
-	`:change`
-	`:d`  directly followed by 'd' or 'p'.
-	`:insert`
+	count += 3		# 3
+	echo count
+	let E1126 = count	# E1126: Cannot use :let in Vim9 script
+<
+- Constants can be declared with `:final` and `:const`:
+>vim9
+	vim9script
+	final matches = ['Peter']	# adding to this list later is okay
+	const NAMES = ['Paul', 'Mary']	# NAMES constant cannot be changed
+	matches->extend(NAMES)
+	echo matches			# ['Peter', 'Paul', 'Mary']
+<
+- Variables and functions are script-local by default (see |vim9-scopes|).
+
+- Functions are declared with argument types and return type:
+>vim9
+	vim9script
+	def Cubed(n: float): string  # float arg, string returned
+	  return $"\n{n} cubed is {n->pow(3)}"
+	enddef
+	echo Cubed(input("Enter a float to cube: ")->str2float())
+<
+- Calling functions does not require `:call`.  Although it is deprecated, using
+  it does not give an error:
+>vim9
+	vim9script
+	popup_notification("Builtin function called WITHOUT :call", {})
+	call popup_notification("Builtin function called WITH :call", {})
+<
+						*vim9-invalid-Ex-commands*
+- You cannot use these Ex commands:
+
+	`:Print` (or shortened forms like `:Pr`)
+	`:append` (or shortened forms like `:a`)
+	`:change` (or shortened forms like `:c`)
+	`:dp`
+	`:insert` (or shortened forms like `:i`)
 	`:k`
-	`:mode`
-	`:open`
-	`:s`  with only flags
+	`:mode` (or the shortened form `:mod`)
+	`:open` (or shortened forms like `:o`)
+	`:sce`	`:scg`	`:sci`	`:scI`	`:scl`	`:scn`	`:scp`
+	`:sg`	`:sgc`	`:sge`	`:sgi`	`:sgI`	`:sgl`	`:sgn`	`:sgp`	`:sgr`
+	`:sic`	`:sie`	`:siI`	`:sin`	`:sip`	`:sir`
+	`:sI`	`:sIc`	`:sIe`	`:sIg`	`:sIi`	`:sIl`	`:sIn`	`:sIp`	`:sIr`
+	`:src`	`:srg`	`:sri`	`:srI`	`:srl`	`:srn`	`:srp`
 	`:t`
-	`:xit`
-- Some commands, especially those used for flow control, cannot be shortened.
-  E.g., `:throw` cannot be written as `:th`.  *vim9-no-shorten*
-- You cannot use curly-braces names.
-- A range before a command must be prefixed with a colon: >
-	:%s/this/that
-- Executing a register with "@r" does not work, you can prepend a colon or use
-  `:exe`: >
-	:exe @a
+	`:xit` (or shortened forms `:x` and `:xi`)
+
+	Note: There are some commands that do not give errors but behave
+	differently in Vim9 script.  One is `:dl`, which is an abbreviation of
+	`:dlist` (whereas it is `:delete` in legacy Vim script).  Others are
+	`:sc`, `:si`, and `:sr`, which in legacy Vim script are short substitute
+	commands (like the 38 others listed above).  However, in Vim9 script
+	they are shortened forms of `:scriptnames`, `:simalt`, and `:srewind`
+	respectively.
+						*vim9-no-shorten* *E1065*
+- Many commands cannot be shortened.  Trying to use a shortened command will
+  give E1065.  Specifically, these commands' full names must be used:
+
+  - Flow control commands: `:break`, `:catch`, `:continue`, `:else`, `:elseif`, `:endfor`,
+    `:endif`, `:endtry`, `:endwhile`, `:finally`, `:finish`, `:return`, `:throw`, `:while`
+  - Declaration keywords: `:abstract`, `:class`, `:const`, `:def`, `:endclass`, `:enddef`,
+    `:endenum`, `:endinterface`, `:enum`, `:export`, `:final`, `:import`, `:interface`,
+    `:public`, `:static`, `:this`, `:type`, `:var`
+
+- `:final` cannot be used as a shortened form of `:finally`.  That is because
+  it means |:final| in Vim9 script.  By itself, `:final` lists all variables,
+  the same as a bare `:let` in legacy Vim script.
+
+- You cannot use |curly-braces-names| like `my_{&background}_message`.
+
+- A range before a command must be prefixed with a colon, for example:
+>vim9
+	vim9script
+	# The following line displays lines containing the word 'colon'
+	:-3,+2g/colon
+	# The following line gives E1050: colon required before a range
+	-3,+2g/colon
+<
+- Executing a register with "@" doesn't work; prepend either a colon or
+  use `:execute`:
+>vim9
+	vim9script
+	@a = 'echo "Works"'
+	:@a		# Works
+	execute @a	# Works
+	@a		# E1207: Expression without an effect @a
+<
 - Unless mentioned specifically, the highest |scriptversion| is used.
-- When defining an expression mapping, the expression will be evaluated in the
-  context of the script where it was defined.
-- When indexing a string the index is counted in characters, not bytes:
-  |vim9-string-index|
-- Some possibly unexpected differences: |vim9-gotchas|.
+
+- When defining an expression mapping, the expression will be evaluated in
+  the context of the script where it was defined.
+
+- When indexing a string, the index is counted in characters, not bytes.
+  For implications and examples, see |vim9-string-index|.
+
+- There are some possibly unexpected differences - see |vim9-gotchas|.
 
 
 Comments starting with # ~
+							*vim9-comments*
+In legacy Vim script, comments start with a quotation mark (").  In Vim9
+script, comments start with a number sign (#).
+>vim9
+	vim9script
+	# This is a comment
+	'Vim9 script uses #, not "'->popup_notification({})  # Another comment
+<
+The reason is that a quotation mark can also start a string.  In many places,
+especially halfway through an expression with a line break, it is hard to tell
+what the meaning is because both a string and a comment can be followed by
+arbitrary text.  To avoid confusion, only # comments are recognized.  This is
+the same as in shell scripts and Python.
 
-In legacy Vim script comments start with double quote.  In Vim9 script
-comments start with #. >
-	# declarations
-	var count = 0  # number of occurrences
-
-The reason is that a double quote can also be the start of a string. In many
-places, especially halfway through an expression with a line break, it's hard
-to tell what the meaning is, since both a string and a comment can be followed
-by arbitrary text.  To avoid confusion only # comments are recognized.  This
-is the same as in shell scripts and Python programs.
-
-In Vi # is a command to list text with numbers.  In Vim9 script you can use
-`:number` for that. >
-	:101 number
-
-To improve readability there must be a space between a command and the #
-that starts a comment: >
-	var name = value # comment
-	var name = value# error!
+In Vi, # is a command to list text with numbers.  In Vim9 script, `:number`
+may be used.  For example, the following one-line script prints this
+paragraph.
+>vim9
+	vim9cmd :-4,-2number
+<
+To improve readability, there must be at least one space or tab between a
+command and the # starting a comment.  With 'syntax' set, syntax highlighting
+also helps to show where an invalid comment is used.  For example:
+>vim9
+	vim9script
+	const OKAY: bool = true # A valid comment (white space before the #)
+	echo OKAY		# true
+	try
+	  const NO: bool = false# THIS IS AN INVALID COMMENT!
+	catch
+	  echo v:exception	# E121: Undefined variable: false#
+	endtry
 <							*E1170*
-Do not start a comment with #{, it looks like the legacy dictionary literal
-and produces an error where this might be confusing.  #{{ or #{{{ are OK,
-these can be used to start a fold.
-
-When starting to read a script file Vim doesn't know it is |Vim9| script until
-the `vim9script` command is found.  Until that point you would need to use
-legacy comments: >
-	" legacy comment
+You cannot not start a comment with `#{` - it looks like the legacy dictionary
+literal and produces an error where this might be confusing, for example:
+>vim9
 	vim9script
-	# Vim9 comment
+	#{ E1170: Cannot use #{ to start a comment:
+<
+A |fold-marker| (i.e., `#{{{`) used to start a fold, is still okay.
 
-That looks ugly, better put `vim9script` in the very first line: >
+When reading a script, Vim doesn't know whether it is |Vim9| script before
+finding the `vim9script` command.  Before it, comments must use legacy
+syntax, so a quotation mark:
+>vim9
+	" legacy Vim script comment before vim9script
 	vim9script
-	# Vim9 comment
-
-In legacy Vim script # is also used for the alternate file name.  In Vim9
-script you need to use %% instead.  Instead of ## use %%% (stands for all
-arguments).
+	# Vim9 script comment
+<
+That looks ugly (especially with the syntax highlighting not treating the
+initial Vim script comment in Comment highlight group as a command).
+It is better having the `vim9script` command as the first line:
+>vim9
+	vim9script
+	# Vim9 script comment
+<
+In legacy Vim script, # is also used for the alternate file name.  In Vim9
+script you must use %% instead.  Instead of ##, use %%%, which stands for
+all arguments.  See |c_%%| and |c_%%%#|.
 
 
 Vim9 functions ~
-							*E1099*
+							*vim9-functions*
+
 A function defined with `:def` is compiled.  Execution is many times faster,
 often 10 to 100 times.
 
@@ -257,155 +350,527 @@ Compilation is done when any of these is encountered:
 - the first time the function is called
 - when the `:defcompile` command is encountered in the script after the
   function was defined
-- `:disassemble` is used for the function.
+- `:disassemble` is used for the function, or
 - a function that is compiled calls the function or uses it as a function
-  reference (so that the argument and return types can be checked)
-						*E1091* *E1191*
+  reference (so that the argument and return types can be checked).
+
+							*E1099*
+"Unknown error", E1099, may occur while executing.  If reproducible, it may be
+reported at https://github.com/vim/vim/issues as it is now likely to be a
+rare, unhandled error worth reporting.
+							*E1091*
 If compilation fails it is not tried again on the next call, instead this
-error is given: "E1091: Function is not compiled: {name}".
-Compilation will fail when encountering a user command that has not been
-created yet.  In this case you can call `execute()` to invoke it at runtime. >
-	def MyFunc()
-	  execute('DefinedLater')
+error is given: "E1091: Function is not compiled: {name}".  For example:
+>vim9
+	vim9script
+	def g:Broken(): string
+	  echo 'a' .. []
 	enddef
-
-`:def` has no options like `:function` does: "range", "abort", "dict" or
-"closure".  A `:def` function always aborts on an error (unless `:silent!` was
-used for the command or the error was caught a `:try` block), does not get a
-range passed, cannot be a "dict" function, and can always be a closure.
-						*vim9-no-dict-function* *E1182*
-You can use a Vim9 Class (|Vim9-class|) instead of a "dict function".
-You can also pass the dictionary explicitly: >
-	def DictFunc(self: dict<any>, arg: string)
-	   echo self[arg]
-	enddef
-	var ad = {item: 'value', func: DictFunc}
-	ad.func(ad, 'item')
-
-You can call a legacy dict function though: >
-	func Legacy() dict
-	  echo self.value
-	endfunc
-	def CallLegacy()
-	  var d = {func: Legacy, value: 'text'}
-	  d.func()
-	enddef
-
-The argument types and return type need to be specified.  The "any" type can
-be used, type checking will then be done at runtime, like with legacy
-functions.
-							*E1106*
-Arguments are accessed by name, without "a:", just like any other language.
-There is no "a:" dictionary or "a:000" list.
-			*vim9-variable-arguments* *E1055* *E1160* *E1180*
-Variable arguments are defined as the last argument, with a name and have a
-list type, similar to TypeScript.  For example, a list of numbers: >
-	def MyFunc(...itemlist: list<number>)
-	   for item in itemlist
-	     ...
-
-When a function argument is optional (it has a default value) passing `v:none`
-as the argument results in using the default value.  This is useful when you
-want to specify a value for an argument that comes after an argument that
-should use its default value.  Example: >
-	def MyFunc(one = 'one', last = 'last')
-	  ...
-	enddef
-	MyFunc(v:none, 'LAST')  # first argument uses default value 'one'
+	g:Broken()		# E1105: Cannot convert list to string
 <
-					*vim9-ignored-argument* *E1181*
+	Compilation failed.  Now, attempting to call "g:Broken" gives E1091:
+>vim9
+	vim9cmd g:Broken()	# E1091: Function is not compiled: Broken
+<
+							*E1191*
+Trying to call a function which failed to compile may also return:
+"E1191: Call to function that failed to compile".  For example:
+>vim9
+	vim9script
+	def Set_hlsearch()
+	  &hlsearch = 9  # NB: 'hlsearch' is bool, so would give E1012
+	enddef
+	def D_Set_hlsearch()
+	  Set_hlsearch()
+	enddef
+	# With 'silent!', this call does not abort, despite the E1012 error
+	silent! Set_hlsearch()
+	# Trying to use the function that failed to compile gives E1191:
+	D_Set_hlsearch()  # E1191: Call to function that failed to compile
+<
+Compilation will fail when attempting to execute a user command that
+does not exist at either compile or execution time.  So, this fails:
+>vim9
+	vim9cmd YeahNah()  # E117: Unknown function: YeahNah
+<
+However, a user command contained in a function, which itself is not yet
+compiled, does not fail.  For example, this script can be sourced
+without error even though neither command in either of the functions exists:
+>vim9
+	vim9script
+	def g:Late1()
+	  DefinedLate1
+	enddef
+	def g:Late2()
+	  execute('DefinedLate2')
+	enddef
+<
+Further, if the functions, above, are subsequently called before the functions
+DefinedLate1 and DefinedLate2 exist, compilation fails.  So, after sourcing
+the script, above, when the following script is sourced, either |E476| or
+|E492| are given:
+>vim9
+	vim9cmd g:Late1()	# E476: Invalid command: DefinedLate1
+	vim9cmd g:Late2()	# E492: Not an editor command: DefinedLate2
+<
+Although those calls fail, and for different reasons, the point is that any
+commands must exist when they are executed.  So, the following script works
+because the commands are defined prior to being executed (Note: The script
+defining the two global functions must be re-sourced before sourcing this
+script):
+>vim9
+	vim9script
+	command DefinedLate1 @a = "One"
+	command DefinedLate2 @b = "Two"
+	g:Late1()
+	g:Late2()
+	echo (@a, @b)	# ('One', 'Two')
+<
+A `:def` function has no options like `:function` (i.e., "abort", "range",
+"closure", or "dict").  A `:def` function:
+- always aborts on an error unless the error is caught by a `:try` block or
+  `:silent!` is used calling the function (for an example, see the first
+  script under |E1191|),
+- may not have a range passed,
+- automatically supports closures (for an example, see |vim9-closure|), and
+- cannot be a "dict" function (see |vim9-no-dict-function|, which follows).
+
+							*vim9-no-dict-function*
+Neither the "dict" option nor "dict" functions are supported in a `:def`
+function.  To illustrate, first consider this working legacy Vim script:
+>vim
+	" legacy Vim script dict function
+	let dic = {'ln': [0, 1, 2, 3]}
+	function! dic.Len() dict
+	  return len(self.ln)
+	endfunction
+	echo dic.Len() | " 4
+<							*E1182*
+In Vim9 script, trying to do something similar gives E1182:
+>vim9
+	vim9script
+	var dic: dict<list<number>> = {'ln': [0, 1, 2, 3]}
+	def dic.len(): number  # E1182: Cannot define a dict function in Vim9…
+	  return len(self.ln)
+	enddef
+<
+Instead of using a "dict" function, in Vim9 script, there are a few options:
+
+- Use a Vim9 Class (see |Vim9-class|):
+>vim9
+	vim9script
+	class MyClass
+	  var ln: list<number>
+	  def Len(): number
+	    return this.ln->len()
+	  enddef
+	endclass
+	var obj = MyClass.new([0, 1, 2, 3])
+	echo obj.Len()	# 4
+<
+- Pass the dictionary explicitly:
+>vim9
+	vim9script
+	def DicLen(self: dict<any>, arg: string): number
+	  return self[arg]->len()
+	enddef
+	var da: dict<any> = {func: DicLen, item: [0, 1, 2, 3]}
+	echo da.func(da, 'item')	# 4
+<
+- Call a legacy Vim script dict function (|Dictionary-function|):
+>vim9
+	vim9script
+	function LegDicLen() dict
+	  return self.item->len()
+	endfunc
+	def CallLegDicLen(): number
+	  var da: dict<any> = {func: LegDicLen, item: [0, 1, 2, 3]}
+	  return da.func()
+	enddef
+	echo CallLegDicLen()	# 4
+<
+The argument types and return type need to be specified and match - various
+errors may occur when they do not.  See |fast-functions| and |type-checking|.
+
+							*vim9-any-type*
+The "any" type can be used, type checking will then be done at runtime, like
+with legacy functions, and allows the type to change.  For example:
+>vim9
+	vim9script
+	var avar: any
+	echo avar->typename()	# number
+	avar = 'A string'
+	echo avar->typename()	# string
+	avar = [['A', 'list'], ['of', 'lists']]
+	echo avar->typename()	# list<list<string>>
+<
+	Warning: The "any" type defaults to the number type and 0.  Operations
+	demanding a specific type may produce unexpected results or errors if
+	that is not factored.  Further, unlike a variable explicitly declared
+	as a number, direct assignment of any other type means the variable's
+	type is re-inferred, which can occur multiple times at runtime.  For
+	example:
+>vim9
+	vim9script
+	var n1: any
+	echo n1->typename()	# number
+	n1 ..= 'zero'
+	echo n1			# 0zero (that is, the default 0 and "zero")
+	echo n1->typename()	# string
+	n1 = true
+	echo n1->typename()	# bool
+	var n2: any
+	n2->extend(['item'])	# E712: Argument of extend() must be a List o…
+<
+Arguments are accessed by name, without "a:", just like any other language.
+There is no "a:" dictionary or "a:000" list.  This example shows not only "a:"
+but also valid extreme white space minimization in a legacy Vim script:
+>vim
+	function! MyFirst(s,d,n,...)
+	  return a:s.a:d[a:n].a:000[1]
+	endfunction
+	let MyDict={1:'one',2:'two'}
+	echo MyFirst('The value of key 2 of MyDict is ',
+	      \ MyDict,2,v:null,'!',9999)
+<
+The equivalent, in Vim9 script:
+>vim9
+	vim9script
+	def MyFirst(s: string, d: dict<string>, n: number,
+	    ...l: list<any>): string
+	  return s .. d[n] .. l[1]
+	enddef
+	var MyDict: dict<string> = {1: 'one', 2: 'two'}
+	echo MyFirst('The value of key 2 of MyDict is ',
+	  MyDict, 2, null, '!', 9999)
+<
+	Note: In this Vim9 script, an error would occur if omitting spaces:
+	- after any of the commas
+	- after any of the colons in 'key: value' or 'variable: type'
+	- before/after instances of '..', and
+	- before/after '='.
+						*vim9-variable-arguments*
+The previous example shows variable arguments ("...l: list<any>") defined as
+the last argument.  In Vim9 script, variable arguments require a name and
+list<type>, similar to TypeScript.  This example iterates a variadic list
+of numbers:
+>vim9
+	vim9script
+	def MyProduct(...ln: list<number>): number
+	  var prod: number = 1
+	  for num in ln
+	    prod *= num
+	  endfor
+	  return prod
+	enddef
+	echo MyProduct(10, 10)	# 100
+	echo MyProduct(5, 4, 5)	# 100
+<
+Errors may occur when variadic arguments are not declared or passed correctly:
+
+							*E1055*
+- Failing to provide the name to a variable argument:
+>vim9
+	vim9script
+	def F1055(n: number, ...): void  # E1055: Missing name after ...
+	enddef
+<							*E1160*
+- Trying to use a default for a variable argument:
+>vim9
+	vim9script
+	def F1160(...l = []): void  # E1160: Cannot use a default for variabl…
+	enddef
+<							*E1180*
+- Failing to declare a variable argument as a list<type>:
+>vim9
+	vim9script
+	def F1180(...l: string): void  # E1180: Variable arguments type must…
+	enddef
+<
+When a function argument is optional (that is, it has a default value),
+passing `v:none` as the argument results in using the default value.  This is
+useful when you want to specify a value for an argument that comes after an
+argument that should use its default value.  For example:
+>vim9
+	vim9script
+	def F(ra: float, pi: float = 3.14): float
+	  return pi * ra->pow(2)
+	enddef
+	echo F(2.0, v:none)	# 12.56 (using default 'pi' value, 3.14)
+<
+							*E1106*
+When too many arguments are passed, either an |E176| or E1106 error occurs.
+An E1106 example:
+>vim9
+	vim9script
+	var ln: list<number> = [1, 2, 4, 8]
+	foreach(ln, (val) => {
+	  echo val
+	})  # E1106: One argument too many (the Lambda has only one argument)
+<
+	Note: `foreach()` passes two arguments to its callback: for a list,
+	they are the list's index and value.  Vim9 lambdas must have both
+	(technically, "matching arity"), even when only one appears to be
+	required.  So, "(val)" should be "(_, val)", explained below.
+
+							*vim9-ignored-argument*
 The argument "_" (an underscore) can be used to ignore the argument.  This is
 most useful in callbacks where you don't need it, but do need to give an
-argument to match the call.  E.g. when using map() two arguments are passed,
-the key and the value, to ignore the key: >
-	map(numberList, (_, v) => v * 2)
-There is no error for using the "_" argument multiple times.  No type needs to
-be given.
+argument to match the call.  For example, when using |map()| with a list, two
+arguments are passed, the index and the value.  The following script
+first demonstrates ignoring the indexes, then ignoring the values:
+>vim9
+	vim9script
+	final nl: list<number> = [1, 2, 4, 8]
+	map(nl, (_, val) => val * 2)	# '_' ignores the indexes
+	echo nl				# [2, 4, 8, 16]
+	map(nl, (idx, _) => idx * 2)	# '_' ignores the values
+	echo nl				# [0, 2, 4, 6]
+<
+The "_" argument can be used multiple times, and no type is needed.
+>vim9
+	vim9script
+	var count: number
+	def In20s(_, _, year: number): void
+	  count += year >= 2020 ? 1 : 0
+	enddef
+	var data = [['Bo', 'A', 2026], ['Mo', 'B', 2018], ['Jo', 'A', 2022]]
+	for staff in data
+	  In20s->call(staff)
+	endfor
+	echo $"There are {count} staff members in the 2020s."
+<
+	Note: This script uses |call()|, not to be confused with |:call|.
 
+							*E1181*
+Using "_" in a disallowed context gives error E1181.  For example:
+>vim9
+	vim9script
+	def F1181(_): string
+	  return _	# E1181: Cannot use an underscore here
+	enddef
+	echo F1181("No")
+<
 
 Functions and variables are script-local by default ~
 							*vim9-scopes*
 When using `:function` or `:def` to specify a new function at the script level
-in a Vim9 script, the function is local to the script.  Like prefixing "s:" in
-legacy script.  To define a global function or variable the "g:" prefix must
-be used.  For functions in a script that is to be imported and in an autoload
-script "export" needs to be used for those to be used elsewhere. >
-	def ThisFunction()          # script-local
-	def g:ThatFunction()        # global
-	export def Function()       # for import and import autoload
-<						*E1075*
-When using `:function` or `:def` to specify a nested function inside a `:def`
-function and no namespace was given, this nested function is local to the code
-block it is defined in.  It cannot be used in `function()` with a string
-argument, pass the function reference itself: >
-	def Outer()
-	  def Inner()
-	    echo 'inner'
+in a Vim9 script, the function is local to the script (like prefixing "s:" in
+legacy Vim script).  To define a global function or variable, the "g:" prefix
+must be used.  For functions in a script that is to be imported, and in an
+autoload script, `:export` needs to be used for those to be used elsewhere.
+>
+	def ThisFunction()	# script-local
+	def g:ThatFunction()	# global
+	export def Function()	# for import and import autoload
+<
+							*E1075*
+Using "s:" (like in a legacy Vim script function), is not allowed.  If used in
+a script level `:def` function, |E1268| is given, and, if used in a nested `:def`
+function, E1075.  For example:
+>vim9
+	vim9script
+	def F1075(): void
+	  def s:Inner()  # E1075: Namespace not supported: s:Inner()
 	  enddef
-	  var Fok = function(Inner)     # OK
-	  var Fbad = function('Inner')  # does not work
-
-Detail: this is because "Inner" will actually become a function reference to a
-function with a generated name.
+	enddef
+	F1075()
+<
+When using `:function` or `:def` to specify a nested function inside a `:def`
+function and no namespace was given, the nested function is local to the code
+block it is defined in.  It cannot be used in a `function()` with a string
+argument.  Instead, pass the function reference itself:
+>vim9
+	vim9script
+	def Outer(): void
+	  def Inner(): string
+	    return 'Inner() successfully called'
+	  enddef
+	  var Okay = function(Inner)
+	  echo Okay()		# Inner() successfully called
+	  try
+	    var Bad = function("Inner")
+	  catch
+	    echo v:exception	# Vim:E700: Unknown function: Inner
+	  endtry
+	enddef
+	Outer()
+<
+	Note: Passing the string argument fails because "Inner" becomes a
+	function reference to a function with a generated internal name,
+	which could be shown with "funcref(Inner)".
 
 It is not possible to define a script-local function in a function.  You can
-define a local function and assign it to a script-local Funcref (it must have
-been declared at the script level).  It is possible to define a global
-function by using the "g:" prefix.
-
-When referring to a function and no "s:" or "g:" prefix is used, Vim will
-search for the function:
-- in the function scope, in block scopes
-- in the script scope
+define a local function and assign it to a script-local |Funcref|, though it
+must first have been declared at the script level.
+>vim9
+	vim9script
+	var ScriptLocalFuncref: func
+	def Outer(): void
+	  def Inner(): string
+	    return "Hi from ScriptLocalFuncref!"
+	  enddef
+	  ScriptLocalFuncref = Inner
+	enddef
+	Outer()
+	echo ScriptLocalFuncref()
+<
+When referring to an unprefixed function (i.e., without either a "g:" or "s:"
+prefix), Vim will search for the function in the function scope, in block
+scopes, and in the script scope.
 
 Imported functions are found with the prefix from the `:import` command.
+Exporting and importing is explained at |vim9-import|.
 
-Since a script-local function reference can be used without "s:" the name must
-start with an upper case letter even when using the "s:" prefix.  In legacy
-script "s:funcref" could be used, because it could not be referred to with
-"funcref".  In Vim9 script it can, therefore "s:Funcref" must be used to avoid
-that the name interferes with builtin functions.
-						*vim9-s-namespace* *E1268*
-The use of the "s:" prefix is not supported at the Vim9 script level.  All
-functions and variables without a prefix are script-local.
+In Vim9 script, a script-local function reference must start with an uppercase
+letter.  Consequently, even in scenarios where "s:" is required (within legacy
+Vim script scopes), "s:Funcref" must be used, avoiding potential ambiguity
+with builtin functions.  Consider the following legacy Vim script and Vim9
+script examples.
 
-In :def functions the use of "s:" depends on the script: Script-local
-variables and functions in a legacy script do use "s:", while in a Vim9 script
-they do not use "s:".  This matches what you see in the rest of the file.
-
-In legacy functions the use of "s:" for script items is required, as before.
-No matter if the script is Vim9 or legacy.
-
-In all cases the function must be defined before used.  That is when it is
-called, when `:defcompile` causes it to be compiled, or when code that calls
-it is being compiled (to figure out the return type).
+- First, legacy Vim script, showing that "s:" may be used in a legacy Vim
+  script to define a function, which would otherwise interfere with a
+  builtin function (in this instance, the builtin, |cos()|):
+>vim
+	function! s:cos()
+	  echo 's:cos() works'
+	endfunction
+	call s:cos()		" s:cos() works
+<
+- Second, Vim9 scripts, showing that legacy functions:
+  1. Must start with an uppercase letter (otherwise |E1267| is given),
+  2. Cannot be defined with "s:" in a Vim9 script-local scope (|E1268|), and
+  3. Within the legacy scope of a function, "s:" is required but, for the
+    reasons, above, must be "s:" and an uppercase letter (|E117|):
+>vim9
+	vim9script
+	execute ('function cos()')  # E1267: Function name must start with a …
+< >vim9
+	vim9script
+	execute ('function s:cos()')  # E1268: Cannot use s: in Vim9 script: …
+< >vim9
+	vim9script
+	function Cos()
+	  echo 'This works: now we are in Cos().'
+	endfunction
+	function Call_Cos()
+	  call s:Cos()	" Requires the 's:'
+	  call Cos()	" E117: Unknown function: Cos
+	endfunction
+	Call_Cos()
+<							*vim9-s-namespace* *E1268*
+Within a Vim9 script's `:def` function, "s:" cannot be used.  Compare these
+two scripts: first, legacy Vim script where "s:" may be used in a `:def` then,
+second, Vim9 script where E1268 is given:
+>vim
+	" Legacy Vim script - s: working in a :def, though it is optional
+	let s:leg = 'okay'
+	def Ok_def_s(): void
+	  # Note that either leg or s:leg are valid here
+	  echo leg .. ', ' .. s:leg	# okay, okay
+	enddef
+	call Ok_def_s()
+< >vim9
+	vim9script
+	var nine: string
+	def F1268(): void
+	  echo s:nine	# E1268: Cannot use s: in Vim9 script: s:nine
+	enddef
+	F1268()
+<
+The use of the "s:" prefix is not supported in the Vim9 script-local scope.
+Functions and variables without a prefix are always script-local.  This
+includes calling legacy functions:
+>vim9
+	vim9script
+	function ScriptLevel(str)
+	  echo a:str
+	endfunction
+	ScriptLevel('okay')
+	# The following gives E1268: Cannot use s: in Vim9 script
+	s:ScriptLevel('not okay')
+<
+Within legacy functions, using "s:" for script-local variables is always
+required:
+>vim9
+	vim9script
+	var local: string = 'script-local :var'
+	function Legacy_requires_s()
+	  echo s:local
+	  " Without 's:', 'local' gives E121:
+	  echo local
+	endfunction
+	Legacy_requires_s()
+<
+In all cases the function must be defined before it is used.  That is, either
+when it is called explicitly (including if `:defcompile` causes it to be
+compiled), or when code that calls it is being compiled, inferring the return
+type.
 
 The result is that functions and variables without a namespace can usually be
 found in the script, either defined there or imported.  Global functions and
-variables could be defined anywhere (good luck finding out where!  You can
+variables could be defined anywhere.  (Good luck finding out where!  You can
 often see where it was last set using |:verbose|).
-							*E1102*
-Global functions can still be defined and deleted at nearly any time.  In
-Vim9 script script-local functions are defined once when the script is sourced
-and cannot be deleted or replaced by itself (it can be by reloading the
-script).
 
-When compiling a function and a function call is encountered for a function
+
+Deleting functions in a Vim9 script ~
+							*E1084*
+In Vim9 script, script-local functions (either `:function` or `:def`) are
+defined once when the script is sourced and cannot be deleted or replaced by
+the script itself:
+>vim9
+	vim9script
+	def MyDef(): void
+	enddef
+	delfunction MyDef  # E1084: Cannot delete Vim9 script function MyDef
+<
+	Note: A script-local function may be replaced by reloading the script.
+	See |vim9-reload|.
+
+Global functions ("g:" prefixed) can still be defined and deleted at nearly
+any time, though deleting a global function in Vim9 script has a distinction
+between |function()| and |funcref()|.  When a global function is deleted and
+redefined, the replacement global function is updated dynamically in any
+variables calling it whereas the function reference is persistent (unless the
+variable itself is redeclared).  This is an important distinction, differing
+from legacy Vim script behavior, where deleting a function deletes the funcref
+too.  To illustrate:
+>vim9
+	vim9script
+	def g:F(): string
+	  return 'one'
+	enddef
+	var Function = function(g:F)
+	var Funcref = funcref(g:F)
+	echo (Function(), Funcref())	# ('one', 'one')
+	delfunction g:F
+	def g:F(): string
+	  return 'two'
+	enddef
+	echo (Function(), Funcref())	# ('two', 'one')
+	Funcref = funcref(g:F)		# Redeclare Funcref
+	echo (Function(), Funcref())	# ('two', 'two')
+<
+	Note: This persistent behavior of |funcref()| may be regarded as
+	either a feature, or, if not understood, be unexpected.
+
+When compiling a function, and a function call is encountered for a function
 that is not (yet) defined, the |FuncUndefined| autocommand is not triggered.
 You can use an autoload function if needed, or call a legacy function and have
 |FuncUndefined| triggered there.
 
 
 Reloading a Vim9 script clears functions and variables by default ~
-						*vim9-reload* *E1149* *E1150*
-When loading a legacy Vim script a second time nothing is removed, the
-commands will replace existing variables and functions, create new ones, and
-leave removed things hanging around.
+						*vim9-reload* *vim9-noclear*
+When loading a legacy Vim script a second or subsequent time, nothing is
+removed.  Commands will replace existing variables and functions, create new
+ones, and leave removed things hanging around.
 
-When loading a Vim9 script a second time all existing script-local functions
-and variables are deleted, thus you start with a clean slate.  This is useful
-if you are developing a plugin and want to try a new version.  If you renamed
-something you don't have to worry about the old name still hanging around.
+When loading a Vim9 script a second or subsequent time, the default is that
+all existing script-local functions and variables are deleted.  So, you start
+with a clean slate.  This is useful if you are developing a plugin and want to
+try a new version.  If you renamed something you don't have to worry about the
+old name persisting.
 
 The exported functions and variables of an autoload script live in the global
 namespace with the autoload prefix.  When such a script is sourced again they
@@ -416,510 +881,1363 @@ previous definition would keep referring to it.  Restart Vim to load a changed
 class or enum in an autoload script.  In other scripts a class or enum is
 cleared like everything else, so it can be redefined.
 
-If you do want to keep items, use: >
+If you do want to keep script-local functions and variables, use "noclear".
+To illustrate, source this script a few times; every time it is sourced,
+another 9 is added to MyList:
+>vim9
 	vim9script noclear
-
+	var MyList: list<number> = !exists('MyList') ? [9] : MyList->add(9)
+	echo MyList
+<
 You want to use this in scripts that use a `finish` command to bail out at
-some point when loaded again.  E.g. when a buffer local option is set to a
-function, the function does not need to be defined more than once: >
+some point when loaded again.  For example, when a buffer local option is set
+to a function, the function does not need to be defined more than once:
+>vim9
 	vim9script noclear
+	# 'We are in SomeFunc()' is echoed only the first time this script is
+	# sourced.  Subsequent times, you are told, 'SomeFunc exists already'.
 	setlocal completefunc=SomeFunc
 	if exists('*SomeFunc')
+	  popup_notification('SomeFunc() exists already', {time: 4000})
 	  finish
 	endif
 	def SomeFunc()
-	....
+	  popup_notification('We are in SomeFunc()', {time: 4000})
+	enddef
+	SomeFunc()
+<							*E1149*
+An important consequence of cleared script-local functions and variables is
+that idiomatic practices, such as finishing when "g:loaded_{plugin_name}"
+exists, means it's important to remember that variables and functions do not
+persist.  To illustrate, source the following Vim9 script.  Then source it
+again.  The first time in it will echo "Okay...."  The second/subsequent times
+it gives an E1149 error:
+>vim9
+	vim9script
+	:+7,+15source
+	echo g:GetName()
+	# The second and subsequent times it is sourced, this error is given:
+	# E1149: Script variable is invalid after reload in function GetName
+< >
+	" DO NOT SOURCE THIS SCRIPT: TO FOLLOW THIS DEMO, SOURCE THE ONE ABOVE
+	vim9script
+	if exists('g:loaded_E1149')
+	  finish
+	endif
+	g:loaded_E1149 = true
+	var name: string = 'Okay (declared only the first time sourced!)'
+	def g:GetName(): string
+	  return name
+	enddef
+<
+	Note: If you want to re-run this, use `:unlet` g:loaded_E1149 to
+	remove the global variable.
 
+							*E1150*
+Variables' types are not cleared when using `noclear` (|vim9-noclear|).  If you
+try to change a variable's type, E1150 may be given.  For example, if you
+source the following script it echoes "string".  If you then source the second
+script it gives E1150:
+>vim9
+	vim9script
+	var my_var: string = "string"
+	def g:Get_myvar(): void
+	  echo my_var
+	enddef
+	g:Get_myvar()
+< >vim9
+	vim9script noclear
+	my_var = false		# This changes my_var to a bool
+	echo my_var		# false
+	echo my_var->typename()	# bool
+	g:Get_myvar()		# E1150: Script variable type changed
+<
+							*E1190*
+When reloading with `noclear`, compiled function calls are preserved.  If a
+called function's signature changes, argument mismatches will occur.  For
+example, when sourced for the first time, the following script echoes "9".
+However, when sourced subsequently, the changed function signature change
+means there is one argument too few and E1190 is given:
+>vim9
+	vim9script noclear
+	if !exists('g:loaded_E1190')
+	  def Echo(n: number): void
+	    echo n
+	  enddef
+	  def CallEcho(n: number): void
+	    Echo(n)
+	  enddef
+	else
+	  # Redefine Echo() with a second argument
+	  def Echo(n: number, x: number)
+	    echo n * x
+	  enddef
+	endif
+	CallEcho(9)  # First time, 9.  Second, E1190: One argument too few.
+	g:loaded_E1190 = true
+<
 
-Variable declarations with :var, :final and :const ~
-				*vim9-declaration* *:var* *E1079*
-				*E1017* *E1020* *E1054* *E1087* *E1124*
+Variable declarations with :var, :final, and :const ~
+							*vim9-declaration* *:var*
 Local variables need to be declared with `:var`.  Local constants need to be
-declared with `:final` or `:const`.  We refer to both as "variables" in this
-section.
+declared with either `:final` or `:const`.  Collectively they are referred to
+as "variables" in this section.  Shortening `:var`, `:final`, or `:const` is not
+allowed - see |vim9-no-shorten|.
 
-Variables can be local to a script, function or code block: >
+Variables can be local to a script, function, or code block.  The following
+example demonstrates all three:
+>vim9
 	vim9script
-	var script_var = 123
-	def SomeFunc()
-	  var func_var = script_var
-	  if cond
-	    var block_var = func_var
-	  ...
-
-The variables are only visible in the block where they are defined and nested
-blocks.  Once the block ends the variable is no longer accessible: >
-	if cond
-	   var inner = 5
-	else
-	   var inner = 0
-	endif
-	echo inner  # Error!
-
-The declaration must be done earlier: >
-	var inner: number
-	if cond
-	   inner = 5
-	else
-	   inner = 0
-	endif
-	echo inner
-
-Although this is shorter and faster for simple values: >
-	var inner = 0
-	if cond
-	   inner = 5
-	endif
-	echo inner
-<							*E1025* *E1128*
-To intentionally hide a variable from code that follows, a block can be
-used: >
+	var s: string = 'script'
+	def Func(): void
+	  var f: string = 'function'
+	  {
+	    var b: string = 'block'
+	    echo $"Visible: {s}, {f}, and {b}"
+	  }
+	  echo $"Visible: {s} and {f}"	# b: invisible outside the {...} block
+	enddef
+	Func()
+	echo $"Visible: {s} only"	# f and b: invisible outside the :def
+<
+	Note: See |vim9-exists()| for limitations in determining whether a
+	variable exists.
+							*vim9-block*
+Variables are only visible in the block where they are defined, including any
+nested blocks.  Once the block ends the variable is no longer accessible and,
+if you try to use it, gives E121.  So, for example, to intentionally "hide" a
+variable from code which follows it, a block may be used to make the variable
+only accessible within the block's scope:
+>vim9
+	vim9script
 	{
-	   var temp = 'temp'
-	   ...
+	  var inblock: string = 'inblock is not visible outside the block!'
 	}
-	echo temp  # Error!
+	echo inblock	# E121: Undefined variable: inblock
+<
+For the variable "inblock" to be visible, it needs to be declared earlier:
+>vim9
+	vim9script
+	var inblock: string
+	{
+	  inblock = 'when defined earlier, inblock is visible outside'
+	}
+	echo inblock
+<
+A block is especially useful in a user command (see also |command-block|).  In
+the following example, the SAVE constant is assigned the value of the unnamed
+register and later it is used to revert the unnamed register.  The SAVE
+constant is invisible outside the user command:
+>vim9
+	vim9script
+	# Create the YankHelpGrep command (to :helpgrep a visual selection)
+	command -register YankHelpGrep {
+	  const SAVE = @"
+	  normal! y
+	  execute $"helpgrep {getreg('<register>')}"
+	  @" = SAVE
+	  copen
+	}
+	# Map YH in Visual mode to YankLhelpGrep
+	xnoremap YH <ScriptCmd>YankHelpGrep "<CR>
+<
+A block can also be useful with autocommands (see |:autocmd-block|).
 
-This is especially useful in a user command: >
-	command -range Rename {
-		 var save = @a
-		 @a = 'some expression'
-		 echo 'do something with ' .. @a
-		 @a = save
-	    }
+Although a block may be useful and terse, using a `:def` function works better
+in many instances, and often is more readable.
+							*E1025* *E1128*
+A block with a missing left curly bracket may give E1025 or E1128.  Examples:
+>vim9
+	vim9script
+	def F1025()
+	  }
+	enddef
+	defcompile F1025  # E1025: Using } outside of a block scope
+<and >vim9
+	vim9cmd }  # E1128: } without {
+<
+Errors given when incorrectly declaring or initializing a variable include:
 
-And with autocommands: >
-   au BufWritePre *.go {
-		 var save = winsaveview()
-		 silent! exe ':%! some formatting command'
-		 winrestview(save)
-	   }
+							*E1017*  >vim9
+	vim9script
+	var F1017: func = (): void => {
+	  var a: any
+	  var a = 'error'  # E1017: Variable already declared: a
+	}
+<							*E1020*  >vim9
+	vim9script
+	var x += 4  # E1020: Cannot use an operator on a new variable: x += 4
+<
+							*E1022*  >vim9
+	vim9script
+	var x  # E1022: Type or initialization required
+<
+							*E1034*  >vim9
+	vim9script
+	var this = 'reserved'	# E1034: Cannot use reserved name this
+<
+							*E1054*  >vim9
+	vim9script
+	var x: bool
+	var F1054: func = (): void => {
+	  var x = 'no'	# E1054: Variable already declared in the script: x
+	}
+<							*E1087*  >vim9
+	vim9script
+	var F1087: func = (): void => {
+	  var x.y = 0	# E1087: Cannot use an index when declaring a variable
+	}
+<							*E1124*  >vim9
+	vim9script
+	function F1124()
+	  var x = 'E1124: ":var" cannot be used in legacy Vim script'
+	endfunction
+	F1124()
+<							*E1079*
+A variable cannot be declared in Command-line mode or Ex mode.  For example:
+>vim9
+	vim9script
+	feedkeys(":vim9cmd var x = 0\<CR>")
+	# E1079: Cannot declare a variable on the command line
+<
+Declaring a variable with a type, but without an initializer, defaults to:
+- `false` for bool
+- 0 for number and "any"
+- 0.0 for float, and
+- empty (for all other types that can be declared without an initializer).
+To illustrate:
+>vim9
+	vim9script
+	var a: any | var b: bool | var n: number | var f: float
+	echo [a, b, f, n]				# [0, false, 0.0, 0]
+	var s: string | var F: func | var l: list<any> | var d: dict<any> |
+	      \ var j: job | var c: channel | var z: blob | var t: tuple<any>
+	echo empty(s) && empty(F) && empty(l) && empty(d) && empty(j) &&
+	      \ empty(c) && empty(z) && empty(t)	# true
+<
+	Note: Take care using the "any" type given its default is 0.  For
+	implications, see |vim9-any-type|.
 
-Although using a :def function probably works better.
-
-				*E1022* *E1103* *E1130* *E1131* *E1133*
-				*E1134* *E1581*
-Declaring a variable with a type but without an initializer will initialize to
-false (for bool), empty (for string, list, dict, etc.) or zero (for number,
-any, etc.).  This matters especially when using the "any" type, the value will
-default to the number zero.  For example, when declaring a list, items can be
-added: >
+Uninitialized container types can be added to.  For example:
+>vim9
+	vim9script
+	var myDict: dict<list<number>>
 	var myList: list<number>
-	myList->add(7)
+	myList->add(9)
+	myDict['version'] = myList
+	echo myDict  # {'version': [9]}
+<
+Initializing a variable to a null value differs from initializing a variable
+with "null_<type>".  Particularly, `null_dict`, `null_list`, and `null_blob`
+give errors when trying to add to/extend variables initialized to them:
 
-Initializing a variable to a null value, e.g. `null_list`, differs from not
-initializing the variable.  This throws an error: >
-	var myList = null_list
-	myList->add(7)  # E1130: Cannot add to null list
-
-<						*E1016* *E1052* *E1066*
-In Vim9 script `:let` cannot be used.  An existing variable is assigned to
-without any command.  The same for global, window, tab, buffer and Vim
-variables, because they are not really declared.  Those can also be deleted
-with `:unlet`.
-							*E1065*
-You cannot use `:va` to declare a variable, it must be written with the full
-name `:var`.  Just to make sure it is easy to read.
+- `null_dict`:
+							*E1103*  >vim9
+	vim9script
+	var nd = null_dict
+	def F1103(): void
+	  nd['a'] = 'fail'		# E1103: Dictionary not set
+	enddef
+	F1103()
+<							*E1133*  >vim9
+	vim9script
+	var ed: dict<string>		# An empty dict can be extended
+	ed->extend({'a': 'okay'})
+	echo ed				# {'a': 'okay'}
+	var nd: dict<string> = null_dict
+	nd->extend({'a': 'fail'})	# E1133: Cannot extend a null_dict
+<
+- `null_list`:
+							*E1147*  >vim9
+	vim9script
+	var nl = null_list
+	def F1147(): void
+	  nl[0] = 'fail'		# E1147: List not set
+	enddef
+	F1147()
+<							*E1130*  >vim9
+	vim9script
+	var el: list<string>		# An empty list can be added to
+	el->add('okay')
+	echo el				# ['okay']
+	var nl: list<string> = null_list
+	nl->add('fail')			# E1130: Cannot add to null_list
+<
+							*E1134*  >vim9
+	vim9script
+	var el: list<string>		# An empty list can be extended
+	el->extend(['okay'])
+	echo el				# ['okay']
+	var nl: list<string> = null_list
+	nl->extend(['fail'])		# E1134: Cannot extend a null_list
+<
+- `null_blob`:
+							*E1581*  >vim9
+	vim9script
+	var eb: blob			# An empty blob can be extended
+	eb->extend(0zF09F988A)
+	echo eb->blob2str()		# ['😊']
+	var nb: blob = null_blob
+	nb->extend(0zF09F988A)		# E1581: Cannot extend a null_blob
+<
+							*E1131*  >vim9
+	vim9script
+	var eb: blob			# An empty blob can be added to
+	eb->add(0xF0)->add(0x9F)->add(0x98)->add(0x8A)
+	echo eb->blob2str()		# ['😊']
+	var nb: blob = null_blob
+	nb->add(0xF0)			# E1131: Cannot add to null_blob
+<
+Note: Similar errors should not be encountered with:
+- `null_tuple` (because |Tuples| are immutable, neither adding to nor
+  extending them is permitted), and
+- `null_string` (which is one of the |null-anomalies|), for example:
+>vim9
+	vim9script
+	var ns: string = null_string
+	ns ..= 'Okay!'
+	echo ns		# Okay!
+<
+Using |:let| is not allowed in Vim9 script.  Trying to do so gives |E1226|.
+An existing variable is assigned to without any command.  The same applies to
+global, window, tab, buffer and Vim variables, because they are not really
+declared.  They can also be deleted with |:unlet|, for example:
+>vim9
+	vim9script
+	g:v = "global"
+	b:v = "buffer local"
+	t:v = "tab local"
+	w:v = "window local"
+	echo [g:v, b:v, w:v, t:v]
+	unlet g:v | unlet b:v | unlet w:v | unlet t:v
+	# Now none of the 'v' variables exist, so this echoes [0, 0, 0, 0]
+	echo [exists('g:v'), exists('b:v'), exists('w:v'), exists('t:v')]
+<
+Declaring any of the following with `:var` gives an error:
+- a global, buffer, tab, or window variable
+- an option, or
+- a register.
+Examples:
+							*E1016*  >vim9
+	vim9script
+	var t:err = 'err'  # E1016: Cannot declare a tab variable: t:err
+<
+							*E1052*  >vim9
+	vim9script
+	var &ts = 8  # E1052: Cannot declare an option: &ts = 8
+<
+							*E1066*   >vim9
+	vim9script
+	var @a = 'no'  # E1066: Cannot declare a register: @a = 'no'
+<
 							*E1178*
-`:lockvar` does not work on local variables.  Use `:const` and `:final`
-instead.
+Use `:const` or `:final` instead of `:lockvar`, which does not work on local
+variables.
+>vim9
+	vim9script
+	def F1178(): void
+	  var x: any
+	  lockvar x
+	enddef
+	F1178()  # E1178: Cannot lock or unlock a local variable
+<
+Even though `:lockvar` works with script-local variables, using `:const` or
+`:final` usually is better for those too, except where locked/unlocked
+toggling is wanted, which is shown in this example:
+>vim9
+	vim9script
+	var n: number = 8
+	lockvar n
+	try
+	  n = 9
+	catch
+	  echo v:exception	# E741: Value is locked: n
+	finally
+	  unlockvar n
+	endtry
+	n = 9
+	echo n			# 9
+<
+You cannot use `:va` to declare a variable - it must be `:var`.  Similarly,
+you cannot use `:cons` or `:fin` for constants - they must be written in full
+as `:const` or `:final`, which improves readability.  Attempting to use `:va`,
+`:cons`, or `:fina` gives |E1065|.
 
-The `exists()` and `exists_compiled()` functions do not work on local variables
-or arguments.
-				*E1006* *E1041* *E1167* *E1168* *E1213*
+							*vim9-exists()*
+The `exists()` (and `exists_compiled()`) function does not work on local
+arguments or variables declared in a compiled function.  It always returns 0.
+However, `exists()` works in both non-compiled Vim9 script and on variables
+tested from within a compiled function where the variable is declared
+already in a non-compiled scope.  To illustrate:
+>vim9
+	vim9script
+	var script: any
+	var MyCompiled: func = (arg: any): void => {
+	  var compiled: any
+	  echo exists('arg')		# 0 (compiled, local argument)
+	  echo exists('compiled')	# 0 (compiled, local variable)
+	  echo exists('script')		# 1 (compiled, script-local variable)
+	  }
+	MyCompiled(true)
+	echo exists('script')		# 1 (script-local scope and variable)
+<
+Also, `exists()` works in a Vim9 script for arguments and variables in a
+legacy function, including those declared with `:var`.  For example:
+>vim9
+	vim9script
+	function Legacy(arg = 'yes')
+	  let local = 'yes'
+	  vim9cmd var vlocal: string = 'yes'
+	  return [exists('a:arg'), exists('local'), exists('vlocal')]
+	endfunction
+	echo Legacy()  # [1, 1, 1]
+<							*vim9-no-shadowing*
 Variables, functions and function arguments cannot shadow previously defined
-or imported variables and functions in the same script file.
-Variables may shadow Ex commands, rename the variable if needed.
+or imported variables and functions in the same script file.  However,
+variables can shadow Ex commands, though rename the variable if necessary.
+The following are examples of errors given when trying to shadow:
 
-Global variables must be prefixed with "g:", also at the script level. >
+							*E1006*  >vim9
 	vim9script
-	var script_local = 'text'
-	g:global = 'value'
-	var Funcref = g:ThatFunction
-
-Global functions must be prefixed with "g:": >
+	def F1006(n: number): void
+	  var n: number = 10  # E1006: n is used as an argument
+	enddef
+	F1006(9)
+<							*E1041*  >vim9
 	vim9script
-	def g:GlobalFunc(): string
-	  return 'text'
+	def X(): void
 	enddef
-	echo g:GlobalFunc()
-The "g:" prefix is not needed for auto-load functions.
+	var X: number	# E1041: Redefining script item: "X"
+<
+							*E1167*  >vim9
+	vim9script
+	var ll: list<number> = [2, 3, 1]
+	def F1167(): void
+	  var x: number = 1
+	  echo ll->sort((x, y) => x - y)
+	enddef
+	F1167()  # E1167: Argument name shadows existing variable: x
+<
+							*E1168*  >vim9
+	vim9script
+	var ll: list<number> = [2, 3, 1]
+	var x: number
+	echo ll->sort((x, y) => x - y)	# E1168: Argument already declared in…
+<
+							*E1213*
+Attempting to redefine an imported script's name will give E1213 (see also
+|:import|).  For example, the following script will write a temporary file,
+which is then imported as "Imp" and its variable, "y", echoed.  Subsequently,
+E1213 is given because "Imp" is the {name} of the imported script:
+>vim9
+	vim9script
+	const TMP: string = tempname()
+	var lines: list<string> = ['vim9script', 'export var y = "Success!"']
+	lines->writefile(TMP)
+	import TMP as Imp
+	echo Imp.y		# Success!
+	var Imp: string		# E1213: Redefining imported item "Imp"
+<
+Global variables and global functions must be prefixed with "g:", including at
+the script level.  That is because a variable or function is script-local when
+it does not have a prefix in a Vim9 script-local scope.  An example (noting
+this will appear to do nothing until you source the subsequent script):
+>vim9
+	vim9script
+	var scriptvar: string = 'scriptvar is a script-local variable'
+	def Sfunc(): string
+	  return 'Sfunc() is a script-local function'
+	enddef
+	g:globalvar = 'g:globalvar is a global variable'
+	def g:Gfunc(): string
+	  return 'g:Gfunc() is a global function'
+	enddef
+<
+	Now source the following script.  The first two will echo the
+	"g:...is a global..." strings whereas the unprefixed variable and
+	function will give |E121| (undefined variable) and |E117| (unknown
+	function) respectively.
+>vim
+	echo g:globalvar
+	echo g:Gfunc()
+	echo scriptvar
+	echo Sfunc()
+<
+The "g:" prefix is not needed for |autoload| functions.
 
-					*vim9-function-defined-later*
-Although global functions can be called without the "g:" prefix, they must
-exist when compiled.  By adding the "g:" prefix the function can be defined
-later.  Example: >
-	def CallPluginFunc()
-	  if exists('g:loaded_plugin')
-	    g:PluginFunc()
+						*vim9-function-defined-later*
+In a Vim9 script, it is possible to call a global function before it exists
+provided it is called from within an `exists()` conditional.  For example:
+>vim9
+	vim9script
+	def Later(arg: number): void
+	  if exists('g:ExLater')
+	    g:ExLater(arg)
 	  endif
 	enddef
+	Later(1)
+	def g:ExLater(arg: number): void
+	  popup_notification($'Called g:ExLater() - {arg}', {})
+	enddef
+	Later(2)
+<
+When sourced initially, "Later(1)" does nothing because the `exists()`
+conditional skips calling "g:ExLater(arg)" (since it doesn't exist, yet).
+When sourced again, the "g:ExLater()" function exists, and both popups,
+"Called g:ExLater() - 1" and "Called g:ExLater() - 2", are generated.
 
-If you do it like this, you get an error at compile time that "PluginFunc"
-does not exist, even when "g:loaded_plugin" does not exist: >
-	def CallPluginFunc()
-	  if exists('g:loaded_plugin')
-	    PluginFunc()   # Error - function not found
+You could use `exists_compiled()` to avoid the error, however, then the
+function would not be called, even when it is defined later.  To illustrate,
+in the following script neither of the "LaterCompiled()" calls generate
+the popup when sourced initially but, when sourced a second time, two popups
+are generated:
+>vim9
+	vim9script
+	def LaterCompiled(arg: number): void
+	  if exists_compiled('g:ExCompLater')
+	    g:ExCompLater(arg)
 	  endif
 	enddef
-
-You can use exists_compiled() to avoid the error, but then the function would
-not be called, even when "g:loaded_plugin" is defined later: >
-	def CallPluginFunc()
-	  if exists_compiled('g:loaded_plugin')
-	    PluginFunc()   # Function may never be called
-	  endif
+	LaterCompiled(1)
+	def g:ExCompLater(arg: number): void
+	  popup_notification($'Called g:ExCompLater() with {arg}', {})
 	enddef
-
-Since `&opt = value` is now assigning a value to option "opt", ":&" cannot be
-used to repeat a `:substitute` command.
-							*vim9-unpack-ignore*
-For an unpack assignment the underscore can be used to ignore a list item,
-similar to how a function argument can be ignored: >
-	[a, _, c] = theList
-To ignore any remaining items: >
-	[a, b; _] = longList
-<							*E1163* *E1080*
-Declaring more than one variable at a time, using the unpack notation, is
-possible.  Each variable can have a type or infer it from the value: >
-	var [v1: number, v2] = GetValues()
-Use this only when there is a list with values, declaring one variable per
-line is much easier to read and change later.
+	LaterCompiled(2)
+<
+Since `&opt = value` is now assigning a value to option "opt", "&" by itself
+cannot be used to repeat a `:substitute` command.  A ":" needs to precede the
+"&" to distinguish it as the repeat command.  The following script
+demonstrates this.  It creates a modifiable buffer in a new split, appends
+"princess", then replaces the "s" twice, resulting in "prince":
+>vim9
+	vim9script
+	:sp | enew
+	append(0, 'princess')
+	:1substitute/s//
+	:&
+<
+Note: If you did use "&" instead of ":&" in this script it would give |E112|.
+>
+<							*vim9-unpack-ignore*
+For unpack assignment (destructuring), the underscore can be used to ignore
+a list item, similar to how a function argument can be ignored:
+>vim9
+	vim9script
+	var theList: list<string> = ['A', 'M', 'Z']
+	var [first, _, last] = theList	# ignore the second item
+	echo $"{first} to {last}"
+<
+To ignore any remaining items, use "; _":
+>vim9
+	vim9script
+	def GetNameCountry(): list<string>
+	  return ['Kamoga', 'Kibaale', 'Uganda', '9', 'M']
+	enddef
+	# Unpack, ignoring second and all items after the third:
+	var [name, _, country; _] = GetNameCountry()
+	echo $"{name} lives in {country}"
+<
+Aside from declaring more than one variable at a time using unpack notation,
+each variable can either have a declared type or infer it from its value:
+>vim9
+	vim9script
+	var one: tuple<...list<any>> = (1, 'I', 'one', 'tahi', '١', '๑')
+	var [d: number, _, _, m; _] = one
+	echo $'Digit {d} is "{m}" in Māori.'
+<
+This approach should be used only where there is a list with values.
+Declaring one variable per line usually is easier to read and change later.
 
 The type of a variable that does not have a declared type is the type of the
 value it gets.  The variable after the ";" gets the remaining items: for a
 list this is a list of the same member type, for a tuple this is a tuple of
-the types of the remaining items: >
-	var [v1; v2] = [1, 2, 3]          # v2 has type list<number>
-	var [v3; v4] = (1, 'a', true)     # v4 has type tuple<string, bool>
+the types of the remaining items:
+>vim9
+	vim9script
+	var [v1; v2] = [8, 9, 10]	  # v2 has type list<number>
+	var [v3; v4] = (null, 'a', true)  # v4 has type tuple<string, bool>
+	echo "    Variable  has type\n    --------  --------"
+	echo $"{v1->printf('%12S')}  {v1->typename()}"
+	echo $"{v2->printf('%12S')}  {v2->typename()}"
+	echo $"{v3->printf('%12S')}  {v3->typename()}"
+	echo $"{v4->printf('%12S')}  {v4->typename()}"
+<
 When the value has type "any" the item types are not known and every variable
 gets type "any".
 
+							*E1163*
+When unpacking, type mismatches give E1163.  For example, the builtin function
+`getpos()` returns four numbers (bufnum, lnum, col, off) so "col" in this
+script is a type mismatch:
+>vim9
+	vim9script
+	def F1163(): void
+	  var lin: number
+	  var col: bool
+	  [lin, col] = getpos('w0')[1 : 2]  # E1163: Variable 2: type mismatc…
+	enddef
+	F1163()
+<							*E1080*
+And E1080, which is the function-scope equivalent of |E452| at the script
+level, is given in a `:def` function if ";" is used more than once:
+>vim9
+	vim9script
+	def F1080(): void
+	  var [b; l; c] = getpos('w0')[0 : 2]	# E1080: Invalid assignment
+	enddef
+	F1080()
+<
 
 Constants ~
-						*vim9-const* *vim9-final*
+							*vim9-const* *vim9-final*
 How constants work varies between languages.  Some consider a variable that
 can't be assigned another value a constant.  JavaScript is an example.  Others
 also make the value immutable, thus when a constant uses a list, the list
-cannot be changed.  In Vim9 we can use both.
+cannot be changed.  Both can be used in Vim9 script.
+
 							*E1021* *E1307*
 `:const` is used for making both the variable and the value a constant.  Use
 this for composite structures that you want to make sure will not be modified.
-Example: >
-	const myList = [1, 2]
-	myList = [3, 4]		# Error!
-	myList[0] = 9		# Error!
-	myList->add(3)		# Error!
-<							*:final* *E1125*
-`:final` is used for making only the variable a constant, the value can be
-changed.  This is well known from Java.  Example: >
-	final myList = [1, 2]
-	myList = [3, 4]		# Error!
-	myList[0] = 9		# OK
-	myList->add(3)		# OK
+The following script shows:
+- That a constant must have a value, otherwise E1021 is given, and
+- Attempts to change a constant fail, with E1307 given.
+>vim9
+	vim9script
+	try
+	  const MISSING_VAL: any
+	catch
+	  echo v:exception # E1021: Const requires a value
+	endtry
+	def F1307(): void
+	  const L: list<number> = [7, 8]
+	  L->add(9) # E1307: Argument 1: Trying to modify a const list<number>
+	enddef
+	F1307()
+<
+Errors |E46| and |E741| may also be given if you try to modify a constant in
+the script-local scope.
 
-It is common to write constants as ALL_CAPS, but you don't have to.
+Note: It is common to write constants in ALL_CAPS, as has been done in the
+examples in this help file, though you do not have to.
 
-The constant only applies to the value itself, not what it refers to. >
-	final females = ["Mary"]
-	const NAMES = [["John", "Peter"], females]
-	NAMES[0] = ["Jack"]     # Error!
-	NAMES[0][0] = "Jack"    # Error!
-	NAMES[1] = ["Emma"]     # Error!
-	NAMES[1][0] = "Emma"    # OK, now females[0] == "Emma"
-
+							*:final* *E1125*
+`:final` is used for making only the variable a constant, but with the
+variable's values mutable.  This is well known from Java.  This example shows
+how a variable declared with final can have its values changed and concludes
+with another variable declared with final giving E1125 because it has no
+value:
+>vim9
+	vim9script
+	final ln: list<number> = [7]
+	ln[1] = 9		# Adds an item to the list (okay with :final)
+	ln->add(10)		# Alternative way to add to the list
+	ln->extend([11, 12])	# Extending the list with a list
+	ln[0] = 8		# Changing the values is fine too
+	echo ln			# [8, 9, 10, 11, 12]
+	final f1125: list<any>	# E1125: Final requires a value
+<
+The constant only applies to the value itself, not to what it refers to.
+An example, showing that all items are constant/locked except for those within
+the "females" list:
+>vim9
+	vim9script
+	final females: list<string> = ['Martha']
+	const NAMES: list<list<string>> = [['Peter', 'Paul'], females]
+	NAMES[1][0] = 'Mary'
+	echo NAMES->flattennew()	# ['Peter', 'Paul', 'Mary']
+	NAMES[1] = ["Mary"]		# E741: Value is locked
+<
 
 Omitting :call and :eval ~
-							*E1190*
-Functions can be called without `:call`: >
-	writefile(lines, 'file')
-Using `:call` is still possible, but this is discouraged.
-
-A method call without `eval` is possible, so long as the start is an
-identifier or can't be an Ex command.  For a function either "(" or "->" must
-be following, without a line break.  Examples: >
-	myList->add(123)
-	g:myList->add(123)
-	[1, 2, 3]->Process()
-	{a: 1, b: 2}->Process()
-	"foobar"->Process()
-	("foobar")->Process()
-	'foobar'->Process()
-	('foobar')->Process()
-
+							*vim9-omitting-:call*
+Functions can be called without `:call`.  Using `:call`, as the following
+example shows, is allowed (though it's discouraged).
+>vim9
+	vim9script
+	popup_create("Call functions without using :call", {time: 3000})
+	call popup_create(":call works, but isn't needed", {time: 6000})
+<
+							*vim9-omitting-:eval*
+Method calls can be made without `:eval` provided the evaluated expression is
+unequivocally an expression.  Each `->` must be followed by a function name,
+and without a line break, otherwise |E260| is given.  Likewise, the "(" of a
+function call cannot have a line break before it, otherwise |E107| is given.
+Consider the following script-local methods where in legacy script `:eval`
+would be mandatory.  In Vim9 script, it is unnecessary:
+>vim9
+	vim9script
+	def Pop(arg: any): void
+	  arg->popup_notification({time: 7000})
+	enddef
+	b:list = []
+	b:list->add('1')->add('2')->Pop()	# 1 and 2 (on separate lines)
+	{a: 1, b: 2}->string()->Pop()		# {'a': 1, 'b': 2}
+	(8, 9)->typename()->Pop()		# tuple<number, number>
+	'single quoted ''string'''->Pop()	# single quoted 'string'
+	"double quoted \"string\""->Pop()	# double quoted "string"
+	(85 >> 1 == 42)->string()->Pop()	# true
+	# The following gives E260: Missing name after ->
+	b:list->add('3')->
+	Pop()
+<
 In the rare case there is ambiguity between a function name and an Ex command,
-prepend ":" to make clear you want to use the Ex command.  For example, there
-is both the `:substitute` command and the `substitute()` function.  When the
-line starts with `substitute(` this will use the function. Prepend a colon to
-use the command instead: >
-	:substitute(pattern (replacement (
-
-If the expression starts with "!" this is interpreted as a shell command, not
-negation of a condition.  Thus this is a shell command: >
-	!shellCommand->something
-Put the expression in parentheses to use the "!" for negation: >
-	(!expression)->Method()
-
+prepend ":" to ensure the Ex command is executed.  For example, there is the
+`:substitute` command and `substitute()` function, the `:glob` shortened
+command and `glob()` function, and so on.  Consequently, when the ":" is not
+present the "(" is inferred by Vim to be the left parenthesis before a
+function's arguments, not a |pattern-delimiter|.  So, prepending a colon will
+ensure the command is executed with "(" as the delimiter.  For example:
+>vim9
+	vim9script
+	# Synonymous with ":glob/delimiter)" (and prints these lines)
+	:glob(delimiter)
+	# Literally calls the "glob()" function (and gives E121/E116)
+	glob(delimiter)
+<
+If an expression starts with "!" it is interpreted as a shell command, not
+negation of a condition.  So, this is interpreted as a shell command:
+>vim9
+	vim9cmd !(900 == v:version)
+<
+Put the expression in parentheses to use the "!" for negation:
+>vim9
+	vim9cmd (!(900 == v:version))->string()->popup_notification({})
+<
 Note that while variables need to be defined before they can be used,
-functions can be called before being defined.  This is required to allow
-for cyclic dependencies between functions.  It is slightly less efficient,
-since the function has to be looked up by name.  And a typo in the function
-name will only be found when the function is called.
+functions may be called before being defined - |vim9-function-defined-later|.
+This is required to allow for cyclic dependencies between functions.  It is
+slightly less efficient, since the function has to be looked up by name.
+Also, a typographical error in the function name will only be found when the
+function is called.
 
 
 Omitting function() ~
 
 A user defined function can be used as a function reference in an expression
-without `function()`. The argument types and return type will then be checked.
-The function must already have been defined. >
+without `function()`, though the function must already be defined.  Argument
+types and the return type will then be checked.  An example, demonstrating
+that `function()` is optional:
+>vim9
+	vim9script
+	def IsASCII(c: string): string
+	  return $"{c} is{char2nr(c) > 127 ? ' not' : ''} an ASCII character"
+	enddef
+	const ASCII: func(string): string = IsASCII
+	const F_ASCII: func(string): string = function(IsASCII)
+	popup_notification(['K'->ASCII(), '§'->F_ASCII()], {time: 7000})
+<
+In the script-local scope, as above, both direct assignment and using
+`function()` require a function to be defined already when used in a function
+reference.
 
-	var Funcref = MyFunction
-
-When using `function()` the resulting type is "func", a function with any
-number of arguments and any return type (including void).  The function can be
-defined later if the argument is in quotes.
-
+Inside a `:def` function, both direct assignment and `function()` are allowed
+as forward references because they are evaluated at runtime.  For example:
+>vim9
+	vim9script
+	# IsASCII forward reference
+	def ASCII(arg: string): string
+	  var Forward_IsASCII: func(string): string = IsASCII
+	  return Forward_IsASCII(arg)
+	enddef
+	# function(IsASCII) forward reference
+	def Func_ASCII(arg: string): string
+	  var Forward_funcIsASCII: func(string): string = function(IsASCII)
+	  return Forward_funcIsASCII(arg)
+	enddef
+	# The forward-referenced function from the two functions above
+	def IsASCII(c: string): string
+	   return $"{c} is{char2nr(c) > 127 ? ' not' : ''} an ASCII character"
+	enddef
+	popup_notification(['K'->ASCII(), '§'->Func_ASCII()], {time: 7000})
+<
 
 Lambda using => instead of -> ~
 							*vim9-lambda*
-In legacy script there can be confusion between using "->" for a method call
-and for a lambda.  Also, when a "{" is found the parser needs to figure out if
-it is the start of a lambda or a dictionary, which is now more complicated
-because of the use of argument types.
+In legacy Vim script there can be confusion between using "->" for method
+calling/chaining and for a |lambda|.  Also, when a "{" is found the parser
+needs to figure out whether it is the start of a lambda or a dictionary, which
+is more complicated in Vim9 script because of the use of argument types.
 
-To avoid these problems Vim9 script uses a different syntax for a lambda,
-which is similar to JavaScript: >
-	var Lambda = (arg) => expression
-	var Lambda = (arg): type => expression
-<							*E1157*
+To avoid these problems, Vim9 script uses a different syntax for a lambda,
+similar to JavaScript, which in its simplest form is:
+>
+	(args) => expr1
+<
+This syntax produces a func type (|vim9-func-type|) with args of "any" type,
+and return type "any".  Examples:
+>vim9
+	vim9script
+	# Vim9 lambda as expr2 of filter()
+	echo [8, -2, 9]->filter((_, val) => val > 0)	# [8, 9]
+	# Vim9 lambda as a func type
+	var Increment = (n) => n + 1
+	echo Increment(8)		# 9
+	echo Increment->typename()	# func(any): any
+<
+A Vim9 script lambda can have its arguments and/or its return value strictly
+typed.  For example, using the filtering example, these all echo [8, 9]:
+>vim9
+	vim9script
+	echo [8, -2, 9]->filter((_, val: number) => val > 0)
+	echo [8, -2, 9]->filter((_, val): bool => val > 0)
+	echo [8, -2, 9]->filter((_, val: number): bool => val > 0)
+<
+When used as a func type in a |Funcref| variable, fourteen valid forms are
+possible.  They are demonstrated in this example:
+>vim9
+	vim9script
+	const I01 = (n) => n + 1
+	const I02 = (n): number => n + 1
+	const I03 = (n: number) => n + 1
+	const I04 = (n: number): number => n + 1
+	const I05: func = (n) => n + 1
+	const I06: func = (n: number) => n + 1
+	const I07: func = (n): number => n + 1
+	const I08: func = (n: number): number => n + 1
+	const I09: func: number = (n: number) => n + 1
+	const I10: func: number = (n): number => n + 1
+	const I11: func: number = (n: number): number => n + 1
+	const I12: func(number): number = (n): number => n + 1
+	const I13: func(number): number = (n: number) => n + 1
+	const I14: func(number): number = (n: number): number => n + 1
+	echo 0->I01()->I02()->I03()->I04()->I05()->I06()->I07()->I08()
+	  ->I09()->I10()->I11()->I12()->I13()->I14()	# 14
+<
+	Notes:
+	1. Return types use the most specific type from either the variable's
+	declaration or the lambda's return type (i.e., if ": {type}" appears
+	in either, that will be the lambda's return type).  Further, the
+	variable's declaration cannot mismatch - it must be either the
+	lambda's explicit or inferred return type, be "any", or be omitted.
+	If the lambda's return type is not declared, it may be inferred from
+	the lambda's expression (e.g., I03 inferred as "number").
+	2. Arguments' types are determined from the lambda's parameter
+	declaration (not from the variable's type declaration, if specified).
+	So, the `typename()` of I02, I07, I10, and I12 is "func(any): number".
+	Those forms should be avoided because, although they appear to accept
+	"any" type arguments they don't (and consequently type mismatches can
+	easily occur).
+	3. The following are examples of invalid lambdas giving |E1012|.
+	They are invalid because either (a and b) the variable declaration is
+	for a number return type, but the lambda's return type is "any", or
+	(c) because the form "func({type}) =" is always invalid.
+>vim9
+	vim9cmd var a: func: number = (n) => n + 1
+	# E1012: ...; expected func(...): number but got func(any): any
+
+	vim9cmd var b: func(number): number = (n) => n + 1
+	# E1012: ...; expected func(number): number but got func(any): any
+
+	vim9cmd var c: func(number) = (n) => n + 1
+	# E1012: ...; expected func(number) but got func(any): any
+<
+The "Increment" lambda, shown in the first example, with `func` declared and
+the lambda's argument type and return type specified (like I08 in the
+example above), is:
+>vim9
+	vim9script
+	var Increment: func = (n: number): number => n + 1
+	echo Increment(0)		# 1
+	echo Increment->typename()	# func(number): number
+<
+Note: Specifying the func type explicitly may appear redundant, though it does
+make it clearer up front that the variable is a func and, for reasons outlined
+above, specifying a lambda's return type and arguments' types is prudent.  It
+is also more performant at runtime because "any" type checking is not required
+(which can be verified using |:disassemble|).  Many of the examples in this
+help file use that form.
+
+							*E1157*
+Although specifying a lambda's return type is not mandatory, including the
+colon means the return type must be specified:
+>vim9
+	vim9script
+	var Minimal = (n) => n / 2
+	var Missing = (n): => n / 2  # E1157: Missing return type
+<
 No line break is allowed in the arguments of a lambda up to and including the
 "=>" (so that Vim can tell the difference between an expression in parentheses
-and lambda arguments).  This is OK: >
-	filter(list, (k, v) =>
-			v > 0)
-This does not work: >
-	filter(list, (k, v)
-			=> v > 0)
-This also does not work: >
-	filter(list, (k,
-			v) => v > 0)
-But you can use a backslash to concatenate the lines before parsing: >
-	filter(list, (k,
-		\	v)
-		\	=> v > 0)
-<					*vim9-lambda-arguments* *E1172*
-In legacy script a lambda could be called with any number of extra arguments,
-there was no way to warn for not using them.  In Vim9 script the number of
-arguments must match.  If you do want to accept any arguments, or any further
-arguments, use "..._", which makes the function accept
-|vim9-variable-arguments|.  Example: >
-	var Callback = (..._) => 'anything'
-	echo Callback(1, 2, 3)  # displays "anything"
+and lambda arguments).  This is okay:
+>vim9
+	vim9script
+	var list: list<number> = [1, -2, 2, -3, -1, 3]
+	filter(list, (_, val): bool =>
+	  val > 0)
+	echowindow list
+<
+This would not work (|E121| and |E116|): >
+	filter(list, (ind, val): bool
+			=> val > 0)
+And this would not work (|E121| and |E116|): >
+	filter(list, (ind,
+			val): bool => val > 0)
+Nor would this (|E1157|): >
+	filter(list, (ind, val):
+		bool => val > 0)
 
-<						*inline-function* *E1171*
-Additionally, a lambda can contain statements in {}: >
-	var Lambda = (arg) => {
-		g:was_called = 'yes'
-		return expression
+However, you can use a backslash to concatenate the lines before parsing.
+This script also shows the lambda's "val" parameter typed:
+>vim9
+	vim9script
+	var list: list<number> = [1, -2, 2, -3, -1, 3]
+	filter(list,
+	      \ (_,
+	      \ val: number):
+	      \ bool
+	      \ => val > 0)
+	echowindow list
+<							*E1172*
+Default values are not allowed in a lambda:
+>vim9
+	vim9script
+	var F_1172 = (n = 1) => n + 1	# E1172: Cannot use default values in…
+<
+							*vim9-lambda-arguments*
+In legacy Vim script, a lambda could be called with any number of extra
+arguments and there was no way to warn for not using them.  In Vim9 script the
+number of arguments must match.  If you want to accept either any arguments or
+any additional arguments, use "..._", which enables |vim9-variable-arguments|.
+For example:
+>vim9
+	vim9script
+	b:fruits = ['apple', 'apricot', 'avocado']
+	def Complete(..._): list<string>
+	  const K: string = getcmdline()[: getcmdpos() - 2]->matchstr('\S*$')
+	  return b:fruits->filter((_, val) => val =~ K)
+	enddef
+	var fruit = input('> ', '', $"customlist,{Complete->string()}")
+	# (e.g., entering p<Tab> will present apple and apricot)
+	echowindow $"Your choice was {fruit}"
+<
+	Note: Without "..._", the function will fail.  The {completion}
+	argument of |input()| has three list items (ArgLead, CmdLine, and
+	CursorPos).  None are required to build the output list, so it is
+	preferable to use "..._", though it works with "...l: list<any>" too).
+	See |:command-completion-custom|.
+
+							*inline-function*
+A |lambda| can contain statements in a {} block.  The following example
+reports on three "local to buffer" options:
+>vim9
+	vim9script
+	var Get_bv: func = (...args: list<string>): dict<any> => {
+	  var opts: dict<any>
+	  for arg in args
+	    opts[arg] = getbufvar(bufname(), $'&{arg}')
+	  endfor
+	  return opts
+	}
+	echowindow Get_bv('modifiable', 'tabstop', 'textwidth')
+<
+This is also useful for a |Channel|, |Job|, or |timer|.  This is a timer example:
+>vim9
+	vim9script
+	echowindow "Handler calling..."
+	var count: number
+	var timer: number = timer_start(700, (_): void => {
+	    count += 1
+	    echowindow $'Handler called {count}'
+	  }, {repeat: 3})
+<
+	Note: In this example, |timer_start()| requires {callback}, the
+	function to call, as its second parameter.  When the timer triggers,
+	Vim calls the callback function, passing the timer ID to it as a
+	mandatory argument.  The "(_)" syntax in the lambda enables passing
+	that ID without needing explicitly either to name it or to reference
+	it - see |vim9-ignored-argument|.
+
+The ending "}" of the block must be at the start of a line, excluding
+leading space or tab characters.  It can be followed by other characters too.
+No command can follow the "{", though a comment can be used there.
+These points are shown in this example:
+>vim9
+	vim9script
+	var numbers: list<number> = [1, 2, 3, 4, 5]
+	var Square: func = (ln: list<number>): list<number> => ln
+	  ->mapnew((_, val) => {  # Comment is okay after the { of the block
+	    return val * val
+	  })  # The } of the block starting a new line (excl. white space)
+	echowindow Square(numbers)
+<							*E1171*
+Omitting the closing "}" of an inline-function's code block gives E1171:
+>vim9
+	vim9script
+	var F_1171 = (): bool => {
+	  return false  # E1171: missing } after inline function
+<
+							*command-block*
+A block can also be used for defining a user command.  Inside the block, Vim9
+script syntax applies.  This example uses a heredoc (see |:let-heredoc|):
+>vim9
+	vim9script
+	command MyHeredoc {
+	  var someVar: list<string> =<< trim eval END
+	    Life, the universe, and everything
+	    {6 * 7}
+	  END
+	  echowindow someVar
+	}
+	MyHeredoc
+<
+	Note: "eval" is required after the "=<<" so that "{6 * 7}" is
+	evaluated and not treated as a |literal-string|.  This is different to
+	|vim9-omitting-:eval|, even though the command block is Vim9 script.
+
+If the statements include a dictionary, the dictionary's closing bracket must
+not be written at the start of a line, otherwise it will be parsed as the end
+of the block.  So, this does not work (the last line gives |E1128|), because
+the penultimate "}" is recognized as the end of the block:
+>vim9
+	command FailingNewCommand {
+	  g:mydict = {
+	    'k1': 'v1',
+	    'k2': 'v2'
 	    }
-This can be useful for a timer, for example: >
-	var count = 0
-	var timer = timer_start(500, (_) => {
-		 count += 1
-		 echom 'Handler called ' .. count
-	     }, {repeat: 3})
-
-The ending "}" must be at the start of a line.  It can be followed by other
-characters, e.g.: >
-	var d = mapnew(dict, (k, v): string => {
-	     return 'value'
-	   })
-No command can follow the "{", only a comment can be used there.
-
-Since the block ends at the first line starting with "}", the closing "}" of a
-dictionary inside the block must not be at the start of a line.  See
-|command-block| for an example and the workaround.
-
-						*command-block* *E1026*
-The block can also be used for defining a user command.  Inside the block Vim9
-syntax will be used.
-
-This is an example of using here-docs: >
-    com SomeCommand {
-        g:someVar =<< trim eval END
-          ccc
-          ddd
-        END
-      }
-
-If the statements include a dictionary, its closing bracket must not be
-written at the start of a line.  Otherwise, it would be parsed as the end of
-the block.  This does not work: >
-	command NewCommand {
-	     g:mydict = {
-	       'key': 'value',
-	       }  # ERROR: will be recognized as the end of the block
-	   }
-Put the '}' after the last item to avoid this: >
-	command NewCommand {
-	     g:mydict = {
-	       'key': 'value' }
-	   }
-
+	  }
+<
+To avoid this, place the dictionary's "}" after the last item:
+>vim9
+	vim9script
+	command WorkingNewCommand {
+	  g:mydict = {
+	    'k1': 'v1',
+	    'k2': 'v2' }
+	  g:mydict->keys()->popup_notification({time: 4000})
+	  }
+	WorkingNewCommand
+<
 Rationale: The "}" cannot be after a command because it would require parsing
-the commands to find it.  For consistency with that no command can follow the
-"{".  Unfortunately this means using "() => {  command  }" does not work, line
-breaks are always required.
-
+the commands to find it.  For consistency with that, no command can follow the
+"{".  Consequently, this means using "() => {  command  }" does not work and,
+similarly, a line break (with optional leading spaces/tabs) is always required
+before the "}" ending the command block too.
+							*E1026*
+Omitting the closing "}" of a code block gives E1026 ("Missing }"):
+>vim9
+	vim9script
+	command C1026 {
+<
 							*vim9-curly*
-To avoid the "{" of a dictionary literal to be recognized as a statement block
-wrap it in parentheses: >
-	var Lambda = (arg) => ({key: 42})
-
-Also when confused with the start of a command block: >
-	({
-	    key: value
-	 })->method()
+To avoid the "{" of a dictionary being recognized as a statement block, wrap
+the dictionary in parentheses:
+>vim9
+	vim9script
+	var AgeDict: func = (arg: number): dict<number> => ({'age': arg})
+	echo 42->AgeDict()
+<
+Similarly, wrap a dictionary in parentheses to avoid confusion with the start
+of a command block.  For example, if a dictionary's opening curly bracket is
+followed by a newline, wrap the dictionary in parentheses to avoid it being
+interpreted as a command block:
+>vim9
+	vim9script
+	command -nargs=+ PopDict {
+	  var [key, val] = split(<q-args>)
+	  ({
+	    [key]: val})
+	    ->string()->popup_notification({time: 5000})
+	}
+	PopDict one tahi
+<
+	Note: The dictionary's "}" cannot be on a separate line, even when
+	within parentheses.  Also, the dictionary's key must be in square
+	brackets to be evaluated as an expression - see |vim9-literal-dict|.
 
 
 Automatic line continuation ~
-					*vim9-line-continuation* *E1097*
-In many cases it is obvious that an expression continues on the next line.  In
-those cases there is no need to prefix the line with a backslash (see
-|line-continuation|).  For example, when a list spans multiple lines: >
-	var mylist = [
-		'one',
-		'two',
-		]
-And when a dict spans multiple lines: >
-	var mydict = {
-		one: 1,
-		two: 2,
-		}
-With a function call: >
-	var result = Func(
-			arg1,
-			arg2
-			)
-
-For binary operators in expressions not in [], {} or () a line break is
-possible just before or after the operator.  For example: >
-	var text = lead
-		   .. middle
-		   .. end
-	var total = start +
-		    end -
-		    correction
-	var result = positive
-			? PosFunc(arg)
-			: NegFunc(arg)
-
-For a method call using "->" and a member using a dot, a line break is allowed
-before it: >
-	var result = GetBuilder()
-			->BuilderSetWidth(333)
-			->BuilderSetHeight(777)
-			->BuilderBuild()
-	var result = MyDict
-			.member
-
-For commands that have an argument that is a list of commands, the | character
-at the start of the line indicates line continuation: >
-	autocmd BufNewFile *.match if condition
-		|   echo 'match'
-		| endif
-
-Note that this means that in heredoc the first line cannot start with a bar: >
-	var lines =<< trim END
-	   | this doesn't work
-	END
-Either use an empty line at the start or do not use heredoc.  Or temporarily
-add the "C" flag to 'cpoptions': >
-	set cpo+=C
-	var lines =<< trim END
-	   | this works
-	END
-	set cpo-=C
-If the heredoc is inside a function 'cpoptions' must be set before :def and
-restored after the :enddef.
-
-In places where line continuation with a backslash is still needed, such as
-splitting up a long Ex command, comments can start with '#\ ': >
-	syn region Text
-	      \ start='foo'
-	      #\ comment
-	      \ end='bar'
-Like with legacy script '"\ ' is used.  This is also needed when line
-continuation is used without a backslash and a line starts with a bar: >
-	au CursorHold * echom 'BEFORE bar'
-	      #\ some comment
-	      | echom 'AFTER bar'
+							*vim9-line-continuation*
+In many cases it is obvious that an expression continues on the next line.
+In such cases, there is no need in Vim9 script to prefix the line with a
+backslash, which is required in legacy Vim script (see |line-continuation|)
+when a list, dictionary, tuple, or function call spans multiple lines.  The
+following example illustrates all four:
+>vim9
+	vim9script
+	var mylist: list<number> = [
+	  1,
+	  2,
+	]
+	var mydict: dict<number> = {
+	  1: 1,
+	  2: 2,
+	}
+	var mytuple: tuple<number, number> = (
+	  1,
+	  2,
+	)
+	var MyDef: func = (...l: list<any>): list<any> => l
+	echo MyDef(mylist,
+	  mydict,
+	  mytuple)  # [[1, 2], {'1': 1, '2': 2}, (1, 2)]
 <
-							*E1050*
-To make it possible for the operator at the start of the line to be
-recognized, it is required to put a colon before a range.  This example will
-add "start" and "print": >
-	var result = start
+For binary and ternary operators in expressions not within in a list,
+dictionary, or tuple, a line break is possible either before or after the
+operator.  For example:
+>vim9
+	vim9script
+	var text: string = 'V'
+	  .. 'i'
+	  .. 'm'
+	var version: number = 9 *
+	  100
+	  + 2
+	var latest: string = v:version == 902
+	  ? 'current' :
+	  'out-of-date'
+	echo (text, version, latest)  # ('Vim', 902, 'current')
+<
+For a method call using "->", a line break is allowed before it.  Likewise,
+for a member using a dot.  Both are illustrated in this interactive example,
+which prompts for a min:sec pace and returns the total seconds and minutes and
+seconds for a 5km run/walk:
+>vim9
+	vim9script
+	def Run5(ms: string): dict<any>
+	  const M: number = ms
+	    ->split('[:.]')[0]
+	    ->str2nr()
+	  const S: number = ms
+	    ->split('[:.]')[1]
+	    ->str2nr()
+	  var secs: number = (M * 5 * 60) + S * 5
+	  var m_s: string = (secs / 60) .. ':' .. printf('%02d', (secs % 60))
+	  return {seconds: secs, minutes_seconds: m_s}
+	enddef
+	var result: dict<any> = input('Pace of min:sec / km: ')
+	  ->Run5()
+	echo ' is a 5km completed in (seconds, mins:secs):'
+	echo (result
+	  .seconds,
+	  result
+	  .minutes_seconds)
+<
+For commands that have an argument that is a list of commands, a | character
+(see |:bar|) at the start of the line indicates line continuation:
+>vim9
+	vim9script
+	command! ShowFileLine if !empty(bufname())
+	  | echo $'File: {bufname()}'
+	  | echo $'Line: {line(".")}'
+	  | endif
+	ShowFileLine
+<
+	Note: Consequently, a heredoc's first line usually cannot start with
+	a bar:
+>vim9
+	vim9script
+	# E488: Trailing characters:  | this doesn't work
+	var lines =<< trim END
+	  | this doesn't work
+	END
+<
+	Either use an empty line at the start or do not use heredoc.
+	Alternatively, ensure the "C" flag is temporarily in 'cpoptions':
+>vim9
+	vim9script
+	const CPO: string = &cpoptions
+	execute CPO->match('C') == -1 ? 'set cpoptions+=C' : ''
+	var lines =<< trim END
+	  | this works
+	END
+	echo lines[0]
+	&cpoptions = $'{CPO}'
+<
+	If the heredoc is inside a function 'cpoptions' must be set before
+	`:def` and restored after the `:enddef`.
+
+							*E1097*
+A continued, incomplete line will give E1097:
+>vim9
+	vim9script
+	def F1097(): void
+	  var x =
+	enddef
+	defcompile	# E1097: Line incomplete
+<
+In places where line continuation with a backslash is still needed, such as
+splitting up a long Ex command, comments can start with '#\ ' (like '"\ ' in
+legacy Vim script):
+>vim9
+	vim9script
+	syntax region IncSearch
+	      \ oneline
+	     #\ Sourcing this script applies the IncSearch highlight group
+	     #\ to the text "Ex command" in this buffer.
+	      \ start='Ex '
+	      \ end='command'
+<
+This is also needed when line continuation is used without a backslash and a
+line starts with a bar.  For example:
+>vim9
+	vim9script
+	command! BufferWords echo $'Buffer name: {bufname()}'
+	      #\ Word count of the buffer
+	      | echo $'Word count: {wordcount().words}'
+	BufferWords
+<							*E1050*
+To make it possible for an operator at the start of a line to be recognized, a
+colon must come before a range.  This example will add "start" and "print"
+(Note this involves shadowing the `:print` command):
+>vim9
+	vim9script
+	var print: number = 1
+	# The following two lines are the same as declaring on one line
+	# var start: number = 1 + print
+	var start: number = 1
 	+ print
-Like this: >
-	var result = start + print
-
-This will assign "start" and print a line: >
-	var result = start
+	echo start
+<
+Whereas, this will assign "start" and print the second line of the script:
+>vim9
+	vim9script
+	var start: number = 1
 	:+ print
+<
+And omitting a colon in this script gives E1050 because, unlike the initial
+example, "print" is not a variable:
+>vim9
+	vim9script
+	var start: number
+	+ print
+	# E1050: Colon required before a range: + print
+<
+After the range, an Ex command must follow.  Without the colon you can call a
+function without `:call`, but after a range you do need it:
+>vim9
+	vim9script
+	const PRINT_W_DIVIDERS: func = (): void => {
+	  echohl Statement
+	  :print
+	  echo "_"->repeat(70)
+	  echohl None
+	}
+	# With no range, call the function without `call`; when sourced, this
+	# will print only the line with 'vim9script' preceded by a divider
+	PRINT_W_DIVIDERS()
+	# With the range, :call is required; when sourced, this prints lines
+	# from 'const...' to the closing '}', separated by dividers
+	:+,+6call PRINT_W_DIVIDERS()
+<
+However, the colon is not required for the |+cmd| argument.  For example:
+>vim9
+	vim9script
+	# Opens a new split of this help buffer and applies IncSearch
+	# highlight group to instances of 'MATCHME'.
+	split +/MATCHME
+	match IncSearch _MATCHME_
+<
+It is also possible to split a function's arguments over multiple lines.
+For example:
+>vim9
+	vim9script
+	def SubBlankHyphen(
+	    text: string,
+	    separator: string = ' '
+	): string
+	  return text->substitute('[[:blank:]]', separator, 'g')
+	enddef
+	echo 'A multiple lines	of arguments	example'->SubBlankHyphen()
+<
+Since a continuation line cannot be easily recognized, parsing of commands is
+stricter.  In legacy Vim script, an error could result in unintended
+interpretation of continuation lines.  For example, consider the following,
+working script:
+>vim9
+	vim9script
+	def Msg(..._): void
+	  popup_notification("Job finished successfully!", {time: 1500})
+	enddef
+	var myjob = job_start([&shell, &shellcmdflag, 'date'], {
+	  exit_cb: Msg})
+<
+However, if there is an error in the command, like in the script below, Vim9
+script will give errors.
+>vim9
+	vim9script
+	var myjob = job_start([&shell, INVALID_LIST_ITEM_HERE, 'date'], {
+	  exit_cb: Msg})
+	# Gives E121, E116 and the script stops executing
+<
+The equivalent legacy Vim script, below, fails on the `:let` command.  However,
+then it continues and interprets "exit" as the `:exit` command with argument
+"_cb: Msg})", causing Vim to save changes to a file literally with that name
+and exits: >
+>
+	" *** DO NOT SOURCE this legacy Vim script ***
+	" If sourced, this will write the file '_cb: Msg})' and exit!
+	"
+	let myjob = job_start([&shell, INVALID_ITEM_HERE, 'date'], {
+	  exit_cb: Msg})
+<
+							*E1144*
+To prevent unintended consequences, like the one above, Vim9 script
+requires white space between most command names and their arguments.
+(Note: Delimited commands, like `:global` and `:substitute`, are exceptions.)
+For example:
+>vim9
+	vim9script
+	exit_abc
+	# E1144: Command "exit" is not followed by white space: exit_abc
+<
+However, the argument of a command that is a command itself won't be
+recognized consistently.  For example, after "windo echo {expr}" a line break
+inside the expression will only apply to the current window, not to subsequent
+windows:
+>vim9
+	vim9script
+	windo echo 'hi'
+	  ->toupper()		# 'HI' (current window) and 'hi' (for others)
+<
+So, in instances like this, the "\" continuation character must still be used:
+>vim9
+	vim9script
+	windo echo 'hi'
+	      \ ->toupper()	# 'HI' (for every window)
+<
+	Note: This could have serious consequences if, for example, the
+	command was "windo execute ':global/something/'" and the continuation
+	line was ".. d".  The lines with "something" would be deleted only in
+	the current window and the other windows would have only `:print`
+	(i.e., default ":p") performed on their "something" lines.
 
-After the range an Ex command must follow.  Without the colon you can call a
-function without `:call`, but after a range you do need it: >
-	MyFunc()
-	:% call MyFunc()
+Other line continuation considerations:
 
-Note that the colon is not required for the |+cmd| argument: >
-	edit +6 fname
+- `:enddef` cannot be used at the start of a continuation line.  It ends the
+  current `:def` function.  See |E1057|.
 
-It is also possible to split a function header over multiple lines, in between
-arguments: >
-	def MyFunc(
-		text: string,
-		separator = '-'
-		): string
+- No line break is allowed in the LHS of an assignment.  Specifically, when
+  unpacking a list (|:let-unpack|), this is okay:
+>vim9
+	vim9script
+	const UNPACK: func = (a: string, b: string): list<string> => [a, b]
+	var [v1, v2] =
+	  UNPACK('all', 'good')
+	echo $'{v1} {v2}'
+<
+  whereas this would not work - it would give |E475|: >
 
-Since a continuation line cannot be easily recognized the parsing of commands
-has been made stricter.  E.g., because of the error in the first line, the
-second line is seen as a separate command: >
-	popup_create(some invalid expression, {
-	   exit_cb: Func})
-Now "exit_cb: Func})" is actually a valid command: save any changes to the
-file "_cb: Func})" and exit.  To avoid this kind of mistake in Vim9 script
-there must be white space between most command names and the argument.
-*E1144*
-
-However, the argument of a command that is a command won't be recognized.  For
-example, after "windo echo expr" a line break inside "expr" will not be seen.
-
-
-Notes:
-- "enddef" cannot be used at the start of a continuation line, it ends the
-  current function.
-- No line break is allowed in the LHS of an assignment.  Specifically when
-  unpacking a list |:let-unpack|. This is OK: >
-	[var1, var2] =
-		Func()
-<  This does not work: >
-	[var1,
-	    var2] =
-		Func()
+	var [v1,
+	  v2] = UNPACK('all', 'good')
+<
 - No line break is allowed in between arguments of an `:echo`, `:execute` and
-  similar commands.  This is OK: >
+  similar commands.  This is okay:
+>vim9
+	vim9script
 	echo [1,
-		2] [3,
-			4]
-<  This does not work: >
+	  2] [3,
+	  4]
+<
+  whereas this does not work (i.e., "[3, 4]" is not echoed):
+>vim9
+	vim9script
 	echo [1, 2]
-		[3, 4]
+	  [3, 4]
+<
 - In some cases it is difficult for Vim to parse a command, especially when
   commands are used as an argument to another command, such as `:windo`,
   `:command` or `:autocmd`.  In those cases the line continuation with a
-  backslash has to be used.  For example: >
+  backslash must be used.  For example:
+>
 	command! Foo call Bar('x', {
 	      \ 'key': 'value',
 	      \ })
@@ -927,405 +2245,1193 @@ Notes:
 	      \ 'key': 'value',
 	      \ })
 <
+  See also the "windo echo" example and note, above.
+
 
 White space ~
-	*vim9-white-space* *E1004* *E1068* *E1069* *E1074* *E1127* *E1202*
-Vim9 script enforces proper use of white space.  This is no longer allowed: >
-	var name=234	# Error!
-	var name= 234	# Error!
-	var name =234	# Error!
-There must be white space before and after the "=": >
-	var name = 234	# OK
-White space must also be put before the # that starts a comment after a
-command: >
-	var name = 234# Error!
-	var name = 234 # OK
-
-White space is required around most operators.
-
-White space is required in a sublist (list slice) around the ":", except at
-the start and end: >
-	otherlist = mylist[v : count]	# v:count has a different meaning
-	otherlist = mylist[:]		# make a copy of the List
-	otherlist = mylist[v :]
-	otherlist = mylist[: v]
-
+							*vim9-white-space*
+Vim9 script enforces proper use of white space.  There must be white space
+before and after the "=" of variable assignment, for example:
+>vim9
+	vim9script
+	var num = 234
+<
+White space is required:
+							*E1004*
+- Before and after the "=" in variable declaration:
+>vim9
+	vim9script
+	var num=234	# E1004: White space required before and after '=' at…
+	# Similarly, these would also give E1004:
+	var num= 234
+	var num =234
+<
+- Around most operators.  So, the first example here works whereas the second
+  gives E1004:
+>vim9
+	vim9cmd echo 'Yes' .. '!'	# Yes!
+	vim9cmd echo 'F'..'ail'		# E1004: White space required before …
+<
+- In a sublist (list slice) around the ":", except at the start and end:
+>vim9
+	vim9script
+	var mylist: list<number> = [7, 8, 9]
+	echo mylist[:]     # [7, 8, 9]
+	echo mylist[1 : 2] # [8, 9]
+	echo mylist[: 1]   # [7, 8]
+	echo mylist[2 :]   # [9]
+	echo mylist[1:2]   # E1004: White space required before and after ":"…
+<
+							*E1069*
+- After a variable name and its ":" (preceding a type declaration):
+>vim9
+	vim9script
+	var okay_list: list<any> = ['Is', 'good']
+	var fail_list:list<any> = ['Is', 'a', 'fail']	# E1069: White space …
+<
+- Before the '#' starting a comment.  If it isn't present, errors such as
+  |E121| or |E488| are given:
+>vim9
+	vim9cmd echo 'No'# E121: Undefined variable: #
+	vim9cmd var f: number = 99# E488: Trailing characters: …
+<
 White space is not allowed:
-- Between a function name and the "(": >
-	Func (arg)	   # Error!
-	Func
-	     \ (arg)	   # Error!
-	Func
-	      (arg)	   # Error!
-	Func(arg)	   # OK
-	Func(
-	      arg)	   # OK
-	Func(
-	      arg	   # OK
-	      )
-<							*E1205*
-White space is not allowed in a `:set` command between the option name and a
-following "&", "!", "<", "=", "+=", "-=" or "^=".
-
+							*E1068*
+- Before the comma separating dictionary key-value pairs or list items (though
+  it is allowed with tuples).  Examples:
+>vim9
+	vim9cmd echo (1 , 2)        # (1, 2)  [Note: Vim normalizes the tuple]
+	vim9cmd echo {1: 1 , 2: 2}  # E1068: No white space allowed before ','
+	vim9cmd echo [1 , 2]        # E1068: No white space allowed before ','
+<
+- Before the comma separating function arguments:
+>vim9
+	vim9script
+	def F1068(arg: string , arg2: bool): void
+	  # E1068: No white space allowed before ',': , arg2: bool): void
+	enddef
+<
+- Before either the "<" or "(" in the declaration of a generic function:
+>vim9
+	vim9script
+	def F1068<T> (): T  # E1068: No white space allowed before '(': (): T
+	enddef
+	F1068()
+<							*E1074*
+- After the '.' of an imported item.  In this example, a temporary Vim9 script
+  is written, then imported.  The script's exported "okay" variable is echoed
+  successfully, but the space after the '.' of the second "Imp" item gives
+  E1074:
+>vim9
+	vim9script
+	var tmp: string = $'{tempname()}.vim'->substitute('\\', '/', 'g')
+	var temp_lines: list<string> = ['vim9script',
+	  'export var okay: bool = true', 'export var err: bool']
+	temp_lines->writefile(tmp)
+	import tmp as Imp
+	echo Imp.okay	# true
+	echo Imp. err	# E1074: No white space allowed after dot
+<
+- Between a function name and the "(", though it is allowed before any
+  argument and after the last argument:
+>vim9
+	vim9script
+	def MyN(...arg: list<number>): void
+	  echo arg
+	enddef
+	MyN(1)			# [1]
+	MyN(  2)		# [2]
+	MyN(3  )		# [3]
+	MyN(   4,    5,    6 )	# [4, 5, 6]
+	MyN  (7, 8, 9)		# E492: Not an editor command
+<
+	Note: The following also are not allowed, and would give |E492|: >
+	MyN
+	  \ (7, 8, 9)
+	MyN
+	  (7, 8, 9)
+<							*E1202*
+- After the '.' when accessing object properties, methods, or enum members.
+  An enum method example:
+>vim9
+	vim9script
+	enum Metal
+	  Au((79, 'Gold')),
+	  Hg((80, 'Mercury'))
+	  var data: tuple<number, string>
+	  def Get_name(): string
+	    return this.data[1]
+	  enddef
+	endenum
+	echo Metal.Au.Get_name()   # Gold
+	echo Metal.Hg. Get_name()  # E1202: No white space allowed after '.':…
+<
+							*E1205*
+- In a `:set` command between the option name and a following "&", "!",
+  "<", "=", "+=", "-=" or "^=".  For example:
+>vim9
+	vim9script
+	# This is okay
+	set tabstop=8
+	echo &tabstop
+	# This is E1205: No white space allowed between option and: =8
+	set tabstop =8
+<
+- In a :set command between the option name and a following ':', which gives
+  |E518|.  For example:
+>vim9
+	vim9script
+	# This is okay
+	set tabstop:8
+	echo &tabstop
+	# This is E518: Unknown option :8
+	set tabstop :8
+<
 
 No curly braces expansion ~
+					*vim9-no-curly-braces-expansion*
+Dynamic variable name construction using curly braces (|curly-braces-names|)
+does not work in Vim9 script scopes.  This example shows two curly braces
+names expanding and working to form script level variable names in a legacy
+Vim script `:function` but failing in a `:def` function:
+>vim9
+	vim9script
+	var [O, O3] = ['oxygen', 'ozone']
+	function Al(arg, n = null_string) abort
+	  return s:{a:arg}{a:n}
+	endfunction
+	def Al9(arg: string, n: any = null_string): string
+	  return {arg}{n}
+	enddef
+	echo Al('O', 3)   # ozone
+	echo Al9('O', 3)  # E720: Missing colon in Dictionary: }{n}
+<
+Similarly, |curly-braces-function-names| are only possible in legacy Vim
+script scopes:
+>vim9
+	vim9script
+	var low_line: string = '_'
+	function F_curly()
+	  echo 'A curly-braces-function-name: okay in legacy Vim script scope'
+	endfunction
+	legacy call s:F{s:low_line}curly()
+	F{low_line}curly()	# E1144: Command "F" is not followed by white…
+<
 
-|curly-braces-names| cannot be used.
+Command modifiers may not always be ignored and give an error ~
 
+In some scenarios, using a command modifier for a command that does not use it
+may give an error.  However, some modifiers do not give an error (just like
+how they do not error in legacy Vim script).  For example, in this script the
+meaningless |:vertical|, |:keepmarks|, and |:hide| modifiers are ignored:
+>vim9
+	vim9script
+	vertical if 1 == 1
+	  keepmarks echo 'Starting...'
+	  try
+	    echo ERROR
+	  catch
+	    hide echo 'Caught!'
+	  endtry
+	endif
+<							*E1176*
+However, if a modifier is applied to certain control flow commands, E1176
+is given.  An example is prepending |:silent| to |:endif|:
+>vim9
+	vim9script
+	if 1
+	  echo "Hi!"
+	silent endif
+	# E1176: Misplaced command modifier
+<
+	Note: When lines 2 to 4 only of this script are sourced, you can see
+	it does not give E1176 (because then the script is executed in a
+	legacy Vim script context).
 
-Command modifiers are not ignored ~
-								*E1176*
-Using a command modifier for a command that does not use it gives an error.
-								*E1082*
-Also, using a command modifier without a following command is now an error.
-
+Similarly, adding modifiers to any of |:try|, |:endtry|, |:for|, |:endfor|,
+|:while|, |:endwhile|, |:catch|, or |:finally| may result in an E1176 error,
+though it depends on the redundant modifier used.  For example, adding the
+|:silent| modifier to |:for| is ignored whereas adding |:keepmarks| to
+|:endfor| is an error.
+							*E1082*
+Also, using a command modifier without a following command gives E1082:
+>vim9
+	vim9script
+	silent
+	# E1082: Command modifier without command
+<
 
 Dictionary literals ~
-						*vim9-literal-dict* *E1014*
+							*vim9-literal-dict*
+
 Traditionally Vim has supported dictionary literals with a {} syntax: >
 	let dict = {'key': value}
-
+<
 Later it became clear that using a simple text key is very common, thus
 literal dictionaries were introduced in a backwards compatible way: >
 	let dict = #{key: value}
-
-However, this #{} syntax is unlike any existing language.  As it turns out
-that using a literal key is much more common than using an expression, and
+<
+However, this #{} syntax is unlike any existing language.  As it turns out,
+using a literal key is much more common than using an expression, and
 considering that JavaScript uses this syntax, using the {} form for dictionary
 literals is considered a much more useful syntax.  In Vim9 script the {} form
 uses literal keys: >
 	var dict = {key: value}
+<
+For example:
+>vim9
+	vim9script
+	var dict = {key: 9}
+	echo dict	# {'key': 9}
+<
+	Note: Vim normalizes the key, adding the ' characters.  Dictionary
+	keys are always strings.
 
-This works for alphanumeric characters, underscore and dash.  If you want to
-use another character, use a single or double quoted string: >
-	var dict = {'key with space': value}
-	var dict = {"key\twith\ttabs": value}
-	var dict = {'': value}			# empty key
+Literal keys work using alphanumeric characters, underscore, and dash.  If you
+want to use a character other than those, or even use an expression, you may:
+- Use a single or double quoted string, or
+- Use `extend()` and the literal key syntax, or
+- For an expression, enclose the key in [] (like in a JavaScript computed
+  property).
+All three are illustrated in this example:
+>vim9
+	vim9script
+	var dict: dict<bool>
+	dict["key\twith\ttabs"] = true		# double quoted key
+	dict->extend({[40.9 + 1.1]: true})	# evaluated expression key
+	dict['¡non–ASCII! w/ spaces'] = true	# single quoted key
+	for k in dict->keys()
+	  echo [k, dict[k]]
+	endfor
+<
+The key type can be string, number, bool, or float, though all keys are stored
+as strings.  Trying to use other types will give an error.  For example:
+>vim9
+	vim9script
+	var dict: dict<bool>
+	dict[9] = true		# number key
+	dict[true] = true	# bool key
+	dict[9.2] = true	# float key
+	echo dict		# {'true': true, '9.2': true, '9': true}
+	dict[(9, 2)] = false	# E1522: Using a Tuple as a String
+<
+Without using [], the value is literal so retains any leading zeros.  An
+expression given with [] is evaluated and then converted to a string.
+Expression evaluation means any leading zeros are omitted.  For example:
+>vim9
+	vim9script
+	var dict = {09: '09 is literal "09"', [09]: '[09] becomes "9"'}
+	echo dict['09']		# '09 is literal "09"'
+	echo dict['9']		# '[09] becomes "9"'
 <							*E1139*
-In case the key needs to be an expression, square brackets can be used, just
-like in JavaScript: >
-	var dict = {["key" .. nr]: value}
+If the key within [] is invalid, errors such as E1139 may be given, for
+example:
+>vim9
+	vim9script
+	var E1139 = {[0😢9]: 2}	# E1139: Missing matching bracket after dict …
+<
+							*E1014*
+An invalid key gives E1014:
+>vim9
+	vim9script
+	# This tries to use an unquoted control code character, U+0007 (ALERT)
+	var E1014: dict<string> = {: 'E1014'}	# E1014: Invalid key: ^G
+<
+A float key must appear inside [], either in a dictionary literal or in a
+subscript assignment.  The '.' of a float outside of either context is an
+invalid Vim9 script dictionary literal key:
+>vim9
+	vim9script
+	var dict: dict<string> = {[.09]: 'ok'}
+	dict[0.10] = 'ok'
+	echo dict	   # {'0.09': 'ok', '0.1': 'ok'}
+	try
+	  dict->extend({0.11: 'fail!'})
+	catch
+	  echo v:exception # E720: Missing colon in Dictionary: .11: 'fail!'
+	endtry
+<							*E1127*
+If the name after a '.' is omitted, E1127 is given:
+>vim9
+	vim9script
+	def F1127(): void
+	  var d = {x: 0}
+	  echo d.
+	enddef
+	F1127()  # E1127: Missing name after dot
+<
 
-The key type can be string, number, bool or float.  Other types result in an
-error.  Without using [] the value is used as a string, keeping leading zeros.
-An expression given with [] is evaluated and then converted to a string.
-Leading zeros will then be dropped: >
-	var dict = {000123: 'without', [000456]: 'with'}
-	echo dict
-	{'456': 'with', '000123': 'without'}
-A float only works inside [] because the dot is not accepted otherwise: >
-	var dict = {[00.013]: 'float'}
-	echo dict
-	{'0.013': 'float'}
+No :xit, :t, :k, :Print, :append, :change, :insert, or :open ~
 
+Some commands are too easily confused with local variable names, though they
+have alternative commands that do the same thing:
 
-No :xit, :t, :k, :append, :change or :insert ~
+	Not allowed	Instead use ~
+	`:k`		|:mark|
+	`:Print`	|:print|
+	`:t`		|:copy|
+	`:xit`		|:exit|
+
+	Note: Shortened forms like `:x` also are not allowed.
+
 							*E1100*
-These commands are too easily confused with local variable names.
-Instead of `:x` or `:xit` you can use `:exit`.
-Instead of `:t` you can use `:copy`.
-Instead of `:k` you can use `:mark`.
+For example, using "mark x" in the following script would work, whereas using
+"k x" gives E1100:
+>vim9
+	vim9script
+	:+2
+	k x
+	# E1100: Command not supported in Vim9 script (missing :var?): k x
+<
+Some commands are not available at all in Vim9 script.  These will give E1100
+if they are used, including their shortened forms, like `:a`, `:o`, and `:ch`:
+
+	`:append`
+	`:change`
+	`:insert`
+	`:open`
+
+See also |vim9-invalid-Ex-commands|.
 
 
 Comparators ~
+							*vim9-comparators*
+The 'ignorecase' option is not used for string comparators.  Consequently,
+"=~" and "=~#" work identically (i.e., comparisons are case sensitive):
+>vim9
+	vim9script
+	var ic: bool = &ignorecase
+	set ignorecase
+	# Both of these echo 'false' because 'ignorecase' isn't used
+	echo 'a' =~# 'A'
+	echo 'a' =~ 'A'
+	# Case sensitive '=~#' echoes 0.  Case insensitive '=~' echoes 1
+	legacy echo 'a' =~# 'A'
+	legacy echo 'a' =~ 'A'
+	# Revert 'ignorecase' to its setting before running this script
+	&ignorecase = ic
+<
+The expression "is" (|expr-is|), when used on strings, returns false (except
+where the strings being compared are either explicitly null or uninitialized).
+Similarly, the expression "isnot" (|expr-isnot|) returns true.  This is
+because, whereas in a legacy Vim script scope strings' content is compared,
+in a |Vim9| script scope identity is compared.  Consequently, because strings
+are copied when used, two strings are not the same, though this might change
+someday if strings are not copied but reference counted.  For example:
+>vim9
+	vim9script
+	var str: string = ''
+	echo str is str			# false
+	legacy echo s:str is s:str |	# 1
+	var x: string
+	var y: string = null_string
+	echo x is y			# true
+<
+For boolean, number, and float types, in legacy Vim script "is" and "isnot"
+work like string comparison.  In Vim9 script, except when comparing a number
+with a float, "is" will give either |E1037| or |E1072|.  For example:
+>vim
+	vim9cmd var [boo: bool, num: number, flo: float] = [true, 9, 9.2]
+	legacy echo s:boo is v:true	| " 1
+	legacy echo s:num is 9		| " 1
+	legacy echo s:flo is 9.2	| " 1
+	legacy echo s:boo is 9		| " 0
+	legacy echo s:boo is 9.2	| " 0
+	legacy echo s:num is 9.2	| " 0
+	vim9cmd echo boo is true  # E1037: Cannot use "is" with bool
+	vim9cmd echo num is 9     # E1037: Cannot use "is" with number
+	vim9cmd echo flo is 9.2   # E1037: Cannot use "is" with float
+	vim9cmd echo boo is 9     # E1072: Cannot compare bool with number
+	vim9cmd echo boo is 9.2   # E1072: Cannot compare bool with float
+	vim9cmd echo num is 9.2   # false
+<
+Similarly, "is" and "isnot" may not be used to compare job and channel types.
+This example shows job comparison working with "is" in a legacy Vim script
+scope but giving |E1072| in a Vim9 script scope:
+>vim9
+	vim9script
+	var job1: job
+	var job2: job = job1
+	legacy echo s:job1 is s:job2  | # 1
+	echo job1 is job2		# E1072: Cannot compare job with job
+<
+Comparing container types list, dict, tuple, and blob using "is" and "isnot"
+behaves the same in Vim9 script as it does in legacy Vim script.  The
+comparison checks instances, not content.  Because they behave similarly,
+only a Vim9 script list example is provided in this example, with legacy Vim
+script scope comparisons to show the same behavior:
+>vim9
+	vim9script
+	var l1: list<any>
+	var l2: list<any> = l1
+	echo l1 is l2			# true (same instance)
+	legacy echo s:l1 is s:l2 |	# 1
+	echo l1 is []			# false (different instance)
+	legacy echo s:l1 is [] |	# 0
+	echo l1 is null_list		# false (different instance)
+<
+Comparing a `Funcref` variable is almost the same as comparing container
+variables, though an uninitialized `Funcref` variable compared to Vim9
+script's `null_function` behaves differently:
+>vim9
+	vim9script
+	var F1: func
+	var F2: func = F1
+	echo F1 is F2			# true (same uninitialized instance)
+	echo F1 is null_function	# true
+<
+In Vim9 script, comparing class objects behaves similarly:
+>vim9
+	vim9script
+	class C
+	endclass
+	# Uninitialized class objects
+	var O1: C
+	var O2: C
+	echo O1 is O2		# true (same uninitialized class object)
+	echo O1 is null_object	# true
+	# Initialized class objects
+	var O4: C = C.new()
+	var O5: C = O4
+	var O6: C = C.new()
+	echo O4 is O5		# true (same initialized class object)
+	echo O5 is O6		# false (different class objects)
+<
+	Note: Classes themselves cannot be compared:
+>vim9
+	vim9script
+	class C
+	endclass
+	echo C is null_class	# E1401: Class "C" cannot be used as a value
+<
+Comparison of enum objects differs from class objects.  Each enumvalue
+is a singleton, so variables assigned the same enumvalue always reference
+the identical instance.  Even when a mutable instance variable of an enum
+value is modified, the change affects all references to that enumvalue:
+>vim9
+	vim9script
+	enum Switch
+	  On(['active', true]),
+	  Off(['inactive', false])
+	  final state: list<any>
+	endenum
+	var on1: Switch = Switch.On
+	var on2: Switch = Switch.On
+	on2.state[0] = 'engaged'
+	# The change affects on1 and on2 because they're the same enumvalue
+	echo on1 is on2				# true
+	# Uninitialized enumvalue (and there is no null_enumvalue):
+	var uninitialized: Switch
+	echo uninitialized is null_object	# true
+<
+In summary, in relation to the "is" and "isnot" comparison operators:
 
-The 'ignorecase' option is not used for comparators that use strings.
-Thus "=~" works like "=~#".
+- Vim9 script introduces stricter rules than legacy Vim script and:
+	- Behaves differently for strings,
+	- Behaves the same for lists, dictionaries, tuples, and blobs,
+	- Does not allow comparison of booleans, numbers, floats, jobs, and
+	  channels (except for comparing a number with a float), and
+	- Behaves the same for function references (though Vim9 script's
+	  `null_function` behaves differently).
 
-"is" and "isnot" (|expr-is| and |expr-isnot|) when used on strings now return
-false.  In legacy script they just compare the strings, in |Vim9| script they
-check identity, and strings are copied when used, thus two strings are never
-the same (this might change someday if strings are not copied but reference
-counted).
+- Entirely exclusive to Vim9 script:
+	- Comparing class objects is similar to comparing function references,
+	  and
+	- For enum objects, "is" and "isnot" always compare the same instance
+	  of a given enumvalue.
 
 
 Abort after error ~
 
-In legacy script, when an error is encountered, Vim continues to execute
-following lines.  This can lead to a long sequence of errors and need to type
-CTRL-C to stop it.  In Vim9 script execution of commands stops at the first
-error.  Example: >
+In legacy Vim script, when an error is encountered, Vim continues to execute
+the lines following the error.  This can lead to a long sequence of errors
+and need to type CTRL-C to stop it.  For example, this script produces two
+|E121| errors:
+>vim
+	" legacy Vim script
+	let x = does_not_exist
+	let y = does_not_exist_too
+<
+However, in Vim9 script, execution of commands stops at the first error:
+>vim9
 	vim9script
-	var x = does-not-exist
-	echo 'not executed'
-
+	var x = does_not_exist  # E121: Undefined variable: does_not_exist
+	# Execution stops and the following line is not executed
+	var y = does_not_exist_too
+<
 
 For loop ~
-							*E1254*
-The loop variable must not be declared yet: >
-	var i = 1
-	for i in [1, 2, 3]   # Error!
 
-It is possible to use a global variable though: >
-	g:i = 1
-	for g:i in [1, 2, 3]
-	  echo g:i
+The loop variable must not be declared yet:
+>vim9
+	vim9script
+	var it: list<number>
+	for it in [1, 2, 3]	# E1041: Redefining script item: "it"
+<
+But it is possible to use a prefixed variable, e.g., a buffer local variable:
+>vim9
+	vim9script
+	b:i = []
+	for b:i in [1, 2, 3]
+	  echo b:i
 	endfor
-
+<							*E1254*
+A loop variable in a `:def` function cannot be a s: variable:
+>vim9
+	vim9script
+	def F()
+	  for s:n in range(9) # E1254: Cannot use script variable in for loop
+	  endfor
+	enddef
+	defcompile
+<
 Legacy Vim script has some tricks to make a for loop over a list handle
-deleting items at the current or previous item.  In Vim9 script it just uses
-the index, if items are deleted then items in the list will be skipped.
-Example legacy script: >
-	let l = [1, 2, 3, 4]
-	for i in l
-	   echo i
-	   call remove(l, index(l, i))
+deleting items at the current or previous item.  In Vim9 script, the same
+trick applies in a non-compiled scope.  However, in a compiled Vim9 script
+scope, when an item is deleted the following item in the list is skipped
+("iterator invalidation"), producing the same result as what you would see in
+Python and Ruby.  The following script demonstrates the differing behaviors in
+non-compiled and compiled Vim9 script scopes:
+>vim9
+	vim9script
+	echo 'Removing items from a list in a Vim9 script non-compiled scope:'
+	# This echoes 10, then 20, 30, 40, and []
+	var list_one: list<number> = [10, 20, 30, 40]
+	for n in list_one
+	  echo n
+	  list_one->remove(index(list_one, n))
 	endfor
-Would echo:
-	1
-	2
-	3
-	4
-In compiled Vim9 script you get:
-	1
-	3
-Generally, you should not change the list that is iterated over.  Make a copy
-first if needed.
+	echo list_one
+	echo 'Removing items from a list in a Vim9 script compiled scope:'
+	# This echoes 10, then 30, and the list [20, 40]
+	# This happens because when 10 is removed, 20 moves to index 0, but
+	# the iterator moves to index 1, which is now 30!
+	var list_two: list<number> = [10, 20, 30, 40]
+	var Remove_items: func = (): void => {
+	  for n in list_two
+	    echo n
+	    list_two->remove(index(list_two, n))
+	  endfor
+	  echo list_two
+	}
+	Remove_items()
+<
+What this example shows is usually it is better not to change a list that is
+iterated over.  Making a copy first is often safer.
+
 When looping over a list of lists, the nested lists can be changed.  The loop
-variable is "final", it cannot be changed but what its value can be changed.
-							*E1306*
-The depth of loops, :for and :while loops added together, cannot exceed 10.
+variable is "final" - that is, it cannot be changed but its value can be
+changed.  For example:
+>vim9
+	vim9script
+	var lst: list<list<number>> = [[1, 2], [3, 4], [5, 6]]
+	for subl in lst
+	  subl[0] = 9
+	endfor
+	echo lst  # [[9, 2], [9, 4], [9, 6]]
+	for subl in lst
+	  subl = [9, subl[1]] # E46: Cannot change read-only variable "subl"
+	endfor
+<							*E1306*
+The depth of |:for| and |:while| loops added together, cannot exceed 10.
 
 
 Conditions and expressions ~
-						*vim9-boolean*
-Conditions and expressions are mostly working like they do in other languages.
-Some values are different from legacy Vim script:
-	value		legacy Vim script	Vim9 script ~
-	0		falsy			falsy
-	1		truthy			truthy
-	99		truthy			Error!
-	"0"		falsy			Error!
-	"99"		truthy			Error!
-	"text"		falsy			Error!
 
-For the "??" operator and when using "!" then there is no error, every value
-is either falsy or truthy.  This is mostly like JavaScript, except that an
-empty list and dict is falsy:
+Vim9 script has stricter type checking than legacy Vim script in boolean
+contexts.  Most operators require either a boolean, or 0/1, or a |Special| type.
+The falsy (|??|) and logical NOT (|expr-!|) operators use truthiness rules.
 
-	type		truthy when ~
-	bool		true, v:true or 1
-	number		non-zero
-	float		non-zero
-	string		non-empty
-	blob		non-empty
-	list		non-empty (different from JavaScript)
-	tuple		non-empty (different from JavaScript)
-	dictionary	non-empty (different from JavaScript)
-	func		when there is a function name
-	special		true or v:true
-	job		when not NULL
-	channel		when not NULL
-	class		not applicable
-	object		when not NULL
-	enum		not applicable
-	enum value	always
-	typealias	not applicable
+– Strict Boolean Expressions ~
+							*vim9-boolean*
+In Vim9 script, the conditionals |:if|, |ternary|, |:while|, `||` (|expr-barbar|),
+and `&&` (|expr-&&|), require strict boolean types.  This is different to
+legacy Vim script, which treats any non-zero number as 1 and implicitly infers
+a string or |Special| as a number equivalent.  To illustrate, in legacy Vim
+script, all these conditional expressions work:
+>vim
+	" legacy Vim script
+	" These evaluate to 1:
+	echo 1 ? 1 : 0
+	echo 0 || 1
+	echo 1 || v:false
+	echo 1 && v:true
+	echo v:null || 1
+	echo 99 ? 1 : 0
+	echo "99" ? 1 : 0
+	" These evaluate to 0:
+	echo 0 || v:none
+	echo 0 && 1
+	echo "text" ? 1 : 0
+<
+In Vim9 script, conditional expressions (excluding `??` and `!`) have stricter
+|type-checking|, which means:
+- For numbers, only 0 (falsy) or 1 (truthy) are permitted, otherwise |E1023|
+  is given, and
+- Strings are not permitted (|E1135|).
+>vim
+	vim9cmd echo 1 ? 1 : 0		# 1
+	vim9cmd echo 0 || 1		# true
+	vim9cmd echo 1 || false		# true
+	vim9cmd echo 1 && true		# true
+	vim9cmd echo null || 1		# true
+	vim9cmd echo 0 || v:none	# false
+	vim9cmd echo 0 && v:true	# false
+	vim9cmd echo 9 ? 1 : 0		# E1023: Using a Number as a Bool: 9
+	vim9cmd echo "9" ? 1 : 0	# E1135: Using a String as a Bool: "9"
+	vim9cmd echo "x" ? 1 : 0	# E1135: Using a String as a Bool: "x"
+<
+– Falsiness Operator ~
+							*vim9-falsy*
+For most types there is no error using `??` (the |falsy-operator|).
+Values are either falsy or truthy, with falsy evaluated as follows:
 
-The boolean operators "||" and "&&" expect the values to be boolean, zero or
-one: >
-	1 || false   == true
-	0 || 1       == true
-	0 || false   == false
-	1 && true    == true
-	0 && 1       == false
-	8 || 0	     Error!
-	'yes' && 0   Error!
-	[] || 99     Error!
+	Type		Falsy when~
+	Number		zero
+	String		empty
+	Funcref		null
+	List		empty
+	Dictionary	empty
+	Float		zero
+	Boolean		`false` (also |Special| `v:false`)
+	None		always (`v:null` and `v:none`)
+	Job		null
+	Channel		null
+	Blob		empty
+	Class		not applicable (see |E1405|)
+	Object		null
+	Typealias	not applicable (see |E1403|)
+	Enum		not applicable (see |E1421|)
+	EnumValue	null
+	Tuple		empty
+	void		always
 
-When using "!" for inverting, there is no error for using any type and the
-result is a boolean.  "!!" can be used to turn any value into boolean: >
-	!'yes'			== false
-	!![]			== false
-	!![1, 2, 3]		== true
+To illustrate, a script showing falsiness of all except error-giving types:
+>vim9
+	vim9script
+	echo "Number: \t0\t\t"			0 ?? 'is falsy'
+	echo "String: \t''\t\t"			'' ?? 'is falsy'
+	echo "Funcref:\tnull_function\t"	null_function ?? 'is falsy'
+	echo "List:   \t[]\t\t"			[] ?? 'is falsy'
+	echo "Dictionary:\t{}\t\t"		{} ?? 'is falsy'
+	echo "Float:  \t0.0\t\t"		0.0 ?? 'is falsy'
+	echo "Boolean:\tfalse\t\t"		false ?? 'is falsy'
+	echo "        \tv:false\t\t"		v:false ?? 'is falsy'
+	echo "None:   \tv:none\t\t"		v:none ?? 'is falsy'
+	echo "        \tv:null\t\t"		v:null ?? 'is falsy'
+	echo "Job:    \tnull_job\t"		null_job ?? 'is falsy'
+	echo "Channel:\tnull_channel\t"		null_channel ?? 'is falsy'
+	echo "Blob:   \t0z\t\t"			0z ?? 'is falsy'
+	echo "Object: \tnull_object\t"		null_object ?? 'is falsy'
+	enum Enum
+	endenum
+	var null_enumval: Enum  # NB: There is no inherent "null_enumvalue"
+	echo "EnumValue:\t'null_enumval'\t"	null_enumval ?? 'is falsy'
+	echo "Tuple:  \t()\t\t"			() ?? 'is falsy'
+	echo "void:   \t\t\t"			test_void() ?? 'is falsy'
+<
+Note: Vim9 script's falsiness is much the same as Python's (e.g., "if []:" in
+Python is falsy, the same as "if []" in Vim9 script.  JavaScript is similar
+too, though it differs in its unusual truthy evaluation of an empty
+object/array.
 
-When using "`.."` for string concatenation arguments of simple types are
-always converted to string: >
-	'hello ' .. 123  == 'hello 123'
-	'hello ' .. v:true  == 'hello true'
+– Type Conversions and Exceptions ~
+							*vim9-!*
+When using the logical NOT operation, "!" (|expr-!|), for inverting, there is
+no error (except with a class - |E1405|, enum - |E1421|, or typealias -
+|E1403|) and the result is always a boolean.  In this example, the falsy
+values are inverted and all evaluations return "true":
+>vim9
+	vim9script
+	echo [!0, !'', !null_function, ![], !{}, !0.0, !false,
+	  !v:false, !v:none, !v:null, !null_job, !null_channel, !0z,
+	  !null_object, !(), !test_void()]
+<							*vim9-!!*
+Similarly, when using "!!" to turn a value into a boolean all the evaluations
+return "false", as this example shows:
+>vim9
+	vim9script
+	echo [!!0, !!'', !!null_function, !![], !!{}, !!0.0, !!false,
+	  !!v:false, !!v:none, !!v:null, !!null_job, !!null_channel, !!0z,
+	  !!null_object, !!(), !!test_void()]
+<
+Note: This is a rare instance where Vim9 script is more permissive than legacy
+Vim script.  As the following example demonstrates, legacy Vim script gives
+errors when using "!" or "!!" with many types (including Funcref, List,
+Dictionary, Blob, Job, and Tuple):
+>vim
+	" legacy Vim script: !! erroring examples
+	let F = {x -> x}
+	let j = job_start([&shell, &shellcmdflag, 'date'], {})
+	echo !!F  |	" E703: Using a Funcref as a Number
+	echo !![] |	" E745: Using a List as a Number
+	echo !!{} |	" E728: Using a Dictionary as a Number
+	echo !!0z |	" E974: Using a Blob as a Number
+	echo !!j  |	" E910: Using a Job as a Number
+	echo !!() |	" E1520: Using a Tuple as a Number
+<
+When using ".." for string concatenation, number, float, bool and |Special|
+types are always converted to strings:
+>vim9
+	vim9script
+	var mystr = 8 .. ', ' .. 9.2 .. ', ' .. true .. ' and ' .. v:none
+	echo [mystr, mystr->typename()]
+<
+	Notes: 1. Both `true` (and `v:true`, not shown) are stringified to
+	"true" whereas legacy Vim script stringifies `v:true` to "v:true".
+	2. In Vim9 script '..' string concatenation handles floats
+	consistently.  Legacy Vim script doesn't, with the decimal point
+	being interpreted as a concatenation "." after the first "." or "..".
+	In the following legacy Vim script, 9.2 loses its decimal point:
+>vim
+	let s:my8str = 8 .. ', ' .. 9.2 .. ', ' .. v:true .. ' and ' .. v:none
+	echo s:my8str | " 8, 92, v:true and v:none
+<
+This illustrates that primitives (|v:t_number|, |v:t_float|, and |v:t_bool|),
+plus |Special| types may be compared directly with "==".  For all other types,
+|string()| must be used.  For example:
+>vim9
+	vim9script
+	echo 'This is a list: ' .. [1, 2, 3]->string()
+	# Whereas doing this gives E730: Using a List as a String:
+	echo 'This does not work! ' .. [1, 2, 3]
+<
+Similarly, |string()| should be used for "==" comparisons, otherwise |E1072|
+is given.  For example:
+>vim9
+	vim9script
+	var l: list<any> = [9, '9.2']
+	echo string(l) == "[9, '9.2']"	# true
+	echo l == "[9, '9.2']"	# E1072: Cannot compare List with String
+<
+WARNING: Short-circuit evaluation may hide errors in boolean expressions when
+an OR expression can be determined to be `true` without evaluating all
+operands.  Evaluation stops early, meaning invalid code may never execute,
+masking errors that would otherwise occur at runtime, including Vim9 script
+type-related errors.  For example, a class itself cannot be used in a
+comparison, but here it does not give an error in the first ternary expression
+because "t" has already been evaluated to `true`:
+>vim9
+	vim9script
+	var t: bool = true
+	echo t || null_class ? true : false  # true
+	echo null_class || t ? true : false  # E1405: Class "" cannot be used…
+<
 
-Simple types are Number, Float, Special and Bool.  For other types |string()|
-should be used.
-			*false* *true* *null* *null_blob* *null_channel*
-			*null_class* *null_dict* *null_function* *null_job*
-			*null_list* *null_object* *null_partial* *null_string*
-			*E1034*
-In Vim9 script one can use the following predefined values: >
-	true
-	false
-	null
-	null_blob
-	null_channel
-	null_class
-	null_dict
-	null_function
-	null_job
-	null_list
-	null_tuple
-	null_object
-	null_partial
-	null_string
-`true` is the same as `v:true`, `false` the same as `v:false`, `null` the same
-as `v:null`.
+Predefined values ~
+				*false* *true* *null* *null_blob* *null_channel*
+				*null_class* *null_dict* *null_function* *null_job*
+				*null_list* *null_object* *null_partial* *null_string*
+Vim9 script has predefined values representing true, false, and null states.
+The following table lists those predefined values, along with their
+|type()|, |typename()|, and |string()| representations:
 
-While `null` has the type "special", the other "null_" values have the type
-indicated by their name.  Quite often a null value is handled the same as an
-empty value, but not always.  The values can be useful to clear a script-local
-variable, since they cannot be deleted with `:unlet`.  E.g.: >
-	var theJob = job_start(...)
-	# let the job do its work
-	theJob = null_job
+ Predefined value  type()	  typename()		string() ~
+ null_string	   |v:t_string|	  string		''
+ null_function	   |v:t_func|	  func(...): unknown	function()
+ null_partial	   |v:t_func|	  func(...): unknown	function('')
+ null_list	   |v:t_list|	  list<any>		[]
+ null_dict	   |v:t_dict|	  dict<any>		{}
+ true		   |v:t_bool|	  bool			true
+ false		   |v:t_bool|	  bool			false
+ null		   |v:t_none|	  special		null
+ null_job	   |v:t_job|	  job			no process
+ null_channel	   |v:t_channel|    channel		channel fail
+ null_blob	   |v:t_blob|	  blob			0z
+ null_class	   |v:t_class|	  class<Unknown>	class [unknown]
+ null_object	   |v:t_object|	  object<any>		object of [unknown]
+ null_tuple	   |v:t_tuple|	  tuple<any>		()
 
-The values can also be useful as the default value for an argument: >
-	def MyFunc(b: blob = null_blob)
-	    # Note: compare against null, not null_blob,
-	    #       to distinguish the default value from an empty blob.
-	    if b == null
-	        # b argument was not given
-See |null-compare| for more information about testing against null.
+The predefined value `true` is the same as `v:true`, `false` is the same as
+`v:false`, and `null` is the same as `v:null`.
 
-It is possible to compare `null`  with any value, this will not give a type
-error.  However, comparing `null` with a number, float or bool will always
-result in `false`.  This is different from legacy script, where comparing
-`null` with zero or `false` would return `true`.
+A "null_<type>" value is treated the same as an empty value only in some
+cases.  See |null-details|.
+
+The following types do not have predefined "null_<type>" values:
+- Number (instead use 0, though it is not `null`)
+- Float (instead use 0.0, though, like the number 0, it also is not `null`)
+- Typealias (which cannot be used as a value; it gives |E1403|)
+- Enum (which cannot be used as a value; it gives |E1421|)
+- EnumValue (however, it can be a `null_object` - see the "Switch" example in
+  |vim9-comparators|)
+
+The "null_<type>" values can be useful for clearing script-local variables
+because they cannot be deleted with `:unlet`.  For example:
+>vim9
+	vim9script
+	var myvar: string = "not null_string"
+	try
+	  unlet myvar
+	catch
+	  echo v:exception  # E1081: Cannot unlet myvar
+	finally
+	  myvar = null_string
+	  echo $"'myvar' is {myvar->string()}"
+	endtry
+<
+The values can also be useful as the default value for an argument:
+>vim9
+	vim9script
+	def CheckMyList(l: list<number> = null_list): string
+	  if l == null
+	    return 'No list was passed'
+	  elseif l->empty()
+	    return 'An empty list was passed'
+	  else
+	    return $"List {l->string()} was passed"
+	  endif
+	enddef
+	echo CheckMyList()
+	echo CheckMyList([])
+	echo CheckMyList([8, 9])
+<
+	Note: This examples shows comparing the list "l" against `null`, not
+	`null_list`.  This is useful because it enables distinguishing the
+	default value, null_list, from an empty list [].  See |null-compare|
+	and |null-anomalies| for more information testing against null.
+
+It is possible to compare `null` with any value - it does not give a type
+error.  However, comparing `null` with a number, float or bool always results
+in `false`.  This is different than number and float in legacy Vim script
+where comparing `v:null` with 0 or 0.0 returns 1.  For example:
+>vim9
+	vim9script
+	echo [0 == null, 0.0 == null]		   # [false, false]
+	legacy echo [0 == v:null, 0.0 == v:null] | # [1, 1]
+<
 							*vim9-false-true*
-When converting a boolean to a string `false` and `true` are used, not
-`v:false` and `v:true` like in legacy script.  `v:none` has no `none`
-replacement, it has no equivalent in other languages.
+When converting a boolean to a string, `false` and `true` are used.  In Vim9
+scripts, `v:false` is equal to `false` and `v:true` is equal to `true`.
+>vim9
+	vim9script
+	echo $'{v:none} has no "none" equivalent, but'
+	echo $'"v:true" is stringified to "{v:true}" in a string, and'
+	echo 'Q: "v:false" and "false" can be used interchangeably?'
+	echo $'A: {v:false == false}'
+<
+Note: There is no "none" for `v:none` because it has no equivalent in other
+languages.
+
 							*vim9-string-index*
 Indexing a string with [idx] or taking a slice with [idx : idx] uses character
-indexes instead of byte indexes.  Composing characters are included.
-Example: >
-	echo 'bár'[1]
-In legacy script this results in the character 0xc3 (an illegal byte), in Vim9
-script this results in the string 'á'.
+indexes instead of byte indexes.  Combining/composing characters are included.
+Example:
+>vim9
+	vim9script
+	echo 'très'[2]		# è (U+00E8)
+	legacy echo 'très'[2] | # <c3> (Illegal byte 0xc3)
+<
 A negative index is counting from the end, "[-1]" is the last character.
-To exclude the last character use |slice()|.
-To count composing characters separately use |strcharpart()|.
-If the index is out of range then an empty string results.
+>vim9
+	vim9script
+	echo 'fenêtre'[-4 : -1]		 # être
+	legacy echo 'fenêtre'[-5 : -1] | # être (-5 because ê is two bytes)
+<
+Using the builtin function, |slice()|, can be a good choice because it uses
+character indexes in both legacy Vim script scopes and Vim9 script scopes:
+>vim9
+	vim9script
+	echo 'fenêtre'->slice(-4)	   # être
+	legacy echo 'fenêtre'->slice(-4) | # être
+<
+Use |strcharpart()| to count combining characters separately.  The following
+example uses "a" (U+0061) and a combining macron (U+0304):
+>vim9
+	vim9script
+	echo 'Ngā mihi'->strcharpart(2, 1)  # a (excluding combining macron)
+	echo 'Ngā mihi'[2]		    # ā (including combining macron)
+<
+If the index is out of range, an empty string is the result.
+>vim9
+	vim9script
+	echo ['In range'[0 : 1]]	# ['In']
+	echo ['Out of range'[19 : ]]	# ['']
+<							*E1148*
+Attempting to assign to or modify a string using an index gives an error.
+For example:
+>vim9
+	vim9script
+	def F1148(): void
+	  b:s = 'Fails'
+	  b:s[4] = '!'	# E1148: Cannot index a string
+	enddef
+	call F1148()
+<
+	Note: Other errors may be given depending on the scope and whether the
+	variable is prefixed.  For example, if the variable in this example
+	was declared with `:var` instead of being a buffer variable, it would
+	give |E1141| and, if the scope was script-local rather than a `:def`,
+	it would give |E689|.
 
-In legacy script "++var" and "--var" would be silently accepted and have no
-effect.  This is an error in Vim9 script.
-
+In legacy Vim script, if either "++var" (|:++|) or "--var" (|:--|) are used in
+a character index they are ignored.  In Vim9 script, they are invalid:
+>vim9
+	vim9script
+	var int: number = 1
+	var str: string = 'hear'
+	legacy echo s:str[++s:int : ] | # ear
+	echo str[++int : ]		# E15: Invalid expression: "++int : ]
+<
 Numbers starting with zero are not considered to be octal, only numbers
-starting with "0o" are octal: "0o744". |scriptversion-4|
-
-
+starting with "0o" are octal: "0o744".  (See |scriptversion-4|.)  For example:
+>vim9
+	vim9script
+	echo 017	  # 17 (inferred decimal)
+	legacy echo 017 | # 15 (inferred octal)
+	echo 0o17	  # 15 (explicit octal)
+<
 What to watch out for ~
 							*vim9-gotchas*
-Vim9 was designed to be closer to often used programming languages, but at the
-same time tries to support the legacy Vim commands.  Some compromises had to
-be made.  Here is a summary of what might be unexpected.
+Vim9 script was designed to be closer to contemporary programming languages,
+but at the same time tries to support legacy Vim commands.  Some compromises
+had to be made.  Here is a summary of what might be unexpected.
 
-Ex command ranges need to be prefixed with a colon. >
-	->		  legacy Vim: shifts the previous line to the right
-	->func()	  Vim9: method call in a continuation line
-	:->		  Vim9: shifts the previous line to the right
+Ex command ranges often need to be prefixed with a colon:
 
-	%s/a/b		  legacy Vim: substitute on all lines
-	x = alongname
-	     % another	  Vim9: modulo operator in a continuation line
-	:%s/a/b		  Vim9: substitute on all lines
-	't		  legacy Vim: jump to mark t
-	'text'->func()	  Vim9: method call
-	:'t		  Vim9: jump to mark t
-
-Some Ex commands can be confused with assignments in Vim9 script: >
-	g:name = value    # assignment
-	:g:pattern:cmd	  # :global command
-
+- A line beginning with "%" in legacy Vim script means "all lines" (|:%|)
+  whereas in Vim9 script it may mean modulo (|expr-%|) or give |E1050|.
+  For example:
+>vim
+	" legacy Vim script
+	let g = 97
+	echo 1000
+	  % g / 9.7
+	" 1000 (then prints all lines containing '9.7' to messages)
+<
+  whereas:
+>vim9
+	vim9script
+	var g = 97
+	echo 1000
+	  % g / 9.7
+	# 3.092784 (which is 1000 % 97 / 9.7)
+	echo 1000
+	:%g/9.7
+	# 1000 (then prints all lines containing '9.7' to messages)
+	% g / 9.7
+	# E1050: Colon required before a range: % g / 9.7
+<
+- An initial apostrophe in legacy Vim script means go to mark (|'|).  In Vim9
+  script it's either the start of a quoted string or it gives |E115|:
+>vim
+	" legacy Vim script
+	:normal! mt
+	" Sets mark t at the line with the comment " legacy Vim script
+	't
+	" Jumps to mark t (which is at this line after sourcing this script)
+<
+  whereas:
+>vim9
+	vim9script
+	:normal! mt
+	# Sets mark t on the line with the vim9script command
+	't'->popup_notification({time: 4000})  # Vim9 script method chain
+	:'t
+	# Jumps to mark t (which is at this line after sourcing this script)
+	# 't by itself would be E115: Missing single quote
+<
+- In legacy Vim script, "->" shifts the prior line, which is prior to a range
+  if it is a sourced script, right by 'shiftwidth' spaces.  In Vim9 script, it
+  is a continuation line of a chained method:
+>vim9
+	vim9script
+	const mine: string = 'MINE'
+	  ->toupper()
+	echo mine	# MINE
+	# In a modifiable buffer, using :-> on a line by itself would shift
+	# the line before vim9script to the right by 'shiftwidth' spaces when
+	# this script is sourced.
+<
+Some Ex commands can be confused with assignments in Vim9 script:
+>vim
+	" legacy Vim script
+	let let = 8
+	echo let | " 8
+	:g:let = 8
+	" Prints lines matching 'let = 8' to messages
+<whereas: >vim9
+	vim9script
+	g:let = 9
+	echo g:let  # 9
+	:g:let = 9  # E1241: Separator not supported: :let = 9
+<
 To avoid confusion between a `:global` or `:substitute` command and an
 expression or assignment, a few separators cannot be used when these commands
-are abbreviated to a single character: ':', '-' and '.'. >
-	g:pattern:cmd	  # invalid command - ERROR
-	s:pattern:repl	  # invalid command - ERROR
-	g-pattern-cmd	  # invalid command - ERROR
-	s-pattern-repl	  # invalid command - ERROR
-	g.pattern.cmd	  # invalid command - ERROR
-	s.pattern.repl	  # invalid command - ERROR
-
-Also, there cannot be a space between the command and the separator: >
-	g /pattern/cmd	  # invalid command - ERROR
-	s /pattern/repl	  # invalid command - ERROR
-
-Functions defined with `:def` compile the whole function.  Legacy functions
-can bail out, and the following lines are not parsed: >
+are abbreviated to a single character: '-', '.' and ':'.  Examples using `:g`:
+>vim9
+	vim9cmd g-pattern-cmd	# E1241: Separator not supported: -pattern-cm…
+	vim9cmd g:pattern:cmd	# E1069: White space required after ':': :cmd…
+	vim9cmd g.pattern.cmd	# E121: Undefined variable: g
+<
+Also, there cannot be a space between the command and the separator, unlike in
+legacy Vim script.  For example:
+>vim
+	g /[-:.]pattern/p | " This prints the three vim9cmd lines above
+<
+whereas in Vim9 script:
+>vim9
+	vim9cmd g /[-:.]pattern/p  # E1242: No whitespace allowed before sepa…
+<
+Functions defined with `:def` compile the whole function, so any syntax or
+type errors will be detected during compilation, regardless of execution path.
+Legacy functions have no static type checking so type-related issues (if any)
+can only manifest for code that actually executes.  For example, the following
+legacy Vim script `:function` returns "yes" (except in the very unlikely
+scenario that you source this in z/OS UNIX):
+>vim9
+	vim9script
 	func Maybe()
-	  if !has('feature')
-	    return
+	  if !has('ebcdic')
+	    return 'yes'
 	  endif
-	  use-feature
+	  return [] + 'yes'
 	endfunc
-Vim9 functions are compiled as a whole: >
-	def Maybe()
-	  if !has('feature')
-	    return
+	echo Maybe()  # yes
+<
+The equivalent Vim9 script gives |E1051|:
+>vim9
+	vim9script
+	def Maybe(): any
+	  if !has('ebcdic')
+	    return 'yes'
 	  endif
-	  use-feature  # May give a compilation error
+	  return [] + 'yes'  # E1051: Wrong argument type for +
 	enddef
-For a workaround, split it in two functions: >
-	func Maybe()
-	  if has('feature')
-	    call MaybeInner()
+	echo Maybe()
+<
+For a workaround, put the unsupported code inside a conditional with a
+constant expression that evaluates to false.  The compiler then skips
+compiling the unsupported code.  For example:
+>vim9
+	vim9script
+	def Maybe(): any
+	  if has('ebcdic')
+	    return [] + 'yes'
 	  endif
-	endfunc
-	if has('feature')
-	  def MaybeInner()
-	    use-feature
+	  return 'yes'
+	enddef
+	echo Maybe()	# yes
+<
+Another option is to split it into two functions:
+>vim9
+	vim9script
+	if has('ebcdic')
+	  # This is not compiled at all unless on an EBCDIC system
+	  def MaybeInner(): any
+	    return [] + 'yes'
 	  enddef
 	endif
-Or put the unsupported code inside an `if` with a constant expression that
-evaluates to false: >
-	def Maybe()
-	  if has('feature')
-	    use-feature
+	func Maybe()
+	  if has('ebcdic')
+	    return MaybeInner()
+	  else
+	    return 'yes'
+	  endif
+	endfunc
+	echo Maybe()	# yes
+<
+Yet another option, though this time using a different scenario, is using
+`exists_compiled()`.  Here the builtin function |luaeval()| will only be used
+when it's available:
+>vim9
+	vim9script
+	def Version(): string
+	  if !exists_compiled('*luaeval')
+	    return $"Version using v:version: {v:version}"
+	  else
+	    return $"Version via Lua: {luaeval('900 + 2')}"
 	  endif
 	enddef
-The `exists_compiled()` function can also be used for this.
-							*vim9-user-command*
+	echo Version()
+<
+Unreachable code after `:return` gives an |E1095| error in a `:def` or Vim9
+lambda function, whereas it is ignored in a legacy function:
+>vim9
+	vim9script
+	function Legacy()
+	  return v:true
+	  let X = "Although this is unreachable, it's ignored."
+	endfunction
+	echo Legacy()		# true
+	var Vim9: func = (): bool => {
+	  return true
+	  const X = false	# E1095: Unreachable code after :return
+	}
+<							*vim9-user-command*
 Another side effect of compiling a function is that the presence of a user
 command is checked at compile time.  If the user command is defined later an
-error will result.  This works: >
-	command -nargs=1 MyCommand echom <q-args>
+error will result.  This works:
+>vim9
+	vim9script
+	command -nargs=1 MyCommand echomsg <q-args>
 	def Works()
-	  MyCommand 123
+	  MyCommand 'this works'
 	enddef
-This will give an error for "MyCommand" not being defined: >
-	def Works()
-	  command -nargs=1 MyCommand echom <q-args>
-	  MyCommand 123
+	Works()
+<
+This gives |E476| for "MyCommandFails" not being defined at compile time:
+>vim9
+	vim9script
+	def Fails()
+	  command -nargs=1 MyCommandFails echomsg <q-args>
+	  MyCommandFails 'this fails'
 	enddef
-A workaround is to invoke the command indirectly with `:execute`: >
-	def Works()
-	  command -nargs=1 MyCommand echom <q-args>
-	  execute 'MyCommand 123'
+	Fails()
+<
+A workaround is to invoke the command indirectly with `:execute`, like this:
+>vim9
+	vim9script
+	def Works_Using_Execute()
+	  command -nargs=1 MyCommandUsingExecute echomsg <q-args>
+	  execute "MyCommandUsingExecute 'this works'"
 	enddef
-
-Note that for unrecognized commands there is no check for "|" and a following
-command.  This will give an error for missing `endif`: >
-	def Maybe()
-	  if has('feature') | use-feature | endif
+	Works_Using_Execute()
+<
+For unrecognized commands in a conditional statement, there is no bailing out.
+So, if the condition evaluates to false, an invalid command will give |E171|
+and, if the condition evaluates to true, an invalid command will give |E476|.
+Examples:
+>vim9
+	vim9script
+	def F171()
+	  if has('ebcdic') | Nah | endif
 	enddef
+	F171()	# E171: Missing :endif
+< >vim9
+	vim9script
+	def F476()
+	  if !has('ebcdic') | Nah | endif
+	enddef
+	F476()	# E476: Invalid command: Nah | endif
+<
 
 Other differences ~
 
-Patterns are used like 'magic' is set, unless explicitly overruled.
-The 'edcompatible' option value is not used.
-The 'gdefault' option value is not used.
+- Patterns use 'magic', unless explicitly overruled.  That is, if the global
+  option 'nomagic' is set, it is ignored.
 
-You may also find this wiki useful.  It was written by an early adopter of
-Vim9 script: https://github.com/lacygoill/wiki/blob/master/vim/vim9.md
+- If the option value 'edcompatible' is set, it is ignored.
+
+- If the option value 'gdefault' is set, it is ignored.
 
 							*:++* *:--*
-The ++ and -- commands have been added.  They are very similar to adding or
-subtracting one: >
-		++var
-		var += 1
-		--var
-		var -= 1
-
-Using ++var or --var in an expression is not supported yet.
-
+- The ++ and -- commands have been added.  They add and subtract one
+  respectively.  They work with number and float types.  For example:
+>vim9
+	vim9script
+	var flo: float = 41.0
+	++flo
+	echo flo	# 42.0
+<
+- Using ++var or --var in an expression is not supported yet.  |E15| is given
+  if either is used.  For example:
+>vim9
+	vim9script
+	var num: number = 43
+	# The following line gives E15: Invalid expression: "--num"
+	echo --num
+<
 
 ==============================================================================
 
@@ -3838,15 +5944,15 @@ slower and means mistakes are found only later.  For example, when
 encountering the "+" character and compiling this into a generic add
 instruction, at runtime the instruction would have to inspect the type of the
 arguments and decide what kind of addition to do.  And when the type is
-dictionary throw an error.  If the types are known to be numbers then an "add
+dictionary, give an error.  If the types are known to be numbers then an "add
 number" instruction can be used, which is faster.  The error can be given at
 compile time, no error handling is needed at runtime, since adding two numbers
 almost never fails.
 
-    NOTE: As a tangential point, the exception is integer overflow, where the
-    result exceeds the maximum integer value.  For example, adding to a 64-bit
-    signed integer where the result is greater than 2^63: >vim9
-
+Note: As a tangential point, the exception is integer overflow, where the
+result exceeds the maximum integer value.  For example, adding to a 64-bit
+signed integer where the result is greater than 2^63:
+>vim9
 	vim9script
 	echo 9223372036854775807 + 1     # -9223372036854775808
 	echo 2->pow(63)->float2nr() + 1  # -9223372036854775808
@@ -3858,10 +5964,10 @@ in Vim before, with some additions such as "void" and "bool".
 
 Removing clutter and weirdness ~
 
-Once decided that `:def` functions have different syntax than legacy functions,
-we are free to add improvements to make the code more familiar for users who
-know popular programming languages.  In other words: remove weird things that
-only Vim does.
+Once decided that `:def` functions have different syntax than legacy
+functions, we are free to add improvements to make the code more familiar for
+users who know popular programming languages.  In other words: remove weird
+things that only Vim does.
 
 We can also remove clutter, mainly things that were done to make Vim script
 backwards compatible with the good old Vi commands.
@@ -3914,11 +6020,11 @@ Specific items from TypeScript we avoid:
   goes against legacy Vim script and often leads to mistakes.  For that reason
   we will keep using ".." for string concatenation.  Lua also uses ".." this
   way.  And it allows for conversion to string for more values.
-- TypeScript can use an expression like "99 || 'yes'" in a condition, but
+- TypeScript can use an expression like '99 || "yes"' in a condition, but
   cannot assign the value to a boolean.  That is inconsistent and can be
   annoying.  Vim recognizes an expression with && or || and allows using the
   result as a bool.  The |falsy-operator| was added for the mechanism to use a
-  default value.
+  default value - see |vim9-falsy|.
 - TypeScript considers an empty string as Falsy, but an empty list or dict as
   Truthy.  That is inconsistent.  In Vim an empty list and dict are also
   Falsy.
@@ -3952,27 +6058,39 @@ What we end up with is very similar to Dart: >
 Since legacy and Vim9 script will be mixed and global variables will be
 shared, optional type checking is desirable.  Also, type inference will avoid
 the need for specifying the type in many cases.  The TypeScript syntax fits
-best for adding types to declarations: >
-	var name: string	  # string type is specified
-	...
+best for adding types to declarations:
+>vim9
+	vim9script
+	var name: string		# string type is specified
 	name = 'John'
-	const greeting = 'hello'  # string type is inferred
+	const GREETING = 'Hello'	# string type is inferred
+	echo $'{GREETING} {name}'
+<
+This is how we put types in a declaration:
+>vim9
+	vim9script
+	var vlist: list<number>
+	final flist: list<string> = ['Vim']
+	def Func(arg1: string, arg2: number): string
+	    return $'{arg1}{arg2}'
+	enddef
+	vlist[0] = 9
+	echo Func(flist[0], vlist[0])	# Vim9
+<
+These alternatives were considered:
 
-This is how we put types in a declaration: >
-	var mylist: list<string>
-	final mylist: list<string> = ['foo']
-	def Func(arg1: number, arg2: string): bool
-
-Two alternatives were considered:
-    1. Put the type before the name, like Dart: >
+  1. Put the type before the name, like Dart:
+>
 	var list<string> mylist
 	final list<string> mylist = ['foo']
 	def Func(number arg1, string arg2) bool
-<    2. Put the type after the variable name, but do not use a colon, like Go: >
+<
+  2. Put the type after the variable name, but do not use a colon, like Go:
+>
 	var mylist list<string>
 	final mylist list<string> = ['foo']
 	def Func(arg1 number, arg2 string) bool
-
+<
 The first is more familiar for anyone used to C or Java.  The second one
 doesn't really have an advantage over the first, so let's discard the second.
 
@@ -4008,8 +6126,8 @@ functions return these values, and changing that causes more problems than it
 solves.  After using this for a while it turned out to work well.
 
 If you have any type of value and want to use it as a boolean, use the `!!`
-operator (see |expr-!|): >vim9
-
+operator (see also |vim9-!!|):
+>vim9
 	vim9script
 	# The following are all true:
 	echo [!!'text', !![1], !!{'x': 1}, !!1, !!1.1]
@@ -4022,7 +6140,7 @@ However, this conflicts with only allowing a boolean for a condition.
 Therefore the "??" operator was added: >
 	GetName() ?? 'unknown'
 Here you can explicitly express your intention to use the value as-is and not
-result in a boolean.  This is called the |falsy-operator|.
+result in a boolean.  This is called the |falsy-operator| - see |vim9-falsy|.
 
 
 Import and Export ~
