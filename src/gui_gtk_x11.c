@@ -7940,6 +7940,9 @@ image_placement_gui_draw(image_placement_T *place)
     if (rects == NULL || n_rects == 0)
 	return;
 
+    // Make sure to flush any output! We write directly to the cairo surface,
+    // meaning draw commands outputted before this, will still draw over the
+    // image surface.
     out_flush();
 
     cairo_surface_set_device_scale(ictx->surf, gui.scale, gui.scale);
