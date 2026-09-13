@@ -421,6 +421,9 @@ typedef struct Gui
 # ifdef GDK_WINDOWING_WAYLAND
     bool	is_wayland;	    // active gdk backend in gtk is wayland
 # endif
+# if defined(FEAT_IMAGE) && GTK_CHECK_VERSION(3,0,0)
+    double	scale;		    // Current scaling (may be fractional)
+# endif
 #endif	// FEAT_GUI_GTK
 
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)

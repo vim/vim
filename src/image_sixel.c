@@ -878,7 +878,7 @@ image_placement_sixel_draw(image_placement_T *place)
 	sixel_chunk_T	*chunk = ctx->chunks + i;
 	char_u		*seq;
 
-	image_placement_subrect(place, rect, &row, &col, &x, &y, &w, &h);
+	image_placement_subrect(place, rect, &row, &col, &x, &y, &w, &h, false);
 
 	sixel_image8_crop(&ictx->image8, x, y, w, h, &view);
 	seq = sixel_encode_view(&view);

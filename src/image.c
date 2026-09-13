@@ -47,14 +47,14 @@ struct
     [IMAGE_BACKEND_GUI] = {
 	.name = "gui",
 	.image = {
-	    .init = NULL,
-	    .uninit = NULL
+	    .init = image_gui_init,
+	    .uninit = image_gui_uninit
 	},
 	.placement = {
-	    .init = NULL,
-	    .uninit = NULL,
-	    .draw = NULL,
-	    .clear = NULL,
+	    .init = image_placement_gui_init,
+	    .uninit = image_placement_gui_uninit,
+	    .draw = image_placement_gui_draw,
+	    .clear = image_placement_gui_clear,
 # ifdef FEAT_GUI_GTK
 #  ifdef USE_GTK4
 	    .blit = false
@@ -250,8 +250,8 @@ image_ref(image_T *img)
     void
 image_get_cell_dimensions(image_T *img, int *cw, int *ch)
 {
-    int w = img->width;
-    int h = img->height;
+    int w = PHY2LOG(img->width);
+    int h = PHY2LOG(img->height);
 
     *cw = (w + cell_width - 1) / cell_width;
     *ch = (h + cell_height - 1) / cell_height;
@@ -264,8 +264,8 @@ image_get_cell_dimensions(image_T *img, int *cw, int *ch)
     static void
 image_get_cell_dimensions_min(image_T *img, int *cw, int *ch)
 {
-    int w = img->width;
-    int h = img->height;
+    int w = PHY2LOG(img->width);
+    int h = PHY2LOG(img->height);
 
     *cw = w / cell_width;
     *ch = h / cell_height;
@@ -488,6 +488,10 @@ image_placement_set_bounding_box(
     place->dirty = true;
 }
 
+/*
+ * Note that the returned crop region (x, y, w, h) is in physical pixels if
+ * "physical" is true. Not relevant when using terminal protocols (sixel, KGP).
+ */
     void
 image_placement_subrect(
 	image_placement_T   *place,
@@ -497,7 +501,8 @@ image_placement_subrect(
 	int		    *x,
 	int		    *y,
 	int		    *w,
-	int		    *h)
+	int		    *h,
+	bool		    physical)
 {
     int iw, ih;
 
@@ -510,6 +515,14 @@ image_placement_subrect(
     *y = (rect.y1 + place->crop_box.y1) * cell_height;
     *w = (rect.x2 - rect.x1) * cell_width;
     *h = (rect.y2 - rect.y1) * cell_height;
+
+    if (physical)
+    {
+	*x = LOG2PHY(*x);
+	*y = LOG2PHY(*y);
+	*w = LOG2PHY(*w);
+	*h = LOG2PHY(*h);
+    }
 
     // Make that all the values are valid. "w" and "h" can especially be
     // invalid, because the image dimensions (in pixels) are converted to cells,
@@ -817,7 +830,7 @@ mark_dirty_region_for_images(int row, int col, int row_height, int col_width)
     {
 	// Only queue a redraw if the dirty region intersects any drawn images.
 	pixman_box32_t rect;
-	
+
 	rect.x1 = col;
 	rect.y1 = row;
 	rect.x2 = col + col_width;
