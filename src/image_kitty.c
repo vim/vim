@@ -83,8 +83,7 @@ transmit_image(image_T *img)
     if (likely(((image_kitty_T *)img->backend_data)->transmitted))
 	return;
 
-    width = pixman_image_get_width(img->image);
-    height = pixman_image_get_height(img->image);
+    image_get_dimensions(img, &width, &height);
     sz = img->fmt * width * height;
 
     while (off < sz)
@@ -104,9 +103,7 @@ transmit_image(image_T *img)
 	    vim_snprintf(buf, sizeof(buf), "\033_Gm=%d;", more);
 	out_str((char_u *)buf);
 
-	encoded = base64_encode_buf((char_u *)buf,
-		(uint8_t *)pixman_image_get_data(img->image) + off,
-		chunk_sz);
+	encoded = base64_encode_buf((char_u *)buf, img->data + off, chunk_sz);
 
 	buf[encoded] = '\033';
 	buf[encoded + 1] = '\\';

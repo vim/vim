@@ -157,12 +157,6 @@ backend_available(bool msg)
     return true;
 }
 
-    static void
-pixman_destroy_func(pixman_image_t *image UNUSED, void *data)
-{
-    vim_free(data);
-}
-
 /*
  * Create a new image using the given data (creates a copy). Returns NULL on
  * failure.
@@ -171,7 +165,6 @@ pixman_destroy_func(pixman_image_t *image UNUSED, void *data)
 image_new(uint8_t *data, int width, int height, image_format_T fmt)
 {
     image_T	*img;
-    uint32_t	*copy;
     static int	id;
 
     if (!backend_available(true))
@@ -181,27 +174,13 @@ image_new(uint8_t *data, int width, int height, image_format_T fmt)
     if (img == NULL)
 	return NULL;
 
-    copy = (uint32_t *)vim_memsave(data, (size_t)width * height * fmt);
-    if (copy == NULL)
+    img->data = vim_memsave(data, (size_t)width * height * fmt);
+    if (img->data == NULL)
     {
 	vim_free(img);
 	return NULL;
     }
 
-    img->image = pixman_image_create_bits(
-	    fmt == IMAGE_FORMAT_RGB ? PIXMAN_r8g8b8 : PIXMAN_r8g8b8a8,
-	    width, height, copy, width * fmt);
-    if (img->image == NULL)
-    {
-	vim_free(copy);
-	vim_free(img);
-	return NULL;
-    }
-
-    // pixman_image_t does not take ownership of the data
-    pixman_image_set_destroy_function(img->image, pixman_destroy_func, copy);
-
-    img->data = (uint8_t *)copy;
     img->width = width;
     img->height = height;
     img->fmt = fmt;
@@ -214,7 +193,7 @@ image_new(uint8_t *data, int width, int height, image_format_T fmt)
 
     if (IMAGE_FUNC(image_backend, init)(img) == FAIL)
     {
-	pixman_image_unref(img->image);
+	vim_free(img->data);
 	vim_free(img);
 	return NULL;
     }
@@ -240,7 +219,7 @@ image_free(image_T *img)
     if (images == img)
 	images = img->prev;
 
-    pixman_image_unref(img->image);
+    vim_free(img->data);
     vim_free(img);
 }
 
@@ -265,8 +244,8 @@ image_ref(image_T *img)
     void
 image_get_cell_dimensions(image_T *img, int *cw, int *ch)
 {
-    int w = pixman_image_get_width(img->image);
-    int h = pixman_image_get_height(img->image);
+    int w = img->width;
+    int h = img->height;
 
     *cw = (w + cell_width - 1) / cell_width;
     *ch = (h + cell_height - 1) / cell_height;
@@ -279,8 +258,8 @@ image_get_cell_dimensions(image_T *img, int *cw, int *ch)
     static void
 image_get_cell_dimensions_min(image_T *img, int *cw, int *ch)
 {
-    int w = pixman_image_get_width(img->image);
-    int h = pixman_image_get_height(img->image);
+    int w = img->width;
+    int h = img->height;
 
     *cw = w / cell_width;
     *ch = h / cell_height;
@@ -289,8 +268,8 @@ image_get_cell_dimensions_min(image_T *img, int *cw, int *ch)
     void
 image_get_dimensions(image_T *img, int *w, int *h)
 {
-    *w = pixman_image_get_width(img->image);
-    *h = pixman_image_get_height(img->image);
+    *w = img->width;
+    *h = img->height;
 }
 
     static void
