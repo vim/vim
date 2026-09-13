@@ -126,7 +126,7 @@ static bool		    global_region_finalized = false;
 #define IMAGE_FUNC(b, n) (image_backends[b].image.n)
 #define PLACEMENT_FUNC(b, n) (image_backends[b].placement.n)
 
-static void redraw_region(pixman_region32_t *region);
+static void redraw_region(pixman_region32_t *region, bool now);
 
     void
 init_image_state(void)
@@ -380,18 +380,24 @@ image_placement_new(image_T *img)
     return place;
 }
 
-    void
-image_placement_clear(image_placement_T *place)
+    static void
+image_placement_clear_int(image_placement_T *place, bool now)
 {
     if (backend_available(false) && place->img != NULL)
     {
 	if (place->visible_init && PLACEMENT_FUNC(image_backend, blit))
-	    redraw_region(&place->visible_abs);
+	    redraw_region(&place->visible_abs, now);
 	PLACEMENT_FUNC(image_backend, clear)(place);
 	place->dirty = true;
 	if (!updating_screen)
 	    redraw_all_later(UPD_VALID);
     }
+}
+
+    void
+image_placement_clear(image_placement_T *place)
+{
+    image_placement_clear_int(place, updating_screen);
 }
 
     void
@@ -539,10 +545,11 @@ image_placement_subrect(
 
 /*
  * Redraw the cells in the given region. This is only relevant for image
- * backends that blit pixels.
+ * backends that blit pixels. If "now" is true, then draw the characters now
+ * instead of deferring to next redraw.
  */
     static void
-redraw_region(pixman_region32_t *region)
+redraw_region(pixman_region32_t *region, bool now)
 {
     pixman_box32_t  *rects;
     int		    n_rects;
@@ -557,7 +564,7 @@ redraw_region(pixman_region32_t *region)
 
 	// If we are currently updating the screen, redraw the characters now.
 	// Otherwise defer it later
-	if (updating_screen)
+	if (now)
 	{
 	    screen_draw_rectangle(rect.y1, rect.x1,
 		    rect.y2 - rect.y1, rect.x2 - rect.x1, FALSE, TRUE);
@@ -578,7 +585,7 @@ redraw_region(pixman_region32_t *region)
 	    }
 	}
     }
-    if (!updating_screen)
+    if (!now)
 	redraw_all_later(UPD_VALID);
 }
 
@@ -665,16 +672,17 @@ draw_image_placements(void)
 	    pixman_region32_t	visible_abs;
 	    pixman_region32_t	dirty;
 	    bool		has_dirty_cells = false;
+	    int			crop_w, crop_h;
 
 	    x = place->col;
 	    y = place->row;
 
-	    // Don't add the crop_box x1 and y1, because "row" and "col" use the
+	    crop_w = place->crop_box.x2 - place->crop_box.x1;
+	    crop_h = place->crop_box.y2 - place->crop_box.y1;
+
+	    // Don't add "crop_box" x1 and y1, because "row" and "col" use the
 	    // top left of the final cropped image.
-	    pixman_region32_init_rect(&image_region,
-		    x, y,
-		    place->crop_box.x2 - place->crop_box.x1,
-		    place->crop_box.y2 - place->crop_box.y1);
+	    pixman_region32_init_rect(&image_region, x, y, crop_w, crop_h);
 
 	    pixman_region32_init(&visible_region);
 	    pixman_region32_init(&visible_abs);
@@ -717,9 +725,7 @@ draw_image_placements(void)
 		{
 		    // Must redraw the stale regions that will not be composited
 		    // over (for this specific image).
-		    pixman_region32_t	stale_region;
-		    int			min_w, min_h;
-		    pixman_region32_t   min_region;
+		    pixman_region32_t stale_region;
 
 		    pixman_region32_init(&stale_region);
 
@@ -746,25 +752,40 @@ draw_image_placements(void)
 		    }
 
 		    // The visible region is guaranteed to cover every single
-		    // pixel. However if the visible region is converted to
+		    // pixel. However when the visible region is converted to
 		    // pixels, that means the resulting rectangles may be bigger
 		    // than the image itself.
 		    //
 		    // We clamp the values in image_placement_subrect(), however
-		    // that means partially covered cells will not be drawn
-		    // over, and therefore could contain stale content. As such,
-		    // subtract the minimum region from the visible region to
-		    // get the resulting region containing partially covered
+		    // that means partially covered cells will not be drawn over
+		    // fully, and therefore could contain stale content. As
+		    // such, subtract the minimum region from the visible region
+		    // to get the resulting region containing partially covered
 		    // cells that may have stale pixels still on them.
 		    //
 		    // Not needed for RGBA images, because we redraw the visible
 		    // region everytime anyways.
-		    if (!place->visible_init || img->fmt != IMAGE_FORMAT_RGBA)
+		    if (img->fmt != IMAGE_FORMAT_RGBA)
 		    {
+			int		    min_w, min_h;
+			int		    rect_w, rect_h;
+			pixman_region32_t   min_region;
+
 			image_get_cell_dimensions_min(img, &min_w, &min_h);
 
-			pixman_region32_init_rect(&min_region,
-				x, y, min_w, min_h);
+			// Ensure "min_region" only covers the fully covered
+			// cells of the cropped region.
+			rect_w = min_w - place->crop_box.x1;
+			rect_h = min_h - place->crop_box.y1;
+
+			if (rect_w > 0 && rect_h > 0)
+			    // pixman_region32_init_rect() expects a non zero
+			    // width and height (otherwise it outputs error
+			    // message).
+			    pixman_region32_init_rect(&min_region,
+				    x, y, rect_w, rect_h);
+			else
+			    pixman_region32_init(&min_region);
 
 			(void)pixman_region32_subtract(&min_region,
 				&visible_abs, &min_region);
@@ -773,7 +794,7 @@ draw_image_placements(void)
 			pixman_region32_fini(&min_region);
 		    }
 
-		    redraw_region(&stale_region);
+		    redraw_region(&stale_region, true);
 		    pixman_region32_fini(&stale_region);
 		}
 		if (place->visible_init)
