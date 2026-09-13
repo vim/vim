@@ -4122,7 +4122,7 @@ static int	    nfa_match;
 static int	   *nfa_timed_out;
 #endif
 
-static void copy_sub(regsub_T *to, regsub_T *from);
+static inline void copy_sub(regsub_T *to, regsub_T *from);
 static int pim_equal(nfa_pim_T *one, nfa_pim_T *two);
 
 /*
@@ -4157,7 +4157,7 @@ clear_sub(regsub_T *sub)
 /*
  * Copy the submatches from "from" to "to".
  */
-    static void
+    static inline void
 copy_sub(regsub_T *to, regsub_T *from)
 {
     to->in_use = from->in_use;
