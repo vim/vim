@@ -1165,7 +1165,6 @@ win_line(
     winlinevars_T	wlv;		// variables passed between functions
 
     int		c = 0;			// init for GCC
-    long	vcol_prev = -1;		// "wlv.vcol" of previous character
     char_u	*line;			// current line
     char_u	*ptr;			// current position in "line"
     int		in_curline = wp == curwin && lnum == curwin->w_cursor.lnum;
@@ -2489,10 +2488,7 @@ win_line(
 		    || (has_mbyte && wlv.vcol + 1 == wlv.fromcol
 			&& ((wlv.n_extra == 0 && (*mb_ptr2cells)(ptr) > 1)
 			    || (wlv.n_extra > 0 && wlv.p_extra != NULL
-				&& (*mb_ptr2cells)(wlv.p_extra) > 1)))
-		    || ((int)vcol_prev == -2
-			&& vcol_prev < wlv.vcol	// not at margin
-			&& wlv.vcol < wlv.tocol))
+				&& (*mb_ptr2cells)(wlv.p_extra) > 1))))
 		*area_attr_p = vi_attr;		// start highlighting
 	    else if (*area_attr_p != 0 && wlv.vcol == wlv.tocol)
 		*area_attr_p = 0;		// stop highlighting
@@ -2664,7 +2660,6 @@ win_line(
 	    else if (wlv.line_attr != 0
 		    && ((wlv.fromcol == -10 && wlv.tocol == MAXCOL)
 			      || wlv.vcol < wlv.fromcol
-			      || vcol_prev < -2
 			      || wlv.vcol >= wlv.tocol))
 	    {
 		// Use wlv.line_attr when not in the Visual or 'incsearch' area
@@ -4096,9 +4091,6 @@ win_line(
 	    }
 	}
 #endif
-
-	if (wlv.draw_state == WL_LINE)
-	    vcol_prev = wlv.vcol;
 
 	// Store character to be displayed.
 	// Skip characters that are left of the screen for 'nowrap'.
