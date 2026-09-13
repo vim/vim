@@ -7,7 +7,7 @@ void foo()
         double c = 1E2;
         double d = 1e2;
 
-        double e = 0X1ffp10;
+        double e = 0X1ffP10;
         double f = 0x1ffp10;
     }
 

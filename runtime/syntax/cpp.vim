@@ -73,8 +73,8 @@ endif
 if !exists("cpp_no_cpp17")
   syn match cppCast		"\<reinterpret_pointer_cast\s*<"me=e-1
   syn match cppCast		"\<reinterpret_pointer_cast\s*$"
-  syn match cppFloat		display contained "\<0[Xx]\x*\.\x\+p[-+]\=\d\+\([FfLl]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
-  syn match cppFloat		display contained "\<0[Xx]\x\+\.\=p[-+]\=\d\+\([FfLl]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
+  syn match cppFloat		display contained "\<0[Xx]\x*\.\x\+[Pp][-+]\=\d\+\([FfLl]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
+  syn match cppFloat		display contained "\<0[Xx]\x\+\.\=[Pp][-+]\=\d\+\([FfLl]\|i[fl]\=\|h\|min\|s\|ms\|us\|ns\|_\i*\)\=\>"
 
   " TODO: push this up to c.vim if/when supported in C23
   syn match cppCharacter	"u8'[^\\]'"
