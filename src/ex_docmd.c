@@ -4149,11 +4149,18 @@ find_ex_command(
 	    && (eap->cmdidx < 0 ||
 		(cmdnames[eap->cmdidx].cmd_argt & EX_NONWHITE_OK) == 0))
     {
-	char_u *cmd = vim_strnsave(eap->cmd, p - eap->cmd);
+	// A name that goes on with an underscore is not this command with an
+	// argument: "ch_log" is not ":change".  Leave it to be reported as an
+	// invalid command.
+	if (*p != '_')
+	{
+	    char_u *cmd = vim_strnsave(eap->cmd, p - eap->cmd);
 
-	semsg(_(e_command_str_not_followed_by_white_space_str), cmd, eap->cmd);
+	    semsg(_(e_command_str_not_followed_by_white_space_str), cmd,
+								    eap->cmd);
+	    vim_free(cmd);
+	}
 	eap->cmdidx = CMD_SIZE;
-	vim_free(cmd);
     }
 #endif
 
