@@ -346,7 +346,8 @@ endfunc
 func Test_exists_info()
   call assert_equal({'name': 'strlen', 'kind': 'builtin', 'minargs': 1,
         \ 'maxargs': 1, 'method': 1,
-        \ 'args': [{'types': ['string', 'number']}], 'returns': 'number'},
+        \ 'args': [{'name': 'string', 'types': ['string', 'number']}],
+        \ 'returns': 'number'},
         \ exists_info('*strlen'))
 
   " No arguments, no argument checks and not usable as a method.
@@ -371,8 +372,22 @@ func Test_exists_info()
   " No maximum number of arguments: the last item is for the rest.
   let info = exists_info('*instanceof')
   call assert_equal(-1, info.maxargs)
-  call assert_equal([{'types': ['object<any>']}, {'types': ['class']}],
-        \ info.args)
+  call assert_equal([{'name': 'object', 'types': ['object<any>']},
+        \ {'name': 'class', 'types': ['class']}], info.args)
+
+  " The names of the arguments as in the help.  An argument the help does not
+  " name has none, also the ones after the first value of printf().
+  call assert_equal(['lnum', 'col', 'off'],
+        \ exists_info('*cursor').args->map('v:val.name'))
+  call assert_equal(['expr1', 'expr2'],
+        \ exists_info('*and').args->map('v:val.name'))
+  let info = exists_info('*getreg')
+  call assert_equal(['regname', 'list'], [info.args[0].name, info.args[2].name])
+  call assert_false(has_key(info.args[1], 'name'))
+  let info = exists_info('*printf')
+  call assert_equal(['fmt', 'expr1'], [info.args[0].name, info.args[1].name])
+  call assert_false(has_key(info.args[2], 'name'))
+  call assert_false(has_key(info.args[18], 'name'))
 
   " The type depends on the number of arguments, and no value at all.
   call assert_equal('any', exists_info('*getline').returns)
