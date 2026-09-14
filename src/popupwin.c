@@ -916,10 +916,21 @@ apply_general_options(win_T *wp, dict_T *dict)
     if (di != NULL && di->di_tv.v_type == VAR_DICT
 	    && di->di_tv.vval.v_dict != NULL)
     {
-	image_T		    *img = add_image(di->di_tv.vval.v_dict);
+	image_T		    *img; 
 	image_placement_T   *place;
 	int		    cw, ch;
 
+	if (dict_len(di->di_tv.vval.v_dict) == 0)
+	{
+	    if (wp->w_popup_imagep != NULL)
+	    {
+		image_placement_free(wp->w_popup_imagep);
+		wp->w_popup_imagep = NULL;
+		goto image_done;
+	    }
+	}
+
+	img = add_image(di->di_tv.vval.v_dict);
 	if (img == NULL)
 	    return FAIL;
 
@@ -947,6 +958,8 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    wp->w_minheight = ch;
 	if (dict_find(dict, (char_u *)"maxheight", -1) == NULL)
 	    wp->w_maxheight = ch;
+image_done:
+	;
     }
     else
     {

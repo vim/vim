@@ -437,8 +437,8 @@ rgb_to_paletted_fixed(
 	int	height,
 	int	has_alpha,
 	char_u	**pal_out,
-	int    	*npal_out,
-	char_u 	**idx_out)
+	int	*npal_out,
+	char_u	**idx_out)
 {
     char_u  *idx;
     int	     n;
