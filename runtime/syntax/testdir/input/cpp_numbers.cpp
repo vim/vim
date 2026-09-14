@@ -16,9 +16,9 @@ void foo()
 
         // extended floating-point types (since C++23)
         std::float16_t f16 = 1.0F16;
-        std::float32_t f32 = .1e+2f32;
+        std::float32_t f32 = .1'2e+3'4f32;
         std::float64_t f64 = -0.123'456F64;
-        std::float128_t f128 = +0x123.ABCp-12f128;
+        std::float128_t f128 = +0x1'23.A'BCp-1'234f128;
         std::bfloat16_t bf16 = 0X1P-7BF16;
     }
 

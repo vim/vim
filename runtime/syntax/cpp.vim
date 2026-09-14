@@ -112,10 +112,10 @@ if !exists("cpp_no_cpp23")
   syn match cppNumber		display contained "\<0\o\('\=\o\+\)*\([Zz][Uu]\=\|[Uu][Zz]\)\>"
   syn match cppNumber		display contained "\<0[Bb][01]\('\=[01]\+\)*\([Zz][Uu]\=\|[Uu][Zz]\)\>"
   syn match cppNumber		display contained "\<0[Xx]\x\('\=\x\+\)*\([Zz][Uu]\=\|[Uu][Zz]\)\>"
-  syn match cppFloat		display contained "\<\d\('\=\d\+\)*\.\(\d\('\=\d\+\)*\)\=\([Ee][-+]\=\d\+\)\=\%([Ff]\%(16\|32\|64\|128\)\|\%(BF\|bf\)16\)\>"
-  syn match cppFloat		display contained "\.\d\('\=\d\+\)*\([Ee][-+]\=\d\+\)\=\%([Ff]\%(16\|32\|64\|128\)\|\%(BF\|bf\)16\)\=\>"
-  syn match cppFloat		display contained "\<0[Xx]\x*\.\x\+[Pp][-+]\=\d\+\%([Ff]\%(16\|32\|64\|128\)\|\%(BF\|bf\)16\)\=\>"
-  syn match cppFloat		display contained "\<0[Xx]\x\+\.\=[Pp][-+]\=\d\+\%([Ff]\%(16\|32\|64\|128\)\|\%(BF\|bf\)16\)\=\>"
+  syn match cppFloat		display contained "\<\d\%('\=\d\+\)*\.\%(\d\%('\=\d\+\)*\)\=\%([Ee][-+]\=\d\%('\=\d\+\)*\)\=\%([Ff]\%(16\|32\|64\|128\)\|\%(BF\|bf\)16\)\>"
+  syn match cppFloat		display contained "\.\d\%('\=\d\+\)*\%([Ee][-+]\=\d\%('\=\d\+\)*\)\=\%([Ff]\%(16\|32\|64\|128\)\|\%(BF\|bf\)16\)\=\>"
+  syn match cppFloat		display contained "\<0[Xx]\%(\x\%('\=\x\+\)*\)\=\.\x\%('\=\x\+\)*[Pp][-+]\=\d\%('\=\d\+\)*\%([Ff]\%(16\|32\|64\|128\)\|\%(BF\|bf\)16\)\=\>"
+  syn match cppFloat		display contained "\<0[Xx]\x\%('\=\x\+\)*\.\=[Pp][-+]\=\d\%('\=\d\+\)*\%([Ff]\%(16\|32\|64\|128\)\|\%(BF\|bf\)16\)\=\>"
   syn keyword cppType		float16_t float32_t float64_t float128_t bfloat16_t
 endif
 
