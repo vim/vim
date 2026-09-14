@@ -275,6 +275,11 @@ static char *(features[]) =
 #else
 	"-iconv",
 #endif
+#ifdef FEAT_IMAGE
+	"+image",
+#else
+	"-image",
+#endif
 	"+insert_expand",
 #ifdef FEAT_IPV6
 	"+ipv6",
