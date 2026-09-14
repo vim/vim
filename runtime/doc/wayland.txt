@@ -1,4 +1,4 @@
-*wayland.txt*	For Vim version 9.2.  Last change: 2026 Apr 20
+*wayland.txt*	For Vim version 9.2.  Last change: 2026 Sep 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -117,7 +117,7 @@ Example: define a provider that shells out to `wl-copy` and `wl-paste`: >vim9
 	    args ..= " -p"
 	endif
 
-	system(args, str)
+	silent system(args, str)
     enddef
 
     def Paste(reg: string): tuple<string, list<string>>
@@ -127,7 +127,7 @@ Example: define a provider that shells out to `wl-copy` and `wl-paste`: >vim9
 	    args ..= " -p"
 	endif
 
-	return ("", systemlist(args))
+	silent return ("", systemlist(args))
     enddef
 
     v:clipproviders["wl_clipboard"] = {

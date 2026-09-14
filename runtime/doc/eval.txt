@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.2.  Last change: 2026 Aug 18
+*eval.txt*	For Vim version 9.2.  Last change: 2026 Sep 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5418,6 +5418,10 @@ following order:
 	2. Register type conforming to |getregtype()|
 	3. List of strings to use, each representing a line.
 
+A callback that uses |system()| or |systemlist()| should prepend |:silent|.
+Otherwise terminal output such as focus events appears on the screen while
+the command runs.
+
 Below is a sample script that makes use of the clipboard provider feature: >vim
 	func Available()
 	    return v:true
@@ -5450,9 +5454,13 @@ Below is a sample script that makes use of the clipboard provider feature: >vim
 For Windows WSL, try this script: >vim9
 	vim9script
 
-	var Copy = (_, _, lines: list<string>) => system('wl-copy', lines)
-	var Paste = (_) => ('', systemlist('wl-paste --no-newline')
-	    ->map((_, v) => v->trim("\r", 2)))
+	def Copy(_: string, _: string, lines: list<string>)
+	    silent system('wl-copy', lines)
+	enddef
+	def Paste(_: string): tuple<string, list<string>>
+	    silent return ('', systemlist('wl-paste --no-newline')
+		->map((_, v) => v->trim("\r", 2)))
+	enddef
 
 	v:clipproviders["wslclip"] = {
 	    available: () => executable('wl-copy') && executable('wl-paste'),
