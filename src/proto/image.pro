@@ -7,7 +7,7 @@ image_T *image_ref(image_T *img);
 void image_get_cell_dimensions(image_T *img, int *cw, int *ch);
 void image_get_dimensions(image_T *img, int *w, int *h);
 void image_placement_clear(image_placement_T *place);
-image_placement_T *image_placement_new(image_T *img);
+image_placement_T *image_placement_new(image_T *img, bool quiet);
 void image_placement_free(image_placement_T *place);
 void image_placement_set_zindex(image_placement_T *place, int zindex, bool first);
 void image_placement_set_position(image_placement_T *place, int row, int col);

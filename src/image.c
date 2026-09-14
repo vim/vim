@@ -335,12 +335,12 @@ image_placement_link(image_placement_T *place, bool first)
  * placement with no backing image. Returns NULL on failure.
  */
     image_placement_T *
-image_placement_new(image_T *img)
+image_placement_new(image_T *img, bool quiet)
 {
     image_placement_T	*place;
     static int		id = 1; // Kitty placements id must be > 1
 
-    if (!backend_available(true))
+    if (!backend_available(!quiet))
 	return NULL;
 
     place = ALLOC_CLEAR_ONE(image_placement_T);

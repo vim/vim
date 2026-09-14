@@ -924,7 +924,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    return FAIL;
 
 	// Create image view for this popup
-	place = image_placement_new(img);
+	place = image_placement_new(img, false);
 
 	if (place == NULL)
 	{
@@ -954,7 +954,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	// will affect the calculations of other popup images.
 	if (wp->w_popup_imagep != NULL)
 	    image_placement_free(wp->w_popup_imagep);
-	wp->w_popup_imagep = image_placement_new(NULL);
+	wp->w_popup_imagep = image_placement_new(NULL, true);
 
 	// Not really needed because we always update the position before
 	// drawing, but do it anyways.
