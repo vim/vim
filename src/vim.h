@@ -3153,6 +3153,8 @@ long elapsed(DWORD start_tick);
 
 // Flags used by getvcol()
 #define GETVCOL_END_EXCL_LBR	1
+#define GETVCOL_NO_ABOVE	2	// exclude virtual text above the line
+#define GETVCOL_FOR_VIRTCOL	4	// value is used for "w_virtcol"
 
 // Used by expand_env_esc() callers that feed the result to
 // wildcard expansion, so that such characters embedded in

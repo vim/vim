@@ -44,7 +44,7 @@ getviscol(void)
 {
     colnr_T	x;
 
-    getvvcol(curwin, &curwin->w_cursor, &x, NULL, NULL, 0);
+    getvvcol(curwin, &curwin->w_cursor, &x, NULL, NULL, GETVCOL_NO_ABOVE);
     return (int)x;
 }
 
@@ -78,7 +78,7 @@ getviscol2(colnr_T col, colnr_T coladd)
     pos.lnum = curwin->w_cursor.lnum;
     pos.col = col;
     pos.coladd = coladd;
-    getvvcol(curwin, &pos, &x, NULL, NULL, 0);
+    getvvcol(curwin, &pos, &x, NULL, NULL, GETVCOL_NO_ABOVE);
     return (int)x;
 }
 
@@ -147,7 +147,8 @@ coladvance2(
 
 	    if ((addspaces || finetune) && !VIsual_active)
 	    {
-		curwin->w_curswant = linetabsize(curwin, pos->lnum) + one_more;
+		curwin->w_curswant = linetabsize_no_outer(curwin, pos->lnum)
+								   + one_more;
 		if (curwin->w_curswant > 0)
 		    --curwin->w_curswant;
 	    }
@@ -163,7 +164,7 @@ coladvance2(
 		&& wcol >= (colnr_T)width
 		&& width > 0)
 	{
-	    csize = linetabsize_eol(curwin, pos->lnum);
+	    csize = linetabsize_no_outer_eol(curwin, pos->lnum);
 	    if (csize > 0)
 		csize--;
 
@@ -179,11 +180,11 @@ coladvance2(
 	}
 
 	init_chartabsize_arg(&cts, curwin, pos->lnum, 0, line, line);
+#ifdef FEAT_PROP_POPUP
+	cts.cts_no_above = true;
+#endif
 	while (cts.cts_vcol <= wcol && *cts.cts_ptr != NUL)
 	{
-#ifdef FEAT_PROP_POPUP
-	    int at_start = cts.cts_ptr == cts.cts_line;
-#endif
 	    // Count a tab for what it's worth (if list mode not on)
 #ifdef FEAT_LINEBREAK
 	    csize = win_lbr_chartabsize(&cts, &head, NULL);
@@ -192,11 +193,6 @@ coladvance2(
 	    csize = lbr_chartabsize_adv(&cts);
 #endif
 	    cts.cts_vcol += csize;
-#ifdef FEAT_PROP_POPUP
-	    if (at_start)
-		// do not count the columns for virtual text above
-		cts.cts_vcol -= cts.cts_first_char;
-#endif
 	}
 	col = cts.cts_vcol;
 	idx = (int)(cts.cts_ptr - line);
