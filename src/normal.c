@@ -214,6 +214,9 @@ check_text_or_curbuf_locked(oparg_T *oap)
     return TRUE;
 }
 
+// declare this function early for use in normal_cmd_get_count
+static void display_showcmd(void);
+
 /*
  * Handle the count before a normal command and set cap->count0.
  */
@@ -241,9 +244,17 @@ getcount:
 		cap->count0 /= 10;
 		del_from_showcmd(4);	// delete the digit and ~@%
 	    }
-	    else if (cap->count0 > 99999999L)
+	    else if (cap->count0 >= 214748364L)
 	    {
-		cap->count0 = 999999999L;
+		if (cap->count0 > 214748364L
+			|| (cap->count0 == 214748364L && c >= '7'))
+		{
+		    cap->count0 = 2147483647L;
+		    mch_memmove(showcmd_buf, "2147483647", 10);
+		    display_showcmd();
+		}
+		else
+		    cap->count0 = cap->count0 * 10 + (c - '0');
 	    }
 	    else
 	    {
@@ -308,8 +319,8 @@ getcount:
 	// multiplied.
 	if (cap->count0)
 	{
-	    if (cap->opcount >= 999999999L / cap->count0)
-		cap->count0 = 999999999L;
+	    if (cap->opcount >= 2147483647L / cap->count0)
+		cap->count0 = 2147483647L;
 	    else
 		cap->count0 *= cap->opcount;
 	}
@@ -1607,8 +1618,6 @@ may_clear_cmdline(void)
 static char_u	old_showcmd_buf[SHOWCMD_BUFLEN];  // For push_showcmd()
 static int	showcmd_is_clear = TRUE;
 static int	showcmd_visual = FALSE;
-
-static void display_showcmd(void);
 
     void
 clear_showcmd(void)
