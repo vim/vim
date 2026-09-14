@@ -5418,6 +5418,11 @@ following order:
 	2. Register type conforming to |getregtype()|
 	3. List of strings to use, each representing a line.
 
+When a callback runs an external command with |system()| or |systemlist()|,
+prepend |:silent|: the command does not need the user to type, and without it
+what the terminal sends in the meantime, such as focus events, shows up on
+the screen.
+
 Below is a sample script that makes use of the clipboard provider feature: >vim
 	func Available()
 	    return v:true
@@ -5450,9 +5455,13 @@ Below is a sample script that makes use of the clipboard provider feature: >vim
 For Windows WSL, try this script: >vim9
 	vim9script
 
-	var Copy = (_, _, lines: list<string>) => system('wl-copy', lines)
-	var Paste = (_) => ('', systemlist('wl-paste --no-newline')
-	    ->map((_, v) => v->trim("\r", 2)))
+	def Copy(_: string, _: string, lines: list<string>)
+	    silent system('wl-copy', lines)
+	enddef
+	def Paste(_: string): tuple<string, list<string>>
+	    silent return ('', systemlist('wl-paste --no-newline')
+		->map((_, v) => v->trim("\r", 2)))
+	enddef
 
 	v:clipproviders["wslclip"] = {
 	    available: () => executable('wl-copy') && executable('wl-paste'),

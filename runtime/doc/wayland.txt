@@ -117,7 +117,7 @@ Example: define a provider that shells out to `wl-copy` and `wl-paste`: >vim9
 	    args ..= " -p"
 	endif
 
-	system(args, str)
+	silent system(args, str)
     enddef
 
     def Paste(reg: string): tuple<string, list<string>>
@@ -127,7 +127,7 @@ Example: define a provider that shells out to `wl-copy` and `wl-paste`: >vim9
 	    args ..= " -p"
 	endif
 
-	return ("", systemlist(args))
+	silent return ("", systemlist(args))
     enddef
 
     v:clipproviders["wl_clipboard"] = {
