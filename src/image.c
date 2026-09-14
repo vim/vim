@@ -919,11 +919,12 @@ match_imageprotocol(image_backend_T *backend)
     char_u	    *buf = alloc(len);
     char_u	    *p = p_ipc;
     int		    ret = FAIL;
+    image_backend_T res = IMAGE_BACKEND_NONE;
 
     if (buf == NULL)
 	return FAIL;
 
-    *backend = IMAGE_BACKEND_NONE;
+    res = IMAGE_BACKEND_NONE;
 
     while (*p != NUL)
     {
@@ -958,7 +959,7 @@ match_imageprotocol(image_backend_T *backend)
 	else
 	    goto exit;
 
-	if (prot == IMAGE_BACKEND_NONE)
+	if (prot == IMAGE_BACKEND_NONE || res != IMAGE_BACKEND_NONE)
 	    continue;
 
 	CLEAR_FIELD(regmatch);
@@ -973,13 +974,12 @@ match_imageprotocol(image_backend_T *backend)
 
 	vim_regfree(regmatch.regprog);
 	if (match)
-	{
-	    *backend = prot;
-	    break;
-	}
+	    // Keep going to catch any errors
+	    res = prot;
     }
 
     ret = OK;
+    *backend = res;
 exit:
     vim_free(buf);
     return ret;
