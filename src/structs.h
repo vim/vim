@@ -142,9 +142,8 @@ typedef struct {
     // only used for cterm.bg_rgb and cterm.fg_rgb: use cterm color
 # define CTERMCOLOR ((guicolor_T)0x1fffffe)
 #endif
-#ifdef FEAT_IMAGE
-# include "image.h"
-#endif
+// We have include guard in the file
+#include "image.h"
 #define COLOR_INVALID(x) ((x) == INVALCOLOR || (x) == CTERMCOLOR)
 
 #ifdef FEAT_TERMINAL

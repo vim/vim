@@ -92,4 +92,15 @@ struct image_placement_S
     image_placement_T *prev;
 };
 
+#else
+
+// Dummy structs for .pro files when GUI Vim is compiled without image support
+typedef struct
+{
+} image_T;
+
+typedef struct
+{
+} image_placement_T;
+
 #endif // FEAT_IMAGE

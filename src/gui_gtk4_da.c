@@ -1792,8 +1792,10 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
     GtkSnapshot	    *invert_snapshot = NULL;
     GskRenderNode   *body_node;
     GskRenderNode   *invert_node = NULL;
+#ifdef FEAT_IMAGE_GUI
     GskRenderNode   *ext_node;
     GHashTableIter  iter;
+#endif
 
     gui_mch_set_bg_color(gui.back_pixel);
     height = gtk_widget_get_height(widget) + gui.bleed_bot;
