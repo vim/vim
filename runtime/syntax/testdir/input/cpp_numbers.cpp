@@ -7,8 +7,10 @@ void foo()
         double c = 1E2;
         double d = 1e2;
 
-        double e = 0X1ffP10;
-        double f = 0x1ffp10;
+        double e = 0X.1ffP10;
+        float f = 0xFFp+2F;
+        double g = 0x67.P-2;
+        long double h = 0x1'2.f'fp-1'0L;
     }
 
     // See: https://en.cppreference.com/w/cpp/language/integer_literal
