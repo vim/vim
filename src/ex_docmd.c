@@ -4218,6 +4218,10 @@ modifier_len(char_u *cmd)
 	p = skipwhite(skipdigits(cmd + 1));
     for (i = 0; i < (int)ARRAY_LENGTH(cmdmod_info_tab); ++i)
     {
+	// cmdmod_info_tab[] is sorted by name: once the first letter is past
+	// the command's first letter no later entry can match.
+	if (cmdmod_info_tab[i].name[0] > *p)
+	    break;
 	for (j = 0; p[j] != NUL; ++j)
 	    if (p[j] != cmdmod_info_tab[i].name[j])
 		break;
