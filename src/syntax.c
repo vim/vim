@@ -6516,7 +6516,7 @@ ex_syntax(exarg_T *eap)
 {
     char_u	*arg = eap->arg;
     char_u	*subcmd_end;
-    char_u	*subcmd_name;
+    char_u	save;
     int		i;
 
     syn_cmdlinep = eap->cmdlinep;
@@ -6524,16 +6524,17 @@ ex_syntax(exarg_T *eap)
     // isolate subcommand name
     for (subcmd_end = arg; ASCII_ISALPHA(*subcmd_end); ++subcmd_end)
 	;
-    subcmd_name = vim_strnsave(arg, subcmd_end - arg);
-    if (subcmd_name == NULL)
-	return;
+    // terminate the subcommand name in place instead of allocating a copy
+    save = *subcmd_end;
+    *subcmd_end = NUL;
 
     if (eap->skip)		// skip error messages for all subcommands
 	++emsg_skip;
     for (i = 0; i < (int)ARRAY_LENGTH(subcommands); ++i)
     {
-	if (STRCMP(subcmd_name, (char_u *)subcommands[i].name) == 0)
+	if (STRCMP(arg, (char_u *)subcommands[i].name) == 0)
 	{
+	    *subcmd_end = save;
 	    eap->arg = skipwhite(subcmd_end);
 	    (subcommands[i].func)(eap, FALSE);
 	    break;
@@ -6541,9 +6542,9 @@ ex_syntax(exarg_T *eap)
     }
 
     if (i == (int)ARRAY_LENGTH(subcommands))
-	semsg(_(e_invalid_syntax_subcommand_str), subcmd_name);
+	semsg(_(e_invalid_syntax_subcommand_str), arg);
 
-    vim_free(subcmd_name);
+    *subcmd_end = save;
     if (eap->skip)
 	--emsg_skip;
 }
