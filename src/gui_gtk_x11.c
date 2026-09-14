@@ -1219,7 +1219,10 @@ key_press_event(GtkWidget *widget UNUSED,
     gui.event_time = event->time;
     key_sym = event->keyval;
     state = event->state;
-
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
+    if (gui.dialog_active || gui.dialog_textentry_active)
+	return FALSE;
+#endif
 #ifdef FEAT_XIM
     if (xim_queue_key_press_event(event, TRUE))
 	return TRUE;
@@ -1399,6 +1402,10 @@ key_release_event(GtkWidget *widget UNUSED,
 		  GdkEventKey *event UNUSED,
 		  gpointer data UNUSED)
 {
+# ifdef HAVE_GTK3_OVERLAY_DIALOG
+    if (gui.dialog_textentry_active)
+	return FALSE;
+# endif
 # if defined(FEAT_XIM)
     gui.event_time = event->time;
     /*
@@ -3249,6 +3256,10 @@ update_window_manager_hints(int force_width, int force_height)
     {
 	min_width  = width  + MIN_COLUMNS * gui.char_width;
 	min_height = height + MIN_LINES   * gui.char_height;
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
+	// Include the active overlay dialog in the window-manager minimum size.
+	gui_gtk_get_overlay_dialog_min_size(&min_width, &min_height);
+#endif
     }
 
     // Avoid an expose event when the size didn't change.
@@ -4120,12 +4131,96 @@ gui_mch_init(void)
     event_mask |= GDK_SCROLL_MASK;
 #endif
     gtk_widget_set_events(gui.drawarea, event_mask);
-
     gtk_widget_show(gui.drawarea);
     gui_gtk_form_put(GTK_FORM(gui.formwin), gui.drawarea, 0, 0);
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
+    GtkCssProvider *gtk_css;
+
+    gui.dialog_overlay = gtk_overlay_new();
+    gtk_css = gtk_css_provider_new();
+    gtk_container_add(GTK_CONTAINER(gui.dialog_overlay), gui.formwin);
+    gtk_widget_show(gui.formwin);
+    gtk_widget_show(gui.dialog_overlay);
+    gtk_box_pack_start(GTK_BOX(vbox), gui.dialog_overlay, TRUE, TRUE, 0);
+    gtk_css_provider_load_from_data(gtk_css,
+	    ".vim-overlay.flash {"
+	    "  box-shadow: inset 0 0 0 2px @theme_selected_bg_color;"
+	    "}"
+	    ".vim-overlay {"
+	    "  background-color: @theme_bg_color;"
+	    "}"
+	    ".vim-overlay.match-overlap {"
+	    "  background-color: alpha(@theme_bg_color, 0.1);"
+	    "}"
+	    ".vim-overlay entry {"
+	    "  background-color: @theme_base_color;"
+	    "  color: @theme_text_color;"
+	    "}"
+	    ".vim-overlay.light {"
+	    "  background-color: #f6f5f4;"
+	    "  color: #2e3436;"
+	    "}"
+	    ".vim-overlay.light label,"
+	    ".vim-overlay.light checkbutton,"
+	    ".vim-overlay.light radiobutton {"
+	    "  color: #2e3436;"
+	    "}"
+	    ".vim-overlay.light checkbutton check,"
+	    ".vim-overlay.light radiobutton radio {"
+	    "  background-color: #ffffff;"
+	    "  background-image: none;"
+	    "  border-color: #b6b6b3;"
+	    "  color: #2e3436;"
+	    "}"
+	    ".vim-overlay.light checkbutton check:checked,"
+	    ".vim-overlay.light radiobutton radio:checked {"
+	    "  background-color: @theme_selected_bg_color;"
+	    "  color: @theme_selected_fg_color;"
+	    "}"
+	    ".vim-overlay.light entry {"
+	    "  background-color: #ffffff;"
+	    "  color: #2e3436;"
+	    "}"
+	    ".vim-overlay.light button {"
+	    "  background-color: #f6f5f4;"
+	    "  background-image: none;"
+	    "  border-color: #b6b6b3;"
+	    "  color: #2e3436;"
+	    "}"
+	    ".vim-overlay.light button:hover {"
+	    "  background-color: #ffffff;"
+	    "}"
+	    ".vim-overlay.light button:active {"
+	    "  background-color: #deddda;"
+	    "}"
+	    ".vim-overlay entry.selected {"
+	    "  box-shadow: inset 0 0 0 1px @theme_selected_bg_color;"
+	    "}"
+	    ".vim-overlay button.selected {"
+	    "  box-shadow: inset 0 0 0 1px @theme_selected_bg_color;"
+	    "}"
+	    ".vim-overlay button:focus,"
+	    ".vim-overlay entry:focus {"
+	    "  box-shadow: inset 0 0 0 1px @theme_selected_bg_color;"
+	    "}"
+	    ".vim-overlay frame.focused {"
+	    "  outline: 1px solid @theme_selected_bg_color;"
+	    "  outline-offset: -1px;"
+	    "}"
+	    ".vim-overlay checkbutton:focus,"
+	    ".vim-overlay radiobutton:focus {"
+	    "  background-color: alpha(@theme_selected_bg_color, 0.1);"
+	    "}",
+	    -1, NULL);
+    gtk_style_context_add_provider_for_screen(
+	    gdk_screen_get_default(),
+	    GTK_STYLE_PROVIDER(gtk_css),
+	    GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    g_object_unref(gtk_css);
+#else
     gtk_widget_show(gui.formwin);
     gtk_box_pack_start(GTK_BOX(vbox), gui.formwin, TRUE, TRUE, 0);
-
+#endif
     // For GtkSockets, key-presses must go to the focus widget (drawarea)
     // and not the window.
     g_signal_connect((gtk_socket_id == 0) ? G_OBJECT(gui.mainwin)
@@ -4212,9 +4307,9 @@ gui_mch_init(void)
     if (gtk_socket_id == 0)
     {
 	g_signal_connect(G_OBJECT(gui.mainwin), "focus-out-event",
-			 G_CALLBACK(focus_out_event), NULL);
-	g_signal_connect(G_OBJECT(gui.mainwin), "focus-in-event",
-			 G_CALLBACK(focus_in_event), NULL);
+		G_CALLBACK(focus_out_event), NULL);
+	g_signal_connect_after(G_OBJECT(gui.mainwin), "focus-in-event",
+		G_CALLBACK(focus_in_event), NULL);
     }
     else
     {
@@ -6971,7 +7066,7 @@ gui_mch_flush(void)
 	dirty_region = NULL;
     }
 #else
-       gdk_display_flush(gtk_widget_get_display(gui.mainwin));
+    gdk_display_flush(gtk_widget_get_display(gui.mainwin));
        return;
 #endif
 }
