@@ -9680,7 +9680,6 @@ image_placement_gui_draw(image_placement_T *place)
     if (rects == NULL || n_rects == 0)
 	return;
 
-    out_flush();
 #if defined(FEAT_DIRECTX)
     // Commit any pending DirectWrite output so popup text and borders are on
     // s_hdc before we blit on top.

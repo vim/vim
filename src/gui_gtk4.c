@@ -5285,8 +5285,6 @@ image_placement_gui_draw(image_placement_T *place)
 	// Not sure if this can happen...
 	return;
 
-    out_flush();
-
     ctx->nodes = g_malloc_n(n_rects, sizeof(GskRenderNode *));
     ctx->n_nodes = n_rects;
 

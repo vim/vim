@@ -350,7 +350,7 @@ image_placement_new(image_T *img)
     place->id = id;
     id += PLACEMENT_ID_INC; // Allocate 1000 free placement ids to be used to
 			    // draw this image placement. Only relevant for
-			    // kitty graphics protocol and GDK.
+			    // kitty graphics protocol.
 
     place->img = img;
     place->dirty = true;
@@ -822,6 +822,12 @@ draw_image_placements(void)
 
     if (pending_len > 0)
     {
+	// Make sure to flush any output! We write directly to the draw
+	// area/whatever, meaning draw commands outputted before this (as escape
+	// sequences), will still draw over the image surface if we don't flush
+	// now.
+	out_flush();
+
 	for (int i = 0; i < pending_len; i++)
 	    PLACEMENT_FUNC(image_backend, draw)(pending_placements[i]);
     }
