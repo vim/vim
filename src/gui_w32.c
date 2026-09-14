@@ -9694,8 +9694,6 @@ image_placement_gui_draw(image_placement_T *place)
 	int		posx, posy;
 	int		x, y, w, h;
 
-	// We set the device scale for the surface, so we need logical pixel
-	// dimensions because cairo will handle the converting stuff.
 	image_placement_subrect(place, rect, &row, &col, &x, &y, &w, &h, true);
 	posx = FILL_X(col);
 	posy = FILL_Y(row);
