@@ -134,12 +134,12 @@ image_placement_kitty_draw(image_placement_T *place)
     int			    n_rects;
 
     rects = pixman_region32_rectangles(&place->visible, &n_rects);
-    if (unlikely(n_rects > PLACEMENT_ID_INC))
+    if (n_rects > PLACEMENT_ID_INC)
 	return;
 
     transmit_image(img);
 
-    if (unlikely(rects == NULL))
+    if (rects == NULL)
 	// Not sure if this can happen...
 	return;
 

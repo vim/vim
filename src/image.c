@@ -350,7 +350,7 @@ image_placement_new(image_T *img)
     place->id = id;
     id += PLACEMENT_ID_INC; // Allocate 1000 free placement ids to be used to
 			    // draw this image placement. Only relevant for
-			    // kitty graphics protocol.
+			    // kitty graphics protocol and GDK.
 
     place->img = img;
     place->dirty = true;

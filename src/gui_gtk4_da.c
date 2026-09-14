@@ -13,30 +13,6 @@
 #include "gui_gtk4_da.h"
 
 
-<<<<<<< HEAD
-#ifdef FEAT_IMAGE_GDK
-/*
- * Struct containing information about an image. This is designed to map well
- * with how Vim handles the kitty graphics protocol.
- */
-typedef struct
-{
-    int id;
-    int part;	// which rectangle of the image, see vim_draw_area_add_image()
-    int zindex;
-    // The cells the image covers, to remove it when one of them is cleared
-    // or moved.
-    int row;
-    int col;
-    int rows;
-    int cols;
-    GskRenderNode *node; // Cached clip node, which has the texture node as its
-			 // child. May be NULL
-} DrawImage;
-#endif
-
-=======
->>>>>>> df497f3dd (initial commit)
 #if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SIGN_ICONS)
 /*
  * Used for sign icons and netbeans multisign indicator. It is in a DrawGlyphs
@@ -165,6 +141,11 @@ struct _VimDrawArea
     GPtrArray	*node_buf;
 
     DrawCursor cursor;
+
+#ifdef FEAT_IMAGE_GUI
+    // Queue of external render nodes
+    GHashTable *external;
+#endif
 };
 
 static void draw_row_init(DrawRow *drow, int row, int cols);
@@ -189,6 +170,10 @@ vim_draw_area_finalize(GObject *obj)
     g_array_free(self->glyph_buf, TRUE);
     g_ptr_array_free(self->node_buf, TRUE);
 
+#ifdef FEAT_IMAGE_GUI
+    g_hash_table_unref(self->external);
+#endif
+
     G_OBJECT_CLASS(vim_draw_area_parent_class)->finalize(obj);
 }
 
@@ -210,6 +195,10 @@ vim_draw_area_class_init(VimDrawAreaClass *class)
 vim_draw_area_init(VimDrawArea *self)
 {
     self->bleed_right = -1;
+#ifdef FEAT_IMAGE_GUI
+    self->external = g_hash_table_new_full(g_direct_hash, g_direct_equal,
+	    NULL, (GDestroyNotify)gsk_render_node_unref);
+#endif
     self->glyph_buf = g_array_new(FALSE, FALSE, sizeof(PangoGlyphInfo));
     self->node_buf = g_ptr_array_new_with_free_func(
 	    (GDestroyNotify)gsk_render_node_unref);
@@ -1513,9 +1502,6 @@ vim_draw_area_clear_block(
 		|| col2 >= self->n_cols))
 	return;
 
-#ifdef FEAT_IMAGE_GDK
-    vim_draw_area_remove_images_in(self, row1, col1, row2, col2);
-#endif
     for (int r = row1; r <= row2; r++)
 	draw_row_fill(self->rows + r, col1, col2, NULL, NULL, &self->cursor);
 }
@@ -1557,10 +1543,6 @@ vim_draw_area_move_block(
     assert(col2 >= col1);
     assert(row1 != to);
 
-#ifdef FEAT_IMAGE_GDK
-    vim_draw_area_remove_images_in(self, MIN(row1, to), col1,
-					       MAX(row2, to + offset), col2);
-#endif
     if (row1 > to)
     {
 	// "row1" is below "to", start moving rows starting at "row1". Rows are
@@ -1663,7 +1645,7 @@ vim_draw_area_add_sign(
 
     draw_row_fill(drow, col, col + cells - 1, dglyphs, NULL, &self->cursor);
     draw_glyphs_unref(dglyphs);
-}
+
 #endif
 
 #ifdef FEAT_NETBEANS_INTG
@@ -1714,6 +1696,25 @@ vim_draw_area_add_multisign(
     draw_row_fill(drow, col, col + cells - 1, dglyphs, NULL, &self->cursor);
     draw_glyphs_unref(dglyphs);
 }
+#endif
+
+#ifdef FEAT_IMAGE_GUI
+
+/*
+ * Add an external node to be rendered, adding a new reference to the node.
+ */
+    void
+vim_draw_area_add_external(VimDrawArea *self, GskRenderNode *node)
+{
+    g_hash_table_add(self->external, gsk_render_node_ref(node));
+}
+
+    void
+vim_draw_area_remove_external(VimDrawArea *self, GskRenderNode *node)
+{
+    g_hash_table_remove(self->external, node);
+}
+
 #endif
 
 /*
@@ -1791,6 +1792,8 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
     GtkSnapshot	    *invert_snapshot = NULL;
     GskRenderNode   *body_node;
     GskRenderNode   *invert_node = NULL;
+    GskRenderNode   *ext_node;
+    GHashTableIter  iter;
 
     gui_mch_set_bg_color(gui.back_pixel);
     height = gtk_widget_get_height(widget) + gui.bleed_bot;
@@ -1872,6 +1875,14 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 	gtk_snapshot_append_node(snapshot, body_node);
 	gsk_render_node_unref(body_node);
     }
+
+#ifdef FEAT_IMAGE_GUI
+    // Allow external nodes to be inverted
+    g_hash_table_iter_init(&iter, self->external);
+
+    while (g_hash_table_iter_next(&iter, (void **)&ext_node, NULL))
+	gtk_snapshot_append_node(snapshot, ext_node);
+#endif
 
     if (invert_snapshot != NULL)
     {

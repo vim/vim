@@ -2053,9 +2053,30 @@ focus_out_event(GtkEventControllerFocus *controller UNUSED,
     }
 }
 
+#if defined(FEAT_IMAGE)
+    static void
+scale_factor_cb(GdkSurface  *surface,
+	GParamSpec	    *pspec UNUSED,
+	void		    *udata UNUSED)
+{
+    gui.scale = gdk_surface_get_scale(surface);
+    redraw_all_later(UPD_VALID);
+}
+#endif
+
     static void
 drawarea_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 {
+#if defined(FEAT_IMAGE)
+    // Use GdkSurface, as that handles fractional scale values.
+    GdkSurface *surface = gtk_native_get_surface(
+	    gtk_widget_get_native(gui.drawarea));
+
+    gui.scale = gdk_surface_get_scale(surface);
+    g_signal_connect(G_OBJECT(surface), "notify::scale",
+	    G_CALLBACK(scale_factor_cb), NULL);
+    redraw_all_later(UPD_VALID);
+#endif
     gui_mch_new_colors();
 }
 
@@ -5141,5 +5162,165 @@ gui_gtk4_print_finish(void)
     }
 }
 #endif // USE_GTK4_PRINT_DIALOG
+
+#ifdef FEAT_IMAGE_GUI
+
+typedef struct
+{
+    GdkTexture *texture;
+} image_gdk_T;
+
+typedef struct
+{
+    GskRenderNode   **nodes; // Note that elements may be NULL
+    int		    n_nodes;
+} image_placement_gdk_T;
+
+    int
+image_gui_init(image_T *img)
+{
+    image_gdk_T	    *ctx = ALLOC_CLEAR_ONE(image_gdk_T);
+    GdkMemoryFormat fmt;
+    size_t	    stride;
+    GBytes	    *bytes;
+    size_t	    size;
+    int		    w, h;
+
+    if (ctx == NULL)
+	return FAIL;
+
+    if (img->fmt == IMAGE_FORMAT_RGBA)
+	fmt = GDK_MEMORY_R8G8B8A8;
+    else
+	fmt = GDK_MEMORY_R8G8B8;
+
+    image_get_dimensions(img, &w, &h);
+
+    size = (size_t)w * h * img->fmt;
+    stride = w * img->fmt;
+
+    bytes = g_bytes_new(img->data, size);
+    ctx->texture = gdk_memory_texture_new(w, h, fmt, bytes, stride);
+    g_bytes_unref(bytes);
+
+    img->backend_data = ctx;
+    return OK;
+}
+
+    void
+image_gui_uninit(image_T *img)
+{
+    image_gdk_T *ctx = img->backend_data;
+
+    g_object_unref(ctx->texture);
+    vim_free(ctx);
+}
+
+    static void
+clear_nodes(image_placement_gdk_T *ctx)
+{
+    if (ctx->nodes == NULL || gui.drawarea == NULL)
+	return;
+
+    for (int i = 0; i < ctx->n_nodes; i++)
+    {
+	if (ctx->nodes[i] == NULL)
+	    continue;
+	vim_draw_area_remove_external(
+		VIM_DRAW_AREA(gui.drawarea), ctx->nodes[i]);
+	gsk_render_node_unref(ctx->nodes[i]);
+    }
+    g_clear_pointer(&ctx->nodes, g_free);
+    ctx->n_nodes = 0;
+}
+
+    int
+image_placement_gui_init(image_placement_T *place)
+{
+    image_placement_gdk_T *ctx = ALLOC_CLEAR_ONE(image_placement_gdk_T);
+
+    if (ctx == NULL)
+	return FAIL;
+
+    place->backend_data = ctx;
+    return OK;
+}
+
+    void
+image_placement_gui_uninit(image_placement_T *place)
+{
+    image_placement_gdk_T *ctx = place->backend_data;
+
+    clear_nodes(ctx);
+    vim_free(ctx);
+}
+
+    void
+image_placement_gui_draw(image_placement_T *place)
+{
+    image_T		    *img = place->img;
+    image_placement_gdk_T   *ctx = place->backend_data;
+    image_gdk_T		    *ictx = img->backend_data;
+    pixman_box32_t	    *rects;
+    int			    n_rects;
+    int			    iw, ih;
+    GskRenderNode	    *texture_node;
+
+    rects = pixman_region32_rectangles(&place->visible, &n_rects);
+    if (rects == NULL)
+	return;
+
+    clear_nodes(ctx);
+    if (n_rects == 0)
+	return;
+
+    image_get_dimensions(img, &iw, &ih);
+    texture_node = gsk_texture_node_new(ictx->texture,
+	    &GRAPHENE_RECT_INIT(
+		FILL_X(place->col) - FILL_X(place->crop_box.x1),
+		FILL_Y(place->row) - FILL_Y(place->crop_box.y1),
+		PHY2LOG(iw), PHY2LOG(ih)));
+
+    if (texture_node == NULL)
+	// Not sure if this can happen...
+	return;
+
+    out_flush();
+
+    ctx->nodes = g_malloc_n(n_rects, sizeof(GskRenderNode *));
+    ctx->n_nodes = n_rects;
+
+    for (int i = 0; i < n_rects; i++)
+    {
+	pixman_box32_t	rect = rects[i];
+	int		row, col;
+	int		posx, posy;
+	int		x, y, w, h;
+	GskRenderNode	*node;
+
+	image_placement_subrect(place, rect, &row, &col, &x, &y, &w, &h, false);
+	posx = FILL_X(col);
+	posy = FILL_Y(row);
+
+	node = gsk_clip_node_new(texture_node,
+		&GRAPHENE_RECT_INIT(posx, posy, w, h));
+
+	if (node != NULL)
+	    vim_draw_area_add_external(VIM_DRAW_AREA(gui.drawarea), node);
+
+	ctx->nodes[i] = node;
+    }
+    gsk_render_node_unref(texture_node);
+}
+
+    void
+image_placement_gui_clear(image_placement_T *place)
+{
+    image_placement_gdk_T   *ctx = place->backend_data;
+
+    clear_nodes(ctx);
+}
+
+#endif
 
 #endif // FEAT_GUI_GTK

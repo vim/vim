@@ -107,4 +107,10 @@ void gui_mch_replace_dialog(exarg_T *eap);
 void ex_helpfind(exarg_T *eap);
 char_u *gui_gtk4_print_dialog(prt_settings_T *psettings, char_u *jobname, double *page_width, double *page_height);
 void gui_gtk4_print_finish(void);
+int image_gui_init(image_T *img);
+void image_gui_uninit(image_T *img);
+int image_placement_gui_init(image_placement_T *place);
+void image_placement_gui_uninit(image_placement_T *place);
+void image_placement_gui_draw(image_placement_T *place);
+void image_placement_gui_clear(image_placement_T *place);
 // vim: ft=c
