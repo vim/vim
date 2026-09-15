@@ -927,8 +927,8 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    {
 		image_placement_free(wp->w_popup_imagep);
 		wp->w_popup_imagep = NULL;
-		goto image_done;
 	    }
+	    goto image_done;
 	}
 
 	// Check if image size and format is the same, if so, then just update
