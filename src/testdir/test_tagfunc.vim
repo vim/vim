@@ -536,4 +536,27 @@ func Test_tagfunc_cmd_secure()
   delfunc EvilTagFunc
 endfunc
 
+" Test that 'tagfunc' is called during `:tag` completion
+func Test_tagfunc_completion()
+  let g:compl_tagfunc_args = []
+
+  func ComplTagFunc(pat, flags, info)
+    let g:compl_tagfunc_args += [[a:pat, a:flags]]
+    return [
+          \ {'name': 'mytagA', 'filename': 'Xfile1', 'cmd': '1'},
+          \ {'name': 'mytagB', 'filename': 'Xfile1', 'cmd': '2'},
+          \ ]
+  endfunc
+  set tagfunc=ComplTagFunc
+
+  let matches = getcompletion('myt', 'tag')
+  call assert_equal(['mytagA', 'mytagB'], matches)
+
+  call assert_equal(g:compl_tagfunc_args, [['^myt', 'r']])
+
+  set tagfunc&
+  delfunc ComplTagFunc
+  unlet g:compl_tagfunc_args
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
