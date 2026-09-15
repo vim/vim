@@ -1001,7 +1001,7 @@ add_image(dict_T *dict, image_T *existing, bool find)
  * Return a dict containing information about the given dict. Note that
  * reference count of dict is not set. Returns NULL on failure.
  */
-    static dict_T *
+    dict_T *
 get_image_info(image_T *img)
 {
     dict_T	*dict;
@@ -1039,7 +1039,8 @@ get_image_info(image_T *img)
 	return NULL;
     }
 
-    dict_add_number(dict, "id", img->id);
+    if (img->state == IMAGE_STATE_PUBLIC)
+	dict_add_number(dict, "id", img->id);
     dict_add_number(dict, "width", img->width);
     dict_add_number(dict, "height", img->height);
     dict_add_number(dict, "alpha", img->fmt == IMAGE_FORMAT_RGBA);

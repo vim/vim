@@ -427,6 +427,11 @@ popup_getoptions({id})					*popup_getoptions()*
 		"textprop", "textpropid" and "textpropwin" are only present
 		when "textprop" was set.
 
+		The "image" entry is a dictionary with the same fields as
+		returned by |image_info()|.  Note that if the image is created
+		directly by the popup, the "id" field will not be present, see
+		|popup-image|.
+
 		If popup window {id} is not found an empty Dict is returned.
 
 		Can also be used as a |method|: >
@@ -609,6 +614,7 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 			firstline
 			flip
 			highlight
+			image
 			mapping
 			mask
 			moved
@@ -801,18 +807,9 @@ The second argument of |popup_create()| is a dictionary with options:
 			underlying text, making it partially transparent.
 			Requires 'termguicolors' to be set.
 			Also see |popup-opacity|.
-	image		Dictionary describing a raw RGB or RGBA pixel buffer
-			to render inside the popup.  When set the popup
-			auto-sizes its cell box from the image's pixel
-			dimensions, so "minwidth" / "minheight" / "maxwidth" /
-			"maxheight" do not need to be set by hand.  Keys:
-			    data    |Blob| of bytes; length must equal
-				    width*height*3 (RGB) or width*height*4
-				    (RGBA).
-			    width   image width in pixels.
-			    height  image height in pixels.
-			Use an empty dictionary to remove a previously set
-			image.  See |popup-image|.
+	image		Dictionary for displaying an image.  See |image_add()|
+			for required fields, or you can provide the "id" field
+			only, see |popup-image|.
 	padding		List with numbers, defining the padding
 			above/right/below/left of the popup (similar to CSS).
 			An empty list uses a padding of 1 all around.  The

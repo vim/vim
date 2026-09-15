@@ -4961,6 +4961,16 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_number(dict, "textpropid", wp->w_popup_prop_id);
     }
 
+#ifdef FEAT_IMAGE_POPUP
+    if (wp->w_popup_imagep != NULL && wp->w_popup_imagep->img != NULL)
+    {
+	dict_T *img_dict = get_image_info(wp->w_popup_imagep->img);
+
+	if (dict_add_dict(dict, "image", img_dict) == FAIL)
+	    dict_unref(img_dict);
+    }
+#endif
+
     dict_add_string(dict, "title", wp->w_popup_title);
     dict_add_number(dict, "wrap", wp->w_p_wrap);
     dict_add_number(dict, "drag", (wp->w_popup_flags & POPF_DRAG) != 0);

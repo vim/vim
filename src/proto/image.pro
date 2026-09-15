@@ -19,6 +19,7 @@ void image_placement_subrect(image_placement_T *place, pixman_box32_t rect, int 
 void draw_image_placements(void);
 void mark_dirty_region_for_images(int row, int col, int row_height, int col_width);
 image_T *add_image(dict_T *dict, image_T *existing, bool find);
+dict_T *get_image_info(image_T *img);
 int update_image_backend(void);
 void f_image_add(typval_T *argvars, typval_T *rettv);
 void f_image_discard(typval_T *argvars, typval_T *rettv);
