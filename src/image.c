@@ -1228,7 +1228,7 @@ f_image_add(typval_T *argvars, typval_T *rettv)
 }
 
     void
-f_image_discard(typval_T *argvars, typval_T *rettv)
+f_image_discard(typval_T *argvars, typval_T *rettv UNUSED)
 {
     image_T *img;
 

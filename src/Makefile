@@ -1389,7 +1389,7 @@ MKDIR_P = $(SHELL) install-sh -c -d
 VTERM_CFLAGS = -Ilibvterm/include
 
 PRE_DEFS = -Iproto $(DEFS) $(GUI_DEFS) $(GUI_IPATH) $(CPPFLAGS) $(EXTRA_IPATHS)
-POST_DEFS = $(X_CFLAGS) $(MZSCHEME_CFLAGS) $(EXTRA_DEFS)
+POST_DEFS = $(X_CFLAGS) $(MZSCHEME_CFLAGS) $(EXTRA_DEFS) $(PIXMAN_CFLAGS) $(PIXMAN_CPPFLAGS)
 
 ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(SANITIZER_CFLAGS) $(LEAK_CFLAGS) $(ABORT_CFLAGS) $(POST_DEFS)
 
@@ -3494,7 +3494,7 @@ objects/if_tcl.o: if_tcl.c
 	$(CCC_NF) $(TCL_CFLAGS) $(ALL_CFLAGS) $(TCL_CFLAGS_EXTRA) -o $@ if_tcl.c
 
 objects/image.o: image.c
-	$(CCC) $(PIXMAN_CFLAGS) $(PIXMAN_CPPFLAGS) -o $@ image.c
+	$(CCC) -o $@ image.c
 
 objects/image_kitty.o: image_kitty.c
 	$(CCC) -o $@ image_kitty.c

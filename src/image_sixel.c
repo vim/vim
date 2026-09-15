@@ -603,18 +603,14 @@ emit_run(garray_T *gap, char_u ch, int cnt)
     static char_u *
 sixel_encode_view(sixel_view_T *view)
 {
-    garray_T	 ga;
-    sixel_band_T	*band_state = &sixel_state.band;
-    char_u	*idx;
-    char_u	*pal;
-    int		 npal;
-    int		 width, height;
-    int		 band, p, x, n;
-    char_u	*result;
-
-    if (view == NULL || view->idx == NULL || view->width <= 0
-	    || view->height <= 0)
-	return NULL;
+    garray_T	    ga;
+    sixel_band_T    *band_state = &sixel_state.band;
+    char_u	    *idx;
+    char_u	    *pal;
+    int		    npal;
+    int		    width, height;
+    int		    band, p, x, n;
+    char_u	    *result;
 
     idx = view->idx;
     pal = view->pal;
