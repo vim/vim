@@ -280,6 +280,11 @@ static char *(features[]) =
 #else
 	"-image",
 #endif
+#ifdef FEAT_IMAGE_POPUP
+	"+image_popup",
+#else
+	"-image_popup",
+#endif
 	"+insert_expand",
 #ifdef FEAT_IPV6
 	"+ipv6",

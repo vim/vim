@@ -910,7 +910,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	}
     }
 
-#ifdef FEAT_IMAGE
+#ifdef FEAT_IMAGE_POPUP
     di = dict_find(dict, (char_u *)"image", -1);
 
     if (di != NULL && di->di_tv.v_type == VAR_DICT
@@ -1912,7 +1912,7 @@ popup_adjust_position(win_T *wp)
 	    {
 		if ((wp->w_popup_flags & POPF_HIDDEN) == 0)
 		{
-#ifdef FEAT_IMAGE
+#ifdef FEAT_IMAGE_POPUP
 		    if (wp->w_popup_imagep != NULL)
 			image_placement_clear(wp->w_popup_imagep);
 #endif
@@ -2437,7 +2437,7 @@ popup_adjust_position(win_T *wp)
     // leaving stray decorations behind.
     if (popup_compute_clipwindow_offsets(wp))
     {
-#ifdef FEAT_IMAGE
+#ifdef FEAT_IMAGE_POPUP
 	if (!(wp->w_popup_flags & POPF_HIDDEN))
 	    // Clear placement before hiding, like popup_hide()
 	    if (wp->w_popup_imagep != NULL)
@@ -3772,7 +3772,7 @@ popup_hide(win_T *wp)
 
     popup_save_area(wp, &old_area);
 
-#ifdef FEAT_IMAGE
+#ifdef FEAT_IMAGE_POPUP
     if (wp->w_popup_imagep != NULL)
 	image_placement_clear(wp->w_popup_imagep);
 #endif
@@ -3974,7 +3974,7 @@ popup_free(win_T *wp)
 
     popup_save_area(wp, &old_area);
 
-#ifdef FEAT_IMAGE
+#ifdef FEAT_IMAGE_POPUP
     if (wp->w_popup_imagep != NULL)
 	image_placement_free(wp->w_popup_imagep);
 #endif
@@ -6205,7 +6205,7 @@ fill_opacity_padding(
 		    start_col, end_col);
 }
 
-#ifdef FEAT_IMAGE
+#ifdef FEAT_IMAGE_POPUP
 /*
  * Position the image associated with this popup window (if any).
  */
@@ -6866,7 +6866,7 @@ update_popups(void (*win_update)(win_T *wp))
 	if (override_success)
 	    pop_highlight_overrides();
 
-#ifdef FEAT_IMAGE
+#ifdef FEAT_IMAGE_POPUP
 	popup_position_image(wp);
 #endif
     }

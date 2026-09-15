@@ -1100,7 +1100,8 @@
 
 
 /*
- * +image   Render images in the terminal and GUI
+ * +image	    Render images in the terminal and GUI
+ * +image_popup	    Render images in popup windows
  */
 #if defined(FEAT_HUGE) && defined(FEAT_PROP_POPUP) && defined(HAVE_PIXMAN)
 # define ALLOW_IMAGE
@@ -1117,6 +1118,7 @@
 
 #if defined(FEAT_IMAGE_SIXEL) || defined(FEAT_IMAGE_KITTY) \
     || defined(FEAT_IMAGE_GUI)
+# define FEAT_IMAGE_POPUP
 # define FEAT_IMAGE
 #endif
 
