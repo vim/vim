@@ -209,4 +209,4 @@ image_placement_kitty_clear(image_placement_T *place)
     ctx->n_ids = 0;
 }
 
-#endif // FEAT_IMAGE_KITTY || PROTO
+#endif // FEAT_IMAGE_KITTY

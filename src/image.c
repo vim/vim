@@ -915,18 +915,38 @@ mark_dirty_region_for_images(int row, int col, int row_height, int col_width)
     }
 }
 
+    static image_T *
+find_image(int id)
+{
+    image_T *img;
+
+    FOR_ALL_IMAGES(img)
+	if (img->id == id)
+	    return img;
+    return NULL;
+}
+
 /*
  * Add an image using the given information in "dict". If "existing" is not
- * NULL, try updating it instead.
+ * NULL, try updating it instead. If "find" is TRUE, then accept the "id" field.
  */
     image_T *
-add_image(dict_T *dict, image_T *existing)
+add_image(dict_T *dict, image_T *existing, bool find)
 {
     dictitem_T	    *di;
     blob_T	    *data;
     varnumber_T     w, h;
     varnumber_T     n_pixels;
     image_format_T  fmt;
+
+    if (find && dict_has_key(dict, "id"))
+    {
+	image_T *img = find_image(dict_get_number(dict, "id"));
+
+	if (img == NULL)
+	    return NULL;
+	return image_ref(img);
+    }
 
     di = dict_find(dict, (char_u *)"data", -1);
     w = dict_get_number(dict, "width");
@@ -971,6 +991,60 @@ add_image(dict_T *dict, image_T *existing)
     }
 
     return image_new(data->bv_ga.ga_data, w, h, fmt);
+}
+
+/*
+ * Return a dict containing information about the given dict. Returns NULL on
+ * failure.
+ */
+    static dict_T *
+get_image_info(image_T *img)
+{
+    dict_T	*dict;
+    blob_T	*blob;
+    int		w, h;
+    dictitem_T	*di;
+
+    dict = dict_alloc();
+    if (dict == NULL)
+	return NULL;
+
+    blob = blob_alloc();
+    if (blob == NULL)
+    {
+	dict_unref(dict);
+	return NULL;
+    }
+
+    image_get_dimensions(img, &w, &h);
+    (void)ga_concat_bytes(&blob->bv_ga, (char *)img->data, w * h * img->fmt);
+
+    di = dictitem_alloc((char_u *)"data");
+
+    if (di != NULL)
+    {
+	di->di_tv.v_type = VAR_BLOB;
+	di->di_tv.vval.v_blob = blob;
+    }
+    if (di == NULL || dict_add(dict, di) == FAIL)
+    {
+	if (di != NULL)
+	    dictitem_free(di);
+	dict_unref(dict);
+	blob_unref(blob);
+	return NULL;
+    }
+
+    dict_add_number(dict, "width", img->width);
+    dict_add_number(dict, "height", img->height);
+    dict_add_number(dict, "alpha", img->fmt == IMAGE_FORMAT_RGBA);
+    dict_add_string(dict, "format",
+	    (char_u *)(img->fmt == IMAGE_FORMAT_RGB ? "rgb" : "rgba"));
+
+    blob->bv_refcount = 1;
+    dict->dv_refcount = 1;
+
+    return dict;
 }
 
     static int
@@ -1133,4 +1207,57 @@ fail:
     return FAIL;
 }
 
-#endif // FEAT_IMAGE || PROTO
+    void
+f_image_add(typval_T *argvars, typval_T *rettv)
+{
+    dict_T  *dict;
+    image_T *img;
+
+    if (in_vim9script() && check_for_dict_arg(argvars, 0) == FAIL)
+	return;
+
+    dict = argvars[0].vval.v_dict;
+
+    img = add_image(dict, NULL, false);
+
+    rettv->v_type = VAR_NUMBER;
+    rettv->vval.v_number = img == NULL ? -1 : img->id;
+}
+
+    void
+f_image_discard(typval_T *argvars, typval_T *rettv)
+{
+    image_T *img;
+
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
+    img = find_image(argvars[0].vval.v_number);
+
+    if (img != NULL)
+	image_unref(img);
+    else
+	semsg(_(e_image_id_nr_does_not_exist), argvars[0].vval.v_number);
+}
+
+    void
+f_image_info(typval_T *argvars, typval_T *rettv)
+{
+    image_T *img;
+
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
+
+    img = find_image(argvars[0].vval.v_number);
+
+    if (img == NULL)
+    {
+	semsg(_(e_image_id_nr_does_not_exist), argvars[0].vval.v_number);
+	return;
+    }
+
+    rettv->v_type = VAR_DICT;
+    rettv->vval.v_dict = get_image_info(img);
+}
+
+#endif // FEAT_IMAGE

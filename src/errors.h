@@ -3840,4 +3840,6 @@ EXTERN char e_no_image_backend_available[]
 	INIT(= N_("E1585: No image backend available"));
 EXTERN char e_changing_image_backend_failed[]
 	INIT(= N_("E1586: Failed changing image backends"));
+EXTERN char e_image_id_nr_does_not_exist[]
+	INIT(= N_("E1587: Image ID %d does not exist"));
 #endif

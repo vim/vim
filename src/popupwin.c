@@ -936,7 +936,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	if (wp->w_popup_imagep != NULL && wp->w_popup_imagep->img != NULL)
 	    cur_img = wp->w_popup_imagep->img;
 
-	img = add_image(di->di_tv.vval.v_dict, cur_img);
+	img = add_image(di->di_tv.vval.v_dict, cur_img, true);
 	if (img == NULL)
 	    return FAIL;
 

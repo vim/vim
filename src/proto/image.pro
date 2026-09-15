@@ -18,6 +18,9 @@ void image_placement_set_bounding_box(image_placement_T *place, int row, int col
 void image_placement_subrect(image_placement_T *place, pixman_box32_t rect, int *row, int *col, int *x, int *y, int *w, int *h, bool physical);
 void draw_image_placements(void);
 void mark_dirty_region_for_images(int row, int col, int row_height, int col_width);
-image_T *add_image(dict_T *dict, image_T *existing);
+image_T *add_image(dict_T *dict, image_T *existing, bool find);
 int update_image_backend(void);
+void f_image_add(typval_T *argvars, typval_T *rettv);
+void f_image_discard(typval_T *argvars, typval_T *rettv);
+void f_image_info(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

@@ -911,4 +911,4 @@ image_placement_sixel_clear(image_placement_T *place UNUSED)
 {
 }
 
-#endif // FEAT_IMAGE_SIXEL || PROTO
+#endif // FEAT_IMAGE_SIXEL
