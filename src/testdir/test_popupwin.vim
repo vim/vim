@@ -6397,6 +6397,49 @@ func Test_popup_image_kitty_leave_tabpage()
   endtry
 endfunc
 
+" The image is placed in the rectangles that a popup with a higher zindex
+" leaves visible; the cell is 8x16 pixels on the pty.
+func Test_popup_image_kitty_covered()
+  CheckUnix
+  CheckFeature job
+  CheckFeature image_kitty
+
+  let lines =<< trim END
+    let img = repeat([0xff, 0, 0], 64 * 64)->list2blob()
+    call popup_create('', #{image: #{data: img, width: 64, height: 64},
+          \ line: 2, col: 2, zindex: 50})
+    let g:cover = popup_create(['xx', 'xx'], #{line: 3, col: 6, zindex: 100})
+    redraw
+  END
+  call writefile(lines, 'XpopupImageTab', 'D')
+  let job = s:StartVimWithImageOnPty(1)
+  try
+    call s:WaitForPtyOutput(',p=4,', 0)
+    " The row above the cover, the parts left and right of it, the row below.
+    for seq in [',p=1,x=0,y=0,w=64,h=16,z=50,', ',p=2,x=0,y=16,w=32,h=32,z=50,',
+          \ ',p=3,x=48,y=16,w=16,h=32,z=50,', ',p=4,x=0,y=48,w=64,h=16,z=50,']
+      call assert_notequal(-1, stridx(s:pty_out, seq), seq)
+    endfor
+
+    " Without the cover one placement is enough, the others are deleted.  The
+    " screen may be drawn once more before that, with the four placements
+    " again: wait for the deletion of the last one.
+    let start = len(s:pty_out)
+    call ch_sendraw(job, ":call popup_close(g:cover)\<CR>")
+    call WaitForAssert({-> assert_match(s:kitty_delete .. 'i=\d\+,p=4,',
+          \ s:pty_out[start :])})
+    call assert_notequal(-1, stridx(s:pty_out, ',p=1,x=0,y=0,w=64,h=64,z=50,',
+          \ start))
+    for p in [2, 3, 4]
+      call assert_match(s:kitty_delete .. 'i=\d\+,p=' .. p .. ',',
+            \ s:pty_out[start :])
+    endfor
+  finally
+    call job_stop(job, 'kill')
+    call WaitForAssert({-> assert_equal('dead', job_status(job))})
+  endtry
+endfunc
+
 func Test_popup_image_sixel_leave_tabpage()
   CheckUnix
   CheckFeature job

@@ -1611,7 +1611,8 @@ gui_mch_draw_popup_image(
 	int	 src_x,
 	int	 src_y,
 	int	 draw_w,
-	int	 draw_h)
+	int	 draw_h,
+	int	 part)
 {
     if (wp->w_popup_image_data == NULL
 	    || wp->w_popup_image_w <= 0 || wp->w_popup_image_h <= 0
@@ -1623,7 +1624,7 @@ gui_mch_draw_popup_image(
     {
 	vim_draw_area_add_image(VIM_DRAW_AREA(gui.drawarea),
 		wp->w_popup_image_texture, row, col, src_x, src_y,
-		draw_w, draw_h, wp->w_zindex, wp->w_id);
+		draw_w, draw_h, wp->w_zindex, wp->w_id, part);
 
 	gtk_widget_queue_draw(gui.drawarea);
     }
@@ -1651,7 +1652,8 @@ gui_mch_draw_popup_image(
 	int	 src_x,
 	int	 src_y,
 	int	 draw_w,
-	int	 draw_h)
+	int	 draw_h,
+	int	 part UNUSED)
 {
     int x, y;
 

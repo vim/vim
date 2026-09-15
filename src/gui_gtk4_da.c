@@ -21,6 +21,7 @@
 typedef struct
 {
     int id;
+    int part;	// which rectangle of the image, see vim_draw_area_add_image()
     int zindex;
     // The cells the image covers, to remove it when one of them is cleared
     // or moved.
@@ -1745,13 +1746,13 @@ vim_draw_area_add_multisign(
  * Get the draw image with the given id, return NULL if not exists.
  */
     static GList *
-vim_draw_area_get_image(VimDrawArea *self, int id)
+vim_draw_area_get_image(VimDrawArea *self, int id, int part)
 {
     for (GList *s = self->images->head; s != NULL; s = s->next)
     {
 	DrawImage *sdimg = s->data;
 
-	if (sdimg->id == id)
+	if (sdimg->id == id && sdimg->part == part)
 	    return s;
     }
     return NULL;
@@ -1780,12 +1781,13 @@ vim_draw_area_queue_image(VimDrawArea *self, GList *link)
 }
 
 /*
- * Add an image at the given row and column with the specified zindex and id.
- * (src_x, src_y, draw_w, draw_h) describe which pixel sub-rect of the source
- * texture should be drawn. If there is an image that has the same id, then it
- * is re-rendered with the new texture. If zindex of an image changed, then the
- * queue will be updated accordingly. Note that the dimensions/positions are to
- * be in physical pixels!!!
+ * Add an image at the given row and column with the specified zindex, id and
+ * part.  (src_x, src_y, draw_w, draw_h) describe which pixel sub-rect of the
+ * source texture should be drawn; an image drawn in several rectangles has an
+ * entry for each, numbered by "part".  If there is an entry with the same id
+ * and part, then it is re-rendered with the new texture.  If zindex of an
+ * image changed, then the queue will be updated accordingly.  Note that the
+ * dimensions/positions are to be in physical pixels!!!
  */
     void
 vim_draw_area_add_image(
@@ -1798,7 +1800,8 @@ vim_draw_area_add_image(
 	double	    draw_w,
 	double	    draw_h,
 	int	    zindex,
-	int	    id)
+	int	    id,
+	int	    part)
 {
     GskRenderNode   *node, *old;
     double	    w, h;
@@ -1831,12 +1834,13 @@ vim_draw_area_add_image(
 	gsk_render_node_unref(old);
     }
 
-    link = vim_draw_area_get_image(self, id);
+    link = vim_draw_area_get_image(self, id, part);
     if (link == NULL)
     {
 	dimg = g_new(DrawImage, 1);
 
 	dimg->id = id;
+	dimg->part = part;
 	dimg->zindex = zindex;
 	dimg->node = node;
 
@@ -1868,18 +1872,25 @@ vim_draw_area_add_image(
 }
 
 /*
- * Remove the image with the given id if it exists
+ * Remove the image with the given id if it exists, all of its parts.
  */
     void
 vim_draw_area_remove_image(VimDrawArea *self, int id)
 {
-    GList *link = vim_draw_area_get_image(self, id);
+    GList *s = self->images->head;
 
-    if (link == NULL)
-	return;
+    while (s != NULL)
+    {
+	GList	    *next = s->next;
+	DrawImage   *dimg = s->data;
 
-    draw_image_free(link->data);
-    g_queue_delete_link(self->images, link);
+	if (dimg->id == id)
+	{
+	    draw_image_free(dimg);
+	    g_queue_delete_link(self->images, s);
+	}
+	s = next;
+    }
 }
 
 /*
