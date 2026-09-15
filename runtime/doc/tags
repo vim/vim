@@ -7286,6 +7286,7 @@ exepath()	builtin.txt	/*exepath()*
 exim	starting.txt	/*exim*
 exists()	builtin.txt	/*exists()*
 exists_compiled()	builtin.txt	/*exists_compiled()*
+exists_info()	builtin.txt	/*exists_info()*
 exiting	starting.txt	/*exiting*
 exiting-variable	eval.txt	/*exiting-variable*
 exp()	builtin.txt	/*exp()*
