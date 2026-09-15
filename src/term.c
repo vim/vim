@@ -2471,6 +2471,10 @@ set_termname(char_u *term)
     may_req_termresponse();
 #endif
 
+#ifdef FEAT_IMAGE
+    (void)update_image_backend();
+#endif
+
     return OK;
 }
 
