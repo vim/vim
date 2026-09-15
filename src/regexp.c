@@ -3044,6 +3044,12 @@ free_regexp_stuff(void)
     ga_clear(&backpos);
     vim_free(reg_tofree);
     vim_free(reg_prev_sub);
+    vim_free(post_start);   // NFA postfix buffer, reused across compilations
+    post_start = NULL;
+    post_start_len = 0;
+    vim_free(nfa_stack);    // NFA fragment stack, reused across compilations
+    nfa_stack = NULL;
+    nfa_stack_len = 0;
 }
 #endif
 
