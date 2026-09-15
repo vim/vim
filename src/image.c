@@ -751,9 +751,12 @@ draw_image_placements(void)
 	    }
 
 	    // Check if visible region touches the current global dirty region.
-	    // If it does, then redraw the image. Only needed for image backends
-	    // that blit pixels.
-	    if (!need_redraw && PLACEMENT_FUNC(image_backend, blit))
+	    // If it does, then redraw the image.
+	    //
+	    // This may seem only relevant for image backends that blit pixels,
+	    // but it does matter for the others. E.g. when an image is
+	    // displayed and the hit enter prompt moves the screen upwards.
+	    if (!need_redraw)
 	    {
 		pixman_region32_init(&dirty);
 		(void)pixman_region32_intersect(&dirty,
