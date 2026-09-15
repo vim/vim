@@ -916,7 +916,7 @@ apply_general_options(win_T *wp, dict_T *dict)
     if (di != NULL && di->di_tv.v_type == VAR_DICT
 	    && di->di_tv.vval.v_dict != NULL)
     {
-	image_T		    *img; 
+	image_T		    *img;
 	image_T		    *cur_img = NULL;
 	image_placement_T   *place;
 	int		    cw, ch;
