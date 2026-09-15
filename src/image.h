@@ -30,6 +30,12 @@ typedef enum
     IMAGE_FORMAT_RGBA = 4
 } image_format_T;
 
+typedef enum
+{
+    IMAGE_STATE_PUBLIC,
+    IMAGE_STATE_PRIVATE
+} image_state_T;
+
 /*
  *
  */
@@ -38,6 +44,10 @@ struct image_S
 {
     int id;
     int refcount;
+
+    // If image state is public, then it can be modified using the builtin
+    // functions.
+    image_state_T state;
 
     uint8_t	    *data; // If NULL, then image is invalid and should not be
 			   // used.

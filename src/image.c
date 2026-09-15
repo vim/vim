@@ -187,6 +187,7 @@ image_new(uint8_t *data, int width, int height, image_format_T fmt)
 	return NULL;
     }
 
+    img->state = IMAGE_STATE_PRIVATE;
     img->width = width;
     img->height = height;
     img->fmt = fmt;
@@ -924,7 +925,7 @@ find_image(int id)
     image_T *img;
 
     FOR_ALL_IMAGES(img)
-	if (img->id == id)
+	if (img->state == IMAGE_STATE_PUBLIC && img->id == id)
 	    return img;
     return NULL;
 }
@@ -1222,6 +1223,8 @@ f_image_add(typval_T *argvars, typval_T *rettv)
     dict = argvars[0].vval.v_dict;
 
     img = add_image(dict, NULL, false);
+    if (img != NULL)
+	img->state = IMAGE_STATE_PUBLIC;
 
     rettv->v_type = VAR_NUMBER;
     rettv->vval.v_number = img == NULL ? -1 : img->id;
@@ -1238,7 +1241,10 @@ f_image_discard(typval_T *argvars, typval_T *rettv UNUSED)
     img = find_image(argvars[0].vval.v_number);
 
     if (img != NULL)
+    {
+	img->state = IMAGE_STATE_PRIVATE;
 	image_unref(img);
+    }
     else
 	semsg(_(e_image_id_nr_does_not_exist), argvars[0].vval.v_number);
 }
