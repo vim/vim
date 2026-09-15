@@ -2581,6 +2581,14 @@ v:hlsearch	Variable that indicates whether search highlighting is on.
 <		Note that the value is restored when returning from a
 		function. |function-search-undo|.
 
+					*v:imagebackend*
+v:imagebackend	Indicates the current image backend being used, see
+		'imageprotocol'.  It may have one of the following values:
+			"none"	    no image backend being used
+			"gui"	    GUI specific image backend being used
+			"kitty"	    kitty graphics protocol being used
+			"sixel"	    sixel graphics being used
+
 					*v:insertmode* *insertmode-variable*
 v:insertmode	Used for the |InsertEnter| and |InsertChange| autocommand
 		events.  Values:

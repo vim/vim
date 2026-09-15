@@ -1471,11 +1471,7 @@ $quote	eval.txt	/*$quote*
 +iconv	various.txt	/*+iconv*
 +iconv/dyn	various.txt	/*+iconv\/dyn*
 +image	various.txt	/*+image*
-+image_cairo	various.txt	/*+image_cairo*
-+image_gdi	various.txt	/*+image_gdi*
-+image_gdk	various.txt	/*+image_gdk*
-+image_kitty	various.txt	/*+image_kitty*
-+image_sixel	various.txt	/*+image_sixel*
++image_popup	various.txt	/*+image_popup*
 +insert_expand	various.txt	/*+insert_expand*
 +ipv6	various.txt	/*+ipv6*
 +job	various.txt	/*+job*
@@ -4794,6 +4790,7 @@ E158	sign.txt	/*E158*
 E1581	vim9.txt	/*E1581*
 E1582	channel.txt	/*E1582*
 E1583	channel.txt	/*E1583*
+E1587	builtin.txt	/*E1587*
 E159	sign.txt	/*E159*
 E16	cmdline.txt	/*E16*
 E160	sign.txt	/*E160*
@@ -8705,6 +8702,13 @@ if_sniff.txt	if_sniff.txt	/*if_sniff.txt*
 if_tcl.txt	if_tcl.txt	/*if_tcl.txt*
 ignore-errors	eval.txt	/*ignore-errors*
 ignore-timestamp	editing.txt	/*ignore-timestamp*
+image	popup.txt	/*image*
+image-animation	popup.txt	/*image-animation*
+image-backends	popup.txt	/*image-backends*
+image-options	popup.txt	/*image-options*
+image_add()	builtin.txt	/*image_add()*
+image_discard()	builtin.txt	/*image_discard()*
+image_info()	builtin.txt	/*image_info()*
 implements	vim9class.txt	/*implements*
 import-autoload	vim9.txt	/*import-autoload*
 import-legacy	vim9.txt	/*import-legacy*

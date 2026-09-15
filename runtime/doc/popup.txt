@@ -427,6 +427,11 @@ popup_getoptions({id})					*popup_getoptions()*
 		"textprop", "textpropid" and "textpropwin" are only present
 		when "textprop" was set.
 
+		The "image" entry is a dictionary with the same fields as
+		returned by |image_info()|.  Note that if the image is created
+		directly by the popup, the "id" field will not be present, see
+		|popup-image|.
+
 		If popup window {id} is not found an empty Dict is returned.
 
 		Can also be used as a |method|: >
@@ -609,6 +614,7 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 			firstline
 			flip
 			highlight
+			image
 			mapping
 			mask
 			moved
@@ -801,18 +807,9 @@ The second argument of |popup_create()| is a dictionary with options:
 			underlying text, making it partially transparent.
 			Requires 'termguicolors' to be set.
 			Also see |popup-opacity|.
-	image		Dictionary describing a raw RGB or RGBA pixel buffer
-			to render inside the popup.  When set the popup
-			auto-sizes its cell box from the image's pixel
-			dimensions, so "minwidth" / "minheight" / "maxwidth" /
-			"maxheight" do not need to be set by hand.  Keys:
-			    data    |Blob| of bytes; length must equal
-				    width*height*3 (RGB) or width*height*4
-				    (RGBA).
-			    width   image width in pixels.
-			    height  image height in pixels.
-			Use an empty dictionary to remove a previously set
-			image.  See |popup-image|.
+	image		Dictionary for displaying an image.  See |image_add()|
+			for required fields, or you can provide the "id" field
+			only, see |popup-image|.
 	padding		List with numbers, defining the padding
 			above/right/below/left of the popup (similar to CSS).
 			An empty list uses a padding of 1 all around.  The
@@ -1170,44 +1167,60 @@ For example, to make the last 10 columns of the last line transparent:
 To make the four corners transparent:
 	[[1, 1, 1, 1], [-1, -1, 1, 1], [1, 1, -1, -1], [-1, -1, -1, -1]]
 
-POPUP IMAGE						*popup-image*
+POPUP IMAGE						*image* *popup-image*
 
-A popup window can render an image instead of (or on top of) text by passing
-an "image" dictionary to |popup_create()| or |popup_setoptions()|.  The caller
-supplies an already-decoded raw pixel buffer and Vim emits it through
-whichever backend is available at runtime:
+Vim is capable of displaying graphical images, in both the terminal and GUI.
+To do this, it must link with the pixman library, which you may install via
+your package manager on Unix, or via vcpkg on MS-Windows.  You may see if
+images are supported by checking |+image| and |+image_popup|.
 
-    sixel   DEC sixel DCS sequence on a sixel-capable terminal.
-	    |+image_sixel|.  Detected automatically; the buffer is also
-	    cropped one cell above the screen edge to avoid sixel-induced
-	    terminal scrolling.
-    kitty   kitty graphics protocol APC sequence on terminals that support it
-	    (kitty, ghostty, WezTerm, Konsole, ...).  |+image_kitty|.
-	    Detected by actively querying the terminal.
-    GDI     StretchDIBits onto the GUI canvas on the MS-Windows GUI.
-	    |+image_gdi|.
-    Cairo   composite onto a cairo_image_surface_t on the GTK GUI
-	    (covers GTK 2 and GTK 3).  |+image_cairo|.
-    GDK	    Use GdkTexture, which uploads the image onto the GPU for faster
-	    rendering (only for GTK 4).	|+image_gdk|
+A popup window may additionally render an image.  To do this, pass a field
+named "image" containing a dictionary to |popup_create()| or
+|popup_setoptions()|.  The dictionary may either have the same fields as in
+|image_add()|, or it may reference an image via its ID using the "id" field.
+The "id" field is prioritized first, see |image_add()|, |image_discard()|, and
+|image_info()|.
 
-Vim itself does NOT link against libpng, libjpeg, libwebp or any image
-decoder.  Format decoding is left to the caller, who can pipe the file through
-any external tool (GraphicsMagick, ImageMagick, ffmpeg, a custom converter,
-...) and pass the resulting bytes via a |Blob|.
+When an image is directly created by a popup window (e.g. "id" is not used),
+then it is considered internal and can not be referenced anywhere else.
 
-The "image" dictionary accepts:
-    data	|Blob| of bytes.  Length must equal width*height*3 for RGB,
-		or width*height*4 for RGBA.  RGBA buffers are alpha-composited
-		over the popup's background.
-    width	image width in pixels.
-    height	image height in pixels.
+To unset a previously set image from a popup window pass an empty dictionary: >
+	call popup_setoptions(winid, #{image: {}})
+<
+							*image-backends*
+There are two terminal image protocols supported on all platforms. The
+protocol to use is chosen using the 'imageprotocol' option:
 
-The popup's cell box is derived from the pixel dimensions and the terminal /
-GUI cell metrics, so the caller does not normally have to set "minwidth" /
-"minheight" / "maxwidth" / "maxheight".
+    sixel   Uses the sixel protocol to display images.
+    kitty   Uses the kitty graphics protocol.  This is the recommended
+	    protocol to use in the terminal if it is available, as it is much
+	    more performant than sixel.
 
-For RGBA buffers that need to blend cleanly into the editor's actual backdrop
+When using the GUI, the GTK4, GTK3, and Win32 versions of Vim are supported.
+
+To see what image backend is currently being used, use the |v:imagebackend|
+variable.
+
+							*image-options*
+When passing an RGBA buffer, Vim expects it to be endian independent and non
+alpha pre-multiplied.  For RGB images, each pixel should be exactly 3 bytes,
+a padding byte is not supported by Vim.
+
+The dimensions of a popup containing an image is automatically calculated
+based on the image dimensions nad terminal/GUI cell size.  However, you may
+override it using the "minwidth", "minheight", "maxwidth", and "maxheight"
+fields.
+
+Images are not scaled, if a popup window is smaller than the image it
+contains, then the image will be cropped instead.
+
+							*image-animation*
+The image of a popup window can be changed at runtime using
+|popup_setoptions()|.  When the new image has the same format, width, and
+height as the existing image, the existing image will be modified in place.
+This is performant enough for frame-by-frame animation, using a |timer|.
+
+For RGBA buffers that need to blend cleanly into the editor's actual backdrop,
 the script can call |getbgcolor()| to obtain the current background colour as
 [r, g, b] and pre-composite anti-aliased edges against it.
 
@@ -1231,15 +1244,6 @@ raw RGB bytes: >
 	      \ image: #{ data: blob, width: w, height: h },
 	      \ line: 1, col: 1, border: [], padding: [0, 0, 0, 0],
 	      \ })
-
-The image can be replaced at runtime via |popup_setoptions()|.  When the new
-buffer has the same width and height as the current one the pixels are swapped
-in place, which is fast enough to drive frame-by-frame animation from a
-|timer|.  |popup_getoptions()| returns the same dictionary back; the "data"
-entry is a fresh blob copy independent of the popup's internal buffer.
-
-To remove a previously set image pass an empty dictionary: >
-	call popup_setoptions(winid, #{image: {}})
 
 ==============================================================================
 4. Examples						*popup-examples*
