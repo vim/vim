@@ -1114,10 +1114,6 @@
  * shared RGB plumbing; at least one backend has to be enabled to actually
  * paint anything.
  */
-#if defined(FEAT_HUGE) && defined(FEAT_PROP_POPUP)
-# define FEAT_IMAGE
-#endif
-
 #if defined(FEAT_IMAGE) && !defined(ALWAYS_USE_GUI)
 # define FEAT_IMAGE_SIXEL
 # define FEAT_IMAGE_KITTY
