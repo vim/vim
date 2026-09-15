@@ -875,11 +875,14 @@ draw_image_placements(void)
 
     if (pending_len > 0)
     {
+#ifdef FEAT_GUI
 	// Make sure to flush any output! We write directly to the draw
 	// area/whatever, meaning draw commands outputted before this (as escape
 	// sequences), will still draw over the image surface if we don't flush
 	// now.
-	out_flush();
+	if (gui.in_use)
+	    out_flush();
+#endif
 
 	for (int i = 0; i < pending_len; i++)
 	    PLACEMENT_FUNC(image_backend, draw)(pending_placements[i]);
