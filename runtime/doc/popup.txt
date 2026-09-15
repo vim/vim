@@ -1178,7 +1178,7 @@ your package manager on Unix, or via vcpkg on MS-Windows.  You may see if
 images are supported by checking |+image| and |+image_popup|.
 
 A popup window may additionally render an image.  To do this, pass a field
-named "image" containing a dictionary to |popup_create)| or
+named "image" containing a dictionary to |popup_create()| or
 |popup_setoptions()|.  The dictionary may either have the same fields as in
 |image_add()|, or it may reference an image via its ID using the "id" field.
 The "id" field is prioritized first, see |image_add()|, |image_discard()|, and

@@ -1471,11 +1471,7 @@ $quote	eval.txt	/*$quote*
 +iconv	various.txt	/*+iconv*
 +iconv/dyn	various.txt	/*+iconv\/dyn*
 +image	various.txt	/*+image*
-+image_cairo	various.txt	/*+image_cairo*
-+image_gdi	various.txt	/*+image_gdi*
-+image_gdk	various.txt	/*+image_gdk*
-+image_kitty	various.txt	/*+image_kitty*
-+image_sixel	various.txt	/*+image_sixel*
++image_popup	various.txt	/*+image_popup*
 +insert_expand	various.txt	/*+insert_expand*
 +ipv6	various.txt	/*+ipv6*
 +job	various.txt	/*+job*
