@@ -1645,7 +1645,7 @@ vim_draw_area_add_sign(
 
     draw_row_fill(drow, col, col + cells - 1, dglyphs, NULL, &self->cursor);
     draw_glyphs_unref(dglyphs);
-
+}
 #endif
 
 #ifdef FEAT_NETBEANS_INTG
