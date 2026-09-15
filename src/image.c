@@ -205,8 +205,8 @@ image_new(uint8_t *data, int width, int height, image_format_T fmt)
     }
 
     if (images != NULL)
-	images->next = img;
-    img->prev = images;
+	images->prev = img;
+    img->next = images;
     images = img;
 
     return img;
@@ -223,7 +223,7 @@ image_free(image_T *img)
     if (img->next != NULL)
 	img->next->prev = img->prev;
     if (images == img)
-	images = img->prev;
+	images = img->next;
 
     vim_free(img->data);
     vim_free(img);
@@ -384,10 +384,10 @@ image_placement_new(image_T *img, bool quiet)
 
     place->img = img;
     place->dirty = true;
-    place->img_ver = img->ver;
 
     if (img != NULL)
     {
+	place->img_ver = img->ver;
 	place->backend = image_backend;
 
 	// Bounding box is in cells
@@ -674,7 +674,7 @@ draw_image_placements(void)
 
 	int x, y;
 
-	if (!place->draw || place->img->data == NULL)
+	if (!place->draw || (place->img != NULL && place->img->data == NULL))
 	{
 	    pixman_region32_t intersect;
 
