@@ -39,10 +39,14 @@ struct image_S
     int id;
     int refcount;
 
-    uint8_t	    *data;
+    uint8_t	    *data; // If NULL, then image is invalid and should not be
+			   // used.
     int		    width;  // In physical pixels
     int		    height; // In physical pixels
     image_format_T  fmt;
+
+    // Incremented every time the image data changes.
+    int_u	    ver;
 
     image_backend_T backend;
     void	    *backend_data;
@@ -87,6 +91,10 @@ struct image_placement_S
     pixman_region32_t	visible_abs;    // In cells, uses absolute coordinates
 					// (only used for blit image backends),
     bool		visible_init;	// If "visible" is valid
+
+    // Current image version, if it is different from the image, then must
+    // redraw the image.
+    int_u img_ver;
 
     image_placement_T *next;
     image_placement_T *prev;

@@ -278,6 +278,36 @@ image_get_dimensions(image_T *img, int *w, int *h)
     *h = img->height;
 }
 
+/*
+ * Replace the current image contents with "data". "data" should be the exact
+ * same format, width, and height. Return OK on success and FAIL on failure.
+ */
+    int
+image_update(image_T *img, uint8_t *data)
+{
+    int w, h;
+
+    if (!backend_available(true))
+	return FAIL;
+
+    image_get_dimensions(img, &w, &h);
+    mch_memmove(img->data, data, (size_t)w * h * img->fmt);
+
+    IMAGE_FUNC(image_backend, uninit)(img);
+
+    if (IMAGE_FUNC(image_backend, init)(img) == FAIL)
+    {
+	emsg(_(e_out_of_memory));
+	VIM_CLEAR(img->data);
+	return FAIL;
+    }
+
+    img->ver++;
+    redraw_all_later(UPD_VALID);
+
+    return OK;
+}
+
     static void
 image_placement_unlink(image_placement_T *place)
 {
@@ -354,6 +384,7 @@ image_placement_new(image_T *img, bool quiet)
 
     place->img = img;
     place->dirty = true;
+    place->img_ver = img->ver;
 
     if (img != NULL)
     {
@@ -643,7 +674,7 @@ draw_image_placements(void)
 
 	int x, y;
 
-	if (!place->draw)
+	if (!place->draw || place->img->data == NULL)
 	{
 	    pixman_region32_t intersect;
 
@@ -669,8 +700,8 @@ draw_image_placements(void)
 	{
 	    pixman_region32_t	visible_abs;
 	    pixman_region32_t	dirty;
-	    bool		has_dirty_cells = false;
 	    int			crop_w, crop_h;
+	    bool		need_redraw;
 
 	    x = place->col;
 	    y = place->row;
@@ -697,23 +728,41 @@ draw_image_placements(void)
 	    // into image relative coordinates.
 	    pixman_region32_translate(&visible_region, -x, -y);
 
+	    // Only redraw the image if it has changed (or if we haven't drawn
+	    // it yet). Or if image data has changed
+	    need_redraw = place->dirty || (place->visible_init
+		    && !pixman_region32_equal(&visible_region, &place->visible));
+
+	    if (place->img_ver != img->ver)
+	    {
+		// Image data changed
+		need_redraw = true;
+		place->img_ver = img->ver;
+
+		image_placement_clear(place);
+		PLACEMENT_FUNC(image_backend, uninit)(place);
+		if (PLACEMENT_FUNC(image_backend, init)(place) == FAIL)
+		{
+		    emsg(_(e_out_of_memory));
+		    image_unref(place->img);
+		    place->img = NULL;
+		    continue;
+		}
+	    }
+
 	    // Check if visible region touches the current global dirty region.
 	    // If it does, then redraw the image. Only needed for image backends
 	    // that blit pixels.
-	    if (PLACEMENT_FUNC(image_backend, blit))
+	    if (!need_redraw && PLACEMENT_FUNC(image_backend, blit))
 	    {
 		pixman_region32_init(&dirty);
 		(void)pixman_region32_intersect(&dirty,
 			&visible_abs, &dirty_region);
-		has_dirty_cells = pixman_region32_not_empty(&dirty);
+		need_redraw = pixman_region32_not_empty(&dirty);
 		pixman_region32_fini(&dirty);
 	    }
 
-	    // Only redraw the image if it has changed (or if we haven't drawn
-	    // it yet).
-	    if (place->dirty || has_dirty_cells
-		    || (place->visible_init && !pixman_region32_equal(
-			    &visible_region, &place->visible)))
+	    if (need_redraw)
 	    {
 		if (place->visible_init)
 		    pixman_region32_fini(&place->visible);
@@ -867,10 +916,11 @@ mark_dirty_region_for_images(int row, int col, int row_height, int col_width)
 }
 
 /*
- * Add an image using the given information in "dict"
+ * Add an image using the given information in "dict". If "existing" is not
+ * NULL, try updating it instead.
  */
     image_T *
-add_image(dict_T *dict)
+add_image(dict_T *dict, image_T *existing)
 {
     dictitem_T	    *di;
     blob_T	    *data;
@@ -907,6 +957,17 @@ add_image(dict_T *dict)
 	semsg(_(e_invalid_value_for_argument_str_str), "data",
 		"data length must equal width*height*3 or width*height*4");
 	return NULL;
+    }
+
+    if (existing != NULL)
+    {
+	if (existing->width == w && existing->height == h
+		&& existing->fmt == fmt)
+	{
+	    if (image_update(existing, data->bv_ga.ga_data) == FAIL)
+		return NULL;
+	    return existing;
+	}
     }
 
     return image_new(data->bv_ga.ga_data, w, h, fmt);

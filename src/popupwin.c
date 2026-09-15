@@ -917,6 +917,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    && di->di_tv.vval.v_dict != NULL)
     {
 	image_T		    *img; 
+	image_T		    *cur_img = NULL;
 	image_placement_T   *place;
 	int		    cw, ch;
 
@@ -930,9 +931,17 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    }
 	}
 
-	img = add_image(di->di_tv.vval.v_dict);
+	// Check if image size and format is the same, if so, then just update
+	// the existing data.
+	if (wp->w_popup_imagep != NULL && wp->w_popup_imagep->img != NULL)
+	    cur_img = wp->w_popup_imagep->img;
+
+	img = add_image(di->di_tv.vval.v_dict, cur_img);
 	if (img == NULL)
 	    return FAIL;
+
+	if (img == cur_img)
+	    goto image_done;
 
 	// Create image view for this popup
 	place = image_placement_new(img, false);
