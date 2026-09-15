@@ -1198,6 +1198,9 @@ protocol to use is chosen using the 'imageprotocol' option:
 
 When using the GUI, the GTK4, GTK3, and Win32 versions of Vim are supported.
 
+To see what image backend is currently being used, use the |v:imagebackend|
+variable.
+
 							*image-options*
 When passing an RGBA buffer, Vim expects it to be endian independent and non
 alpha pre-multiplied.  For RGB images, each pixel should be exactly 3 bytes,
