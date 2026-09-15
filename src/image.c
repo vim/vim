@@ -998,8 +998,8 @@ add_image(dict_T *dict, image_T *existing, bool find)
 }
 
 /*
- * Return a dict containing information about the given dict. Returns NULL on
- * failure.
+ * Return a dict containing information about the given dict. Note that
+ * reference count of dict is not set. Returns NULL on failure.
  */
     static dict_T *
 get_image_info(image_T *img)
@@ -1039,6 +1039,7 @@ get_image_info(image_T *img)
 	return NULL;
     }
 
+    dict_add_number(dict, "id", img->id);
     dict_add_number(dict, "width", img->width);
     dict_add_number(dict, "height", img->height);
     dict_add_number(dict, "alpha", img->fmt == IMAGE_FORMAT_RGBA);
@@ -1046,7 +1047,6 @@ get_image_info(image_T *img)
 	    (char_u *)(img->fmt == IMAGE_FORMAT_RGB ? "rgb" : "rgba"));
 
     blob->bv_refcount = 1;
-    dict->dv_refcount = 1;
 
     return dict;
 }
@@ -1253,17 +1253,56 @@ f_image_discard(typval_T *argvars, typval_T *rettv UNUSED)
 f_image_info(typval_T *argvars, typval_T *rettv)
 {
     image_T *img;
+    list_T  *list;
+    dict_T  *dict;
 
-    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
 	return;
 
-    img = find_image(argvars[0].vval.v_number);
+    list = list_alloc();
+    if (list == NULL)
+	return;
 
-    if (img == NULL)
+    if (argvars[0].v_type == VAR_NUMBER)
     {
-	semsg(_(e_image_id_nr_does_not_exist), argvars[0].vval.v_number);
-	return;
+	img = find_image(argvars[0].vval.v_number);
+
+	if (img == NULL)
+	{
+	    semsg(_(e_image_id_nr_does_not_exist), argvars[0].vval.v_number);
+	    list_unref(list);
+	    return;
+	}
+
+	dict = get_image_info(img);
+	if (dict == NULL || list_append_dict(list, dict) == FAIL)
+	{
+	    if (dict != NULL)
+		dict_unref(dict);
+	    list_unref(list);
+	    return;
+	}
     }
+    else
+    {
+	FOR_ALL_IMAGES(img)
+	{
+	    if (img->state == IMAGE_STATE_PRIVATE)
+		continue;
+
+	    dict = get_image_info(img);
+
+	    if (dict == NULL || list_append_dict(list, dict) == FAIL)
+	    {
+		if (dict != NULL)
+		    dict_unref(dict);
+		list_unref(list);
+		return;
+	    }
+	}
+    }
+
+    list->lv_refcount = 1;
 
     rettv->v_type = VAR_DICT;
     rettv->vval.v_dict = get_image_info(img);
