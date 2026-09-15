@@ -5043,6 +5043,24 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note that when using the GTK4 GUI, this option is not supported. The
 	only valid value for this option will be an empty string.
 
+						'imageprotocol' 'ipc'
+'imageprotocol' 'ipc'	string (default: see below)
+			global
+			{only available when compiled with the |+image| feature}
+	Same as the 'keyprotocol' option, but chooses which |image| backend to
+	use, see |image-backends|.  The supported image protocol names are:
+		none	No protocol is supported (images will not render)
+		sixel	The sixel protocol
+		kitty	Kitty graphics protocol
+
+	This option is first queried on startup, and then after when the
+	'term' option changes.  If the option is updated, and the image
+	backend changes, then any loaded images will automatically switch
+	backends. This includes when switching to the GUI using |:gui.|
+
+	The default value is: >
+		kitty:kitty,foot:sixel,ghostty:kitty,wezterm:kitty,xterm:sixel
+<
 				*'imcmdline'* *'imc'* *'noimcmdline'* *'noimc'*
 'imcmdline' 'imc'	boolean (default off)
 			global

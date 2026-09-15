@@ -6219,7 +6219,7 @@ indexof({object}, {expr} [, {opts}])			*indexof()*
 
 
 image_add({dict})					*image_add()*
-		Add an image using the given information in {dict}. This does
+		Add an image using the given information in {dict}.  This does
 		not display an image, it simply loads the image data so that
 		can be reference elsewhere (e.g. popup windows) multiple
 		times.
@@ -6234,6 +6234,8 @@ image_add({dict})					*image_add()*
 		The return value is an arbitrary ID that can be used to
 		reference the image.
 
+		{only available when compiled with the |+image| feature}
+
 		Can also be used as a |method|: >
 			info->image_add()
 <
@@ -6242,8 +6244,8 @@ image_add({dict})					*image_add()*
 
 image_discard({id})					*image_discard()*
 		Discard an image with ID {id}, internally decreasing its
-		reference count. The image will only actually be deleted when
-		there are no more references to it left. Note that after this,
+		reference count.  The image will only actually be deleted when
+		there are no more references to it left.  Note that after this,
 		the given image and its ID can not be referenced or modified.
 		This function only works on images created with |image_add()|,
 		images created directly from popup windows can not be
@@ -6253,6 +6255,8 @@ image_discard({id})					*image_discard()*
 		by a popup window, the popup window still display the image.
 
 		It is an error to provide an invalid image ID |E1587|.
+
+		{only available when compiled with the |+image| feature}
 
 		Can also be used as a |method|: >
 			id->image_discard
@@ -6265,7 +6269,7 @@ image_info([{id}])					*image_info()* *E1587*
 		When {id} is given only information about this image is
 		returned.  It is an error to use an invalid image ID.
 
-		When {id} is omitted information about all timers is returned.
+		When {id} is omitted information about all images is returned.
 
 		For each image the information is stored in a |Dictionary|
 		with these items:
@@ -6275,6 +6279,8 @@ image_info([{id}])					*image_info()* *E1587*
 		    "height"	height of image in pixels
 		    "alpha"	if image has an alpha channel (RGBA)
 		    "format"	image format, either "rgb" or "rgba"
+
+		{only available when compiled with the |+image| feature}
 
 		Can also be used as a |method|: >
 			GetImage()->image_info()
