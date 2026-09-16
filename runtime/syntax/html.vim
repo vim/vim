@@ -46,12 +46,12 @@ syn match   htmlArg	contained "[@:]\?\h[-0-9A-Za-z_:.]*\%(\_s*[>\s/]\)\@="
 
 " backward compat: special/math/svg tag name groups
 syn match   htmlSpecialTagName	contained "\%(script\|style\)\>" containedin=htmlTagN
-syn match   htmlMathTagName	contained "math" containedin=htmlTagN
-syn match   htmlSvgTagName	contained "svg" containedin=htmlTagN
+syn match   htmlMathTagName	contained "math\>" containedin=htmlTagN
+syn match   htmlSvgTagName	contained "svg\>" containedin=htmlTagN
 
 " svg and math regions (allow HTML inside)
-syn region  htmlMath start="<math>" end="</math>" contains=@htmlXml,@htmlTop transparent keepend
-syn region  htmlSvg  start="<svg>"  end="</svg>"  contains=@htmlXml,@htmlTop transparent keepend
+syn region  htmlMath start=+<math\>\_[^>]*>+ end=+</math>+ contains=@htmlXml,@htmlTop transparent keepend
+syn region  htmlSvg  start=+<svg\>\_[^>]*>+  end=+</svg>+  contains=@htmlXml,@htmlTop transparent keepend
 
 syn cluster xmlTagHook	add=htmlMathTagName,htmlSvgTagName
 
@@ -67,7 +67,7 @@ else
   " Idem 8.2.4.42,51: Comment starts with <!-- and ends with -->
   " Idem 8.2.4.43,44: Except <!--> and <!---> are parser errors
   " Idem 8.2.4.52: dash-dash-bang (--!>) is error ignored by parser, also closes comment
-  syn region htmlComment matchgroup=htmlComment start=+<!--\%(-\?>\)\@!+	end=+--!\?>+	contains=htmlCommentNested,@htmlPreProc,@Spell keepend
+  syn region htmlComment matchgroup=htmlComment start=+<!--\%(-\?>\)\@!+	end=+--!\?>+	contains=htmlCommentNested,@htmlPreproc,@Spell keepend
   " Idem 8.2.4.49: nested comment is parser error, except <!--> is all right
   syn match htmlCommentNested contained "<!-->\@!"
   syn match htmlCommentError  contained "[^><!]"
@@ -78,7 +78,7 @@ syn region htmlDoctype	start=+<!DOCTYPE+	end=+>+ keepend
 syn region htmlPreProc start=+<!--#+ end=+-->+ contains=htmlPreStmt,htmlPreError,htmlPreAttr
 syn match htmlPreStmt contained "<!--#\%(config\|echo\|exec\|fsize\|flastmod\|include\|printenv\|set\|if\|elif\|else\|endif\|geoguide\)\>"
 syn match htmlPreError contained "<!--#\S*"ms=s+4
-syn match htmlPreAttr contained "\w\+=[^"]\S\+" contains=htmlPreProcAttrError,htmlPreProcAttrName
+syn match htmlPreAttr contained "\w\+=[^"]\S*" contains=htmlPreProcAttrError,htmlPreProcAttrName
 syn region htmlPreAttr contained start=+\w\+="+ skip=+\\\\\|\\"+ end=+"+ contains=htmlPreProcAttrName keepend
 syn match htmlPreProcAttrError contained "\w\+="he=e-1
 syn match htmlPreProcAttrName contained "\%(expr\|errmsg\|sizefmt\|timefmt\|var\|cgi\|cmd\|file\|virtual\|value\)="he=e-1
@@ -172,7 +172,6 @@ if main_syntax != 'java' || exists("java_css")
   syn region cssStyle start=+<style+ keepend end=+</style>+ contains=@htmlCss,htmlTag,htmlEndTag,htmlCssStyleComment,@htmlPreproc
   syn match htmlCssStyleComment contained "\%(<!--\|-->\)"
   syn region htmlCssDefinition matchgroup=htmlArg start='style="' keepend matchgroup=htmlString end='"' contains=css.*Attr,css.*Prop,cssComment,cssLength,cssColor,cssURL,cssImportant,cssError,cssString,@htmlPreproc
-  hi def link htmlStyleArg htmlString
 endif
 
 if main_syntax == "html"

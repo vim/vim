@@ -44,7 +44,7 @@ syntax region svelteScriptJS matchgroup=svelteScriptTag
       \ end=+</script\_[^>]*>+me=s-1
       \ contains=@svelteJavaScript,htmlPreProc,svelteScriptTag,htmlEvent
 syntax region svelteScriptTS matchgroup=svelteScriptTag
-      \ start=+<script\_[^>]*lang=["']ts["']+ keepend
+      \ start=+<script\_[^>]*lang=["']ts["']>+ keepend
       \ end=+</script\_[^>]*>+me=s-1
       \ contains=@svelteTypeScript,htmlPreProc,svelteScriptTag,htmlEvent
 syntax region svelteStyle matchgroup=svelteStyleTag
@@ -60,12 +60,12 @@ syntax region svelteStyleTag contained start=+<style+ end=+>+ fold
       \ contains=htmlTagN,htmlString,htmlArg,htmlValue
 
 " Svelte special component elements: <svelte:head>, <svelte:window>, ...
-syntax match svelteComponent "\v<svelte:(head|body|window|document|options|element|boundary|component|fragment|self)>" containedin=htmlTagN
+syntax match svelteComponent contained "svelte:\%(head\|body\|window\|document\|options\|element\|boundary\|component\|fragment\|self\)\>" containedin=htmlTagN
 
 " Svelte 5 runes (and store auto-subscriptions) inside <script> blocks.
 " Also matches dot-notation rune variants: $state.raw, $derived.by,
 " $effect.pre, $effect.tracking, $effect.pending, $effect.root, $props.id
-syntax match svelteRune "\$\w\+\%(\.\w\+\)\?" containedin=svelteScriptJS,svelteScriptTS
+syntax match svelteRune "\$\w\+\%(\.\w\+\)\?\>" containedin=svelteScriptJS,svelteScriptTS
 
 " Interpolation and expressions: { expr }
 " Match inside tags, attribute values, and at top level (but not inside
@@ -78,7 +78,7 @@ syntax region svelteMustache matchgroup=svelteBraces
 "   {#if} {:else} {/if} {#each} {:then} {:catch} {/each}
 "   {#await} {#key} {#snippet} {@html} {@const} {@debug} {@render}
 syntax region svelteBlock matchgroup=svelteKeyword
-      \ start=+\v\{[#/:@]\w*+ end=+\v\}+
+      \ start=+\v\{[#/:@]\w++ end=+\v\}+
       \ containedin=htmlTag,htmlString,htmlValue keepend
 
 " Top-level mustache and block expressions (outside tags)
@@ -86,14 +86,14 @@ syntax region svelteMustacheTop matchgroup=svelteBraces
       \ start=+\v\{+ end=+\v\}+
       \ containedin=TOP keepend
 syntax region svelteBlockTop matchgroup=svelteKeyword
-      \ start=+\v\{[#/:@]\w*+ end=+\v\}+ containedin=TOP keepend
+      \ start=+\v\{[#/:@]\w++ end=+\v\}+ containedin=TOP keepend
 
 " Element directives:
 "   on:click bind:value class:active use:foo transition:fade in:/out:/animate:
 "   let:item slot: style:  (modifiers via "|": on:click|once)
-syntax match svelteDirective
-      \ "\v(on|bind|class|use|transition|in|out|animate|let|slot|style):[a-zA-Z0-9_-]+(\|[a-zA-Z0-9_-]+)*"
-      \ containedin=htmlTag contained
+syntax match svelteDirective contained
+      \ "\v(on|bind|class|use|transition|in|out|animate|let|slot|style):[a-zA-Z0-9_-]+(\|[a-zA-Z0-9_-]+)*\%(\_s*[>=\s/]\)\@="
+      \ containedin=htmlTag
 
 " Highlight links: reuse html.vim groups where possible, add Svelte-specific ones
 highlight default link svelteScriptTag htmlTag
