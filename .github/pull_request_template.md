@@ -17,14 +17,11 @@ for visual changes, a before/after screenshot is helpful
 <!--
 Changes to the C core are merged with a message in this form.
 
-    patch 9.2.XXXX: short problem line (can be the same as Problem)
     Problem:  <one line: what is wrong, from the user's point of view>
     Solution: <one line: what this does about it>
 
 Anything longer (mechanism, benchmark numbers, why an alternative was
 rejected) goes in the body below the Solution line.
-
-Keep the 9.2.XXXX, it will be filled in when merging
 
 Align the Problem and Solution lines.
 
@@ -36,7 +33,6 @@ runtime(lang): runtime file changes for language lang
 filetype: for changes to filetype detection
 -->
 
-    patch 9.2.XXXX: short problem description
     Problem:  Problem line
     Solution: Solution line
 
@@ -49,13 +45,13 @@ Align the # columns
 -->
 related: #number
 fixes:   #number
-closes:  #
+closes:  #number
 
 ### AI assistance
 
 <!--
 Please disclose AI involvement by adding the trailer
-  "Co-authored-by: AI" instead.
+  "Co-authored-by: AI tool" instead.
 -->
 
 - [ ] AI involvement is disclosed in the commit message, or no AI was used
@@ -65,9 +61,8 @@ Please disclose AI involvement by adding the trailer
 - [ ] The commit message follows the Problem/Solution form above
 - [ ] `Signed-off-by:` trailer is present (`git commit -s`)
 - [ ] A test was added, or the change cannot be tested (say why)
-- [ ] The test fails without the change and passes with it
-- [ ] Documentation under `runtime/doc/` was updated, if behaviour changed
-- [ ] CI is green
+- [ ] A test was added and ran locally, or the change cannot be tested (say why), or is already tested.
+- [ ] Documentation under `runtime/doc/` was updated
 
 ### Anything reviewers should know
 
