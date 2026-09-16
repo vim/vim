@@ -5842,7 +5842,6 @@ ml_updatechunk(
     int		updtype)
 {
     static buf_T	*ml_upd_lastbuf = NULL;
-    static linenr_T	ml_upd_lastline;
     static linenr_T	ml_upd_lastcurline;
     static int		ml_upd_lastcurix;
 
@@ -5868,6 +5867,7 @@ ml_updatechunk(
 	buf->b_ml.ml_usedchunks = 1;
 	buf->b_ml.ml_chunksize[0].mlcs_numlines = 1;
 	buf->b_ml.ml_chunksize[0].mlcs_totalsize = 1;
+	ml_upd_lastbuf = NULL;		// invalidate resume cache
     }
 
     if (updtype == ML_CHNK_UPDLINE && buf->b_ml.ml_line_count == 1)
@@ -5878,29 +5878,25 @@ ml_updatechunk(
 	buf->b_ml.ml_usedchunks = 1;
 	buf->b_ml.ml_chunksize[0].mlcs_numlines = 1;
 	buf->b_ml.ml_chunksize[0].mlcs_totalsize = (long)buf->b_ml.ml_line_len;
+	ml_upd_lastbuf = NULL;		// invalidate resume cache
 	return;
     }
 
     /*
      * Find chunk that our line belongs to, curline will be at start of the
      * chunk.
+     * The scan resumes at the cached chunk while ml_upd_lastbuf is set: the
+     * chunks have not moved since the last call.
      */
-    if (buf != ml_upd_lastbuf || line != ml_upd_lastline + 1
-	    || updtype != ML_CHNK_ADDLINE)
+    if (buf != ml_upd_lastbuf || line < curline)
     {
-	for (curline = 1, curix = 0;
-	     curix < buf->b_ml.ml_usedchunks - 1
+	curline = 1;
+	curix = 0;
+    }
+    for (; curix < buf->b_ml.ml_usedchunks - 1
 	     && line >= curline + buf->b_ml.ml_chunksize[curix].mlcs_numlines;
 	     curix++)
-	    curline += buf->b_ml.ml_chunksize[curix].mlcs_numlines;
-    }
-    else if (curix < buf->b_ml.ml_usedchunks - 1
-	      && line >= curline + buf->b_ml.ml_chunksize[curix].mlcs_numlines)
-    {
-	// Adjust cached curix & curline
 	curline += buf->b_ml.ml_chunksize[curix].mlcs_numlines;
-	curix++;
-    }
     curchnk = buf->b_ml.ml_chunksize + curix;
 
     if (updtype == ML_CHNK_DELLINE)
@@ -6043,7 +6039,6 @@ ml_updatechunk(
     else if (updtype == ML_CHNK_DELLINE)
     {
 	curchnk->mlcs_numlines--;
-	ml_upd_lastbuf = NULL;   // Force recalc of curix & curline
 	if (curix < buf->b_ml.ml_usedchunks - 1
 		&& curchnk->mlcs_numlines + curchnk[1].mlcs_numlines
 								  <= MLCS_MINL)
@@ -6053,6 +6048,7 @@ ml_updatechunk(
 	}
 	else if (curix == 0 && curchnk->mlcs_numlines <= 0)
 	{
+	    ml_upd_lastbuf = NULL;   // Force recalc of curix & curline
 	    buf->b_ml.ml_usedchunks--;
 	    mch_memmove(buf->b_ml.ml_chunksize, buf->b_ml.ml_chunksize + 1,
 			buf->b_ml.ml_usedchunks * sizeof(chunksize_T));
@@ -6062,10 +6058,16 @@ ml_updatechunk(
 		    && curchnk->mlcs_numlines + curchnk[-1].mlcs_numlines
 								  > MLCS_MINL))
 	{
+	    // The chunks are left as they are, the cached position stays
+	    // valid.
+	    ml_upd_lastbuf = buf;
+	    ml_upd_lastcurline = curline;
+	    ml_upd_lastcurix = curix;
 	    return;
 	}
 
 	// Collapse chunks
+	ml_upd_lastbuf = NULL;   // Force recalc of curix & curline
 	curchnk[-1].mlcs_numlines += curchnk->mlcs_numlines;
 	curchnk[-1].mlcs_totalsize += curchnk->mlcs_totalsize;
 	buf->b_ml.ml_usedchunks--;
@@ -6077,7 +6079,6 @@ ml_updatechunk(
 	return;
     }
     ml_upd_lastbuf = buf;
-    ml_upd_lastline = line;
     ml_upd_lastcurline = curline;
     ml_upd_lastcurix = curix;
 }
