@@ -669,6 +669,9 @@ borrow_stl_vsep_hl(void)
     {
 	if (left->w_status_height == 0 || left->w_vsep_width == 0)
 	    continue;
+	// A window of zero width has no status line cell to borrow from.
+	if (left->w_width == 0)
+	    continue;
 	if (!stl_connected(left))
 	    continue;
 
@@ -712,6 +715,12 @@ borrow_stl_vsep_hl(void)
 	int dst_col = W_ENDCOL(left);
 	int src_col = (neighbour == curwin)
 				? neighbour->w_wincol : W_ENDCOL(left) - 1;
+
+	// The windows may be laid out for a size the screen does not have yet.
+	if (dst_col >= screen_Columns || src_col >= screen_Columns)
+	    continue;
+	if (end > screen_Rows)
+	    end = screen_Rows;
 
 	for (int r = start; r < end; r++)
 	{

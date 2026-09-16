@@ -3976,7 +3976,7 @@ def Test_expr9_method_call()
                     module: ''}
                     ], getloclist(0))
 
-      var result: bool = get({n: 0}, 'n', 0)
+      var result: bool = get({n: false}, 'n', false)
       assert_equal(false, result)
 
       assert_equal('+string+', 'string'->((s) => '+' .. s .. '+')())

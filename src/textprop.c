@@ -518,6 +518,7 @@ um_store_changes(unpacked_memline_T *um)
     um->detached = false;
     um->text = packed;
     um->text_size = (colnr_T)STRLEN(packed) + 1;
+    um->buf->b_ml.ml_line_textlen = um->text_size;
 }
 
 /*

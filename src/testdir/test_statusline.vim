@@ -1250,6 +1250,25 @@ func Test_statusline_vsep_borrow_hl_mode_change()
   call StopVimInTerminal(buf)
 endfunc
 
+" A window of zero width has no status line cell to borrow the highlight
+" from.  With its status line on the first screen line the cell before it is
+" outside the screen.
+func Test_statusline_vsep_borrow_zero_width_window()
+  set winminheight=0 winminwidth=0 laststatus=2
+
+  " Two windows side by side above a third.  Sizing from inside the third
+  " and the right one leaves the current window, the left one, 0 by 0.
+  split
+  vsplit
+  call win_execute(win_getid(3), 'wincmd _')
+  call win_execute(win_getid(2), 'wincmd |')
+  call assert_equal([0, 0], [winwidth(0), winheight(0)])
+  redraw
+
+  only!
+  set winminheight& winminwidth& laststatus&
+endfunc
+
 " Creating a full-height vertical split must not add a status line when
 " 'laststatus' is zero.
 func Test_window_cmd_ls0_splitmove()

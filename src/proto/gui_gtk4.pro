@@ -45,7 +45,7 @@ void gui_mch_clear_all(void);
 void gui_gtk4_remove_image(win_T *wp);
 void gui_mch_free_popup_image(win_T *wp);
 bool gui_mch_update_popup_image_pixels(win_T *wp);
-void gui_mch_draw_popup_image(win_T *wp, int row, int col, int src_x, int src_y, int draw_w, int draw_h);
+void gui_mch_draw_popup_image(win_T *wp, int row, int col, int src_x, int src_y, int draw_w, int draw_h, int part);
 void gui_mch_delete_lines(int row, int num_lines);
 void gui_mch_insert_lines(int row, int num_lines);
 void gui_gtk4_draw_cursor(guicolor_T bg, guicolor_T fg, int w, int h);

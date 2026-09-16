@@ -7101,7 +7101,8 @@ gui_mch_draw_popup_image(
 	int	 src_x,
 	int	 src_y,
 	int	 draw_w,
-	int	 draw_h)
+	int	 draw_h,
+	int	 part UNUSED)
 {
     int x, y;
 
