@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.2.  Last change: 2026 Aug 23
+*eval.txt*	For Vim version 9.2.  Last change: 2026 Sep 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1575,11 +1575,12 @@ In |Vim9| script:
 - If expr10 is a String this results in a String that contains the expr1'th
   single character (including any composing characters) from expr10.  To use
   byte indexes use |strpart()|.
-- Index zero gives the first byte or character.  Careful: text column numbers
-  start with one!
+- Index zero gives the first character (including any composing character).
+  Careful: text column numbers start with one!
 - If the length of the String is less than the index, the result is an empty
   String.  A negative index always results in an empty string (reason:
-  backward compatibility).  Use [-1:] to get the last byte or character.
+  backward compatibility).  Use [-1 :] to get the last character (including
+  any composing character).
 - A negative index is used like with a list: count from the end.
 - Attempting to assign to or modify a string with an index within a `:def`
   function gives |E1148|.

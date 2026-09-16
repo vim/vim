@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.2.  Last change: 2026 Aug 23
+*vim9.txt*	For Vim version 9.2.  Last change: 2026 Sep 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -405,7 +405,7 @@ without error even though neither command in either of the functions exists:
 	  execute('DefinedLate2')
 	enddef
 <
-Further, if the functions, above, are subsequently called before the functions
+Further, if the functions, above, are subsequently called before the commands
 DefinedLate1 and DefinedLate2 exist, compilation fails.  So, after sourcing
 the script, above, when the following script is sourced, either |E476| or
 |E492| are given:
@@ -593,10 +593,10 @@ useful when you want to specify a value for an argument that comes after an
 argument that should use its default value.  For example:
 >vim9
 	vim9script
-	def F(ra: float, pi: float = 3.14): float
+	def F(pi: float = 3.14, ra: float = 1.0): float
 	  return pi * ra->pow(2)
 	enddef
-	echo F(2.0, v:none)	# 12.56 (using default 'pi' value, 3.14)
+	echo F(v:none, 2.0)	# 12.56 (using default 'pi' value, 3.14)
 <
 							*E1106*
 When too many arguments are passed, either an |E176| or E1106 error occurs.
@@ -851,8 +851,8 @@ too.  To illustrate:
 	Funcref = funcref(g:F)		# Redeclare Funcref
 	echo (Function(), Funcref())	# ('two', 'two')
 <
-	Note: This persistent behavior of |funcref()| may be regarded as
-	either a feature, or, if not understood, be unexpected.
+	Note: This persistent behavior of |funcref()| may be regarded as a
+	feature, or may be unexpected if not understood.
 
 When compiling a function, and a function call is encountered for a function
 that is not (yet) defined, the |FuncUndefined| autocommand is not triggered.
@@ -1258,11 +1258,6 @@ toggling is wanted, which is shown in this example:
 	n = 9
 	echo n			# 9
 <
-You cannot use `:va` to declare a variable - it must be `:var`.  Similarly,
-you cannot use `:cons` or `:fin` for constants - they must be written in full
-as `:const` or `:final`, which improves readability.  Attempting to use `:va`,
-`:cons`, or `:fina` gives |E1065|.
-
 							*vim9-exists()*
 The `exists()` (and `exists_compiled()`) function does not work on local
 arguments or variables declared in a compiled function.  It always returns 0.
@@ -1294,7 +1289,7 @@ legacy function, including those declared with `:var`.  For example:
 <							*vim9-no-shadowing*
 Variables, functions and function arguments cannot shadow previously defined
 or imported variables and functions in the same script file.  However,
-variables can shadow Ex commands, though rename the variable if necessary.
+variables can shadow Ex commands, so rename the variable if necessary.
 The following are examples of errors given when trying to shadow:
 
 							*E1006*  >vim9
@@ -1446,7 +1441,7 @@ each variable can either have a declared type or infer it from its value:
 	echo $'Digit {d} is "{m}" in Māori.'
 <
 This approach should be used only where there is a list with values.
-Declaring one variable per line usually is easier to read and change later.
+Declaring one variable per line usually is easier to understand.
 
 The type of a variable that does not have a declared type is the type of the
 value it gets.  The variable after the ";" gets the remaining items: for a
@@ -1500,7 +1495,7 @@ cannot be changed.  Both can be used in Vim9 script.
 this for composite structures that you want to make sure will not be modified.
 The following script shows:
 - That a constant must have a value, otherwise E1021 is given, and
-- Attempts to change a constant fail, with E1307 given.
+- Attempts to change a constant fail, with E1307.
 >vim9
 	vim9script
 	try
@@ -2345,7 +2340,7 @@ White space is not allowed:
 	MyN(   4,    5,    6 )	# [4, 5, 6]
 	MyN  (7, 8, 9)		# E492: Not an editor command
 <
-	Note: The following also are not allowed, and would give |E492|: >
+	Note: The following are also not allowed, and give |E492|: >
 	MyN
 	  \ (7, 8, 9)
 	MyN
@@ -2452,7 +2447,9 @@ Similarly, adding modifiers to any of |:try|, |:endtry|, |:for|, |:endfor|,
 |:while|, |:endwhile|, |:catch|, or |:finally| may result in an E1176 error,
 though it depends on the redundant modifier used.  For example, adding the
 |:silent| modifier to |:for| is ignored whereas adding |:keepmarks| to
-|:endfor| is an error.
+|:endfor| is an error.  (Note the behavior of `:silent` is intentional.  It works
+like that so that error messages are suppressed when Vim does not support
+the |+eval| feature.)
 							*E1082*
 Also, using a command modifier without a following command gives E1082:
 >vim9
@@ -3156,7 +3153,7 @@ For example:
 	  b:s = 'Fails'
 	  b:s[4] = '!'	# E1148: Cannot index a string
 	enddef
-	call F1148()
+	F1148()
 <
 	Note: Other errors may be given depending on the scope and whether the
 	variable is prefixed.  For example, if the variable in this example
