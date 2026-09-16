@@ -1,4 +1,4 @@
-/* window.c */
+// window.c
 void window_layout_lock(void);
 void window_layout_unlock(void);
 int frames_locked(void);
@@ -111,4 +111,4 @@ int get_tab_number(tabpage_T *tp);
 char *check_colorcolumn(char_u *cc, win_T *wp);
 int get_last_winid(void);
 int win_locked(win_T *wp);
-/* vim: set ft=c : */
+// vim: ft=c

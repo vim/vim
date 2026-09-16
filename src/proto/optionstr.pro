@@ -1,4 +1,4 @@
-/* optionstr.c */
+// optionstr.c
 void didset_string_options(void);
 void trigger_optionset_string(int opt_idx, int opt_flags, char_u *oldval, char_u *oldval_l, char_u *oldval_g, char_u *newval);
 void check_buf_options(buf_T *buf);
@@ -220,4 +220,4 @@ int check_ff_value(char_u *p);
 void save_clear_shm_value(void);
 void restore_shm_value(void);
 void export_myvimdir(void);
-/* vim: set ft=c : */
+// vim: ft=c

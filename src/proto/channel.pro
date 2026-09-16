@@ -1,4 +1,4 @@
-/* channel.c */
+// channel.c
 channel_T *add_channel(void);
 int has_any_channel(void);
 int channel_still_useful(channel_T *channel);
@@ -45,6 +45,7 @@ int channel_poll_setup(int nfd_in, void *fds_in, int *towait);
 int channel_poll_check(int ret_in, void *fds_in);
 int channel_select_setup(int maxfd_in, void *rfds_in, void *wfds_in, struct timeval *tv, struct timeval **tvp);
 int channel_select_check(int ret_in, void *rfds_in, void *wfds_in);
+void channel_stdio_loop(void);
 int channel_parse_messages(void);
 int channel_any_readahead(void);
 int set_ref_in_channel(int copyID);
@@ -67,4 +68,4 @@ void f_ch_setoptions(typval_T *argvars, typval_T *rettv);
 void f_ch_status(typval_T *argvars, typval_T *rettv);
 char_u *channel_to_string_buf(typval_T *varp, char_u *buf);
 channel_T *channel_find(int ch_id);
-/* vim: set ft=c : */
+// vim: ft=c

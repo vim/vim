@@ -1,4 +1,4 @@
-/* hashtab.c */
+// hashtab.c
 void hash_init(hashtab_T *ht);
 int check_hashtab_frozen(hashtab_T *ht, char *command);
 void hash_clear(hashtab_T *ht);
@@ -13,4 +13,4 @@ void hash_lock(hashtab_T *ht);
 void hash_lock_size(hashtab_T *ht, int size);
 void hash_unlock(hashtab_T *ht);
 hash_T hash_hash(char_u *key);
-/* vim: set ft=c : */
+// vim: ft=c

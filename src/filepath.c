@@ -3200,7 +3200,7 @@ vim_fnamencmp(char_u *x, char_u *y, size_t len)
     char_u  *
 concat_fnames(char_u *fname1, size_t fname1len, char_u *fname2, size_t fname2len, int sep, string_T *ret)
 {
-    ret->string = alloc(fname1len + (sep ? STRLEN_LITERAL(PATHSEPSTR) : 0) + fname2len + 1);
+    ret->string = alloc(fname1len + (sep ? sizeof(PATHSEP) : 0) + fname2len + 1);
     if (ret->string == NULL)
 	ret->length = 0;
     else
@@ -3210,7 +3210,7 @@ concat_fnames(char_u *fname1, size_t fname1len, char_u *fname2, size_t fname2len
 	if (sep && *ret->string != NUL && !after_pathsep(ret->string, ret->string + ret->length))
 	{
 	    STRCPY(ret->string + ret->length, PATHSEPSTR);
-	    ret->length += STRLEN_LITERAL(PATHSEPSTR);
+	    ret->length += sizeof(PATHSEP);
 	}
 	STRCPY(ret->string + ret->length, fname2);
 	ret->length += fname2len;

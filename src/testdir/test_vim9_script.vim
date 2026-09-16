@@ -4789,10 +4789,12 @@ def Test_invoke_normal_in_visual_mode()
 enddef
 
 def Test_white_space_after_command()
+  # "exit_cb" is not ":exit"; nothing must be executed.
   var lines =<< trim END
     exit_cb: Func})
   END
-  v9.CheckDefAndScriptFailure(lines, 'E1144:', 1)
+  v9.CheckDefAndScriptFailure(lines, ['E476: Invalid command: exit_cb: Func})',
+    'E492: Not an editor command: exit_cb: Func})'], 1)
 
   lines =<< trim END
     e#
@@ -6194,6 +6196,25 @@ def Test_builtin_fullcommand()
   assert_equal('', fullcommand('fina', true))
   assert_equal('final', fullcommand('final', true))
   assert_equal('', fullcommand('finall', true))
+enddef
+
+" This used to cause a stack-use-after-return under ASAN
+" Set custom ASAN_OPTIONS, to force an abort
+def Test_string_reduce_error_funccal()
+  CheckAsan
+
+  var save = $ASAN_OPTIONS
+  defer setenv('ASAN_OPTIONS', save)
+  $ASAN_OPTIONS = 'detect_stack_use_after_return=1:abort_on_error=1:' .. save
+
+  var lines =<< trim END
+      vim9script
+      silent! echo reduce("abc", (acc, c) => [][0])
+      qall!
+  END
+  writefile(lines, 'Xreducefc.vim', 'D')
+  g:RunVim([], [], '-u NONE -S Xreducefc.vim')
+  assert_equal(0, v:shell_error)
 enddef
 
 " Keep this last, it messes up highlighting.

@@ -1,4 +1,4 @@
-/* filepath.c */
+// filepath.c
 int modify_fname(char_u *src, int tilde_file, size_t *usedlen, char_u **fnamep, char_u **bufp, size_t *fnamelen);
 void shorten_dir(char_u *str);
 int file_is_readable(char_u *fname);
@@ -63,4 +63,4 @@ void FreeWild(int count, char_u **files);
 int pathcmp(const char *p, const char *q, int maxlen);
 int vim_isAbsName(char_u *name);
 int vim_FullName(char_u *fname, char_u *buf, int len, int force);
-/* vim: set ft=c : */
+// vim: ft=c

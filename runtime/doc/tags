@@ -1623,6 +1623,7 @@ $quote	eval.txt	/*$quote*
 --servername	remote.txt	/*--servername*
 --socketid	starting.txt	/*--socketid*
 --startuptime	starting.txt	/*--startuptime*
+--stdio-channel	starting.txt	/*--stdio-channel*
 --ttyfail	starting.txt	/*--ttyfail*
 --version	starting.txt	/*--version*
 --windowid	starting.txt	/*--windowid*
@@ -3425,6 +3426,7 @@ $quote	eval.txt	/*$quote*
 :sort-uniq	change.txt	/*:sort-uniq*
 :source	repeat.txt	/*:source*
 :source!	repeat.txt	/*:source!*
+:source-dryrun	repeat.txt	/*:source-dryrun*
 :source-range	repeat.txt	/*:source-range*
 :source_crnl	repeat.txt	/*:source_crnl*
 :sp	windows.txt	/*:sp*
@@ -4789,6 +4791,8 @@ E1577	options.txt	/*E1577*
 E1578	spell.txt	/*E1578*
 E158	sign.txt	/*E158*
 E1581	vim9.txt	/*E1581*
+E1582	channel.txt	/*E1582*
+E1583	channel.txt	/*E1583*
 E159	sign.txt	/*E159*
 E16	cmdline.txt	/*E16*
 E160	sign.txt	/*E160*
@@ -6668,6 +6672,7 @@ channel-onetime-callback	channel.txt	/*channel-onetime-callback*
 channel-open	channel.txt	/*channel-open*
 channel-open-options	channel.txt	/*channel-open-options*
 channel-raw	channel.txt	/*channel-raw*
+channel-stdio	channel.txt	/*channel-stdio*
 channel-timeout	channel.txt	/*channel-timeout*
 channel-use	channel.txt	/*channel-use*
 channel.txt	channel.txt	/*channel.txt*
@@ -10045,6 +10050,7 @@ quickfix-valid	quickfix.txt	/*quickfix-valid*
 quickfix-window	quickfix.txt	/*quickfix-window*
 quickfix-window-ID	quickfix.txt	/*quickfix-window-ID*
 quickfix-window-function	quickfix.txt	/*quickfix-window-function*
+quickfix-winfixbuf	quickfix.txt	/*quickfix-winfixbuf*
 quickfix.txt	quickfix.txt	/*quickfix.txt*
 quickref	quickref.txt	/*quickref*
 quickref.txt	quickref.txt	/*quickref.txt*

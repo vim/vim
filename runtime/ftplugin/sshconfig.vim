@@ -2,7 +2,7 @@
 " Language:	OpenSSH client configuration file
 " Maintainer:	This runtime file is looking for a new maintainer.
 " Previous Maintainer:	Nikolai Weibull <now@bitwi.se>
-" Latest Revision:	2026-03-11 (`less -I`)
+" Latest Revision:	2026 Sep 01
 
 if exists("b:did_ftplugin")
   finish
@@ -15,7 +15,7 @@ set cpo&vim
 setlocal comments=:# commentstring=#\ %s formatoptions-=t formatoptions+=croql
 let b:undo_ftplugin = 'setlocal com< cms< fo<'
 
-if has('unix') && executable('less') && exists(':terminal') == 2
+if has('unix') && executable('less') && has('terminal')
   command -buffer -nargs=1 SshconfigKeywordPrg
         \ silent exe 'hor term ' . 'env LESS= MANPAGER="less -I --pattern=''' . escape('^\s+' . <q-args> . '$', '\') . ''' --hilite-search" man ' . 'ssh_config'
   setlocal iskeyword+=-

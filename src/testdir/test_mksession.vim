@@ -602,7 +602,7 @@ func Test_mksession_terminal_shared_windows()
       call assert_match('exe '':terminal ++curwin ++cols='' \.\. ((&columns \* \d\+ + \d\+) \/ \d\+) \.\. '' ++rows='' \.\. ((&lines \* \d\+ + \d\+) \/ \d\+)', line)
     elseif line =~ $"^var term_buf_{term_buf}: number = bufnr()$"
       let found_var = 1
-    elseif line =~ "^execute 'buffer ' . term_buf_" . term_buf . "$"
+    elseif line =~ "^execute 'buffer ' \\.\\. term_buf_" . term_buf . "$"
       let found_use = 1
     endif
   endfor
@@ -610,6 +610,15 @@ func Test_mksession_terminal_shared_windows()
   call assert_true(found_creation && found_use && found_var)
 
   call StopShellInTerminal(term_buf)
+
+  source Xtest_mks.out
+
+  let restored = bufnr()
+  call assert_equal('terminal', getbufvar(restored, '&buftype'))
+  call WaitForAssert({-> assert_match('running', term_getstatus(restored))})
+  call StopShellInTerminal(restored)
+
+  %bwipe!
   call delete('Xtest_mks.out')
 endfunc
 
@@ -1596,6 +1605,58 @@ func Test_mksession_cursor_position()
   %bwipe
 endfunc
 
+func Test_mksession_with_Ctrl_I_map()
+  set sessionoptions=options
+
+  " <Tab> and g<Tab> not mapped explicitly
+  imapclear
+  inoremap <C-I> foo
+  inoremap g<C-I> bar
+  imap <F2> <C-I>
+  imap g<F2> g<C-I>
+  mksession! Xtest_mks.out
+
+  " Check that the session doesn't create spurious simplified mappings
+  imapclear
+  source Xtest_mks.out
+  call assert_equal('i  <C-I>       * foo', execute('imap <C-I>')->trim())
+  call assert_equal('No mapping found', execute('imap <Tab>')->trim())
+  call assert_equal('i  g<C-I>      * bar', execute('imap g<C-I>')->trim())
+  call assert_equal('No mapping found', execute('imap g<Tab>')->trim())
+
+  " Check that the restored mappings are working properly
+  new
+  call feedkeys("i\<*C-I>\<F2>g\<*C-I>g\<F2>\<Esc>", 'tx')
+  call assert_equal('foofoobarbar', getline('.'))
+  bwipe!
+
+  " <Tab> and g<Tab> mapped explicitly
+  imapclear
+  inoremap <C-I> foo
+  inoremap <Tab> FOO
+  inoremap g<C-I> bar
+  inoremap g<Tab> BAR
+  mksession! Xtest_mks.out
+
+  " Check that the session restores mappings properly
+  imapclear
+  source Xtest_mks.out
+  call assert_equal('i  <C-I>       * foo', execute('imap <C-I>')->trim())
+  call assert_equal('i  <Tab>       * FOO', execute('imap <Tab>')->trim())
+  call assert_equal('i  g<C-I>      * bar', execute('imap g<C-I>')->trim())
+  call assert_equal('i  g<Tab>      * BAR', execute('imap g<Tab>')->trim())
+
+  " Check that the restored mappings are working properly
+  new
+  call feedkeys("i\<*C-I>\<Tab>g\<*C-I>g\<Tab>\<Esc>", 'tx')
+  call assert_equal('fooFOObarBAR', getline('.'))
+  bwipe!
+
+  call delete('Xtest_mks.out')
+  imapclear
+  set sessionoptions&
+endfunc
+
 " Test sessions global and local mappings
 func Test_mksession_localmappings()
 
@@ -1959,6 +2020,37 @@ func Test_mksession_winminwidth()
   source Xtest_mks.out
   call assert_equal([2, 2], [&winminheight, &winminwidth])
   only
+endfunc
+
+" Test for avoiding options relying on lambdas in the session file.
+func Test_mksession_avoid_lambda_options()
+  set sessionoptions+=options
+  set sessionoptions+=localoptions
+
+  " Set global and local options that rely on a lambda function.
+  let Lambda = {-> 'dummy function'}
+  let &opfunc = Lambda
+  let &completefunc = Lambda
+
+  mksession! Xtest_mks.out
+
+  " Test restoring session
+  const msg = 'Option relying on lambda function should not be restored'
+  try
+    set opfunc&
+    set completefunc&
+    source Xtest_mks.out
+    call assert_true(empty(&opfunc), msg)
+    call assert_true(empty(&completefunc), msg)
+  catch /^Vim\%((\S\+)\)\=:E700:/
+    call assert_report(msg)
+  endtry
+
+  " clean up
+  set opfunc&
+  set completefunc&
+  call delete('Xtest_mks.out')
+  set sessionoptions&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

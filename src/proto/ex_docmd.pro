@@ -1,4 +1,4 @@
-/* ex_docmd.c */
+// ex_docmd.c
 void do_exmode(int improved);
 int do_cmdline_cmd(char_u *cmd);
 int do_cmdline(char_u *cmdline, char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie, int flags);
@@ -80,4 +80,4 @@ void set_no_hlsearch(int flag);
 int is_loclist_cmd(int cmdidx);
 int get_pressedreturn(void);
 void set_pressedreturn(int val);
-/* vim: set ft=c : */
+// vim: ft=c

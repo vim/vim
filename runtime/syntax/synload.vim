@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2023 Aug 10
+" Last Change:	2026 Sep 11
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " This file sets up for syntax highlighting.
@@ -55,7 +55,7 @@ fun! s:SynSet()
     " Load the syntax file(s).  When there are several, separated by dots,
     " load each in sequence.  Skip empty entries.
     for name in split(s, '\.')
-      if !empty(name)
+      if !empty(name) && name !=# 'syntax'
 	exe "runtime! syntax/" . name . ".vim syntax/" . name . "/*.vim"
       endif
     endfor

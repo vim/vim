@@ -1,4 +1,4 @@
-/* memline.c */
+// memline.c
 int ml_open(buf_T *buf);
 void ml_set_crypt_key(buf_T *buf, char_u *old_key, char_u *old_cm);
 void ml_setname(buf_T *buf);
@@ -44,4 +44,4 @@ char_u *ml_encrypt_data(memfile_T *mfp, char_u *data, off_T offset, unsigned siz
 void ml_decrypt_data(memfile_T *mfp, char_u *data, off_T offset, unsigned size);
 long ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp);
 void goto_byte(long cnt);
-/* vim: set ft=c : */
+// vim: ft=c

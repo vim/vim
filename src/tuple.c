@@ -874,7 +874,7 @@ tuple2items(typval_T *argvars, typval_T *rettv)
 
 	if (list_append_list(rettv->vval.v_list, l) == FAIL)
 	{
-	    vim_free(l);
+	    list_free(l);
 	    break;
 	}
 	if (list_append_number(l, idx) == FAIL

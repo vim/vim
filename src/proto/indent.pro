@@ -1,4 +1,4 @@
-/* indent.c */
+// indent.c
 int tabstop_set(char_u *var, int **array);
 int tabstop_padding(colnr_T col, int ts_arg, int *vts);
 int tabstop_at(colnr_T col, int ts, int *vts, int left);
@@ -35,4 +35,4 @@ int use_indentexpr_for_lisp(void);
 void fix_indent(void);
 void f_indent(typval_T *argvars, typval_T *rettv);
 void f_lispindent(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

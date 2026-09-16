@@ -2407,6 +2407,20 @@ bool_on_stack(cctx_T *cctx)
 }
 
 /*
+ * With ":source ++dryrun", after an error in an expression: put a value of
+ * "type" in its place and skip the rest of the line, so that compiling can
+ * go on.  Returns FAIL when not in a dry run.
+ */
+    int
+recover_expr(char_u **arg, type_T *type, cctx_T *cctx)
+{
+    if (!source_dryrun)
+	return FAIL;
+    *arg += STRLEN(*arg);
+    return push_type_stack(cctx, type);
+}
+
+/*
  * Give the "white on both sides" error, taking the operator from "p[len]".
  */
     void
@@ -2550,7 +2564,7 @@ compile_subscript(
 	    if (next != NULL &&
 		    ((next[0] == '-' && next[1] == '>'
 				 && (next[2] == '{'
-				       || next[2] == '('
+				       || *skipwhite(next + 2) == '('
 				       || ASCII_ISALPHA(*skipwhite(next + 2))))
 		    || (next[0] == '.' && eval_isdictc(next[1]))))
 	    {

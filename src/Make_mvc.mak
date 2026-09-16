@@ -1782,6 +1782,8 @@ $(OUTDIR)/cairo.obj: $(OUTDIR) cairo.c $(INCL)
 
 $(OUTDIR)/socketserver.obj: $(OUTDIR) socketserver.c $(INCL)
 
+$(OUTDIR)/sound.obj: $(OUTDIR) sound.c $(INCL)
+
 $(OUTDIR)/spell.obj: $(OUTDIR) spell.c $(INCL)
 
 $(OUTDIR)/spellfile.obj: $(OUTDIR) spellfile.c $(INCL)
@@ -1798,7 +1800,7 @@ $(OUTDIR)/tag.obj: $(OUTDIR) tag.c $(INCL)
 
 $(OUTDIR)/term.obj: $(OUTDIR) term.c $(INCL)
 
-$(OUTDIR)/term.obj: $(OUTDIR) testing.c $(INCL)
+$(OUTDIR)/testing.obj: $(OUTDIR) testing.c $(INCL)
 
 $(OUTDIR)/textformat.obj: $(OUTDIR) textformat.c $(INCL)
 

@@ -1,4 +1,4 @@
-/* socketserver.c */
+// socketserver.c
 int socketserver_start(char_u *name, bool quiet);
 void socketserver_stop(void);
 list_T *socketserver_list(void);
@@ -8,4 +8,4 @@ int socketserver_send(char_u *name, char_u *str, char_u **result, bool is_expr, 
 int socketserver_send_reply(char_u *client, char_u *str);
 int socketserver_read_reply(char_u *client, char_u **str, int timeout, bool remotewait);
 int socketserver_peek_reply(char_u *sender, char_u **str);
-/* vim: set ft=c : */
+// vim: ft=c

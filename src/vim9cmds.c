@@ -515,7 +515,8 @@ compile_if(char_u *arg, cctx_T *cctx)
     if (compile_expr1(&p, cctx, &ppconst) == FAIL)
     {
 	clear_ppconst(&ppconst);
-	return NULL;
+	if (recover_expr(&p, &t_bool, cctx) == FAIL)
+	    return NULL;
     }
     if (!ends_excmd2(arg, skipwhite(p)))
     {
@@ -697,7 +698,8 @@ compile_elseif(char_u *arg, cctx_T *cctx)
     if (compile_expr1(&p, cctx, &ppconst) == FAIL)
     {
 	clear_ppconst(&ppconst);
-	return NULL;
+	if (recover_expr(&p, &t_bool, cctx) == FAIL)
+	    return NULL;
     }
     cctx->ctx_skip = save_skip;
     if (!ends_excmd2(arg, skipwhite(p)))
@@ -1033,7 +1035,8 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 
     // compile "expr", it remains on the stack until "endfor"
     arg = p;
-    if (compile_expr0(&arg, cctx) == FAIL)
+    if (compile_expr0(&arg, cctx) == FAIL
+			       && recover_expr(&arg, &t_list_any, cctx) == FAIL)
     {
 	drop_scope(cctx);
 	return NULL;
@@ -1339,7 +1342,8 @@ compile_while(char_u *arg, cctx_T *cctx)
     whilescope->ws_loop_info.li_depth = scope->se_loop_depth - 1;
 
     // compile "expr"
-    if (compile_expr0(&p, cctx) == FAIL)
+    if (compile_expr0(&p, cctx) == FAIL
+				    && recover_expr(&p, &t_bool, cctx) == FAIL)
 	return NULL;
 
     if (!ends_excmd2(arg, skipwhite(p)))

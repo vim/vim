@@ -62,8 +62,10 @@ typedef struct sockaddr_un {
 #endif
 
 static void channel_read(channel_T *channel, ch_part_T part, char *func);
+static void channel_wait_any(long msec);
 static ch_mode_T channel_get_mode(channel_T *channel, ch_part_T part);
 static int channel_get_timeout(channel_T *channel, ch_part_T part);
+static channel_T *channel_open_stdio(void);
 static ch_part_T channel_part_send(channel_T *channel);
 static ch_part_T channel_part_read(channel_T *channel);
 
@@ -838,6 +840,10 @@ channel_open_unix(
 	return NULL;
     }
 
+#ifdef MSWIN
+    channel_init_winsock();
+#endif
+
     channel = add_channel();
     if (channel == NULL)
     {
@@ -1342,6 +1348,7 @@ channel_open_func(typval_T *argvars)
     int		port = 0;
     int		is_ipv6 = FALSE;
     int		is_unix = FALSE;
+    int		is_stdio = FALSE;
     jobopt_T    opt;
     channel_T	*channel = NULL;
 
@@ -1361,7 +1368,9 @@ channel_open_func(typval_T *argvars)
 	return NULL;
     }
 
-    if (STRNCMP(address, "unix:", 5) == 0)
+    if (STRCMP(address, "stdio") == 0)
+	is_stdio = TRUE;
+    else if (STRNCMP(address, "unix:", 5) == 0)
     {
 	is_unix = TRUE;
 	address += 5;
@@ -1388,7 +1397,7 @@ channel_open_func(typval_T *argvars)
 	}
     }
 
-    if (!is_unix)
+    if (!is_unix && !is_stdio)
     {
 	port = strtol((char *)(p + 1), &rest, 10);
 	if (port <= 0 || port >= 65536 || *rest != NUL)
@@ -1412,7 +1421,7 @@ channel_open_func(typval_T *argvars)
     opt.jo_timeout = 2000;
     if (get_job_options(&argvars[1], &opt,
 	    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL
-		+ (is_unix? 0 : JO_WAITTIME), 0) == FAIL)
+		+ (is_unix || is_stdio ? 0 : JO_WAITTIME), 0) == FAIL)
 	goto theend;
     if (opt.jo_timeout < 0)
     {
@@ -1420,17 +1429,138 @@ channel_open_func(typval_T *argvars)
 	goto theend;
     }
 
-    if (is_unix)
+    if (is_stdio)
+	channel = channel_open_stdio();
+    else if (is_unix)
 	channel = channel_open_unix((char *)address, NULL);
     else
 	channel = channel_open((char *)address, port, opt.jo_waittime, NULL);
     if (channel != NULL)
     {
+	int	user_set = opt.jo_set;
+
 	opt.jo_set = JO_ALL;
+	if (is_stdio)
+	    // "mode" and "timeout" apply to both reading and writing, unless
+	    // given for a part specifically.
+	    opt.jo_set &= ~((JO_IN_MODE | JO_OUT_MODE | JO_ERR_MODE
+				| JO_OUT_TIMEOUT | JO_ERR_TIMEOUT) & ~user_set);
 	channel_set_options(channel, &opt);
     }
 theend:
     free_job_options(&opt);
+    return channel;
+}
+
+// The channel on the stdin and stdout of Vim, see --stdio-channel.
+static channel_T *stdio_channel = NULL;
+
+/*
+ * Open a channel that reads from the stdin of Vim and writes to its stdout.
+ * Only when started with --stdio-channel, and only once.
+ * Returns the channel for success.
+ * Returns NULL for failure.
+ */
+    static channel_T *
+channel_open_stdio(void)
+{
+    channel_T	*channel;
+    sock_T	in_fd;		// our stdin, the channel reads from it
+    sock_T	out_fd;		// our stdout, the channel writes to it
+
+    if (!use_stdio_channel)
+    {
+	emsg(_(e_not_started_with_stdio_channel));
+	return NULL;
+    }
+    if (stdio_channel != NULL)
+    {
+	emsg(_(e_cannot_open_stdio_channel));
+	return NULL;
+    }
+
+    // Point the original stdin and stdout at the null device, so that neither
+    // Vim nor the commands it starts can use the channel.
+#ifdef MSWIN
+    {
+	HANDLE	proc = GetCurrentProcess();
+	HANDLE	hin;
+	HANDLE	hout;
+	HANDLE	hnul;
+	int	nul_fd;
+
+	if (!DuplicateHandle(proc, GetStdHandle(STD_INPUT_HANDLE), proc, &hin,
+					      0, FALSE, DUPLICATE_SAME_ACCESS))
+	{
+	    emsg(_(e_cannot_open_stdio_channel));
+	    return NULL;
+	}
+	if (!DuplicateHandle(proc, GetStdHandle(STD_OUTPUT_HANDLE), proc,
+				       &hout, 0, FALSE, DUPLICATE_SAME_ACCESS))
+	{
+	    CloseHandle(hin);
+	    emsg(_(e_cannot_open_stdio_channel));
+	    return NULL;
+	}
+	hnul = CreateFile("NUL", GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0,
+		NULL);
+	if (hnul != INVALID_HANDLE_VALUE)
+	{
+	    SetStdHandle(STD_INPUT_HANDLE, hnul);
+	    SetStdHandle(STD_OUTPUT_HANDLE, hnul);
+	}
+	// The C runtime keeps its own stdout, used for messages.
+	nul_fd = _open("NUL", _O_RDWR);
+	if (nul_fd >= 0)
+	{
+	    _dup2(nul_fd, 1);
+	    _close(nul_fd);
+	}
+	in_fd = (sock_T)hin;
+	out_fd = (sock_T)hout;
+    }
+#else
+    {
+	int	nul_fd;
+
+	in_fd = dup(0);
+	out_fd = dup(1);
+	if (in_fd < 0 || out_fd < 0)
+	{
+	    if (in_fd >= 0)
+		close(in_fd);
+	    if (out_fd >= 0)
+		close(out_fd);
+	    emsg(_(e_cannot_open_stdio_channel));
+	    return NULL;
+	}
+	(void)fcntl(in_fd, F_SETFD, FD_CLOEXEC);
+	(void)fcntl(out_fd, F_SETFD, FD_CLOEXEC);
+	nul_fd = open("/dev/null", O_RDWR);
+	if (nul_fd >= 0)
+	{
+	    dup2(nul_fd, 0);
+	    dup2(nul_fd, 1);
+	    close(nul_fd);
+	}
+    }
+#endif
+
+    channel = add_channel();
+    if (channel == NULL)
+    {
+	ch_error(NULL, "Cannot allocate channel.");
+	fd_close(in_fd);
+	fd_close(out_fd);
+	return NULL;
+    }
+    channel_set_pipes(channel, out_fd, in_fd, INVALID_FD);
+    ch_log(channel, "Using stdin and stdout as a channel");
+
+    // Keep a reference for channel_stdio_loop().
+    ++channel->ch_refcount;
+    stdio_channel = channel;
     return channel;
 }
 
@@ -1639,6 +1769,10 @@ channel_listen_unix(
 	semsg(_(e_invalid_argument_str), path);
 	return NULL;
     }
+
+#ifdef MSWIN
+    channel_init_winsock();
+#endif
 
     channel = add_channel();
     if (channel == NULL)
@@ -4509,6 +4643,23 @@ channel_in_blocking_wait(void)
 }
 
 /*
+ * Wait up to "timeout" msec for something to read on "fd" of "channel", and
+ * read what arrives on any channel meanwhile.
+ */
+    static void
+channel_wait_reading(channel_T *channel UNUSED, sock_T fd UNUSED, int timeout)
+{
+#ifdef MSWIN
+    // A pipe cannot be waited for, channel_wait() polls it; the other
+    // channels are looked at every 10 msec.
+    (void)channel_wait(channel, fd, timeout > 10 ? 10 : timeout);
+    channel_handle_events(FALSE);
+#else
+    channel_wait_any(timeout);
+#endif
+}
+
+/*
  * Read one JSON message with ID "id" from "channel"/"part" and store the
  * result in "rettv".
  * When "id" is -1 accept any message;
@@ -4530,6 +4681,11 @@ channel_read_json_block(
     chanpart_T	*chanpart = &channel->ch_part[part];
     ch_mode_T	mode = channel->ch_part[part].ch_mode;
     int		retval = FAIL;
+#ifdef ELAPSED_FUNC
+    elapsed_T	start_tv;
+
+    ELAPSED_INIT(start_tv);
+#endif
 
     ch_log(channel, "Blocking read JSON for id %d", id);
     ++channel_blocking_wait;
@@ -4572,48 +4728,46 @@ channel_read_json_block(
 	    if (readahead_ptr != NULL && readahead_ptr != prev_readahead_ptr)
 		continue;
 
-	    // Wait for up to the timeout.  If there was an incomplete message
-	    // use the deadline for that.
+	    // Wait for up to what is left of the timeout.
 	    timeout = timeout_arg;
+#ifdef ELAPSED_FUNC
+	    timeout -= (int)ELAPSED_FUNC(start_tv);
+#endif
+	    fd = chanpart->ch_fd;
+	    if (timeout <= 0 || fd == INVALID_FD)
+	    {
+		if (fd != INVALID_FD)
+		    ch_log(channel, "Timed out on id %d", id);
+		break;
+	    }
+	    // If there was an incomplete message use the deadline for that.
 	    if (chanpart->ch_wait_len > 0)
 	    {
+		int	left;
 #ifdef MSWIN
-		timeout = chanpart->ch_deadline - GetTickCount() + 1;
+		left = chanpart->ch_deadline - GetTickCount() + 1;
 #else
 		{
 		    struct timeval now_tv;
 
 		    gettimeofday(&now_tv, NULL);
-		    timeout = (chanpart->ch_deadline.tv_sec
-						       - now_tv.tv_sec) * 1000
-			+ (chanpart->ch_deadline.tv_usec
-						     - now_tv.tv_usec) / 1000
-			+ 1;
+		    left = (chanpart->ch_deadline.tv_sec - now_tv.tv_sec) * 1000
+			+ (chanpart->ch_deadline.tv_usec - now_tv.tv_usec)
+								    / 1000 + 1;
 		}
 #endif
-		if (timeout < 0)
-		{
+		if (left < 0)
 		    // Something went wrong, channel_parse_json() didn't
 		    // discard message.  Cancel waiting.
 		    chanpart->ch_wait_len = 0;
-		    timeout = timeout_arg;
-		}
-		else if (timeout > timeout_arg)
-		    timeout = timeout_arg;
+		else if (left < timeout)
+		    timeout = left;
 	    }
-	    fd = chanpart->ch_fd;
-	    if (fd == INVALID_FD
-			    || channel_wait(channel, fd, timeout) != CW_READY)
-	    {
-		if (timeout == timeout_arg)
-		{
-		    if (fd != INVALID_FD)
-			ch_log(channel, "Timed out on id %d", id);
-		    break;
-		}
-	    }
-	    else
-		channel_read(channel, part, "channel_read_json_block");
+	    channel_wait_reading(channel, fd, timeout);
+#ifndef ELAPSED_FUNC
+	    // Without a clock the wait counts as the whole timeout.
+	    timeout_arg = 0;
+#endif
 	}
     }
     if (id >= 0)
@@ -5120,6 +5274,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
     {
 	dict_T		*d;
 	dictitem_T	*di;
+	char		*key = ch_mode == CH_MODE_LSP ? "id" : "seq";
 
 	// return an empty dict by default
 	if (rettv_dict_alloc(rettv) == FAIL)
@@ -5129,21 +5284,19 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	    return;
 
 	d = argvars[1].vval.v_dict;
-	if (ch_mode == CH_MODE_LSP)
-	    di = dict_find(d, (char_u *)"id", -1);
-	else
-	    di = dict_find(d, (char_u *)"seq", -1);
-	if (di != NULL && di->di_tv.v_type != VAR_NUMBER)
+	di = dict_find(d, (char_u *)key, -1);
+	if (argvars[2].v_type == VAR_DICT
+		&& dict_has_key(argvars[2].vval.v_dict, "callback"))
+	    callback_present = TRUE;
+
+	// The id is what a reply is matched by, so it must be a number when
+	// one is waited for.
+	if (di != NULL && di->di_tv.v_type != VAR_NUMBER
+		&& (ch_mode == CH_MODE_DAP || eval || callback_present))
 	{
-	    // only number type is supported for the 'id' or 'seq' item
-	    semsg(_(e_invalid_value_for_argument_str),
-		    ch_mode == CH_MODE_LSP ? "id" : "seq");
+	    semsg(_(e_invalid_value_for_argument_str), key);
 	    return;
 	}
-
-	if (argvars[2].v_type == VAR_DICT)
-	    if (dict_has_key(argvars[2].vval.v_dict, "callback"))
-		callback_present = TRUE;
 
 	if (ch_mode == CH_MODE_DAP)
 	{
@@ -5169,7 +5322,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	    // When sending an expression, if the message has an 'id' item,
 	    // then use it.
 	    id = 0;
-	    if (di != NULL)
+	    if (di != NULL && di->di_tv.v_type == VAR_NUMBER)
 		id = di->di_tv.vval.v_number;
 	}
 	if (ch_mode == CH_MODE_LSP && !dict_has_key(d, "jsonrpc"))
@@ -5504,6 +5657,69 @@ channel_select_check(int ret_in, void *rfds_in, void *wfds_in)
     return ret;
 }
 #endif // !MSWIN && HAVE_SELECT
+
+/*
+ * Wait up to "msec" for something to read on any channel and read it.
+ * For channel_stdio_loop(), which has no terminal to wait for.
+ */
+    static void
+channel_wait_any(long msec)
+{
+#ifdef MSWIN
+    // A pipe cannot be waited for, channel_wait() polls it.
+    if (stdio_channel->CH_OUT_FD != INVALID_FD)
+	(void)channel_wait(stdio_channel, stdio_channel->CH_OUT_FD,
+						(int)(msec > 20 ? 20 : msec));
+    channel_handle_events(FALSE);
+#elif defined(HAVE_SELECT)
+    fd_set		rfds;
+    fd_set		wfds;
+    struct timeval	tv;
+    struct timeval	*tvp = &tv;
+    int			maxfd;
+    int			ret;
+
+    FD_ZERO(&rfds);
+    FD_ZERO(&wfds);
+    tv.tv_sec = msec / 1000;
+    tv.tv_usec = (msec % 1000) * 1000;
+    maxfd = channel_select_setup(-1, &rfds, &wfds, &tv, &tvp);
+    ret = select(maxfd + 1, &rfds, &wfds, NULL, tvp);
+    if (ret >= 0)
+	(void)channel_select_check(ret, &rfds, &wfds);
+#else
+    struct pollfd	fds[4 * MAX_OPEN_CHANNELS + MAX_CLIENT_CHANNELS];
+    int			nfd;
+    int			towait = (int)msec;
+    int			ret;
+
+    nfd = channel_poll_setup(0, fds, &towait);
+    ret = poll(fds, nfd, towait);
+    if (ret >= 0)
+	(void)channel_poll_check(ret, fds);
+#endif
+}
+
+/*
+ * Wait for messages on the stdio channel and handle them, until the channel
+ * is closed.  Takes the place of the main loop with --stdio-channel.
+ */
+    void
+channel_stdio_loop(void)
+{
+    while (stdio_channel != NULL && channel_is_open(stdio_channel))
+    {
+	long	msec = 1000;
+#ifdef FEAT_TIMERS
+	long	due_time = check_due_timer();
+
+	if (due_time > 0 && due_time < msec)
+	    msec = due_time;
+#endif
+	channel_wait_any(msec);
+	parse_queued_messages();
+    }
+}
 
 /*
  * Execute queued up commands.

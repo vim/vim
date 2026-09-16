@@ -684,6 +684,13 @@ ml_setname(buf_T *buf)
 	if (*dirp == NUL)	    // tried all directories, fail
 	    break;
 	fname = findswapname(buf, &dirp, mfp->mf_fname);
+	// autocmd may have freed mfp if findswapname creates
+	// different swapfile name
+	if (buf->b_ml.ml_mfp != mfp)
+	{
+	    vim_free(fname);
+	    return;
+	}
 						    // alloc's fname
 	if (dirp == NULL)	    // out of memory
 	    break;
@@ -810,6 +817,12 @@ ml_open_file(buf_T *buf)
 	// and creating it, another Vim creates the file.  In that case the
 	// creation will fail and we will use another directory.
 	fname = findswapname(buf, &dirp, NULL); // allocates fname
+	// autocmd may have freed mfp, grr!
+	if (buf->b_ml.ml_mfp != mfp)
+	{
+	    vim_free(fname);
+	    return;
+	}
 	if (dirp == NULL)
 	    break;  // out of memory
 	if (fname == NULL)

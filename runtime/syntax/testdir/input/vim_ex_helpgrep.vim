@@ -1,5 +1,4 @@
 " Vim :helpgrep command
-" VIM_TEST_SETUP hi link vimHelpgrepPattern Todo
 
 
 helpgrep :help

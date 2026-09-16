@@ -1,4 +1,4 @@
-/* digraph.c */
+// digraph.c
 int do_digraph(int c);
 char_u *get_digraph_for_char(int val_arg);
 int get_digraph(int cmdline);
@@ -12,4 +12,4 @@ void f_digraph_setlist(typval_T *argvars, typval_T *rettv);
 char *keymap_init(void);
 void ex_loadkeymap(exarg_T *eap);
 void keymap_clear(garray_T *kmap);
-/* vim: set ft=c : */
+// vim: ft=c

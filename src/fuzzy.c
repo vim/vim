@@ -992,12 +992,13 @@ has_match(char_u *needle, char_u *haystack)
     while (*n_ptr)
     {
 	int n_char = mb_ptr2char(n_ptr);
+	int n_upper = MB_TOUPPER(n_char);
 	int found = FALSE;
 
 	while (*h_ptr)
 	{
 	    int h_char = mb_ptr2char(h_ptr);
-	    if (h_char == n_char || h_char == MB_TOUPPER(n_char))
+	    if (h_char == n_char || h_char == n_upper)
 	    {
 		found = TRUE;
 		h_ptr += mb_ptr2len(h_ptr);

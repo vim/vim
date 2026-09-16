@@ -459,10 +459,10 @@ def write_prototypes(out_path: Path, headers: List[str], src_name: str) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     try:
         with out_path.open("w", encoding="utf-8", newline="\n") as f:
-            f.write(f"/* {src_name} */\n")
+            f.write(f"// {src_name}\n")
             for h in headers:
                 f.write(h + "\n")
-            f.write("/* vim: set ft=c : */\n")
+            f.write("// vim: ft=c\n")
     except Exception as e:
         print(f"write failed: {e}", file=sys.stderr)
         sys.exit(4)

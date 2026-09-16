@@ -1,4 +1,4 @@
-/* term.c */
+// term.c
 guicolor_T termgui_get_color(char_u *name);
 guicolor_T termgui_mch_get_rgb(guicolor_T color);
 void init_term_props(int all);
@@ -100,4 +100,4 @@ void term_disable_dec(void);
 void term_set_win_resize(bool state);
 int sync_output_active(void);
 void term_set_sync_output(int flags);
-/* vim: set ft=c : */
+// vim: ft=c

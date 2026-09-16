@@ -1,4 +1,4 @@
-/* gui_gtk_x11.c */
+// gui_gtk_x11.c
 void gui_mch_prepare(int *argc, char **argv);
 void gui_mch_free_all(void);
 int gui_mch_is_blinking(void);
@@ -62,7 +62,7 @@ void gui_mch_clear_block(int row1arg, int col1arg, int row2arg, int col2arg);
 void gui_mch_clear_all(void);
 void gui_mch_free_popup_image(win_T *wp);
 bool gui_mch_update_popup_image_pixels(win_T *wp);
-void gui_mch_draw_popup_image(win_T *wp, int row, int col, int src_x, int src_y, int draw_w, int draw_h);
+void gui_mch_draw_popup_image(win_T *wp, int row, int col, int src_x, int src_y, int draw_w, int draw_h, int part);
 void gui_mch_delete_lines(int row, int num_lines);
 void gui_mch_insert_lines(int row, int num_lines);
 void clip_mch_request_selection(Clipboard_T *cbd);
@@ -82,4 +82,4 @@ void mch_set_mouse_shape(int shape);
 void gui_mch_drawsign(int row, int col, int typenr);
 void *gui_mch_register_sign(char_u *signfile);
 void gui_mch_destroy_sign(void *sign);
-/* vim: set ft=c : */
+// vim: ft=c

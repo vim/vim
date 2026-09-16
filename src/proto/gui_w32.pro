@@ -1,4 +1,4 @@
-/* gui_w32.c */
+// gui_w32.c
 int gui_mch_set_rendering_options(char_u *s);
 int gui_mch_is_blinking(void);
 int gui_mch_is_blink_off(void);
@@ -31,11 +31,11 @@ void gui_mch_draw_hollow_cursor(guicolor_T color);
 void gui_mch_draw_part_cursor(int w, int h, guicolor_T color);
 void gui_mch_update(void);
 void server_add_input(char_u *str);
-int gui_mch_wait_for_chars(int wtime);
+int gui_mch_wait_for_chars(long wtime);
 void gui_mch_clear_block(int row1, int col1, int row2, int col2);
 void gui_mch_free_popup_image(win_T *wp);
 bool gui_mch_update_popup_image_pixels(win_T *wp);
-void gui_mch_draw_popup_image(win_T *wp, int row, int col, int src_x, int src_y, int draw_w, int draw_h);
+void gui_mch_draw_popup_image(win_T *wp, int row, int col, int src_x, int src_y, int draw_w, int draw_h, int part);
 void gui_mch_clear_all(void);
 void gui_mch_enable_menu(int flag);
 void gui_mch_set_menu_pos(int x, int y, int w, int h);
@@ -104,4 +104,4 @@ BalloonEval *gui_mch_create_beval_area(void *target, char_u *mesg, void (*mesgCB
 void gui_mch_destroy_beval_area(BalloonEval *beval);
 void netbeans_draw_multisign_indicator(int row);
 int test_gui_w32_sendevent(char_u *event, dict_T *args);
-/* vim: set ft=c : */
+// vim: ft=c

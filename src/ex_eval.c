@@ -1098,8 +1098,9 @@ ex_if(exarg_T *eap)
 	 * Don't do something after an error, interrupt, or throw, or when
 	 * there is a surrounding conditional and it was not active.
 	 */
-	skip = did_emsg || got_int || did_throw || (cstack->cs_idx > 0
-		&& !(cstack->cs_flags[cstack->cs_idx - 1] & CSF_ACTIVE));
+	skip = did_emsg || got_int || did_throw || source_dryrun
+		|| (cstack->cs_idx > 0
+		    && !(cstack->cs_flags[cstack->cs_idx - 1] & CSF_ACTIVE));
 
 	result = eval_to_bool(eap->arg, &error, eap, skip, FALSE);
 
@@ -1163,7 +1164,8 @@ ex_else(exarg_T *eap)
      * Don't do something after an error, interrupt, or throw, or when there is
      * a surrounding conditional and it was not active.
      */
-    skip = did_emsg || got_int || did_throw || (cstack->cs_idx > 0
+    skip = did_emsg || got_int || did_throw || source_dryrun
+	|| (cstack->cs_idx > 0
 	    && !(cstack->cs_flags[cstack->cs_idx - 1] & CSF_ACTIVE));
 
     if (cstack->cs_idx < 0
@@ -1331,8 +1333,9 @@ ex_while(exarg_T *eap)
 	 * Don't do something after an error, interrupt, or throw, or when
 	 * there is a surrounding conditional and it was not active.
 	 */
-	skip = did_emsg || got_int || did_throw || (cstack->cs_idx > 0
-		&& !(cstack->cs_flags[cstack->cs_idx - 1] & CSF_ACTIVE));
+	skip = did_emsg || got_int || did_throw || source_dryrun
+		|| (cstack->cs_idx > 0
+		    && !(cstack->cs_flags[cstack->cs_idx - 1] & CSF_ACTIVE));
 	if (eap->cmdidx == CMD_while)
 	{
 	    /*
@@ -1769,8 +1772,9 @@ ex_try(exarg_T *eap)
 	 * Don't do something after an error, interrupt, or throw, or when there
 	 * is a surrounding conditional and it was not active.
 	 */
-	skip = did_emsg || got_int || did_throw || (cstack->cs_idx > 0
-		&& !(cstack->cs_flags[cstack->cs_idx - 1] & CSF_ACTIVE));
+	skip = did_emsg || got_int || did_throw || source_dryrun
+		|| (cstack->cs_idx > 0
+		    && !(cstack->cs_flags[cstack->cs_idx - 1] & CSF_ACTIVE));
 
 	if (!skip)
 	{

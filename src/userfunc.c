@@ -994,6 +994,7 @@ get_function_body(
     garray_T	heredoc_ga;
     char_u	*heredoc_trimmed = NULL;
     size_t	heredoc_trimmedlen = 0;
+    int		did_emsg_start = did_emsg;
 
     ga_init2(&heredoc_ga, 1, 500);
 
@@ -1422,8 +1423,9 @@ get_function_body(
 	    line_arg = NULL;
     }
 
-    // Return OK when no error was detected.
-    if (!did_emsg)
+    // Return OK when no error was detected here; "did_emsg" may already be
+    // set by an earlier error in the same command.
+    if (did_emsg == did_emsg_start)
 	ret = OK;
 
 theend:
@@ -5412,12 +5414,12 @@ define_function(
     // Save the starting line number.
     sourcing_lnum_top = SOURCING_LNUM;
 
-    // Do not define the function when getting the body fails and when
-    // skipping.
+    // Do not define the function when getting the body fails, when the header
+    // had an error (the body is still read to find the end) and when skipping.
     if (((class_flags & CF_INTERFACE) == 0
 		&& (class_flags & CF_ABSTRACT_METHOD) == 0
-		&& get_function_body(eap, &newlines, line_arg, lines_to_free)
-								       == FAIL)
+		&& (get_function_body(eap, &newlines, line_arg, lines_to_free)
+							== FAIL || did_emsg))
 	    || eap->skip)
 	goto erret;
 
@@ -5512,10 +5514,11 @@ define_function(
 	    int dead = fp != NULL && (fp->uf_flags & FC_DEAD);
 
 	    // Function can be replaced with "function!" and when sourcing the
-	    // same script again, but only once.
+	    // same script again, but only once.  With ":source ++dryrun" both
+	    // branches of an ":if" define their function.
 	    // A name that is used by an import can not be overruled.
 	    if (import != NULL
-		    || (!dead && !eap->forceit
+		    || (!dead && !eap->forceit && !source_dryrun
 			&& (fp->uf_script_ctx.sc_sid != current_sctx.sc_sid
 			  || fp->uf_script_ctx.sc_seq == current_sctx.sc_seq)))
 	    {
@@ -7333,15 +7336,34 @@ get_funccal(void)
 }
 
 /*
+ * Get the function call environment to use for the l: and a: variables, based
+ * on the backtrace debug level.
+ * Returns NULL if there is no current funccal or when the selected funccal is
+ * for a :def function, which does not have l: and a: dictionaries.
+ */
+    static funccall_T *
+get_funccal_for_vars(void)
+{
+    funccall_T	*funccal = NULL;
+
+    if (current_funccal == NULL)
+	return NULL;
+    funccal = get_funccal();
+    if (funccal == NULL || funccal->fc_l_vars.dv_refcount == 0)
+	return NULL;
+    return funccal;
+}
+
+/*
  * Return the hashtable used for local variables in the current funccal.
  * Return NULL if there is no current funccal.
  */
     hashtab_T *
 get_funccal_local_ht(void)
 {
-    if (current_funccal == NULL || current_funccal->fc_l_vars.dv_refcount == 0)
-	return NULL;
-    return &get_funccal()->fc_l_vars.dv_hashtab;
+    funccall_T	*funccal = get_funccal_for_vars();
+
+    return funccal == NULL ? NULL : &funccal->fc_l_vars.dv_hashtab;
 }
 
 /*
@@ -7351,9 +7373,9 @@ get_funccal_local_ht(void)
     dictitem_T *
 get_funccal_local_var(void)
 {
-    if (current_funccal == NULL || current_funccal->fc_l_vars.dv_refcount == 0)
-	return NULL;
-    return &get_funccal()->fc_l_vars_var;
+    funccall_T	*funccal = get_funccal_for_vars();
+
+    return funccal == NULL ? NULL : &funccal->fc_l_vars_var;
 }
 
 /*
@@ -7363,9 +7385,9 @@ get_funccal_local_var(void)
     hashtab_T *
 get_funccal_args_ht(void)
 {
-    if (current_funccal == NULL || current_funccal->fc_l_vars.dv_refcount == 0)
-	return NULL;
-    return &get_funccal()->fc_l_avars.dv_hashtab;
+    funccall_T	*funccal = get_funccal_for_vars();
+
+    return funccal == NULL ? NULL : &funccal->fc_l_avars.dv_hashtab;
 }
 
 /*
@@ -7375,9 +7397,9 @@ get_funccal_args_ht(void)
     dictitem_T *
 get_funccal_args_var(void)
 {
-    if (current_funccal == NULL || current_funccal->fc_l_vars.dv_refcount == 0)
-	return NULL;
-    return &get_funccal()->fc_l_avars_var;
+    funccall_T	*funccal = get_funccal_for_vars();
+
+    return funccal == NULL ? NULL : &funccal->fc_l_avars_var;
 }
 
 /*

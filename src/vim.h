@@ -2586,6 +2586,25 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 #include "globals.h"	    // global variables and messages
 #include "errors.h"	    // error messages
 
+#ifndef PROTO
+/*
+ * Return TRUE when currently using Vim9 script syntax.
+ * Does not go up the stack, a ":function" inside vim9script uses legacy
+ * syntax.
+ * Defined here as "static inline" because it is called very frequently from
+ * the eval hot path; inlining avoids the cross-file call overhead.
+ */
+    static inline int
+in_vim9script(void)
+{
+    // "sc_version" is also set when compiling a ":def" function in legacy
+    // script.
+    return (current_sctx.sc_version == SCRIPT_VERSION_VIM9
+					 || (cmdmod.cmod_flags & CMOD_VIM9CMD))
+		&& !(cmdmod.cmod_flags & CMOD_LEGACY);
+}
+#endif
+
 /*
  * If console dialog not supported, but GUI dialog is, use the GUI one.
  */

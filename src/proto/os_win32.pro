@@ -1,4 +1,4 @@
-/* os_win32.c */
+// os_win32.c
 void mch_get_exe_name(void);
 HINSTANCE vimLoadLib(const char *name);
 int mch_is_gui_executable(void);
@@ -92,4 +92,4 @@ void resize_console_buf(void);
 char *GetWin32Error(void);
 void stop_timeout(void);
 volatile sig_atomic_t *start_timeout(long msec);
-/* vim: set ft=c : */
+// vim: ft=c

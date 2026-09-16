@@ -1,4 +1,4 @@
-*cmdline.txt*	For Vim version 9.2.  Last change: 2026 Jul 18
+*cmdline.txt*	For Vim version 9.2.  Last change: 2026 Aug 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1263,6 +1263,16 @@ In the command-line window the command line can be edited just like editing
 text in any window.  It is a special kind of window, because you cannot leave
 it in a normal way.
 
+If you often type `q:` when you meant `:q`, you can map `q` so that it puts
+":q" on the command line instead of opening the command-line window, while
+still ending a recording when one is in progress: >
+
+	nnoremap <expr><script> q reg_recording() != '' ? 'q' : '<SID>_qmode_'
+	nnoremap <SID>_qmode_: :<C-U>q
+	nnoremap <SID>_qmode_  q
+<
+Note that starting a recording with `qa` now waits for 'timeoutlen', because
+`q` has become the start of a longer mapping.
 
 OPEN						*c_CTRL-F* *q:* *q/* *q?*
 

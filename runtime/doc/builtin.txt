@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Aug 20
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Sep 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -213,11 +213,13 @@ floor({expr})			Float	round {expr} down
 fmod({expr1}, {expr2})		Float	remainder of {expr1} / {expr2}
 fnameescape({fname})		String	escape special characters in {fname}
 fnamemodify({fname}, {mods})	String	modify file name
-foldclosed({lnum})		Number	first line of fold at {lnum} if closed
-foldclosedend({lnum})		Number	last line of fold at {lnum} if closed
-foldlevel({lnum})		Number	fold level at {lnum}
+foldclosed({lnum} [, {winid}])	Number	first line of fold at {lnum} if closed
+foldclosedend({lnum} [, {winid}]))
+				Number	last line of fold at {lnum} if closed
+foldlevel({lnum} [, {winid}]))	Number	fold level at {lnum}
 foldtext()			String	line displayed for closed fold
-foldtextresult({lnum})		String	text for closed fold at {lnum}
+foldtextresult({lnum} [, {winid}]))
+				String	text for closed fold at {lnum}
 foreach({expr1}, {expr2})	List/Tuple/Dict/Blob/String
 					for each item in {expr1} call {expr2}
 foreground()			none	bring the Vim window to the foreground
@@ -2059,12 +2061,20 @@ complete_info([{what}])					*complete_info()*
 		Returns a |Dictionary| with information about Insert mode
 		completion.  See |ins-completion|.
 		The items are:
+		   auto		|TRUE| when Vim started this completion by
+				itself, which is what 'autocomplete' does,
+				and |FALSE| when a key asked for it, such as
+				|i_CTRL-X_CTRL-O|.  A |complete-functions|
+				function can read this to tell the two apart.
+				Returned only when asked for in {what}.
 		   completed	Return a dictionary containing the entries of
 				the currently selected index item.
 		   items	List of all completion candidates.  Each item
 				is a dictionary containing the entries "word",
-				"abbr", "menu", "kind", "info" and
-				"user_data".
+				"abbr", "menu", "kind", "info", "abbr_hlgroup",
+				"kind_hlgroup" and "user_data".  The highlight
+				group entries hold the name that the item was
+				added with, or an empty string.
 				See |complete-items|.
 		   matches	Same as "items", but only returns items that
 				are matching current query.  If both "matches"
@@ -2232,7 +2242,7 @@ cosh({expr})						*cosh()*
 			:echo cosh(0.5)
 <			1.127626 >
 			:echo cosh(-0.5)
-<			-1.127626
+<			1.127626
 
 		Can also be used as a |method|: >
 			Compute()->cosh()
@@ -3546,33 +3556,43 @@ fnamemodify({fname}, {mods})				*fnamemodify()*
 		Return type: |String|
 
 
-foldclosed({lnum})					*foldclosed()*
+foldclosed({lnum} [, {winid}])				*foldclosed()*
 		The result is a Number.  If the line {lnum} is in a closed
 		fold, the result is the number of the first line in that fold.
 		If the line {lnum} is not in a closed fold, -1 is returned.
 		{lnum} is used like with |getline()|.  Thus "." is the current
 		line, "'m" mark m, etc.
 
+		With the optional {winid} argument the values are obtained for
+		that window instead of the current window.  If {winid} is
+		invalid, return -2.
+
 		Can also be used as a |method|: >
 			GetLnum()->foldclosed()
+			GetLnum()->foldclosed(winid)
 <
 		Return type: |Number|
 
 
-foldclosedend({lnum})					*foldclosedend()*
+foldclosedend({lnum} [, {winid}])			*foldclosedend()*
 		The result is a Number.  If the line {lnum} is in a closed
 		fold, the result is the number of the last line in that fold.
 		If the line {lnum} is not in a closed fold, -1 is returned.
 		{lnum} is used like with |getline()|.  Thus "." is the current
 		line, "'m" mark m, etc.
 
+		With the optional {winid} argument the values are obtained for
+		that window instead of the current window.  If {winid} is
+		invalid, return -2.
+
 		Can also be used as a |method|: >
 			GetLnum()->foldclosedend()
+			GetLnum()->foldclosedend(winid)
 <
 		Return type: |Number|
 
 
-foldlevel({lnum})					*foldlevel()*
+foldlevel({lnum} [, {winid}])				*foldlevel()*
 		The result is a Number, which is the foldlevel of line {lnum}
 		in the current buffer.  For nested folds the deepest level is
 		returned.  If there is no fold at line {lnum}, zero is
@@ -3584,8 +3604,13 @@ foldlevel({lnum})					*foldlevel()*
 		{lnum} is used like with |getline()|.  Thus "." is the current
 		line, "'m" mark m, etc.
 
+		With the optional {winid} argument the values are obtained for
+		that window instead of the current window.  If {winid} is
+		invalid, return -2.
+
 		Can also be used as a |method|: >
 			GetLnum()->foldlevel()
+			GetLnum()->foldlevel(winid)
 <
 		Return type: |Number|
 
@@ -3611,7 +3636,7 @@ foldtext()						*foldtext()*
 		{not available when compiled without the |+folding| feature}
 
 
-foldtextresult({lnum})					*foldtextresult()*
+foldtextresult({lnum} [, {winid}])			*foldtextresult()*
 		Returns the text that is displayed for the closed fold at line
 		{lnum}.  Evaluates 'foldtext' in the appropriate context.
 		When there is no closed fold at {lnum} an empty string is
@@ -3621,9 +3646,13 @@ foldtextresult({lnum})					*foldtextresult()*
 		Useful when exporting folded text, e.g., to HTML.
 		{not available when compiled without the |+folding| feature}
 
+		With the optional {winid} argument the values are obtained for
+		that window instead of the current window.  If {winid} is
+		invalid, an empty string is returned.
 
 		Can also be used as a |method|: >
 			GetLnum()->foldtextresult()
+			GetLnum()->foldtextresult(winid)
 <
 		Return type: |String|
 
@@ -4980,7 +5009,8 @@ getqflist([{what}])					*getqflist()*
 			valid	|TRUE|: recognized error message
 			user_data
 				custom data associated with the item, can be
-				any type.
+				any type.  This entry is present only when
+				user data was set for this item.
 
 		When there is no error list or it's empty, an empty list is
 		returned.  Quickfix list entries with a non-existing buffer
@@ -5022,6 +5052,11 @@ getqflist([{what}])					*getqflist()*
 			qfbufnr number of the buffer displayed in the quickfix
 				window.  Returns 0 if the quickfix buffer is
 				not present.  See |quickfix-buffer|.
+			quickfixtextfunc
+				function to get the text to display in the
+				quickfix window.  Returns an empty string if
+				this function is not set for the list.  See
+				|quickfix-window-function|.
 			size	number of entries in the quickfix list
 			title	get the list title |quickfix-title|
 			winid	get the quickfix |window-ID|
@@ -5053,6 +5088,9 @@ getqflist([{what}])					*getqflist()*
 				0
 			qfbufnr	number of the buffer displayed in the quickfix
 				window.  If not present, set to 0.
+			quickfixtextfunc
+				'quickfixtextfunc' setting of the list.  If
+				not present, set to "".
 			size	number of entries in the quickfix list.  If
 				not present, set to 0.
 			title	quickfix list title text.  If not present, set
@@ -5221,6 +5259,31 @@ getregionpos({pos1}, {pos2} [, {opts}])			*getregionpos()*
 					beyond the end of a line, a "col"
 					value of 0 is used for both positions.
 					(default: |FALSE|)
+
+			bounds		If |TRUE|, return only the outer
+					bounds of the region as a single
+					pair: >
+						[[{start_pos}, {end_pos}]]
+<					{start_pos} is the start position on
+					the first line of the region and
+					{end_pos} the end position on its
+					last line.  The lines in between are
+					not visited, which is much faster for
+					a large region.
+					(default: |FALSE|)
+
+		Using "bounds" with the same {opts} is equivalent to taking
+		the outer positions of the full result: >
+			let full = getregionpos(pos1, pos2, opts)
+			let bounds = [[full[0][0], full[-1][1]]]
+<		When the full result is empty, e.g. because {pos1} and {pos2}
+		are in different buffers, the result is empty as well.
+		Note that the two positions then come from different lines, so
+		they describe a diagonal of the region and not its shape.  For
+		a blockwise region they are the start of the first line and
+		the end of the last line, not the corners of the block.
+		Likewise, when the first line is empty and "eol" is |FALSE|,
+		{start_pos} has a "col" of 0 while {end_pos} may not.
 
 		Can also be used as a |method|: >
 			getpos('.')->getregionpos(getpos("'a"))
@@ -6691,7 +6754,7 @@ libcallnr({libname}, {funcname}, {argument})		*libcallnr()*
 		third argument: >
 			GetValue()->libcallnr("libc.so", "printf")
 <
-		Return type: |String|
+		Return type: |Number|
 
 
 line({expr} [, {winid}])				*line()*
@@ -8180,7 +8243,7 @@ pow({x}, {y})						*pow()*
 		Can also be used as a |method|: >
 			Compute()->pow(3)
 <
-		Return type: |Number|
+		Return type: |Float|
 
 
 preinserted()						*preinserted()*
@@ -8636,7 +8699,7 @@ pum_getpos()						*pum_getpos()*
 		The values are the same as in |v:event| during
 		|CompleteChanged|.
 
-		Return type: dict<any>
+		Return type: dict<number>
 
 
 pumvisible()						*pumvisible()*
@@ -8738,6 +8801,8 @@ range({expr} [, {max} [, {stride}]])			*range()*
 		When the maximum is one before the start the result is an
 		empty list.  When the maximum is more than one before the
 		start this is an error.
+		The list can have at most 2147483647 items and {stride} must
+		fit in a 32 bit number, otherwise |E1510| is given.
 		Examples: >
 			range(4)		" [0, 1, 2, 3]
 			range(2, 4)		" [2, 3, 4]
@@ -8798,7 +8863,7 @@ readdir({directory} [, {expr} [, {dict}]])		*readdir()*
 		Each time {expr} is evaluated |v:val| is set to the entry name.
 		When {expr} is a function the name is passed as the argument.
 		For example, to get a list of files ending in ".txt": >
-		  readdir(dirname, {n -> n =~ '.txt$'})
+		  readdir(dirname, {n -> n =~ '\.txt$'})
 <		To skip hidden and backup files: >
 		  readdir(dirname, {n -> n !~ '^\.\|\~$'})
 <								*E857*
@@ -9929,7 +9994,11 @@ server2client({clientid}, {string})			*server2client()*
 serverlist([{dict}])					*serverlist()*
 		Return a list of available server names, one per line.
 		When there are no servers or the information is not available
-		an empty string is returned.
+		an empty string is returned, or an empty |List| when the
+		"list" option below is used.
+
+		When the server cannot be reached, no error will be given and
+		the result is an empty string or |List|.
 		{only available when compiled with the |+clientserver| feature}
 
 		If {dict} is given, then it is a |Dictionary| supporting the
@@ -10370,7 +10439,10 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 				:call setqflist([], 'r')
 <
 		'u'	Like 'r', but tries to preserve the current selection
-			in the quickfix list.
+			in the quickfix list.  The entry nearest to the
+			previously selected one becomes the current entry.
+			Proximity is determined by comparing the file, then
+			the line number and then the column number.
 		'f'	All the quickfix lists in the quickfix stack are
 			freed.
 
@@ -12149,6 +12221,7 @@ terminalprops()						*terminalprops()*
 		   mouse		mouse type supported
 		   kitty		whether Kitty terminal was detected
 		   decrqm		whether sending DECRQM sequences work
+		   rgb			whether the terminal has true color  **
 
 		** value 'u' for unknown, 'y' for yes, 'n' for no
 
@@ -12170,6 +12243,9 @@ terminalprops()						*terminalprops()*
 
 		If "decrqm" is 'y', then Vim will query support for the
 		'termsync' and 'termresize' ("inband") options.
+
+		"rgb" is 'y' when 't_Co' is 16777216, as it is for the
+		"xterm-direct" terminal entry.  See |xterm-true-color|.
 
 		Also see:
 		- 'ambiwidth' - detected by using |t_u7|.

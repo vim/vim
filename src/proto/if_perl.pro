@@ -1,4 +1,4 @@
-/* manually generated if_perl.c from if_perl.xs */
+// manually generated if_perl.c from if_perl.xs
 int perl_enabled(int verbose);
 void perl_end(void);
 void msg_split(char_u *s, int attr);
@@ -7,3 +7,4 @@ void perl_buf_free(buf_T *bp);
 void ex_perl(exarg_T *eap);
 void do_perleval(char_u *str, typval_T *rettv);
 void ex_perldo(exarg_T *eap);
+// vim: ft=c

@@ -1,4 +1,4 @@
-/* memfile.c */
+// memfile.c
 memfile_T *mf_open(char_u *fname, int flags);
 int mf_open_file(memfile_T *mfp, char_u *fname);
 void mf_close(memfile_T *mfp, int del_file);
@@ -15,4 +15,4 @@ blocknr_T mf_trans_del(memfile_T *mfp, blocknr_T old_nr);
 void mf_set_ffname(memfile_T *mfp);
 void mf_fullname(memfile_T *mfp);
 int mf_need_trans(memfile_T *mfp);
-/* vim: set ft=c : */
+// vim: ft=c

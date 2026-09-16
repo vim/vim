@@ -1692,6 +1692,7 @@ struct itf2class_S {
 #define CLASS_EXTENDED	    0x2	    // another class extends this one
 #define CLASS_ABSTRACT	    0x4	    // abstract class
 #define CLASS_ENUM	    0x8	    // enum
+#define CLASS_DRYRUN	    0x10    // defined by ":source ++dryrun"
 
 // "class_T": used for v_class of typval of VAR_CLASS
 // Also used for an interface (class_flags has CLASS_INTERFACE).
@@ -3183,6 +3184,8 @@ typedef struct {
      * b_sst_array	pointer to an array of synstate_T
      * b_sst_len	number of entries in b_sst_array[]
      * b_sst_first	pointer to first used entry in b_sst_array[] or NULL
+     * b_sst_search	cached entry near the last accessed line, used as a
+     *			start point for forward lookups, or NULL
      * b_sst_firstfree	pointer to first free entry in b_sst_array[] or NULL
      * b_sst_freecount	number of free entries in b_sst_array[]
      * b_sst_check_lnum	entries after this lnum need to be checked for
@@ -3191,6 +3194,7 @@ typedef struct {
     synstate_T	*b_sst_array;
     int		b_sst_len;
     synstate_T	*b_sst_first;
+    synstate_T	*b_sst_search;
     synstate_T	*b_sst_firstfree;
     int		b_sst_freecount;
     linenr_T	b_sst_check_lnum;
@@ -3710,6 +3714,8 @@ struct file_buffer
 
 #ifdef FEAT_SIGNS
     sign_entry_T *b_signlist;	   // list of placed signs
+    sign_entry_T *b_sign_finger;   // last sign inserted, used to speed up
+				   // inserting signs in ascending line order
 # ifdef FEAT_NETBEANS_INTG
     bool	b_has_sign_column; // Flag that is set when a first sign is
 				   // added and remains set until the end of
@@ -4291,6 +4297,7 @@ struct window_S
 #  ifdef FEAT_IMAGE_KITTY
     bool	w_popup_image_transmit;	    // If image has been transmitted to
 					    // terminal
+    int		w_popup_image_placements;   // kitty placements on screen
 #  endif
 #  ifdef FEAT_IMAGE_GDI
     // Pre-built Windows GUI image cache.  The bitmap is a 32-bit top-down
@@ -5472,8 +5479,11 @@ typedef struct {
 #endif
 } spellvars_T;
 
-// Return the length of a string literal
-#define STRLEN_LITERAL(s) (sizeof(s) - 1)
+// Return the length of a string literal.
+// This macro only computes a string's length for a string-literal token; for
+// anything else, including a char*, compilation will fail (note "" following
+// s).
+#define STRLEN_LITERAL(s) (sizeof(s "") - 1)
 
 // Store a key/value (string) pair
 typedef struct
@@ -5493,7 +5503,7 @@ struct cellsize {
 };
 #endif
 
-#if defined(FEAT_IMAGE) || defined(PROTO)
+#if defined(FEAT_IMAGE)
 // RGB(A) image input shared by all popup image backends.
 // "data" points to width*height*3 bytes of tightly packed R,G,B triples
 // when has_alpha is FALSE, or width*height*4 R,G,B,A quadruples otherwise.

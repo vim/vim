@@ -1,5 +1,4 @@
-/* vim9script.c */
-int in_vim9script(void);
+// vim9script.c
 int in_old_script(int max_version);
 int current_script_is_vim9(void);
 void clear_vim9_scriptlocal_vars(int sid);
@@ -15,9 +14,10 @@ void ex_import(exarg_T *eap);
 void import_check_sourced_sid(int *sid);
 int find_exported(int sid, char_u *name, ufunc_T **ufunc, type_T **type, cctx_T *cctx, cstack_T *cstack, int verbose);
 char_u *vim9_declare_scriptvar(exarg_T *eap, char_u *arg);
+void vim9_declare_dryrun(char_u *arg, int flags);
 void update_vim9_script_var(int create, dictitem_T *di, char_u *name, int flags, typval_T *tv, type_T **type, int do_member);
 void hide_script_var(scriptitem_T *si, int idx, int func_defined);
 svar_T *find_typval_in_script(typval_T *dest, scid_T sid, int must_find);
 int check_script_var_type(svar_T *sv, typval_T *value, char_u *name, where_T where);
 int check_reserved_name(char_u *name, int is_objm_access);
-/* vim: set ft=c : */
+// vim: ft=c

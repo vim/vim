@@ -1,4 +1,4 @@
-/* help.c */
+// help.c
 void ex_help(exarg_T *eap);
 void ex_helpclose(exarg_T *eap);
 char_u *check_help_lang(char_u *arg);
@@ -10,4 +10,4 @@ void fix_help_buffer(void);
 void ex_exusage(exarg_T *eap);
 void ex_viusage(exarg_T *eap);
 void ex_helptags(exarg_T *eap);
-/* vim: set ft=c : */
+// vim: ft=c

@@ -635,6 +635,288 @@ func Test_source_buffer_vim9()
   %bw!
 endfunc
 
+" What the class and the enum of Xdryrun/autoload/xshape.vim give; a legacy
+" function cannot reach them by their autoload name.
+def s:DryrunShapeInfo(): list<any>
+  return [xshape#Shape.new().Area(), xshape#Color.Blue.name]
+enddef
+
+" Test for ":source ++dryrun": only definitions are executed, then the
+" functions are compiled.
+func Test_source_dryrun()
+  let lines =<< trim END
+    vim9script
+    writefile(['ran'], 'Xdryrun_import_ran')
+    export def Helper(n: number): string
+      return string(n)
+    enddef
+  END
+  call writefile(lines, 'Xdryrun_import.vim', 'D')
+
+  let lines =<< trim END
+    vim9script
+    # nothing at the script level runs
+    writefile(['ran'], 'Xdryrun_ran')
+    g:dryrun_touched = 1
+    command! DryrunCmd echo 1
+    augroup DryrunGroup
+      autocmd BufEnter * echo 1
+    augroup END
+    nnoremap <F13> :echo 1<CR>
+
+    import './Xdryrun_import.vim' as imp
+    # an import with a function in its name does not call it
+    def ImportName(): string
+      writefile(['ran'], 'Xdryrun_ran')
+      return './Xdryrun_import.vim'
+    enddef
+    import ImportName() as unnamed
+
+    # declared with the type or "any", the expression is not evaluated
+    var typed: string = DoesNotExist()
+    var untyped = DoesNotExist()
+    const LIMIT = 10
+    var [first, second] = [1, 2]
+    var text =<< trim EOT
+      heredoc line
+    EOT
+    var multi = {
+      a: 1,
+      b: 2,
+    }
+
+    # both branches define the function
+    if has('win32')
+      def Platform(): string
+        return 'win'
+      enddef
+    else
+      def Platform(): string
+        return 'unix'
+      enddef
+    endif
+
+    class Config
+      var name: string = 'x'
+      static var registry: dict<any> = DoesNotExist()
+      def Describe(): string
+        return this.name .. Platform()
+      enddef
+    endclass
+
+    enum Color
+      Red('ff'),
+      Blue('00')
+      var code: string
+      def new(code: string)
+        this.code = code
+      enddef
+    endenum
+
+    def Broken(): number
+      return 'x'
+    enddef
+    def UsesAll(): string
+      return imp.Helper(1) .. typed .. untyped .. LIMIT .. text[0] .. first
+    enddef
+    def WrongConst()
+      LIMIT = 11
+    enddef
+
+    finish
+    def AfterFinish(): number
+      return 'x'
+    enddef
+  END
+  call writefile(lines, 'Xdryrun.vim', 'D')
+
+  redir => msgs
+  silent! source ++dryrun Xdryrun.vim
+  redir END
+  call assert_match('function <SNR>\d\+_Broken:\_.*E1012:', msgs)
+  call assert_match('function <SNR>\d\+_WrongConst:\_.*E46:', msgs)
+  call assert_match('function <SNR>\d\+_AfterFinish:\_.*E1012:', msgs)
+  call assert_notmatch('E1073:', msgs)
+  call assert_false(filereadable('Xdryrun_ran'))
+  call assert_false(filereadable('Xdryrun_import_ran'))
+  call assert_false(exists('g:dryrun_touched'))
+  call assert_false(exists(':DryrunCmd'))
+  call assert_false(exists('#DryrunGroup'))
+  call assert_equal('', maparg('<F13>'))
+  let sid = getscriptinfo({'name': 'Xdryrun\.vim$'})[0].sid
+  let info = getscriptinfo({'sid': sid})[0]
+  call assert_equal(['AfterFinish', 'Broken', 'ImportName', 'Platform',
+        \ 'UsesAll', 'WrongConst'],
+        \ sort(map(copy(info.functions), 'substitute(v:val, ".*_", "", "")')))
+  call assert_equal(['Color', 'Config', 'LIMIT', 'first', 'multi', 'second',
+        \ 'text', 'typed', 'untyped'], sort(keys(info.variables)))
+  call assert_equal(v:t_string, type(info.variables.typed))
+
+  " a range of buffer lines
+  new
+  let lines =<< trim END
+    vim9script
+    g:dryrun_touched = 1
+    def Broken(): number
+      return 'x'
+    enddef
+  END
+  call setline(1, lines)
+  call assert_fails('%source ++dryrun', 'E1012:')
+  call assert_false(exists('g:dryrun_touched'))
+
+  " an error in a definition does not stop the script
+  %d _
+  let lines =<< trim END
+    vim9script
+    var bad: nosuchtype = 1
+    if 1
+      def Bad(): number
+        return 'x'
+      enddef
+    endif
+    def Later(): number
+      return 'x'
+    enddef
+  END
+  call setline(1, lines)
+  redir => msgs
+  silent! %source ++dryrun
+  redir END
+  call assert_match('E1010:', msgs)
+  call assert_match('function <SNR>\d\+_Bad:\_.*E1012:', msgs)
+  call assert_match('function <SNR>\d\+_Later:\_.*E1012:', msgs)
+
+  " every line with an error in a function is reported, the error does not
+  " lead to more errors and the function is not compiled
+  %d _
+  let lines =<< trim END
+    vim9script
+    def Many(): number
+      var a: number = 'one'
+      var b: nosuchtype = 1
+      echo b
+      var c = NoSuchFunc()
+      echo c
+      if UndefinedVar
+        var d: string = 2
+      else
+        echo undefined_e
+      endif
+      for i in NoSuchList()
+        echo i
+      endfor
+      while UndefinedCond
+      endwhile
+      nosuchcommand
+      def Nested(): string
+        return 7
+      enddef
+      return 'nine'
+    enddef
+  END
+  call setline(1, lines)
+  redir => msgs
+  silent! %source ++dryrun
+  redir END
+  " with ":silent!" E1028 is given as well, the errors did not count
+  let found = []
+  for line in split(msgs, "\n")
+    if line =~ '^line'
+      let lnum = str2nr(matchstr(line, '\d\+'))
+    elseif line =~ '^E\d\+:' && line !~ '^E1028:'
+      call add(found, [lnum, matchstr(line, '^E\d\+:')])
+    endif
+  endfor
+  call assert_equal([[1, 'E1012:'], [2, 'E1010:'], [4, 'E117:'], [6, 'E1001:'],
+        \ [7, 'E1012:'], [9, 'E1001:'], [11, 'E117:'], [14, 'E1001:'],
+        \ [16, 'E476:'], [1, 'E1012:'], [20, 'E1012:']], found)
+  bwipe!
+
+  " a legacy script defines its functions, they are not compiled; the
+  " condition of an :if, :elseif, :while or :for is not evaluated
+  let lines =<< trim END
+    let g:dryrun_touched = 1
+    if g:dryrun_undefined
+      let g:dryrun_touched = 2
+    elseif g:dryrun_undefined
+    endif
+    while g:dryrun_undefined
+    endwhile
+    for i in g:dryrun_undefined
+    endfor
+    try
+      let g:dryrun_touched = 3
+    catch
+    endtry
+    function DryrunLegacy()
+      return undefined_name
+    endfunction
+  END
+  call writefile(lines, 'Xdryrun_legacy.vim', 'D')
+  source ++dryrun Xdryrun_legacy.vim
+  call assert_false(exists('g:dryrun_touched'))
+  call assert_true(exists('*DryrunLegacy'))
+  delfunc DryrunLegacy
+
+  " no SourceCmd, SourcePre or SourcePost autocommand, also not for the
+  " imported script
+  let g:dryrun_events = ''
+  augroup DryrunAutocmds
+    autocmd SourceCmd * let g:dryrun_events ..= 'cmd '
+    autocmd SourcePre * let g:dryrun_events ..= 'pre '
+    autocmd SourcePost * let g:dryrun_events ..= 'post '
+  augroup END
+  call writefile(['vim9script'], 'Xdryrun_import2.vim', 'D')
+  let lines =<< trim END
+    vim9script
+    import './Xdryrun_import2.vim' as imp2
+  END
+  call writefile(lines, 'Xdryrun_events.vim', 'D')
+  source ++dryrun Xdryrun_events.vim
+  call assert_equal('', g:dryrun_events)
+  source Xdryrun_legacy.vim
+  call assert_equal('cmd post ', g:dryrun_events)
+  unlet g:dryrun_events
+  autocmd! DryrunAutocmds
+  augroup! DryrunAutocmds
+
+  " a class in an autoload script can be defined again by a dry run, and
+  " after one by a normal source: no object was made from it
+  call mkdir('Xdryrun/autoload', 'pR')
+  let lines =<< trim END
+    vim9script
+    export class Shape
+      var width: number = 1
+      def Area(): number
+        return this.width
+      enddef
+    endclass
+    export enum Color
+      Red,
+      Blue
+    endenum
+  END
+  call writefile(lines, 'Xdryrun/autoload/xshape.vim')
+  source ++dryrun Xdryrun/autoload/xshape.vim
+  source ++dryrun Xdryrun/autoload/xshape.vim
+  source Xdryrun/autoload/xshape.vim
+  call assert_equal([1, 'Blue'], s:DryrunShapeInfo())
+  call assert_fails('source Xdryrun/autoload/xshape.vim', 'E1041:')
+
+  " a normal source afterwards runs the script level
+  let lines =<< trim END
+    vim9script
+    g:dryrun_touched = 1
+  END
+  call writefile(lines, 'Xdryrun_normal.vim', 'D')
+  source Xdryrun_normal.vim
+  call assert_true(exists('g:dryrun_touched'))
+  unlet g:dryrun_touched
+
+  call assert_fails('source ++dryrunx Xdryrun.vim', 'E484:')
+endfunc
+
 " Test that the modifier does not override the script type when sourcing files
 " with :vim9cmd and :legacy
 func Test_source_file_ignores_modifiers()

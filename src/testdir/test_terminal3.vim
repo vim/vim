@@ -1446,4 +1446,23 @@ func Test_terminal_scrollregion_resize_oob()
   endfor
 endfunc
 
+" This caused a Crash
+func Test_terminal_csi_resize()
+  CheckUnix
+  CheckExecutable cat
+
+  " The escape sequence and the output must arrive in one burst
+  call writefile(["\<Esc>[8;50000;200t"] + repeat(['x'], 3000), 'Xtermsize', 'D')
+
+  let buf = term_start(['cat', 'Xtermsize'], #{term_rows: 20})
+  call WaitForAssert({-> assert_equal('finished', term_getstatus(buf))})
+  call TermWait(buf)
+
+  " clamped to VTERM_MAX_ROWS instead of 50,000
+  call assert_equal([1000, 1], term_getcursor(buf)[0:1])
+  call assert_true(bufexists(buf))
+
+  exe 'bwipe! ' .. buf
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

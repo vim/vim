@@ -2037,7 +2037,7 @@ static struct vimoption options[] =
 # ifdef MSWIN
 				(char_u *)"Courier_New:h10",
 # elif defined(FEAT_PRINT_PANGO)
-				(char_u *)"Courier New 10",
+				(char_u *)"Courier 10",
 # else
 				(char_u *)"courier",
 # endif

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-08-18 20:22+0000\n"
+"POT-Creation-Date: 2026-09-08 18:52+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1669,6 +1669,9 @@ msgid "--gui-dialog-file {fname}  For testing: write dialog text"
 msgstr ""
 
 msgid "--ttyfail\t\tExit if input or output is not a terminal"
+msgstr ""
+
+msgid "--stdio-channel\tUse stdin and stdout as a channel"
 msgstr ""
 
 msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
@@ -8903,6 +8906,12 @@ msgid "E1580: Too many text properties on a single line"
 msgstr ""
 
 msgid "E1581: Cannot extend a null blob"
+msgstr ""
+
+msgid "E1582: Not started with --stdio-channel"
+msgstr ""
+
+msgid "E1583: Cannot open stdio channel"
 msgstr ""
 
 #. type of cmdline window or 0

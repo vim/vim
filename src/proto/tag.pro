@@ -1,4 +1,4 @@
-/* tag.c */
+// tag.c
 char *did_set_tagfunc(optset_T *args);
 void free_tagfunc_option(void);
 int set_ref_in_tagfunc(int copyID);
@@ -15,4 +15,4 @@ int expand_tags(int tagnames, char_u *pat, int *num_file, char_u ***file);
 int get_tags(list_T *list, char_u *pat, char_u *buf_fname);
 void get_tagstack(win_T *wp, dict_T *retdict);
 int set_tagstack(win_T *wp, dict_T *d, int action);
-/* vim: set ft=c : */
+// vim: ft=c

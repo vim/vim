@@ -1,4 +1,4 @@
-*pattern.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*pattern.txt*	For Vim version 9.2.  Last change: 2026 Aug 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1370,7 +1370,7 @@ Suppose B is a base character and x and y are composing characters:
 ==============================================================================
 9. Compare with Perl patterns				*perl-patterns*
 
-Vim's regexes are most similar to Perl's, in terms of what you can do.  The
+Vim's regexps are most similar to Perl's, in terms of what you can do.  The
 difference between them is mostly just notation;  here's a summary of where
 they differ:
 
@@ -1401,7 +1401,7 @@ by giving you the \_ "modifier":  put it in front of a . or a character
 class, and they will match newlines as well.
 
 Finally, these constructs are unique to Perl:
-- execution of arbitrary code in the regex:  (?{perl code})
+- execution of arbitrary code in the regexp:  (?{perl code})
 - conditional expressions:  (?(condition)true-expr|false-expr)
 
 ...and these are unique to Vim:

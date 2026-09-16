@@ -1,4 +1,4 @@
-/* vim9type.c */
+// vim9type.c
 type_T *get_type_ptr(garray_T *type_gap);
 type_T *copy_type(type_T *type, garray_T *type_gap);
 type_T *copy_type_deep(type_T *type, garray_T *type_gap);
@@ -42,4 +42,4 @@ char *type_name(type_T *type, char **tofree);
 void f_typename(typval_T *argvars, typval_T *rettv);
 int check_typval_is_value(typval_T *tv);
 int check_type_is_value(type_T *type);
-/* vim: set ft=c : */
+// vim: ft=c

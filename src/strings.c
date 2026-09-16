@@ -681,15 +681,11 @@ vim_strchr(char_u *string, int c)
     char_u  *
 vim_strbyte(char_u *string, int c)
 {
-    char_u	*p = string;
-
-    while (*p != NUL)
-    {
-	if (*p == c)
-	    return p;
-	++p;
-    }
-    return NULL;
+    // strchr() converts c to char and also matches the terminating NUL.
+    // Keep the byte range and NUL behavior of this function.
+    if (c <= 0 || c > 255)
+	return NULL;
+    return (char_u *)strchr((char *)string, c);
 }
 
 /*
@@ -1057,7 +1053,7 @@ string_reduce(
 	clear_tv(&argv[0]);
 	clear_tv(&argv[1]);
 	if (r == FAIL || called_emsg != called_emsg_start)
-	    return;
+	    break;
     }
 
     if (fc != NULL)

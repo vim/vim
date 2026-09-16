@@ -1,4 +1,4 @@
-/* gui_xim.c */
+// gui_xim.c
 char *did_set_imactivatefunc(optset_T *args);
 char *did_set_imstatusfunc(optset_T *args);
 void free_xim_stuff(void);
@@ -18,4 +18,4 @@ int preedit_get_status(void);
 int im_is_preediting(void);
 void xim_set_status_area(void);
 int xim_get_status_area_height(void);
-/* vim: set ft=c : */
+// vim: ft=c

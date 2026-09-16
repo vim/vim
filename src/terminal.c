@@ -1107,7 +1107,7 @@ term_write_session(FILE *fd, win_T *wp, hashtab_T *terminal_bufs)
 	if (!HASHITEM_EMPTY(entry))
 	{
 	    // we've already opened this terminal buffer
-	    if (fprintf(fd, "execute 'buffer ' . term_buf_%d", bufnr) < 0)
+	    if (fprintf(fd, "execute 'buffer ' .. term_buf_%d", bufnr) < 0)
 		return FAIL;
 	    return put_eol(fd);
 	}

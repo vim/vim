@@ -6595,6 +6595,12 @@ makeset(FILE *fd, int opt_flags, int local_only)
 		    int		do_endif = FALSE;
 		    bool	legacy;
 
+		    // Ignore those options associated to lambda expressions because
+		    // persistence makes no sense for them.
+		    if ((p->flags & P_FUNC) && *(char_u **)varp != NULL
+			    && strstr(*(char **)varp, "<lambda>") != NULL)
+			continue;
+
 #ifdef FEAT_EVAL
 		    legacy = !is_option_value_vim9(p - &options[0],
 			    round == 1 ? opt_flags | OPT_GLOBAL : OPT_LOCAL);

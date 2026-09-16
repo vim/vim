@@ -1,4 +1,4 @@
-/* json.c */
+// json.c
 char_u *json_encode(typval_T *val, int options);
 char_u *json_encode_nr_expr(int nr, typval_T *val, int options);
 char_u *json_encode_lsp_msg(typval_T *val);
@@ -8,4 +8,4 @@ void f_js_decode(typval_T *argvars, typval_T *rettv);
 void f_js_encode(typval_T *argvars, typval_T *rettv);
 void f_json_decode(typval_T *argvars, typval_T *rettv);
 void f_json_encode(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

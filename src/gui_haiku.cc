@@ -4329,7 +4329,7 @@ gui_mch_update()
  */
 int
 gui_mch_wait_for_chars(
-	int	wtime)
+	long	wtime)
 {
     int		focus;
     bigtime_t	until, timeout;

@@ -1,0 +1,52 @@
+# VIM_TEST_SETUP call DeferRenamingTestFileTo('radvd.conf')
+# radvd configuration
+# TODO comments are highlighted
+
+interface eth0
+{
+	AdvSendAdvert on;
+	MinRtrAdvInterval 3;
+	MaxRtrAdvInterval 10;
+	AdvDefaultPreference low;
+	AdvHomeAgentFlag off;
+
+	prefix 2001:db8:0:1::/64
+	{
+		AdvOnLink on;
+		AdvAutonomous on;
+		AdvRouterAddr off;
+		AdvValidLifetime infinity;
+	};
+
+	// route with a preference
+	route 2001:db8:0:2::/64
+	{
+		AdvRoutePreference high;
+		AdvRouteLifetime 3600;
+	};
+
+	/* recursive DNS server
+	 * and search list */
+	RDNSS 2001:db8::35 2001:db8::36
+	{
+		AdvRDNSSLifetime 30;
+	};
+
+	DNSSL branch.example.com example.com
+	{
+		FlushDNSSL off;
+	};
+
+	clients
+	{
+		fe80::21f:16ff:fe06:3aab;
+		fe80::21d:72ff:fe96:aaff;
+	};
+
+	abro fe80::a
+	{
+		AdvVersionLow 10;
+		AdvVersionHigh 2;
+		AdvValidLifeTime 2;
+	};
+};

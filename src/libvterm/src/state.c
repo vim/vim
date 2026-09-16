@@ -2143,6 +2143,12 @@ static int on_resize(int rows, int cols, void *user)
   VTermState *state = user;
   VTermPos oldpos = state->pos;
 
+  if (cols > VTERM_MAX_COLS)
+    cols = VTERM_MAX_COLS;
+
+  if (rows > VTERM_MAX_ROWS)
+    rows = VTERM_MAX_ROWS;
+
   if(cols != state->cols) {
     unsigned char *newtabstops = vterm_allocator_malloc(state->vt, (cols + 7) / 8);
     if (newtabstops == NULL)

@@ -1,4 +1,4 @@
-/* gui_photon.c */
+// gui_photon.c
 void gui_ph_encoding_changed(int new_encoding);
 void gui_mch_prepare(int *argc, char **argv);
 int gui_mch_init(void);
@@ -6,7 +6,7 @@ int gui_mch_init_check(void);
 int gui_mch_open(void);
 void gui_mch_exit(int rc);
 void gui_mch_update(void);
-int gui_mch_wait_for_chars(int wtime);
+int gui_mch_wait_for_chars(long wtime);
 char_u *gui_mch_browse(int saving, char_u *title, char_u *default_name, char_u *ext, char_u *initdir, char_u *filter);
 int gui_mch_dialog(int type, char_u *title, char_u *message, char_u *buttons, int default_button, char_u *textfield, int ex_cmd);
 int gui_mch_get_winpos(int *x, int *y);
@@ -69,4 +69,4 @@ GuiFont gui_mch_get_font(char_u *vim_font_name, int report_error);
 char_u *gui_mch_get_fontname(GuiFont font, char_u *name);
 void gui_mch_set_font(GuiFont font);
 void gui_mch_free_font(GuiFont font);
-/* vim: set ft=c : */
+// vim: ft=c

@@ -971,6 +971,16 @@ vim_main2(void)
 
     TIME_MSG("before starting main loop");
 
+# ifdef FEAT_JOB_CHANNEL
+    if (use_stdio_channel)
+    {
+	// Serve the stdio channel instead of reading Ex commands, exit when
+	// it is closed.
+	channel_stdio_loop();
+	getout(0);
+    }
+# endif
+
     /*
      * Call the main command loop.  This never returns.
      */
@@ -2217,6 +2227,7 @@ command_line_scan(mparm_T *parmp)
 				// "--not-a-term" don't warn for not a term
 				// "--gui-dialog-file fname" write dialog text
 				// "--ttyfail" exit if not a term
+				// "--stdio-channel" use stdin/stdout as channel
 				// "--noplugin[s]" skip plugins
 				// "--cmd <cmd>" execute cmd before vimrc
 		if (STRICMP(argv[0] + argv_idx, "help") == 0)
@@ -2267,6 +2278,19 @@ command_line_scan(mparm_T *parmp)
 		}
 		else if (STRNICMP(argv[0] + argv_idx, "ttyfail", 7) == 0)
 		    parmp->tty_fail = TRUE;
+# ifdef FEAT_JOB_CHANNEL
+		else if (STRNICMP(argv[0] + argv_idx, "stdio-channel", 13) == 0)
+		{
+		    // Like "-es": no terminal, but the channel is served
+		    // instead of reading Ex commands.
+		    use_stdio_channel = TRUE;
+		    exmode_active = EXMODE_NORMAL;
+		    silent_mode = TRUE;
+#  if defined(FEAT_GUI) && !defined(VIMDLL)
+		    gui.starting = false;	// don't start GUI
+#  endif
+		}
+# endif
 		else if (STRNICMP(argv[0] + argv_idx, "cmd", 3) == 0)
 		{
 		    want_argument = TRUE;
@@ -3758,6 +3782,9 @@ usage(void)
     main_msg(_("--gui-dialog-file {fname}  For testing: write dialog text"));
 # endif
     main_msg(_("--ttyfail\t\tExit if input or output is not a terminal"));
+# ifdef FEAT_JOB_CHANNEL
+    main_msg(_("--stdio-channel\tUse stdin and stdout as a channel"));
+# endif
     main_msg(_("-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"));
 # ifdef FEAT_GUI
     main_msg(_("-U <gvimrc>\t\tUse <gvimrc> instead of any .gvimrc"));

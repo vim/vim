@@ -2824,7 +2824,7 @@ mch_FullName(
 						   && STRCMP(fname, ".") != 0)
 	{
 	    STRCPY(buf + buflen, PATHSEPSTR);
-	    buflen += STRLEN_LITERAL(PATHSEPSTR);
+	    buflen += sizeof(PATHSEP);
 	}
 #endif
     }
@@ -6027,7 +6027,8 @@ mch_get_cmd_output_direct(
 	n = (int)read(fd_out[0], buf, sizeof(buf));
 	if (n <= 0)
 	    break;
-	ga_grow(&ga, n);
+	if (ga_grow(&ga, n) == FAIL)
+	    break;
 	mch_memmove((char *)ga.ga_data + ga.ga_len, buf, n);
 	ga.ga_len += n;
     }

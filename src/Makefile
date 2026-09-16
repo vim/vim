@@ -1988,6 +1988,7 @@ PROTO_FILES = \
 	proto/sixel.pro \
 	proto/kitty.pro \
 	proto/cairo.pro \
+	proto/socketserver.pro \
 	proto/sound.pro \
 	proto/spell.pro \
 	proto/spellfile.pro \

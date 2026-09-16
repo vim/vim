@@ -106,17 +106,18 @@ an 50.10.740 &Syntax.AB.Basic.QBasic :cal SetSyn("basic")<CR>
 an 50.10.750 &Syntax.AB.Basic.Visual\ Basic :cal SetSyn("vb")<CR>
 an 50.10.760 &Syntax.AB.Bazaar\ commit\ file :cal SetSyn("bzr")<CR>
 an 50.10.770 &Syntax.AB.Bazel :cal SetSyn("bzl")<CR>
-an 50.10.780 &Syntax.AB.BC\ calculator :cal SetSyn("bc")<CR>
-an 50.10.790 &Syntax.AB.BDF\ font :cal SetSyn("bdf")<CR>
-an 50.10.800 &Syntax.AB.Beancount :cal SetSyn("beancount")<CR>
-an 50.10.810 &Syntax.AB.BibTeX.Bibliography\ database :cal SetSyn("bib")<CR>
-an 50.10.820 &Syntax.AB.BibTeX.Bibliography\ Style :cal SetSyn("bst")<CR>
-an 50.10.830 &Syntax.AB.BIND.BIND\ config :cal SetSyn("named")<CR>
-an 50.10.840 &Syntax.AB.BIND.BIND\ zone :cal SetSyn("bindzone")<CR>
-an 50.10.850 &Syntax.AB.Bitbake :cal SetSyn("bitbake")<CR>
-an 50.10.860 &Syntax.AB.Blank :cal SetSyn("blank")<CR>
-an 50.10.870 &Syntax.AB.Bpftrace :cal SetSyn("bpftrace")<CR>
-an 50.10.880 &Syntax.AB.Bsdl :cal SetSyn("bsdl")<CR>
+an 50.10.780 &Syntax.AB.Bazel\ rc\ file :cal SetSyn("bazelrc")<CR>
+an 50.10.790 &Syntax.AB.BC\ calculator :cal SetSyn("bc")<CR>
+an 50.10.800 &Syntax.AB.BDF\ font :cal SetSyn("bdf")<CR>
+an 50.10.810 &Syntax.AB.Beancount :cal SetSyn("beancount")<CR>
+an 50.10.820 &Syntax.AB.BibTeX.Bibliography\ database :cal SetSyn("bib")<CR>
+an 50.10.830 &Syntax.AB.BibTeX.Bibliography\ Style :cal SetSyn("bst")<CR>
+an 50.10.840 &Syntax.AB.BIND.BIND\ config :cal SetSyn("named")<CR>
+an 50.10.850 &Syntax.AB.BIND.BIND\ zone :cal SetSyn("bindzone")<CR>
+an 50.10.860 &Syntax.AB.Bitbake :cal SetSyn("bitbake")<CR>
+an 50.10.870 &Syntax.AB.Blank :cal SetSyn("blank")<CR>
+an 50.10.880 &Syntax.AB.Bpftrace :cal SetSyn("bpftrace")<CR>
+an 50.10.890 &Syntax.AB.Bsdl :cal SetSyn("bsdl")<CR>
 an 50.20.100 &Syntax.C.C :cal SetSyn("c")<CR>
 an 50.20.110 &Syntax.C.C++ :cal SetSyn("cpp")<CR>
 an 50.20.120 &Syntax.C.C# :cal SetSyn("cs")<CR>
@@ -580,35 +581,36 @@ an 50.100.120 &Syntax.R.R.R\ noweb :cal SetSyn("rnoweb")<CR>
 an 50.100.130 &Syntax.R.Racc\ input :cal SetSyn("racc")<CR>
 an 50.100.140 &Syntax.R.Racket :cal SetSyn("racket")<CR>
 an 50.100.150 &Syntax.R.Radiance :cal SetSyn("radiance")<CR>
-an 50.100.160 &Syntax.R.Raml :cal SetSyn("raml")<CR>
-an 50.100.170 &Syntax.R.Rapid :cal SetSyn("rapid")<CR>
-an 50.100.180 &Syntax.R.Rasi :cal SetSyn("rasi")<CR>
-an 50.100.190 &Syntax.R.Ratpoison :cal SetSyn("ratpoison")<CR>
-an 50.100.200 &Syntax.R.RCS.RCS\ log\ output :cal SetSyn("rcslog")<CR>
-an 50.100.210 &Syntax.R.RCS.RCS\ file :cal SetSyn("rcs")<CR>
-an 50.100.220 &Syntax.R.Readline\ config :cal SetSyn("readline")<CR>
-an 50.100.230 &Syntax.R.Rebol :cal SetSyn("rebol")<CR>
-an 50.100.240 &Syntax.R.ReDIF :cal SetSyn("redif")<CR>
-an 50.100.250 &Syntax.R.Rego :cal SetSyn("rego")<CR>
-an 50.100.260 &Syntax.R.Relax\ NG :cal SetSyn("rng")<CR>
-an 50.100.270 &Syntax.R.Remind :cal SetSyn("remind")<CR>
-an 50.100.280 &Syntax.R.Relax\ NG\ compact :cal SetSyn("rnc")<CR>
-an 50.100.290 &Syntax.R.Renderman.Renderman\ Shader\ Lang :cal SetSyn("sl")<CR>
-an 50.100.300 &Syntax.R.Renderman.Renderman\ Interface\ Bytestream :cal SetSyn("rib")<CR>
-an 50.100.310 &Syntax.R.Requirements :cal SetSyn("requirements")<CR>
-an 50.100.320 &Syntax.R.Resolv\.conf :cal SetSyn("resolv")<CR>
-an 50.100.330 &Syntax.R.Reva\ Forth :cal SetSyn("reva")<CR>
-an 50.100.340 &Syntax.R.Rexx :cal SetSyn("rexx")<CR>
-an 50.100.350 &Syntax.R.Robots\.txt :cal SetSyn("robots")<CR>
-an 50.100.360 &Syntax.R.RockLinux\ package\ desc\. :cal SetSyn("desc")<CR>
-an 50.100.370 &Syntax.R.Rpcgen :cal SetSyn("rpcgen")<CR>
-an 50.100.380 &Syntax.R.RPL/2 :cal SetSyn("rpl")<CR>
-an 50.100.390 &Syntax.R.ReStructuredText :cal SetSyn("rst")<CR>
-an 50.100.400 &Syntax.R.ReStructuredText\ with\ R\ statements :cal SetSyn("rrst")<CR>
-an 50.100.410 &Syntax.R.Routeros :cal SetSyn("routeros")<CR>
-an 50.100.420 &Syntax.R.RTF :cal SetSyn("rtf")<CR>
-an 50.100.430 &Syntax.R.Ruby :cal SetSyn("ruby")<CR>
-an 50.100.440 &Syntax.R.Rust :cal SetSyn("rust")<CR>
+an 50.100.160 &Syntax.R.Radvd\ config :cal SetSyn("radvd")<CR>
+an 50.100.170 &Syntax.R.Raml :cal SetSyn("raml")<CR>
+an 50.100.180 &Syntax.R.Rapid :cal SetSyn("rapid")<CR>
+an 50.100.190 &Syntax.R.Rasi :cal SetSyn("rasi")<CR>
+an 50.100.200 &Syntax.R.Ratpoison :cal SetSyn("ratpoison")<CR>
+an 50.100.210 &Syntax.R.RCS.RCS\ log\ output :cal SetSyn("rcslog")<CR>
+an 50.100.220 &Syntax.R.RCS.RCS\ file :cal SetSyn("rcs")<CR>
+an 50.100.230 &Syntax.R.Readline\ config :cal SetSyn("readline")<CR>
+an 50.100.240 &Syntax.R.Rebol :cal SetSyn("rebol")<CR>
+an 50.100.250 &Syntax.R.ReDIF :cal SetSyn("redif")<CR>
+an 50.100.260 &Syntax.R.Rego :cal SetSyn("rego")<CR>
+an 50.100.270 &Syntax.R.Relax\ NG :cal SetSyn("rng")<CR>
+an 50.100.280 &Syntax.R.Remind :cal SetSyn("remind")<CR>
+an 50.100.290 &Syntax.R.Relax\ NG\ compact :cal SetSyn("rnc")<CR>
+an 50.100.300 &Syntax.R.Renderman.Renderman\ Shader\ Lang :cal SetSyn("sl")<CR>
+an 50.100.310 &Syntax.R.Renderman.Renderman\ Interface\ Bytestream :cal SetSyn("rib")<CR>
+an 50.100.320 &Syntax.R.Requirements :cal SetSyn("requirements")<CR>
+an 50.100.330 &Syntax.R.Resolv\.conf :cal SetSyn("resolv")<CR>
+an 50.100.340 &Syntax.R.Reva\ Forth :cal SetSyn("reva")<CR>
+an 50.100.350 &Syntax.R.Rexx :cal SetSyn("rexx")<CR>
+an 50.100.360 &Syntax.R.Robots\.txt :cal SetSyn("robots")<CR>
+an 50.100.370 &Syntax.R.RockLinux\ package\ desc\. :cal SetSyn("desc")<CR>
+an 50.100.380 &Syntax.R.Rpcgen :cal SetSyn("rpcgen")<CR>
+an 50.100.390 &Syntax.R.RPL/2 :cal SetSyn("rpl")<CR>
+an 50.100.400 &Syntax.R.ReStructuredText :cal SetSyn("rst")<CR>
+an 50.100.410 &Syntax.R.ReStructuredText\ with\ R\ statements :cal SetSyn("rrst")<CR>
+an 50.100.420 &Syntax.R.Routeros :cal SetSyn("routeros")<CR>
+an 50.100.430 &Syntax.R.RTF :cal SetSyn("rtf")<CR>
+an 50.100.440 &Syntax.R.Ruby :cal SetSyn("ruby")<CR>
+an 50.100.450 &Syntax.R.Rust :cal SetSyn("rust")<CR>
 an 50.110.100 &Syntax.S-Sm.S-Lang :cal SetSyn("slang")<CR>
 an 50.110.110 &Syntax.S-Sm.Samba\ config :cal SetSyn("samba")<CR>
 an 50.110.120 &Syntax.S-Sm.SAS :cal SetSyn("sas")<CR>
@@ -707,15 +709,16 @@ an 50.120.510 &Syntax.Sn-Sy.Structurizr :cal SetSyn("structurizr")<CR>
 an 50.120.520 &Syntax.Sn-Sy.Stylus :cal SetSyn("stylus")<CR>
 an 50.120.530 &Syntax.Sn-Sy.Subversion\ commit :cal SetSyn("svn")<CR>
 an 50.120.540 &Syntax.Sn-Sy.Sudoers :cal SetSyn("sudoers")<CR>
-an 50.120.550 &Syntax.Sn-Sy.SVG :cal SetSyn("svg")<CR>
-an 50.120.560 &Syntax.Sn-Sy.Swayconfig :cal SetSyn("swayconfig")<CR>
-an 50.120.570 &Syntax.Sn-Sy.Swift.Swift :cal SetSyn("swift")<CR>
-an 50.120.580 &Syntax.Sn-Sy.Swift.GYB :cal SetSyn("swiftgyb")<CR>
-an 50.120.590 &Syntax.Sn-Sy.Swig :cal SetSyn("swig")<CR>
-an 50.120.600 &Syntax.Sn-Sy.Symbian\ meta-makefile :cal SetSyn("mmp")<CR>
-an 50.120.610 &Syntax.Sn-Sy.Sysctl\.conf :cal SetSyn("sysctl")<CR>
-an 50.120.620 &Syntax.Sn-Sy.Systemd :cal SetSyn("systemd")<CR>
-an 50.120.630 &Syntax.Sn-Sy.SystemVerilog :cal SetSyn("systemverilog")<CR>
+an 50.120.550 &Syntax.Sn-Sy.Svelt :cal SetSyn("svelte")<CR>
+an 50.120.560 &Syntax.Sn-Sy.SVG :cal SetSyn("svg")<CR>
+an 50.120.570 &Syntax.Sn-Sy.Swayconfig :cal SetSyn("swayconfig")<CR>
+an 50.120.580 &Syntax.Sn-Sy.Swift.Swift :cal SetSyn("swift")<CR>
+an 50.120.590 &Syntax.Sn-Sy.Swift.GYB :cal SetSyn("swiftgyb")<CR>
+an 50.120.600 &Syntax.Sn-Sy.Swig :cal SetSyn("swig")<CR>
+an 50.120.610 &Syntax.Sn-Sy.Symbian\ meta-makefile :cal SetSyn("mmp")<CR>
+an 50.120.620 &Syntax.Sn-Sy.Sysctl\.conf :cal SetSyn("sysctl")<CR>
+an 50.120.630 &Syntax.Sn-Sy.Systemd :cal SetSyn("systemd")<CR>
+an 50.120.640 &Syntax.Sn-Sy.SystemVerilog :cal SetSyn("systemverilog")<CR>
 an 50.130.100 &Syntax.T.TADS :cal SetSyn("tads")<CR>
 an 50.130.110 &Syntax.T.Tags :cal SetSyn("tags")<CR>
 an 50.130.120 &Syntax.T.TAK.TAK\ compare :cal SetSyn("takcmp")<CR>

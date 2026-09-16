@@ -436,6 +436,32 @@ func Test_terminal_scrape_multibyte()
   exe buf . 'bwipe'
 endfunc
 
+func Test_terminal_scrape_char_width()
+  " These characters do not come through a Windows console.
+  CheckUnix
+
+  " U+1F93B and U+1F946 have East Asian Width "Neutral", the surrounding
+  " emoji are "Wide".  A terminal cell must get the same width as the
+  " character gets in an ordinary buffer.
+  let chars = ["\U0001F93A", "\U0001F93B", "\U0001F945", "\U0001F946"]
+  call writefile([join(chars, '')], 'Xwidth', 'D')
+  let buf = term_start("cat Xwidth")
+
+  call WaitFor({-> len(term_scrape(buf, 1)) >= len(chars)
+        \ && term_scrape(buf, 1)[0].chars == chars[0]})
+  let l = term_scrape(buf, 1)
+  for i in range(len(chars))
+    call assert_equal(chars[i], l[i].chars)
+    call assert_equal(strdisplaywidth(chars[i]), l[i].width, chars[i])
+  endfor
+
+  let job = term_getjob(buf)
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  call TermWait(buf)
+
+  exe buf . 'bwipe'
+endfunc
+
 func Test_terminal_one_column()
   " This creates a terminal, displays a double-wide character and makes the
   " window one column wide.  This used to cause a crash.

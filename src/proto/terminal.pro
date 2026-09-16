@@ -1,4 +1,4 @@
-/* terminal.c */
+// terminal.c
 void init_job_options(jobopt_T *opt);
 buf_T *term_start(typval_T *argvar, char **argv, jobopt_T *opt, int flags);
 void ex_terminal(exarg_T *eap);
@@ -74,4 +74,4 @@ void term_send_eof(channel_T *ch);
 job_T *term_getjob(term_T *term);
 int use_conpty(void);
 int terminal_enabled(void);
-/* vim: set ft=c : */
+// vim: ft=c

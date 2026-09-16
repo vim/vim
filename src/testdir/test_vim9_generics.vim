@@ -1211,7 +1211,7 @@ def Test_generic_obj_method()
     var a = A.new()
     a.Fn<>()
   END
-  v9.CheckSourceFailureList(lines, ["E1555: Empty type list specified for generic function '<>()'"])
+  v9.CheckSourceFailureList(lines, ["E1555: Empty type list specified for generic function 'Fn'"])
 
   lines =<< trim END
     vim9script
@@ -1295,7 +1295,7 @@ def Test_generic_obj_method_call_from_another_method()
     enddef
     defcompile
   END
-  v9.CheckSourceFailureList(lines, ["E1555: Empty type list specified for generic function '<>()'"])
+  v9.CheckSourceFailureList(lines, ["E1555: Empty type list specified for generic function 'Fn'"])
 
   lines =<< trim END
     vim9script
@@ -1476,7 +1476,7 @@ def Test_generic_class_method()
     endclass
     A.Fn<>()
   END
-  v9.CheckSourceFailureList(lines, ["E1555: Empty type list specified for generic function '<>()'"])
+  v9.CheckSourceFailureList(lines, ["E1555: Empty type list specified for generic function 'Fn'"])
 
   lines =<< trim END
     vim9script
@@ -1554,7 +1554,7 @@ def Test_generic_class_method_call_from_another_method()
     enddef
     defcompile
   END
-  v9.CheckSourceFailureList(lines, ["E1555: Empty type list specified for generic function '<>()'"])
+  v9.CheckSourceFailureList(lines, ["E1555: Empty type list specified for generic function 'Fn'"])
 
   lines =<< trim END
     vim9script

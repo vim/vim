@@ -257,8 +257,8 @@ um_add_prop(unpacked_memline_T *um, textprop_T *prop)
 {
     if (um->buf == NULL)
 	return;
-    if (!um->detached)
-	um_detach(um);
+    if (!um->detached && !um_detach(um))
+	return;
     if (!um_grow_props(um, 1))
     {
 	um->buf = NULL;
@@ -518,6 +518,7 @@ um_store_changes(unpacked_memline_T *um)
     um->detached = false;
     um->text = packed;
     um->text_size = (colnr_T)STRLEN(packed) + 1;
+    um->buf->b_ml.ml_line_textlen = um->text_size;
 }
 
 /*

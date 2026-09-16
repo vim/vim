@@ -1,4 +1,4 @@
-/* mark.c */
+// mark.c
 int setmark(int c);
 int setmark_pos(int c, pos_T *pos, int fnum);
 void mark_forget_file(win_T *wp, int fnum);
@@ -29,4 +29,4 @@ void set_last_cursor(win_T *win);
 void free_all_marks(void);
 xfmark_T *get_namedfm(void);
 void f_getmarklist(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

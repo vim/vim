@@ -1,4 +1,4 @@
-/* if_xcmdsrv.c */
+// if_xcmdsrv.c
 int serverRegisterName(Display *dpy, char_u *name);
 void serverChangeRegisteredWindow(Display *dpy, Window newwin);
 int serverSendToVim(Display *dpy, char_u *name, char_u *cmd, char_u **result, Window *server, Bool asExpr, int timeout, Bool localLoop, int silent);
@@ -10,4 +10,4 @@ int serverPeekReply(Display *dpy, Window win, char_u **str);
 void serverEventProc(Display *dpy, XEvent *eventPtr, int immediate);
 void server_parse_messages(void);
 int server_waiting(void);
-/* vim: set ft=c : */
+// vim: ft=c

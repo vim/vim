@@ -408,6 +408,14 @@ OPTIONS
        --startuptime {file}
                    During startup write timing messages to the file {fname}.
 
+       --stdio-channel
+                   Use the stdin and stdout of Vim for a  channel  instead  of
+                   for a terminal.  Implies "-es": nothing is displayed, no Ex
+                   commands  are  read  and  the GUI is not started.  A script
+                   opens the channel with ch_open() and the  address  "stdio",
+                   see  ":help --stdio-channel".  Only available when compiled
+                   with the channel feature.
+
        --ttyfail   When stdin or stdout is not  a  terminal  (tty)  then  exit
                    right away.
 
@@ -498,4 +506,4 @@ BUGS
        vi_diff.txt when in Vim).  Also have a look  at  the  'compatible'  and
        'cpoptions' options.
 
-                                  2026 Jun 05                           VIM(1)
+                                  2026 Sep 08                           VIM(1)

@@ -1549,10 +1549,23 @@ typedef struct {
 #define TPR_KITTY		    4
 // can send DECRQM requests to terminal
 #define TPR_DECRQM		    5
+// true color, from the color count of the terminal entry
+#define TPR_RGB			    6
 // table size
-#define TPR_COUNT		    6
+#define TPR_COUNT		    7
 
 static termprop_T term_props[TPR_COUNT];
+
+/*
+ * Set the "rgb" terminal property from the color count.  The entry of a
+ * direct color terminal, such as xterm-direct, has 16777216 colors.
+ */
+    static void
+set_rgb_term_prop(void)
+{
+    term_props[TPR_RGB].tpr_status = t_colors == 0x1000000
+						       ? TPR_YES : TPR_UNKNOWN;
+}
 
 /*
  * Initialize the term_props table.
@@ -1576,10 +1589,15 @@ init_term_props(int all)
     term_props[TPR_KITTY].tpr_set_by_termresponse = FALSE;
     term_props[TPR_DECRQM].tpr_name = "decrqm";
     term_props[TPR_DECRQM].tpr_set_by_termresponse = TRUE;
+    term_props[TPR_RGB].tpr_name = "rgb";
+    term_props[TPR_RGB].tpr_set_by_termresponse = FALSE;
 
     for (i = 0; i < TPR_COUNT; ++i)
 	if (all || term_props[i].tpr_set_by_termresponse)
 	    term_props[i].tpr_status = TPR_UNKNOWN;
+
+    // Derived from the color count, not reset.
+    set_rgb_term_prop();
 }
 
 #if defined(FEAT_EVAL)
@@ -3567,6 +3585,7 @@ ttest(int pairs)
 		set_color_count(colors);
 	}
     }
+    set_rgb_term_prop();
 }
 
 #if defined(FEAT_GUI) && (defined(FEAT_MENU) || !defined(USE_ON_FLY_SCROLL))

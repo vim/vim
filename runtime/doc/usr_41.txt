@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.2.  Last change: 2026 Aug 18
+*usr_41.txt*	For Vim version 9.2.  Last change: 2026 Aug 25
 
 
 		     VIM USER MANUAL	by Bram Moolenaar
@@ -936,9 +936,13 @@ Blob manipulation:					*blob-functions*
 	foreach()		apply function to Blob bytes
 	reduce()		reduce a Blob to a value
 	slice()			take a slice of a Blob
-	blob2list()		get a list of numbers from a blob
-	list2blob()		get a blob from a list of numbers
-	reverse()		reverse the order of numbers in a blob
+	blob2list()		get a list of numbers from a Blob
+	list2blob()		get a Blob from a list of numbers
+	blob2str()		get a list of strings from a Blob
+	str2blob()		get a Blob from a list of strings
+	base64_encode()		encode a Blob into a base64 String
+	base64_decode()		decode a base64 String into a Blob
+	reverse()		reverse the order of bytes in a Blob
 	string()		String representation of a Blob
 	index()			index of a value in a Blob
 	indexof()		index in a Blob where an expression is true

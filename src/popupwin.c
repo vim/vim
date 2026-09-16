@@ -1568,9 +1568,8 @@ popup_height(win_T *wp)
     int
 popup_width(win_T *wp)
 {
-    // w_leftcol is how many columns of the core are left of the screen
     // w_popup_rightoff is how many columns of the core are right of the screen
-    return wp->w_width + wp->w_leftcol
+    return wp->w_width
 	    + popup_extra_width(wp)
 	    + wp->w_popup_rightoff;
 }
@@ -2708,11 +2707,11 @@ popup_adjust_position(win_T *wp)
     {
 	++right_extra;
 	++extra_width;
-	// make space for the scrollbar if needed, when lines wrap and when
-	// applying minwidth
+	// give up the right padding when the popup would not fit, when lines
+	// wrap and when applying minwidth
 	if (maxwidth + right_extra >= maxspace
 		&& (used_maxwidth || (minwidth > 0 && wp->w_width < minwidth)))
-	    maxwidth -= wp->w_popup_padding[1] + 1;
+	    maxwidth -= wp->w_popup_padding[1];
     }
 
     if (wp->w_popup_title != NULL && *wp->w_popup_title != NUL)
@@ -2766,13 +2765,10 @@ popup_adjust_position(win_T *wp)
 	    wp->w_wincol = leftoff;
 	else if (wp->w_popup_fixed)
 	{
-	    // "col" specifies the right edge, but popup doesn't fit, skip some
-	    // columns when displaying the window, minus left border and
-	    // padding.
-	    if (-leftoff > left_extra)
-		wp->w_leftcol = -leftoff - left_extra;
+	    // "col" specifies the right edge, but the popup doesn't fit.
+	    // Scroll the text instead of moving the border off the screen.
+	    wp->w_leftcol = -leftoff;
 	    wp->w_width -= wp->w_leftcol;
-	    wp->w_popup_leftoff = -leftoff;
 	    if (wp->w_width < 0)
 		wp->w_width = 0;
 	}
@@ -2879,9 +2875,17 @@ popup_adjust_position(win_T *wp)
 	if (wp->w_buffer->b_term == NULL || term_is_finished(wp->w_buffer))
 #endif
 	{
-	    wp->w_has_scrollbar = true;
-	    if (width_with_scrollbar > 0)
-		wp->w_width = width_with_scrollbar;
+	    // The width already accounts for a scrollbar that was there.
+	    if (!wp->w_has_scrollbar)
+	    {
+		wp->w_has_scrollbar = true;
+		if (width_with_scrollbar > 0)
+		    wp->w_width = width_with_scrollbar;
+		else
+		    // The width and the position were computed without the
+		    // scrollbar, reserve a column for it.
+		    ++extra_width;
+	    }
 	}
     }
 
@@ -4641,6 +4645,43 @@ popup_close(int id, int force)
     return FAIL;
 }
 
+#ifdef FEAT_IMAGE
+/*
+ * Remove the images of the popups local to tabpage "tp", it is about to be
+ * left.  The popups are not drawn in another tabpage, their images stay until
+ * they are removed.  They are emitted again when the tabpage is entered.
+ */
+    void
+popup_leave_tabpage(tabpage_T *tp)
+{
+    win_T	*wp;
+
+    FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
+    {
+	if ((wp->w_popup_flags & POPF_HIDDEN) || wp->w_popup_image_data == NULL)
+	    continue;
+# ifdef FEAT_IMAGE_KITTY
+	popup_image_clear_kitty(wp, false);
+# endif
+# ifdef FEAT_IMAGE_GDK
+	if (gui.in_use)
+	    gui_gtk4_remove_image(wp);
+# endif
+# ifdef POPUP_IMAGE_CLEAR_GUI
+	popup_image_clear_gui(wp);
+# endif
+# ifdef FEAT_IMAGE_SIXEL
+	// Sixel pixels only go away with a clear of the screen.
+#  ifdef FEAT_GUI
+	if (!gui.in_use)
+#  endif
+	    if (popup_image_backend() == IMAGE_BACKEND_SIXEL)
+		redraw_later_clear();
+# endif
+    }
+}
+#endif
+
 /*
  * Close a popup window with Window-id "id" in tabpage "tp".
  */
@@ -5056,12 +5097,12 @@ popup_save_padding_screen(win_T *wp, popup_saved_screen_T *saved_screen)
 	++saved_screen->cols;
     }
 
-    saved_screen->lines = ALLOC_MULT(schar_T,
+    saved_screen->lines = ALLOC_CLEAR_MULT(schar_T,
 				  saved_screen->rows * saved_screen->cols);
-    saved_screen->attrs = ALLOC_MULT(int,
+    saved_screen->attrs = ALLOC_CLEAR_MULT(int,
 				  saved_screen->rows * saved_screen->cols);
     if (enc_utf8)
-	saved_screen->linesuc = ALLOC_MULT(u8char_T,
+	saved_screen->linesuc = ALLOC_CLEAR_MULT(u8char_T,
 				  saved_screen->rows * saved_screen->cols);
 
     if (saved_screen->lines == NULL || saved_screen->attrs == NULL)
@@ -6633,6 +6674,10 @@ draw_opacity_padding_cell(
 	int		pad_start_col,
 	int		pad_end_col)
 {
+    if (LineOffset == NULL || ScreenLines == NULL || ScreenAttrs == NULL
+	    || (enc_utf8 && ScreenLinesUC == NULL))
+	return;
+
     int off = LineOffset[row] + col;
     int r = row - saved_screen->start_row;
     int c = col - saved_screen->start_col;
@@ -6653,8 +6698,7 @@ draw_opacity_padding_cell(
 	    // saved data may not contain a reliable right-half marker.
 	    if (base_off >= 0)
 	    {
-		if (ScreenLinesUC != NULL
-			&& ScreenLinesUC[base_off] != 0
+		if (ScreenLinesUC[base_off] != 0
 			&& utf_char2cells(ScreenLinesUC[base_off]) == 2
 			&& ScreenLines[off] == 0)
 		    wide_prev = TRUE;
@@ -6673,8 +6717,7 @@ draw_opacity_padding_cell(
 		// overwrite it. Use the base screen cell if available.
 		if (base_col < pad_start_col)
 		{
-		    if (ScreenLinesUC != NULL
-			    && ScreenLinesUC[base_off] != 0
+		    if (ScreenLinesUC[base_off] != 0
 			    && utf_char2cells(ScreenLinesUC[base_off]) == 2)
 		    {
 			// The left half still has the wide char on screen.
@@ -6754,7 +6797,7 @@ draw_opacity_padding_cell(
 		    // wide char may have an unreliable attr value.
 		    ScreenLines[off] = ' ';
 		    ScreenAttrs[off] = saved_screen->attrs[base_save_off];
-		    if (enc_utf8 && ScreenLinesUC != NULL)
+		    if (enc_utf8)
 			ScreenLinesUC[off] = 0;
 		    int popup_attr_val = get_win_attr(screen_opacity_popup);
 		    int blend = screen_opacity_popup->w_popup_blend;
@@ -6792,8 +6835,9 @@ draw_opacity_padding_cell(
 	}
 	ScreenLines[off] = saved_screen->lines[save_off];
 	ScreenAttrs[off] = saved_screen->attrs[save_off];
-	if (enc_utf8 && saved_screen->linesuc != NULL)
-	    ScreenLinesUC[off] = saved_screen->linesuc[save_off];
+	if (enc_utf8)
+	    ScreenLinesUC[off] = saved_screen->linesuc != NULL
+					? saved_screen->linesuc[save_off] : 0;
 
 	// If the saved character is wide and would extend past the padding
 	// area into the content area, replace with a space to avoid
@@ -6903,6 +6947,124 @@ popup_image_gui_clip(
 	*draw_w = MIN(*draw_w, visible_w * cell_x);
     if (visible_h > 0)
 	*draw_h = MIN(*draw_h, visible_h * cell_y);
+}
+# endif
+
+# if defined(FEAT_IMAGE_KITTY) || defined(FEAT_IMAGE_GDI) \
+	|| defined(FEAT_IMAGE_CAIRO) || defined(FEAT_IMAGE_GDK)
+// A rectangle of cells of a popup's image that no popup with a higher zindex
+// covers.
+typedef struct
+{
+    int	row;
+    int	col;
+    int	rows;
+    int	cols;
+} image_rect_T;
+
+/*
+ * Split the "rows" by "cols" cells of the image of "wp" at "row", "col" into
+ * the rectangles that no popup with a higher zindex covers, according to
+ * popup_mask, and append them to "gap" (image_rect_T).  The visible cells of
+ * a row form runs; a run with the same columns as one on the row above joins
+ * that rectangle, so one popup on top gives at most four.
+ */
+    static void
+popup_image_visible_rects(
+	win_T	    *wp,
+	int	    row,
+	int	    col,
+	int	    rows,
+	int	    cols,
+	garray_T    *gap)
+{
+    for (int r = row; r < row + rows && r < screen_Rows; ++r)
+    {
+	int c = col;
+
+	while (c < col + cols && c < screen_Columns)
+	{
+	    int		    start;
+	    image_rect_T    *rect = NULL;
+
+	    // Skip the cells a higher popup covers, then take the run of
+	    // visible cells.
+	    while (c < col + cols && c < screen_Columns && popup_mask != NULL
+		    && popup_mask[r * screen_Columns + c] > wp->w_zindex)
+		++c;
+	    start = c;
+	    while (c < col + cols && c < screen_Columns && (popup_mask == NULL
+		    || popup_mask[r * screen_Columns + c] <= wp->w_zindex))
+		++c;
+	    if (c == start)
+		continue;
+
+	    for (int i = 0; i < gap->ga_len; ++i)
+	    {
+		image_rect_T *known = ((image_rect_T *)gap->ga_data) + i;
+
+		if (known->col == start && known->cols == c - start
+			&& known->row + known->rows == r)
+		{
+		    rect = known;
+		    break;
+		}
+	    }
+	    if (rect != NULL)
+		++rect->rows;
+	    else if (ga_grow(gap, 1) == OK)
+	    {
+		rect = ((image_rect_T *)gap->ga_data) + gap->ga_len++;
+		rect->row = r;
+		rect->col = start;
+		rect->rows = 1;
+		rect->cols = c - start;
+	    }
+	}
+    }
+}
+# endif
+
+# if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO) \
+	|| defined(FEAT_IMAGE_GDK)
+/*
+ * Draw the image of "wp" in the GUI: the sub-rectangle "src_x", "src_y",
+ * "draw_w", "draw_h" of the pixels at "row", "col", leaving out what a popup
+ * with a higher zindex covers.
+ */
+    static void
+popup_image_draw_gui(
+	win_T	*wp,
+	int	row,
+	int	col,
+	int	src_x,
+	int	src_y,
+	int	draw_w,
+	int	draw_h)
+{
+    int		cell_x = gui.char_width > 0 ? gui.char_width : 8;
+    int		cell_y = gui.char_height > 0 ? gui.char_height : 16;
+    garray_T	rects;
+
+#  ifdef FEAT_IMAGE_GDK
+    // The parts of the previous draw, there may be fewer this time.
+    gui_gtk4_remove_image(wp);
+#  endif
+    ga_init2(&rects, sizeof(image_rect_T), 4);
+    popup_image_visible_rects(wp, row, col, (draw_h + cell_y - 1) / cell_y,
+					(draw_w + cell_x - 1) / cell_x, &rects);
+    for (int i = 0; i < rects.ga_len; ++i)
+    {
+	image_rect_T	*rect = ((image_rect_T *)rects.ga_data) + i;
+	int		off_x = (rect->col - col) * cell_x;
+	int		off_y = (rect->row - row) * cell_y;
+
+	gui_mch_draw_popup_image(wp, rect->row, rect->col,
+		src_x + off_x, src_y + off_y,
+		MIN(rect->cols * cell_x, draw_w - off_x),
+		MIN(rect->rows * cell_y, draw_h - off_y), i + 1);
+    }
+    ga_clear(&rects);
 }
 # endif
 
@@ -7071,8 +7233,7 @@ popup_emit_image(win_T *wp)
 				    &src_x, &src_y, &draw_w, &draw_h);
 	if (row < 0 || col < 0 || draw_w <= 0 || draw_h <= 0)
 	    return;
-	gui_mch_draw_popup_image(wp, row, col,
-					    src_x, src_y, draw_w, draw_h);
+	popup_image_draw_gui(wp, row, col, src_x, src_y, draw_w, draw_h);
 
 	// Remember where the image was painted on gui.surface so the next
 	// redraw can invalidate ScreenLines/ScreenAttrs for cells that move
@@ -7163,7 +7324,33 @@ popup_emit_image(win_T *wp)
 		return;
 	    wp->w_popup_image_transmit = true;
 	}
-	kitty_place(wp->w_id, row, col, src_x, src_y, w, h, wp->w_zindex);
+
+	// One placement for each rectangle that no higher popup covers; a
+	// placement of the previous emit that is not used again is deleted.
+	{
+	    garray_T	rects;
+	    int		count;
+
+	    ga_init2(&rects, sizeof(image_rect_T), 4);
+	    popup_image_visible_rects(wp, row, col, (h + cell_y - 1) / cell_y,
+					    (w + cell_x - 1) / cell_x, &rects);
+	    for (int i = 0; i < rects.ga_len; ++i)
+	    {
+		image_rect_T	*rect = ((image_rect_T *)rects.ga_data) + i;
+		int		off_x = (rect->col - col) * cell_x;
+		int		off_y = (rect->row - row) * cell_y;
+
+		kitty_place(wp->w_id, i + 1, rect->row, rect->col,
+			src_x + off_x, src_y + off_y,
+			MIN(rect->cols * cell_x, w - off_x),
+			MIN(rect->rows * cell_y, h - off_y), wp->w_zindex);
+	    }
+	    count = rects.ga_len;
+	    ga_clear(&rects);
+	    for (int i = count + 1; i <= wp->w_popup_image_placements; ++i)
+		kitty_delete_placement(wp->w_id, i);
+	    wp->w_popup_image_placements = count;
+	}
 
 	wp->w_popup_image_emit_row = row;
 	wp->w_popup_image_emit_col = col;
@@ -7268,6 +7455,7 @@ popup_image_clear_kitty(win_T *wp, bool del_data)
     if (popup_image_backend() != IMAGE_BACKEND_KITTY)
 	return;
     kitty_delete(wp->w_id, del_data);
+    wp->w_popup_image_placements = 0;
     if (del_data)
 	wp->w_popup_image_transmit = false;
 }
@@ -7359,7 +7547,7 @@ popup_maybe_emit_image_rect(
 	    || img_bottom <= top || bottom <= img_top)
 	return;
 
-    gui_mch_draw_popup_image(wp, row, col, src_x, src_y, draw_w, draw_h);
+    popup_image_draw_gui(wp, row, col, src_x, src_y, draw_w, draw_h);
 }
 
 /*
@@ -7881,7 +8069,7 @@ update_popups(void (*win_update)(win_T *wp))
 	    if (do_padding && cl.eff_padding[1] > 0)
 	    {
 		int pad_col_start = wincol + wp->w_popup_border[3]
-			+ wp->w_popup_padding[3] + wp->w_width + wp->w_leftcol;
+			+ wp->w_popup_padding[3] + wp->w_width;
 		int pad_col_end = pad_col_start + wp->w_popup_padding[1];
 
 		if (screen_opacity_popup != NULL && saved_screen.lines != NULL)

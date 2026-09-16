@@ -1,4 +1,4 @@
-/* popupwin.c */
+// popupwin.c
 int popup_on_border(win_T *wp, int row, int col);
 int popup_close_if_on_X(win_T *wp, int row, int col);
 void popup_start_drag(win_T *wp, int row, int col);
@@ -39,6 +39,7 @@ void f_popup_settext(typval_T *argvars, typval_T *rettv);
 void f_popup_setbuf(typval_T *argvars, typval_T *rettv);
 int error_if_popup_window(int also_with_term);
 int popup_close(int id, int force);
+void popup_leave_tabpage(tabpage_T *tp);
 int popup_close_tabpage(tabpage_T *tp, int id, int force);
 void close_all_popups(int force);
 void f_popup_move(typval_T *argvars, typval_T *rettv);
@@ -85,4 +86,4 @@ void end_echowindow(void);
 int popup_win_closed(win_T *win);
 void popup_set_title(win_T *wp);
 void popup_update_preview_title(void);
-/* vim: set ft=c : */
+// vim: ft=c
