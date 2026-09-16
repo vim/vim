@@ -1102,6 +1102,8 @@ func Test_syntax_html_generic()
 	\ '<script></script>',
 	\ '<svg viewBox="0 0 100 100">',
 	\ '<div popover="auto">',
+	\ '<div id="test"></div>',
+	\ '<math><mi>x</mi></math>',
 	\ ])
 
   " Custom element with hyphen
@@ -1139,6 +1141,18 @@ func Test_syntax_html_generic()
 
   " popover attribute
   call assert_equal('htmlArg', s:GetSynGroup(12, 6))
+
+  " Standard HTML tag
+  call assert_equal('htmlTagName', s:GetSynGroup(13, 2))
+
+  " Standard attribute with value
+  call assert_equal('htmlArg', s:GetSynGroup(13, 6))
+
+  " End tag
+  call assert_equal('htmlEndTag', s:GetSynGroup(13, 16))
+
+  " Math element
+  call assert_equal('htmlMathTagName', s:GetSynGroup(14, 2))
 
   call test_override('ALL', 0)
   bwipe!

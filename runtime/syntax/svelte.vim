@@ -65,7 +65,7 @@ syntax match svelteComponent contained "svelte:\%(head\|body\|window\|document\|
 " Svelte 5 runes (and store auto-subscriptions) inside <script> blocks.
 " Also matches dot-notation rune variants: $state.raw, $derived.by,
 " $effect.pre, $effect.tracking, $effect.pending, $effect.root, $props.id
-syntax match svelteRune "\$\w\+\%(\.\w\+\)\?\>" containedin=svelteScriptJS,svelteScriptTS
+syntax match svelteRune "\$\w\+\%(\.\w\+\)\?" containedin=svelteScriptJS,svelteScriptTS
 
 " Interpolation and expressions: { expr }
 " Match inside tags, attribute values, and at top level (but not inside

@@ -45,7 +45,7 @@ syn match   htmlArg	contained "[@:]\?\h[-0-9A-Za-z_:.]*\%(\_s*=\)\@="
 syn match   htmlArg	contained "[@:]\?\h[-0-9A-Za-z_:.]*\%(\_s*[>\s/]\)\@="
 
 " backward compat: special/math/svg tag name groups
-syn match   htmlSpecialTagName	contained "\%(script\|style\)\>" containedin=htmlTagN
+syn match   htmlSpecialTagName	contained "\%(script\|style\)\>"
 syn match   htmlMathTagName	contained "math\>" containedin=htmlTagN
 syn match   htmlSvgTagName	contained "svg\>" containedin=htmlTagN
 
