@@ -66,7 +66,7 @@ else
   syn region htmlComment	start=+<!+	end=+>+		contains=htmlCommentError keepend
   " Idem 8.2.4.42,51: Comment starts with <!-- and ends with -->
   " Idem 8.2.4.43,44: Except <!--> and <!---> are parser errors
-  " Idem 8.2.4.52: dash-dash-bank (--!>) is error ignored by parser, also closes comment
+  " Idem 8.2.4.52: dash-dash-bang (--!>) is error ignored by parser, also closes comment
   syn region htmlComment matchgroup=htmlComment start=+<!--\%(-\?>\)\@!+	end=+--!\?>+	contains=htmlCommentNested,@htmlPreProc,@Spell keepend
   " Idem 8.2.4.49: nested comment is parser error, except <!--> is all right
   syn match htmlCommentNested contained "<!-->\@!"
