@@ -1077,4 +1077,71 @@ func Test_syn_sync_grouphere_shorter_next_line()
   bw!
 endfunc
 
+" Helper: get syntax group name
+func s:GetSynGroup(lnum, col)
+  return synIDattr(synID(a:lnum, a:col, 1), 'name')
+endfunc
+
+" Test for html.vim generic tag and attribute matching
+func Test_syntax_html_generic()
+  call test_override('syn_idlist_cache', 0)
+  new
+  syntax off
+  syntax on
+  setfiletype html
+  call setline(1, [
+	\ '<my-component></my-component>',
+	\ '<foo:bar></foo:bar>',
+	\ '<button hx-get="/api">Click</button>',
+	\ '<div x-data="{ open: false }">',
+	\ '<button @click="handler()">',
+	\ '<div :class="active">',
+	\ '<button disabled>Click</button>',
+	\ '<div data-id="123">',
+	\ '<div aria-label="test">',
+	\ '<script></script>',
+	\ '<svg viewBox="0 0 100 100">',
+	\ '<div popover="auto">',
+	\ ])
+
+  " Custom element with hyphen
+  call assert_equal('htmlTagName', s:GetSynGroup(1, 2))
+
+  " Namespaced element (not svg/math prefix)
+  call assert_equal('htmlTagName', s:GetSynGroup(2, 2))
+
+  " HTMX attribute
+  call assert_equal('htmlArg', s:GetSynGroup(3, 9))
+
+  " Alpine.js x-data attribute
+  call assert_equal('htmlArg', s:GetSynGroup(4, 6))
+
+  " @click handler
+  call assert_equal('htmlArg', s:GetSynGroup(5, 9))
+
+  " :class binding
+  call assert_equal('htmlArg', s:GetSynGroup(6, 6))
+
+  " Boolean attribute (no value)
+  call assert_equal('htmlArg', s:GetSynGroup(7, 9))
+
+  " data-* attribute
+  call assert_equal('htmlArg', s:GetSynGroup(8, 6))
+
+  " aria-* attribute
+  call assert_equal('htmlArg', s:GetSynGroup(9, 6))
+
+  " script tag (special)
+  call assert_equal('htmlSpecialTagName', s:GetSynGroup(10, 2))
+
+  " SVG element
+  call assert_equal('htmlSvgTagName', s:GetSynGroup(11, 2))
+
+  " popover attribute
+  call assert_equal('htmlArg', s:GetSynGroup(12, 6))
+
+  call test_override('ALL', 0)
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

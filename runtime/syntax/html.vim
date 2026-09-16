@@ -34,159 +34,26 @@ syn region  htmlString	 contained start=+'+ end=+'+ contains=htmlSpecialChar,jav
 syn match   htmlValue	 contained "=[\t ]*[^'" \t>][^ \t>]*"hs=s+1   contains=javaScriptExpression,@htmlPreproc
 syn region  htmlEndTag		   start=+</+	   end=+>+ contains=htmlTagN,htmlTagError
 syn region  htmlTag		   start=+<[^/]+   end=+>+ fold contains=htmlTagN,htmlString,htmlArg,htmlValue,htmlTagError,htmlEvent,htmlCssDefinition,@htmlPreproc,@htmlArgCluster
-syn match   htmlTagN	 contained +<\s*[-a-zA-Z0-9]\++hs=s+1 contains=htmlTagName,htmlSpecialTagName,@htmlTagNameCluster
-syn match   htmlTagN	 contained +</\s*[-a-zA-Z0-9]\++hs=s+2 contains=htmlTagName,htmlSpecialTagName,@htmlTagNameCluster
+syn match   htmlTagN	 contained +<\s*[-a-zA-Z0-9_:]\++hs=s+1 contains=htmlTagName,htmlSpecialTagName,@htmlTagNameCluster
+syn match   htmlTagN	 contained +</\s*[-a-zA-Z0-9_:]\++hs=s+2 contains=htmlTagName,htmlSpecialTagName,@htmlTagNameCluster
 syn match   htmlTagError contained "[^>]<"ms=s+1
 
-" tag names
-syn keyword htmlTagName contained address applet area a base basefont
-syn keyword htmlTagName contained big blockquote br caption center
-syn keyword htmlTagName contained cite code dd dfn dir div dl dt font
-syn keyword htmlTagName contained form hr html img
-syn keyword htmlTagName contained input isindex kbd li link map menu
-syn keyword htmlTagName contained meta ol option param pre p samp span
-syn keyword htmlTagName contained select small strike sub sup
-syn keyword htmlTagName contained table td textarea th tr tt ul var xmp
-syn keyword htmlTagName contained b i u em strong head body title h1 h2 h3 h4 h5 h6
+" generic tag name and attribute matching
+syn match   htmlTagName	contained "\h[-0-9A-Za-z_:]*"
+syn match   htmlArg	contained "[@:]\?\h[-0-9A-Za-z_:.]*\%(\_s*=\)\@="
+" boolean attributes (no value, e.g. checked, disabled, x-transition)
+syn match   htmlArg	contained "[@:]\?\h[-0-9A-Za-z_:.]*\%(\_s*[>\s/]\)\@="
 
-" new html 4.0 tags
-syn keyword htmlTagName contained abbr acronym bdo button col colgroup
-syn keyword htmlTagName contained del fieldset iframe ins label legend
-syn keyword htmlTagName contained object optgroup q s tbody tfoot thead
+" backward compat: special/math/svg tag name groups
+syn match   htmlSpecialTagName	contained "\%(script\|style\)\>" containedin=htmlTagN
+syn match   htmlMathTagName	contained "math" containedin=htmlTagN
+syn match   htmlSvgTagName	contained "svg" containedin=htmlTagN
 
-" new html 5 tags
-syn keyword htmlTagName contained article aside audio bdi canvas data
-syn keyword htmlTagName contained datalist details dialog embed figcaption
-syn keyword htmlTagName contained figure footer header hgroup keygen main
-syn keyword htmlTagName contained mark menuitem meter nav output picture
-syn keyword htmlTagName contained progress rb rp rt rtc ruby search section
-syn keyword htmlTagName contained slot source summary template time track
-syn keyword htmlTagName contained video wbr
-
-" svg and math tags
-syn keyword htmlMathTagName contained math
-syn keyword htmlSvgTagName  contained svg
-
-syn region  htmlMath start="<math>" end="</math>" contains=@htmlXml transparent keepend
-syn region  htmlSvg  start="<svg>"  end="</svg>"  contains=@htmlXml transparent keepend
+" svg and math regions (allow HTML inside)
+syn region  htmlMath start="<math>" end="</math>" contains=@htmlXml,@htmlTop transparent keepend
+syn region  htmlSvg  start="<svg>"  end="</svg>"  contains=@htmlXml,@htmlTop transparent keepend
 
 syn cluster xmlTagHook	add=htmlMathTagName,htmlSvgTagName
-
-" legal arg names
-syn keyword htmlArg contained action
-syn keyword htmlArg contained align alink alt archive background bgcolor
-syn keyword htmlArg contained border bordercolor cellpadding
-syn keyword htmlArg contained cellspacing checked class clear code codebase color
-syn keyword htmlArg contained cols colspan content coords enctype face
-syn keyword htmlArg contained gutter height href hspace id
-syn keyword htmlArg contained link lowsrc marginheight
-syn keyword htmlArg contained marginwidth maxlength method name prompt
-syn keyword htmlArg contained rel rev role rows rowspan scrolling selected shape
-syn keyword htmlArg contained size src start target text title type url
-syn keyword htmlArg contained usemap ismap valign value vlink vspace width wrap
-syn match   htmlArg contained "\<http-equiv="me=e-1
-
-" ARIA attributes {{{1
-let s:aria =<< trim END
-  activedescendant
-  atomic
-  autocomplete
-  braillelabel
-  brailleroledescription
-  busy
-  checked
-  colcount
-  colindex
-  colindextext
-  colspan
-  controls
-  current
-  describedby
-  description
-  details
-  disabled
-  errormessage
-  expanded
-  flowto
-  haspopup
-  hidden
-  invalid
-  keyshortcuts
-  label
-  labelledby
-  level
-  live
-  modal
-  multiline
-  multiselectable
-  orientation
-  owns
-  placeholder
-  posinset
-  pressed
-  readonly
-  relevant
-  required
-  roledescription
-  rowcount
-  rowindex
-  rowindextext
-  rowspan
-  selected
-  setsize
-  sort
-  valuemax
-  valuemin
-  valuenow
-  valuetext
-END
-let s:aria_deprecated =<< trim END
-  dropeffect
-  grabbed
-END
-
-call extend(s:aria, s:aria_deprecated)
-exe 'syn match htmlArg contained "\%#=1\<aria-\%(' .. s:aria->join('\|') .. '\)\>"'
-unlet s:aria s:aria_deprecated
-" }}}
-
-" Netscape extensions
-syn keyword htmlTagName contained frame noframes frameset nobr blink
-syn keyword htmlTagName contained layer ilayer nolayer spacer
-syn keyword htmlArg	contained frameborder noresize pagex pagey above below
-syn keyword htmlArg	contained left top visibility clip id noshade
-syn match   htmlArg	contained "\<z-index\>"
-
-" Microsoft extensions
-syn keyword htmlTagName contained marquee
-
-" html 4.0 arg names
-syn match   htmlArg contained "\<accept-charset\>"
-syn keyword htmlArg contained abbr accept accesskey axis char charoff charset
-syn keyword htmlArg contained cite classid codetype compact data datetime
-syn keyword htmlArg contained declare defer dir disabled for frame
-syn keyword htmlArg contained headers hreflang label lang language longdesc
-syn keyword htmlArg contained multiple nohref nowrap object profile readonly
-syn keyword htmlArg contained rules scheme scope span standby style
-syn keyword htmlArg contained summary tabindex valuetype version
-
-" html 5 arg names
-syn keyword htmlArg contained allow autocapitalize as blocking decoding
-syn keyword htmlArg contained enterkeyhint imagesizes imagesrcset inert
-syn keyword htmlArg contained integrity is itemid itemprop itemref itemscope
-syn keyword htmlArg contained itemtype loading nomodule ping playsinline
-syn keyword htmlArg contained referrerpolicy slot allowfullscreen async
-syn keyword htmlArg contained autocomplete autofocus autoplay challenge
-syn keyword htmlArg contained contenteditable contextmenu controls crossorigin
-syn keyword htmlArg contained default dirname download draggable dropzone form
-syn keyword htmlArg contained formaction formenctype formmethod formnovalidate
-syn keyword htmlArg contained formtarget hidden high icon inputmode keytype
-syn keyword htmlArg contained kind list loop low max min minlength muted nonce
-syn keyword htmlArg contained novalidate open optimum pattern placeholder
-syn keyword htmlArg contained poster preload radiogroup required reversed
-syn keyword htmlArg contained sandbox spellcheck sizes srcset srcdoc srclang
-syn keyword htmlArg contained step title translate typemustmatch
-syn match   htmlArg contained "\<data-\h\%(\w\|[-.]\)*\%(\_s*=\)\@="
 
 " special characters
 syn match htmlSpecialChar "&#\=[0-9A-Za-z]\{1,32};"
@@ -199,7 +66,7 @@ else
   syn region htmlComment	start=+<!+	end=+>+		contains=htmlCommentError keepend
   " Idem 8.2.4.42,51: Comment starts with <!-- and ends with -->
   " Idem 8.2.4.43,44: Except <!--> and <!---> are parser errors
-  " Idem 8.2.4.52: dash-dash-bang (--!>) is error ignored by parser, also closes comment
+  " Idem 8.2.4.52: dash-dash-bank (--!>) is error ignored by parser, also closes comment
   syn region htmlComment matchgroup=htmlComment start=+<!--\%(-\?>\)\@!+	end=+--!\?>+	contains=htmlCommentNested,@htmlPreProc,@Spell keepend
   " Idem 8.2.4.49: nested comment is parser error, except <!--> is all right
   syn match htmlCommentNested contained "<!-->\@!"
@@ -264,8 +131,6 @@ if !exists("html_no_rendering")
   syn region htmlTitle start="<title\>" end="</title\_s*>"me=s-1 contains=htmlTag,htmlEndTag,htmlSpecialChar,htmlPreProc,htmlComment,javaScript,htmlVbScript,@htmlPreproc
 endif
 
-syn keyword htmlTagName		contained noscript
-syn keyword htmlSpecialTagName	contained script style
 if main_syntax != 'java' || exists("java_javascript")
   " JAVA SCRIPT
   syn include @htmlJavaScript syntax/javascript.vim
@@ -302,7 +167,6 @@ syn cluster htmlJavaScript	add=@htmlPreproc
 
 if main_syntax != 'java' || exists("java_css")
   " embedded style sheets
-  syn keyword htmlArg		contained media
   syn include @htmlCss syntax/css.vim
   unlet b:current_syntax
   syn region cssStyle start=+<style+ keepend end=+</style>+ contains=@htmlCss,htmlTag,htmlEndTag,htmlCssStyleComment,@htmlPreproc
