@@ -5743,7 +5743,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 	    {
 		fill_chars.stl = ' ';
 		fill_chars.stlnc = ' ';
-		fill_chars.vert = ' ';
+		fill_chars.vert = '|';
 		fill_chars.fold = '-';
 		fill_chars.foldopen = '-';
 		fill_chars.foldclosed = '+';
