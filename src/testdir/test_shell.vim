@@ -1,6 +1,8 @@
 " Test for the shell related options ('shell', 'shellcmdflag', 'shellpipe',
 " 'shellquote', 'shellredir', 'shellxescape', and 'shellxquote')
 
+source util/screendump.vim
+
 func Test_shell_options()
   if has('win32')
     " FIXME: This test is flaky on MS-Windows.
@@ -308,6 +310,25 @@ func Test_shell_filter_buffer_with_nul_bytes()
 
   set shelltemp&
   bwipe!
+endfunc
+
+" With 't_ti' empty the screen is not swapped, so ":silent !cmd" leaves the
+" output of the command on the screen.
+func Test_silent_shell_output_kept()
+  CheckScreendump
+  CheckUnix
+
+  let lines =<< trim END
+    call setline(1, ['one', 'two'])
+    set shell=/bin/sh t_ti= t_te=
+  END
+  call writefile(lines, 'XtestSilentShell', 'D')
+  let buf = RunVimInTerminal('-S XtestSilentShell', #{rows: 8})
+  call term_sendkeys(buf, ":silent !seq 1 3\<CR>")
+  call WaitForAssert({-> assert_equal('3', term_getline(buf, 7))})
+  call VerifyScreenDump(buf, 'Test_silent_shell_output_kept_1', {})
+
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
