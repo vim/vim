@@ -51,7 +51,7 @@ closes:  #number
 
 <!--
 Please disclose AI involvement by adding the trailer
-  "Co-authored-by: AI tool" instead.
+  "Co-authored-by: AI tool".
 -->
 
 - [ ] AI involvement is disclosed in the commit message, or no AI was used
