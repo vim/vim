@@ -735,7 +735,6 @@ gui_mch_open(void)
     guicolor_T bg_pixel = INVALCOLOR;
     guint pixel_width;
     guint pixel_height;
-    long columns = Columns, rows = Rows;
 
     if (gui.geom != NULL)
     {
@@ -745,12 +744,12 @@ gui_mch_open(void)
 	mask = vim_parse_geometry((char *)gui.geom, &w, &h);
 
 	if (mask & WidthValue)
-	    columns = Columns = w;
+	    Columns = w;
 	if (mask & HeightValue)
 	{
 	    if (p_window > (long)h - 1 || !option_was_set((char_u *)"window"))
 		p_window = h - 1;
-	    rows = Rows = h;
+	    Rows = h;
 	}
 	limit_screen_size();
 
@@ -808,8 +807,6 @@ gui_mch_open(void)
     // Undo the 80x24 clamp above, gui_init() asks for this size next.  Drain
     // the pending allocation before that, or gui_resize_shell() overwrites it.
     gui_mch_update();
-    Columns = columns;
-    Rows = rows;
 
     // Make sure the drawing area gets keyboard focus.
     gtk_widget_grab_focus(gui.drawarea);
