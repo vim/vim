@@ -2996,7 +2996,14 @@ func Test_lsp_incomplete_message_while_blocked()
     let notes = 0
     let child = job_start([v:progpath, '--clean', '--stdio-channel',
           \ '-S', 'Xstdio_child.vim'], #{in_mode: 'lsp', out_mode: 'lsp'})
+    " A notification, which ch_sendexpr() would wait for an answer to.
+    func Notify(method)
+      let body = json_encode(#{jsonrpc: '2.0', method: a:method})
+      call ch_sendraw(g:stdio,
+            \ 'Content-Length: ' .. strlen(body) .. "\r\n\r\n" .. body)
+    endfunc
     func Block(timer)
+      call Notify('blocking')
       for i in range(30)
         call ch_evalexpr(g:child, #{method: 'quick'}, #{timeout: 5000})
       endfor
@@ -3011,27 +3018,47 @@ func Test_lsp_incomplete_message_while_blocked()
         call timer_start(10, 'Block')
       endif
     endfunc
-    call ch_open('stdio', #{mode: 'lsp', callback: 'OnMessage'})
+    let stdio = ch_open('stdio', #{mode: 'lsp', callback: 'OnMessage'})
   END
   call writefile(lines, 'Xstdio_busy.vim', 'D')
+  let g:blocking = 0
+  func! BusyMessage(ch, msg)
+    if a:msg->get('method', '') == 'blocking'
+      let g:blocking = 1
+    endif
+  endfunc
   let job = job_start([GetVimProg(), '--clean', '--stdio-channel',
-        \ '-S', 'Xstdio_busy.vim'], #{in_mode: 'lsp', out_mode: 'lsp'})
+        \ '-S', 'Xstdio_busy.vim'], #{in_mode: 'lsp', out_mode: 'lsp',
+        \ callback: 'BusyMessage'})
   call assert_equal('run', job_status(job))
 
-  " The first half of a notification is read before the blocking reads
-  " start, the second half arrives while they go on, well within the 100
-  " msec an incomplete message is kept.
+  " Nothing may go out between the two halves: whatever is sent would be taken
+  " for the rest of the first one.  So "block" goes first, the first half is
+  " read while the other Vim is still idle, and the second half waits for word
+  " that the blocking reads have started.
   call ch_evalexpr(job, #{method: 'block'}, #{timeout: 5000})
   let body = json_encode(#{method: 'note', jsonrpc: '2.0',
         \ params: #{text: repeat('x', 1000)}})
   let framed = 'Content-Length: ' .. strlen(body) .. "\r\n\r\n" .. body
   let half = strlen(framed) / 2
   call ch_sendraw(job, framed[: half - 1])
-  sleep 20m
+  call WaitForAssert({-> assert_equal(1, g:blocking)})
   call ch_sendraw(job, framed[half :])
-  sleep 500m
-  let resp = ch_evalexpr(job, #{method: 'count'}, #{timeout: 5000})
-  call assert_equal(1, resp->get('result', resp))
+
+  " Ask more than once: a notification that is only late turns up in a later
+  " answer, one that was discarded never does.
+  let counts = []
+  for i in range(5)
+    let resp = ch_evalexpr(job, #{method: 'count'}, #{timeout: 5000})
+    " An empty Dict is no answer at all, which is not a count of zero.
+    let got = type(resp) == v:t_dict ? resp->get('result', resp) : resp
+    call add(counts, got)
+    if type(got) == v:t_number && got == 1
+      break
+    endif
+    sleep 200m
+  endfor
+  call assert_equal(1, counts[-1], 'the count over time: ' .. string(counts))
 
   call ch_close(job)
   call WaitForAssert({-> assert_equal('dead', job_status(job))})
