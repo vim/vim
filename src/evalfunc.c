@@ -2026,6 +2026,11 @@ typedef struct
 #else
 # define TABPANEL_FUNC(name) NULL
 #endif
+#ifdef FEAT_IMAGE
+# define IMAGE_FUNC(name) name
+#else
+# define IMAGE_FUNC(name) NULL
+#endif
 
 static const funcentry_T global_functions[] =
 {
@@ -2517,6 +2522,12 @@ static const funcentry_T global_functions[] =
 			ret_string,	    f_iconv},
     {"id",		1, 1, FEARG_1,	    NULL,
 			ret_string,	    f_id},
+    {"image_add",	1, 1, FEARG_1,	    arg1_dict_any,
+			ret_number,	    IMAGE_FUNC(f_image_add)},
+    {"image_discard",	1, 1, FEARG_1,	    arg1_number,
+			ret_void,	    IMAGE_FUNC(f_image_discard)},
+    {"image_info",	0, 1, FEARG_1,	    arg1_number,
+			ret_dict_any,	    IMAGE_FUNC(f_image_info)},
     {"indent",		1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_indent},
     {"index",		2, 4, FEARG_1,	    arg24_index,
@@ -7247,36 +7258,8 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"image_cairo",
-#ifdef FEAT_IMAGE_CAIRO
-		1
-#else
-		0
-#endif
-		},
-	{"image_gdi",
-#ifdef FEAT_IMAGE_GDI
-		1
-#else
-		0
-#endif
-		},
-	{"image_gdk",
-#ifdef FEAT_IMAGE_GDK
-		1
-#else
-		0
-#endif
-		},
-	{"image_kitty",
-#ifdef FEAT_IMAGE_KITTY
-		1
-#else
-		0
-#endif
-		},
-	{"image_sixel",
-#ifdef FEAT_IMAGE_SIXEL
+	{"image_popup",
+#ifdef FEAT_IMAGE_POPUP
 		1
 #else
 		0

@@ -280,30 +280,10 @@ static char *(features[]) =
 #else
 	"-image",
 #endif
-#ifdef FEAT_IMAGE_CAIRO
-	"+image_cairo",
+#ifdef FEAT_IMAGE_POPUP
+	"+image_popup",
 #else
-	"-image_cairo",
-#endif
-#ifdef FEAT_IMAGE_GDI
-	"+image_gdi",
-#else
-	"-image_gdi",
-#endif
-#ifdef FEAT_IMAGE_GDK
-	"+image_gdk",
-#else
-	"-image_gdk",
-#endif
-#ifdef FEAT_IMAGE_KITTY
-	"+image_kitty",
-#else
-	"-image_kitty",
-#endif
-#ifdef FEAT_IMAGE_SIXEL
-	"+image_sixel",
-#else
-	"-image_sixel",
+	"-image_popup",
 #endif
 	"+insert_expand",
 #ifdef FEAT_IPV6

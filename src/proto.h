@@ -217,14 +217,14 @@ void mbyte_im_set_active(int active_arg);
 #  include "popupwin.pro"
 #  include "textprop.pro"
 # endif
-# ifdef FEAT_IMAGE_SIXEL
-#  include "sixel.pro"
-# endif
-# ifdef FEAT_IMAGE_KITTY
-#  include "kitty.pro"
-# endif
-# ifdef FEAT_IMAGE_CAIRO
-#  include "cairo.pro"
+# ifdef FEAT_IMAGE
+#  include "image.pro"
+#  ifdef FEAT_IMAGE_KITTY
+#   include "image_kitty.pro"
+#  endif
+#  ifdef FEAT_IMAGE_SIXEL
+#   include "image_sixel.pro"
+#  endif
 # endif
 # include "testing.pro"
 # include "textobject.pro"

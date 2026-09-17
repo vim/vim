@@ -31,9 +31,9 @@ void vim_draw_area_add_sign(VimDrawArea *self, GdkTexture *sign, int row, int co
 #ifdef FEAT_NETBEANS_INTG
 void vim_draw_area_add_multisign(VimDrawArea *self, cairo_surface_t *surf, int row, int col, int width, int height);
 #endif
-#ifdef FEAT_IMAGE_GDK
-void vim_draw_area_add_image(VimDrawArea *self, GdkTexture *image, int row, int col, double src_x, double src_y, double draw_w, double draw_h, int zindex, int id, int part);
-void vim_draw_area_remove_image(VimDrawArea *self, int id);
+#ifdef FEAT_IMAGE_GUI
+void vim_draw_area_add_external(VimDrawArea *self, GskRenderNode *node);
+void vim_draw_area_remove_external(VimDrawArea *self, GskRenderNode *node);
 #endif
 
 #endif

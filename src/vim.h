@@ -2275,7 +2275,8 @@ typedef int sock_T;
 #define VV_TERMOSC 115
 #define VV_VIM_DID_INIT		116
 #define VV_CLIPPROVIDERS 117
-#define VV_LEN		118	// number of v: vars
+#define VV_IMAGEBACKEND 118
+#define VV_LEN		119	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
@@ -2712,6 +2713,16 @@ in_vim9script(void)
 #ifdef FEAT_NETBEANS_INTG
 # define MULTISIGN_BYTE 2   // byte value used where sign is displayed if
 			    // multiple signs exist on the line
+#endif
+
+#if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE)
+// Logical pixels to physical pixels
+# define LOG2PHY(l) (gui.in_use ? (double)(l) * gui.scale : (l))
+ // Physical pixels to logical pixels
+# define PHY2LOG(p) (gui.in_use ? (double)(p) / gui.scale : (p))
+#else
+# define LOG2PHY(l) (l)
+# define PHY2LOG(p) (p)
 #endif
 
 #if defined(FEAT_GUI) && defined(FEAT_XCLIPBOARD)

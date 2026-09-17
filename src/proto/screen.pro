@@ -22,7 +22,7 @@ void end_search_hl(void);
 void screen_stop_highlight(void);
 void reset_cterm_colors(void);
 void screen_char(unsigned off, int row, int col);
-void screen_draw_rectangle(int row, int col, int height, int width, int invert);
+void screen_draw_rectangle(int row, int col, int height, int width, int invert, int force);
 void space_to_screenline(int off, int attr);
 void screen_fill(int start_row, int end_row, int start_col, int end_col, int c1, int c2, int attr);
 void check_for_delay(int check_msg_scroll);
