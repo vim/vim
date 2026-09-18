@@ -390,9 +390,6 @@ main
      */
     ui_get_shellsize();		// inits Rows and Columns
     win_init_size();
-#  ifdef FEAT_IMAGE
-    update_cell_size();
-#  endif
 #  ifdef FEAT_DIFF
     // Set the 'diff' option now, so that it can be checked for in a .vimrc
     // file.  There is no buffer yet though.
@@ -895,6 +892,9 @@ vim_main2(void)
     may_req_termresponse();
 
     may_req_bg_color();
+# endif
+# ifdef FEAT_IMAGE
+    update_cell_size();
 # endif
 
     // start in insert mode

@@ -5714,22 +5714,14 @@ f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv)
     else
 #endif
     {
-	struct cellsize cs;
 #if defined(UNIX) || defined(MSWIN)
-	mch_calc_cell_size(&cs);
+	list_append_number(rettv->vval.v_list, (varnumber_T)cell_width);
+	list_append_number(rettv->vval.v_list, (varnumber_T)cell_height);
 #else
 	// Non-Unix CUIs are not supported, so set this to -1x-1.
-	cs.cs_xpixel = -1;
-	cs.cs_ypixel = -1;
+	list_append_number(rettv->vval.v_list, (varnumber_T)-1);
+	list_append_number(rettv->vval.v_list, (varnumber_T)-1);
 #endif
-
-	// failed get pixel size.
-	if (cs.cs_xpixel == -1)
-	    return;
-
-	// success pixel size and no gui.
-	list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_xpixel);
-	list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_ypixel);
     }
 
 }

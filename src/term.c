@@ -5842,6 +5842,23 @@ handle_csi(
 	*slen = csi_len;
     }
 
+#ifdef UNIX
+    // Response to CSI 14 t (query pixel size of terminal).
+    else if (first == -1 && argc >= 3 && arg[0] == 4 && trail == 't')
+    {
+	LOG_TRN("Received CSI 14 t response: %s", tp);
+
+	cell_width = arg[2] / Columns;
+	cell_height = arg[1] / Rows;
+
+	key_name[0] = (int)KS_EXTRA;
+	key_name[1] = (int)KE_IGNORE;
+	*slen = csi_len;
+
+	redraw_all_later(UPD_VALID);
+    }
+#endif
+
     // Primary device attributes (DA1) response
     else if (first == '?' && trail == 'c')
     {
@@ -5856,6 +5873,7 @@ handle_csi(
 
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;
+	*slen = csi_len;
     }
 
     // DECRPM mode 2026 or 2048.

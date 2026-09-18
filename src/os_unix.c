@@ -4506,9 +4506,10 @@ mch_calc_cell_size(struct cellsize *cs_out)
 {
    // get current tty size.
    struct winsize ws;
-   int fd = 1;
-   int retval = -1;
-   retval = ioctl(fd, TIOCGWINSZ, &ws);
+   int retval;
+
+   // If fd is not a terminal, then -1 is returned
+   retval = ioctl(read_cmd_fd, TIOCGWINSZ, &ws);
 
 # ifdef FEAT_EVAL
    ch_log(NULL, "ioctl(TIOCGWINSZ) %s", retval == 0 ? "success" : "failed");
@@ -4525,51 +4526,15 @@ mch_calc_cell_size(struct cellsize *cs_out)
    int x_cell_size = ws.ws_xpixel / ws.ws_col;
    int y_cell_size = ws.ws_ypixel / ws.ws_row;
 
-   // many terminals leave ws_xpixel/ws_ypixel zero; ask via CSI 14 t.
-   // Cache the resulting *cell* size (cell px is invariant under window
-   // resize as long as the font size stays the same -- caching the raw
-   // window pixel size and re-dividing by ws_col/ws_row would produce
-   // garbage after a resize).
-   if (x_cell_size <= 0 || y_cell_size <= 0)
-   {
-	static int csi14_state = -1;	    // -1 unknown, 0 fail, 1 ok
-	static int csi14_cell_x = 0;
-	static int csi14_cell_y = 0;
-
-	if (csi14_state == 1)
-	{
-	    x_cell_size = csi14_cell_x;
-	    y_cell_size = csi14_cell_y;
-	}
-	else if (csi14_state == -1)
-	{
-	    int wpx, hpx;
-
-	    csi14_state = 0;
-	    if (query_terminal_pixel_size(&wpx, &hpx) == OK
-				    && wpx / ws.ws_col > 0
-				    && hpx / ws.ws_row > 0)
-	    {
-		x_cell_size = wpx / ws.ws_col;
-		y_cell_size = hpx / ws.ws_row;
-		csi14_state = 1;
-		csi14_cell_x = x_cell_size;
-		csi14_cell_y = y_cell_size;
-# ifdef FEAT_EVAL
-		ch_log(NULL, "Got cell pixel size via CSI 14 t: %d x %d",
-						    x_cell_size, y_cell_size);
-# endif
-	    }
-	}
-   }
-
-   // calculate current tty's pixel
    cs_out->cs_xpixel = x_cell_size > 0 ? x_cell_size : -1;
    cs_out->cs_ypixel = y_cell_size > 0 ? y_cell_size : -1;
 
-# ifdef FEAT_EVAL
-   ch_log(NULL, "Got cell pixel size with TIOCGWINSZ: %d x %d", x_cell_size, y_cell_size);
-# endif
+   if (x_cell_size <= 0 || y_cell_size <= 0)
+   {
+       // Default to 8x16 pixels for now until we receive a response.
+       OUT_STR("\033[14t");
+       out_flush();
+   }
 }
 
 # if defined(FEAT_TERMINAL)
