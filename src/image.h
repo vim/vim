@@ -37,7 +37,8 @@ typedef enum
 } image_state_T;
 
 /*
- *
+ * Represents image data, that can be referenced by multiple image placements,
+ * each with a different view.
  */
 typedef struct image_S image_T;
 struct image_S
@@ -67,12 +68,13 @@ struct image_S
 
 #define IMAGEF_DIRTY 1	    // If image positioning/geometry has been modified
 #define IMAGEF_HIDDEN 2     // If image should not be drawn
-#define IMAGEF_FORCE 4      // If image backend should use a cache
+#define IMAGEF_FORCE 4      // If image backend should not use its cache
+			    // (if any)
 
 #define IMAGEF_VISIBLE_INIT 8   // If "visible" is valid
 
 /*
- *
+ * Represents an image placement, which is a visible view of an image.
  */
 typedef struct image_placement_S image_placement_T;
 struct image_placement_S

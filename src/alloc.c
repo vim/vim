@@ -914,6 +914,9 @@ ga_concat_bytes(garray_T *gap, const char *s, int len)
     return OK;
 }
 
+/*
+ * Append the string form of an integer to "gap". Returns FAIL on OOM.
+ */
     int
 ga_concat_int(garray_T *gap, int n)
 {

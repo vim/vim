@@ -220,6 +220,10 @@ image_free(image_T *img)
     vim_free(img);
 }
 
+/*
+ * Decrement reference count of an image. Be careful to not let the public API
+ * be able to directly decrement the refcount of an image multiple times!
+ */
     void
 image_unref(image_T *img)
 {
@@ -227,6 +231,10 @@ image_unref(image_T *img)
 	image_free(img);
 }
 
+/*
+ * Increment reference count of an image. Each image placement should have its
+ * own reference to the image.
+ */
     image_T *
 image_ref(image_T *img)
 {
@@ -757,7 +765,7 @@ draw_image_placements(void)
 	    // it yet). Or if image data has changed or cell size has changed
 	    need_redraw = place->flags & IMAGEF_DIRTY || cs_changed
 		||  (place->flags & IMAGEF_VISIBLE_INIT
-		    && !pixman_region32_equal(&visible_region, &place->visible));
+			&& !pixman_region32_equal(&visible_region, &place->visible));
 
 	    if (place->img_ver != img->ver)
 	    {
@@ -868,7 +876,7 @@ draw_image_placements(void)
 		    redraw_region(&stale_region, true, false);
 		    pixman_region32_fini(&stale_region);
 		}
-		    if (place->flags & IMAGEF_VISIBLE_INIT)
+		if (place->flags & IMAGEF_VISIBLE_INIT)
 		    pixman_region32_fini(&old_visible_abs);
 
 		pending_placements[pending_len++] = place;
