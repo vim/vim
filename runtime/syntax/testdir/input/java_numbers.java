@@ -1,10 +1,10 @@
+// VIM_TEST_SETUP let g:java_comment_strings = 1
 
 
 
+import java.util.function.Predicate;
 
-
-
-class NumbersTests
+class NumbersTests	// JDK 8= (--release 8).
 {
 	static {
 		double[] dd = {
@@ -90,5 +90,31 @@ class NumbersTests
 		long minus_one_hex_l = 0xffff_ffff_ffff_ffffL;
 		long minus_one_oct_l = 017_7777_7777_7777_7777_7777L;
 		long minus_one_bin_l = 0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111L;
+
+		final Predicate<Integer> p = n -> n != 0;
+
+		try {
+			echo(xor(unused -> false, false, false));
+			echo(xor(p, 1, 0));
+			echo(xor(p, 0, 1));
+			echo(xor(p, 1, 1));
+		} catch (final ArithmeticException _) {
+		}
+	}
+
+	private static boolean _ [] = new boolean[2];
+
+	static void echo(Object o) { System.out.println(o); }
+
+	static <T> boolean xor(Predicate<T> p, T x, T y)
+	{
+		return ((_ [0] = x instanceof Boolean)
+				& (_ [1] = y instanceof Boolean))
+			? (boolean) x ^ (boolean) y
+			: (_ [0])
+				? (boolean) x ^ p.test(y)
+				: (_ [1])
+					? p.test(x) ^ (boolean) y
+					: p.test(x) ^ p.test(y);
 	}
 }
