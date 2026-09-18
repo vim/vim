@@ -133,7 +133,7 @@ charclass({string})		Number	character class of {string}
 charcol({expr} [, {winid}])	Number	column number of cursor or mark
 charidx({string}, {idx} [, {countcc} [, {utf16}]])
 				Number	char index of byte {idx} in {string}
-chdir({dir})			String	change current working directory
+chdir({dir} [, {scope}])	String	change current working directory
 cindent({lnum})			Number	C indent for line {lnum}
 clearmatches([{win}])		none	clear all matches
 cmdcomplete_info()		Dict	get current cmdline completion
@@ -177,7 +177,7 @@ escape({string}, {chars})	String	escape {chars} in {string} with '\'
 eval({string})			any	evaluate {string} into its value
 eventhandler()			Number	|TRUE| if inside an event handler
 executable({expr})		Number	1 if executable {expr} exists
-execute({command})		String	execute {command} and get the output
+execute({command} [, {silent}])	String	execute {command} and get the output
 exepath({expr})			String	full path of the command {expr}
 exists({expr})			Number	|TRUE| if {expr} exists
 exists_compiled({expr})		Number	|TRUE| if {expr} exists at compile time
@@ -214,11 +214,11 @@ fmod({expr1}, {expr2})		Float	remainder of {expr1} / {expr2}
 fnameescape({fname})		String	escape special characters in {fname}
 fnamemodify({fname}, {mods})	String	modify file name
 foldclosed({lnum} [, {winid}])	Number	first line of fold at {lnum} if closed
-foldclosedend({lnum} [, {winid}]))
+foldclosedend({lnum} [, {winid}])
 				Number	last line of fold at {lnum} if closed
-foldlevel({lnum} [, {winid}]))	Number	fold level at {lnum}
+foldlevel({lnum} [, {winid}])	Number	fold level at {lnum}
 foldtext()			String	line displayed for closed fold
-foldtextresult({lnum} [, {winid}]))
+foldtextresult({lnum} [, {winid}])
 				String	text for closed fold at {lnum}
 foreach({expr1}, {expr2})	List/Tuple/Dict/Blob/String
 					for each item in {expr1} call {expr2}
@@ -275,6 +275,8 @@ getfsize({fname})		Number	size in bytes of file {fname}
 getftime({fname})		Number	last modification time of file
 getftype({fname})		String	description of type of file {fname}
 getimstatus()			Number	|TRUE| if the IME status is active
+getinfo({kind}, {name} [, {opts}])
+				Dict	the definition of {name}
 getjumplist([{winnr} [, {tabnr}]])
 				List	list of jump list items
 getline({lnum})			String	line {lnum} of current buffer
@@ -341,7 +343,7 @@ id({item})			String	get unique identity string of item
 indent({lnum})			Number	indent of line {lnum}
 index({object}, {expr} [, {start} [, {ic}]])
 				Number	index in {object} where {expr} appears
-indexof({object}, {expr} [, {opts}]])
+indexof({object}, {expr} [, {opts}])
 				Number	index in {object} where {expr} is true
 input({prompt} [, {text} [, {completion}]])
 				String	get input from the user
@@ -355,7 +357,8 @@ inputsecret({prompt} [, {text}])
 insert({object}, {item} [, {idx}])
 				List	insert {item} in {object}
 					[before {idx}]
-instanceof({object}, {class})	Bool	|TRUE| if {object} is an instance of
+instanceof({object}, {class} ...)
+				Bool	|TRUE| if {object} is an instance of
 					{class}
 interrupt()			none	interrupt script execution
 invert({expr})			Number	bitwise invert
@@ -412,6 +415,7 @@ mapnew({expr1}, {expr2})	List/Dict/Blob/String
 					like |map()| but creates a new List or
 					Dictionary
 mapset({mode}, {abbr}, {dict})	none	restore mapping from |maparg()| result
+mapset({dict})			none	restore mapping from |maparg()| result
 match({expr}, {pat} [, {start} [, {count}]])
 				Number	position where {pat} matches in {expr}
 matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
@@ -419,7 +423,7 @@ matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])
 				Number	highlight positions with {group}
 matcharg({nr})			List	arguments of `:match`
-matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict})
+matchbufline({buf}, {pat}, {lnum}, {end} [, {dict}])
 				List	all the {pat} matches in buffer {buf}
 matchdelete({id} [, {win}])	Number	delete match identified by {id}
 matchend({expr}, {pat} [, {start} [, {count}]])
@@ -433,7 +437,7 @@ matchlist({expr}, {pat} [, {start} [, {count}]])
 					{expr}
 matchstr({expr}, {pat} [, {start} [, {count}]])
 				String	{count}'th match of {pat} in {expr}
-matchstrlist({list}, {pat} [, {dict})
+matchstrlist({list}, {pat} [, {dict}])
 				List	all the {pat} matches in {list}
 matchstrpos({expr}, {pat} [, {start} [, {count}]])
 				List	{count}'th match of {pat} in {expr}
@@ -445,7 +449,7 @@ mkdir({name} [, {flags} [, {prot}]])
 mode([{expr}])			String	current editing mode
 mzeval({expr})			any	evaluate |MzScheme| expression
 nextnonblank({lnum})		Number	line nr of non-blank line >= {lnum}
-ngettext({single}, {plural}, {number}[, {domain}])
+ngettext({single}, {plural}, {number} [, {domain}])
 				String	translate text based on {number}
 nr2char({expr} [, {utf8}])	String	single char with ASCII/UTF-8 value
 					{expr}
@@ -455,7 +459,7 @@ perleval({expr})		any	evaluate |Perl| expression
 popup_atcursor({what}, {options})
 				Number	create popup window near the cursor
 popup_beval({what}, {options})	Number	create popup window for 'ballooneval'
-popup_clear()			none	close all popup windows
+popup_clear([{force}])		none	close all popup windows
 popup_close({id} [, {result}])	none	close popup window {id}
 popup_create({what}, {options}) Number	create a popup window
 popup_dialog({what}, {options}) Number	create a popup window used as a dialog
@@ -482,7 +486,7 @@ popup_show({id})		Number	unhide popup window {id}
 pow({x}, {y})			Float	{x} to the power of {y}
 preinserted()			Number	whether text is inserted after cursor
 prevnonblank({lnum})		Number	line nr of non-blank line <= {lnum}
-printf({fmt}, {expr1}...)	String	format text
+printf({fmt} [, {expr1} ...])	String	format text
 prompt_getprompt({buf})		String	get prompt text
 prompt_setcallback({buf}, {expr})
 				none	set prompt callback function
@@ -577,7 +581,7 @@ searchpos({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 				List	search for {pattern}
 server2client({clientid}, {string})
 				Number	send reply string
-serverlist()			String	get a list of available servers
+serverlist([{dict}])		String	get a list of available servers
 setbufline({buf}, {lnum}, {text})
 				Number	set line {lnum} to {text} in buffer
 					{buf}
@@ -588,6 +592,8 @@ setcharpos({expr}, {list})	Number	set the {expr} position to {list}
 setcharsearch({dict})		none	set character search from {dict}
 setcmdline({str} [, {pos}])	Number	set command-line
 setcmdpos({pos})		Number	set cursor position in command-line
+setcursorcharpos({lnum}, {col} [, {off}])
+				Number	move cursor to {lnum}, {col}, {off}
 setcursorcharpos({list})	Number	move cursor to position in {list}
 setenv({name}, {val})		none	set environment variable
 setfperm({fname}, {mode})	Number	set {fname} file permissions to {mode}
@@ -646,7 +652,7 @@ sound_playfile({path} [, {callback}])
 				Number	play sound file {path}
 sound_stop({id})		none	stop playing sound {id}
 soundfold({word})		String	sound-fold {word}
-spellbadword()			List	badly spelled word at cursor
+spellbadword([{sentence}])	List	badly spelled word at cursor
 spellsuggest({word} [, {max} [, {capital}]])
 				List	spelling suggestions
 split({expr} [, {pat} [, {keepempty}]])
@@ -731,7 +737,7 @@ term_getscrolled({buf})		Number	get the scroll count of a terminal
 term_getsize({buf})		List	get the size of a terminal
 term_getstatus({buf})		String	get the status of a terminal
 term_gettitle({buf})		String	get the title of a terminal
-term_gettty({buf}, [{input}])	String	get the tty name of a terminal
+term_gettty({buf} [, {input}])	String	get the tty name of a terminal
 term_list()			List	get the list of terminal buffers
 term_scrape({buf}, {row})	List	get row of a terminal screen
 term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
@@ -801,7 +807,7 @@ uri_encode({string})		String	URI-encode a string
 utf16idx({string}, {idx} [, {countcc} [, {charidx}]])
 				Number	UTF-16 index of byte {idx} in {string}
 values({dict})			List	values in {dict}
-virtcol({expr} [, {list} [, {winid}])
+virtcol({expr} [, {list} [, {winid}]])
 				Number/List
 					screen column of cursor or mark
 virtcol2col({winid}, {lnum}, {col})
@@ -817,8 +823,10 @@ win_gettype([{nr}])		String	type of window {nr}
 win_gotoid({expr})		Number	go to window with ID {expr}
 win_id2tabwin({expr})		List	get tab and window nr from window ID
 win_id2win({expr})		Number	get window nr from window ID
-win_move_separator({nr})	Number	move window vertical separator
-win_move_statusline({nr})	Number	move window status line
+win_move_separator({nr}, {offset})
+				Number	move window vertical separator
+win_move_statusline({nr}, {offset})
+				Number	move window status line
 win_screenpos({nr})		List	get screen position of window {nr}
 win_splitmove({nr}, {target} [, {options}])
 				Number	move window {nr} to split of {target}
@@ -4725,6 +4733,190 @@ getimstatus()						*getimstatus()*
 		Return type: |Number|
 
 
+getinfo({kind}, {name} [, {opts}])			*getinfo()*
+		Return a Dict with the definition of {name}.  {kind} tells
+		what {name} is looked up as: "function", "command", "option"
+		or "vimvar".  Another {kind} is an error.  The result is an
+		empty Dict when {name} is not found.
+
+		Every Dict has an "available" item, which is |FALSE| for a
+		function or an option that this Vim was built without and for
+		an Ex command that it does not implement.  The other items
+		depend on {kind}, and so do the items of the optional Dict
+		{opts}; an item of {opts} for another {kind} is an error.
+
+		"function"	a built-in function, or a user defined
+				function when there is no built-in one with
+				that name.  "s:Func" finds a script-local
+				function in that script, its "<SNR>12_Func"
+				name from anywhere.
+
+			For a built-in function:
+			name	the name of the function
+			kind	"builtin"
+			minargs	the number of arguments that are required
+			maxargs	the maximum number of arguments, -1 when there
+				is no maximum
+			method	the number of the argument that the base of a
+				|method| call fills in, zero when the function
+				cannot be used as a method
+			args	a List with a Dict for each argument:
+				name	the name of the argument as in the
+					help, missing when the help does not
+					name it
+				types	the types the argument accepts, a List
+					of |vim9-types|; "any" for an argument
+					that is not checked or is checked
+					against another argument
+				For a function without a maximum the last item
+				is for all the remaining arguments.
+			returns	the type of the returned value when the
+				arguments are of type "any", "void" when there
+				is none.  Also "any" when the type depends on
+				the number of arguments.
+
+			Example: >
+				echo getinfo('function', 'strlen')
+<			{'name': 'strlen', 'kind': 'builtin',
+			'available': v:true, 'minargs': 1, 'maxargs': 1,
+			'method': 1,
+			'args': [{'name': 'string',
+				  'types': ['string', 'number']}],
+			'returns': 'number'}
+
+			With the "argtypes" item of {opts}, a List of
+			|vim9-types| for the arguments, "returns" is the
+			type for arguments of those types, the same as what
+			a |:def| function is compiled with.  Required
+			arguments that are not in the List are of type
+			"any".  It is an error to give more types than the
+			maximum number of arguments or a type that is not
+			recognized.  The types are not checked against
+			"args".  Example: >
+				let opts = {'argtypes': ['list<number>']}
+				echo getinfo('function', 'sort', opts).returns
+<			list<number>
+
+			For a user defined function:
+			name	the name of the function, "<SNR>12_Func" for a
+				script-local one
+			kind	"function" for |:function|, "def" for |:def|
+			args	a List with a Dict for each argument:
+				name	the name of the argument
+				type	the type for "def", "any" for
+					"function"
+				default	the expression for the default value,
+					missing when there is none
+			varargs	only when the function accepts more arguments:
+				a Dict with "name", empty for "...", and
+				"type", "list<any>" for "function"
+			returns	the return type for "def", "any" for
+				"function"
+			abort	|TRUE| when the function aborts on an error,
+				see |:func-abort|
+			range	|TRUE| when the function takes a range, see
+				|:func-range|
+			dict	|TRUE| for a |Dictionary-function|
+			closure	|TRUE| for a closure, see |:func-closure|
+			sid	the script ID where the function was defined
+			lnum	the line number in that script
+
+			Example: >
+				def g:Twice(n: number): number
+				  return n * 2
+				enddef
+				echo getinfo('function', 'g:Twice')
+<			{'name': 'Twice', 'kind': 'def', 'available': v:true,
+			'args': [{'name': 'n', 'type': 'number'}],
+			'returns': 'number', 'abort': v:false,
+			'range': v:false, 'dict': v:false,
+			'closure': v:false, 'sid': 1, 'lnum': 1}
+
+		"command"	an Ex command, also with an abbreviation; a
+				user defined command is found first, as with
+				`exists()`.  The Dict is empty for an
+				ambiguous abbreviation.
+			name	the full name of the command
+			kind	"builtin", "modifier" for a command modifier
+				like `:silent`, or "user" for a user defined
+				command
+			nargs	the arguments as for |:command-nargs|: "0",
+				"1", "_", "*", "?" or "+"
+			range	|FALSE| when a range is not allowed, otherwise
+				the default: "." for the cursor line, "%" for
+				the whole buffer or a Number as with
+				|:command-range|
+			count	|FALSE| when a count is not allowed, otherwise
+				the default count
+			bang	|TRUE| when a "!" after the name is allowed
+			bar	|TRUE| when "|" ends the command, see |:bar|
+			register
+				|TRUE| when a register name is accepted
+			addr	what a range refers to, as for
+				|:command-addr|; a builtin command can also
+				have "none", "tabs_relative", "quickfix_valid"
+				or "unsigned"
+
+			Only for "user":
+			buffer	|TRUE| for a buffer-local command
+			complete
+				the completion as for |:command-complete|,
+				empty when there is none
+			definition
+				the replacement text
+			sid	the script ID where the command was defined
+			lnum	the line number in that script
+
+			With the "vim9" item of {opts}, |TRUE| finds the
+			command as in |Vim9| script, where an abbreviation is
+			not accepted and some commands do not exist, |FALSE|
+			as in legacy Vim script.  Without it the context of
+			the caller is used.
+
+			Example: >
+				echo getinfo('command', 's')
+<			{'name': 'substitute', 'kind': 'builtin',
+			'available': v:true, 'nargs': '*', 'range': '.',
+			'count': v:false, 'bang': v:false, 'bar': v:false,
+			'register': v:false, 'addr': 'lines'}
+
+		"option"	an option, also one that is not supported in
+				this Vim, see |hidden-options|
+			name	the full name of the option
+			shortname
+				the abbreviation, empty when there is none
+			type	"bool", "number" or "string"
+			scope	"global", "window", "buffer", "global-window"
+				or "global-buffer", see |global-local|
+			default	the default value
+
+			Example: >
+				echo getinfo('option', 'tw')
+<			{'name': 'textwidth', 'shortname': 'tw',
+			'available': v:true, 'type': 'number',
+			'scope': 'buffer', 'default': 0}
+
+		"vimvar"	a predefined Vim variable, see |v:var|.
+				{name} includes the "v:".
+			name	the name of the variable, with the "v:"
+			type	the type of the variable, see |vim9-types|
+			readonly
+				|TRUE| when the variable cannot be set
+			compat	|TRUE| when the variable can also be used
+				without the "v:", like "count" for v:count
+
+			Example: >
+				echo getinfo('vimvar', 'v:count')
+<			{'name': 'v:count', 'available': v:true,
+			'type': 'number', 'readonly': v:true,
+			'compat': v:true}
+
+		Can also be used as a |method|: >
+			GetName()->getinfo('function')
+<
+		Return type: dict<any>
+
+
 getjumplist([{winnr} [, {tabnr}]])			*getjumplist()*
 		Returns the |jumplist| for the specified window.
 
@@ -6370,7 +6562,7 @@ insert({object}, {item} [, {idx}])			*insert()*
 		Return type: |Number|
 
 
-instanceof({object}, {class})			*instanceof()* *E616* *E693*
+instanceof({object}, {class} ...)		*instanceof()* *E616* *E693*
 		The result is a Number, which is |TRUE| when the {object}
 		argument is a direct or indirect instance of a |Class|,
 		|Interface|, or class |:type| alias specified by {class}.
@@ -7581,7 +7773,7 @@ matcharg({nr})						*matcharg()*
 		Return type: list<string>
 
 
-matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict}])	*matchbufline()*
+matchbufline({buf}, {pat}, {lnum}, {end} [, {dict}])	*matchbufline()*
 		Returns the |List| of matches in lines from {lnum} to {end} in
 		buffer {buf} where {pat} matches.
 
@@ -7633,7 +7825,7 @@ matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict}])	*matchbufline()*
 		Return type: list<dict<any>> or list<any>
 
 
-matchdelete({id} [, {win})			*matchdelete()* *E802* *E803*
+matchdelete({id} [, {win}])			*matchdelete()* *E802* *E803*
 		Deletes a match with ID {id} previously defined by |matchadd()|
 		or one of the |:match| commands.  Returns 0 if successful,
 		otherwise -1.  See example for |matchadd()|.  All matches can
@@ -8129,7 +8321,7 @@ nextnonblank({lnum})					*nextnonblank()*
 		Return type: |Number|
 
 
-ngettext({single}, {plural}, {number}[, {domain})	*ngettext()*
+ngettext({single}, {plural}, {number} [, {domain}])	*ngettext()*
 		Return a string that contains the correct value for a
 		message based on the rules for plural form(s) in
 		a language.  Examples: >
@@ -8270,7 +8462,7 @@ prevnonblank({lnum})					*prevnonblank()*
 		Return type: |Number|
 
 
-printf({fmt}, {expr1} ...)				*printf()*
+printf({fmt} [, {expr1} ...])				*printf()*
 		Return a String with {fmt}, where "%" items are replaced by
 		the formatted form of their respective arguments.  Example: >
 			printf("%4d: E%d %.30s", lnum, errno, msg)
@@ -9244,7 +9436,7 @@ remote_peek({serverid} [, {retvar}])			*remote_peek()*
 		Return type: |Number|
 
 
-remote_read({serverid}, [{timeout}])			*remote_read()*
+remote_read({serverid} [, {timeout}])			*remote_read()*
 		Return the oldest available reply from {serverid} and consume
 		it.  Unless a {timeout} in seconds is given, it blocks until a
 		reply is available.  Returns an empty string, if a reply is
