@@ -340,7 +340,7 @@ iconv({expr}, {from}, {to})	String	convert encoding of {expr}
 id({item})			String	get unique identity string of item
 image_add({dict})		Number	Add an image and return handle to it
 image_discard({id})		none	Discard an image handle
-image_info({id})		Dict	Get information about an image
+image_info([{id}])		List	Get information about an image
 indent({lnum})			Number	indent of line {lnum}
 index({object}, {expr} [, {start} [, {ic}]])
 				Number	index in {object} where {expr} appears
@@ -6221,13 +6221,13 @@ indexof({object}, {expr} [, {opts}])			*indexof()*
 image_add({dict})					*image_add()*
 		Add an image using the given information in {dict}.  This does
 		not display an image, it simply loads the image data so that
-		can be reference elsewhere (e.g. popup windows) multiple
+		it can be reference elsewhere (e.g. popup windows) multiple
 		times.
 
 		The {dict} argument must contain the following fields:
-		    "data"	a blob containg RGB or RGBA data, the format is
-				automatically detected using the dimensions and
-				blob size.
+		    "data"	a blob containing RGB or RGBA data, the format
+				is automatically detected using the dimensions
+				and blob size.
 		    "width"	width of image in pixels
 		    "height"	height of image in pixels
 
@@ -6252,14 +6252,15 @@ image_discard({id})					*image_discard()*
 		discarded or referenced anywhere else.
 
 		For example, if discarding an image that is still referenced
-		by a popup window, the popup window still display the image.
+		by a popup window, the popup window will still display the
+		image.
 
 		It is an error to provide an invalid image ID |E1587|.
 
 		{only available when compiled with the |+image| feature}
 
 		Can also be used as a |method|: >
-			id->image_discard
+			id->image_discard()
 <
 		Return type: void
 

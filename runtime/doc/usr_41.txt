@@ -1458,7 +1458,7 @@ Sound:							*sound-functions*
 Images:
 	image_add()		add an image
 	image_discard()		discard an image
-	image_info()		Get information about an image
+	image_info()		get information about image(s)
 
 Various:					*various-functions*
 	mode()			get current editing mode

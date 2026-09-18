@@ -1188,7 +1188,7 @@ To unset a previously set image from a popup window pass an empty dictionary: >
 	call popup_setoptions(winid, #{image: {}})
 <
 							*image-backends*
-There are two terminal image protocols supported on all platforms. The
+There are two terminal image protocols supported on all platforms.  The
 protocol to use is chosen using the 'imageprotocol' option:
 
     sixel   Uses the sixel protocol to display images.
@@ -1206,8 +1206,8 @@ When passing an RGBA buffer, Vim expects it to be endian independent and non
 alpha pre-multiplied.  For RGB images, each pixel should be exactly 3 bytes,
 a padding byte is not supported by Vim.
 
-The dimensions of a popup containing an image is automatically calculated
-based on the image dimensions nad terminal/GUI cell size.  However, you may
+The dimensions of a popup containing an image are automatically calculated
+based on the image dimensions and terminal/GUI cell size.  However, you may
 override it using the "minwidth", "minheight", "maxwidth", and "maxheight"
 fields.
 
