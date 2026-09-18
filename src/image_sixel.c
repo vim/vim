@@ -850,6 +850,7 @@ image_placement_sixel_draw(image_placement_T *place)
 	    windgoto(place->row + place->row_off
 		    + chunk->row_off, place->col + chunk->col_off);
 	    out_str(chunk->seq);
+	    screen_start();
 	}
 	return;
     }
@@ -882,6 +883,7 @@ image_placement_sixel_draw(image_placement_T *place)
 
 	windgoto(row, col);
 	out_str(seq);
+	screen_start();
 
 	chunk->row_off = rect.y1;
 	chunk->col_off = rect.x1;

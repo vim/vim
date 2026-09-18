@@ -179,6 +179,8 @@ image_placement_kitty_draw(image_placement_T *place)
 
 	windgoto(row, col);
 	out_str((char_u *)IObuff);
+	screen_start(); // Probably not needed because of C=1, but do it
+			// anyways...
     }
 
     // Clear all placements that have not been reused.
