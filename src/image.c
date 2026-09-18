@@ -742,6 +742,16 @@ draw_image_placements(void)
 	    cs_changed = place->cell_width != cell_width
 		|| place->cell_height != cell_height;
 
+	    // If cell size changed, then the visible regions are invalid pixel
+	    // wise. This prevents backends such as sixel from using cached
+	    // sequences.
+	    if (cs_changed)
+	    {
+		place->cell_width = cell_width;
+		place->cell_height = cell_height;
+		place->force = true;
+	    }
+
 	    // Only redraw the image if it has changed (or if we haven't drawn
 	    // it yet). Or if image data has changed or cell size has changed
 	    need_redraw = place->dirty || cs_changed ||  (place->visible_init
@@ -894,23 +904,8 @@ draw_image_placements(void)
 
 	for (int i = 0; i < pending_len; i++)
 	{
-	    // If cell size changed, then the visible regions are invalid. This
-	    // prevents backends such as sixel from using cached sequences.
-	    bool cs_changed = place->cell_width != cell_width
-		|| place->cell_height != cell_height;
-
-	    if (cs_changed)
-	    {
-		pixman_region32_fini(&place->visible);
-		pixman_region32_fini(&place->visible_abs);
-		place->visible_init = false;
-	    }
 	    PLACEMENT_FUNC(image_backend, draw)(pending_placements[i]);
-	    if (cs_changed)
-	    {
-		place->cell_width = cell_width;
-		place->cell_height = cell_height;
-	    }
+	    pending_placements[i]->force = false;
 	}
     }
 

@@ -84,6 +84,7 @@ struct image_placement_S
     int		zindex;
     bool	dirty;	// If image positioning/geometry has been modified
     bool	hidden;	// If image should not be drawn
+    bool	force; // If image backend should use a cache
 
     pixman_box32_t crop_box; // In cells
 
