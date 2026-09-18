@@ -3,7 +3,7 @@
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Previous Maintainers: Jorge Maldonado Ventura <jorgesumle@freakspot.net>
 "			Claudio Fleiner <claudio@fleiner.com>
-" Last Change:		2026 Sep 12
+" Last Change:		2026 Sep 18
 
 " See :help html.vim for some comments and a description of the options
 
@@ -78,7 +78,7 @@ syn region htmlDoctype	start=+<!DOCTYPE+	end=+>+ keepend
 syn region htmlPreProc start=+<!--#+ end=+-->+ contains=htmlPreStmt,htmlPreError,htmlPreAttr
 syn match htmlPreStmt contained "<!--#\%(config\|echo\|exec\|fsize\|flastmod\|include\|printenv\|set\|if\|elif\|else\|endif\|geoguide\)\>"
 syn match htmlPreError contained "<!--#\S*"ms=s+4
-syn match htmlPreAttr contained "\w\+=[^"]\S*" contains=htmlPreProcAttrError,htmlPreProcAttrName
+syn match htmlPreAttr contained "\w\+=[^"]\S\+" contains=htmlPreProcAttrError,htmlPreProcAttrName
 syn region htmlPreAttr contained start=+\w\+="+ skip=+\\\\\|\\"+ end=+"+ contains=htmlPreProcAttrName keepend
 syn match htmlPreProcAttrError contained "\w\+="he=e-1
 syn match htmlPreProcAttrName contained "\%(expr\|errmsg\|sizefmt\|timefmt\|var\|cgi\|cmd\|file\|virtual\|value\)="he=e-1

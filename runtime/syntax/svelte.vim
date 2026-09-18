@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language: Svelte
 " Maintainer: 231tr0n
-" Last Change: 2026 Sep 03
+" Last Change: 2026 Sep 18
 
 " Quit if a syntax file was already loaded.
 if exists("b:current_syntax")
