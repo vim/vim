@@ -502,6 +502,9 @@
 /* Define to use Pango and Cairo for hardcopy printing */
 #undef FEAT_PRINT_PANGO
 
+/* Define to render images using popup windows */
+#undef FEAT_IMAGE
+
 /* Define if we have isinf() */
 #undef HAVE_ISINF
 
