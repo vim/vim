@@ -397,7 +397,7 @@ image_placement_new(image_T *img, bool quiet)
 
 	if (PLACEMENT_FUNC(image_backend, init)(place) == FAIL)
 	{
-	    id -= 1000;
+	    id -= PLACEMENT_ID_INC;
 	    vim_free(place);
 	    return NULL;
 	}
@@ -1018,7 +1018,7 @@ add_image(dict_T *dict, image_T *existing, bool find)
 
     // Check for overflow
     n_pixels = w * h;
-    if (w <= 0 || h <= 0 || n_pixels * IMAGE_FORMAT_RGBA > UINT_MAX)
+    if (w > INT_MAX || h > INT_MAX || n_pixels > INT_MAX)
     {
 	emsg(_(e_invalid_image_dimensions));
 	return NULL;
@@ -1078,7 +1078,8 @@ get_image_info(image_T *img)
     }
 
     image_get_dimensions(img, &w, &h);
-    (void)ga_concat_bytes(&blob->bv_ga, (char *)img->data, w * h * img->fmt);
+    (void)ga_concat_bytes(&blob->bv_ga, (char *)img->data,
+	    (size_t)w * h * img->fmt);
 
     di = dictitem_alloc((char_u *)"data");
 
@@ -1092,7 +1093,7 @@ get_image_info(image_T *img)
 	if (di != NULL)
 	    dictitem_free(di);
 	dict_unref(dict);
-	blob_unref(blob);
+	// No need to unref blob, dictitem_free() will do that.
 	return NULL;
     }
 
@@ -1117,11 +1118,10 @@ match_imageprotocol(image_backend_T *backend)
     char_u	    *p = p_ipc;
     int		    ret = FAIL;
     image_backend_T res = IMAGE_BACKEND_NONE;
+    bool	    got = false;
 
     if (buf == NULL)
 	return FAIL;
-
-    res = IMAGE_BACKEND_NONE;
 
     while (*p != NUL)
     {
@@ -1156,7 +1156,7 @@ match_imageprotocol(image_backend_T *backend)
 	else
 	    goto exit;
 
-	if (prot == IMAGE_BACKEND_NONE || res != IMAGE_BACKEND_NONE)
+	if (got)
 	    continue;
 
 	CLEAR_FIELD(regmatch);
@@ -1171,8 +1171,11 @@ match_imageprotocol(image_backend_T *backend)
 
 	vim_regfree(regmatch.regprog);
 	if (match)
+	{
 	    // Keep going to catch any errors
 	    res = prot;
+	    got = true;
+	}
     }
 
     ret = OK;
@@ -1210,7 +1213,8 @@ update_image_backend(void)
     // backend for each.
     FOR_ALL_IMAGES(img)
     {
-	if (image_backend != IMAGE_BACKEND_NONE)
+	if (image_backend != IMAGE_BACKEND_NONE && img->data != NULL
+		&& img->backend_data != NULL)
 	    IMAGE_FUNC(image_backend, uninit)(img);
 	img->backend_data = NULL;
 	if (new != IMAGE_BACKEND_NONE)
@@ -1223,7 +1227,8 @@ update_image_backend(void)
     FOR_ALL_PLACEMENTS(place)
     {
 	image_placement_clear(place);
-	if (image_backend != IMAGE_BACKEND_NONE && place->img != NULL)
+	if (image_backend != IMAGE_BACKEND_NONE
+		&& place->img != NULL && place->backend_data != NULL)
 	    PLACEMENT_FUNC(image_backend, uninit)(place);
 	place->backend_data = NULL;
 	if (new != IMAGE_BACKEND_NONE && place->img != NULL)
@@ -1253,12 +1258,14 @@ fail:
 	}
 
     FOR_ALL_PLACEMENTS(place)
-	if (img->backend != IMAGE_BACKEND_NONE)
+    {
+	if (place->img != NULL && place->backend != IMAGE_BACKEND_NONE)
 	{
 	    image_placement_clear(place);
 	    PLACEMENT_FUNC(place->backend, uninit)(place);
-	    place->backend = IMAGE_BACKEND_NONE;
 	}
+	place->backend = IMAGE_BACKEND_NONE;
+    }
 
     redraw_all_later(UPD_VALID);
 
@@ -1274,7 +1281,7 @@ f_image_add(typval_T *argvars, typval_T *rettv)
     dict_T  *dict;
     image_T *img;
 
-    if (in_vim9script() && check_for_dict_arg(argvars, 0) == FAIL)
+    if (check_for_dict_arg(argvars, 0) == FAIL)
 	return;
 
     dict = argvars[0].vval.v_dict;
@@ -1292,7 +1299,7 @@ f_image_discard(typval_T *argvars, typval_T *rettv UNUSED)
 {
     image_T *img;
 
-    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+    if (check_for_number_arg(argvars, 0) == FAIL)
 	return;
 
     img = find_image(argvars[0].vval.v_number);
@@ -1313,7 +1320,7 @@ f_image_info(typval_T *argvars, typval_T *rettv)
     list_T  *list;
     dict_T  *dict;
 
-    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+    if (check_for_opt_number_arg(argvars, 0) == FAIL)
 	return;
 
     list = list_alloc();
