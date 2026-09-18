@@ -2,6 +2,8 @@
 
 
 
+
+
 class PrimitiveSwitchTests	// JDK 23+ (--enable-preview --release 23).
 {
 	static void echo(Object o) { System.out.println(o); }

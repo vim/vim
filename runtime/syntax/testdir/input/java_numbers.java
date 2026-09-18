@@ -1,3 +1,9 @@
+
+
+
+
+
+
 class NumbersTests
 {
 	static {
@@ -26,7 +32,7 @@ class NumbersTests
 				1e+3, 1E+3D, 1e+3f,
 			1d, 1D, 1f, 1F,
 
-//// MALFORMED: :let g:java_comment_strings = 1 | doautocmd Syntax
+// MALFORMED:
 //			0_x.0p0, 0x._0p0, 0x.0_p0, 0x.0p_0, 0x.0p0_,
 //			0x0_.0p0, 0x_0.0p0, 0xp0,
 		};
