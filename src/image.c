@@ -705,7 +705,7 @@ draw_image_placements(void)
 
 	    // Only apply row shift if image is within the shifted region.
 	    if ((place->bounding_box.y1 >= shift_top
-			|| place->bounding_box.y2 <= shift_bot)
+			&& place->bounding_box.y2 <= shift_bot)
 		    && place->row_off != shift)
 	    {
 		place->row_off = shift;
