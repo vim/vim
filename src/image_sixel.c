@@ -106,8 +106,8 @@ typedef struct
     pixman_region32_t	visible_region; // Region used for the previous redraw
     bool		visible_init;
     sixel_chunk_T	*chunks;    // Cached sixel sequence (stored as multiple
-				    // chunks). Length is number of rects in
-				    // "visible_region".
+				    // chunks).
+    int			n_chunks;
 } image_placement_sixel_T;
 
 static char_u		sixel_fixed_palette[240 * 3];
@@ -812,9 +812,10 @@ clear_chunks(image_placement_sixel_T *ctx)
     if (ctx->chunks == NULL)
 	return;
 
-    for (int i = 0; i < pixman_region32_n_rects(&ctx->visible_region); i++)
+    for (int i = 0; i < ctx->n_chunks; i++)
 	vim_free(ctx->chunks[i].seq);
     VIM_CLEAR(ctx->chunks);
+    ctx->n_chunks = 0;
 }
 
     void
@@ -888,6 +889,7 @@ image_placement_sixel_draw(image_placement_T *place)
 	chunk->row_off = rect.y1;
 	chunk->col_off = rect.x1;
 	chunk->seq = seq;
+	ctx->n_chunks++;
     }
 
     if (ctx->visible_init)
