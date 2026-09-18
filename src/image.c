@@ -115,6 +115,10 @@ static int shift_top = 0;
 static int shift_bot = 0;
 static int shift = 0;
 
+// Current cell size that drawn images used.
+static int cur_cell_width = -1;
+static int cur_cell_height = -1;
+
 #define FOR_ALL_IMAGES(v) for ((v) = images; (v) != NULL; (v) = (v)->next)
 #define FOR_ALL_PLACEMENTS(v) \
     for ((v) = placements; (v) != NULL; (v) = (v)->next)
@@ -688,6 +692,7 @@ draw_image_placements(void)
 	{
 	    pixman_region32_t	visible_abs;
 	    int			crop_w, crop_h;
+	    bool		cs_changed;
 	    bool		need_redraw;
 
 	    // Processing changed image data failed, skip this image
@@ -736,10 +741,22 @@ draw_image_placements(void)
 	    // into image relative coordinates.
 	    pixman_region32_translate(&visible_region, -x, -y);
 
+	    cs_changed = (cur_cell_width != -1 && cur_cell_width != cell_width)
+		|| (cur_cell_height != -1 && cur_cell_height != cell_height);
+
+	    if (cs_changed)
+	    {
+		cur_cell_width = cell_width;
+		cur_cell_height = cell_height;
+	    }
+
 	    // Only redraw the image if it has changed (or if we haven't drawn
-	    // it yet). Or if image data has changed
-	    need_redraw = place->dirty || (place->visible_init
+	    // it yet). Or if image data has changed or cell size has changed
+	    need_redraw = cs_changed || place->dirty || (place->visible_init
 		    && !pixman_region32_equal(&visible_region, &place->visible));
+
+	    cur_cell_width = cell_width;
+	    cur_cell_height = cell_height;
 
 	    if (place->img_ver != img->ver)
 	    {
