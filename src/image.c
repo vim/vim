@@ -122,7 +122,7 @@ static int shift = 0;
 #define IMAGE_FUNC(b, n) (image_backends[b].image.n)
 #define PLACEMENT_FUNC(b, n) (image_backends[b].placement.n)
 
-static void redraw_region(pixman_region32_t *region, bool now);
+static void redraw_region(pixman_region32_t *region, bool now, bool restore);
 
     void
 init_image_state(void)
@@ -408,7 +408,7 @@ image_placement_clear_int(image_placement_T *place, bool now)
     if (backend_available(false) && place->img != NULL)
     {
 	if (place->visible_init && PLACEMENT_FUNC(image_backend, blit))
-	    redraw_region(&place->visible_abs, now);
+	    redraw_region(&place->visible_abs, now, true);
 	PLACEMENT_FUNC(image_backend, clear)(place);
 	place->dirty = true;
 	place->hidden = true;
@@ -573,13 +573,16 @@ image_placement_subrect(
 /*
  * Redraw the cells in the given region. This is only relevant for image
  * backends that blit pixels. If "now" is true, then draw the characters now
- * instead of deferring to next redraw.
+ * instead of deferring to next redraw. If "restore" is true, restore the cursor
+ * position.
  */
     static void
-redraw_region(pixman_region32_t *region, bool now)
+redraw_region(pixman_region32_t *region, bool now, bool restore)
 {
     pixman_box32_t  *rects;
     int		    n_rects;
+    int		    cur_row = screen_cur_row;
+    int		    cur_col = screen_cur_col;
 
     rects = pixman_region32_rectangles(region, &n_rects);
     if (rects == NULL)
@@ -614,6 +617,9 @@ redraw_region(pixman_region32_t *region, bool now)
     }
     if (!now)
 	redraw_all_later(UPD_VALID);
+
+    if (restore)
+	windgoto(cur_row, cur_col);
 }
 
 /*
@@ -627,6 +633,9 @@ draw_image_placements(void)
     pixman_region32_t	subtract_region; // In pixels
     image_placement_T	**pending_placements;
     int			pending_len = -1;
+    // Save current cursor position
+    int			cur_row = screen_cur_row;
+    int			cur_col = screen_cur_col;
 
     // Check if all placements have no backing image. If so, then do nothing
     FOR_ALL_PLACEMENTS(place)
@@ -650,6 +659,8 @@ draw_image_placements(void)
 	return;
 
     pixman_region32_init(&subtract_region);
+
+    cursor_off();
 
     // Go through each image placement, from highest to lowests zindex. For each
     // image, subtract the bounding boxes of the images with higher zindexes
@@ -826,7 +837,7 @@ draw_image_placements(void)
 			pixman_region32_fini(&min_region);
 		    }
 
-		    redraw_region(&stale_region, true);
+		    redraw_region(&stale_region, true, false);
 		    pixman_region32_fini(&stale_region);
 		}
 		if (place->visible_init)
@@ -865,6 +876,11 @@ draw_image_placements(void)
 	for (int i = 0; i < pending_len; i++)
 	    PLACEMENT_FUNC(image_backend, draw)(pending_placements[i]);
     }
+
+    // Restore cursor position
+    windgoto(cur_row, cur_col);
+    cursor_on();
+    out_flush();
 
     vim_free(pending_placements);
     pixman_region32_fini(&subtract_region);

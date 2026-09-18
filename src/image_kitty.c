@@ -177,7 +177,7 @@ image_placement_kitty_draw(image_placement_T *place)
 		img->id, rect_id,
 		x, y, w, h);
 
-	term_windgoto(row, col);
+	windgoto(row, col);
 	out_str((char_u *)IObuff);
     }
 
@@ -186,13 +186,6 @@ image_placement_kitty_draw(image_placement_T *place)
 	clear_placement(img->id, place->id + i);
 
     ctx->n_ids = n_rects;
-
-    if (n_rects > 0)
-    {
-	screen_start();
-	setcursor_mayforce(TRUE);
-	out_flush();
-    }
 }
 
     void

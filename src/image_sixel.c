@@ -847,11 +847,11 @@ image_placement_sixel_draw(image_placement_T *place)
 	{
 	    sixel_chunk_T *chunk = ctx->chunks + i;
 
-	    term_windgoto(
+	    windgoto(
 		    place->row + chunk->row_off, place->col + chunk->col_off);
 	    out_str(chunk->seq);
 	}
-	goto exit;
+	return;
     }
 
     rects = pixman_region32_rectangles(&place->visible, &n_rects);
@@ -863,8 +863,6 @@ image_placement_sixel_draw(image_placement_T *place)
 
     if (ctx->chunks == NULL)
 	return;
-
-    cursor_off();
 
     for (int i = 0; i < n_rects; i++)
     {
@@ -882,7 +880,7 @@ image_placement_sixel_draw(image_placement_T *place)
 	if (seq == NULL)
 	    continue;
 
-	term_windgoto(row, col);
+	windgoto(row, col);
 	out_str(seq);
 
 	chunk->row_off = rect.y1;
@@ -894,12 +892,6 @@ image_placement_sixel_draw(image_placement_T *place)
 	pixman_region32_clear(&ctx->visible_region);
     pixman_region32_copy(&ctx->visible_region, &place->visible);
     ctx->visible_init = true;
-
-exit:
-    screen_start();
-    setcursor_mayforce(TRUE);
-    cursor_on();
-    out_flush();
 }
 
     void
