@@ -6066,7 +6066,9 @@ exec_instructions(ectx_T *ectx)
 		    tv = STACK_TV_BOT(-1 - gi->gi_with_op);
 		    if (tv->v_type == VAR_LIST)
 		    {
-			li = list_find(tv->vval.v_list, gi->gi_index);
+			if ((li = list_find(tv->vval.v_list, gi->gi_index)) == NULL)
+			    goto on_error;
+
 			item_tv = &li->li_tv;
 		    }
 		    else
