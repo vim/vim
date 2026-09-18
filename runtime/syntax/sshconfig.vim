@@ -246,6 +246,7 @@ syn keyword sshconfigKeyword Tunnel
 syn keyword sshconfigKeyword TunnelDevice
 syn keyword sshconfigKeyword UpdateHostKeys
 syn keyword sshconfigKeyword UseBlacklistedKeys
+syn keyword sshconfigKeyword UseKeychain
 syn keyword sshconfigKeyword User
 syn keyword sshconfigKeyword UserKnownHostsFile
 syn keyword sshconfigKeyword VerifyHostKeyDNS
