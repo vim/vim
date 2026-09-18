@@ -3758,7 +3758,7 @@ update_cell_size(void)
 	struct cellsize cell_sz;
 
 	mch_calc_cell_size(&cell_sz);
-	if (cell_sz.cs_xpixel < 0 || cell_sz.cs_ypixel < 0)
+	if (cell_sz.cs_xpixel <= 0 || cell_sz.cs_ypixel <= 0)
 	{
 	    cell_width = 8;
 	    cell_height = 16;
