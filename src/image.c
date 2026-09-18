@@ -881,7 +881,7 @@ draw_image_placements(void)
 
 		pending_placements[pending_len++] = place;
 		place->flags |= IMAGEF_VISIBLE_INIT;
-		place->flags |= IMAGEF_DIRTY;
+		place->flags &= ~IMAGEF_DIRTY;
 	    }
 	    else
 	    {
