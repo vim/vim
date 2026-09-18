@@ -111,6 +111,10 @@ syn match javaError "<<<\|\.\.\|=>\|||=\|&&=\|\*\/"
 " use separate name so that it can be deleted in javacc.vim
 syn match   javaError2 "#\|=<"
 
+" (Without knowing what Java release is being targeted for the source
+" file it is found in, an underscore token cannot be reliably matched
+" as an identifier _or_ a syntax error _or_ a keyword.)
+"
 " Keywords (JLS-17, §3.9):
 syn keyword javaExternal	native package
 syn match   javaExternal	"\<import\>\%(\s\+static\>\)\="
