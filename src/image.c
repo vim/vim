@@ -760,9 +760,19 @@ draw_image_placements(void)
 
 	    if (need_redraw)
 	    {
+		pixman_region32_t old_visible_abs;
+
+		// Update the old absolute visible region now. This is so that
+		// in redraw_region() which may call
+		// mark_dirty_region_for_images(), does not dirty the current
+		// image again and cause another UPD_VALID redraw.
 		if (place->visible_init)
+		{
 		    pixman_region32_fini(&place->visible);
+		    old_visible_abs = place->visible_abs;
+		}
 		place->visible = visible_region;
+		place->visible_abs = visible_abs;
 
 		if (PLACEMENT_FUNC(image_backend, blit))
 		{
@@ -775,7 +785,7 @@ draw_image_placements(void)
 		    if (place->visible_init)
 		    {
 			(void)pixman_region32_subtract(&stale_region,
-				&place->visible_abs, &visible_abs);
+				&old_visible_abs, &visible_abs);
 
 			// Also subtract "subtract_region", so we don't
 			// redundantly redraw cells that will have images
@@ -791,7 +801,7 @@ draw_image_placements(void)
 			// no stale pixels remain from the previous redraw.
 			if (img->fmt == IMAGE_FORMAT_RGBA)
 			    (void)pixman_region32_union(&stale_region,
-				    &stale_region, &place->visible_abs);
+				    &stale_region, &old_visible_abs);
 		    }
 
 		    // The visible region is guaranteed to cover every single
@@ -841,8 +851,7 @@ draw_image_placements(void)
 		    pixman_region32_fini(&stale_region);
 		}
 		if (place->visible_init)
-		    pixman_region32_fini(&place->visible_abs);
-		place->visible_abs = visible_abs;
+		    pixman_region32_fini(&old_visible_abs);
 
 		pending_placements[pending_len++] = place;
 		place->visible_init = true;
