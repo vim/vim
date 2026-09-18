@@ -855,6 +855,10 @@ draw_image_placements(void)
 	    }
 	}
 
+	// If this is last image, no need to union its bounds.
+	if (place->next == NULL)
+	    break;
+
 	pixman_region32_union_rect(&subtract_region, &subtract_region,
 		place->bounding_box.x1,
 		place->bounding_box.y1 + place->row_off,
