@@ -5843,13 +5843,22 @@ handle_csi(
     }
 
 #ifdef UNIX
-    // Response to CSI 14 t (query pixel size of terminal).
-    else if (first == -1 && argc >= 3 && arg[0] == 4 && trail == 't')
+    // Response to CSI 14 t or CSI 16 t
+    else if (first == -1 && argc >= 3
+	    && (arg[0] == 4 || arg[0] == 6) && trail == 't')
     {
-	LOG_TRN("Received CSI 14 t response: %s", tp);
-
-	cell_width = arg[2] / Columns;
-	cell_height = arg[1] / Rows;
+	if (arg[0] == 4)
+	{
+	    LOG_TRN("Received CSI 14 t response: %s", tp);
+	    cell_width = arg[2] / Columns;
+	    cell_height = arg[1] / Rows;
+	}
+	else
+	{
+	    LOG_TRN("Received CSI 16 t response: %s", tp);
+	    cell_width = arg[2];
+	    cell_height = arg[1];
+	}
 
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;

@@ -4498,15 +4498,15 @@ query_terminal_pixel_size(int *win_w, int *win_h)
 }
 
 /*
- * Try to get the current terminal cell size.
- * On failure, returns -1x-1
+ * Try to get the current terminal cell size. May return -1 x -1.
  */
     void
 mch_calc_cell_size(struct cellsize *cs_out)
 {
-   // get current tty size.
-   struct winsize ws;
-   int retval;
+   struct winsize   ws;
+   int		    retval;
+   int 		    x_cell_size;
+   int 		    y_cell_size;
 
    // If fd is not a terminal, then -1 is returned
    retval = ioctl(read_cmd_fd, TIOCGWINSZ, &ws);
@@ -4522,17 +4522,21 @@ mch_calc_cell_size(struct cellsize *cs_out)
 	return;
    }
 
-   // calculate parent tty's pixel per cell.
-   int x_cell_size = ws.ws_xpixel / ws.ws_col;
-   int y_cell_size = ws.ws_ypixel / ws.ws_row;
+   // Calculate parent tty's pixel per cell.
+   x_cell_size = ws.ws_xpixel / ws.ws_col;
+   y_cell_size = ws.ws_ypixel / ws.ws_row;
 
    cs_out->cs_xpixel = x_cell_size > 0 ? x_cell_size : -1;
    cs_out->cs_ypixel = y_cell_size > 0 ? y_cell_size : -1;
 
+   // Some terminals do not handle TIOCGWINSZ, send CSI 14 t (query terminal
+   // size in pixels), and CSI 16 t (less common, gets cell size in pixels
+   // directly).
    if (x_cell_size <= 0 || y_cell_size <= 0)
    {
        // Default to 8x16 pixels for now until we receive a response.
        OUT_STR("\033[14t");
+       OUT_STR("\033[16t");
        out_flush();
    }
 }
