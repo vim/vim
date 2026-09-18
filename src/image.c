@@ -286,7 +286,7 @@ image_update(image_T *img, uint8_t *data)
 {
     int w, h;
 
-    if (!backend_available(true))
+    if (!backend_available(true) || img->data == NULL)
 	return FAIL;
 
     image_get_dimensions(img, &w, &h);
@@ -1062,6 +1062,9 @@ get_image_info(image_T *img)
     blob_T	*blob;
     int		w, h;
     dictitem_T	*di;
+
+    if (img->data == NULL)
+	return NULL;
 
     dict = dict_alloc();
     if (dict == NULL)
