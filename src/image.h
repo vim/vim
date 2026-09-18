@@ -105,6 +105,10 @@ struct image_placement_S
     // redraw the image.
     int_u img_ver;
 
+    // Cell dimensions used to draw this placement
+    int cell_width;
+    int cell_height;
+
     int row_off;
 
     image_placement_T *next;

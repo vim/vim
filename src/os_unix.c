@@ -4505,8 +4505,8 @@ mch_calc_cell_size(struct cellsize *cs_out)
 {
    struct winsize   ws;
    int		    retval;
-   int 		    x_cell_size;
-   int 		    y_cell_size;
+   int		    x_cell_size;
+   int		    y_cell_size;
 
    // If fd is not a terminal, then -1 is returned
    retval = ioctl(read_cmd_fd, TIOCGWINSZ, &ws);

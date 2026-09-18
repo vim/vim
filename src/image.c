@@ -115,10 +115,6 @@ static int shift_top = 0;
 static int shift_bot = 0;
 static int shift = 0;
 
-// Current cell size that drawn images used.
-static int cur_cell_width = -1;
-static int cur_cell_height = -1;
-
 #define FOR_ALL_IMAGES(v) for ((v) = images; (v) != NULL; (v) = (v)->next)
 #define FOR_ALL_PLACEMENTS(v) \
     for ((v) = placements; (v) != NULL; (v) = (v)->next)
@@ -384,6 +380,8 @@ image_placement_new(image_T *img, bool quiet)
     {
 	place->img_ver = img->ver;
 	place->backend = image_backend;
+	place->cell_width = cell_width;
+	place->cell_height = cell_height;
 
 	// Bounding box is in cells
 	image_get_cell_dimensions(img,
@@ -741,22 +739,13 @@ draw_image_placements(void)
 	    // into image relative coordinates.
 	    pixman_region32_translate(&visible_region, -x, -y);
 
-	    cs_changed = (cur_cell_width != -1 && cur_cell_width != cell_width)
-		|| (cur_cell_height != -1 && cur_cell_height != cell_height);
-
-	    if (cs_changed)
-	    {
-		cur_cell_width = cell_width;
-		cur_cell_height = cell_height;
-	    }
+	    cs_changed = place->cell_width != cell_width
+		|| place->cell_height != cell_height;
 
 	    // Only redraw the image if it has changed (or if we haven't drawn
 	    // it yet). Or if image data has changed or cell size has changed
-	    need_redraw = cs_changed || place->dirty || (place->visible_init
+	    need_redraw = place->dirty || cs_changed ||  (place->visible_init
 		    && !pixman_region32_equal(&visible_region, &place->visible));
-
-	    cur_cell_width = cell_width;
-	    cur_cell_height = cell_height;
 
 	    if (place->img_ver != img->ver)
 	    {
@@ -904,7 +893,25 @@ draw_image_placements(void)
 #endif
 
 	for (int i = 0; i < pending_len; i++)
+	{
+	    // If cell size changed, then the visible regions are invalid. This
+	    // prevents backends such as sixel from using cached sequences.
+	    bool cs_changed = place->cell_width != cell_width
+		|| place->cell_height != cell_height;
+
+	    if (cs_changed)
+	    {
+		pixman_region32_fini(&place->visible);
+		pixman_region32_fini(&place->visible_abs);
+		place->visible_init = false;
+	    }
 	    PLACEMENT_FUNC(image_backend, draw)(pending_placements[i]);
+	    if (cs_changed)
+	    {
+		place->cell_width = cell_width;
+		place->cell_height = cell_height;
+	    }
+	}
     }
 
     // Restore cursor position, however do not turn on the cursor, since that
