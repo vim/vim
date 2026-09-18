@@ -847,8 +847,8 @@ image_placement_sixel_draw(image_placement_T *place)
 	{
 	    sixel_chunk_T *chunk = ctx->chunks + i;
 
-	    windgoto(
-		    place->row + chunk->row_off, place->col + chunk->col_off);
+	    windgoto(place->row + place->row_off
+		    + chunk->row_off, place->col + chunk->col_off);
 	    out_str(chunk->seq);
 	}
 	return;
