@@ -5842,7 +5842,7 @@ handle_csi(
 	*slen = csi_len;
     }
 
-#ifdef UNIX
+#if defined(UNIX) && (defined(FEAT_IMAGE) || defined(FEAT_EVAL))
     // Response to CSI 14 t or CSI 16 t
     else if (first == -1 && argc >= 3
 	    && (arg[0] == 4 || arg[0] == 6) && trail == 't')
