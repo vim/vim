@@ -160,8 +160,8 @@ backend_available(bool msg)
     image_T *
 image_new(uint8_t *data, int width, int height, image_format_T fmt)
 {
-    image_T	*img;
-    static int	id;
+    image_T	    *img;
+    static int_u    id;
 
     if (!backend_available(true))
 	return NULL;
@@ -183,7 +183,7 @@ image_new(uint8_t *data, int width, int height, image_format_T fmt)
     img->fmt = fmt;
 
     // Mix in PID to prevent ID collisions when using kitty graphics protocol
-    img->id = ((((int)mch_get_pid() & 0x7fff) + 1) << 16) | (id++ & 0xffff);
+    img->id = ((((int_u)mch_get_pid() & 0x7fff) + 1) << 16) | (id++ & 0xffff);
     img->refcount = 1;
 
     img->backend = image_backend;
@@ -365,7 +365,7 @@ image_placement_link(image_placement_T *place, bool first)
 image_placement_new(image_T *img, bool quiet)
 {
     image_placement_T	*place;
-    static int		id = 1; // Kitty placements id must be > 1
+    static int_u	id = 1; // Kitty placements id must be > 1
 
     if (!backend_available(!quiet))
 	return NULL;

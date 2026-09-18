@@ -43,7 +43,7 @@ typedef enum
 typedef struct image_S image_T;
 struct image_S
 {
-    int id;
+    int_u id;
     int refcount;
 
     // If image state is public, then it can be modified using the builtin
@@ -79,7 +79,7 @@ struct image_S
 typedef struct image_placement_S image_placement_T;
 struct image_placement_S
 {
-    int	    id;
+    int_u   id;
     image_T *img; // May be NULL, if so then only "bounding_box" is relevant (and
 		  // the position + zindex).
 
