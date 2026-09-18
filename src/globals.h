@@ -2190,7 +2190,7 @@ EXTERN garray_T last_insert_ga INIT5(0, 0, 1, 64, NULL);
 EXTERN int	add_last_insert INIT(= 0);
 #endif
 
-#ifdef FEAT_IMAGE
+#if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
 // Cached value, re calculated when window size changes. Defaults to 8x16
 // pixels. Note that these are in logical pixels (when using GUI).
 EXTERN int cell_width INIT(= 8);

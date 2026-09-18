@@ -893,7 +893,7 @@ vim_main2(void)
 
     may_req_bg_color();
 # endif
-# ifdef FEAT_IMAGE
+# if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
     update_cell_size();
 # endif
 

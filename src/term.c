@@ -3742,7 +3742,7 @@ win_new_shellsize(void)
     }
 }
 
-#ifdef FEAT_IMAGE
+#if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
     void
 update_cell_size(void)
 {
@@ -3779,7 +3779,7 @@ update_cell_size(void)
     void
 shell_resized(void)
 {
-#ifdef FEAT_IMAGE
+#if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
     update_cell_size();
 #endif
     set_shellsize(0, 0, FALSE);
