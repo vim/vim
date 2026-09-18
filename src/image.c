@@ -910,7 +910,7 @@ mark_dirty_region_for_images(int row, int col, int row_height, int col_width)
     image_placement_T	*place;
     pixman_box32_t	rect;
 
-    if ((backend_available(false) && !PLACEMENT_FUNC(image_backend, blit))
+    if (!backend_available(false) || !PLACEMENT_FUNC(image_backend, blit)
 	    || n_placements == 0)
 	return;
 
