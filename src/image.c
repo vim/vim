@@ -302,8 +302,6 @@ image_update(image_T *img, uint8_t *data)
     }
 
     img->ver++;
-    redraw_all_later(UPD_VALID);
-
     return OK;
 }
 
@@ -423,8 +421,6 @@ image_placement_clear_int(image_placement_T *place, bool now)
 	PLACEMENT_FUNC(image_backend, clear)(place);
 	place->flags |= IMAGEF_DIRTY;
 	place->flags |= IMAGEF_HIDDEN;
-	if (!now && !updating_screen)
-	    redraw_all_later(UPD_VALID);
     }
 }
 
@@ -626,8 +622,6 @@ redraw_region(pixman_region32_t *region, bool now, bool restore)
 	    }
 	}
     }
-    if (!now)
-	redraw_all_later(UPD_VALID);
 
     if (restore)
 	windgoto(cur_row, cur_col);
@@ -955,8 +949,6 @@ mark_dirty_region_for_images(int row, int col, int row_height, int col_width)
 	    continue;
 
 	place->flags |= IMAGEF_DIRTY;
-	if (!updating_screen)
-	    redraw_all_later(UPD_VALID);
     }
 }
 
@@ -967,7 +959,6 @@ clear_all_image_placements(void)
 
     FOR_ALL_PLACEMENTS(place)
 	image_placement_clear(place);
-    redraw_all_later(UPD_VALID);
 }
 
 /*
