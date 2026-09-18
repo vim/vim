@@ -881,9 +881,10 @@ draw_image_placements(void)
 	    PLACEMENT_FUNC(image_backend, draw)(pending_placements[i]);
     }
 
-    // Restore cursor position
+    // Restore cursor position, however do not turn on the cursor, since that
+    // causes it to flicker at the wrong position when using sixel. It will be
+    // turned on later somewhere...
     windgoto(cur_row, cur_col);
-    cursor_on();
     out_flush();
 
     vim_free(pending_placements);
