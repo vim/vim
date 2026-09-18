@@ -374,7 +374,7 @@ image_placement_new(image_T *img, bool quiet)
 			    // kitty graphics protocol.
 
     place->img = img;
-    place->dirty = true;
+    place->flags = IMAGEF_DIRTY;
 
     if (img != NULL)
     {
@@ -409,11 +409,12 @@ image_placement_clear_int(image_placement_T *place, bool now)
 {
     if (backend_available(false) && place->img != NULL)
     {
-	if (place->visible_init && PLACEMENT_FUNC(image_backend, blit))
+	if (place->flags & IMAGEF_VISIBLE_INIT
+		&& PLACEMENT_FUNC(image_backend, blit))
 	    redraw_region(&place->visible_abs, now, true);
 	PLACEMENT_FUNC(image_backend, clear)(place);
-	place->dirty = true;
-	place->hidden = true;
+	place->flags |= IMAGEF_DIRTY;
+	place->flags |= IMAGEF_HIDDEN;
 	if (!now && !updating_screen)
 	    redraw_all_later(UPD_VALID);
     }
@@ -434,7 +435,7 @@ image_placement_free(image_placement_T *place)
 	PLACEMENT_FUNC(image_backend, uninit)(place);
     }
 
-    if (place->visible_init)
+    if (place->flags & IMAGEF_VISIBLE_INIT)
     {
 	pixman_region32_fini(&place->visible);
 	pixman_region32_fini(&place->visible_abs);
@@ -452,12 +453,12 @@ image_placement_free(image_placement_T *place)
     void
 image_placement_set_zindex(image_placement_T *place, int zindex, bool first)
 {
-    place->hidden = false;
+    place->flags &= ~IMAGEF_HIDDEN;
 
     if (place->zindex == zindex)
 	return;
     place->zindex = zindex;
-    place->dirty = true;
+    place->flags |= IMAGEF_DIRTY;
 
     // Must re-add the placement back so it is in the correct order
     image_placement_unlink(place);
@@ -470,19 +471,19 @@ image_placement_set_zindex(image_placement_T *place, int zindex, bool first)
     void
 image_placement_set_position(image_placement_T *place, int row, int col)
 {
-    place->hidden = false;
+    place->flags &= ~IMAGEF_HIDDEN;
 
     if (place->row == row && place->col == col)
 	return;
     place->row = row;
     place->col = col;
-    place->dirty = true;
+    place->flags |= IMAGEF_DIRTY;
 }
 
     void
 image_placement_set_crop(image_placement_T *place, int x, int y, int w, int h)
 {
-    place->hidden = false;
+    place->flags &= ~IMAGEF_HIDDEN;
 
     if (place->crop_box.x1 == x && place->crop_box.y1 == y
 	    && place->crop_box.x2 == x + w && place->crop_box.y2 == y + h)
@@ -493,7 +494,7 @@ image_placement_set_crop(image_placement_T *place, int x, int y, int w, int h)
 
     place->crop_box.x2 = x + w;
     place->crop_box.y2 = y + h;
-    place->dirty = true;
+    place->flags |= IMAGEF_DIRTY;
 }
 
     void
@@ -504,7 +505,7 @@ image_placement_set_bounding_box(
 	int		    row_height,
 	int		    col_width)
 {
-    place->hidden = false;
+    place->flags &= ~IMAGEF_HIDDEN;
 
     if (place->bounding_box.x1 == col && place->bounding_box.y1 == row
 	    && place->bounding_box.x2 == col + col_width
@@ -516,7 +517,7 @@ image_placement_set_bounding_box(
 
     place->bounding_box.x2 = col + col_width;
     place->bounding_box.y2 = row + row_height;
-    place->dirty = true;
+    place->flags |= IMAGEF_DIRTY;
 }
 
 /*
@@ -683,7 +684,7 @@ draw_image_placements(void)
 
 	int x, y;
 
-	if (place->hidden)
+	if (place->flags & IMAGEF_HIDDEN)
 	    continue;
 
 	if (img != NULL)
@@ -706,7 +707,7 @@ draw_image_placements(void)
 		    && place->row_off != shift)
 	    {
 		place->row_off = shift;
-		place->dirty = true;
+		place->flags |= IMAGEF_DIRTY;
 	    }
 
 	    x = place->col;
@@ -749,12 +750,13 @@ draw_image_placements(void)
 	    {
 		place->cell_width = cell_width;
 		place->cell_height = cell_height;
-		place->force = true;
+		place->flags |= IMAGEF_FORCE;
 	    }
 
 	    // Only redraw the image if it has changed (or if we haven't drawn
 	    // it yet). Or if image data has changed or cell size has changed
-	    need_redraw = place->dirty || cs_changed ||  (place->visible_init
+	    need_redraw = place->flags & IMAGEF_DIRTY || cs_changed
+		||  (place->flags & IMAGEF_VISIBLE_INIT
 		    && !pixman_region32_equal(&visible_region, &place->visible));
 
 	    if (place->img_ver != img->ver)
@@ -782,7 +784,7 @@ draw_image_placements(void)
 		// in redraw_region() which may call
 		// mark_dirty_region_for_images(), does not dirty the current
 		// image again and cause another UPD_VALID redraw.
-		if (place->visible_init)
+		if (place->flags & IMAGEF_VISIBLE_INIT)
 		{
 		    pixman_region32_fini(&place->visible);
 		    old_visible_abs = place->visible_abs;
@@ -798,7 +800,7 @@ draw_image_placements(void)
 
 		    pixman_region32_init(&stale_region);
 
-		    if (place->visible_init)
+		    if (place->flags & IMAGEF_VISIBLE_INIT)
 		    {
 			(void)pixman_region32_subtract(&stale_region,
 				&old_visible_abs, &visible_abs);
@@ -866,12 +868,12 @@ draw_image_placements(void)
 		    redraw_region(&stale_region, true, false);
 		    pixman_region32_fini(&stale_region);
 		}
-		if (place->visible_init)
+		    if (place->flags & IMAGEF_VISIBLE_INIT)
 		    pixman_region32_fini(&old_visible_abs);
 
 		pending_placements[pending_len++] = place;
-		place->visible_init = true;
-		place->dirty = false;
+		place->flags |= IMAGEF_VISIBLE_INIT;
+		place->flags |= IMAGEF_DIRTY;
 	    }
 	    else
 	    {
@@ -905,7 +907,7 @@ draw_image_placements(void)
 	for (int i = 0; i < pending_len; i++)
 	{
 	    PLACEMENT_FUNC(image_backend, draw)(pending_placements[i]);
-	    pending_placements[i]->force = false;
+	    pending_placements[i]->flags &= ~IMAGEF_FORCE;
 	}
     }
 
@@ -944,7 +946,7 @@ mark_dirty_region_for_images(int row, int col, int row_height, int col_width)
 		== PIXMAN_REGION_OUT)
 	    continue;
 
-	place->dirty = true;
+	place->flags |= IMAGEF_DIRTY;
 	if (!updating_screen)
 	    redraw_all_later(UPD_VALID);
     }

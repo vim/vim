@@ -65,6 +65,12 @@ struct image_S
     image_T *prev;
 };
 
+#define IMAGEF_DIRTY 1	    // If image positioning/geometry has been modified 
+#define IMAGEF_HIDDEN 2     // If image should not be drawn                    
+#define IMAGEF_FORCE 4      // If image backend should use a cache             
+
+#define IMAGEF_VISIBLE_INIT 8   // If "visible" is valid                           
+
 /*
  *
  */
@@ -82,9 +88,8 @@ struct image_placement_S
     linenr_T	row;
     colnr_T	col;
     int		zindex;
-    bool	dirty;	// If image positioning/geometry has been modified
-    bool	hidden;	// If image should not be drawn
-    bool	force; // If image backend should use a cache
+
+    int_u flags;
 
     pixman_box32_t crop_box; // In cells
 
@@ -100,7 +105,6 @@ struct image_placement_S
     pixman_region32_t	visible;	// In cells
     pixman_region32_t	visible_abs;    // In cells, uses absolute coordinates
 					// (only used for blit image backends),
-    bool		visible_init;	// If "visible" is valid
 
     // Current image version, if it is different from the image, then must
     // redraw the image.
