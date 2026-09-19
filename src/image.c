@@ -941,6 +941,7 @@ draw_image_placements(void)
 		place->bounding_box.y2 - place->bounding_box.y1);
     }
 
+    // Don't want to dirty images again redundantly
     freeze_mark_dirty++;
     redraw_region(&dirty_region, true, false);
     freeze_mark_dirty--;
