@@ -70,6 +70,10 @@ static char *(p_fdo_values[]) = {"all", "block", "hor", "mark", "percent",
 #endif
 // Note: Keep this in sync with match_keyprotocol()
 static char *(p_kpc_protocol_values[]) = {"none", "mok2", "kitty", NULL};
+#ifdef FEAT_IMAGE
+// Note: Keep this in sync with match_imageprotocol()
+static char *(p_ipc_protocol_values[]) = {"none", "kitty", "sixel", NULL};
+#endif
 #ifdef FEAT_PROP_POPUP
 // Note: Keep this in sync with parse_popup_option()
 static char *(p_popup_cpp_option_values[]) = {"align:", "border:",
@@ -3093,6 +3097,41 @@ did_set_imactivatekey(optset_T *args UNUSED)
     if (!im_xim_isvalid_imactivate())
 	return e_invalid_argument;
     return NULL;
+}
+#endif
+
+#ifdef FEAT_IMAGE
+/*
+ * The 'imageprotocol' option is changed.
+ */
+    char *
+did_set_imageprotocol(optset_T *args UNUSED)
+{
+    if (update_image_backend() == FAIL)
+	return e_invalid_argument;
+    return NULL;
+}
+
+    int
+expand_set_imageprotocol(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    expand_T *xp = args->oe_xp;
+
+    if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
+    {
+	// 'imageprotocol' only has well-defined terms for completion for the
+	// protocol part after the colon.
+	return expand_set_opt_string(
+		args,
+		p_ipc_protocol_values,
+		ARRAY_LENGTH(p_ipc_protocol_values) - 1,
+		numMatches,
+		matches);
+    }
+    // Use expand_set_opt_string instead of returning FAIL so that we can
+    // include the original value if args->oe_include_orig_val is set.
+    static char *(empty[]) = {NULL};
+    return expand_set_opt_string(args, empty, 0, numMatches, matches);
 }
 #endif
 

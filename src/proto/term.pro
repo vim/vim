@@ -47,6 +47,7 @@ int get_bytes_from_buf(char_u *buf, char_u *bytes, int num_bytes);
 void check_shellsize(void);
 void limit_screen_size(void);
 void win_new_shellsize(void);
+void update_cell_size(void);
 void shell_resized(void);
 void shell_resized_check(void);
 void set_shellsize(int width, int height, int mustset);
