@@ -564,102 +564,14 @@ realloc_post_list(void)
     static int
 nfa_recognize_char_class(char_u *start, char_u *end, int extra_newl)
 {
-#define CLASS_not		0x80
-#define CLASS_af		0x40
-#define CLASS_AF		0x20
-#define CLASS_az		0x10
-#define CLASS_AZ		0x08
-#define CLASS_o7		0x04
-#define CLASS_o9		0x02
-#define CLASS_underscore	0x01
+    int		newl;
+    int		config = get_char_class_bits(start, end, &newl);
 
-    int		newl = FALSE;
-    char_u	*p;
-    int		config = 0;
+    if (config < 0)
+	return FAIL;
 
     if (extra_newl == TRUE)
 	newl = TRUE;
-
-    if (*end != ']')
-	return FAIL;
-    p = start;
-    if (*p == '^')
-    {
-	config |= CLASS_not;
-	p++;
-    }
-
-    while (p < end)
-    {
-	if (p + 2 < end && *(p + 1) == '-')
-	{
-	    switch (*p)
-	    {
-		case '0':
-		    if (*(p + 2) == '9')
-		    {
-			config |= CLASS_o9;
-			break;
-		    }
-		    if (*(p + 2) == '7')
-		    {
-			config |= CLASS_o7;
-			break;
-		    }
-		    return FAIL;
-
-		case 'a':
-		    if (*(p + 2) == 'z')
-		    {
-			config |= CLASS_az;
-			break;
-		    }
-		    if (*(p + 2) == 'f')
-		    {
-			config |= CLASS_af;
-			break;
-		    }
-		    return FAIL;
-
-		case 'A':
-		    if (*(p + 2) == 'Z')
-		    {
-			config |= CLASS_AZ;
-			break;
-		    }
-		    if (*(p + 2) == 'F')
-		    {
-			config |= CLASS_AF;
-			break;
-		    }
-		    return FAIL;
-
-		default:
-		    return FAIL;
-	    }
-	    p += 3;
-	}
-	else if (p + 1 < end && *p == '\\' && *(p + 1) == 'n')
-	{
-	    newl = TRUE;
-	    p += 2;
-	}
-	else if (*p == '_')
-	{
-	    config |= CLASS_underscore;
-	    p ++;
-	}
-	else if (*p == '\n')
-	{
-	    newl = TRUE;
-	    p ++;
-	}
-	else
-	    return FAIL;
-    } // while (p < end)
-
-    if (p != end)
-	return FAIL;
 
     if (newl == TRUE)
 	extra_newl = NFA_ADD_NL;

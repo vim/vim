@@ -265,6 +265,53 @@ static const int classcodes[] = {
 };
 
 /*
+ * Search between "start" (the first char of the range) and "end" (the closing
+ * "]") and try to recognize a character class in expanded form, for example
+ * [0-9].  On success, return the atom to be emitted, on failure 0.
+ */
+    static int
+bt_recognize_char_class(char_u *start, char_u *end)
+{
+    int		newl;
+    int		config = get_char_class_bits(start, end, &newl);
+
+    // A newline would need the ADD_NL variant, don't bother with it here.
+    if (config < 0 || newl)
+	return 0;
+
+	// The old engine has no case-insensitive class opcode, so [a-z] and [A-Z]
+	// are left as collections.  The classes below are case-independent.
+    switch (config)
+    {
+	case CLASS_o9:
+	    return DIGIT;
+	case CLASS_not | CLASS_o9:
+	    return NDIGIT;
+	case CLASS_af | CLASS_AF | CLASS_o9:
+	    return HEX;
+	case CLASS_not | CLASS_af | CLASS_AF | CLASS_o9:
+	    return NHEX;
+	case CLASS_o7:
+	    return OCTAL;
+	case CLASS_not | CLASS_o7:
+	    return NOCTAL;
+	case CLASS_az | CLASS_AZ | CLASS_o9 | CLASS_underscore:
+	    return WORD;
+	case CLASS_not | CLASS_az | CLASS_AZ | CLASS_o9 | CLASS_underscore:
+	    return NWORD;
+	case CLASS_az | CLASS_AZ | CLASS_underscore:
+	    return HEAD;
+	case CLASS_not | CLASS_az | CLASS_AZ | CLASS_underscore:
+	    return NHEAD;
+	case CLASS_az | CLASS_AZ:
+	    return ALPHA;
+	case CLASS_not | CLASS_az | CLASS_AZ:
+	    return NALPHA;
+    }
+    return 0;
+}
+
+/*
  * When regcode is set to this value, code is not emitted and size is computed
  * instead.
  */
@@ -1728,6 +1775,20 @@ collection:
 	    {
 		int	startc = -1;	// > 0 when next '-' is a range
 		int	endc;
+
+		if (extra == 0)
+		{
+		    int	cl = bt_recognize_char_class(regparse, lp);
+
+		    if (cl != 0)
+		    {
+			ret = regnode(cl);
+			regparse = lp;
+			skipchr();
+			*flagp |= HASWIDTH | SIMPLE;
+			break;
+		    }
+		}
 
 		// In a character class, different parsing rules apply.
 		// Not even \ is special anymore, nothing is.
