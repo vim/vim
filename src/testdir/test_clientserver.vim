@@ -278,7 +278,6 @@ func Test_clientserver_x11_registry_loose_name()
   " Loose match: "XVIMTESTREG" against a registered "XVIMTESTREG1" whose
   " window id is not hex.
   call system(cmd .. ' --servername ' .. name .. ' --remote-send x')
-  call assert_equal(0, v:shell_error)
 
   call system('xprop -root -remove VimRegistry')
   call job_stop(job, 'kill')

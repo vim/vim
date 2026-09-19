@@ -52663,6 +52663,7 @@ Other ~
 - Control Vim via a channel using stdin/stdout |channel-stdio|.
 - Add the "++dryrun" argument to |:source| so a script can be sourced without
   executing it to check for errors |:source-dryrun|.
+- 'tagfunc' is now also used for :tag completion.
 
 Platform specific ~
 -----------------
