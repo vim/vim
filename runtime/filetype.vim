@@ -910,6 +910,10 @@ au BufNewFile,BufRead PklProject,*.pkl,*.pcf,pkl-lsp://*	setf pkl
 " WIC kickstarter files
 au BufNewFile,BufRead *.wks,*.wks.in,*.wks.inc	setf wks
 
+" Portage
+au BufNewFile,BufRead */portage/make.conf/*.conf,*/portage/make.conf	setf sh
+au BufNewFile,BufRead */portage/{bin,}repos.conf/*.conf			setf confini
+
 " Povray, Pascal, PHP or assembly
 au BufNewFile,BufRead *.inc			call dist#ft#FTinc()
 
