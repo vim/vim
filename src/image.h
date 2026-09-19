@@ -80,8 +80,9 @@ typedef struct image_placement_S image_placement_T;
 struct image_placement_S
 {
     int_u   id;
-    image_T *img; // May be NULL, if so then only "bounding_box" is relevant (and
-		  // the position + zindex).
+    int_u   gen;    // See image_placement_new()
+    image_T *img;   // May be NULL, if so then only "bounding_box" is relevant
+		    // (and the position + zindex).
 
     image_backend_T backend;
     void	    *backend_data;
@@ -108,8 +109,8 @@ struct image_placement_S
     pixman_region32_t	visible_abs;    // In cells, uses absolute coordinates
 					// (only used for blit image backends),
 
-    int_u img_ver; // Current image version, if it is different from the image, then must
-		   // redraw the image.
+    int_u img_ver; // Current image version, if it is different from the image,
+		   // then must redraw the image.
 
     int cell_width; // Cell dimensions used to draw this placement
     int cell_height;

@@ -943,8 +943,10 @@ apply_general_options(win_T *wp, dict_T *dict)
 	if (img == cur_img)
 	    goto image_done;
 
-	// Create image view for this popup
-	place = image_placement_new(img, false);
+	// Create image view for this popup. Use window id as generation number,
+	// so that newer image placements are always placed below older image
+	// placements with same zindex.
+	place = image_placement_new(img, wp->w_id, false);
 
 	if (place == NULL)
 	{
@@ -976,7 +978,7 @@ image_done:
 	// will affect the calculations of other popup images.
 	if (wp->w_popup_imagep != NULL)
 	    image_placement_free(wp->w_popup_imagep);
-	wp->w_popup_imagep = image_placement_new(NULL, true);
+	wp->w_popup_imagep = image_placement_new(NULL, wp->w_id, true);
 
 	// Not really needed because we always update the position before
 	// drawing, but do it anyways.
@@ -1900,7 +1902,7 @@ popup_position_image(win_T *wp)
 exit:
     // Add after the last placement with the same zindex (if any), to match
     // popup window behaviour.
-    image_placement_set_zindex(wp->w_popup_imagep, wp->w_zindex, false);
+    image_placement_set_zindex(wp->w_popup_imagep, wp->w_zindex);
     image_placement_set_position(wp->w_popup_imagep, row, col);
     image_placement_set_bounding_box(wp->w_popup_imagep,
 	    wp->w_winrow, wp->w_wincol, clip.eff_height, clip.eff_width);

@@ -320,25 +320,18 @@ image_placement_unlink(image_placement_T *place)
     n_placements--;
 }
 
-/*
- * If "first" is true, then always place the placement before placements with
- * the same zindex.
- */
     static void
-image_placement_link(image_placement_T *place, bool first)
+image_placement_link(image_placement_T *place)
 {
     image_placement_T *p = placements;
     image_placement_T *prev = NULL;
 
-    // Add placement before the placement with the lower zindex.
+    // Add placement *before* the placement with the lower zindex.
     while (p != NULL)
     {
-	if (first)
-	{
-	    if (p->zindex <= place->zindex)
-		break;
-	}
-	else if (p->zindex < place->zindex)
+	if (place->zindex > p->zindex)
+	    break;
+	else if (place->zindex == p->zindex && place->gen < p->gen)
 	    break;
 	prev = p;
 	p = p->next;
@@ -362,10 +355,15 @@ image_placement_link(image_placement_T *place, bool first)
  * Create a new placement for the image, taking ownership of it. By default it
  * will be at the top left corner of the screen, no crop, zindex of 0, and the
  * bounding box will cover the entire image. "img" may be NULL to create a
- * placement with no backing image. Returns NULL on failure.
+ * placement with no backing image. 
+ * 
+ * "gen" is an arbitrary integer that is used to handle images with same zindex.
+ * The image with the higher gen will be placed under others.
+ *
+ * Returns NULL on failure.
  */
     image_placement_T *
-image_placement_new(image_T *img, bool quiet)
+image_placement_new(image_T *img, int_u gen, bool quiet)
 {
     image_placement_T	*place;
     static int_u	id = 1; // Kitty placements id must be > 1
@@ -381,6 +379,7 @@ image_placement_new(image_T *img, bool quiet)
     id += PLACEMENT_ID_INC; // Allocate 1000 free placement ids to be used to
 			    // draw this image placement. Only relevant for
 			    // kitty graphics protocol.
+    place->gen = gen;
 
     place->img = img;
     place->flags = IMAGEF_DIRTY;
@@ -408,7 +407,7 @@ image_placement_new(image_T *img, bool quiet)
     else
 	place->backend = IMAGE_BACKEND_NONE;
 
-    image_placement_link(place, false);
+    image_placement_link(place);
 
     return place;
 }
@@ -454,11 +453,8 @@ image_placement_free(image_placement_T *place)
     vim_free(place);
 }
 
-/*
- * See "image_placement_link" for "first"
- */
     void
-image_placement_set_zindex(image_placement_T *place, int zindex, bool first)
+image_placement_set_zindex(image_placement_T *place, int zindex)
 {
     place->flags &= ~IMAGEF_HIDDEN;
 
@@ -469,7 +465,7 @@ image_placement_set_zindex(image_placement_T *place, int zindex, bool first)
 
     // Must re-add the placement back so it is in the correct order
     image_placement_unlink(place);
-    image_placement_link(place, first);
+    image_placement_link(place);
 }
 
 /*
@@ -939,6 +935,7 @@ mark_dirty_region_for_images(int row, int col, int row_height, int col_width)
     image_placement_T	*place;
     pixman_box32_t	rect;
 
+    return;
     if (freeze_mark_dirty > 0 || !backend_available(false)
 	    || !PLACEMENT_FUNC(image_backend, blit) || n_placements == 0)
 	return;

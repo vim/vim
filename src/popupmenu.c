@@ -1009,10 +1009,11 @@ pum_redraw(void)
 #ifdef FEAT_IMAGE
     // Create a image placement so that other images are clipped correctly
     if (pum_imagep == NULL)
-	pum_imagep = image_placement_new(NULL, true);
+	// Make pom always be on top of any image placement with same zindex.
+	pum_imagep = image_placement_new(NULL, UINT_MAX, true);
     if (pum_imagep != NULL)
     {
-	image_placement_set_zindex(pum_imagep, POPUPMENU_ZINDEX, false);
+	image_placement_set_zindex(pum_imagep, POPUPMENU_ZINDEX);
 	image_placement_set_position(pum_imagep, pum_row, pum_col);
 	image_placement_set_bounding_box(pum_imagep, pum_row, pum_col,
 		pum_height, pum_width);
