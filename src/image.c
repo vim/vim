@@ -473,6 +473,9 @@ image_placement_free(image_placement_T *place)
     void
 image_placement_set_zindex(image_placement_T *place, int zindex)
 {
+    // If image was hidden before, must dirty it so it is fully redrawn again.
+    if (place->flags & IMAGEPF_HIDDEN)
+	place->flags |= IMAGEPF_DIRTY;
     place->flags &= ~IMAGEPF_HIDDEN;
 
     if (place->zindex == zindex)
@@ -491,6 +494,8 @@ image_placement_set_zindex(image_placement_T *place, int zindex)
     void
 image_placement_set_position(image_placement_T *place, int row, int col)
 {
+    if (place->flags & IMAGEPF_HIDDEN)
+	place->flags |= IMAGEPF_DIRTY;
     place->flags &= ~IMAGEPF_HIDDEN;
 
     if (place->row == row && place->col == col)
@@ -503,6 +508,8 @@ image_placement_set_position(image_placement_T *place, int row, int col)
     void
 image_placement_set_crop(image_placement_T *place, int x, int y, int w, int h)
 {
+    if (place->flags & IMAGEPF_HIDDEN)
+	place->flags |= IMAGEPF_DIRTY;
     place->flags &= ~IMAGEPF_HIDDEN;
 
     if (place->crop_box.x1 == x && place->crop_box.y1 == y
@@ -525,6 +532,8 @@ image_placement_set_bounding_box(
 	int		    row_height,
 	int		    col_width)
 {
+    if (place->flags & IMAGEPF_HIDDEN)
+	place->flags |= IMAGEPF_DIRTY;
     place->flags &= ~IMAGEPF_HIDDEN;
 
     if (place->bounding_box.x1 == col && place->bounding_box.y1 == row
