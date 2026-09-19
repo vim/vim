@@ -165,6 +165,7 @@ endfunc
 " Test that image backend is updated when switching from terminal to gui. Must
 " be last because it runs ":gui".
 func Test_zz1_imageprotocol_switch_gui()
+  CheckNotGui
   CheckCanRunGui
   CheckFeature gui_gtk
 
