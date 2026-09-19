@@ -93,7 +93,7 @@ typedef struct
     // These are offsets relative to the top left of the image.
     int	    row_off;
     int	    col_off;
-    char_u  *seq;
+    char_u  *seq[2]; // Header + body
 } sixel_chunk_T;
 
 typedef struct
@@ -597,20 +597,22 @@ emit_run(garray_T *gap, char_u ch, int cnt)
  * may be a crop (view->stride >= view->width) or a full, uncropped image
  * (view->stride == view->width).
  *
- * Returns a malloced char_u* containing the full sequence (\033P...\033\\), or
- * NULL on invalid input or OOM.
+ * Stores header string in "seq[0]" and body in "seq[1]", all malloced strings.
+ * Note that check if each string is NULL! Probably can't happen but be safe.
+ * Returns FAIL on failure.
  */
-    static char_u *
-sixel_encode_view(sixel_view_T *view)
+    static int
+sixel_encode_view(sixel_view_T *view, char_u *seq[2])
 {
-    garray_T	    ga;
+    garray_T	    hdr;    // DCS introducer, raster attrs, used-color defs
+    garray_T	    body;   // band data (colour selects + sixel bytes)
     sixel_band_T    *band_state = &sixel_state.band;
     char_u	    *idx;
     char_u	    *pal;
     int		    npal;
     int		    width, height;
     int		    band, p, x, n;
-    char_u	    *result;
+    bool	    defined[256];   // register already defined in header
 
     idx = view->idx;
     pal = view->pal;
@@ -618,7 +620,9 @@ sixel_encode_view(sixel_view_T *view)
     width = view->width;
     height = view->height;
 
-    ga_init2(&ga, sizeof(char_u), 4096);
+    ga_init2(&hdr, sizeof(char_u), 256);
+    ga_init2(&body, sizeof(char_u), 4096);
+    vim_memset(defined, 0, sizeof(defined));
 
     // DECSIXEL Introducer + Raster Attributes "1;1;W;H.
     // P2=1 means pixel positions left unspecified by any colour register
@@ -627,34 +631,11 @@ sixel_encode_view(sixel_view_T *view)
     // alpha < 128 pixels are emitted as palette index 0 (which we never
     // write to the bitmask), so the terminal leaves the popup's underlying
     // cell colour visible there -- no flatten, no colour-match drift.
-    if (ga_concat_bytes(&ga, "\033P0;1;8q\"1;1;", 13) == FAIL
-	    || ga_concat_int(&ga, width) == FAIL
-	    || ga_append(&ga, ';') == FAIL
-	    || ga_concat_int(&ga, height) == FAIL)
+    if (ga_concat_bytes(&hdr, "\033P0;1;8q\"1;1;", 13) == FAIL
+	    || ga_concat_int(&hdr, width) == FAIL
+	    || ga_append(&hdr, ';') == FAIL
+	    || ga_concat_int(&hdr, height) == FAIL)
 	goto fail;
-
-    // Color register definitions  #N;2;R;G;B  (RGB scaled to 0..100).
-    // Round to nearest, not truncate, so the round-trip 8bit -> 0..100 -> 8bit
-    // stays within ~1 level instead of drifting up to 2-3 levels darker.  This
-    // matters when the popup blends RGBA alpha onto the terminal background:
-    // truncation made the flattened bg visibly darker than the surrounding
-    // terminal cells.
-    for (n = 0; n < npal; n++)
-    {
-	int r = (pal[n * 3]     * 100 + 127) / 255;
-	int g = (pal[n * 3 + 1] * 100 + 127) / 255;
-	int b = (pal[n * 3 + 2] * 100 + 127) / 255;
-
-	if (ga_append(&ga, '#') == FAIL
-		|| ga_concat_int(&ga, n + 1) == FAIL
-		|| ga_concat_bytes(&ga, ";2;", 3) == FAIL
-		|| ga_concat_int(&ga, r) == FAIL
-		|| ga_append(&ga, ';') == FAIL
-		|| ga_concat_int(&ga, g) == FAIL
-		|| ga_append(&ga, ';') == FAIL
-		|| ga_concat_int(&ga, b) == FAIL)
-	    goto fail;
-    }
 
     // bitmask buffer: (crop) width bytes per palette index, +1 for the
     // unused index 0.  Sized off the view's width, not the parent image's
@@ -676,7 +657,7 @@ sixel_encode_view(sixel_view_T *view)
 	}
 	gen = band_state->seen_gen;
 
-	if (band > 0 && ga_append(&ga, '-') == FAIL)
+	if (band > 0 && ga_append(&body, '-') == FAIL)
 	    goto fail;
 
 	// Fill the bitmask for this band.
@@ -726,14 +707,40 @@ sixel_encode_view(sixel_view_T *view)
 	    int	     start = band_state->xmin[pix];
 	    int	     end = band_state->xmax[pix];
 
-	    if (last_was_cr && ga_append(&ga, '$') == FAIL)
+	    // First time this colour is used in the subrect: add its
+	    // definition "#N;2;R;G;B" (RGB scaled to 0..100) to the header.
+	    // Colours the subrect never touches are never defined.  Round to
+	    // nearest, not truncate, so the round-trip 8bit -> 0..100 -> 8bit
+	    // stays within ~1 level instead of drifting up to 2-3 levels
+	    // darker.  This matters when the popup blends RGBA alpha onto the
+	    // terminal background: truncation made the flattened bg visibly
+	    // darker than the surrounding terminal cells.
+	    if (!defined[pix])
+	    {
+		int r = (pal[(pix - 1) * 3]     * 100 + 127) / 255;
+		int g = (pal[(pix - 1) * 3 + 1] * 100 + 127) / 255;
+		int b = (pal[(pix - 1) * 3 + 2] * 100 + 127) / 255;
+
+		defined[pix] = true;
+		if (ga_append(&hdr, '#') == FAIL
+			|| ga_concat_int(&hdr, pix) == FAIL
+			|| ga_concat_bytes(&hdr, ";2;", 3) == FAIL
+			|| ga_concat_int(&hdr, r) == FAIL
+			|| ga_append(&hdr, ';') == FAIL
+			|| ga_concat_int(&hdr, g) == FAIL
+			|| ga_append(&hdr, ';') == FAIL
+			|| ga_concat_int(&hdr, b) == FAIL)
+		    goto fail;
+	    }
+
+	    if (last_was_cr && ga_append(&body, '$') == FAIL)
 		goto fail;
-	    if (ga_append(&ga, '#') == FAIL
-		    || ga_concat_int(&ga, pix) == FAIL)
+	    if (ga_append(&body, '#') == FAIL
+		    || ga_concat_int(&body, pix) == FAIL)
 		goto fail;
 
 	    row = band_state->bits + (size_t)pix * width;
-	    if (start > 0 && emit_run(&ga, 0, start) == FAIL)
+	    if (start > 0 && emit_run(&body, 0, start) == FAIL)
 		goto fail;
 	    ch0 = row[start];
 	    cnt = 1;
@@ -746,28 +753,30 @@ sixel_encode_view(sixel_view_T *view)
 		    cnt++;
 		    continue;
 		}
-		if (emit_run(&ga, ch0, cnt) == FAIL)
+		if (emit_run(&body, ch0, cnt) == FAIL)
 		    goto fail;
 		ch0 = ch;
 		cnt = 1;
 	    }
-	    if (emit_run(&ga, ch0, cnt) == FAIL)
+	    if (emit_run(&body, ch0, cnt) == FAIL)
 		goto fail;
 	    last_was_cr = 1;
 	}
     }
 
-    // String terminator
-    if (ga_concat_bytes(&ga, "\033\\", 2) == FAIL
-	    || ga_append(&ga, NUL) == FAIL)
+    if (ga_append(&hdr, NUL) == FAIL
+	    || ga_concat_bytes(&body, "\033\\", 3) == FAIL)
 	goto fail;
 
-    result = (char_u *)ga.ga_data;
-    return result;
+    seq[0] = (char_u *)hdr.ga_data;
+    seq[1] = (char_u *)body.ga_data;
+
+    return OK;
 
 fail:
-    ga_clear(&ga);
-    return NULL;
+    ga_clear(&hdr);
+    ga_clear(&body);
+    return FAIL;
 }
 
     int
@@ -813,7 +822,10 @@ clear_chunks(image_placement_sixel_T *ctx)
 	return;
 
     for (int i = 0; i < ctx->n_chunks; i++)
-	vim_free(ctx->chunks[i].seq);
+    {
+	vim_free(ctx->chunks[i].seq[0]);
+	vim_free(ctx->chunks[i].seq[1]);
+    }
     VIM_CLEAR(ctx->chunks);
     ctx->n_chunks = 0;
 }
@@ -850,7 +862,10 @@ image_placement_sixel_draw(image_placement_T *place)
 
 	    windgoto(place->row + place->row_off
 		    + chunk->row_off, place->col + chunk->col_off);
-	    out_str(chunk->seq);
+	    if (chunk->seq[0] != NULL)
+		out_str(chunk->seq[0]);
+	    if (chunk->seq[1] != NULL)
+		out_str(chunk->seq[1]);
 	    screen_start();
 	}
 	return;
@@ -872,23 +887,25 @@ image_placement_sixel_draw(image_placement_T *place)
 	int		row, col;
 	int		x, y, w, h;
 	sixel_chunk_T	*chunk = ctx->chunks + i;
-	char_u		*seq;
+	char_u		*seq[2];
 
 	image_placement_subrect(place, rect, &row, &col, &x, &y, &w, &h, false);
 
 	sixel_image8_crop(&ictx->image8, x, y, w, h, &view);
-	seq = sixel_encode_view(&view);
-
-	if (seq == NULL)
+	if (sixel_encode_view(&view, seq) == FAIL)
 	    continue;
 
 	windgoto(row, col);
-	out_str(seq);
+	if (seq[0] != NULL)
+	    out_str(seq[0]);
+	if (seq[1] != NULL)
+	    out_str(seq[1]);
 	screen_start();
 
 	chunk->row_off = rect.y1;
 	chunk->col_off = rect.x1;
-	chunk->seq = seq;
+	chunk->seq[0] = seq[0];
+	chunk->seq[1] = seq[1];
 	ctx->n_chunks++;
     }
 
