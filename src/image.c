@@ -1016,7 +1016,7 @@ shift_image_placements(int top, int bot, int amount)
 }
 
     static image_T *
-find_image(int id)
+find_image(int_u id)
 {
     image_T *img;
 
@@ -1041,7 +1041,7 @@ add_image(dict_T *dict, image_T *existing, bool find)
 
     if (find && dict_has_key(dict, "id"))
     {
-	image_T *img = find_image(dict_get_number(dict, "id"));
+	image_T *img = find_image((int_u)dict_get_number(dict, "id"));
 
 	if (img == NULL)
 	    return NULL;
@@ -1333,7 +1333,7 @@ f_image_add(typval_T *argvars, typval_T *rettv)
 	img->state = IMAGE_STATE_PUBLIC;
 
     rettv->v_type = VAR_NUMBER;
-    rettv->vval.v_number = img == NULL ? -1 : img->id;
+    rettv->vval.v_number = img == NULL ? (varnumber_T)-1 : img->id;
 }
 
     void
@@ -1344,7 +1344,7 @@ f_image_discard(typval_T *argvars, typval_T *rettv UNUSED)
     if (check_for_number_arg(argvars, 0) == FAIL)
 	return;
 
-    img = find_image(argvars[0].vval.v_number);
+    img = find_image((int_u)argvars[0].vval.v_number);
 
     if (img != NULL)
     {
@@ -1371,7 +1371,7 @@ f_image_info(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type == VAR_NUMBER)
     {
-	img = find_image(argvars[0].vval.v_number);
+	img = find_image((int_u)argvars[0].vval.v_number);
 
 	if (img == NULL)
 	{
