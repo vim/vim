@@ -682,8 +682,8 @@ redraw_region(pixman_region32_t *region, bool now, bool restore)
 draw_image_placements(void)
 {
     image_placement_T	*place;
-    pixman_region32_t	subtract_region; // In cells
-    pixman_region32_t	dirty_region; // In cells
+    pixman_region32_t	subtract_region;    // In cells
+    pixman_region32_t	dirty_region;	    // In cells
     image_placement_T	**pending_placements;
     int			pending_len = -1;
     // Save current cursor position
@@ -972,6 +972,7 @@ draw_image_placements(void)
 
     vim_free(pending_placements);
     pixman_region32_fini(&subtract_region);
+    pixman_region32_fini(&dirty_region);
 }
 
 /*
