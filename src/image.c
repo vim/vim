@@ -115,6 +115,9 @@ static int shift_top = 0;
 static int shift_bot = 0;
 static int shift = 0;
 
+// If > 0, then mark_dirty_region_for_images() will be a no-op
+static int freeze_mark_dirty = 0;
+
 #define FOR_ALL_IMAGES(v) for ((v) = images; (v) != NULL; (v) = (v)->next)
 #define FOR_ALL_PLACEMENTS(v) \
     for ((v) = placements; (v) != NULL; (v) = (v)->next)
@@ -667,7 +670,7 @@ draw_image_placements(void)
 
     cursor_off();
 
-    // Go through each image placement, from highest to lowests zindex. For each
+    // Go through each image placement, from highest to lowest zindex. For each
     // image, subtract the bounding boxes of the images with higher zindexes
     // from its own image region. The result is a region containing rectangles
     // that represent only the visible regions of the image that should be
@@ -725,6 +728,8 @@ draw_image_placements(void)
 	    pixman_region32_init(&visible_region);
 	    pixman_region32_init(&visible_abs);
 
+	    // Only use parts of the image region within the actual screen.
+	    // "row_off" may offset the image slightly/completely off screen.
 	    if (!pixman_region32_intersect_rect(&image_region, &image_region,
 			0, 0, Columns, Rows)
 		    || !pixman_region32_subtract(&visible_region,
@@ -759,7 +764,8 @@ draw_image_placements(void)
 	    // it yet). Or if image data has changed or cell size has changed
 	    need_redraw = place->flags & IMAGEF_DIRTY || cs_changed
 		||  (place->flags & IMAGEF_VISIBLE_INIT
-			&& !pixman_region32_equal(&visible_region, &place->visible));
+			&& !pixman_region32_equal(&visible_region,
+			    &place->visible));
 
 	    if (place->img_ver != img->ver)
 	    {
@@ -780,19 +786,9 @@ draw_image_placements(void)
 
 	    if (need_redraw)
 	    {
-		pixman_region32_t old_visible_abs;
-
-		// Update the old absolute visible region now. This is so that
-		// in redraw_region() which may call
-		// mark_dirty_region_for_images(), does not dirty the current
-		// image again and cause another UPD_VALID redraw.
 		if (place->flags & IMAGEF_VISIBLE_INIT)
-		{
 		    pixman_region32_fini(&place->visible);
-		    old_visible_abs = place->visible_abs;
-		}
 		place->visible = visible_region;
-		place->visible_abs = visible_abs;
 
 		if (PLACEMENT_FUNC(image_backend, blit))
 		{
@@ -805,23 +801,14 @@ draw_image_placements(void)
 		    if (place->flags & IMAGEF_VISIBLE_INIT)
 		    {
 			(void)pixman_region32_subtract(&stale_region,
-				&old_visible_abs, &visible_abs);
-
-			// Also subtract "subtract_region", so we don't
-			// redundantly redraw cells that will have images
-			// painted over them after. Make sure to do this before
-			// we check partially covered cells, since
-			// "subtract_region" may also have partially covered
-			// cells.
-			(void)pixman_region32_subtract(&stale_region,
-				&stale_region, &subtract_region);
+				&place->visible_abs, &visible_abs);
 
 			// Since pixels may be translucent/transparent, we must
 			// redraw the cells behind the image every time, so that
 			// no stale pixels remain from the previous redraw.
 			if (img->fmt == IMAGE_FORMAT_RGBA)
 			    (void)pixman_region32_union(&stale_region,
-				    &stale_region, &old_visible_abs);
+				    &stale_region, &place->visible_abs);
 		    }
 
 		    // The visible region is guaranteed to cover every single
@@ -867,11 +854,24 @@ draw_image_placements(void)
 			pixman_region32_fini(&min_region);
 		    }
 
+		    if (place->flags & IMAGEF_VISIBLE_INIT)
+			// Also subtract "subtract_region", so we don't
+			// redundantly redraw cells that will have images
+			// painted over them after. Make sure to do this before
+			// we check partially covered cells, since
+			// "subtract_region" may also have partially covered
+			// cells.
+			(void)pixman_region32_subtract(&stale_region,
+				&stale_region, &subtract_region);
+
+		    freeze_mark_dirty++;
 		    redraw_region(&stale_region, true, false);
+		    freeze_mark_dirty--;
 		    pixman_region32_fini(&stale_region);
 		}
 		if (place->flags & IMAGEF_VISIBLE_INIT)
-		    pixman_region32_fini(&old_visible_abs);
+		    pixman_region32_fini(&place->visible_abs);
+		place->visible_abs = visible_abs;
 
 		pending_placements[pending_len++] = place;
 		place->flags |= IMAGEF_VISIBLE_INIT;
@@ -933,8 +933,8 @@ mark_dirty_region_for_images(int row, int col, int row_height, int col_width)
     image_placement_T	*place;
     pixman_box32_t	rect;
 
-    if (!backend_available(false) || !PLACEMENT_FUNC(image_backend, blit)
-	    || n_placements == 0)
+    if (freeze_mark_dirty > 0 || !backend_available(false)
+	    || !PLACEMENT_FUNC(image_backend, blit) || n_placements == 0)
 	return;
 
     rect.x1 = col;
