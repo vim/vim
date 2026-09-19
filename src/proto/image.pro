@@ -20,6 +20,7 @@ void draw_image_placements(void);
 void mark_dirty_region_for_images(int row, int col, int row_height, int col_width);
 void clear_all_image_placements(void);
 void shift_image_placements(int top, int bot, int amount);
+void shift_reset_image_placements(void);
 image_T *add_image(dict_T *dict, image_T *existing, bool find);
 dict_T *get_image_info(image_T *img);
 int update_image_backend(void);

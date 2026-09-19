@@ -3671,6 +3671,10 @@ screenclear2(int doclear)
     screen_start();		// don't know where cursor is now
     msg_didany = FALSE;
     msg_didout = FALSE;
+#ifdef FEAT_IMAGE
+    shift_reset_image_placements(); // Reset "row_off" for every placement
+    clear_all_image_placements();
+#endif
 
     return did_clear;
 }

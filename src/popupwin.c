@@ -6898,6 +6898,10 @@ update_popups(void (*win_update)(win_T *wp))
 
 	if (override_success)
 	    pop_highlight_overrides();
+
+#ifdef FEAT_IMAGE_POPUP
+	popup_position_image(wp);
+#endif
     }
 
 #ifdef FEAT_PROP_POPUP

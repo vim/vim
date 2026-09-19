@@ -736,6 +736,10 @@ draw_image_placements(void)
 	int x, y;
 
 	if (place->flags & IMAGEPF_HIDDEN || !(place->flags & IMAGEPF_ENABLED))
+	    // Don't need to clear image placement for non-blit backends,
+	    // because we call image_placement_clear() every time we don't want
+	    // to see the image. Not sure of the side effects if we also clear
+	    // it here...
 	    continue;
 
 	if (img != NULL)
@@ -996,6 +1000,8 @@ mark_dirty_region_for_images(int row, int col, int row_height, int col_width)
 
     FOR_ALL_PLACEMENTS(place)
     {
+	if (place->flags & IMAGEPF_HIDDEN)
+	    continue;
 	if (pixman_region32_contains_rectangle(&place->visible_abs, &rect)
 		== PIXMAN_REGION_OUT)
 	    continue;
@@ -1011,7 +1017,8 @@ clear_all_image_placements(void)
 
     FOR_ALL_PLACEMENTS(place)
 	image_placement_clear(place);
-    redraw_all_later(UPD_VALID);
+    if (!updating_screen)
+	redraw_all_later(UPD_VALID);
 }
 
 /*
@@ -1024,6 +1031,16 @@ shift_image_placements(int top, int bot, int amount)
     shift_top = top;
     shift_bot = bot;
     shift += amount;
+}
+
+/*
+ * Called when screen is cleared, as update_screen() may go to clearing the
+ * screen instead of inserting lines using screen_ins_lines().
+ */
+    void
+shift_reset_image_placements(void)
+{
+    shift = 0;
 }
 
     static image_T *
