@@ -638,7 +638,8 @@ redraw_region(pixman_region32_t *region, bool now, bool restore)
 draw_image_placements(void)
 {
     image_placement_T	*place;
-    pixman_region32_t	subtract_region; // In pixels
+    pixman_region32_t	subtract_region; // In cells
+    pixman_region32_t	dirty_region; // In cells
     image_placement_T	**pending_placements;
     int			pending_len = -1;
     // Save current cursor position
@@ -667,6 +668,7 @@ draw_image_placements(void)
 	return;
 
     pixman_region32_init(&subtract_region);
+    pixman_region32_init(&dirty_region);
 
     cursor_off();
 
@@ -864,9 +866,9 @@ draw_image_placements(void)
 			(void)pixman_region32_subtract(&stale_region,
 				&stale_region, &subtract_region);
 
-		    freeze_mark_dirty++;
-		    redraw_region(&stale_region, true, false);
-		    freeze_mark_dirty--;
+		    // Don't redraw now, defer it later
+		    pixman_region32_union(&dirty_region,
+			    &dirty_region, &stale_region);
 		    pixman_region32_fini(&stale_region);
 		}
 		if (place->flags & IMAGEF_VISIBLE_INIT)
@@ -894,6 +896,10 @@ draw_image_placements(void)
 		place->bounding_box.x2 - place->bounding_box.x1,
 		place->bounding_box.y2 - place->bounding_box.y1);
     }
+
+    freeze_mark_dirty++;
+    redraw_region(&dirty_region, true, false);
+    freeze_mark_dirty--;
 
     if (pending_len > 0)
     {
