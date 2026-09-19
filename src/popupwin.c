@@ -806,6 +806,10 @@ apply_general_options(win_T *wp, dict_T *dict)
     int		nr;
     char_u	*str;
 
+#ifdef FEAT_IMAGE_POPUP
+    image_placement_use_T iplace_use;
+#endif
+
     // TODO: flip
 
     di = dict_find(dict, (char_u *)"firstline", -1);
@@ -911,8 +915,17 @@ apply_general_options(win_T *wp, dict_T *dict)
     }
 
 #ifdef FEAT_IMAGE_POPUP
+    if (wp->w_popup_flags & POPF_GLOBAL)
+	iplace_use = IMAGE_PLACEMENT_USE_POPUP_GLOBAL;
+    else
+	iplace_use = IMAGE_PLACEMENT_USE_POPUP_LOCAL;
+
     di = dict_find(dict, (char_u *)"image", -1);
 
+    // Note: we do not enable the image placement here. This is because
+    // draw_image_placements() may be drawn before the popup window text is
+    // drawn (e.g. inside a hit-enter prompt). Instead only enable once we draw
+    // the popup window.
     if (di != NULL && di->di_tv.v_type == VAR_DICT
 	    && di->di_tv.vval.v_dict != NULL)
     {
@@ -946,7 +959,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	// Create image view for this popup. Use window id as generation number,
 	// so that newer image placements are always placed below older image
 	// placements with same zindex.
-	place = image_placement_new(img, wp->w_id, false);
+	place = image_placement_new(img, wp->w_id, iplace_use, false);
 
 	if (place == NULL)
 	{
@@ -978,7 +991,8 @@ image_done:
 	// will affect the calculations of other popup images.
 	if (wp->w_popup_imagep != NULL)
 	    image_placement_free(wp->w_popup_imagep);
-	wp->w_popup_imagep = image_placement_new(NULL, wp->w_id, true);
+	wp->w_popup_imagep = image_placement_new(NULL, wp->w_id,
+		iplace_use, true);
 
 	// Not really needed because we always update the position before
 	// drawing, but do it anyways.
@@ -1859,6 +1873,8 @@ popup_position_image(win_T *wp)
     if (wp->w_popup_imagep == NULL || wp->w_popup_flags & POPF_HIDDEN)
 	return;
 
+    image_placement_set_enable(wp->w_popup_imagep, true);
+
     row = wp->w_winrow + wp->w_popup_border[0] + wp->w_popup_padding[0];
     col = wp->w_wincol + wp->w_popup_border[3] + wp->w_popup_padding[3];
 
@@ -2550,6 +2566,7 @@ popup_adjust_position(win_T *wp)
 	    clear_cmdline = TRUE;
 	popup_mask_refresh = TRUE;
     }
+
 #ifdef FEAT_IMAGE_POPUP
     popup_position_image(wp);
 #endif
@@ -3216,6 +3233,9 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 		prev = prev->w_next;
 	    prev->w_next = wp;
 	}
+#ifdef FEAT_IMAGE_POPUP
+	wp->w_popup_flags |= POPF_GLOBAL;
+#endif
     }
 
     if (new_buffer && argvars != NULL)

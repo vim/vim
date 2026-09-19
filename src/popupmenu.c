@@ -49,7 +49,7 @@ static int pum_border = 0;
 static int pum_margin = 0;	// margin of 1 cell on left and right
 static int pum_shadow = 0;
 
-#ifdef FEAT_IMAGE
+#ifdef FEAT_IMAGE_POPUP
 static image_placement_T *pum_imagep = NULL;
 #endif
 
@@ -1006,17 +1006,19 @@ pum_redraw(void)
     // synchronized output frame to avoid flicker.
     term_set_sync_output(TERM_SYNC_OUTPUT_ENABLE);
 
-#ifdef FEAT_IMAGE
+#ifdef FEAT_IMAGE_POPUP
     // Create a image placement so that other images are clipped correctly
     if (pum_imagep == NULL)
 	// Make pom always be on top of any image placement with same zindex.
-	pum_imagep = image_placement_new(NULL, UINT_MAX, true);
+	pum_imagep = image_placement_new(NULL, UINT_MAX,
+		IMAGE_PLACEMENT_USE_PUM, true);
     if (pum_imagep != NULL)
     {
 	image_placement_set_zindex(pum_imagep, POPUPMENU_ZINDEX);
 	image_placement_set_position(pum_imagep, pum_row, pum_col);
 	image_placement_set_bounding_box(pum_imagep, pum_row, pum_col,
 		pum_height, pum_width);
+	image_placement_set_enable(pum_imagep, true);
     }
 #endif
 
@@ -1634,7 +1636,7 @@ pum_set_selected(int n, int repeat UNUSED)
     void
 pum_undisplay(void)
 {
-#ifdef FEAT_IMAGE
+#ifdef FEAT_IMAGE_POPUP
     if (pum_imagep != NULL)
     {
 	image_placement_free(pum_imagep);

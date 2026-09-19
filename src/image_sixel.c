@@ -841,7 +841,7 @@ image_placement_sixel_draw(image_placement_T *place)
 
     // Check if visible region is still the same, if so then use the cached
     // sixel sequences.
-    if (!(place->flags & IMAGEF_FORCE) && ctx->visible_init
+    if (!(place->flags & IMAGEPF_FORCE) && ctx->visible_init
 	    && pixman_region32_equal(&ctx->visible_region, &place->visible))
     {
 	for (int i = 0; i < pixman_region32_n_rects(&ctx->visible_region); i++)

@@ -695,6 +695,7 @@ extern int *dyn_libintl_nl_msg_cat_cntr;
 #define POPF_POSINVERT	0x800	// vertical position can be inverted
 #define POPF_OPACITY 0x1000	// popup has opacity/transparency setting
 #define POPF_CLIPWINDOW	0x2000	// confine popup to its host window's rect
+#define POPF_GLOBAL	0x4000	// popup is global (not tabpage local)
 
 // flags used in w_popup_handled
 #define POPUP_HANDLED_1	    0x01    // used by mouse_find_win()

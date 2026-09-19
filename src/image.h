@@ -37,6 +37,21 @@ typedef enum
 } image_state_T;
 
 /*
+ * Each image placement is assigned a "use" (what its used for). Uses with
+ * higher values will always be on top of other image placements with a lower
+ * use that have the same zindex as the higher use image.
+ */
+typedef enum
+{
+    // See find_next_popup() for why (global popups are always drawn first,
+    // meaning they should be below local tab popups).
+    IMAGE_PLACEMENT_USE_POPUP_GLOBAL = 0,   // Local tab popup windows
+    IMAGE_PLACEMENT_USE_POPUP_LOCAL = 1,    // Global popup windows
+
+    IMAGE_PLACEMENT_USE_PUM = 2 // Popup menu (pum)
+} image_placement_use_T;
+
+/*
  * Represents image data, that can be referenced by multiple image placements,
  * each with a different view.
  */
@@ -66,12 +81,14 @@ struct image_S
     image_T *prev;
 };
 
-#define IMAGEF_DIRTY 1	    // If image positioning/geometry has been modified
-#define IMAGEF_HIDDEN 2     // If image should not be drawn
-#define IMAGEF_FORCE 4      // If image backend should not use its cache
+#define IMAGEPF_DIRTY 1	    // If image positioning/geometry has been modified
+#define IMAGEPF_HIDDEN 2    // If image should not be drawn
+#define IMAGEPF_FORCE 4     // If image backend should not use its cache
 			    // (if any)
 
-#define IMAGEF_VISIBLE_INIT 8   // If "visible" is valid
+#define IMAGEPF_VISIBLE_INIT 8  // If "visible" is valid
+#define IMAGEPF_ENABLED 16	// If image should be drawn (not reset across
+				// redraws).
 
 /*
  * Represents an image placement, which is a visible view of an image.
@@ -80,7 +97,8 @@ typedef struct image_placement_S image_placement_T;
 struct image_placement_S
 {
     int_u   id;
-    int_u   gen;    // See image_placement_new()
+    int_u   gen;    // See image_placement_new(), note that "use" is prioritized
+		    // over this.
     image_T *img;   // May be NULL, if so then only "bounding_box" is relevant
 		    // (and the position + zindex).
 
@@ -116,6 +134,8 @@ struct image_placement_S
     int cell_height;
 
     int row_off;
+
+    image_placement_use_T use;
 
     image_placement_T *next;
     image_placement_T *prev;
