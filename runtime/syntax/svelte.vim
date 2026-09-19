@@ -78,7 +78,7 @@ syntax region svelteMustache matchgroup=svelteBraces
 "   {#if} {:else} {/if} {#each} {:then} {:catch} {/each}
 "   {#await} {#key} {#snippet} {@html} {@const} {@debug} {@render}
 syntax region svelteBlock matchgroup=svelteKeyword
-      \ start=+\v\{[#/:@]\w++ end=+\v\}+
+      \ start=/\v\{[#/:@]\w+/ end=/\v\}/
       \ containedin=htmlTag,htmlString,htmlValue keepend
 
 " Top-level mustache and block expressions (outside tags)
@@ -86,13 +86,13 @@ syntax region svelteMustacheTop matchgroup=svelteBraces
       \ start=+\v\{+ end=+\v\}+
       \ containedin=TOP keepend
 syntax region svelteBlockTop matchgroup=svelteKeyword
-      \ start=+\v\{[#/:@]\w++ end=+\v\}+ containedin=TOP keepend
+      \ start=/\v\{[#/:@]\w+/ end=/\v\}/ containedin=TOP keepend
 
 " Element directives:
 "   on:click bind:value class:active use:foo transition:fade in:/out:/animate:
 "   let:item slot: style:  (modifiers via "|": on:click|once)
 syntax match svelteDirective contained
-      \ "\v(on|bind|class|use|transition|in|out|animate|let|slot|style):[a-zA-Z0-9_-]+(\|[a-zA-Z0-9_-]+)*\%(\_s*[>=\s/]\)\@="
+      \ "\v(on|bind|class|use|transition|in|out|animate|let|slot|style):[a-zA-Z0-9_-]+(\|[a-zA-Z0-9_-]+)*(\_s*[>=\s/])\@="
       \ containedin=htmlTag
 
 " Highlight links: reuse html.vim groups where possible, add Svelte-specific ones
