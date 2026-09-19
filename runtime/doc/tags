@@ -8178,6 +8178,7 @@ getfsize()	builtin.txt	/*getfsize()*
 getftime()	builtin.txt	/*getftime()*
 getftype()	builtin.txt	/*getftype()*
 getimstatus()	builtin.txt	/*getimstatus()*
+getinfo()	builtin.txt	/*getinfo()*
 getjumplist()	builtin.txt	/*getjumplist()*
 getlatestvimscripts-install	pi_getscript.txt	/*getlatestvimscripts-install*
 getline()	builtin.txt	/*getline()*
