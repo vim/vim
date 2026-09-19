@@ -162,4 +162,27 @@ func Test_imageprotocol_switch()
   set imageprotocol&
 endfunc
 
+" Test that image backend is updated when switching from terminal to gui. Must
+" be last because it runs ":gui".
+func Test_zz1_imageprotocol_switch_gui()
+  CheckCanRunGui
+  CheckFeature gui_gtk
+
+  set imageprotocol=.*:sixel
+
+  let blob = repeat([255, 0, 0], 4 * 4)->list2blob()
+  let id = image_add(#{data: blob, width: 4, height: 4})
+  let winid = popup_create('', #{image: #{id: id}, line: 1, col: 1})
+
+  call assert_equal('sixel', v:imagebackend)
+
+  gui -f
+
+  call assert_equal('gui', v:imagebackend)
+
+  call image_discard(id)
+  call popup_close(winid)
+  set imageprotocol&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
