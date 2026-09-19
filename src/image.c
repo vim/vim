@@ -421,7 +421,6 @@ image_placement_clear_int(image_placement_T *place, bool now)
 		&& PLACEMENT_FUNC(image_backend, blit))
 	    redraw_region(&place->visible_abs, now, true);
 	PLACEMENT_FUNC(image_backend, clear)(place);
-	place->flags |= IMAGEF_DIRTY;
 	place->flags |= IMAGEF_HIDDEN;
     }
 }
@@ -935,7 +934,6 @@ mark_dirty_region_for_images(int row, int col, int row_height, int col_width)
     image_placement_T	*place;
     pixman_box32_t	rect;
 
-    return;
     if (freeze_mark_dirty > 0 || !backend_available(false)
 	    || !PLACEMENT_FUNC(image_backend, blit) || n_placements == 0)
 	return;
