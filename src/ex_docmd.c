@@ -2526,6 +2526,16 @@ do_one_cmd(
 	    case CMD_def:
 				break;
 
+	    // commands that read a block of lines
+	    case CMD_abstract:
+	    case CMD_autocmd:
+	    case CMD_class:
+	    case CMD_command:
+	    case CMD_enum:
+	    case CMD_interface:
+	    case CMD_loadkeymap:
+				break;
+
 	    // Commands that handle '|' themselves.  Check: A command should
 	    // either have the EX_TRLBAR flag, appear in this list or appear in
 	    // the list at ":help :bar".
@@ -5834,6 +5844,12 @@ expand_argopt(
     static void
 ex_autocmd(exarg_T *eap)
 {
+    if (eap->skip)
+    {
+	skip_cmd_block(eap);
+	return;
+    }
+
     /*
      * Disallow autocommands from .exrc and .vimrc in current
      * directory for security reasons.

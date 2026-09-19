@@ -11965,4 +11965,33 @@ def Test_nested_object_member_op_assign()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for a class, interface or enum in a block that is not executed: the
+" body is skipped, not read as commands.
+def Test_class_body_skipped()
+  var lines =<< trim END
+      vim9script
+      if 0
+        interface Bar
+          def M(): number
+        endinterface
+      endif
+      if 0
+        class Foo
+          var x: number = 1
+        endclass
+      endif
+      while 0
+        enum Baz
+          One,
+          Two
+        endenum
+      endwhile
+      g:skipped = 'all three'
+  END
+  g:skipped = ''
+  v9.CheckSourceSuccess(lines)
+  assert_equal('all three', g:skipped)
+  unlet g:skipped
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
