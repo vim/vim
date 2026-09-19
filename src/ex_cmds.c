@@ -1722,10 +1722,17 @@ do_shell(
 		save_nwr = no_wait_return;
 		if (swapping_screen())
 		    no_wait_return = FALSE;
+		// ":silent" leaves the output of the command on the screen,
+		// except where it cannot be seen there anyway.
+		int redraw = msg_silent == 0 || swapping_screen();
+# ifdef FEAT_GUI
+		if (gui.in_use)
+		    redraw = TRUE;
+# endif
 # ifdef AMIGA
-		wait_return(term_console ? -1 : msg_silent == 0); // see below
+		wait_return(term_console ? -1 : redraw); // see below
 # else
-		wait_return(msg_silent == 0);
+		wait_return(redraw);
 # endif
 		no_wait_return = save_nwr;
 	    }
