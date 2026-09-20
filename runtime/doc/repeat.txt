@@ -1,4 +1,4 @@
-*repeat.txt*	For Vim version 9.2.  Last change: 2026 Sep 12
+*repeat.txt*	For Vim version 9.2.  Last change: 2026 Sep 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -67,9 +67,12 @@ This also makes it faster.
 Instead of the '/' which surrounds the {pattern}, you can use any other
 single byte character, but not an alphabetic character, '\', '"', '|' or '!'.
 This is useful if you want to include a '/' in the search pattern or
-replacement string.
+replacement string.  The closing delimiter is optional when [cmd] is not
+given, and the pattern then terminates at <EOL>.
 
 For the definition of a pattern, see |pattern|.
+
+The default [cmd] is `:print`.
 
 NOTE [cmd] may contain a range; see |collapse| and |edit-paragraph-join| for
 examples.

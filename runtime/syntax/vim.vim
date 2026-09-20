@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2026 Sep 12
+" Last Change:	   2026 Sep 20
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -908,6 +908,8 @@ syn region	vimGlobalPattern	contained
       \ start=+\z([^[:space:][:alnum:]\\"|:.-]\)+
       \ skip="\\."
       \ end="\z1"
+      \ excludenl
+      \ end="$"
       \ skipwhite nextgroup=vimCmdStart,@vimRange,@vimCmdList
       \ contains=@vimSubstList
 syn match	vimGlobal	contained        "g\%[lobal]\>!\=[:.-]\@!"	skipwhite nextgroup=vimGlobalPattern contains=vimBang
@@ -1425,8 +1427,26 @@ syn match	vimSubstFlags	contained	"[&cegiIlnpr#]\+"	skipwhite nextgroup=vimSubst
 syn match	vimSubstCount	contained	"\d\+\>"
 " TODO: Vim9 illegal separators for abbreviated :s form are [-.:], :su\%[...] required
 "     : # is allowed but "not recommended" (see :h pattern-delimiter)
-syn region	vimSubstPat	contained	matchgroup=vimSubstDelim start="\z([!#$%&'()*+,-./:;<=>?@[\]^_`{}~]\)"rs=s+1 skip="\\\\\|\\\z1" end="\z1"re=e-1,me=e-1	contains=@vimSubstList	nextgroup=vimSubstRep4	oneline
-syn region	vimSubstRep4	contained	matchgroup=vimSubstDelim start="\z(.\)" skip="\\\\\|\\\z1" end="\z1" matchgroup=vimNotation end="<[cC][rR]>"	contains=@vimSubstRepList	nextgroup=vimSubstFlagErr	oneline
+syn region	vimSubstPat	contained
+      \ matchgroup=vimSubstDelim
+      \ start="\z([!#$%&'()*+,-./:;<=>?@[\]^_`{}~]\)"rs=s+1
+      \ skip="\\\\\|\\\z1"
+      \ end="\z1"re=e-1,me=e-1
+      \ excludenl
+      \ end="$"
+      \ nextgroup=vimSubstRep4
+      \ contains=@vimSubstList
+syn region	vimSubstRep4	contained
+      \ matchgroup=vimSubstDelim
+      \ start="\z(.\)"
+      \ skip="\\\\\|\\\z1"
+      \ end="\z1"
+      \ matchgroup=vimNotation
+      \ end="<[cC][rR]>"
+      \ excludenl
+      \ end="$"
+      \ contains=@vimSubstRepList
+      \ nextgroup=vimSubstFlagErr
 syn region	vimCollection	contained 	transparent	start="\\\@<!\[" skip="\\\[" end="\]"	contains=vimCollClass
 syn match	vimCollClassErr	contained	"\[:.\{-\}:\]"
 syn match	vimCollClass	contained 	transparent	"\%#=1\[:\(alnum\|alpha\|blank\|cntrl\|digit\|graph\|lower\|print\|punct\|space\|upper\|xdigit\|retu\%[rn]\|tab\|escape\|backspace\):\]"
