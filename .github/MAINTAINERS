@@ -603,6 +603,7 @@ runtime/syntax/hollywood.vim				@sodero
 runtime/syntax/html.vim					@dkearns
 runtime/syntax/htmlangular.vim				@dlvandenberg
 runtime/syntax/i3config.vim				@hiqua
+runtime/syntax/icalendar.vim				@anakin4747
 runtime/syntax/icon.vim					@dkearns
 runtime/syntax/indent.vim				@dkearns
 runtime/syntax/j.vim					@glts
