@@ -6067,6 +6067,8 @@ exec_instructions(ectx_T *ectx)
 		    if (tv->v_type == VAR_LIST)
 		    {
 			li = list_find(tv->vval.v_list, gi->gi_index);
+			if (li == NULL)
+			    goto on_error;
 			item_tv = &li->li_tv;
 		    }
 		    else
