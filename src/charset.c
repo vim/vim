@@ -948,7 +948,14 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
     {
 #if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
 	if (simple_width)
-	    vcol += win_nolbr_chartabsize(cts, NULL);
+	{
+	    int	c = *cts->cts_ptr;
+
+	    if (c < 0x80 && c != TAB)
+		vcol += g_chartab[c] & CT_CELL_MASK;
+	    else
+		vcol += win_nolbr_chartabsize(cts, NULL);
+	}
 	else
 #endif
 	    vcol += win_lbr_chartabsize(cts, NULL, NULL);
