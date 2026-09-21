@@ -3485,6 +3485,11 @@ syn_cmd_iskeyword(exarg_T *eap, int syncing UNUSED)
 	}
 	else
 	{
+	    if (check_isopt(arg) == FAIL)
+	    {
+		emsg(_(e_invalid_argument));
+		return;
+	    }
 	    mch_memmove(save_chartab, curbuf->b_chartab, (size_t)32);
 	    save_isk = curbuf->b_p_isk;
 	    curbuf->b_p_isk = vim_strsave(arg);
