@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Sep 14
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Sep 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -10108,6 +10108,8 @@ setcellwidths({list})					*setcellwidths()*
 		through the text to check if the cell widths of your terminal
 		match with what Vim knows about each emoji.  If it doesn't
 		look right you need to adjust the {list} argument.
+
+		|getcellwidths()| can be used to get the overrides later.
 
 		Return type: void
 
