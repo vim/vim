@@ -1577,7 +1577,7 @@ compile time, may be used.  For example:
 	MyDef()
 	var MyVar2: number = 2	# Declared after MyDef() is compiled
 <
-<							*E1269*
+							*E1269*
 Script-local variables in a Vim9 script must be declared at the script
 level.  They cannot be created in a `:def` function and may not be declared
 in a legacy function with the "s:" prefix.  For example:

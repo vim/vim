@@ -52759,6 +52759,7 @@ Highlighting: ~
 |hl-PopupTitle|		Popup window title.
 
 Vim Arguments: ~
+
 |--stdio-channel|	Control Vim via a channel using stdin/stdout
 			|channel-stdio|
 
