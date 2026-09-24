@@ -4,7 +4,7 @@ vim9script
 
 # Author: Bram Moolenaar
 # Copyright: Vim license applies, see ":help license"
-# Last Change: 2026 Mar 11
+# Last Change: 2026 Sep 25
 # Converted to Vim9: Ubaldo Tiberi <ubaldo.tiberi@gmail.com>
 
 # WORK IN PROGRESS - The basics works stable, more to come
@@ -473,7 +473,7 @@ def GetRemotePtyDev(bufnr: number, interact: bool): string
   var pty: string = null_string
   var line = null_string
 
-  for j in range(5)
+  for _ in range(5)
 
     if interact
       term_sendkeys(bufnr, "tty\<CR>")
@@ -1317,7 +1317,6 @@ def HandleVariablesMsg(msg: string)
   var curwinid = win_getid()
   if win_gotoid(varwin)
     silent! :%delete _
-    var spaceBuffer = 20
     var spaces = repeat(' ', 16)
     setline(1, $'Type{spaces}Name{spaces}Value')
     var cnt = 1
@@ -2416,8 +2415,8 @@ enddef
 # Handle a BufUnloaded autocommand event: unplace any signs.
 def BufUnloaded()
   var fname = expand('<afile>:p')
-  for [id, entries] in items(breakpoints)
-    for [subid, entry] in items(entries)
+  for entries in values(breakpoints)
+    for entry in values(entries)
       if entry['fname'] == fname
         entry['placed'] = 0
       endif
