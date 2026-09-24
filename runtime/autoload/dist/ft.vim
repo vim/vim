@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Sep 02
+# Last Change:		2026 Sep 24
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -2274,6 +2274,8 @@ const ft_from_ext = {
   # Httest
   "htt": "httest",
   "htb": "httest",
+  # ICalendar
+  "ics": "icalendar",
   # Icon
   "icn": "icon",
   # Microsoft IDL (Interface Description Language)  Also *.idl

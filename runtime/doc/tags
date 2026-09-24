@@ -7623,6 +7623,8 @@ ft-html-plugin	filetype.txt	/*ft-html-plugin*
 ft-html-syntax	syntax.txt	/*ft-html-syntax*
 ft-htmlos-syntax	syntax.txt	/*ft-htmlos-syntax*
 ft-ia64-syntax	syntax.txt	/*ft-ia64-syntax*
+ft-icalendar-plugin	filetype.txt	/*ft-icalendar-plugin*
+ft-icalendar-syntax	syntax.txt	/*ft-icalendar-syntax*
 ft-idris2-indent	indent.txt	/*ft-idris2-indent*
 ft-idris2-plugin	filetype.txt	/*ft-idris2-plugin*
 ft-inform-syntax	syntax.txt	/*ft-inform-syntax*
@@ -7905,6 +7907,7 @@ g:html_use_encoding	syntax.txt	/*g:html_use_encoding*
 g:html_use_input_for_pc	syntax.txt	/*g:html_use_input_for_pc*
 g:html_use_xhtml	syntax.txt	/*g:html_use_xhtml*
 g:html_whole_filler	syntax.txt	/*g:html_whole_filler*
+g:icalendar_folding	filetype.txt	/*g:icalendar_folding*
 g:lf_shell_syntax	syntax.txt	/*g:lf_shell_syntax*
 g:lua_folding	filetype.txt	/*g:lua_folding*
 g:lua_subversion	filetype.txt	/*g:lua_subversion*
@@ -8684,6 +8687,7 @@ i_esc	intro.txt	/*i_esc*
 i`	motion.txt	/*i`*
 ia64.vim	syntax.txt	/*ia64.vim*
 ib	motion.txt	/*ib*
+icalendar.vim	syntax.txt	/*icalendar.vim*
 iccf	uganda.txt	/*iccf*
 icon-changed	version4.txt	/*icon-changed*
 iconise	starting.txt	/*iconise*
