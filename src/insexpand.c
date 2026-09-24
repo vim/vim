@@ -3445,17 +3445,17 @@ ins_compl_next_buf(buf_T *buf, int flag)
 }
 
 /*
- * Count the number of entries in the 'complete' option (curbuf->b_p_cpt).
+ * Count the number of entries in the 'complete' option value "cpt".
  * Each non-empty, comma-separated segment is counted as one entry.
  */
     static int
-get_cpt_sources_count(void)
+get_cpt_sources_count(char_u *cpt)
 {
     char_u  dummy[LSIZE];
     int	    count = 0;
     char_u  *p;
 
-    for (p = curbuf->b_p_cpt; *p != NUL; )
+    for (p = cpt; *p != NUL; )
     {
 	while (*p == ',' || *p == ' ')
 	    p++;  // Skip delimiters
@@ -3585,11 +3585,11 @@ clear_cpt_callbacks(callback_T **callbacks, int count)
     static int
 copy_cpt_callbacks(callback_T **dest, int *dest_cnt, callback_T *src, int cnt)
 {
-    if (cnt == 0)
-	return OK;
-
     clear_cpt_callbacks(dest, *dest_cnt);
     *dest_cnt = 0;
+
+    if (cnt == 0)
+	return OK;
 
     *dest = ALLOC_CLEAR_MULT(callback_T, cnt);
     if (*dest == NULL)
@@ -3612,7 +3612,7 @@ copy_cpt_callbacks(callback_T **dest, int *dest_cnt, callback_T *src, int cnt)
 set_buflocal_cpt_callbacks(buf_T *buf UNUSED)
 {
 # ifdef FEAT_EVAL
-    if (buf == NULL || cpt_cb_count == 0)
+    if (buf == NULL)
 	return;
     (void)copy_cpt_callbacks(&buf->b_p_cpt_cb, &buf->b_p_cpt_count, cpt_cb,
 	    cpt_cb_count);
@@ -3620,36 +3620,35 @@ set_buflocal_cpt_callbacks(buf_T *buf UNUSED)
 }
 
 /*
- * Parse 'complete' option and initialize F{func} callbacks.
- * Frees any existing callbacks and allocates new ones.
- * Only F{func} entries are processed; others are ignored.
+ * Parse the 'complete' option value "cpt" and store the callbacks for the
+ * F{func} entries in a newly allocated array in "*cbp", setting "*cnt" to the
+ * number of entries.  The array has one entry for every item in "cpt", also
+ * for items that are not a function, so that it can be indexed with the item
+ * index.  Any previous array in "*cbp" is cleared.
+ * Returns FAIL when out of memory.
  */
-    int
-set_cpt_callbacks(optset_T *args)
+    static int
+parse_cpt_callbacks(char_u *cpt, callback_T **cbp, int *cnt)
 {
     char_u  buf[LSIZE];
     char_u  *p;
     int	    idx = 0;
     int	    slen;
     int	    count;
-    int	    local = (args->os_flags & OPT_LOCAL) != 0;
 
-    if (curbuf == NULL)
-	return FAIL;
+    clear_cpt_callbacks(cbp, *cnt);
+    *cnt = 0;
 
-    clear_cpt_callbacks(&curbuf->b_p_cpt_cb, curbuf->b_p_cpt_count);
-    curbuf->b_p_cpt_count = 0;
-
-    count = get_cpt_sources_count();
+    count = get_cpt_sources_count(cpt);
     if (count == 0)
 	return OK;
 
-    curbuf->b_p_cpt_cb = ALLOC_CLEAR_MULT(callback_T, count);
-    if (curbuf->b_p_cpt_cb == NULL)
+    *cbp = ALLOC_CLEAR_MULT(callback_T, count);
+    if (*cbp == NULL)
 	return FAIL;
-    curbuf->b_p_cpt_count = count;
+    *cnt = count;
 
-    for (p = curbuf->b_p_cpt; *p != NUL; )
+    for (p = cpt; *p != NUL; )
     {
 	while (*p == ',' || *p == ' ')
 	    p++; // Skip delimiters
@@ -3659,26 +3658,50 @@ set_cpt_callbacks(optset_T *args)
 	    slen = copy_option_part(&p, buf, LSIZE, ","); // Advance p
 	    if (slen > 0 && buf[0] == 'F' && buf[1] != NUL)
 	    {
-		char_u	*caret;
-		caret = vim_strchr(buf, '^');
+		char_u	*caret = vim_strchr(buf, '^');
+
 		if (caret != NULL)
 		    *caret = NUL;
 
-		if (option_set_callback_func(buf + 1, &curbuf->b_p_cpt_cb[idx])
-			!= OK)
-		    curbuf->b_p_cpt_cb[idx].cb_name = NULL;
+		if (option_set_callback_func(buf + 1, &(*cbp)[idx]) != OK)
+		    (*cbp)[idx].cb_name = NULL;
 	    }
 	    idx++;
 	}
     }
 
-    if (!local) // ':set' used instead of ':setlocal'
-	// Cache the callback array
-	if (copy_cpt_callbacks(&cpt_cb, &cpt_cb_count, curbuf->b_p_cpt_cb,
-		    curbuf->b_p_cpt_count) != OK)
-	    return FAIL;
-
     return OK;
+}
+
+/*
+ * Parse 'complete' option and initialize F{func} callbacks.
+ * Frees any existing callbacks and allocates new ones.
+ */
+    int
+set_cpt_callbacks(optset_T *args)
+{
+    int	    opt_flags = args->os_flags;
+
+    if (curbuf == NULL)
+	return FAIL;
+
+    // ":setglobal" does not change the buffer-local option value
+    if (!(opt_flags & OPT_GLOBAL)
+	    && parse_cpt_callbacks(curbuf->b_p_cpt, &curbuf->b_p_cpt_cb,
+				   &curbuf->b_p_cpt_count) != OK)
+	return FAIL;
+
+    // ":setlocal" does not change the global option value
+    if (opt_flags & OPT_LOCAL)
+	return OK;
+
+    // Cache the callbacks for the global value
+    if (opt_flags & OPT_GLOBAL)
+	return parse_cpt_callbacks(p_cpt, &cpt_cb, &cpt_cb_count);
+
+    // set case
+    return copy_cpt_callbacks(&cpt_cb, &cpt_cb_count, curbuf->b_p_cpt_cb,
+			      curbuf->b_p_cpt_count);
 }
 
 /*
@@ -5278,6 +5301,9 @@ get_callback_if_cpt_func(char_u *p, int idx)
 	if (*++p != ',' && *p != NUL)
 	{
 	    // 'F{func}' case
+	    if (curbuf->b_p_cpt_cb == NULL
+		    || idx < 0 || idx >= curbuf->b_p_cpt_count)
+		return NULL;
 	    return curbuf->b_p_cpt_cb[idx].cb_name != NULL
 		? &curbuf->b_p_cpt_cb[idx] : NULL;
 	}
@@ -7732,7 +7758,7 @@ setup_cpt_sources(void)
 
     cpt_sources_clear();
 
-    count = get_cpt_sources_count();
+    count = get_cpt_sources_count(curbuf->b_p_cpt);
     if (count == 0)
 	return OK;
 
