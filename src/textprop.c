@@ -3281,6 +3281,181 @@ prepend_joined_props(
     um_abort(&r_um);
 }
 
+/*
+ * Remember in "gap" that "flag" was cleared on "prop", on the line "which".
+ */
+    static void
+remember_cleared_prop(garray_T *gap, int which, textprop_T *prop, int flag)
+{
+    undoprop_T	*up;
+
+    if (which == UNDOPROP_NONE)
+	return;
+    if (gap->ga_itemsize == 0)
+	ga_init2(gap, sizeof(undoprop_T), 4);
+    if (ga_grow(gap, 1) == FAIL)
+	return;
+    up = (undoprop_T *)gap->ga_data + gap->ga_len++;
+    up->up_which = which;
+    up->up_type = prop->tp_type;
+    up->up_id = prop->tp_id;
+    up->up_col = prop->tp_col;
+    up->up_flag = flag;
+}
+
+/*
+ * Clear the continuation flags between line "lnum" and the line below it that
+ * have no partner in the other line.  A property is split there then.  What
+ * is cleared on the line above is remembered in "gap" as "above_which", on
+ * the line below as "below_which".
+ */
+    void
+adjust_props_for_undo(
+	buf_T	    *buf,
+	linenr_T    lnum,
+	garray_T    *gap,
+	int	    above_which,
+	int	    below_which)
+{
+    unpacked_memline_T	above;
+    unpacked_memline_T	below;
+    bool		*paired = NULL;
+    bool		above_changed = false;
+    bool		below_changed = false;
+    bool		cont_next = false;
+
+    if (!buf->b_has_textprop || lnum < 1 || lnum >= buf->b_ml.ml_line_count)
+	return;
+
+    above = um_open_at(buf, lnum, 0);
+    if (above.buf == NULL)
+	return;
+    for (int i = 0; i < above.prop_count; ++i)
+	if (above.props[i].tp_flags & TP_FLAG_CONT_NEXT)
+	    cont_next = true;
+    // Loading the line below may invalidate the text of "above", copy it when
+    // it may have to be stored.
+    if (cont_next && !um_detach(&above))
+    {
+	um_abort(&above);
+	return;
+    }
+
+    below = um_open_at(buf, lnum + 1, 0);
+    if (below.buf == NULL)
+    {
+	um_abort(&above);
+	return;
+    }
+    if (below.prop_count > 0)
+    {
+	paired = ALLOC_CLEAR_MULT(bool, below.prop_count);
+	if (paired == NULL)
+	    goto theend;
+    }
+
+    for (int i = 0; i < above.prop_count; ++i)
+    {
+	textprop_T  *prop = &above.props[i];
+	bool	    found = false;
+
+	if (!(prop->tp_flags & TP_FLAG_CONT_NEXT))
+	    continue;
+	for (int j = 0; j < below.prop_count; ++j)
+	{
+	    textprop_T *next = &below.props[j];
+
+	    if (!paired[j] && (next->tp_flags & TP_FLAG_CONT_PREV)
+		    && next->tp_id == prop->tp_id
+		    && next->tp_type == prop->tp_type)
+	    {
+		paired[j] = true;
+		found = true;
+		break;
+	    }
+	}
+	if (!found)
+	{
+	    prop->tp_flags &= ~TP_FLAG_CONT_NEXT;
+	    above_changed = true;
+	    remember_cleared_prop(gap, above_which, prop, TP_FLAG_CONT_NEXT);
+	}
+    }
+
+    for (int j = 0; j < below.prop_count; ++j)
+    {
+	if (!(below.props[j].tp_flags & TP_FLAG_CONT_PREV) || paired[j])
+	    continue;
+	if (!below.detached && !um_detach(&below))
+	    break;
+	below.props[j].tp_flags &= ~TP_FLAG_CONT_PREV;
+	below_changed = true;
+	remember_cleared_prop(gap, below_which, &below.props[j],
+							   TP_FLAG_CONT_PREV);
+    }
+
+theend:
+    if (below_changed)
+	um_close(&below);
+    else
+	um_abort(&below);
+    if (above_changed)
+	um_close(&above);
+    else
+	um_abort(&above);
+    vim_free(paired);
+}
+
+/*
+ * Give back to line "lnum" the continuation flags "gap" has for "which",
+ * those cleared when the undo block was applied the other way.  A property
+ * that is no longer there is skipped.
+ */
+    void
+restore_props_for_undo(
+	buf_T	    *buf,
+	linenr_T    lnum,
+	garray_T    *gap,
+	int	    which)
+{
+    unpacked_memline_T	um;
+    bool		changed = false;
+
+    if (!buf->b_has_textprop || gap->ga_len == 0 || lnum < 1
+					  || lnum > buf->b_ml.ml_line_count)
+	return;
+    um = um_open_at(buf, lnum, 0);
+    if (um.buf == NULL)
+	return;
+    for (int r = 0; r < gap->ga_len; ++r)
+    {
+	undoprop_T  *up = (undoprop_T *)gap->ga_data + r;
+
+	if (up->up_which != which)
+	    continue;
+	for (int i = 0; i < um.prop_count; ++i)
+	{
+	    textprop_T *prop = &um.props[i];
+
+	    if (prop->tp_type != up->up_type || prop->tp_id != up->up_id
+		    || prop->tp_col != up->up_col
+		    || (prop->tp_flags & up->up_flag))
+		continue;
+	    if (!um.detached && !um_detach(&um))
+		goto theend;
+	    um.props[i].tp_flags |= up->up_flag;
+	    changed = true;
+	    break;
+	}
+    }
+
+theend:
+    if (changed)
+	um_close(&um);
+    else
+	um_abort(&um);
+}
+
     bool
 text_prop_count_valid(int prop_count, size_t propdata_len)
 {
