@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2026 Sep 11
+" Last Change:		2026 Sep 24
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If the filetype can be detected from extension or file name(the final path component),
@@ -909,6 +909,10 @@ au BufNewFile,BufRead PklProject,*.pkl,*.pcf,pkl-lsp://*	setf pkl
 
 " WIC kickstarter files
 au BufNewFile,BufRead *.wks,*.wks.in,*.wks.inc	setf wks
+
+" Portage
+au BufNewFile,BufRead */portage/make.conf/*.conf,*/portage/make.conf	setf sh
+au BufNewFile,BufRead */portage/{bin,}repos.conf/*.conf			setf confini
 
 " Povray, Pascal, PHP or assembly
 au BufNewFile,BufRead *.inc			call dist#ft#FTinc()
