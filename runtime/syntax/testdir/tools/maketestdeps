@@ -17,7 +17,6 @@ for input in testdir/input/*.*; do
 	basename=$(basename "$input")
 
 	case "$basename" in
-		vim9_*.*) ft=vim;;
 		*_*.*) ft=${basename%%_*};;
 		*.*) ft=${basename%%.*};;
 		*) exit 1
@@ -29,7 +28,7 @@ for input in testdir/input/*.*; do
 	fi
 
 	cat << EOF
-$input: $ft.vim $vimsetup
+$input: ${ft/#vim9/vim}.vim $vimsetup
 	touch -c \$@
 $basename:: $input
 $ft:: $basename

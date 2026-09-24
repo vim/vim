@@ -68,7 +68,6 @@ awk 'BEGIN { \
         types[parts[1]]; \
         print names[3]; \
     } \
-    delete types["vim9"]; \
     split("$(phonies)", scratch); \
     for (phony in scratch) \
         phonies[scratch[phony]]; \
