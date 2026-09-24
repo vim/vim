@@ -2517,6 +2517,12 @@ in Vim9 script.
 	echo filter([1, 2], 0)
 	vim9cmd echo filter([1, 2], 0)	# E1024: Using a Number as a String
 <
+- Assigning a number to an environment variable, a register or a String
+  v: variable:
+>vim
+	let $FOO = 123
+	vim9cmd $FOO = 123	# E1012: Type mismatch; expected string but ...
+<
 - Not using a number where a number is expected:
 >vim
 	" In this example, legacy Vim script treats v:false as 0
