@@ -1,4 +1,4 @@
-*change.txt*	For Vim version 9.2.  Last change: 2026 Aug 23
+*change.txt*	For Vim version 9.2.  Last change: 2026 Sep 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -800,6 +800,9 @@ matched pattern is deleted.  The separator after {pattern} can also be left
 out then.  Example: >
 	:%s/TESTING
 This deletes "TESTING" from all lines, but only one per line.
+
+If [flags] are omitted the separator after {string} may also be left out.
+
 								*E1270*
 For compatibility with Vi these two exceptions are allowed in legacy Vim
 script:
@@ -814,6 +817,9 @@ use another single-byte character.  This is useful if you want to include a
 You can use most characters, but not an alphanumeric character, '\', '"' or
 '|'.  In Vim9 script you should not use '#' because it may be recognized as
 the start of a comment.
+
+The closing delimiter is optional for both the pattern and the replacement
+string, if nothing follows.  These then terminate at <EOL>.
 
 For the definition of a pattern, see |pattern|.  In Visual block mode, use
 |/\%V| in the pattern to have the substitute work in the block only.
