@@ -9546,6 +9546,9 @@ screenpos({winid}, {lnum}, {col})			*screenpos()*
 		as if 'conceallevel' is zero.  You can set the cursor to the
 		right position and use |screencol()| to get the value with
 		|conceal| taken into account.
+		|virtual-text| above the line occupies its own screen line and
+		is counted: the first character of the line is then on the
+		screen line below it.
 		If the position is in a closed fold the screen position of the
 		first character is returned, {col} is not used.
 		Returns an empty Dict if {winid} is invalid.
@@ -12742,6 +12745,10 @@ virtcol({expr} [, {list} [, {winid}]])			*virtcol()*
 		Virtual editing is active in the current mode, a position
 		beyond the end of the line can be returned.  Also see
 		'virtualedit'
+
+		|virtual-text| above the line occupies its own screen line and
+		is counted like a wrapped line: with a window 80 columns wide
+		the first character of the line is then in virtual column 81.
 
 		If {list} is present and non-zero then virtcol() returns a
 		List with the first and last screen position occupied by the

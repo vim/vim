@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Sep 08
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Sep 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52718,6 +52718,7 @@ Changed ~
   autocommand.
 - The highlighting groups |hl-CursorLineFold| and |hl-CursorLineSign| are
   always used when 'cursorline' is set.
+- Virtual text above a line is now counted by |screenpos()| and |virtcol()|.
 
 							*added-9.3*
 Added ~

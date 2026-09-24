@@ -910,6 +910,16 @@ linetabsize_no_outer(win_T *wp, linenr_T lnum)
 }
 
 /*
+ * Like linetabsize_no_outer(), but counts the size of 'listchars' "eol".
+ */
+    int
+linetabsize_no_outer_eol(win_T *wp, linenr_T lnum)
+{
+    return linetabsize_no_outer(wp, lnum)
+	+ ((wp->w_p_list && wp->w_lcs_chars.eol != NUL) ? 1 : 0);
+}
+
+/*
  * Return TRUE when win_lbr_chartabsize() does nothing more than
  * win_nolbr_chartabsize(): no 'linebreak', 'breakindent', 'showbreak' and no
  * text properties that insert text.
@@ -1411,11 +1421,17 @@ win_lbr_chartabsize(
 		    }
 		    else
 			cells = vim_strsize(p);
-		    cts->cts_cur_text_width += cells;
 		    if (tp->tp_flags & TP_FLAG_ALIGN_ABOVE)
+		    {
 			cts->cts_first_char += cells;
+			if (!cts->cts_no_above)
+			    cts->cts_cur_text_width += cells;
+		    }
 		    else
+		    {
+			cts->cts_cur_text_width += cells;
 			size += cells;
+		    }
 		    cts->cts_start_incl = tp->tp_flags & TP_FLAG_START_INCL;
 #  ifdef FEAT_LINEBREAK
 		    if (*s == TAB)
@@ -1609,11 +1625,13 @@ win_lbr_chartabsize(
 	*tailp = size - size_before_lbr;
 
 #  ifdef FEAT_PROP_POPUP
-    if (cts->cts_first_char > 0)
+    if (cts->cts_first_char > 0 && !cts->cts_no_above)
+    {
 	// Remember the width for the size of a Tab later in the line.  Use
 	// assignment, this may be called more than once for a character.
 	cts->cts_above_width = cts->cts_first_char;
-    size += cts->cts_first_char;
+	size += cts->cts_first_char;
+    }
 #  endif
 # endif
     return size;
@@ -1724,6 +1742,9 @@ getvcol(
 
     init_chartabsize_arg(&cts, wp, pos->lnum, 0, line, line);
     cts.cts_max_head_vcol = -1;
+#ifdef FEAT_PROP_POPUP
+    cts.cts_no_above = true;
+#endif
 
     /*
      * This function is used very often, do some speed optimizations.
@@ -1801,6 +1822,19 @@ getvcol(
 	    head = 0;
 	    tail = 0;
 	    incr = win_lbr_chartabsize(&cts, &head, &tail);
+#ifdef FEAT_PROP_POPUP
+	    if (cts.cts_ptr == cts.cts_line)
+	    {
+		if (flags & GETVCOL_FOR_VIRTCOL)
+		    // do not count the virtual text above for w_curswant
+		    wp->w_virtcol_first_char = cts.cts_first_char;
+		if ((flags & GETVCOL_NO_ABOVE) == 0)
+		{
+		    cts.cts_vcol += cts.cts_first_char;
+		    cts.cts_above_width = cts.cts_first_char;
+		}
+	    }
+#endif
 	    // make sure we don't go past the end of the line
 	    if (*cts.cts_ptr == NUL)
 	    {
@@ -1811,11 +1845,6 @@ getvcol(
 #endif
 		break;
 	    }
-#ifdef FEAT_PROP_POPUP
-	    if (cursor == &wp->w_virtcol && cts.cts_ptr == cts.cts_line)
-		// do not count the virtual text above for w_curswant
-		wp->w_virtcol_first_char = cts.cts_first_char;
-#endif
 
 	    char_u *next_ptr = cts.cts_ptr + (*mb_ptr2len)(cts.cts_ptr);
 	    if (next_ptr - line > pos->col) // character at pos->col
@@ -1855,9 +1884,6 @@ getvcol(
 	    if (((State & MODE_INSERT) == 0 || cts.cts_start_incl) && !on_NUL)
 		// cursor is after inserted text, unless on the NUL
 		vcol += cts.cts_cur_text_width;
-	    else
-		// insertion also happens after the "above" virtual text
-		vcol += cts.cts_first_char;
 #endif
 	    *cursor = vcol + head;	    // cursor at start
 	}

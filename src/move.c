@@ -1112,7 +1112,8 @@ validate_virtcol_win(win_T *wp)
 #ifdef FEAT_PROP_POPUP
     wp->w_virtcol_first_char = 0;
 #endif
-    getvvcol(wp, &wp->w_cursor, NULL, &(wp->w_virtcol), NULL, 0);
+    getvvcol(wp, &wp->w_cursor, NULL, &(wp->w_virtcol), NULL,
+							 GETVCOL_FOR_VIRTCOL);
 #ifdef FEAT_SYN_HL
     redraw_for_cursorcolumn(wp);
 #endif
@@ -1273,8 +1274,8 @@ curs_columns(
 	startcol = curwin->w_virtcol = endcol = curwin->w_leftcol;
     else
 #endif
-	getvvcol(curwin, &curwin->w_cursor,
-				  &startcol, &(curwin->w_virtcol), &endcol, 0);
+	getvvcol(curwin, &curwin->w_cursor, &startcol,
+			 &(curwin->w_virtcol), &endcol, GETVCOL_FOR_VIRTCOL);
 
     // remove '$' from change command when cursor moves onto it
     if (startcol > dollar_vcol)
