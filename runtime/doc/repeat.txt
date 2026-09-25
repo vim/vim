@@ -245,10 +245,9 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 						*:source-dryrun*
 :so[urce] ++dryrun {file}
 :[range]so[urce] ++dryrun
-			Read the script without running it: only what
-			defines something is executed, then every |:def|
-			function in it is compiled and the errors are reported
-			as usual.
+			Read the script without running it: only what defines
+			something is executed, then every |:def| function in
+			it is compiled and the errors are reported as usual.
 			What is executed: `vim9script`, `import`, `def`,
 			`function`, `class`, `interface`, `enum`, `type` and a
 			declaration with `var`, `const` or `final`.  The

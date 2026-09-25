@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Sep 24
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Sep 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52760,6 +52760,7 @@ Highlighting: ~
 |hl-PopupTitle|		Popup window title.
 
 Vim Arguments: ~
+
 |--stdio-channel|	Control Vim via a channel using stdin/stdout
 			|channel-stdio|
 
