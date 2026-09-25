@@ -805,6 +805,26 @@ func Test_listchars_foldcolumn()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_listchars_visual()
+  CheckScreendump
+
+  let lines =<< trim END
+      call setline(1, ["\t\thello world", "    lead          here  "])
+      set list listchars=tab:›-,nbsp:␣,trail:·,lead:=,space:_,multispace:___+,eol:$
+      highlight Visual ctermbg=237 ctermfg=NONE
+      highlight SpecialKey ctermbg=NONE ctermfg=red
+  END
+  call writefile(lines, 'XTest_listchars_visual', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_listchars_visual', {'rows': 10, 'cols': 60})
+  call term_sendkeys(buf, "vip")
+
+  call VerifyScreenDump(buf, 'Test_listchars_visual', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_listchars_precedes_with_wide_char()
   new
   setlocal nowrap list listchars=eol:$,precedes:!
