@@ -308,6 +308,33 @@ def Test_assign_register()
   v9.CheckDefFailure(['@a += 123'], 'E1012:')
 enddef
 
+" An environment variable, a register and a String v: variable only take a
+" String.
+def Test_assign_string_only()
+  for target in ['$XSTRING_ONLY', '@a', 'v:errmsg']
+    v9.CheckDefAndScriptFailure([target .. ' = 123'],
+      'E1012: Type mismatch; expected string but got number', 1)
+    v9.CheckDefAndScriptFailure([target .. ' ..= 123'],
+      'E1012: Type mismatch; expected string but got number', 1)
+    v9.CheckDefAndScriptFailure([target .. ' = true'],
+      'E1012: Type mismatch; expected string but got bool', 1)
+  endfor
+  v9.CheckDefAndScriptFailure(['[$XSTRING_ONLY, @a] = [1, 2]'],
+    'E1012: Type mismatch; expected string but got number', 1)
+  v9.CheckDefAndScriptFailure(['@# ..= 1'],
+    'E1012: Type mismatch; expected string but got number', 1)
+  v9.CheckDefAndScriptSuccess(['@# = bufnr()'])
+
+  # Legacy script converts the value.
+  legacy let $XSTRING_ONLY = 123
+  legacy let @a = 456
+  legacy let v:errmsg = 789
+  assert_equal('123', $XSTRING_ONLY)
+  assert_equal('456', @a)
+  assert_equal('789', v:errmsg)
+  unlet $XSTRING_ONLY
+enddef
+
 def Test_reserved_name()
   var more_names = ['null_job', 'null_channel']
   if !has('job')
