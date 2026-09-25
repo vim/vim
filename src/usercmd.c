@@ -1373,6 +1373,20 @@ may_get_cmd_block(exarg_T *eap, char_u *p, char_u **tofree, int *flags)
 }
 
 /*
+ * Read the block of commands that may follow and throw it away.
+ * Used for ":command" and ":autocmd" while skipping.
+ */
+    void
+skip_cmd_block(exarg_T *eap)
+{
+    char_u	*tofree = NULL;
+    int		flags = 0;
+
+    (void)may_get_cmd_block(eap, eap->cmd, &tofree, &flags);
+    vim_free(tofree);
+}
+
+/*
  * ":command ..." implementation
  */
     void
@@ -1390,6 +1404,12 @@ ex_command(exarg_T *eap)
     cmd_addr_T	addr_type_arg = ADDR_NONE;
     int		has_attr = (eap->arg[0] == '-');
     int		name_len;
+
+    if (eap->skip)
+    {
+	skip_cmd_block(eap);
+	return;
+    }
 
     p = eap->arg;
 

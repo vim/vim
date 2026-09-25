@@ -1935,6 +1935,35 @@ enum_set_internal_obj_vars(class_T *en, object_T *enval)
 }
 
 /*
+ * Read the body up to ":endclass", ":endenum" or ":endinterface" and throw it
+ * away.  Used while skipping.
+ */
+    static void
+skip_class_body(exarg_T *eap)
+{
+    for (;;)
+    {
+	char_u	*theline = eap->ea_getline(':', eap->cookie, 0,
+							  GETLINE_CONCAT_ALL);
+	if (theline == NULL)
+	    break;
+
+	char_u	*p = theline;
+	int	found;
+
+	// skip ':' and blanks
+	for (; VIM_ISWHITE(*p) || *p == ':'; ++p)
+	    ;
+	found = checkforcmd(&p, "endclass", 4)
+			|| checkforcmd(&p, "endenum", 4)
+			|| checkforcmd(&p, "endinterface", 5);
+	vim_free(theline);
+	if (found)
+	    break;
+    }
+}
+
+/*
  * Handle ":class" and ":abstract class" up to ":endclass".
  * Handle ":enum" up to ":endenum".
  * Handle ":interface" up to ":endinterface".
@@ -1949,6 +1978,12 @@ ex_class(exarg_T *eap)
     int		is_interface;
     long	start_lnum = SOURCING_LNUM;
     char_u	*arg = eap->arg;
+
+    if (eap->skip)
+    {
+	skip_class_body(eap);
+	return;
+    }
 
     if (is_abstract)
     {
