@@ -1211,6 +1211,10 @@ gui_update_cursor(
 
     gui_check_pos();
 
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
+    gui_gtk_update_find_replace_overlap();
+#endif
+
     if (gui.cursor_is_valid && !force
 		&& gui.row == gui.cursor_row && gui.col == gui.cursor_col)
 	return;
