@@ -590,7 +590,7 @@ space at the end of a line is hard to see and may be accidentally deleted. >
 In |Vim9| script the backslash can often be omitted, but not always.
 See |vim9-line-continuation|.
 
-There is a problem with the ":append" and ":insert" commands: >
+There is a problem with the `:append`, `:change` and `:insert` commands: >
    :1append
    \asdf
    .
