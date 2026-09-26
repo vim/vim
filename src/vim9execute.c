@@ -2459,8 +2459,12 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 		}
 	    }
 	}
-	else if ((dest_type == VAR_LIST || dest_type == VAR_OBJECT)
-		&& tv_idx->v_type != VAR_NUMBER)
+	else if (dest_type == VAR_OBJECT)
+	{
+	    emsg(_(e_string_required));
+	    status = FAIL;
+	}
+	else if (dest_type == VAR_LIST && tv_idx->v_type != VAR_NUMBER)
 	{
 	    emsg(_(e_number_expected));
 	    status = FAIL;

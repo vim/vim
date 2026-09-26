@@ -11965,4 +11965,96 @@ def Test_nested_object_member_op_assign()
   v9.CheckSourceSuccess(lines)
 enddef
 
+def Test_index_object()
+  # Used to write past the end of the object member array.
+  var lines =<< trim END
+    vim9script
+    class C
+      var a: number = 1
+    endclass
+    def Fails()
+      var o: any = C.new()
+      o[100] = 999
+    enddef
+    Fails()
+  END
+  v9.CheckSourceFailure(lines, 'E928: String required')
+
+  # Used to write in front of the object member array.
+  lines =<< trim END
+    vim9script
+    class C
+      var a: number = 1
+    endclass
+    def Fails()
+      var o: any = C.new()
+      o[-4] = 999
+    enddef
+    Fails()
+  END
+  v9.CheckSourceFailure(lines, 'E928: String required')
+
+  # In range, but used to write a protected member.
+  lines =<< trim END
+    vim9script
+    class C
+      var _secret: number = 1
+    endclass
+    def Fails()
+      var o: any = C.new()
+      o[0] = 42
+    enddef
+    Fails()
+  END
+  v9.CheckSourceFailure(lines, 'E928: String required')
+
+  # In range, but used to store a number in a member declared as a string.
+  lines =<< trim END
+    vim9script
+    class C
+      public var name: string = 'hello'
+    endclass
+    def Fails()
+      var o: any = C.new()
+      o[0] = 999
+    enddef
+    Fails()
+  END
+  v9.CheckSourceFailure(lines, 'E928: String required')
+
+  # Using the member name instead of a number still works.
+  lines =<< trim END
+    vim9script
+    class C
+      public var a: number = 1
+    endclass
+    def Works()
+      var o = C.new()
+      var any_o: any = o
+      any_o['a'] = 7
+      assert_equal(7, o.a)
+    enddef
+    Works()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # An object reached through a member typed "any" still works.
+  lines =<< trim END
+    vim9script
+    class Inner
+      public var value: number = 0
+    endclass
+    class Outer
+      var inner: any
+    endclass
+    def Works(outer: Outer)
+      outer.inner.value = 1
+    enddef
+    var inner_obj = Inner.new(0)
+    Works(Outer.new(inner_obj))
+    assert_equal(1, inner_obj.value)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
