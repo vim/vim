@@ -1753,7 +1753,7 @@ screen_getbytes(int row, int col, char_u *bytes, int *attrp)
     bytes[1] = NUL;
 
     if (enc_utf8 && ScreenLinesUC[off] != 0)
-	bytes[utfc_char2bytes(off, bytes)] = NUL;
+	bytes[utfc_char2bytes(off, bytes, MB_MAXBYTES + 1)] = NUL;
     else if (enc_dbcs == DBCS_JPNU && ScreenLines[off] == 0x8e)
     {
 	bytes[0] = ScreenLines[off];
@@ -2620,7 +2620,7 @@ screen_char(unsigned off, int row, int col)
 	    ++screen_cur_col;
 
 	// Convert the UTF-8 character to bytes and write it.
-	buf[utfc_char2bytes(off, buf)] = NUL;
+	buf[utfc_char2bytes(off, buf, sizeof(buf))] = NUL;
 	out_str(buf);
     }
     else

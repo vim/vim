@@ -2319,7 +2319,7 @@ gui_screenchar(
 
     if (enc_utf8 && ScreenLinesUC[off] != 0)
 	// Draw UTF-8 multi-byte character.
-	return gui_outstr_nowrap(buf, utfc_char2bytes(off, buf),
+	return gui_outstr_nowrap(buf, utfc_char2bytes(off, buf, sizeof(buf)),
 							 flags, fg, bg, back);
 
     if (enc_dbcs == DBCS_JPNU && ScreenLines[off] == 0x8e)
@@ -2361,7 +2361,9 @@ gui_screenstr(
 
     if (enc_utf8)
     {
-	buf = alloc(len * MB_MAXBYTES + 1);
+	size_t	buflen = (size_t)len * MB_MAXBYTES + 1;
+
+	buf = alloc(buflen);
 	if (buf == NULL)
 	    return OK; // not much we could do here...
 
@@ -2373,7 +2375,8 @@ gui_screenstr(
 	    if (ScreenLinesUC[i] == 0)
 		buf[outlen++] = ScreenLines[i];
 	    else
-		outlen += utfc_char2bytes(i, buf + outlen);
+		outlen += utfc_char2bytes(i, buf + outlen,
+							  buflen - outlen);
 	}
 
 	buf[outlen] = NUL; // only to aid debugging

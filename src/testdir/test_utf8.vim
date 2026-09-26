@@ -388,6 +388,29 @@ func Test_overlong_utf8_cells()
   bwipe!
 endfunc
 
+" Composing characters in the supplementary planes take four bytes each.  A
+" base character followed by six of them used to write more than MB_MAXBYTES
+" bytes into the buffer of utfc_char2bytes().
+func Test_composing_chars_four_bytes()
+  new
+  let save_mco = &maxcombine
+  set maxcombine=6
+
+  for base in [0x1F600, 0x4000000]
+    let text = nr2char(base)
+    for c in [0x101fd, 0x102e0, 0x10376, 0x10377, 0x10378, 0x10379]
+      let text ..= nr2char(c)
+    endfor
+    call setline(1, text)
+    redraw
+    " MB_MAXBYTES is 21, one more byte is used for the NUL.
+    call assert_inrange(1, 21, strlen(screenstring(1, 1)))
+  endfor
+
+  let &maxcombine = save_mco
+  bwipe!
+endfunc
+
 func Test_isprint_leading_byte()
   new
   let save_isprint = &isprint

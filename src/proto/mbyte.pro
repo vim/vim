@@ -28,7 +28,7 @@ int mb_cptr2char_adv(char_u **pp);
 int utf_composinglike(char_u *p1, char_u *p2);
 int utfc_ptr2char(char_u *p, int *pcc);
 int utfc_ptr2char_len(char_u *p, int *pcc, int maxlen);
-int utfc_char2bytes(int off, char_u *buf);
+int utfc_char2bytes(int off, char_u *buf, size_t buflen);
 int utf_ptr2len(char_u *p);
 int utf_byte2len(int b);
 int utf_byte2len_zero(int b);

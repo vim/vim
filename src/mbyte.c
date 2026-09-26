@@ -2208,12 +2208,14 @@ utfc_ptr2char_len(
 /*
  * Convert the character at screen position "off" to a sequence of bytes.
  * Includes the composing characters.
- * "buf" must at least have the length MB_MAXBYTES + 1.
+ * "buf" must have room for "buflen" bytes, including a terminating NUL, which
+ * is not added here.  Composing characters that do not fit are dropped, a
+ * composing character in the supplementary planes takes four bytes.
  * Only to be used when ScreenLinesUC[off] != 0.
  * Returns the produced number of bytes.
  */
     int
-utfc_char2bytes(int off, char_u *buf)
+utfc_char2bytes(int off, char_u *buf, size_t buflen)
 {
     int		len;
     int		i;
@@ -2222,6 +2224,9 @@ utfc_char2bytes(int off, char_u *buf)
     for (i = 0; i < Screen_mco; ++i)
     {
 	if (ScreenLinesC[i][off] == 0)
+	    break;
+	// Leave room for the NUL the caller adds at "buf[len]".
+	if ((size_t)(len + utf_char2len(ScreenLinesC[i][off])) >= buflen)
 	    break;
 	len += utf_char2bytes(ScreenLinesC[i][off], buf + len);
     }
