@@ -28,4 +28,6 @@ void ga_concat(garray_T *gap, char_u *s);
 void ga_concat_len(garray_T *gap, char_u *s, size_t len);
 int ga_append(garray_T *gap, int c);
 void append_ga_line(garray_T *gap);
+int ga_concat_bytes(garray_T *gap, const char *s, int len);
+int ga_concat_int(garray_T *gap, int n);
 // vim: ft=c

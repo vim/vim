@@ -2026,6 +2026,11 @@ typedef struct
 #else
 # define TABPANEL_FUNC(name) NULL
 #endif
+#ifdef FEAT_IMAGE
+# define IMAGE_FUNC(name) name
+#else
+# define IMAGE_FUNC(name) NULL
+#endif
 
 static const funcentry_T global_functions[] =
 {
@@ -2517,6 +2522,12 @@ static const funcentry_T global_functions[] =
 			ret_string,	    f_iconv},
     {"id",		1, 1, FEARG_1,	    NULL,
 			ret_string,	    f_id},
+    {"image_add",	1, 1, FEARG_1,	    arg1_dict_any,
+			ret_number,	    IMAGE_FUNC(f_image_add)},
+    {"image_discard",	1, 1, FEARG_1,	    arg1_number,
+			ret_void,	    IMAGE_FUNC(f_image_discard)},
+    {"image_info",	0, 1, FEARG_1,	    arg1_number,
+			ret_dict_any,	    IMAGE_FUNC(f_image_info)},
     {"indent",		1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_indent},
     {"index",		2, 4, FEARG_1,	    arg24_index,
@@ -5703,22 +5714,14 @@ f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv)
     else
 #endif
     {
-	struct cellsize cs;
 #if defined(UNIX) || defined(MSWIN)
-	mch_calc_cell_size(&cs);
+	list_append_number(rettv->vval.v_list, (varnumber_T)cell_width);
+	list_append_number(rettv->vval.v_list, (varnumber_T)cell_height);
 #else
 	// Non-Unix CUIs are not supported, so set this to -1x-1.
-	cs.cs_xpixel = -1;
-	cs.cs_ypixel = -1;
+	list_append_number(rettv->vval.v_list, (varnumber_T)-1);
+	list_append_number(rettv->vval.v_list, (varnumber_T)-1);
 #endif
-
-	// failed get pixel size.
-	if (cs.cs_xpixel == -1)
-	    return;
-
-	// success pixel size and no gui.
-	list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_xpixel);
-	list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_ypixel);
     }
 
 }
@@ -7247,36 +7250,8 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"image_cairo",
-#ifdef FEAT_IMAGE_CAIRO
-		1
-#else
-		0
-#endif
-		},
-	{"image_gdi",
-#ifdef FEAT_IMAGE_GDI
-		1
-#else
-		0
-#endif
-		},
-	{"image_gdk",
-#ifdef FEAT_IMAGE_GDK
-		1
-#else
-		0
-#endif
-		},
-	{"image_kitty",
-#ifdef FEAT_IMAGE_KITTY
-		1
-#else
-		0
-#endif
-		},
-	{"image_sixel",
-#ifdef FEAT_IMAGE_SIXEL
+	{"image_popup",
+#ifdef FEAT_IMAGE_POPUP
 		1
 #else
 		0

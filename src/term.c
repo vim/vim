@@ -2471,6 +2471,10 @@ set_termname(char_u *term)
     may_req_termresponse();
 #endif
 
+#ifdef FEAT_IMAGE
+    (void)update_image_backend();
+#endif
+
     return OK;
 }
 
@@ -3738,6 +3742,36 @@ win_new_shellsize(void)
     }
 }
 
+#if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
+    void
+update_cell_size(void)
+{
+# ifdef FEAT_GUI
+    if (gui.in_use)
+    {
+	cell_width = gui.char_width;
+	cell_height = gui.char_height;
+    }
+    else
+# endif
+    {
+	struct cellsize cell_sz;
+
+	mch_calc_cell_size(&cell_sz);
+	if (cell_sz.cs_xpixel <= 0 || cell_sz.cs_ypixel <= 0)
+	{
+	    cell_width = 8;
+	    cell_height = 16;
+	}
+	else
+	{
+	    cell_width = cell_sz.cs_xpixel;
+	    cell_height = cell_sz.cs_ypixel;
+	}
+    }
+}
+#endif
+
 /*
  * Call this function when the Vim shell has been resized in any way.
  * Will obtain the current size and redraw (also when size didn't change).
@@ -3745,6 +3779,9 @@ win_new_shellsize(void)
     void
 shell_resized(void)
 {
+#if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
+    update_cell_size();
+#endif
     set_shellsize(0, 0, FALSE);
 }
 
@@ -5409,6 +5446,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	    }
 	    termrequest_sent(&decrqm_status);
 	    need_flush = TRUE;
+
 	}
 
 	if (need_flush)
@@ -5800,6 +5838,31 @@ handle_csi(
 	*slen = csi_len;
     }
 
+#if (defined(UNIX) || defined(MSWIN)) \
+    && (defined(FEAT_IMAGE) || defined(FEAT_EVAL))
+    // Response to CSI 14 t or CSI 16 t
+    else if (first == -1 && argc >= 3
+	    && (arg[0] == 4 || arg[0] == 6) && trail == 't')
+    {
+	if (arg[0] == 4)
+	{
+	    LOG_TRN("Received CSI 14 t response: %s", tp);
+	    cell_width = arg[2] / Columns;
+	    cell_height = arg[1] / Rows;
+	}
+	else
+	{
+	    LOG_TRN("Received CSI 16 t response: %s", tp);
+	    cell_width = arg[2];
+	    cell_height = arg[1];
+	}
+
+	key_name[0] = (int)KS_EXTRA;
+	key_name[1] = (int)KE_IGNORE;
+	*slen = csi_len;
+    }
+#endif
+
     // Primary device attributes (DA1) response
     else if (first == '?' && trail == 'c')
     {
@@ -5814,6 +5877,7 @@ handle_csi(
 
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;
+	*slen = csi_len;
     }
 
     // DECRPM mode 2026 or 2048.
@@ -7387,6 +7451,21 @@ gather_termleader(void)
     if (gui.in_use)
 	termleader[len++] = CSI;    // the GUI codes are not in termcodes[]
 #endif
+
+    // Querying cell size uses CSI 14 t
+#if defined(MSWIN) && (defined(FEAT_IMAGE) || defined(FEAT_EVAL))
+# ifdef FEAT_GUI
+    if (!gui.in_use)
+# endif
+    {
+	termleader[len++] = ESC;
+# ifdef FEAT_GUI
+	if (!gui.in_use)
+# endif
+	    termleader[len++] = CSI;
+    }
+#endif
+
 #ifdef FEAT_TERMRESPONSE
     if (check_for_codes || *T_CRS != NUL)
 	termleader[len++] = DCS;    // the termcode response starts with DCS
