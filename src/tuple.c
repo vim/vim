@@ -989,7 +989,7 @@ tuple_max_min(tuple_T *tuple, int domax)
  * Repeat the tuple "tuple" "n" times and set "rettv" to the new tuple.
  */
     void
-tuple_repeat(tuple_T *tuple, int n, typval_T *rettv)
+tuple_repeat(tuple_T *tuple, varnumber_T n, typval_T *rettv)
 {
     rettv->v_type = VAR_TUPLE;
     rettv->vval.v_tuple = NULL;
@@ -997,11 +997,14 @@ tuple_repeat(tuple_T *tuple, int n, typval_T *rettv)
     if (tuple == NULL || TUPLE_LEN(tuple) == 0 || n <= 0)
 	return;
 
-    if (rettv_tuple_set_with_items(rettv, TUPLE_LEN(tuple) * n) == FAIL)
+    if (check_repeat_count(TUPLE_LEN(tuple), n) == FAIL)
+	return;
+
+    if (rettv_tuple_set_with_items(rettv, TUPLE_LEN(tuple) * (int)n) == FAIL)
 	return;
 
     tuple_T	*new_tuple = rettv->vval.v_tuple;
-    for (int count = 0; count < n; count++)
+    for (int count = 0; count < (int)n; count++)
     {
 	for (int idx = 0; idx < TUPLE_LEN(tuple); idx++)
 	{
