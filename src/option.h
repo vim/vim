@@ -729,6 +729,9 @@ EXTERN char_u	*p_imak;	// 'imactivatekey'
 # define IM_OVER_THE_SPOT	1L
 EXTERN long	p_imst;		// 'imstyle'
 #endif
+#ifdef FEAT_IMAGE
+EXTERN char_u	*p_ipc;		// 'imageprotocol'
+#endif
 #if defined(FEAT_EVAL)
 EXTERN char_u	*p_imaf;	// 'imactivatefunc'
 EXTERN char_u	*p_imsf;	// 'imstatusfunc'

@@ -4400,119 +4400,24 @@ mch_get_shellsize(void)
     return OK;
 }
 
+# if defined(FEAT_EVAL) || defined(FEAT_IMAGE)
 /*
- * Synchronously ask the terminal for its window pixel dimensions via the
- * xterm CSI 14 t query and parse the CSI 4 ; H ; W t response.  Returns OK
- * and fills *win_w and *win_h on success.  Returns FAIL on any error
- * (non-tty, no response within ~200ms, malformed reply).
- *
- * Any bytes that arrive before / after the response (e.g. the user typed
- * something while we were probing) are forwarded to the regular input
- * buffer via add_to_input_buf() so keystrokes are not swallowed.
- */
-    static int
-query_terminal_pixel_size(int *win_w, int *win_h)
-{
-    struct termios old_t, new_t;
-    int		fd_in = read_cmd_fd;
-    int		fd_out = 1;
-    char	buf[64];
-    int		n = 0;
-    char	*p, *semi, *end, *rest;
-    char	*resp_end;
-    long	hpx, wpx;
-    ssize_t	r;
-    int		ret = FAIL;
-
-    if (!isatty(fd_in) || !isatty(fd_out))
-	return FAIL;
-    if (tcgetattr(fd_in, &old_t) != 0)
-	return FAIL;
-    new_t = old_t;
-    new_t.c_lflag &= ~(ICANON | ECHO);
-    new_t.c_cc[VMIN] = 0;
-    new_t.c_cc[VTIME] = 2;	    // 200ms grace per read()
-    if (tcsetattr(fd_in, TCSANOW, &new_t) != 0)
-	return FAIL;
-
-    if (write(fd_out, "\033[14t", 5) != 5)
-    {
-	tcsetattr(fd_in, TCSANOW, &old_t);
-	return FAIL;
-    }
-
-    while (n < (int)sizeof(buf) - 1)
-    {
-	char c;
-
-	r = read(fd_in, &c, 1);
-	if (r != 1)
-	    break;
-	buf[n++] = c;
-	if (c == 't')
-	    break;
-    }
-    buf[n] = 0;
-    tcsetattr(fd_in, TCSANOW, &old_t);
-
-    // expected: ESC [ 4 ; H ; W t
-    p = (char *)vim_strchr((char_u *)buf, '\033');
-    if (p != NULL && p[1] == '[' && p[2] == '4' && p[3] == ';')
-    {
-	char *q = p + 4;
-
-	semi = (char *)vim_strchr((char_u *)q, ';');
-	end = semi != NULL ? (char *)vim_strchr((char_u *)semi, 't') : NULL;
-	if (end != NULL)
-	{
-	    hpx = strtol(q, &rest, 10);
-	    if (rest == semi && hpx > 0 && hpx <= INT_MAX)
-	    {
-		wpx = strtol(semi + 1, &rest, 10);
-		if (rest == end && wpx > 0 && wpx <= INT_MAX)
-		{
-		    *win_w = (int)wpx;
-		    *win_h = (int)hpx;
-		    ret = OK;
-		}
-	    }
-	}
-    }
-
-    // Push back bytes that were not part of the response, so any keystrokes
-    // typed during the probe do not get lost.  On a failed parse, everything
-    // in buf is treated as foreign input.
-    if (ret == OK)
-    {
-	resp_end = end + 1;	    // one past the matched 't'
-	if (p > buf)
-	    add_to_input_buf((char_u *)buf, (int)(p - buf));
-	if (resp_end < buf + n)
-	    add_to_input_buf((char_u *)resp_end,
-				    (int)((buf + n) - resp_end));
-    }
-    else if (n > 0)
-	add_to_input_buf((char_u *)buf, n);
-
-    return ret;
-}
-
-/*
- * Try to get the current terminal cell size.
- * On failure, returns -1x-1
+ * Try to get the current terminal cell size. May return -1 x -1.
  */
     void
 mch_calc_cell_size(struct cellsize *cs_out)
 {
-   // get current tty size.
-   struct winsize ws;
-   int fd = 1;
-   int retval = -1;
-   retval = ioctl(fd, TIOCGWINSZ, &ws);
+   struct winsize   ws;
+   int		    retval;
+   int		    x_cell_size;
+   int		    y_cell_size;
 
-# ifdef FEAT_EVAL
+   // If fd is not a terminal, then -1 is returned
+   retval = ioctl(read_cmd_fd, TIOCGWINSZ, &ws);
+
+#  ifdef FEAT_EVAL
    ch_log(NULL, "ioctl(TIOCGWINSZ) %s", retval == 0 ? "success" : "failed");
-# endif
+#  endif
 
    if (retval == -1 || ws.ws_col == 0 || ws.ws_row == 0)
    {
@@ -4521,56 +4426,25 @@ mch_calc_cell_size(struct cellsize *cs_out)
 	return;
    }
 
-   // calculate parent tty's pixel per cell.
-   int x_cell_size = ws.ws_xpixel / ws.ws_col;
-   int y_cell_size = ws.ws_ypixel / ws.ws_row;
+   // Calculate parent tty's pixel per cell.
+   x_cell_size = ws.ws_xpixel / ws.ws_col;
+   y_cell_size = ws.ws_ypixel / ws.ws_row;
 
-   // many terminals leave ws_xpixel/ws_ypixel zero; ask via CSI 14 t.
-   // Cache the resulting *cell* size (cell px is invariant under window
-   // resize as long as the font size stays the same -- caching the raw
-   // window pixel size and re-dividing by ws_col/ws_row would produce
-   // garbage after a resize).
-   if (x_cell_size <= 0 || y_cell_size <= 0)
-   {
-	static int csi14_state = -1;	    // -1 unknown, 0 fail, 1 ok
-	static int csi14_cell_x = 0;
-	static int csi14_cell_y = 0;
-
-	if (csi14_state == 1)
-	{
-	    x_cell_size = csi14_cell_x;
-	    y_cell_size = csi14_cell_y;
-	}
-	else if (csi14_state == -1)
-	{
-	    int wpx, hpx;
-
-	    csi14_state = 0;
-	    if (query_terminal_pixel_size(&wpx, &hpx) == OK
-				    && wpx / ws.ws_col > 0
-				    && hpx / ws.ws_row > 0)
-	    {
-		x_cell_size = wpx / ws.ws_col;
-		y_cell_size = hpx / ws.ws_row;
-		csi14_state = 1;
-		csi14_cell_x = x_cell_size;
-		csi14_cell_y = y_cell_size;
-# ifdef FEAT_EVAL
-		ch_log(NULL, "Got cell pixel size via CSI 14 t: %d x %d",
-						    x_cell_size, y_cell_size);
-# endif
-	    }
-	}
-   }
-
-   // calculate current tty's pixel
    cs_out->cs_xpixel = x_cell_size > 0 ? x_cell_size : -1;
    cs_out->cs_ypixel = y_cell_size > 0 ? y_cell_size : -1;
 
-# ifdef FEAT_EVAL
-   ch_log(NULL, "Got cell pixel size with TIOCGWINSZ: %d x %d", x_cell_size, y_cell_size);
-# endif
+   // Some terminals do not handle TIOCGWINSZ, send CSI 14 t (query terminal
+   // size in pixels), and CSI 16 t (less common, gets cell size in pixels
+   // directly).
+   if (x_cell_size <= 0 || y_cell_size <= 0)
+   {
+       // Default to 8x16 pixels for now until we receive a response.
+       OUT_STR("\033[14t");
+       OUT_STR("\033[16t");
+       out_flush();
+   }
 }
+# endif
 
 # if defined(FEAT_TERMINAL)
 /*

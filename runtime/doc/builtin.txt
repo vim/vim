@@ -338,6 +338,9 @@ hlset({list})			Number	set highlight group attributes
 hostname()			String	name of the machine Vim is running on
 iconv({expr}, {from}, {to})	String	convert encoding of {expr}
 id({item})			String	get unique identity string of item
+image_add({dict})		Number	Add an image and return handle to it
+image_discard({id})		none	Discard an image handle
+image_info([{id}])		List	Get information about an image
 indent({lnum})			Number	indent of line {lnum}
 index({object}, {expr} [, {start} [, {ic}]])
 				Number	index in {object} where {expr} appears
@@ -6213,6 +6216,77 @@ indexof({object}, {expr} [, {opts}])			*indexof()*
 			mylist->indexof(expr)
 <
 		Return type: |Number|
+
+
+image_add({dict})					*image_add()*
+		Add an image using the given information in {dict}.  This does
+		not display an image, it simply loads the image data so that
+		it can be reference elsewhere (e.g. popup windows) multiple
+		times.
+
+		The {dict} argument must contain the following fields:
+		    "data"	a blob containing RGB or RGBA data, the format
+				is automatically detected using the dimensions
+				and blob size.
+		    "width"	width of image in pixels
+		    "height"	height of image in pixels
+
+		The return value is an arbitrary ID that can be used to
+		reference the image.
+
+		{only available when compiled with the |+image| feature}
+
+		Can also be used as a |method|: >
+			info->image_add()
+<
+		Return type: |Number|
+
+
+image_discard({id})					*image_discard()*
+		Discard an image with ID {id}, internally decreasing its
+		reference count.  The image will only actually be deleted when
+		there are no more references to it left.  Note that after this,
+		the given image and its ID can not be referenced or modified.
+		This function only works on images created with |image_add()|,
+		images created directly from popup windows can not be
+		discarded or referenced anywhere else.
+
+		For example, if discarding an image that is still referenced
+		by a popup window, the popup window will still display the
+		image.
+
+		It is an error to provide an invalid image ID |E1587|.
+
+		{only available when compiled with the |+image| feature}
+
+		Can also be used as a |method|: >
+			id->image_discard()
+<
+		Return type: void
+
+
+image_info([{id}])					*image_info()* *E1587*
+		Return a list with information about loaded images.
+		When {id} is given only information about this image is
+		returned.  It is an error to use an invalid image ID.
+
+		When {id} is omitted information about all images is returned.
+
+		For each image the information is stored in a |Dictionary|
+		with these items:
+		    "id"	the image ID
+		    "data"	newly copied blob of the image data
+		    "width"	width of image in pixels
+		    "height"	height of image in pixels
+		    "alpha"	if image has an alpha channel (RGBA)
+		    "format"	image format, either "rgb" or "rgba"
+
+		{only available when compiled with the |+image| feature}
+
+		Can also be used as a |method|: >
+			GetImage()->image_info()
+<
+		Return type: list<dict<any>>
 
 
 input({prompt} [, {text} [, {completion}]])		*input()*

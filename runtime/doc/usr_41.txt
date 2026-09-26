@@ -1455,6 +1455,11 @@ Sound:							*sound-functions*
 	sound_playfile()	play a sound file
 	sound_stop()		stop playing a sound
 
+Images:
+	image_add()		add an image
+	image_discard()		discard an image
+	image_info()		get information about image(s)
+
 Various:					*various-functions*
 	mode()			get current editing mode
 	state()			get current busy state

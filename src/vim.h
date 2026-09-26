@@ -695,6 +695,7 @@ extern int *dyn_libintl_nl_msg_cat_cntr;
 #define POPF_POSINVERT	0x800	// vertical position can be inverted
 #define POPF_OPACITY 0x1000	// popup has opacity/transparency setting
 #define POPF_CLIPWINDOW	0x2000	// confine popup to its host window's rect
+#define POPF_GLOBAL	0x4000	// popup is global (not tabpage local)
 
 // flags used in w_popup_handled
 #define POPUP_HANDLED_1	    0x01    // used by mouse_find_win()
@@ -2275,7 +2276,8 @@ typedef int sock_T;
 #define VV_TERMOSC 115
 #define VV_VIM_DID_INIT		116
 #define VV_CLIPPROVIDERS 117
-#define VV_LEN		118	// number of v: vars
+#define VV_IMAGEBACKEND 118
+#define VV_LEN		119	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
@@ -2712,6 +2714,16 @@ in_vim9script(void)
 #ifdef FEAT_NETBEANS_INTG
 # define MULTISIGN_BYTE 2   // byte value used where sign is displayed if
 			    // multiple signs exist on the line
+#endif
+
+#if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE)
+// Logical pixels to physical pixels
+# define LOG2PHY(l) (gui.in_use ? (double)(l) * gui.scale : (l))
+ // Physical pixels to logical pixels
+# define PHY2LOG(p) (gui.in_use ? (double)(p) / gui.scale : (p))
+#else
+# define LOG2PHY(l) (l)
+# define PHY2LOG(p) (p)
 #endif
 
 #if defined(FEAT_GUI) && defined(FEAT_XCLIPBOARD)
