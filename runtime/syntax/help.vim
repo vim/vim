@@ -56,8 +56,7 @@ unlet! s:lang s:syntax
 if has_key(g:help_example_languages, "vim9")
   " for example at :help vim9-mix
   syn region vim9LegacyHeader_HelpExample
-	\ start=+" _legacy Vim script_ comments are placed here+
-	\ start=+" legacy Vim script comment before vim9script+
+	\ start='^\s\+"\s.\+\n'
 	\ end="^\ze\s*vim9s\%[cript]\>"
 	\ contains=@vimLegacyTop,vimComment,vimLineComment,vimLineStart
   syn cluster helpExampleHighlight_vim9 add=vim9LegacyHeader_HelpExample
