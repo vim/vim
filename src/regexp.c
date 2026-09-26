@@ -2991,6 +2991,12 @@ get_char_class_bits(char_u *start, char_u *end, int *newl)
     if (p != end)
 	return -1;
 
+    // A UTF-8 character such as U+017F (long s) may fold to an ASCII
+    // letter.  The character class opcodes only check the ASCII character
+    // itself, while a collection also checks its case fold.
+    if (enc_utf8 && (config & (CLASS_af | CLASS_AF | CLASS_az | CLASS_AZ)))
+	return -1;
+
     return config;
 }
 
