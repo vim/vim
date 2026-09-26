@@ -1161,6 +1161,55 @@ func Test_prop_undo()
   call prop_type_delete('comment')
 endfunc
 
+" A property added across the edge of the lines that undo/redo restores after
+" they were saved.
+func Test_prop_undo_redo_added_across_lines()
+  new
+  call prop_type_add('comment', {'highlight': 'Directory'})
+  call setline(1, ['one', 'two', 'three', 'four'])
+  set ul&
+  exe "normal 2Gdd"
+  undo
+
+  " Redo deletes the line where the property starts.
+  call prop_add(2, 1, {'end_lnum': 3, 'end_col': 6, 'type': 'comment'})
+  redo
+  call assert_equal(['one', 'three', 'four'], getline(1, '$'))
+  call assert_equal([#{lnum: 2, col: 1, length: 5, id: 0, type_bufnr: 0,
+        \ type: 'comment', start: 1, end: 1}],
+        \ prop_list(1, {'end_lnum': -1}))
+
+  " Undo brings back the line, and the property goes over two lines again.
+  undo
+  call assert_equal(['one', 'two', 'three', 'four'], getline(1, '$'))
+  call assert_equal([
+        \ #{lnum: 2, col: 1, length: 4, id: 0, type_bufnr: 0,
+        \   type: 'comment', start: 1, end: 0},
+        \ #{lnum: 3, col: 1, length: 5, id: 0, type_bufnr: 0,
+        \   type: 'comment', start: 0, end: 1}],
+        \ prop_list(1, {'end_lnum': -1}))
+  call prop_clear(1, 4)
+
+  " Redo deletes the line where the property ends.
+  call prop_add(1, 1, {'end_lnum': 2, 'end_col': 4, 'type': 'comment'})
+  redo
+  call assert_equal(['one', 'three', 'four'], getline(1, '$'))
+  call assert_equal([#{lnum: 1, col: 1, length: 4, id: 0, type_bufnr: 0,
+        \ type: 'comment', start: 1, end: 1}],
+        \ prop_list(1, {'end_lnum': -1}))
+  undo
+  call assert_equal(['one', 'two', 'three', 'four'], getline(1, '$'))
+  call assert_equal([
+        \ #{lnum: 1, col: 1, length: 4, id: 0, type_bufnr: 0,
+        \   type: 'comment', start: 1, end: 0},
+        \ #{lnum: 2, col: 1, length: 3, id: 0, type_bufnr: 0,
+        \   type: 'comment', start: 0, end: 1}],
+        \ prop_list(1, {'end_lnum': -1}))
+
+  bwipe!
+  call prop_type_delete('comment')
+endfunc
+
 func Test_prop_delete_text()
   new
   call prop_type_add('comment', {'highlight': 'Directory'})
