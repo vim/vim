@@ -44,9 +44,25 @@ mechanism.
 
 
 EXAMPLE LANGUAGES~
-							*vim9-mix*
-There is one way to use both legacy and Vim9 syntax in one script file: >vim9
 
+Legacy Vim Script Headers~
+
+							*vim9-comments*
+ ...
+
+syntax, so a quotation mark:
+>vim9
+	" legacy Vim script comment before vim9script
+	vim9script
+	# Vim9 script comment
+<
+You may think that looks peculiar.  Placing all comments after the `vim9script`
+
+ ...
+
+							*vim9-mix*
+There is one way to use both legacy and Vim9 syntax in one script file:
+>vim9
 	" _legacy Vim script_ comments are placed here
 	if !has('vim9script')
 	  " _legacy Vim script_ comments and commands are placed here
@@ -55,8 +71,20 @@ There is one way to use both legacy and Vim9 syntax in one script file: >vim9
 	vim9script
 	# _Vim9 script_ commands/commands from here onwards
 	echowindow $"has('vim9script') == {has('vim9script')}"
-
+<
 This allows for writing a script that takes advantage of the Vim9 script
-syntax if possible, but will also work on a Vim version without it.
+
+ ...
+
+patch 1232), a better condition is:
+>vim9
+	if !has('patch-9.1.1232')
+	  echowindow $"Fail: Vim does not have patch 9.1.1232"
+	  finish
+	endif
+	vim9script
+	echowindow $"Pass: version {v:versionlong}.  Continuing ..."
+<
+Whichever vim-mix condition is used, it only works in one of two ways:
 
  vim:tw=78:ts=8:noet:ft=help:norl:

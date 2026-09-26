@@ -325,13 +325,15 @@ syntax, so a quotation mark:
 	vim9script
 	# Vim9 script comment
 <
-That looks ugly (especially with the syntax highlighting not treating the
-initial Vim script comment in Comment highlight group as a command).
-It is better having the `vim9script` command as the first line:
+You may think that looks peculiar.  Placing all comments after the `vim9script`
+is tider.
 >vim9
 	vim9script
-	# Vim9 script comment
+	# All comments here
 <
+	Note that in the |vim9-mix| scenario, legacy Vim script comments cannot
+	be avoided.
+
 In legacy Vim script, # is also used for the alternate file name.  In Vim9
 script you must use %% instead.  Instead of ##, use %%%, which stands for
 all arguments.  See |c_%%| and |c_%%%#|.
