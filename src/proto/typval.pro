@@ -92,4 +92,5 @@ linenr_T tv_get_lnum(typval_T *argvars);
 linenr_T tv_get_lnum_buf(typval_T *argvars, buf_T *buf);
 buf_T *tv_get_buf(typval_T *tv, int curtab_only);
 buf_T *tv_get_buf_from_arg(typval_T *tv);
+int check_repeat_count(varnumber_T slen, varnumber_T n);
 // vim: ft=c
