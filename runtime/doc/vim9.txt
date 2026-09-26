@@ -325,9 +325,8 @@ syntax, so a quotation mark:
 	vim9script
 	# Vim9 script comment
 <
-That looks ugly (especially with the syntax highlighting not treating the
-initial Vim script comment in Comment highlight group as a command).
-It is better having the `vim9script` command as the first line:
+That looks ugly.  It is better having the `vim9script` command as the first
+line:
 >vim9
 	vim9script
 	# Vim9 script comment
