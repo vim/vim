@@ -1276,15 +1276,13 @@ get_function_body(
 	    }
 
 	    // Check for ":append", ":change", ":insert".  Not for :def.
-	    char_u *tp = p = skip_range(p, FALSE, NULL);
+	    p = skip_range(p, FALSE, NULL);
+	    arg = p;
 	    if (!vim9_function
-		&& (checkforcmd(&p, "append", 1)
-		    || checkforcmd(&p, "change", 1)
-		    || checkforcmd(&p, "insert", 1))
-		    && (*p == '!' || *p == '|' || IS_WHITE_NL_OR_NUL(*p)))
+		&& (checkforcmd(&arg, "append", 1)
+		    || checkforcmd(&arg, "change", 1)
+		    || checkforcmd(&arg, "insert", 1)))
 		skip_until = vim_strnsave((char_u *)".", 1);
-	    else
-		p = tp;
 
 	    // Check for ":python <<EOF", ":tcl <<EOF", etc.
 	    arg = skipwhite(skiptowhite(p));
