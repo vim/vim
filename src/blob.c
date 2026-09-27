@@ -1010,6 +1010,10 @@ f_list2blob(typval_T *argvars, typval_T *rettv)
     if (l == NULL)
 	return;
 
+    // The result has one byte per list item; reserve all space at once.
+    if (ga_grow(&blob->bv_ga, list_len(l)) == FAIL)
+	return;
+
     CHECK_LIST_MATERIALIZE(l);
     FOR_ALL_LIST_ITEMS(l, li)
     {
@@ -1025,7 +1029,7 @@ f_list2blob(typval_T *argvars, typval_T *rettv)
 	    ga_clear(&blob->bv_ga);
 	    return;
 	}
-	ga_append(&blob->bv_ga, n);
+	((char_u *)blob->bv_ga.ga_data)[blob->bv_ga.ga_len++] = (char_u)n;
     }
 }
 
