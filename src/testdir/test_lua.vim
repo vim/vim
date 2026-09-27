@@ -65,7 +65,7 @@ func Test_lua_luado()
   call setline(1, ['one', 'two'])
   luado return(linenr)
   call assert_equal(['1', '2'], getline(1, '$'))
-  close!
+  bw!
 
   " Error cases
   call assert_fails('luado string.format()',
@@ -895,7 +895,7 @@ func Test_lua_string_with_newline()
   lua k = vim.buffer(vim.eval('bufnr()'))
   lua k:insert("Hello\0World", 0)
   call assert_equal(["Hello\nWorld", ''], getline(1, '$'))
-  close!
+  bw!
 endfunc
 
 func Test_lua_set_cursor()
