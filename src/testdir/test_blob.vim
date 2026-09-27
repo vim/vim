@@ -752,6 +752,20 @@ func Test_blob2list()
   call assert_equal([], blob2list(test_null_blob()))
 endfunc
 
+func Test_blob2list_edit_result()
+  let b = list2blob(range(256))
+  let l = blob2list(b)
+  call assert_equal(range(256), l)
+  call assert_equal(range(1, 254), remove(l, 1, 254))
+  call insert(l, 42, 1)
+  call add(l, 99)
+  call reverse(l)
+  call assert_equal([99, 255, 42, 0], l)
+  let l[1] = 'changed'
+  call assert_equal([99, 'changed', 42, 0], l)
+  call assert_equal(list2blob(range(256)), b)
+endfunc
+
 " Tests for the list2blob() function
 func Test_list2blob()
   call assert_fails('let b = list2blob(0z10)', 'E1211: List required for argument 1')
