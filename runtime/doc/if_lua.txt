@@ -1,4 +1,4 @@
-*if_lua.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*if_lua.txt*	For Vim version 9.2.  Last change: 2026 Sep 27
 
 
 		  VIM REFERENCE MANUAL	  by Luis Carvalho
@@ -346,8 +346,9 @@ Properties
 ----------
 	o "#b" is the length of blob "b", equivalent to "len(b)" in Vim.
 	o "b[k]" returns the k-th item in "b"; "b" is zero-indexed, as in Vim.
-	    To modify the k-th item, simply do "b[k] = number"; in particular,
-	    "b[#b] = number" can append a byte to tail.
+	    A negative "k" counts from the end, also as in Vim, thus "b[-1]" is
+	    the last item.  To modify the k-th item, simply do
+	    "b[k] = number"; "b[#b] = number" can append a byte to tail.
 
 Methods
 -------
