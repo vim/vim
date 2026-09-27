@@ -17,8 +17,8 @@ for visual changes, a before/after screenshot is helpful
 <!--
 Changes to the C core are merged with a message in this form.
 
-    Problem:  <one line: what is wrong, from the user's point of view>
-    Solution: <one line: what this does about it>
+    Problem:  <one short sentence: what is wrong, from the user's point of view>
+    Solution: <one short sentence: what this does about it>
 
 Anything longer (mechanism, benchmark numbers, why an alternative was
 rejected) goes in the body below the Solution line.
@@ -60,8 +60,7 @@ Please disclose AI involvement by adding the trailer
 
 - [ ] The commit message follows the Problem/Solution form above
 - [ ] `Signed-off-by:` trailer is present (`git commit -s`)
-- [ ] A test was added, or the change cannot be tested (say why)
-- [ ] A test was added and ran locally, or the change cannot be tested (say why), or is already tested.
+- [ ] Tests were added, existing tests cover the change, or the change cannot be tested (say why)
 - [ ] Documentation under `runtime/doc/` was updated
 
 ### Anything reviewers should know
