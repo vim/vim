@@ -640,6 +640,21 @@ def Test_command_block_heredoc()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" A line in a :def that starts with a string is not a heredoc, even when the
+" string reads like one.
+def Test_def_line_starting_with_string_not_heredoc()
+  var lines =<< trim CODE
+    vim9script
+    def F(): list<string>
+      var l = ['a',
+        'text =<< END', 'b']
+      return l
+    enddef
+    assert_equal(['a', 'text =<< END', 'b'], F())
+  CODE
+  v9.CheckSourceSuccess(lines)
+enddef
+
 def Test_autocommand_block()
   au BufNew *.xml {
       g:otherVar = 'other'
