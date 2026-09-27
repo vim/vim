@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Sep 07
+*options.txt*	For Vim version 9.2.  Last change: 2026 Sep 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -673,13 +673,19 @@ version 3.0).  Using "ex:" at the start of the line will be ignored (this
 could be short for "example:").
 
 If the modeline is disabled within a modeline, subsequent modelines will be
-ignored.  This is to allow turning off modeline on a per-file basis.  This is
+ignored.  This is to allow turning off modeline on a per-file basis, which is
 useful when a line looks like a modeline but isn't.  For example, it would be
 good to start a YAML file containing strings like "vim:" with
     # vim: nomodeline ~
 so as to avoid modeline misdetection.  Following options on the same line
 after modeline deactivation, if any, are still evaluated (but you would
 normally not have any).
+
+							*modeline-strict*
+The 'modelinestrict' option restricts which options can be set via a
+modeline to a fixed whitelist.  This is enabled by default, for security
+reasons: it avoids unexpected or harmful side effects when opening files
+from unknown or untrustworthy locations.
 
 							*modeline-local*
 The options are set like with ":setlocal": The new value only applies to the

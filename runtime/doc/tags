@@ -9167,6 +9167,7 @@ modeless-and-clipboard	version6.txt	/*modeless-and-clipboard*
 modeless-selection	gui.txt	/*modeless-selection*
 modeline	options.txt	/*modeline*
 modeline-local	options.txt	/*modeline-local*
+modeline-strict	options.txt	/*modeline-strict*
 modeline-version	options.txt	/*modeline-version*
 modifyOtherKeys	map.txt	/*modifyOtherKeys*
 modula2.vim	syntax.txt	/*modula2.vim*
