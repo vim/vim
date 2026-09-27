@@ -149,6 +149,58 @@ func Test_append_cmd()
   bw!
 endfunc
 
+func Test_append_cmd_trailing_bar()
+  new
+
+  call feedkeys(":append |\<CR>.\<CR>", 'xt')
+  call assert_equal([''], getline(1, '$'))
+  %delete _
+  call feedkeys(":append |L0\<CR>.\<CR>", 'xt')
+  call assert_equal(['L0'], getline(1, '$'))
+  %delete _
+  call feedkeys(":append |\<CR>L1\<CR>.\<CR>", 'xt')
+  call assert_equal(['', 'L1'], getline(1, '$'))
+  %delete _
+  call feedkeys(":append |L0\<CR>L1\<CR>.\<CR>", 'xt')
+  call assert_equal(['L0', 'L1'], getline(1, '$'))
+  %delete _
+
+  " literal quote and bar
+  call feedkeys(":append |\" a literal quote\<CR>.\<CR>", 'xt')
+  call assert_equal(['" a literal quote'], getline(1, '$'))
+  %delete _
+  call feedkeys(":append || a literal bar\<CR>.\<CR>", 'xt')
+  call assert_equal(['| a literal bar'], getline(1, '$'))
+  %delete _
+
+  " backslash prefixed quote and bar
+  call feedkeys(":append |\\\" backslash preserved\<CR>", 'xt')
+  call assert_equal(['\" backslash preserved'], getline(1, '$'))
+  %delete _
+  call feedkeys(":append |\\| backslash preserved\<CR>", 'xt')
+  call assert_equal(['\| backslash preserved'], getline(1, '$'))
+  %delete _
+
+  " global
+  call setline(1, ['L1', 'L2', 'L3'])
+  call feedkeys(":global/./append |\<CR>", 'xt')
+  call assert_equal(['L1', '', 'L2', '', 'L3', ''], getline(1, '$'))
+  %delete _
+  call setline(1, ['L1', 'L2', 'L3'])
+  call feedkeys(":global/./append |L-extra\<CR>", 'xt')
+  call assert_equal(['L1', 'L-extra', 'L2', 'L-extra', 'L3', 'L-extra'], getline(1, '$'))
+  %delete _
+
+  bw!
+endfunc
+
+func Test_append_cmd_comment()
+  new
+  call feedkeys(":append \" comment\<CR>L1\<CR>L2\<CR>.\<CR>", 'xt')
+  call assert_equal(['L1', 'L2'], getline(1, '$'))
+  bw!
+endfunc
+
 func Test_append_cmd_empty_buf()
   CheckRunVimInTerminal
   let lines =<< trim END
@@ -197,6 +249,58 @@ func Test_insert_cmd()
   bw!
 endfunc
 
+func Test_insert_cmd_trailing_bar()
+  new
+
+  call feedkeys(":insert |\<CR>.\<CR>", 'xt')
+  call assert_equal([''], getline(1, '$'))
+  %delete _
+  call feedkeys(":insert |L0\<CR>.\<CR>", 'xt')
+  call assert_equal(['L0'], getline(1, '$'))
+  %delete _
+  call feedkeys(":insert |\<CR>L1\<CR>.\<CR>", 'xt')
+  call assert_equal(['', 'L1'], getline(1, '$'))
+  %delete _
+  call feedkeys(":insert |L0\<CR>L1\<CR>.\<CR>", 'xt')
+  call assert_equal(['L0', 'L1'], getline(1, '$'))
+  %delete _
+
+  " literal quote and bar
+  call feedkeys(":insert |\" a literal quote\<CR>.\<CR>", 'xt')
+  call assert_equal(['" a literal quote'], getline(1, '$'))
+  %delete _
+  call feedkeys(":insert || a literal bar\<CR>.\<CR>", 'xt')
+  call assert_equal(['| a literal bar'], getline(1, '$'))
+  %delete _
+
+  " backslash prefixed quote and bar
+  call feedkeys(":insert |\\\" backslash preserved\<CR>", 'xt')
+  call assert_equal(['\" backslash preserved'], getline(1, '$'))
+  %delete _
+  call feedkeys(":insert |\\| backslash preserved\<CR>", 'xt')
+  call assert_equal(['\| backslash preserved'], getline(1, '$'))
+  %delete _
+
+  " global
+  call setline(1, ['L1', 'L2', 'L3'])
+  call feedkeys(":global/./insert |\<CR>", 'xt')
+  call assert_equal(['', 'L1', '', 'L2', '', 'L3'], getline(1, '$'))
+  %delete _
+  call setline(1, ['L1', 'L2', 'L3'])
+  call feedkeys(":global/./insert |L-extra\<CR>", 'xt')
+  call assert_equal(['L-extra', 'L1', 'L-extra', 'L2', 'L-extra', 'L3'], getline(1, '$'))
+  %delete _
+
+  bw!
+endfunc
+
+func Test_insert_cmd_comment()
+  new
+  call feedkeys(":insert \" comment\<CR>L1\<CR>L2\<CR>.\<CR>", 'xt')
+  call assert_equal(['L1', 'L2'], getline(1, '$'))
+  bw!
+endfunc
+
 func Test_insert_cmd_empty_buf()
   CheckRunVimInTerminal
   let lines =<< trim END
@@ -242,6 +346,58 @@ func Test_change_cmd()
   call assert_equal(['  L4', '  L5', 'L2', 'L3'], getline(1, '$'))
   call assert_true(&autoindent)
   set autoindent&
+  bw!
+endfunc
+
+func Test_change_cmd_trailing_bar()
+  new
+
+  call feedkeys(":change |\<CR>.\<CR>", 'xt')
+  call assert_equal([''], getline(1, '$'))
+  %delete _
+  call feedkeys(":change |L0\<CR>.\<CR>", 'xt')
+  call assert_equal(['L0'], getline(1, '$'))
+  %delete _
+  call feedkeys(":change |\<CR>L1\<CR>.\<CR>", 'xt')
+  call assert_equal(['', 'L1'], getline(1, '$'))
+  %delete _
+  call feedkeys(":change |L0\<CR>L1\<CR>.\<CR>", 'xt')
+  call assert_equal(['L0', 'L1'], getline(1, '$'))
+  %delete _
+
+  " literal quote and bar
+  call feedkeys(":change |\" a literal quote\<CR>.\<CR>", 'xt')
+  call assert_equal(['" a literal quote'], getline(1, '$'))
+  %delete _
+  call feedkeys(":change || a literal bar\<CR>.\<CR>", 'xt')
+  call assert_equal(['| a literal bar'], getline(1, '$'))
+  %delete _
+
+  " backslash prefixed quote and bar
+  call feedkeys(":change |\\\" backslash preserved\<CR>", 'xt')
+  call assert_equal(['\" backslash preserved'], getline(1, '$'))
+  %delete _
+  call feedkeys(":change |\\| backslash preserved\<CR>", 'xt')
+  call assert_equal(['\| backslash preserved'], getline(1, '$'))
+  %delete _
+
+  " global
+  call setline(1, ['L1', 'L2', 'L3'])
+  call feedkeys(":global/./change |\<CR>", 'xt')
+  call assert_equal(['', '', ''], getline(1, '$'))
+  %delete _
+  call setline(1, ['L1', 'L2', 'L3'])
+  call feedkeys(":global/./change |L-changed\<CR>", 'xt')
+  call assert_equal(['L-changed', 'L-changed', 'L-changed'], getline(1, '$'))
+  %delete _
+
+  bw!
+endfunc
+
+func Test_change_cmd_comment()
+  new
+  call feedkeys(":change \" comment\<CR>L1\<CR>L2\<CR>.\<CR>", 'xt')
+  call assert_equal(['L1', 'L2'], getline(1, '$'))
   bw!
 endfunc
 
