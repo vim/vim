@@ -19,7 +19,7 @@ if exists("b:current_syntax")
   finish
 endif
 
-setlocal iskeyword=_,-,a-z,A-Z,48-57
+syn iskeyword _,-,a-z,A-Z,48-57
 
 
 " case on
