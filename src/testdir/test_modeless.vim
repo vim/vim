@@ -256,7 +256,7 @@ func Test_modeless_characterwise_selection()
   let &ttymouse = save_ttymouse
   set mousetime&
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for modeless word selection (double click)
@@ -338,7 +338,7 @@ func Test_modeless_word_selection()
   let &ttymouse = save_ttymouse
   set mousetime&
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for modeless line selection (triple click)
@@ -412,7 +412,7 @@ func Test_modeless_line_selection()
   let &ttymouse = save_ttymouse
   set mousetime&
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
