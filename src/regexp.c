@@ -2991,6 +2991,10 @@ get_char_class_bits(char_u *start, char_u *end, int *newl)
     if (p != end)
 	return -1;
 
+    // U+017F and U+212A fold to ASCII 's' and 'k', missed by the class opcodes
+    if (enc_utf8 && (config & (CLASS_az | CLASS_AZ)))
+	return -1;
+
     return config;
 }
 
