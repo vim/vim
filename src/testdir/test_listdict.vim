@@ -1591,6 +1591,24 @@ func Test_null_list()
   unlockvar l
 endfunc
 
+" The key/value pairs can be edited and retain references to their values.
+func Test_dict_items_edit_result()
+  let shared = [1, 2]
+  let d = {'key': shared}
+  let pairs = items(d)
+  call assert_equal([['key', [1, 2]]], pairs)
+  call assert_true(pairs[0][1] is shared)
+  call add(pairs[0][1], 3)
+  call assert_equal([1, 2, 3], d.key)
+  unlet d
+  let pair = remove(pairs, 0)
+  call assert_equal('key', remove(pair, 0))
+  call insert(pair, 'new')
+  call add(pair, 42)
+  call assert_equal(['new', [1, 2, 3], 42], pair)
+  call assert_equal([], pairs)
+endfunc
+
 " Test for a null dict
 func Test_null_dict()
   let lines =<< trim END

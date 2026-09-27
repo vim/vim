@@ -1622,7 +1622,7 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
 	    else
 	    {
 		// items()
-		l2 = list_alloc();
+		l2 = list_alloc_with_items(2);
 		li->li_tv.v_type = VAR_LIST;
 		li->li_tv.v_lock = 0;
 		li->li_tv.vval.v_list = l2;
@@ -1630,9 +1630,11 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
 		    goto alloc_failed;
 		++l2->lv_refcount;
 
-		if (list_append_string(l2, di->di_key, -1) == FAIL
-			|| list_append_tv(l2, &di->di_tv) == FAIL)
+		l2->lv_first->li_tv.v_type = VAR_STRING;
+		l2->lv_first->li_tv.vval.v_string = vim_strsave(di->di_key);
+		if (l2->lv_first->li_tv.vval.v_string == NULL)
 		    goto alloc_failed;
+		copy_tv(&di->di_tv, &l2->lv_u.mat.lv_last->li_tv);
 	    }
 	    li = li->li_next;
 	}
