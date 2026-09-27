@@ -1902,9 +1902,9 @@ compile_lhs_script_var(
 			lhs->lhs_name);
 	    return FAIL;
 	}
-	else if (cctx->ctx_ufunc->uf_script_ctx_version == SCRIPT_VERSION_VIM9
-		&& script_namespace
-		&& !script_var && import == NULL)
+	// With ":source ++dryrun" the ":let" that creates it was not executed.
+	else if (script_namespace && !script_var && import == NULL
+							       && !source_dryrun)
 	{
 	    semsg(_(e_unknown_variable_str), lhs->lhs_name);
 	    return FAIL;

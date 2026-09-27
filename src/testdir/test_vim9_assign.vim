@@ -2660,6 +2660,8 @@ def Test_cannot_use_let()
   v9.CheckDefAndScriptFailure(['let a = 34'], 'E1126:', 1)
 enddef
 
+let s:somevar = ''
+
 def Test_unlet()
   g:somevar = 'yes'
   assert_true(exists('g:somevar'))
@@ -3119,6 +3121,15 @@ def Test_using_s_var_in_function()
       call assert_equal(456, s:scriptlevel)
   END
   v9.CheckScriptSuccess(lines)
+
+  # but a :def function cannot create one
+  lines =<< trim END
+      def s:SomeFunc()
+        s:scriptlevel = 456
+      enddef
+      call s:SomeFunc()
+  END
+  v9.CheckScriptFailure(lines, 'E1089: Unknown variable: s:scriptlevel', 1)
 enddef
 
 " Test for specifying a type in assignment

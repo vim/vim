@@ -52719,6 +52719,8 @@ Changed ~
 - The highlighting groups |hl-CursorLineFold| and |hl-CursorLineSign| are
   always used when 'cursorline' is set.
 - Virtual text above a line is now counted by |screenpos()| and |virtcol()|.
+- A |:def| function in a legacy script can no longer create a script-local
+  variable by assigning to it, this gives |E1089|.
 
 							*added-9.3*
 Added ~

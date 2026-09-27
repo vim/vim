@@ -859,6 +859,19 @@ func Test_source_dryrun()
   call assert_true(exists('*DryrunLegacy'))
   delfunc DryrunLegacy
 
+  " a :def function in a legacy script can assign to a script variable
+  " with "s:", although the ":let" that creates it is not executed
+  let lines =<< trim END
+    let s:count = 0
+    def DryrunLegacyDef()
+      s:count += 1
+    enddef
+  END
+  call writefile(lines, 'Xdryrun_legacydef.vim', 'D')
+  source ++dryrun Xdryrun_legacydef.vim
+  call assert_true(exists('*DryrunLegacyDef'))
+  delfunc DryrunLegacyDef
+
   " no SourceCmd, SourcePre or SourcePost autocommand, also not for the
   " imported script
   let g:dryrun_events = ''
