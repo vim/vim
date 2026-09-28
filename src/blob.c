@@ -975,18 +975,29 @@ f_blob2list(typval_T *argvars, typval_T *rettv)
 {
     blob_T	*blob;
     list_T	*l;
-    long	i;
-
-    if (rettv_list_alloc(rettv) == FAIL)
-	return;
+    int		i, len;
+    typval_T	tv;
 
     if (check_for_blob_arg(argvars, 0) == FAIL)
+    {
+	(void)rettv_list_alloc(rettv);
 	return;
+    }
 
     blob = argvars->vval.v_blob;
-    l = rettv->vval.v_list;
-    for (i = 0; i < (long)blob_len(blob); i++)
-	list_append_number(l, blob_get(blob, (int)i));
+    len = blob_len(blob);
+    l = list_alloc_with_items(len);
+    if (l == NULL)
+	return;
+    rettv_list_set(rettv, l);
+
+    tv.v_type = VAR_NUMBER;
+    tv.v_lock = 0;
+    for (i = 0; i < len; i++)
+    {
+	tv.vval.v_number = blob_get(blob, i);
+	list_set_item(l, i, &tv);
+    }
 }
 
 /*
