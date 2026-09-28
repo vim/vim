@@ -48,9 +48,9 @@ syn match   sshconfigCiphersDeprecated "\<rijndael-cbc@lysator\.liu\.se\>"
 syn keyword sshconfigCiphers aes128-ctr
 syn keyword sshconfigCiphers aes192-ctr
 syn keyword sshconfigCiphers aes256-ctr
-syn match sshconfigCiphers "\<aes128-gcm@openssh\.com\>"
-syn match sshconfigCiphers "\<aes256-gcm@openssh\.com\>"
-syn match sshconfigCiphers "\<chacha20-poly1305@openssh\.com\>"
+syn match   sshconfigCiphers "\<aes128-gcm@openssh\.com\>"
+syn match   sshconfigCiphers "\<aes256-gcm@openssh\.com\>"
+syn match   sshconfigCiphers "\<chacha20-poly1305@openssh\.com\>"
 
 syn keyword sshconfigMAC hmac-sha1
 syn keyword sshconfigMAC hmac-sha1-96
@@ -255,8 +255,8 @@ syn keyword sshconfigKeyword XAuthLocation
 
 " Deprecated/ignored/remove/unsupported keywords
 
-syn keyword sshConfigDeprecated ChallengeResponseAuthentication
-syn keyword sshConfigDeprecated Cipher
+syn keyword sshconfigDeprecated ChallengeResponseAuthentication
+syn keyword sshconfigDeprecated Cipher
 syn keyword sshconfigDeprecated GSSAPIClientIdentity
 syn keyword sshconfigDeprecated GSSAPIKeyExchange
 syn keyword sshconfigDeprecated GSSAPIRenewalForcesRekey
