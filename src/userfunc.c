@@ -1624,7 +1624,6 @@ lambda_function_body(
     if (!ASCII_ISUPPER(*ufunc->uf_name))
 	ufunc->uf_flags |= FC_VIM9;
     ufunc->uf_script_ctx = current_sctx;
-    ufunc->uf_script_ctx_version = current_sctx.sc_version;
     ufunc->uf_script_ctx.sc_lnum += sourcing_lnum_top;
     set_function_type(ufunc);
 
@@ -5739,7 +5738,6 @@ define_function(
     fp->uf_calls = 0;
     fp->uf_cleared = FALSE;
     fp->uf_script_ctx = current_sctx;
-    fp->uf_script_ctx_version = current_sctx.sc_version;
     fp->uf_script_ctx.sc_lnum += sourcing_lnum_top;
     if (is_export)
     {

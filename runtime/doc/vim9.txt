@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.2.  Last change: 2026 Sep 25
+*vim9.txt*	For Vim version 9.2.  Last change: 2026 Sep 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3610,7 +3610,9 @@ or within a `:function`.  The three rules are:
     regardless of the function's parent context.  Similarly, it gives E1268 in
     the script-local scope of a Vim9 script.
  3. In a legacy Vim script, "s:" is optional in a `:def` function, regardless
-    of the function's parent context.
+    of the function's parent context.  A `:def` function cannot create a
+    script-local variable, assigning to one that does not exist when the
+    function is compiled gives |E1089|.
 
 The following three scripts demonstrate these rules:
 >vim

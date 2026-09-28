@@ -2083,7 +2083,6 @@ struct ufunc_S
     sctx_T	uf_script_ctx;	// SCTX where function was defined,
 				// used for s: variables; sc_version changed
 				// for :function
-    int		uf_script_ctx_version;  // original sc_version of SCTX
     int		uf_refcount;	// reference count, see func_name_refcount()
 
     funccall_T	*uf_scoped;	// l: local variables for closure

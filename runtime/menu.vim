@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2026 Jan 19
+" Last Change:	2026 Sep 28
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
@@ -677,6 +677,8 @@ if !exists("no_buffers_menu")
 " wait with building the menu until after loading 'session' files. Makes
 " startup faster.
 let s:bmenu_wait = 1
+let s:bmenu_short = 1
+let s:bmenu_count = 0
 
 " Dictionary of buffer number to name. This helps prevent problems where a
 " buffer as renamed and we didn't keep track of that.
@@ -1008,6 +1010,12 @@ cnoremenu <script> <silent> 1.100 PopUp.Select\ &All	<C-U>call <SID>SelectAll()<
 if has("spell")
   " Spell suggestions in the popup menu.  Note that this will slow down the
   " appearance of the menu!
+  let s:suglist = []
+  let s:fromword = ''
+  let s:changeitem = ''
+  let s:additem = ''
+  let s:ignoreitem = ''
+
   def s:SpellPopup()
     if exists("s:changeitem") && s:changeitem != ''
       call s:SpellDel()
