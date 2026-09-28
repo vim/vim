@@ -21,7 +21,7 @@ syn match sshKnownHostsHashedHostname "|1|[a-zA-Z0-9/+]\+=\{,2}|[a-zA-Z0-9/+]\+=
 
 hi def link sshKnownHostsMarker Statement
 hi def link sshKnownHostsHostname Identifier
-hi def link sshKnownHostsHostnameSeparator Punctuation
+hi def link sshKnownHostsHostnameSeparator Delimiter
 hi def link sshKnownHostsHashedHostname Identifier
 
 let b:current_syntax = "sshknownhosts"
