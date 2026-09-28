@@ -124,6 +124,35 @@ def Test_disassemble_exec_expr()
         res)
 enddef
 
+def Test_disassemble_script_heredoc()
+  var cmds =<< trim END
+    lua
+    mzscheme
+    perl
+    python
+    py3
+    python3
+    pyx
+    pythonx
+    ruby
+    tcl
+  END
+  for cmd in cmds
+    var lines =<< eval trim END
+      def g:ScriptHeredoc()
+        {cmd} << trim EOF
+          text
+        EOF
+      enddef
+    END
+    writefile(lines, 'Xscript', 'D')
+    source Xscript
+    var res = execute('disass g:ScriptHeredoc')
+    assert_match($'\d EXEC_SPLIT\s\+{cmd} << trim EOF^@', res, cmd)
+    delfunc g:ScriptHeredoc
+  endfor
+enddef
+
 if has('python3')
   def s:PyHeredoc()
     python3 << EOF
