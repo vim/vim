@@ -1,4 +1,4 @@
-.TH VIM 1 "2026 Sep 08"
+.TH VIM 1 "2026 Sep 28"
 .SH NAME
 vim \- Vi IMproved, a programmer's text editor
 .SH SYNOPSIS
@@ -501,6 +501,18 @@ Connect to a Vim server and send {keys} to it.
 .TP
 \-\-remote\-silent
 As \-\-remote, but without the warning when no server is found.
+.TP
+\-\-remote\-tab
+As \-\-remote, but open each file in a new tabpage.
+.TP
+\-\-remote\-tab\-silent
+As \-\-remote-silent, but open each file in a new tabpage.
+.TP
+\-\-remote\-tab\-wait
+As \-\-remote\-wait, but open each file in a new tabpage.
+.TP
+\-\-remote\-tab\-wait\-silent
+As \-\-remote\-wait\-silent, but open each file in a new tabpage.
 .TP
 \-\-remote\-wait
 As \-\-remote, but Vim does not exit until the files have been edited.

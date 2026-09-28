@@ -373,8 +373,21 @@ OPTIONS
                    As --remote, but without the  warning  when  no  server  is
                    found.
 
+       --remote-tab
+                   As --remote, but open each file in a new tabpage.
+
+       --remote-tab-silent
+                   As --remote-silent, but open each file in a new tabpage.
+
+       --remote-tab-wait
+                   As --remote-wait, but open each file in a new tabpage.
+
+       --remote-tab-wait-silent
+                   As  --remote-wait-silent,  but open each file in a new tab‐
+                   page.
+
        --remote-wait
-                   As  --remote,  but  Vim  does not exit until the files have
+                   As --remote, but Vim does not exit  until  the  files  have
                    been edited.
 
        --remote-wait-silent
@@ -385,62 +398,62 @@ OPTIONS
                    List the names of all Vim servers that can be found.
 
        --servername {name}
-                   Use {name} as the server name.  Used for the  current  Vim,
+                   Use  {name}  as the server name.  Used for the current Vim,
                    unless used with a --remote argument, then it's the name of
-                   the  server  to connect to.  If the socketserver backend is
+                   the server to connect to.  If the socketserver  backend  is
                    being used, if the name starts with "/", "./", or "../", it
-                   is taken as either an absolute, relative or  relative  path
+                   is  taken  as either an absolute, relative or relative path
                    to the socket.
 
        --clientserver {backend}
-                   Use  {backend}  as the backend for clientserver functional‐
+                   Use {backend} as the backend for  clientserver  functional‐
                    ity, either "socket", "x11", or "mswin" respectively.  Only
                    available when compiled with both socketserver and X11 fea‐
-                   tures present, or if compiled with socketserver on  MS-Win‐
-                   dows.  The  $VIM_CLIENTSERVER environment variable may also
-                   be set which will be interpreted in the same way,  but  the
+                   tures  present, or if compiled with socketserver on MS-Win‐
+                   dows. The $VIM_CLIENTSERVER environment variable  may  also
+                   be  set  which will be interpreted in the same way, but the
                    --clientserver argument will always take priority.
 
        --socketid {id}
-                   GTK  GUI only: Use the GtkPlug mechanism to run gVim in an‐
+                   GTK GUI only: Use the GtkPlug mechanism to run gVim in  an‐
                    other window.
 
        --startuptime {file}
                    During startup write timing messages to the file {fname}.
 
        --stdio-channel
-                   Use the stdin and stdout of Vim for a  channel  instead  of
+                   Use  the  stdin  and stdout of Vim for a channel instead of
                    for a terminal.  Implies "-es": nothing is displayed, no Ex
-                   commands  are  read  and  the GUI is not started.  A script
-                   opens the channel with ch_open() and the  address  "stdio",
-                   see  ":help --stdio-channel".  Only available when compiled
+                   commands are read and the GUI is  not  started.   A  script
+                   opens  the  channel with ch_open() and the address "stdio",
+                   see ":help --stdio-channel".  Only available when  compiled
                    with the channel feature.
 
-       --ttyfail   When stdin or stdout is not  a  terminal  (tty)  then  exit
+       --ttyfail   When  stdin  or  stdout  is  not a terminal (tty) then exit
                    right away.
 
        --version   Print version information and exit.
 
        --windowid {id}
-                   Win32  GUI  only: Make gVim try to use the window {id} as a
+                   Win32 GUI only: Make gVim try to use the window {id}  as  a
                    parent, so that it runs inside that window.
 
 ON-LINE HELP
-       Type ":help" in Vim to get started.  Type ":help subject" to  get  help
-       on  a  specific  subject.   For example: ":help ZZ" to get help for the
-       "ZZ" command.  Use <Tab> and CTRL-D to complete subjects  (":help  cmd‐
-       line-completion").   Tags are present to jump from one place to another
+       Type  ":help"  in Vim to get started.  Type ":help subject" to get help
+       on a specific subject.  For example: ":help ZZ" to  get  help  for  the
+       "ZZ"  command.   Use <Tab> and CTRL-D to complete subjects (":help cmd‐
+       line-completion").  Tags are present to jump from one place to  another
        (sort of hypertext links, see ":help").  All documentation files can be
        viewed in this way, for example ":help syntax.txt".
 
 FILES
        /usr/local/share/vim/vim??/doc/*.txt
-                      The Vim documentation files.  Use ":help  doc-file-list"
+                      The  Vim documentation files.  Use ":help doc-file-list"
                       to get the complete list.
                       vim??  is short version number, like vim91 for Vim 9.1
 
        /usr/local/share/vim/vim??/doc/tags
-                      The  tags file used for finding information in the docu‐
+                      The tags file used for finding information in the  docu‐
                       mentation files.
 
        /usr/local/share/vim/vim??/syntax/syntax.vim
@@ -453,18 +466,18 @@ FILES
                       System wide Vim initializations.
 
        ~/.vimrc, ~/.vim/vimrc, $XDG_CONFIG_HOME/vim/vimrc
-                      Your personal Vim initializations (first  one  found  is
+                      Your  personal  Vim  initializations (first one found is
                       used).
 
        /usr/local/share/vim/gvimrc
                       System wide gvim initializations.
 
        ~/.gvimrc, ~/.vim/gvimrc, $XDG_CONFIG_HOME/vim/gvimrc
-                      Your  personal  gVim initializations (first one found is
+                      Your personal gVim initializations (first one  found  is
                       used).
 
        /usr/local/share/vim/vim??/optwin.vim
-                      Script used for the ":options" command, a  nice  way  to
+                      Script  used  for  the ":options" command, a nice way to
                       view and set options.
 
        /usr/local/share/vim/vim??/menu.vim
@@ -474,11 +487,11 @@ FILES
                       Script to generate a bug report.  See ":help bugs".
 
        /usr/local/share/vim/vim??/filetype.vim
-                      Script  to  detect  the type of a file by its name.  See
+                      Script to detect the type of a file by  its  name.   See
                       ":help 'filetype'".
 
        /usr/local/share/vim/vim??/scripts.vim
-                      Script to detect the type of a  file  by  its  contents.
+                      Script  to  detect  the  type of a file by its contents.
                       See ":help 'filetype'".
 
        /usr/local/share/vim/vim??/print/*.ps
@@ -493,17 +506,17 @@ SEE ALSO
 AUTHOR
        Most of Vim was made by Bram Moolenaar, with a lot of help from others.
        See ":help credits" in Vim.
-       Vim  is  based  on Stevie, worked on by: Tim Thompson, Tony Andrews and
+       Vim is based on Stevie, worked on by: Tim Thompson,  Tony  Andrews  and
        G.R. (Fred) Walter.  Although hardly any of the original code remains.
 
 BUGS
        Probably.  See ":help todo" for a list of known problems.
 
-       Note that a number of things that may be regarded as bugs by some,  are
-       in  fact  caused by a too-faithful reproduction of Vi's behaviour.  And
-       if you think other things are bugs "because Vi  does  it  differently",
-       you  should  take  a closer look at the vi_diff.txt file (or type :help
-       vi_diff.txt when in Vim).  Also have a look  at  the  'compatible'  and
+       Note  that a number of things that may be regarded as bugs by some, are
+       in fact caused by a too-faithful reproduction of Vi's  behaviour.   And
+       if  you  think  other things are bugs "because Vi does it differently",
+       you should take a closer look at the vi_diff.txt file  (or  type  :help
+       vi_diff.txt  when  in  Vim).   Also have a look at the 'compatible' and
        'cpoptions' options.
 
-                                  2026 Sep 08                           VIM(1)
+                                  2026 Sep 28                           VIM(1)
