@@ -3,11 +3,12 @@
 
 # Source files for all source archives.
 SRC_ALL =	\
-		.gitattributes \
 		.git-blame-ignore-revs \
-		.github/MAINTAINERS \
+		.gitattributes \
 		.github/ISSUE_TEMPLATE/bug_report.yml \
 		.github/ISSUE_TEMPLATE/feature_request.md \
+		.github/MAINTAINERS \
+		.github/pull_request_template.md \
 		.github/workflows/ci-cygwin.yml \
 		.github/workflows/ci-linux.yml \
 		.github/workflows/ci-linux_asan.yml \
