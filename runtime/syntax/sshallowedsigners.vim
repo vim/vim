@@ -21,10 +21,10 @@ syn match sshAllowedSignersOptionValue '"\(\\\"\|[^"]\)*"' contained
 runtime! syntax/sshpublickey.vim
 
 hi def link sshAllowedSignersPrincipal Identifier
-hi def link sshAllowedSignersPrincipalSeparator Punctuation
+hi def link sshAllowedSignersPrincipalSeparator Delimiter
 
 hi def link sshAllowedSignersOptionKeyword Keyword
-hi def link sshAllowedSignersOptionSeparator Punctuation
+hi def link sshAllowedSignersOptionSeparator Delimiter
 hi def link sshAllowedSignersOptionAssignment Operator
 hi def link sshAllowedSignersOptionValue String
 
