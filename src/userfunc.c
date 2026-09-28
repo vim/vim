@@ -1117,10 +1117,14 @@ get_function_body(
 	    int	    c;
 	    char_u  *end;
 	    char_u  *cmd;
+	    bool    colon = false;
 
 	    // skip ':' and blanks
 	    for (p = theline; VIM_ISWHITE(*p) || *p == ':'; ++p)
-		;
+	    {
+		if (*p == ':')
+		    colon = true;
+	    }
 
 	    // Check for "endfunction", "enddef" or "}".
 	    // When a ":" follows it must be a dict key; "enddef: value,"
@@ -1276,7 +1280,11 @@ get_function_body(
 	    }
 
 	    // Check for ":append", ":change", ":insert".  Not for :def.
-	    char_u *tp = p = skip_range(p, FALSE, NULL);
+	    // In Vim9 script a range comes after a colon; without one a
+	    // leading "'" starts a string, not a mark.
+	    if (!vim9_function || colon)
+		p = skip_range(p, FALSE, NULL);
+	    char_u *tp = p;
 	    if (!vim9_function
 		&& (checkforcmd(&p, "append", 1)
 		    || checkforcmd(&p, "change", 1)
