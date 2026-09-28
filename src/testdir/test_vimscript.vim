@@ -6653,6 +6653,36 @@ func Test_skip()
 
 endfunc
 
+func Test_script_heredoc_skip()
+  let cmds =<< trim END
+    lua
+    mzscheme
+    perl
+    python
+    py3
+    python3
+    pyx
+    pythonx
+    ruby
+    tcl
+  END
+  for cmd in cmds
+    let lines =<< eval trim END
+      Xpath 'a'
+      if 0
+        {cmd} << trim EOS
+          Xpath 'b' 
+        EOS
+      endif
+      Xpath 'c'
+    END
+    XpathINIT
+    call writefile(lines, 'Xscript', 'D')
+    source Xscript
+    call assert_equal('ac', g:Xpath, cmd)
+  endfor
+endfunc
+
 "-------------------------------------------------------------------------------
 " Test 93:  :echo and string()					    {{{1
 "-------------------------------------------------------------------------------
