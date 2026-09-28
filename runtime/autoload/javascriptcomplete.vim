@@ -641,6 +641,7 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 	endfor
 	let g:fm = final_menu
 	return final_menu
+  endif
 
 endfunction
 
