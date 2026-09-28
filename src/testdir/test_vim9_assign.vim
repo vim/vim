@@ -248,6 +248,28 @@ def Test_assignment()
   END
 enddef
 
+" An item of a read-only v: variable can be changed in a :def function, as
+" at the script level, the variable itself cannot.
+def Test_assign_item_of_readonly_vim_var()
+  assert_equal(v:t_dict, type(v:clipproviders))
+  var lines =<< trim END
+    vim9script
+    def Define()
+      v:clipproviders['vim9_one'] = {}
+      v:clipproviders.vim9_two = {}
+    enddef
+    Define()
+    assert_equal({}, v:clipproviders.vim9_one)
+    assert_equal({}, v:clipproviders.vim9_two)
+    remove(v:clipproviders, 'vim9_one')
+    remove(v:clipproviders, 'vim9_two')
+  END
+  v9.CheckScriptSuccess(lines)
+
+  v9.CheckDefFailure(['v:clipproviders = {}'], 'E46:')
+  v9.CheckDefFailure(['v:version[0] = 1'], 'E1141:')
+enddef
+
 def Test_float_and_number()
   var lines =<< trim END
        var f: float

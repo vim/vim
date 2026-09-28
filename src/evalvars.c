@@ -273,6 +273,7 @@ evalvars_init(void)
     set_vim_var_nr(VV_ECHOSPACE,    sc_col - 1);
 
     set_vim_var_dict(VV_COLORNAMES, dict_alloc());
+    set_vim_var_dict(VV_CLIPPROVIDERS, dict_alloc());
 
 #ifdef FEAT_PYTHON3
     set_vim_var_nr(VV_PYTHON3_VERSION, python3_version());
