@@ -2486,8 +2486,10 @@ get_one_sourceline(source_cookie_T *sp)
 	have_read = TRUE;
 	ga.ga_len = len;
 
-	// If the line was longer than the buffer, read more.
-	if (ga.ga_maxlen - ga.ga_len == 1 && buf[len - 1] != '\n')
+	// If the line was longer than the buffer, read more.  A line of a
+	// buffer was taken as a whole.
+	if (!sp->source_from_buf && ga.ga_maxlen - ga.ga_len == 1
+						       && buf[len - 1] != '\n')
 	    continue;
 
 	if (len >= 1 && buf[len - 1] == '\n')	// remove trailing NL
