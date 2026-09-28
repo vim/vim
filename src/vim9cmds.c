@@ -1151,7 +1151,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		    goto failed;
 	    }
 
-	    if (get_var_dest(name, &dest, CMD_for, &opt_flags,
+	    if (get_var_dest(name, &dest, CMD_for, FALSE, &opt_flags,
 					      &vimvaridx, &type, cctx) == FAIL)
 		goto failed;
 	    if (dest != dest_local)

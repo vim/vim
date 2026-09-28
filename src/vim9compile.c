@@ -1493,6 +1493,7 @@ valid_dest_reg(int name)
  * For an option "option_scope" is set.
  * For a v:var "vimvaridx" is set.
  * "type" is set to the destination type if known, unchanted otherwise.
+ * When "has_index" is TRUE an item of the variable is assigned to.
  * Return FAIL if an error message was given.
  */
     int
@@ -1500,6 +1501,7 @@ get_var_dest(
 	char_u		*name,
 	assign_dest_T	*dest,
 	cmdidx_T	cmdidx,
+	int		has_index,
 	int		*option_scope,
 	int		*vimvaridx,
 	type_T		**type,
@@ -1600,8 +1602,9 @@ get_var_dest(
 	    semsg(_(e_variable_not_found_str), name);
 	    return FAIL;
 	}
+	// An item of a read-only variable can be changed, as when not compiled.
 	// We use the current value of "sandbox" here, is that OK?
-	if (var_check_ro(di_flags, name, FALSE))
+	if (!has_index && var_check_ro(di_flags, name, FALSE))
 	    return FAIL;
 	*dest = dest_vimvar;
 	vtv = get_vim_var_tv(*vimvaridx);
@@ -1961,6 +1964,7 @@ compile_lhs_var_dest(
     int	    declare_error = FALSE;
 
     if (get_var_dest(lhs->lhs_name, &lhs->lhs_dest, cmdidx,
+				lhs->lhs_has_index,
 				&lhs->lhs_opt_flags, &lhs->lhs_vimvaridx,
 				&lhs->lhs_type, cctx) == FAIL)
 	return FAIL;
