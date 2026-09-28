@@ -1049,6 +1049,20 @@ check_typval_arg_type(
 }
 
 /*
+ * Return true if "expected" is list<any> or dict<any> and "actual_tv" is a
+ * list or dict of that kind, which matches whatever its values are.
+ */
+    static bool
+matches_listdict_any(type_T *expected, typval_T *actual_tv)
+{
+    return (expected->tt_type == VAR_LIST || expected->tt_type == VAR_DICT)
+	    && actual_tv->v_type == expected->tt_type
+	    && expected->tt_member != NULL
+	    && (expected->tt_member->tt_type == VAR_ANY
+		|| expected->tt_member->tt_type == VAR_UNKNOWN);
+}
+
+/*
  * Return FAIL if "expected" and "actual" don't match.
  * When "argidx" > 0 it is included in the error message.
  */
@@ -1061,6 +1075,10 @@ check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
 
     if (expected == NULL)
 	return OK;  // didn't expect anything.
+
+    // No need to go through the values of a possibly big list or dict.
+    if (matches_listdict_any(expected, actual_tv))
+	return OK;
 
     ga_init2(&type_list, sizeof(type_T *), 10);
 
