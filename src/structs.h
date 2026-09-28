@@ -445,6 +445,25 @@ typedef struct {
 
 typedef struct u_entry u_entry_T;
 typedef struct u_header u_header_T;
+
+#ifdef FEAT_PROP_POPUP
+// Which line around an undo block a cleared continuation flag was on.
+# define UNDOPROP_NONE	0
+# define UNDOPROP_ABOVE	1
+# define UNDOPROP_BELOW	2
+
+// A continuation flag cleared on a line around an undo block, given back when
+// the block is undone or redone the other way.
+typedef struct
+{
+    int		up_which;	// UNDOPROP_ABOVE or UNDOPROP_BELOW
+    int		up_type;	// tp_type of the property
+    int		up_id;		// tp_id of the property
+    colnr_T	up_col;		// tp_col of the property
+    int		up_flag;	// TP_FLAG_CONT_NEXT or TP_FLAG_CONT_PREV
+} undoprop_T;
+#endif
+
 struct u_entry
 {
     u_entry_T	*ue_next;	// pointer to next entry in list
@@ -453,6 +472,9 @@ struct u_entry
     linenr_T	ue_lcount;	// linecount when u_save called
     undoline_T	*ue_array;	// array of lines in undo block
     long	ue_size;	// number of lines in ue_array
+#ifdef FEAT_PROP_POPUP
+    garray_T	ue_props;	// undoprop_T: flags cleared around the block
+#endif
 #ifdef U_DEBUG
     int		ue_magic;	// magic number to check allocation
 #endif
