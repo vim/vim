@@ -7649,11 +7649,13 @@ handle_subscript(
     while (ret == OK)
     {
 	// When at the end of the line and ".name" or a method call follows in
-	// the next line then consume the line break.
+	// the next line then consume the line break.  When not evaluating the
+	// type is unknown, ".name" is taken to be a lookup.
 	p = eval_next_non_blank(*arg, evalarg, &getnext);
 	if (getnext
 	    && ((*p == '.'
-		    && ((rettv->v_type == VAR_DICT && eval_isdictc(p[1]))
+		    && (((rettv->v_type == VAR_DICT || !evaluate)
+				&& eval_isdictc(p[1]))
 			|| rettv->v_type == VAR_CLASS
 			|| rettv->v_type == VAR_OBJECT))
 		|| method_call_follows(p)))

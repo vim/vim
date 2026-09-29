@@ -3589,6 +3589,23 @@ def Test_expr_member_vim9script()
 				])
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  # also after an expression that is not evaluated
+  lines =<< trim END
+      var d1 = {key: 'one'}
+      var d2 = {key: 'two'}
+      var r1 = true ? d1 : d2
+                            .key
+      assert_equal({key: 'one'}, r1)
+      var b = {key: true}
+      var r2 = false && b
+                            .key
+      assert_equal(false, r2)
+      var F = (d) => d
+                            .key
+      assert_equal('two', F(d2))
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def SetSomeVar()
