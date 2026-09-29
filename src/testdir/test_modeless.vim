@@ -415,4 +415,52 @@ func Test_modeless_line_selection()
   bw!
 endfunc
 
+" Test that there is room for the newlines written between the rows.
+func Test_modeless_selection_full_width_rows()
+  CheckFeature clipboard_working
+  let save_enc = &encoding
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  " With a single byte encoding a screen cell takes exactly one byte, there is
+  " then no room to spare for the newline in front of every row.
+  set encoding=latin1
+  call test_override('no_query_mouse', 1)
+  set mouse=a term=xterm mousetime=200
+  exe 'set ttymouse=' .. g:Ttymouse_values[0]
+  call WaitForResponses()
+
+  new
+  " Lines exactly as wide as the screen fill one row each and do not wrap.
+  call setline(1, map(range(5), 'repeat(nr2char(97 + v:val), &columns)'))
+  redraw!
+  sleep 50m
+
+  let @* = 'clean'
+  call MouseRightClick(1, 1)
+  call MouseRightRelease(1, 1)
+  let keys = ":"
+  let keys ..= MouseLeftClickCode(1, 1)
+  let keys ..= MouseLeftReleaseCode(1, 1)
+  let keys ..= MouseLeftClickCode(1, 1)
+  let keys ..= MouseLeftReleaseCode(1, 1)
+  let keys ..= MouseLeftClickCode(1, 1)
+  let keys ..= MouseLeftDragCode(5, 2)
+  let keys ..= MouseLeftReleaseCode(5, 2)
+  let keys ..= "\<C-Y>\<CR>"
+  call feedkeys(keys, "x")
+
+  " Five rows of &columns bytes with a newline in between.
+  call assert_equal(5 * &columns + 4, strlen(@*),
+	\ 'got: ' .. strtrans(strpart(@*, 0, 20)))
+
+  let &ttymouse = save_ttymouse
+  let &term = save_term
+  let &mouse = save_mouse
+  let &encoding = save_enc
+  set mousetime&
+  call test_override('no_query_mouse', 0)
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

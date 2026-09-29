@@ -1155,6 +1155,8 @@ clip_copy_modeless_selection(int both UNUSED)
 	len *= 2;	// max. 2 bytes per display cell
     else if (enc_utf8)
 	len *= MB_MAXBYTES;
+    // A newline is added after each row
+    len += row2 - row1 + 2;
     buffer = alloc(len);
     if (buffer == NULL)	    // out of memory
 	return;
