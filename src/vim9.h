@@ -513,6 +513,7 @@ typedef struct {
 typedef struct {
     vartype_T	si_vartype;
     class_T	*si_class;
+    char_u	*si_name;	// destination for error messages
 } storeindex_T;
 
 // arguments to ISN_LOCKUNLOCK

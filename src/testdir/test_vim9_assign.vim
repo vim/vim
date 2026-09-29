@@ -267,7 +267,10 @@ def Test_assign_item_of_readonly_vim_var()
   v9.CheckScriptSuccess(lines)
 
   v9.CheckDefFailure(['v:clipproviders = {}'], 'E46:')
-  v9.CheckDefFailure(['v:version[0] = 1'], 'E1141:')
+  v9.CheckDefFailure(['v:beval_col[0] = 10'],
+        'E1141: Indexable type required: v:beval_col[0]')
+  v9.CheckDefExecFailure(["v:argv[0] = 'abc'"],
+        'E1119: Cannot change locked list item: v:argv[0]')
 enddef
 
 def Test_float_and_number()

@@ -2497,9 +2497,16 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 		listitem_T *li = list_find(list, lidx);
 		if (li == NULL)
 		    return FAIL;
-		if (error_if_locked(li->li_tv.v_lock,
-					     e_cannot_change_locked_list_item))
+		if (li->li_tv.v_lock & (VAR_LOCKED | VAR_FIXED))
+		{
+		    char_u *name = iptr->isn_arg.storeindex.si_name;
+
+		    if (name == NULL)
+			emsg(_(e_cannot_change_locked_list_item));
+		    else
+			semsg(_(e_cannot_change_locked_list_item_str), name);
 		    return FAIL;
+		}
 		// overwrite existing list item
 		clear_tv(&li->li_tv);
 		li->li_tv = *tv;

@@ -2889,6 +2889,8 @@ EXTERN char e_cannot_change_locked_list[]
 	INIT(= N_("E1118: Cannot change locked list"));
 EXTERN char e_cannot_change_locked_list_item[]
 	INIT(= N_("E1119: Cannot change locked list item"));
+EXTERN char e_cannot_change_locked_list_item_str[]
+	INIT(= N_("E1119: Cannot change locked list item: %s"));
 EXTERN char e_cannot_change_dict[]
 	INIT(= N_("E1120: Cannot change dict"));
 EXTERN char e_cannot_change_dict_item[]
@@ -2932,8 +2934,8 @@ EXTERN char e_missing_matching_bracket_after_dict_key[]
 	INIT(= N_("E1139: Missing matching bracket after dict key"));
 EXTERN char e_for_argument_must_be_sequence_of_lists_or_tuples[]
 	INIT(= N_("E1140: :for argument must be a sequence of lists or tuples"));
-EXTERN char e_indexable_type_required[]
-	INIT(= N_("E1141: Indexable type required"));
+EXTERN char e_indexable_type_required_str[]
+	INIT(= N_("E1141: Indexable type required: %s"));
 EXTERN char e_calling_test_garbagecollect_now_while_v_testing_is_not_set[]
 	INIT(= N_("E1142: Calling test_garbagecollect_now() while v:testing is not set"));
 EXTERN char e_empty_expression_str[]
