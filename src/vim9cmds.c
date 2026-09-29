@@ -2066,7 +2066,7 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
     if (*arg == '(')
     {
 	// a lambda function
-	if (compile_lambda(&arg, cctx) != OK)
+	if (compile_lambda(&arg, cctx, NULL) != OK)
 	    return NULL;
 	paren = vim_strchr(arg, '(');
 	if (paren == NULL)

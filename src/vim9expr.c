@@ -1767,10 +1767,12 @@ restore_cmdline_arg(evalarg_T *evalarg, char_u **arg, cctx_T *cctx)
 /*
  * Parse a lambda: "(arg, arg) => expr"
  * "*arg" points to the '('.
+ * When "ppconst" is not NULL the constants in it are generated before the
+ * lambda, which goes on top of them on the stack.
  * Returns OK/FAIL when a lambda is recognized, NOTDONE if it's not a lambda.
  */
     int
-compile_lambda(char_u **arg, cctx_T *cctx)
+compile_lambda(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
     int		r;
     typval_T	rettv;
@@ -1787,6 +1789,13 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     {
 	clear_evalarg(&evalarg, NULL);
 	return r;
+    }
+
+    if (ppconst != NULL && generate_ppconst(cctx, ppconst) == FAIL)
+    {
+	clear_tv(&rettv);
+	clear_evalarg(&evalarg, NULL);
+	return FAIL;
     }
 
     // "rettv" will now be a partial referencing the function.
@@ -3120,7 +3129,7 @@ compile_expr9(
 	 * funcref: (arg, arg) => { statement }
 	 */
 	case '(':   // if compile_lambda returns NOTDONE then it must be (expr)
-		    ret = compile_lambda(arg, cctx);
+		    ret = compile_lambda(arg, cctx, ppconst);
 		    if (ret == NOTDONE)
 			ret = compile_parenthesis(arg, cctx, ppconst);
 		    break;

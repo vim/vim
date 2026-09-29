@@ -2800,6 +2800,18 @@ def Test_expr9_lambda()
     eval (name + 2) / 3
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  # a lambda called after a constant operand
+  lines =<< trim END
+    assert_equal('ab', 'a' .. ((x) => x)('b'))
+    assert_equal('ab', 'a' .. (((x) => x)('b')))
+    assert_equal(3, 1 + ((x) => x)(2))
+    assert_equal('ab', 'a' .. ((x) => x)->call(['b']))
+    assert_equal('/a/x', ((cwdpath: string) => cwdpath
+          ->strpart(0, cwdpath->strridx('/vim')))('/a/vim/b')
+          .. '/x')
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_expr9_lambda_block()
