@@ -10711,11 +10711,17 @@ f_rename(typval_T *argvars, typval_T *rettv)
  * Repeat the list "l" "n" times and set "rettv" to the new list.
  */
     static void
-repeat_list(list_T *l, int n, typval_T *rettv)
+repeat_list(list_T *l, varnumber_T n, typval_T *rettv)
 {
+    int slen = list_len(l);
+
     if (rettv_list_alloc(rettv) == FAIL
 	    || l == NULL
-	    || n <= 0)
+	    || n <= 0
+	    || slen == 0)
+	return;
+
+    if (check_repeat_count(slen, n) == FAIL)
 	return;
 
     while (n-- > 0)
@@ -10727,7 +10733,7 @@ repeat_list(list_T *l, int n, typval_T *rettv)
  * Repeat the blob "b" "n" times and set "rettv" to the new blob.
  */
     static void
-repeat_blob(typval_T *blob_tv, int n, typval_T *rettv)
+repeat_blob(typval_T *blob_tv, varnumber_T n, typval_T *rettv)
 {
     int		slen;
     int		len;
@@ -10740,9 +10746,11 @@ repeat_blob(typval_T *blob_tv, int n, typval_T *rettv)
 	return;
 
     slen = blob->bv_ga.ga_len;
-    len = (int)slen * n;
-    if (len <= 0)
+    if (slen <= 0)
 	return;
+    if (check_repeat_count(slen, n) == FAIL)
+	return;
+    len = slen * (int)n;
 
     if (ga_grow(&rettv->vval.v_blob->bv_ga, len) == FAIL)
 	return;
@@ -10757,7 +10765,7 @@ repeat_blob(typval_T *blob_tv, int n, typval_T *rettv)
 	// No need to copy since all bytes are already zero
 	return;
 
-    for (i = 0; i < n; ++i)
+    for (i = 0; i < (int)n; ++i)
 	blob_set_range(rettv->vval.v_blob,
 		(long)i * slen, ((long)i + 1) * slen - 1, blob_tv);
 }
@@ -10766,10 +10774,10 @@ repeat_blob(typval_T *blob_tv, int n, typval_T *rettv)
  * Repeat the string "str" "n" times and set "rettv" to the new string.
  */
     static void
-repeat_string(typval_T *str_tv, int n, typval_T *rettv)
+repeat_string(typval_T *str_tv, varnumber_T n, typval_T *rettv)
 {
     char_u	*p;
-    int		slen;
+    size_t	slen;
     int		len;
     char_u	*r;
     int		done;
@@ -10778,17 +10786,19 @@ repeat_string(typval_T *str_tv, int n, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
-    slen = (int)STRLEN(p);
-    len = slen * n;
-    if (len <= 0)
+    slen = STRLEN(p);
+    if (slen == 0 || n <= 0)
 	return;
+    if (check_repeat_count((varnumber_T)slen, n) == FAIL)
+	return;
+    len = (int)slen * (int)n;
 
-    r = alloc(len + 1);
+    r = alloc((size_t)len + 1);
     if (r == NULL)
 	return;
 
-    mch_memmove(r, p, (size_t)slen);
-    done = slen;
+    mch_memmove(r, p, slen);
+    done = (int)slen;
     while (done < len)
     {
 	int copy_len = done;

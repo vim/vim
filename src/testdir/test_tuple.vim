@@ -2167,6 +2167,10 @@ func Test_tuple_repeat()
     call assert_equal((), repeat(test_null_tuple(), 3))
   END
   call v9.CheckSourceLegacyAndVim9Success(lines)
+
+  " Overflow
+  call assert_fails('call repeat((1, 2, 3, 4, 5, 6), 715827883)', 'E1510:')
+  call assert_fails('call repeat((1,), 4294967297)', 'E1510:')
 endfunc
 
 " Test for reverse()
