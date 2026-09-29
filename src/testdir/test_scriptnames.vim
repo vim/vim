@@ -103,4 +103,21 @@ func Test_getscriptinfo()
   call assert_equal([], getscriptinfo({'sid': max_sid + 1}))
 endfunc
 
+" getscriptinfo() with a script-local variable that is a null dict
+func Test_getscriptinfo_null_var()
+  let lines =<< trim END
+    vim9script
+    var a: dict<any> = null_dict
+    var b: list<string> = []
+    def Xnull_var_func()
+    enddef
+  END
+  call writefile(lines, 'X22script92', 'D')
+  source X22script92
+  let sid = getscriptinfo({'name': 'X22script92'})[0].sid
+  let l = getscriptinfo({'sid': sid})
+  call assert_equal({'a': {}, 'b': []}, l[0].variables)
+  call assert_equal([$"<SNR>{sid}_Xnull_var_func"], l[0].functions)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
