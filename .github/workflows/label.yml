@@ -1,5 +1,6 @@
 # This workflow will triage pull requests and apply a label based on the
-# paths that are modified in the pull request.
+# paths that are modified in the pull request.  It also applies the
+# "AI assisted" label when a commit has an "Assisted-by:" trailer.
 #
 # To use this workflow, you will need to set up a .github/labeler.yml
 # file with configuration.  For more information, see:
@@ -20,3 +21,18 @@ jobs:
     - uses: actions/labeler@v7.0.0
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
+
+    # Only reads the commit messages; the pull request is not checked out.
+    - name: Label pull requests with an Assisted-by trailer
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        REPO: ${{ github.repository }}
+        PR: ${{ github.event.pull_request.number }}
+      run: |
+        found=$(gh api "repos/$REPO/pulls/$PR/commits" --paginate \
+          --jq '.[].commit.message | split("\n")[] | ascii_downcase
+                | select(startswith("assisted-by:"))')
+        if [ -n "$found" ]; then
+          gh api -X POST "repos/$REPO/issues/$PR/labels" \
+            -f 'labels[]=AI assisted'
+        fi
