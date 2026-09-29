@@ -1987,10 +1987,10 @@ typedef void	    *vim_acl_T;		// dummy to pass an ACL to a function
 
 #define MAX_MCO	6	// maximum value for 'maxcombine'
 
-// Maximum number of bytes in a multi-byte character.  It can be one 32-bit
-// character of up to 6 bytes, or one 16-bit character of up to three bytes
-// plus six following composing characters of three bytes each.
-#define MB_MAXBYTES	21
+// Maximum number of bytes in the multi-byte character of one screen cell.
+// It can be one character of up to six bytes, plus MAX_MCO following composing
+// characters of up to four bytes each.
+#define MB_MAXBYTES	30
 
 #if (defined(FEAT_PROFILE) || defined(FEAT_RELTIME)) && !defined(PROTO)
 # ifdef MSWIN
