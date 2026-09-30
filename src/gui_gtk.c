@@ -1531,6 +1531,8 @@ split_button_translation(const char *message)
     return buttons;
 }
 
+# if !GTK_CHECK_VERSION(3,10,0)
+
     static int
 button_equal(const char *a, const char *b)
 {
@@ -1551,6 +1553,8 @@ button_equal(const char *a, const char *b)
 
     return (*a == '\0' && *b == '\0');
 }
+
+# endif
 
     static void
 dialog_add_buttons(GtkDialog *dialog, char_u *button_string)
@@ -1617,14 +1621,9 @@ dialog_add_buttons(GtkDialog *dialog, char_u *button_string)
 	if (ok != NULL && ync != NULL) // almost impossible to fail
 	{
 # if GTK_CHECK_VERSION(3,10,0)
-	    if	    (button_equal(label, ok[0]))    label = _("OK");
-	    else if (button_equal(label, ync[0]))   label = _("Yes");
-	    else if (button_equal(label, ync[1]))   label = _("No");
-	    else if (button_equal(label, ync[2]))   label = _("Cancel");
-	    else if (button_equal(label, "Ok"))     label = _("OK");
-	    else if (button_equal(label, "Yes"))    label = _("Yes");
-	    else if (button_equal(label, "No"))     label = _("No");
-	    else if (button_equal(label, "Cancel")) label = _("Cancel");
+	    // Unlike in GTK2, there's no GTK_STOCK_OK in GTK 3.10+.
+	    // Label "_OK" should be used instead.
+	    // Similar for the others GTK_STOCK_*.
 # else
 	    if	    (button_equal(label, ok[0]))    label = GTK_STOCK_OK;
 	    else if (button_equal(label, ync[0]))   label = GTK_STOCK_YES;
