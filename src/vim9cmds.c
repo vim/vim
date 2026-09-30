@@ -1727,7 +1727,7 @@ compile_catch(char_u *arg, cctx_T *cctx)
 	emsg(_(e_catch_unreachable_after_catch_all));
 	return NULL;
     }
-    if (!cctx->ctx_had_return)
+    if (!cctx->ctx_had_return && !cctx->ctx_had_throw)
 	scope->se_u.se_try.ts_no_return = TRUE;
 
     if (cctx->ctx_skip != SKIP_YES)
@@ -1843,6 +1843,12 @@ compile_finally(char_u *arg, cctx_T *cctx)
 	return NULL;
     }
 
+    // If the preceding "try" or "catch" block didn't end in a "return" or a
+    // "throw" statement, a pending return/throw from before "finally" cannot
+    // be relied on to terminate the try statement.
+    if (!cctx->ctx_had_return && !cctx->ctx_had_throw)
+	scope->se_u.se_try.ts_no_return = TRUE;
+
     if (cctx->ctx_skip != SKIP_YES)
     {
 	// End :catch or :finally scope: set value in ISN_TRY instruction
@@ -1954,13 +1960,20 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 	}
     }
 
-    // If there is a finally clause that ends in return then we will return.
-    // If one of the blocks didn't end in "return" or we did not catch all
-    // exceptions reset the had_return flag.
-    if (!(scope->se_u.se_try.ts_has_finally && cctx->ctx_had_return)
-	    && (scope->se_u.se_try.ts_no_return
-		|| !scope->se_u.se_try.ts_caught_all))
-	cctx->ctx_had_return = FALSE;
+    // The try statement terminates (always returns or throws) if:
+    // - a "finally" clause always returns or throws, overriding everything
+    //   that came before it, or
+    // - every earlier block (the "try" body and each "catch") terminated
+    //   and, when there is no "finally" to override it, the last such block
+    //   also terminates.  A "catch" pattern not matching an exception still
+    //   terminates: the exception then simply propagates instead of falling
+    //   through to what follows "endtry".
+    cctx->ctx_had_return =
+	(scope->se_u.se_try.ts_has_finally
+			   && (cctx->ctx_had_return || cctx->ctx_had_throw))
+	|| (!scope->se_u.se_try.ts_no_return
+			   && (scope->se_u.se_try.ts_has_finally
+			       || cctx->ctx_had_return || cctx->ctx_had_throw));
 
     compile_endblock(cctx);
 

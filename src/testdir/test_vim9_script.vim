@@ -1137,6 +1137,882 @@ def Test_unreachable_after()
   v9.CheckScriptFailure(lines, 'E1095: Unreachable code after :return')
 enddef
 
+" Tests for unreachable code after an if-else block.
+def Test_unreachable_after_if_basic()
+  # Both branches of a simple if-else return.
+  var lines =<< trim END
+    vim9script
+    def SimpleReturn(n: number): string
+      if n > 10
+        return 'a'
+      else
+        return 'b'
+      endif
+      var x = 1
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 6)
+
+  # Both branches of a simple if-else throw.
+  lines =<< trim END
+    vim9script
+    def SimpleThrowBothBranches(n: number): string
+      if n > 10
+        throw 'Error A'
+      else
+        throw 'Error B'
+      endif
+      var x = 1
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 6)
+
+  # One branch returns, the other throws; both terminate.
+  lines =<< trim END
+    vim9script
+    def ReturnThenThrow(n: number): string
+      if n > 10
+        return 'ok'
+      else
+        throw 'failed'
+      endif
+      var x = 1
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 6)
+
+  # Same as above with the throw/return branches swapped.
+  lines =<< trim END
+    vim9script
+    def ThrowThenReturn(n: number): string
+      if n > 10
+        throw 'failed'
+      else
+        return 'ok'
+      endif
+      var x = 1
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 6)
+
+  # Every branch of an if/elseif/elseif/else chain returns.
+  lines =<< trim END
+    vim9script
+    def MultiElseIfReturn(n: number): number
+      if n == 1
+        return 10
+      elseif n == 2
+        return 20
+      elseif n == 3
+        return 30
+      else
+        return 0
+      endif
+      echo "finished"
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 10)
+
+  # Every branch of an if/elseif/elseif/else chain throws.
+  lines =<< trim END
+    vim9script
+    def MultiElseIfThrow(n: number): number
+      if n == 1
+        throw 'Err 1'
+      elseif n == 2
+        throw 'Err 2'
+      elseif n == 3
+        throw 'Err 3'
+      else
+        throw 'Err else'
+      endif
+      echo "finished"
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 10)
+
+  # Every branch of an if/elseif/elseif/else chain terminates via a mix of
+  # return and throw.
+  lines =<< trim END
+    vim9script
+    def MultiElseIfReturnThrow(n: number): number
+      if n == 1
+        return 10
+      elseif n == 2
+        throw 'Err 2'
+      elseif n == 3
+        return 30
+      else
+        throw 'Err else'
+      endif
+      echo "finished"
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 10)
+
+  # No "else": the if returns but code can still fall through.
+  lines =<< trim END
+    vim9script
+    def MissingElseReturn(n: number): string
+      if n > 10
+        return 'a'
+      endif
+      return 'b'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # No "else": even though every present branch terminates, the missing
+  # else still allows falling through.
+  lines =<< trim END
+    vim9script
+    def MissingElseAllTerminate(n: number): string
+      if n == 1
+        return 'a'
+      elseif n == 2
+        throw 'err'
+      elseif n == 3
+        return 'c'
+      endif
+      return 'reachable'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # No "else": the if throws but code can still fall through.
+  lines =<< trim END
+    vim9script
+    def MissingElseThrow(n: number): string
+      if n > 10
+        throw 'Err a'
+      endif
+      return 'b'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # An empty "else" branch never terminates, so the if doesn't either.
+  lines =<< trim END
+    vim9script
+    def EmptyElse(n: number): string
+      if n > 10
+        return 'a'
+      else
+      endif
+      return 'b'
+    enddef
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # An empty "if" branch never terminates, so the if doesn't either.
+  lines =<< trim END
+    vim9script
+    def EmptyIf(n: number): string
+      if n > 10
+      else
+        return 'b'
+      endif
+      return 'c'
+    enddef
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # The "elseif" branch falls through, so the if/elseif/else doesn't
+  # terminate even though the other branches return.
+  lines =<< trim END
+    vim9script
+    def NonTerminatingElseIfReturn(n1: number, n2: number): number
+      if n1 == 1
+        return 100
+      elseif n2 == 2
+        var x = 42
+      else
+        return 300
+      endif
+      return 0
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # Same as above, but the terminating branches throw instead of return.
+  lines =<< trim END
+    vim9script
+    def NonTerminatingElseIfThrow(n1: number, n2: number): number
+      if n1 == 1
+        throw 'Err 1'
+      elseif n2 == 2
+        var x = 42
+      else
+        return 300
+      endif
+      return 0
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+enddef
+
+def Test_unreachable_after_if_nested()
+  # A nested if-else, where every branch (inner and outer) returns.
+  var lines =<< trim END
+    vim9script
+    def NestedIfReturn(n1: number, n2: number): string
+      if n1 > 10
+        if n2 < 5
+          return 'a'
+        else
+          return 'b'
+        endif
+      else
+        return 'c'
+      endif
+      return 'done'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 10)
+
+  # The inner if-else terminates, but the outer if has no "else", so
+  # code can still fall through.
+  lines =<< trim END
+    vim9script
+    def InnerTerminatingOuterFallsThrough(n1: number, n2: number): string
+      if n1 > 10
+        if n2 > 10
+          return 'a'
+        else
+          return 'b'
+        endif
+      endif
+      return 'c'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # Same as above, but the inner if/elseif/else mixes return and throw.
+  lines =<< trim END
+    vim9script
+    def ElseIfInnerTerminatesOuterFallsThrough(n1: number, n2: number): string
+      if n1 > 10
+        if n2 == 1
+          return 'a'
+        elseif n2 == 2
+          throw 'b'
+        else
+          return 'c'
+        endif
+      endif
+      return 'reachable'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # A nested if-else, where every branch (inner and outer) throws.
+  lines =<< trim END
+    vim9script
+    def NestedIfBothThrow(n1: number, n2: number): string
+      if n1 > 10
+        if n2 < 5
+          throw 'Err a'
+        else
+          throw 'Err b'
+        endif
+      else
+        throw 'Err c'
+      endif
+      return 'done'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 10)
+
+  # A nested if-else, where every branch terminates via a mix of return
+  # and throw.
+  lines =<< trim END
+    vim9script
+    def NestedIfMixed(n1: number, n2: number): string
+      if n1 > 10
+        if n2 < 5
+          return 'a'
+        else
+          throw 'Err b'
+        endif
+      else
+        return 'c'
+      endif
+      return 'done'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 10)
+
+  # A nested if inside a for loop, where every branch either breaks,
+  # continues or returns.
+  lines =<< trim END
+    vim9script
+    def NestedBreakContinue(): number
+      for i in [1, 2, 3]
+        if i > 1
+          if i == 2
+            continue
+          else
+            break
+          endif
+        else
+          return 10
+        endif
+        echo 'unreachable'
+      endfor
+      return 0
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 11)
+
+  # The inner if has no "else", so the nested if-else doesn't terminate.
+  lines =<< trim END
+    vim9script
+    def IncompleteNestedIfReturn(n1: number, n2: number): string
+      if n1
+        if n2
+          return 'a'
+        endif
+      else
+        return 'b'
+      endif
+      return 'c'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # Same as above, but the terminating branches throw instead of return.
+  lines =<< trim END
+    vim9script
+    def IncompleteNestedIfThrow(n1: number, n2: number): string
+      if n1
+        if n2
+          throw 'Err a'
+        endif
+      else
+        throw 'Err b'
+      endif
+      return 'c'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+enddef
+
+def Test_unreachable_after_if_loop()
+  # break/return terminate the if-else, but the loop can still fall
+  # through normally after the endfor.
+  var lines =<< trim END
+    vim9script
+    def BreakOrReturnFallsThroughLoop(): number
+      for i in [1, 2, 3]
+        if i == 2
+          break
+        else
+          return 10
+        endif
+      endfor
+      return 0
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # break/return in an if-else make the code after the endif, inside the
+  # loop body, unreachable.
+  lines =<< trim END
+    vim9script
+    def BreakMakesFollowingCodeUnreachable(): number
+      for i in [1, 2, 3]
+        if i == 2
+          break
+        else
+          return 10
+        endif
+        echo 'unreachable'
+      endfor
+      return 0
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 7)
+
+  # Same as above but with "continue" instead of "break".
+  lines =<< trim END
+    vim9script
+    def ContinueMakesFollowingCodeUnreachable(): number
+      for i in [1, 2, 3]
+        if i == 2
+          continue
+        else
+          return 10
+        endif
+        echo 'unreachable'
+      endfor
+      return 0
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 7)
+
+  # Both branches of the if-else "continue", so the loop body code after
+  # the endif is unreachable.
+  lines =<< trim END
+    vim9script
+    def BothBranchesContinue(): number
+      for i in [1, 2, 3]
+        if i == 2
+          continue
+        else
+          continue
+        endif
+        echo 'unreachable'
+      endfor
+      return 0
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 7)
+
+  # An if/elseif/else where each branch terminates differently: break,
+  # continue and return.
+  lines =<< trim END
+    vim9script
+    def BreakContinueReturnAllTerminate(): number
+      for i in [1, 2, 3]
+        if i == 1
+          break
+        elseif i == 2
+          continue
+        else
+          return 10
+        endif
+        echo 'unreachable'
+      endfor
+      return 0
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 9)
+
+  # Same as above, but the last branch falls through instead of
+  # returning, so the code after the endif stays reachable.
+  lines =<< trim END
+    vim9script
+    def BreakContinueReturnNotAllTerminate(): number
+      for i in [1, 2, 3]
+        if i == 1
+          break
+        elseif i == 2
+          continue
+        else
+          var x = 10
+        endif
+        echo 'reachable'
+      endfor
+      return 0
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # "break" in one branch and "throw" in the other; no code follows the
+  # if-else, so nothing should be reported unreachable.
+  lines =<< trim END
+    vim9script
+    def BreakInBranchWithThrow(): number
+      for i in [1, 2, 3]
+        if i == 2
+          break
+        else
+          throw 'Err a'
+        endif
+      endfor
+      return 0
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # "continue"/"return" in a while loop's if-else fall through the loop
+  # normally, same as with a for loop.
+  lines =<< trim END
+    vim9script
+    def ContinueOrReturnFallsThroughLoop(): number
+      var i = 0
+      while i < 3
+        i += 1
+        if i == 2
+          continue
+        else
+          return 10
+        endif
+      endwhile
+      return 0
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+enddef
+
+def Test_unreachable_after_if_trycatch()
+  # In both branches, both the try and the (bare) catch return.
+  var lines =<< trim END
+    vim9script
+    def TryCatchAllReturn(n: number): string
+      if n > 10
+        try
+          return 'try_a'
+        catch
+          return 'catch_a'
+        endtry
+      else
+        try
+          return 'try_b'
+        catch
+          return 'catch_b'
+        endtry
+      endif
+      var x = 1
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 14)
+
+  # In both branches, both the try and the (bare) catch throw.
+  lines =<< trim END
+    vim9script
+    def TryCatchAllThrow(n: number)
+      if n > 10
+        try
+          throw 'err_try_a'
+        catch
+          throw 'err_catch_a'
+        endtry
+      else
+        try
+          throw 'err_try_b'
+        catch
+          throw 'err_catch_b'
+        endtry
+      endif
+      var x = 1
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 14)
+
+  # Try/catch terminate via a mix of throw and return in each branch.
+  lines =<< trim END
+    vim9script
+    def TryCatchMixedExits(n: number): string
+      if n > 10
+        try
+          throw 'err'
+        catch
+          return 'handled'
+        endtry
+      else
+        try
+          return 'ok'
+        catch
+          throw 'unhandled'
+        endtry
+      endif
+      var x = 1
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 14)
+
+  # A catch block that doesn't return or throw leaves the branch reachable.
+  lines =<< trim END
+    vim9script
+    def CatchSwallowsException(n: number): string
+      if n > 10
+        try
+          throw 'error'
+        catch
+          echo "caught, but no return or re-throw!"
+        endtry
+      else
+        return 'b'
+      endif
+      return 'reachable'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # Try block returns, but if an exception occurs prior or inside, catch block
+  # falls through.
+  lines =<< trim END
+    vim9script
+    def TryReturnsCatchDoesNot(n: number): string
+      if n > 10
+        try
+          return 'a'
+        catch /SpecificError/
+          var x = 42  # Missing return or throw in catch!
+        endtry
+      else
+        throw 'error_else'
+      endif
+      return 'reachable'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # Second catch clause (with a pattern) falls through, leaving the
+  # try/catch reachable even though the first catch returns.
+  lines =<< trim END
+    vim9script
+    def MultiCatchPartialReturn(n: number): string
+      if n > 10
+        try
+          throw 'ErrA'
+        catch /ErrA/
+          return 'handled_a'
+        catch /ErrB/
+          var x = 1
+        endtry
+      else
+        return 'b'
+      endif
+      return 'reachable'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # An if-else that both returns is nested inside a try, with a
+  # terminating catch; the whole try/catch terminates.
+  lines =<< trim END
+    vim9script
+    def IfInsideTry(n: number): string
+      try
+        if n > 10
+          return 'a'
+        else
+          return 'b'
+        endif
+      catch
+        return 'caught'
+      endtry
+      var x = 1
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 10)
+
+  # The catch swallows the exception without returning/throwing, so the
+  # try/catch (and the if-else nested inside the try) stays reachable.
+  lines =<< trim END
+    vim9script
+    def IfInsideTryCatchFallsThrough(n: number): string
+      try
+        if n > 10
+          throw 'err'
+        else
+          return 'b'
+        endif
+      catch
+        echo 'caught'
+      endtry
+      return 'reachable'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+enddef
+
+def Test_unreachable_after_if_finally()
+  # Even if try/catch don't terminate, a return or throw in finally forces
+  # termination.
+  var lines =<< trim END
+    vim9script
+    def TerminatedByFinally(n: number): string
+      if n > 10
+        try
+          echo "no return here"
+        catch
+          echo "no return here either"
+        finally
+          return 'finally_a'
+        endtry
+      else
+        try
+          echo "no return"
+        finally
+          throw 'finally_b_err'
+        endtry
+      endif
+      var x = 1
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 16)
+
+  # Try has no return/throw, finally runs without exit -> falls through.
+  lines =<< trim END
+    vim9script
+    def FinallyWithoutExit(n: number): string
+      if n > 10
+        try
+          var a = 1
+        finally
+          var b = 2  # Finally executes, but does not return or throw
+        endtry
+      else
+        return 'else_branch'
+      endif
+      return 'reachable'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # "finally" returning overrides a try that returns.
+  lines =<< trim END
+    vim9script
+    def FinallyReturnOverridesReturn(): string
+      if true
+        try
+          return 'try'
+        finally
+          return 'finally'
+        endtry
+      else
+        return 'else'
+      endif
+      var x = 1
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 10)
+
+  # "finally" returning overrides a try that throws.
+  lines =<< trim END
+    vim9script
+    def FinallyReturnOverridesThrow(): string
+      if true
+        try
+          throw 'try'
+        finally
+          return 'finally'
+        endtry
+      else
+        return 'else'
+      endif
+      var x = 1
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 10)
+
+  # "finally" throwing overrides a try that returns.
+  lines =<< trim END
+    vim9script
+    def FinallyThrowOverridesReturn(): string
+      if true
+        try
+          return 'try'
+        finally
+          throw 'finally'
+        endtry
+      else
+        return 'else'
+      endif
+      var x = 1
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 10)
+
+  # Only one branch has a try/finally that terminates; the other branch
+  # falls through, so the if-else stays reachable.
+  lines =<< trim END
+    vim9script
+    def TryOnlyOneBranch(n: number): string
+      if n > 10
+        try
+          return 'a'
+        finally
+          echo 'done'
+        endtry
+      else
+        echo 'not terminated'
+      endif
+      return 'reachable'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  # Both branches have a try/finally, where the try itself (not the
+  # finally) terminates via return or throw.
+  lines =<< trim END
+    vim9script
+    def TryBothBranches(n: number): string
+      if n > 10
+        try
+          return 'a'
+        finally
+          echo 'done'
+        endtry
+      else
+        try
+          throw 'err'
+        finally
+          echo 'done'
+        endtry
+      endif
+      return 'unreachable'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 14)
+
+  # A non-terminating finally does not prevent a return in the try from
+  # terminating the overall construct.
+  lines =<< trim END
+    vim9script
+    def ReturnWithNonTerminatingFinally(): string
+      if true
+        try
+          return 'a'
+        finally
+          echo 'finally'
+        endtry
+      else
+        return 'b'
+      endif
+      var x = 1
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 10)
+enddef
+
 def Test_throw_in_nested_try()
   var lines =<< trim END
       vim9script
@@ -1232,10 +2108,11 @@ def Test_try_ends_in_return()
         catch /x/
           return 'caught'
         endtry
+        return 'aaa'
       enddef
       assert_equal('foo', Foo())
   END
-  v9.CheckScriptFailure(lines, 'E1027:')
+  v9.CheckScriptFailure(lines, 'E1095: Unreachable code after :return')
 
   lines =<< trim END
       vim9script
@@ -1251,7 +2128,6 @@ def Test_try_ends_in_return()
       assert_equal('done', Foo())
   END
   v9.CheckScriptSuccess(lines)
-
 enddef
 
 def Test_try_in_catch()
