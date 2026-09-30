@@ -964,6 +964,21 @@ func Test_source_buffer_long_line()
   bwipe!
 endfunc
 
+" A line of a certain length made the line after it be dropped.  The length
+" follows from the 250 bytes get_one_sourceline() starts with, try up to
+" about twice as much.
+func Test_source_buffer_line_after_long_line()
+  new
+  for len in range(2, 512)
+    call setline(1, ['" ' .. repeat('x', len - 2), 'let g:Xsourced = ' .. len])
+    unlet! g:Xsourced
+    source
+    call assert_equal(len, get(g:, 'Xsourced', 0), 'line length ' .. len)
+  endfor
+  unlet! g:Xsourced
+  bwipe!
+endfunc
+
 func Test_source_buffer_with_NUL_char()
   " This was trying to use a line below the buffer.
   let lines =<< trim END
