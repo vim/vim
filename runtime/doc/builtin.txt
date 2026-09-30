@@ -12227,6 +12227,7 @@ terminalprops()						*terminalprops()*
 		   kitty		whether Kitty terminal was detected
 		   decrqm		whether sending DECRQM sequences work
 		   rgb			whether the terminal has true color  **
+		   undercurl		whether "\e[4:3m" gives undercurl  **
 
 		** value 'u' for unknown, 'y' for yes, 'n' for no
 
@@ -12243,6 +12244,11 @@ terminalprops()						*terminalprops()*
 
 		When "underline_rgb" is not 'y', then |t_8u| will be made empty.
 		This avoids sending it to xterm, which would clear the colors.
+
+		When |t_Cs| is empty, Vim asks the terminal whether it takes
+		"\e[4:3m" for the curly underline.  When "undercurl" is 'y'
+		then |t_Cs| is set to "\e[4:3m" and |t_Ce| to "\e[4:0m", unless
+		they were set.
 
 		For "mouse" the value 'u' is unknown
 

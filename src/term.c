@@ -159,6 +159,12 @@ static termrequest_T winpos_status = TERMREQUEST_INIT;
 // Request DECRQM (DEC mode) report:
 static termrequest_T decrqm_status = TERMREQUEST_INIT;
 
+// Request DECRQSS report of the SGR, for the curly underline:
+static termrequest_T rcu_status = TERMREQUEST_INIT;
+
+// The xterm compatibility check found that an unknown DCS string is ignored.
+static bool xcc_ignores_dcs = false;
+
 static termrequest_T *all_termrequests[] = {
     &crv_status,
     &u7_status,
@@ -171,6 +177,7 @@ static termrequest_T *all_termrequests[] = {
     &rcs_status,
     &winpos_status,
     &decrqm_status,
+    &rcu_status,
     NULL
 };
 
@@ -1551,8 +1558,10 @@ typedef struct {
 #define TPR_DECRQM		    5
 // true color, from the color count of the terminal entry
 #define TPR_RGB			    6
+// SGR 4:3 gives the curly underline, from the DECRQSS response
+#define TPR_UNDERCURL		    7
 // table size
-#define TPR_COUNT		    7
+#define TPR_COUNT		    8
 
 static termprop_T term_props[TPR_COUNT];
 
@@ -1591,6 +1600,8 @@ init_term_props(int all)
     term_props[TPR_DECRQM].tpr_set_by_termresponse = TRUE;
     term_props[TPR_RGB].tpr_name = "rgb";
     term_props[TPR_RGB].tpr_set_by_termresponse = FALSE;
+    term_props[TPR_UNDERCURL].tpr_name = "undercurl";
+    term_props[TPR_UNDERCURL].tpr_set_by_termresponse = FALSE;
 
     for (i = 0; i < TPR_COUNT; ++i)
 	if (all || term_props[i].tpr_set_by_termresponse)
@@ -5125,6 +5136,9 @@ handle_u7_response(int *arg, char_u *tp UNUSED, int csi_len UNUSED)
 	value = arg[1] == 1 ? TPR_YES : TPR_NO;
 	term_props[TPR_CURSOR_STYLE].tpr_status = value;
 	term_props[TPR_CURSOR_BLINK].tpr_status = value;
+#ifdef FEAT_TERMRESPONSE
+	xcc_ignores_dcs = value == TPR_YES;
+#endif
     }
 }
 
@@ -5391,6 +5405,22 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	    LOG_TR1("Sending cursor blink mode request");
 	    out_str(T_CRC);
 	    termrequest_sent(&rbm_status);
+	    need_flush = TRUE;
+	}
+
+	// Not where DECRQM does not work, such as Apple Terminal.app, which
+	// echoes the request as it does t_RS.
+	if (rcu_status.tr_progress == STATUS_GET
+		&& xcc_ignores_dcs
+		&& term_props[TPR_DECRQM].tpr_status != TPR_NO
+		&& *T_UCS == NUL
+		&& !option_was_set((char_u *)"t_Cs"))
+	{
+	    MAY_WANT_TO_LOG_THIS;
+	    LOG_TR1("Sending undercurl request");
+	    screen_stop_highlight();
+	    out_str((char_u *)"\033[0m\033[4:3m\033P$qm\033\\\033[0m");
+	    termrequest_sent(&rcu_status);
 	    need_flush = TRUE;
 	}
 
@@ -6181,6 +6211,54 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 }
 
 /*
+ * Find the "m" that ends the parameters of an SGR response, which start at
+ * "tp[start]".  Returns its index, "start" for an empty response, "len" when
+ * more characters are needed and -1 when this is not an SGR response.
+ */
+    static int
+sgr_response_end(char_u *tp, int start, int len)
+{
+    int i = start;
+
+    while (i < len && (SAFE_isdigit(tp[i]) || tp[i] == ';' || tp[i] == ':'))
+	++i;
+    if (i < len && tp[i] != 'm'
+			&& !(i == start && (tp[i] == ESC || tp[i] == STERM)))
+	i = -1;
+    return i;
+}
+
+#ifdef FEAT_TERMRESPONSE
+/*
+ * Handle the SGR response to the undercurl request: "params" are the "len"
+ * bytes of the parameters, "valid" is false when the terminal did not take
+ * the request.
+ */
+    static void
+handle_sgr_response(char_u *params, int len, bool valid)
+{
+    bool    found = false;
+
+    for (int i = 0; valid && !found && i + 3 <= len; ++i)
+	found = (i == 0 || params[i - 1] == ';')
+		&& STRNCMP(params + i, "4:3", 3) == 0
+		&& (i + 3 == len || params[i + 3] == ';');
+
+    rcu_status.tr_progress = STATUS_GOT;
+    term_props[TPR_UNDERCURL].tpr_status = found ? TPR_YES : TPR_NO;
+    if (found && *T_UCS == NUL && !option_was_set((char_u *)"t_Cs"))
+    {
+	set_string_option_direct((char_u *)"t_Cs", -1,
+					(char_u *)"\033[4:3m", OPT_FREE, 0);
+	if (*T_UCE == NUL && !option_was_set((char_u *)"t_Ce"))
+	    set_string_option_direct((char_u *)"t_Ce", -1,
+					(char_u *)"\033[4:0m", OPT_FREE, 0);
+	redraw_later_clear();
+    }
+}
+#endif
+
+/*
  * Check for key code response from xterm:
  * {lead}{flag}+r<hex bytes><{tail}
  *
@@ -6194,6 +6272,9 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
  * Check for cursor shape response from xterm:
  * {lead}1$r<digit> q{tail}
  *
+ * Check for SGR response to the undercurl request:
+ * {lead}1$r{parameters}m{tail}
+ *
  * {lead} can be <Esc>P or DCS
  * {tail} can be <Esc>\ or STERM
  *
@@ -6202,7 +6283,7 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
     static int
 handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 {
-    int i, j;
+    int i, j, k;
 
     LOG_TRN("Received DCS response: %s", (char*)tp);
     j = 1 + (tp[0] == ESC);
@@ -6229,6 +6310,33 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 		break;
 	    }
 	}
+    else if ((k = sgr_response_end(tp, j + 3, len)) >= 0)
+    {
+	int	tail = 0;
+
+	// The SGR response, or an empty one for a request that was not taken.
+	// Make sure that "i" is equal to "len" when there are not sufficient
+	// characters.
+	i = k < len && tp[k] == 'm' ? k + 1 : k;
+	if (i < len && tp[i] == STERM)
+	    tail = 1;
+	else if (i + 1 < len && tp[i] == ESC && tp[i + 1] == '\\')
+	    tail = 2;
+	else if (i == len || (i + 1 == len && tp[i] == ESC))
+	    i = len;
+	if (tail > 0)
+	{
+#ifdef FEAT_TERMRESPONSE
+	    if (tp[k] == 'm')
+		handle_sgr_response(tp + j + 3, k - j - 3, argp[0] == '1');
+#endif
+	    LOG_TRN("Received SGR response: %s", tp);
+
+	    key_name[0] = (int)KS_EXTRA;
+	    key_name[1] = (int)KE_IGNORE;
+	    *slen = i + tail;
+	}
+    }
     else
     {
 	// Probably the cursor shape response.  Make sure that "i"
