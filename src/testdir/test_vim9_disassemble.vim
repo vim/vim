@@ -148,7 +148,11 @@ def Test_disassemble_script_heredoc()
     writefile(lines, 'Xscript', 'D')
     source Xscript
     var res = execute('disass g:ScriptHeredoc')
-    assert_match($'\d EXEC_SPLIT\s\+{cmd} << trim EOF^@', res, cmd)
+    assert_match("ScriptHeredoc\n" ..
+                $'  {cmd} << trim EOF^@    text^@  EOF\_s*' ..
+                $'\d EXEC_SPLIT   {cmd} << trim EOF^@    text^@  EOF\_s*' ..
+                 '\d RETURN void',
+                 res, cmd)
     delfunc g:ScriptHeredoc
   endfor
 enddef
