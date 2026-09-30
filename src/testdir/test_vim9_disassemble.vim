@@ -1062,7 +1062,9 @@ enddef
 
 " Mainly check that ENDLOOP is only produced after a closure was created.
 def Test_disassemble_closure_in_loop()
+  test_override('unreachable', 1)
   var res = execute('disass s:ClosureInLoop')
+  test_override('unreachable', 0)
   assert_match('<SNR>\d\+_ClosureInLoop\_s*' ..
         'for i in range(5)\_s*' ..
         '\d\+ STORE -1 in $0\_s*' ..

@@ -4591,14 +4591,17 @@ compile_def_function_body(
 	    goto linefail;
 	}
 
-	// When processing the end of an if-else block, don't clear the
-	// "ctx_had_throw" flag.  If an if-else block ends in a "throw"
+	// When processing the end of an if-else or try-catch block, don't
+	// clear the "ctx_had_throw" flag.  If such a block ends in a "throw"
 	// statement, then it is considered to end in a "return" statement.
 	// The "ctx_had_throw" is cleared immediately after processing the
-	// if-else block ending statement.
+	// block ending statement.
 	// Otherwise, clear the "had_throw" flag.
 	if (ea.cmdidx != CMD_else && ea.cmdidx != CMD_elseif
-						&& ea.cmdidx != CMD_endif)
+						&& ea.cmdidx != CMD_endif
+						&& ea.cmdidx != CMD_catch
+						&& ea.cmdidx != CMD_finally
+						&& ea.cmdidx != CMD_endtry)
 	    cctx->ctx_had_throw = FALSE;
 
 	p = skipwhite(p);
@@ -4695,9 +4698,14 @@ compile_def_function_body(
 		    break;
 	    case CMD_continue:
 		    line = compile_continue(p, cctx);
+		    // "continue" unconditionally jumps back to the loop,
+		    // like a "return".
+		    cctx->ctx_had_return = TRUE;
 		    break;
 	    case CMD_break:
 		    line = compile_break(p, cctx);
+		    // "break" unconditionally exits the loop, like a "return".
+		    cctx->ctx_had_return = TRUE;
 		    break;
 
 	    case CMD_try:
@@ -4706,13 +4714,16 @@ compile_def_function_body(
 	    case CMD_catch:
 		    line = compile_catch(p, cctx);
 		    cctx->ctx_had_return = FALSE;
+		    cctx->ctx_had_throw = FALSE;
 		    break;
 	    case CMD_finally:
 		    line = compile_finally(p, cctx);
 		    cctx->ctx_had_return = FALSE;
+		    cctx->ctx_had_throw = FALSE;
 		    break;
 	    case CMD_endtry:
 		    line = compile_endtry(p, cctx);
+		    cctx->ctx_had_throw = FALSE;
 		    break;
 	    case CMD_throw:
 		    line = compile_throw(p, cctx);

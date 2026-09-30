@@ -1,4 +1,4 @@
-*todo.txt*	For Vim version 9.2.  Last change: 2026 Aug 25
+*todo.txt*	For Vim version 9.2.  Last change: 2026 Sep 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -43,9 +43,6 @@ without all the help files.
 Errors when running tests with valgrind:
 - test_gui.vim:
     Found errors in Test_gui_mouse_event():
-
-When every block in if/elseif ends in "throw" or "return" code following after
-"endif" should give an "unreachable code" error.
 
 Upcoming larger works:
 - Make spell checking work with recent .dic/.aff files, e.g. French.  #4916
