@@ -604,6 +604,18 @@ func Test_dict_deepcopy()
   call assert_fails("call deepcopy([1, 2], 2)", 'E1212:')
 endfunc
 
+" deepcopy() keeps a null list, tuple or dict in a list or dict
+func Test_deepcopy_null_item()
+  let lines =<< trim END
+      VAR d = {'a': test_null_dict(), 'b': test_null_list(),
+            \ 'c': test_null_tuple(), 'd': 1}
+      call assert_equal(d, deepcopy(d))
+      VAR l = [test_null_dict(), test_null_list(), test_null_tuple(), 1]
+      call assert_equal(l, deepcopy(l))
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+endfunc
+
 " Locked variables
 func Test_list_locked_var()
   " Not tested with :def function, local vars cannot be locked.
