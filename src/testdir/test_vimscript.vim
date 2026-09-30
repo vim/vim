@@ -6653,6 +6653,28 @@ func Test_skip()
 
 endfunc
 
+func Test_echo_skip()
+  " echohl has EX_TRLBAR, handled normally
+  let cmds =<< trim END
+    echo
+    echoconsole
+    echoerr
+    echomsg
+    echon
+    echowindow
+  END
+  for cmd in cmds
+    let lines =<< eval trim END
+      if 0 | {cmd} execute("Xpath 'a'") | endif
+      Xpath 'b'
+    END
+    XpathINIT
+    call writefile(lines, 'Xscript', 'D')
+    source Xscript
+    call assert_equal('b', g:Xpath, cmd)
+  endfor
+endfunc
+
 "-------------------------------------------------------------------------------
 " Test 93:  :echo and string()					    {{{1
 "-------------------------------------------------------------------------------
