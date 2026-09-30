@@ -2500,6 +2500,10 @@ screen_char(unsigned off, int row, int col)
     if (row >= screen_Rows || col >= screen_Columns)
 	return;
 
+#ifdef FEAT_IMAGE
+    mark_dirty_region_for_images(row, col, 1, 1);
+#endif
+
 #ifdef FEAT_PROP_POPUP
     // If this cell is under a higher-zindex opacity popup, suppress
     // output to prevent flicker.  The higher popup's redraw will
@@ -2688,7 +2692,8 @@ screen_draw_rectangle(
     int		col,
     int		height,
     int		width,
-    int		invert)
+    int		invert,
+    int		force)
 {
     int		r, c;
     int		off;
@@ -2708,13 +2713,13 @@ screen_draw_rectangle(
 	{
 	    if (enc_dbcs != 0 && dbcs_off2cells(off + c, max_off) > 1)
 	    {
-		if (!skip_for_popup(r, c))
+		if (force || !skip_for_popup(r, c))
 		    screen_char_2(off + c, r, c);
 		++c;
 	    }
 	    else
 	    {
-		if (!skip_for_popup(r, c))
+		if (force || !skip_for_popup(r, c))
 		    screen_char(off + c, r, c);
 		if (utf_off2cells(off + c, max_off) > 1)
 		    ++c;
@@ -2747,7 +2752,7 @@ redraw_block(int row, int end, win_T *wp)
 	col = wp->w_wincol;
 	width = wp->w_width;
     }
-    screen_draw_rectangle(row, col, end - row, width, FALSE);
+    screen_draw_rectangle(row, col, end - row, width, FALSE, FALSE);
 }
 
     void
@@ -3666,6 +3671,10 @@ screenclear2(int doclear)
     screen_start();		// don't know where cursor is now
     msg_didany = FALSE;
     msg_didout = FALSE;
+#ifdef FEAT_IMAGE
+    shift_reset_image_placements(); // Reset "row_off" for every placement
+    clear_all_image_placements();
+#endif
 
     return did_clear;
 }
@@ -4385,11 +4394,19 @@ screen_ins_lines(
 	     || (clip_star.state != SELECT_CLEARED
 						 && redrawing_for_callback > 0)
 #endif
-#ifdef FEAT_PROP_POPUP
-	     || popup_visible
-#endif
 	     )
 	return FAIL;
+
+#ifdef FEAT_PROP_POPUP
+    if (popup_visible)
+    {
+# ifdef FEAT_IMAGE
+	// Always make sure images are correctly shifted
+	shift_image_placements(off + row, off + end, line_count);
+# endif
+	return FAIL;
+    }
+#endif
 
     /*
      * There are seven ways to insert lines:
@@ -4467,6 +4484,9 @@ screen_ins_lines(
 	clip_clear_selection(&clip_star);
     else
 	clip_scroll_selection(-line_count);
+#endif
+#ifdef FEAT_IMAGE
+    shift_image_placements(off + row, off + end, line_count);
 #endif
 
 #ifdef FEAT_GUI_HAIKU
@@ -4695,6 +4715,9 @@ screen_del_lines(
 	clip_clear_selection(&clip_star);
     else
 	clip_scroll_selection(line_count);
+#endif
+#ifdef FEAT_IMAGE
+    shift_image_placements(off + row, off + end, -line_count);
 #endif
 
 #ifdef FEAT_GUI_HAIKU

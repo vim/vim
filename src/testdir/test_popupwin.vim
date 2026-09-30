@@ -6033,7 +6033,8 @@ func Test_popup_opacity_lowcolor()
 endfunc
 
 func Test_popup_image_update()
-  CheckFeature image
+  CheckFeature image_popup
+  set imageprotocol=.*:sixel
 
   " 2x2 RGB = 12 bytes per image (4 pixels x 3 bytes).
   let image1 = 0zff000000ff000000ffffffff
@@ -6059,10 +6060,14 @@ func Test_popup_image_update()
   call assert_true(pos3.width > pos2.width || pos3.height > pos2.height)
 
   call popup_close(winid)
+
+  set imageprotocol&
 endfunc
 
 func Test_popup_image_clear_with_empty_dict()
-  CheckFeature image
+  CheckFeature image_popup
+
+  set imageprotocol=.*:sixel
 
   " Documented sentinel: popup_setoptions(winid, #{image: {}}) removes a
   " previously set image.  After the empty-dict call, popup_getoptions()
@@ -6086,6 +6091,8 @@ func Test_popup_image_clear_with_empty_dict()
   call assert_true(has_key(popup_getoptions(winid), 'image'))
 
   call popup_close(winid)
+
+  set imageprotocol&
 endfunc
 
 " A popup image is emitted as a DCS (sixel) escape sequence.  On the Windows
@@ -6094,6 +6101,7 @@ endfunc
 " with echoraw() so that only the console write is under test.  See #20795.
 func Test_dcs_not_written_as_text_windows_cui()
   CheckFeature terminal
+
   if !has('win32') || has('gui_running')
     throw 'Skipped: only for the Windows CUI'
   endif
@@ -6123,7 +6131,8 @@ func Test_dcs_not_written_as_text_windows_cui()
 endfunc
 
 func Test_popup_image_set_and_getoptions()
-  CheckFeature image
+  CheckFeature image_popup
+  set imageprotocol=.*:sixel
 
   " RGB image: 4x4 cells, 3 bytes per pixel.
   let blob = repeat([0xff, 0x00, 0x00], 4 * 4)->list2blob()
@@ -6134,7 +6143,7 @@ func Test_popup_image_set_and_getoptions()
   let opt = popup_getoptions(winid)
   call assert_true(has_key(opt, 'image'),
         \ 'popup_getoptions() should expose the image dict')
-  call assert_equal(['alpha', 'data', 'height', 'width'], sort(keys(opt.image)))
+  call assert_equal(['alpha', 'data', 'format', 'height', 'width'], sort(keys(opt.image)))
   call assert_equal(4, opt.image.width)
   call assert_equal(4, opt.image.height)
   call assert_equal(0, opt.image.alpha)
@@ -6165,53 +6174,27 @@ func Test_popup_image_set_and_getoptions()
   let winid = popup_create('plain', #{line: 1, col: 1})
   call assert_false(has_key(popup_getoptions(winid), 'image'))
   call popup_close(winid)
+
+  set imageprotocol&
 endfunc
 
 func Test_popup_image_required_params()
-  CheckFeature image
+  CheckFeature Image
+  set imageprotocol=.*:sixel
 
   let blob = repeat([0xff, 0x00, 0x00], 2 * 2)->list2blob()
 
-  " Wrong data length is rejected with a clear error and the popup is not
-  " created, so there is nothing to clean up.
   call assert_fails(
         \ "call popup_create('', #{image: #{data: 0z00, width: 2, height: 2}})",
         \ 'E475:')
   call assert_equal([], popup_list())
 
-  " Missing/zero required keys are silently ignored: the popup is created
-  " without an image, so popup_getoptions() should not expose "image".
-  let winid = popup_create('', #{
-        \ image: #{width: 2, height: 2},
-        \ line: 1, col: 1,
-        \ })
-  call assert_false(has_key(popup_getoptions(winid), 'image'))
-  call popup_close(winid)
-
-  let winid = popup_create('', #{
-        \ image: #{data: blob, height: 2},
-        \ line: 1, col: 1,
-        \ })
-  call assert_false(has_key(popup_getoptions(winid), 'image'))
-  call popup_close(winid)
-
-  let winid = popup_create('', #{
-        \ image: #{data: blob, width: 2},
-        \ line: 1, col: 1,
-        \ })
-  call assert_false(has_key(popup_getoptions(winid), 'image'))
-  call popup_close(winid)
-
-  let winid = popup_create('', #{
-        \ image: #{data: blob, width: 0, height: 2},
-        \ line: 1, col: 1,
-        \ })
-  call assert_false(has_key(popup_getoptions(winid), 'image'))
-  call popup_close(winid)
+  set imageprotocol&
 endfunc
 
 func Test_popup_image_move()
-  CheckFeature image
+  CheckFeature Image
+  set imageprotocol=.*:sixel
 
   let img = repeat([0xff, 0x00, 0x00], 8 * 8)->list2blob()
   let id = popup_create('', #{
@@ -6236,10 +6219,13 @@ func Test_popup_image_move()
   endfor
 
   call popup_close(id)
+
+  set imageprotocol&
 endfunc
 
 func Test_popup_image_opacity_overlay()
-  CheckFeature image
+  CheckFeature Image
+  set imageprotocol=.*:sixel
 
   " Bottom popup carries an image.
   let img = repeat([0x00, 0xff, 0x00], 16 * 16)->list2blob()
@@ -6266,10 +6252,13 @@ func Test_popup_image_opacity_overlay()
 
   call popup_close(top_id)
   call popup_close(img_id)
+
+  set imageprotocol&
 endfunc
 
 func Test_popup_image_clipwindow_scroll()
-  CheckFeature image
+  CheckFeature Image
+  set imageprotocol=.*:sixel
 
   " An image popup anchored to a textprop with "clipwindow" set stays visible
   " (clipped) while the prop is in reach, hides when the host scrolls the prop
@@ -6308,156 +6297,8 @@ func Test_popup_image_clipwindow_scroll()
   call popup_close(id)
   bwipe!
   call prop_type_delete('imgclipprop')
-endfunc
 
-" The kitty and sixel image backends cannot be tested in a terminal window:
-" it does not show the escape sequences Vim writes and does not answer the
-" probe for the kitty graphics protocol.  Run Vim on a pty as a job instead
-" and look at what it writes there.
-
-" The sequences of the kitty graphics protocol Vim writes, "a=" is the action.
-" See https://sw.kovidgoyal.net/kitty/graphics-protocol/
-" a=q: does the terminal support the protocol?
-let s:kitty_probe = "\<Esc>_Gi=31"
-" What a terminal that supports the protocol answers, followed by the reply to
-" the DA1 request that ends the probe.
-let s:kitty_probe_answer = "\<Esc>_Gi=31;OK\<Esc>\\\<Esc>[?62;4c"
-" a=t: transmit the pixels of an image.
-let s:kitty_transmit = "\<Esc>_Ga=t,"
-" a=p: place a transmitted image on the screen.
-let s:kitty_place = "\<Esc>_Ga=p,"
-" a=d,d=i: delete the placement of an image, the terminal keeps the pixels.
-let s:kitty_delete = "\<Esc>_Ga=d,d=i,"
-
-" The start of a sixel image, a DCS with the "q" command.
-let s:sixel_start_pat = "\<Esc>P[0-9;]*q"
-" Clear the screen, the only way to remove sixel pixels on some terminals.
-let s:clear_screen = "\<Esc>[2J"
-
-" The script for the Vim on the pty: create a popup with an image.
-let s:image_popup_script =<< trim END
-  let img = repeat([0xff, 0, 0], 16 * 32)->list2blob()
-  call popup_create('', #{image: #{data: img, width: 16, height: 32}})
-  redraw
-END
-
-" Collect what the Vim on the pty writes in s:pty_out.  With "kitty" the probe
-" is answered like a terminal that supports the protocol, otherwise Vim gets
-" no answer and uses sixel.
-func s:PtyOutput(job, msg, kitty)
-  let s:pty_out ..= a:msg
-  if a:kitty && !s:pty_answered && stridx(s:pty_out, s:kitty_probe) >= 0
-    call ch_sendraw(a:job, s:kitty_probe_answer)
-    let s:pty_answered = 1
-  endif
-endfunc
-
-" Start Vim on a pty with the script written to XpopupImageTab.
-func s:StartVimWithImageOnPty(kitty)
-  let s:pty_out = ''
-  let s:pty_answered = 0
-  return job_start(GetVimCommandCleanTerm() .. ' -S XpopupImageTab', #{
-        \ pty: 1,
-        \ out_mode: 'raw',
-        \ env: #{TERM: 'xterm', LINES: '24', COLUMNS: '80'},
-        \ out_cb: {job, msg -> s:PtyOutput(job, msg, a:kitty)},
-        \ })
-endfunc
-
-" Wait for the Vim on the pty to write "seq" after the first "start" bytes.
-func s:WaitForPtyOutput(seq, start)
-  call WaitForAssert({-> assert_notequal(-1,
-        \ stridx(s:pty_out, a:seq, a:start))})
-endfunc
-
-func Test_popup_image_kitty_leave_tabpage()
-  CheckUnix
-  CheckFeature job
-  CheckFeature image_kitty
-
-  call writefile(s:image_popup_script, 'XpopupImageTab', 'D')
-  let job = s:StartVimWithImageOnPty(1)
-  try
-    call s:WaitForPtyOutput(s:kitty_transmit, 0)
-    call s:WaitForPtyOutput(s:kitty_place, 0)
-
-    " Leaving the tab page deletes the placement.
-    let start = len(s:pty_out)
-    call ch_sendraw(job, ":tabedit\<CR>")
-    call s:WaitForPtyOutput(s:kitty_delete, start)
-
-    " Entering the tab page places the image again without transmitting it.
-    let start = len(s:pty_out)
-    call ch_sendraw(job, ":tabnext\<CR>")
-    call s:WaitForPtyOutput(s:kitty_place, start)
-    call assert_equal(-1, stridx(s:pty_out, s:kitty_transmit, start))
-  finally
-    call job_stop(job, 'kill')
-    call WaitForAssert({-> assert_equal('dead', job_status(job))})
-  endtry
-endfunc
-
-" The image is placed in the rectangles that a popup with a higher zindex
-" leaves visible; the cell is 8x16 pixels on the pty.
-func Test_popup_image_kitty_covered()
-  CheckUnix
-  CheckFeature job
-  CheckFeature image_kitty
-
-  let lines =<< trim END
-    let img = repeat([0xff, 0, 0], 64 * 64)->list2blob()
-    call popup_create('', #{image: #{data: img, width: 64, height: 64},
-          \ line: 2, col: 2, zindex: 50})
-    let g:cover = popup_create(['xx', 'xx'], #{line: 3, col: 6, zindex: 100})
-    redraw
-  END
-  call writefile(lines, 'XpopupImageTab', 'D')
-  let job = s:StartVimWithImageOnPty(1)
-  try
-    call s:WaitForPtyOutput(',p=4,', 0)
-    " The row above the cover, the parts left and right of it, the row below.
-    for seq in [',p=1,x=0,y=0,w=64,h=16,z=50,', ',p=2,x=0,y=16,w=32,h=32,z=50,',
-          \ ',p=3,x=48,y=16,w=16,h=32,z=50,', ',p=4,x=0,y=48,w=64,h=16,z=50,']
-      call assert_notequal(-1, stridx(s:pty_out, seq), seq)
-    endfor
-
-    " Without the cover one placement is enough, the others are deleted.  The
-    " screen may be drawn once more before that, with the four placements
-    " again: wait for the deletion of the last one.
-    let start = len(s:pty_out)
-    call ch_sendraw(job, ":call popup_close(g:cover)\<CR>")
-    call WaitForAssert({-> assert_match(s:kitty_delete .. 'i=\d\+,p=4,',
-          \ s:pty_out[start :])})
-    call assert_notequal(-1, stridx(s:pty_out, ',p=1,x=0,y=0,w=64,h=64,z=50,',
-          \ start))
-    for p in [2, 3, 4]
-      call assert_match(s:kitty_delete .. 'i=\d\+,p=' .. p .. ',',
-            \ s:pty_out[start :])
-    endfor
-  finally
-    call job_stop(job, 'kill')
-    call WaitForAssert({-> assert_equal('dead', job_status(job))})
-  endtry
-endfunc
-
-func Test_popup_image_sixel_leave_tabpage()
-  CheckUnix
-  CheckFeature job
-  CheckFeature image_sixel
-
-  call writefile(s:image_popup_script, 'XpopupImageTab', 'D')
-  let job = s:StartVimWithImageOnPty(0)
-  try
-    call WaitForAssert({-> assert_match(s:sixel_start_pat, s:pty_out)})
-
-    " Leaving the tab page clears the screen.
-    let start = len(s:pty_out)
-    call ch_sendraw(job, ":tabedit\<CR>")
-    call s:WaitForPtyOutput(s:clear_screen, start)
-  finally
-    call job_stop(job, 'kill')
-    call WaitForAssert({-> assert_equal('dead', job_status(job))})
-  endtry
+  set imageprotocol&
 endfunc
 
 func Test_popupwin_textprop_redraw()

@@ -190,6 +190,7 @@ NEW_TESTS = \
 	test_highlight \
 	test_history \
 	test_hlsearch \
+	test_image \
 	test_iminsert \
 	test_increment \
 	test_increment_dbcs \
@@ -475,6 +476,7 @@ NEW_TESTS_RES = \
 	test_highlight.res \
 	test_history.res \
 	test_hlsearch.res \
+	test_image.res \
 	test_iminsert.res \
 	test_increment.res \
 	test_increment_dbcs.res \

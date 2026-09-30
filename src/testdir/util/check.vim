@@ -378,6 +378,13 @@ func CheckGithubActions()
   endif
 endfunc
 
+command CheckImageBackend call CheckImageBackend()
+func CheckImageBackend()
+  if v:imagebackend != "none"
+    throw "Skipped: No image backend available"
+  endif
+endfunc
+
 let &cpo = s:cpo_save
 unlet s:cpo_save
 " vim: shiftwidth=2 sts=2 expandtab

@@ -1317,6 +1317,11 @@ wait_return(int redraw)
 
 	    do
 	    {
+#ifdef FEAT_IMAGE
+		// Make sure to update image placements (since their row offset
+		// will have been changed).
+		draw_image_placements();
+#endif
 		// Remember "got_int", if it is set vgetc() probably returns a
 		// CTRL-C, but we need to loop then.
 		had_got_int = got_int;

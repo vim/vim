@@ -52732,6 +52732,9 @@ Functions: ~
 |ch_listen()|		listen on {address}
 |getbgcolor()|		return background color as RGB value
 |getinfo()|		get definition of argument
+|image_add()|		add an image and return a handle
+|image_discard()|	discard an image handle
+|image_info()|		get information about an image
 |tabpanel_getinfo()|	get current state of the |tabpanel|
 |tabpanel_scroll()|	scroll the |tabpanel|
 
@@ -52743,6 +52746,7 @@ Autocommands: ~
 
 Options: ~
 
+'imageprotocol'		Image backend to use for what terminal
 'modelinestrict'	Only allow safe options to be set from a modeline.
 'pumopt'		Additional options for the popup menu.
 'scrolloffpad'		Vertically center cursor at end of file.
@@ -52762,6 +52766,10 @@ Highlighting: ~
 |hl-PopupBorder|	Popup window border.
 |hl-PopupTitle|		Popup window title.
 
+Vim Variables: ~
+
+|v:imagebackend|	The current 'imageprotocol'
+
 Vim Arguments: ~
 
 |--stdio-channel|	Control Vim via a channel using stdin/stdout
@@ -52770,6 +52778,7 @@ Vim Arguments: ~
 Configure Switches: ~
 
 --enable-hardcopy-pango	Enable the Pango |:hardcopy| backend |pango-printing|
+--enable-pixman		Enable the Pixman library for image handling
 
 ==============================================================================
 PATCHES						*patches-9.3* *bug-fixes-9.3*
