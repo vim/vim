@@ -5,6 +5,7 @@ char_u *set_context_in_user_cmdarg(char_u *cmd, char_u *arg, long argt, int cont
 char_u *expand_user_command_name(int idx);
 char_u *get_user_commands(expand_T *xp, int idx);
 char_u *get_user_command_name(int idx, int cmdidx);
+int user_command_info(int idx, int cmdidx, dict_T *d);
 char_u *get_user_cmd_addr_type(expand_T *xp, int idx);
 char_u *get_user_cmd_flags(expand_T *xp, int idx);
 char_u *get_user_cmd_nargs(expand_T *xp, int idx);

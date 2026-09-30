@@ -52731,6 +52731,7 @@ Functions: ~
 
 |ch_listen()|		listen on {address}
 |getbgcolor()|		return background color as RGB value
+|getinfo()|		get definition of argument
 |tabpanel_getinfo()|	get current state of the |tabpanel|
 |tabpanel_scroll()|	scroll the |tabpanel|
 
