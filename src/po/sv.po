@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim 9.1\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-03-30 11:05+0900\n"
-"PO-Revision-Date: 2026-01-11 14:27+0100\n"
+"POT-Creation-Date: 2026-09-30 21:33+0000\n"
+"PO-Revision-Date: 2026-10-01 10:40+0200\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -262,9 +262,6 @@ msgstr ": Överföring misslyckades. Försöker att köra lokalt\n"
 msgid "%d of %d edited"
 msgstr "%d av %d redigerade"
 
-msgid "Socket server not online:Send expression failed"
-msgstr "Uttagsservern är inte ansluten:Skicka uttryck misslyckades"
-
 msgid "No display: Send expression failed.\n"
 msgstr "Ingen display: Överföringsuttryck misslyckades.\n"
 
@@ -353,11 +350,11 @@ msgid "cmd: %s"
 msgstr "kommando: %s"
 
 msgid "frame is zero"
-msgstr "ram är noll"
+msgstr "ramen är noll"
 
 #, c-format
 msgid "frame at highest level: %d"
-msgstr "ram vid högsta nivån: %d"
+msgstr "ramen på högsta nivån: %d"
 
 #, c-format
 msgid "Breakpoint in \"%s%s\" line %ld"
@@ -389,7 +386,7 @@ msgid "Custom"
 msgstr "Anpassad"
 
 msgid "Latin supplement"
-msgstr "Latin tillägg"
+msgstr "Latinskt tillägg"
 
 msgid "Greek and Coptic"
 msgstr "Grekiska och koptiska"
@@ -407,7 +404,7 @@ msgid "Latin extended"
 msgstr "Latin utökad"
 
 msgid "Greek extended"
-msgstr "Grekiska utökad"
+msgstr "Grekiskt tillägg"
 
 msgid "Punctuation"
 msgstr "Interpunktion"
@@ -557,8 +554,8 @@ msgid ""
 "It may still be possible to write it.\n"
 "Do you wish to try?"
 msgstr ""
-"Filrättigheterna för \"%s\" är skrivskyddad.\n"
-"Den kan fortfarande vara möjlig att skriva till.\n"
+"Filrättigheterna för \"%s\" är skrivskyddade.\n"
+"Det kan ändå gå att skriva till filen.\n"
 "Vill du försöka?"
 
 msgid "Edit File"
@@ -716,7 +713,7 @@ msgid "Exception"
 msgstr "Undantag"
 
 msgid "Error and interrupt"
-msgstr "Fel och avbrytet"
+msgstr "Fel och avbrott"
 
 msgid "Error"
 msgstr "Fel"
@@ -950,9 +947,11 @@ msgstr "VIM - Sök och ersätt..."
 msgid "VIM - Search..."
 msgstr "VIM - Sök..."
 
+#. "Find what:" label + entry
 msgid "Find what:"
 msgstr "Hitta vad:"
 
+#. "Replace with:" label + entry
 msgid "Replace with:"
 msgstr "Ersätt med:"
 
@@ -986,6 +985,21 @@ msgstr "Ersätt alla"
 msgid "_Close"
 msgstr "S_täng"
 
+msgid "Close Tab"
+msgstr "Stäng flik"
+
+msgid "New Tab"
+msgstr "Ny flik"
+
+msgid "Open Tab..."
+msgstr "Öppna flik..."
+
+msgid "Direction:"
+msgstr "Riktning:"
+
+msgid "Close"
+msgstr "Stäng"
+
 msgid "Vim: Received \"die\" request from session manager\n"
 msgstr "Vim: Tog emot \"die\"-begäran från sessionshanteraren\n"
 
@@ -994,9 +1008,6 @@ msgstr "Stäng flik"
 
 msgid "New tab"
 msgstr "Ny flik"
-
-msgid "Open Tab..."
-msgstr "Öppna flik..."
 
 msgid "Vim: Main window unexpectedly destroyed\n"
 msgstr "Vim: Huvudfönster oväntat förstört\n"
@@ -1156,7 +1167,7 @@ msgid "Kill a connection"
 msgstr "Döda en anslutning"
 
 msgid "Reinit all connections"
-msgstr "Ominitiera alla anslutningar"
+msgstr "Återinitiera alla anslutningar"
 
 msgid "Show connections"
 msgstr "Visa anslutningar"
@@ -1334,14 +1345,10 @@ msgstr "kan inte skapa buffert/fönster-kommando: objekt håller på att tas bor
 
 msgid ""
 "cannot register callback command: buffer/window is already being deleted"
-msgstr ""
-"kan inte registera återkallningskommando: buffert/fönster håller redan på "
-"att tas bort"
+msgstr "kan inte registrera återanropskommando: buffert/fönster håller redan på att tas bort"
 
 msgid "cannot register callback command: buffer/window reference not found"
-msgstr ""
-"kan inte registrera återkallningskommando: buffert-/fönsterreferens hittades "
-"inte"
+msgstr "kan inte registrera återanropskommando: buffert-/fönsterreferens hittades inte"
 
 msgid "cannot get line"
 msgstr "kan inte hämta rad"
@@ -1554,7 +1561,7 @@ msgstr "Vim: Varning: Inmatning är inte från en terminal\n"
 
 #. just in case..
 msgid "pre-vimrc command line"
-msgstr "pre-vimrc kommandorad"
+msgstr "`pre-vimrc`-kommandorad"
 
 msgid ""
 "\n"
@@ -1700,7 +1707,7 @@ msgid "-L\t\t\tSame as -r"
 msgstr "-L\t\t\tSamma som -r"
 
 msgid "-f\t\t\tDon't use newcli to open window"
-msgstr "-f\t\t\tAnvända inte newcli för att öppna fönster"
+msgstr "-f\t\t\tAnvänd inte newcli för att öppna ett fönster"
 
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <enhet>\t\tAnvänd <enhet> för I/O"
@@ -1724,6 +1731,9 @@ msgstr "--gui-dialog-file {fname}  För testning: skriv dialogtext"
 msgid "--ttyfail\t\tExit if input or output is not a terminal"
 msgstr ""
 "--ttyfail\t\tAvsluta om inmatningen eller utmatningen inte är en terminal"
+
+msgid "--stdio-channel\tUse stdin and stdout as a channel"
+msgstr "--stdio-channel\tAnvänd standard in och standard ut som en kanal"
 
 msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
 msgstr "-u <vimrc>\t\tAnvänd <vimrc> istället för någon .vimrc"
@@ -1753,7 +1763,7 @@ msgid "--cmd <command>\tExecute <command> before loading any vimrc file"
 msgstr "--cmd <kommando>\tKör <kommando> före inläsning av någon vimrc fil"
 
 msgid "-c <command>\t\tExecute <command> after loading the first file"
-msgstr "-c <kommando>\tKör <kommando> efter inläsning av den första filen"
+msgstr "-c <kommando>\t\tKör <kommando> efter inläsning av den första filen"
 
 msgid "-S <session>\t\tSource file <session> after loading the first file"
 msgstr "-S <session>\t\tKör fil <session> efter inläsning av den första filen"
@@ -1779,8 +1789,9 @@ msgstr "-X\t\t\tAnslut inte till X server"
 msgid "-Y\t\t\tDo not connect to Wayland compositor"
 msgstr "-Y\t\t\tAnslut inte till Wayland compositor"
 
-msgid "--clientserver <socket|x11> Backend for clientserver communication"
-msgstr "--clientserver <socket|x11> Backend för clientserver-kommunikation"
+msgid ""
+"--clientserver <socket|x11|mswin> Backend for clientserver communication"
+msgstr "--clientserver <socket|x11|mswin> Bakände för clientserver-kommunikation"
 
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr "--remote <filer>\tRedigera <filer> i en Vim-server om möjligt"
@@ -1826,7 +1837,7 @@ msgid "--startuptime <file>\tWrite startup timing messages to <file>"
 msgstr "--startuptime <fil>\tSkriv starttidsmeddelanden till <fil>"
 
 msgid "--log <file>\t\tStart logging to <file> early"
-msgstr "--log <fil>         Börja logga till <fil> tidigt"
+msgstr "--log <fil>\t\tBörja logga till <fil> tidigt"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\tAnvänd <viminfo> istället för .viminfo"
@@ -1889,6 +1900,13 @@ msgstr "+reverse\t\tAnvänd inte omvänd video (även: +rv)"
 
 msgid "-xrm <resource>\tSet the specified resource"
 msgstr "-xrm <tillgång>\tStäll in den angivna tillgången"
+
+msgid ""
+"\n"
+"Arguments recognised by gvim (GTK4 version):\n"
+msgstr ""
+"\n"
+"Argument som kan användas av gvim (GTK4-version):\n"
 
 msgid ""
 "\n"
@@ -2062,11 +2080,20 @@ msgstr "???TOMT BLOCK"
 msgid "???LINES MISSING"
 msgstr "???RADER SAKNAS"
 
+msgid "???ILLEGAL BLOCK NUMBER"
+msgstr "???OTILLÅTET BLOCKNUMMER"
+
 msgid "???BLOCK MISSING"
 msgstr "???BLOCK SAKNAS"
 
+msgid "??? BLOCK PAGE COUNT MISMATCH"
+msgstr "??? SIDANTAL I BLOCK STÄMMER INTE"
+
 msgid "??? from here until ???END lines may be messed up"
 msgstr "??? från här till ???SLUT kan rader vara tillstökade"
+
+msgid "??? block header corrupted"
+msgstr "??? blockhuvud skadat"
 
 msgid "??? from here until ???END lines may have been inserted/deleted"
 msgstr "??? från här till ???SLUT kan rader ha blivit infogade/borttagna"
@@ -2286,11 +2313,11 @@ msgstr "Växlingsfil \""
 msgid "\" already exists!"
 msgstr "\" existerar redan!"
 
-msgid "VIM - ATTENTION"
-msgstr "VIM - LYSTRING"
-
 msgid "Swap file already exists!"
 msgstr "Växlingsfil existerar redan!"
+
+msgid "VIM - ATTENTION"
+msgstr "VIM - LYSTRING"
 
 msgid ""
 "&Open Read-Only\n"
@@ -2417,6 +2444,10 @@ msgstr " (Avbruten)"
 
 msgid "Beep!"
 msgstr "Piip!"
+
+#, c-format
+msgid "Executing directly: \"%s\""
+msgstr "Kör direkt: \"%s\""
 
 #, c-format
 msgid "Calling shell to execute: \"%s\""
@@ -2550,10 +2581,12 @@ msgid "Vim exiting with %d\n"
 msgstr "Vim avslutar med %d\n"
 
 msgid "cannot change console mode ?!\n"
-msgstr "kan inte ändra konsoll-läge ?!\n"
+msgstr ""
+"kan inte ändra konsolläge?!\n"
 
 msgid "mch_get_shellsize: not a console??\n"
-msgstr "mch_get_shellsize: inte en konsoll??\n"
+msgstr ""
+"mch_get_shellsize: inte en konsol??\n"
 
 msgid "Cannot execute "
 msgstr "Kan inte köra "
@@ -2699,10 +2732,6 @@ msgstr "XSMP ICE-anslutning övervakning misslyckades"
 msgid "XSMP SmcOpenConnection failed: %s"
 msgstr "XSMP SmcOpenConnection misslyckades: %s"
 
-#, c-format
-msgid "Failed creating socket directory: %s"
-msgstr "Misslyckades med att skapa uttagskatalog: %s"
-
 msgid "At line"
 msgstr "På rad"
 
@@ -2725,7 +2754,7 @@ msgid ""
 "See  :help win32-vimrun  for more information."
 msgstr ""
 "VIMRUN.EXE hittades inte i din $PATH.\n"
-"Externa kommandon vill inte stå stilla efter färdigställning.\n"
+"Externa kommandon pausas inte när de har avslutats.\n"
 "Se  :help win32-vimrun  för mer information."
 
 msgid "Vim Warning"
@@ -2980,6 +3009,10 @@ msgstr " (INTE HITTADE)"
 
 msgid " (not supported)"
 msgstr " (stöds inte)"
+
+#, c-format
+msgid "Failed creating socket directory: %s"
+msgstr "Misslyckades med att skapa uttagskatalog: %s"
 
 #, c-format
 msgid "Warning: Cannot find word list \"%s_%s.spl\" or \"%s_ascii.spl\""
@@ -3284,18 +3317,6 @@ msgstr "syntaxen iskeyword inte inställt"
 msgid "syncing on C-style comments"
 msgstr "synkning av C-stil-kommentarer"
 
-msgid "no syncing"
-msgstr "ingen synkning"
-
-msgid "syncing starts at the first line"
-msgstr "synkronisering börjar vid första raden"
-
-msgid "syncing starts "
-msgstr "synkning startar "
-
-msgid " lines before top line"
-msgstr " rader före topprad"
-
 msgid ""
 "\n"
 "--- Syntax sync items ---"
@@ -3309,6 +3330,18 @@ msgid ""
 msgstr ""
 "\n"
 "synkning av föremål"
+
+msgid "no syncing"
+msgstr "ingen synkning"
+
+msgid "syncing starts at the first line"
+msgstr "synkronisering börjar vid första raden"
+
+msgid "syncing starts "
+msgstr "synkning startar "
+
+msgid " lines before top line"
+msgstr " rader före topprad"
 
 msgid ""
 "\n"
@@ -3644,14 +3677,14 @@ msgid ""
 "Included patches: "
 msgstr ""
 "\n"
-"Inkluderade patchar: "
+"Inkluderade programfixar: "
 
 msgid ""
 "\n"
 "Extra patches: "
 msgstr ""
 "\n"
-"Extra patchar: "
+"Extra programfixar: "
 
 msgid "Modified by "
 msgstr "Modifierad av "
@@ -3689,6 +3722,9 @@ msgstr ""
 
 msgid "without GUI."
 msgstr "utan grafiskt gränssnitt."
+
+msgid "with GTK4 GUI."
+msgstr "med GTK4-grafiskt gränssnitt."
 
 msgid "with GTK3 GUI."
 msgstr "med grafiskt GTK3-gränssnitt."
@@ -5121,14 +5157,13 @@ msgid "E337: Menu not found - check menu names"
 msgstr "E337: Meny hittades inte - kontrollera menynamn"
 
 msgid "E338: Sorry, no file browser in console mode"
-msgstr "E338: Tyvärr, ingen filbläddrare i konsoll-läge"
+msgstr "E338: Tyvärr, ingen filbläddrare i konsolläge"
 
 msgid "E339: Pattern too long"
 msgstr "E339: Mönster för långt"
 
 msgid "E340: Internal error; if you can reproduce please report a bug"
-msgstr ""
-"E340: Internt fel; om du kan återskapa felet, rapportera det som ett bugg"
+msgstr "E340: Internt fel; rapportera en bugg om du kan återskapa felet"
 
 #, c-format
 msgid "E342: Out of memory!  (allocating %lu bytes)"
@@ -5545,9 +5580,6 @@ msgstr "E456: Kan inte hitta PostScript-källfilen \"%s.ps\""
 msgid "E457: Can't read PostScript resource file \"%s\""
 msgstr "E457: Kan inte läsa PostScript-resursfil \"%s\""
 
-msgid "E458: Cannot allocate colormap entry, some colors may be incorrect"
-msgstr "E458: Kan inte allokera colormap-post, vissa färger kan vara felaktiga"
-
 msgid "E459: Cannot go back to previous directory"
 msgstr "E459: Kan inte gå tillbaka till tidigare katalog"
 
@@ -5566,7 +5598,7 @@ msgid "E463: Region is guarded, cannot modify"
 msgstr "E463: Region är vaktad, kan inte modifiera"
 
 msgid "E464: Ambiguous use of user-defined command"
-msgstr "E464: Otydlig användning av användardefinierat kommando"
+msgstr "E464: Tvetydig användning av användardefinierat kommando"
 
 #, c-format
 msgid "E464: Ambiguous use of user-defined command: %s"
@@ -6223,6 +6255,9 @@ msgstr "E647: Ogiltig buffertidentifierare i setDot"
 
 msgid "E648: Invalid buffer identifier in close"
 msgstr "E648: Ogiltig buffertidentifierare i close"
+
+msgid "E649: Invalid identifier name in defineAnnoType"
+msgstr "E649: Ogiltigt identifierarnamn i defineAnnoType"
 
 msgid "E650: Invalid buffer identifier in defineAnnoType"
 msgstr "E650: Ogiltig buffertidentifierare i defineAnnoType"
@@ -7040,12 +7075,9 @@ msgstr "E881: Radantalet ändrades oväntat"
 msgid "E882: Uniq compare function failed"
 msgstr "E882: Uniq-jämförelsefunktion misslyckades"
 
-msgid ""
-"E883: Search pattern and expression register may not contain two or more "
-"lines"
-msgstr ""
-"E883: Sökmönster och uttrycksregister får inte innehålla två eller flera "
-"rader"
+#, c-format
+msgid "E883: Register '%c' cannot contain multiple lines"
+msgstr "E883: Register '%c' får inte innehålla flera rader"
 
 #, c-format
 msgid "E884: Function name cannot contain a colon: %s"
@@ -7155,9 +7187,9 @@ msgstr "E910: Använder Job som Number"
 msgid "E911: Using a Job as a Float"
 msgstr "E911: Använder Job som Float"
 
-msgid "E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
-msgstr ""
-"E912: Kan inte använda ch_evalexpr()/ch_sendexpr() med en raw- eller nl-kanal"
+msgid ""
+"E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw, nl or blob channel"
+msgstr "E912: Kan inte använda ch_evalexpr()/ch_sendexpr() med en raw-, nl- eller blob-kanal"
 
 msgid "E913: Using a Channel as a Number"
 msgstr "E913: Använder Channel som Number"
@@ -7196,7 +7228,7 @@ msgid "E924: Current window was closed"
 msgstr "E924: Aktuellt fönster stängdes"
 
 msgid "E925: Current quickfix list was changed"
-msgstr "E925: Aktuellt lista med snabbfixar har ändrats"
+msgstr "E925: Den aktuella snabbfixlistan har ändrats"
 
 msgid "E926: Current location list was changed"
 msgstr "E926: Aktuell lista med platser har ändrats"
@@ -8338,7 +8370,7 @@ msgid "E1248: Closure called from invalid context"
 msgstr "E1248: Stängning anropad från ogiltig kontext"
 
 msgid "E1249: Highlight group name too long"
-msgstr "E1249: Markering av gruppnamn för långt"
+msgstr "E1249: Framhävningsgruppnamnet är för långt"
 
 #, c-format
 msgid "E1250: Argument of %s must be a List, String, Dictionary or Blob"
@@ -8504,10 +8536,8 @@ msgstr "E1291: Ogiltigt argument: %ld"
 msgid "E1292: Command-line window is already open"
 msgstr "E1292: Kommandoradsfönstret är redan öppet"
 
-msgid "E1293: Cannot use a negative id after adding a textprop with text"
-msgstr ""
-"E1293: Kan inte använda ett negativt id efter att ha lagt till en "
-"textegenskap med text"
+msgid "E1293: Cannot use a negative id for a text property"
+msgstr "E1293: Kan inte använda ett negativt id för en textegenskap"
 
 msgid "E1294: Can only use text_align when column is zero"
 msgstr "E1294: Kan endast använda text_align när kolumnen är noll"
@@ -8655,13 +8685,6 @@ msgstr "E1335: Variabeln \"%s\" i klass \"%s\" är inte skrivbar"
 #, c-format
 msgid "E1337: Class variable \"%s\" not found in class \"%s\""
 msgstr "E1337: Klassvariabeln \"%s\" hittades inte i klassen \"%s\""
-
-msgid ""
-"E1339: Cannot add a textprop with text after using a textprop with a "
-"negative id"
-msgstr ""
-"E1339: Kan inte lägga till en textprop med text efter att ha använt en "
-"textprop med ett negativt id"
 
 #, c-format
 msgid "E1340: Argument already declared in the class: %s"
@@ -8897,6 +8920,10 @@ msgstr "E1404: Abstrakt kan inte användas i ett gränssnitt"
 #, c-format
 msgid "E1405: Class \"%s\" cannot be used as a value"
 msgstr "E1405: Klassen \"%s\" kan inte användas som ett värde"
+
+#, c-format
+msgid "E1406: Public and protected member have the same name: %s and _%s"
+msgstr "E1406: Publik och skyddad medlem har samma namn: %s och _%s"
 
 msgid "E1407: Cannot use a Typealias as a variable or value"
 msgstr "E1407: Kan inte använda ett typalias som variabel eller värde"
@@ -9195,8 +9222,8 @@ msgstr "E1545: Snabbkorrigeringslista inte tillgänglig"
 msgid "E1546: Cannot switch to a closing buffer"
 msgstr "E1546: Kan inte växla till en stängande buffert"
 
-msgid "E1547: This version of Vim does support :redrawtabpanel"
-msgstr "E1547: Denna version av Vim har stöd för :redrawtabpanel"
+msgid "E1547: This version of Vim does not support :redrawtabpanel"
+msgstr "E1547: Denna version av Vim saknar stöd för :redrawtabpanel"
 
 msgid "E1548: Wayland connection is unavailable"
 msgstr "E1548: Wayland-anslutningen är inte tillgänglig"
@@ -9254,24 +9281,22 @@ msgstr "E1561: Dubblett typ av variabelnamn: %s"
 msgid "E1562: Diff anchors cannot be used with hidden diff windows"
 msgstr "E1562: Diff-ankare kan inte användas med dolda diff-fönster"
 
-msgid "E1563: Socket path is too big"
-msgstr "E1563: Uttagssökvägen är för stor"
-
-msgid "E1564: Socket name cannot have slashes in it without being a path"
-msgstr ""
-"E1564: Uttagsnamnet får inte innehålla snedstreck om det inte är en sökväg"
+#, c-format
+msgid "E1564: Socket name '%s' cannot have slashes in it without being a path"
+msgstr "E1564: Socket-namnet '%s' får inte innehålla snedstreck om det inte är en sökväg"
 
 msgid "E1565: Socket server is not online, call remote_startserver() first"
 msgstr ""
-"E1565: Uttagsservern är inte ansluten, anropa remote_startserver() först"
+"E1565: Socket-servern är inte ansluten, anropa remote_startserver() först"
 
 #, c-format
-msgid "E1566: Failed connecting to socket %s: %s"
-msgstr "E1566: Misslyckades med att ansluta till uttaget %s: %s"
+msgid "E1566: Failed connecting to socket '%s'"
+msgstr "E1566: Det gick inte att ansluta till socketen '%s'"
 
-msgid "E1567: Cannot start socket server, socket path is unavailable"
-msgstr ""
-"E1567: Kan inte starta uttagsservern, uttagssökvägen är inte tillgänglig"
+msgid ""
+"E1567: Socket server protocol version mismatch, check what Vim version you "
+"are using"
+msgstr "E1567: Socket-serverns protokollversion stämmer inte överens, kontrollera vilken Vim-version du använder"
 
 #, c-format
 msgid "E1568: OSC command response timed out: %.*s"
@@ -9286,6 +9311,57 @@ msgstr ""
 
 msgid "E1571: Must specify at least one callback for redraw_listener_add"
 msgstr "E1571: Måste ange minst ett återanrop för redraw_listener_add"
+
+msgid "E1572: 'listchars' field \"leadtab\" requires \"tab\" to be specified"
+msgstr "E1572: Fältet \"leadtab\" i 'listchars' kräver att \"tab\" anges"
+
+msgid "E1573: Cannot listen on port"
+msgstr "E1573: Kan inte lyssna på porten"
+
+msgid "E1574: gethostbyname(): cannot resolve hostname in channel_listen()"
+msgstr "E1574: gethostbyname(): kan inte slå upp värdnamnet i channel_listen()"
+
+msgid "E1575: Cannot create pipes"
+msgstr "E1575: Kan inte skapa rör"
+
+msgid "E1576: Tag file entry must not be a URL"
+msgstr "E1576: Post i taggfil får inte vara en URL"
+
+#, c-format
+msgid "E1577: Invalid format string, only one \"%s\" is allowed"
+msgstr "E1577: Ogiltig formatsträng, endast en \"%s\" tillåts"
+
+msgid "E1578: Too many postponed prefixes and/or compound flags"
+msgstr "E1578: För många uppskjutna prefix och/eller sammansatta flaggor"
+
+msgid "E1579: -completeopt=escape cannot be used with -nargs=_"
+msgstr "E1579: -completeopt=escape kan inte användas med -nargs=_"
+
+msgid "E1580: Too many text properties on a single line"
+msgstr "E1580: För många textegenskaper på en enskild rad"
+
+msgid "E1581: Cannot extend a null blob"
+msgstr "E1581: Kan inte utöka en null-blob"
+
+msgid "E1582: Not started with --stdio-channel"
+msgstr "E1582: Startades inte med --stdio-channel"
+
+# TODO: Capitalise first word of message?
+msgid "E1583: Cannot open stdio channel"
+msgstr "E1583: Kan inte öppna stdio-kanalen"
+
+msgid "E1584: Image dimensions are invalid"
+msgstr "E1584: Bilddimensionerna är ogiltiga"
+
+msgid "E1585: No image backend available"
+msgstr "E1585: Ingen bildbakände tillgänglig"
+
+msgid "E1586: Failed changing image backends"
+msgstr "E1586: Det gick inte att byta bildbakände"
+
+#, c-format
+msgid "E1587: Image ID %d does not exist"
+msgstr "E1587: Bild-ID %d finns inte"
 
 #. type of cmdline window or 0
 #. result of cmdline window or 0
@@ -9310,7 +9386,7 @@ msgid "search hit TOP, continuing at BOTTOM"
 msgstr "sökning nådde TOPPEN, fortsätter vid BOTTEN"
 
 msgid "search hit BOTTOM, continuing at TOP"
-msgstr "sökning nådde BOTTEN, forsätter vid TOPPEN"
+msgstr "sökningen nådde BOTTEN och fortsätter vid TOPPEN"
 
 msgid " line "
 msgstr " rad "
@@ -9670,9 +9746,7 @@ msgstr "\"            En boolesk flagga kommer att växlas."
 msgid ""
 "\"            For other options you can edit the value before hitting "
 "<Enter>."
-msgstr ""
-"\"            För andra alternativ kan du redigera värdet innan du trycker "
-"på \" <Enter>\"."
+msgstr "\"            För andra alternativ kan du redigera värdet innan du trycker på <Enter>."
 
 msgid "\" Hit <Enter> on a help line to open a help window on this option."
 msgstr ""
@@ -9806,6 +9880,9 @@ msgstr ""
 msgid "file names in a tags file are relative to the tags file"
 msgstr "filnamnen i en taggfil är relativa till taggfilen"
 
+msgid "a :tag command cannot access remote files"
+msgstr "ett :tag-kommando kan inte komma åt fjärrfiler"
+
 msgid "a :tag command will use the tagstack"
 msgstr "ett :tag-kommando använder tagstacken"
 
@@ -9847,6 +9924,9 @@ msgstr "rulla efter skärmrad"
 
 msgid "number of screen lines to show around the cursor"
 msgstr "antal skärmrader som ska visas runt markören"
+
+msgid "vertically center cursor even at end of file"
+msgstr "centrera markören lodrätt även vid slutet av filen"
 
 msgid "long lines wrap"
 msgstr "radbryt långa rader"
@@ -9902,6 +9982,12 @@ msgstr "antal rader att rulla för CTRL-F och CTRL-B"
 
 msgid "don't redraw while executing macros"
 msgstr "rita inte om medan makron körs"
+
+msgid "configure method of receiving terminal size changes"
+msgstr "konfigurera metod för att ta emot ändringar av terminalstorlek"
+
+msgid "enable terminal sync mode"
+msgstr "aktivera terminalens synkroniseringsläge"
 
 msgid "timeout for 'hlsearch' and :match highlighting in msec"
 msgstr "tidsgräns för 'hlsearch' och :match-markering i ms"
@@ -9964,6 +10050,9 @@ msgstr "markera alla träffar för det senast använda sökmönstret"
 msgid "highlight group to use for the window"
 msgstr "markera grupp att använda för fönstret"
 
+msgid "highlight group mappings for the window"
+msgstr "framhävningsgruppsmappningar för fönstret"
+
 msgid "use GUI colors for the terminal"
 msgstr "använd grafiska gränssnittsfärger för terminalen"
 
@@ -10008,6 +10097,9 @@ msgstr "0, 1 eller 2; när en statusrad ska användas för det sista fönstret"
 
 msgid "alternate format to be used for a status line"
 msgstr "alternativt format som ska användas för en statusrad"
+
+msgid "optional settings for the status line"
+msgstr "valfria inställningar för statusraden"
 
 msgid "make all windows the same size when adding/removing windows"
 msgstr "gör alla fönster lika stora när du lägger till/tar bort fönster"
@@ -10139,6 +10231,9 @@ msgstr "terminal som kräver extra omritning"
 
 msgid "what keyboard protocol to use for which terminal"
 msgstr "vilket tangentbordsprotokoll att använda för vilken terminal"
+
+msgid "what image backend to use for which terminal"
+msgstr "vilken bildbakände som ska användas för vilken terminal"
 
 msgid "recognize keys that start with <Esc> in Insert mode"
 msgstr "känn igen tangenter som börjar med <Esc> i infogningsläge"
@@ -10399,10 +10494,6 @@ msgstr ""
 msgid "Wayland seat to use"
 msgstr "Wayland-seat att använda"
 
-msgid ""
-"Enable wayland focus stealing functionality in order to access the clipboard"
-msgstr "Aktivera waylands fokusstöldfunktion för att få åtkomst till urklipp"
-
 msgid "\"startsel\" and/or \"stopsel\"; what special keys can do"
 msgstr "\"startsel\" och/eller \"stopsel\"; vad specialtangenter kan göra"
 
@@ -10506,6 +10597,9 @@ msgstr "maximal bredd på popup-menyn"
 
 msgid "popup border style"
 msgstr "popup-kantstil"
+
+msgid "additional options for the popup menu"
+msgstr "ytterligare alternativ för popup-menyn"
 
 msgid "user defined function for Insert mode completion"
 msgstr "användardefinierad funktion för komplettering i infogningsläge"
@@ -10685,7 +10779,7 @@ msgid "list of addresses for anchoring a diff"
 msgstr "lista med adresser för förankring av en diff"
 
 msgid "expression used to patch a file"
-msgstr "uttryck som används för att patcha en fil"
+msgstr "uttryck som används för att korrigera en fil"
 
 msgid "mapping"
 msgstr "mappning"
@@ -10717,6 +10811,9 @@ msgstr ""
 
 msgid "allow setting expression options from a modeline"
 msgstr "tillåt inställning av uttrycksalternativ från en modeline"
+
+msgid "only allow safe options to be set from a modeline"
+msgstr "tillåt endast säkra alternativ från en modeline"
 
 msgid "number of lines to check for modelines"
 msgstr "antal rader att kontrollera för modelines"
@@ -11177,8 +11274,81 @@ msgstr "anpassade fliksidor i flikpanel"
 msgid "options for using tabpanel"
 msgstr "flaggor för användning av flikpanel"
 
+msgid "Notice"
+msgstr "Observera"
+
+msgid "Quickfix list not found, stopping the job"
+msgstr "Snabbfixlistan hittades inte, jobbet stoppas"
+
+msgid "Success!"
+msgstr "Lyckades!"
+
+msgid "Job terminated"
+msgstr "Jobbet avslutades"
+
+msgid "There are errors."
+msgstr "Det finns fel."
+
+msgid "Could not create quickfix list"
+msgstr "Kunde inte skapa snabbfixlista"
+
+msgid "File not readable:"
+msgstr "Filen kan inte läsas:"
+
+msgid "Failed to start job"
+msgstr "Det gick inte att starta jobbet"
+
+msgid "Typesetting..."
+msgstr "Typsättning…"
+
+msgid "Jobs still running:"
+msgstr "Jobb körs fortfarande:"
+
+msgid "Done."
+msgstr "Klar."
+
+msgid "Typeset"
+msgstr "Typsätt"
+
+msgid "Please save the buffer first."
+msgstr "Spara bufferten först."
+
 msgid "You discovered the command-line window! You can close it with \":q\"."
 msgstr "Du har upptäckt kommandoradsfönstret! Du kan stänga det med \":q\"."
+
+#~ msgid "Socket server not online:Send expression failed"
+#~ msgstr "Uttagsservern är inte ansluten:Skicka uttryck misslyckades"
+
+#~ msgid "E458: Cannot allocate colormap entry, some colors may be incorrect"
+#~ msgstr ""
+#~ "E458: Kan inte allokera colormap-post, vissa färger kan vara felaktiga"
+
+#~ msgid ""
+#~ "E883: Search pattern and expression register may not contain two or more "
+#~ "lines"
+#~ msgstr ""
+#~ "E883: Sökmönster och uttrycksregister får inte innehålla två eller flera "
+#~ "rader"
+
+#~ msgid ""
+#~ "E1339: Cannot add a textprop with text after using a textprop with a "
+#~ "negative id"
+#~ msgstr ""
+#~ "E1339: Kan inte lägga till en textprop med text efter att ha använt en "
+#~ "textprop med ett negativt id"
+
+#~ msgid "E1563: Socket path is too big"
+#~ msgstr "E1563: Uttagssökvägen är för stor"
+
+#~ msgid "E1567: Cannot start socket server, socket path is unavailable"
+#~ msgstr ""
+#~ "E1567: Kan inte starta uttagsservern, uttagssökvägen är inte tillgänglig"
+
+#~ msgid ""
+#~ "Enable wayland focus stealing functionality in order to access the "
+#~ "clipboard"
+#~ msgstr ""
+#~ "Aktivera waylands fokusstöldfunktion för att få åtkomst till urklipp"
 
 #~ msgid "Become a registered Vim user!"
 #~ msgstr "Bli en registrerad Vim-användare!"
