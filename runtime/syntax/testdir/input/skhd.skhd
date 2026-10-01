@@ -100,5 +100,3 @@ option - z : echo "option is alt alias"
 super - z : echo "super is cmd alias"
 
 # End of configuration
-
-# vim:ft=skhd:
