@@ -4374,7 +4374,7 @@ ex_command_info(char_u *name, int vim9, dict_T *d)
     if (p == NULL || ea.cmdidx == CMD_SIZE
 	    || (vim_isdigit(*name) && ea.cmdidx != CMD_match)
 	    || *skipwhite(p) != NUL
-	    || not_in_vim9(&ea) == FAIL)
+	    || not_in_vim9(&ea, true) == FAIL)
 	ret = FAIL;
     --emsg_silent;
 
@@ -4446,17 +4446,8 @@ f_fullcommand(typval_T *argvars, typval_T *rettv)
     if (p == NULL || ea.cmdidx == CMD_SIZE)
 	goto theend;
 
-    if (vim9script)
-    {
-	int	     res;
-
-	++emsg_silent;
-	res = not_in_vim9(&ea);
-	--emsg_silent;
-
-	if (res == FAIL)
-	    goto theend;
-    }
+    if (vim9script && not_in_vim9(&ea, true) == FAIL)
+	goto theend;
 
     rettv->vval.v_string = vim_strsave(IS_USER_CMDIDX(ea.cmdidx)
 				 ? get_user_command_name(ea.useridx, ea.cmdidx)
@@ -6997,7 +6988,7 @@ ex_stop(exarg_T *eap)
 ex_exit(exarg_T *eap)
 {
 #ifdef FEAT_EVAL
-    if (not_in_vim9(eap) == FAIL)
+    if (not_in_vim9(eap, false) == FAIL)
 	return;
 #endif
     if (cmdwin_type != 0)
@@ -7842,7 +7833,7 @@ ex_open(exarg_T *eap)
     char_u	*p;
 
 #ifdef FEAT_EVAL
-    if (not_in_vim9(eap) == FAIL)
+    if (not_in_vim9(eap, false) == FAIL)
 	return;
 #endif
     curwin->w_cursor.lnum = eap->line2;
@@ -8866,7 +8857,7 @@ ex_copymove(exarg_T *eap)
     long	n;
 
 #ifdef FEAT_EVAL
-    if (not_in_vim9(eap) == FAIL)
+    if (not_in_vim9(eap, false) == FAIL)
 	return;
 #endif
     n = get_address(eap, &eap->arg, eap->addr_type, FALSE, FALSE, FALSE, 1);
@@ -9406,7 +9397,7 @@ ex_mark(exarg_T *eap)
     pos_T	pos;
 
 #ifdef FEAT_EVAL
-    if (not_in_vim9(eap) == FAIL)
+    if (not_in_vim9(eap, false) == FAIL)
 	return;
 #endif
     if (*eap->arg == NUL)		// No argument?

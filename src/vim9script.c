@@ -133,10 +133,10 @@ ex_vim9script(exarg_T *eap UNUSED)
 
 #if defined(FEAT_EVAL)
 /*
- * When in Vim9 script give an error and return FAIL.
+ * When in Vim9 script give an error (unless "silent" is true) and return FAIL.
  */
     int
-not_in_vim9(exarg_T *eap)
+not_in_vim9(exarg_T *eap, bool silent)
 {
     if (in_vim9script())
 	switch (eap->cmdidx)
@@ -144,7 +144,8 @@ not_in_vim9(exarg_T *eap)
 	    case CMD_k:
 		if (eap->addr_count > 0)
 		{
-		    emsg(_(e_no_range_allowed));
+		    if (!silent)
+			emsg(_(e_no_range_allowed));
 		    return FAIL;
 		}
 		// FALLTHROUGH
@@ -154,7 +155,8 @@ not_in_vim9(exarg_T *eap)
 	    case CMD_open:
 	    case CMD_t:
 	    case CMD_xit:
-		semsg(_(e_command_not_supported_in_vim9_script_missing_var_str), eap->cmd);
+		if (!silent)
+		    semsg(_(e_command_not_supported_in_vim9_script_missing_var_str), eap->cmd);
 		return FAIL;
 	    default: break;
 	}
