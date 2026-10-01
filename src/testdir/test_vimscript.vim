@@ -6671,7 +6671,7 @@ func Test_script_heredoc_skip()
       Xpath 'a'
       if 0
         {cmd} << trim EOS
-          Xpath 'b' 
+          Xpath 'b'
         EOS
       endif
       Xpath 'c'
