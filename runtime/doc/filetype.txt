@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.2.  Last change: 2026 Sep 24
+*filetype.txt*	For Vim version 9.2.  Last change: 2026 Oct 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1003,6 +1003,21 @@ For fish, add to the config file
 
 	set -x MANPAGER "vim +MANPAGER --not-a-term -"
 
+NOTE: Some man implementations pass a temporary file path to the pager as an
+argument instead. This includes mandoc's frontend, which is the default on
+OpenBSD, Alpine Linux and Void Linux for example.
+
+In that case adjust the above lines to set the MANPAGER environment variable
+to "vim +MANPAGER --not-a-term" instead, dropping the final hyphen argument.
+
+A way to support both behaviors is to create the following wrapper script:
+>sh
+	#!/bin/sh
+	vim +MANPAGER --not-a-term "${1:--}"
+<
+You can set the MANPAGER environment variable to the script name to enable it
+(if it's not on the PATH you can use the absolute path). Make sure the
+executable permission bit is set.
 
 MARKDOWN						*ft-markdown-plugin*
 
