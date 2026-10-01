@@ -2308,6 +2308,126 @@ func Test_executable_single_character_dir()
   let $PATH = save_path
 endfunc
 
+func Test_executable_pathext_search()
+  CheckMSWindows
+
+  let save_path = $PATH
+  let save_pathext = $PATHEXT
+  let save_shell = &shell
+  call mkdir('Xexepath', 'R')
+  call mkdir('Xexepath/first')
+  call mkdir('Xexepath/second')
+  let first = fnamemodify('Xexepath/first', ':p')->substitute('\\', '/', 'g')
+        \ ->substitute('/$', '', '')
+  let second = fnamemodify('Xexepath/second', ':p')->substitute('\\', '/', 'g')
+        \ ->substitute('/$', '', '')
+  try
+    let &shell = 'cmd.exe'
+    let $PATH = first .. ';' .. second
+    let $PATHEXT = '.EXE;.CMD;.BAT'
+    call writefile([], first .. '/Xcommand.cmd')
+    call writefile([], second .. '/Xcommand.exe')
+    " The directory order takes precedence over the extension order.
+    call assert_equal(1, executable('Xcommand'))
+    call assert_equal(first .. '/Xcommand.cmd',
+          \ exepath('Xcommand')->substitute('\\', '/', 'g'))
+    call writefile([], first .. '/Xcommand.exe')
+    call assert_equal(first .. '/Xcommand.exe',
+          \ exepath('Xcommand')->substitute('\\', '/', 'g'))
+    let $PATHEXT = '.CMD;.EXE;.BAT'
+    call assert_equal(first .. '/Xcommand.cmd',
+          \ exepath('Xcommand')->substitute('\\', '/', 'g'))
+
+    " A matching prefix is not sufficient: the full candidate must exist.
+    call writefile([], first .. '/Xmissing-other.exe')
+    call assert_equal(0, executable('Xmissing'))
+    call assert_equal('', exepath('Xmissing'))
+    call mkdir(first .. '/Xdirectory.exe')
+    call assert_equal(0, executable('Xdirectory'))
+
+    " Absolute names, empty PATH entries and missing directories still work.
+    call assert_equal(1, executable(first .. '/Xcommand'))
+    let $PATH = first .. '/missing;;' .. first .. ';'
+    let $PATHEXT = ';.EXE;;.CMD;.BAT;'
+    call assert_equal(1, executable('Xcommand'))
+    call assert_equal(1, executable('Xcommand.cmd'))
+    let $PATHEXT = '.CMD'
+    call assert_equal(1, executable('Xcommand'))
+    call assert_equal(0, executable('Xmissing'))
+    " Unusual suffixes still use the original candidate checks.
+    call writefile([], first .. '/Xcustomcommand.foo.bar')
+    let $PATHEXT = '.EXE;.CMD;.BAT;.foo.bar'
+    call assert_equal(1, executable('Xcustomcommand'))
+  finally
+    let $PATH = save_path
+    let $PATHEXT = save_pathext
+    let &shell = save_shell
+  endtry
+endfunc
+
+func Test_executable_pathext_changes()
+  CheckMSWindows
+
+  let save_path = $PATH
+  let save_pathext = $PATHEXT
+  let save_shell = &shell
+  call mkdir('Xexechange', 'R')
+  try
+    let &shell = 'cmd.exe'
+    let $PATH = fnamemodify('Xexechange', ':p')
+    let $PATHEXT = '.EXE;.CMD;.BAT'
+    call assert_equal(0, executable('Xchanging'))
+    call writefile([], 'Xexechange/Xchanging.cmd')
+    call assert_equal(1, executable('Xchanging'))
+    call delete('Xexechange/Xchanging.cmd')
+    call assert_equal(0, executable('Xchanging'))
+    call assert_equal('', exepath('Xchanging'))
+
+    call writefile([], 'Xexechange/Xextensionless')
+    let $PATHEXT = '.;.EXE;.CMD;.BAT'
+    call assert_equal(1, executable('Xextensionless'))
+    " A "." in $PATHEXT skips the prefix search, so device names still work.
+    call assert_equal(1, executable('nul'))
+    let $PATHEXT = '.EXE;.CMD;.BAT'
+    let &shell = 'sh'
+    call assert_equal(1, executable('Xextensionless'))
+  finally
+    let $PATH = save_path
+    let $PATHEXT = save_pathext
+    let &shell = save_shell
+  endtry
+endfunc
+
+func Test_executable_pathext_names()
+  CheckMSWindows
+
+  let save_path = $PATH
+  let save_pathext = $PATHEXT
+  let save_shell = &shell
+  call mkdir('Xexenames', 'R')
+  try
+    let &shell = 'cmd.exe'
+    let $PATH = fnamemodify('Xexenames', ':p')
+    let $PATHEXT = '.EXE;.CMD;.BAT'
+    call writefile([], 'Xexenames/X日本語.cmd')
+    call assert_equal(1, executable('X日本語'))
+    call assert_equal(0, executable('X存在しない'))
+    call mkdir('Xexenames/日本語')
+    call writefile([], 'Xexenames/日本語/Xcommand.cmd')
+    call assert_equal(1, executable('Xexenames/日本語/Xcommand'))
+    call writefile([], 'Xexenames/Xlong-executable-name.cmd')
+    let shortname = fnamemodify('Xexenames/Xlong-executable-name.cmd', ':8:t:r')
+    call assert_equal(1, executable(shortname))
+    " Wildcard characters in the argument must not select another file.
+    call assert_equal(0, executable('Xlong*'))
+    call assert_equal(0, executable('Xlong?'))
+  finally
+    let $PATH = save_path
+    let $PATHEXT = save_pathext
+    let &shell = save_shell
+  endtry
+endfunc
+
 func Test_hostname()
   let hostname_vim = hostname()
   if has('unix')
