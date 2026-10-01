@@ -2949,12 +2949,21 @@ func Test_prop_inserts_text_before_linebreak()
     call prop_type_add('theprop', #{highlight: 'Special'})
     call prop_add(1, 51, #{type: 'theprop', text: repeat('b', 10)})
     normal! $
+    func AddMore()
+      call append(0, repeat('a', 50) .. ' ' .. repeat('c', 45))
+      call prop_add(1, 51, #{type: 'theprop', text: repeat('b', 160)})
+      normal! gg$
+    endfunc
   END
   call writefile(lines, 'XscriptPropsBeforeLinebreak', 'D')
-  let buf = RunVimInTerminal('-S XscriptPropsBeforeLinebreak', #{rows: 6, cols: 50})
+  let buf = RunVimInTerminal('-S XscriptPropsBeforeLinebreak', #{rows: 12, cols: 50})
   call VerifyScreenDump(buf, 'Test_prop_inserts_text_before_linebreak_1', {})
   call term_sendkeys(buf, '05x$')
   call VerifyScreenDump(buf, 'Test_prop_inserts_text_before_linebreak_2', {})
+  call term_sendkeys(buf, ":call AddMore()\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_before_linebreak_3', {})
+  call term_sendkeys(buf, '015x$')
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_before_linebreak_4', {})
 
   call StopVimInTerminal(buf)
 endfunc
