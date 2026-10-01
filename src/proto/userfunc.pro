@@ -25,6 +25,7 @@ void funcdepth_restore(int depth);
 funccall_T *create_funccal(ufunc_T *fp, typval_T *rettv);
 void remove_funccal(void);
 funcerror_T check_user_func_argcount(ufunc_T *fp, int argcount);
+int func_defined_by_dryrun(ufunc_T *fp);
 funcerror_T call_user_func_check(ufunc_T *fp, int argcount, typval_T *argvars, typval_T *rettv, funcexe_T *funcexe, dict_T *selfdict);
 void save_funccal(funccal_entry_T *entry);
 void restore_funccal(void);

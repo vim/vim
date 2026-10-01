@@ -3843,3 +3843,13 @@ EXTERN char e_changing_image_backend_failed[]
 EXTERN char e_image_id_nr_does_not_exist[]
 	INIT(= N_("E1587: Image ID %d does not exist"));
 #endif
+#ifdef FEAT_EVAL
+EXTERN char e_cannot_call_function_in_dry_run_str[]
+	INIT(= N_("E1588: Cannot call a function in a dry run: %s"));
+EXTERN char e_not_allowed_in_dry_run[]
+	INIT(= N_("E1589: Not allowed in a dry run"));
+EXTERN char e_cannot_call_function_defined_by_dry_run_str[]
+	INIT(= N_("E1590: Cannot call a function defined by a dry run: %s"));
+EXTERN char e_cannot_replace_function_of_other_script_str[]
+	INIT(= N_("E1591: A dry run cannot replace a function of another script: %s"));
+#endif

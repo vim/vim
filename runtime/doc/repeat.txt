@@ -264,9 +264,9 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			holds or not.  A function may therefore be defined
 			twice, the last definition counts.
 
-			In a legacy script `let` is not executed, thus a
-			script variable created by it does not exist.  A
-			|:def| function can use it with "s:", but reading it
+			In a legacy script `let` and `const` are not executed,
+			thus a script variable created by them does not exist.
+			A |:def| function can use it with "s:", but reading it
 			or calling it without "s:" gives an error.  Defining a
 			function in a Dictionary it holds, such as
 			`function s:obj.Method()`, fails as well.
@@ -277,6 +277,20 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			A class or enum in an autoload script is defined again
 			by a dry run, and after one by a normal load, since no
 			object was made from it; see |vim9-reload|.
+
+						*E1588* *E1589*
+			No function is called, a call gives E1588.  Running a
+			shell command, writing a file and other things not
+			allowed in the |sandbox| give E1589.
+
+						*E1590* *E1591*
+			A function defined by a dry run cannot be called, also
+			not after it, this gives E1590.  A normal source of
+			the script defines it again, also without "!".  Thus
+			after a dry run of a script that was already loaded
+			its functions cannot be called until it is sourced
+			again.  A dry run does not replace a function defined
+			by another script, this gives E1591.
 
 			Note: An error in a definition does not stop the
 			reading, the rest of the script is read as well.  And
