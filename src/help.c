@@ -795,7 +795,7 @@ fix_help_buffer(void)
 		    if (*NameBuff != NUL && !after_pathsep(NameBuff, NameBuff + NameBufflen))
 		    {
 			STRCPY(NameBuff + NameBufflen, PATHSEPSTR);
-			NameBufflen += STRLEN_LITERAL(PATHSEPSTR);
+			NameBufflen += sizeof(PATHSEP);
 		    }
 #ifdef FEAT_MULTI_LANG
 		    STRCPY(NameBuff + NameBufflen, "doc/*.??[tx]");

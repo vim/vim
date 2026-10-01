@@ -1,4 +1,4 @@
-/* os_win32.c */
+// os_win32.c
 void mch_get_exe_name(void);
 HINSTANCE vimLoadLib(const char *name);
 int mch_is_gui_executable(void);
@@ -30,6 +30,7 @@ int mch_setperm(char_u *name, long perm);
 void mch_hide(char_u *name);
 int mch_ishidden(char_u *name);
 int mch_isdir(char_u *name);
+int mch_isdir_or_missing(char_u *name);
 int mch_isrealdir(char_u *name);
 int mch_mkdir(char_u *name);
 int mch_rmdir(char_u *name);
@@ -49,7 +50,6 @@ void mch_set_shellsize(void);
 void mch_new_shellsize(void);
 void mch_set_winsize_now(void);
 void mch_calc_cell_size(struct cellsize *cs_out);
-int mch_kitty_probe(void);
 int mch_call_shell(char_u *cmd, int options);
 void win32_build_env(dict_T *env, garray_T *gap, int is_terminal);
 char_u *mch_get_cmd_output_direct(char **argv, char_u *infile, int flags, int *ret_len);
@@ -92,4 +92,4 @@ void resize_console_buf(void);
 char *GetWin32Error(void);
 void stop_timeout(void);
 volatile sig_atomic_t *start_timeout(long msec);
-/* vim: set ft=c : */
+// vim: ft=c

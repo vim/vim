@@ -1471,7 +1471,7 @@ unserialize_uep(bufinfo_T *bi, int *error, char_u *file_name)
     uep->ue_size = undo_read_4c(bi);
     if (uep->ue_size > 0)
     {
-	if (uep->ue_size < LONG_MAX / (int)sizeof(char_u *))
+	if (uep->ue_size < LONG_MAX / (long)sizeof(undoline_T))
 	    array = U_ALLOC_LINE(sizeof(undoline_T) * uep->ue_size);
 	if (array == NULL)
 	{
@@ -2887,6 +2887,22 @@ u_undoredo(int undo)
 	    vim_free((char_u *)uep->ue_array);
 	}
 
+#ifdef FEAT_PROP_POPUP
+	// A property may have been added or removed across the edges of the
+	// restored lines after they were saved.  What was cleared on the lines
+	// around them the last time is given back first, so that undoing and
+	// redoing again joins what it split.
+	restore_props_for_undo(curbuf, top, &uep->ue_props, UNDOPROP_ABOVE);
+	restore_props_for_undo(curbuf, top + newsize + 1, &uep->ue_props,
+								UNDOPROP_BELOW);
+	ga_clear(&uep->ue_props);
+	adjust_props_for_undo(curbuf, top, &uep->ue_props, UNDOPROP_ABOVE,
+			      newsize > 0 ? UNDOPROP_NONE : UNDOPROP_BELOW);
+	if (newsize > 0)
+	    adjust_props_for_undo(curbuf, top + newsize, &uep->ue_props,
+						  UNDOPROP_NONE, UNDOPROP_BELOW);
+#endif
+
 	// adjust marks
 	if (oldsize != newsize)
 	{
@@ -3530,6 +3546,9 @@ u_freeentry(u_entry_T *uep, long n)
     while (n > 0)
 	vim_free(uep->ue_array[--n].ul_line);
     vim_free((char_u *)uep->ue_array);
+#ifdef FEAT_PROP_POPUP
+    ga_clear(&uep->ue_props);
+#endif
 #ifdef U_DEBUG
     uep->ue_magic = 0;
 #endif

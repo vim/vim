@@ -1471,9 +1471,19 @@ do_search(
 
 	if (pat != NULL && *pat != NUL)	// look for (new) offset
 	{
+	    char_u	*prev_searchstr = searchstr;
+	    size_t	prev_searchstrlen = searchstrlen;
+
 	    searchcmdlen += parse_search_pattern_offset(&pat, &patlen,
 				search_delim, options, &strcopy, &searchstr,
 				&searchstrlen, &dircp, &spats[0].off);
+	    // An empty pattern (e.g. "//e") uses the previous pattern selected
+	    // above.
+	    if (*searchstr == NUL)
+	    {
+		searchstr = prev_searchstr;
+		searchstrlen = prev_searchstrlen;
+	    }
 	}
 
 	show_search_stats = FALSE;
@@ -1744,6 +1754,7 @@ do_search(
 	    break;
 
 	dirc = *++pat;
+	--patlen;
 	search_delim = dirc;
 	if (dirc != '?' && dirc != '/')
 	{
@@ -3890,7 +3901,8 @@ search_line:
 		}
 
 		add_r = ins_compl_add_infercase(aux, i, p_ic,
-			curr_fname == curbuf->b_fname ? NULL : curr_fname,
+			curr_fname == curbuf->b_fname ? NULL
+						  : shorten_fname1(curr_fname),
 			dir, cont_s_ipos, 0);
 		if (add_r == OK)
 		    // if dir was BACKWARD then honor it just once

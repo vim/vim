@@ -38,3 +38,34 @@ func Test_helptoc_markdown_with_comments()
   call term_sendkeys(buf, ":qa!\<cr>")
   call StopVimInTerminal(buf)
 endfunc
+
+func Test_helptoc_fuzzy_multibyte()
+  packadd helptoc
+  new Xhelptoc_md.md
+  call setline(1, ['# 中文标题'])
+  setfiletype markdown
+
+  HelpToc
+  redraw
+  " Drive the fuzzy search through the popup filter: "/" opens the input()
+  " prompt, the query chars are typed into it, <Esc> leaves it.
+  call feedkeys("/标题\<Esc>", 'xt')
+  redraw
+
+  let winid = popup_list()[0]
+  let buf = winbufnr(winid)
+  let props = []
+  for lnum in range(1, line('$', winid))
+    for p in prop_list(lnum, {'bufnr': buf})
+      if p.type == 'help-fuzzy-toc'
+        call add(props, [p.col, p.length])
+      endif
+    endfor
+  endfor
+  " 中文标题: 中/文 are 3 bytes each, so 标 starts at byte 6 (col 7) and 题 at
+  " byte 9 (col 10), each 3 bytes long.
+  call assert_equal([[7, 3], [10, 3]], props)
+
+  call popup_close(winid)
+  bwipe!
+endfunc

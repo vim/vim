@@ -656,6 +656,7 @@ def Test_disassemble_list_assign()
         '\d\+ CHECKTYPE string stack\[-1\] var 2\_s*' ..
         '\d\+ STORE $1\_s*' ..
         '\d\+ SLICE 2\_s*' ..
+        '\d\+ CHECKTYPE list<any> stack\[-1\] var 3\_s*' ..
         '\d\+ STORE $2\_s*' ..
         '\d\+ RETURN void',
         res)
@@ -1061,7 +1062,9 @@ enddef
 
 " Mainly check that ENDLOOP is only produced after a closure was created.
 def Test_disassemble_closure_in_loop()
+  test_override('unreachable', 1)
   var res = execute('disass s:ClosureInLoop')
+  test_override('unreachable', 0)
   assert_match('<SNR>\d\+_ClosureInLoop\_s*' ..
         'for i in range(5)\_s*' ..
         '\d\+ STORE -1 in $0\_s*' ..
@@ -3807,6 +3810,47 @@ def Test_disassemble_tuple_compare()
     '10 COMPARETUPLE ==\_s*' ..
     '11 STORE $2\_s*' ..
     '12 RETURN void', g:instr)
+
+  # the other compare operators and comparing with an "any" value
+  lines =<< trim END
+    vim9script
+    def Fn(t1: tuple<number>, t2: tuple<number>, x: any)
+      var a = t1 != t2
+      var b = t1 is t2
+      var c = t1 isnot t2
+      var d = t1 ==? t2
+      var e = t1 == x
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var a = t1 != t2\_s*' ..
+    '0 LOAD arg\[-3\]\_s*' ..
+    '1 LOAD arg\[-2\]\_s*' ..
+    '2 COMPARETUPLE !=\_s*' ..
+    '3 STORE $0\_s*' ..
+    'var b = t1 is t2\_s*' ..
+    '4 LOAD arg\[-3\]\_s*' ..
+    '5 LOAD arg\[-2\]\_s*' ..
+    '6 COMPARETUPLE is\_s*' ..
+    '7 STORE $1\_s*' ..
+    'var c = t1 isnot t2\_s*' ..
+    '8 LOAD arg\[-3\]\_s*' ..
+    '9 LOAD arg\[-2\]\_s*' ..
+    '10 COMPARETUPLE isnot\_s*' ..
+    '11 STORE $2\_s*' ..
+    'var d = t1 ==? t2\_s*' ..
+    '12 LOAD arg\[-3\]\_s*' ..
+    '13 LOAD arg\[-2\]\_s*' ..
+    '14 COMPARETUPLE ==?\_s*' ..
+    '15 STORE $3\_s*' ..
+    'var e = t1 == x\_s*' ..
+    '16 LOAD arg\[-3\]\_s*' ..
+    '17 LOAD arg\[-1\]\_s*' ..
+    '18 COMPAREANY ==\_s*' ..
+    '19 STORE $4\_s*' ..
+    '20 RETURN void', g:instr)
   unlet g:instr
 enddef
 
@@ -3830,6 +3874,31 @@ def Test_disassemble_tuple_concatenate()
     '5 SETTYPE tuple<number, number>\_s*' ..
     '6 STORE $0\_s*' ..
     '7 RETURN void', g:instr)
+
+  # the type of a tuple concatenated with a variadic tuple and concatenating
+  # with an "any" value
+  lines =<< trim END
+    vim9script
+    def Fn(a: tuple<number>, b: tuple<...list<string>>, x: any)
+      var c = a + b
+      var d = a + x
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var c = a + b\_s*' ..
+    '0 LOAD arg\[-3\]\_s*' ..
+    '1 LOAD arg\[-2\]\_s*' ..
+    '2 ADDTUPLE\_s*' ..
+    '3 SETTYPE tuple<number, ...list<string>>\_s*' ..
+    '4 STORE $0\_s*' ..
+    'var d = a + x\_s*' ..
+    '5 LOAD arg\[-3\]\_s*' ..
+    '6 LOAD arg\[-1\]\_s*' ..
+    '7 OPANY +\_s*' ..
+    '8 STORE $1\_s*' ..
+    '9 RETURN void', g:instr)
   unlet g:instr
 enddef
 
@@ -3897,6 +3966,566 @@ def Test_disassemble_assign_tuple_set_type()
     '1 STORE $0\_s*' ..
     '2 RETURN void', g:instr)
 
+  # variadic tuple types
+  lines =<< trim END
+    vim9script
+    def Fn()
+      var t: tuple<number, ...list<string>> = (1, 'a', 'b')
+      var u: tuple<...list<string>> = ('x',)
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var t: tuple<number, ...list<string>> = (1, ''a'', ''b'')\_s*' ..
+    '0 PUSHNR 1\_s*' ..
+    '1 PUSHS "a"\_s*' ..
+    '2 PUSHS "b"\_s*' ..
+    '3 NEWTUPLE size 3\_s*' ..
+    '4 SETTYPE tuple<number, ...list<string>>\_s*' ..
+    '5 STORE $0\_s*' ..
+    'var u: tuple<...list<string>> = (''x'',)\_s*' ..
+    '6 PUSHS "x"\_s*' ..
+    '7 NEWTUPLE size 1\_s*' ..
+    '8 SETTYPE tuple<...list<string>>\_s*' ..
+    '9 STORE $1\_s*' ..
+    '10 RETURN void', g:instr)
+
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for using a null tuple
+def Test_disassemble_null_tuple()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      var t1 = null_tuple
+      var t2: tuple<number> = null_tuple
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var t1 = null_tuple\_s*' ..
+    '0 NEWTUPLE size -1\_s*' ..
+    '1 STORE $0\_s*' ..
+    'var t2: tuple<number> = null_tuple\_s*' ..
+    '2 NEWTUPLE size -1\_s*' ..
+    '3 SETTYPE tuple<number>\_s*' ..
+    '4 STORE $1\_s*' ..
+    '5 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for unpacking a tuple in an assignment
+def Test_disassemble_tuple_unpack()
+  var lines =<< trim END
+    vim9script
+    def Fn(t: tuple<number, string>)
+      var [a, b] = t
+      var [c; d] = (1, 2, 3)
+      var [e, f] = (4, 5)
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var \[a, b\] = t\_s*' ..
+    '0 LOAD arg\[-1\]\_s*' ..
+    '1 CHECKLEN 2\_s*' ..
+    '2 ITEM 0\_s*' ..
+    '3 STORE $0\_s*' ..
+    '4 ITEM 1\_s*' ..
+    '5 STORE $1\_s*' ..
+    '6 DROP\_s*' ..
+    'var \[c; d\] = (1, 2, 3)\_s*' ..
+    '7 PUSHNR 1\_s*' ..
+    '8 PUSHNR 2\_s*' ..
+    '9 PUSHNR 3\_s*' ..
+    '10 NEWTUPLE size 3\_s*' ..
+    '11 ITEM 0\_s*' ..
+    '12 STORE $2\_s*' ..
+    '13 SLICE 1\_s*' ..
+    '14 SETTYPE tuple<number, number>\_s*' ..
+    '15 STORE $3\_s*' ..
+    'var \[e, f\] = (4, 5)\_s*' ..
+    '16 PUSHNR 4\_s*' ..
+    '17 PUSHNR 5\_s*' ..
+    '18 NEWTUPLE size 2\_s*' ..
+    '19 ITEM 0\_s*' ..
+    '20 STORE $4\_s*' ..
+    '21 ITEM 1\_s*' ..
+    '22 STORE $5\_s*' ..
+    '23 DROP\_s*' ..
+    '24 RETURN void', g:instr)
+
+  # unpacking a variadic tuple
+  lines =<< trim END
+    vim9script
+    def Fn(v: tuple<number, ...list<number>>)
+      var [a, b; c] = v
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var \[a, b; c\] = v\_s*' ..
+    '0 LOAD arg\[-1\]\_s*' ..
+    '1 CHECKLEN >= 2\_s*' ..
+    '2 ITEM 0\_s*' ..
+    '3 STORE $0\_s*' ..
+    '4 ITEM 1\_s*' ..
+    '5 STORE $1\_s*' ..
+    '6 SLICE 2\_s*' ..
+    '7 STORE $2\_s*' ..
+    '8 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for looping over a tuple
+def Test_disassemble_tuple_for()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      for x in (1, 2)
+        echo x
+      endfor
+      for [a, b] in ((1, 2), (3, 4))
+        echo a b
+      endfor
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'for x in (1, 2)\_s*' ..
+    '0 STORE -1 in $0\_s*' ..
+    '1 PUSHNR 1\_s*' ..
+    '2 PUSHNR 2\_s*' ..
+    '3 NEWTUPLE size 2\_s*' ..
+    '4 FOR $0 -> 9\_s*' ..
+    '5 STORE $2\_s*' ..
+    'echo x\_s*' ..
+    '6 LOAD $2\_s*' ..
+    '7 ECHO 1\_s*' ..
+    'endfor\_s*' ..
+    '8 JUMP -> 4\_s*' ..
+    '9 DROP\_s*' ..
+    'for \[a, b\] in ((1, 2), (3, 4))\_s*' ..
+    '10 STORE -1 in $3\_s*' ..
+    '11 PUSHNR 1\_s*' ..
+    '12 PUSHNR 2\_s*' ..
+    '13 NEWTUPLE size 2\_s*' ..
+    '14 PUSHNR 3\_s*' ..
+    '15 PUSHNR 4\_s*' ..
+    '16 NEWTUPLE size 2\_s*' ..
+    '17 NEWTUPLE size 2\_s*' ..
+    '18 FOR $3 -> 26\_s*' ..
+    '19 UNPACK 2\_s*' ..
+    '20 STORE $5\_s*' ..
+    '21 STORE $6\_s*' ..
+    'echo a b\_s*' ..
+    '22 LOAD $5\_s*' ..
+    '23 LOAD $6\_s*' ..
+    '24 ECHO 2\_s*' ..
+    'endfor\_s*' ..
+    '25 JUMP -> 18\_s*' ..
+    '26 DROP\_s*' ..
+    '27 RETURN void', g:instr)
+
+  # The loop variable has the item type of a variadic tuple, a type check is
+  # needed for a tuple with items of different types.
+  lines =<< trim END
+    vim9script
+    def Fn(v: tuple<...list<number>>, w: tuple<number, string>)
+      for x in v
+        var n: number = x
+      endfor
+      for y in w
+        var m: number = y
+      endfor
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'for x in v\_s*' ..
+    '0 STORE -1 in $0\_s*' ..
+    '1 LOAD arg\[-2\]\_s*' ..
+    '2 FOR $0 -> 7\_s*' ..
+    '3 STORE $2\_s*' ..
+    'var n: number = x\_s*' ..
+    '4 LOAD $2\_s*' ..
+    '5 STORE $3\_s*' ..
+    'endfor\_s*' ..
+    '6 JUMP -> 2\_s*' ..
+    '7 DROP\_s*' ..
+    'for y in w\_s*' ..
+    '8 STORE -1 in $4\_s*' ..
+    '9 LOAD arg\[-1\]\_s*' ..
+    '10 FOR $4 -> 16\_s*' ..
+    '11 STORE $6\_s*' ..
+    'var m: number = y\_s*' ..
+    '12 LOAD $6\_s*' ..
+    '13 CHECKTYPE number stack\[-1\]\_s*' ..
+    '14 STORE $7\_s*' ..
+    'endfor\_s*' ..
+    '15 JUMP -> 10\_s*' ..
+    '16 DROP\_s*' ..
+    '17 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for checking the tuple type of a function
+" argument, a return value and a type cast
+def Test_disassemble_tuple_typecheck()
+  var lines =<< trim END
+    vim9script
+    def TakeTuple(t: tuple<number, string>)
+    enddef
+    def Fn1()
+      var x: any = (1, 'a')
+      TakeTuple(x)
+    enddef
+    def Fn2(): tuple<number, ...list<number>>
+      var x: any = (1, 2)
+      return x
+    enddef
+    def Fn3()
+      var x: any = (1, 2)
+      var t = <tuple<number, number>>x
+    enddef
+    g:instr1 = execute('disassemble Fn1')
+    g:instr2 = execute('disassemble Fn2')
+    g:instr3 = execute('disassemble Fn3')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn1\_s*' ..
+    'var x: any = (1, ''a'')\_s*' ..
+    '0 PUSHNR 1\_s*' ..
+    '1 PUSHS "a"\_s*' ..
+    '2 NEWTUPLE size 2\_s*' ..
+    '3 STORE $0\_s*' ..
+    'TakeTuple(x)\_s*' ..
+    '4 LOAD $0\_s*' ..
+    '5 CHECKTYPE tuple<number, string> stack\[-1\] arg 1\_s*' ..
+    '6 DCALL <SNR>\d\+_TakeTuple(argc 1)\_s*' ..
+    '7 DROP\_s*' ..
+    '8 RETURN void', g:instr1)
+  assert_match('<SNR>\d\+_Fn2\_s*' ..
+    'var x: any = (1, 2)\_s*' ..
+    '0 PUSHNR 1\_s*' ..
+    '1 PUSHNR 2\_s*' ..
+    '2 NEWTUPLE size 2\_s*' ..
+    '3 STORE $0\_s*' ..
+    'return x\_s*' ..
+    '4 LOAD $0\_s*' ..
+    '5 CHECKTYPE tuple<number, ...list<number>> stack\[-1\]\_s*' ..
+    '6 RETURN', g:instr2)
+  assert_match('<SNR>\d\+_Fn3\_s*' ..
+    'var x: any = (1, 2)\_s*' ..
+    '0 PUSHNR 1\_s*' ..
+    '1 PUSHNR 2\_s*' ..
+    '2 NEWTUPLE size 2\_s*' ..
+    '3 STORE $0\_s*' ..
+    'var t = <tuple<number, number>>x\_s*' ..
+    '4 LOAD $0\_s*' ..
+    '5 CHECKTYPE tuple<number, number> stack\[-1\]\_s*' ..
+    '6 SETTYPE tuple<number, number>\_s*' ..
+    '7 STORE $1\_s*' ..
+    '8 RETURN void', g:instr3)
+  unlet g:instr1 g:instr2 g:instr3
+enddef
+
+" Disassemble the code generated for using tuples in a List and a Dict
+def Test_disassemble_tuple_in_list_and_dict()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      var l = [(1, 'a'), (2, 'b')]
+      var d = {a: (1,), b: (2,)}
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var l = \[(1, ''a''), (2, ''b'')\]\_s*' ..
+    '0 PUSHNR 1\_s*' ..
+    '1 PUSHS "a"\_s*' ..
+    '2 NEWTUPLE size 2\_s*' ..
+    '3 PUSHNR 2\_s*' ..
+    '4 PUSHS "b"\_s*' ..
+    '5 NEWTUPLE size 2\_s*' ..
+    '6 NEWLIST size 2\_s*' ..
+    '7 SETTYPE list<tuple<number, string>>\_s*' ..
+    '8 STORE $0\_s*' ..
+    'var d = {a: (1,), b: (2,)}\_s*' ..
+    '9 PUSHS "a"\_s*' ..
+    '10 PUSHNR 1\_s*' ..
+    '11 NEWTUPLE size 1\_s*' ..
+    '12 PUSHS "b"\_s*' ..
+    '13 PUSHNR 2\_s*' ..
+    '14 NEWTUPLE size 1\_s*' ..
+    '15 NEWDICT size 2\_s*' ..
+    '16 SETTYPE dict<tuple<number>>\_s*' ..
+    '17 STORE $1\_s*' ..
+    '18 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for using a tuple as a boolean and with the
+" falsy operator
+def Test_disassemble_tuple_bool()
+  var lines =<< trim END
+    vim9script
+    def Fn(t: tuple<number>)
+      var a = !t
+      var b = !!t
+      var c = t ?? (2,)
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var a = !t\_s*' ..
+    '0 LOAD arg\[-1\]\_s*' ..
+    '1 INVERT -1 (!val)\_s*' ..
+    '2 STORE $0\_s*' ..
+    'var b = !!t\_s*' ..
+    '3 LOAD arg\[-1\]\_s*' ..
+    '4 2BOOL -1 (!!val)\_s*' ..
+    '5 STORE $1\_s*' ..
+    'var c = t ?? (2,)\_s*' ..
+    '6 LOAD arg\[-1\]\_s*' ..
+    '7 JUMP_AND_KEEP_IF_TRUE -> 10\_s*' ..
+    '8 PUSHNR 2\_s*' ..
+    '9 NEWTUPLE size 1\_s*' ..
+    '10 SETTYPE tuple<number>\_s*' ..
+    '11 STORE $2\_s*' ..
+    '12 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for indexing a nested tuple, a negative and
+" a variable index and slices without a first or last index
+def Test_disassemble_tuple_index_forms()
+  var lines =<< trim END
+    vim9script
+    def Fn(t: tuple<number, number, number>, n: tuple<tuple<number, number>>)
+      var x = n[0][1]
+      echo t[-1]
+      var i = 1
+      echo t[i]
+      echo t[1 :]
+      echo t[: 1]
+      echo t[:]
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var x = n\[0\]\[1\]\_s*' ..
+    '0 LOAD arg\[-1\]\_s*' ..
+    '1 PUSHNR 0\_s*' ..
+    '2 TUPLEINDEX\_s*' ..
+    '3 PUSHNR 1\_s*' ..
+    '4 TUPLEINDEX\_s*' ..
+    '5 STORE $0\_s*' ..
+    'echo t\[-1\]\_s*' ..
+    '6 LOAD arg\[-2\]\_s*' ..
+    '7 PUSHNR -1\_s*' ..
+    '8 TUPLEINDEX\_s*' ..
+    '9 ECHO 1\_s*' ..
+    'var i = 1\_s*' ..
+    '10 STORE 1 in $1\_s*' ..
+    'echo t\[i\]\_s*' ..
+    '11 LOAD arg\[-2\]\_s*' ..
+    '12 LOAD $1\_s*' ..
+    '13 TUPLEINDEX\_s*' ..
+    '14 ECHO 1\_s*' ..
+    'echo t\[1 :\]\_s*' ..
+    '15 LOAD arg\[-2\]\_s*' ..
+    '16 PUSHNR 1\_s*' ..
+    '17 PUSHNR -1\_s*' ..
+    '18 TUPLESLICE\_s*' ..
+    '19 ECHO 1\_s*' ..
+    'echo t\[: 1\]\_s*' ..
+    '20 LOAD arg\[-2\]\_s*' ..
+    '21 PUSHNR 0\_s*' ..
+    '22 PUSHNR 1\_s*' ..
+    '23 TUPLESLICE\_s*' ..
+    '24 ECHO 1\_s*' ..
+    'echo t\[:\]\_s*' ..
+    '25 LOAD arg\[-2\]\_s*' ..
+    '26 PUSHNR 0\_s*' ..
+    '27 PUSHNR -1\_s*' ..
+    '28 TUPLESLICE\_s*' ..
+    '29 ECHO 1\_s*' ..
+    '30 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for converting a tuple to a string
+def Test_disassemble_tuple_string()
+  var lines =<< trim END
+    vim9script
+    def Fn(t: tuple<number, string>)
+      var s = $'{t}'
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var s = $''{t}''\_s*' ..
+    '0 LOAD arg\[-1\]\_s*' ..
+    '1 2STRING stack\[-1\]\_s*' ..
+    '2 STORE $0\_s*' ..
+    '3 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for using a script-local tuple variable
+def Test_disassemble_tuple_script_var()
+  var lines =<< trim END
+    vim9script
+    var st = (1, 2)
+    def Fn()
+      echo st
+      st = (3, 4)
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'echo st\_s*' ..
+    '0 LOADSCRIPT st-0 from .*\_s*' ..
+    '1 ECHO 1\_s*' ..
+    'st = (3, 4)\_s*' ..
+    '2 PUSHNR 3\_s*' ..
+    '3 PUSHNR 4\_s*' ..
+    '4 NEWTUPLE size 2\_s*' ..
+    '5 SETTYPE tuple<number, number>\_s*' ..
+    '6 STORESCRIPT st-0 in .*\_s*' ..
+    '7 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for using a tuple item.  The type of the item
+" is known for a tuple with one item and for a variadic tuple, a type check is
+" needed for a tuple with items of different types.
+def Test_disassemble_tuple_item_type()
+  var lines =<< trim END
+    vim9script
+    def Fn(t1: tuple<number>, t2: tuple<...list<number>>, t3: tuple<number, string>)
+      var a: number = t1[0]
+      var b: number = t2[1]
+      var c: number = t3[0]
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var a: number = t1\[0\]\_s*' ..
+    '0 LOAD arg\[-3\]\_s*' ..
+    '1 PUSHNR 0\_s*' ..
+    '2 TUPLEINDEX\_s*' ..
+    '3 STORE $0\_s*' ..
+    'var b: number = t2\[1\]\_s*' ..
+    '4 LOAD arg\[-2\]\_s*' ..
+    '5 PUSHNR 1\_s*' ..
+    '6 TUPLEINDEX\_s*' ..
+    '7 STORE $1\_s*' ..
+    'var c: number = t3\[0\]\_s*' ..
+    '8 LOAD arg\[-1\]\_s*' ..
+    '9 PUSHNR 0\_s*' ..
+    '10 TUPLEINDEX\_s*' ..
+    '11 CHECKTYPE number stack\[-1\]\_s*' ..
+    '12 STORE $2\_s*' ..
+    '13 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for initializing an object variable with a
+" tuple type
+def Test_disassemble_tuple_object_member()
+  var lines =<< trim END
+    vim9script
+    class A
+      var t: tuple<number, string> = (1, 'a')
+    endclass
+    g:instr = execute('disassemble A.new')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('new\_s*' ..
+    '0 NEW A size \d\+\_s*' ..
+    '1 PUSHNR 1\_s*' ..
+    '2 PUSHS "a"\_s*' ..
+    '3 NEWTUPLE size 2\_s*' ..
+    '4 SETTYPE tuple<number, string>\_s*' ..
+    '5 STORE_THIS 0', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for a generic function with a tuple type
+def Test_disassemble_tuple_generic_func()
+  var lines =<< trim END
+    vim9script
+    def Fn<T>(t: tuple<T, T>): T
+      return t[0]
+    enddef
+    def CallFn()
+      var n = Fn<number>((1, 2))
+    enddef
+    g:instr1 = execute('disassemble Fn<number>')
+    g:instr2 = execute('disassemble CallFn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn<number>\_s*' ..
+    'return t\[0\]\_s*' ..
+    '0 LOAD arg\[-1\]\_s*' ..
+    '1 PUSHNR 0\_s*' ..
+    '2 TUPLEINDEX\_s*' ..
+    '3 CHECKTYPE number stack\[-1\]\_s*' ..
+    '4 RETURN', g:instr1)
+  assert_match('<SNR>\d\+_CallFn\_s*' ..
+    'var n = Fn<number>((1, 2))\_s*' ..
+    '0 PUSHNR 1\_s*' ..
+    '1 PUSHNR 2\_s*' ..
+    '2 NEWTUPLE size 2\_s*' ..
+    '3 DCALL <SNR>\d\+_Fn<number>(argc 1)\_s*' ..
+    '4 STORE $0\_s*' ..
+    '5 RETURN void', g:instr2)
+  unlet g:instr1 g:instr2
+enddef
+
+" Disassemble the code generated for calling builtin functions with a tuple
+def Test_disassemble_tuple_builtins()
+  var lines =<< trim END
+    vim9script
+    def Fn(t: tuple<number, number>)
+      var n = len(t)
+      var l = tuple2list(t)
+      var r = list2tuple([1, 2])
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var n = len(t)\_s*' ..
+    '0 LOAD arg\[-1\]\_s*' ..
+    '1 BCALL len(argc 1)\_s*' ..
+    '2 STORE $0\_s*' ..
+    'var l = tuple2list(t)\_s*' ..
+    '3 LOAD arg\[-1\]\_s*' ..
+    '4 BCALL tuple2list(argc 1)\_s*' ..
+    '5 STORE $1\_s*' ..
+    'var r = list2tuple(\[1, 2\])\_s*' ..
+    '6 PUSHNR 1\_s*' ..
+    '7 PUSHNR 2\_s*' ..
+    '8 NEWLIST size 2\_s*' ..
+    '9 BCALL list2tuple(argc 1)\_s*' ..
+    '10 STORE $2\_s*' ..
+    '11 RETURN void', g:instr)
   unlet g:instr
 enddef
 

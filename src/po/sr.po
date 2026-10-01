@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-06-27 08:41+0000\n"
-"PO-Revision-Date: 2026-07-02 15:14+0400\n"
+"POT-Creation-Date: 2026-09-08 18:52+0000\n"
+"PO-Revision-Date: 2026-09-14 12:45+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -1714,6 +1714,9 @@ msgstr "--gui-dialog-file {имеф}  За тестирање: испиши те
 msgid "--ttyfail\t\tExit if input or output is not a terminal"
 msgstr "--ttyfail\t\tИзађи ако улаз или излаз нису терминал"
 
+msgid "--stdio-channel\tUse stdin and stdout as a channel"
+msgstr "--stdio-channel\tКористи stdin и stdout као канал"
+
 msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
 msgstr "-u <vimrc>\t\tКористи <vimrc> уместо било ког .vimrc"
 
@@ -1772,7 +1775,8 @@ msgstr "-X\t\t\tНе повезуј се на Wayland композитор"
 msgid ""
 "--clientserver <socket|x11|mswin> Backend for clientserver communication"
 msgstr ""
-"--clientserver <socket|x11|mswin> Позадински механизам за clientserver комуникацију"
+"--clientserver <socket|x11|mswin> Позадински механизам за clientserver "
+"комуникацију"
 
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr "--remote <фајлови>\tУређуј <фајлови> у Vim серверу ако је могуће"
@@ -1875,6 +1879,13 @@ msgstr "+reverse\t\tНемој да користиш обрнути видео (
 
 msgid "-xrm <resource>\tSet the specified resource"
 msgstr "-xrm <ресурс>\tПостави наведени ресурс"
+
+msgid ""
+"\n"
+"Arguments recognised by gvim (GTK4 version):\n"
+msgstr ""
+"\n"
+"Аргументи које препознаје gvim (GTK4 верзија):\n"
 
 msgid ""
 "\n"
@@ -3671,9 +3682,6 @@ msgstr ""
 
 msgid "without GUI."
 msgstr "без ГКИ."
-
-msgid "with GTK4 GUI (hwaccel)."
-msgstr "са GTK4 ГКИ (хдвубрз)."
 
 msgid "with GTK4 GUI."
 msgstr "са GTK4 ГКИ."
@@ -9182,7 +9190,8 @@ msgstr "E1562: Diff не могу да се користе са скривени
 
 #, c-format
 msgid "E1564: Socket name '%s' cannot have slashes in it without being a path"
-msgstr "E1564: Име сокета ’%s’ не сме да са садржи косе црте осим ако није путања"
+msgstr ""
+"E1564: Име сокета ’%s’ не сме да са садржи косе црте осим ако није путања"
 
 msgid "E1565: Socket server is not online, call remote_startserver() first"
 msgstr ""
@@ -9241,6 +9250,18 @@ msgstr "E1578: Превише закашњених префикса и/или и
 
 msgid "E1579: -completeopt=escape cannot be used with -nargs=_"
 msgstr "E1579: -completeopt=escape не може да се користи са -nargs=_"
+
+msgid "E1580: Too many text properties on a single line"
+msgstr "E1580: Превише текст особина на једној линији"
+
+msgid "E1581: Cannot extend a null blob"
+msgstr "E1581: Не може да се прошири null блоб"
+
+msgid "E1582: Not started with --stdio-channel"
+msgstr "E1582: Није покренуто са --stdio-channel"
+
+msgid "E1583: Cannot open stdio channel"
+msgstr "E1583: Не може да се отвори stdio канал"
 
 msgid "--No lines in buffer--"
 msgstr "--У баферу нема линија--"

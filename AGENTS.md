@@ -74,7 +74,7 @@ Before submitting any patch, at minimum:
 Vim uses a strict commit message format. The subject line is a
 one-sentence **problem statement**, not a description of the fix:
 
-    patch 9.2.NNNN: short description of the problem
+    short description of the problem
 
     Problem:  Restatement of the problem as a full sentence, possibly
               with a reporter attribution in parentheses.
@@ -88,6 +88,7 @@ one-sentence **problem statement**, not a description of the fix:
     related: #NNNN
     closes:  #NNNN
 
+    Assisted-by: <AI tool>
     Co-authored-by: Name
     Signed-off-by: Author Name <email>
 
@@ -105,10 +106,11 @@ Rules:
   **`related:` references related issues**, including issues that caused this
   one.
   All can appear. Colon, aligned, no trailing period.
-- **`Signed-off-by:` is required** — DCO.
-- **`Co-Authored-By:` is allowed** and is the accepted way to
-  acknowledge AI assistance transparently. Human
-  coauthors should usually also have their own Signed-off-by.
+- **`Signed-off-by:` is required** for the Developer Certificate of Origin (DCO).
+- **`Co-Authored-by:` is allowed** and is the accepted way to
+  acknowledge human assistance transparently. Human coauthors should usually
+  also have their own Signed-off-by.
+- **`Assisted-by:` is required** when AI was used.
 
 ## C code conventions
 
@@ -216,6 +218,14 @@ Further rules, not spelled out here, live in `runtime/doc/develop.txt`:
   `VerifyScreenDump`, and live dumps in `src/testdir/dumps/`.
 - `v9.CheckScriptSuccess(lines)` / `v9.CheckScriptFailure(lines, error, lnum)`
   are the standard way to test Vim9 script behavior at script-load time.
+- **Garbage Collection tests** Always write GC tests as a legacy func
+  Test_...(), using let lines =<< trim END and call
+  v9.CheckSourceSuccess(lines) with test_garbagecollect_now() invoked at script
+  level inside lines (see Test_enum_garbagecollect() in
+  src/testdir/test_vim9_enum.vim). Never call test_garbagecollect_now() while a
+  Vim9 :def function is on the call stack—including passing lines from a def
+  test—because :def stack values are not marked during GC, resulting in memory
+  errors or crashes.
 - When fixing a bug reported as an issue, include a test that
   reproduces the original report, not just a minimal synthetic case.
 - Tests for Syntax runtime are in `runtime/syntax/testdir`

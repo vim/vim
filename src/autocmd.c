@@ -2831,19 +2831,21 @@ getnextac(
 }
 
 /*
- * Return TRUE if there is a matching autocommand for "fname".
- * To account for buffer-local autocommands, function needs to know
- * in which buffer the file will be opened.
+ * Implementation of has_autocmd() and has_autocmd_fullname().
+ * When "is_full" is TRUE "sfname" is already a full path name.
  */
-    int
-has_autocmd(event_T event, char_u *sfname, buf_T *buf)
+    static int
+has_autocmd_ext(event_T event, char_u *sfname, buf_T *buf, bool is_full)
 {
     AutoPat	*ap;
     char_u	*fname;
     char_u	*tail = gettail(sfname);
     int		retval = FALSE;
 
-    fname = FullName_save(sfname, FALSE);
+    if (first_autopat[(int)event] == NULL)
+	return FALSE;
+
+    fname = is_full ? vim_strsave(sfname) : FullName_save(sfname, FALSE);
     if (fname == NULL)
 	return FALSE;
 
@@ -2876,6 +2878,28 @@ has_autocmd(event_T event, char_u *sfname, buf_T *buf)
 #endif
 
     return retval;
+}
+
+/*
+ * Return TRUE if there is a matching autocommand for "fname".
+ * To account for buffer-local autocommands, function needs to know
+ * in which buffer the file will be opened.
+ */
+    int
+has_autocmd(event_T event, char_u *sfname, buf_T *buf)
+{
+    return has_autocmd_ext(event, sfname, buf, false);
+}
+
+/*
+ * Like has_autocmd(), but "fname" is already a full path name, e.g. as
+ * returned by fix_fname().  Avoids expanding it again, which is slow on
+ * MS-Windows.
+ */
+    int
+has_autocmd_fullname(event_T event, char_u *fname, buf_T *buf)
+{
+    return has_autocmd_ext(event, fname, buf, true);
 }
 
 /*
@@ -2937,7 +2961,21 @@ set_context_in_autocmd(
     while (*arg && (!VIM_ISWHITE(*arg) || arg[-1] == '\\'))
 	arg++;
     if (*arg)
+    {
+	// skip over "++once", "++nested" and "nested"
+	arg = skipwhite(arg);
+	for (int i = 0; i < 2; i++)
+	{
+	    if (STRNCMP(arg, "++once", 6) == 0 && VIM_ISWHITE(arg[6]))
+		arg = skipwhite(arg + 6);
+	    if (STRNCMP(arg, "++nested", 8) == 0 && VIM_ISWHITE(arg[8]))
+		arg = skipwhite(arg + 8);
+	    if (!in_vim9script() && STRNCMP(arg, "nested", 6) == 0
+						       && VIM_ISWHITE(arg[6]))
+		arg = skipwhite(arg + 6);
+	}
 	return arg;			    // expand (next) command
+    }
 
     if (doautocmd)
 	xp->xp_context = EXPAND_FILES;	    // expand file names

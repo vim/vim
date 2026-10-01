@@ -501,3 +501,8 @@
 #define TUPLE_LEN(t)	    (t->tv_items.ga_len)
 #define TUPLE_ITEM(t, i) \
 	    (((typval_T *)t->tv_items.ga_data) + i)
+
+// Avoid open() on a non-existing file on MS-Windows
+#if !defined(MSWIN) && !defined(PROTO)
+# define mch_isdir_or_missing(f) mch_isdir(f)
+#endif

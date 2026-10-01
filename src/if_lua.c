@@ -1247,7 +1247,10 @@ luaV_blob_index(lua_State *L)
     if (lua_isnumber(L, 2))
     {
 	int idx = luaL_checkinteger(L, 2);
-	if (idx < blob_len(b))
+	if (idx < 0)
+	    // Negative index is relative to the end.
+	    idx += (int) blob_len(b);
+	if (idx >= 0 && idx < blob_len(b))
 	    lua_pushnumber(L, (lua_Number) blob_get(b, idx));
 	else
 	    lua_pushnil(L);
@@ -1281,7 +1284,11 @@ luaV_blob_newindex(lua_State *L)
     long len = blob_len(b);
     int idx = luaL_checkinteger(L, 2);
     int val = luaL_checkinteger(L, 3);
-    if (idx < len || (idx == len && ga_grow(&b->bv_ga, 1) == OK))
+    if (idx < 0)
+	// Negative index is relative to the end.
+	idx += (int) len;
+    if ((idx >= 0 && idx < len)
+	    || (idx == len && ga_grow(&b->bv_ga, 1) == OK))
     {
 	blob_set(b, idx, (char_u) val);
 	if (idx == len)

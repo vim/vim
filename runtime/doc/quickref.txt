@@ -764,6 +764,7 @@ Short explanation of each option:		*option-list*
 'ignorecase'	  'ic'	    ignore case in search patterns
 'imactivatefunc'  'imaf'    function to enable/disable the X input method
 'imactivatekey'   'imak'    key that activates the X input method
+'imageprotocol'   'ipc'     image backend to use for what terminal
 'imcmdline'	  'imc'     use IM when starting to edit a command line
 'imdisable'	  'imd'     do not use the IM in any mode
 'iminsert'	  'imi'     use :lmap or IM in Insert mode

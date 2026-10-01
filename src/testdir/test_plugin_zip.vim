@@ -16,9 +16,20 @@ def CopyZipFile(source: string)
 enddef
 
 def g:Test_zip_basic()
+  ### Check load once
+  assert_true(!exists("g:loaded_zip"), "Test config: now the zip autoload should not be loaded.")
+
+  ### Windows OS: PowerShell fallback should be manually set up
+  if &shell =~? 'cmd'
+    g:zip_pwsh = 'powershell'
+  endif
+
   CopyZipFile("test.zip")
   defer delete("X.zip")
   e X.zip
+
+  ### Check load once
+  assert_true(exists("g:loaded_zip"))
 
   ### Check header
   assert_match('^" zip\.vim version v\d\+', getline(1))
@@ -83,6 +94,11 @@ def g:Test_zip_basic()
   assert_equal("X.zip", @%)
   bw
 
+  ### Windows OS: PowerShell fallback
+  if has('win32')
+    return
+  endif
+
   ### Check opening zip when "unzip" program is missing
   var save_zip_unzipcmd = g:zip_unzipcmd
   g:zip_unzipcmd = "/"
@@ -124,6 +140,23 @@ def g:Test_zip_basic()
   bw!|bw
 
   g:zip_zipcmd = save_zip_zipcmd
+
+  ### Check opening an no zipfile
+  writefile(["qsdf"], "Xcorupt.zip", "D")
+  e! Xcorupt.zip
+  assert_equal("qsdf", getline(1))
+
+  bw
+
+  ### Check no existing zipfile
+  assert_match('File not readable', execute("e Xnot_exists.zip"))
+
+  bw
+enddef
+
+def g:Test_zip_windows_powershell()
+  CheckMSWindows
+  ### TODO: add more test for powershell fallback
 
   ### Check opening an no zipfile
   writefile(["qsdf"], "Xcorupt.zip", "D")

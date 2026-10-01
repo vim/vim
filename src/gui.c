@@ -10,10 +10,6 @@
 
 #include "vim.h"
 
-#if defined(FEAT_IMAGE_GDI)
-void update_popup_images_rect(int left, int top, int right, int bottom);
-#endif
-
 // Structure containing all the GUI information
 gui_T gui;
 
@@ -158,11 +154,17 @@ gui_start(char_u *arg UNUSED)
 	    emsg(msg);
 #endif
     }
-#ifdef HAVE_CLIPMETHOD
     else
+    {
+#ifdef HAVE_CLIPMETHOD
 	// Reset clipmethod to CLIPMETHOD_NONE
 	choose_clipmethod();
 #endif
+#ifdef FEAT_IMAGE
+	update_cell_size();
+	update_image_backend();
+#endif
+    }
 
 #if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)
     // Enable fullscreen mode
@@ -2846,15 +2848,6 @@ gui_undraw_cursor(void)
 #endif
     gui_redraw_block(gui.cursor_row, startcol,
 	    gui.cursor_row, endcol, GUI_MON_NOCLEAR);
-#if defined(FEAT_IMAGE_GDI)
-    {
-	int left   = FILL_X(startcol);
-	int top    = FILL_Y(gui.cursor_row);
-	int right  = FILL_X(endcol + 1);
-	int bottom = FILL_Y(gui.cursor_row + 1);
-	update_popup_images_rect(left, top, right, bottom);
-    }
-#endif
 
     // Cursor_is_valid is reset when the cursor is undrawn, also reset it
     // here in case it wasn't needed to undraw it.
@@ -3153,6 +3146,7 @@ gui_wait_for_chars_buf(
     int		tb_change_cnt)
 {
     int	    retval;
+    int	    keep_blinking; // Guard against restarting blink cycle on CursorHold
 
 #ifdef FEAT_MENU
     // If we're going to wait a bit, update the menus and mouse shape for the
@@ -3164,6 +3158,8 @@ gui_wait_for_chars_buf(
     gui_mch_update();
     if (input_available())	// Got char, return immediately
     {
+	if (gui_mch_is_blinking())
+	    gui_mch_stop_blink(TRUE);
 	if (buf != NULL && !typebuf_changed(tb_change_cnt))
 	    return read_from_input_buf(buf, (long)maxlen);
 	return 0;
@@ -3175,14 +3171,21 @@ gui_wait_for_chars_buf(
     gui_mch_flush();
 
     // Blink while waiting for a character.
-    gui_mch_start_blink();
+    if (!gui_mch_is_blinking())
+	gui_mch_start_blink();
 
     // Common function to loop until "wtime" is met, while handling timers and
     // other callbacks.
     retval = inchar_loop(buf, maxlen, wtime, tb_change_cnt,
 			 gui_wait_for_chars_or_timer, NULL);
 
-    gui_mch_stop_blink(TRUE);
+    // Keep blinking when CursorHold wakes the input loop. (See PR #21115)
+    keep_blinking = retval == 3 && buf != NULL
+	&& buf[0] == K_SPECIAL && buf[1] == KS_EXTRA
+	&& buf[2] == (int)KE_CURSORHOLD;
+
+    if (!keep_blinking)
+	gui_mch_stop_blink(TRUE);
 
     return retval;
 }

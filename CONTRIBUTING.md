@@ -6,11 +6,13 @@ If you create a pull request on GitHub it will be
 forwarded to the vim-dev mailing list. You can also send your patch there
 directly (but please note, the initial posting is subject to moderation).
 In that case an attachment with a unified diff format is preferred.
-Information about the mailing list can be found [on the Vim website][0]
+Information about the mailing list can be found [on the Vim website][0].
 
 A pull request has the advantage that it will trigger the Continuous
 Integration tests, you will be warned of problems (you can ignore the coverage
 warning, it's noisy).
+
+Do not submit a single PR that addresses multiple unrelated issues.
 
 Please always add a test, if possible. All new functionality should be tested
 and bug fixes should be tested for regressions: the test should fail before the
@@ -48,12 +50,39 @@ approvers are happy with that particular change.
 
 ## Using AI
 
-When using AI for contributions, please disclose this. Any AI-generated code
-must follow the Vim code style. In particular, [test_codestyle.vim][18]
-must not report any failures. Check the CI output for any test failures.
+Use of AI is allowed within the limits mentioned below, but you remain fully
+responsible for everything you submit. Disclosure of AI use is required, using
+an `Assisted-by:` trailer. [AGENTS.md](AGENTS.md) contains information and
+instructions for AI coding agents.
 
-Ensure that changes are properly tested. Do not submit a single PR that
-addresses multiple unrelated issues.
+### What is acceptable
+
+- Research, looking things up, understanding existing code.
+- Small, targeted fixes (e.g. for security issues).
+- Help with writing tests and benchmarks.
+
+### What is not acceptable
+
+- Large pull requests that were mostly generated. We may close pull
+  requests that are too large to review with confidence, whatever their
+  origin. Split large changes into smaller, reviewable steps.
+- Answering review questions by pasting AI output. Reviewers want to hear
+  your own understanding of the change.
+- Posting AI-generated reviews on other people's pull requests. Automated
+  CI checks are fine.
+- Generated commit messages or PR descriptions. Write them yourself
+  that ensures you have a good understanding of the change. Fixing
+  spelling, grammar and translations is fine.
+
+### Your responsibility
+
+- You must understand every line of your change and be able to explain it.
+- You must have the right to submit the code under the Vim license.
+- You are expected to fix problems your change introduces.
+
+Maintainers decide whether a contribution is acceptable. See also the
+[Code of Conduct](CODE_OF_CONDUCT.md), which covers the use of AI in
+discussions.
 
 # Reporting issues
 
@@ -86,7 +115,7 @@ features).
 
 If you find a problem with one of these files or have a suggestion for
 improvement, please first try to contact the maintainer directly.
-Look in the header of the file for the name, email address, github handle and/or
+Look in the header of the file for the name, email address, GitHub handle and/or
 upstream repository. You may also check the [MAINTAINERS][11] file.
 
 The maintainer will take care of issues and send updates to the Vim project for
@@ -113,10 +142,10 @@ PR with your changes against this repository here. For new filetypes, do not for
 - to add a new [filetype test][12] (keep it similar to the other filetype tests).
 - all configuration switches should be documented
   (check [filetype.txt][13] and/or [syntax.txt][14] for filetype and syntax plugins)
-- add yourself as Maintainer to the top of file (again, keep the header similar to
-  other runtime files)
+- add yourself as Maintainer to the top of the file (again, keep the header similar
+  to other runtime files)
 - add yourself to the [MAINTAINERS][11] file.
-- add a guard `if has('vim9script')` if you like to maintain Neovim
+- add a guard `if has('vim9script')` if you would like to maintain Neovim
   compatibility but want to use Vim9 script (or restrict yourself to legacy Vim
   script)
 
@@ -147,9 +176,9 @@ For the recommended documentation style, please check [helphelp.txt][16].
 # I have a question
 
 If you have some question on the style guide, please contact the [vim-dev][0]
-mailing list. For other questions you can join [`#vim`][19], use the 
-[Vi Stack Exchange][8] website, the [vim-use][9] mailing list or make use of the 
-[discussion][10] feature here at github.
+mailing list. For other questions you can join [`#vim`][19], use the
+[Vi Stack Exchange][8] website, the [vim-use][9] mailing list or make use of the
+[discussion][10] feature here at GitHub.
 
 [todo list]: https://github.com/vim/vim/blob/master/runtime/doc/todo.txt
 [0]: http://www.vim.org/maillist.php#vim-dev
@@ -170,6 +199,5 @@ mailing list. For other questions you can join [`#vim`][19], use the
 [15]: https://en.wikipedia.org/wiki/Developer_Certificate_of_Origin
 [16]: https://github.com/vim/vim/blob/master/runtime/doc/helphelp.txt
 [17]: https://github.com/vim/vim/issues
-[18]: https://github.com/vim/vim/blob/master/src/testdir/test_codestyle.vim
 [19]: https://web.libera.chat/#vim
 [20]: https://github.com/vim/vim-win32-installer

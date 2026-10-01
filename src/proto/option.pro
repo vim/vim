@@ -1,4 +1,4 @@
-/* option.c */
+// option.c
 void set_init_1(int clean_arg);
 void set_fencs_unicode(void);
 void set_string_default(char *name, char_u *val);
@@ -123,6 +123,7 @@ void unset_global_local_option(char_u *name, void *from);
 char_u *get_option_varp_scope(int opt_idx, int scope);
 char_u *get_option_var(int opt_idx);
 char_u *get_option_fullname(int opt_idx);
+int option_info(char_u *name, dict_T *d);
 opt_did_set_cb_T get_option_did_set_cb(int opt_idx);
 char_u *get_equalprg(void);
 char_u *get_findfunc(void);
@@ -157,4 +158,4 @@ int fill_culopt_flags(char_u *val, win_T *wp);
 int magic_isset(void);
 int option_set_callback_func(char_u *optval, callback_T *optcb);
 char *did_set_showtabpanel(optset_T *args);
-/* vim: set ft=c : */
+// vim: ft=c

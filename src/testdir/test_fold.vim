@@ -1462,10 +1462,20 @@ func Test_foldtextresult()
   call assert_equal('+--  2 lines: two', foldtextresult(2))
   setlocal foldtext=
   call assert_equal('+--  2 lines folded ', foldtextresult(2))
+  setlocal foldtext&
+
+  let main_winid = win_getid()
+  tabnew
+  call assert_equal('', foldtextresult(1))
+  call assert_equal('', foldtextresult(2, 9999)) " wrong winid
+  call assert_equal('+--  2 lines: two', foldtextresult(2, main_winid))
+  call win_execute(main_winid, 'setlocal foldtext=')
+  call assert_equal('+--  2 lines folded ', foldtextresult(2, main_winid))
+  call win_execute(main_winid, 'setlocal foldtext&')
+  bw! " tabnew
 
   " Fold text for a C comment fold
   %d _
-  setlocal foldtext&
   call setline(1, ['', '/*', ' * Comment', ' */', ''])
   2,4fold
   call assert_equal('+--  3 lines: Comment', foldtextresult(2))
@@ -2141,6 +2151,87 @@ func Test_foldminlines_per_window()
   call assert_equal(-1, foldclosed(2))
   call win_execute(winid, 'call assert_equal(2, foldclosed(2))')
   bwipe!
+endfunc
+
+" Test for foldclosed(), foldclosedend() and foldlevel() with winid argument
+func Test_foldclosed_with_winid()
+  " Create a main window with folds
+  new
+  call setline(1, [
+        \ 'one',
+        \ '  two',
+        \ '  three',
+        \ '  four',
+        \ 'five',
+        \ '  six',
+        \ '  seven',
+        \ '  eight',
+        \ 'nine'
+        \ ])
+  setlocal foldmethod=indent shiftwidth=2 foldenable
+  let main_winid = win_getid()
+
+  call cursor(6, 0) " Test foldclosed('.')
+  " Split to create a second window showing the same buffer
+  vnew
+
+  call assert_equal(2, foldclosed(2, main_winid))
+  call assert_equal(6, foldclosed(6, main_winid))
+  call assert_equal(6, foldclosed('.', main_winid))
+  call assert_equal(-1, foldclosed(1, main_winid))
+  call assert_equal(-1, foldclosed(5, main_winid))
+  call assert_equal(0, foldlevel(1, main_winid))
+  call assert_equal(1, foldlevel(2, main_winid))
+  call assert_equal(1, foldlevel('.', main_winid))
+
+  call assert_equal(4, foldclosedend(2, main_winid))
+  call assert_equal(8, foldclosedend(6, main_winid))
+  call assert_equal(8, foldclosedend('.', main_winid))
+  call assert_equal(-1, foldclosedend(1, main_winid))
+  call assert_equal(-1, foldclosedend(5, main_winid))
+
+  " Test with an invalid window ID
+  call assert_equal(-2, foldclosed(2, 99999))
+  call assert_equal(-2, foldclosedend(2, 99999))
+  call assert_equal(-2, foldlevel(2, 99999))
+
+  " Test with invalid line number
+  call assert_equal(-1, foldclosed(100, main_winid))
+  call assert_equal(-1, foldclosedend(100, main_winid))
+  call assert_equal(-1, foldclosed(0, main_winid))
+  call assert_equal(-1, foldclosedend(0, main_winid))
+
+  bwipe! " vnew
+
+  tabnew
+
+  call assert_equal(2, foldclosed(2, main_winid))
+  call assert_equal(6, foldclosed(6, main_winid))
+  call assert_equal(-1, foldclosed(1, main_winid))
+  call assert_equal(-1, foldclosed(5, main_winid))
+  call assert_equal(0, foldlevel(1, main_winid))
+  call assert_equal(1, foldlevel(2, main_winid))
+  call assert_equal(1, foldlevel('.', main_winid))
+
+  call assert_equal(4, foldclosedend(2, main_winid))
+  call assert_equal(8, foldclosedend(6, main_winid))
+  call assert_equal(-1, foldclosedend(1, main_winid))
+  call assert_equal(-1, foldclosedend(5, main_winid))
+
+  " Test with an invalid window ID
+  call assert_equal(-2, foldclosed(2, 99999))
+  call assert_equal(-2, foldclosedend(2, 99999))
+  call assert_equal(-2, foldlevel(2, 99999))
+
+  " Test with invalid line number
+  call assert_equal(-1, foldclosed(100, main_winid))
+  call assert_equal(-1, foldclosedend(100, main_winid))
+  call assert_equal(-1, foldclosed(0, main_winid))
+  call assert_equal(-1, foldclosedend(0, main_winid))
+
+  bwipe! " tabnew
+
+  bwipe! " new
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

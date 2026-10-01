@@ -36,6 +36,20 @@ func Test_source_cmd()
   au! SourcePost
 endfunc
 
+" A SourceCmd pattern with a directory is matched against the full path.
+func Test_source_cmd_full_path()
+  call mkdir('XsourceCmdDir', 'R')
+  call writefile(['let g:sourced_file = 1'], 'XsourceCmdDir/script.vim')
+  au SourceCmd */XsourceCmdDir/*.vim let g:source_cmd_file = expand('<afile>:t')
+
+  source XsourceCmdDir/script.vim
+  call assert_equal('script.vim', g:source_cmd_file)
+  call assert_false(exists('g:sourced_file'))
+
+  au! SourceCmd
+  unlet g:source_cmd_file
+endfunc
+
 func Test_source_sandbox()
   new
   call writefile(["Ohello\<Esc>"], 'Xsourcehello', 'D')
@@ -666,6 +680,21 @@ func Test_source_buffer_long_line()
   END
   call writefile(lines, 'Xtest.vim', 'D')
   source Xtest.vim
+  bwipe!
+endfunc
+
+" A line of a certain length made the line after it be dropped.  The length
+" follows from the 250 bytes get_one_sourceline() starts with, try up to
+" about twice as much.
+func Test_source_buffer_line_after_long_line()
+  new
+  for len in range(2, 512)
+    call setline(1, ['" ' .. repeat('x', len - 2), 'let g:Xsourced = ' .. len])
+    unlet! g:Xsourced
+    source
+    call assert_equal(len, get(g:, 'Xsourced', 0), 'line length ' .. len)
+  endfor
+  unlet! g:Xsourced
   bwipe!
 endfunc
 

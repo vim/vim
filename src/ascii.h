@@ -87,6 +87,6 @@
 # define PATHSEP	psepc
 # define PATHSEPSTR	pseps
 #else
-# define PATHSEP	'/'
+# define PATHSEP	((char_u)'/')
 # define PATHSEPSTR	"/"
 #endif

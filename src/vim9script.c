@@ -13,21 +13,6 @@
 
 #include "vim.h"
 
-/*
- * Return TRUE when currently using Vim9 script syntax.
- * Does not go up the stack, a ":function" inside vim9script uses legacy
- * syntax.
- */
-    int
-in_vim9script(void)
-{
-    // "sc_version" is also set when compiling a ":def" function in legacy
-    // script.
-    return (current_sctx.sc_version == SCRIPT_VERSION_VIM9
-					 || (cmdmod.cmod_flags & CMOD_VIM9CMD))
-		&& !(cmdmod.cmod_flags & CMOD_LEGACY);
-}
-
 #if defined(FEAT_EVAL)
 /*
  * Return TRUE when currently in a script with script version smaller than
@@ -146,10 +131,10 @@ ex_vim9script(exarg_T *eap UNUSED)
 
 #if defined(FEAT_EVAL)
 /*
- * When in Vim9 script give an error and return FAIL.
+ * When in Vim9 script give an error (unless "silent" is true) and return FAIL.
  */
     int
-not_in_vim9(exarg_T *eap)
+not_in_vim9(exarg_T *eap, bool silent)
 {
     if (in_vim9script())
 	switch (eap->cmdidx)
@@ -157,7 +142,8 @@ not_in_vim9(exarg_T *eap)
 	    case CMD_k:
 		if (eap->addr_count > 0)
 		{
-		    emsg(_(e_no_range_allowed));
+		    if (!silent)
+			emsg(_(e_no_range_allowed));
 		    return FAIL;
 		}
 		// FALLTHROUGH
@@ -167,7 +153,8 @@ not_in_vim9(exarg_T *eap)
 	    case CMD_open:
 	    case CMD_t:
 	    case CMD_xit:
-		semsg(_(e_command_not_supported_in_vim9_script_missing_var_str), eap->cmd);
+		if (!silent)
+		    semsg(_(e_command_not_supported_in_vim9_script_missing_var_str), eap->cmd);
 		return FAIL;
 	    default: break;
 	}

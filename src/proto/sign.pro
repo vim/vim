@@ -1,4 +1,4 @@
-/* sign.c */
+// sign.c
 void init_signs(void);
 int buf_get_signattrs(win_T *wp, linenr_T lnum, sign_attrs_T *sattr);
 linenr_T buf_delsign(buf_T *buf, linenr_T atlnum, int id, char_u *group);
@@ -30,4 +30,4 @@ sign_entry_T *get_first_valid_sign(win_T *wp);
 int signcolumn_on(win_T *wp);
 void f_sign_unplace(typval_T *argvars, typval_T *rettv);
 void f_sign_unplacelist(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

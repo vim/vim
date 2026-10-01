@@ -1,4 +1,4 @@
-/* drawscreen.c */
+// drawscreen.c
 int update_screen(int type_arg);
 int statusline_row(win_T *wp);
 void win_redr_status(win_T *wp, int ignore_pum);
@@ -28,4 +28,4 @@ void redraw_win_range_later(win_T *wp, linenr_T first, linenr_T last);
 void redraw_win_range_now(win_T *wp, linenr_T first, linenr_T last);
 void f_redraw_listener_add(typval_T *argvars, typval_T *rettv);
 void f_redraw_listener_remove(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

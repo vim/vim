@@ -1,4 +1,4 @@
-*windows.txt*	For Vim version 9.2.  Last change: 2026 May 01
+*windows.txt*	For Vim version 9.2.  Last change: 2026 Aug 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -969,7 +969,7 @@ settings.  The option is a comma-separated list of values:
 
 Example: >
 	:set previewpopup=height:10,width:60
-	:set previewpopup=border:single,borderhilight:PmenuBorder
+	:set previewpopup=border:single,borderhighlight:PmenuBorder
 	:set previewpopup=border:custom:─;│;─;│;┌;┐;┘;└
 	:set previewpopup=border:round,opacity:80
 

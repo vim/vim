@@ -806,6 +806,7 @@ set_indent(
 		saved_cursor.col = new_offset;
 	}
 #ifdef FEAT_PROP_POPUP
+	if (curbuf->b_has_textprop)
 	{
 	    int added = ind_len - old_offset;
 

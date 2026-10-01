@@ -202,7 +202,7 @@ skip_generic_func_type_args(char_u **argp)
  * Returns:
  *   A newly allocated string with the combined function name and type
  *   arguments, or NULL if there is a syntax error in the generic type
- *   arguments.
+ *   arguments or if there is an allocation failure.
  *
  * The caller is responsible for freeing the returned string.
  */
@@ -212,17 +212,25 @@ append_generic_func_type_args(
     size_t	namelen,
     char_u	**argp)
 {
-    char_u *p = generic_func_find_close_bracket(*argp);
+    char_u	*p = generic_func_find_close_bracket(*argp);
+    size_t	argslen;
+    char_u	*name;
 
     if (p == NULL)
 	return NULL;
 
-    vim_strncpy(IObuff, funcname, namelen);
-    STRNCAT(IObuff, *argp, p - *argp + 1);
+    // The type arguments can be of any length, do not use IObuff.
+    argslen = (size_t)(p - *argp) + 1;
+    name = alloc(namelen + argslen + 1);
+    if (name == NULL)
+	return NULL;
+    mch_memmove(name, funcname, namelen);
+    mch_memmove(name + namelen, *argp, argslen);
+    name[namelen + argslen] = NUL;
 
     *argp = p + 1;
 
-    return vim_strsave(IObuff);
+    return name;
 }
 
 /*
@@ -426,7 +434,8 @@ generic_name_exists(
     {
 	generic_T *generic = &((generic_T *)gfatab->gfat_args.ga_data)[i];
 
-	if (STRNCMP(gt_name, generic->gt_name, name_len) == 0)
+	if (STRNCMP(gt_name, generic->gt_name, name_len) == 0
+				&& generic->gt_name[name_len] == NUL)
 	{
 	    semsg(_(e_duplicate_type_var_name_str), gt_name);
 	    return TRUE;
@@ -485,6 +494,13 @@ parse_generic_func_type_params(
 	return NULL;
     }
 
+    // Find the start of the function name before the '<'.  It is always
+    // preceded by "def" and white space, or "g:".
+    char_u	    *fname_start = p;
+    while (ASCII_ISALNUM(fname_start[-1]) || fname_start[-1] == '_')
+	--fname_start;
+    size_t	    fname_len = p - fname_start;
+
     char_u	    *start = ++p;
 
     while (*p && *p != '>')
@@ -519,6 +535,17 @@ parse_generic_func_type_params(
 	name_len = name_end - name_start;
 	cc = *name_end;
 	*name_end = NUL;
+
+	// The type variable cannot have the name of the function being
+	// defined.  Use the name as it appears before the '<', a nested
+	// function internally has a "<lambda>N" name.
+	if (fname_len == name_len
+			&& STRNCMP(fname_start, name_start, name_len) == 0)
+	{
+	    semsg(_(e_redefining_script_item_str), name_start);
+	    *name_end = cc;
+	    return NULL;
+	}
 
 	int name_exists = generic_name_exists(name_start, name_len, gfatab,
 									cctx);
@@ -865,6 +892,69 @@ update_generic_type(
 }
 
 /*
+ * Make a copy of the argument types, the return type, the vararg type and the
+ * function type of the generic function "fp" for "new_fp", a copy of "fp".
+ * The type variables of "fp" in these types are replaced with the types of
+ * the type variables of "new_fp", see update_generic_type().
+ */
+    void
+generic_func_copy_types(ufunc_T *fp, ufunc_T *new_fp)
+{
+    int		i;
+
+    // create a copy of
+    // - all the argument types
+    // - return type
+    // - vararg type
+    // - function type
+    // if any generic type is used, it will be replaced below).
+    if (fp->uf_arg_types != NULL)
+	for (i = 0; i < fp->uf_args.ga_len; i++)
+	    new_fp->uf_arg_types[i] = copy_type_deep(fp->uf_arg_types[i],
+						&new_fp->uf_type_list);
+
+    if (fp->uf_ret_type != NULL)
+	new_fp->uf_ret_type = copy_type_deep(fp->uf_ret_type,
+						&new_fp->uf_type_list);
+
+    if (fp->uf_va_type != NULL)
+	new_fp->uf_va_type = copy_type_deep(fp->uf_va_type,
+						&new_fp->uf_type_list);
+
+    if (fp->uf_func_type != NULL)
+	new_fp->uf_func_type = copy_type_deep(fp->uf_func_type,
+						&new_fp->uf_type_list);
+
+    type_T	*ft = new_fp->uf_func_type;
+
+    // Update any generic types in the function arguments
+    if (fp->uf_arg_types != NULL)
+	for (i = 0; i < fp->uf_args.ga_len; i++)
+	    update_generic_type(fp, new_fp, fp->uf_arg_types[i],
+			    &new_fp->uf_arg_types[i],
+			    ft != NULL && ft->tt_args != NULL
+					&& ft->tt_argcount > i
+						    ? &ft->tt_args[i] : NULL);
+
+    // Update the vararg type if it uses generic types.  It is the last
+    // argument of the function type.
+    if (fp->uf_va_type != NULL)
+    {
+	int	va_idx = fp->uf_args.ga_len;
+
+	update_generic_type(fp, new_fp, fp->uf_va_type, &new_fp->uf_va_type,
+			    ft != NULL && ft->tt_args != NULL
+					&& ft->tt_argcount > va_idx
+						? &ft->tt_args[va_idx] : NULL);
+    }
+
+    // Update the return type if it is a generic type
+    if (fp->uf_ret_type != NULL)
+	update_generic_type(fp, new_fp, fp->uf_ret_type, &new_fp->uf_ret_type,
+			    ft != NULL ? &ft->tt_member : NULL);
+}
+
+/*
  * Adds a new concrete instance of a generic function for a specific set of
  * type arguments.
  *
@@ -949,28 +1039,6 @@ generic_func_add(ufunc_T *fp, char_u *key, gfargs_tab_T *gfatab)
     gfitem->gfi_ufunc = new_fp;
     gfitem->gfi_ufunc->uf_def_status = UF_TO_BE_COMPILED;
 
-    // create a copy of
-    // - all the argument types
-    // - return type
-    // - vararg type
-    // - function type
-    // if any generic type is used, it will be replaced below).
-    for (i = 0; i < fp->uf_args.ga_len; i++)
-	new_fp->uf_arg_types[i] = copy_type_deep(fp->uf_arg_types[i],
-						&new_fp->uf_type_list);
-
-    if (fp->uf_ret_type != NULL)
-	new_fp->uf_ret_type = copy_type_deep(fp->uf_ret_type,
-						&new_fp->uf_type_list);
-
-    if (fp->uf_va_type != NULL)
-	new_fp->uf_va_type = copy_type_deep(fp->uf_va_type,
-						&new_fp->uf_type_list);
-
-    if (fp->uf_func_type != NULL)
-	new_fp->uf_func_type = copy_type_deep(fp->uf_func_type,
-						&new_fp->uf_type_list);
-
     // Replace the t_any generic types with the actual types
     for (i = 0; i < fp->uf_generic_argcount; i++)
     {
@@ -980,21 +1048,7 @@ generic_func_add(ufunc_T *fp, char_u *key, gfargs_tab_T *gfatab)
 	gt->gt_type = generic_arg->gt_type;
     }
 
-    // Update any generic types in the function arguments
-    for (i = 0; i < fp->uf_args.ga_len; i++)
-	update_generic_type(fp, new_fp, fp->uf_arg_types[i],
-			    &new_fp->uf_arg_types[i],
-			    &new_fp->uf_func_type->tt_args[i]);
-
-    // Update the vararg type if it uses generic types
-    if (fp->uf_va_type != NULL)
-	update_generic_type(fp, new_fp, fp->uf_va_type, &new_fp->uf_va_type,
-			    NULL);
-
-    // Update the return type if it is a generic type
-    if (fp->uf_ret_type != NULL)
-	update_generic_type(fp, new_fp, fp->uf_ret_type, &new_fp->uf_ret_type,
-			    &new_fp->uf_func_type->tt_member);
+    generic_func_copy_types(fp, new_fp);
 
     hash_add_item(ht, hi, gfitem->gfi_name, hash);
 
@@ -1120,6 +1174,72 @@ generic_func_get(ufunc_T *fp, gfargs_tab_T *gfatab)
 }
 
 /*
+ * Returns the concrete function of the generic function "fp" for the type
+ * arguments of "inst", a concrete function of another generic function with
+ * the same number of type variables.  E.g. "inst" is the interface method
+ * "Get<string>" and "fp" the generic method "Get" of the object class.  It is
+ * created when it does not exist yet.
+ * Returns NULL on failure, an error was given then (except for memory
+ * allocation failure).
+ */
+    ufunc_T *
+generic_func_get_same_types(ufunc_T *fp, ufunc_T *inst)
+{
+    gfargs_tab_T	gfatab;
+    ufunc_T		*new_fp = NULL;
+    int			argcount = inst->uf_generic_argcount;
+    int			i;
+
+    generic_func_args_table_init(&gfatab);
+
+    if (ga_grow(&gfatab.gfat_args, argcount) == FAIL)
+	goto done;
+    for (i = 0; i < argcount; i++)
+    {
+	generic_T	*generic_arg = (generic_T *)gfatab.gfat_args.ga_data + i;
+	type_T		*type = inst->uf_generic_args[i].gt_type;
+	char		*tofree = NULL;
+
+	generic_arg->gt_name = vim_strsave(
+				    (char_u *)type_name(type, &tofree));
+	vim_free(tofree);
+	if (generic_arg->gt_name == NULL)
+	    goto done;
+	// The types of "inst" are used for the lookup, see below.
+	generic_arg->gt_type = type;
+	gfatab.gfat_args.ga_len++;
+    }
+
+    // Usually the function exists, look it up first to avoid copying the
+    // types.
+    garray_T	gfkey_ga;
+
+    ga_init2(&gfkey_ga, 1, 80);
+    new_fp = generic_lookup_func(fp, &gfatab, &gfkey_ga);
+    ga_clear(&gfkey_ga);
+    if (new_fp != NULL)
+	goto done;
+
+    // The new function owns the types, use a copy of the types of "inst".
+    for (i = 0; i < argcount; i++)
+    {
+	generic_T   *generic_arg = (generic_T *)gfatab.gfat_args.ga_data + i;
+	type_T	    *type = copy_type_deep(generic_arg->gt_type,
+							&gfatab.gfat_arg_types);
+
+	// out of memory when the type is returned, it must not be used
+	if (type == generic_arg->gt_type)
+	    goto done;
+	generic_arg->gt_type = type;
+    }
+    new_fp = generic_func_get(fp, &gfatab);
+
+done:
+    generic_func_args_table_clear(&gfatab);
+    return new_fp;
+}
+
+/*
  * Looks up or creates a concrete instance of a generic function "ufunc" using
  * the type arguments specified after the function name in "name".
  *
@@ -1187,7 +1307,8 @@ find_generic_type_in_ufunc(char_u *gt_name, size_t name_len, ufunc_T *ufunc)
 	generic_T *generic;
 
 	generic = ((generic_T *)ufunc->uf_generic_args) + i;
-	if (STRNCMP(generic->gt_name, gt_name, name_len) == 0)
+	if (STRNCMP(generic->gt_name, gt_name, name_len) == 0
+				&& generic->gt_name[name_len] == NUL)
 	{
 	    type_T *type = generic->gt_type;
 	    return type;
@@ -1253,7 +1374,9 @@ find_generic_type(
 	    return type;
     }
 
-    if (cctx != NULL && ufunc != cctx->ctx_ufunc)
+    // Also when "ufunc" is the compiled function: a lambda can use the type
+    // variables of the function it is defined in.
+    if (cctx != NULL)
 	return find_generic_type_in_cctx(gt_name, name_len, cctx);
 
     return NULL;

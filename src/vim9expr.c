@@ -347,7 +347,7 @@ inside_class_hierarchy(cctx_T *cctx_arg, class_T *cl)
 /*
  * Compile ".member" coming after an object or class.
  */
-    static int
+    int
 compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 {
     int		m_idx;
@@ -416,7 +416,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	name_end = parse_generic_func_type_args(name, len, name_end,
 							&gfatab, cctx);
 	if (name_end == NULL)
-	    return FAIL;
+	    goto done;
     }
 
     if (*name_end == '(')
@@ -865,6 +865,84 @@ compiling_a_class_method(cctx_T *cctx)
 }
 
 /*
+ * Generate a closure for the nested generic function "ufunc" with the type
+ * arguments in "gfatab".  The function is compiled in the context of the
+ * function where it is defined, which is "outer_depth" levels up from the
+ * function being compiled: zero when it is defined in the current function,
+ * non-zero when used in a closure or in a recursive call.
+ */
+    static int
+compile_nested_generic_func(
+    cctx_T		*cctx,
+    ufunc_T		*ufunc,
+    gfargs_tab_T	*gfatab,
+    int			outer_depth)
+{
+    ufunc_T	*fp = generic_func_get(ufunc, gfatab);
+    cctx_T	*outer_cctx = cctx;
+    int		isn_idx;
+
+    if (fp == NULL)
+	return FAIL;
+
+    for (int depth = 0; depth < outer_depth; ++depth)
+    {
+	if (outer_cctx->ctx_outer == NULL)
+	{
+	    siemsg("generic function %s outer context missing", ufunc->uf_name);
+	    return FAIL;
+	}
+	outer_cctx = outer_cctx->ctx_outer;
+    }
+
+    // copy over the block scope IDs before compiling
+    if (fp->uf_block_ids == NULL && ufunc->uf_block_depth > 0)
+    {
+	fp->uf_block_ids = ALLOC_MULT(int, ufunc->uf_block_depth);
+	if (fp->uf_block_ids != NULL)
+	{
+	    mch_memmove(fp->uf_block_ids, ufunc->uf_block_ids,
+					    sizeof(int) * ufunc->uf_block_depth);
+	    fp->uf_block_depth = ufunc->uf_block_depth;
+	}
+    }
+
+    compiletype_T compile_type = get_compile_type(fp);
+    if (func_needs_compiling(fp, compile_type)
+	    && compile_def_function(fp, TRUE, compile_type, outer_cctx) == FAIL)
+	return FAIL;
+
+    if (generate_FUNCREF(cctx, fp, NULL, FALSE, 0, &isn_idx) == FAIL)
+	return FAIL;
+    if (cctx->ctx_skip == SKIP_YES)
+	return OK;
+
+    // The function is owned by the generic function, the reference is
+    // dropped when the instruction is deleted.  It may be a recursive call
+    // in the function itself.
+    func_ptr_ref(fp);
+
+    if (outer_depth > 0)
+    {
+	// The closure uses the context of the function where the generic
+	// function is defined, not the current function.
+	isn_T		*isn = ((isn_T *)cctx->ctx_instr.ga_data) + isn_idx;
+	funcref_extra_T *extra = isn->isn_arg.funcref.fr_extra;
+
+	if (extra == NULL)
+	{
+	    extra = ALLOC_CLEAR_ONE(funcref_extra_T);
+	    if (extra == NULL)
+		return FAIL;
+	    isn->isn_arg.funcref.fr_extra = extra;
+	}
+	extra->fre_outer_depth = outer_depth;
+    }
+
+    return OK;
+}
+
+/*
  * Compile a variable name into a load instruction.
  * "end" points to just after the name.
  * "is_expr" is TRUE when evaluating an expression, might be a funcref.
@@ -885,6 +963,7 @@ compile_load(
     int		res = FAIL;
     int		prev_called_emsg = called_emsg;
     gfargs_tab_T gfatab;
+    char_u	*lt = NULL;
 
     generic_func_args_table_init(&gfatab);
 
@@ -893,8 +972,13 @@ compile_load(
 	// generic function call
 	if (parse_generic_func_type_args(*arg, namelen,
 			*arg + namelen, &gfatab, cctx) == NULL)
+	{
+	    generic_func_args_table_clear(&gfatab);
 	    return FAIL;
-	*(*arg + namelen) = NUL;
+	}
+	// Temporarily terminate the name, the line may be compiled again.
+	lt = *arg + namelen;
+	*lt = NUL;
     }
 
     if (*(*arg + 1) == ':')
@@ -1019,7 +1103,15 @@ compile_load(
 	    {
 		type = lvar.lv_type;
 		idx = lvar.lv_idx;
-		if (lvar.lv_from_outer != 0)
+		if (lvar.lv_ufunc != NULL && IS_GENERIC_FUNC(lvar.lv_ufunc)
+			&& gfatab.gfat_args.ga_len > 0)
+		{
+		    // The function with the types is compiled in the context
+		    // of the function where it is defined.
+		    res = compile_nested_generic_func(cctx, lvar.lv_ufunc,
+					    &gfatab, lvar.lv_from_outer);
+		}
+		else if (lvar.lv_from_outer != 0)
 		{
 		    gen_load_outer = lvar.lv_from_outer;
 		    outer_loop_depth = lvar.lv_loop_depth;
@@ -1086,6 +1178,8 @@ compile_load(
     *arg = end;
 
 theend:
+    if (lt != NULL)
+	*lt = '<';
     if (res == FAIL && error && called_emsg == prev_called_emsg)
 	semsg(_(e_variable_not_found_str), name);
     vim_free(name);
@@ -1286,6 +1380,7 @@ compile_call(
     char_u	namebuf[MAX_FUNC_NAME_LEN];
     char_u	fname_buf[FLEN_FIXED + 1];
     char_u	*tofree = NULL;
+    char_u	*gname = NULL;
     ufunc_T	*ufunc = NULL;
     int		res = FAIL;
     int		is_autoload;
@@ -1382,10 +1477,16 @@ compile_call(
 
     if (*(*arg + varlen) == '<')
     {
+	char_u	*start = *arg;
+
 	// generic function
 	*arg = parse_generic_func_type_args(*arg, varlen, *arg + varlen,
 								&gfatab, cctx);
 	if (*arg == NULL)
+	    goto theend;
+	// the name with the type arguments, used for a nested function
+	gname = vim_strnsave(start, *arg - start);
+	if (gname == NULL)
 	    goto theend;
 	++*arg;			// skip '('
     }
@@ -1520,9 +1621,9 @@ compile_call(
     // If the name is a variable, load it and use PCALL.
     // Not for g:Func(), we don't know if it is a variable or not.
     // Not for some#Func(), it will be loaded later.
-    p = namebuf;
+    p = ufunc == NULL && gname != NULL ? gname : namebuf;
     if (!has_g_namespace && !is_autoload
-	    && compile_load(&p, varlen, namebuf + varlen, cctx, FALSE, FALSE) == OK)
+	    && compile_load(&p, varlen, p + varlen, cctx, FALSE, FALSE) == OK)
     {
 	type_T	    *s_type = get_type_on_stack(cctx, 0);
 
@@ -1547,6 +1648,7 @@ compile_call(
 theend:
     generic_func_args_table_clear(&gfatab);
     vim_free(tofree);
+    vim_free(gname);
     return res;
 }
 
@@ -1767,10 +1869,12 @@ restore_cmdline_arg(evalarg_T *evalarg, char_u **arg, cctx_T *cctx)
 /*
  * Parse a lambda: "(arg, arg) => expr"
  * "*arg" points to the '('.
+ * When "ppconst" is not NULL the constants in it are generated before the
+ * lambda, which goes on top of them on the stack.
  * Returns OK/FAIL when a lambda is recognized, NOTDONE if it's not a lambda.
  */
     int
-compile_lambda(char_u **arg, cctx_T *cctx)
+compile_lambda(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
     int		r;
     typval_T	rettv;
@@ -1787,6 +1891,13 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     {
 	clear_evalarg(&evalarg, NULL);
 	return r;
+    }
+
+    if (ppconst != NULL && generate_ppconst(cctx, ppconst) == FAIL)
+    {
+	clear_tv(&rettv);
+	clear_evalarg(&evalarg, NULL);
+	return FAIL;
     }
 
     // "rettv" will now be a partial referencing the function.
@@ -2550,7 +2661,7 @@ compile_subscript(
 	    if (next != NULL &&
 		    ((next[0] == '-' && next[1] == '>'
 				 && (next[2] == '{'
-				       || next[2] == '('
+				       || *skipwhite(next + 2) == '('
 				       || ASCII_ISALPHA(*skipwhite(next + 2))))
 		    || (next[0] == '.' && eval_isdictc(next[1]))))
 	    {
@@ -3106,7 +3217,7 @@ compile_expr9(
 	 * funcref: (arg, arg) => { statement }
 	 */
 	case '(':   // if compile_lambda returns NOTDONE then it must be (expr)
-		    ret = compile_lambda(arg, cctx);
+		    ret = compile_lambda(arg, cctx, ppconst);
 		    if (ret == NOTDONE)
 			ret = compile_parenthesis(arg, cctx, ppconst);
 		    break;

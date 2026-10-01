@@ -1,4 +1,4 @@
-/* dict.c */
+// dict.c
 dict_T *dict_alloc(void);
 dict_T *dict_alloc_id(alloc_id_T id);
 dict_T *dict_alloc_lock(int lock);
@@ -51,4 +51,4 @@ void f_keys(typval_T *argvars, typval_T *rettv);
 void f_values(typval_T *argvars, typval_T *rettv);
 void dict_set_items_ro(dict_T *di);
 void f_has_key(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

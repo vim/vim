@@ -1,4 +1,4 @@
-/* vim9cmds.c */
+// vim9cmds.c
 void free_locals(cctx_T *cctx);
 int check_vim9_unlet(char_u *name);
 char_u *compile_unletlock(char_u *arg, exarg_T *eap, cctx_T *cctx);
@@ -34,4 +34,4 @@ char_u *compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx);
 char_u *compile_cexpr(char_u *line, exarg_T *eap, cctx_T *cctx);
 char_u *compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx);
 int check_global_and_subst(char_u *cmd, char_u *arg);
-/* vim: set ft=c : */
+// vim: ft=c

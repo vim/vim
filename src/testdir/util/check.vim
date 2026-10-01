@@ -309,6 +309,14 @@ func CheckNotAsan()
   endif
 endfunc
 
+" Command to check for running under ASAN
+command CheckAsan call CheckAsan()
+func CheckAsan()
+  if execute('version') !~# '-fsanitize=[a-z,]*\<address\>'
+    throw 'Skipped: requires an ASAN build'
+  endif
+endfunc
+
 " Command to check for not running under valgrind
 command CheckNotValgrind call CheckNotValgrind()
 func CheckNotValgrind()
@@ -367,6 +375,13 @@ command CheckGithubActions call CheckGithubActions()
 func CheckGithubActions()
   if expand('$GITHUB_ACTIONS') ==# 'true'
     throw "Skipped: FIXME: this test doesn't work on Github Actions CI"
+  endif
+endfunc
+
+command CheckImageBackend call CheckImageBackend()
+func CheckImageBackend()
+  if v:imagebackend != "none"
+    throw "Skipped: No image backend available"
   endif
 endfunc
 

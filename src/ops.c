@@ -3747,8 +3747,9 @@ op_function(oparg_T *oap UNUSED)
 	// Set '[ and '] marks to text to be operated on.
 	curbuf->b_op_start = oap->start;
 	curbuf->b_op_end = oap->end;
-	if (oap->motion_type != MLINE && !oap->inclusive)
-	    // Exclude the end position.
+	// Exclude the end position.  For a block "oap->end" is already the
+	// last column.
+	if (oap->motion_type != MLINE && !oap->block_mode && !oap->inclusive)
 	    decl(&curbuf->b_op_end);
 
 	argv[0].v_type = VAR_STRING;
@@ -4275,9 +4276,10 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	curwin->w_set_curswant = true;
 
 	// oap->empty is set when start and end are the same.  The inclusive
-	// flag affects this too, unless yanking and the end is on a NUL.
+	// flag affects this too, unless yanking and the end is on a NUL.  For
+	// a block "oap->end" is already the last column.
 	oap->empty = (oap->motion_type == MCHAR
-		    && (!oap->inclusive
+		    && ((!oap->inclusive && !oap->block_mode)
 			|| (oap->op_type == OP_YANK
 			    && gchar_pos(&oap->end) == NUL))
 		    && EQUAL_POS(oap->start, oap->end)

@@ -1,4 +1,4 @@
-/* evalvars.c */
+// evalvars.c
 void evalvars_init(void);
 void evalvars_clear(void);
 int garbage_collect_globvars(int copyID);
@@ -41,6 +41,7 @@ void set_vim_var_nr(int idx, varnumber_T val);
 char *get_vim_var_name(int idx);
 typval_T *get_vim_var_tv(int idx);
 type_T *get_vim_var_type(int idx, garray_T *type_list);
+int vim_var_info(char_u *name, dict_T *d);
 int set_vim_var_tv(int idx, typval_T *tv);
 varnumber_T get_vim_var_nr(int idx);
 char_u *get_vim_var_str(int idx);
@@ -112,4 +113,4 @@ void set_callback(callback_T *dest, callback_T *src);
 void copy_callback(callback_T *dest, callback_T *src);
 void expand_autload_callback(callback_T *cb);
 void free_callback(callback_T *callback);
-/* vim: set ft=c : */
+// vim: ft=c

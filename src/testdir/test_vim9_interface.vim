@@ -1446,6 +1446,104 @@ def Test_implements_using_var_type_any()
   v9.CheckSourceFailure(lines, 'E1382: Variable "val": type mismatch, expected list<dict<string>> but got dict<number>', 1)
 enddef
 
+" Test for an error in a long "implements" list, after the first interface {{{1
+def Test_implements_many_with_error()
+  var lines =<< trim END
+    vim9script
+    interface I1
+    endinterface
+    class C implements I1, Nope, I3, I4, I5, I6, I7, I8, I9
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1346: Interface name not found: Nope', 5)
+enddef
+
+" Test for a method returning the implementing class where the interface
+" method returns the interface type
+def Test_interface_method_returns_own_class()
+  var lines =<< trim END
+    vim9script
+    interface I
+      def Copy(): I
+    endinterface
+    interface J extends I
+      def Get(): number
+    endinterface
+    class A implements I
+      def Copy(): A
+        return A.new()
+      enddef
+    endclass
+    class B implements J
+      def Copy(): B
+        return B.new()
+      enddef
+      def Get(): number
+        return 2
+      enddef
+    endclass
+    abstract class Base implements I
+      abstract def Copy(): I
+    endclass
+    class C extends Base
+      def Copy(): C
+        return C.new()
+      enddef
+    endclass
+    var i: I = A.new().Copy()
+    assert_equal('object<A>', typename(i))
+    assert_equal('object<B>', typename(B.new().Copy()))
+    i = C.new().Copy()
+    assert_equal('object<C>', typename(i))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    interface I
+      def Copy(): I
+    endinterface
+    class Other
+    endclass
+    class A implements I
+      def Copy(): Other
+        return Other.new()
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1383: Method "Copy": type mismatch, expected func(): object<I> but got func(): object<Other>', 11)
+enddef
+
+" Test for a class inheriting an interface from the parent class, while it
+" implements several interfaces itself
+def Test_implements_with_parent_interface()
+  var lines =<< trim END
+    vim9script
+    interface I1
+    endinterface
+    interface I2
+    endinterface
+    interface I3
+    endinterface
+    interface I4
+    endinterface
+    interface I5
+      def F(): number
+    endinterface
+    class A implements I5
+      def F(): number
+        return 5
+      enddef
+    endclass
+    class B extends A implements I1, I2, I3, I4
+    endclass
+    var i5: I5 = B.new()
+    assert_equal(5, i5.F())
+    assert_true(instanceof(B.new(), I1, I4, I5))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test interface garbage collection {{{1
 func Test_interface_garbagecollect()
   let lines =<< trim END

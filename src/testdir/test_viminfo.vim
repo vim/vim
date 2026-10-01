@@ -1385,6 +1385,7 @@ func Test_viminfo_len_one()
 endfunc
 
 func Test_viminfo_len_overflow()
+  CheckNotAsan
   let _viminfofile = &viminfofile
   let &viminfofile=''
   let viminfo_file = tempname()

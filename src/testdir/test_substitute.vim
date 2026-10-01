@@ -797,7 +797,7 @@ func Test_replace_with_tilde()
   call assert_equal('- Bug uuun "vPPPP" on this text:', getline(1))
   s/o/~~~/
   call assert_equal('- Bug uuun "vPPPP" uuuuuuuuun this text:', getline(1))
-  close!
+  bw!
 endfunc
 
 func Test_replace_keeppatterns()
@@ -835,7 +835,7 @@ one two
   exe "normal 0dn"
   call assert_equal('xyz bar', getline('.'))
 
-  close!
+  bw!
 endfunc
 
 func Test_sub_beyond_end()
@@ -859,7 +859,7 @@ func Test_repeat_last_sub()
   let @/ = 'green'
   s//gray
   call assert_equal('red gray red orange red', getline(1))
-  close!
+  bw!
 endfunc
 
 " Test for Vi compatible substitution:
@@ -874,7 +874,7 @@ func Test_sub_vi_compatibility()
   let @/ = 'white'
   s\&green&
   call assert_equal('amber green yellow white green', getline(1))
-  close!
+  bw!
 
   call assert_fails('vim9cmd s\/white/', 'E1270:')
   call assert_fails('vim9cmd s\?white?', 'E1270:')
@@ -887,7 +887,7 @@ func Test_sub_expand_text()
   call setline(1, 'abcabcabcabcabcabcabcabc')
   s/b/\=repeat('B', 10)/g
   call assert_equal(repeat('aBBBBBBBBBBc', 8), getline(1))
-  close!
+  bw!
 endfunc
 
 " Test for command failures when the last substitute pattern is not set.
@@ -998,7 +998,7 @@ func Test_substitute_multiline_submatch()
   call setline(1, ['line1', 'line2', 'line3', 'line4'])
   %s/^line1\(\_.\+\)line4$/\=submatch(1)/
   call assert_equal(['', 'line2', 'line3', ''], getline(1, '$'))
-  close!
+  bw!
 endfunc
 
 func Test_substitute_skipped_range()
@@ -1524,6 +1524,29 @@ func Test_substitute_expr_cpo()
   call assert_equal(save_cpo, &cpo)
 
   delfunc XSubExpr
+endfunc
+
+" Test that undo after a confirmed substitution restores the state right
+" before the confirmed match, also when "\r" splits the line (issue #4798)
+func Test_sub_undo_after_confirm()
+  new
+  call setline(1, 'foofoo')
+  call feedkeys(":s/foo/bar\\r/gc\<CR>yy", 'xt')
+  call assert_equal(['bar', 'bar', ''], getline(1, '$'))
+  call feedkeys('u', 'xt')
+  call assert_equal(['bar', 'foo'], getline(1, '$'))
+  call feedkeys('u', 'xt')
+  call assert_equal(['foofoo'], getline(1, '$'))
+  bwipe!
+
+  " Without "\r" all the matches in one line are still undone at once.
+  new
+  call setline(1, 'aXbXcXd')
+  call feedkeys(":s/X/-/gc\<CR>yyy", 'xt')
+  call assert_equal(['a-b-c-d'], getline(1, '$'))
+  call feedkeys('u', 'xt')
+  call assert_equal(['aXbXcXd'], getline(1, '$'))
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

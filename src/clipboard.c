@@ -512,7 +512,7 @@ clip_invert_rectangle(
 	gui_mch_invert_rectangle(row, col, height, width);
     else
 # endif
-	screen_draw_rectangle(row, col, height, width, invert);
+	screen_draw_rectangle(row, col, height, width, invert, FALSE);
 # ifdef FEAT_PROP_POPUP
     screen_zindex = 0;
 # endif
@@ -1155,6 +1155,8 @@ clip_copy_modeless_selection(int both UNUSED)
 	len *= 2;	// max. 2 bytes per display cell
     else if (enc_utf8)
 	len *= MB_MAXBYTES;
+    // A newline is added after each row
+    len += row2 - row1 + 2;
     buffer = alloc(len);
     if (buffer == NULL)	    // out of memory
 	return;
@@ -1231,7 +1233,6 @@ clip_copy_modeless_selection(int both UNUSED)
 	    {
 		int	off;
 		int	i;
-		int	ci;
 
 		off = LineOffset[row];
 		for (i = start_col; i < end_col; ++i)
@@ -1241,17 +1242,8 @@ clip_copy_modeless_selection(int both UNUSED)
 		    if (ScreenLinesUC[off + i] == 0)
 			*bufp++ = ScreenLines[off + i];
 		    else
-		    {
-			bufp += utf_char2bytes(ScreenLinesUC[off + i], bufp);
-			for (ci = 0; ci < Screen_mco; ++ci)
-			{
-			    // Add a composing character.
-			    if (ScreenLinesC[ci][off + i] == 0)
-				break;
-			    bufp += utf_char2bytes(ScreenLinesC[ci][off + i],
-									bufp);
-			}
-		    }
+			// Includes the composing characters.
+			bufp += utfc_char2bytes(off + i, bufp);
 		    // Skip right half of double-wide character.
 		    if (ScreenLines[off + i + 1] == 0)
 			++i;
@@ -3548,6 +3540,7 @@ clip_provider_paste(char_u *reg, char_u *provider)
     if (ret == FAIL)
 	goto exit;
     else if (rettv.v_type == VAR_TUPLE
+	    && rettv.vval.v_tuple != NULL
 	    && TUPLE_LEN(rettv.vval.v_tuple) == 2
 	    && TUPLE_ITEM(rettv.vval.v_tuple, 0)->v_type == VAR_STRING
 	    && TUPLE_ITEM(rettv.vval.v_tuple, 1)->v_type == VAR_LIST)
@@ -3556,6 +3549,7 @@ clip_provider_paste(char_u *reg, char_u *provider)
 	lines = TUPLE_ITEM(rettv.vval.v_tuple, 1)->vval.v_list;
     }
     else if (rettv.v_type == VAR_LIST
+	    && rettv.vval.v_list != NULL
 	    && rettv.vval.v_list->lv_len == 2
 	    && rettv.vval.v_list->lv_first->li_tv.v_type == VAR_STRING
 	    && rettv.vval.v_list->lv_first->li_next->li_tv.v_type == VAR_LIST)

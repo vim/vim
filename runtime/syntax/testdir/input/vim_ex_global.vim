@@ -1,6 +1,10 @@
 " Vim :global and :v commands
 
 
+global/foo
+global!/foo
+vglobal/foo
+
 global/foo/echo "..."
 global!/foo/echo "..."
 vglobal/foo/echo "..."
@@ -21,6 +25,10 @@ global/found/v/not\%(found\)/echo "..."
 
 
 def Vim9Context()
+  global/foo
+  global!/foo
+  vglobal/foo
+
   global/foo/echo "..."
   global!/foo/echo "..."
   vglobal/foo/echo "..."

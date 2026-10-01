@@ -1,4 +1,4 @@
-.TH VIM 1 "2026 Jun 05"
+.TH VIM 1 "2026 Sep 28"
 .SH NAME
 vim \- Vi IMproved, a programmer's text editor
 .SH SYNOPSIS
@@ -502,6 +502,18 @@ Connect to a Vim server and send {keys} to it.
 \-\-remote\-silent
 As \-\-remote, but without the warning when no server is found.
 .TP
+\-\-remote\-tab
+As \-\-remote, but open each file in a new tabpage.
+.TP
+\-\-remote\-tab\-silent
+As \-\-remote-silent, but open each file in a new tabpage.
+.TP
+\-\-remote\-tab\-wait
+As \-\-remote\-wait, but open each file in a new tabpage.
+.TP
+\-\-remote\-tab\-wait\-silent
+As \-\-remote\-wait\-silent, but open each file in a new tabpage.
+.TP
 \-\-remote\-wait
 As \-\-remote, but Vim does not exit until the files have been edited.
 .TP
@@ -530,6 +542,14 @@ GTK GUI only: Use the GtkPlug mechanism to run gVim in another window.
 .TP
 \-\-startuptime {file}
 During startup write timing messages to the file {fname}.
+.TP
+\-\-stdio\-channel
+Use the stdin and stdout of
+.B Vim
+for a channel instead of for a terminal.  Implies "\-es": nothing is
+displayed, no Ex commands are read and the GUI is not started.  A script
+opens the channel with ch_open() and the address "stdio", see ":help
+\-\-stdio\-channel".  Only available when compiled with the channel feature.
 .TP
 \-\-ttyfail
 When stdin or stdout is not a terminal (tty) then exit right away.

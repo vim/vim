@@ -609,6 +609,23 @@ func Test_equalalways_on_close()
   set equalalways&
 endfunc
 
+func Test_equalalways_on_open()
+  set equalalways
+  vsplit
+  split
+  wincmd l
+  windo vsplit
+
+  let basewidth = winwidth(1)
+
+  for win in range(2, winnr("$"))
+    call assert_true(abs(winwidth(win) - basewidth) <= 1)
+  endfor
+
+  only
+  set equalalways&
+endfunc
+
 func Test_win_screenpos()
   CheckFeature quickfix
 
@@ -2024,6 +2041,34 @@ func Test_splitkeep_screen_cursor_pos()
   set splitkeep&
 endfunc
 
+func Test_splitkeep_phantom_jump()
+  set splitbelow
+  call setline(1, range(1, 100))
+  split
+
+  " Move cursor to last visible line so it is at risk of being pushed off
+  normal! L
+  let old = getcurpos()
+
+  " No jumps, just 3 header lines
+  call assert_equal(3, execute('jumps')->split('\n')->len())
+
+  " Switching to "screen" was causing vim to not update relevant variables
+  set splitkeep=screen
+
+  " Reduce window 2's space, and so bump up the cursor
+  set cmdheight=2
+
+  " Cursor has moved up a single line in the buffer, respecting splitkeep
+  call assert_equal(4, execute('jumps')->split('\n')->len())
+
+  let old[1] = old[1] - 1
+  call assert_equal(old, getcurpos())
+
+  %bwipeout!
+  set splitbelow& splitkeep& cmdheight&
+endfunc
+
 func Test_splitkeep_cmdheight()
   set splitkeep=screen
   call setline(1, range(&lines))
@@ -2537,6 +2582,39 @@ func Test_winfixheight_split_only_window()
   setlocal winfixheight&
   set laststatus&
   bwipe!
+endfunc
+
+" Test that closing a window respects 'winfixwidth' and 'winfixheight'
+" when the freed space goes to a group of windows.
+func Test_winfixsize_close_non_leaf_frame()
+  for vertical in [v:true, v:false]
+    let opt = vertical ? 'winfixwidth' : 'winfixheight'
+    let split = vertical ? 'vertical ' : ''
+    let other = vertical ? '' : 'vertical '
+    let move = vertical ? 'l' : 'j'
+    let Size = {id -> vertical ? winwidth(win_id2win(id))
+          \                     : winheight(win_id2win(id))}
+
+    exe split .. 'split | ' .. split .. 'resize ' .. (vertical ? 30 : 5)
+    exe 'setlocal ' .. opt
+    let b = win_getid()
+    exe 'wincmd ' .. move
+    let c = win_getid()
+    exe 'botright ' .. other .. 'split'
+    exe 'topleft ' .. split .. 'split | ' .. split .. 'resize 4'
+    let a = win_getid()
+
+    let b0 = Size(b)
+    let c0 = Size(c)
+    let a0 = Size(a)
+    close
+
+    call assert_equal(b0, Size(b), opt)
+    call assert_equal(c0 + a0 + 1, Size(c), opt)
+
+    call win_execute(b, 'setlocal no' .. opt)
+    only!
+  endfor
 endfunc
 
 " Test that setting 'laststatus' from 0 to 2 gives all windows in a vertical

@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	C
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2026 Feb 3
+" Last Change:	2026 Oct 12
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Only do this when not done yet for this buffer
@@ -41,16 +41,17 @@ if has("vms")
 endif
 
 " Use terminal window for gui
-if has('gui_running') && exists(':terminal') == 2 && executable("man")
+if has('gui_running') && has('terminal') && executable("man")
   setlocal keywordprg=:CKeywordPrg
 
   command! -buffer -nargs=1 -count CKeywordPrg call s:CKeywordPrg(<q-args>, <count>)
 
   function! s:CKeywordPrg(arg, count) abort
+    let arg = escape(a:arg, '\%#')
     if a:count > 0
-      exe printf('term ++close man -s %d %s', a:count, a:arg)
+      exe printf('term ++close man -s %d %s', a:count, arg)
     else
-      exe printf('term ++close man %s', a:arg)
+      exe printf('term ++close man %s', arg)
     endif
   endfunction
 

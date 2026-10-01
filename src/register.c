@@ -1542,8 +1542,9 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	    curbuf->b_op_start.col = 0;
 	    curbuf->b_op_end.col = MAXCOL;
 	}
-	if (yanktype != MLINE && !oap->inclusive)
-	    // Exclude the end position.
+	// Exclude the end position.  For a block "oap->end" is already the
+	// last column.
+	if (yanktype != MLINE && !oap->block_mode && !oap->inclusive)
 	    decl(&curbuf->b_op_end);
     }
 
@@ -3300,7 +3301,7 @@ str_to_reg(
 	    pp[lnum].string = vim_strnsave(*ss, pp[lnum].length);
 	    if (type == MBLOCK)
 	    {
-		int charlen = mb_string2cells(*ss, -1);
+		int charlen = vim_strsize(*ss);
 
 		if (charlen > maxlen)
 		    maxlen = charlen;
@@ -3318,7 +3319,12 @@ str_to_reg(
 		if (str[i] == '\n')
 		    break;
 		if (type == MBLOCK)
-		    charlen += mb_ptr2cells_len(str + i, len - i);
+		{
+		    if (str[i] >= 0x80)
+			charlen += mb_ptr2cells_len(str + i, len - i);
+		    else
+			charlen += byte2cells(str[i]);
+		}
 
 		if (str[i] == NUL)
 		    i++; // registers can have NUL chars

@@ -1,0 +1,44 @@
+# Bazel rc file
+# TODO comments are highlighted
+
+startup --output_base=/tmp/bazel
+common --enable_platform_specific_config
+always --announce_rc
+build --jobs=8 --verbose_failures
+test -c dbg --test_env=PATH
+query --keep_going
+
+# A config name is everything after the first colon
+build:ci --remote_cache=grpcs://cache.example.com --config=strict
+build:strict --copt=-Wall --copt=-Werror
+build:foo:bar --//my/pkg:setting=1 --no//my/pkg:other
+startup:linux --host_jvm_args=-Xmx4g
+common:empty
+
+# Quotes may open part-way through a word and need not be closed
+build --define='a b' --define="a#b" --define=a"b c"d
+build --copt=-DNAME=\"x\" --copt=-DSPACE=a\ b
+build --define="unterminated
+build --jobs=8
+
+# An unquoted # starts a comment, with or without leading whitespace
+build --jobs=4 # trailing comment
+build --jobs=2# no leading whitespace
+build --copt=\#notacomment
+
+# A trailing backslash joins the following line
+build --copt=-Wextra \
+      --copt=-Wpedantic \
+      --copt=-Wshadow
+
+# ...including inside a comment, so this line is commented too \
+build --this_line_is_part_of_the_comment
+
+import /etc/bazel/site.bazelrc
+import %workspace%/tools/flags.bazelrc
+try-import %workspace%/user.bazelrc
+try-import-if-bazel-version >=7.0.0 %workspace%/configs/v7.rc
+try-import-if-bazel-version <8 %workspace%/configs/pre_v8.rc
+try-import-if-bazel-version ==6.3.2 %workspace%/configs/hotfix.rc
+try-import-if-bazel-version !=7.0.1 %workspace%/configs/standard.rc
+try-import-if-bazel-version ~8.1 %workspace%/configs/v8_1.rc

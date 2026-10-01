@@ -1,31 +1,10 @@
 " zip.vim: Handles browsing zipfiles
 " AUTOLOAD PORTION
-" Date:		2024 Aug 21
+" Date:		2026 Aug 19
 " Version:	34
 " Maintainer:	This runtime file is looking for a new maintainer.
 " Former Maintainer:	Charles E Campbell
 " Last Change:
-" 2024 Jun 16 by Vim Project: handle whitespace on Windows properly (#14998)
-" 2024 Jul 23 by Vim Project: fix 'x' command
-" 2024 Jul 24 by Vim Project: use delete() function
-" 2024 Jul 30 by Vim Project: fix opening remote zipfile
-" 2024 Aug 04 by Vim Project: escape '[' in name of file to be extracted
-" 2024 Aug 05 by Vim Project: workaround for the FreeBSD's unzip
-" 2024 Aug 05 by Vim Project: clean-up and make it work with shellslash on Windows
-" 2024 Aug 18 by Vim Project: correctly handle special globbing chars
-" 2024 Aug 21 by Vim Project: simplify condition to detect MS-Windows
-" 2025 Mar 11 by Vim Project: handle filenames with leading '-' correctly
-" 2025 Jul 12 by Vim Project: drop ../ on write to prevent path traversal attacks
-" 2025 Sep 22 by Vim Project: support PowerShell Core
-" 2025 Dec 20 by Vim Project: use :lcd instead of :cd
-" 2026 Feb 08 by Vim Project: use system() instead of :!
-" 2026 Mar 08 by Vim Project: Make ZipUpdatePS() check for powershell
-" 2026 Apr 01 by Vim Project: Detect more path traversal attacks
-" 2026 Apr 05 by Vim Project: Detect more path traversal attacks
-" 2026 Apr 14 by Vim Project: Detect more path traversal attacks on Windows
-" 2026 Apr 15 by Vim Project: Detect more path traversal attacks on Windows
-" 2026 Jun 20 by Vim Project: Fix wrong escaping for the powershell calls
-" 2026 Jul 25 by Vim Project: Improved Compatibility for powershell 5 and pwsh 7
 " License:	Vim License  (see vim's :help license)
 " Copyright:	Copyright (C) 2005-2019 Charles E. Campbell {{{1
 "		Permission is hereby granted to use and distribute this code,
@@ -56,12 +35,30 @@ let s:NOTE           = 0
 if !exists("g:zip_zipcmd")
  let g:zip_zipcmd= "zip"
 endif
+if !exists("g:zip_zipcmd_deleteopt")
+ let g:zip_zipcmd_deleteopt= "-d"
+endif
+if !exists("g:zip_zipcmd_updateopt")
+ let g:zip_zipcmd_updateopt= "-u"
+endif
+
 if !exists("g:zip_unzipcmd")
  let g:zip_unzipcmd= "unzip"
 endif
+if !exists("g:zip_unzipcmd_browseopt")
+ let g:zip_unzipcmd_browseopt= "-Z1"
+endif
+if !exists("g:zip_unzipcmd_readopt")
+ let g:zip_unzipcmd_readopt= "-p"
+endif
+
 if !exists("g:zip_extractcmd")
  let g:zip_extractcmd= g:zip_unzipcmd
 endif
+if !exists("g:zip_extractcmd_extractopt")
+ let g:zip_extractcmd_extractopt= "-o"
+endif
+
 if !exists("g:zip_pwsh")
   let g:zip_pwsh=''
 endif
@@ -290,7 +287,7 @@ fun! zip#Browse(zipfile)
  \                '" Select a file with cursor and press ENTER'])
   keepj $
 
-  let gnu_cmd = "keepj sil r! " . g:zip_unzipcmd . " -Z1 -- " . s:Escape(a:zipfile, 1)
+  let gnu_cmd = "keepj sil r! " . g:zip_unzipcmd . " " . g:zip_unzipcmd_browseopt . " -- " . s:Escape(a:zipfile, 1)
   let ps_cmd = 'keepj sil r! ' . s:ZipBrowsePS(a:zipfile)
   call s:TryExecGnuFallBackToPs(g:zip_unzipcmd, gnu_cmd, ps_cmd)
 
@@ -374,7 +371,7 @@ fun! zip#Read(fname,mode)
   let temp = tempname()
   let fn   = expand('%:p')
 
-  let gnu_cmd = g:zip_unzipcmd . ' -p -- ' . s:Escape(zipfile) . ' ' . s:Escape(fname) . ' > ' . s:Escape(temp)
+  let gnu_cmd = g:zip_unzipcmd . ' ' . g:zip_unzipcmd_readopt . ' -- ' . s:Escape(zipfile) . ' ' . s:Escape(fname) . ' > ' . s:Escape(temp)
   let gnu_cmd = 'call system(' . string(gnu_cmd) . ')'
   let ps_cmd = 'call system(' . string(s:ZipReadPS(zipfile, fname, temp)) . ')'
   call s:TryExecGnuFallBackToPs(g:zip_unzipcmd, gnu_cmd, ps_cmd)
@@ -448,7 +445,7 @@ fun! zip#Write(fname)
     endif
   endif
   if fname =~ '^[.]\{1,2}/'
-    let gnu_cmd = g:zip_zipcmd . ' -d ' . s:Escape(fnamemodify(zipfile,":p")) . ' ' . s:Escape(fname)
+    let gnu_cmd = g:zip_zipcmd . ' ' . g:zip_zipcmd_deleteopt . ' ' . s:Escape(fnamemodify(zipfile,":p")) . ' ' . s:Escape(fname)
     let gnu_cmd = 'call system(' . string(gnu_cmd) . ')'
     let ps_cmd = $"call system({string(s:ZipDeleteFilePS(zipfile, fname))})"
     call s:TryExecGnuFallBackToPs(g:zip_zipcmd, gnu_cmd, ps_cmd)
@@ -477,7 +474,7 @@ fun! zip#Write(fname)
     let fname = substitute(fname, '[', '[[]', 'g')
   endif
 
-  let gnu_cmd = g:zip_zipcmd . ' -u '. s:Escape(fnamemodify(zipfile,":p")) . ' ' . s:Escape(fname)
+  let gnu_cmd = g:zip_zipcmd . ' ' . g:zip_zipcmd_updateopt . ' ' . s:Escape(fnamemodify(zipfile,":p")) . ' ' . s:Escape(fname)
   let gnu_cmd = 'call system(''' . substitute(gnu_cmd, "'", "''", 'g') . ''')'
   let zip = fnamemodify(zipfile, ':p')
   let ps_cmd = s:ZipUpdatePS(zip, fname)
@@ -581,7 +578,7 @@ fun! zip#Extract()
   endif
 
   " extract the file mentioned under the cursor
-  let gnu_cmd = g:zip_extractcmd . ' -o '. shellescape(b:zipfile) . ' ' . target
+  let gnu_cmd = g:zip_extractcmd . ' ' . g:zip_extractcmd_extractopt . ' ' . shellescape(b:zipfile) . ' ' . target
   let gnu_cmd = 'call system(' . string(gnu_cmd) . ')'
   let ps_cmd = 'call system(' . string(s:ZipExtractFilePS(b:zipfile, fname)) . ')'
   call s:TryExecGnuFallBackToPs(g:zip_extractcmd, gnu_cmd, ps_cmd)

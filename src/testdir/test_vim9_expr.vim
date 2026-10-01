@@ -2800,6 +2800,18 @@ def Test_expr9_lambda()
     eval (name + 2) / 3
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  # a lambda called after a constant operand
+  lines =<< trim END
+    assert_equal('ab', 'a' .. ((x) => x)('b'))
+    assert_equal('ab', 'a' .. (((x) => x)('b')))
+    assert_equal(3, 1 + ((x) => x)(2))
+    assert_equal('ab', 'a' .. ((x) => x)->call(['b']))
+    assert_equal('/a/x', ((cwdpath: string) => cwdpath
+          ->strpart(0, cwdpath->strridx('/vim')))('/a/vim/b')
+          .. '/x')
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_expr9_lambda_block()
@@ -2862,6 +2874,30 @@ def Test_expr9_lambda_block()
   END
   v9.CheckDefFailure(lines, 'E1145: Missing heredoc end marker: ENDIT', 0)
   v9.CheckScriptFailure(['vim9script'] + lines, 'E1145: Missing heredoc end marker: ENDIT', 2)
+
+  # An error in one function must not make the block lambda in the next
+  # function fail to compile in the same :defcompile.  Class methods are
+  # compiled in the order they are defined.
+  lines =<< trim END
+      vim9script
+      class C
+        static def Broken(): number
+          return 'x'
+        enddef
+        static def Healthy(): list<number>
+          return [1, 2]->map((_, v) => {
+            return v * 2
+          })
+        enddef
+      endclass
+      try
+        defcompile C
+      catch
+        assert_match('E1012:', v:exception)
+      endtry
+      assert_equal([2, 4], C.Healthy())
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def NewLambdaWithComments(): func
@@ -3952,7 +3988,7 @@ def Test_expr9_method_call()
                     module: ''}
                     ], getloclist(0))
 
-      var result: bool = get({n: 0}, 'n', 0)
+      var result: bool = get({n: false}, 'n', false)
       assert_equal(false, result)
 
       assert_equal('+string+', 'string'->((s) => '+' .. s .. '+')())
@@ -3964,6 +4000,14 @@ def Test_expr9_method_call()
       var sorted = [3, 1, 2]
                     -> sort()
       assert_equal([1, 2, 3], sorted)
+
+      var nrs = [1, 2]
+                    ->((x) => x)()
+      assert_equal([1, 2], nrs)
+
+      nrs = [3, 4]
+                    -> ((x) => x)()
+      assert_equal([3, 4], nrs)
   END
   v9.CheckDefAndScriptSuccess(lines)
 

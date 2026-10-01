@@ -3142,6 +3142,46 @@ def Test_closure_using_argument()
       assert_equal([3, 4, 5], Test(Inc))
   END
   v9.CheckScriptSuccess(lines)
+
+  # assign to an element of the outer function's argument
+  lines =<< trim END
+      vim9script
+      def MakeSetter(arg: dict<any>): func()
+        return () => {
+          arg.key = 1
+        }
+      enddef
+      def Run()
+        var Set = MakeSetter({})
+        Set()
+      enddef
+      Run()
+
+      var d: dict<any> = {}
+      MakeSetter(d)()
+      assert_equal({key: 1}, d)
+
+      def MakeListSetter(arg: list<number>): func()
+        return () => {
+          arg[0] = 2
+        }
+      enddef
+      var l = [0]
+      MakeListSetter(l)()
+      assert_equal([2], l)
+
+      def MakeNestedSetter(arg: dict<any>): func(): func()
+        return () => {
+          return () => {
+            arg.key = 3
+          }
+        }
+      enddef
+      var nd: dict<any> = {}
+      MakeNestedSetter(nd)()()
+      assert_equal({key: 3}, nd)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def s:MakeGetAndAppendRefs()
@@ -5067,6 +5107,66 @@ def Test_term_wait_in_job_exit_cb()
   # This shouldn't cause an ASAN error immediately, but will result in a use
   # after free when Vim exits.
   v9.CheckDefSuccess(lines)
+enddef
+
+" Test for an error in the return type of a lambda after argument types that
+" were allocated, these must be freed
+def Test_lambda_type_error()
+  var lines =<< trim END
+    vim9script
+    var L = (x: dict<list<string>>): nosuch => x
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: nosuch', 2)
+
+  lines =<< trim END
+    vim9script
+    def Fn()
+      var L = (x: list<list<number>>, Y: func(number): string): nosuch => x
+    enddef
+    defcompile Fn
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: nosuch', 1)
+
+  # the variable arguments name must also be freed
+  lines =<< trim END
+    vim9script
+    var L = (...x: list<list<number>>): nosuch => x
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: nosuch', 2)
+
+  lines =<< trim END
+    vim9script
+    var M = (y: list<list<number>>, ...x: number) => x
+  END
+  v9.CheckSourceFailure(lines, 'E1180: Variable arguments type must be a list: number', 2)
+enddef
+
+def Test_cmdmod_silent_nested_load_error()
+  var lines =<< trim END
+      vim9script
+      var result = ''
+
+      def H(): number
+        result ..= 'Hb'
+        echo g:nosuch
+        result ..= 'Ha'
+        return 1
+      enddef
+
+      def G()
+        result ..= 'Gb'
+        silent! H()
+        silent! g:out->add(H())
+        result ..= 'Ga'
+      enddef
+
+      g:out = []
+      G()
+      assert_equal('GbHbHaHbHaGa', result)
+      assert_equal([1], g:out)
+      unlet g:out
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

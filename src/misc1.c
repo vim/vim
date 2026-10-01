@@ -2295,6 +2295,11 @@ prepare_to_exit(void)
     {
 	windgoto((int)Rows - 1, cmdline_col_off);
 
+	// When "full_screen" was reset, e.g. by deathtrap(), settmode() below
+	// returns without switching the mouse off, so do it here.
+	if (!full_screen)
+	    mch_setmouse(FALSE);
+
 	/*
 	 * Switch terminal mode back now, so messages end up on the "normal"
 	 * screen (if there are two screens).

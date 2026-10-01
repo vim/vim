@@ -65,7 +65,7 @@ func Test_lua_luado()
   call setline(1, ['one', 'two'])
   luado return(linenr)
   call assert_equal(['1', '2'], getline(1, '$'))
-  close!
+  bw!
 
   " Error cases
   call assert_fails('luado string.format()',
@@ -650,6 +650,28 @@ func Test_lua_blob()
   call assert_fails('lua b:add({})', '[string "vim chunk"]:1: string expected, got table')
   lua b = nil
 
+  " A negative index counts from the end, an out of range one is rejected and
+  " must not read or write outside of the blob.
+  lua b = vim.blob("\001\002\003")
+  call assert_equal(3, luaeval('b[-1]'))
+  call assert_equal(1, luaeval('b[-3]'))
+  call assert_equal(v:null, luaeval('b[-4]'))
+  call assert_equal(v:null, luaeval('b[-100]'))
+  lua b[-1] = 0xff
+  call assert_equal(0z0102FF, luaeval('b'))
+  lua b[-3] = 0x80
+  call assert_equal(0z8002FF, luaeval('b'))
+  call assert_fails('lua b[-4] = 0x80', '[string "vim chunk"]:1: index out of range')
+  call assert_fails('lua b[-100] = 0x80', '[string "vim chunk"]:1: index out of range')
+  call assert_equal(0z8002FF, luaeval('b'))
+  lua b = nil
+
+  " A negative index on an empty blob is out of range.
+  lua eb = vim.blob("")
+  call assert_equal(v:null, luaeval('eb[-1]'))
+  call assert_fails('lua eb[-1] = 0x80', '[string "vim chunk"]:1: index out of range')
+  lua eb = nil
+
   let b = 0z0102
   lua lb = vim.eval('b')
   let n = luaeval('lb[1]')
@@ -895,7 +917,7 @@ func Test_lua_string_with_newline()
   lua k = vim.buffer(vim.eval('bufnr()'))
   lua k:insert("Hello\0World", 0)
   call assert_equal(["Hello\nWorld", ''], getline(1, '$'))
-  close!
+  bw!
 endfunc
 
 func Test_lua_set_cursor()

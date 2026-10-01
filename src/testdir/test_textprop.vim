@@ -8,7 +8,7 @@ source util/screendump.vim
 import './util/vim9.vim' as v9
 
 func Test_proptype_global()
-  call prop_type_add('comment', {'highlight': 'Directory', 'priority': 123, 'start_incl': 1, 'end_incl': 1})
+  call prop_type_add('comment', {'highlight': 'Directory', 'priority': 123, 'start_incl': 1, 'end_incl': 1, 'override': 1})
   let proptypes = prop_type_list()
   call assert_equal(1, len(proptypes))
   call assert_equal('comment', proptypes[0])
@@ -18,6 +18,7 @@ func Test_proptype_global()
   call assert_equal(123, proptype['priority'])
   call assert_equal(1, proptype['start_incl'])
   call assert_equal(1, proptype['end_incl'])
+  call assert_equal(1, proptype['override'])
 
   call prop_type_delete('comment')
   call assert_equal(0, len(prop_type_list()))
@@ -29,6 +30,7 @@ func Test_proptype_global()
   call assert_equal(0, proptype['priority'])
   call assert_equal(0, proptype['start_incl'])
   call assert_equal(0, proptype['end_incl'])
+  call assert_equal(0, proptype['override'])
 
   call prop_type_add('two', {})
   call assert_equal(2, len(prop_type_list()))
@@ -40,7 +42,7 @@ endfunc
 
 func Test_proptype_buf()
   let bufnr = bufnr('')
-  call prop_type_add('comment', #{bufnr: bufnr, highlight: 'Directory', priority: 123, start_incl: 1, end_incl: 1})
+  call prop_type_add('comment', #{bufnr: bufnr, highlight: 'Directory', priority: 123, start_incl: 1, end_incl: 1, override: 1})
   let proptypes = prop_type_list({'bufnr': bufnr})
   call assert_equal(1, len(proptypes))
   call assert_equal('comment', proptypes[0])
@@ -50,6 +52,7 @@ func Test_proptype_buf()
   call assert_equal(123, proptype['priority'])
   call assert_equal(1, proptype['start_incl'])
   call assert_equal(1, proptype['end_incl'])
+  call assert_equal(1, proptype['override'])
 
   call prop_type_delete('comment', {'bufnr': bufnr})
   call assert_equal(0, len({'bufnr': bufnr}->prop_type_list()))
@@ -60,6 +63,7 @@ func Test_proptype_buf()
   call assert_equal(0, proptype['priority'])
   call assert_equal(0, proptype['start_incl'])
   call assert_equal(0, proptype['end_incl'])
+  call assert_equal(0, proptype['override'])
 
   call prop_type_add('two', {'bufnr': bufnr})
   call assert_equal(2, len(prop_type_list({'bufnr': bufnr})))
@@ -1161,6 +1165,55 @@ func Test_prop_undo()
   call prop_type_delete('comment')
 endfunc
 
+" A property added across the edge of the lines that undo/redo restores after
+" they were saved.
+func Test_prop_undo_redo_added_across_lines()
+  new
+  call prop_type_add('comment', {'highlight': 'Directory'})
+  call setline(1, ['one', 'two', 'three', 'four'])
+  set ul&
+  exe "normal 2Gdd"
+  undo
+
+  " Redo deletes the line where the property starts.
+  call prop_add(2, 1, {'end_lnum': 3, 'end_col': 6, 'type': 'comment'})
+  redo
+  call assert_equal(['one', 'three', 'four'], getline(1, '$'))
+  call assert_equal([#{lnum: 2, col: 1, length: 5, id: 0, type_bufnr: 0,
+        \ type: 'comment', start: 1, end: 1}],
+        \ prop_list(1, {'end_lnum': -1}))
+
+  " Undo brings back the line, and the property goes over two lines again.
+  undo
+  call assert_equal(['one', 'two', 'three', 'four'], getline(1, '$'))
+  call assert_equal([
+        \ #{lnum: 2, col: 1, length: 4, id: 0, type_bufnr: 0,
+        \   type: 'comment', start: 1, end: 0},
+        \ #{lnum: 3, col: 1, length: 5, id: 0, type_bufnr: 0,
+        \   type: 'comment', start: 0, end: 1}],
+        \ prop_list(1, {'end_lnum': -1}))
+  call prop_clear(1, 4)
+
+  " Redo deletes the line where the property ends.
+  call prop_add(1, 1, {'end_lnum': 2, 'end_col': 4, 'type': 'comment'})
+  redo
+  call assert_equal(['one', 'three', 'four'], getline(1, '$'))
+  call assert_equal([#{lnum: 1, col: 1, length: 4, id: 0, type_bufnr: 0,
+        \ type: 'comment', start: 1, end: 1}],
+        \ prop_list(1, {'end_lnum': -1}))
+  undo
+  call assert_equal(['one', 'two', 'three', 'four'], getline(1, '$'))
+  call assert_equal([
+        \ #{lnum: 1, col: 1, length: 4, id: 0, type_bufnr: 0,
+        \   type: 'comment', start: 1, end: 0},
+        \ #{lnum: 2, col: 1, length: 3, id: 0, type_bufnr: 0,
+        \   type: 'comment', start: 0, end: 1}],
+        \ prop_list(1, {'end_lnum': -1}))
+
+  bwipe!
+  call prop_type_delete('comment')
+endfunc
+
 func Test_prop_delete_text()
   new
   call prop_type_add('comment', {'highlight': 'Directory'})
@@ -2151,11 +2204,11 @@ def Test_prop_bufnr_zero()
     ], list)
 
     assert_equal(
-      {highlight: 'ErrorMsg', end_incl: 0, start_incl: 0, priority: 0, combine: 1},
+      {highlight: 'ErrorMsg', end_incl: 0, start_incl: 0, priority: 0, combine: 1, override: 0},
       prop_type_get('bufnr-global', {bufnr: list[0].type_bufnr}))
 
     assert_equal(
-      {highlight: 'StatusLine', end_incl: 0, start_incl: 0, priority: 0, bufnr: bufnr, combine: 1},
+      {highlight: 'StatusLine', end_incl: 0, start_incl: 0, priority: 0, bufnr: bufnr, combine: 1, override: 0},
       prop_type_get('bufnr-buffer', {bufnr: list[1].type_bufnr}))
   finally
     bwipe!
@@ -2900,12 +2953,21 @@ func Test_prop_inserts_text_before_linebreak()
     call prop_type_add('theprop', #{highlight: 'Special'})
     call prop_add(1, 51, #{type: 'theprop', text: repeat('b', 10)})
     normal! $
+    func AddMore()
+      call append(0, repeat('a', 50) .. ' ' .. repeat('c', 45))
+      call prop_add(1, 51, #{type: 'theprop', text: repeat('b', 160)})
+      normal! gg$
+    endfunc
   END
   call writefile(lines, 'XscriptPropsBeforeLinebreak', 'D')
-  let buf = RunVimInTerminal('-S XscriptPropsBeforeLinebreak', #{rows: 6, cols: 50})
+  let buf = RunVimInTerminal('-S XscriptPropsBeforeLinebreak', #{rows: 12, cols: 50})
   call VerifyScreenDump(buf, 'Test_prop_inserts_text_before_linebreak_1', {})
   call term_sendkeys(buf, '05x$')
   call VerifyScreenDump(buf, 'Test_prop_inserts_text_before_linebreak_2', {})
+  call term_sendkeys(buf, ":call AddMore()\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_before_linebreak_3', {})
+  call term_sendkeys(buf, '015x$')
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_before_linebreak_4', {})
 
   call StopVimInTerminal(buf)
 endfunc
@@ -3359,6 +3421,271 @@ func Test_prop_with_text_above_empty()
   call VerifyScreenDump(buf, 'Test_prop_above_empty_2', {})
 
   call StopVimInTerminal(buf)
+endfunc
+
+func Test_prop_with_text_above_virtualedit()
+  call NewWindow(10, 40)
+  setlocal virtualedit=all
+  call setline(1, ['Test', 'Test', 'Test', 'Test'])
+  call prop_type_add('test', #{highlight: 'Normal'})
+  call prop_add(2, 0, #{type: 'test', text: 'Example', text_align: 'above'})
+  redraw
+
+  call cursor(2, 1)
+  call assert_equal([0, 2, 1, 0, 1], getcurpos())
+  call assert_equal(41, virtcol('.'))
+  for col in range(2, 5)
+    normal! l
+    call assert_equal([0, 2, col, 0, col], getcurpos())
+    call assert_equal(40 + col, virtcol('.'))
+  endfor
+
+  normal! l
+  call assert_equal([0, 2, 5, 1, 6], getcurpos())
+  call assert_equal(46, virtcol('.'))
+  normal! h
+  call assert_equal([0, 2, 5, 0, 5], getcurpos())
+  call assert_equal(45, virtcol('.'))
+
+  normal! ^
+  call assert_equal([0, 2, 1, 0, 1], getcurpos())
+  call assert_equal(41, virtcol('.'))
+
+  call cursor(2, 3)
+  normal! j
+  call assert_equal([0, 3, 3, 0, 3], getcurpos())
+  normal! k
+  call assert_equal([0, 2, 3, 0, 3], getcurpos())
+
+  call setline(2, "\tabc")
+  call prop_add(2, 0, #{type: 'test', text: 'Example', text_align: 'above'})
+  call cursor(2, 1)
+  normal! 3l
+  call assert_equal([0, 2, 1, 3, 4], getcurpos())
+  call assert_equal(44, virtcol('.'))
+
+  call setline(2, '')
+  call prop_add(2, 0, #{type: 'test', text: 'Example', text_align: 'above'})
+  call cursor(2, 1)
+  call assert_equal([0, 2, 1, 0, 1], getcurpos())
+  call assert_equal(41, virtcol('.'))
+  normal! j
+  call assert_equal([0, 3, 1, 0, 1], getcurpos())
+  call cursor(2, 1)
+  normal! l
+  call assert_equal([0, 2, 1, 1, 2], getcurpos())
+  call assert_equal(42, virtcol('.'))
+
+  call prop_type_delete('test')
+  bwipe!
+endfunc
+
+func Test_prop_with_text_below_virtualedit()
+  call NewWindow(10, 40)
+  setlocal virtualedit=all
+  call setline(1, ['Test', 'Test', 'Test', 'Test'])
+  call prop_type_add('test', #{highlight: 'Normal'})
+  call prop_add(2, 0, #{type: 'test', text: 'Example', text_align: 'below'})
+  redraw
+
+  call cursor(2, 1)
+  normal! 4l
+  call assert_equal([0, 2, 5, 0, 5], getcurpos())
+  call assert_equal(5, virtcol('.'))
+  normal! 100l
+  call assert_equal([0, 2, 5, 35, 40], getcurpos())
+  call assert_equal(40, virtcol('.'))
+
+  normal! $
+  call assert_equal([2, 4, 0], getcurpos()[1 : 3])
+  call assert_equal(4, virtcol('.'))
+
+  call cursor(2, 3)
+  normal! j
+  call assert_equal([0, 3, 3, 0, 3], getcurpos())
+  normal! k
+  call assert_equal([0, 2, 3, 0, 3], getcurpos())
+
+  call setline(2, repeat('x', 45))
+  call prop_add(2, 0, #{type: 'test', text: 'Example', text_align: 'below'})
+  call cursor(2, 1)
+  normal! 200l
+  call assert_equal([0, 2, 46, 34, 80], getcurpos())
+  call assert_equal(80, virtcol('.'))
+
+  call setline(2, '')
+  call prop_add(2, 0, #{type: 'test', text: 'Example', text_align: 'below'})
+  call cursor(2, 1)
+  normal! 100l
+  call assert_equal([0, 2, 1, 39, 40], getcurpos())
+  call assert_equal(40, virtcol('.'))
+
+  call prop_type_delete('test')
+  bwipe!
+endfunc
+
+func Test_prop_with_text_virtualedit_curswant()
+  call NewWindow(10, 40)
+  setlocal virtualedit=all
+  call prop_type_add('test', #{highlight: 'Normal'})
+
+  for align in ['none', 'above', 'below', 'after', 'right']
+    call setline(1, ['test', 'test', 'test', 'test'])
+    if align != 'none'
+      call prop_add(2, 0, #{type: 'test', text: 'Example', text_align: align})
+    endif
+    redraw
+
+    call cursor(2, 1)
+    normal! $
+    call assert_equal([0, 2, 4, 0, 4], getcurpos(), align)
+    normal! j
+    call assert_equal([0, 3, 4, 0, 4], getcurpos(), align)
+    call assert_equal(4, virtcol('.'), align)
+    normal! k
+    call assert_equal([0, 2, 4, 0, 4], getcurpos(), align)
+  endfor
+
+  call setline(1, ['test', 'test', 'test', 'test'])
+  call prop_add(2, 3, #{type: 'test', text: 'Example'})
+  redraw
+  call cursor(2, 1)
+  normal! $
+  call assert_equal([0, 2, 4, 0, 11], getcurpos())
+  call assert_equal(11, virtcol('.'))
+  normal! j
+  call assert_equal([0, 3, 5, 6, 11], getcurpos())
+  call assert_equal(11, virtcol('.'))
+
+  call prop_type_delete('test')
+  bwipe!
+endfunc
+
+func Test_prop_with_text_above_screenpos()
+  call NewWindow(10, 40)
+  call setline(1, ['one', 'two', 'three'])
+  call prop_type_add('test', #{highlight: 'Normal'})
+  call prop_add(2, 0, #{type: 'test', text: 'ABOVE', text_align: 'above'})
+  redraw
+
+  let winid = win_getid()
+  call assert_equal(#{row: 1, col: 1, endcol: 1, curscol: 1},
+        \ screenpos(winid, 1, 1))
+  call assert_equal(#{row: 3, col: 1, endcol: 1, curscol: 1},
+        \ screenpos(winid, 2, 1))
+  call assert_equal(#{row: 3, col: 2, endcol: 2, curscol: 2},
+        \ screenpos(winid, 2, 2))
+  call assert_equal(#{row: 4, col: 1, endcol: 1, curscol: 1},
+        \ screenpos(winid, 3, 1))
+
+  call assert_equal([1, 1], virtcol([1, 1], 1))
+  call assert_equal([41, 41], virtcol([2, 1], 1))
+  call assert_equal([42, 42], virtcol([2, 2], 1))
+
+  call prop_type_delete('test')
+  bwipe!
+endfunc
+
+func Test_prop_with_text_above_screenline_motion()
+  call NewWindow(20, 40)
+  let text = repeat('abcdefghij', 16)
+  call setline(1, [text, text, text])
+  call prop_type_add('test', #{highlight: 'Normal'})
+  call prop_add(2, 0, #{type: 'test', text: 'Example', text_align: 'above'})
+  redraw
+
+  for col in range(1, 40)
+    call cursor(1, col)
+    for [lnum, wantcol] in [[1, col + 40], [1, col + 80], [1, col + 120],
+	  \ [2, col], [2, col + 40], [2, col + 80], [2, col + 120], [3, col]]
+      normal! gj
+      call assert_equal([lnum, wantcol], getcurpos()[1 : 2],
+	    \ 'gj starting in column ' .. col)
+    endfor
+
+    call cursor(3, col)
+    for [lnum, wantcol] in [[2, col + 120], [2, col + 80], [2, col + 40],
+	  \ [2, col], [1, col + 120], [1, col + 80], [1, col + 40], [1, col]]
+      normal! gk
+      call assert_equal([lnum, wantcol], getcurpos()[1 : 2],
+	    \ 'gk starting in column ' .. col)
+    endfor
+  endfor
+
+  call cursor(1, 1)
+  normal! $
+  for [lnum, wantcol] in [[2, 40], [2, 80], [2, 120], [2, 160], [3, 40]]
+    normal! gj
+    call assert_equal([lnum, wantcol], getcurpos()[1 : 2], 'gj after "$"')
+  endfor
+
+  call cursor(3, 1)
+  normal! $
+  for [lnum, wantcol] in [[3, 120], [3, 80], [3, 40], [2, 160], [2, 120],
+	\ [2, 80], [2, 40], [1, 160]]
+    normal! gk
+    call assert_equal([lnum, wantcol], getcurpos()[1 : 2], 'gk after "$"')
+  endfor
+
+  call prop_type_delete('test')
+  bwipe!
+endfunc
+
+func Test_prop_with_text_above_smoothscroll()
+  call NewWindow(6, 40)
+  setlocal smoothscroll scrolloff=0
+  let rowa = repeat('a', 40)
+  let rowb = repeat('b', 40)
+  let rowc = repeat('c', 20)
+  call setline(1, ['line 1', rowa .. rowb .. rowc]
+	\ + map(range(3, 12), '"line " .. v:val'))
+  call prop_type_add('test', #{highlight: 'Normal'})
+
+  let tests = [
+	\ ['Example', [
+	\   ['line 1', 'Example', rowa, rowb, rowc, 'line 3'],
+	\   ['Example', rowa, rowb, rowc, 'line 3', 'line 4'],
+	\   ['<<<' .. rowa[3 :], rowb, rowc, 'line 3', 'line 4', 'line 5'],
+	\   ['<<<' .. rowb[3 :], rowc, 'line 3', 'line 4', 'line 5', 'line 6'],
+	\   ['<<<' .. rowc[3 :], 'line 3', 'line 4', 'line 5', 'line 6',
+	\     'line 7'],
+	\   ['line 3', 'line 4', 'line 5', 'line 6', 'line 7', 'line 8'],
+	\ ]],
+	\ ['Second', [
+	\   ['line 1', 'Example', 'Second', rowa, rowb, rowc],
+	\   ['Example', 'Second', rowa, rowb, rowc, 'line 3'],
+	\   ['<<<ond', rowa, rowb, rowc, 'line 3', 'line 4'],
+	\   ['<<<' .. rowa[3 :], rowb, rowc, 'line 3', 'line 4', 'line 5'],
+	\   ['<<<' .. rowb[3 :], rowc, 'line 3', 'line 4', 'line 5', 'line 6'],
+	\   ['<<<' .. rowc[3 :], 'line 3', 'line 4', 'line 5', 'line 6',
+	\     'line 7'],
+	\   ['line 3', 'line 4', 'line 5', 'line 6', 'line 7', 'line 8'],
+	\ ]],
+	\ ]
+  for [vtext, screens] in tests
+    call prop_add(2, 0, #{type: 'test', text: vtext, text_align: 'above'})
+    normal! gg
+    redraw
+    call assert_equal(screens[0],
+	  \ ScreenLines([1, 6], 40)->map('trim(v:val, " ", 2)'))
+    for idx in range(1, len(screens) - 1)
+      exe "normal! \<C-E>"
+      redraw
+      call assert_equal(screens[idx],
+	    \ ScreenLines([1, 6], 40)->map('trim(v:val, " ", 2)'),
+	    \ vtext .. ': CTRL-E to screen ' .. idx)
+    endfor
+    for idx in range(len(screens) - 2, 0, -1)
+      exe "normal! \<C-Y>"
+      redraw
+      call assert_equal(screens[idx],
+	    \ ScreenLines([1, 6], 40)->map('trim(v:val, " ", 2)'),
+	    \ vtext .. ': CTRL-Y to screen ' .. idx)
+    endfor
+  endfor
+
+  call prop_type_delete('test')
+  bwipe!
 endfunc
 
 func Test_prop_with_text_below_after_match()

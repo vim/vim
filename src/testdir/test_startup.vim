@@ -985,6 +985,28 @@ func Test_v_argv()
   call assert_equal(['arg1', '--cmd', 'echo v:argv', '--cmd', 'q'']'], list[idx:])
 endfunc
 
+func Test_longopt_prefix_not_accepted()
+  CheckNotGui
+  CheckFeature clientserver
+
+  let command = printf('%s -es -X -i NONE -n', GetVimCommand())
+  for args in ['--serverlistx',
+        \ '--servername=XtestName',
+        \ '--serversend=foo',
+        \ '--clientserver=socket']
+    let out = system($'{command} {args}')
+    call assert_notequal(0, v:shell_error, args)
+    call assert_match('Unknown option', out, args)
+  endfor
+
+  " The documented forms still work.
+  for args in ['--servername XtestName --serverlist',
+        \ '--servername XtestName -c quit']
+    call system($'{command} {args}')
+    call assert_equal(0, v:shell_error, args)
+  endfor
+endfunc
+
 " Test for the "-r" recovery mode option
 func Test_r_arg()
   " Can't catch the output of gvim.

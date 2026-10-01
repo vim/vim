@@ -117,6 +117,17 @@ func Test_json_encode()
   call assert_equal("", res)
 endfunc
 
+func Test_json_encode_control_text()
+  let text = '日本語' .. s:var2 .. s:var3 .. s:var4 .. s:var5 .. 'text'
+  let escaped = '日本語' .. s:json2[1:-2] .. s:json3[1:-2]
+        \ .. s:json4[1:-2] .. s:json5[1:-2] .. 'text'
+  let text = repeat(text, 200)
+  let expected = '"' .. repeat(escaped, 200) .. '"'
+  call assert_equal(expected, json_encode(text))
+  call assert_equal(expected, js_encode(text))
+  call assert_equal(text, json_decode(expected))
+endfunc
+
 func Test_json_decode()
   call assert_equal(s:var1, json_decode(s:json1))
   call assert_equal(s:var2, json_decode(s:json2))

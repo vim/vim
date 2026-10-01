@@ -137,7 +137,7 @@ README_vms.txt		VMS
 
 ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ
 
-Для системе macOS вы можете использовать MacVim:  https://macvim.org
+Для системы macOS вы можете использовать MacVim:  https://macvim.org
 
 Последние новости о редакторе Vim можно найти на его домашней странице:
 	https://www.vim.org/

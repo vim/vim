@@ -683,6 +683,9 @@ X_PRE_LIBS
 X_CFLAGS
 XMKMF
 xmkmfpath
+PIXMAN_CPPFLAGS
+PIXMAN_CFLAGS
+PIXMAN_LIBS
 WAYLAND_OBJ
 WAYLAND_SRC
 WAYLAND_LIBS
@@ -864,6 +867,7 @@ enable_farsi
 enable_xim
 enable_fontset
 with_wayland
+enable_pixman
 with_x
 enable_gui
 enable_gtk2_check
@@ -1545,6 +1549,7 @@ Optional Features:
   --disable-farsi         Deprecated.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
+  --enable-pixman         Use the pixman library (default: auto).
   --enable-gui=OPTS       X11 GUI. default=auto OPTS=auto/no/gtk2/gnome2/gtk3/gtk4/motif/haiku/photon/carbon
   --enable-gtk2-check     If auto-select GUI, check for GTK+ 2 default=yes
   --enable-gnome-check    If GTK GUI, check for GNOME default=no
@@ -9291,6 +9296,43 @@ printf "%s\n" "no, version 1.44 or later is required" >&6; }
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-pixman argument" >&5
+printf %s "checking --enable-pixman argument... " >&6; }
+# Check whether --enable-pixman was given.
+if test ${enable_pixman+y}
+then :
+  enableval=$enable_pixman;
+else case e in #(
+  e) enable_pixman="auto" ;;
+esac
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enable_pixman" >&5
+printf "%s\n" "$enable_pixman" >&6; }
+
+if test "$enable_pixman" != "no"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pixman" >&5
+printf %s "checking for pixman... " >&6; }
+  if test -n "$PKG_CONFIG" && "$PKG_CONFIG" --exists 'pixman-1'; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+    PIXMAN_LIBS=`$PKG_CONFIG --libs pixman-1`
+    PIXMAN_CFLAGS=`$PKG_CONFIG --cflags-only-other pixman-1`
+    PIXMAN_CPPFLAGS=`$PKG_CONFIG --cflags-only-I pixman-1`
+    printf "%s\n" "#define HAVE_PIXMAN 1" >>confdefs.h
+
+
+
+
+  else
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    if test "$fail_if_missing" = "yes" -a "$enable_pixman" = "yes"; then
+      as_fn_error $? "could not configure pixman" "$LINENO" 5
+    fi
+  fi
 fi
 
 if test "x$enable_gui" = "xgtk4"; then

@@ -2696,6 +2696,34 @@ executable_file(char *name, char_u **path)
 }
 
 /*
+ * Check for a matching prefix; "name" includes the trailing wildcard.
+ * An inconclusive search (e.g. a directory which cannot be enumerated) must
+ * not skip the normal checks.
+ */
+    static bool
+executable_prefix_exists(char_u *name)
+{
+    WCHAR		*wn;
+    WIN32_FIND_DATAW	data;
+    HANDLE		handle;
+    DWORD		error;
+
+    wn = enc_to_utf16(name, NULL);
+    if (wn == NULL)
+	return true;
+    handle = FindFirstFileExW(wn, FindExInfoBasic, &data,
+					    FindExSearchNameMatch, NULL, 0);
+    error = GetLastError();
+    vim_free(wn);
+    if (handle != INVALID_HANDLE_VALUE)
+    {
+	FindClose(handle);
+	return true;
+    }
+    return error != ERROR_FILE_NOT_FOUND && error != ERROR_PATH_NOT_FOUND;
+}
+
+/*
  * If "use_path" is TRUE: Return TRUE if "name" is in $PATH.
  * If "use_path" is FALSE: Return TRUE if "name" exists.
  * If "use_pathext" is TRUE search "name" with extensions in $PATHEXT.
@@ -2721,6 +2749,8 @@ executable_exists(
     int		pathext_allocated = FALSE;
     char_u	*shname = NULL;
     int		noext = FALSE;
+    bool	simple_pathext = true;
+    int		ext_count = 0;
     int		retval = FALSE;
 
     if (namelen >= sizeof(buf))	// safety check
@@ -2744,6 +2774,7 @@ executable_exists(
 	if (noext == FALSE)
 	{
 	    char_u  *e;
+	    char_u  *q;
 	    size_t  plen;
 
 	    /*
@@ -2757,6 +2788,8 @@ executable_exists(
 			    || (p[0] == '.' && (p[1] == NUL || p[1] == ';')))
 		{
 		    // Skip empty or single ".".
+		    if (*p == '.')
+			simple_pathext = false;
 		    ++p;
 		    continue;
 		}
@@ -2764,6 +2797,12 @@ executable_exists(
 		if (e == NULL)
 		    e = pathext.string + pathext.length;
 		plen = (size_t)(e - p);
+		++ext_count;
+		if (*p != '.')
+		    simple_pathext = false;
+		for (q = p + 1; q < e; ++q)
+		    if (!ASCII_ISALNUM(*q))
+			simple_pathext = false;
 
 		if (_strnicoll(name + namelen - plen, (char *)p, plen) == 0)
 		{
@@ -2864,6 +2903,30 @@ executable_exists(
 		"%.*s%s%s", (int)(e - p), p,
 		!after_pathsep(p, e) ? PATHSEPSTR : "",
 		name);
+	}
+
+	// Most directories in $PATH do not contain this command.  One prefix
+	// search can avoid a separate file query for every extension.  With
+	// few extensions, or an explicit executable suffix, it is cheaper to
+	// use the normal checks.  Leave unusual paths and suffixes to those
+	// checks as well, to preserve their path normalization and semantics.
+	if (!noext && simple_pathext && ext_count >= 3 && buflen > 0
+		&& buflen + 2 <= sizeof(buf)
+		&& buf[buflen - 1] != '.' && buf[buflen - 1] != ' '
+		&& vim_strpbrk(buf, (char_u *)"*?") == NULL
+		&& vim_strchr(gettail(buf), ':') == NULL)
+	{
+	    bool exists;
+
+	    buf[buflen] = '*';
+	    buf[buflen + 1] = NUL;
+	    exists = executable_prefix_exists(buf);
+	    buf[buflen] = NUL;
+	    if (!exists)
+	    {
+		p = e;
+		continue;
+	    }
 	}
 
 	/*
@@ -3914,6 +3977,31 @@ mch_isdir(char_u *name)
 }
 
 /*
+ * Return TRUE if "name" is a directory or does not exist.
+ * Return FALSE otherwise, also when the attributes cannot be obtained for
+ * another reason.
+ */
+    int
+mch_isdir_or_missing(char_u *name)
+{
+    WCHAR	*p;
+    DWORD	attr;
+    DWORD	error = 0;
+
+    p = enc_to_utf16(name, NULL);
+    if (p == NULL)
+	return FALSE;
+    attr = GetFileAttributesW(p);
+    if (attr == INVALID_FILE_ATTRIBUTES)
+	error = GetLastError();
+    vim_free(p);
+
+    if (attr == INVALID_FILE_ATTRIBUTES)
+	return error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND;
+    return (attr & FILE_ATTRIBUTE_DIRECTORY) != 0;
+}
+
+/*
  * return TRUE if "name" is a directory, NOT a symlink to a directory
  * return FALSE if "name" is not a directory
  * return FALSE for error
@@ -4689,140 +4777,20 @@ mch_set_winsize_now(void)
     suppress_winsize = 0;
 }
 
-/*
- * Synchronously ask the terminal for its window pixel dimensions via the
- * xterm CSI 14 t query and parse the CSI 4 ; H ; W t response.  Returns OK
- * and fills *win_w and *win_h on success.  Returns FAIL on any error
- * (no console handles, no response within ~200ms, malformed reply).
- *
- * Used as a fallback for ConPTY-hosted terminals (Windows Terminal, VS Code,
- * ...) where GetCurrentConsoleFontEx() returns dwFontSize = (0, *) because
- * the pty stub does not own a font.  Real terminals (mintty, Windows
- * Terminal recent builds, WezTerm, ...) reply to CSI 14 t with their
- * rendered window pixel size.
- */
-    static int
-query_terminal_pixel_size_w32(int *win_w, int *win_h)
-{
-    HANDLE	hOut = g_hConOut;
-    HANDLE	hIn = g_hConIn;
-    DWORD	mode_in_old = 0;
-    int		restored = 0;
-    DWORD	nWritten = 0;
-    char	buf[64];
-    int		n = 0;
-    DWORD	deadline;
-    char	*p, *semi, *end;
-    int		hpx, wpx;
-
-    if (hOut == INVALID_HANDLE_VALUE || hIn == INVALID_HANDLE_VALUE)
-	return FAIL;
-
-    if (GetConsoleMode(hIn, &mode_in_old))
-    {
-	DWORD mode_new = mode_in_old;
-
-	// Read raw bytes; deliver xterm response as VT input.
-	mode_new &= ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT
-						    | ENABLE_PROCESSED_INPUT);
-	mode_new |= ENABLE_VIRTUAL_TERMINAL_INPUT;
-	if (SetConsoleMode(hIn, mode_new))
-	    restored = 1;
-    }
-
-    if (!WriteFile(hOut, "\033[14t", 5, &nWritten, NULL) || nWritten != 5)
-    {
-	if (restored)
-	    SetConsoleMode(hIn, mode_in_old);
-	return FAIL;
-    }
-
-    deadline = GetTickCount() + 200;
-    while (n < (int)sizeof(buf) - 1)
-    {
-	DWORD		now = GetTickCount();
-	DWORD		remaining;
-	INPUT_RECORD	ir;
-	DWORD		count = 0;
-
-	if ((int)(deadline - now) <= 0)
-	    break;
-	remaining = deadline - now;
-
-	if (WaitForSingleObject(hIn, remaining) != WAIT_OBJECT_0)
-	    break;
-	if (!ReadConsoleInputW(hIn, &ir, 1, &count) || count != 1)
-	    break;
-	if (ir.EventType != KEY_EVENT
-		|| !ir.Event.KeyEvent.bKeyDown
-		|| ir.Event.KeyEvent.uChar.AsciiChar == 0)
-	    continue;
-	buf[n++] = ir.Event.KeyEvent.uChar.AsciiChar;
-	if (buf[n - 1] == 't')
-	    break;
-    }
-    buf[n] = 0;
-
-    if (restored)
-	SetConsoleMode(hIn, mode_in_old);
-
-    // expected: ESC [ 4 ; H ; W t
-    p = (char *)vim_strchr((char_u *)buf, '\033');
-    if (p == NULL || p[1] != '[' || p[2] != '4' || p[3] != ';')
-	return FAIL;
-    p += 4;
-    semi = (char *)vim_strchr((char_u *)p, ';');
-    if (semi == NULL)
-	return FAIL;
-    end = (char *)vim_strchr((char_u *)semi, 't');
-    if (end == NULL)
-	return FAIL;
-    {
-	varnumber_T	v;
-
-	// 0 = recognise decimal only.
-	vim_str2nr((char_u *)p, NULL, NULL, 0, &v, NULL, 0, FALSE, NULL);
-	hpx = (int)v;
-	vim_str2nr((char_u *)(semi + 1), NULL, NULL, 0, &v, NULL, 0,
-								  FALSE, NULL);
-	wpx = (int)v;
-    }
-    if (hpx <= 0 || wpx <= 0)
-	return FAIL;
-
-    *win_w = wpx;
-    *win_h = hpx;
-    return OK;
-}
-
+# if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
 /*
  * Try to get the current terminal cell size in pixels.
- *
- * Strategy:
- *   1. GetCurrentConsoleFontEx() — works on the legacy conhost, where the
- *      console owns the font and returns real cell metrics.
- *   2. CSI 14 t / window-size-in-cells fallback — for ConPTY hosts
- *      (Windows Terminal, VS Code, ...) where GetCurrentConsoleFontEx()
- *      returns a zero or default-stub font size.  The result is cached
- *      so the synchronous probe is paid at most once per session.
- *
- * On failure, sets cs_xpixel and cs_ypixel to -1.
  */
     void
 mch_calc_cell_size(struct cellsize *cs_out)
 {
     CONSOLE_FONT_INFOEX cfi;
-    static int		csi14_state = -1;	// -1 unknown, 0 fail, 1 ok
-    static int		csi14_cell_x = 0;
-    static int		csi14_cell_y = 0;
+    DWORD cmodeold;
+    DWORD cmodein;
 
     cs_out->cs_xpixel = -1;
     cs_out->cs_ypixel = -1;
 
-# ifdef VIMDLL
-    if (gui.in_use)
-	return;
-# endif
     if (g_hConOut == INVALID_HANDLE_VALUE)
 	return;
 
@@ -4835,166 +4803,21 @@ mch_calc_cell_size(struct cellsize *cs_out)
 	return;
     }
 
-    // ConPTY fallback: ask the host terminal via CSI 14 t and divide by
-    // the current window cell count to get cell pixel size.  Cache the
-    // result -- cell pixel size is invariant under window resize so long
-    // as the font size stays the same; caching the raw window pixel size
-    // would go stale after a resize.
-    if (csi14_state == 1)
+    GetConsoleMode(g_hConIn, &cmodein);
+    cmodeold = cmodein;
+    cmodein &= ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT
+	    | ENABLE_PROCESSED_INPUT);
+    cmodein |= ENABLE_VIRTUAL_TERMINAL_INPUT;
+
+    if (SetConsoleMode(g_hConIn, cmodein))
     {
-	cs_out->cs_xpixel = csi14_cell_x;
-	cs_out->cs_ypixel = csi14_cell_y;
-	return;
+	// We will receive the window dimensions later
+	vtp_printf("\033[14t");
+	SetConsoleMode(g_hConIn, cmodeold);
     }
-    if (csi14_state == 0)
-	return;
-
-    csi14_state = 0;
-    {
-	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	int wpx, hpx, cols, rows;
-
-	if (!GetConsoleScreenBufferInfo(g_hConOut, &csbi))
-	    return;
-	cols = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-	rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-	if (cols <= 0 || rows <= 0)
-	    return;
-
-	if (query_terminal_pixel_size_w32(&wpx, &hpx) != OK)
-	    return;
-	if (wpx / cols <= 0 || hpx / rows <= 0)
-	    return;
-
-	csi14_cell_x = wpx / cols;
-	csi14_cell_y = hpx / rows;
-	csi14_state = 1;
-	cs_out->cs_xpixel = csi14_cell_x;
-	cs_out->cs_ypixel = csi14_cell_y;
-    }
-}
-
-# if defined(FEAT_IMAGE_KITTY) || defined(PROTO)
-/*
- * Synchronously probe the host terminal for kitty graphics protocol
- * support.  Windows console counterpart of popup_kitty_probe() in
- * popupwin.c: sends the same
- *	\e_Gi=31,s=1,v=1,a=q,t=d,f=24;AAAA\e\\\e[c
- * query (kitty answer + DA1 sentinel) and feeds the reply to the shared
- * kitty_probe_parse().  The reply is read from the console input handle
- * with ENABLE_VIRTUAL_TERMINAL_INPUT set, the same technique as
- * query_terminal_pixel_size_w32() above.
- *
- * Returns TRUE on a positive `_Gi=31;OK` response.  Missing handles,
- * a non-VT console and timeouts (~500ms) all yield FALSE.
- */
-    int
-mch_kitty_probe(void)
-{
-    HANDLE	hOut = g_hConOut;
-    HANDLE	hIn = g_hConIn;
-    DWORD	mode_in_old = 0;
-    int		restored = 0;
-    DWORD	nWritten = 0;
-    char	buf[256];
-    int		n = 0;
-    DWORD	deadline;
-    DWORD	da1_deadline;
-    static const char	query[] =
-		    "\033_Gi=31,s=1,v=1,a=q,t=d,f=24;AAAA\033\\\033[c";
-
-#  ifdef VIMDLL
-    if (gui.in_use)
-	return FALSE;
-#  endif
-    if (hOut == INVALID_HANDLE_VALUE || hIn == INVALID_HANDLE_VALUE)
-	return FALSE;
-    // Without VT output processing the query would be echoed onto the
-    // legacy console as raw text, and the kitty APC image sequences could
-    // not reach a terminal anyway.
-    if (!vtp_working)
-	return FALSE;
-
-    if (GetConsoleMode(hIn, &mode_in_old))
-    {
-	DWORD mode_new = mode_in_old;
-
-	// Read raw bytes; deliver the terminal responses as VT input.
-	mode_new &= ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT
-						| ENABLE_PROCESSED_INPUT);
-	mode_new |= ENABLE_VIRTUAL_TERMINAL_INPUT;
-	if (SetConsoleMode(hIn, mode_new))
-	    restored = 1;
-    }
-
-    if (!WriteFile(hOut, query, sizeof(query) - 1, &nWritten, NULL)
-	    || nWritten != sizeof(query) - 1)
-    {
-	if (restored)
-	    SetConsoleMode(hIn, mode_in_old);
-	return FALSE;
-    }
-
-    // Read until the kitty reply lands or we time out.  Unlike the UNIX
-    // probe, the DA1 reply cannot serve as a hard "no kitty support"
-    // sentinel here: under ConPTY the DA1 answer is generated by conhost
-    // itself, while the kitty APC query has to round-trip through the
-    // attached terminal (possibly over ssh), so the DA1 answer usually
-    // arrives first.  Treat DA1 as "wrap up soon" instead and keep
-    // reading for a short grace period after it.
-    deadline = GetTickCount() + 500;
-    da1_deadline = 0;		    // 0: DA1 reply not seen yet
-    while (n < (int)sizeof(buf) - 1)
-    {
-	DWORD		now = GetTickCount();
-	DWORD		until = deadline;
-	INPUT_RECORD	ir;
-	DWORD		count = 0;
-
-	if (da1_deadline != 0 && (int)(da1_deadline - until) < 0)
-	    until = da1_deadline;
-	if ((int)(until - now) <= 0)
-	    break;
-	if (WaitForSingleObject(hIn, until - now) != WAIT_OBJECT_0)
-	    break;
-	if (!ReadConsoleInputW(hIn, &ir, 1, &count) || count != 1)
-	    break;
-	if (ir.EventType != KEY_EVENT
-		|| !ir.Event.KeyEvent.bKeyDown
-		|| ir.Event.KeyEvent.uChar.AsciiChar == 0)
-	    continue;
-	buf[n++] = ir.Event.KeyEvent.uChar.AsciiChar;
-	buf[n] = NUL;
-	// Stop as soon as the kitty APC reply is complete (terminated by
-	// ESC \) -- positive or negative, nothing later changes the verdict.
-	if (n >= 2 && buf[n - 1] == '\\' && buf[n - 2] == '\033'
-		&& strstr(buf, "_Gi=31;") != NULL)
-	    break;
-	// DA1 reply ends with a primary 'c' that is preceded by '?';
-	// once seen, allow a little more time for a passthrough kitty
-	// reply, then give up.
-	if (da1_deadline == 0
-		&& buf[n - 1] == 'c' && n >= 3 && buf[n - 2] != '\033')
-	{
-	    int i;
-
-	    for (i = n - 2; i > 0; --i)
-		if (buf[i] == '?' && buf[i - 1] == '[')
-		    break;
-	    if (i > 0)
-		da1_deadline = GetTickCount() + 250;
-	}
-    }
-    buf[n] = NUL;
-
-    if (restored)
-	SetConsoleMode(hIn, mode_in_old);
-
-    // Filter the probe responses out of the read-back bytes (pushing user
-    // keystrokes back into the input buffer) and check for a positive reply.
-    return kitty_probe_parse(buf, n);
 }
 # endif
+
 #endif
 
     static BOOL
@@ -8848,7 +8671,9 @@ static int	*used_file_indexes = NULL; // indexes in global_argv[] for
 static int	used_file_count = 0;	// nr of entries in used_file_indexes
 static int	used_file_literal = FALSE;  // take file names literally
 static int	used_file_full_path = FALSE;  // file name was full path
+#ifdef FEAT_DIFF
 static int	used_file_diff_mode = FALSE;  // file name was with diff mode
+#endif
 static int	used_alist_count = 0;
 
 
@@ -8938,7 +8763,9 @@ used_file_arg(char *name, int literal, int full_path, int diff_mode)
 	}
     used_file_literal = literal;
     used_file_full_path = full_path;
+#ifdef FEAT_DIFF
     used_file_diff_mode = diff_mode;
+#endif
 }
 
 /*

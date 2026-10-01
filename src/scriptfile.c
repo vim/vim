@@ -667,7 +667,7 @@ do_in_path(
 		    && !after_pathsep(buf.string, buf.string + buf.length))
 		{
 		    STRCPY(buf.string + buf.length, PATHSEPSTR);
-		    buf.length += STRLEN_LITERAL(PATHSEPSTR);
+		    buf.length += sizeof(PATHSEP);
 		}
 		STRCPY(buf.string + buf.length, prefix);
 		buf.length += prefixlen;
@@ -1704,7 +1704,11 @@ do_source_ext(
 #endif
 
     // Apply SourceCmd autocommands, they should get the file and source it.
-    if (has_autocmd(EVENT_SOURCECMD, fname_exp, NULL)
+    // When sourcing a file "fname_exp" was made a full path name by
+    // fix_fname() above, avoid expanding it again.
+    if ((fname == NULL
+		? has_autocmd(EVENT_SOURCECMD, fname_exp, NULL)
+		: has_autocmd_fullname(EVENT_SOURCECMD, fname_exp, NULL))
 	    && apply_autocmds(EVENT_SOURCECMD, fname_exp, fname_exp,
 							       FALSE, curbuf))
     {
@@ -2450,8 +2454,10 @@ get_one_sourceline(source_cookie_T *sp)
 	have_read = TRUE;
 	ga.ga_len = len;
 
-	// If the line was longer than the buffer, read more.
-	if (ga.ga_maxlen - ga.ga_len == 1 && buf[len - 1] != '\n')
+	// If the line was longer than the buffer, read more.  A line of a
+	// buffer was taken as a whole.
+	if (!sp->source_from_buf && ga.ga_maxlen - ga.ga_len == 1
+						       && buf[len - 1] != '\n')
 	    continue;
 
 	if (len >= 1 && buf[len - 1] == '\n')	// remove trailing NL

@@ -3,7 +3,7 @@ vim9script
 # Vim completion script
 # Language:    Vim script
 # Maintainer:  Maxim Kim <habamax@gmail.com>
-# Last Change: 2025-10-15
+# Last Change: 2026 Sep 22
 #
 # Usage:
 # setlocal omnifunc=vimcomplete#Complete
@@ -25,12 +25,12 @@ def GetTrigger(line: string): list<any>
     elseif line =~ '\vse%[t]\s+(\k+\s+)*no\k*$'
         result = 'nooption'
         result_len = -2
-    elseif line =~ '[\[(]\s*$'
+    elseif line =~ '[\[(]\s*$' && !complete_info(["auto"]).auto
         result = 'expression'
     elseif line =~ '[lvgsb]:\k*$'
         result = 'var'
         result_len = 2
-    elseif line !~ '^\s*$'
+    elseif line !~ '^\s*$' && !complete_info(["auto"]).auto
         result = getcompletiontype(line) ?? 'cmdline'
     endif
     return [result, result_len]
@@ -53,6 +53,14 @@ export def Complete(findstart: number, base: string): any
         prefix = line
         return line->len() - keyword->len() - trigger_len
     endif
+
+    # getcompletion() uses wildoptions to filter out items
+    # which is not what users might expect
+    var save_wildoptions = &wildoptions
+    &wildoptions = ""
+    defer () => {
+        &wildoptions = save_wildoptions
+    }()
 
     var items = []
     if trigger == 'function'

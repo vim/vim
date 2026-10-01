@@ -1,4 +1,4 @@
-/* if_mzsch.c */
+// if_mzsch.c
 int mzscheme_enabled(int verbose);
 void mzvim_check_threads(void);
 char *did_set_mzquantum(optset_T *args);
@@ -14,4 +14,4 @@ void raise_if_error(void);
 buf_T *get_valid_buffer(void *obj);
 win_T *get_valid_window(void *obj);
 int mzthreads_allowed(void);
-/* vim: set ft=c : */
+// vim: ft=c

@@ -1,4 +1,4 @@
-/* gui_gtk.c */
+// gui_gtk.c
 void gui_gtk_register_stock_icons(void);
 void gui_mch_add_menu(vimmenu_T *menu, int idx);
 void gui_mch_add_menu_item(vimmenu_T *menu, int idx);
@@ -22,4 +22,4 @@ void gui_mch_find_dialog(exarg_T *eap);
 void gui_mch_replace_dialog(exarg_T *eap);
 void ex_helpfind(exarg_T *eap);
 void gui_mch_set_fullscreen(int flag);
-/* vim: set ft=c : */
+// vim: ft=c

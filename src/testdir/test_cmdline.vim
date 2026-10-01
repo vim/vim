@@ -821,6 +821,13 @@ func Test_getcompletion()
   let l = getcompletion('det', 'filetypecmd')
   call assert_equal(['detect'], l)
 
+  command -nargs=1 -complete=filetypecmd DoFiletype :
+  let l = getcompletion('filetype plugin indent ', 'cmdline')
+  call assert_equal(['off', 'on'], l)
+  let l = getcompletion('DoFiletype ', 'cmdline')
+  call assert_equal(['detect', 'indent', 'off', 'on', 'plugin'], l)
+  delcommand DoFiletype
+
   let l = getcompletion('tag', 'function')
   call assert_true(index(l, 'taglist(') >= 0)
   let l = getcompletion('paint', 'function')
@@ -1538,6 +1545,12 @@ func Test_cmdline_complete_various()
   call feedkeys(":1,2\"\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"1,2\"\<C-A>", @:)
 
+  " completion for command after a pattern address (containing delimiter)
+  call feedkeys(":/foo[/]bar\\/baz/num\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"/foo[/]bar\\/baz/number", @:)
+  call feedkeys(":?foo[?]bar\\?baz?num\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"?foo[?]bar\\?baz?number", @:)
+
   " completion for :k command
   call feedkeys(":ka\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"ka\<C-A>", @:)
@@ -1662,6 +1675,14 @@ func Test_cmdline_complete_various()
   " autocmd pattern completion
   call feedkeys(":au BufEnter *.py\<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"au BufEnter *.py\t", @:)
+
+  " command completion after "++once" and "++nested" in :autocmd
+  call feedkeys(":au BufEnter * ++once setl filety\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"au BufEnter * ++once setl filetype", @:)
+  call feedkeys(":au BufEnter * ++nested ++once setl filety\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"au BufEnter * ++nested ++once setl filetype", @:)
+  call feedkeys(":au BufEnter * nested setl filety\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"au BufEnter * nested setl filetype", @:)
 
   " completion for the :unlet command
   call feedkeys(":unlet one two\<C-A>\<C-B>\"\<CR>", 'xt')
@@ -2348,6 +2369,27 @@ func Wildmode_tests()
   call assert_equal('oneA  oneB  oneC', g:Sline)
   call assert_equal('"MyCmd one', @:)
 
+  " Colon-separated modes apply during the same completion phase.
+  call writefile([], 'XwildmodeA', 'D')
+  call writefile([], 'XwildmodeB', 'D')
+  call writefile([], 'XwildmodeC', 'D')
+  set wildmode=list:full
+  let g:Sline = ''
+  call feedkeys(":e Xwildmode\t\<F4>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('XwildmodeA  XwildmodeB  XwildmodeC', g:Sline)
+  call assert_equal('"e XwildmodeA', @:)
+  call feedkeys(":e Xwildmode\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e XwildmodeB', @:)
+
+  " Comma-separated modes apply on consecutive Tab presses.
+  set wildmode=list,full
+  let g:Sline = ''
+  call feedkeys(":MyCmd o\t\<F4>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('oneA  oneB  oneC', g:Sline)
+  call assert_equal('"MyCmd o', @:)
+  call feedkeys(":MyCmd o\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneA', @:)
+
   set wildmode=""
   call feedkeys(":MyCmd \t\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"MyCmd oneA', @:)
@@ -2381,6 +2423,13 @@ func Wildmode_tests()
   call assert_equal('"MyCmd o', @:)
   call feedkeys(":MyCmd o\t\t\<C-Y>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"MyCmd o', @:)
+
+  " 'noselect' takes precedence over 'full' on the first Tab.
+  set wildmode=noselect:full
+  call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd o', @:)
+  call feedkeys(":MyCmd o\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneA', @:)
 
   " When 'full' is present, complete after first <tab>.
   set wildmode=noselect,full
@@ -2639,6 +2688,18 @@ func Test_zero_line_search()
   0;/pattern/d
   call assert_equal(["2, ", "3, pattern"], getline(1,'$'))
   q!
+endfunc
+
+func Test_pattern_address_with_command()
+  new
+  call setline(1, ["one", "two - foo/bar/baz", "three - foo?bar?baz", "four"])
+  call cursor(1, 1)
+  :/foo[/]bar\/baz/print
+  call assert_equal("two - foo/bar/baz", getline('.'))
+  call cursor("$", 1)
+  :?foo[?]bar\?baz?print
+  call assert_equal("three - foo?bar?baz", getline('.'))
+  bwipe!
 endfunc
 
 func Test_read_shellcmd()
@@ -3316,6 +3377,45 @@ func Test_wildmenu_pum_info_async_update()
 
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
+endfunc
+
+" Test that "list" and "full" in the same 'wildmode' phase list the matches
+" and show the wildmenu as well
+func Test_wildmenu_with_list_full()
+  call writefile([], 'XwildA', 'D')
+  call writefile([], 'XwildB', 'D')
+  func! SaveScreenLineAbove()
+    let g:Sabove = Screenline(&lines - 2)
+    return ''
+  endfunc
+  cnoremap <expr> <F2> wildmenumode()
+  cnoremap <expr> <F3> SaveScreenLineAbove()
+  set wildmenu wildmode=list:full
+
+  " The matches are listed above the menu.
+  let [g:Sabove, g:Sline] = ['', '']
+  call feedkeys(":e Xwild\<Tab>\<F3>\<F4>\<F2>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e XwildA1', @:)
+  call assert_equal('XwildA  XwildB', g:Sabove)
+  call assert_equal('XwildA  XwildB', g:Sline)
+
+  " The popup menu is shown over the listed matches.
+  set wildoptions=pum
+  call feedkeys(":e Xwild\<Tab>\<F2>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e XwildA1', @:)
+
+  " Without 'wildmenu' the matches are listed as before.
+  set nowildmenu wildoptions=
+  let g:Sline = ''
+  call feedkeys(":e Xwild\<Tab>\<F4>\<F2>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('XwildA  XwildB', g:Sline)
+  call assert_equal('"e XwildA0', @:)
+
+  cunmap <F2>
+  cunmap <F3>
+  delfunc SaveScreenLineAbove
+  unlet g:Sabove
+  set nowildmenu wildoptions& wildmode&
 endfunc
 
 " Test for wildmenumode() with the cmdline popup menu
@@ -4262,6 +4362,13 @@ func Test_cmdline_complete_breakadd()
   call assert_equal(['expr', 'file', 'func', 'here'], getcompletion('', 'breakpoint'))
   let l = getcompletion('not', 'breakpoint')
   call assert_equal([], l)
+
+  command -nargs=1 -complete=breakpoint DoBreak :
+  call getcompletion('breakdel ', 'cmdline')
+  call assert_equal(['expr', 'file', 'func', 'here'], getcompletion('DoBreak ', 'cmdline'))
+  call getcompletion('breakdel ', 'cmdline')
+  call assert_equal(['expr', 'file', 'func', 'here'], getcompletion('', 'breakpoint'))
+  delcommand DoBreak
 
   " Test for :breakadd file [lnum] <file>
   call writefile([], 'Xscript', 'D')

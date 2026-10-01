@@ -1,4 +1,4 @@
-/* os_amiga.c */
+// os_amiga.c
 void win_resize_on(void);
 void win_resize_off(void);
 void mch_write(char_u *p, int len);
@@ -43,4 +43,4 @@ int mch_has_wildcard(char_u *p);
 char_u *mch_getenv(char_u *var);
 int mch_setenv(char *var, char *value, int x);
 int mch_get_random(char_u *buf, int len);
-/* vim: set ft=c : */
+// vim: ft=c

@@ -108,8 +108,11 @@ ja.sjis.po: ja.po
 sjiscorr: sjiscorr.c
 	$(CC) -o sjiscorr sjiscorr.c
 
+# Use EUC-JP-MS instead of EUC-JP: the iconv of macOS turns a backslash that
+# follows a multibyte character into a fullwidth one for EUC-JP, which breaks
+# the escaping in the po file. The result is the same for both names.
 ja.euc-jp.po: ja.po
-	iconv -f UTF-8 -t EUC-JP $? | \
+	iconv -f UTF-8 -t EUC-JP-MS $? | \
 		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=EUC-JP/' \
 			-e 's/# Original translations/# Generated from $?, DO NOT EDIT/' \
 			> $@

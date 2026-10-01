@@ -1317,7 +1317,7 @@ implicit_selector_expression :: proc() {
     case .A:
         fmt.println("HITHER")
     case .B:
-        fmt.println("NEVER")
+        if true do fmt.println("NEVER")
     case .C:
         fmt.println("FOREVER")
     }

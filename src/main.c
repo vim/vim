@@ -893,6 +893,9 @@ vim_main2(void)
 
     may_req_bg_color();
 # endif
+# if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
+    update_cell_size();
+# endif
 
     // start in insert mode
     if (p_im)
@@ -965,11 +968,25 @@ vim_main2(void)
     }
 # endif
 
+# ifdef FEAT_IMAGE
+    init_image_state();
+# endif
+
     // Redraw at least once, also when 'lazyredraw' is set, to make sure the
     // window title gets updated.
     do_redraw = TRUE;
 
     TIME_MSG("before starting main loop");
+
+# ifdef FEAT_JOB_CHANNEL
+    if (use_stdio_channel)
+    {
+	// Serve the stdio channel instead of reading Ex commands, exit when
+	// it is closed.
+	channel_stdio_loop();
+	getout(0);
+    }
+# endif
 
     /*
      * Call the main command loop.  This never returns.
@@ -1297,6 +1314,97 @@ work_pending(void)
     return op_pending() || !is_safe_now();
 }
 
+#ifdef FEAT_CONCEAL
+static linenr_T	conceal_old_cursor_line = 0;
+static linenr_T	conceal_new_cursor_line = 0;
+static int	conceal_update_lines = FALSE;
+#endif
+
+/*
+ * Trigger the events that are not triggered where they happen, but by
+ * comparing the current state against the state stored when they were last
+ * triggered. Also updates what depends on the cursor having moved, which is
+ * not affected by 'eventignore'.
+ * Called from the main loop and when 'eventignore(win)' changes, so that what
+ * happened with an event ignored is not reported once it is not ignored
+ * anymore.
+ */
+    void
+may_trigger_deferred_events(void)
+{
+    static bool	recursive = false;
+
+    if (recursive)
+	return;
+    recursive = true;
+
+#ifdef FEAT_CONCEAL
+    if (curwin->w_p_cole == 0)
+	conceal_update_lines = FALSE;
+#endif
+
+    // Trigger CursorMoved if the cursor moved.
+    if (!finish_op && (has_cursormoved()
+#ifdef FEAT_PROP_POPUP
+		|| popup_visible
+#endif
+#ifdef FEAT_CONCEAL
+		|| curwin->w_p_cole > 0
+#endif
+		) && !EQUAL_POS(last_cursormoved, curwin->w_cursor))
+    {
+	if (has_cursormoved())
+	    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL, FALSE, curbuf);
+#ifdef FEAT_PROP_POPUP
+	if (popup_visible)
+	    popup_check_cursor_pos();
+#endif
+#ifdef FEAT_CONCEAL
+	if (curwin->w_p_cole > 0)
+	{
+	    conceal_old_cursor_line = last_cursormoved.lnum;
+	    conceal_new_cursor_line = curwin->w_cursor.lnum;
+	    conceal_update_lines = TRUE;
+	}
+#endif
+	last_cursormoved = curwin->w_cursor;
+    }
+
+#ifdef FEAT_CONCEAL
+    if (conceal_update_lines
+	    && (conceal_old_cursor_line != conceal_new_cursor_line
+		|| conceal_cursor_line(curwin)
+		|| need_cursor_line_redraw))
+    {
+	if (conceal_old_cursor_line != conceal_new_cursor_line
+		&& conceal_old_cursor_line != 0
+		&& conceal_old_cursor_line <= curbuf->b_ml.ml_line_count)
+	    redrawWinline(curwin, conceal_old_cursor_line);
+	redrawWinline(curwin, conceal_new_cursor_line);
+	curwin->w_valid &= ~VALID_CROW;
+	need_cursor_line_redraw = FALSE;
+    }
+#endif
+
+    // Trigger TextChanged if b:changedtick differs.
+    if (!finish_op && has_textchanged()
+	    && curbuf->b_last_changedtick != CHANGEDTICK(curbuf))
+    {
+	apply_autocmds(EVENT_TEXTCHANGED, NULL, NULL, FALSE, curbuf);
+	curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
+    }
+
+    // Ensure curwin->w_topline and curwin->w_leftcol are up to date before
+    // triggering a WinScrolled autocommand.
+    update_topline();
+    validate_cursor();
+
+    if (!finish_op)
+	may_trigger_win_scrolled_resized();
+
+    recursive = false;
+}
+
 
 /*
  * Main loop: Execute Normal mode commands until exiting Vim.
@@ -1313,12 +1421,6 @@ main_loop(
     oparg_T	oa;		// operator arguments
     oparg_T	*prev_oap;	// operator arguments
     volatile int previous_got_int = FALSE;	// "got_int" was TRUE
-#ifdef FEAT_CONCEAL
-    // these are static to avoid a compiler warning
-    static linenr_T	conceal_old_cursor_line = 0;
-    static linenr_T	conceal_new_cursor_line = 0;
-    static int		conceal_update_lines = FALSE;
-#endif
 
     prev_oap = current_oap;
     current_oap = &oa;
@@ -1413,72 +1515,7 @@ main_loop(
 	    // locked, this would be a good time to handle the drop.
 	    handle_any_postponed_drop();
 #endif
-#ifdef FEAT_CONCEAL
-	    if (curwin->w_p_cole == 0)
-		conceal_update_lines = FALSE;
-#endif
-
-	    // Trigger CursorMoved if the cursor moved.
-	    if (!finish_op && (has_cursormoved()
-#ifdef FEAT_PROP_POPUP
-				|| popup_visible
-#endif
-#ifdef FEAT_CONCEAL
-				|| curwin->w_p_cole > 0
-#endif
-			      )
-		    && !EQUAL_POS(last_cursormoved, curwin->w_cursor))
-	    {
-		if (has_cursormoved())
-		    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL,
-							       FALSE, curbuf);
-#ifdef FEAT_PROP_POPUP
-		if (popup_visible)
-		    popup_check_cursor_pos();
-#endif
-#ifdef FEAT_CONCEAL
-		if (curwin->w_p_cole > 0)
-		{
-		    conceal_old_cursor_line = last_cursormoved.lnum;
-		    conceal_new_cursor_line = curwin->w_cursor.lnum;
-		    conceal_update_lines = TRUE;
-		}
-#endif
-		last_cursormoved = curwin->w_cursor;
-	    }
-
-#if defined(FEAT_CONCEAL)
-	    if (conceal_update_lines
-		    && (conceal_old_cursor_line != conceal_new_cursor_line
-			|| conceal_cursor_line(curwin)
-			|| need_cursor_line_redraw))
-	    {
-		if (conceal_old_cursor_line != conceal_new_cursor_line
-			&& conceal_old_cursor_line != 0
-			&& conceal_old_cursor_line
-						<= curbuf->b_ml.ml_line_count)
-		    redrawWinline(curwin, conceal_old_cursor_line);
-		redrawWinline(curwin, conceal_new_cursor_line);
-		curwin->w_valid &= ~VALID_CROW;
-		need_cursor_line_redraw = FALSE;
-	    }
-#endif
-
-	    // Trigger TextChanged if b:changedtick differs.
-	    if (!finish_op && has_textchanged()
-		    && curbuf->b_last_changedtick != CHANGEDTICK(curbuf))
-	    {
-		apply_autocmds(EVENT_TEXTCHANGED, NULL, NULL, FALSE, curbuf);
-		curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
-	    }
-
-	    // Ensure curwin->w_topline and curwin->w_leftcol are up to date
-	    // before triggering a WinScrolled autocommand.
-	    update_topline();
-	    validate_cursor();
-
-	    if (!finish_op)
-		may_trigger_win_scrolled_resized();
+	    may_trigger_deferred_events();
 
 	    // If nothing is pending and we are going to wait for the user to
 	    // type a character, trigger SafeState.
@@ -1857,6 +1894,9 @@ getout(int exitval)
 #ifdef FEAT_CSCOPE
     cs_end();
 #endif
+#ifdef FEAT_IMAGE
+    uninit_image_state();
+#endif
 #ifdef FEAT_EVAL
     if (garbage_collect_at_exit)
 	garbage_collect(FALSE);
@@ -1921,7 +1961,7 @@ early_arg_scan(mparm_T *parmp UNUSED)
 #  endif
 	}
 #  ifdef FEAT_CLIENTSERVER_BACKENDS
-	else if (STRNICMP(argv[i], "--clientserver", 14) == 0)
+	else if (STRICMP(argv[i], "--clientserver") == 0)
 	{
 	    char_u *arg;
 	    if (i == argc - 1)
@@ -2197,6 +2237,7 @@ command_line_scan(mparm_T *parmp)
 				// "--not-a-term" don't warn for not a term
 				// "--gui-dialog-file fname" write dialog text
 				// "--ttyfail" exit if not a term
+				// "--stdio-channel" use stdin/stdout as channel
 				// "--noplugin[s]" skip plugins
 				// "--cmd <cmd>" execute cmd before vimrc
 		if (STRICMP(argv[0] + argv_idx, "help") == 0)
@@ -2247,6 +2288,19 @@ command_line_scan(mparm_T *parmp)
 		}
 		else if (STRNICMP(argv[0] + argv_idx, "ttyfail", 7) == 0)
 		    parmp->tty_fail = TRUE;
+# ifdef FEAT_JOB_CHANNEL
+		else if (STRNICMP(argv[0] + argv_idx, "stdio-channel", 13) == 0)
+		{
+		    // Like "-es": no terminal, but the channel is served
+		    // instead of reading Ex commands.
+		    use_stdio_channel = TRUE;
+		    exmode_active = EXMODE_NORMAL;
+		    silent_mode = TRUE;
+#  if defined(FEAT_GUI) && !defined(VIMDLL)
+		    gui.starting = false;	// don't start GUI
+#  endif
+		}
+# endif
 		else if (STRNICMP(argv[0] + argv_idx, "cmd", 3) == 0)
 		{
 		    want_argument = TRUE;
@@ -2263,13 +2317,13 @@ command_line_scan(mparm_T *parmp)
 		    argv_idx += 3;
 		}
 # ifdef FEAT_CLIENTSERVER
-		else if (STRNICMP(argv[0] + argv_idx, "serverlist", 10) == 0)
+		else if (STRICMP(argv[0] + argv_idx, "serverlist") == 0)
 		    ; // already processed -- no arg
-		else if (STRNICMP(argv[0] + argv_idx, "servername", 10) == 0
-		       || STRNICMP(argv[0] + argv_idx, "serversend", 10) == 0
+		else if (STRICMP(argv[0] + argv_idx, "servername") == 0
+		       || STRICMP(argv[0] + argv_idx, "serversend") == 0
 		       // Don't put this under FEAT_CLIENTSERVER_BACKENDS, just
 		       // let it be ignored. Makes tests less complicated
-		       || STRNICMP(argv[0] + argv_idx, "clientserver", 12) == 0
+		       || STRICMP(argv[0] + argv_idx, "clientserver") == 0
 		       )
 		{
 		    // already processed -- snatch the following arg
@@ -3738,6 +3792,9 @@ usage(void)
     main_msg(_("--gui-dialog-file {fname}  For testing: write dialog text"));
 # endif
     main_msg(_("--ttyfail\t\tExit if input or output is not a terminal"));
+# ifdef FEAT_JOB_CHANNEL
+    main_msg(_("--stdio-channel\tUse stdin and stdout as a channel"));
+# endif
     main_msg(_("-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"));
 # ifdef FEAT_GUI
     main_msg(_("-U <gvimrc>\t\tUse <gvimrc> instead of any .gvimrc"));

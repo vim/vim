@@ -1,4 +1,4 @@
-/* cmdhist.c */
+// cmdhist.c
 int get_hislen(void);
 histentry_T *get_histentry(int hist_type);
 void set_histentry(int hist_type, histentry_T *entry);
@@ -16,4 +16,4 @@ void f_histget(typval_T *argvars, typval_T *rettv);
 void f_histnr(typval_T *argvars, typval_T *rettv);
 void remove_key_from_history(void);
 void ex_history(exarg_T *eap);
-/* vim: set ft=c : */
+// vim: ft=c

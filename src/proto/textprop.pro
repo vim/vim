@@ -1,4 +1,4 @@
-/* textprop.c */
+// textprop.c
 unpacked_memline_T um_open(buf_T *buf);
 bool um_goto_line(unpacked_memline_T *um, linenr_T lnum, int extra_props);
 unpacked_memline_T um_open_at(buf_T *buf, linenr_T lnum, int extra_props);
@@ -36,6 +36,8 @@ void clear_buf_prop_types(buf_T *buf);
 int adjust_prop_columns(linenr_T lnum, colnr_T col, int bytes_added, int flags);
 void adjust_props_for_split(linenr_T lnum_props, linenr_T lnum_top, int kept, int deleted, int at_eol);
 void prepend_joined_props(unpacked_memline_T *um, linenr_T lnum, int last_line, long col, int removed);
+void adjust_props_for_undo(buf_T *buf, linenr_T lnum, garray_T *gap, int above_which, int below_which);
+void restore_props_for_undo(buf_T *buf, linenr_T lnum, garray_T *gap, int which);
 bool text_prop_count_valid(int prop_count, size_t propdata_len);
 bool text_prop_vtext_valid(char_u *props, int prop_count, size_t propdata_len);
-/* vim: set ft=c : */
+// vim: ft=c

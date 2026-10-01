@@ -1,4 +1,4 @@
-/* typval.c */
+// typval.c
 typval_T *alloc_tv(void);
 typval_T *alloc_string_tv(char_u *s);
 void free_tv(typval_T *varp);
@@ -20,6 +20,7 @@ int check_for_float_or_nr_arg(typval_T *args, int idx);
 int check_for_bool_arg(typval_T *args, int idx);
 int check_for_opt_bool_arg(typval_T *args, int idx);
 int check_for_opt_bool_or_number_arg(typval_T *args, int idx);
+int check_for_opt_bool_or_dict_arg(typval_T *args, int idx);
 int check_for_blob_arg(typval_T *args, int idx);
 int check_for_list_arg(typval_T *args, int idx);
 int check_for_nonnull_list_arg(typval_T *args, int idx);
@@ -91,4 +92,5 @@ linenr_T tv_get_lnum(typval_T *argvars);
 linenr_T tv_get_lnum_buf(typval_T *argvars, buf_T *buf);
 buf_T *tv_get_buf(typval_T *tv, int curtab_only);
 buf_T *tv_get_buf_from_arg(typval_T *tv);
-/* vim: set ft=c : */
+int check_repeat_count(varnumber_T slen, varnumber_T n);
+// vim: ft=c

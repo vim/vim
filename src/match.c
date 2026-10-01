@@ -1135,6 +1135,7 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 		    s = list_alloc();
 		    if (s == NULL)
 			return;
+		    ++s->lv_refcount;
 		}
 
 		// match from matchaddpos()
@@ -1144,10 +1145,12 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 		    if ((di = dict_find(d, (char_u *)buf, -1)) != NULL)
 		    {
 			if (di->di_tv.v_type != VAR_LIST)
+			{
+			    list_unref(s);
 			    return;
+			}
 
 			list_append_tv(s, &di->di_tv);
-			s->lv_refcount++;
 		    }
 		    else
 			break;

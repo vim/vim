@@ -578,6 +578,18 @@ check_for_opt_bool_or_number_arg(typval_T *args, int idx)
 }
 
 /*
+ * Check for an optional bool or dict argument at 'idx'.
+ * Return FAIL if the type is wrong.
+ */
+    int
+check_for_opt_bool_or_dict_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type == VAR_UNKNOWN || args[idx].v_type == VAR_DICT)
+	return OK;
+    return check_for_bool_arg(args, idx);
+}
+
+/*
  * Give an error and return FAIL unless "args[idx]" is a blob.
  */
     int
@@ -2978,6 +2990,24 @@ tv_get_buf_from_arg(typval_T *tv)
 	// issue errmsg for type error
 	(void)tv_get_number(tv);
     return buf;
+}
+
+/*
+ * Check that repeating "slen" items "n" times, does not
+ * overflow the int used for the resulting length.
+ */
+    int
+check_repeat_count(varnumber_T slen, varnumber_T n)
+{
+    // Use a division so that the multiplication cannot overflow.
+    if (n <= (varnumber_T)INT_MAX / slen)
+	return OK;
+
+    char	buf[NUMBUFLEN];
+
+    vim_snprintf(buf, sizeof(buf), "%lld", (long long)n);
+    semsg(_(e_val_too_large), buf);
+    return FAIL;
 }
 
 #endif // FEAT_EVAL

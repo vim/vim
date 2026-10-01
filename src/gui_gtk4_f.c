@@ -228,7 +228,21 @@ vim_form_resize_idle_cb(VimForm *self)
 		&& --gui.pending_form_skip >= 0)
 	    goto exit;
 
+	int	req_w, req_h;
+
 	gui.pending_form_w = 0;
+
+	// The size request that Vim made has been answered.  Keep the size and
+	// drop the request, otherwise the window could not be made smaller.
+	gtk_widget_get_size_request(GTK_WIDGET(self), &req_w, &req_h);
+	if (req_w != -1 || req_h != -1)
+	{
+	    gtk_window_set_default_size(GTK_WINDOW(gui.mainwin),
+		    gtk_widget_get_width(gui.mainwin),
+		    gtk_widget_get_height(gui.mainwin));
+	    gtk_widget_set_size_request(GTK_WIDGET(self), -1, -1);
+	}
+
 	gui_resize_shell(self->last_width, self->last_height);
     }
 

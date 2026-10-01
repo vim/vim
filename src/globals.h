@@ -1198,6 +1198,11 @@ EXTERN int	sandbox INIT(= 0);
 EXTERN int	silent_mode INIT(= FALSE);
 				// set to TRUE when "-s" commandline argument
 				// used for ex
+#ifdef FEAT_JOB_CHANNEL
+EXTERN int	use_stdio_channel INIT(= FALSE);
+				// set to TRUE for the "--stdio-channel"
+				// commandline argument
+#endif
 
 EXTERN pos_T	VIsual;		// start position of active Visual selection
 EXTERN int	VIsual_active INIT(= FALSE);
@@ -2180,4 +2185,11 @@ EXTERN int silence_w23_w24_msg INIT( = 0);
 // text to "last_insert_ga".
 EXTERN garray_T last_insert_ga INIT5(0, 0, 1, 64, NULL);
 EXTERN int	add_last_insert INIT(= 0);
+#endif
+
+#if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
+// Cached value, re calculated when window size changes. Defaults to 8x16
+// pixels. Note that these are in logical pixels (when using GUI).
+EXTERN int cell_width INIT(= 8);
+EXTERN int cell_height INIT(= 16);
 #endif

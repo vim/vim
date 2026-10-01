@@ -695,6 +695,7 @@ extern int *dyn_libintl_nl_msg_cat_cntr;
 #define POPF_POSINVERT	0x800	// vertical position can be inverted
 #define POPF_OPACITY 0x1000	// popup has opacity/transparency setting
 #define POPF_CLIPWINDOW	0x2000	// confine popup to its host window's rect
+#define POPF_GLOBAL	0x4000	// popup is global (not tabpage local)
 
 // flags used in w_popup_handled
 #define POPUP_HANDLED_1	    0x01    // used by mouse_find_win()
@@ -1987,10 +1988,10 @@ typedef void	    *vim_acl_T;		// dummy to pass an ACL to a function
 
 #define MAX_MCO	6	// maximum value for 'maxcombine'
 
-// Maximum number of bytes in a multi-byte character.  It can be one 32-bit
-// character of up to 6 bytes, or one 16-bit character of up to three bytes
-// plus six following composing characters of three bytes each.
-#define MB_MAXBYTES	21
+// Maximum number of bytes in the multi-byte character of one screen cell.
+// It can be one character of up to six bytes, plus MAX_MCO following composing
+// characters of up to four bytes each.
+#define MB_MAXBYTES	30
 
 #if (defined(FEAT_PROFILE) || defined(FEAT_RELTIME)) && !defined(PROTO)
 # ifdef MSWIN
@@ -2275,7 +2276,8 @@ typedef int sock_T;
 #define VV_TERMOSC 115
 #define VV_VIM_DID_INIT		116
 #define VV_CLIPPROVIDERS 117
-#define VV_LEN		118	// number of v: vars
+#define VV_IMAGEBACKEND 118
+#define VV_LEN		119	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
@@ -2586,6 +2588,25 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 #include "globals.h"	    // global variables and messages
 #include "errors.h"	    // error messages
 
+#ifndef PROTO
+/*
+ * Return TRUE when currently using Vim9 script syntax.
+ * Does not go up the stack, a ":function" inside vim9script uses legacy
+ * syntax.
+ * Defined here as "static inline" because it is called very frequently from
+ * the eval hot path; inlining avoids the cross-file call overhead.
+ */
+    static inline int
+in_vim9script(void)
+{
+    // "sc_version" is also set when compiling a ":def" function in legacy
+    // script.
+    return (current_sctx.sc_version == SCRIPT_VERSION_VIM9
+					 || (cmdmod.cmod_flags & CMOD_VIM9CMD))
+		&& !(cmdmod.cmod_flags & CMOD_LEGACY);
+}
+#endif
+
 /*
  * If console dialog not supported, but GUI dialog is, use the GUI one.
  */
@@ -2693,6 +2714,16 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 #ifdef FEAT_NETBEANS_INTG
 # define MULTISIGN_BYTE 2   // byte value used where sign is displayed if
 			    // multiple signs exist on the line
+#endif
+
+#if defined(FEAT_GUI_GTK) && defined(FEAT_IMAGE)
+// Logical pixels to physical pixels
+# define LOG2PHY(l) (gui.in_use ? (double)(l) * gui.scale : (l))
+ // Physical pixels to logical pixels
+# define PHY2LOG(p) (gui.in_use ? (double)(p) / gui.scale : (p))
+#else
+# define LOG2PHY(l) (l)
+# define PHY2LOG(p) (p)
 #endif
 
 #if defined(FEAT_GUI) && defined(FEAT_XCLIPBOARD)
@@ -3134,6 +3165,8 @@ long elapsed(DWORD start_tick);
 
 // Flags used by getvcol()
 #define GETVCOL_END_EXCL_LBR	1
+#define GETVCOL_NO_ABOVE	2	// exclude virtual text above the line
+#define GETVCOL_FOR_VIRTCOL	4	// value is used for "w_virtcol"
 
 // Used by expand_env_esc() callers that feed the result to
 // wildcard expansion, so that such characters embedded in

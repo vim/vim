@@ -388,4 +388,49 @@ func Test_overlong_utf8_cells()
   bwipe!
 endfunc
 
+" A screen cell can hold a character of up to six bytes plus 'maxcombine'
+" composing characters of up to four bytes each.  This used to be more than
+" MB_MAXBYTES, overflowing the buffers that are sized with it.
+func Test_composing_chars_four_bytes()
+  new
+  let save_mco = &maxcombine
+  set maxcombine=6
+
+  " Six composing characters in the supplementary planes, four bytes each.
+  let cc = ''
+  for c in [0x101fd, 0x102e0, 0x10376, 0x10377, 0x10378, 0x10379]
+    let cc ..= nr2char(c)
+  endfor
+
+  " A four byte and a six byte base character.
+  for base in [0x1F600, 0x4000000]
+    let text = nr2char(base) .. cc
+    call setline(1, text)
+    redraw
+    call assert_equal(text, screenstring(1, 1))
+    call assert_equal(7, len(screenchars(1, 1)))
+  endfor
+
+  let &maxcombine = save_mco
+  bwipe!
+endfunc
+
+func Test_isprint_leading_byte()
+  new
+  let save_isprint = &isprint
+  " 226 is the leading byte of U+222B, which must not be affected.
+  set isprint+=^226
+  call setline(1, "∫")
+  redraw
+  call assert_equal("∫", ScreenLines(1, 1)[0])
+
+  " U+00E2 has the character value 226 and is still excluded.
+  call setline(1, "â")
+  redraw
+  call assert_equal('<e2>', ScreenLines(1, 4)[0])
+
+  let &isprint = save_isprint
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

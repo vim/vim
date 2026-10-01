@@ -1,4 +1,4 @@
-*insert.txt*	For Vim version 9.2.  Last change: 2026 Jul 22
+*insert.txt*	For Vim version 9.2.  Last change: 2026 Oct 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -969,8 +969,14 @@ CTRL-X CTRL-F		Search for the first file name that starts with the
 			file name is inserted in front of the cursor.
 			Alphabetic characters and characters in 'isfname'
 			are used to decide which characters are included in
-			the file name.  Note: the 'path' option is not used
-			here (yet).
+			the file name.
+			When 'completeopt' contains "pathopt", the directories
+			in 'path' are searched as well, like with |gf| and
+			|:find|.  A match found in a directory of 'path' is
+			shortened when possible, such that "gf" can find it
+			again.  A file name starting with "/", "./" or "../"
+			is completed as an absolute or relative path to the
+			current directory, without consulting 'path'.
 	CTRL-F	or
 	CTRL-N		Search forwards for next matching file name.  This
 			file name replaces the previous matching file name.
@@ -1264,13 +1270,15 @@ items:
 			|hl-PmenuMatchSel| and |hl-PmenuMatch| highlight
 			attributes in the popup menu to apply cterm and gui
 			properties (with higher priority) like strikethrough
-			to the completion items abbreviation
+			to the completion items abbreviation.
+			The group can be defined later.
 	kind_hlgroup	an additional highlight group specifically for setting
 			the highlight attributes of the completion kind.  When
 			this field is present, it will override the
 			|hl-PmenuKind| highlight group, allowing for the
 			customization of ctermfg and guifg properties for the
-			completion kind
+			completion kind.
+			The group can be defined later.
 	match		See "matches" in |complete_info()|.
 
 All of these except "icase", "equal", "dup" and "empty" must be a string.  If
@@ -1796,9 +1804,9 @@ autoload/syntaxcomplete.vim) to add items.  Looking at the output from
     htmlArg,htmlTag,htmlTagName,javaScriptStatement,javaScriptGlobalObjects
 
 To pick up any JavaScript and HTML keyword syntax groups while editing a PHP
-file, you can use 3 different regexs, one for each language.  Or you can
+file, you can use 3 different regexps, one for each language.  Or you can
 simply restrict the include groups to a particular value, without using
-a regex string: >
+a regexp string: >
     let g:omni_syntax_group_include_php = 'php\w\+,javaScript\w\+,html\w\+'
     let g:omni_syntax_group_include_php = 'phpFunctions,phpMethods'
 <

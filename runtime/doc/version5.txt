@@ -1,4 +1,4 @@
-*version5.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*version5.txt*	For Vim version 9.2.  Last change: 2026 Oct 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3215,7 +3215,7 @@ New words for 'sessionoptions':
 - "globals"	Store global variables.
 - "unix"	Use unix file format (<NL> instead of <CR><NL>)
 
-The ":mksession" and 'sessionoptions' are now in the +mksession feature.
+The ":mksession" and 'sessionoptions' are now in the |+mksession| feature.
 
 The top line of the window is also restored when using a session file.
 
@@ -3401,7 +3401,7 @@ file even with ":w!".  The |-m| command line option resets 'write'.
 register like "*. (Cortopassi)  Value "autoselect": Like what 'a' in
 'guioptions' does but works in the terminal.
 
-'guifontset' option: Specify fonts for the +fontset feature, for the X11 GUI
+'guifontset' option: Specify fonts for the |+xfontset| feature, for the X11 GUI
 versions.  Allows using normal fonts when vim is compiled with this feature.
 (Nam)
 
@@ -4418,7 +4418,7 @@ Now map <xF4> to <F4>, so that the user can override this.
 When compiling os_win32.c with MIN_FEAT the apply_autocmds() should not be
 used. (Aaron)
 
-This autocommand looped forever: ":au FileChangedShell * ++nested e <afile>"
+This autocommand looped forever: ":au FileChangedShell * nested e <afile>"
 Now FileChangeShell never nests. (Roemer)
 
 When evaluating an ":elseif" that was not going to matter anyway, ignore

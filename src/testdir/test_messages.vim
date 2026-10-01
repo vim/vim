@@ -450,7 +450,65 @@ func Test_mode_cleared_after_silent_message()
   call delete('XsilentMessageMode.txt')
 endfunc
 
-" Test verbose message before echo command
+" Empty lines must be preserved when redrawing messages from scrollback.
+func Test_message_scrollback_empty_lines()
+  CheckScreendump
+
+  for newline_count in range(1, 3)
+    let buf = RunVimInTerminal('', #{rows: 10})
+    call term_sendkeys(buf, ":echo join(range(1, 100), repeat(\"\\n\", "
+          \ .. newline_count .. "))\<CR>")
+    let dump = 'Test_message_scrollback_' .. newline_count
+    call VerifyScreenDump(buf, dump, {})
+
+    call term_sendkeys(buf, 'f')
+    call TermWait(buf)
+    call term_sendkeys(buf, 'b')
+    call VerifyScreenDump(buf, dump, {})
+
+    " Redrawing the same pages again must keep the same spacing.
+    call term_sendkeys(buf, "\<PageDown>")
+    call TermWait(buf)
+    call term_sendkeys(buf, "\<PageUp>")
+    call VerifyScreenDump(buf, dump, {})
+
+    call term_sendkeys(buf, 'q')
+    call TermWait(buf)
+    call StopVimInTerminal(buf)
+  endfor
+endfunc
+
+" Both G at the more prompt and g< must preserve trailing empty lines.
+func Test_message_scrollback_trailing_empty_lines()
+  CheckRunVimInTerminal
+
+  for newline_count in range(0, 3)
+    let buf = RunVimInTerminal('', #{rows: 10})
+    call term_sendkeys(buf, ":echo join(range(1, 20), \"\\n\") .. repeat(\"\\n\", "
+          \ .. newline_count .. ")\<CR>")
+    call WaitForAssert({-> assert_equal('-- More --', term_getline(buf, 10))})
+
+    let expected = map(range(12 + newline_count, 20), 'string(v:val)')
+          \ + repeat([''], newline_count)
+          \ + ['Press ENTER or type command to continue']
+    call term_sendkeys(buf, 'G')
+    call WaitForAssert({-> assert_equal(expected,
+          \ map(range(1, 10), {_, row -> term_getline(buf, row)}))})
+
+    call term_sendkeys(buf, "\<CR>")
+    call TermWait(buf)
+    call term_sendkeys(buf, 'g<')
+    call WaitForAssert({-> assert_equal(expected,
+          \ map(range(1, 10), {_, row -> term_getline(buf, row)}))})
+
+    call term_sendkeys(buf, "\<CR>")
+    call TermWait(buf)
+    call StopVimInTerminal(buf)
+  endfor
+endfunc
+
+" Test verbose message before echo command.  This also checks that msg_sb_eol()
+" does not introduce an extra empty line after a trailing newline.
 func Test_echo_verbose_system()
   CheckScreendump
   CheckRunVimInTerminal
@@ -808,6 +866,46 @@ func Test_long_formatprg_no_hit_enter()
   call VerifyScreenDump(buf, 'Test_long_formatprg_no_hit_enter_2', {})
   call term_sendkeys(buf, ":messages\<CR>")
   call VerifyScreenDump(buf, 'Test_long_formatprg_no_hit_enter_3', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
+" A message shown while a mapping is still being processed must not eat the
+" mapping's remaining keys.
+" If a mapping starts cmdline after multiline messages exceeding 'cmdheight',
+" the messages should still be visible.
+func Test_hit_enter_during_mapping()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set ruler
+    call setline(1, range(1, 20))
+    " The 8-line :echo leads to a hit-enter prompt.
+    nnoremap X :echo "a\nb\nc\nd\ne\nf\ng\nh"<CR>gg
+    nnoremap \b :echo "a\nb\nc\nd\ne\nf\ng\nh"<CR>:b<Space>
+    normal! 10G
+  END
+  call writefile(lines, 'XtestHitEnterMap', 'D')
+  let buf = RunVimInTerminal('-S XtestHitEnterMap', #{rows: 10})
+  call WaitForAssert({-> assert_match(' 10,1 ', term_getline(buf, 10))})
+
+  call term_sendkeys(buf, "X")
+  " Without the fix the hit-enter prompt eats the mapping's "g" keys and the
+  " cursor stays put.  With the fix "gg" runs and moves the cursor to line 1.
+  call WaitForAssert({-> assert_match(' 1,1 ', term_getline(buf, 10))})
+  call assert_notmatch('Press ENTER', term_getline(buf, 10))
+
+  call term_sendkeys(buf, '\b')
+  call WaitForAssert({-> assert_match('^:b ', term_getline(buf, 10))})
+  call assert_match('^a *$', term_getline(buf, 2))
+  call assert_match('^b *$', term_getline(buf, 3))
+  call assert_match('^c *$', term_getline(buf, 4))
+  call assert_match('^d *$', term_getline(buf, 5))
+  call assert_match('^e *$', term_getline(buf, 6))
+  call assert_match('^f *$', term_getline(buf, 7))
+  call assert_match('^g *$', term_getline(buf, 8))
+  call assert_match('^h *$', term_getline(buf, 9))
 
   " clean up
   call StopVimInTerminal(buf)

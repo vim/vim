@@ -1,4 +1,4 @@
-/* term.c */
+// term.c
 guicolor_T termgui_get_color(char_u *name);
 guicolor_T termgui_mch_get_rgb(guicolor_T color);
 void init_term_props(int all);
@@ -47,6 +47,7 @@ int get_bytes_from_buf(char_u *buf, char_u *bytes, int num_bytes);
 void check_shellsize(void);
 void limit_screen_size(void);
 void win_new_shellsize(void);
+void update_cell_size(void);
 void shell_resized(void);
 void shell_resized_check(void);
 void set_shellsize(int width, int height, int mustset);
@@ -100,4 +101,4 @@ void term_disable_dec(void);
 void term_set_win_resize(bool state);
 int sync_output_active(void);
 void term_set_sync_output(int flags);
-/* vim: set ft=c : */
+// vim: ft=c

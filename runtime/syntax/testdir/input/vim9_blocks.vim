@@ -44,6 +44,10 @@ echo "Foo" | { | echo "Bar"
   var foo = 42
 } | echo "Baz"
 
+{| echo "Foo" |}
+
+
 # dictionary
+
 {}->items()
 

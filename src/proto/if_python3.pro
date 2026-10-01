@@ -1,4 +1,4 @@
-/* if_python3.c */
+// if_python3.c
 int python3_enabled(int verbose);
 void python3_end(void);
 int python3_loaded(void);
@@ -11,4 +11,4 @@ void python3_tabpage_free(tabpage_T *tab);
 void do_py3eval(char_u *str, dict_T *locals, typval_T *rettv);
 int set_ref_in_python3(int copyID);
 int python3_version(void);
-/* vim: set ft=c : */
+// vim: ft=c

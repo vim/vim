@@ -133,6 +133,10 @@ function Test_NetrwFile(fname) abort
     return s:NetrwFile(a:fname)
 endfunction
 
+function Test_NetrwLcd(newdir) abort
+    return s:NetrwLcd(a:newdir)
+endfunction
+
 " Test hostname validation
 function Test_NetrwValidateHostname(hostname) abort
     return s:NetrwValidateHostname(a:hostname)
@@ -195,6 +199,11 @@ function Test_NetrwMarkFile_match_pattern_rebuild()
   call assert_equal(match_pattern, rebuilt_match_pattern)
 
   bw
+endfunction
+
+" Test the "home" directory used for bookmarks and history
+function Test_NetrwHome() abort
+    return s:NetrwHome()
 endfunction
 " }}}
 END
@@ -307,6 +316,44 @@ func s:combine
   endfor
 endfunction
 
+
+func Test_netrw_lcd_failure()
+  CheckUnix
+  CheckNotRoot
+  let dirname = getcwd() .. '/Xnetrw_noaccess'
+  call mkdir(dirname)
+  call assert_true(setfperm(dirname, 'r--------'))
+  try
+    for prevdir in [1, 0]
+      new
+      try
+        let cwd = getcwd()
+        if prevdir
+          let w:netrw_prvdir = cwd
+        else
+          unlet! w:netrw_prvdir
+        endif
+        setlocal modifiable noreadonly number
+        let msg = execute('call assert_equal(-1, Test_NetrwLcd(dirname))')
+        call assert_match('unable to change directory to <' .. dirname .. '>', msg)
+        call assert_equal(cwd, getcwd())
+        if prevdir
+          call assert_equal(cwd, w:netrw_prvdir)
+          call assert_true(&l:modifiable)
+        else
+          call assert_false(&l:modifiable)
+          call assert_true(&l:readonly)
+          call assert_false(&l:number)
+        endif
+      finally
+        bwipe!
+      endtry
+    endfor
+  finally
+    call setfperm(dirname, 'rwx------')
+    call delete(dirname, 'd')
+  endtry
+endfunc
 
 func Test_netrw_parse_remote_simple()
   let result = TestNetrwCaptureRemotePath('scp://user@localhost:2222/test.txt')
@@ -631,6 +678,52 @@ func Test_netrw_reject_evil_hostname()
   call assert_match('Rejecting invalid hostname', msg)
 endfunc
 
+func Test_netrw_obtain_reject_evil_hostname()
+  new
+  let b:netrw_islocal = 0
+  let b:netrw_curdir = 'scp://x;touch RCE;x/dir/'
+  try
+    " A List skips s:SetupNetrwStatusLine(), whose :redir cannot run in execute()
+    let msg = execute('call netrw#Obtain(0, ["file"])')
+    call assert_match('Rejecting invalid hostname: <x;touch RCE;x>', msg)
+  finally
+    bwipe!
+  endtry
+endfunc
+
+" "O" in a local listing copies the file under the cursor to the current directory
+func Test_netrw_obtain_local()
+  let dir = getcwd() .. '/Xnetrwobtain'
+  call mkdir(dir, 'pR')
+  call writefile(['obtained'], dir .. '/Xobtainfile')
+  try
+    exe 'Explore' dir
+    call search('^Xobtainfile$')
+    let msg = execute('normal O')
+    call assert_notmatch('cannot determine method', msg)
+    call assert_notmatch('copy failed', msg)
+    call assert_equal(['obtained'], readfile('Xobtainfile'))
+
+    " the same for marked files
+    call delete('Xobtainfile')
+    call writefile(['marked'], dir .. '/Xobtainmarked')
+    Explore
+    call search('^Xobtainfile$')
+    normal mf
+    call search('^Xobtainmarked$')
+    normal mf
+    let msg = execute('normal O')
+    call assert_notmatch('cannot determine method', msg)
+    call assert_notmatch('copy failed', msg)
+    call assert_equal(['obtained'], readfile('Xobtainfile'))
+    call assert_equal(['marked'], readfile('Xobtainmarked'))
+  finally
+    bwipe!
+    call delete('Xobtainfile')
+    call delete('Xobtainmarked')
+  endtry
+endfunc
+
 func Test_netrw_hostname()
   let valid_hostnames = [
   \   'localhost',
@@ -910,6 +1003,53 @@ func Test_netrw_open_no_dir_arg()
   Explore
   call assert_equal(fnamemodify(dir, ':p'), fnamemodify(b:netrw_curdir, ':p'))
   bw!
+endfunc
+
+func Test_netrw_home_setting()
+  let save_home = get(g:, 'netrw_home', '')
+  let dir = fnamemodify('XnetrwHome', ':p')
+  let vimdir = fnamemodify('XvimDir', ':p')
+  let subdir = fnamemodify('XnetrwHomeParent/XnetrwHome', ':p')
+  if has('win32')
+    let dir = substitute(dir, '/', '\\', 'g')
+    let vimdir = substitute(vimdir, '/', '\\', 'g')
+    let subdir = substitute(subdir, '/', '\\', 'g')
+  endif
+  let save_myvimdir = getenv('MYVIMDIR')
+  let $MYVIMDIR = vimdir
+
+  unlet! g:netrw_home
+  if has('nvim')
+    call assert_equal(netrw#fs#PathJoin(stdpath('state'), 'netrw'), Test_NetrwHome())
+  else
+    " without the setting $MYVIMDIR is used
+    call assert_equal(vimdir, Test_NetrwHome())
+  endif
+
+  let g:netrw_home = dir
+  call assert_equal(dir, Test_NetrwHome())
+  call assert_true(isdirectory(dir))
+
+  let g:netrw_home = subdir
+  call assert_equal(subdir, Test_NetrwHome())
+  call assert_true(isdirectory(subdir))
+
+  " the value is expanded
+  let $NETRW_TEST_HOME = dir
+  let g:netrw_home = '$NETRW_TEST_HOME'
+  call assert_equal(dir, Test_NetrwHome())
+
+  call delete(dir, 'd')
+  call delete(vimdir, 'd')
+  call delete(subdir, 'd')
+  call delete(fnamemodify(subdir, ':h'), 'd')
+  unlet $NETRW_TEST_HOME
+  call setenv('MYVIMDIR', save_myvimdir)
+  if empty(save_home)
+    unlet! g:netrw_home
+  else
+    let g:netrw_home = save_home
+  endif
 endfunc
 
 " vim:ts=8 sts=2 sw=2 et

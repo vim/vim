@@ -6595,6 +6595,12 @@ makeset(FILE *fd, int opt_flags, int local_only)
 		    int		do_endif = FALSE;
 		    bool	legacy;
 
+		    // Ignore those options associated to lambda expressions because
+		    // persistence makes no sense for them.
+		    if ((p->flags & P_FUNC) && *(char_u **)varp != NULL
+			    && strstr(*(char **)varp, "<lambda>") != NULL)
+			continue;
+
 #ifdef FEAT_EVAL
 		    legacy = !is_option_value_vim9(p - &options[0],
 			    round == 1 ? opt_flags | OPT_GLOBAL : OPT_LOCAL);
@@ -7464,6 +7470,47 @@ get_option_var(int opt_idx)
 get_option_fullname(int opt_idx)
 {
     return (char_u *)options[opt_idx].fullname;
+}
+
+/*
+ * Add what getinfo() reports for the option "name" to "d".  "available" tells
+ * whether the option is supported in this Vim.
+ * Returns FAIL when there is no such option.
+ */
+    int
+option_info(char_u *name, dict_T *d)
+{
+    int			opt_idx;
+    struct vimoption	*p;
+    int			dvi;
+
+    // The "g:" or "l:" scope does not matter for the definition.
+    if ((name[0] == 'g' || name[0] == 'l') && name[1] == ':')
+	name += 2;
+    opt_idx = findoption(name);
+    if (opt_idx < 0)
+	return FAIL;
+
+    p = &options[opt_idx];
+    dict_add_string(d, "name", (char_u *)p->fullname);
+    dict_add_string(d, "shortname",
+		    (char_u *)(p->shortname == NULL ? "" : p->shortname));
+    dict_add_bool(d, "available", p->var != NULL);
+    dict_add_string(d, "type", (char_u *)((p->flags & P_BOOL) ? "bool"
+				: (p->flags & P_NUM) ? "number" : "string"));
+    dict_add_string(d, "scope", (char_u *)(p->indir == PV_NONE ? "global"
+		: (p->indir & PV_BOTH)
+		    ? ((p->indir & PV_WIN) ? "global-window" : "global-buffer")
+		    : ((p->indir & PV_WIN) ? "window" : "buffer")));
+    dvi = (p->flags & P_VI_DEF) ? VI_DEFAULT : VIM_DEFAULT;
+    if (p->flags & P_BOOL)
+	dict_add_bool(d, "default", (int)(long_i)p->def_val[dvi]);
+    else if (p->flags & P_NUM)
+	dict_add_number(d, "default", (long)(long_i)p->def_val[dvi]);
+    else
+	dict_add_string(d, "default", p->def_val[dvi] == NULL
+					? (char_u *)"" : p->def_val[dvi]);
+    return OK;
 }
 #endif
 

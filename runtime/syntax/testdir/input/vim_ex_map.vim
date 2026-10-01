@@ -15,6 +15,9 @@ map <buffer> <expr> <nowait> <script> <silent> <special> <unique> lhs rhs
 " :map special arguments are case sensitive, <BUFFER> is the LHS
 map <BUFFER> rhs
 
+" concatenated special argument names, <bufferexpr> is the LHS
+map <bufferexpr> rhs
+
 map <Leader>lhs      rhs
 map <LocalLeader>lhs rhs
 

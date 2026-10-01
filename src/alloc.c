@@ -447,6 +447,7 @@ free_all_mem(void)
     free_signs();
 # endif
 # ifdef FEAT_EVAL
+    free_eval_regcomp_cache();
     set_expr_line(NULL, NULL);
 # endif
 # ifdef FEAT_DIFF
@@ -473,10 +474,6 @@ free_all_mem(void)
 
 # ifdef FEAT_QUICKFIX
     free_quickfix();
-# endif
-
-# ifdef FEAT_IMAGE_SIXEL
-    sixel_free_all();
 # endif
 
     // Close all script inputs.
@@ -865,6 +862,11 @@ ga_concat_len(garray_T *gap, char_u *s, size_t len)
 {
     if (s == NULL || *s == NUL || len == 0)
 	return;
+    if (len > (size_t)(INT_MAX - gap->ga_len))
+    {
+	emsg(_(e_resulting_text_too_long));
+	return;
+    }
     if (ga_grow(gap, (int)len) == OK)
     {
 	mch_memmove((char *)gap->ga_data + gap->ga_len, s, len);
@@ -903,3 +905,29 @@ append_ga_line(garray_T *gap)
 }
 #endif
 
+#ifdef FEAT_IMAGE
+/*
+ * Append a string to a growarray of bytes.  Returns FAIL on OOM.
+ */
+    int
+ga_concat_bytes(garray_T *gap, const char *s, int len)
+{
+    if (ga_grow(gap, len) == FAIL)
+	return FAIL;
+    mch_memmove((char_u *)gap->ga_data + gap->ga_len, s, len);
+    gap->ga_len += len;
+    return OK;
+}
+
+/*
+ * Append the string form of an integer to "gap". Returns FAIL on OOM.
+ */
+    int
+ga_concat_int(garray_T *gap, int n)
+{
+    char    buf[16];
+    int	    len = vim_snprintf(buf, sizeof(buf), "%d", n);
+
+    return ga_concat_bytes(gap, buf, len);
+}
+#endif

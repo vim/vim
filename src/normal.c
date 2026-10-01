@@ -279,6 +279,7 @@ getcount:
 	    *ctrl_w = TRUE;
 	    cap->opcount = cap->count0;	// remember first count
 	    cap->count0 = 0;
+	    did_cursorhold = TRUE;
 	    ++no_mapping;
 	    ++allow_keys;		// no mapping for nchar, but keys
 	    c = plain_vgetc();		// get next character
@@ -2377,9 +2378,15 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 	    curwin->w_curswant = 0;
 	else
 	{
+	    colnr_T virtcol = curwin->w_virtcol
+#ifdef FEAT_PROP_POPUP
+		- curwin->w_virtcol_first_char
+#endif
+		;
+
 	    curwin->w_curswant = width1 - 1;
-	    if (curwin->w_virtcol > curwin->w_curswant)
-		curwin->w_curswant += ((curwin->w_virtcol
+	    if (virtcol > curwin->w_curswant)
+		curwin->w_curswant += ((virtcol
 			     - curwin->w_curswant - 1) / width2 + 1) * width2;
 	}
       }
@@ -2473,7 +2480,11 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 	// last line.  We want to advance a screenline, not end up in the same
 	// screenline or move two screenlines.
 	validate_virtcol();
-	virtcol = curwin->w_virtcol;
+	virtcol = curwin->w_virtcol
+#ifdef FEAT_PROP_POPUP
+	    - curwin->w_virtcol_first_char
+#endif
+	    ;
 #if defined(FEAT_LINEBREAK)
 	if (virtcol > (colnr_T)width1 && *get_showbreak_value(curwin) != NUL)
 	    virtcol -= vim_strsize(get_showbreak_value(curwin));

@@ -183,7 +183,10 @@ arg_exists(
 									 == OK)
 	{
 	    if (gen_load_outer != NULL)
+	    {
 		++*gen_load_outer;
+		cctx->ctx_outer_used = TRUE;
+	    }
 	    return OK;
 	}
     }
@@ -1118,6 +1121,26 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	goto theend;
     }
 
+    // A type variable cannot have the name of the function.  The function is
+    // defined with the "<lambda>" name, check it here.
+    if (bracket_start != NULL)
+    {
+	size_t	len = STRLEN(func_name);
+
+	for (char_u *t = bracket_start + 1; *t != '>' && *t != NUL; )
+	{
+	    char_u *te = to_name_end(t, FALSE);
+
+	    if ((size_t)(te - t) == len && STRNCMP(t, func_name, len) == 0)
+	    {
+		semsg(_(e_redefining_script_item_str), func_name);
+		r = FAIL;
+		goto theend;
+	    }
+	    t = te == t ? t + 1 : te;
+	}
+    }
+
     // Make sure "KeyTyped" is not set, it may cause indent to be written.
     int save_KeyTyped = KeyTyped;
     KeyTyped = FALSE;
@@ -1174,6 +1197,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	    func_ptr_unref(ufunc);
 	    goto theend;
 	}
+	lvar->lv_ufunc = ufunc;
 	if (generate_FUNCREF(cctx, ufunc, NULL, FALSE, 0, &funcref_isn_idx) == FAIL)
 	{
 	    func_ptr_unref(ufunc);
@@ -1493,6 +1517,7 @@ valid_dest_reg(int name)
  * For an option "option_scope" is set.
  * For a v:var "vimvaridx" is set.
  * "type" is set to the destination type if known, unchanted otherwise.
+ * When "has_index" is TRUE an item of the variable is assigned to.
  * Return FAIL if an error message was given.
  */
     int
@@ -1500,6 +1525,7 @@ get_var_dest(
 	char_u		*name,
 	assign_dest_T	*dest,
 	cmdidx_T	cmdidx,
+	int		has_index,
 	int		*option_scope,
 	int		*vimvaridx,
 	type_T		**type,
@@ -1600,8 +1626,9 @@ get_var_dest(
 	    semsg(_(e_variable_not_found_str), name);
 	    return FAIL;
 	}
+	// An item of a read-only variable can be changed, as when not compiled.
 	// We use the current value of "sandbox" here, is that OK?
-	if (var_check_ro(di_flags, name, FALSE))
+	if (!has_index && var_check_ro(di_flags, name, FALSE))
 	    return FAIL;
 	*dest = dest_vimvar;
 	vtv = get_vim_var_tv(*vimvaridx);
@@ -1961,6 +1988,7 @@ compile_lhs_var_dest(
     int	    declare_error = FALSE;
 
     if (get_var_dest(lhs->lhs_name, &lhs->lhs_dest, cmdidx,
+				lhs->lhs_has_index,
 				&lhs->lhs_opt_flags, &lhs->lhs_vimvaridx,
 				&lhs->lhs_type, cctx) == FAIL)
 	return FAIL;
@@ -2265,8 +2293,10 @@ compile_lhs_set_member_type(
 	lhs->lhs_varlen = after - var_start;
 	lhs->lhs_dest = dest_expr;
 	// We don't know the type before evaluating the expression,
-	// use "any" until then.
+	// use "any" until then.  The member index is for the first name,
+	// not for the last index.
 	lhs->lhs_type = &t_any;
+	lhs->lhs_member_idx = -1;
     }
 
     int use_class = lhs->lhs_type != NULL
@@ -2604,7 +2634,7 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 	char_u *dot = vim_strchr(var_start, '.');
 	if (dot == NULL)
 	{
-	    check_type_is_value(lhs->lhs_type);
+	    (void)check_type_is_value(lhs->lhs_type);
 	    return FAIL;
 	}
 
@@ -2623,7 +2653,17 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 
     if (lhs->lhs_has_index)
     {
-	int range = FALSE;
+	int	range = FALSE;
+	type_T	*type = get_type_on_stack(cctx, 0);
+
+	// A member of an object or class is not obtained by indexing it.
+	if (type->tt_type == VAR_CLASS
+		|| (type->tt_type == VAR_OBJECT && type != &t_object_any))
+	{
+	    char_u *p = var_start + lhs->lhs_varlen;
+
+	    return compile_class_object_index(cctx, &p, type);
+	}
 
 	// Get member from list or dict.  First compile the
 	// index value.
@@ -2673,7 +2713,10 @@ compile_assign_unlet(
 	return FAIL;
     }
 
-    if (lhs->lhs_type == NULL || lhs->lhs_type == &t_any)
+    // For "expr[idx]" the index is compiled before the expression, thus the
+    // resulting type cannot be used here.
+    if (lhs->lhs_dest == dest_expr
+	    || lhs->lhs_type == NULL || lhs->lhs_type == &t_any)
     {
 	// Index on variable of unknown type: check at runtime.
 	dest_type = VAR_ANY;
@@ -3059,6 +3102,11 @@ compile_assign_list_check_rhs_type(cctx_T *cctx, cac_T *cac)
 		  stacktype->tt_type == VAR_TUPLE ? &t_tuple_any : &t_list_any,
 		  TYPECHK_TUPLE_OK, -1, 0, cctx, FALSE, FALSE) == FAIL)
 	return FAIL;
+
+    // The check accepts both a list and a tuple. Keep "any", making it a list
+    // would reject a tuple later on.
+    if (stacktype->tt_type == VAR_ANY)
+	set_type_on_stack(cctx, &t_any, 0);
 
     if (stacktype->tt_type == VAR_TUPLE)
     {
@@ -4554,14 +4602,17 @@ compile_def_function_body(
 	    return FAIL;
 	}
 
-	// When processing the end of an if-else block, don't clear the
-	// "ctx_had_throw" flag.  If an if-else block ends in a "throw"
+	// When processing the end of an if-else or try-catch block, don't
+	// clear the "ctx_had_throw" flag.  If such a block ends in a "throw"
 	// statement, then it is considered to end in a "return" statement.
 	// The "ctx_had_throw" is cleared immediately after processing the
-	// if-else block ending statement.
+	// block ending statement.
 	// Otherwise, clear the "had_throw" flag.
 	if (ea.cmdidx != CMD_else && ea.cmdidx != CMD_elseif
-						&& ea.cmdidx != CMD_endif)
+						&& ea.cmdidx != CMD_endif
+						&& ea.cmdidx != CMD_catch
+						&& ea.cmdidx != CMD_finally
+						&& ea.cmdidx != CMD_endtry)
 	    cctx->ctx_had_throw = FALSE;
 
 	p = skipwhite(p);
@@ -4658,9 +4709,14 @@ compile_def_function_body(
 		    break;
 	    case CMD_continue:
 		    line = compile_continue(p, cctx);
+		    // "continue" unconditionally jumps back to the loop,
+		    // like a "return".
+		    cctx->ctx_had_return = TRUE;
 		    break;
 	    case CMD_break:
 		    line = compile_break(p, cctx);
+		    // "break" unconditionally exits the loop, like a "return".
+		    cctx->ctx_had_return = TRUE;
 		    break;
 
 	    case CMD_try:
@@ -4669,13 +4725,16 @@ compile_def_function_body(
 	    case CMD_catch:
 		    line = compile_catch(p, cctx);
 		    cctx->ctx_had_return = FALSE;
+		    cctx->ctx_had_throw = FALSE;
 		    break;
 	    case CMD_finally:
 		    line = compile_finally(p, cctx);
 		    cctx->ctx_had_return = FALSE;
+		    cctx->ctx_had_throw = FALSE;
 		    break;
 	    case CMD_endtry:
 		    line = compile_endtry(p, cctx);
+		    cctx->ctx_had_throw = FALSE;
 		    break;
 	    case CMD_throw:
 		    line = compile_throw(p, cctx);
@@ -4757,9 +4816,10 @@ compile_def_function_body(
 	    case CMD_change:
 	    case CMD_insert:
 	    case CMD_k:
+	    case CMD_open:
 	    case CMD_t:
 	    case CMD_xit:
-		    not_in_vim9(&ea);
+		    not_in_vim9(&ea, false);
 		    return FAIL;
 
 	    case CMD_SIZE:

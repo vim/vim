@@ -194,7 +194,7 @@ get_lpp(void)
 }
 
 /*
- * Get the font descrption from the given name. Returns NULL on failure.
+ * Get the font description from the given name. Returns NULL on failure.
  */
     static PangoFontDescription *
 get_font(char_u *name)
@@ -246,7 +246,7 @@ mch_print_init(
     pctx.format = PRT_FORMAT_PS;
 
     // Let GTK handle stuff when using dialog. Not sure if our postscript DSC
-    // comments can intefere with dialog settings, but don't add them...
+    // comments can interfere with dialog settings, but don't add them...
 #ifdef USE_GTK4_PRINT_DIALOG
     if (!dialog)
 #endif
@@ -375,8 +375,7 @@ mch_print_init(
 	descent = pango_font_metrics_get_descent(metrics);
 
 	pctx.char_ascent = (double)ascent / PANGO_SCALE;
-	pctx.char_height = (double)(ascent + descent
-		+ (PANGO_SCALE * 15.0) / 16.0) / PANGO_SCALE;
+	pctx.char_height = (double)(ascent + descent) / PANGO_SCALE;
 
 	pctx.line_spacing = (double)
 	    (pango_font_metrics_get_height(metrics) - (ascent + descent))
@@ -669,7 +668,7 @@ mch_print_text_out(char_u *textp, int len)
 
     glyphs = pango_glyph_string_new();
 
-    // Loop is probably unecessary, because "str" represents a single character.
+    // Loop is probably unnecessary, because "str" represents a single character.
     // Do it anyways to be sure.
     while (item_list != NULL)
     {

@@ -22,6 +22,8 @@ command! Foo {
   echo "Baz"
 }
 
+command! Foo {| echo "Foo" |}
+
 command! -addr=arguments -bang -bar -buffer -complete=arglist -count=1 -keepscript -nargs=* -range=% -register Foo echo "Foo"
 
 command! -addr=arguments -bang -bar -buffer -complete=arglist -count=1 -keepscript -nargs=* -range=% -register Foo

@@ -1701,14 +1701,22 @@ read_tree_node(
 		    // byte, the condition index shifted up 8 bits, the flags
 		    // shifted up 24 bits.
 		    if (c == BY_FLAGS)
-			c = getc(fd) << 24;		// <pflags>
+		    {
+			n = getc(fd);			// <pflags>
+			if (n < 0)
+			    return SP_TRUNCERROR;
+			c = n << 24;
+		    }
 		    else
 			c = 0;
 
-		    c |= getc(fd);			// <affixID>
+		    n = getc(fd);			// <affixID>
+		    if (n < 0)
+			return SP_TRUNCERROR;
+		    c |= n;
 
 		    n = get2c(fd);			// <prefcondnr>
-		    if (n >= maxprefcondnr)
+		    if (n < 0 || n >= maxprefcondnr)
 			return SP_FORMERROR;
 		    c |= (n << 8);
 		}
@@ -1719,12 +1727,29 @@ read_tree_node(
 		    // that and prefix ID above the region.
 		    c2 = c;
 		    c = getc(fd);			// <flags>
+		    if (c < 0)
+			return SP_TRUNCERROR;
 		    if (c2 == BY_FLAGS2)
-			c = (getc(fd) << 8) + c;	// <flags2>
+		    {
+			n = getc(fd);			// <flags2>
+			if (n < 0)
+			    return SP_TRUNCERROR;
+			c = (n << 8) + c;
+		    }
 		    if (c & WF_REGION)
-			c = (getc(fd) << 16) + c;	// <region>
+		    {
+			n = getc(fd);			// <region>
+			if (n < 0)
+			    return SP_TRUNCERROR;
+			c = (n << 16) + c;
+		    }
 		    if (c & WF_AFX)
-			c = (getc(fd) << 24) + c;	// <affixID>
+		    {
+			n = getc(fd);			// <affixID>
+			if (n < 0)
+			    return SP_TRUNCERROR;
+			c = (n << 24) + c;
+		    }
 		}
 
 		idxs[idx] = c;

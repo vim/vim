@@ -1,7 +1,7 @@
 vim9script
 
 # Maintainer: Maxim Kim <habamax@gmail.com>
-# Last update: 2023-12-10
+# Last update: 2026-09-25
 #
 # Set of functions to format/beautify JSON data structures.
 #
@@ -76,7 +76,6 @@ enddef
 # command -range=% JSONFormat json.FormatRange(<line1>, <line2>)
 export def FormatRange(line1: number, line2: number)
     var indent_base = matchstr(getline(line1), '^\s*')
-    var indent = &expandtab ? repeat(' ', &shiftwidth) : "\t"
 
     var [l1, l2] = line1 > line2 ? [line2, line1] : [line1, line2]
 

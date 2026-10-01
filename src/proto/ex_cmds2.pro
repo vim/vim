@@ -1,4 +1,4 @@
-/* ex_cmds2.c */
+// ex_cmds2.c
 int autowrite(buf_T *buf, int forceit);
 void autowrite_all(void);
 int check_changed(buf_T *buf, int flags);
@@ -15,4 +15,4 @@ void ex_pyxfile(exarg_T *eap);
 void ex_pyx(exarg_T *eap);
 void ex_pyxdo(exarg_T *eap);
 void ex_checktime(exarg_T *eap);
-/* vim: set ft=c : */
+// vim: ft=c

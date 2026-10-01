@@ -1,4 +1,4 @@
-*pi_getscript.txt*  For Vim version 9.2.  Last change: 2026 Feb 14
+*pi_getscript.txt*  For Vim version 9.2.  Last change: 2026 Aug 17
 >
 		GETSCRIPT REFERENCE MANUAL  by Charles E. Campbell
 <
@@ -79,6 +79,14 @@ work.
 		(edit GetLatestVimScripts.dat to install your own personal
 		list of desired plugins -- see |GetLatestVimScripts_dat|)
 
+	PREVENT LOADING
+
+If you want to use plugins, but for some reason don't wish to use getscript,
+then you can avoid loading the getscript plugin by adding the following to
+your |vimrc|: >
+
+	:let g:loaded_getscriptPlugin = 1
+<
 
 ==============================================================================
 3. GetLatestVimScripts Usage				*glvs-usage* *:GLVS*

@@ -1549,10 +1549,23 @@ typedef struct {
 #define TPR_KITTY		    4
 // can send DECRQM requests to terminal
 #define TPR_DECRQM		    5
+// true color, from the color count of the terminal entry
+#define TPR_RGB			    6
 // table size
-#define TPR_COUNT		    6
+#define TPR_COUNT		    7
 
 static termprop_T term_props[TPR_COUNT];
+
+/*
+ * Set the "rgb" terminal property from the color count.  The entry of a
+ * direct color terminal, such as xterm-direct, has 16777216 colors.
+ */
+    static void
+set_rgb_term_prop(void)
+{
+    term_props[TPR_RGB].tpr_status = t_colors == 0x1000000
+						       ? TPR_YES : TPR_UNKNOWN;
+}
 
 /*
  * Initialize the term_props table.
@@ -1576,10 +1589,15 @@ init_term_props(int all)
     term_props[TPR_KITTY].tpr_set_by_termresponse = FALSE;
     term_props[TPR_DECRQM].tpr_name = "decrqm";
     term_props[TPR_DECRQM].tpr_set_by_termresponse = TRUE;
+    term_props[TPR_RGB].tpr_name = "rgb";
+    term_props[TPR_RGB].tpr_set_by_termresponse = FALSE;
 
     for (i = 0; i < TPR_COUNT; ++i)
 	if (all || term_props[i].tpr_set_by_termresponse)
 	    term_props[i].tpr_status = TPR_UNKNOWN;
+
+    // Derived from the color count, not reset.
+    set_rgb_term_prop();
 }
 
 #if defined(FEAT_EVAL)
@@ -2451,6 +2469,10 @@ set_termname(char_u *term)
 
 #ifdef FEAT_TERMRESPONSE
     may_req_termresponse();
+#endif
+
+#ifdef FEAT_IMAGE
+    (void)update_image_backend();
 #endif
 
     return OK;
@@ -3567,6 +3589,7 @@ ttest(int pairs)
 		set_color_count(colors);
 	}
     }
+    set_rgb_term_prop();
 }
 
 #if defined(FEAT_GUI) && (defined(FEAT_MENU) || !defined(USE_ON_FLY_SCROLL))
@@ -3719,6 +3742,36 @@ win_new_shellsize(void)
     }
 }
 
+#if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
+    void
+update_cell_size(void)
+{
+# ifdef FEAT_GUI
+    if (gui.in_use)
+    {
+	cell_width = gui.char_width;
+	cell_height = gui.char_height;
+    }
+    else
+# endif
+    {
+	struct cellsize cell_sz;
+
+	mch_calc_cell_size(&cell_sz);
+	if (cell_sz.cs_xpixel <= 0 || cell_sz.cs_ypixel <= 0)
+	{
+	    cell_width = 8;
+	    cell_height = 16;
+	}
+	else
+	{
+	    cell_width = cell_sz.cs_xpixel;
+	    cell_height = cell_sz.cs_ypixel;
+	}
+    }
+}
+#endif
+
 /*
  * Call this function when the Vim shell has been resized in any way.
  * Will obtain the current size and redraw (also when size didn't change).
@@ -3726,6 +3779,9 @@ win_new_shellsize(void)
     void
 shell_resized(void)
 {
+#if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
+    update_cell_size();
+#endif
     set_shellsize(0, 0, FALSE);
 }
 
@@ -5390,6 +5446,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	    }
 	    termrequest_sent(&decrqm_status);
 	    need_flush = TRUE;
+
 	}
 
 	if (need_flush)
@@ -5781,6 +5838,31 @@ handle_csi(
 	*slen = csi_len;
     }
 
+#if (defined(UNIX) || defined(MSWIN)) \
+    && (defined(FEAT_IMAGE) || defined(FEAT_EVAL))
+    // Response to CSI 14 t or CSI 16 t
+    else if (first == -1 && argc >= 3
+	    && (arg[0] == 4 || arg[0] == 6) && trail == 't')
+    {
+	if (arg[0] == 4)
+	{
+	    LOG_TRN("Received CSI 14 t response: %s", tp);
+	    cell_width = arg[2] / Columns;
+	    cell_height = arg[1] / Rows;
+	}
+	else
+	{
+	    LOG_TRN("Received CSI 16 t response: %s", tp);
+	    cell_width = arg[2];
+	    cell_height = arg[1];
+	}
+
+	key_name[0] = (int)KS_EXTRA;
+	key_name[1] = (int)KE_IGNORE;
+	*slen = csi_len;
+    }
+#endif
+
     // Primary device attributes (DA1) response
     else if (first == '?' && trail == 'c')
     {
@@ -5795,6 +5877,7 @@ handle_csi(
 
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;
+	*slen = csi_len;
     }
 
     // DECRPM mode 2026 or 2048.
@@ -7368,6 +7451,21 @@ gather_termleader(void)
     if (gui.in_use)
 	termleader[len++] = CSI;    // the GUI codes are not in termcodes[]
 #endif
+
+    // Querying cell size uses CSI 14 t
+#if defined(MSWIN) && (defined(FEAT_IMAGE) || defined(FEAT_EVAL))
+# ifdef FEAT_GUI
+    if (!gui.in_use)
+# endif
+    {
+	termleader[len++] = ESC;
+# ifdef FEAT_GUI
+	if (!gui.in_use)
+# endif
+	    termleader[len++] = CSI;
+    }
+#endif
+
 #ifdef FEAT_TERMRESPONSE
     if (check_for_codes || *T_CRS != NUL)
 	termleader[len++] = DCS;    // the termcode response starts with DCS

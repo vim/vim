@@ -458,13 +458,14 @@ func RunTest()
   " Turn a subset of filenames etc. requested for testing into a pattern.
   if filereadable('../testdir/Xfilter')
     let filter = readfile('../testdir/Xfilter')
-	\ ->map({_, v -> '^' .. escape(substitute(v, '_$', '', ''), '.')})
+	\ ->map({_, v -> '^' .. escape(substitute(v, '_$', '', ''), '.')
+	    \ .. (v !~ '.\..' ? '[._]' : '$')})
 	\ ->join('\|')
     call delete('../testdir/Xfilter')
   endif
 
-  " Treat "^self-testing" as a string NOT as a regexp.
-  if filter ==# '^self-testing'
+  " Treat "^self-testing[._]" as a string NOT as a regexp.
+  if filter ==# '^self-testing[._]'
     let dirpath = 'input/selftestdir/'
     let fnames = readdir(dirpath, {fname -> fname !~ '^README\.txt$'})
   else
@@ -489,6 +490,9 @@ func RunTest()
     if out_time < 0 || in_time > out_time
       call ch_log('running tests for: ' .. fname)
       let filetype = substitute(root, '\([^_.]*\)[_.].*', '\1', '')
+      if filetype ==# 'vim9'
+	let filetype = 'vim'
+      endif
       let failed_root = 'failed/' .. root
 
       for pagename in glob(failed_root .. '_\d*\.dump', 1, 1)

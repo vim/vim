@@ -250,6 +250,16 @@ typedef struct {
     int	    cmf_idx;	    // index in "def_functions" for ISN_METHODCALL
     int	    cmf_argcount;   // number of arguments on top of stack
     int	    cmf_is_super;   // doing "super.Func", use cmf_itf, not cmf_idx
+    ufunc_T *cmf_ufunc;	    // for a generic method: the method of
+			    // "cmf_itf" with the type arguments, NULL
+			    // otherwise
+    // Cache for a generic method: "cmf_cache_ufunc" is the method of
+    // "cmf_cache_cl" with the type arguments of "cmf_ufunc", for the generic
+    // method "cmf_cache_generic".  "cmf_cache_cl" is referenced so that the
+    // functions are not freed.
+    class_T *cmf_cache_cl;
+    ufunc_T *cmf_cache_generic;
+    ufunc_T *cmf_cache_ufunc;
 } cmfunc_T;
 
 // arguments to ISN_PCALL
@@ -393,6 +403,8 @@ typedef struct {
     class_T	  *fre_class;		// class for a method
     int		  fre_object_method;	// class or object method
     int		  fre_method_idx;	// method index on "fre_class"
+    int		  fre_outer_depth;	// when > 0: use the context of the
+					// function this many levels up
 } funcref_extra_T;
 
 // arguments to ISN_FUNCREF
@@ -776,6 +788,8 @@ typedef struct {
 				// ASSIGN_FINAL (no assignment) or ASSIGN_CONST
 				// (value cannot be changed)
     int		lv_arg;		// when TRUE this is an argument
+    ufunc_T	*lv_ufunc;	// for a nested function: its ufunc, see
+				// compile_nested_generic_func()
 } lvar_T;
 
 // Destination for an assignment or ":unlet" with an index.

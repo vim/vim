@@ -1,4 +1,4 @@
-/* charset.c */
+// charset.c
 int init_chartab(void);
 int buf_init_chartab(buf_T *buf, int global);
 int check_isopt(char_u *var);
@@ -24,6 +24,7 @@ int win_linetabsize(win_T *wp, linenr_T lnum, char_u *line, colnr_T len);
 int linetabsize(win_T *wp, linenr_T lnum);
 int linetabsize_eol(win_T *wp, linenr_T lnum);
 int linetabsize_no_outer(win_T *wp, linenr_T lnum);
+int linetabsize_no_outer_eol(win_T *wp, linenr_T lnum);
 void win_linetabsize_cts(chartabsize_T *cts, colnr_T len);
 int vim_isIDc(int c);
 int vim_isNormalIDc(int c);
@@ -74,4 +75,4 @@ int hexhex2nr(char_u *p);
 int rem_backslash(char_u *str);
 void backslash_halve(char_u *p);
 char_u *backslash_halve_save(char_u *p);
-/* vim: set ft=c : */
+// vim: ft=c
