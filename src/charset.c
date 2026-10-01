@@ -1597,7 +1597,7 @@ win_lbr_chartabsize(
 	    colmax += col_adj;
 	    n = colmax +  win_col_off2(wp);
 	    if (n > 0)
-		colmax += (((vcol - colmax) / n) + 1) * n - col_adj;
+		colmax += (((vcol + col_adj - colmax) / n) + 1) * n - col_adj;
 	}
 
 	colnr_T vcol2 = vcol;
