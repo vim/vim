@@ -1179,6 +1179,8 @@ end_visual_mode_keep_button(void)
     curbuf->b_visual.vi_mode = VIsual_mode;
     curbuf->b_visual.vi_start = VIsual;
     curbuf->b_visual.vi_end = curwin->w_cursor;
+    curbuf->b_visual.vi_start_is_end = LT_POS(curbuf->b_visual.vi_end,
+						curbuf->b_visual.vi_start);
     curbuf->b_visual.vi_curswant = curwin->w_curswant;
 #ifdef FEAT_EVAL
     curbuf->b_visual_mode_eval = VIsual_mode;
@@ -5761,6 +5763,8 @@ nv_gv_cmd(cmdarg_T *cap)
 	curbuf->b_visual.vi_end = curwin->w_cursor;
 	curwin->w_cursor = curbuf->b_visual.vi_start;
 	curbuf->b_visual.vi_start = VIsual;
+	curbuf->b_visual.vi_start_is_end = LT_POS(curbuf->b_visual.vi_end,
+						curbuf->b_visual.vi_start);
     }
     else
     {
@@ -7559,6 +7563,8 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	// need to adjust cursor position
 	if (*p_sel == 'e')
 	    inc(&curbuf->b_visual.vi_end);
+	curbuf->b_visual.vi_start_is_end = LT_POS(curbuf->b_visual.vi_end,
+						curbuf->b_visual.vi_start);
     }
 
     // When all lines were selected and deleted do_put() leaves an empty

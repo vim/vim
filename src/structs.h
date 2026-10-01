@@ -429,6 +429,8 @@ typedef struct
     pos_T	vi_end;		// end position of last VIsual
     int		vi_mode;	// VIsual_mode of last VIsual
     colnr_T	vi_curswant;	// MAXCOL from w_curswant
+    int		vi_start_is_end; // '>' uses vi_start; bind only on a new
+				// complete Visual snapshot, not on mark changes
 } visualinfo_T;
 
 /*
