@@ -1,4 +1,4 @@
-.TH VIM 1 "08 settembre 2026"
+.TH VIM 1 "28 settembre 2026"
 .SH NOME
 vim \- VI Migliorato, un editor di testi per programmatori
 .SH SINTASSI
@@ -309,7 +309,7 @@ Se N manca, aprire una finestra per ciascun file.
 .TP
 \-p[N]
 Aprire N pagine di schede.
-Quando N è omesso, aprire una pagine di schede per ciascun file.
+Quando N è omesso, aprire una pagine di schede per ogni file.
 .TP
 \-P {titolo-padre}
 Solo per GUI Win32: Specificare il titolo dell'applicazione-padre.  Se
@@ -515,6 +515,18 @@ Connettersi a un server Vim e spedirgli {chiavi}.
 .TP
 \-\-remote\-silent
 Come \-\-remote, ma senza avvisare se non si trova un server.
+.TP
+\-\-remote\-tab
+Come \-\-remote, ma ogni file viene aperto in una nuova pagina di schede.
+.TP
+\-\-remote\-tab\-silent
+Come \-\-remote-silent, ma ogni file viene aperto in una nuova pagina di schede.
+.TP
+\-\-remote\-tab\-wait
+Come \-\-remote\-wait, ma ogni file viene aperto in una nuova pagina di schede.
+.TP
+\-\-remote\-tab\-wait\-silent
+Come \-\-remote\-wait\-silent, ma ogni file viene aperto in una nuova pagina di schede.
 .TP
 \-\-remote-wait
 Come \-\-remote, ma non terminare Vim finché i file non sono stati editati.
