@@ -1901,6 +1901,14 @@ call_shell(char_u *cmd, int opt)
     proftime_T	wait_time;
 #endif
 
+#ifdef FEAT_EVAL
+    if (source_dryrun)
+    {
+	emsg(_(e_not_allowed_in_dry_run));
+	return -1;
+    }
+#endif
+
     if (p_verbose > 3)
     {
 	verbose_enter();

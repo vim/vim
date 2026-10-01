@@ -1714,6 +1714,16 @@ do_source_ext(
 	retval = OK;
 	goto theend;
     }
+
+    // A dry run would replace the functions and variables of a script that
+    // is in use.
+    if (dryrun && sid > 0 && SCRIPT_ITEM(sid)->sn_state != SN_STATE_NOT_LOADED
+	    && !SCRIPT_ITEM(sid)->sn_dryrun)
+    {
+	semsg(_(e_cannot_dry_run_script_already_loaded_str), fname_exp);
+	retval = OK;
+	goto theend;
+    }
 #endif
 
 #ifdef FEAT_EVAL
@@ -1923,6 +1933,7 @@ do_source_ext(
 	// Remember the "is_vimrc" flag for when the file is sourced again.
 	si->sn_is_vimrc = is_vimrc;
     }
+    si->sn_dryrun = source_dryrun;
 
     // Keep the sourcing name/lnum, for recursive calls.
     estack_push(ETYPE_SCRIPT, si->sn_name, 0);
@@ -2090,8 +2101,6 @@ almosttheend:
 
     if (cookie.fp != NULL)
 	fclose(cookie.fp);
-    if (cookie.source_from_buf)
-	ga_clear_strings(&cookie.buflines);
     vim_free(cookie.nextline);
     vim_free(firstline);
     convert_setup(&cookie.conv, NULL, NULL);
@@ -2114,6 +2123,8 @@ theend:
     }
 #endif
 
+    if (cookie.source_from_buf)
+	ga_clear_strings(&cookie.buflines);
     vim_free(fname_not_fixed);
     vim_free(fname_exp);
     sticky_cmdmod_flags = save_sticky_cmdmod_flags;

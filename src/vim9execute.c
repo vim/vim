@@ -530,6 +530,8 @@ call_dfunc(
 		dfunc->df_name == NULL ? (char_u *)"unknown" : dfunc->df_name);
 	return FAIL;
     }
+    if (func_defined_by_dryrun(ufunc))
+	return FAIL;
 
 #ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
@@ -6686,6 +6688,14 @@ call_def_function(
 // Get pointer to a local variable on the stack.  Negative for arguments.
 #undef STACK_TV_VAR
 #define STACK_TV_VAR(idx) (((typval_T *)ectx.ec_stack.ga_data) + ectx.ec_frame_idx + STACK_FRAME_SIZE + idx)
+
+    if (source_dryrun)
+    {
+	emsg(_(e_not_allowed_in_dry_run));
+	return FAIL;
+    }
+    if (func_defined_by_dryrun(ufunc))
+	return FAIL;
 
     if (ufunc->uf_def_status == UF_NOT_COMPILED
 	    || ufunc->uf_def_status == UF_COMPILE_ERROR
