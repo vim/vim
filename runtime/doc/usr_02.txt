@@ -1,4 +1,4 @@
-*usr_02.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*usr_02.txt*	For Vim version 9.2.  Last change: 2026 Aug 25
 
 
 		     VIM USER MANUAL	by Bram Moolenaar
@@ -581,7 +581,7 @@ Summary:					*help-summary*  >
     starting with "z".
 
 11) Regexp items always start with /.  So to get help for the "\+" quantifier
-    in Vim regexes: >
+    in Vim regexps: >
 	:help /\+
 <    If you need to know everything about regular expressions, start reading
     at: >

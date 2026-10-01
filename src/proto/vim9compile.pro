@@ -1,4 +1,4 @@
-/* vim9compile.c */
+// vim9compile.c
 int lookup_local(char_u *name, size_t len, lvar_T *lvar, cctx_T *cctx);
 int arg_exists(char_u *name, size_t len, int *idxp, type_T **type, int *gen_load_outer, cctx_T *cctx);
 void update_script_var_block_id(char_u *name, int block_id);
@@ -22,7 +22,7 @@ char_u *compile_one_expr_in_str(char_u *p, cctx_T *cctx);
 int compile_all_expr_in_str(char_u *str, int evalstr, cctx_T *cctx);
 int assignment_len(char_u *p, int *heredoc);
 void vim9_declare_error(char_u *name);
-int get_var_dest(char_u *name, assign_dest_T *dest, cmdidx_T cmdidx, int *option_scope, int *vimvaridx, type_T **type, cctx_T *cctx);
+int get_var_dest(char_u *name, assign_dest_T *dest, cmdidx_T cmdidx, int has_index, int *option_scope, int *vimvaridx, type_T **type, cctx_T *cctx);
 int compile_lhs(char_u *var_start, lhs_T *lhs, cmdidx_T cmdidx, int heredoc, int has_cmd, int oplen, cctx_T *cctx);
 int compile_assign_lhs(char_u *var_start, lhs_T *lhs, cmdidx_T cmdidx, int is_decl, int heredoc, int has_cmd, int oplen, cctx_T *cctx);
 int compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx);
@@ -33,4 +33,4 @@ void set_function_type(ufunc_T *ufunc);
 void unlink_def_function(ufunc_T *ufunc);
 void link_def_function(ufunc_T *ufunc);
 void free_def_functions(void);
-/* vim: set ft=c : */
+// vim: ft=c

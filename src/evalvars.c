@@ -169,6 +169,7 @@ static struct vimvar
     {VV_NAME("termosc",	 VAR_STRING), NULL, VV_RO},
     {VV_NAME("vim_did_init",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("clipproviders",	 VAR_DICT), NULL, VV_RO},
+    {VV_NAME("imagebackend",	 VAR_STRING), NULL, VV_RO}
 };
 
 // shorthand
@@ -273,6 +274,7 @@ evalvars_init(void)
     set_vim_var_nr(VV_ECHOSPACE,    sc_col - 1);
 
     set_vim_var_dict(VV_COLORNAMES, dict_alloc());
+    set_vim_var_dict(VV_CLIPPROVIDERS, dict_alloc());
 
 #ifdef FEAT_PYTHON3
     set_vim_var_nr(VV_PYTHON3_VERSION, python3_version());
@@ -1128,6 +1130,36 @@ ex_let(exarg_T *eap)
 	return;
     }
 
+    if (source_dryrun && vim9script && (flags & ASSIGN_NO_DECL) == 0)
+    {
+	// ":source ++dryrun": skip the expression, it may span lines, and only
+	// declare the variables.
+	int	save_skip = eap->skip;
+
+	eap->skip = TRUE;
+	if (expr[0] == '=' && expr[1] == '<' && expr[2] == '<')
+	{
+	    list_T *l = heredoc_get(eap, expr + 3, FALSE, FALSE);
+
+	    if (l != NULL)
+		list_free(l);
+	}
+	else
+	{
+	    evalarg_T	evalarg;
+
+	    ++emsg_skip;
+	    fill_evalarg_from_eap(&evalarg, eap, TRUE);
+	    expr = skipwhite_and_linebreak(expr + 1, &evalarg);
+	    (void)eval0(expr, &rettv, eap, &evalarg);
+	    --emsg_skip;
+	    clear_evalarg(&evalarg, eap);
+	}
+	eap->skip = save_skip;
+	vim9_declare_dryrun(arg, flags & (ASSIGN_CONST | ASSIGN_FINAL));
+	return;
+    }
+
     if (expr[0] == '=' && expr[1] == '<' && expr[2] == '<')
     {
 	list_T	*l = NULL;
@@ -1961,6 +1993,18 @@ ex_let_one(
     if (check_typval_is_value(tv) == FAIL)
 	return NULL;
 
+    // In Vim9 script an environment variable and a register only take a
+    // String.  "@#" also takes a buffer number.
+    if (in_vim9script() && (*arg == '$' || *arg == '@')
+	    && !(*arg == '@' && arg[1] == '#' && tv->v_type == VAR_NUMBER
+					       && (op == NULL || *op == '=')))
+    {
+	where_T	where = WHERE_INIT;
+
+	if (check_typval_type(&t_string, tv, where) == FAIL)
+	    return NULL;
+    }
+
     if (*arg == '$')
     {
 	// ":let $VAR = expr": Set environment variable.
@@ -2771,6 +2815,33 @@ get_vim_var_type(int idx, garray_T *type_list)
     if (vimvars[idx].vv_type != NULL)
 	return vimvars[idx].vv_type;
     return typval2type_vimvar(&vimvars[idx].vv_tv, type_list);
+}
+
+/*
+ * Add what getinfo() reports for the v: variable "name", without the "v:", to
+ * "d".  Returns FAIL when there is no such variable.
+ */
+    int
+vim_var_info(char_u *name, dict_T *d)
+{
+    int		di_flags;
+    int		idx = find_vim_var(name, &di_flags);
+    garray_T	type_list;
+    char	*tofree;
+
+    if (idx < 0)
+	return FAIL;
+    vim_snprintf((char *)IObuff, IOSIZE, "v:%s", vimvars[idx].vv_name);
+    dict_add_string(d, "name", IObuff);
+    dict_add_bool(d, "available", TRUE);
+    ga_init2(&type_list, sizeof(type_T *), 10);
+    char *type = type_name(get_vim_var_type(idx, &type_list), &tofree);
+    dict_add_string(d, "type", (char_u *)type);
+    vim_free(tofree);
+    clear_type_list(&type_list);
+    dict_add_bool(d, "readonly", (vimvars[idx].vv_flags & VV_RO) != 0);
+    dict_add_bool(d, "compat", (vimvars[idx].vv_flags & VV_COMPAT) != 0);
+    return OK;
 }
 
 /*
@@ -3931,8 +4002,12 @@ delete_autoload_export_vars(char_u *prefix)
 	    dictitem_T	*di = HI2DI(hi);
 
 	    --todo;
-	    // Keep a class or enum: existing objects still refer to it.
-	    if (di->di_tv.v_type != VAR_CLASS
+	    // Keep a class or enum: existing objects still refer to it.  Not
+	    // in a dry run, nor one a dry run defined: no object was made.
+	    if ((di->di_tv.v_type != VAR_CLASS || source_dryrun
+			|| (di->di_tv.vval.v_class != NULL
+			    && (di->di_tv.vval.v_class->class_flags
+							     & CLASS_DRYRUN)))
 		    && STRNCMP(di->di_key, prefix, prefixlen) == 0)
 		delete_var(&globvarht, hi);
 	}
@@ -4292,6 +4367,16 @@ set_var_const(
 	}
 
 	// existing variable, need to clear the value
+
+	// In Vim9 script a String v: variable only takes a String.
+	if (ht == &vimvarht && di->di_tv.v_type == VAR_STRING
+							    && in_vim9script())
+	{
+	    where_T	where = WHERE_INIT;
+
+	    if (check_typval_type(&t_string, tv, where) == FAIL)
+		goto failed;
+	}
 
 	// Handle setting internal v: variables separately where needed to
 	// prevent changing the type.

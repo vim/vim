@@ -120,7 +120,7 @@ split (42)
 
 let substitute = substitute(42)
 call substitute(42)
-" command
+" command - /42)/
 substitute(42)
 substitute (42)
 

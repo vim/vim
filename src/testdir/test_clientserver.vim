@@ -243,6 +243,47 @@ func Test_client_server_stopinsert()
   endtry
 endfunc
 
+" A "VimRegistry" entry whose window id does not parse makes LookupName() keep
+" the loose name it allocated while still returning None.  Nothing observable
+" differs, so this test asserts nothing about the leak itself: it walks the
+" path so that the ASan job notices if it comes back.
+func Test_clientserver_x11_registry_loose_name()
+  let g:test_is_flaky = 1
+  CheckFeature x11
+  if !executable('xprop')
+    throw 'Skipped: xprop is not available'
+  endif
+  " Only the x11 backend goes through serverSendToVim().
+  if $VIM_CLIENTSERVER != '' && $VIM_CLIENTSERVER !=? 'x11'
+    throw 'Skipped: the clientserver backend is not x11'
+  endif
+  let cmd = GetVimCommand()
+  if cmd == ''
+    throw 'GetVimCommand() failed'
+  endif
+  call Check_X11_Connection()
+
+  " Keep a client on the display: when the last one disconnects the X server
+  " may reset and drop the property before Vim can read it.
+  let name = 'XVIMTESTREG'
+  let job = job_start(cmd .. ' --servername ' .. name,
+        \ {'stoponexit': 'kill', 'out_io': 'null'})
+  call WaitForAssert({-> assert_equal("run", job_status(job))})
+  call WaitForAssert({-> assert_match(name, serverlist())})
+
+  " Replaces the whole registry, so this unregisters the server above too.
+  call system("xprop -root -f VimRegistry 8s -set VimRegistry 'zz " .. name .. "1'")
+  call assert_equal(0, v:shell_error)
+
+  " Loose match: "XVIMTESTREG" against a registered "XVIMTESTREG1" whose
+  " window id is not hex.
+  call system(cmd .. ' --servername ' .. name .. ' --remote-send x')
+
+  call system('xprop -root -remove VimRegistry')
+  call job_stop(job, 'kill')
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+endfunc
+
 " Test if socket server, X11, and mswin backends can be chosen and work properly.
 func Test_client_server_multiple_backends()
     CheckFeature socketserver
@@ -671,14 +712,18 @@ func Test_clientserver_serverlist_list()
 
   " Don't use channel:2000, because previous tests use that and it may take a
   " while for the channel to fully close.
-  let actual = cmd .. ' --servername XVIMTEST'
+  " Use a name of its own: when a server of another test is still running Vim
+  " appends a number to the name.
+  let actual = cmd .. ' --servername XVIMSRVLIST'
 
   let job = job_start(actual, {'stoponexit': 'kill', 'out_io': 'null'})
 
-  call WaitForAssert({-> assert_match('XVIMTEST', serverlist())})
+  call WaitForAssert({-> assert_match('XVIMSRVLIST', serverlist())})
 
-  call assert_equal('list<string>', typename(serverlist(#{list: v:true})))
-  call assert_true(serverlist(#{list: v:true})->index('XVIMTEST') != -1)
+  " Use a pattern, the name may have a number appended to it.
+  let servers = serverlist(#{list: v:true})
+  call assert_equal('list<string>', typename(servers))
+  call assert_notequal(-1, match(servers, '^XVIMSRVLIST'))
 
   if has('win32')
     call job_stop(job, 'kill')
@@ -704,20 +749,24 @@ func Test_clientserver_serverlist_without_x11()
     throw 'GetVimCommand() failed'
   endif
 
-  " This test verifies that serverlist() fails with error E240 when a
+  " This test verifies that serverlist() returns an empty result when a
   " connection to X11 cannot be established. It must be executed with the
   " CLIENTSERVER backend set to x11 and in a state where the X11 server is
   " unreachable.
   "
   " To achieve this, the `VIM_CLIENTSERVER` and `DISPLAY` environment
-  " variables must be unset before running Vim as a child process. Within the
-  " child process, `assert_fails()` and `v:errors` are used to confirm that
-  " E240 occurred; if E240 is raised as expected, `v:errors` remains empty,
-  " whereas if the call succeeds or a different error occurs, `v:errors` will
-  " contain one or more errors.
+  " variables must be unset before running Vim as a child process. The child
+  " process reports the number of `v:errors` as its exit code. The calls are
+  " wrapped in a try/catch, because an error would otherwise skip the
+  " assertion without adding anything to `v:errors`.
 
   call writefile([
-        \ "call assert_fails('let x = serverlist()', 'E240:')",
+        \ "try",
+        \ "  call assert_equal('', serverlist())",
+        \ "  call assert_equal([], serverlist(#{list: v:true}))",
+        \ "catch",
+        \ "  call add(v:errors, 'unexpected exception: ' .. v:exception)",
+        \ "endtry",
         \ "execute 'cq! ' .. len(v:errors)"
         \ ], 'Xtest', 'D')
 

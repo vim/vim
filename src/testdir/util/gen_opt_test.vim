@@ -238,6 +238,9 @@ let test_values = {
       \ 'helplang': [['', 'de', 'de,it'], ['xxx']],
       \ 'highlight': [['', 'e:Error'], ['xxx']],
       \ 'imactivatekey': [[''], ['xxx']],
+      \ 'imageprotocol': [
+      \ ['kitty:kitty', 'xterm:sixel,kitty:sixel'],
+      \ ['kitty:', 'xterm:unknown', 'xterm:sixel,wwww']],
       \ 'isfname': [['', '@', '@,48-52'], ['xxx', '@48']],
       \ 'isident': [['', '@', '@,48-52'], ['xxx', '@48']],
       \ 'iskeyword': [['', '@', '@,48-52'], ['xxx', '@48']],

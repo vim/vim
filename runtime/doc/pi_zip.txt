@@ -1,4 +1,4 @@
-*pi_zip.txt*	For Vim version 9.2.  Last change: 2026 Jul 30
+*pi_zip.txt*	For Vim version 9.2.  Last change: 2026 Aug 19
 
 				+====================+
 				| Zip File Interface |
@@ -49,20 +49,30 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
    automatically maximized when opened.
 
 							*g:zip_unzipcmd*
-   Use this option to specify the program which does the duty of "unzip".
-   It's used during browsing. By default: >
+   Use these options to specify the program which does the duty of "unzip" and
+   the required argument switches.
+   It's used during browsing.  By default: >
 	let g:zip_unzipcmd= "unzip"
+	let g:zip_unzipcmd_browseopt= "-Z1"
+	let g:zip_unzipcmd_readopt= "-p"
 <
+   Note: a `--` is appended after the g:zip_unzipcmd_browseopt and
+   g:zip_unzipcmd_readopt settings to indicate the end of options.
+
 							*g:zip_zipcmd*
-   Use this option to specify the program which does the duty of "zip".
+   Use these options to specify the program which does the duty of "zip" and
+   the required argument switches.
    It's used during the writing (updating) of a file already in a zip
    file; by default: >
 	let g:zip_zipcmd= "zip"
+	let g:zip_zipcmd_deleteopt= "-d"
+	let g:zip_zipcmd_updateopt= "-u"
 <
 							*g:zip_extractcmd*
    This option specifies the program (and any options needed) used to
    extract a file from a zip archive.  By default, >
 	let g:zip_extractcmd= g:zip_unzipcmd
+	let g:zip_extractcmd_extractopt= "-o"
 <
 							*g:zip_exec*
    For security reasons, one may prevent that Vim runs executables

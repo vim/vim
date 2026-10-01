@@ -1,4 +1,4 @@
-/* gui_motif.c */
+// gui_motif.c
 void gui_x11_create_widgets(void);
 void gui_x11_destroy_widgets(void);
 void gui_mch_set_text_area_pos(int x, int y, int w, int h);
@@ -43,4 +43,4 @@ void gui_motif_menu_fontlist(Widget id);
 void gui_mch_find_dialog(exarg_T *eap);
 void gui_mch_replace_dialog(exarg_T *eap);
 void gui_motif_synch_fonts(void);
-/* vim: set ft=c : */
+// vim: ft=c

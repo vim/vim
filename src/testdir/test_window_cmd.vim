@@ -609,6 +609,23 @@ func Test_equalalways_on_close()
   set equalalways&
 endfunc
 
+func Test_equalalways_on_open()
+  set equalalways
+  vsplit
+  split
+  wincmd l
+  windo vsplit
+
+  let basewidth = winwidth(1)
+
+  for win in range(2, winnr("$"))
+    call assert_true(abs(winwidth(win) - basewidth) <= 1)
+  endfor
+
+  only
+  set equalalways&
+endfunc
+
 func Test_win_screenpos()
   CheckFeature quickfix
 
@@ -2022,6 +2039,34 @@ func Test_splitkeep_screen_cursor_pos()
   call assert_equal([0, 1, 20, 0], getpos('.'))
   %bwipeout!
   set splitkeep&
+endfunc
+
+func Test_splitkeep_phantom_jump()
+  set splitbelow
+  call setline(1, range(1, 100))
+  split
+
+  " Move cursor to last visible line so it is at risk of being pushed off
+  normal! L
+  let old = getcurpos()
+
+  " No jumps, just 3 header lines
+  call assert_equal(3, execute('jumps')->split('\n')->len())
+
+  " Switching to "screen" was causing vim to not update relevant variables
+  set splitkeep=screen
+
+  " Reduce window 2's space, and so bump up the cursor
+  set cmdheight=2
+
+  " Cursor has moved up a single line in the buffer, respecting splitkeep
+  call assert_equal(4, execute('jumps')->split('\n')->len())
+
+  let old[1] = old[1] - 1
+  call assert_equal(old, getcurpos())
+
+  %bwipeout!
+  set splitbelow& splitkeep& cmdheight&
 endfunc
 
 func Test_splitkeep_cmdheight()

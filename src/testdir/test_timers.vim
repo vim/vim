@@ -293,6 +293,39 @@ func Test_timer_errors()
   call assert_fails('call timer_stop("abc")', 'E1210:')
 endfunc
 
+func FuncWithErrorPattern(state, timer)
+  let a:state.calls += 1
+  if a:state.errors[a:state.calls - 1]
+    doesnotexist
+  endif
+endfunc
+
+func Test_timer_nonconsecutive_errors()
+  for [errors, expected] in [[[1, 0, 1, 0, 1, 0], 6],
+        \ [[1, 1, 0, 1, 1, 1, 0], 6]]
+    let state = {'calls': 0, 'errors': errors}
+    let timer = timer_start(10, function('FuncWithErrorPattern', [state]),
+          \ {'repeat': len(errors)})
+    call WaitForAssert({-> assert_equal([], timer_info(timer))})
+    call assert_equal(expected, state.calls)
+  endfor
+endfunc
+
+func Test_timer_errors_are_independent()
+  let failing = {'calls': 0, 'errors': [1, 1, 1, 1]}
+  let passing = {'calls': 0, 'errors': [0, 0, 0, 0]}
+  let timers = []
+  for state in [failing, passing]
+    call add(timers, timer_start(10,
+          \ function('FuncWithErrorPattern', [state]), {'repeat': 4}))
+  endfor
+  for timer in timers
+    call WaitForAssert({-> assert_equal([], timer_info(timer))})
+  endfor
+  call assert_equal(3, failing.calls)
+  call assert_equal(4, passing.calls)
+endfunc
+
 func FuncWithCaughtError(timer)
   let g:call_count += 1
   try

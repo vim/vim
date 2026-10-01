@@ -1,7 +1,7 @@
 " Creator:    Charles E Campbell
 " Previous Maintainer: Luca Saccarola <github.e41mv@aleeas.com>
 " Maintainer: This runtime file is looking for a new maintainer.
-" Last Change: 2026 Jul 23
+" Last Change: 2026 Sep 07
 " Copyright:  Copyright (C) 2016 Charles E. Campbell {{{1
 "             Permission is hereby granted to use and distribute this code,
 "             with or without modifications, provided that this copyright
@@ -4459,10 +4459,10 @@ endfunction
 
 "  s:NetrwHome: this function determines a "home" for saving bookmarks and history {{{2
 function s:NetrwHome()
-    if has('nvim')
-        let home = netrw#fs#PathJoin(stdpath('state'), 'netrw')
-    elseif exists('g:netrw_home')
+    if exists('g:netrw_home')
         let home = expand(g:netrw_home)
+    elseif has('nvim')
+        let home = netrw#fs#PathJoin(stdpath('state'), 'netrw')
     elseif exists('$MYVIMDIR')
         let home = expand('$MYVIMDIR')->substitute('/$', '', '')
     else
@@ -4485,7 +4485,7 @@ function s:NetrwHome()
         if exists("g:netrw_mkdir")
             call system(g:netrw_mkdir." ".s:ShellEscape(s:NetrwFile(home)))
         else
-            call mkdir(home)
+            call mkdir(home, 'p')
         endif
     endif
 
@@ -9300,12 +9300,9 @@ function s:NetrwLcd(newdir)
 
     if err472
         call netrw#msg#Notify('ERROR', printf('unable to change directory to <%s> (permissions?)', a:newdir))
-        if exists("w:netrw_prvdir")
-            let a:newdir= w:netrw_prvdir
-        else
+        if !exists("w:netrw_prvdir")
             call s:NetrwOptionsRestore("w:")
             exe "setl ".g:netrw_bufsettings
-            let a:newdir= dirname
         endif
         return -1
     endif

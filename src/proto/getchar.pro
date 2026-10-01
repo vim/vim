@@ -1,4 +1,4 @@
-/* getchar.c */
+// getchar.c
 char_u *get_recorded(void);
 string_T get_inserted(void);
 int stuff_empty(void);
@@ -59,4 +59,4 @@ int input_available(void);
 void may_add_last_used_map_to_redobuff(void);
 int do_cmdkey_command(int key, int flags);
 void reset_last_used_map(mapblock_T *mp);
-/* vim: set ft=c : */
+// vim: ft=c

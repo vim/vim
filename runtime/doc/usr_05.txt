@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 9.2.  Last change: 2026 May 11
+*usr_05.txt*	For Vim version 9.2.  Last change: 2026 Aug 30
 
 
 		     VIM USER MANUAL	by Bram Moolenaar
@@ -406,6 +406,10 @@ packages: optional and automatically loaded on startup.
 
 The Vim distribution comes with a few packages that you can optionally use.
 
+In your |vimrc| use `:packadd!`: it only adds the package to 'runtimepath'
+and leaves the loading to the usual startup.  Without the "!" the package is
+loaded directly, which is what you want when trying one out.  See |:packadd|.
+
 ------------------------------------------------------------------------------
 Adding the matchit package		*matchit-install* *package-matchit*
 ------------------------------------------------------------------------------
@@ -413,14 +417,14 @@ For example, the matchit package  This plugin makes the "%" command jump to
 matching HTML tags, if/else/endif in Vim scripts, etc.  Very useful, although
 it's not backwards compatible (that's why it is not enabled by default).
 
-To start using the matchit plugin, add one line to your vimrc file: >
+To start using this plugin, add one line to your vimrc file: >
 	packadd! matchit
 
 That's all!  After restarting Vim you can find help about this plugin: >
 	:help matchit
 
-This works, because when `:packadd` loaded the plugin it also added the
-package directory in 'runtimepath', so that the help file can be found.
+This works, because `:packadd!` added the package directory in 'runtimepath',
+so that the help file can be found.
 
 You can find packages on the Internet in various places.  It usually comes as
 an archive or as a repository.  For an archive you can follow these steps:
@@ -442,11 +446,10 @@ an archive or as a repository.  For an archive you can follow these steps:
 Adding the editorconfig package *editorconfig-install* *package-editorconfig*
 ------------------------------------------------------------------------------
 
-Similar to the matchit package, to load the distributed editorconfig plugin
-when Vim starts, add the following line to your vimrc file: >
+To start using this plugin, add one line to your vimrc file: >
 	packadd! editorconfig
 
-After restarting your Vim, the plugin is active and you can read about it at: >
+After restarting Vim the plugin is active and you can read about it at: >
 	:h editorconfig.txt
 
 
@@ -454,14 +457,13 @@ After restarting your Vim, the plugin is active and you can read about it at: >
 Adding the comment package		*comment-install* *package-comment*
 ------------------------------------------------------------------------------
 
-Load the plugin with this command: >
-	packadd comment
+To start using this plugin, add one line to your vimrc file: >
+	packadd! comment
 <
 This way you can use the plugin with the default key bindings `gc` and similar
 for commenting (which is a well-established mapping in the Vim community).
 
-If you add this line to your vimrc file, then you need to restart Vim to have
-the package loaded.  Once the package is loaded, read about it at: >
+After restarting Vim the plugin is active and you can read about it at: >
 	:h comment.txt
 
 
@@ -469,8 +471,8 @@ the package loaded.  Once the package is loaded, read about it at: >
 Adding the nohlsearch package	*nohlsearch-install* *package-nohlsearch*
 ------------------------------------------------------------------------------
 
-Load the plugin with this command: >
-	packadd nohlsearch
+To start using this plugin, add one line to your vimrc file: >
+	packadd! nohlsearch
 <
 Automatically execute |:nohlsearch| after 'updatetime' or getting into
 |Insert| mode.
@@ -485,8 +487,8 @@ To disable the effect of the plugin after it has been loaded: >
 Adding the highlight-yank package	*hlyank-install* *package-hlyank*
 ------------------------------------------------------------------------------
 
-Load the plugin with this command: >
-	packadd hlyank
+To start using this plugin, add one line to your vimrc file: >
+	packadd! hlyank
 <
 This package briefly highlights the affected region of the last |yank|
 command.  See |52.6| for a simplified implementation using the
@@ -523,8 +525,8 @@ The following configuration variables can be used are "g:hlput_hlgroup" and
 Adding the osc52 package		*osc52-install* *package-osc52*
 ------------------------------------------------------------------------------
 
-Load the plugin with this command: >
-	packadd osc52
+To start using this plugin, add one line to your vimrc file: >
+	packadd! osc52
 <
 The osc52.vim package provides support for the OSC 52 terminal command, which
 allows an application to access the clipboard by communicating directly with

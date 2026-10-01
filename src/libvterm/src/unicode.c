@@ -417,6 +417,7 @@ static int bisearch(uint32_t ucs, const struct interval *table, int max) {
 #ifdef WCWIDTH_FUNCTION
 // use a provided wcwidth() function
 int WCWIDTH_FUNCTION(uint32_t ucs);
+# define HAVE_PROVIDED_WCWIDTH
 #else
 # define WCWIDTH_FUNCTION mk_wcwidth
 
@@ -564,14 +565,20 @@ vterm_get_special_pty_type_placeholder(void)
 // ################################
 // ### The rest added by Paul Evans
 
+#ifndef HAVE_PROVIDED_WCWIDTH
 static const struct interval fullwidth[] = {
 #include "fullwidth.inc"
 };
+#endif
 
 INTERNAL int vterm_unicode_width(uint32_t codepoint)
 {
+  // The fullwidth table is outdated.  When a wcwidth() function is provided
+  // it is the only authority on the width of a character.
+#ifndef HAVE_PROVIDED_WCWIDTH
   if(bisearch(codepoint, fullwidth, sizeof(fullwidth) / sizeof(fullwidth[0]) - 1))
     return 2;
+#endif
 
   return WCWIDTH_FUNCTION(codepoint);
 }

@@ -1,4 +1,4 @@
-*repeat.txt*	For Vim version 9.2.  Last change: 2026 May 31
+*repeat.txt*	For Vim version 9.2.  Last change: 2026 Sep 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -67,9 +67,12 @@ This also makes it faster.
 Instead of the '/' which surrounds the {pattern}, you can use any other
 single byte character, but not an alphabetic character, '\', '"', '|' or '!'.
 This is useful if you want to include a '/' in the search pattern or
-replacement string.
+replacement string.  The closing delimiter is optional when [cmd] is not
+given, and the pattern then terminates at <EOL>.
 
 For the definition of a pattern, see |pattern|.
+
+The default [cmd] is |:print|.
 
 NOTE [cmd] may contain a range; see |collapse| and |edit-paragraph-join| for
 examples.
@@ -238,6 +241,47 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			lines that falls inside a folded region, the range
 			will be adjusted to the start and end of the fold,
 			but only if a two line specifiers range was used.
+
+						*:source-dryrun*
+:so[urce] ++dryrun {file}
+:[range]so[urce] ++dryrun
+			Read the script without running it: only what defines
+			something is executed, then every |:def| function in
+			it is compiled and the errors are reported as usual.
+
+			What is executed: `vim9script`, `import`, `def`,
+			`function`, `class`, `interface`, `enum`, `type` and a
+			declaration with `var`, `const` or `final`.  The
+			declared variable gets the type from the declaration,
+			or "any" when there is none, and a zero value; the
+			expression is not evaluated.  A static class variable
+			is treated the same way and an enum value is not
+			created.
+
+			Everything else is skipped, also `finish` and the
+			condition of an `if`, `while` or `for`; a definition
+			inside such a block is executed whether the condition
+			holds or not.  A function may therefore be defined
+			twice, the last definition counts.
+
+			In a legacy script `let` is not executed, thus a
+			script variable created by it does not exist.  A
+			|:def| function can use it with "s:", but reading it
+			or calling it without "s:" gives an error.  Defining a
+			function in a Dictionary it holds, such as
+			`function s:obj.Method()`, fails as well.
+
+			A script that is imported is read the same way, but an
+			autoload script is not loaded.  No |SourceCmd|,
+			|SourcePre| or |SourcePost| autocommand is triggered.
+			A class or enum in an autoload script is defined again
+			by a dry run, and after one by a normal load, since no
+			object was made from it; see |vim9-reload|.
+
+			Note: An error in a definition does not stop the
+			reading, the rest of the script is read as well.  And
+			an error in a line of a function does not stop
+			compiling it, every line with an error is reported.
 
 							*:source!*
 :so[urce]! {file}	Read Vim commands from {file}.  These are commands

@@ -449,12 +449,9 @@ update_screen(int type_arg)
     }
 #endif
 
-#if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO) \
-    || defined(FEAT_IMAGE_GDK)
-    // GUI only: the cursor redraw and other late blits paint directly onto
-    // the canvas and may damage the popup images blitted by update_popups();
-    // restore the image layer.  No-op in terminal mode.
-    update_popup_images();
+#ifdef FEAT_IMAGE
+    // Make sure to do this last!
+    draw_image_placements();
 #endif
 
 #ifdef FEAT_EVAL
@@ -669,6 +666,9 @@ borrow_stl_vsep_hl(void)
     {
 	if (left->w_status_height == 0 || left->w_vsep_width == 0)
 	    continue;
+	// A window of zero width has no status line cell to borrow from.
+	if (left->w_width == 0)
+	    continue;
 	if (!stl_connected(left))
 	    continue;
 
@@ -712,6 +712,12 @@ borrow_stl_vsep_hl(void)
 	int dst_col = W_ENDCOL(left);
 	int src_col = (neighbour == curwin)
 				? neighbour->w_wincol : W_ENDCOL(left) - 1;
+
+	// The windows may be laid out for a size the screen does not have yet.
+	if (dst_col >= screen_Columns || src_col >= screen_Columns)
+	    continue;
+	if (end > screen_Rows)
+	    end = screen_Rows;
 
 	for (int r = start; r < end; r++)
 	{
@@ -2779,10 +2785,10 @@ win_update(win_T *wp)
 		if ((*mb_off2cells)(LineOffset[k] + topframe->fr_width - 2,
 					   LineOffset[k] + screen_Columns) > 1)
 		    screen_draw_rectangle(k, topframe->fr_width - 2, 1, 2,
-			    FALSE);
+			    FALSE, FALSE);
 		else
 		    screen_draw_rectangle(k, topframe->fr_width - 1, 1, 1,
-			    FALSE);
+			    FALSE, FALSE);
 	    else
 		screen_char(LineOffset[k] + topframe->fr_width - 1, k,
 			cmdline_width - 1);

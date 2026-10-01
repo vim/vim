@@ -169,6 +169,61 @@ func Test_append_cmd_empty_buf()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test for :append, :insert and :change in a block that is not executed: the
+" lines up to the "." are skipped, not executed as commands.
+func Test_append_cmd_skipped()
+  let lines =<< trim END
+    if 0
+      append
+    endif
+    .
+    endif
+    let g:skipped = 'append'
+    if 0
+      insert
+    else
+    .
+    endif
+    let g:skipped ..= ' insert'
+    if 0
+      1change
+    endif
+    .
+    endif
+    let g:skipped ..= ' change'
+    while 0
+      append
+    endwhile
+    .
+    endwhile
+    let g:skipped ..= ' while'
+  END
+  call writefile(lines, 'Xappend_skipped', 'D')
+  new
+  call setline(1, 'text')
+  source Xappend_skipped
+  call assert_equal('append insert change while', g:skipped)
+  call assert_equal(['text'], getline(1, '$'))
+
+  " In Vim9 script :append is not allowed, but it is not executed here.
+  let lines =<< trim END
+    vim9script
+    if false
+      append
+    enddef
+    .
+    endif
+    g:skipped = 'vim9'
+  END
+  call writefile(lines, 'Xappend_skipped_vim9', 'D')
+  source Xappend_skipped_vim9
+  call assert_equal('vim9', g:skipped)
+  call assert_equal(['text'], getline(1, '$'))
+
+  unlet g:skipped
+  bwipe!
+endfunc
+
 " Test for the :insert command
 func Test_insert_cmd()
   new

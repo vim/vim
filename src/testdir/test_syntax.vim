@@ -71,6 +71,13 @@ func Test_syn_iskeyword()
   redir END
   call assert_equal("\nsyntax iskeyword @,48-57,_,192-255", @c)
 
+  call assert_fails("syntax iskeyword invalid_value", "E474:")
+  redir @c
+  syn iskeyword
+  redir END
+  " did not change
+  call assert_equal("\nsyntax iskeyword @,48-57,_,192-255", @c)
+
   setlocal isk-=_
   call assert_equal('DLTD_BY', GetSyntaxItem('DLTD'))
   /\<D\k\+\>/:norm! ygn
@@ -99,6 +106,13 @@ func Test_syntax_after_reload()
   call assert_equal('hello', &filetype)
   call assert_true(exists('g:gotit'))
   call delete('Xsomefile')
+endfunc
+
+func Test_syntax_filetype_syntax()
+  set filetype=syntax
+  syntax on
+  syntax off
+  set filetype= syntax=
 endfunc
 
 func Test_syntime()

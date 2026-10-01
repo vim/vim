@@ -1,4 +1,4 @@
-/* ex_eval.c */
+// ex_eval.c
 int aborting(void);
 void update_force_abort(void);
 int should_abort(int retcode);
@@ -40,4 +40,4 @@ int cleanup_conditionals(cstack_T *cstack, int searched_cond, int inclusive);
 void rewind_conditionals(cstack_T *cstack, int idx, int cond_type, int *cond_level);
 void ex_endfunction(exarg_T *eap);
 int has_loop_cmd(char_u *p);
-/* vim: set ft=c : */
+// vim: ft=c

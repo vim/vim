@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-07-29 19:37+0000\n"
+"POT-Creation-Date: 2026-09-30 21:33+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1669,6 +1669,9 @@ msgid "--gui-dialog-file {fname}  For testing: write dialog text"
 msgstr ""
 
 msgid "--ttyfail\t\tExit if input or output is not a terminal"
+msgstr ""
+
+msgid "--stdio-channel\tUse stdin and stdout as a channel"
 msgstr ""
 
 msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
@@ -8902,6 +8905,28 @@ msgstr ""
 msgid "E1580: Too many text properties on a single line"
 msgstr ""
 
+msgid "E1581: Cannot extend a null blob"
+msgstr ""
+
+msgid "E1582: Not started with --stdio-channel"
+msgstr ""
+
+msgid "E1583: Cannot open stdio channel"
+msgstr ""
+
+msgid "E1584: Image dimensions are invalid"
+msgstr ""
+
+msgid "E1585: No image backend available"
+msgstr ""
+
+msgid "E1586: Failed changing image backends"
+msgstr ""
+
+#, c-format
+msgid "E1587: Image ID %d does not exist"
+msgstr ""
+
 #. type of cmdline window or 0
 #. result of cmdline window or 0
 #. buffer of cmdline window or NULL
@@ -9720,6 +9745,9 @@ msgid "terminal that requires extra redrawing"
 msgstr ""
 
 msgid "what keyboard protocol to use for which terminal"
+msgstr ""
+
+msgid "what image backend to use for which terminal"
 msgstr ""
 
 msgid "recognize keys that start with <Esc> in Insert mode"

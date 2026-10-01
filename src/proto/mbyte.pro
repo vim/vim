@@ -1,4 +1,4 @@
-/* mbyte.c */
+// mbyte.c
 int enc_canon_props(char_u *name);
 char *mb_init(void);
 int bomb_size(void);
@@ -92,4 +92,4 @@ void f_setcellwidths(typval_T *argvars, typval_T *rettv);
 void f_getcellwidths(typval_T *argvars, typval_T *rettv);
 void f_charclass(typval_T *argvars, typval_T *rettv);
 char_u *get_encoding_name(expand_T *xp, int idx);
-/* vim: set ft=c : */
+// vim: ft=c

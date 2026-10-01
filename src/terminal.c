@@ -1107,7 +1107,7 @@ term_write_session(FILE *fd, win_T *wp, hashtab_T *terminal_bufs)
 	if (!HASHITEM_EMPTY(entry))
 	{
 	    // we've already opened this terminal buffer
-	    if (fprintf(fd, "execute 'buffer ' . term_buf_%d", bufnr) < 0)
+	    if (fprintf(fd, "execute 'buffer ' .. term_buf_%d", bufnr) < 0)
 		return FAIL;
 	    return put_eol(fd);
 	}
@@ -4454,19 +4454,6 @@ term_get_attr(win_T *wp, linenr_T lnum, int col)
 	else
 	    cellattr = line->sb_cells + sb_col;
     }
-    return cell2attr(term, wp, &cellattr->attrs, &cellattr->fg, &cellattr->bg);
-}
-
-/*
- * Return the screen attribute for the terminal's default color.  Used to tell
- * whether a line's fill (background) is the default or was set explicitly.
- */
-    int
-term_get_default_attr(win_T *wp)
-{
-    term_T	*term = wp->w_buffer->b_term;
-    cellattr_T	*cellattr = &term->tl_default_color;
-
     return cell2attr(term, wp, &cellattr->attrs, &cellattr->fg, &cellattr->bg);
 }
 

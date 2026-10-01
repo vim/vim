@@ -248,6 +248,28 @@ def Test_assignment()
   END
 enddef
 
+" An item of a read-only v: variable can be changed in a :def function, as
+" at the script level, the variable itself cannot.
+def Test_assign_item_of_readonly_vim_var()
+  assert_equal(v:t_dict, type(v:clipproviders))
+  var lines =<< trim END
+    vim9script
+    def Define()
+      v:clipproviders['vim9_one'] = {}
+      v:clipproviders.vim9_two = {}
+    enddef
+    Define()
+    assert_equal({}, v:clipproviders.vim9_one)
+    assert_equal({}, v:clipproviders.vim9_two)
+    remove(v:clipproviders, 'vim9_one')
+    remove(v:clipproviders, 'vim9_two')
+  END
+  v9.CheckScriptSuccess(lines)
+
+  v9.CheckDefFailure(['v:clipproviders = {}'], 'E46:')
+  v9.CheckDefFailure(['v:version[0] = 1'], 'E1141:')
+enddef
+
 def Test_float_and_number()
   var lines =<< trim END
        var f: float
@@ -306,6 +328,33 @@ def Test_assign_register()
 
   v9.CheckDefFailure(['@a += "more"'], 'E1051:')
   v9.CheckDefFailure(['@a += 123'], 'E1012:')
+enddef
+
+" An environment variable, a register and a String v: variable only take a
+" String.
+def Test_assign_string_only()
+  for target in ['$XSTRING_ONLY', '@a', 'v:errmsg']
+    v9.CheckDefAndScriptFailure([target .. ' = 123'],
+      'E1012: Type mismatch; expected string but got number', 1)
+    v9.CheckDefAndScriptFailure([target .. ' ..= 123'],
+      'E1012: Type mismatch; expected string but got number', 1)
+    v9.CheckDefAndScriptFailure([target .. ' = true'],
+      'E1012: Type mismatch; expected string but got bool', 1)
+  endfor
+  v9.CheckDefAndScriptFailure(['[$XSTRING_ONLY, @a] = [1, 2]'],
+    'E1012: Type mismatch; expected string but got number', 1)
+  v9.CheckDefAndScriptFailure(['@# ..= 1'],
+    'E1012: Type mismatch; expected string but got number', 1)
+  v9.CheckDefAndScriptSuccess(['@# = bufnr()'])
+
+  # Legacy script converts the value.
+  legacy let $XSTRING_ONLY = 123
+  legacy let @a = 456
+  legacy let v:errmsg = 789
+  assert_equal('123', $XSTRING_ONLY)
+  assert_equal('456', @a)
+  assert_equal('789', v:errmsg)
+  unlet $XSTRING_ONLY
 enddef
 
 def Test_reserved_name()
@@ -2633,6 +2682,8 @@ def Test_cannot_use_let()
   v9.CheckDefAndScriptFailure(['let a = 34'], 'E1126:', 1)
 enddef
 
+let s:somevar = ''
+
 def Test_unlet()
   g:somevar = 'yes'
   assert_true(exists('g:somevar'))
@@ -3092,6 +3143,15 @@ def Test_using_s_var_in_function()
       call assert_equal(456, s:scriptlevel)
   END
   v9.CheckScriptSuccess(lines)
+
+  # but a :def function cannot create one
+  lines =<< trim END
+      def s:SomeFunc()
+        s:scriptlevel = 456
+      enddef
+      call s:SomeFunc()
+  END
+  v9.CheckScriptFailure(lines, 'E1089: Unknown variable: s:scriptlevel', 1)
 enddef
 
 " Test for specifying a type in assignment

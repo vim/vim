@@ -1,4 +1,4 @@
-/* userfunc.c */
+// userfunc.c
 void func_init(void);
 hashtab_T *func_tbl_get(void);
 char_u *make_ufunc_name_readable(char_u *name, char_u *buf, size_t bufsize);
@@ -56,6 +56,7 @@ int eval_fname_script(char_u *p);
 int translated_function_exists(char_u *name, int is_global);
 int has_varargs(ufunc_T *ufunc);
 int function_exists(char_u *name, int no_deref);
+int user_func_info(char_u *name, dict_T *d);
 char_u *get_expanded_name(char_u *name, int check);
 char_u *get_user_func_name(expand_T *xp, int idx);
 ufunc_T *copy_function(ufunc_T *fp, int extra_namelen);
@@ -95,4 +96,4 @@ int set_ref_in_call_stack(int copyID);
 int set_ref_in_functions(int copyID);
 int set_ref_in_func_args(int copyID);
 int set_ref_in_func(char_u *name, ufunc_T *fp_in, int copyID);
-/* vim: set ft=c : */
+// vim: ft=c

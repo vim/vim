@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.2.  Last change: 2026 Aug 08
+*syntax.txt*	For Vim version 9.2.  Last change: 2026 Sep 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -230,6 +230,7 @@ you can see the actual color, except for "Ignore"):
 	 Character	a character constant: 'c', '\n'
 	 Number		a number constant: 234, 0xff
 	 Boolean	a boolean constant: TRUE, false
+	 Regexp		a regular expression constant: /ab*c/
 	 Float		a floating point constant: 2.3e10
 
 	*Identifier	any variable name
@@ -1083,6 +1084,7 @@ Variable		Highlight ~
 *c_no_c99*		don't highlight C99 standard items
 *c_no_c11*		don't highlight C11 standard items
 *c_no_c23*		don't highlight C23 standard items
+*c_no_c29*		don't highlight C29 standard items
 *c_no_bsd*		don't highlight BSD specific types
 *c_functions*		highlight function calls and definitions
 *c_function_pointers*	highlight function pointers definitions
@@ -2011,9 +2013,11 @@ You can also disable this rendering by adding the following line to your
 vimrc file: >
 	:let html_no_rendering=1
 
-By default Vim synchronises the syntax to 250 lines before the first displayed
-line.  This can be configured using: >
+By default Vim starts parsing 1.5 times "html_minlines" lines before the first
+displayed line, and searches a further "html_maxlines" lines back for a
+synchronization point.  These values can be configured using: >
 	:let html_minlines = 500
+	:let html_maxlines = 750
 <
 HTML comments are rather special (see an HTML reference document for the
 details), and the syntax coloring scheme will highlight all errors.
@@ -2079,6 +2083,21 @@ how to recognize this filetype.
 To have *.inc files be recognized as IA64, add this to your .vimrc file: >
 	:let g:filetype_inc = "ia64"
 
+
+
+ICALENDAR				*icalendar.vim* *ft-icalendar-syntax*
+
+Highlighting for iCalendar files (RFC 5545), as used by calendaring
+applications with an ".ics" extension.
+
+Component boundaries (BEGIN: and END:), property names, property
+parameters and recurrence rule parts are highlighted separately.  A content
+line may be split across several lines by inserting a line break followed
+by a space or a tab; such folded lines are highlighted as a single logical
+line.
+
+Folding of components is provided by the filetype plugin and is off by
+default; see |ft-icalendar-plugin|.
 
 INFORM						*inform.vim* *ft-inform-syntax*
 
@@ -2301,11 +2320,11 @@ cycles for such a feature to become either integrated into the platform or
 withdrawn from this effort.  To cater for early adopters, there is optional
 support in Vim for syntax related preview features that are implemented.  You
 can request it by specifying a list of preview feature numbers as follows: >
-	:let g:java_syntax_previews = [530]
+	:let g:java_syntax_previews = [532]
 
 The supported JEP numbers are to be drawn from this table:
 	`430`: String Templates [JDK 21]
-	`530`: Primitive types in Patterns, instanceof, and switch
+	`532`: Primitive types in Patterns, instanceof, and switch
 
 Note that as soon as the particular preview feature will have been integrated
 into the Java platform, its entry will be removed from the table and related
@@ -3707,12 +3726,15 @@ reduce this, the "sh_maxlines" internal variable can be set.  Example: >
 The default is to use the twice sh_minlines.  Set it to a smaller number to
 speed up displaying.  The disadvantage is that highlight errors may appear.
 
-syntax/sh.vim tries to flag certain problems as errors; usually things like
-unmatched "]", "done", "fi", etc.  If you find the error handling problematic
-for your purposes, you may suppress such error highlighting by putting
-the following line in your .vimrc: >
+Unmatched "]", "done", "fi", etc., are highlighted as errors by default.  If
+you find this error handling problematic, you may suppress it with: >
 
-	let g:sh_no_error= 1
+	let g:sh_no_error = 1
+<
+As a refinement, you may suppress particular classes of errors by looking up
+their syntax rule names and listing them with: >
+
+	let g:sh_no_error_rules = ["shCurlyError", "shParenError"]
 <
 
 						*sh-embed*  *sh-awk*

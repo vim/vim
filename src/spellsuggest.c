@@ -484,6 +484,9 @@ spell_suggest(int count)
 	parse_spelllang(curwin);
 	curwin->w_p_spell = TRUE;
     }
+    // Autocommands may have changed the buffer and made the cursor invalid
+    check_cursor();
+    prev_cursor = curwin->w_cursor;
 
     if (*curwin->w_s->b_p_spl == NUL)
     {

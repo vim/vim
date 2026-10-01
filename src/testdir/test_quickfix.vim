@@ -3184,6 +3184,24 @@ func Test_cwindow_jump()
   set efm&vim
 endfunc
 
+" ":silent make" leaves the screen as it was: the shell is run without the
+" hit-enter prompt, and the window is drawn again without waiting for CTRL-L.
+func Test_silent_make_redraw()
+  CheckScreendump
+  CheckUnix
+
+  let lines =<< trim END
+    call setline(1, ['one', 'two'])
+    set makeprg=echo\ hello
+  END
+  call writefile(lines, 'XtestSilentMake', 'D')
+  let buf = RunVimInTerminal('-S XtestSilentMake', #{rows: 8})
+  call term_sendkeys(buf, ":silent make\<CR>")
+  call VerifyScreenDump(buf, 'Test_quickfix_silent_make_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_cwindow_highlight()
   CheckScreendump
 

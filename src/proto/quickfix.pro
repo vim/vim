@@ -1,4 +1,4 @@
-/* quickfix.c */
+// quickfix.c
 int qf_init(win_T *wp, char_u *efile, char_u *errorformat, int newlist, char_u *qf_title, char_u *enc);
 int qf_stack_get_bufnr(void);
 void qf_free_all(win_T *wp);
@@ -43,4 +43,4 @@ void f_getloclist(typval_T *argvars, typval_T *rettv);
 void f_getqflist(typval_T *argvars, typval_T *rettv);
 void f_setloclist(typval_T *argvars, typval_T *rettv);
 void f_setqflist(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

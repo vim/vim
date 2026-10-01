@@ -1,4 +1,4 @@
-*userfunc.txt*	For Vim version 9.2.  Last change: 2026 May 31
+*userfunc.txt*	For Vim version 9.2.  Last change: 2026 Sep 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -177,7 +177,7 @@ See |:verbose-cmd| for more information.
 			command, use line breaks instead of |:bar|: >
 				:exe "func Foo()\necho 'foo'\nendfunc"
 <
-				*:delf* *:delfunction* *E131* *E933* *E1084*
+				*:delf* *:delfunction* *E131* *E933*
 :delf[unction][!] {name}
 			Delete function {name}.
 			{name} can also be a |Dictionary| entry that is a
@@ -188,6 +188,9 @@ See |:verbose-cmd| for more information.
 			it.
 			With the ! there is no error if the function does not
 			exist.
+			In Vim9 script, |E1084| is given when attempting to
+			delete a script-local function.
+
 							*:retu* *:return* *E133*
 :retu[rn] [expr]	Return from a function.  When [expr] is given, it is
 			evaluated and returned as the result of the function.
@@ -197,8 +200,13 @@ See |:verbose-cmd| for more information.
 
 			In |Vim9| script:
 			- `:return` cannot be shortened, and
-			- *E1095* is given if unreachable code follows after
-			  the `:return`.  For example:
+			- *E1095* is given if a command follows an
+			  unconditional `:return` or `:throw`.  A complete
+			  `:if`/`:elseif`/`:else` is also considered to
+			  terminate when every branch ends with `:return` or
+			  `:throw`.  An `:if` without `:else`, or any branch
+			  that can continue normally, does not make following
+			  commands unreachable.  For example:
 >vim9
 			  vim9script
 			  var L: func = (): bool => {
@@ -206,6 +214,25 @@ See |:verbose-cmd| for more information.
 			    echo 'no'  # E1095: Unreachable code after :return
 			  }
 			  echo L()
+<
+			  The same check applies to `:try`: the `:try` body
+			  and all `:catch` blocks must terminate, unless a
+			  terminating `:finally` block overrides them.  In a
+			  loop, `:break` and `:continue` make later commands
+			  in the loop body unreachable, but do not make
+			  commands after the loop unreachable.  For example,
+			  when every branch of an `:if`/`:else` returns, a
+			  command after `:endif` is unreachable:
+>vim9
+			  vim9script
+			  def AllBranchesReturn(n: number): number
+			    if n > 0
+			      return 1
+			    else
+			      return 0
+			    endif
+			    echo 'no'  # E1095: Unreachable code after :return
+			  enddef
 <
 			In legacy Vim script there is no check for unreachable
 			lines, thus there is no warning if commands follow

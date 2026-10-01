@@ -421,7 +421,7 @@ serverSendToVim(
 	    {
 		LookupName(dpy, loosename ? loosename : name,
 			   /*DELETE=*/TRUE, NULL);
-		vim_free(loosename);
+		VIM_CLEAR(loosename);
 		continue;
 	    }
 	}
@@ -952,8 +952,9 @@ LookupName(
 	    if (*p != 0 && IsSerialName(p + 1)
 		    && STRNICMP(name, p + 1, STRLEN(name)) == 0)
 	    {
-		sscanf((char *)entry, "%x", &returnValue);
-		*loose = vim_strsave(p + 1);
+		if (sscanf((char *)entry, "%x", &returnValue) == 1
+			&& returnValue != (int_u)None)
+		    *loose = vim_strsave(p + 1);
 		break;
 	    }
 	    while (*p != 0)

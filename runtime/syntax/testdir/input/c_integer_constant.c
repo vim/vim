@@ -31,11 +31,12 @@ int main(void)
 
 int d = 42;
 int o = 052;
+long o29 = 0O4'750l; // C29
 int x = 0x2a;
 int X = 0X2A;
 int b = 0b101010; // C23
 
-// The following variables are also initialized to the same value: 
+// The following variables are also initialized to the same value:
 
 unsigned long long l1 = 18446744073709550592ull; // C99
 unsigned long long l2 = 18'446'744'073'709'550'592llu; // C23

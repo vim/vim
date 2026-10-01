@@ -1,4 +1,4 @@
-/* gui_gtk4.c */
+// gui_gtk4.c
 void gui_mch_prepare(int *argc, char **argv);
 void gui_mch_free_all(void);
 int gui_mch_is_blinking(void);
@@ -42,10 +42,6 @@ void gui_gtk4_update_size(void);
 void gui_gtk4_add_multisign(cairo_surface_t *surf, int row, int col, int width, int height);
 void gui_mch_clear_block(int row1, int col1, int row2, int col2);
 void gui_mch_clear_all(void);
-void gui_gtk4_remove_image(win_T *wp);
-void gui_mch_free_popup_image(win_T *wp);
-bool gui_mch_update_popup_image_pixels(win_T *wp);
-void gui_mch_draw_popup_image(win_T *wp, int row, int col, int src_x, int src_y, int draw_w, int draw_h);
 void gui_mch_delete_lines(int row, int num_lines);
 void gui_mch_insert_lines(int row, int num_lines);
 void gui_gtk4_draw_cursor(guicolor_T bg, guicolor_T fg, int w, int h);
@@ -111,4 +107,10 @@ void gui_mch_replace_dialog(exarg_T *eap);
 void ex_helpfind(exarg_T *eap);
 char_u *gui_gtk4_print_dialog(prt_settings_T *psettings, char_u *jobname, double *page_width, double *page_height);
 void gui_gtk4_print_finish(void);
-/* vim: set ft=c : */
+int image_gui_init(image_T *img);
+void image_gui_uninit(image_T *img);
+int image_placement_gui_init(image_placement_T *place);
+void image_placement_gui_uninit(image_placement_T *place);
+void image_placement_gui_draw(image_placement_T *place);
+void image_placement_gui_clear(image_placement_T *place);
+// vim: ft=c

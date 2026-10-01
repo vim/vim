@@ -1385,4 +1385,65 @@ func Test_clipboard_provider_recursive()
   unlet g:vim_copy_recursive
 endfunc
 
+" Test that caching the compiled pattern of "=~" and the match functions
+" does not change the semantics.
+func Test_eval_pattern_cache()
+  let save_ic = &ignorecase
+  defer execute('let &ignorecase = ' .. save_ic)
+
+  " "~" in a pattern stands for the previous substitute string, a compiled
+  " program must not be reused across a :substitute
+  new
+  call setline(1, 'one')
+  s/one/AAA/
+  call assert_true('xAAAy' =~ 'x~y')
+  call assert_false('xBBBy' =~ 'x~y')
+  call setline(1, 'AAA')
+  s/AAA/BBB/
+  call assert_true('xBBBy' =~ 'x~y')
+  call assert_false('xAAAy' =~ 'x~y')
+  bwipe!
+
+  " 'ignorecase' is applied at execution time, also with a cached program
+  set noignorecase
+  call assert_false('ABC' =~ 'abc')
+  set ignorecase
+  call assert_true('ABC' =~ 'abc')
+  call assert_true('ABC' =~ 'abc')
+  set noignorecase
+  call assert_false('ABC' =~ 'abc')
+
+  " changing 'regexpengine' compiles the pattern again
+  for re in [0, 1, 2]
+    exe 'set re=' .. re
+    call assert_true('abc123' =~ 'a\+bc\d\+')
+    call assert_false('xyz' =~ 'a\+bc\d\+')
+  endfor
+  set re&
+
+  " \%.l, \%.c and \%.v compile the current cursor position into the
+  " program, such a pattern must not be reused after the cursor moved
+  new
+  call setline(1, 'abcdef')
+  call cursor(1, 4)
+  call assert_true('abcdef' =~# '\%.cd')
+  call cursor(1, 2)
+  call assert_false('abcdef' =~# '\%.cd')
+  call assert_true('abcdef' =~# '\%.cb')
+  bwipe!
+
+  " when the automatic engine replaces the program by falling back to the
+  " backtracking engine, the replaced program is the one that is kept
+  call test_override('nfa_fail', 1)
+  defer test_override('nfa_fail', 0)
+  for i in range(3)
+    call assert_true('fallback' =~ 'fall\%(back\)\?')
+    call assert_false('nomatch' =~ 'fall\%(back\)\?')
+  endfor
+  call test_override('nfa_fail', 0)
+  for i in range(3)
+    call assert_true('fallback' =~ 'fall\%(back\)\?')
+  endfor
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

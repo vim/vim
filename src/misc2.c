@@ -44,7 +44,7 @@ getviscol(void)
 {
     colnr_T	x;
 
-    getvvcol(curwin, &curwin->w_cursor, &x, NULL, NULL, 0);
+    getvvcol(curwin, &curwin->w_cursor, &x, NULL, NULL, GETVCOL_NO_ABOVE);
     return (int)x;
 }
 
@@ -78,7 +78,7 @@ getviscol2(colnr_T col, colnr_T coladd)
     pos.lnum = curwin->w_cursor.lnum;
     pos.col = col;
     pos.coladd = coladd;
-    getvvcol(curwin, &pos, &x, NULL, NULL, 0);
+    getvvcol(curwin, &pos, &x, NULL, NULL, GETVCOL_NO_ABOVE);
     return (int)x;
 }
 
@@ -147,7 +147,8 @@ coladvance2(
 
 	    if ((addspaces || finetune) && !VIsual_active)
 	    {
-		curwin->w_curswant = linetabsize(curwin, pos->lnum) + one_more;
+		curwin->w_curswant = linetabsize_no_outer(curwin, pos->lnum)
+								   + one_more;
 		if (curwin->w_curswant > 0)
 		    --curwin->w_curswant;
 	    }
@@ -163,7 +164,7 @@ coladvance2(
 		&& wcol >= (colnr_T)width
 		&& width > 0)
 	{
-	    csize = linetabsize_eol(curwin, pos->lnum);
+	    csize = linetabsize_no_outer_eol(curwin, pos->lnum);
 	    if (csize > 0)
 		csize--;
 
@@ -179,11 +180,11 @@ coladvance2(
 	}
 
 	init_chartabsize_arg(&cts, curwin, pos->lnum, 0, line, line);
+#ifdef FEAT_PROP_POPUP
+	cts.cts_no_above = true;
+#endif
 	while (cts.cts_vcol <= wcol && *cts.cts_ptr != NUL)
 	{
-#ifdef FEAT_PROP_POPUP
-	    int at_start = cts.cts_ptr == cts.cts_line;
-#endif
 	    // Count a tab for what it's worth (if list mode not on)
 #ifdef FEAT_LINEBREAK
 	    csize = win_lbr_chartabsize(&cts, &head, NULL);
@@ -192,11 +193,6 @@ coladvance2(
 	    csize = lbr_chartabsize_adv(&cts);
 #endif
 	    cts.cts_vcol += csize;
-#ifdef FEAT_PROP_POPUP
-	    if (at_start)
-		// do not count the columns for virtual text above
-		cts.cts_vcol -= cts.cts_first_char;
-#endif
 	}
 	col = cts.cts_vcol;
 	idx = (int)(cts.cts_ptr - line);
@@ -3315,4 +3311,153 @@ mergesort_list(
     }
 
     return head;
+}
+
+static const char_u base64_table[] =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+static char_u base64_dec_table[256];
+
+#define BASE64_ENCODED_LEN(len) ((((len) + 2) / 3) * 4 + 1)
+
+/*
+ * Initialize the base64 decoding table
+ */
+    static void
+init_base64_dec_table(void)
+{
+    static int base64_dec_tbl_initialized = FALSE;
+
+    if (base64_dec_tbl_initialized)
+	return;
+
+    vim_memset(base64_dec_table, 0xFF, sizeof(base64_dec_table));
+    for (size_t i = 0; i < sizeof(base64_table) - 1; i++)
+	base64_dec_table[(char_u)base64_table[i]] = (char_u)i;
+    base64_dec_table['='] = 0;
+
+    base64_dec_tbl_initialized = TRUE;
+}
+
+/*
+ * Base64 encode "src[len]" into caller-supplied "dst", which must have room for
+ * at least BASE64_ENCODED_LEN(len) bytes (NUL terminated). Returns the number
+ * of bytes written, excluding the NUL.
+ */
+    long
+base64_encode_buf(char_u *dst, const char_u *src, size_t len)
+{
+    size_t i, j;
+
+    for (i = 0, j = 0; i < len;)
+    {
+	size_t remaining = len - i;
+
+	int_u octet_a = src[i++];
+	int_u octet_b = remaining > 1 ? src[i++] : 0;
+	int_u octet_c = remaining > 2 ? src[i++] : 0;
+
+	int_u triple = (octet_a << 16) | (octet_b << 8) | octet_c;
+
+	dst[j++] = base64_table[(triple >> 18) & 0x3F];
+	dst[j++] = base64_table[(triple >> 12) & 0x3F];
+	dst[j++] = remaining > 1
+	    ? base64_table[(triple >> 6) & 0x3F]
+	    : '=';
+	dst[j++] = remaining > 2
+	    ? base64_table[triple & 0x3F]
+	    : '=';
+    }
+
+    dst[j] = NUL;
+    return (long)j;
+}
+
+/*
+ * Base64-encode "data[len]".  Returns an allocated NUL-terminated string, or
+ * NULL on OOM.  Caller frees with vim_free().
+ */
+    char_u *
+base64_encode(const char_u *data, size_t len)
+{
+    char_u *encoded = alloc(BASE64_ENCODED_LEN(len));
+
+    if (encoded == NULL)
+	return NULL;
+    base64_encode_buf(encoded, data, len);
+    return encoded;
+}
+
+/*
+ * Decode base64 text "data[len]" (len must be a multiple of 4) into growarray
+ * "out" (appended byte-by-byte, e.g. a blob's bv_ga). Returns OK on success and
+ * FAIL on failure.
+ */
+    int
+base64_decode(const char_u *data, size_t len, garray_T *out)
+{
+    if (len == 0)
+	return OK;
+
+    if (len % 4 != 0)
+    {
+	semsg(_(e_invalid_argument_str), data);
+	return FAIL;
+    }
+
+    init_base64_dec_table();
+
+    size_t decoded_len = (len / 4) * 3;
+    if (data[len - 1] == '=')
+	decoded_len--;
+    if (data[len - 2] == '=')
+	decoded_len--;
+
+    size_t i, j;
+    for (i = 0, j = 0; i < len;)
+    {
+	int_u sextet_a = base64_dec_table[(char_u)data[i++]];
+	int_u sextet_b = base64_dec_table[(char_u)data[i++]];
+	int_u sextet_c = base64_dec_table[(char_u)data[i++]];
+	int_u sextet_d = base64_dec_table[(char_u)data[i++]];
+
+	if (sextet_a == 0xFF || sextet_b == 0xFF || sextet_c == 0xFF
+							|| sextet_d == 0xFF)
+	{
+	    semsg(_(e_invalid_argument_str), data);
+	    ga_clear(out);
+	    return FAIL;
+	}
+
+	int_u triple = (sextet_a << 18) | (sextet_b << 12)
+						| (sextet_c << 6) | sextet_d;
+
+	if (j < decoded_len)
+	{
+	    ga_append(out, (triple >> 16) & 0xFF);
+	    j++;
+	}
+	if (j < decoded_len)
+	{
+	    ga_append(out, (triple >> 8) & 0xFF);
+	    j++;
+	}
+	if (j < decoded_len)
+	{
+	    ga_append(out, triple & 0xFF);
+	    j++;
+	}
+
+	if (j == decoded_len)
+	{
+	    if ((data[len - 2] == '=' && ((sextet_b & 0xF) != 0))
+		|| ((data[len - 1] == '=') && ((sextet_c & 0x3) != 0)))
+	    {
+		semsg(_(e_invalid_argument_str), data);
+		ga_clear(out);
+		return FAIL;
+	    }
+	}
+    }
+    return OK;
 }

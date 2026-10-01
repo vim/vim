@@ -1744,6 +1744,7 @@ do_search(
 	    break;
 
 	dirc = *++pat;
+	--patlen;
 	search_delim = dirc;
 	if (dirc != '?' && dirc != '/')
 	{
@@ -3890,7 +3891,8 @@ search_line:
 		}
 
 		add_r = ins_compl_add_infercase(aux, i, p_ic,
-			curr_fname == curbuf->b_fname ? NULL : curr_fname,
+			curr_fname == curbuf->b_fname ? NULL
+						  : shorten_fname1(curr_fname),
 			dir, cont_s_ipos, 0);
 		if (add_r == OK)
 		    // if dir was BACKWARD then honor it just once

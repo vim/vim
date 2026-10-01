@@ -994,6 +994,7 @@ get_function_body(
     garray_T	heredoc_ga;
     char_u	*heredoc_trimmed = NULL;
     size_t	heredoc_trimmedlen = 0;
+    int		did_emsg_start = did_emsg;
 
     ga_init2(&heredoc_ga, 1, 500);
 
@@ -1116,10 +1117,14 @@ get_function_body(
 	    int	    c;
 	    char_u  *end;
 	    char_u  *cmd;
+	    bool    colon = false;
 
 	    // skip ':' and blanks
 	    for (p = theline; VIM_ISWHITE(*p) || *p == ':'; ++p)
-		;
+	    {
+		if (*p == ':')
+		    colon = true;
+	    }
 
 	    // Check for "endfunction", "enddef" or "}".
 	    // When a ":" follows it must be a dict key; "enddef: value,"
@@ -1275,7 +1280,11 @@ get_function_body(
 	    }
 
 	    // Check for ":append", ":change", ":insert".  Not for :def.
-	    char_u *tp = p = skip_range(p, FALSE, NULL);
+	    // In Vim9 script a range comes after a colon; without one a
+	    // leading "'" starts a string, not a mark.
+	    if (!vim9_function || colon)
+		p = skip_range(p, FALSE, NULL);
+	    char_u *tp = p;
 	    if (!vim9_function
 		&& (checkforcmd(&p, "append", 1)
 		    || checkforcmd(&p, "change", 1)
@@ -1422,8 +1431,9 @@ get_function_body(
 	    line_arg = NULL;
     }
 
-    // Return OK when no error was detected.
-    if (!did_emsg)
+    // Return OK when no error was detected here; "did_emsg" may already be
+    // set by an earlier error in the same command.
+    if (did_emsg == did_emsg_start)
 	ret = OK;
 
 theend:
@@ -1622,7 +1632,6 @@ lambda_function_body(
     if (!ASCII_ISUPPER(*ufunc->uf_name))
 	ufunc->uf_flags |= FC_VIM9;
     ufunc->uf_script_ctx = current_sctx;
-    ufunc->uf_script_ctx_version = current_sctx.sc_version;
     ufunc->uf_script_ctx.sc_lnum += sourcing_lnum_top;
     set_function_type(ufunc);
 
@@ -5412,12 +5421,12 @@ define_function(
     // Save the starting line number.
     sourcing_lnum_top = SOURCING_LNUM;
 
-    // Do not define the function when getting the body fails and when
-    // skipping.
+    // Do not define the function when getting the body fails, when the header
+    // had an error (the body is still read to find the end) and when skipping.
     if (((class_flags & CF_INTERFACE) == 0
 		&& (class_flags & CF_ABSTRACT_METHOD) == 0
-		&& get_function_body(eap, &newlines, line_arg, lines_to_free)
-								       == FAIL)
+		&& (get_function_body(eap, &newlines, line_arg, lines_to_free)
+							== FAIL || did_emsg))
 	    || eap->skip)
 	goto erret;
 
@@ -5512,10 +5521,11 @@ define_function(
 	    int dead = fp != NULL && (fp->uf_flags & FC_DEAD);
 
 	    // Function can be replaced with "function!" and when sourcing the
-	    // same script again, but only once.
+	    // same script again, but only once.  With ":source ++dryrun" both
+	    // branches of an ":if" define their function.
 	    // A name that is used by an import can not be overruled.
 	    if (import != NULL
-		    || (!dead && !eap->forceit
+		    || (!dead && !eap->forceit && !source_dryrun
 			&& (fp->uf_script_ctx.sc_sid != current_sctx.sc_sid
 			  || fp->uf_script_ctx.sc_seq == current_sctx.sc_seq)))
 	    {
@@ -5736,7 +5746,6 @@ define_function(
     fp->uf_calls = 0;
     fp->uf_cleared = FALSE;
     fp->uf_script_ctx = current_sctx;
-    fp->uf_script_ctx_version = current_sctx.sc_version;
     fp->uf_script_ctx.sc_lnum += sourcing_lnum_top;
     if (is_export)
     {
@@ -6110,6 +6119,100 @@ function_exists(char_u *name, int no_deref)
 	n = translated_function_exists(p, is_global);
     vim_free(p);
     return n;
+}
+
+/*
+ * Add what getinfo() reports for the user defined function "name" to "d".
+ * Returns FAIL when there is no such function.
+ */
+    int
+user_func_info(char_u *name, dict_T *d)
+{
+    char_u	*nm = name;
+    char_u	*p;
+    int		is_global = FALSE;
+    ufunc_T	*fp = NULL;
+    list_T	*args;
+    int		is_def;
+    char	*tofree;
+
+    if (*name == NUL)
+	return FAIL;
+    p = trans_function_name(&nm, &is_global, FALSE,
+			 TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DEREF);
+    if (p != NULL && *skipwhite(nm) == NUL)
+	fp = find_func(p, is_global);
+    vim_free(p);
+    if (fp == NULL)
+	return FAIL;
+
+    is_def = fp->uf_def_status != UF_NOT_COMPILED;
+    dict_add_string(d, "name", printable_func_name(fp));
+    dict_add_string(d, "kind", (char_u *)(is_def ? "def" : "function"));
+    dict_add_bool(d, "available", TRUE);
+    args = list_alloc();
+    if (args == NULL || dict_add_list(d, "args", args) == FAIL)
+    {
+	list_unref(args);
+	return FAIL;
+    }
+    for (int j = 0; j < fp->uf_args.ga_len; ++j)
+    {
+	dict_T	*arg = dict_alloc();
+
+	if (arg == NULL || list_append_dict(args, arg) == FAIL)
+	{
+	    dict_unref(arg);
+	    return FAIL;
+	}
+	dict_add_string(arg, "name", FUNCARG(fp, j));
+	if (fp->uf_arg_types == NULL)
+	    dict_add_string(arg, "type", (char_u *)"any");
+	else
+	{
+	    dict_add_string(arg, "type",
+			     (char_u *)type_name(fp->uf_arg_types[j], &tofree));
+	    vim_free(tofree);
+	}
+	if (j >= fp->uf_args.ga_len - fp->uf_def_args.ga_len)
+	    dict_add_string(arg, "default", ((char_u **)fp->uf_def_args.ga_data)
+			     [j - fp->uf_args.ga_len + fp->uf_def_args.ga_len]);
+    }
+    if (has_varargs(fp))
+    {
+	dict_T	*va = dict_alloc();
+
+	if (va == NULL || dict_add_dict(d, "varargs", va) == FAIL)
+	{
+	    dict_unref(va);
+	    return FAIL;
+	}
+	dict_add_string(va, "name",
+			 fp->uf_va_name == NULL ? (char_u *)"" : fp->uf_va_name);
+	if (fp->uf_va_type == NULL)
+	    dict_add_string(va, "type", (char_u *)"list<any>");
+	else
+	{
+	    dict_add_string(va, "type",
+				 (char_u *)type_name(fp->uf_va_type, &tofree));
+	    vim_free(tofree);
+	}
+    }
+    if (is_def)
+    {
+	dict_add_string(d, "returns",
+				 (char_u *)type_name(fp->uf_ret_type, &tofree));
+	vim_free(tofree);
+    }
+    else
+	dict_add_string(d, "returns", (char_u *)"any");
+    dict_add_bool(d, "abort", (fp->uf_flags & FC_ABORT) != 0);
+    dict_add_bool(d, "range", (fp->uf_flags & FC_RANGE) != 0);
+    dict_add_bool(d, "dict", (fp->uf_flags & FC_DICT) != 0);
+    dict_add_bool(d, "closure", (fp->uf_flags & FC_CLOSURE) != 0);
+    dict_add_number(d, "sid", fp->uf_script_ctx.sc_sid);
+    dict_add_number(d, "lnum", fp->uf_script_ctx.sc_lnum);
+    return OK;
 }
 
 #if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
@@ -7333,15 +7436,34 @@ get_funccal(void)
 }
 
 /*
+ * Get the function call environment to use for the l: and a: variables, based
+ * on the backtrace debug level.
+ * Returns NULL if there is no current funccal or when the selected funccal is
+ * for a :def function, which does not have l: and a: dictionaries.
+ */
+    static funccall_T *
+get_funccal_for_vars(void)
+{
+    funccall_T	*funccal = NULL;
+
+    if (current_funccal == NULL)
+	return NULL;
+    funccal = get_funccal();
+    if (funccal == NULL || funccal->fc_l_vars.dv_refcount == 0)
+	return NULL;
+    return funccal;
+}
+
+/*
  * Return the hashtable used for local variables in the current funccal.
  * Return NULL if there is no current funccal.
  */
     hashtab_T *
 get_funccal_local_ht(void)
 {
-    if (current_funccal == NULL || current_funccal->fc_l_vars.dv_refcount == 0)
-	return NULL;
-    return &get_funccal()->fc_l_vars.dv_hashtab;
+    funccall_T	*funccal = get_funccal_for_vars();
+
+    return funccal == NULL ? NULL : &funccal->fc_l_vars.dv_hashtab;
 }
 
 /*
@@ -7351,9 +7473,9 @@ get_funccal_local_ht(void)
     dictitem_T *
 get_funccal_local_var(void)
 {
-    if (current_funccal == NULL || current_funccal->fc_l_vars.dv_refcount == 0)
-	return NULL;
-    return &get_funccal()->fc_l_vars_var;
+    funccall_T	*funccal = get_funccal_for_vars();
+
+    return funccal == NULL ? NULL : &funccal->fc_l_vars_var;
 }
 
 /*
@@ -7363,9 +7485,9 @@ get_funccal_local_var(void)
     hashtab_T *
 get_funccal_args_ht(void)
 {
-    if (current_funccal == NULL || current_funccal->fc_l_vars.dv_refcount == 0)
-	return NULL;
-    return &get_funccal()->fc_l_avars.dv_hashtab;
+    funccall_T	*funccal = get_funccal_for_vars();
+
+    return funccal == NULL ? NULL : &funccal->fc_l_avars.dv_hashtab;
 }
 
 /*
@@ -7375,9 +7497,9 @@ get_funccal_args_ht(void)
     dictitem_T *
 get_funccal_args_var(void)
 {
-    if (current_funccal == NULL || current_funccal->fc_l_vars.dv_refcount == 0)
-	return NULL;
-    return &get_funccal()->fc_l_avars_var;
+    funccall_T	*funccal = get_funccal_for_vars();
+
+    return funccal == NULL ? NULL : &funccal->fc_l_avars_var;
 }
 
 /*

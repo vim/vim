@@ -1,4 +1,4 @@
-/* crypt.c */
+// crypt.c
 int sodium_enabled(int verbose);
 int crypt_method_nr_from_name(char_u *name);
 int crypt_method_nr_from_magic(char *ptr, int len);
@@ -31,4 +31,4 @@ int crypt_sodium_munlock(void *const addr, const size_t len);
 void crypt_sodium_randombytes_buf(void *const buf, const size_t size);
 int crypt_sodium_init(void);
 UINT32_T crypt_sodium_randombytes_random(void);
-/* vim: set ft=c : */
+// vim: ft=c

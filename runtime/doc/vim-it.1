@@ -1,4 +1,4 @@
-.TH VIM 1 "05 giugno 2026"
+.TH VIM 1 "08 settembre 2026"
 .SH NOME
 vim \- VI Migliorato, un editor di testi per programmatori
 .SH SINTASSI
@@ -535,9 +535,9 @@ relativo per arrivare al socket.
 .TP
 \-\-clientserver {metodo}
 Usare {metodo} come interfaccia per la funzionalità client/server. Può valere
-"socket" o "x11" o "mswin".  Disponibile solo se Vim è stato compilato sia con
-la funzionalità socketserver che con quella X11, o se, in ambiente MS-Windows,
-è stato compilato con la funzionalità socketserver.
+"socket" o "x11" o "mswin".  Disponibile solo se compilato sia con
+la funzionalità socketserver che con quella X11 o, in ambiente MS-Windows,
+con la funzionalità socketserver.
 Si può anche impostare la variabile d'ambiente $VIM_CLIENTSERVER, che sarà
 interpretata allo stesso modo, ma specificare l'argomento --clientserver
 prevarrà sempre su di essa.
@@ -548,6 +548,15 @@ finestra.
 .TP
 \-\-startuptime {nome_file}
 Durante la fase iniziale, scrivere messaggi di log al file {nome_file}.
+.TP
+\-\-stdio\-channel
+Considerare i file stdin e stdout di
+.B Vim
+come un canale, e non come un terminale.  Implica l'opzione "\-es": non
+viene visualizzato niente, non venogno letti eventuali comandi Ex e non
+viene fatta partire la GUI.  Uno script apre il canale usando ch_open()
+con indirizzo "stdio". Vedere ":help \-\-stdio\-channel".
+Disponibile solo se compilato con la funzionalità channel.
 .TP
 \-\-ttyfail
 Quando stdin o stdout non sono un terminale (tty) uscire subito da Vim.

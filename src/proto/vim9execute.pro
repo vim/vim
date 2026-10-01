@@ -1,4 +1,4 @@
-/* vim9execute.c */
+// vim9execute.c
 void to_string_error(vartype_T vartype);
 void update_has_breakpoint(ufunc_T *ufunc);
 int funcstack_check_refcount(funcstack_T *funcstack);
@@ -27,4 +27,4 @@ void ex_disassemble(exarg_T *eap);
 int tv2bool(typval_T *tv);
 void emsg_using_string_as(typval_T *tv, int as_number);
 int check_not_string(typval_T *tv);
-/* vim: set ft=c : */
+// vim: ft=c

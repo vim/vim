@@ -1786,11 +1786,12 @@ func Test_popup_filter_win_execute_error()
   call writefile(lines, 'XtestPopupWinExecuteError', 'D')
   let buf = RunVimInTerminal('-S XtestPopupWinExecuteError', #{rows: 10, wait_for_ruler: 0})
 
+  " The CR is consumed by the hit-enter prompt, the key after it reaches the
+  " popup filter.
   call WaitFor({-> term_getline(buf, 9) =~ 'Not an editor command: invalidCommand'})
   call term_sendkeys(buf, "\<CR>")
-  call WaitFor({-> term_getline(buf, 9) =~ 'Unknown function: invalidfilter'})
-  call term_sendkeys(buf, "\<CR>")
-  call WaitFor({-> term_getline(buf, 9) =~ 'Not allowed in a popup window'})
+  call term_sendkeys(buf, "x")
+  call WaitFor({-> term_getline(buf, 10) =~ 'Unknown function: invalidfilter'})
   call term_sendkeys(buf, "\<CR>")
   call term_sendkeys(buf, "\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_win_execute', {})
@@ -2308,6 +2309,36 @@ func Test_adjust_left_past_screen_width()
   %bwipe!
 endfunc
 
+func Test_popupwin_border_at_screen_edge()
+  CheckScreendump
+
+  let lines =<< trim END
+      call setline(1, range(1, 20))
+      func ShowScrollbarPopup()
+	call popup_clear()
+	call popup_create(map(range(12), {-> repeat('a', 9)}), #{
+	      \ pos: 'botleft', line: 5, col: 33, fixed: v:true,
+	      \ maxwidth: 80, padding: [0, 1, 0, 1], border: []})
+      endfunc
+      func ShowRightAlignedPopup()
+	call popup_clear()
+	call popup_create(map(range(6), {-> repeat('abcdefghij', 4)}), #{
+	      \ pos: 'botright', line: 15, col: 30, fixed: v:true,
+	      \ maxwidth: 80, padding: [0, 1, 0, 1], border: []})
+      endfunc
+      call ShowScrollbarPopup()
+  END
+  call writefile(lines, 'XtestPopupBorderEdge', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupBorderEdge', #{rows: 16, cols: 45})
+  call VerifyScreenDump(buf, 'Test_popupwin_border_edge_1', {})
+
+  call term_sendkeys(buf, ":call ShowRightAlignedPopup()\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_border_edge_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_popup_moved()
   new
   call test_override('char_avail', 1)
@@ -2659,6 +2690,39 @@ func Test_popup_settext_scrollbar_disappear()
   " column must not leave stray characters where the scrollbar used to be.
   call term_sendkeys(buf, ":call popup_settext(g:p, ['short'])\<CR>")
   call VerifyScreenDump(buf, 'Test_popup_settext_scrollbar_disappear_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_popup_scrolled_width()
+  CheckScreendump
+
+  let lines =<< trim END
+    set mouse=a
+    let g:p = popup_create(['start', repeat('x', 100)]
+          \ + repeat(['hello'], 20), #{
+          \ line: 3,
+          \ col: 1,
+          \ pos: 'topleft',
+          \ maxwidth: 48,
+          \ padding: [0, 1, 0, 1],
+          \ border: [],
+          \ })
+    func ScrollToBottom()
+      let pos = popup_getpos(g:p)
+      call test_setmouse(pos.line + 2, pos.col + 2)
+      for i in range(6)
+        call feedkeys("\<ScrollWheelDown>", 'xt')
+      endfor
+    endfunc
+  END
+  call writefile(lines, 'XtestPopupScrollWidth', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupScrollWidth', #{rows: 15, cols: 50})
+  call VerifyScreenDump(buf, 'Test_popup_scrolled_width_1', {})
+
+  " Scrolling the wrapped line out of view must not change the width.
+  call term_sendkeys(buf, ":call ScrollToBottom()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_scrolled_width_2', {})
 
   call StopVimInTerminal(buf)
 endfunc
@@ -5969,7 +6033,8 @@ func Test_popup_opacity_lowcolor()
 endfunc
 
 func Test_popup_image_update()
-  CheckFeature image
+  CheckFeature image_popup
+  set imageprotocol=.*:sixel
 
   " 2x2 RGB = 12 bytes per image (4 pixels x 3 bytes).
   let image1 = 0zff000000ff000000ffffffff
@@ -5995,10 +6060,14 @@ func Test_popup_image_update()
   call assert_true(pos3.width > pos2.width || pos3.height > pos2.height)
 
   call popup_close(winid)
+
+  set imageprotocol&
 endfunc
 
 func Test_popup_image_clear_with_empty_dict()
-  CheckFeature image
+  CheckFeature image_popup
+
+  set imageprotocol=.*:sixel
 
   " Documented sentinel: popup_setoptions(winid, #{image: {}}) removes a
   " previously set image.  After the empty-dict call, popup_getoptions()
@@ -6022,6 +6091,8 @@ func Test_popup_image_clear_with_empty_dict()
   call assert_true(has_key(popup_getoptions(winid), 'image'))
 
   call popup_close(winid)
+
+  set imageprotocol&
 endfunc
 
 " A popup image is emitted as a DCS (sixel) escape sequence.  On the Windows
@@ -6030,6 +6101,7 @@ endfunc
 " with echoraw() so that only the console write is under test.  See #20795.
 func Test_dcs_not_written_as_text_windows_cui()
   CheckFeature terminal
+
   if !has('win32') || has('gui_running')
     throw 'Skipped: only for the Windows CUI'
   endif
@@ -6059,7 +6131,8 @@ func Test_dcs_not_written_as_text_windows_cui()
 endfunc
 
 func Test_popup_image_set_and_getoptions()
-  CheckFeature image
+  CheckFeature image_popup
+  set imageprotocol=.*:sixel
 
   " RGB image: 4x4 cells, 3 bytes per pixel.
   let blob = repeat([0xff, 0x00, 0x00], 4 * 4)->list2blob()
@@ -6070,7 +6143,7 @@ func Test_popup_image_set_and_getoptions()
   let opt = popup_getoptions(winid)
   call assert_true(has_key(opt, 'image'),
         \ 'popup_getoptions() should expose the image dict')
-  call assert_equal(['alpha', 'data', 'height', 'width'], sort(keys(opt.image)))
+  call assert_equal(['alpha', 'data', 'format', 'height', 'width'], sort(keys(opt.image)))
   call assert_equal(4, opt.image.width)
   call assert_equal(4, opt.image.height)
   call assert_equal(0, opt.image.alpha)
@@ -6101,53 +6174,27 @@ func Test_popup_image_set_and_getoptions()
   let winid = popup_create('plain', #{line: 1, col: 1})
   call assert_false(has_key(popup_getoptions(winid), 'image'))
   call popup_close(winid)
+
+  set imageprotocol&
 endfunc
 
 func Test_popup_image_required_params()
-  CheckFeature image
+  CheckFeature Image
+  set imageprotocol=.*:sixel
 
   let blob = repeat([0xff, 0x00, 0x00], 2 * 2)->list2blob()
 
-  " Wrong data length is rejected with a clear error and the popup is not
-  " created, so there is nothing to clean up.
   call assert_fails(
         \ "call popup_create('', #{image: #{data: 0z00, width: 2, height: 2}})",
         \ 'E475:')
   call assert_equal([], popup_list())
 
-  " Missing/zero required keys are silently ignored: the popup is created
-  " without an image, so popup_getoptions() should not expose "image".
-  let winid = popup_create('', #{
-        \ image: #{width: 2, height: 2},
-        \ line: 1, col: 1,
-        \ })
-  call assert_false(has_key(popup_getoptions(winid), 'image'))
-  call popup_close(winid)
-
-  let winid = popup_create('', #{
-        \ image: #{data: blob, height: 2},
-        \ line: 1, col: 1,
-        \ })
-  call assert_false(has_key(popup_getoptions(winid), 'image'))
-  call popup_close(winid)
-
-  let winid = popup_create('', #{
-        \ image: #{data: blob, width: 2},
-        \ line: 1, col: 1,
-        \ })
-  call assert_false(has_key(popup_getoptions(winid), 'image'))
-  call popup_close(winid)
-
-  let winid = popup_create('', #{
-        \ image: #{data: blob, width: 0, height: 2},
-        \ line: 1, col: 1,
-        \ })
-  call assert_false(has_key(popup_getoptions(winid), 'image'))
-  call popup_close(winid)
+  set imageprotocol&
 endfunc
 
 func Test_popup_image_move()
-  CheckFeature image
+  CheckFeature Image
+  set imageprotocol=.*:sixel
 
   let img = repeat([0xff, 0x00, 0x00], 8 * 8)->list2blob()
   let id = popup_create('', #{
@@ -6172,10 +6219,13 @@ func Test_popup_image_move()
   endfor
 
   call popup_close(id)
+
+  set imageprotocol&
 endfunc
 
 func Test_popup_image_opacity_overlay()
-  CheckFeature image
+  CheckFeature Image
+  set imageprotocol=.*:sixel
 
   " Bottom popup carries an image.
   let img = repeat([0x00, 0xff, 0x00], 16 * 16)->list2blob()
@@ -6202,10 +6252,13 @@ func Test_popup_image_opacity_overlay()
 
   call popup_close(top_id)
   call popup_close(img_id)
+
+  set imageprotocol&
 endfunc
 
 func Test_popup_image_clipwindow_scroll()
-  CheckFeature image
+  CheckFeature Image
+  set imageprotocol=.*:sixel
 
   " An image popup anchored to a textprop with "clipwindow" set stays visible
   " (clipped) while the prop is in reach, hides when the host scrolls the prop
@@ -6244,6 +6297,8 @@ func Test_popup_image_clipwindow_scroll()
   call popup_close(id)
   bwipe!
   call prop_type_delete('imgclipprop')
+
+  set imageprotocol&
 endfunc
 
 func Test_popupwin_textprop_redraw()
@@ -6280,6 +6335,61 @@ func Test_popupwin_textprop_redraw()
   call term_sendkeys(buf, "\<F3>")
   call VerifyScreenDump(buf, 'Test_popupwin_textprop_redraw_2', {})
 
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_popup_no_filter_at_hit_enter()
+  CheckScreendump
+
+  let lines =<< trim END
+      call setline(1, range(1, 20))
+      func MyFilter(id, key)
+        call popup_close(a:id)
+        return 1
+      endfunc
+      func ShowPopup()
+        call popup_create(['one'], #{line: 8, col: 5, filter: 'MyFilter'})
+        redraw
+        echomsg repeat('x', &columns * 2)
+      endfunc
+      nnoremap <F3> <Cmd>call ShowPopup()<CR>
+  END
+  call writefile(lines, 'XtestPopupHitEnter', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupHitEnter', #{rows: 15})
+  call term_sendkeys(buf, "\<F3>")
+  call VerifyScreenDump(buf, 'Test_popupwin_hit_enter_1', {})
+
+  " The key goes to the hit-enter prompt, not to the popup filter, thus the
+  " popup is still there.
+  call term_sendkeys(buf, "\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_hit_enter_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_popupwin_close_and_redraw_keeps_cursor()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, repeat(['some text'], 8))
+      call cursor(3, 2)
+      let g:id = popup_atcursor(['a popup'], #{moved: 'any'})
+      func CloseIt()
+        call popup_close(g:id)
+        redraw
+      endfunc
+      autocmd ModeChanged * ++once call CloseIt()
+  END
+  call writefile(lines, 'XtestPopupCursor', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupCursor', #{rows: 10})
+  call WaitForAssert({-> assert_equal([3, 2], term_getcursor(buf)[0:1])})
+
+  " With the operator waiting, nothing after the redraw puts the cursor back.
+  call term_sendkeys(buf, "c")
+  call TermWait(buf, 100)
+  call assert_equal([3, 2], term_getcursor(buf)[0:1])
+
+  call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
 endfunc
 

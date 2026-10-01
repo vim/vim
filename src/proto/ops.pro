@@ -1,4 +1,4 @@
-/* ops.c */
+// ops.c
 int get_op_type(int char1, int char2);
 int op_is_change(int op);
 int get_op_char(int optype);
@@ -24,4 +24,4 @@ char *did_set_operatorfunc(optset_T *args);
 void free_operatorfunc_option(void);
 int set_ref_in_opfunc(int copyID);
 void do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank);
-/* vim: set ft=c : */
+// vim: ft=c

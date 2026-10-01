@@ -52,6 +52,10 @@ COVERAGE=no
 # Set to yes or specify the path to the libsodium directory to enable it.
 #SODIUM=yes
 
+# Pixman library support, used for image feature. Set to the path of the pixman directory to
+# enable it. Default is "no"
+#PIXMAN=[path to pixman directory]
+
 # Set to SIZE for size, SPEED for speed, MAXSPEED for maximum optimization.
 OPTIMIZE=MAXSPEED
 
@@ -686,6 +690,15 @@ TERM_DEPS = \
 	libvterm/src/vterm_internal.h
 endif
 
+ifndef PIXMAN
+PIXMAN = no
+endif
+
+ifneq ($(PIXMAN),no)
+DEFINES += -DHAVE_PIXMAN
+CFLAGS += -I$(PIXMAN)/include/pixman-1
+endif
+
 ifeq ($(SOUND),yes)
 DEFINES += -DFEAT_SOUND
 endif
@@ -839,6 +852,9 @@ OBJ = \
 	$(OUTDIR)/help.o \
 	$(OUTDIR)/highlight.o \
 	$(OUTDIR)/if_cscope.o \
+	$(OUTDIR)/image.o \
+	$(OUTDIR)/image_kitty.o \
+	$(OUTDIR)/image_sixel.o \
 	$(OUTDIR)/indent.o \
 	$(OUTDIR)/insexpand.o \
 	$(OUTDIR)/json.o \
@@ -878,9 +894,6 @@ OBJ = \
 	$(OUTDIR)/session.o \
 	$(OUTDIR)/sha256.o \
 	$(OUTDIR)/sign.o \
-	$(OUTDIR)/sixel.o \
-	$(OUTDIR)/kitty.o \
-	$(OUTDIR)/cairo.o \
 	$(OUTDIR)/socketserver.o \
 	$(OUTDIR)/spell.o \
 	$(OUTDIR)/spellfile.o \
@@ -986,6 +999,10 @@ OBJ += $(OUTDIR)/xpm_w32.o
 # You'll need libXpm.a from http://gnuwin32.sf.net
 LIB += -L$(XPM)/lib -lXpm
  endif
+endif
+
+ifneq ($(PIXMAN),no)
+LIB += -L$(PIXMAN)/lib -lpixman-1
 endif
 
 ifeq ($(TERMINAL),yes)

@@ -133,7 +133,7 @@ charclass({string})		Number	character class of {string}
 charcol({expr} [, {winid}])	Number	column number of cursor or mark
 charidx({string}, {idx} [, {countcc} [, {utf16}]])
 				Number	char index of byte {idx} in {string}
-chdir({dir})			String	change current working directory
+chdir({dir} [, {scope}])	String	change current working directory
 cindent({lnum})			Number	C indent for line {lnum}
 clearmatches([{win}])		none	clear all matches
 cmdcomplete_info()		Dict	get current cmdline completion
@@ -177,7 +177,7 @@ escape({string}, {chars})	String	escape {chars} in {string} with '\'
 eval({string})			any	evaluate {string} into its value
 eventhandler()			Number	|TRUE| if inside an event handler
 executable({expr})		Number	1 if executable {expr} exists
-execute({command})		String	execute {command} and get the output
+execute({command} [, {silent}])	String	execute {command} and get the output
 exepath({expr})			String	full path of the command {expr}
 exists({expr})			Number	|TRUE| if {expr} exists
 exists_compiled({expr})		Number	|TRUE| if {expr} exists at compile time
@@ -187,12 +187,12 @@ expand({expr} [, {nosuf} [, {list}]])
 expandcmd({string} [, {options}])
 				String	expand {string} like with `:edit`
 extend({expr1}, {expr2} [, {expr3}])
-				List/Dict
+				List/Dict/Blob
 					insert items of {expr2} into {expr1}
 extendnew({expr1}, {expr2} [, {expr3}])
-				List/Dict
-					like |extend()| but creates a new List
-					or Dictionary
+				List/Dict/Blob
+					like |extend()| but creates a new
+					List, Dictionary or Blob
 feedkeys({string} [, {mode}])	none	add key sequence to typeahead buffer
 filecopy({from}, {to})		Number	|TRUE| if copying file {from} to {to}
 					worked
@@ -213,11 +213,13 @@ floor({expr})			Float	round {expr} down
 fmod({expr1}, {expr2})		Float	remainder of {expr1} / {expr2}
 fnameescape({fname})		String	escape special characters in {fname}
 fnamemodify({fname}, {mods})	String	modify file name
-foldclosed({lnum})		Number	first line of fold at {lnum} if closed
-foldclosedend({lnum})		Number	last line of fold at {lnum} if closed
-foldlevel({lnum})		Number	fold level at {lnum}
+foldclosed({lnum} [, {winid}])	Number	first line of fold at {lnum} if closed
+foldclosedend({lnum} [, {winid}])
+				Number	last line of fold at {lnum} if closed
+foldlevel({lnum} [, {winid}])	Number	fold level at {lnum}
 foldtext()			String	line displayed for closed fold
-foldtextresult({lnum})		String	text for closed fold at {lnum}
+foldtextresult({lnum} [, {winid}])
+				String	text for closed fold at {lnum}
 foreach({expr1}, {expr2})	List/Tuple/Dict/Blob/String
 					for each item in {expr1} call {expr2}
 foreground()			none	bring the Vim window to the foreground
@@ -273,6 +275,8 @@ getfsize({fname})		Number	size in bytes of file {fname}
 getftime({fname})		Number	last modification time of file
 getftype({fname})		String	description of type of file {fname}
 getimstatus()			Number	|TRUE| if the IME status is active
+getinfo({kind}, {name} [, {opts}])
+				Dict	the definition of {name}
 getjumplist([{winnr} [, {tabnr}]])
 				List	list of jump list items
 getline({lnum})			String	line {lnum} of current buffer
@@ -336,10 +340,13 @@ hlset({list})			Number	set highlight group attributes
 hostname()			String	name of the machine Vim is running on
 iconv({expr}, {from}, {to})	String	convert encoding of {expr}
 id({item})			String	get unique identity string of item
+image_add({dict})		Number	Add an image and return handle to it
+image_discard({id})		none	Discard an image handle
+image_info([{id}])		List	Get information about an image
 indent({lnum})			Number	indent of line {lnum}
 index({object}, {expr} [, {start} [, {ic}]])
 				Number	index in {object} where {expr} appears
-indexof({object}, {expr} [, {opts}]])
+indexof({object}, {expr} [, {opts}])
 				Number	index in {object} where {expr} is true
 input({prompt} [, {text} [, {completion}]])
 				String	get input from the user
@@ -353,7 +360,8 @@ inputsecret({prompt} [, {text}])
 insert({object}, {item} [, {idx}])
 				List	insert {item} in {object}
 					[before {idx}]
-instanceof({object}, {class})	Bool	|TRUE| if {object} is an instance of
+instanceof({object}, {class} ...)
+				Bool	|TRUE| if {object} is an instance of
 					{class}
 interrupt()			none	interrupt script execution
 invert({expr})			Number	bitwise invert
@@ -390,7 +398,7 @@ lispindent({lnum})		Number	Lisp indent for line {lnum}
 list2blob({list})		Blob	turn {list} of numbers into a Blob
 list2str({list} [, {utf8}])	String	turn {list} of numbers into a String
 list2tuple({list})		Tuple	turn {list} of items into a tuple
-listener_add({callback} [, {buf} [, {unbuffered}]])
+listener_add({callback} [, {buf} [, {options}]])
 				Number	add a callback to listen to changes
 listener_flush([{buf}])		none	invoke listener callbacks
 listener_remove({id})		Number	remove a listener callback
@@ -410,6 +418,7 @@ mapnew({expr1}, {expr2})	List/Dict/Blob/String
 					like |map()| but creates a new List or
 					Dictionary
 mapset({mode}, {abbr}, {dict})	none	restore mapping from |maparg()| result
+mapset({dict})			none	restore mapping from |maparg()| result
 match({expr}, {pat} [, {start} [, {count}]])
 				Number	position where {pat} matches in {expr}
 matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
@@ -417,7 +426,7 @@ matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])
 				Number	highlight positions with {group}
 matcharg({nr})			List	arguments of `:match`
-matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict})
+matchbufline({buf}, {pat}, {lnum}, {end} [, {dict}])
 				List	all the {pat} matches in buffer {buf}
 matchdelete({id} [, {win}])	Number	delete match identified by {id}
 matchend({expr}, {pat} [, {start} [, {count}]])
@@ -431,7 +440,7 @@ matchlist({expr}, {pat} [, {start} [, {count}]])
 					{expr}
 matchstr({expr}, {pat} [, {start} [, {count}]])
 				String	{count}'th match of {pat} in {expr}
-matchstrlist({list}, {pat} [, {dict})
+matchstrlist({list}, {pat} [, {dict}])
 				List	all the {pat} matches in {list}
 matchstrpos({expr}, {pat} [, {start} [, {count}]])
 				List	{count}'th match of {pat} in {expr}
@@ -443,7 +452,7 @@ mkdir({name} [, {flags} [, {prot}]])
 mode([{expr}])			String	current editing mode
 mzeval({expr})			any	evaluate |MzScheme| expression
 nextnonblank({lnum})		Number	line nr of non-blank line >= {lnum}
-ngettext({single}, {plural}, {number}[, {domain}])
+ngettext({single}, {plural}, {number} [, {domain}])
 				String	translate text based on {number}
 nr2char({expr} [, {utf8}])	String	single char with ASCII/UTF-8 value
 					{expr}
@@ -453,7 +462,7 @@ perleval({expr})		any	evaluate |Perl| expression
 popup_atcursor({what}, {options})
 				Number	create popup window near the cursor
 popup_beval({what}, {options})	Number	create popup window for 'ballooneval'
-popup_clear()			none	close all popup windows
+popup_clear([{force}])		none	close all popup windows
 popup_close({id} [, {result}])	none	close popup window {id}
 popup_create({what}, {options}) Number	create a popup window
 popup_dialog({what}, {options}) Number	create a popup window used as a dialog
@@ -480,7 +489,7 @@ popup_show({id})		Number	unhide popup window {id}
 pow({x}, {y})			Float	{x} to the power of {y}
 preinserted()			Number	whether text is inserted after cursor
 prevnonblank({lnum})		Number	line nr of non-blank line <= {lnum}
-printf({fmt}, {expr1}...)	String	format text
+printf({fmt} [, {expr1} ...])	String	format text
 prompt_getprompt({buf})		String	get prompt text
 prompt_setcallback({buf}, {expr})
 				none	set prompt callback function
@@ -575,7 +584,7 @@ searchpos({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 				List	search for {pattern}
 server2client({clientid}, {string})
 				Number	send reply string
-serverlist()			String	get a list of available servers
+serverlist([{dict}])		String	get a list of available servers
 setbufline({buf}, {lnum}, {text})
 				Number	set line {lnum} to {text} in buffer
 					{buf}
@@ -586,6 +595,8 @@ setcharpos({expr}, {list})	Number	set the {expr} position to {list}
 setcharsearch({dict})		none	set character search from {dict}
 setcmdline({str} [, {pos}])	Number	set command-line
 setcmdpos({pos})		Number	set cursor position in command-line
+setcursorcharpos({lnum}, {col} [, {off}])
+				Number	move cursor to {lnum}, {col}, {off}
 setcursorcharpos({list})	Number	move cursor to position in {list}
 setenv({name}, {val})		none	set environment variable
 setfperm({fname}, {mode})	Number	set {fname} file permissions to {mode}
@@ -633,8 +644,8 @@ simplify({filename})		String	simplify filename as much as possible
 sin({expr})			Float	sine of {expr}
 sinh({expr})			Float	hyperbolic sine of {expr}
 slice({expr}, {start} [, {end}])
-				String/List/Blob
-					slice of a String, List or Blob
+				String/List/Blob/Tuple
+					slice of a String, List, Blob or Tuple
 sort({list} [, {how} [, {dict}]])
 				List	sort {list}, compare with {how}
 sound_clear()			none	stop playing all sounds
@@ -644,7 +655,7 @@ sound_playfile({path} [, {callback}])
 				Number	play sound file {path}
 sound_stop({id})		none	stop playing sound {id}
 soundfold({word})		String	sound-fold {word}
-spellbadword()			List	badly spelled word at cursor
+spellbadword([{sentence}])	List	badly spelled word at cursor
 spellsuggest({word} [, {max} [, {capital}]])
 				List	spelling suggestions
 split({expr} [, {pat} [, {keepempty}]])
@@ -729,7 +740,7 @@ term_getscrolled({buf})		Number	get the scroll count of a terminal
 term_getsize({buf})		List	get the size of a terminal
 term_getstatus({buf})		String	get the status of a terminal
 term_gettitle({buf})		String	get the title of a terminal
-term_gettty({buf}, [{input}])	String	get the tty name of a terminal
+term_gettty({buf} [, {input}])	String	get the tty name of a terminal
 term_list()			List	get the list of terminal buffers
 term_scrape({buf}, {row})	List	get row of a terminal screen
 term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
@@ -799,7 +810,7 @@ uri_encode({string})		String	URI-encode a string
 utf16idx({string}, {idx} [, {countcc} [, {charidx}]])
 				Number	UTF-16 index of byte {idx} in {string}
 values({dict})			List	values in {dict}
-virtcol({expr} [, {list} [, {winid}])
+virtcol({expr} [, {list} [, {winid}]])
 				Number/List
 					screen column of cursor or mark
 virtcol2col({winid}, {lnum}, {col})
@@ -815,8 +826,10 @@ win_gettype([{nr}])		String	type of window {nr}
 win_gotoid({expr})		Number	go to window with ID {expr}
 win_id2tabwin({expr})		List	get tab and window nr from window ID
 win_id2win({expr})		Number	get window nr from window ID
-win_move_separator({nr})	Number	move window vertical separator
-win_move_statusline({nr})	Number	move window status line
+win_move_separator({nr}, {offset})
+				Number	move window vertical separator
+win_move_statusline({nr}, {offset})
+				Number	move window status line
 win_screenpos({nr})		List	get screen position of window {nr}
 win_splitmove({nr}, {target} [, {options}])
 				Number	move window {nr} to split of {target}
@@ -2059,12 +2072,20 @@ complete_info([{what}])					*complete_info()*
 		Returns a |Dictionary| with information about Insert mode
 		completion.  See |ins-completion|.
 		The items are:
+		   auto		|TRUE| when Vim started this completion by
+				itself, which is what 'autocomplete' does,
+				and |FALSE| when a key asked for it, such as
+				|i_CTRL-X_CTRL-O|.  A |complete-functions|
+				function can read this to tell the two apart.
+				Returned only when asked for in {what}.
 		   completed	Return a dictionary containing the entries of
 				the currently selected index item.
 		   items	List of all completion candidates.  Each item
 				is a dictionary containing the entries "word",
-				"abbr", "menu", "kind", "info" and
-				"user_data".
+				"abbr", "menu", "kind", "info", "abbr_hlgroup",
+				"kind_hlgroup" and "user_data".  The highlight
+				group entries hold the name that the item was
+				added with, or an empty string.
 				See |complete-items|.
 		   matches	Same as "items", but only returns items that
 				are matching current query.  If both "matches"
@@ -2232,7 +2253,7 @@ cosh({expr})						*cosh()*
 			:echo cosh(0.5)
 <			1.127626 >
 			:echo cosh(-0.5)
-<			-1.127626
+<			1.127626
 
 		Can also be used as a |method|: >
 			Compute()->cosh()
@@ -3130,24 +3151,27 @@ expandcmd({string} [, {options}])			*expandcmd()*
 
 
 extend({expr1}, {expr2} [, {expr3}])			*extend()*
-		{expr1} and {expr2} must be both |Lists| or both
-		|Dictionaries|.
+		{expr1} and {expr2} must be both |Lists|, |Dictionaries| or
+		|Blobs|.
 
-		If they are |Lists|: Append {expr2} to {expr1}.
+		If they are |Lists| or |Blobs|: Append {expr2} to {expr1}.
 		If {expr3} is given insert the items of {expr2} before the
-		item with index {expr3} in {expr1}.  When {expr3} is zero
+		item with index/byte {expr3} in {expr1}.  When {expr3} is zero
 		insert before the first item.  When {expr3} is equal to
 		len({expr1}) then {expr2} is appended.
 		Examples: >
 			:echo sort(extend(mylist, [7, 5]))
 			:call extend(mylist, [2, 3], 1)
-<		When {expr1} is the same List as {expr2} then the number of
-		items copied is equal to the original length of the List.
+<		When {expr1} is the same List or Blob as {expr2} then the
+		number of items copied is equal to the original length of the
+		List or the Blob.
 		E.g., when {expr3} is 1 you get N new copies of the first item
 		(where N is the original length of the List).
-		Use |add()| to concatenate one item to a list.  To concatenate
-		two lists into a new list use the + operator: >
+		Use |add()| to concatenate one item to a list or a blob.
+		To concatenate two lists or blobs into a new one use the +
+		operator: >
 			:let newlist = [1, 2, 3] + [4, 5]
+			:let newblob = 0z1122 + 0z3344
 <
 		If they are |Dictionaries|:
 		Add all entries from {expr2} to {expr1}.
@@ -3160,7 +3184,7 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 
 		{expr1} is changed when {expr2} is not empty.  If necessary
 		make a copy of {expr1} first or use |extendnew()| to return a
-		new List/Dictionary.
+		new List/Dictionary/Blob.
 		{expr2} remains unchanged.
 		When {expr1} is locked and {expr2} is not empty the operation
 		fails.
@@ -3169,17 +3193,17 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 		Can also be used as a |method|: >
 			mylist->extend(otherlist)
 <
-		Return type: list<{type}> or dict<{type}> depending on {expr1}
-		and {expr2}, in case of error: |Number|
+		Return type: list<{type}>, dict<{type}> or blob depending on
+		{expr1} and {expr2}, in case of error: |Number|
 
 
 extendnew({expr1}, {expr2} [, {expr3}])			*extendnew()*
 		Like |extend()| but instead of adding items to {expr1} a new
-		List or Dictionary is created and returned.  {expr1} remains
-		unchanged.
+		List, Dictionary or Blob is created and returned.  {expr1}
+		remains unchanged.
 
-		Return type: list<{type}> or dict<{type}> depending on {expr1}
-		and {expr2}, in case of error: |Number|
+		Return type: list<{type}>, dict<{type}> or blob depending on
+		{expr1} and {expr2}, in case of error: |Number|
 
 
 feedkeys({string} [, {mode}])				*feedkeys()*
@@ -3543,33 +3567,43 @@ fnamemodify({fname}, {mods})				*fnamemodify()*
 		Return type: |String|
 
 
-foldclosed({lnum})					*foldclosed()*
+foldclosed({lnum} [, {winid}])				*foldclosed()*
 		The result is a Number.  If the line {lnum} is in a closed
 		fold, the result is the number of the first line in that fold.
 		If the line {lnum} is not in a closed fold, -1 is returned.
 		{lnum} is used like with |getline()|.  Thus "." is the current
 		line, "'m" mark m, etc.
 
+		With the optional {winid} argument the values are obtained for
+		that window instead of the current window.  If {winid} is
+		invalid, return -2.
+
 		Can also be used as a |method|: >
 			GetLnum()->foldclosed()
+			GetLnum()->foldclosed(winid)
 <
 		Return type: |Number|
 
 
-foldclosedend({lnum})					*foldclosedend()*
+foldclosedend({lnum} [, {winid}])			*foldclosedend()*
 		The result is a Number.  If the line {lnum} is in a closed
 		fold, the result is the number of the last line in that fold.
 		If the line {lnum} is not in a closed fold, -1 is returned.
 		{lnum} is used like with |getline()|.  Thus "." is the current
 		line, "'m" mark m, etc.
 
+		With the optional {winid} argument the values are obtained for
+		that window instead of the current window.  If {winid} is
+		invalid, return -2.
+
 		Can also be used as a |method|: >
 			GetLnum()->foldclosedend()
+			GetLnum()->foldclosedend(winid)
 <
 		Return type: |Number|
 
 
-foldlevel({lnum})					*foldlevel()*
+foldlevel({lnum} [, {winid}])				*foldlevel()*
 		The result is a Number, which is the foldlevel of line {lnum}
 		in the current buffer.  For nested folds the deepest level is
 		returned.  If there is no fold at line {lnum}, zero is
@@ -3581,8 +3615,13 @@ foldlevel({lnum})					*foldlevel()*
 		{lnum} is used like with |getline()|.  Thus "." is the current
 		line, "'m" mark m, etc.
 
+		With the optional {winid} argument the values are obtained for
+		that window instead of the current window.  If {winid} is
+		invalid, return -2.
+
 		Can also be used as a |method|: >
 			GetLnum()->foldlevel()
+			GetLnum()->foldlevel(winid)
 <
 		Return type: |Number|
 
@@ -3608,7 +3647,7 @@ foldtext()						*foldtext()*
 		{not available when compiled without the |+folding| feature}
 
 
-foldtextresult({lnum})					*foldtextresult()*
+foldtextresult({lnum} [, {winid}])			*foldtextresult()*
 		Returns the text that is displayed for the closed fold at line
 		{lnum}.  Evaluates 'foldtext' in the appropriate context.
 		When there is no closed fold at {lnum} an empty string is
@@ -3618,9 +3657,13 @@ foldtextresult({lnum})					*foldtextresult()*
 		Useful when exporting folded text, e.g., to HTML.
 		{not available when compiled without the |+folding| feature}
 
+		With the optional {winid} argument the values are obtained for
+		that window instead of the current window.  If {winid} is
+		invalid, an empty string is returned.
 
 		Can also be used as a |method|: >
 			GetLnum()->foldtextresult()
+			GetLnum()->foldtextresult(winid)
 <
 		Return type: |String|
 
@@ -4693,6 +4736,190 @@ getimstatus()						*getimstatus()*
 		Return type: |Number|
 
 
+getinfo({kind}, {name} [, {opts}])			*getinfo()*
+		Return a Dict with the definition of {name}.  {kind} tells
+		what {name} is looked up as: "function", "command", "option"
+		or "vimvar".  Another {kind} is an error.  The result is an
+		empty Dict when {name} is not found.
+
+		Every Dict has an "available" item, which is |FALSE| for a
+		function or an option that this Vim was built without and for
+		an Ex command that it does not implement.  The other items
+		depend on {kind}, and so do the items of the optional Dict
+		{opts}; an item of {opts} for another {kind} is an error.
+
+		"function"	a built-in function, or a user defined
+				function when there is no built-in one with
+				that name.  "s:Func" finds a script-local
+				function in that script, its "<SNR>12_Func"
+				name from anywhere.
+
+			For a built-in function:
+			name	the name of the function
+			kind	"builtin"
+			minargs	the number of arguments that are required
+			maxargs	the maximum number of arguments, -1 when there
+				is no maximum
+			method	the number of the argument that the base of a
+				|method| call fills in, zero when the function
+				cannot be used as a method
+			args	a List with a Dict for each argument:
+				name	the name of the argument as in the
+					help, missing when the help does not
+					name it
+				types	the types the argument accepts, a List
+					of |vim9-types|; "any" for an argument
+					that is not checked or is checked
+					against another argument
+				For a function without a maximum the last item
+				is for all the remaining arguments.
+			returns	the type of the returned value when the
+				arguments are of type "any", "void" when there
+				is none.  Also "any" when the type depends on
+				the number of arguments.
+
+			Example: >
+				echo getinfo('function', 'strlen')
+<			{'name': 'strlen', 'kind': 'builtin',
+			'available': v:true, 'minargs': 1, 'maxargs': 1,
+			'method': 1,
+			'args': [{'name': 'string',
+				  'types': ['string', 'number']}],
+			'returns': 'number'}
+
+			With the "argtypes" item of {opts}, a List of
+			|vim9-types| for the arguments, "returns" is the
+			type for arguments of those types, the same as what
+			a |:def| function is compiled with.  Required
+			arguments that are not in the List are of type
+			"any".  It is an error to give more types than the
+			maximum number of arguments or a type that is not
+			recognized.  The types are not checked against
+			"args".  Example: >
+				let opts = {'argtypes': ['list<number>']}
+				echo getinfo('function', 'sort', opts).returns
+<			list<number>
+
+			For a user defined function:
+			name	the name of the function, "<SNR>12_Func" for a
+				script-local one
+			kind	"function" for |:function|, "def" for |:def|
+			args	a List with a Dict for each argument:
+				name	the name of the argument
+				type	the type for "def", "any" for
+					"function"
+				default	the expression for the default value,
+					missing when there is none
+			varargs	only when the function accepts more arguments:
+				a Dict with "name", empty for "...", and
+				"type", "list<any>" for "function"
+			returns	the return type for "def", "any" for
+				"function"
+			abort	|TRUE| when the function aborts on an error,
+				see |:func-abort|
+			range	|TRUE| when the function takes a range, see
+				|:func-range|
+			dict	|TRUE| for a |Dictionary-function|
+			closure	|TRUE| for a closure, see |:func-closure|
+			sid	the script ID where the function was defined
+			lnum	the line number in that script
+
+			Example: >
+				def g:Twice(n: number): number
+				  return n * 2
+				enddef
+				echo getinfo('function', 'g:Twice')
+<			{'name': 'Twice', 'kind': 'def', 'available': v:true,
+			'args': [{'name': 'n', 'type': 'number'}],
+			'returns': 'number', 'abort': v:false,
+			'range': v:false, 'dict': v:false,
+			'closure': v:false, 'sid': 1, 'lnum': 1}
+
+		"command"	an Ex command, also with an abbreviation; a
+				user defined command is found first, as with
+				`exists()`.  The Dict is empty for an
+				ambiguous abbreviation.
+			name	the full name of the command
+			kind	"builtin", "modifier" for a command modifier
+				like `:silent`, or "user" for a user defined
+				command
+			nargs	the arguments as for |:command-nargs|: "0",
+				"1", "_", "*", "?" or "+"
+			range	|FALSE| when a range is not allowed, otherwise
+				the default: "." for the cursor line, "%" for
+				the whole buffer or a Number as with
+				|:command-range|
+			count	|FALSE| when a count is not allowed, otherwise
+				the default count
+			bang	|TRUE| when a "!" after the name is allowed
+			bar	|TRUE| when "|" ends the command, see |:bar|
+			register
+				|TRUE| when a register name is accepted
+			addr	what a range refers to, as for
+				|:command-addr|; a builtin command can also
+				have "none", "tabs_relative", "quickfix_valid"
+				or "unsigned"
+
+			Only for "user":
+			buffer	|TRUE| for a buffer-local command
+			complete
+				the completion as for |:command-complete|,
+				empty when there is none
+			definition
+				the replacement text
+			sid	the script ID where the command was defined
+			lnum	the line number in that script
+
+			With the "vim9" item of {opts}, |TRUE| finds the
+			command as in |Vim9| script, where an abbreviation is
+			not accepted and some commands do not exist, |FALSE|
+			as in legacy Vim script.  Without it the context of
+			the caller is used.
+
+			Example: >
+				echo getinfo('command', 's')
+<			{'name': 'substitute', 'kind': 'builtin',
+			'available': v:true, 'nargs': '*', 'range': '.',
+			'count': v:false, 'bang': v:false, 'bar': v:false,
+			'register': v:false, 'addr': 'lines'}
+
+		"option"	an option, also one that is not supported in
+				this Vim, see |hidden-options|
+			name	the full name of the option
+			shortname
+				the abbreviation, empty when there is none
+			type	"bool", "number" or "string"
+			scope	"global", "window", "buffer", "global-window"
+				or "global-buffer", see |global-local|
+			default	the default value
+
+			Example: >
+				echo getinfo('option', 'tw')
+<			{'name': 'textwidth', 'shortname': 'tw',
+			'available': v:true, 'type': 'number',
+			'scope': 'buffer', 'default': 0}
+
+		"vimvar"	a predefined Vim variable, see |v:var|.
+				{name} includes the "v:".
+			name	the name of the variable, with the "v:"
+			type	the type of the variable, see |vim9-types|
+			readonly
+				|TRUE| when the variable cannot be set
+			compat	|TRUE| when the variable can also be used
+				without the "v:", like "count" for v:count
+
+			Example: >
+				echo getinfo('vimvar', 'v:count')
+<			{'name': 'v:count', 'available': v:true,
+			'type': 'number', 'readonly': v:true,
+			'compat': v:true}
+
+		Can also be used as a |method|: >
+			GetName()->getinfo('function')
+<
+		Return type: dict<any>
+
+
 getjumplist([{winnr} [, {tabnr}]])			*getjumplist()*
 		Returns the |jumplist| for the specified window.
 
@@ -4975,7 +5202,8 @@ getqflist([{what}])					*getqflist()*
 			valid	|TRUE|: recognized error message
 			user_data
 				custom data associated with the item, can be
-				any type.
+				any type.  This entry is present only when
+				user data was set for this item.
 
 		When there is no error list or it's empty, an empty list is
 		returned.  Quickfix list entries with a non-existing buffer
@@ -5017,6 +5245,11 @@ getqflist([{what}])					*getqflist()*
 			qfbufnr number of the buffer displayed in the quickfix
 				window.  Returns 0 if the quickfix buffer is
 				not present.  See |quickfix-buffer|.
+			quickfixtextfunc
+				function to get the text to display in the
+				quickfix window.  Returns an empty string if
+				this function is not set for the list.  See
+				|quickfix-window-function|.
 			size	number of entries in the quickfix list
 			title	get the list title |quickfix-title|
 			winid	get the quickfix |window-ID|
@@ -5048,6 +5281,9 @@ getqflist([{what}])					*getqflist()*
 				0
 			qfbufnr	number of the buffer displayed in the quickfix
 				window.  If not present, set to 0.
+			quickfixtextfunc
+				'quickfixtextfunc' setting of the list.  If
+				not present, set to "".
 			size	number of entries in the quickfix list.  If
 				not present, set to 0.
 			title	quickfix list title text.  If not present, set
@@ -5190,7 +5426,7 @@ getregionpos({pos1}, {pos2} [, {opts}])			*getregionpos()*
 		describing the buffer text segments bound by {pos1} and
 		{pos2}.
 		The segments are a pair of positions for every line: >
-			[[{start_pos}, {end_pos}], ...]
+			[[{startpos}, {endpos}], ...]
 <
 		The position is a |List| with four numbers:
 		    [bufnum, lnum, col, off]
@@ -5216,6 +5452,31 @@ getregionpos({pos1}, {pos2} [, {opts}])			*getregionpos()*
 					beyond the end of a line, a "col"
 					value of 0 is used for both positions.
 					(default: |FALSE|)
+
+			bounds		If |TRUE|, return only the outer
+					bounds of the region as a single
+					pair: >
+						[[{startpos}, {endpos}]]
+<					{startpos} is the start position on
+					the first line of the region and
+					{endpos} the end position on its last
+					line.  The lines in between are not
+					visited, which is much faster for a
+					large region.
+					(default: |FALSE|)
+
+		Using "bounds" with the same {opts} is equivalent to taking
+		the outer positions of the full result: >
+			let full = getregionpos(pos1, pos2, opts)
+			let bounds = [[full[0][0], full[-1][1]]]
+<		When the full result is empty, e.g. because {pos1} and {pos2}
+		are in different buffers, the result is empty as well.
+		Note that the two positions then come from different lines, so
+		they describe a diagonal of the region and not its shape.  For
+		a blockwise region they are the start of the first line and
+		the end of the last line, not the corners of the block.
+		Likewise, when the first line is empty and "eol" is |FALSE|,
+		{startpos} has a "col" of 0 while {endpos} may not.
 
 		Can also be used as a |method|: >
 			getpos('.')->getregionpos(getpos("'a"))
@@ -6147,6 +6408,81 @@ indexof({object}, {expr} [, {opts}])			*indexof()*
 		Return type: |Number|
 
 
+image_add({dict})					*image_add()*
+		Add an image using the given information in {dict}.  This does
+		not display an image, it simply loads the image data so that
+		it can be reference elsewhere (e.g. popup windows) multiple
+		times.
+
+		The {dict} argument must contain the following fields:
+		    "data"	a blob containing RGB or RGBA data, the format
+				is automatically detected using the dimensions
+				and blob size.
+		    "width"	width of image in pixels
+		    "height"	height of image in pixels
+
+							*E1584*
+		The image may not have more than 2147483647 pixels, that is
+		"width" times "height" must fit in a 32-bit signed integer.
+
+		The return value is an arbitrary ID that can be used to
+		reference the image.
+
+		{only available when compiled with the |+image| feature}
+
+		Can also be used as a |method|: >
+			info->image_add()
+<
+		Return type: |Number|
+
+
+image_discard({id})					*image_discard()*
+		Discard an image with ID {id}, internally decreasing its
+		reference count.  The image will only actually be deleted when
+		there are no more references to it left.  Note that after this,
+		the given image and its ID can not be referenced or modified.
+		This function only works on images created with |image_add()|,
+		images created directly from popup windows can not be
+		discarded or referenced anywhere else.
+
+		For example, if discarding an image that is still referenced
+		by a popup window, the popup window will still display the
+		image.
+
+		It is an error to provide an invalid image ID |E1587|.
+
+		{only available when compiled with the |+image| feature}
+
+		Can also be used as a |method|: >
+			id->image_discard()
+<
+		Return type: void
+
+
+image_info([{id}])					*image_info()* *E1587*
+		Return a list with information about loaded images.
+		When {id} is given only information about this image is
+		returned.  It is an error to use an invalid image ID.
+
+		When {id} is omitted information about all images is returned.
+
+		For each image the information is stored in a |Dictionary|
+		with these items:
+		    "id"	the image ID
+		    "data"	newly copied blob of the image data
+		    "width"	width of image in pixels
+		    "height"	height of image in pixels
+		    "alpha"	if image has an alpha channel (RGBA)
+		    "format"	image format, either "rgb" or "rgba"
+
+		{only available when compiled with the |+image| feature}
+
+		Can also be used as a |method|: >
+			GetImage()->image_info()
+<
+		Return type: list<dict<any>>
+
+
 input({prompt} [, {text} [, {completion}]])		*input()*
 		The result is a String, which is whatever the user typed on
 		the command-line.  The {prompt} argument is either a prompt
@@ -6302,7 +6638,7 @@ insert({object}, {item} [, {idx}])			*insert()*
 		Return type: |Number|
 
 
-instanceof({object}, {class})			*instanceof()* *E616* *E693*
+instanceof({object}, {class} ...)		*instanceof()* *E616* *E693*
 		The result is a Number, which is |TRUE| when the {object}
 		argument is a direct or indirect instance of a |Class|,
 		|Interface|, or class |:type| alias specified by {class}.
@@ -6686,7 +7022,7 @@ libcallnr({libname}, {funcname}, {argument})		*libcallnr()*
 		third argument: >
 			GetValue()->libcallnr("libc.so", "printf")
 <
-		Return type: |String|
+		Return type: |Number|
 
 
 line({expr} [, {winid}])				*line()*
@@ -6809,7 +7145,7 @@ list2tuple({list})					*list2tuple()*
 		Return type: tuple<{type}> (depending on the given |List|)
 
 
-listener_add({callback} [, {buf} [, {unbuffered}]])	*listener_add()*
+listener_add({callback} [, {buf} [, {options}]])	*listener_add()*
 		Add a callback function that will be invoked when changes have
 		been made to buffer {buf}.
 		{buf} refers to a buffer name or number.  For the accepted
@@ -6846,6 +7182,8 @@ listener_add({callback} [, {buf} [, {unbuffered}]])	*listener_add()*
 				the change; one if unknown or the whole line
 				was affected; this is a byte index, first
 				character has a value of one.
+		    text	only present when the "text" option is set
+				for at least one listener, see below
 		When lines are inserted (not when a line is split, e.g. by
 		typing CR in Insert mode) the values are:
 		    lnum	line above which the new line is added
@@ -6864,7 +7202,15 @@ listener_add({callback} [, {buf} [, {unbuffered}]])	*listener_add()*
 		    added	0
 		    col		first column with a change or 1
 
-		When {unbuffered} is |FALSE| or not provided the {callback} is
+		{options} is a Dictionary with these optional entries:
+		    unbuffered	invoke the {callback} for every single change
+				instead of for a batch of changes
+		    text	include the resulting text as a |List| of
+				Strings in each item of "changes"
+		For backwards compatibility {options} may also be a |Boolean|,
+		which is then used for the "unbuffered" entry.
+
+		When "unbuffered" is |FALSE| or not provided the {callback} is
 		invoked:
 
 		1. Just before the screen is updated.
@@ -6872,23 +7218,58 @@ listener_add({callback} [, {buf} [, {unbuffered}]])	*listener_add()*
 		3. When a change is being made that changes the line count in
 		   a way that causes a line number in the list of changes to
 		   become invalid.
+		4. When "text" is set and a lot of text has been recorded.
 
 		The entries are in the order the changes were made, thus the
 		most recent change is at the end.
 
+		Reasons three and four make the {callback} run while another
+		command is executing, carrying the changes made before it.  Do
+		not assume that what a {callback} receives was caused by the
+		command that is running.
+
 		Because of the third reason for triggering a callback listed
 		above, the line numbers passed to the callback are not
 		guaranteed to be valid. In particular, the end value can be
-		greater than line('$') + 1. If this is a problem then make
-		{unbuffered} |TRUE|.
+		greater than line('$') + 1. If this is a problem then set
+		"unbuffered".
 
-		When {unbuffered} is |TRUE| the {callback} is invoked for every
+		When "unbuffered" is |TRUE| the {callback} is invoked for every
 		single change.  The changes list only holds a single
 		dictionary and the "start", "end" and "added" values in the
 		dictionary are the same as the corresponding callback
 		arguments.  The line numbers are valid when the callback is
 		invoked, but later changes may make them invalid, thus keeping
 		a copy for later might not work.
+
+							*listener-text*
+		When "text" is set each item in "changes" gets a "text" entry,
+		a List with the lines that occupy the changed region right
+		after that change was made: the lines "lnum" up to but not
+		including "end" plus "added".  This List is empty when the
+		change only deleted lines.  Together with "lnum", "end" and
+		"added" the item then fully describes the change: replace the
+		lines "lnum" up to but not including "end" with "text".
+
+		The text is copied at the moment the change is recorded, so it
+		is not affected by later changes.  Without it a buffered
+		{callback} cannot reliably obtain the text of a change: two
+		changes to the same line do not change the line count and are
+		reported together, and by then |getbufline()| can only return
+		the result of the second one.  Setting "unbuffered" avoids
+		that as well, but then the {callback} is invoked for every
+		single change, which is expensive for a command that changes
+		many lines.
+
+		Setting "text" costs a copy of the changed lines for every
+		change.  To keep the memory used by a long sequence of changes
+		bounded, the {callback} is also invoked when a lot of text has
+		been recorded.
+
+		The recorded changes are kept per buffer and shared by all
+		listeners for that buffer.  Therefore, when at least one
+		listener for the buffer sets "text", every {callback} for that
+		buffer gets the "text" entry.
 
 		The {callback} is invoked with the text locked, see
 		|textlock|.  If you do need to make changes to the buffer, use
@@ -7468,7 +7849,7 @@ matcharg({nr})						*matcharg()*
 		Return type: list<string>
 
 
-matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict}])	*matchbufline()*
+matchbufline({buf}, {pat}, {lnum}, {end} [, {dict}])	*matchbufline()*
 		Returns the |List| of matches in lines from {lnum} to {end} in
 		buffer {buf} where {pat} matches.
 
@@ -7520,7 +7901,7 @@ matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict}])	*matchbufline()*
 		Return type: list<dict<any>> or list<any>
 
 
-matchdelete({id} [, {win})			*matchdelete()* *E802* *E803*
+matchdelete({id} [, {win}])			*matchdelete()* *E802* *E803*
 		Deletes a match with ID {id} previously defined by |matchadd()|
 		or one of the |:match| commands.  Returns 0 if successful,
 		otherwise -1.  See example for |matchadd()|.  All matches can
@@ -8016,7 +8397,7 @@ nextnonblank({lnum})					*nextnonblank()*
 		Return type: |Number|
 
 
-ngettext({single}, {plural}, {number}[, {domain})	*ngettext()*
+ngettext({single}, {plural}, {number} [, {domain}])	*ngettext()*
 		Return a string that contains the correct value for a
 		message based on the rules for plural form(s) in
 		a language.  Examples: >
@@ -8130,7 +8511,7 @@ pow({x}, {y})						*pow()*
 		Can also be used as a |method|: >
 			Compute()->pow(3)
 <
-		Return type: |Number|
+		Return type: |Float|
 
 
 preinserted()						*preinserted()*
@@ -8157,7 +8538,7 @@ prevnonblank({lnum})					*prevnonblank()*
 		Return type: |Number|
 
 
-printf({fmt}, {expr1} ...)				*printf()*
+printf({fmt} [, {expr1} ...])				*printf()*
 		Return a String with {fmt}, where "%" items are replaced by
 		the formatted form of their respective arguments.  Example: >
 			printf("%4d: E%d %.30s", lnum, errno, msg)
@@ -8586,7 +8967,7 @@ pum_getpos()						*pum_getpos()*
 		The values are the same as in |v:event| during
 		|CompleteChanged|.
 
-		Return type: dict<any>
+		Return type: dict<number>
 
 
 pumvisible()						*pumvisible()*
@@ -8688,6 +9069,8 @@ range({expr} [, {max} [, {stride}]])			*range()*
 		When the maximum is one before the start the result is an
 		empty list.  When the maximum is more than one before the
 		start this is an error.
+		The list can have at most 2147483647 items and {stride} must
+		fit in a 32 bit number, otherwise |E1510| is given.
 		Examples: >
 			range(4)		" [0, 1, 2, 3]
 			range(2, 4)		" [2, 3, 4]
@@ -8748,7 +9131,7 @@ readdir({directory} [, {expr} [, {dict}]])		*readdir()*
 		Each time {expr} is evaluated |v:val| is set to the entry name.
 		When {expr} is a function the name is passed as the argument.
 		For example, to get a list of files ending in ".txt": >
-		  readdir(dirname, {n -> n =~ '.txt$'})
+		  readdir(dirname, {n -> n =~ '\.txt$'})
 <		To skip hidden and backup files: >
 		  readdir(dirname, {n -> n !~ '^\.\|\~$'})
 <								*E857*
@@ -9129,7 +9512,7 @@ remote_peek({serverid} [, {retvar}])			*remote_peek()*
 		Return type: |Number|
 
 
-remote_read({serverid}, [{timeout}])			*remote_read()*
+remote_read({serverid} [, {timeout}])			*remote_read()*
 		Return the oldest available reply from {serverid} and consume
 		it.  Unless a {timeout} in seconds is given, it blocks until a
 		reply is available.  Returns an empty string, if a reply is
@@ -9431,6 +9814,9 @@ screenpos({winid}, {lnum}, {col})			*screenpos()*
 		as if 'conceallevel' is zero.  You can set the cursor to the
 		right position and use |screencol()| to get the value with
 		|conceal| taken into account.
+		|virtual-text| above the line occupies its own screen line and
+		is counted: the first character of the line is then on the
+		screen line below it.
 		If the position is in a closed fold the screen position of the
 		first character is returned, {col} is not used.
 		Returns an empty Dict if {winid} is invalid.
@@ -9879,7 +10265,11 @@ server2client({clientid}, {string})			*server2client()*
 serverlist([{dict}])					*serverlist()*
 		Return a list of available server names, one per line.
 		When there are no servers or the information is not available
-		an empty string is returned.
+		an empty string is returned, or an empty |List| when the
+		"list" option below is used.
+
+		When the server cannot be reached, no error will be given and
+		the result is an empty string or |List|.
 		{only available when compiled with the |+clientserver| feature}
 
 		If {dict} is given, then it is a |Dictionary| supporting the
@@ -9934,9 +10324,13 @@ setbufline({buf}, {lnum}, {text})			*setbufline()*
 setbufvar({buf}, {varname}, {val})			*setbufvar()*
 		Set option or local variable {varname} in buffer {buf} to
 		{val}.
-		This also works for a global or local window option, but it
-		doesn't work for a global or local window variable.
-		For a local window option the global value is unchanged.
+		This also works for a global option or a window-local option,
+		but it doesn't work for a global or local window variable.  A
+		window-local option is set in a window of the current tab page
+		that displays {buf}, and the global value is unchanged.  When
+		no window in the current tab page displays {buf} the option is
+		not set and no error is given; use |setwinvar()| or
+		|win_execute()| for that.
 		For the use of {buf}, see |bufname()| above.
 		The {varname} argument is a string.
 		Note that the variable name without "b:" must be used.
@@ -9985,6 +10379,8 @@ setcellwidths({list})					*setcellwidths()*
 		through the text to check if the cell widths of your terminal
 		match with what Vim knows about each emoji.  If it doesn't
 		look right you need to adjust the {list} argument.
+
+		|getcellwidths()| can be used to get the overrides later.
 
 		Return type: void
 
@@ -10322,7 +10718,10 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 				:call setqflist([], 'r')
 <
 		'u'	Like 'r', but tries to preserve the current selection
-			in the quickfix list.
+			in the quickfix list.  The entry nearest to the
+			previously selected one becomes the current entry.
+			Proximity is determined by comparing the file, then
+			the line number and then the column number.
 		'f'	All the quickfix lists in the quickfix stack are
 			freed.
 
@@ -10690,7 +11089,7 @@ slice({expr}, {start} [, {end}])			*slice()*
 		Can also be used as a |method|: >
 			GetList()->slice(offset)
 <
-		Return type: list<{type}> or tuple<{type}>
+		Return type: |String|, list<{type}>, blob or tuple<{type}>
 
 
 sort({list} [, {how} [, {dict}]])			*sort()* *E702*
@@ -12101,6 +12500,7 @@ terminalprops()						*terminalprops()*
 		   mouse		mouse type supported
 		   kitty		whether Kitty terminal was detected
 		   decrqm		whether sending DECRQM sequences work
+		   rgb			whether the terminal has true color  **
 
 		** value 'u' for unknown, 'y' for yes, 'n' for no
 
@@ -12122,6 +12522,9 @@ terminalprops()						*terminalprops()*
 
 		If "decrqm" is 'y', then Vim will query support for the
 		'termsync' and 'termresize' ("inband") options.
+
+		"rgb" is 'y' when 't_Co' is 16777216, as it is for the
+		"xterm-direct" terminal entry.  See |xterm-true-color|.
 
 		Also see:
 		- 'ambiwidth' - detected by using |t_u7|.
@@ -12618,6 +13021,10 @@ virtcol({expr} [, {list} [, {winid}]])			*virtcol()*
 		Virtual editing is active in the current mode, a position
 		beyond the end of the line can be returned.  Also see
 		'virtualedit'
+
+		|virtual-text| above the line occupies its own screen line and
+		is counted like a wrapped line: with a window 80 columns wide
+		the first character of the line is then in virtual column 81.
 
 		If {list} is present and non-zero then virtcol() returns a
 		List with the first and last screen position occupied by the

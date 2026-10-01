@@ -1,4 +1,4 @@
-/* testing.c */
+// testing.c
 void f_assert_beeps(typval_T *argvars, typval_T *rettv);
 void f_assert_nobeep(typval_T *argvars, typval_T *rettv);
 void f_assert_equal(typval_T *argvars, typval_T *rettv);
@@ -37,4 +37,4 @@ void f_test_setmouse(typval_T *argvars, typval_T *rettv);
 void f_test_mswin_event(typval_T *argvars, typval_T *rettv);
 void f_test_gui_event(typval_T *argvars, typval_T *rettv);
 void f_test_settime(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

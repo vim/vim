@@ -1861,7 +1861,6 @@ find_file_in_path_option(
 	if (first == TRUE)
 	{
 	    int		l;
-	    int		NameBufflen;
 	    int		run;
 	    size_t	rel_fnamelen = 0;
 	    char_u	*suffix;
@@ -1902,7 +1901,6 @@ find_file_in_path_option(
 
 		// When the file doesn't exist, try adding parts of
 		// 'suffixesadd'.
-		NameBufflen = l;
 		suffix = suffixes;
 		for (;;)
 		{
@@ -1911,13 +1909,13 @@ find_file_in_path_option(
 				 || ((find_what == FINDFILE_DIR)
 						    == mch_isdir(NameBuff))))
 		    {
-			file_name = vim_strnsave(NameBuff, NameBufflen);
+			file_name = vim_strnsave(NameBuff,
+						  simplify_filename(NameBuff));
 			goto theend;
 		    }
 		    if (*suffix == NUL)
 			break;
-		    NameBufflen = l + copy_option_part(&suffix, NameBuff + l,
-							    MAXPATHL - l, ",");
+		    copy_option_part(&suffix, NameBuff + l, MAXPATHL - l, ",");
 		}
 	    }
 	}
@@ -2678,7 +2676,7 @@ uniquefy_paths(
 	    continue;
 	}
 
-	rel_pathsize = 1 + STRLEN_LITERAL(PATHSEPSTR) + STRLEN(short_name) + 1;
+	rel_pathsize = 1 + sizeof(PATHSEP) + STRLEN(short_name) + 1;
 	rel_path = alloc(rel_pathsize);
 	if (rel_path == NULL)
 	    goto theend;

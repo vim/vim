@@ -2,7 +2,7 @@
 " Language:             mutt RC File
 " Maintainer:           This runtime file is looking for a new maintainer.
 " Previous Maintainer:  Nikolai Weibull <now@bitwi.se>
-" Latest Revision:      2025-07-22 (use :hor term #17822)
+" Latest Revision:      2026 Sep 01
 
 if exists("b:did_ftplugin")
   finish
@@ -19,7 +19,7 @@ setlocal formatoptions-=t formatoptions+=croql
 
 let &l:include = '^\s*source\>'
 
-if has('unix') && executable('less') && exists(':terminal') == 2
+if has('unix') && executable('less') && has('terminal')
   command -buffer -nargs=1 MuttrcKeywordPrg
         \ silent exe 'hor term ' . 'env LESS= MANPAGER="less --pattern=''' . escape('^\s+' . <q-args> . '\b', '\') . ''' --hilite-search" man ' . 'muttrc'
   setlocal iskeyword+=-

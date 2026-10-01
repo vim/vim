@@ -894,6 +894,131 @@ func Test_statusline_click_multiple_regions()
   let &laststatus = save_ls
 endfunc
 
+func StlExchangeEnter()
+  let &l:statusline = 'one%@two%@three'
+endfunc
+
+func StlExchangeLeave()
+  setlocal statusline<
+endfunc
+
+" Rows used by the status line of window "nr", derived from where the window
+" ends on the screen.
+func s:StlHeight(nr)
+  return &lines - &cmdheight - win_screenpos(a:nr)[0] - winheight(a:nr) + 1
+endfunc
+
+" Exchanging two windows keeps the status line height with the window.
+func Test_statuslineopt_win_exchange()
+  let save_stlo = &statuslineopt
+  let save_stl = &statusline
+  let save_ls = &laststatus
+  set laststatus=2
+  set statusline=global
+  set statuslineopt=maxheight:3
+
+  augroup TestStlExchange
+    autocmd!
+    autocmd WinEnter * call StlExchangeEnter()
+    autocmd WinLeave * call StlExchangeLeave()
+  augroup END
+
+  new
+  only
+  call StlExchangeEnter()
+  vsplit
+  redraw
+
+  " The current window needs three rows for its status line, the other one.
+  call assert_equal(1, winnr())
+  call assert_equal(3, s:StlHeight(1))
+  call assert_equal(1, s:StlHeight(2))
+
+  " Exchanging puts the cursor in the other window, which then is the one
+  " needing three rows.
+  wincmd x
+  redraw
+  call assert_equal(1, winnr())
+  call assert_equal(3, s:StlHeight(1))
+  call assert_equal(1, s:StlHeight(2))
+
+  augroup TestStlExchange
+    autocmd!
+  augroup END
+  augroup! TestStlExchange
+  delfunc StlExchangeEnter
+  delfunc StlExchangeLeave
+  only
+  bwipe!
+  let &laststatus = save_ls
+  let &statusline = save_stl
+  let &statuslineopt = save_stlo
+endfunc
+
+" Exchanging two windows keeps a fixed status line height with the window.
+func Test_statuslineopt_fixed_win_exchange()
+  let save_stlo = &statuslineopt
+  let save_ls = &laststatus
+  set laststatus=2
+
+  new
+  only
+  vsplit
+  setlocal statuslineopt=fixedheight,maxheight:3
+  redraw
+
+  " Only the current window has a local 'statuslineopt'.
+  call assert_equal(1, winnr())
+  call assert_equal(3, s:StlHeight(1))
+  call assert_equal(1, s:StlHeight(2))
+
+  " The window that was exchanged keeps needing three rows.
+  wincmd x
+  redraw
+  call assert_equal(1, winnr())
+  call assert_equal(1, s:StlHeight(1))
+  call assert_equal(3, s:StlHeight(2))
+
+  only
+  bwipe!
+  let &laststatus = save_ls
+  let &statuslineopt = save_stlo
+endfunc
+
+" Rotating windows keeps a fixed status line height with the window.
+func Test_statuslineopt_fixed_win_rotate()
+  let save_stlo = &statuslineopt
+  let save_ls = &laststatus
+  set laststatus=2
+
+  new
+  only
+  vsplit
+  setlocal statuslineopt=fixedheight,maxheight:3
+  redraw
+
+  call assert_equal(1, winnr())
+  call assert_equal(3, s:StlHeight(1))
+  call assert_equal(1, s:StlHeight(2))
+
+  " Rotating moves the window that needs three rows to the other position.
+  wincmd r
+  redraw
+  call assert_equal(1, s:StlHeight(1))
+  call assert_equal(3, s:StlHeight(2))
+
+  " Rotating back restores it.
+  wincmd r
+  redraw
+  call assert_equal(3, s:StlHeight(1))
+  call assert_equal(1, s:StlHeight(2))
+
+  only
+  bwipe!
+  let &laststatus = save_ls
+  let &statuslineopt = save_stlo
+endfunc
+
 " Click on a region in any row of a multi-line statusline (issue #20116).
 func Test_statusline_click_multiline()
   let save_mouse = &mouse
@@ -1123,6 +1248,82 @@ func Test_statusline_vsep_borrow_hl_mode_change()
   call VerifyScreenDump(buf, 'Test_statusline_vsep_borrow_hl_mode_01', {})
 
   call StopVimInTerminal(buf)
+endfunc
+
+" A window of zero width has no status line cell to borrow the highlight
+" from.  With its status line on the first screen line the cell before it is
+" outside the screen.
+func Test_statusline_vsep_borrow_zero_width_window()
+  set winminheight=0 winminwidth=0 laststatus=2
+
+  " Two windows side by side above a third.  Sizing from inside the third
+  " and the right one leaves the current window, the left one, 0 by 0.
+  split
+  vsplit
+  call win_execute(win_getid(3), 'wincmd _')
+  call win_execute(win_getid(2), 'wincmd |')
+  call assert_equal([0, 0], [winwidth(0), winheight(0)])
+  redraw
+
+  only!
+  set winminheight& winminwidth& laststatus&
+endfunc
+
+" Creating a full-height vertical split must not add a status line when
+" 'laststatus' is zero.
+func Test_window_cmd_ls0_splitmove()
+  set laststatus=0
+  let avail = &lines - &cmdheight
+
+  " CTRL-W H and CTRL-W L move a window into a full-height vertical split.
+  for cmd in ['H', 'L']
+    split
+    exe 'wincmd ' .. cmd
+    call assert_equal([0, 0],
+          \ map(range(1, winnr('$')), 'avail - winheight(v:val)'),
+          \ 'wincmd ' .. cmd)
+    only!
+  endfor
+
+  " The same when the full-height vertical split is created directly, which
+  " does not go through win_splitmove().
+  for cmd in ['vert topleft new', 'vert botright new',
+        \ 'topleft vsplit', 'botright vsplit']
+    exe cmd
+    call assert_equal([0, 0],
+          \ map(range(1, winnr('$')), 'avail - winheight(v:val)'), cmd)
+    only!
+  endfor
+
+  " With a horizontal split next to it the new window still spans the full
+  " height; the status line between the stacked windows remains.
+  for cmd in ['split | split | wincmd H', 'split | vert topleft new']
+    exe cmd
+    call assert_equal(0, avail - winheight(1), cmd .. ', left window')
+    call assert_equal(1, avail - winheight(2) - winheight(3),
+          \ cmd .. ', right column')
+    only!
+  endfor
+
+  " The reverse still adds a status line to the upper window.
+  vsplit
+  wincmd K
+  call assert_equal(1, avail - winheight(1) - winheight(2))
+  only!
+
+  " With 'laststatus' set every window does get a status line.
+  for ls in [1, 2]
+    exe 'set laststatus=' .. ls
+    split
+    wincmd H
+    call assert_equal([1, 1],
+          \ map(range(1, winnr('$')), 'avail - winheight(v:val)'),
+          \ 'laststatus=' .. ls)
+    only!
+  endfor
+
+  set laststatus&vim
+  %bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

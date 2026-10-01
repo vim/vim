@@ -2348,6 +2348,27 @@ func Wildmode_tests()
   call assert_equal('oneA  oneB  oneC', g:Sline)
   call assert_equal('"MyCmd one', @:)
 
+  " Colon-separated modes apply during the same completion phase.
+  call writefile([], 'XwildmodeA', 'D')
+  call writefile([], 'XwildmodeB', 'D')
+  call writefile([], 'XwildmodeC', 'D')
+  set wildmode=list:full
+  let g:Sline = ''
+  call feedkeys(":e Xwildmode\t\<F4>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('XwildmodeA  XwildmodeB  XwildmodeC', g:Sline)
+  call assert_equal('"e XwildmodeA', @:)
+  call feedkeys(":e Xwildmode\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e XwildmodeB', @:)
+
+  " Comma-separated modes apply on consecutive Tab presses.
+  set wildmode=list,full
+  let g:Sline = ''
+  call feedkeys(":MyCmd o\t\<F4>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('oneA  oneB  oneC', g:Sline)
+  call assert_equal('"MyCmd o', @:)
+  call feedkeys(":MyCmd o\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneA', @:)
+
   set wildmode=""
   call feedkeys(":MyCmd \t\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"MyCmd oneA', @:)
@@ -2381,6 +2402,13 @@ func Wildmode_tests()
   call assert_equal('"MyCmd o', @:)
   call feedkeys(":MyCmd o\t\t\<C-Y>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"MyCmd o', @:)
+
+  " 'noselect' takes precedence over 'full' on the first Tab.
+  set wildmode=noselect:full
+  call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd o', @:)
+  call feedkeys(":MyCmd o\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneA', @:)
 
   " When 'full' is present, complete after first <tab>.
   set wildmode=noselect,full
@@ -3316,6 +3344,45 @@ func Test_wildmenu_pum_info_async_update()
 
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
+endfunc
+
+" Test that "list" and "full" in the same 'wildmode' phase list the matches
+" and show the wildmenu as well
+func Test_wildmenu_with_list_full()
+  call writefile([], 'XwildA', 'D')
+  call writefile([], 'XwildB', 'D')
+  func! SaveScreenLineAbove()
+    let g:Sabove = Screenline(&lines - 2)
+    return ''
+  endfunc
+  cnoremap <expr> <F2> wildmenumode()
+  cnoremap <expr> <F3> SaveScreenLineAbove()
+  set wildmenu wildmode=list:full
+
+  " The matches are listed above the menu.
+  let [g:Sabove, g:Sline] = ['', '']
+  call feedkeys(":e Xwild\<Tab>\<F3>\<F4>\<F2>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e XwildA1', @:)
+  call assert_equal('XwildA  XwildB', g:Sabove)
+  call assert_equal('XwildA  XwildB', g:Sline)
+
+  " The popup menu is shown over the listed matches.
+  set wildoptions=pum
+  call feedkeys(":e Xwild\<Tab>\<F2>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e XwildA1', @:)
+
+  " Without 'wildmenu' the matches are listed as before.
+  set nowildmenu wildoptions=
+  let g:Sline = ''
+  call feedkeys(":e Xwild\<Tab>\<F4>\<F2>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('XwildA  XwildB', g:Sline)
+  call assert_equal('"e XwildA0', @:)
+
+  cunmap <F2>
+  cunmap <F3>
+  delfunc SaveScreenLineAbove
+  unlet g:Sabove
+  set nowildmenu wildoptions& wildmode&
 endfunc
 
 " Test for wildmenumode() with the cmdline popup menu

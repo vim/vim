@@ -1,4 +1,4 @@
-*insert.txt*	For Vim version 9.2.  Last change: 2026 Jul 22
+*insert.txt*	For Vim version 9.2.  Last change: 2026 Aug 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1264,13 +1264,15 @@ items:
 			|hl-PmenuMatchSel| and |hl-PmenuMatch| highlight
 			attributes in the popup menu to apply cterm and gui
 			properties (with higher priority) like strikethrough
-			to the completion items abbreviation
+			to the completion items abbreviation.
+			The group can be defined later.
 	kind_hlgroup	an additional highlight group specifically for setting
 			the highlight attributes of the completion kind.  When
 			this field is present, it will override the
 			|hl-PmenuKind| highlight group, allowing for the
 			customization of ctermfg and guifg properties for the
-			completion kind
+			completion kind.
+			The group can be defined later.
 	match		See "matches" in |complete_info()|.
 
 All of these except "icase", "equal", "dup" and "empty" must be a string.  If
@@ -1796,9 +1798,9 @@ autoload/syntaxcomplete.vim) to add items.  Looking at the output from
     htmlArg,htmlTag,htmlTagName,javaScriptStatement,javaScriptGlobalObjects
 
 To pick up any JavaScript and HTML keyword syntax groups while editing a PHP
-file, you can use 3 different regexs, one for each language.  Or you can
+file, you can use 3 different regexps, one for each language.  Or you can
 simply restrict the include groups to a particular value, without using
-a regex string: >
+a regexp string: >
     let g:omni_syntax_group_include_php = 'php\w\+,javaScript\w\+,html\w\+'
     let g:omni_syntax_group_include_php = 'phpFunctions,phpMethods'
 <

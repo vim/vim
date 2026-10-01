@@ -150,6 +150,7 @@ runtime/ftplugin/asy.vim				@avidseeker
 runtime/ftplugin/autohotkey.vim				@telemachus
 runtime/ftplugin/awk.vim				@dkearns
 runtime/ftplugin/basic.vim				@dkearns
+runtime/ftplugin/bazelrc.vim				@barrettruth
 runtime/ftplugin/beancount.vim				@nathangrigg
 runtime/ftplugin/bicep.vim				@scottmckendry
 runtime/ftplugin/bicep-params.vim			@scottmckendry
@@ -229,6 +230,7 @@ runtime/ftplugin/html.vim				@dkearns
 runtime/ftplugin/http.vim				@ribru17
 runtime/ftplugin/hyprlang.vim				@ribru17
 runtime/ftplugin/i3config.vim				@hiqua
+runtime/ftplugin/icalendar.vim				@anakin4747
 runtime/ftplugin/icon.vim				@dkearns
 runtime/ftplugin/indent.vim				@dkearns
 runtime/ftplugin/ishd.vim				@dkearns
@@ -277,6 +279,7 @@ runtime/ftplugin/modula3.vim				@dkearns
 runtime/ftplugin/mojo.vim				@ribru17
 runtime/ftplugin/mp.vim					@lifepillar
 runtime/ftplugin/mss.vim				@Freed-Wu
+runtime/ftplugin/nasm.vim				@selenebun
 runtime/ftplugin/nginx.vim				@chr4
 runtime/ftplugin/nickel.vim				@ribru17
 runtime/ftplugin/nim.vim				@ribru17
@@ -310,10 +313,12 @@ runtime/ftplugin/python.vim				@tpict
 runtime/ftplugin/qb64.vim				@dkearns
 runtime/ftplugin/qml.vim				@ChaseKnowlden
 runtime/ftplugin/racket.vim				@benknoble
+runtime/ftplugin/radvd.vim				@mdspan
 runtime/ftplugin/rasi.vim				@fymyte
 runtime/ftplugin/readline.vim				@dkearns
 runtime/ftplugin/remind.vim				@joereynolds
 runtime/ftplugin/rescript.vim				@ribru17
+runtime/ftplugin/robot.vim				@dawidd6
 runtime/ftplugin/routeros.vim				@zainin
 runtime/ftplugin/rst.vim				@marshallward
 runtime/ftplugin/ruby.vim				@tpope @dkearns
@@ -508,6 +513,7 @@ runtime/syntax/asy.vim					@avidseeker
 runtime/syntax/autohotkey.vim				@mmikeww
 runtime/syntax/awk.vim					@dkearns
 runtime/syntax/basic.vim				@dkearns
+runtime/syntax/bazelrc.vim				@barrettruth
 runtime/syntax/beancount.vim				@nathangrigg
 runtime/syntax/bpftrace.vim				@sgruszka
 runtime/syntax/bst.vim					@tpope
@@ -597,6 +603,7 @@ runtime/syntax/hollywood.vim				@sodero
 runtime/syntax/html.vim					@dkearns
 runtime/syntax/htmlangular.vim				@dlvandenberg
 runtime/syntax/i3config.vim				@hiqua
+runtime/syntax/icalendar.vim				@anakin4747
 runtime/syntax/icon.vim					@dkearns
 runtime/syntax/indent.vim				@dkearns
 runtime/syntax/j.vim					@glts
@@ -682,6 +689,7 @@ runtime/syntax/pymanifest.vim				@ObserverOfTime
 runtime/syntax/qb64.vim					@dkearns
 runtime/syntax/qml.vim					@ChaseKnowlden
 runtime/syntax/racket.vim				@benknoble
+runtime/syntax/radvd.vim				@mdspan
 runtime/syntax/raml.vim					@in3d
 runtime/syntax/rapid.vim				@KnoP-01
 runtime/syntax/rasi.vim					@fymyte
@@ -721,6 +729,7 @@ runtime/syntax/sshdconfig.vim				@Jakuje
 runtime/syntax/sshpublickey.vim				@fionn
 runtime/syntax/sshknownhosts.vim			@fionn
 runtime/syntax/sudoers.vim				@e-kwsm
+runtime/syntax/svelte.vim				@231tr0n
 runtime/syntax/svn.vim					@hdima
 runtime/syntax/swayconfig.vim				@jamespeapen
 runtime/syntax/swig.vim					@jmarrec

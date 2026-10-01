@@ -1,4 +1,4 @@
-/* eval.c */
+// eval.c
 varnumber_T num_divide(varnumber_T n1, varnumber_T n2, int *failed);
 varnumber_T num_modulus(varnumber_T n1, varnumber_T n2, int *failed);
 void eval_init(void);
@@ -34,6 +34,9 @@ void skip_for_lines(void *fi_void, evalarg_T *evalarg);
 int next_for_item(void *fi_void, char_u *arg);
 void free_for_info(void *fi_void);
 void set_context_for_expression(expand_T *xp, char_u *arg, cmdidx_T cmdidx);
+regprog_T *eval_regcomp(char_u *pat);
+void eval_regfree(char_u *pat, regprog_T *prog);
+void free_eval_regcomp_cache(void);
 int pattern_match(char_u *pat, char_u *text, int ic);
 char_u *eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext);
 char_u *eval_next_line(char_u *arg, evalarg_T *evalarg);
@@ -74,4 +77,4 @@ void ex_execute(exarg_T *eap);
 char_u *find_option_end(char_u **arg, int *scope);
 void last_set_msg(sctx_T script_ctx);
 char_u *do_string_sub(char_u *str, size_t len, char_u *pat, char_u *sub, typval_T *expr, char_u *flags, size_t *ret_len);
-/* vim: set ft=c : */
+// vim: ft=c

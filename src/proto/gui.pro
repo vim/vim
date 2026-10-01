@@ -1,4 +1,4 @@
-/* gui.c */
+// gui.c
 void gui_start(char_u *arg);
 void gui_prepare(int *argc, char **argv);
 int gui_init_check(void);
@@ -65,4 +65,4 @@ int gui_do_findrepl(int flags, char_u *find_text, char_u *repl_text, int down);
 void gui_handle_drop(int x, int y, int_u modifiers, char_u **fnames, int count);
 int check_for_interrupt(int key, int modifiers_arg);
 int gui_dialog_log(char_u *title, char_u *message);
-/* vim: set ft=c : */
+// vim: ft=c

@@ -458,13 +458,14 @@ func RunTest()
   " Turn a subset of filenames etc. requested for testing into a pattern.
   if filereadable('../testdir/Xfilter')
     let filter = readfile('../testdir/Xfilter')
-	\ ->map({_, v -> '^' .. escape(substitute(v, '_$', '', ''), '.')})
+	\ ->map({_, v -> '^' .. escape(substitute(v, '_$', '', ''), '.')
+	    \ .. (v !~ '.\..' ? '[._]' : '$')})
 	\ ->join('\|')
     call delete('../testdir/Xfilter')
   endif
 
-  " Treat "^self-testing" as a string NOT as a regexp.
-  if filter ==# '^self-testing'
+  " Treat "^self-testing[._]" as a string NOT as a regexp.
+  if filter ==# '^self-testing[._]'
     let dirpath = 'input/selftestdir/'
     let fnames = readdir(dirpath, {fname -> fname !~ '^README\.txt$'})
   else

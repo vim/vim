@@ -1510,6 +1510,25 @@ def Test_user_command_comment()
   delcommand Foo
 enddef
 
+" A name with an underscore is not a command with an argument: "ch_log" is
+" not ":change".
+def Test_command_name_with_underscore()
+  var lines =<< trim END
+      vim9script
+      ch_log
+  END
+  v9.CheckScriptFailure(lines, 'E492: Not an editor command: ch_log')
+  lines =<< trim END
+      vim9script
+      command Foo echo 'Foo'
+      Foo_bar
+  END
+  v9.CheckScriptFailure(lines, 'E492: Not an editor command: Foo_bar')
+  delcommand Foo
+  v9.CheckDefFailure(['ch_log'], 'E476: Invalid command: ch_log')
+  v9.CheckDefFailure(['echo_x'], 'E476: Invalid command: echo_x')
+enddef
+
 def Test_star_command()
   var lines =<< trim END
     vim9script
@@ -2247,6 +2266,23 @@ def Test_delfunction_dict_funcref()
       delfunction d['k2']
       assert_false(has_key(d, 'k2'))
       delfunction g:LegacyFunc
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Looking ahead at a line that starts with a dict member, to tell an
+" assignment from an expression, must not leave an error behind.
+def Test_no_error_from_looking_ahead()
+  var lines =<< trim END
+      vim9script
+      var d = {Fn: (m: string) => 0}
+      def F(b: bool)
+        d.Fn(b ? 'one'
+               : 'two')
+      enddef
+      v:errmsg = ''
+      defcompile
+      assert_equal('', v:errmsg)
   END
   v9.CheckScriptSuccess(lines)
 enddef

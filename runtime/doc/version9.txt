@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Aug 06
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Sep 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52587,11 +52587,10 @@ work in progress.
 
 GUI ~
 -----
-- Added support for the GTK 4 GUI (via patch 9.2.0501), stablized as of
-  patch 9.2.0931.  Enable with `--enable-gui=gtk4` configure switch at build
-  time.
+- Added experimental support for the GTK 4 GUI (via patch 9.2.0501 and many
+  following), enable with `--enable-gui=gtk4` configure switch at build time.
 - Add support for fullscreen mode in the GTK UI |'go-s'|.
-- Enable native printing dialog for the GTK4 UI using pango library, see
+- Enable native printing dialog for the GTK4 UI using Pango library, see
   |pango-printing|.
 
 Popups ~
@@ -52661,6 +52660,10 @@ Other ~
 - Generated Session and View files are written in Vim9 script, see |:mksession|,
   |:mkview| and |:mkvimrc|
 - The "term_finish" option of term_start() supports a "noclose" value.
+- Control Vim via a channel using stdin/stdout |channel-stdio|.
+- Add the "++dryrun" argument to |:source| so a script can be sourced without
+  executing it to check for errors |:source-dryrun|.
+- 'tagfunc' is now also used for :tag completion.
 
 Platform specific ~
 -----------------
@@ -52701,7 +52704,23 @@ Changed ~
 - |serverlist()| can return a list of all available server names.
 - Improve visual appearance when the terminal does not support colors.
 - Improve diff highlighting for terminals with 256 or less colors.
-
+- |listener_add()| accepts a Dictionary of options and can include the
+  resulting text of a change |listener-text|.
+- |extend()| and |extendnew()| also accept |Blobs|.
+- events like |CursorMoved| are no longer triggered for what happened while
+  they were ignored with 'eventignore'.
+- |ch_sendexpr()| accepts a non-Number "id" in "lsp" mode when no response is
+  expected, so a request from the server can be answered.
+- |complete_info()| can distinguish between manual and automatic triggered
+  completions via the "auto" item.
+- fold functions take an optional {winid} parameter.
+- It is no longer allowed to change the window layout during a |DiffUpdated|
+  autocommand.
+- The highlighting groups |hl-CursorLineFold| and |hl-CursorLineSign| are
+  always used when 'cursorline' is set.
+- Virtual text above a line is now counted by |screenpos()| and |virtcol()|.
+- A |:def| function in a legacy script can no longer create a script-local
+  variable by assigning to it, this gives |E1089|.
 
 							*added-9.3*
 Added ~
@@ -52712,6 +52731,10 @@ Functions: ~
 
 |ch_listen()|		listen on {address}
 |getbgcolor()|		return background color as RGB value
+|getinfo()|		get definition of argument
+|image_add()|		add an image and return a handle
+|image_discard()|	discard an image handle
+|image_info()|		get information about an image
 |tabpanel_getinfo()|	get current state of the |tabpanel|
 |tabpanel_scroll()|	scroll the |tabpanel|
 
@@ -52723,6 +52746,7 @@ Autocommands: ~
 
 Options: ~
 
+'imageprotocol'		Image backend to use for what terminal
 'modelinestrict'	Only allow safe options to be set from a modeline.
 'pumopt'		Additional options for the popup menu.
 'scrolloffpad'		Vertically center cursor at end of file.
@@ -52742,9 +52766,19 @@ Highlighting: ~
 |hl-PopupBorder|	Popup window border.
 |hl-PopupTitle|		Popup window title.
 
+Vim Variables: ~
+
+|v:imagebackend|	The current 'imageprotocol'
+
+Vim Arguments: ~
+
+|--stdio-channel|	Control Vim via a channel using stdin/stdout
+			|channel-stdio|
+
 Configure Switches: ~
 
---enable-hardcopy-pango	Enable the pango |:hardcopy| backend |pango-printing|
+--enable-hardcopy-pango	Enable the Pango |:hardcopy| backend |pango-printing|
+--enable-pixman		Enable the Pixman library for image handling
 
 ==============================================================================
 PATCHES						*patches-9.3* *bug-fixes-9.3*

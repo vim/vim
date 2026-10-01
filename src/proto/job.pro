@@ -1,4 +1,4 @@
-/* job.c */
+// job.c
 void clear_job_options(jobopt_T *opt);
 void free_job_options(jobopt_T *opt);
 int get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2);
@@ -34,4 +34,4 @@ void f_job_start(typval_T *argvars, typval_T *rettv);
 void f_job_status(typval_T *argvars, typval_T *rettv);
 void f_job_stop(typval_T *argvars, typval_T *rettv);
 char_u *job_to_string_buf(typval_T *varp, char_u *buf);
-/* vim: set ft=c : */
+// vim: ft=c

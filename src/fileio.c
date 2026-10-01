@@ -5424,7 +5424,7 @@ vim_settempdir(char_u *tempdir)
     if (!after_pathsep(buf, buf + buflen))
     {
 	STRCPY(buf + buflen, PATHSEPSTR);
-	buflen += STRLEN_LITERAL(PATHSEPSTR);
+	buflen += sizeof(PATHSEP);
     }
     vim_tempdir = vim_strnsave(buf, buflen);
 # if defined(UNIX) && defined(HAVE_FLOCK) && defined(HAVE_DIRFD)
@@ -5501,7 +5501,7 @@ vim_tempname(
 		if (!after_pathsep(itmp, itmp + itmplen))
 		{
 		    STRCPY(itmp + itmplen, PATHSEPSTR);
-		    itmplen += STRLEN_LITERAL(PATHSEPSTR);
+		    itmplen += sizeof(PATHSEP);
 		}
 
 # ifdef HAVE_MKDTEMP
@@ -5606,7 +5606,7 @@ vim_tempname(
     // randomize the name to avoid collisions
     i = mch_get_pid() + extra_char;
     buf4[1] = chartab[i % 36];
-    buf4[2] = chartab[101 * i % 36];
+    buf4[2] = chartab[(i / 36) % 36];
     if (GetTempFileNameW(wszTempFile, buf4, 0, itmp) == 0)
 	return NULL;
     if (!keep)

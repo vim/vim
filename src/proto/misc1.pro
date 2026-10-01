@@ -1,4 +1,4 @@
-/* misc1.c */
+// misc1.c
 int get_leader_len(char_u *line, char_u **flags, int backward, int include_space);
 int get_last_leader_offset(char_u *line, char_u **flags);
 int plines(linenr_T lnum);
@@ -56,4 +56,4 @@ void restore_v_event(dict_T *v_event, save_v_event_T *sve);
 void may_trigger_modechanged(void);
 int vim_append_digit_long(long *value, int digit);
 int trim_to_int(vimlong_T x);
-/* vim: set ft=c : */
+// vim: ft=c

@@ -265,6 +265,53 @@ static const int classcodes[] = {
 };
 
 /*
+ * Search between "start" (the first char of the range) and "end" (the closing
+ * "]") and try to recognize a character class in expanded form, for example
+ * [0-9].  On success, return the atom to be emitted, on failure 0.
+ */
+    static int
+bt_recognize_char_class(char_u *start, char_u *end)
+{
+    int		newl;
+    int		config = get_char_class_bits(start, end, &newl);
+
+    // A newline would need the ADD_NL variant, don't bother with it here.
+    if (config < 0 || newl)
+	return 0;
+
+	// The old engine has no case-insensitive class opcode, so [a-z] and [A-Z]
+	// are left as collections.  The classes below are case-independent.
+    switch (config)
+    {
+	case CLASS_o9:
+	    return DIGIT;
+	case CLASS_not | CLASS_o9:
+	    return NDIGIT;
+	case CLASS_af | CLASS_AF | CLASS_o9:
+	    return HEX;
+	case CLASS_not | CLASS_af | CLASS_AF | CLASS_o9:
+	    return NHEX;
+	case CLASS_o7:
+	    return OCTAL;
+	case CLASS_not | CLASS_o7:
+	    return NOCTAL;
+	case CLASS_az | CLASS_AZ | CLASS_o9 | CLASS_underscore:
+	    return WORD;
+	case CLASS_not | CLASS_az | CLASS_AZ | CLASS_o9 | CLASS_underscore:
+	    return NWORD;
+	case CLASS_az | CLASS_AZ | CLASS_underscore:
+	    return HEAD;
+	case CLASS_not | CLASS_az | CLASS_AZ | CLASS_underscore:
+	    return NHEAD;
+	case CLASS_az | CLASS_AZ:
+	    return ALPHA;
+	case CLASS_not | CLASS_az | CLASS_AZ:
+	    return NALPHA;
+    }
+    return 0;
+}
+
+/*
  * When regcode is set to this value, code is not emitted and size is computed
  * instead.
  */
@@ -1729,6 +1776,20 @@ collection:
 		int	startc = -1;	// > 0 when next '-' is a range
 		int	endc;
 
+		if (extra == 0)
+		{
+		    int	cl = bt_recognize_char_class(regparse, lp);
+
+		    if (cl != 0)
+		    {
+			ret = regnode(cl);
+			regparse = lp;
+			skipchr();
+			*flagp |= HASWIDTH | SIMPLE;
+			break;
+		    }
+		}
+
 		// In a character class, different parsing rules apply.
 		// Not even \ is special anymore, nothing is.
 		if (*regparse == '^')	    // Complement of range.
@@ -3188,7 +3249,7 @@ regstack_push(regstate_T state, char_u *scan)
 	emsg(_(e_pattern_uses_more_memory_than_maxmempattern));
 	return NULL;
     }
-    if (ga_grow(&regstack, sizeof(regitem_T)) == FAIL)
+    if (GA_GROW_FAILS(&regstack, (int)sizeof(regitem_T)))
 	return NULL;
 
     rp = (regitem_T *)((char *)regstack.ga_data + regstack.ga_len);
@@ -3924,7 +3985,7 @@ regmatch(
 		if (i == backpos.ga_len)
 		{
 		    // First time at this BACK, make room to store the pos.
-		    if (ga_grow(&backpos, 1) == FAIL)
+		    if (GA_GROW_FAILS(&backpos, 1))
 			status = RA_FAIL;
 		    else
 		    {
@@ -4324,7 +4385,7 @@ regmatch(
 			emsg(_(e_pattern_uses_more_memory_than_maxmempattern));
 			status = RA_FAIL;
 		    }
-		    else if (ga_grow(&regstack, sizeof(regstar_T)) == FAIL)
+		    else if (GA_GROW_FAILS(&regstack, (int)sizeof(regstar_T)))
 			status = RA_FAIL;
 		    else
 		    {
@@ -4369,7 +4430,7 @@ regmatch(
 		emsg(_(e_pattern_uses_more_memory_than_maxmempattern));
 		status = RA_FAIL;
 	    }
-	    else if (ga_grow(&regstack, sizeof(regbehind_T)) == FAIL)
+	    else if (GA_GROW_FAILS(&regstack, (int)sizeof(regbehind_T)))
 		status = RA_FAIL;
 	    else
 	    {

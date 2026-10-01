@@ -1,6 +1,8 @@
-// VIM_TEST_SETUP let g:java_syntax_previews = [455, 488, 507, 530]
+// VIM_TEST_SETUP let g:java_syntax_previews = [455, 488, 507, 530, 532]
 
 
+
+import java.util.function.Predicate;
 
 class PrimitiveSwitchTests	// JDK 23+ (--enable-preview --release 23).
 {
@@ -60,5 +62,27 @@ class PrimitiveSwitchTests	// JDK 23+ (--enable-preview --release 23).
 			case 1.0	-> 1.0;
 			default		-> -1.0;
 		});
+
+		final Predicate<Integer> p = n -> n != 0;
+
+		try {
+			echo(xor(_ -> false, false, false));
+			echo(xor(p, 1, 0));
+			echo(xor(p, 0, 1));
+			echo(xor(p, 1, 1));
+		} catch (final ArithmeticException _) {
+		}
+	}
+
+	static <T> boolean xor(Predicate<T> p, T x, T y)
+	{
+		record Pair<T>(T x, T y) { }
+
+		return switch (new Pair<>(x, y)) {
+			case Pair(boolean x_, boolean y_) -> x_ ^ y_;
+			case Pair(boolean x_, _)	-> x_ ^ p.test(y);
+			case Pair(var _, boolean y_)	-> p.test(x) ^ y_;
+			case Pair<?> _			-> p.test(x) ^ p.test(y);
+		};
 	}
 }

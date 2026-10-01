@@ -1,4 +1,4 @@
-/* gui_x11.c */
+// gui_x11.c
 void gui_x11_key_hit_cb(Widget w, XtPointer dud, XEvent *event, Boolean *dum);
 void gui_mch_prepare(int *argc, char **argv);
 int gui_mch_init_check(void);
@@ -69,4 +69,4 @@ void gui_mch_destroy_sign(void *sign);
 void gui_mch_mousehide(int hide);
 void mch_set_mouse_shape(int shape);
 void gui_mch_menu_set_tip(vimmenu_T *menu);
-/* vim: set ft=c : */
+// vim: ft=c

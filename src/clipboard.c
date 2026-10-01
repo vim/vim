@@ -512,7 +512,7 @@ clip_invert_rectangle(
 	gui_mch_invert_rectangle(row, col, height, width);
     else
 # endif
-	screen_draw_rectangle(row, col, height, width, invert);
+	screen_draw_rectangle(row, col, height, width, invert, FALSE);
 # ifdef FEAT_PROP_POPUP
     screen_zindex = 0;
 # endif
@@ -1155,6 +1155,8 @@ clip_copy_modeless_selection(int both UNUSED)
 	len *= 2;	// max. 2 bytes per display cell
     else if (enc_utf8)
 	len *= MB_MAXBYTES;
+    // A newline is added after each row
+    len += row2 - row1 + 2;
     buffer = alloc(len);
     if (buffer == NULL)	    // out of memory
 	return;
@@ -1231,7 +1233,6 @@ clip_copy_modeless_selection(int both UNUSED)
 	    {
 		int	off;
 		int	i;
-		int	ci;
 
 		off = LineOffset[row];
 		for (i = start_col; i < end_col; ++i)
@@ -1241,17 +1242,8 @@ clip_copy_modeless_selection(int both UNUSED)
 		    if (ScreenLinesUC[off + i] == 0)
 			*bufp++ = ScreenLines[off + i];
 		    else
-		    {
-			bufp += utf_char2bytes(ScreenLinesUC[off + i], bufp);
-			for (ci = 0; ci < Screen_mco; ++ci)
-			{
-			    // Add a composing character.
-			    if (ScreenLinesC[ci][off + i] == 0)
-				break;
-			    bufp += utf_char2bytes(ScreenLinesC[ci][off + i],
-									bufp);
-			}
-		    }
+			// Includes the composing characters.
+			bufp += utfc_char2bytes(off + i, bufp);
 		    // Skip right half of double-wide character.
 		    if (ScreenLines[off + i + 1] == 0)
 			++i;

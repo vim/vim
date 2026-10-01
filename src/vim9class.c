@@ -1428,7 +1428,8 @@ add_class_members(class_T *cl, exarg_T *eap, garray_T *type_list_gap)
     {
 	ocmember_T	*m = &cl->class_class_members[i];
 	typval_T	*tv = &cl->class_members_tv[i];
-	if (m->ocm_init != NULL)
+	// With ":source ++dryrun" the value is not needed, only the type.
+	if (m->ocm_init != NULL && !source_dryrun)
 	{
 	    sctx_T	save_current_sctx = current_sctx;
 
@@ -1934,6 +1935,35 @@ enum_set_internal_obj_vars(class_T *en, object_T *enval)
 }
 
 /*
+ * Read the body up to ":endclass", ":endenum" or ":endinterface" and throw it
+ * away.  Used while skipping.
+ */
+    static void
+skip_class_body(exarg_T *eap)
+{
+    for (;;)
+    {
+	char_u	*theline = eap->ea_getline(':', eap->cookie, 0,
+							  GETLINE_CONCAT_ALL);
+	if (theline == NULL)
+	    break;
+
+	char_u	*p = theline;
+	int	found;
+
+	// skip ':' and blanks
+	for (; VIM_ISWHITE(*p) || *p == ':'; ++p)
+	    ;
+	found = checkforcmd(&p, "endclass", 4)
+			|| checkforcmd(&p, "endenum", 4)
+			|| checkforcmd(&p, "endinterface", 5);
+	vim_free(theline);
+	if (found)
+	    break;
+    }
+}
+
+/*
  * Handle ":class" and ":abstract class" up to ":endclass".
  * Handle ":enum" up to ":endenum".
  * Handle ":interface" up to ":endinterface".
@@ -1948,6 +1978,12 @@ ex_class(exarg_T *eap)
     int		is_interface;
     long	start_lnum = SOURCING_LNUM;
     char_u	*arg = eap->arg;
+
+    if (eap->skip)
+    {
+	skip_class_body(eap);
+	return;
+    }
 
     if (is_abstract)
     {
@@ -2135,6 +2171,8 @@ early_ret:
 	cl->class_flags = CLASS_INTERFACE;
     else if (is_abstract)
 	cl->class_flags = CLASS_ABSTRACT;
+    if (source_dryrun)
+	cl->class_flags |= CLASS_DRYRUN;
 
     cl->class_refcount = 1;
     cl->class_name.length = (size_t)(name_end - name_start);
@@ -3841,6 +3879,11 @@ can_free_enum(class_T *cl)
 	    // If all of those members are no longer referenced, then the enum
 	    // may be freed.
 	    return TRUE;
+
+	// With ":source ++dryrun" the enum values were not created.
+	if (tv->v_type == VAR_OBJECT ? tv->vval.v_object == NULL
+						   : tv->vval.v_list == NULL)
+	    continue;
 
 	if (tv->v_type == VAR_LIST
 		&& tv->vval.v_list->lv_type->tt_member->tt_type == VAR_OBJECT

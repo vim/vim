@@ -13,20 +13,6 @@
 #include "gui_gtk4_da.h"
 
 
-#ifdef FEAT_IMAGE_GDK
-/*
- * Struct containing information about an image. This is designed to map well
- * with how Vim handles the kitty graphics protocol.
- */
-typedef struct
-{
-    int id;
-    int zindex;
-    GskRenderNode *node; // Cached clip node, which has the texture node as its
-			 // child. May be NULL
-} DrawImage;
-#endif
-
 #if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SIGN_ICONS)
 /*
  * Used for sign icons and netbeans multisign indicator. It is in a DrawGlyphs
@@ -133,6 +119,7 @@ typedef struct
     gboolean draw; // If cursor should be drawn
     int width;
     int height;
+    int n_cells; // Cells covered, 2 for a double width character
     GdkRGBA bg_color;
     GdkRGBA fg_color;
 } DrawCursor;
@@ -155,16 +142,12 @@ struct _VimDrawArea
 
     DrawCursor cursor;
 
-#ifdef FEAT_IMAGE_GDK
-    // Queue of DrawImage structs. Sorted in ascending order of zindex, so that
-    // images with a higher zindex are rendered over ones with lower zindex.
-    GQueue *images;
+#ifdef FEAT_IMAGE_GUI
+    // Queue of external render nodes
+    GHashTable *external;
 #endif
 };
 
-#ifdef FEAT_IMAGE_GDK
-static void draw_image_free(DrawImage *dimg);
-#endif
 static void draw_row_init(DrawRow *drow, int row, int cols);
 static void draw_row_clear(DrawRow *drow);
 static void draw_row_dirty_layer(DrawRow *drow, DrawLayerType dlayer_t);
@@ -187,8 +170,8 @@ vim_draw_area_finalize(GObject *obj)
     g_array_free(self->glyph_buf, TRUE);
     g_ptr_array_free(self->node_buf, TRUE);
 
-#ifdef FEAT_IMAGE_GDK
-    g_queue_free_full(self->images, (GDestroyNotify)draw_image_free);
+#ifdef FEAT_IMAGE_GUI
+    g_hash_table_unref(self->external);
 #endif
 
     G_OBJECT_CLASS(vim_draw_area_parent_class)->finalize(obj);
@@ -212,8 +195,9 @@ vim_draw_area_class_init(VimDrawAreaClass *class)
 vim_draw_area_init(VimDrawArea *self)
 {
     self->bleed_right = -1;
-#ifdef FEAT_IMAGE_GDK
-    self->images = g_queue_new();
+#ifdef FEAT_IMAGE_GUI
+    self->external = g_hash_table_new_full(g_direct_hash, g_direct_equal,
+	    NULL, (GDestroyNotify)gsk_render_node_unref);
 #endif
     self->glyph_buf = g_array_new(FALSE, FALSE, sizeof(PangoGlyphInfo));
     self->node_buf = g_ptr_array_new_with_free_func(
@@ -452,16 +436,6 @@ setup_zero_width_cluster(
 	glyph->geometry.x_offset = -width + MAX(0, width - ink_rect.width) / 2;
 }
 
-#ifdef FEAT_IMAGE_GDK
-    static void
-draw_image_free(DrawImage *dimg)
-{
-    gsk_render_node_unref(dimg->node);
-    g_free(dimg);
-}
-#endif
-
-
 #if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SIGN_ICONS)
 /*
  * Create a new draw sign icon with the given texture.
@@ -672,6 +646,13 @@ draw_layer_get_texture(
     GBytes	    *bytes;
     GdkTexture	    *texture;
     GskRenderNode   *node;
+    int		    height;
+
+#if GTK_CHECK_VERSION(4,24,0)
+    height = gui.char_height;
+#else
+    height = gui.char_height + 1;
+#endif
 
     if (bleed)
     {
@@ -693,8 +674,8 @@ draw_layer_get_texture(
 
     // Scale texture to actual size
     node = gsk_texture_scale_node_new(texture,
-	    &GRAPHENE_RECT_INIT(FILL_X(0), FILL_Y(row),
-		(da->n_cols + bleed) * gui.char_width, gui.char_height),
+		&GRAPHENE_RECT_INIT(FILL_X(0), FILL_Y(row),
+		(da->n_cols + bleed) * gui.char_width, gui.char_height + bleed),
 	    GSK_SCALING_FILTER_NEAREST);
     if (bleed)
     {
@@ -702,8 +683,7 @@ draw_layer_get_texture(
 
 	new = gsk_clip_node_new(node,
 		&GRAPHENE_RECT_INIT(FILL_X(0), FILL_Y(row),
-		    da->n_cols * gui.char_width + da->bleed_right,
-		    gui.char_height));
+		    da->n_cols * gui.char_width + da->bleed_right, height));
 	gsk_render_node_unref(node);
 	node = new;
     }
@@ -1598,6 +1578,9 @@ vim_draw_area_set_cursor(VimDrawArea *self, int w, int h)
     self->cursor.draw = TRUE;
     self->cursor.width = w;
     self->cursor.height = h;
+    // Remember this now: the snapshot runs later, when the drawing position
+    // has moved on.
+    self->cursor.n_cells = 1 + mb_lefthalve(gui.cursor_row, gui.cursor_col);
     self->cursor.bg_color = *gui.bgcolor;
     self->cursor.fg_color = *gui.fgcolor;
 }
@@ -1715,142 +1698,23 @@ vim_draw_area_add_multisign(
 }
 #endif
 
-#ifdef FEAT_IMAGE_GDK
-/*
- * Get the draw image with the given id, return NULL if not exists.
- */
-    static GList *
-vim_draw_area_get_image(VimDrawArea *self, int id)
-{
-    for (GList *s = self->images->head; s != NULL; s = s->next)
-    {
-	DrawImage *sdimg = s->data;
-
-	if (sdimg->id == id)
-	    return s;
-    }
-    return NULL;
-}
+#ifdef FEAT_IMAGE_GUI
 
 /*
- * Queue the given image to the correct position in the queue using its zindex.
- */
-    static void
-vim_draw_area_queue_image(VimDrawArea *self, GList *link)
-{
-    DrawImage *dimg = link->data;
-
-    for (GList *s = self->images->head; s != NULL; s = s->next)
-    {
-	DrawImage *sdimg = s->data;
-
-	if (sdimg->zindex >= dimg->zindex)
-	{
-	    g_queue_insert_before_link(self->images, s, link);
-	    return;
-	}
-    }
-    // Queue is empty or image has new highest zindex
-    g_queue_push_tail_link(self->images, link);
-}
-
-/*
- * Add an image at the given row and column with the specified zindex and id.
- * (src_x, src_y, draw_w, draw_h) describe which pixel sub-rect of the source
- * texture should be drawn. If there is an image that has the same id, then it
- * is re-rendered with the new texture. If zindex of an image changed, then the
- * queue will be updated accordingly. Note that the dimensions/positions are to
- * be in physical pixels!!!
+ * Add an external node to be rendered, adding a new reference to the node.
  */
     void
-vim_draw_area_add_image(
-	VimDrawArea *self,
-	GdkTexture  *image,
-	int	    row,
-	int	    col,
-	double	    src_x,
-	double	    src_y,
-	double	    draw_w,
-	double	    draw_h,
-	int	    zindex,
-	int	    id)
+vim_draw_area_add_external(VimDrawArea *self, GskRenderNode *node)
 {
-    GskRenderNode   *node, *old;
-    double	    w, h;
-    graphene_rect_t clip;
-    GList	    *link;
-    DrawImage	    *dimg;
-
-    if (unlikely(self->rows == NULL
-		|| row >= self->n_rows
-		|| col >= self->n_cols))
-	return;
-
-    w = PHY2LOG(gdk_texture_get_width(image));
-    h = PHY2LOG(gdk_texture_get_height(image));
-    src_x = PHY2LOG(src_x);
-    src_y = PHY2LOG(src_y);
-    draw_w = PHY2LOG(draw_w);
-    draw_h = PHY2LOG(draw_h);
-
-    node = gsk_texture_scale_node_new(image,
-	    &GRAPHENE_RECT_INIT(FILL_X(col) - src_x, FILL_Y(row) - src_y,
-		w, h), GSK_SCALING_FILTER_TRILINEAR);
-
-    if (node != NULL)
-    {
-	graphene_rect_init(&clip, FILL_X(col), FILL_Y(row), draw_w, draw_h);
-
-	old = node;
-	node = gsk_clip_node_new(node, &clip);
-	gsk_render_node_unref(old);
-    }
-
-    link = vim_draw_area_get_image(self, id);
-    if (link == NULL)
-    {
-	dimg = g_new(DrawImage, 1);
-
-	dimg->id = id;
-	dimg->zindex = zindex;
-	dimg->node = node;
-
-	link = g_list_alloc();
-	link->data = dimg;
-    }
-    else
-    {
-	dimg = link->data;
-
-	gsk_render_node_unref(dimg->node);
-	dimg->node = node;
-
-	if (dimg->zindex == zindex)
-	    return;
-	else
-	{
-	    dimg->zindex = zindex;
-	    g_queue_unlink(self->images, link);
-	}
-    }
-
-    vim_draw_area_queue_image(self, link);
+    g_hash_table_add(self->external, gsk_render_node_ref(node));
 }
 
-/*
- * Remove the image with the given id if it exists
- */
     void
-vim_draw_area_remove_image(VimDrawArea *self, int id)
+vim_draw_area_remove_external(VimDrawArea *self, GskRenderNode *node)
 {
-    GList *link = vim_draw_area_get_image(self, id);
-
-    if (link == NULL)
-	return;
-
-    draw_image_free(link->data);
-    g_queue_delete_link(self->images, link);
+    g_hash_table_remove(self->external, node);
 }
+
 #endif
 
 /*
@@ -1873,8 +1737,7 @@ vim_draw_area_snapshot_cursor(
 
     if (cursor->width <= 0 && cursor->height <= 0)
     {
-	// Double width if double width character
-	w += gui.char_width * (1 + mb_lefthalve(gui.row, gui.col));
+	w += gui.char_width * cursor->n_cells;
 	h = gui.char_height;
     }
 
@@ -1929,6 +1792,10 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
     GtkSnapshot	    *invert_snapshot = NULL;
     GskRenderNode   *body_node;
     GskRenderNode   *invert_node = NULL;
+#ifdef FEAT_IMAGE_GUI
+    GskRenderNode   *ext_node;
+    GHashTableIter  iter;
+#endif
 
     gui_mch_set_bg_color(gui.back_pixel);
     height = gtk_widget_get_height(widget) + gui.bleed_bot;
@@ -1956,6 +1823,9 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
     // First append everything that should be inverted to another snapshot, then
     // free that snapshot into a node so it can be blended (if needed).
     body_snapshot = gtk_snapshot_new();
+#if GTK_CHECK_VERSION(4,24,0)
+    gtk_snapshot_set_snap(body_snapshot, GSK_RECT_SNAP_ROUND);
+#endif
 
     for (int r = 0; r < self->n_rows; r++)
     {
@@ -1975,7 +1845,13 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 		if (l == DRAW_LAYER_OVERLAY)
 		{
 		    if (invert_snapshot == NULL)
+		    {
 			invert_snapshot = gtk_snapshot_new();
+#if GTK_CHECK_VERSION(4,24,0)
+			gtk_snapshot_set_snap(invert_snapshot,
+				GSK_RECT_SNAP_ROUND);
+#endif
+		    }
 		    gtk_snapshot_append_node(invert_snapshot, dlayer->node);
 		}
 		else
@@ -2002,6 +1878,14 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 	gsk_render_node_unref(body_node);
     }
 
+#ifdef FEAT_IMAGE_GUI
+    // Allow external nodes to be inverted
+    g_hash_table_iter_init(&iter, self->external);
+
+    while (g_hash_table_iter_next(&iter, (void **)&ext_node, NULL))
+	gtk_snapshot_append_node(snapshot, ext_node);
+#endif
+
     if (invert_snapshot != NULL)
     {
 	gtk_snapshot_pop(snapshot);
@@ -2014,15 +1898,4 @@ vim_draw_area_snapshot(GtkWidget *widget, GtkSnapshot *snapshot)
 	}
 	gtk_snapshot_pop(snapshot);
     }
-
-#ifdef FEAT_IMAGE_GDK
-    // Draw images after any possible inversions
-    for (GList *s = self->images->head; s != NULL; s = s->next)
-    {
-	DrawImage *dimg = s->data;
-
-	if (dimg->node != NULL)
-	    gtk_snapshot_append_node(snapshot, dimg->node);
-    }
-#endif
 }

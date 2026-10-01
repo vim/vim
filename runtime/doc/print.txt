@@ -1,4 +1,4 @@
-*print.txt*	For Vim version 9.2.  Last change: 2026 Aug 02
+*print.txt*	For Vim version 9.2.  Last change: 2026 Sep 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -200,7 +200,7 @@ font may be named, and the special "guifont=*" syntax is not available.
 
 In the Win32 GUI version this specifies a font name with its extra attributes,
 as with the 'guifont' option.  When |+pango| is enabled, the format is the
-same as 'guifont' for the GTK GUI (e.g. "Courier New 10").
+same as 'guifont' for the GTK GUI (e.g. "Courier 10").
 
 For other systems, only ":h11" is recognized, where "11" is the point size of
 the font.  When omitted, the point size is 10.
@@ -404,8 +404,8 @@ of |:hardcopy|:
 			first line on a new page.
   format:postscript (default)
 			Output format: Postscript
-  format:{name}		Output format from this table (only used when compiled
-			with |+pango| feature):
+  format:{name}		Output format from this table:
+			{only available when compiled with |+pango| feature}
 			{name}		meaning ~
 			postscript	Generate Postscript
 			pdf		Generate Adobe PDF
@@ -739,7 +739,7 @@ If Vim is compiled with |+pango|, then it will render pages using Pango (a
 text handling library), and Cairo (a graphics library).  The benefit of this
 is that Unicode is fully supported.  Postscript files will still be generated
 using Cairo.  Additionally, PDF files can be emitted as well, see the
-"format" key in |popt-option|
+"format" key in |popt-option|.
 
 When using the GTK GUI, |+pango| is always enabled and used.  On terminal
 builds of Vim, "--enable-hardcopy-pango" must be passed to the configure

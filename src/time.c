@@ -595,6 +595,8 @@ check_due_timer(void)
 	    vgetc_busy = save_vgetc_busy;
 	    if (uncaught_emsg > prev_uncaught_emsg)
 		++timer->tr_emsg_count;
+	    else
+		timer->tr_emsg_count = 0;
 	    did_emsg = save_did_emsg;
 	    called_emsg = save_called_emsg;
 	    exception_state_restore(&estate);
@@ -629,6 +631,13 @@ check_due_timer(void)
 		    free_timer(timer);
 		}
 	    }
+
+#  ifdef FEAT_IMAGE
+	    // Make sure to update any image placements. Without this, image
+	    // placements will not be updated on the screen properly in a
+	    // hit-enter prompt.
+	    draw_image_placements();
+#  endif
 	}
 	if (this_due > 0 && (next_due == -1 || next_due > this_due))
 	    next_due = this_due;

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Aug 10
+*options.txt*	For Vim version 9.2.  Last change: 2026 Sep 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -673,13 +673,19 @@ version 3.0).  Using "ex:" at the start of the line will be ignored (this
 could be short for "example:").
 
 If the modeline is disabled within a modeline, subsequent modelines will be
-ignored.  This is to allow turning off modeline on a per-file basis.  This is
+ignored.  This is to allow turning off modeline on a per-file basis, which is
 useful when a line looks like a modeline but isn't.  For example, it would be
 good to start a YAML file containing strings like "vim:" with
     # vim: nomodeline ~
 so as to avoid modeline misdetection.  Following options on the same line
 after modeline deactivation, if any, are still evaluated (but you would
 normally not have any).
+
+							*modeline-strict*
+The 'modelinestrict' option restricts which options can be set via a
+modeline to a fixed whitelist.  This is enabled by default, for security
+reasons: it avoids unexpected or harmful side effects when opening files
+from unknown or untrustworthy locations.
 
 							*modeline-local*
 The options are set like with ":setlocal": The new value only applies to the
@@ -3007,7 +3013,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to window
 			{not available when compiled without the |+syntax|
 			feature}
-	Highlight the text line of the cursor with CursorLine |hl-CursorLine|.
+	Highlighting used for the line the cursor is on:
+
+	CursorLine		the text line |hl-CursorLine|
+	CursorLineFold		the fold column |hl-CursorLineFold|
+	CursorLineSign		the sign column |hl-CursorLineSign|
+	CursorLineNr		the line number, when 'cursorlineopt' contains
+				"number" |hl-CursorLineNr|
+
 	Useful to easily spot the cursor.  Will make screen redrawing slower.
 	When Visual mode is active the highlighting isn't used to make it
 	easier to see the selected text.
@@ -3583,6 +3596,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	To ignore all but some events, a "-" prefix can be used: >
 	    :set ei=all,-WinLeave
 <
+	Events that are triggered by comparing the current state against a
+	stored one, such as |CursorMoved| and |TextChanged|, are not triggered
+	afterwards for what happened while they were ignored.
+
 						*'eventignorewin'* *'eiw'*
 'eventignorewin' 'eiw'	string	(default "")
 			window-local
@@ -3986,7 +4003,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The function should return a List, which is handled similarly to the
 	return value of a |:command-completion-customlist| function.
 
-	The function is called only once per |:find| command invocation.
 	The function can process all the directories specified in 'path'.
 
 	If a match is found, the function should return a |List| containing
@@ -5033,6 +5049,24 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note that when using the GTK4 GUI, this option is not supported. The
 	only valid value for this option will be an empty string.
 
+						*'imageprotocol'* *'ipc'*
+'imageprotocol' 'ipc'	string (default: see below)
+			global				*E1585* *E1586*
+			{only available when compiled with the |+image| feature}
+	Same as the 'keyprotocol' option, but chooses which |image| backend to
+	use, see |image-backends|.  The supported image protocol names are:
+		none	No protocol is supported (images will not render)
+		sixel	The sixel protocol
+		kitty	Kitty graphics protocol
+
+	This option is first queried on startup, and then after when the
+	'term' option changes.  If the option is updated, and the image
+	backend changes, then any loaded images will automatically switch
+	backends.  This includes when switching to the GUI using ":gui".
+
+	The default value is: >
+		kitty:kitty,foot:sixel,ghostty:kitty,wezterm:kitty,xterm:sixel
+<
 				*'imcmdline'* *'imc'* *'noimcmdline'* *'noimc'*
 'imcmdline' 'imc'	boolean (default off)
 			global
@@ -5397,9 +5431,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	expand "$HOME/.viminfo".  Maybe you should change 'iskeyword' instead.
 
 						*'iskeyword'* *'isk'*
-'iskeyword' 'isk'	string (Vim default for Win32:
-					    "@,48-57,_,128-167,224-235"
-				   otherwise:  "@,48-57,_,192-255"
+'iskeyword' 'isk'	string (Vim default: "@,48-57,_,192-255"
 				Vi default: "@,48-57,_")
 			local to buffer
 	Keywords are used in searching and recognizing with many commands:
@@ -7344,7 +7376,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    emoji might be rendered beyond the bounding box of drawing
 		    cell.
 
-	Other render types are currently not supported.  See also 'guiligatures'.
+	Other render types are currently not supported.  See also
+	'guiligatures'.
 
 						*'report'*
 'report'		number	(default 2)
@@ -10518,7 +10551,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  exacttext	When this flag is present, search pattern completion
 			(e.g., in |/|, |?|, |:s|, |:g|, |:v|, and |:vim|)
 			shows exact buffer text as menu items, without
-			preserving regex artifacts like position
+			preserving regexp artifacts like position
 			anchors (e.g., |/\<|).  This provides more intuitive
 			menu items that match the actual buffer text.
 			However, searches may be less accurate since the

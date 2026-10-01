@@ -1,4 +1,4 @@
-/* clipboard.c */
+// clipboard.c
 void clip_init(int can_use);
 void clip_update_selection(Clipboard_T *clip);
 void clip_own_selection(Clipboard_T *cbd);
@@ -46,4 +46,4 @@ void call_clip_provider_set(int reg);
 void inc_clip_provider(void);
 void dec_clip_provider(void);
 int clip_convert_data(char_u **buf, long *len_store, int *motion, bool vim, bool vimenc, char_u **tofree);
-/* vim: set ft=c : */
+// vim: ft=c

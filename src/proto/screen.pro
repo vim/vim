@@ -1,4 +1,4 @@
-/* screen.c */
+// screen.c
 int conceal_cursor_line(win_T *wp);
 void conceal_check_cursor_line(int was_concealed);
 int get_win_attr(win_T *wp);
@@ -22,7 +22,7 @@ void end_search_hl(void);
 void screen_stop_highlight(void);
 void reset_cterm_colors(void);
 void screen_char(unsigned off, int row, int col);
-void screen_draw_rectangle(int row, int col, int height, int width, int invert);
+void screen_draw_rectangle(int row, int col, int height, int width, int invert, int force);
 void space_to_screenline(int off, int attr);
 void screen_fill(int start_row, int end_row, int start_col, int end_col, int c1, int c2, int attr);
 void check_for_delay(int check_msg_scroll);
@@ -61,4 +61,4 @@ char *set_listchars_option(win_T *wp, char_u *val, int apply, char *errbuf, size
 char_u *get_fillchars_name(expand_T *xp, int idx);
 char_u *get_listchars_name(expand_T *xp, int idx);
 char *check_chars_options(void);
-/* vim: set ft=c : */
+// vim: ft=c

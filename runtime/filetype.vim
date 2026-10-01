@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2026 Aug 08
+" Last Change:		2026 Sep 24
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If the filetype can be detected from extension or file name(the final path component),
@@ -125,6 +125,9 @@ au BufNewFile,BufRead *.demo,*.dm{1,2,3,t},*.wxm,maxima-init.mac setf maxima
 " ObjectScript routine or assembly
 au BufNewFile,BufRead *.mac			call dist#ft#FTmac()
 
+" Argo CD configuration
+au BufNewFile,BufRead */argocd/config		setf yaml
+
 " Assembly (all kinds)
 " *.lst is not pure assembly, it has two extra columns (address, byte codes)
 " *.[sS], *.[aA] usually Assembly - GNU
@@ -181,6 +184,9 @@ if has("fname_case")
   " There is another check for BUILD and BUCK further below.
   au BufNewFile,BufRead *.BUILD,BUILD,BUCK		setf bzl
 endif
+
+" Bazel rc file, the workspace location used before Bazel 0.17
+au BufNewFile,BufRead */tools/bazel.rc			setf bazelrc
 
 " Bundle config
 au BufNewFile,BufRead */.bundle/config			setf yaml
@@ -301,6 +307,9 @@ au BufNewFile,BufRead *.eu,*.ew,*.exu,*.exw  call dist#ft#EuphoriaCheck()
 if has("fname_case")
    au BufNewFile,BufRead *.EU,*.EW,*.EX,*.EXU,*.EXW  call dist#ft#EuphoriaCheck()
 endif
+
+" Evcxr history
+au BufNewFile,BufRead */evcxr/history.txt		setf rust
 
 " Execline (s6) scripts
 au BufNewFile,BufRead *s6*/\(up\|down\|run\|finish\)    setf execline
@@ -901,6 +910,10 @@ au BufNewFile,BufRead PklProject,*.pkl,*.pcf,pkl-lsp://*	setf pkl
 " WIC kickstarter files
 au BufNewFile,BufRead *.wks,*.wks.in,*.wks.inc	setf wks
 
+" Portage
+au BufNewFile,BufRead */portage/make.conf/*.conf,*/portage/make.conf	setf sh
+au BufNewFile,BufRead */portage/{bin,}repos.conf/*.conf			setf confini
+
 " Povray, Pascal, PHP or assembly
 au BufNewFile,BufRead *.inc			call dist#ft#FTinc()
 
@@ -1418,7 +1431,7 @@ au BufNewFile,BufRead [cC]hange[lL]og*
 	\|endif
 
 " Crontab
-au BufNewFile,BufRead crontab,crontab.*,*/etc/cron.d/*		call s:StarSetf('crontab')
+au BufNewFile,BufRead crontab,crontab.*,crontabs.*,*/etc/cron.d/*		call s:StarSetf('crontab')
 
 " dnsmasq(8) configuration
 au BufNewFile,BufRead */etc/dnsmasq.d/*		call s:StarSetf('dnsmasq')

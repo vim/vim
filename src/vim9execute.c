@@ -887,7 +887,8 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 		*(stack + idx) = *tv;
 		tv->v_type = VAR_UNKNOWN;
 	    }
-	    else
+	    else if (tv->v_type != VAR_UNKNOWN)
+		// Skip an argument that was not set, the stack was cleared.
 		copy_tv(tv, stack + idx);
 	}
 	// Skip the stack frame.
@@ -1103,7 +1104,7 @@ add_defer_item(int var_idx, int argcount, ectx_T *ectx)
     listval.v_lock = 0;
     if (list_insert_tv(defer_l, &listval, defer_l->lv_first) == FAIL)
     {
-	vim_free(l);
+	list_free(l);
 	return NULL;
     }
 
@@ -2458,8 +2459,12 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 		}
 	    }
 	}
-	else if ((dest_type == VAR_LIST || dest_type == VAR_OBJECT)
-		&& tv_idx->v_type != VAR_NUMBER)
+	else if (dest_type == VAR_OBJECT)
+	{
+	    emsg(_(e_string_required));
+	    status = FAIL;
+	}
+	else if (dest_type == VAR_LIST && tv_idx->v_type != VAR_NUMBER)
 	{
 	    emsg(_(e_number_expected));
 	    status = FAIL;
@@ -2494,7 +2499,8 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    if (lidx < list->lv_len)
 	    {
 		listitem_T *li = list_find(list, lidx);
-
+		if (li == NULL)
+		    return FAIL;
 		if (error_if_locked(li->li_tv.v_lock,
 					     e_cannot_change_locked_list_item))
 		    return FAIL;
@@ -2944,7 +2950,8 @@ execute_for(isn_T *iptr, ectx_T *ectx)
 	{
 	    listitem_T *li = list_find(list,
 					 idxtv->vval.v_number);
-
+	    if (li == NULL)
+		return FAIL;
 	    copy_tv(&li->li_tv, STACK_TV_BOT(0));
 	    ++ectx->ec_stack.ga_len;
 	}
@@ -2996,7 +3003,8 @@ execute_for(isn_T *iptr, ectx_T *ectx)
 	// changed.
 	if (idxtv->vval.v_number == -1 && blob != NULL)
 	{
-	    blob_copy(blob, ltv);
+	    ltv->v_lock = 0;
+	    ltv->vval.v_blob = blob_copy(blob);
 	    blob_unref(blob);
 	    blob = ltv->vval.v_blob;
 	}
@@ -4740,7 +4748,8 @@ exec_instructions(ectx_T *ectx)
 			tv->vval.v_float = iptr->isn_arg.fnumber;
 			break;
 		    case ISN_PUSHBLOB:
-			blob_copy(iptr->isn_arg.blob, tv);
+			tv->v_type = VAR_BLOB;
+			tv->vval.v_blob = blob_copy(iptr->isn_arg.blob);
 			break;
 		    case ISN_PUSHFUNC:
 			tv->v_type = VAR_FUNC;
@@ -5262,9 +5271,12 @@ exec_instructions(ectx_T *ectx)
 		    size_t argidx = ufunc->uf_def_args.ga_len
 					+ iptr->isn_arg.jumparg.jump_arg_off
 					+ STACK_FRAME_SIZE;
-		    type_T *tuple = ufunc->uf_arg_types[argidx];
+		    type_T *type = ufunc->uf_arg_types[argidx];
 		    CLEAR_POINTER(tv);
-		    tv->v_type = tuple->tt_type;
+		    // "any" is not a type a value can have, leave the
+		    // argument marked as not set.
+		    if (type->tt_type != VAR_ANY)
+			tv->v_type = type->tt_type;
 		}
 
 		if (iptr->isn_type == ISN_JUMP_IF_ARG_SET ? arg_set : !arg_set)
@@ -6059,6 +6071,8 @@ exec_instructions(ectx_T *ectx)
 		    if (tv->v_type == VAR_LIST)
 		    {
 			li = list_find(tv->vval.v_list, gi->gi_index);
+			if (li == NULL)
+			    goto on_error;
 			item_tv = &li->li_tv;
 		    }
 		    else

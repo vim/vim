@@ -1,4 +1,4 @@
-/* evalwindow.c */
+// evalwindow.c
 win_T *win_id2wp(int id);
 win_T *win_id2wp_tp(int id, tabpage_T **tpp);
 void win_findbuf(typval_T *argvars, list_T *list);
@@ -38,4 +38,4 @@ int switch_win(switchwin_T *switchwin, win_T *win, tabpage_T *tp, int no_display
 int switch_win_noblock(switchwin_T *switchwin, win_T *win, tabpage_T *tp, int no_display);
 void restore_win(switchwin_T *switchwin, int no_display);
 void restore_win_noblock(switchwin_T *switchwin, int no_display);
-/* vim: set ft=c : */
+// vim: ft=c

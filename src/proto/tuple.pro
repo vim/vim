@@ -1,4 +1,4 @@
-/* tuple.c */
+// tuple.c
 tuple_T *tuple_alloc(void);
 tuple_T *tuple_alloc_with_items(int count);
 void tuple_set_item(tuple_T *tuple, int idx, typval_T *tv);
@@ -27,8 +27,8 @@ void tuple2items(typval_T *argvars, typval_T *rettv);
 int index_tuple(tuple_T *tuple, typval_T *tv, int start_idx, int ic);
 int indexof_tuple(tuple_T *tuple, long startidx, typval_T *expr);
 typval_T *tuple_max_min(tuple_T *tuple, int domax);
-void tuple_repeat(tuple_T *tuple, int n, typval_T *rettv);
+void tuple_repeat(tuple_T *tuple, varnumber_T n, typval_T *rettv);
 void tuple_reverse(tuple_T *tuple, typval_T *rettv);
 void tuple_reduce(typval_T *argvars, typval_T *expr, typval_T *rettv);
 int check_tuples_addable(type_T *type1, type_T *type2);
-/* vim: set ft=c : */
+// vim: ft=c

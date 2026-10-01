@@ -1028,12 +1028,16 @@ func Test_terminal_visual_empty_listchars()
   \ ]
   call writefile(lines, 'XtermStart1', 'D')
   let buf = RunVimInTerminal('-S XtermStart1', #{rows: 15})
-  call term_wait(buf)
+  " Wait for the job to finish, otherwise the keys go to the shell.
+  call WaitForAssert({-> assert_match('\[finished\]', term_getline(buf, 7))})
   call term_sendkeys(buf, "V2k")
+  call term_wait(buf)
   call VerifyScreenDump(buf, 'Test_terminal_empty_listchars', {})
   call term_sendkeys(buf, "\<esc>")
   call term_sendkeys(buf, ":set nu\<cr>")
+  call term_wait(buf)
   call term_sendkeys(buf, "ggV2j")
+  call term_wait(buf)
   call VerifyScreenDump(buf, 'Test_terminal_empty_listchars2', {})
 
   call StopVimInTerminal(buf)
@@ -1051,7 +1055,7 @@ func Test_terminal_normal_mode_colored_empty_line()
 	\ 'Xterm_colored.sh', 'D')
   call writefile([':term sh ./Xterm_colored.sh'], 'XtermColored', 'D')
   let buf = RunVimInTerminal('-S XtermColored', #{rows: 10})
-  call term_wait(buf)
+  call WaitForAssert({-> assert_match('\[finished\]', term_getline(buf, 5))})
   call VerifyScreenDump(buf, 'Test_terminal_colored_empty_1', {})
 
   " Enter Terminal-Normal mode: the empty lines must still be gray.
@@ -1075,11 +1079,40 @@ func Test_terminal_visual_colored_empty_line()
   call writefile([':set listchars=', ':term sh ./Xterm_colored.sh'],
 	\ 'XtermColored', 'D')
   let buf = RunVimInTerminal('-S XtermColored', #{rows: 10})
-  call term_wait(buf)
+  call WaitForAssert({-> assert_match('\[finished\]', term_getline(buf, 5))})
 
   call term_sendkeys(buf, "\<C-W>NggVG")
   call term_wait(buf)
   call VerifyScreenDump(buf, 'Test_terminal_visual_colored_empty', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_terminal_hl_terminal_empty_line()
+  CheckScreendump
+  CheckRunVimInTerminal
+  CheckUnix
+
+  " When a background color is set with hl-terminal the empty lines must use
+  " it as well, both while the job runs and in Terminal-Normal mode.
+  let lines = [
+  \ 'highlight Terminal ctermbg=darkred',
+  \ 'set listchars=',
+  \ ':term sh -c "printf ''one\\n\\ntwo\\n\\n''"'
+  \ ]
+  call writefile(lines, 'XtermHlTerm', 'D')
+  let buf = RunVimInTerminal('-S XtermHlTerm', #{rows: 10})
+  call WaitForAssert({-> assert_match('\[finished\]', term_getline(buf, 5))})
+  call VerifyScreenDump(buf, 'Test_terminal_hl_empty_1', {})
+
+  call term_sendkeys(buf, "\<C-W>N")
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_terminal_hl_empty_2', {})
+
+  " The Visual selection must still show on the first cell of an empty line.
+  call term_sendkeys(buf, "ggVG")
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_terminal_hl_empty_3', {})
 
   call StopVimInTerminal(buf)
 endfunc
@@ -1305,7 +1338,6 @@ endfunc
 
 " This caused a Crash
 func Test_terminal_csi_resize_oob()
-  return
   CheckUnix
   CheckExecutable printf
 
@@ -1362,6 +1394,75 @@ func Test_terminal_negative_col_oob()
     call assert_true(bufexists(buf))
     exe 'bwipe! ' .. buf
   endfor
+endfunc
+
+" This caused a hang
+func Test_terminal_rep_no_preceding_char()
+  CheckUnix
+  CheckExecutable printf
+
+  " REP repeats the preceding graphic character.  When none was printed yet
+  " the repeat width in libvterm is zero, so the cursor never reached the end
+  " column and Vim looped forever while rendering the sequence.
+  let buf = term_start([&shell, &shellcmdflag, 'printf "%s" ' .. shellescape("\<ESC>[9b")],
+        \ #{term_rows: 10, term_cols: 40})
+  call TermWait(buf)
+  " Getting here without a hang is the test.
+  call assert_true(bufexists(buf))
+  exe 'bwipe! ' .. buf
+
+  " REP after a graphic character still repeats it.
+  let buf = term_start([&shell, &shellcmdflag, 'printf "%s" ' .. shellescape("X\<ESC>[4b")],
+        \ #{term_rows: 10, term_cols: 40})
+  call TermWait(buf)
+  call WaitForAssert({-> assert_equal('XXXXX', term_getline(buf, 1))})
+  exe 'bwipe! ' .. buf
+endfunc
+
+" This caused a Crash
+func Test_terminal_scrollregion_resize_oob()
+  CheckUnix
+  CheckExecutable printf
+
+  " A scroll region set before the terminal was made smaller kept its old top
+  " row, since on_resize() only clamped the bottom row.  Every scroll after
+  " that used a rectangle that ends before it starts, which made libvterm pass
+  " a negative size to memmove().
+
+  " Sequences: set the scroll region to rows 5-9, shrink the terminal to three
+  " rows with CSI 8 ; rows ; cols t, then
+  " 1 SU, 2 SD, 3 a line feed at the bottom of the stale region
+  let seqs = ["\<ESC>[5;9r\<ESC>[8;3;40t\<ESC>[5S",
+        \ "\<ESC>[5;9r\<ESC>[8;3;40t\<ESC>[5T",
+        \ "\<ESC>[5;9r\<ESC>[8;3;40t\n\n\n"]
+
+  for seq in seqs
+    let buf = term_start([&shell, &shellcmdflag, 'printf "%s" ' .. shellescape(seq)],
+          \ #{term_rows: 10, term_cols: 40})
+    call TermWait(buf)
+    " Getting here without a crash (and no ASAN report) is the test.
+    call assert_true(bufexists(buf))
+    exe 'bwipe! ' .. buf
+  endfor
+endfunc
+
+" This caused a Crash
+func Test_terminal_csi_resize()
+  CheckUnix
+  CheckExecutable cat
+
+  " The escape sequence and the output must arrive in one burst
+  call writefile(["\<Esc>[8;50000;200t"] + repeat(['x'], 3000), 'Xtermsize', 'D')
+
+  let buf = term_start(['cat', 'Xtermsize'], #{term_rows: 20})
+  call WaitForAssert({-> assert_equal('finished', term_getstatus(buf))})
+  call TermWait(buf)
+
+  " clamped to VTERM_MAX_ROWS instead of 50,000
+  call assert_equal([1000, 1], term_getcursor(buf)[0:1])
+  call assert_true(bufexists(buf))
+
+  exe 'bwipe! ' .. buf
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

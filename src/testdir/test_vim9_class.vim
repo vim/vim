@@ -11887,4 +11887,203 @@ def Test_colon_whitespace()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" A closure in the initializer of an object variable, with the constructor
+" called without arguments.
+def Test_class_member_closure()
+  var lines =<< trim END
+    vim9script
+    class C
+      def F(): number
+        return 7
+      enddef
+      var A = () => this.F()
+    endclass
+    var c = C.new()
+    assert_equal(7, c.A())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Using a compound operator on an object variable of an object variable.
+def Test_nested_object_member_op_assign()
+  var lines =<< trim END
+    vim9script
+    class A
+      public var n = 1
+      public var s = 'x'
+    endclass
+    class B
+      var a: A = A.new()
+      def Add()
+        this.a.n += 2
+        this.a.s ..= 'y'
+      enddef
+    endclass
+    var b = B.new()
+    b.Add()
+    assert_equal(3, b.a.n)
+    assert_equal('xy', b.a.s)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Also when the object is in a local variable.
+  lines =<< trim END
+    vim9script
+    class A
+      public var n = 1
+    endclass
+    class B
+      var a: A = A.new()
+    endclass
+    def F(): number
+      var b = B.new()
+      b.a.n += 2
+      return b.a.n
+    enddef
+    assert_equal(3, F())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # A plain assignment must use the last name, not the first one.
+  lines =<< trim END
+    vim9script
+    class A
+      public var n = 1
+      public var s = 'x'
+    endclass
+    class B
+      var a: A = A.new()
+      def Set()
+        this.a.s = 'y'
+      enddef
+    endclass
+    var b = B.new()
+    b.Set()
+    assert_equal(1, b.a.n)
+    assert_equal('y', b.a.s)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for a class, interface or enum in a block that is not executed: the
+" body is skipped, not read as commands.
+def Test_class_body_skipped()
+  var lines =<< trim END
+      vim9script
+      if 0
+        interface Bar
+          def M(): number
+        endinterface
+      endif
+      if 0
+        class Foo
+          var x: number = 1
+        endclass
+      endif
+      while 0
+        enum Baz
+          One,
+          Two
+        endenum
+      endwhile
+      g:skipped = 'all three'
+  END
+  g:skipped = ''
+  v9.CheckSourceSuccess(lines)
+  assert_equal('all three', g:skipped)
+  unlet g:skipped
+enddef
+
+def Test_index_object()
+  # Used to write past the end of the object member array.
+  var lines =<< trim END
+    vim9script
+    class C
+      var a: number = 1
+    endclass
+    def Fails()
+      var o: any = C.new()
+      o[100] = 999
+    enddef
+    Fails()
+  END
+  v9.CheckSourceFailure(lines, 'E928: String required')
+
+  # Used to write in front of the object member array.
+  lines =<< trim END
+    vim9script
+    class C
+      var a: number = 1
+    endclass
+    def Fails()
+      var o: any = C.new()
+      o[-4] = 999
+    enddef
+    Fails()
+  END
+  v9.CheckSourceFailure(lines, 'E928: String required')
+
+  # In range, but used to write a protected member.
+  lines =<< trim END
+    vim9script
+    class C
+      var _secret: number = 1
+    endclass
+    def Fails()
+      var o: any = C.new()
+      o[0] = 42
+    enddef
+    Fails()
+  END
+  v9.CheckSourceFailure(lines, 'E928: String required')
+
+  # In range, but used to store a number in a member declared as a string.
+  lines =<< trim END
+    vim9script
+    class C
+      public var name: string = 'hello'
+    endclass
+    def Fails()
+      var o: any = C.new()
+      o[0] = 999
+    enddef
+    Fails()
+  END
+  v9.CheckSourceFailure(lines, 'E928: String required')
+
+  # Using the member name instead of a number still works.
+  lines =<< trim END
+    vim9script
+    class C
+      public var a: number = 1
+    endclass
+    def Works()
+      var o = C.new()
+      var any_o: any = o
+      any_o['a'] = 7
+      assert_equal(7, o.a)
+    enddef
+    Works()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # An object reached through a member typed "any" still works.
+  lines =<< trim END
+    vim9script
+    class Inner
+      public var value: number = 0
+    endclass
+    class Outer
+      var inner: any
+    endclass
+    def Works(outer: Outer)
+      outer.inner.value = 1
+    enddef
+    var inner_obj = Inner.new(0)
+    Works(Outer.new(inner_obj))
+    assert_equal(1, inner_obj.value)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

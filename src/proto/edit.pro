@@ -1,4 +1,4 @@
-/* edit.c */
+// edit.c
 int edit(int cmdchar, int startln, long count);
 int ins_need_undo_get(void);
 void ins_redraw(int ready);
@@ -39,4 +39,4 @@ colnr_T get_nolist_virtcol(void);
 int get_can_cindent(void);
 void set_can_cindent(int val);
 int ins_apply_autocmds(event_T event);
-/* vim: set ft=c : */
+// vim: ft=c

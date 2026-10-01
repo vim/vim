@@ -1,4 +1,4 @@
-/* fold.c */
+// fold.c
 void copyFoldingState(win_T *wp_from, win_T *wp_to);
 int hasAnyFolding(win_T *win);
 int hasFolding(linenr_T lnum, linenr_T *firstp, linenr_T *lastp);
@@ -42,4 +42,4 @@ void f_foldclosedend(typval_T *argvars, typval_T *rettv);
 void f_foldlevel(typval_T *argvars, typval_T *rettv);
 void f_foldtext(typval_T *argvars, typval_T *rettv);
 void f_foldtextresult(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

@@ -1354,7 +1354,7 @@ tag		command		action ~
 |:ex|		:ex		same as ":edit"
 |:execute|	:exe[cute]	execute result of expressions
 |:exit|		:exi[t]		same as ":xit"
-|:export|	:exp[ort]	Vim9: export an item from a script
+|:export|	:export		Vim9: export an item from a script
 |:exusage|	:exu[sage]	overview of Ex commands
 |:file|		:f[ile]		show or set the current file name
 |:files|	:files		list all files in the buffer list
@@ -1398,7 +1398,7 @@ tag		command		action ~
 |:imap|		:im[ap]		like ":map" but for Insert mode
 |:imapclear|	:imapc[lear]	like ":mapclear" but for Insert mode
 |:imenu|	:ime[nu]	add menu for Insert mode
-|:import|	:imp[ort]	Vim9: import an item from another script
+|:import|	:import		Vim9: import an item from another script
 |:inoremap|	:ino[remap]	like ":noremap" but for Insert mode
 |:inoreabbrev|	:inorea[bbrev]	like ":noreabbrev" but for Insert mode
 |:inoremenu|	:inoreme[nu]	like ":noremenu" but for Insert mode

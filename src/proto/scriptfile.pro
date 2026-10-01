@@ -1,4 +1,4 @@
-/* scriptfile.c */
+// scriptfile.c
 void estack_init(void);
 estack_T *estack_push(etype_T type, char_u *name, long lnum);
 estack_T *estack_push_ufunc(ufunc_T *ufunc, long lnum);
@@ -50,4 +50,4 @@ char_u *get_autoload_prefix(scriptitem_T *si);
 char_u *may_prefix_autoload(char_u *name);
 char_u *autoload_name(char_u *name);
 int script_autoload(char_u *name, int reload);
-/* vim: set ft=c : */
+// vim: ft=c

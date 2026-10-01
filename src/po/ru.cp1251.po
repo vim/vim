@@ -22,10 +22,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: RuVim_0.9020677.200626\n"
+"Project-Id-Version: RuVim_0.9021099.160926\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-06-20 13:01+0300\n"
-"PO-Revision-Date: 2026-06-20 14:36+0300\n"
+"POT-Creation-Date: 2026-09-28 23:36+0300\n"
+"PO-Revision-Date: 2026-09-28 23:41+0300\n"
 "Last-Translator: Restorer, <restorer@mail2k.ru>\n"
 "Language-Team: RuVim, https://github.com/RestorerZ/RuVim\n"
 "Language: ru_RU\n"
@@ -2172,6 +2172,9 @@ msgstr ""
 msgid "--ttyfail\t\tExit if input or output is not a terminal"
 msgstr "--ttyfail\t\tЗавершить работу при отсутствии терминала ввода-вывода"
 
+msgid "--stdio-channel\tUse stdin and stdout as a channel"
+msgstr "--stdio-channel\tИспользовать потоки stdin и stdout в качестве каналов"
+
 msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
 msgstr "-u <файл>\t\tИспользовать вместо файлов .vimrc указанный <файл>"
 
@@ -2351,6 +2354,13 @@ msgstr "+reverse\t\tНе использовать инверсный видеорежим (или +rv)"
 # ~!: earlier
 msgid "-xrm <resource>\tSet the specified resource"
 msgstr "-xrm <ресурс>\tУстановка указанного <ресурса>"
+
+msgid ""
+"\n"
+"Arguments recognised by gvim (GTK4 version):\n"
+msgstr ""
+"\n"
+"Аргументы запуска программы gVim (вариант для GTK4):\n"
 
 msgid ""
 "\n"
@@ -2547,6 +2557,9 @@ msgstr "???НЕДОПУСТИМЫЙ НОМЕР БЛОКА"
 
 msgid "???BLOCK MISSING"
 msgstr "???БЛОК ПРОПУЩЕН"
+
+msgid "??? BLOCK PAGE COUNT MISMATCH"
+msgstr "??? НЕСООТВЕТСТВИЕ КОЛИЧЕСТВА СТРАНИЦ БЛОКА"
 
 msgid "??? from here until ???END lines may be messed up"
 msgstr ""
@@ -4018,22 +4031,6 @@ msgid "syncing on C-style comments"
 msgstr "Ретроспективная синхронизация по строкам комментариев в стиле языка Си"
 
 # Restorer: выводится, например, по команде `:syntax sync`
-msgid "no syncing"
-msgstr "Ретроспективная синхронизация подсветки текста не выполняется"
-
-# Restorer: выводится, например, по команде `:syntax sync`
-msgid "syncing starts at the first line"
-msgstr "Ретроспективная синхронизация подсветки выполняется с первой строки"
-
-# Restorer: выводится, например, по команде `:syntax sync`
-msgid "syncing starts "
-msgstr "Для ретроспективной синхронизации считано строк: "
-
-# Restorer: дописывается к сообщениям «syncing starts» и «minimal», «maximal»
-msgid " lines before top line"
-msgstr " от верхней строки на экране"
-
-# Restorer: выводится, например, по команде `:syntax sync`
 msgid ""
 "\n"
 "--- Syntax sync items ---"
@@ -4051,6 +4048,22 @@ msgid ""
 msgstr ""
 "\n"
 "Ретроспективная синхронизация по элементам синтаксиса"
+
+# Restorer: выводится, например, по команде `:syntax sync`
+msgid "no syncing"
+msgstr "Ретроспективная синхронизация подсветки текста не выполняется"
+
+# Restorer: выводится, например, по команде `:syntax sync`
+msgid "syncing starts at the first line"
+msgstr "Ретроспективная синхронизация подсветки выполняется с первой строки"
+
+# Restorer: выводится, например, по команде `:syntax sync`
+msgid "syncing starts "
+msgstr "Для ретроспективной синхронизации считано строк: "
+
+# Restorer: дописывается к сообщениям «syncing starts» и «minimal», «maximal»
+msgid " lines before top line"
+msgstr " от верхней строки на экране"
 
 # Restorer: выводится, например, по команде `:syntax`
 msgid ""
@@ -4541,9 +4554,6 @@ msgstr ""
 msgid "without GUI."
 msgstr "без графического интерфейса."
 
-msgid "with GTK4 GUI (hwaccel)."
-msgstr "с графическим интерфейсом GTK4 (hwaccel)."
-
 msgid "with GTK4 GUI."
 msgstr "с графическим интерфейсом GTK4."
 
@@ -4782,7 +4792,6 @@ msgid "[end of lines]"
 msgstr "и обнаружено окончание строки"
 
 # Restorer: в файле viminfo
-# ~!: earlier
 msgid ""
 "\n"
 "# Buffer list:\n"
@@ -8183,12 +8192,9 @@ msgstr "E881: Непредвиденное изменение количества строк"
 msgid "E882: Uniq compare function failed"
 msgstr "E882: Ошибка при выполнении сравнения в функции поиска дубликатов"
 
-msgid ""
-"E883: Search pattern and expression register may not contain two or more "
-"lines"
-msgstr ""
-"E883: Регистр поиска и регистр выражения не могут содержать более одной "
-"строки"
+#, c-format
+msgid "E883: Register '%c' cannot contain multiple lines"
+msgstr "E883: Регистр '%c' не может содержать многострочные записи"
 
 #, c-format
 msgid "E884: Function name cannot contain a colon: %s"
@@ -9117,23 +9123,19 @@ msgid "E1129: Throw with empty string"
 msgstr "E1129: После команды :throw отсутствует выражение"
 
 msgid "E1130: Cannot add to null list"
-msgstr ""
-"E1130: Данные с типом List отсутствуют. Добавление элементов не выполнено"
+msgstr "E1130: Не допускается добавление элементов к нулевому списку"
 
 msgid "E1131: Cannot add to null blob"
-msgstr "E1131: Данные с типом BLOB отсутствуют. Добавление цифр не выполнено"
+msgstr "E1131: Не допускается добавление данных к нулевому BLOB"
 
 msgid "E1132: Missing function argument"
 msgstr "E1132: Не указан аргумент функции"
 
 msgid "E1133: Cannot extend a null dict"
-msgstr ""
-"E1133: Данные с типом Dictionary отсутствуют. Присоединение записей не "
-"выполнено"
+msgstr "E1133: Не допускается присоединение записей к нулевому словарю"
 
 msgid "E1134: Cannot extend a null list"
-msgstr ""
-"E1134: Данные с типом List отсутствуют. Присоединение элементов не выполнено"
+msgstr "E1134: Не допускается присоединение элементов к нулевому списку"
 
 #, c-format
 msgid "E1135: Using a String as a Bool: \"%s\""
@@ -10173,8 +10175,7 @@ msgstr "E1405: Не допускается в качестве значения указывать класс \"%s\""
 
 #, c-format
 msgid "E1406: Public and protected member have the same name: %s and _%s"
-msgstr ""
-"E1406: Общий и защищённый член имеют одно и тоже наименование %s и _%s"
+msgstr "E1406: Общий и защищённый член имеют одно и тоже наименование %s и _%s"
 
 msgid "E1407: Cannot use a Typealias as a variable or value"
 msgstr ""
@@ -10557,8 +10558,8 @@ msgstr ""
 #, c-format
 msgid "E1564: Socket name '%s' cannot have slashes in it without being a path"
 msgstr ""
-"E1564: В наименовании сокета '%s' не должно быть косой черты, "
-"если это не маршрут"
+"E1564: В наименовании сокета '%s' не должно быть косой черты, если это не "
+"маршрут"
 
 msgid "E1565: Socket server is not online, call remote_startserver() first"
 msgstr ""
@@ -10621,6 +10622,18 @@ msgstr ""
 msgid "E1579: -completeopt=escape cannot be used with -nargs=_"
 msgstr ""
 "E1579: Команда -completeopt=escape не может применяться с командой -nargs=_"
+
+msgid "E1580: Too many text properties on a single line"
+msgstr "E1580: Указано большое количество свойств текста в одной строке"
+
+msgid "E1581: Cannot extend a null blob"
+msgstr "E1581: Не допускается присоединение данных к нулевому BLOB"
+
+msgid "E1582: Not started with --stdio-channel"
+msgstr "E1582: При запуске не был указан параметр --stdio-channel"
+
+msgid "E1583: Cannot open stdio channel"
+msgstr "E1583: Не удалось открыть адрес stdio"
 
 # Restorer: выводится, например, по команде `CTRL+g`, `g CTRL+g` и т. п.
 msgid "--No lines in buffer--"

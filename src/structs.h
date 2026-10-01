@@ -142,6 +142,8 @@ typedef struct {
     // only used for cterm.bg_rgb and cterm.fg_rgb: use cterm color
 # define CTERMCOLOR ((guicolor_T)0x1fffffe)
 #endif
+// We have include guard in the file
+#include "image.h"
 #define COLOR_INVALID(x) ((x) == INVALCOLOR || (x) == CTERMCOLOR)
 
 #ifdef FEAT_TERMINAL
@@ -447,6 +449,25 @@ typedef struct {
 
 typedef struct u_entry u_entry_T;
 typedef struct u_header u_header_T;
+
+#ifdef FEAT_PROP_POPUP
+// Which line around an undo block a cleared continuation flag was on.
+# define UNDOPROP_NONE	0
+# define UNDOPROP_ABOVE	1
+# define UNDOPROP_BELOW	2
+
+// A continuation flag cleared on a line around an undo block, given back when
+// the block is undone or redone the other way.
+typedef struct
+{
+    int		up_which;	// UNDOPROP_ABOVE or UNDOPROP_BELOW
+    int		up_type;	// tp_type of the property
+    int		up_id;		// tp_id of the property
+    colnr_T	up_col;		// tp_col of the property
+    int		up_flag;	// TP_FLAG_CONT_NEXT or TP_FLAG_CONT_PREV
+} undoprop_T;
+#endif
+
 struct u_entry
 {
     u_entry_T	*ue_next;	// pointer to next entry in list
@@ -455,6 +476,9 @@ struct u_entry
     linenr_T	ue_lcount;	// linecount when u_save called
     undoline_T	*ue_array;	// array of lines in undo block
     long	ue_size;	// number of lines in ue_array
+#ifdef FEAT_PROP_POPUP
+    garray_T	ue_props;	// undoprop_T: flags cleared around the block
+#endif
 #ifdef U_DEBUG
     int		ue_magic;	// magic number to check allocation
 #endif
@@ -1694,6 +1718,7 @@ struct itf2class_S {
 #define CLASS_EXTENDED	    0x2	    // another class extends this one
 #define CLASS_ABSTRACT	    0x4	    // abstract class
 #define CLASS_ENUM	    0x8	    // enum
+#define CLASS_DRYRUN	    0x10    // defined by ":source ++dryrun"
 
 // "class_T": used for v_class of typval of VAR_CLASS
 // Also used for an interface (class_flags has CLASS_INTERFACE).
@@ -2084,7 +2109,6 @@ struct ufunc_S
     sctx_T	uf_script_ctx;	// SCTX where function was defined,
 				// used for s: variables; sc_version changed
 				// for :function
-    int		uf_script_ctx_version;  // original sc_version of SCTX
     int		uf_refcount;	// reference count, see func_name_refcount()
 
     funccall_T	*uf_scoped;	// l: local variables for closure
@@ -2975,6 +2999,7 @@ struct listener_S
 {
     listener_T	*lr_next;
     int		lr_id;
+    bool	lr_text;	// include the resulting text in each change
     callback_T	lr_callback;
 };
 
@@ -3184,6 +3209,8 @@ typedef struct {
      * b_sst_array	pointer to an array of synstate_T
      * b_sst_len	number of entries in b_sst_array[]
      * b_sst_first	pointer to first used entry in b_sst_array[] or NULL
+     * b_sst_search	cached entry near the last accessed line, used as a
+     *			start point for forward lookups, or NULL
      * b_sst_firstfree	pointer to first free entry in b_sst_array[] or NULL
      * b_sst_freecount	number of free entries in b_sst_array[]
      * b_sst_check_lnum	entries after this lnum need to be checked for
@@ -3192,6 +3219,7 @@ typedef struct {
     synstate_T	*b_sst_array;
     int		b_sst_len;
     synstate_T	*b_sst_first;
+    synstate_T	*b_sst_search;
     synstate_T	*b_sst_firstfree;
     int		b_sst_freecount;
     linenr_T	b_sst_check_lnum;
@@ -3635,6 +3663,7 @@ struct file_buffer
     listener_T	*b_listener;       // Listeners accepting buffered reports.
     listener_T	*b_sync_listener;  // Listeners requiring unbuffered reports.
     list_T	*b_recorded_changes;
+    size_t	b_recorded_text_size;  // bytes of text held by the above
 #endif
 #ifdef FEAT_PROP_POPUP
     bool	b_has_textprop;	// true when text props were added
@@ -3710,6 +3739,8 @@ struct file_buffer
 
 #ifdef FEAT_SIGNS
     sign_entry_T *b_signlist;	   // list of placed signs
+    sign_entry_T *b_sign_finger;   // last sign inserted, used to speed up
+				   // inserting signs in ascending line order
 # ifdef FEAT_NETBEANS_INTG
     bool	b_has_sign_column; // Flag that is set when a first sign is
 				   // added and remains set until the end of
@@ -4256,64 +4287,6 @@ struct window_S
     int		w_popup_mask_height; // height of w_popup_mask_cells
     int		w_popup_mask_width;  // width of w_popup_mask_cells
 
-# ifdef FEAT_IMAGE
-    char_u	*w_popup_image_data;	// RGB pixels (w*h*3) or RGBA (w*h*4)
-    int		w_popup_image_w;	// source pixel width
-    int		w_popup_image_h;	// source pixel height
-    int		w_popup_image_alpha;	// TRUE when data is RGBA, not RGB
-    // Last screen rectangle (in cells) where the image was emitted.  Used
-    // to invalidate ScreenLines under the previous image when the popup
-    // moves or the clip changes; otherwise screen_fill() skips the paint
-    // for cells whose desired space+attr already matches what was drawn
-    // before (e.g. body -> top padding both write ' '+popup_attr), leaving
-    // image pixels stranded in the terminal (sixel/kitty) or on gui.surface
-    // (GDI/Cairo).  cells_h == 0 means "no previous emit".
-    int		w_popup_image_emit_row;
-    int		w_popup_image_emit_col;
-    int		w_popup_image_emit_cells_w;
-    int		w_popup_image_emit_cells_h;
-    // TRUE when the pixel buffer was replaced after the last emit.  For
-    // RGBA images the backends that composite onto the previous emit
-    // instead of replacing it (sixel P2=1 transparency, cairo OPERATOR_OVER)
-    // must repaint the cells underneath first, or the old frame stays
-    // visible under the new frame's transparent pixels.
-    bool	w_popup_image_px_dirty;
-#  ifdef FEAT_IMAGE_SIXEL
-    char_u	*w_popup_image_seq;	// cached sixel DCS sequence (terminal)
-    int		w_popup_image_seq_w;	// pixel width of cached seq
-    int		w_popup_image_seq_h;	// pixel height used for cached seq;
-					// -1 means cache is invalid
-    int		w_popup_image_seq_crop_x; // pixel offset (left) into source
-    int		w_popup_image_seq_crop_y; // pixel offset (top) into source
-    int		w_popup_image_seq_cells_w; // cell width  spanning seq pixels
-    int		w_popup_image_seq_cells_h; // cell height spanning seq pixels
-    int		w_popup_image_seq_zindex;  // zindex encoded into seq (kitty z=)
-    bool	w_popup_image_emit_valid;  // true while the kitty placement
-					   // emitted at w_popup_image_emit_*
-					   // is still on the terminal
-#  endif
-#  ifdef FEAT_IMAGE_GDI
-    // Pre-built Windows GUI image cache.  The bitmap is a 32-bit top-down
-    // DIB section, the DC keeps it selected for fast BitBlt, and the bits
-    // pointer is updated in place on same-size frame swaps.  Stored as
-    // void* so structs.h does not have to pull in <windows.h>.
-    void	*w_popup_image_hbitmap;
-    void	*w_popup_image_hdc;
-    void	*w_popup_image_bits;
-#  endif
-#  ifdef FEAT_IMAGE_CAIRO
-    // Pre-built Cairo GUI image cache.  Holds a cairo_image_surface_t*
-    // with the popup's pixel data converted to ARGB32 / RGB24 (BGRA byte
-    // order expected by cairo on little-endian).  Composited onto
-    // gui.surface by gui_mch_draw_popup_image().  Stored as void* so
-    // structs.h does not have to pull in <cairo.h>.
-    void	*w_popup_image_surface;
-#  endif
-#  ifdef FEAT_IMAGE_GDK
-    // Cached GdkTexture for the image.
-    void	*w_popup_image_texture;
-#  endif
-# endif
 # if defined(FEAT_TIMERS)
     timer_T	*w_popup_timer;	    // timer for closing popup window
 # endif
@@ -4324,6 +4297,10 @@ struct window_S
 				    // w_wcol
 # define WFLAG_WROW_OFF_ADDED	2   // popup border and padding were added to
 				    // w_wrow
+
+# ifdef FEAT_IMAGE
+    image_placement_T *w_popup_imagep;
+# endif
 #endif
 
     /*
@@ -5368,6 +5345,8 @@ typedef struct {
     int		cts_first_char;		// width text props above the line
     int		cts_above_width;	// width of text props above the line,
 					// kept for the whole line
+    bool	cts_no_above;		// do not count the width of text props
+					// above the line
     int		cts_with_trailing;	// include size of trailing props with
 					// last character
     int		cts_start_incl;		// prop has true "start_incl" arg
@@ -5472,8 +5451,11 @@ typedef struct {
 #endif
 } spellvars_T;
 
-// Return the length of a string literal
-#define STRLEN_LITERAL(s) (sizeof(s) - 1)
+// Return the length of a string literal.
+// This macro only computes a string's length for a string-literal token; for
+// anything else, including a char*, compilation will fail (note "" following
+// s).
+#define STRLEN_LITERAL(s) (sizeof(s "") - 1)
 
 // Store a key/value (string) pair
 typedef struct
@@ -5491,28 +5473,6 @@ struct cellsize {
     int cs_xpixel;
     int cs_ypixel;
 };
-#endif
-
-#if defined(FEAT_IMAGE) || defined(PROTO)
-// RGB(A) image input shared by all popup image backends.
-// "data" points to width*height*3 bytes of tightly packed R,G,B triples
-// when has_alpha is FALSE, or width*height*4 R,G,B,A quadruples otherwise.
-// Backends that cannot represent partial alpha (e.g. sixel) flatten the
-// alpha channel onto the terminal background before encoding.
-typedef struct {
-    char_u  *data;
-    int	     width;
-    int	     height;
-    int	     has_alpha;
-} image_rgb_T;
-
-// Terminal-side image backend selected at runtime by popup_image_backend().
-// IMAGE_BACKEND_SIXEL emits DEC sixel DCS sequences via sixel_encode();
-// IMAGE_BACKEND_KITTY emits kitty graphics protocol APC sequences via
-// kitty_encode().  GUI builds use a separate FEAT_IMAGE_GDI path and never
-// consult this enum.
-# define IMAGE_BACKEND_SIXEL  0
-# define IMAGE_BACKEND_KITTY  1
 #endif
 
 #ifdef FEAT_WAYLAND

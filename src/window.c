@@ -1134,25 +1134,11 @@ win_split_ins(
 	if (oldwin->w_p_wfw)
 	    win_setwidth_win(oldwin->w_width + new_size + 1, oldwin);
 
-	// Only make all windows the same width if one of them (except oldwin)
-	// is wider than one of the split windows.
+	// Make all windows the same width if 'equalalways' is set, 'ead'
+	// not set to 'v', a size was not provided and there is a parent frame.
 	if (!do_equal && p_ea && size == 0 && *p_ead != 'v'
-					 && oldwin->w_frame->fr_parent != NULL)
-	{
-	    frp = oldwin->w_frame->fr_parent->fr_child;
-	    while (frp != NULL)
-	    {
-		if (frp->fr_win != oldwin && frp->fr_win != NULL
-			&& (frp->fr_win->w_width > new_size
-			    || frp->fr_win->w_width > oldwin->w_width
-							      - new_size - 1))
-		{
-		    do_equal = TRUE;
-		    break;
-		}
-		frp = frp->fr_next;
-	    }
-	}
+	    && oldwin->w_frame->fr_parent != NULL)
+	    do_equal = TRUE;
     }
     else
     {
@@ -1236,25 +1222,11 @@ win_split_ins(
 	    oldwin_height = oldwin->w_height;
 	}
 
-	// Only make all windows the same height if one of them (except oldwin)
-	// is higher than one of the split windows.
+	// Make all windows the same height if 'equalalways' is set, 'ead' is
+	// not set to 'h', a size was not provided and there is a parent frame.
 	if (!do_equal && p_ea && size == 0 && *p_ead != 'h'
-	   && oldwin->w_frame->fr_parent != NULL)
-	{
-	    frp = oldwin->w_frame->fr_parent->fr_child;
-	    while (frp != NULL)
-	    {
-		if (frp->fr_win != oldwin && frp->fr_win != NULL
-			&& (frp->fr_win->w_height > new_size
-			    || frp->fr_win->w_height > oldwin_height - new_size
-						- statusline_height(oldwin)))
-		{
-		    do_equal = TRUE;
-		    break;
-		}
-		frp = frp->fr_next;
-	    }
-	}
+	    && oldwin->w_frame->fr_parent != NULL)
+	    do_equal = TRUE;
     }
 
     /*
@@ -1378,10 +1350,13 @@ win_split_ins(
 	if (flags & (WSP_TOP | WSP_BOT))
 	{
 	    // set height and row of new window to full height
+	    // no status line when 'laststatus' is zero
+	    int stl_height = p_ls > 0 ? statusline_height(curfrp->fr_win) : 0;
+
 	    wp->w_winrow = tabline_height();
-	    win_new_height(wp, curfrp->fr_height
-		    - statusline_height(curfrp->fr_win) - WINBAR_HEIGHT(wp));
-	    wp->w_status_height = statusline_height(curfrp->fr_win);
+	    win_new_height(wp, curfrp->fr_height - stl_height
+							  - WINBAR_HEIGHT(wp));
+	    wp->w_status_height = stl_height;
 	}
 	else
 	{
@@ -1905,7 +1880,14 @@ win_exchange(long Prenum)
 	else
 	    frame_append(frp2, wp->w_frame);
     }
+    // Keep the total height of each window the same, so that the frames keep
+    // their height; the status line height is computed below.
     temp = curwin->w_status_height;
+    if (temp != wp->w_status_height)
+    {
+	win_new_height(curwin, curwin->w_height + temp - wp->w_status_height);
+	win_new_height(wp, wp->w_height + wp->w_status_height - temp);
+    }
     curwin->w_status_height = wp->w_status_height;
     wp->w_status_height = temp;
     temp = curwin->w_vsep_width;
@@ -1918,6 +1900,9 @@ win_exchange(long Prenum)
     frame_fix_width(wp);
 
     win_comp_pos();		// recompute window positions
+#if defined(FEAT_STL_OPT)
+    frame_change_statusline_height();
+#endif
 
     if (wp->w_buffer != curbuf)
 	reset_VIsual_and_resel();
@@ -1993,7 +1978,14 @@ win_rotate(int upwards, int count)
 	}
 
 	// exchange status height and vsep width of old and new last window
+	// Keep the total height of each window the same, so that the frames
+	// keep their height; the status line height is computed below.
 	n = wp2->w_status_height;
+	if (n != wp1->w_status_height)
+	{
+	    win_new_height(wp2, wp2->w_height + n - wp1->w_status_height);
+	    win_new_height(wp1, wp1->w_height + wp1->w_status_height - n);
+	}
 	wp2->w_status_height = wp1->w_status_height;
 	wp1->w_status_height = n;
 	frame_fix_height(wp1);
@@ -2007,6 +1999,9 @@ win_rotate(int upwards, int count)
 	// recompute w_winrow and w_wincol for all windows
 	win_comp_pos();
     }
+#if defined(FEAT_STL_OPT)
+    frame_change_statusline_height();
+#endif
 
     redraw_all_later(UPD_NOT_VALID);
 }
@@ -5127,6 +5122,10 @@ leave_tabpage(
     if (gui.in_use)
 	gui_remove_scrollbars();
 #endif
+#ifdef FEAT_IMAGE
+    // Clear all image placements, they will be redrawn again if needed.
+    clear_all_image_placements();
+#endif
     tp->tp_curwin = curwin;
     tp->tp_prevwin = prevwin;
     tp->tp_firstwin = firstwin;
@@ -6216,16 +6215,6 @@ win_free_popup(win_T *win)
     // the timer may have been cleared, making the pointer invalid
     if (timer_valid(win->w_popup_timer))
 	stop_timer(win->w_popup_timer);
-# endif
-# ifdef FEAT_IMAGE
-    vim_free(win->w_popup_image_data);
-#  ifdef FEAT_IMAGE_SIXEL
-    vim_free(win->w_popup_image_seq);
-#  endif
-#  if defined(FEAT_IMAGE_GDI) || defined(FEAT_IMAGE_CAIRO) \
-    || defined(FEAT_IMAGE_GDK)
-    gui_mch_free_popup_image(win);
-#  endif
 # endif
     vim_free(win->w_frame);
     win_free(win, NULL);
