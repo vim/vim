@@ -776,6 +776,7 @@ nomem:
 
 // extra fields for uhp
 # define UHP_SAVE_NR		1
+# define UHP_VISUAL_IDENTITY	2
 
 /*
  * Compute the hash for the current buffer text into hash[UNDO_HASH_SIZE].
@@ -1298,6 +1299,10 @@ serialize_uhp(bufinfo_T *bi, u_header_T *uhp)
     undo_write_bytes(bi, UHP_SAVE_NR, 1);
     undo_write_bytes(bi, (long_u)uhp->uh_save_nr, 4);
 
+    undo_write_bytes(bi, 1, 1);
+    undo_write_bytes(bi, UHP_VISUAL_IDENTITY, 1);
+    undo_write_bytes(bi, (long_u)uhp->uh_visual.vi_start_is_end, 1);
+
     undo_write_bytes(bi, 0, 1);  // end marker
 
     // Write all the entries.
@@ -1365,6 +1370,23 @@ unserialize_uhp(bufinfo_T *bi, char_u *file_name)
 	{
 	    case UHP_SAVE_NR:
 		uhp->uh_save_nr = undo_read_4c(bi);
+		break;
+	    case UHP_VISUAL_IDENTITY:
+		if (len != 1)
+		{
+		    corruption_error("visual identity length", file_name);
+		    u_free_uhp(uhp);
+		    return NULL;
+		}
+		c = undo_read_byte(bi);
+		if (c != FALSE && c != TRUE)
+		{
+		    corruption_error(c == EOF ? "truncated"
+					       : "visual identity", file_name);
+		    u_free_uhp(uhp);
+		    return NULL;
+		}
+		uhp->uh_visual.vi_start_is_end = c;
 		break;
 	    default:
 		// field not supported, skip
@@ -1532,6 +1554,8 @@ unserialize_visualinfo(bufinfo_T *bi, visualinfo_T *info)
     unserialize_pos(bi, &info->vi_end);
     info->vi_mode = undo_read_4c(bi);
     info->vi_curswant = undo_read_4c(bi);
+    // Old undo files used fixed '<' / '>' slots, regardless of their order.
+    info->vi_start_is_end = FALSE;
 }
 
 /*

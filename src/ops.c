@@ -4035,6 +4035,8 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		// Save the current VIsual area for '< and '> marks, and "gv"
 		curbuf->b_visual.vi_start = VIsual;
 		curbuf->b_visual.vi_end = curwin->w_cursor;
+		curbuf->b_visual.vi_start_is_end = LT_POS(
+		    curbuf->b_visual.vi_end, curbuf->b_visual.vi_start);
 		curbuf->b_visual.vi_mode = VIsual_mode;
 		restore_visual_mode();
 		curbuf->b_visual.vi_curswant = curwin->w_curswant;

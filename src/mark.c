@@ -99,36 +99,14 @@ setmark_pos(int c, pos_T *pos, int fnum)
 	pos_T	*startp = &buf->b_visual.vi_start;
 	pos_T	*endp = &buf->b_visual.vi_end;
 	pos_T	*markp;
-	pos_T	*otherp;
 
-	// Keep the fixed association until both endpoints can be ordered.
-	if (startp->lnum == 0 || endp->lnum == 0)
-	    markp = c == '<' ? startp : endp;
-	else if ((c == '<') == LT_POS(*startp, *endp))
-	    markp = startp;
-	else
-	    markp = endp;
-	otherp = markp == startp ? endp : startp;
-
-	if (pos->lnum == 0)
-	{
-	    pos_T other = *otherp;
-
-	    // Store a missing endpoint in its fixed slot, so that it can be
-	    // recreated after the Visual direction has been lost.
-	    if (c == '<')
-	    {
-		*startp = *pos;
-		*endp = other;
-	    }
-	    else
-	    {
-		*startp = other;
-		*endp = *pos;
-	    }
-	}
-	else
-	    *markp = *pos;
+	// Keep the endpoint identities from the last complete Visual snapshot.
+	// Reordering after each write would lose the other end after a crossing.
+	markp = ((c == '>') == buf->b_visual.vi_start_is_end)
+							      ? startp : endp;
+	*markp = *pos;
+	if (startp->lnum == 0 && endp->lnum == 0)
+	    buf->b_visual.vi_start_is_end = FALSE;
 	if (buf->b_visual.vi_mode == NUL)
 	    // Visual_mode has not yet been set, use a sane default.
 	    buf->b_visual.vi_mode = 'v';
@@ -919,8 +897,14 @@ ex_delmarks(exarg_T *eap)
 		    case '.': curbuf->b_last_change.lnum = 0; break;
 		    case '[': curbuf->b_op_start.lnum    = 0; break;
 		    case ']': curbuf->b_op_end.lnum      = 0; break;
-		    case '<': curbuf->b_visual.vi_start.lnum = 0; break;
-		    case '>': curbuf->b_visual.vi_end.lnum   = 0; break;
+		    case '<':
+		    case '>':
+			{
+			    pos_T pos = {0, 0, 0};
+
+			    setmark_pos(*p, &pos, curbuf->b_fnum);
+			}
+			break;
 		    case ' ': break;
 		    default:  semsg(_(e_invalid_argument_str), p);
 			      return;
