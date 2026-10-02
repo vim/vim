@@ -530,7 +530,7 @@ static tcap_entry_T builtin_xterm[] = {
     {(int)KS_RFG,	"\033]10;?\007"},
     {(int)KS_RBG,	"\033]11;?\007"},
     {(int)KS_U7,	"\033[6n"},
-    {(int)KS_CAU,	"\033[58;5;%dm"},
+    {(int)KS_CAU,	"\033[58:5:%dm"},
     {(int)KS_CBE,	"\033[?2004h"},
     {(int)KS_CBD,	"\033[?2004l"},
     {(int)KS_CST,	"\033[22;2t"},
@@ -712,7 +712,7 @@ static tcap_entry_T builtin_rgb[] = {
     // These are printf strings, not terminal codes.
     {(int)KS_8F,	"\033[38;2;%lu;%lu;%lum"},
     {(int)KS_8B,	"\033[48;2;%lu;%lu;%lum"},
-    {(int)KS_8U,	"\033[58;2;%lu;%lu;%lum"},
+    {(int)KS_8U,	"\033[58:2::%lu:%lu:%lum"},
 
     {(int)KS_NAME,	NULL}  // end marker
 };
