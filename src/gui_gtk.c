@@ -101,6 +101,7 @@ typedef int GtkWidget;
 static void entry_activate_cb(GtkWidget *widget, gpointer data);
 static void entry_changed_cb(GtkWidget *entry, GtkWidget *dialog);
 static void find_replace_cb(GtkWidget *widget, gpointer data);
+static char ** split_button_string(char_u *button_string, int *n_buttons);
 #if defined(FEAT_BROWSE)
 static void recent_func_log_func(
 	const gchar *log_domain,
@@ -1035,6 +1036,9 @@ gui_mch_set_scrollbar_thumb(scrollbar_T *sb, long val, long size, long max)
 
     g_signal_handler_unblock(G_OBJECT(adjustment),
 	    (gulong)sb->handler_id);
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
+    gui_gtk_update_find_replace_overlap();
+#endif
 }
 
     void
@@ -1409,6 +1413,508 @@ gui_mch_browsedir(
 
 #if defined(FEAT_GUI_DIALOG)
 
+# ifdef HAVE_GTK3_OVERLAY_DIALOG
+
+typedef struct
+{
+    GtkWidget *root; // overlay encapsulating child and event box
+    GtkWidget *frame;
+    GMainLoop *loop;
+    GtkWidget *actions; // buttons container
+    GPtrArray *buttons;
+    int response;
+    int sel;
+    GtkWidget *textentry;
+} OverlayDialog;
+
+static GtkWidget *overlay_dialog_flash_widget = NULL;
+static guint overlay_flash_timer = 0;
+
+static void overlay_dialog_focus_button(OverlayDialog *dlg, int idx);
+
+    static gboolean
+overlay_dialog_get_child_position_cb(
+	GtkOverlay	*overlay UNUSED,
+	GtkWidget	*widget UNUSED,
+	GtkAllocation	*allocation,
+	gpointer	data UNUSED)
+{
+    gtk_widget_get_allocation(gui.drawarea, allocation);
+    return true;
+}
+
+    void
+gui_gtk_get_overlay_dialog_min_size(int *min_width, int *min_height)
+{
+    if (overlay_dialog_flash_widget != NULL)
+    {
+	GtkRequisition minimum;
+
+	gtk_widget_get_preferred_size(overlay_dialog_flash_widget,
+		&minimum, NULL);
+	*min_width = minimum.width;
+	*min_height = minimum.height;
+	*min_width += gui_get_base_width();
+	*min_height += gui_get_base_height() + 2 * gui.char_height;
+    }
+}
+
+    static gboolean
+overlay_dialog_flash_timeout_cb(gpointer data)
+{
+    GtkWidget *frame = (GtkWidget *)data;
+
+    gtk_style_context_remove_class(
+	    gtk_widget_get_style_context(frame), "flash");
+    overlay_flash_timer = 0;
+    return G_SOURCE_REMOVE;
+}
+
+    static void
+gui_gtk_flash_dialog(int msec)
+{
+    if (overlay_dialog_flash_widget == NULL)
+	return;
+
+    if (overlay_flash_timer != 0)
+	g_source_remove(overlay_flash_timer);
+
+    gtk_style_context_add_class(
+	    gtk_widget_get_style_context(overlay_dialog_flash_widget), "flash");
+    overlay_flash_timer = g_timeout_add(
+	    msec > 0 ? (guint)msec : 1,
+	    overlay_dialog_flash_timeout_cb,
+	    overlay_dialog_flash_widget);
+}
+
+    static gboolean
+overlay_dialog_button_press_cb(
+	GtkWidget	*widget UNUSED,
+	GdkEventButton	*event,
+	gpointer	data)
+{
+    OverlayDialog *dlg = (OverlayDialog *)data;
+    GtkWidget *target = gtk_get_event_widget((GdkEvent *)event);
+
+    if (target != NULL
+	    && (target == dlg->frame
+		|| gtk_widget_is_ancestor(target, dlg->frame)))
+	return false;
+
+    gui_gtk_flash_dialog(100);
+    return true;
+}
+
+    static void
+overlay_dialog_clear_selected_button(OverlayDialog *dlg)
+{
+    GtkWidget *button;
+
+    if (dlg->sel < 0 || dlg->sel >= (int)dlg->buttons->len)
+	return;
+
+    button = g_ptr_array_index(dlg->buttons, dlg->sel);
+    gtk_style_context_remove_class(gtk_widget_get_style_context(button),
+	    "selected");
+}
+
+    static bool
+overlay_dialog_cancel(OverlayDialog *dlg)
+{
+    dlg->response = 0;
+    if (dlg->loop != NULL)
+	g_main_loop_quit(dlg->loop);
+
+    return true;
+}
+
+    static void
+overlay_dialog_activate_current(OverlayDialog *dlg)
+{
+    if (dlg->buttons->len == 0)
+	return;
+    if (dlg->sel < 0 || dlg->sel >= (int)dlg->buttons->len)
+	dlg->sel = 0;
+    gtk_button_clicked(GTK_BUTTON(g_ptr_array_index(dlg->buttons,
+		    dlg->sel)));
+}
+
+    static void
+overlay_textentry_activate_cb(GtkWidget *widget UNUSED, gpointer data)
+{
+    overlay_dialog_activate_current((OverlayDialog *)data);
+}
+
+    static void
+overlay_dialog_focus_textentry(OverlayDialog *dlg)
+{
+    overlay_dialog_clear_selected_button(dlg);
+
+    if (dlg->textentry == NULL)
+	return;
+
+    dlg->sel = -1;
+    gtk_style_context_add_class(gtk_widget_get_style_context(dlg->textentry),
+	    "vim-overlay");
+    gtk_widget_grab_focus(dlg->textentry);
+    gtk_editable_select_region(GTK_EDITABLE(dlg->textentry), -1, -1);
+}
+
+    static gboolean
+overlay_textentry_key_press_cb(
+       GtkWidget	*widget UNUSED,
+       GdkEventKey	*event,
+       gpointer		data)
+{
+    OverlayDialog *dlg = (OverlayDialog *)data;
+
+    switch (event->keyval)
+    {
+	case GDK_KEY_Escape:
+	    return overlay_dialog_cancel(dlg);
+
+	case GDK_KEY_ISO_Left_Tab:
+	case GDK_KEY_3270_BackTab:
+	    overlay_dialog_focus_button(dlg, dlg->buttons->len - 1);
+	    return true;
+
+	case GDK_KEY_Tab:
+	    overlay_dialog_focus_button(dlg,
+		    (event->state & GDK_SHIFT_MASK) != 0
+			? dlg->buttons->len - 1 : 0);
+	    return true;
+
+	default:
+	    return false;
+    }
+}
+
+    static void
+overlay_dialog_focus_relative(OverlayDialog *dlg, int offset)
+{
+    int idx = dlg->sel + offset;
+
+    if (dlg->textentry != NULL
+	    && (idx < 0 || idx >= (int)dlg->buttons->len))
+	overlay_dialog_focus_textentry(dlg);
+    else
+	overlay_dialog_focus_button(dlg, idx);
+}
+
+    static gboolean
+overlay_key_press_cb(GtkWidget *widget UNUSED, GdkEventKey *event, gpointer data)
+{
+    OverlayDialog *dlg = (OverlayDialog *)data;
+
+    if (dlg->textentry != NULL && gtk_widget_has_focus(dlg->textentry))
+	return false;
+
+    switch (event->keyval)
+    {
+	case GDK_KEY_Escape:
+	    return overlay_dialog_cancel(dlg);
+
+	case GDK_KEY_c:
+	case GDK_KEY_C:
+	    if ((event->state & GDK_CONTROL_MASK) != 0)
+		return overlay_dialog_cancel(dlg);
+	    break;
+
+	case GDK_KEY_Return:
+	case GDK_KEY_KP_Enter:
+	case GDK_KEY_space:
+	    overlay_dialog_activate_current(dlg);
+	    return true;
+
+	case GDK_KEY_ISO_Left_Tab:
+	case GDK_KEY_3270_BackTab:
+	case GDK_KEY_Left:
+	    overlay_dialog_focus_relative(dlg, -1);
+	    return true;
+
+	case GDK_KEY_Tab:
+	    overlay_dialog_focus_relative(dlg,
+		    (event->state & GDK_SHIFT_MASK) != 0 ? -1 : 1);
+	    return true;
+
+	case GDK_KEY_Right:
+	    overlay_dialog_focus_relative(dlg, 1);
+	    return true;
+
+	default:
+	    break;
+    }
+
+    if (dlg->textentry == NULL
+	    && (event->state & gtk_accelerator_get_default_mod_mask()) == 0)
+	return gtk_window_mnemonic_activate(
+		GTK_WINDOW(gui.mainwin), event->keyval,
+		gtk_window_get_mnemonic_modifier(GTK_WINDOW(gui.mainwin)));
+
+    return false;
+}
+
+    static void
+overlay_response_cb(GtkWidget *widget UNUSED, gpointer data)
+{
+    OverlayDialog *dlg = (OverlayDialog *)data;
+
+    dlg->response = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),
+		"vim-response"));
+
+    if (dlg->loop != NULL)
+	g_main_loop_quit(dlg->loop);
+}
+
+    static void
+overlay_dialog_focus_button(OverlayDialog *dlg, int idx)
+{
+    GtkWidget *button;
+
+    if (dlg->buttons->len == 0)
+	return;
+
+    if (idx < 0)
+	idx = dlg->buttons->len - 1;
+    if (idx >= (int)dlg->buttons->len)
+	idx = 0;
+
+    if (dlg->textentry != NULL)
+    {
+	gtk_editable_select_region(GTK_EDITABLE(dlg->textentry), 0, 0);
+	gtk_style_context_remove_class(
+		gtk_widget_get_style_context(dlg->textentry),
+		"selected");
+    }
+
+    overlay_dialog_clear_selected_button(dlg);
+    dlg->sel = idx;
+    button = g_ptr_array_index(dlg->buttons, dlg->sel);
+    gtk_widget_grab_focus(button);
+    gtk_window_set_focus(GTK_WINDOW(gui.mainwin), button);
+    gtk_style_context_add_class(gtk_widget_get_style_context(button),
+	    "selected");
+}
+
+    static void
+overlay_set_bg_style(GtkWidget *dlg)
+{
+    GtkStyleContext *context = gtk_widget_get_style_context(dlg);
+
+    if (STRCMP(p_bg, "light") == 0)
+	gtk_style_context_add_class(context, "light");
+    else
+	gtk_style_context_remove_class(context, "light");
+}
+
+    static GtkWidget *
+create_overlay_dialog(
+	int type,
+	char_u *title,
+	char_u *message,
+	char_u *textfield,
+	OverlayDialog *dlg)
+{
+    GtkWidget *vbox;
+    GtkWidget *label;
+    GtkWidget *image;
+    GtkWidget *hbox;
+    GtkWidget *eventbox;
+    const char *icon_name;
+
+    switch (type)
+    {
+	case VIM_ERROR:	    icon_name = "dialog-error";	break;
+	case VIM_WARNING:   icon_name = "dialog-warning";	break;
+	case VIM_QUESTION:  icon_name = "dialog-question";	break;
+	default:	    icon_name = "dialog-information";	break;
+    }
+
+    CLEAR_POINTER(dlg);
+    dlg->buttons = g_ptr_array_new();
+    dlg->response = -1;
+    dlg->sel = -1;
+
+    dlg->frame = gtk_frame_new(NULL);
+    gtk_style_context_add_class(gtk_widget_get_style_context(dlg->frame),
+	    "vim-overlay");
+    overlay_set_bg_style(dlg->frame);
+    gtk_widget_set_halign(dlg->frame, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(dlg->frame, GTK_ALIGN_CENTER);
+
+    eventbox = gtk_event_box_new();
+    gtk_event_box_set_visible_window(GTK_EVENT_BOX(eventbox), false);
+    gtk_widget_set_halign(eventbox, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(eventbox, GTK_ALIGN_FILL);
+    gtk_container_add(GTK_CONTAINER(eventbox), dlg->frame);
+    gtk_widget_add_events(eventbox, GDK_BUTTON_PRESS_MASK);
+    g_signal_connect(eventbox, "button-press-event",
+	    G_CALLBACK(overlay_dialog_button_press_cb), dlg);
+
+    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 12);
+    gtk_container_set_border_width(GTK_CONTAINER(vbox), 16);
+    gtk_container_add(GTK_CONTAINER(dlg->frame), vbox);
+
+    if (title != NULL)
+    {
+	GtkWidget *title_label;
+
+	title = CONVERT_TO_UTF8(title);
+	title_label = gtk_label_new((const char *)title);
+	gtk_widget_set_halign(title_label, GTK_ALIGN_START);
+	gtk_style_context_add_class(
+		gtk_widget_get_style_context(title_label), "title");
+	gtk_box_pack_start(GTK_BOX(vbox), title_label, false, false, 0);
+	CONVERT_TO_UTF8_FREE(title);
+    }
+
+    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, true, true, 0);
+
+    image = gtk_image_new_from_icon_name(icon_name, GTK_ICON_SIZE_DIALOG);
+    gtk_box_pack_start(GTK_BOX(hbox), image, false, false, 0);
+
+    message = CONVERT_TO_UTF8(message);
+    label = gtk_label_new((const char *)message);
+    gtk_label_set_line_wrap(GTK_LABEL(label), true);
+    gtk_widget_set_halign(label, GTK_ALIGN_START);
+    gtk_box_pack_start(GTK_BOX(hbox), label, true, true, 0);
+    CONVERT_TO_UTF8_FREE(message);
+
+    if (textfield != NULL)
+    {
+	char_u *entry_text;
+	dlg->textentry = gtk_entry_new();
+	gtk_widget_set_can_focus(dlg->textentry, true);
+	g_signal_connect(dlg->textentry, "activate",
+		G_CALLBACK(overlay_textentry_activate_cb), dlg);
+	g_signal_connect(dlg->textentry, "key-press-event",
+		G_CALLBACK(overlay_textentry_key_press_cb), dlg);
+	entry_text = CONVERT_TO_UTF8(textfield);
+	gtk_entry_set_text(GTK_ENTRY(dlg->textentry),
+		(const char *)entry_text);
+	CONVERT_TO_UTF8_FREE(entry_text);
+	gtk_box_pack_start(GTK_BOX(vbox), dlg->textentry, FALSE, FALSE, 0);
+    }
+
+    dlg->actions = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
+    gtk_widget_set_halign(dlg->actions, GTK_ALIGN_END);
+    gtk_box_pack_start(GTK_BOX(vbox), dlg->actions, FALSE, FALSE, 0);
+
+    dlg->root = eventbox;
+    return dlg->root;
+}
+
+static char **split_button_translation(const char *message);
+
+    static void
+overlay_dialog_add_buttons(
+	OverlayDialog	*dlg,
+	char_u		*buttons,
+	int		def_but)
+{
+    char	**button_array;
+    int		i;
+
+    if (buttons == NULL)
+	return;
+
+    button_array = split_button_translation((const char *)buttons);
+
+    for (i = 0; button_array[i] != NULL; ++i)
+    {
+	GtkWidget *button;
+	char_u *button_text;
+
+	button_text = CONVERT_TO_UTF8((char_u *)button_array[i]);
+	button = gtk_button_new_with_mnemonic((const char *)button_text);
+	CONVERT_TO_UTF8_FREE(button_text);
+
+	gtk_widget_set_can_focus(button, true);
+	gtk_widget_set_can_default(button, true);
+
+	g_signal_connect(button, "key-press-event",
+		G_CALLBACK(overlay_key_press_cb), dlg);
+	g_object_set_data(G_OBJECT(button), "vim-response",
+		GINT_TO_POINTER(i + 1));
+	g_signal_connect(button, "clicked",
+		G_CALLBACK(overlay_response_cb), dlg);
+
+	gtk_box_pack_start(GTK_BOX(dlg->actions), button, FALSE, FALSE, 0);
+	g_ptr_array_add(dlg->buttons, button);
+
+	if (dlg->sel < 0 || i + 1 == def_but)
+	    dlg->sel = i;
+    }
+    vim_free(button_array[0]);
+    vim_free(button_array);
+}
+
+    static int
+overlay_dialog_run(OverlayDialog *dlg)
+{
+    gulong mainwin_key_handler;
+    gulong drawarea_key_handler;
+    gulong box_key_handler;
+    gtk_window_set_mnemonics_visible(GTK_WINDOW(gui.mainwin), true);
+    gtk_widget_show_all(dlg->root);
+    gtk_grab_add(dlg->root);
+    gui.dialog_active = true;
+    overlay_dialog_flash_widget = dlg->frame;
+    g_signal_connect(gui.dialog_overlay, "get-child-position",
+	    G_CALLBACK(overlay_dialog_get_child_position_cb), NULL);
+
+    if (dlg->textentry != NULL)
+	overlay_dialog_focus_textentry(dlg);
+    else
+	overlay_dialog_focus_button(dlg, dlg->sel);
+
+    mainwin_key_handler = g_signal_connect(
+	    G_OBJECT(gui.mainwin),
+	    "key-press-event",
+	    G_CALLBACK(overlay_key_press_cb),
+	    dlg);
+    drawarea_key_handler = g_signal_connect(
+	    G_OBJECT(gui.drawarea),
+	    "key-press-event",
+	    G_CALLBACK(overlay_key_press_cb),
+	    dlg);
+    box_key_handler = g_signal_connect(
+	    G_OBJECT(dlg->root),
+	    "key-press-event",
+	    G_CALLBACK(overlay_key_press_cb),
+	    dlg);
+
+    dlg->loop = g_main_loop_new(NULL, false);
+    g_main_loop_run(dlg->loop);
+    g_main_loop_unref(dlg->loop);
+    dlg->loop = NULL;
+
+    gui.dialog_active = false;
+    overlay_dialog_flash_widget = NULL;
+    g_signal_handlers_disconnect_by_func(gui.dialog_overlay,
+	    G_CALLBACK(overlay_dialog_get_child_position_cb), NULL);
+
+    if (overlay_flash_timer != 0)
+    {
+	g_source_remove(overlay_flash_timer);
+	overlay_flash_timer = 0;
+    }
+    gtk_style_context_remove_class(
+	    gtk_widget_get_style_context(dlg->frame),
+	    "flash");
+
+    g_signal_handler_disconnect(G_OBJECT(dlg->root), box_key_handler);
+    g_signal_handler_disconnect(G_OBJECT(gui.drawarea),
+	    drawarea_key_handler);
+    g_signal_handler_disconnect(G_OBJECT(gui.mainwin), mainwin_key_handler);
+
+    gtk_grab_remove(dlg->root);
+    g_ptr_array_free(dlg->buttons, false);
+
+    return dlg->response;
+}
+# else
     static GtkWidget *
 create_message_dialog(int type, char_u *title, char_u *message)
 {
@@ -1444,6 +1950,7 @@ create_message_dialog(int type, char_u *title, char_u *message)
 
     return dialog;
 }
+# endif
 
 /*
  * Split up button_string into individual button labels by inserting
@@ -1531,6 +2038,7 @@ split_button_translation(const char *message)
     return buttons;
 }
 
+# ifndef HAVE_GTK3_OVERLAY_DIALOG
     static int
 button_equal(const char *a, const char *b)
 {
@@ -1568,11 +2076,11 @@ dialog_add_buttons(GtkDialog *dialog, char_u *button_string)
     // Check 'v' flag in 'guioptions': vertical button placement.
     if (vim_strchr(p_go, GO_VERTICAL) != NULL)
     {
-# if GTK_CHECK_VERSION(3,0,0)
+#  if GTK_CHECK_VERSION(3,0,0)
 	// Add GTK+ 3 code if necessary.
 	// N.B. GTK+ 3 doesn't allow you to access vbox and action_area via
 	// the C API.
-# else
+#  else
 	GtkWidget	*vbutton_box;
 
 	vbutton_box = gtk_vbutton_box_new();
@@ -1581,7 +2089,7 @@ dialog_add_buttons(GtkDialog *dialog, char_u *button_string)
 						 vbutton_box, TRUE, FALSE, 0);
 	// Overrule the "action_area" value, hopefully this works...
 	GTK_DIALOG(dialog)->action_area = vbutton_box;
-# endif
+#  endif
     }
 
     /*
@@ -1616,7 +2124,7 @@ dialog_add_buttons(GtkDialog *dialog, char_u *button_string)
 	 */
 	if (ok != NULL && ync != NULL) // almost impossible to fail
 	{
-# if GTK_CHECK_VERSION(3,10,0)
+#  if GTK_CHECK_VERSION(3,10,0)
 	    if	    (button_equal(label, ok[0]))    label = _("OK");
 	    else if (button_equal(label, ync[0]))   label = _("Yes");
 	    else if (button_equal(label, ync[1]))   label = _("No");
@@ -1625,7 +2133,7 @@ dialog_add_buttons(GtkDialog *dialog, char_u *button_string)
 	    else if (button_equal(label, "Yes"))    label = _("Yes");
 	    else if (button_equal(label, "No"))     label = _("No");
 	    else if (button_equal(label, "Cancel")) label = _("Cancel");
-# else
+#  else
 	    if	    (button_equal(label, ok[0]))    label = GTK_STOCK_OK;
 	    else if (button_equal(label, ync[0]))   label = GTK_STOCK_YES;
 	    else if (button_equal(label, ync[1]))   label = GTK_STOCK_NO;
@@ -1634,7 +2142,7 @@ dialog_add_buttons(GtkDialog *dialog, char_u *button_string)
 	    else if (button_equal(label, "Yes"))    label = GTK_STOCK_YES;
 	    else if (button_equal(label, "No"))     label = GTK_STOCK_NO;
 	    else if (button_equal(label, "Cancel")) label = GTK_STOCK_CANCEL;
-# endif
+#  endif
 	}
 	label8 = CONVERT_TO_UTF8((char_u *)label);
 	gtk_dialog_add_button(dialog, (const gchar *)label8, idx);
@@ -1693,6 +2201,7 @@ dialog_key_press_event_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 
     return FALSE; // continue emission
 }
+# endif
 
     int
 gui_mch_dialog(int	type,	    // type of dialog
@@ -1703,10 +2212,46 @@ gui_mch_dialog(int	type,	    // type of dialog
 	       char_u	*textfield, // text for textfield or NULL
 	       int	ex_cmd UNUSED)
 {
+    int		response;
+# ifdef HAVE_GTK3_OVERLAY_DIALOG
+    {
+	GtkWidget	*box;
+	static OverlayDialog overlay_dialog;
+
+	if (gui.dialog_active)
+	    return 0;
+
+	box = create_overlay_dialog(type, title, message, textfield,
+		&overlay_dialog);
+
+	gtk_overlay_add_overlay(GTK_OVERLAY(gui.dialog_overlay), box);
+	gtk_overlay_set_overlay_pass_through(
+		GTK_OVERLAY(gui.dialog_overlay), box, FALSE);
+
+	overlay_dialog_add_buttons(&overlay_dialog, buttons, def_but);
+	response = overlay_dialog_run(&overlay_dialog);
+
+	if (textfield != NULL && overlay_dialog.textentry != NULL && response > 0)
+	{
+	    const char *entry_text;
+	    char_u *text;
+
+	    entry_text = gtk_entry_get_text(GTK_ENTRY(overlay_dialog.textentry));
+	    text = CONVERT_FROM_UTF8((char_u *)entry_text);
+	    vim_strncpy(IObuff, text, IOSIZE - 1);
+	    CONVERT_FROM_UTF8_FREE(text);
+	}
+
+	if (overlay_dialog.root != NULL)
+	    gtk_container_remove(GTK_CONTAINER(gui.dialog_overlay),
+		    overlay_dialog.root);
+
+	return response;
+    }
+# else
     GtkWidget	*dialog;
     GtkWidget	*entry = NULL;
     char_u	*text;
-    int		response;
     DialogInfo  dialoginfo;
 
     ++gui.dialogs_active;
@@ -1729,32 +2274,32 @@ gui_mch_dialog(int	type,	    // type of dialog
 	gtk_entry_set_text(GTK_ENTRY(entry), (const char *)text);
 	CONVERT_TO_UTF8_FREE(text);
 
-# if GTK_CHECK_VERSION(3,14,0)
+#  if GTK_CHECK_VERSION(3,14,0)
 	gtk_widget_set_halign(GTK_WIDGET(entry), GTK_ALIGN_CENTER);
 	gtk_widget_set_valign(GTK_WIDGET(entry), GTK_ALIGN_CENTER);
 	gtk_widget_set_hexpand(GTK_WIDGET(entry), TRUE);
 	gtk_widget_set_vexpand(GTK_WIDGET(entry), TRUE);
 
 	alignment = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-# else
+#  else
 	alignment = gtk_alignment_new((float)0.5, (float)0.5,
 						      (float)1.0, (float)1.0);
-# endif
+#  endif
 	gtk_container_add(GTK_CONTAINER(alignment), entry);
 	gtk_container_set_border_width(GTK_CONTAINER(alignment), 5);
 	gtk_widget_show(alignment);
 
-# if GTK_CHECK_VERSION(3,0,0)
+#  if GTK_CHECK_VERSION(3,0,0)
 	{
 	    GtkWidget * const vbox
 		= gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	    gtk_box_pack_start(GTK_BOX(vbox),
 		    alignment, TRUE, FALSE, 0);
 	}
-# else
+#  else
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
 			   alignment, TRUE, FALSE, 0);
-# endif
+#  endif
 	dialoginfo.noalt = FALSE;
     }
     else
@@ -1799,6 +2344,7 @@ gui_mch_dialog(int	type,	    // type of dialog
     if (gui.dialogs_active > 0)
 	--gui.dialogs_active;
     return response > 0 ? response : 0;
+# endif
 }
 
 #endif // FEAT_GUI_DIALOG
@@ -1993,35 +2539,187 @@ typedef struct _SharedFindReplace
     GtkWidget *find;	// 'Find Next' action button
     GtkWidget *replace;	// 'Replace With' action button
     GtkWidget *all;	// 'Replace All' action button
+    GtkWidget *close;	// Close action button
+    bool searched;	// a search was performed while the overlay was visible
+    win_T *match_win;	// window containing the current match
+    pos_T match_pos;	// buffer position of the current match
+    GtkAllocation allocation;
 } SharedFindReplace;
 
-static SharedFindReplace find_widgets = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-static SharedFindReplace repl_widgets = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
-    static int
-find_key_press_event(
-		GtkWidget	*widget UNUSED,
-		GdkEventKey	*event,
-		SharedFindReplace *frdp)
+static SharedFindReplace find_widgets = {0};
+static SharedFindReplace repl_widgets = {0};
+
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
+static SharedFindReplace *active_find_replace = NULL;
+
+    static void
+find_replace_direction_focus_cb(
+	GtkWidget	*widget,
+	GParamSpec	*pspec UNUSED,
+	GtkWidget	*frame)
 {
-    // If the user is holding one of the key modifiers we will just bail out,
-    // thus preserving the possibility of normal focus traversal.
-    if (event->state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
-	return FALSE;
+    if (gtk_widget_has_focus(widget))
+	gtk_style_context_add_class(
+		gtk_widget_get_style_context(frame), "focused");
+    else
+	gtk_style_context_remove_class(
+		gtk_widget_get_style_context(frame), "focused");
+}
 
-    // the Escape key synthesizes a cancellation action
-    if (event->keyval == GDK_Escape)
+    static gboolean
+find_replace_overlay_key_press_cb(
+	GtkWidget	*widget UNUSED,
+	GdkEventKey	*event,
+	gpointer	data)
+{
+    SharedFindReplace *frdp = (SharedFindReplace *)data;
+    GtkWidget *order[10];
+    int count = 0;
+    int forward;
+    int i;
+
+    if (active_find_replace != frdp)
+	return false;
+    if (event->keyval == GDK_KEY_Escape)
     {
 	gtk_widget_hide(frdp->dialog);
-
-	return TRUE;
+	return true;
     }
+    if (event->keyval != GDK_KEY_Tab
+	    && event->keyval != GDK_KEY_ISO_Left_Tab
+	    && event->keyval != GDK_KEY_3270_BackTab)
+	return false;
 
-    // It would be delightful if it where possible to do search history
-    // operations on the K_UP and K_DOWN keys here.
+    forward = event->keyval == GDK_KEY_Tab
+			    && (event->state & GDK_SHIFT_MASK) == 0;
+    order[count++] = frdp->what;
+    if (frdp->with != NULL)
+	order[count++] = frdp->with;
+    order[count++] = frdp->wword;
+    order[count++] = frdp->mcase;
+    order[count++] = gtk_toggle_button_get_active(
+		GTK_TOGGLE_BUTTON(frdp->down)) ? frdp->down : frdp->up;
+    order[count++] = frdp->find;
+    if (frdp->replace != NULL)
+	order[count++] = frdp->replace;
+    if (frdp->all != NULL)
+	order[count++] = frdp->all;
+    order[count++] = frdp->close;
 
-    return FALSE;
+    for (i = 0; i < count; ++i)
+	if (gtk_widget_has_focus(order[i]))
+	{
+	    int next = (i + (forward ? 1 : count - 1)) % count;
+
+	    while (!gtk_widget_get_sensitive(order[next]))
+		next = (next + (forward ? 1 : count - 1)) % count;
+	    gtk_widget_grab_focus(order[next]);
+	    return true;
+	}
+    return false;
 }
+
+    static void
+find_replace_overlay_visibility_cb(
+	GtkWidget *widget,
+	GParamSpec *pspec UNUSED,
+	gpointer data)
+{
+    bool was_visible = active_find_replace != NULL;
+
+    gui.dialog_textentry_active = gtk_widget_get_visible(widget);
+    active_find_replace = gui.dialog_textentry_active ? data : NULL;
+    if (!was_visible && active_find_replace != NULL)
+	active_find_replace->searched = false;
+    gui_gtk_update_find_replace_overlap();
+}
+
+    static gboolean
+find_replace_overlay_button_press_cb(
+	GtkWidget	*widget UNUSED,
+	GdkEventButton	*event,
+	gpointer	data UNUSED)
+{
+    GtkWidget *target;
+
+    if (active_find_replace == NULL)
+	return false;
+    target = gtk_get_event_widget((GdkEvent *)event);
+    if (target == active_find_replace->dialog
+	    || (target != NULL && gtk_widget_is_ancestor(target,
+					active_find_replace->dialog)))
+	return false;
+
+    gtk_widget_grab_focus(active_find_replace->what);
+    gtk_style_context_add_class(
+	    gtk_widget_get_style_context(active_find_replace->dialog), "flash");
+    g_timeout_add(100, overlay_dialog_flash_timeout_cb,
+	    active_find_replace->dialog);
+    return true;
+}
+
+    static gboolean
+find_replace_get_child_position_cb(
+	GtkOverlay	*overlay UNUSED,
+	GtkWidget	*widget,
+	GtkAllocation	*allocation,
+	gpointer	data)
+{
+    SharedFindReplace *frdp = (SharedFindReplace *)data;
+    GtkAllocation area;
+    GtkRequisition natural;
+
+    if (widget != frdp->dialog)
+	return false;
+
+    gtk_widget_get_allocation(gui.drawarea, &area);
+    gtk_widget_get_preferred_size(widget, NULL, &natural);
+    allocation->width = natural.width < area.width
+					 ? natural.width : area.width;
+    allocation->height = natural.height < area.height
+					  ? natural.height : area.height;
+    allocation->x = area.x + area.width - allocation->width;
+    allocation->y = area.y;
+    frdp->allocation = *allocation;
+    return true;
+}
+
+    void
+gui_gtk_update_find_replace_overlap(void)
+{
+    SharedFindReplace *sfr = active_find_replace;
+    GtkStyleContext *context;
+    bool overlap;
+    int cursor_x;
+    int cursor_y;
+    int row;
+    int scol;
+    int ccol;
+    int ecol;
+
+    if (sfr == NULL)
+	return;
+
+    row = scol = ccol = ecol = 0;
+    if (sfr->searched)
+	textpos2screenpos(sfr->match_win, &sfr->match_pos,
+		&row, &scol, &ccol, &ecol);
+    cursor_x = FILL_X(ccol - 1);
+    cursor_y = FILL_Y(row - 1);
+    overlap = row > 0 && ccol > 0
+	    && cursor_x < sfr->allocation.x + sfr->allocation.width
+	    && cursor_x + gui.char_width > sfr->allocation.x
+	    && cursor_y < sfr->allocation.y + sfr->allocation.height
+	    && cursor_y + gui.char_height > sfr->allocation.y;
+    context = gtk_widget_get_style_context(sfr->dialog);
+    if (overlap)
+	gtk_style_context_add_class(context, "match-overlap");
+    else
+	gtk_style_context_remove_class(context, "match-overlap");
+}
+
+#endif
 
     static GtkWidget *
 #if GTK_CHECK_VERSION(3,10,0)
@@ -2156,6 +2854,9 @@ find_replace_dialog_create(char_u *arg, int do_replace)
      */
     if (frdp->dialog)
     {
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
+	overlay_set_bg_style(frdp->dialog);
+#endif
 	if (entry_text != NULL)
 	{
 	    gtk_entry_set_text(GTK_ENTRY(frdp->what), (char *)entry_text);
@@ -2164,7 +2865,11 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 	    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(frdp->mcase),
 							     (gboolean)mcase);
 	}
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
+	gtk_widget_show(frdp->dialog);
+#else
 	gtk_window_present(GTK_WINDOW(frdp->dialog));
+#endif
 
 	// For :promptfind dialog, always give keyboard focus to 'what' entry.
 	// For :promptrepl dialog, give it to 'with' entry if 'what' has a
@@ -2177,15 +2882,32 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 	return;
     }
 
-    frdp->dialog = gtk_dialog_new();
-#if GTK_CHECK_VERSION(3,0,0)
-    // Nothing equivalent to gtk_dialog_set_has_separator() in GTK+ 3.
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
+    frdp->dialog = gtk_frame_new(NULL);
+    gtk_style_context_add_class(gtk_widget_get_style_context(frdp->dialog),
+	    "vim-overlay");
+    overlay_set_bg_style(frdp->dialog);
+    gtk_overlay_add_overlay(GTK_OVERLAY(gui.dialog_overlay), frdp->dialog);
+    g_signal_connect(gui.dialog_overlay, "get-child-position",
+	    G_CALLBACK(find_replace_get_child_position_cb), frdp);
+    g_signal_connect(frdp->dialog, "notify::visible",
+	    G_CALLBACK(find_replace_overlay_visibility_cb), frdp);
+    g_signal_connect(gui.dialog_overlay, "button-press-event",
+	    G_CALLBACK(find_replace_overlay_button_press_cb), NULL);
+    g_signal_connect(gui.mainwin, "key-press-event",
+	    G_CALLBACK(find_replace_overlay_key_press_cb), frdp);
 #else
+    frdp->dialog = gtk_dialog_new();
+# if GTK_CHECK_VERSION(3,0,0)
+    // Nothing equivalent to gtk_dialog_set_has_separator() in GTK+ 3.
+# else
     gtk_dialog_set_has_separator(GTK_DIALOG(frdp->dialog), FALSE);
-#endif
+# endif
     gtk_window_set_transient_for(GTK_WINDOW(frdp->dialog), GTK_WINDOW(gui.mainwin));
     gtk_window_set_destroy_with_parent(GTK_WINDOW(frdp->dialog), TRUE);
+#endif
 
+#ifndef HAVE_GTK3_OVERLAY_DIALOG
     if (do_replace)
     {
 	gtk_window_set_title(GTK_WINDOW(frdp->dialog),
@@ -2196,6 +2918,7 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 	gtk_window_set_title(GTK_WINDOW(frdp->dialog),
 			     CONV(_("VIM - Search...")));
     }
+#endif
 
 #if GTK_CHECK_VERSION(3,2,0)
     hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2204,7 +2927,9 @@ find_replace_dialog_create(char_u *arg, int do_replace)
     hbox = gtk_hbox_new(FALSE, 0);
 #endif
     gtk_container_set_border_width(GTK_CONTAINER(hbox), 10);
-#if GTK_CHECK_VERSION(3,0,0)
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
+    gtk_container_add(GTK_CONTAINER(frdp->dialog), hbox);
+#elif GTK_CHECK_VERSION(3,0,0)
     {
 	GtkWidget * const dialog_vbox
 	    = gtk_dialog_get_content_area(GTK_DIALOG(frdp->dialog));
@@ -2262,9 +2987,6 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 	gtk_entry_set_text(GTK_ENTRY(frdp->what), (char *)entry_text);
     g_signal_connect(G_OBJECT(frdp->what), "changed",
 		     G_CALLBACK(entry_changed_cb), frdp->dialog);
-    g_signal_connect_after(G_OBJECT(frdp->what), "key-press-event",
-			   G_CALLBACK(find_key_press_event),
-			   (gpointer) frdp);
 #if GTK_CHECK_VERSION(3,4,0)
     gtk_grid_attach(GTK_GRID(table), frdp->what, 2, 0, 5, 1);
 #else
@@ -2305,9 +3027,6 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 	g_signal_connect(G_OBJECT(frdp->with), "activate",
 			 G_CALLBACK(find_replace_cb),
 			 GINT_TO_POINTER(FRD_R_FINDNEXT));
-	g_signal_connect_after(G_OBJECT(frdp->with), "key-press-event",
-			       G_CALLBACK(find_key_press_event),
-			       (gpointer) frdp);
 #if GTK_CHECK_VERSION(3,4,0)
 	gtk_grid_attach(GTK_GRID(table), frdp->with, 2, 1, 5, 1);
 #else
@@ -2403,6 +3122,12 @@ find_replace_dialog_create(char_u *arg, int do_replace)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(frdp->down), TRUE);
     gtk_container_set_border_width(GTK_CONTAINER(vbox), 2);
     gtk_box_pack_start(GTK_BOX(vbox), frdp->down, TRUE, TRUE, 0);
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
+    g_signal_connect(frdp->up, "notify::has-focus",
+	    G_CALLBACK(find_replace_direction_focus_cb), tmp);
+    g_signal_connect(frdp->down, "notify::has-focus",
+	    G_CALLBACK(find_replace_direction_focus_cb), tmp);
+#endif
 
     // vbox to hold the action buttons
 #if GTK_CHECK_VERSION(3,2,0)
@@ -2465,14 +3190,17 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 #else
     tmp = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 #endif
+    frdp->close = tmp;
     gtk_widget_set_can_default(tmp, TRUE);
     gtk_box_pack_end(GTK_BOX(actionarea), tmp, FALSE, FALSE, 0);
     g_signal_connect_swapped(G_OBJECT(tmp),
 			     "clicked", G_CALLBACK(gtk_widget_hide),
 			     G_OBJECT(frdp->dialog));
+#ifndef HAVE_GTK3_OVERLAY_DIALOG
     g_signal_connect_swapped(G_OBJECT(frdp->dialog),
 			     "delete-event", G_CALLBACK(gtk_widget_hide_on_delete),
 			     G_OBJECT(frdp->dialog));
+#endif
 
 #if GTK_CHECK_VERSION(3,2,0)
     tmp = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
@@ -2482,7 +3210,8 @@ find_replace_dialog_create(char_u *arg, int do_replace)
     gtk_box_pack_end(GTK_BOX(hbox), tmp, FALSE, FALSE, 10);
 
     // Suppress automatic show of the unused action area
-#if GTK_CHECK_VERSION(3,0,0)
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
+#elif GTK_CHECK_VERSION(3,0,0)
 # if !GTK_CHECK_VERSION(3,12,0)
     gtk_widget_hide(gtk_dialog_get_action_area(GTK_DIALOG(frdp->dialog)));
 # endif
@@ -2491,6 +3220,9 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 #endif
     gtk_widget_show_all(hbox);
     gtk_widget_show(frdp->dialog);
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
+    gtk_widget_grab_focus(frdp->what);
+#endif
 
     vim_free(entry_text);
     vim_free(conv_buffer);
@@ -2548,6 +3280,12 @@ find_replace_cb(GtkWidget *widget UNUSED, gpointer data)
     repl_text = CONVERT_FROM_UTF8(repl_text);
     find_text = CONVERT_FROM_UTF8(find_text);
     gui_do_findrepl(flags, find_text, repl_text, direction_down);
+#ifdef HAVE_GTK3_OVERLAY_DIALOG
+    sfr->searched = true;
+    sfr->match_win = curwin;
+    sfr->match_pos = curwin->w_cursor;
+    gui_gtk_update_find_replace_overlap();
+#endif
     CONVERT_FROM_UTF8_FREE(repl_text);
     CONVERT_FROM_UTF8_FREE(find_text);
 }
