@@ -1778,9 +1778,11 @@ dryrun_executes(cmdidx_T cmdidx, int no_keyword)
 	case CMD_type:
 	    return TRUE;
 	case CMD_var:
-	case CMD_const:
 	case CMD_final:
 	    return !no_keyword;
+	case CMD_const:
+	    // A legacy ":const" would evaluate its value.
+	    return !no_keyword && in_vim9script();
 	default:
 	    return FALSE;
     }
@@ -1830,6 +1832,7 @@ do_one_cmd(
     int		may_have_range;
 #ifdef FEAT_EVAL
     int		did_set_expr_line = FALSE;
+    int		dryrun_define = FALSE;
 #endif
     int		sourcing = flags & DOCMD_VERBOSE;
     int		did_append_cmd = FALSE;
@@ -1951,8 +1954,10 @@ do_one_cmd(
     // With ":source ++dryrun" only a command that defines something is
     // executed, also inside a block that is not active.
     if (source_dryrun)
-	ea.skip = did_emsg || got_int || did_throw
-				    || !dryrun_executes(ea.cmdidx, p == ea.cmd);
+    {
+	dryrun_define = dryrun_executes(ea.cmdidx, p == ea.cmd);
+	ea.skip = did_emsg || got_int || did_throw || !dryrun_define;
+    }
 
 # ifdef FEAT_PROFILE
     // Count this line for profiling if skip is TRUE.
@@ -2668,6 +2673,15 @@ do_one_cmd(
 /*
  * 7. Execute the command.
  */
+
+#ifdef FEAT_EVAL
+    // Fail-safe for ":source ++dryrun": only a definition is executed.
+    if (source_dryrun && !ea.skip && !dryrun_define)
+    {
+	errormsg = _(e_not_allowed_in_dry_run);
+	goto doend;
+    }
+#endif
 
     if (IS_USER_CMDIDX(ea.cmdidx))
     {
