@@ -259,15 +259,27 @@ If you prefer "cw" to include the space after a word, use this mapping: >
 Alternatively use "caw" (see also |aw| and |cpo-z|).
 
 							*:c* *:ch* *:change*
-:{range}c[hange][!]	Replace lines of text with some different text.
-			Type a line containing only "." to stop replacing.
-			Without {range}, this command changes only the current
-			line.
+:[range]c[hange][!]
+{text}
+.
+			Replace [range] lines of text with some different
+			text.  A line containing only "." terminates the
+			replacement text.
+			If [range] is not given, the text will replace the
+			current line.
 			Adding [!] toggles 'autoindent' for the time this
 			command is executed.
 			This command is not supported in |Vim9| script,
 			because it is too easily confused with a variable
 			name.
+			See |ex-text-input|.
+
+:[range]c[hange][!] {count}
+{text}
+.
+			Replace {count} lines of text, starting with [range]
+			(default: current line |cmdline-ranges|), with some
+			different text.
 
 ==============================================================================
 3. Simple changes					*simple-change*
