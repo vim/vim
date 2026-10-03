@@ -5725,7 +5725,7 @@ free_old_sub(void)
 /*
  * Set up for a tagpreview.
  * Makes the preview window the current window.
- * Return TRUE when it was created.
+ * Return TRUE when a window was split for it.
  */
     int
 prepare_tagpreview(
@@ -5785,7 +5785,10 @@ prepare_tagpreview(
 # ifdef FEAT_PROP_POPUP
     if ((use_previewpopup && *p_pvp != NUL)
 	    || use_popup != USEPOPUP_NONE)
-	return popup_create_preview_window(use_popup != USEPOPUP_NONE);
+    {
+	(void)popup_create_preview_window(use_popup != USEPOPUP_NONE);
+	return FALSE;
+    }
 # endif
     if (win_split(g_do_tagpreview > 0 ? g_do_tagpreview : 0, 0) == FAIL)
 	return FALSE;
