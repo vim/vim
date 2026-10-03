@@ -4808,7 +4808,7 @@ compile_def_function_body(
 	    case CMD_open:
 	    case CMD_t:
 	    case CMD_xit:
-		    not_in_vim9(&ea);
+		    not_in_vim9(&ea, false);
 		    goto linefail;
 
 	    case CMD_SIZE:

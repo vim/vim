@@ -3642,6 +3642,10 @@ ex_append(exarg_T *eap)
     int		vcol;
     int		empty = (curbuf->b_ml.ml_flags & ML_EMPTY);
 
+#ifdef FEAT_EVAL
+    if (not_in_vim9(eap, eap->skip) == FAIL)
+	return;
+#endif
     if (eap->skip)
     {
 	// Not executing the command, only read the lines up to the ".".
@@ -3655,10 +3659,7 @@ ex_append(exarg_T *eap)
 	}
 	return;
     }
-#ifdef FEAT_EVAL
-    if (not_in_vim9(eap) == FAIL)
-	return;
-#endif
+
     // the ! flag toggles autoindent
     if (eap->forceit)
 	curbuf->b_p_ai = !curbuf->b_p_ai;
@@ -3777,15 +3778,15 @@ ex_change(exarg_T *eap)
 {
     linenr_T	lnum;
 
+#ifdef FEAT_EVAL
+    if (not_in_vim9(eap, eap->skip) == FAIL)
+	return;
+#endif
     if (eap->skip)
     {
 	ex_append(eap);
 	return;
     }
-#ifdef FEAT_EVAL
-    if (not_in_vim9(eap) == FAIL)
-	return;
-#endif
     if (eap->line2 >= eap->line1
 	    && u_save(eap->line1 - 1, eap->line2 + 1) == FAIL)
 	return;

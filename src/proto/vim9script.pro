@@ -3,7 +3,7 @@ int in_old_script(int max_version);
 int current_script_is_vim9(void);
 void clear_vim9_scriptlocal_vars(int sid);
 void ex_vim9script(exarg_T *eap);
-int not_in_vim9(exarg_T *eap);
+int not_in_vim9(exarg_T *eap, bool silent);
 int vim9_bad_comment(char_u *p);
 int vim9_comment_start(char_u *p);
 void ex_incdec(exarg_T *eap);
