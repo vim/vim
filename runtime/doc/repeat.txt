@@ -1,4 +1,4 @@
-*repeat.txt*	For Vim version 9.2.  Last change: 2026 Sep 28
+*repeat.txt*	For Vim version 9.2.  Last change: 2026 Oct 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -72,7 +72,7 @@ given, and the pattern then terminates at <EOL>.
 
 For the definition of a pattern, see |pattern|.
 
-The default [cmd] is |:print|.
+The default [cmd] is `:print`.
 
 NOTE [cmd] may contain a range; see |collapse| and |edit-paragraph-join| for
 examples.
