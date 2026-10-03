@@ -5608,6 +5608,46 @@ func Test_getqflist_by_idx()
 endfunc
 
 " Test for the 'quickfixtextfunc' setting
+func Test_qftextfunc_result_refcount()
+  let save_qftf = &quickfixtextfunc
+  new
+  try
+    for cchar in ['c', 'l']
+      call s:setup_commands(cchar)
+      let result = ['custom text']
+      let &quickfixtextfunc = {info -> result}
+      let refcount = test_refcount(result)
+      call g:Xsetlist([{'text': 'entry', 'lnum': 1}], 'r')
+      Xopen
+      call assert_equal(['custom text'], getline(1, '$'))
+      call assert_equal(refcount, test_refcount(result))
+
+      " Replacing and appending entries must release the callback result.
+      call g:Xsetlist([{'text': 'replacement', 'lnum': 2}], 'r')
+      call assert_equal(['custom text'], getline(1, '$'))
+      call assert_equal(refcount, test_refcount(result))
+      call g:Xsetlist([{'text': 'appended', 'lnum': 3}], 'a')
+      call assert_equal(['custom text', 'custom text'], getline(1, '$'))
+      call assert_equal(refcount, test_refcount(result))
+
+      " Empty and invalid custom entries still own a list reference.
+      let result[0] = ''
+      call g:Xsetlist([{'text': 'default text'}], 'r')
+      call assert_equal(['|| default text'], getline(1, '$'))
+      call assert_equal(refcount, test_refcount(result))
+      let result[0] = []
+      call assert_fails("call g:Xsetlist([{'text': 'default text'}], 'r')",
+            \ 'E730:')
+      call assert_equal(refcount, test_refcount(result))
+      Xclose
+      call g:Xsetlist([], 'f')
+    endfor
+  finally
+    let &quickfixtextfunc = save_qftf
+    bwipe!
+  endtry
+endfunc
+
 func Tqfexpr(info)
   if a:info.quickfix
     let qfl = getqflist({'id' : a:info.id, 'items' : 1}).items
