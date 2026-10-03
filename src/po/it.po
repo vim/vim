@@ -15,8 +15,8 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-06-19 15:17+0200\n"
-"PO-Revision-Date: 2026-06-19 16:30+0100\n"
+"POT-Creation-Date: 2026-10-02 15:50+0200\n"
+"PO-Revision-Date: 2026-10-02 22:36+0200\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -1743,6 +1743,9 @@ msgstr "--gui-dialog-file {nomefile}  Per test: scrive testo del dialogo"
 msgid "--ttyfail\t\tExit if input or output is not a terminal"
 msgstr "--ttyfail\t\tEsce se l'input o l'output non sono da un terminale"
 
+msgid "--stdio-channel\tUse stdin and stdout as a channel"
+msgstr "--stdio-channel\tUsa stdin e stdout come canale"
+
 msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
 msgstr "-u <vimrc>\t\tUsa <vimrc> invece di qualche .vimrc"
 
@@ -1903,6 +1906,13 @@ msgstr "+reverse\t\tNon usare colori invertiti (anche: +rv)"
 
 msgid "-xrm <resource>\tSet the specified resource"
 msgstr "-xrm <risorsa>\tImposta la risorsa specificata"
+
+msgid ""
+"\n"
+"Arguments recognised by gvim (GTK4 version):\n"
+msgstr ""
+"\n"
+"Argomenti accettati da gvim (versione GTK4):\n"
 
 msgid ""
 "\n"
@@ -2084,6 +2094,9 @@ msgstr "???NUMERO DI BLOCCO NON VALIDO"
 
 msgid "???BLOCK MISSING"
 msgstr "???BLOCCO MANCANTE"
+
+msgid "??? BLOCK PAGE COUNT MISMATCH"
+msgstr "??? CONTATORE BLOCCO PAGINE NON CORRISPONDENTE"
 
 msgid "??? from here until ???END lines may be messed up"
 msgstr "??? da qui fino a ???END le righe possono essere fuori ordine"
@@ -3314,18 +3327,6 @@ msgstr "syntax iskeyword non impostato"
 msgid "syncing on C-style comments"
 msgstr "sincronizzo i commenti nello stile C"
 
-msgid "no syncing"
-msgstr "nessuna sincronizzazione"
-
-msgid "syncing starts at the first line"
-msgstr "la sincronizzazione inizia alla prima riga"
-
-msgid "syncing starts "
-msgstr "la sincronizzazione inizia "
-
-msgid " lines before top line"
-msgstr " righe prima della riga iniziale"
-
 msgid ""
 "\n"
 "--- Syntax sync items ---"
@@ -3339,6 +3340,18 @@ msgid ""
 msgstr ""
 "\n"
 "sincronizzo elementi"
+
+msgid "no syncing"
+msgstr "nessuna sincronizzazione"
+
+msgid "syncing starts at the first line"
+msgstr "la sincronizzazione inizia alla prima riga"
+
+msgid "syncing starts "
+msgstr "la sincronizzazione inizia "
+
+msgid " lines before top line"
+msgstr " righe prima della riga iniziale"
 
 msgid ""
 "\n"
@@ -3719,9 +3732,6 @@ msgstr ""
 
 msgid "without GUI."
 msgstr "senza GUI."
-
-msgid "with GTK4 GUI (hwaccel)."
-msgstr "con GUI GTK4 (hwaccel)."
 
 msgid "with GTK4 GUI."
 msgstr "con GUI GTK4."
@@ -7028,12 +7038,8 @@ msgstr "E881: Contatore righe è inaspettatamente cambiato"
 msgid "E882: Uniq compare function failed"
 msgstr "E882: Funzione confronto in uniq fallita"
 
-msgid ""
-"E883: Search pattern and expression register may not contain two or more "
-"lines"
-msgstr ""
-"E883: Espressione di ricerca e registro dell'espressione non possono "
-"contenere due o più righe"
+msgid "E883: Register '%c' cannot contain multiple lines"
+msgstr "E883: Il registro '%c' non può contenere più di una riga"
 
 #, c-format
 msgid "E884: Function name cannot contain a colon: %s"
@@ -9302,13 +9308,16 @@ msgid "E1562: Diff anchors cannot be used with hidden diff windows"
 msgstr ""
 "E1562: Punti di ancoraggio Diff non disponibili per finestre Diff nascoste"
 
+#, c-format
 msgid "E1564: Socket name '%s' cannot have slashes in it without being a path"
-msgstr "E1564: Il nome socket '%s' non può contenere barre se non è un percorso"
+msgstr ""
+"E1564: Il nome socket '%s' non può contenere barre se non è un percorso"
 
 msgid "E1565: Socket server is not online, call remote_startserver() first"
 msgstr ""
 "E1565: Il server di socket non è online, chiamare prima remote_startserver()"
 
+#, c-format
 msgid "E1566: Failed connecting to socket '%s'"
 msgstr "E1566: Connessione fallita al socket '%s'"
 
@@ -9360,6 +9369,30 @@ msgstr "E1578: Troppi suffissi finali e/o flag composti"
 
 msgid "E1579: -completeopt=escape cannot be used with -nargs=_"
 msgstr "E1579: -completeopt=escape non consentito con -nargs=_"
+
+msgid "E1580: Too many text properties on a single line"
+msgstr "E1580: Troppe proprietà del testo in una sola riga"
+
+msgid "E1581: Cannot extend a null blob"
+msgstr "E1581: Non posso estendere un Blob nullo"
+
+msgid "E1582: Not started with --stdio-channel"
+msgstr "E1582: Non iniziato con --stdio-channel"
+
+msgid "E1583: Cannot open stdio channel"
+msgstr "E1583: Non posso aprire canale stdio"
+
+msgid "E1584: Image dimensions are invalid"
+msgstr "E1584: Dimensioni immagine non valide"
+
+msgid "E1585: No image backend available"
+msgstr "E1585: Nessuna immagine backend disponibile"
+
+msgid "E1586: Failed changing image backends"
+msgstr "E1586: Non riesco a cambiare immagine backend"
+
+msgid "E1587: Image ID %d does not exist"
+msgstr "E1587: L'ID di immagine %d non esiste"
 
 #. type of cmdline window or 0
 #. result of cmdline window or 0
@@ -10286,6 +10319,9 @@ msgstr "terminale che richiede ulteriore ridisegno"
 
 msgid "what keyboard protocol to use for which terminal"
 msgstr "protocollo di tastiera da usare per un dato terminale"
+
+msgid "what image backend to use for which terminal"
+msgstr "quale immagine backend usare per quale terminal"
 
 msgid "recognize keys that start with <Esc> in Insert mode"
 msgstr "riconoscere sequenze di tasti che iniziano con <Esc> in modo Insert"
@@ -11487,3 +11523,13 @@ msgstr "Siete pregati di salvare prima il buffer."
 msgid "You discovered the command-line window! You can close it with \":q\"."
 msgstr ""
 "Avete trovato la finestra della riga-di-comando! Si può chiudere con \":q\"."
+
+#~ msgid "with GTK4 GUI (hwaccel)."
+#~ msgstr "con GUI GTK4 (hwaccel)."
+
+#~ msgid ""
+#~ "E883: Search pattern and expression register may not contain two or more "
+#~ "lines"
+#~ msgstr ""
+#~ "E883: Espressione di ricerca e registro dell'espressione non possono "
+#~ "contenere due o più righe"
