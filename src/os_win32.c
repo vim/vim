@@ -2696,6 +2696,34 @@ executable_file(char *name, char_u **path)
 }
 
 /*
+ * Check for a matching prefix; "name" includes the trailing wildcard.
+ * An inconclusive search (e.g. a directory which cannot be enumerated) must
+ * not skip the normal checks.
+ */
+    static int
+executable_prefix_exists(char_u *name)
+{
+    WCHAR		*wn;
+    WIN32_FIND_DATAW	data;
+    HANDLE		handle;
+    DWORD		error;
+
+    wn = enc_to_utf16(name, NULL);
+    if (wn == NULL)
+	return TRUE;
+    handle = FindFirstFileExW(wn, FindExInfoBasic, &data,
+					    FindExSearchNameMatch, NULL, 0);
+    error = GetLastError();
+    vim_free(wn);
+    if (handle != INVALID_HANDLE_VALUE)
+    {
+	FindClose(handle);
+	return TRUE;
+    }
+    return error != ERROR_FILE_NOT_FOUND && error != ERROR_PATH_NOT_FOUND;
+}
+
+/*
  * If "use_path" is TRUE: Return TRUE if "name" is in $PATH.
  * If "use_path" is FALSE: Return TRUE if "name" exists.
  * If "use_pathext" is TRUE search "name" with extensions in $PATHEXT.
@@ -2721,6 +2749,8 @@ executable_exists(
     int		pathext_allocated = FALSE;
     char_u	*shname = NULL;
     int		noext = FALSE;
+    int		simple_pathext = TRUE;
+    int		ext_count = 0;
     int		retval = FALSE;
 
     if (namelen >= sizeof(buf))	// safety check
@@ -2744,6 +2774,7 @@ executable_exists(
 	if (noext == FALSE)
 	{
 	    char_u  *e;
+	    char_u  *q;
 	    size_t  plen;
 
 	    /*
@@ -2757,6 +2788,8 @@ executable_exists(
 			    || (p[0] == '.' && (p[1] == NUL || p[1] == ';')))
 		{
 		    // Skip empty or single ".".
+		    if (*p == '.')
+			simple_pathext = FALSE;
 		    ++p;
 		    continue;
 		}
@@ -2764,6 +2797,12 @@ executable_exists(
 		if (e == NULL)
 		    e = pathext.string + pathext.length;
 		plen = (size_t)(e - p);
+		++ext_count;
+		if (*p != '.')
+		    simple_pathext = FALSE;
+		for (q = p + 1; q < e; ++q)
+		    if (!ASCII_ISALNUM(*q))
+			simple_pathext = FALSE;
 
 		if (_strnicoll(name + namelen - plen, (char *)p, plen) == 0)
 		{
@@ -2864,6 +2903,30 @@ executable_exists(
 		"%.*s%s%s", (int)(e - p), p,
 		!after_pathsep(p, e) ? PATHSEPSTR : "",
 		name);
+	}
+
+	// Most directories in $PATH do not contain this command.  One prefix
+	// search can avoid a separate file query for every extension.  With
+	// few extensions, or an explicit executable suffix, it is cheaper to
+	// use the normal checks.  Leave unusual paths and suffixes to those
+	// checks as well, to preserve their path normalization and semantics.
+	if (!noext && simple_pathext && ext_count >= 3 && buflen > 0
+		&& buflen + 2 <= sizeof(buf)
+		&& buf[buflen - 1] != '.' && buf[buflen - 1] != ' '
+		&& vim_strpbrk(buf, (char_u *)"*?") == NULL
+		&& vim_strchr(gettail(buf), ':') == NULL)
+	{
+	    int exists;
+
+	    buf[buflen] = '*';
+	    buf[buflen + 1] = NUL;
+	    exists = executable_prefix_exists(buf);
+	    buf[buflen] = NUL;
+	    if (!exists)
+	    {
+		p = e;
+		continue;
+	    }
 	}
 
 	/*
