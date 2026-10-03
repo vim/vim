@@ -4325,6 +4325,58 @@ func Test_popupmenu_info_too_wide()
   call StopVimInTerminal(buf)
 endfunc
 
+" Collect what the Vim on the pty writes in s:pty_out.
+func s:PtyOutput(msg)
+  let s:pty_out ..= a:msg
+endfunc
+
+" Selecting an item redraws the text under the menu.  That must not clear the
+" menu on the screen, also when the info popup is created and when there is no
+" room for it.  A terminal window does not show how the screen was drawn, run
+" Vim on a pty.
+func Test_popupmenu_info_hidden_does_not_clear_menu()
+  CheckUnix
+  CheckFeature job
+  CheckFeature quickfix
+
+  let lines =<< trim END
+    call setline(1, range(1, 20))
+    set completeopt=menuone,popup,noinsert,noselect shortmess+=c
+    func CompleteFunc(findstart, base)
+      if a:findstart
+        return col('.') - 1
+      endif
+      return range(10)->map({_, n -> #{word: 'a' .. n .. repeat('x', 70),
+            \ info: 'info ' .. n}})
+    endfunc
+    set completefunc=CompleteFunc
+    normal! Go
+  END
+  call writefile(lines, 'XpopupInfoHidden', 'D')
+  let s:pty_out = ''
+  let job = job_start(GetVimCommandCleanTerm() .. ' -S XpopupInfoHidden', #{
+        \ pty: 1,
+        \ out_mode: 'raw',
+        \ env: #{TERM: 'xterm', LINES: '24', COLUMNS: '80'},
+        \ out_cb: {job, msg -> s:PtyOutput(msg)},
+        \ })
+  try
+    call WaitForAssert({-> assert_match('21,0-1', s:pty_out)})
+    call ch_sendraw(job, "A\<C-X>\<C-U>")
+    call WaitForAssert({-> assert_match('a0x', s:pty_out)})
+    for n in range(5)
+      let start = len(s:pty_out)
+      call ch_sendraw(job, "\<C-N>")
+      call WaitForAssert({-> assert_notequal(-1,
+            \ stridx(s:pty_out, 'a' .. n .. 'x', start))})
+      call assert_equal(-1, stridx(s:pty_out, "\<Esc>[K", start))
+    endfor
+  finally
+    call job_stop(job, 'kill')
+    call WaitForAssert({-> assert_equal('dead', job_status(job))})
+  endtry
+endfunc
+
 func Test_popupmenu_masking()
   " Test that popup windows that are opened while popup menu is open are
   " properly displayed.
