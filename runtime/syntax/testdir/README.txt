@@ -26,12 +26,17 @@ Creating a syntax plugin test
 -----------------------------
 
 Create a source file in the language you want to test in the "input"
-directory.  Use the filetype name as the base and a filename extension
-matching the filetype.  Let's use Java as an example.  The file would then be
-"input/java.java".  As another example, consider Gitignore.  Since there is no
-established filename extension for this filetype, use the filetype name for
-its base AND filename extension, "input/gitignore.gitignore", as the first
-step.
+directory.  Copy the base name of the source file from the base name of the
+syntax plugin, and use a filename extension associated with this filetype.
+Let's use Java as an example.  Copying the base name from "syntax/java.vim",
+the file would then be named "input/java.java".  As another example, consider
+Gitignore.  Since there is no established filename extension for this
+filetype, duplicate the base name of the syntax plugin "syntax/gitignore.vim"
+for both the base name of the source file AND its filename extension,
+"input/gitignore.gitignore", as the first step.  When you prefer having
+multiple source files for the language, use the same base name prefix and
+another, arbitrary name for its suffix, delimiting words with an underscore
+character, e.g. "input/java_module_info.java" and "input/java_numbers.java".
 
 Make sure to include some interesting constructs with plenty of complicated
 highlighting.  Optionally, pre-configure the testing environment by including
@@ -74,8 +79,8 @@ If there is no further setup required, you can now run all tests:
 
 	make test
 
-Or you can run the tests for a filetype only by passing its name as another
-target, e.g. "java", before "test":
+Or you can run the whole test suite for one language only by passing its name
+as another target, e.g. "java", before "test":
 
 	make java test
 
