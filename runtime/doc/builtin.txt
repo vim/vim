@@ -35,7 +35,7 @@ appendbufline({buf}, {lnum}, {text})
 					in buffer {buf}
 argc([{winid}])			Number	number of files in the argument list
 argidx()			Number	current index in the argument list
-arglistid([{winnr} [, {tabnr}]])
+arglistid([{winid} [, {tabnr}]])
 				Number	argument list id
 argv({nr} [, {winid}])		String	{nr} entry of the argument list
 argv([-1, {winid}])		List	the argument list
@@ -135,7 +135,7 @@ charidx({string}, {idx} [, {countcc} [, {utf16}]])
 				Number	char index of byte {idx} in {string}
 chdir({dir} [, {scope}])	String	change current working directory
 cindent({lnum})			Number	C indent for line {lnum}
-clearmatches([{win}])		none	clear all matches
+clearmatches([{winid}])		none	clear all matches
 cmdcomplete_info()		Dict	get current cmdline completion
 					information
 col({expr} [, {winid}])		Number	column byte index of cursor or mark
@@ -265,9 +265,9 @@ getcompletion({pat}, {type} [, {filtered}])
 				List	list of cmdline completion matches
 getcompletiontype({pat})	String	return the type of the command-line
 					completion using {pat}
-getcurpos([{winnr}])		List	position of the cursor
-getcursorcharpos([{winnr}])	List	character position of the cursor
-getcwd([{winnr} [, {tabnr}]])	String	get the current working directory
+getcurpos([{winid}])		List	position of the cursor
+getcursorcharpos([{winid}])	List	character position of the cursor
+getcwd([{winid} [, {tabnr}]])	String	get the current working directory
 getenv({name})			String	return environment variable
 getfontname([{name}])		String	name of font being used
 getfperm({fname})		String	file permissions of file {fname}
@@ -277,15 +277,15 @@ getftype({fname})		String	description of type of file {fname}
 getimstatus()			Number	|TRUE| if the IME status is active
 getinfo({kind}, {name} [, {opts}])
 				Dict	the definition of {name}
-getjumplist([{winnr} [, {tabnr}]])
+getjumplist([{winid} [, {tabnr}]])
 				List	list of jump list items
 getline({lnum})			String	line {lnum} of current buffer
 getline({lnum}, {end})		List	lines {lnum} to {end} of current
 					buffer
-getloclist({nr})		List	list of location list items
-getloclist({nr}, {what})	Dict	get specific location list properties
+getloclist({winid})		List	list of location list items
+getloclist({winid}, {what})	Dict	get specific location list properties
 getmarklist([{buf}])		List	list of global/local marks
-getmatches([{win}])		List	list of current matches
+getmatches([{winid}])		List	list of current matches
 getmousepos()			Dict	last known mouse position
 getmouseshape()			String	current mouse shape name
 getpid()			Number	process ID of Vim
@@ -307,16 +307,16 @@ gettabinfo([{expr}])		List	list of tab pages
 gettabvar({nr}, {varname} [, {def}])
 				any	variable {varname} in tab {nr} or
 					{def}
-gettabwinvar({tabnr}, {winnr}, {name} [, {def}])
-				any	{name} in {winnr} in tab page {tabnr}
-gettagstack([{nr}])		Dict	get the tag stack of window {nr}
+gettabwinvar({tabnr}, {winid}, {name} [, {def}])
+				any	{name} in {winid} in tab page {tabnr}
+gettagstack([{winid}])		Dict	get the tag stack of window {winid}
 gettext({text} [, {package}])	String	lookup translation of {text}
 getwininfo([{winid}])		List	list of info about each window
 getwinpos([{timeout}])		List	X and Y coord in pixels of Vim window
 getwinposx()			Number	X coord in pixels of the Vim window
 getwinposy()			Number	Y coord in pixels of the Vim window
-getwinvar({nr}, {varname} [, {def}])
-				any	variable {varname} in window {nr}
+getwinvar({winid}, {varname} [, {def}])
+				any	variable {varname} in window {winid}
 glob({expr} [, {nosuf} [, {list} [, {alllinks}]]])
 				any	expand file wildcards in {expr}
 glob2regpat({expr})		String	convert a glob pat into a search pat
@@ -324,7 +324,7 @@ globpath({path}, {expr} [, {nosuf} [, {list} [, {alllinks}]]])
 				String	do glob({expr}) for all dirs in {path}
 has({feature} [, {check}])	Number	|TRUE| if feature {feature} supported
 has_key({dict}, {key})		Number	|TRUE| if {dict} has entry {key}
-haslocaldir([{winnr} [, {tabnr}]])
+haslocaldir([{winid} [, {tabnr}]])
 				Number	|TRUE| if the window executed `:lcd` or
 					`:tcd`
 hasmapto({what} [, {mode} [, {abbr}]])
@@ -428,7 +428,7 @@ matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])
 matcharg({nr})			List	arguments of `:match`
 matchbufline({buf}, {pat}, {lnum}, {end} [, {dict}])
 				List	all the {pat} matches in buffer {buf}
-matchdelete({id} [, {win}])	Number	delete match identified by {id}
+matchdelete({id} [, {winid}])	Number	delete match identified by {id}
 matchend({expr}, {pat} [, {start} [, {count}]])
 				Number	position where {pat} ends in {expr}
 matchfuzzy({list}, {str} [, {dict}])
@@ -601,11 +601,11 @@ setcursorcharpos({list})	Number	move cursor to position in {list}
 setenv({name}, {val})		none	set environment variable
 setfperm({fname}, {mode})	Number	set {fname} file permissions to {mode}
 setline({lnum}, {line})		Number	set line {lnum} to {line}
-setloclist({nr}, {list} [, {action}])
+setloclist({winid}, {list} [, {action}])
 				Number	modify location list using {list}
-setloclist({nr}, {list}, {action}, {what})
+setloclist({winid}, {list}, {action}, {what})
 				Number	modify specific location list props
-setmatches({list} [, {win}])	Number	restore a list of matches
+setmatches({list} [, {winid}])	Number	restore a list of matches
 setpos({expr}, {list})		Number	set the {expr} position to {list}
 setqflist({list} [, {action}])	Number	modify quickfix list using {list}
 setqflist({list}, {action}, {what})
@@ -614,12 +614,14 @@ setreg({n}, {v} [, {opt}])	Number	set register to value and type
 settabvar({nr}, {varname}, {val})
 				none	set {varname} in tab page {nr} to
 					{val}
-settabwinvar({tabnr}, {winnr}, {varname}, {val})
-				none	set {varname} in window {winnr} in tab
+settabwinvar({tabnr}, {winid}, {varname}, {val})
+				none	set {varname} in window {winid} in tab
 					page {tabnr} to {val}
-settagstack({nr}, {dict} [, {action}])
+settagstack({winid}, {dict} [, {action}])
 				Number	modify tag stack using {dict}
-setwinvar({nr}, {varname}, {val}) none	set {varname} in window {nr} to {val}
+setwinvar({winid}, {varname}, {val})
+				none	set {varname} in window {winid} to
+					{val}
 sha256({expr})			String	SHA256 checksum of String or Blob
 shellescape({string} [, {special}])
 				String	escape {string} for use as shell
@@ -822,21 +824,22 @@ win_execute({id}, {command} [, {silent}])
 				String	execute {command} in window {id}
 win_findbuf({bufnr})		List	find windows containing {bufnr}
 win_getid([{win} [, {tab}]])	Number	get window ID for {win} in {tab}
-win_gettype([{nr}])		String	type of window {nr}
+win_gettype([{winid}])		String	type of window {winid}
 win_gotoid({expr})		Number	go to window with ID {expr}
 win_id2tabwin({expr})		List	get tab and window nr from window ID
 win_id2win({expr})		Number	get window nr from window ID
-win_move_separator({nr}, {offset})
+win_move_separator({winid}, {offset})
 				Number	move window vertical separator
-win_move_statusline({nr}, {offset})
+win_move_statusline({winid}, {offset})
 				Number	move window status line
-win_screenpos({nr})		List	get screen position of window {nr}
-win_splitmove({nr}, {target} [, {options}])
-				Number	move window {nr} to split of {target}
-winbufnr({nr})			Number	buffer number of window {nr}
+win_screenpos({winid})		List	get screen position of window {winid}
+win_splitmove({winid}, {target} [, {options}])
+				Number	move window {winid} to split of
+					{target}
+winbufnr({winid})		Number	buffer number of window {winid}
 wincol()			Number	window column of the cursor
 windowsversion()		String	MS-Windows OS version
-winheight({nr})			Number	height of window {nr}
+winheight({winid})		Number	height of window {winid}
 winlayout([{tabnr}])		List	layout of windows in tab {tabnr}
 winline()			Number	window line of the cursor
 winnr([{expr}])			Number	number of current window
@@ -844,7 +847,7 @@ winrestcmd()			String	returns command to restore window
 					sizes
 winrestview({dict})		none	restore view of current window
 winsaveview()			Dict	save view of current window
-winwidth({nr})			Number	width of window {nr}
+winwidth({winid})		Number	width of window {winid}
 wordcount()			Dict	get byte/char/word statistics
 writefile({object}, {fname} [, {flags}])
 				Number	write |Blob| or |List| of lines to file
@@ -995,17 +998,17 @@ argidx()						*argidx()*
 		Return type: |Number|
 
 
-arglistid([{winnr} [, {tabnr}]])			*arglistid()*
+arglistid([{winid} [, {tabnr}]])			*arglistid()*
 		Return the argument list ID.  This is a number which
 		identifies the argument list being used.  Zero is used for the
 		global argument list.  See |arglist|.
 		Returns -1 if the arguments are invalid.
 
 		Without arguments use the current window.
-		With {winnr} only use this window in the current tab page.
-		With {winnr} and {tabnr} use the window in the specified tab
+		With {winid} only use this window in the current tab page.
+		With {winid} and {tabnr} use the window in the specified tab
 		page.
-		{winnr} can be the window number or the |window-ID|.
+		{winid} can be the window number or the |window-ID|.
 
 		Return type: |Number|
 
@@ -1902,10 +1905,10 @@ cindent({lnum})						*cindent()*
 		Return type: |Number|
 
 
-clearmatches([{win}])					*clearmatches()*
+clearmatches([{winid}])					*clearmatches()*
 		Clears all matches previously defined for the current window
 		by |matchadd()| and the |:match| commands.
-		If {win} is specified, use the window with this number or
+		If {winid} is specified, use the window with this number or
 		window ID instead of the current window.
 
 		Can also be used as a |method|: >
@@ -4579,20 +4582,20 @@ getcursorcharpos([{winid}])				*getcursorcharpos()*
 		Return type: list<number>
 
 
-getcwd([{winnr} [, {tabnr}]])				*getcwd()*
+getcwd([{winid} [, {tabnr}]])				*getcwd()*
 		The result is a String, which is the name of the current
 		working directory.  'autochdir' is ignored.
 
-		With {winnr} return the local current directory of this window
-		in the current tab page.  {winnr} can be the window number or
+		With {winid} return the local current directory of this window
+		in the current tab page.  {winid} can be the window number or
 		the |window-ID|.
-		If {winnr} is -1 return the name of the global working
+		If {winid} is -1 return the name of the global working
 		directory.  See also |haslocaldir()|.
 
-		With {winnr} and {tabnr} return the local current directory of
-		the window in the specified tab page.  If {winnr} is -1 return
+		With {winid} and {tabnr} return the local current directory of
+		the window in the specified tab page.  If {winid} is -1 return
 		the working directory of the tabpage.
-		If {winnr} is zero use the current window, if {tabnr} is zero
+		If {winid} is zero use the current window, if {tabnr} is zero
 		use the current tabpage.
 		Without any arguments, return the actual working directory of
 		the current window.
@@ -4920,14 +4923,14 @@ getinfo({kind}, {name} [, {opts}])			*getinfo()*
 		Return type: dict<any>
 
 
-getjumplist([{winnr} [, {tabnr}]])			*getjumplist()*
+getjumplist([{winid} [, {tabnr}]])			*getjumplist()*
 		Returns the |jumplist| for the specified window.
 
 		Without arguments use the current window.
-		With {winnr} only use this window in the current tab page.
-		{winnr} can also be a |window-ID|.
-		With {winnr} and {tabnr} use the window in the specified tab
-		page.  If {winnr} or {tabnr} is invalid, an empty list is
+		With {winid} only use this window in the current tab page.
+		{winid} can also be a |window-ID|.
+		With {winid} and {tabnr} use the window in the specified tab
+		page.  If {winid} or {tabnr} is invalid, an empty list is
 		returned.
 
 		The returned list contains two entries: a list with the jump
@@ -4976,14 +4979,15 @@ getline({lnum} [, {end}])				*getline()*
 		To get lines from another buffer see |getbufline()| and
 		|getbufoneline()|
 
-getloclist({nr} [, {what}])				*getloclist()*
+getloclist({winid} [, {what}])				*getloclist()*
 		Returns a |List| with all the entries in the location list for
-		window {nr}.  {nr} can be the window number or the |window-ID|.
-		When {nr} is zero the current window is used.
+		window {winid}.  {winid} can be the window number or the
+		|window-ID|.
+		When {winid} is zero the current window is used.
 
 		For a location list window, the displayed location list is
-		returned.  For an invalid window number {nr}, an empty list is
-		returned.  Otherwise, same as |getqflist()|.
+		returned.  For an invalid window number {winid}, an empty list
+		is returned.  Otherwise, same as |getqflist()|.
 
 		If the optional {what} dictionary argument is supplied, then
 		returns the items listed in {what} as a dictionary.  Refer to
@@ -5000,8 +5004,8 @@ getloclist({nr} [, {what}])				*getloclist()*
 					details.
 
 		Returns a |Dictionary| with default values if there is no
-		location list for the window {nr}.
-		Returns an empty Dictionary if window {nr} does not exist.
+		location list for the window {winid}.
+		Returns an empty Dictionary if window {winid} does not exist.
 
 		Examples (See also |getqflist-examples|): >
 			:echo getloclist(3, {'all': 0})
@@ -5035,15 +5039,15 @@ getmarklist([{buf}])					*getmarklist()*
 		Return type: list<dict<any>> or list<any>
 
 
-getmatches([{win}])					*getmatches()*
+getmatches([{winid}])					*getmatches()*
 		Returns a |List| with all matches previously defined for the
 		current window by |matchadd()| and the |:match| commands.
 		|getmatches()| is useful in combination with |setmatches()|,
 		as |setmatches()| can restore a list of matches saved by
 		|getmatches()|.
-		If {win} is specified, use the window with this number or
-		window ID instead of the current window.  If {win} is invalid,
-		an empty list is returned.
+		If {winid} is specified, use the window with this number or
+		window ID instead of the current window.  If {winid} is
+		invalid, an empty list is returned.
 		Example: >
 			:echo getmatches()
 <			[{'group': 'MyGroup1', 'pattern': 'TODO',
@@ -5601,9 +5605,9 @@ gettabvar({tabnr}, {varname} [, {def}])			*gettabvar()*
 		Return type: any, depending on {varname}
 
 
-gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])	*gettabwinvar()*
+gettabwinvar({tabnr}, {winid}, {varname} [, {def}])	*gettabwinvar()*
 		Get the value of window-local variable {varname} in window
-		{winnr} in tab page {tabnr}.
+		{winid} in tab page {tabnr}.
 		The {varname} argument is a string.  When {varname} is empty a
 		dictionary with all window-local variables is returned.
 		When {varname} is equal to "&" get the values of all
@@ -5613,8 +5617,8 @@ gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])	*gettabwinvar()*
 		Note that {varname} must be the name without "w:".
 		Tabs are numbered starting with one.  For the current tabpage
 		use |getwinvar()|.
-		{winnr} can be the window number or the |window-ID|.
-		When {winnr} is zero the current window is used.
+		{winid} can be the window number or the |window-ID|.
+		When {winid} is zero the current window is used.
 		This also works for a global option, buffer-local option and
 		window-local option, but it doesn't work for a global variable
 		or buffer-local variable.
@@ -5625,7 +5629,7 @@ gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])	*gettabwinvar()*
 			:echo "myvar = " .. gettabwinvar(3, 1, 'myvar')
 <
 		To obtain all window-local variables use: >
-			gettabwinvar({tabnr}, {winnr}, '&')
+			gettabwinvar({tabnr}, {winid}, '&')
 
 <		Can also be used as a |method|: >
 			GetTabnr()->gettabwinvar(winnr, varname)
@@ -5633,12 +5637,12 @@ gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])	*gettabwinvar()*
 		Return type: any, depending on {varname}
 
 
-gettagstack([{winnr}])					*gettagstack()*
+gettagstack([{winid}])					*gettagstack()*
 		The result is a Dict, which is the tag stack of window
-		{winnr}.
-		{winnr} can be the window number or the |window-ID|.
-		When {winnr} is not specified, the current window is used.
-		When window {winnr} doesn't exist, an empty Dict is returned.
+		{winid}.
+		{winid} can be the window number or the |window-ID|.
+		When {winid} is not specified, the current window is used.
+		When window {winid} doesn't exist, an empty Dict is returned.
 
 		The returned dictionary contains the following entries:
 			curidx		Current index in the stack.  When at
@@ -5783,7 +5787,7 @@ getwinposy()						*getwinposy()*
 		Return type: |Number|
 
 
-getwinvar({winnr}, {varname} [, {def}])			*getwinvar()*
+getwinvar({winid}, {varname} [, {def}])			*getwinvar()*
 		Like |gettabwinvar()| for the current tabpage.
 		Examples: >
 			:let list_is_on = getwinvar(2, '&list')
@@ -5942,18 +5946,18 @@ has_key({dict}, {key})					*has_key()*
 		Return type: |Number|
 
 
-haslocaldir([{winnr} [, {tabnr}]])			*haslocaldir()*
+haslocaldir([{winid} [, {tabnr}]])			*haslocaldir()*
 		The result is a Number:
 		    1   when the window has set a local directory via |:lcd|
 		    2   when the tab-page has set a local directory via |:tcd|
 		    0   otherwise.
 
 		Without arguments use the current window.
-		With {winnr} use this window in the current tab page.
-		With {winnr} and {tabnr} use the window in the specified tab
+		With {winid} use this window in the current tab page.
+		With {winid} and {tabnr} use the window in the specified tab
 		page.
-		{winnr} can be the window number or the |window-ID|.
-		If {winnr} is -1 it is ignored and only the tabpage is used.
+		{winid} can be the window number or the |window-ID|.
+		If {winid} is -1 it is ignored and only the tabpage is used.
 		Return 0 if the arguments are invalid.
 		Examples: >
 			if haslocaldir() == 1
@@ -7903,12 +7907,12 @@ matchbufline({buf}, {pat}, {lnum}, {end} [, {dict}])	*matchbufline()*
 		Return type: list<dict<any>> or list<any>
 
 
-matchdelete({id} [, {win}])			*matchdelete()* *E802* *E803*
+matchdelete({id} [, {winid}])			*matchdelete()* *E802* *E803*
 		Deletes a match with ID {id} previously defined by |matchadd()|
 		or one of the |:match| commands.  Returns 0 if successful,
 		otherwise -1.  See example for |matchadd()|.  All matches can
 		be deleted in one operation by |clearmatches()|.
-		If {win} is specified, use the window with this number or
+		If {winid} is specified, use the window with this number or
 		window ID instead of the current window.
 
 		Can also be used as a |method|: >
@@ -9796,6 +9800,7 @@ screenpos({winid}, {lnum}, {col})			*screenpos()*
 		The result is a Dict with the screen position of the text
 		character in window {winid} at buffer line {lnum} and column
 		{col}.  {col} is a one-based byte index.
+		{winid} can be the window number or the |window-ID|.
 		The Dict has these members:
 			row	screen row
 			col	first screen column
@@ -10558,13 +10563,14 @@ setline({lnum}, {text})					*setline()*
 		Return type: |Number|
 
 
-setloclist({nr}, {list} [, {action} [, {what}]])	*setloclist()*
-		Create or replace or add to the location list for window {nr}.
-		{nr} can be the window number or the |window-ID|.
-		When {nr} is zero the current window is used.
+setloclist({winid}, {list} [, {action} [, {what}]])	*setloclist()*
+		Create or replace or add to the location list for window
+		{winid}.  {winid} can be the window number or the |window-ID|.
+		When {winid} is zero the current window is used.
 
 		For a location list window, the displayed location list is
-		modified.  For an invalid window number {nr}, -1 is returned.
+		modified.  For an invalid window number {winid}, -1 is
+		returned.
 		Otherwise, same as |setqflist()|.
 		Also see |location-list|.
 
@@ -10581,12 +10587,12 @@ setloclist({nr}, {list} [, {action} [, {what}]])	*setloclist()*
 		Return type: |Number|
 
 
-setmatches({list} [, {win}])				*setmatches()*
+setmatches({list} [, {winid}])				*setmatches()*
 		Restores a list of matches saved by |getmatches()| for the
 		current window.  Returns 0 if successful, otherwise -1.  All
 		current matches are cleared before the list is restored.  See
 		example for |getmatches()|.
-		If {win} is specified, use the window with this number or
+		If {winid} is specified, use the window with this number or
 		window ID instead of the current window.
 
 		Can also be used as a |method|: >
@@ -10859,13 +10865,13 @@ settabvar({tabnr}, {varname}, {val})			*settabvar()*
 		Return type: void
 
 
-settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
-		Set option or local variable {varname} in window {winnr} to
+settabwinvar({tabnr}, {winid}, {varname}, {val})	*settabwinvar()*
+		Set option or local variable {varname} in window {winid} to
 		{val}.
 		Tabs are numbered starting with one.  For the current tabpage
 		use |setwinvar()|.
-		{winnr} can be the window number or the |window-ID|.
-		When {winnr} is zero the current window is used.
+		{winid} can be the window number or the |window-ID|.
+		When {winid} is zero the current window is used.
 		Note that autocommands are blocked, side effects may not be
 		triggered, e.g. when setting 'filetype' or 'syntax'.
 		This also works for a global or local buffer option, but it
@@ -10884,9 +10890,9 @@ settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
 		Return type: void
 
 
-settagstack({nr}, {dict} [, {action}])			*settagstack()*
-		Modify the tag stack of the window {nr} using {dict}.
-		{nr} can be the window number or the |window-ID|.
+settagstack({winid}, {dict} [, {action}])		*settagstack()*
+		Modify the tag stack of the window {winid} using {dict}.
+		{winid} can be the window number or the |window-ID|.
 
 		For a list of supported items in {dict}, refer to
 		|gettagstack()|.  "curidx" takes effect before changing the tag
@@ -10924,7 +10930,7 @@ settagstack({nr}, {dict} [, {action}])			*settagstack()*
 		Return type: |Number|
 
 
-setwinvar({winnr}, {varname}, {val})			*setwinvar()*
+setwinvar({winid}, {varname}, {val})			*setwinvar()*
 		Like |settabwinvar()| for the current tab page.
 		Examples: >
 			:call setwinvar(1, "&list", 0)
@@ -13187,7 +13193,7 @@ win_getid([{win} [, {tab}]])				*win_getid()*
 		Return type: |Number|
 
 
-win_gettype([{nr}])					*win_gettype()*
+win_gettype([{winid}])					*win_gettype()*
 		Return the type of the window:
 			"autocmd"	autocommand window.  Temporary window
 					used to execute autocommands.
@@ -13197,11 +13203,11 @@ win_gettype([{nr}])					*win_gettype()*
 			"popup"		popup window |popup|
 			"preview"	preview window |preview-window|
 			"quickfix"	|quickfix-window|
-			"unknown"	window {nr} not found
+			"unknown"	window {winid} not found
 
-		When {nr} is omitted return the type of the current window.
-		When {nr} is given return the type of this window by number or
-		|window-ID|.
+		When {winid} is omitted return the type of the current window.
+		When {winid} is given return the type of this window by number
+		or |window-ID|.
 
 		Also see the 'buftype' option.  When running a terminal in a
 		popup window then 'buftype' is "terminal" and win_gettype()
@@ -13246,15 +13252,15 @@ win_id2win({expr})					*win_id2win()*
 		Return type: |Number|
 
 
-win_move_separator({nr}, {offset})			*win_move_separator()*
-		Move window {nr}'s vertical separator (i.e., the right border)
-		by {offset} columns, as if being dragged by the mouse.  {nr}
-		can be a window number or |window-ID|.  A positive {offset}
-		moves right and a negative {offset} moves left.  Moving a
-		window's vertical separator will change the width of the
-		window and the width of other windows adjacent to the vertical
-		separator.  The magnitude of movement may be smaller than
-		specified (e.g., as a consequence of maintaining
+win_move_separator({winid}, {offset})			*win_move_separator()*
+		Move window {winid}'s vertical separator (i.e., the right
+		border) by {offset} columns, as if being dragged by the mouse.
+		{winid} can be a window number or |window-ID|.  A positive
+		{offset} moves right and a negative {offset} moves left.
+		Moving a window's vertical separator will change the width of
+		the window and the width of other windows adjacent to the
+		vertical separator.  The magnitude of movement may be smaller
+		than specified (e.g., as a consequence of maintaining
 		'winminwidth').  Returns TRUE if the window can be found and
 		FALSE otherwise.
 		This will fail for the rightmost window and a full-width
@@ -13267,10 +13273,10 @@ win_move_separator({nr}, {offset})			*win_move_separator()*
 		Return type: |Number|
 
 
-win_move_statusline({nr}, {offset})			*win_move_statusline()*
-		Move window {nr}'s status line (i.e., the bottom border) by
-		{offset} rows, as if being dragged by the mouse.  {nr} can be
-		a window number or |window-ID|.  A positive {offset} moves
+win_move_statusline({winid}, {offset})			*win_move_statusline()*
+		Move window {winid}'s status line (i.e., the bottom border) by
+		{offset} rows, as if being dragged by the mouse.  {winid} can
+		be a window number or |window-ID|.  A positive {offset} moves
 		down and a negative {offset} moves up.  Moving a window's
 		status line will change the height of the window and the
 		height of other windows adjacent to the status line.  The
@@ -13285,11 +13291,11 @@ win_move_statusline({nr}, {offset})			*win_move_statusline()*
 		Return type: |Number|
 
 
-win_screenpos({nr})					*win_screenpos()*
-		Return the screen position of window {nr} as a list with two
-		numbers: [row, col].  The first window always has position
+win_screenpos({winid})					*win_screenpos()*
+		Return the screen position of window {winid} as a list with
+		two numbers: [row, col].  The first window always has position
 		[1, 1], unless there is a tabline, then it is [2, 1].
-		{nr} can be the window number or the |window-ID|.  Use zero
+		{winid} can be the window number or the |window-ID|.  Use zero
 		for the current window.
 		Returns [0, 0] if the window cannot be found.
 
@@ -13299,13 +13305,15 @@ win_screenpos({nr})					*win_screenpos()*
 		Return type: list<number>
 
 
-win_splitmove({nr}, {target} [, {options}])		*win_splitmove()*
-		Temporarily switch to window {target}, then move window {nr}
-		to a new split adjacent to {target}.
+win_splitmove({winid}, {target} [, {options}])		*win_splitmove()*
+		Temporarily switch to window {target}, then move window
+		{winid} to a new split adjacent to {target}.
 		Unlike commands such as |:split|, no new windows are created
-		(the |window-ID| of window {nr} is unchanged after the move).
+		(the |window-ID| of window {winid} is unchanged after the
+		move).
 
-		Both {nr} and {target} can be window numbers or |window-ID|s.
+		Both {winid} and {target} can be window numbers or
+		|window-ID|s.
 		Both must be in the current tab page.
 
 		Returns zero for success, non-zero for failure.
@@ -13325,13 +13333,13 @@ win_splitmove({nr}, {target} [, {options}])		*win_splitmove()*
 		Return type: |Number|
 
 
-winbufnr({nr})						*winbufnr()*
+winbufnr({winid})					*winbufnr()*
 		The result is a Number, which is the number of the buffer
-		associated with window {nr}.  {nr} can be the window number or
-		the |window-ID|.
-		When {nr} is zero, the number of the buffer in the current
+		associated with window {winid}.  {winid} can be the window
+		number or the |window-ID|.
+		When {winid} is zero, the number of the buffer in the current
 		window is returned.
-		When window {nr} doesn't exist, -1 is returned.
+		When window {winid} doesn't exist, -1 is returned.
 		Example: >
   :echo "The file in the current window is " .. bufname(winbufnr(0))
 <
@@ -13358,11 +13366,11 @@ windowsversion()					*windowsversion()*
 		Return type: |String|
 
 
-winheight({nr})						*winheight()*
-		The result is a Number, which is the height of window {nr}.
-		{nr} can be the window number or the |window-ID|.
-		When {nr} is zero, the height of the current window is
-		returned.  When window {nr} doesn't exist, -1 is returned.
+winheight({winid})					*winheight()*
+		The result is a Number, which is the height of window {winid}.
+		{winid} can be the window number or the |window-ID|.
+		When {winid} is zero, the height of the current window is
+		returned.  When window {winid} doesn't exist, -1 is returned.
 		An existing window always has a height of zero or more.
 		This excludes any window toolbar line.
 		Examples: >
@@ -13523,11 +13531,11 @@ winsaveview()						*winsaveview()*
 		Return type: dict<number>
 
 
-winwidth({nr})						*winwidth()*
-		The result is a Number, which is the width of window {nr}.
-		{nr} can be the window number or the |window-ID|.
-		When {nr} is zero, the width of the current window is
-		returned.  When window {nr} doesn't exist, -1 is returned.
+winwidth({winid})					*winwidth()*
+		The result is a Number, which is the width of window {winid}.
+		{winid} can be the window number or the |window-ID|.
+		When {winid} is zero, the width of the current window is
+		returned.  When window {winid} doesn't exist, -1 is returned.
 		An existing window always has a width of zero or more.
 		Examples: >
   :echo "The current window has " .. winwidth(0) .. " columns."
