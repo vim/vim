@@ -4212,6 +4212,55 @@ func Test_glob_symlinks()
   call delete('XglobOk')
 endfunc
 
+func Test_glob_directory_win32()
+  CheckMSWindows
+
+  call mkdir('XglobType/dir', 'pR')
+  call writefile([], 'XglobType/file')
+  let save_shellslash = &shellslash
+  set shellslash
+  try
+    call assert_equal(['XglobType/dir/'], getcompletion('XglobType/', 'dir'))
+    call assert_equal(['XglobType/dir', 'XglobType/file'],
+          \ sort(glob('XglobType/*', 0, 1)))
+    silent !mklink /D XglobType\link dir
+    if v:shell_error
+      throw 'Skipped: cannot create directory symlinks'
+    endif
+    call assert_equal(['XglobType/dir/', 'XglobType/link/'],
+          \ sort(getcompletion('XglobType/', 'dir')))
+    call assert_equal(['XglobType/link'], glob('XglobType/link', 0, 1))
+    call delete('XglobType/dir', 'd')
+    call assert_equal([], glob('XglobType/link', 0, 1))
+    call assert_equal(['XglobType/link'], glob('XglobType/link', 0, 1, 1))
+  finally
+    call delete('XglobType/link')
+    let &shellslash = save_shellslash
+  endtry
+endfunc
+
+func Test_glob_literal_suffix_win32()
+  CheckMSWindows
+
+  call mkdir('XglobSuffix/one', 'pR')
+  call mkdir('XglobSuffix/two')
+  call writefile([], 'XglobSuffix/one/script.vim')
+  let save_shellslash = &shellslash
+  set shellslash
+  try
+    call assert_equal(['XglobSuffix/one/script.vim'],
+          \ glob('XglobSuffix/*/script.vim', 0, 1))
+    call assert_equal(['XglobSuffix/one/script.vim'],
+          \ expand('XglobSuffix/*/script.vim', 0, 1))
+    call assert_equal([], glob('XglobSuffix/*/missing.vim', 0, 1))
+    call assert_equal([], expand('XglobSuffix/*/missing.vim', 0, 1))
+    call assert_equal(['XglobSuffix/one/script.vim'],
+          \ glob('XglobSuffix/**/script.vim', 0, 1))
+  finally
+    let &shellslash = save_shellslash
+  endtry
+endfunc
+
 " Test for browse()
 func Test_browse()
   CheckFeature browse
