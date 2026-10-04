@@ -553,7 +553,7 @@ sixel_image8_crop(
 	y1 = y0;
 
     if (x1 <= x0 || y1 <= y0)
-	return FAIL; 
+	return FAIL;
 
     out->stride = src->width;
     out->idx    = (x1 > x0 && y1 > y0)
@@ -563,7 +563,7 @@ sixel_image8_crop(
     out->height = y1 - y0;
     out->pal    = src->pal;
     out->npal   = src->npal;
-
+	
     return OK;
 }
 
