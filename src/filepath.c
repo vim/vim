@@ -806,8 +806,15 @@ file_is_readable(char_u *fname)
 #ifndef O_NONBLOCK
 # define O_NONBLOCK 0
 #endif
-    if (*fname && !mch_isdir(fname)
-	      && (fd = mch_open((char *)fname, O_RDONLY | O_NONBLOCK, 0)) >= 0)
+#ifdef MSWIN
+    // Opening a file that does not exist is slow.
+    if (*fname == NUL || mch_isdir_or_missing(fname))
+	return FALSE;
+#else
+    if (*fname == NUL || mch_isdir(fname))
+	return FALSE;
+#endif
+    if ((fd = mch_open((char *)fname, O_RDONLY | O_NONBLOCK, 0)) >= 0)
     {
 	close(fd);
 	return TRUE;
