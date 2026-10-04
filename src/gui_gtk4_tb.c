@@ -105,7 +105,7 @@ vim_toolbar_new(void)
 }
 
 /*
- * Inser the widget at the given index, then queue a size allocate to check for
+ * Insert the widget at the given index, then queue a size allocate to check for
  * overflowing items.
  */
     static void

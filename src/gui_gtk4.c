@@ -2172,7 +2172,7 @@ read_data_input_cb(
 
     if (r == -1)
     {
-	// Error occured
+	// Error occurred
 	DropReadData *drd = (DropReadData *)rd;
 
 	if (rd->type == READ_DATA_DROP_DATA)

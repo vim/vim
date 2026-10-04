@@ -1273,7 +1273,7 @@ vim_draw_area_add_string(
 
     // Fast path for pure ASCII: use cached glyph table. Skip this path when
     // there are non-ascii characters in the string, font attributes, or if
-    // theres a possible ligature.
+    // there's a possible ligature.
     if (!(draw_flags & DRAW_ITALIC)
 	    && !((draw_flags & DRAW_BOLD) && gui.font_can_bold)
 	    && gui.ascii_glyphs != NULL
