@@ -4902,7 +4902,7 @@ get_next_filename_completion(void)
     }
 
     if (expand_wildcards(1, &compl_pattern.string, &num_matches, &matches,
-		EW_FILE|EW_DIR|EW_ADDSLASH|EW_SILENT) != OK)
+		EW_FILE|EW_DIR|EW_ADDSLASH|EW_SILENT|EW_PATH) != OK)
 	return;
 
     // May change home directory back to "~".

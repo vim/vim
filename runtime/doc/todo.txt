@@ -4640,7 +4640,6 @@ Insert mode completion/expansion:
 -   Make CTRL-X CTRL-L use the 'complete' option?
 -   Add command in CTRL-X mode to add following words to the completed string
     (e.g. to complete "Pointer->element" with CTRL-X CTRL-P CTRL-W CTRL-W)
--   CTRL-X CTRL-F: Use 'path' to find completions.
 -   CTRL-X CTRL-F: Option to use forward slashes on MS-Windows?
 -   CTRL-X CTRL-F: Don't replace "$VIM" with the actual value. (Kelly)
 -   Allow listing all matches in some way (and picking one from the list).
