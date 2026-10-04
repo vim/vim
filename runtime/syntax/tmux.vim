@@ -103,22 +103,22 @@ syn keyword tmuxOptions
 \ automatic-rename automatic-rename-format backspace base-index bell-action
 \ buffer-limit client-active client-attached client-detached client-focus-in
 \ client-focus-out client-resized client-session-changed clock-mode-color
-\ clock-mode-colour clock-mode-style command-alias command-error copy-command
+\ clock-mode-colour clock-mode-style command-alias codepoint-widths command-error copy-command
 \ copy-mode-current-match-style copy-mode-mark-style copy-mode-match-style
-\ cursor-color cursor-colour cursor-style default-command default-shell
+\ cursor-color cursor-colour cursor-style default-client-command default-command default-shell
 \ default-size default-terminal destroy-unattached detach-on-destroy
 \ display-panes-active-color display-panes-active-colour display-panes-color
 \ display-panes-colour display-panes-time display-time editor escape-time
-\ exit-empty exit-unattached extended-keys fill-character focus-events
-\ history-file history-limit key-table lock-after-time lock-command
-\ main-pane-height main-pane-width menu-border-lines menu-border-style
-\ menu-selected-style menu-style message-command-style message-limit
+\ exit-empty exit-unattached extended-keys fill-character focus-events focus-follows-mouse
+\ get-clipboard history-file history-limit input-buffer-size key-table lock-after-time lock-command
+\ main-pane-height main-pane-width marked-pane-changed menu-border-lines menu-border-style
+\ menu-selected-style menu-style message-command-style message-format message-limit
 \ message-line message-style mode-keys mode-style monitor-activity monitor-bell
 \ monitor-silence mouse other-pane-height other-pane-width
 \ pane-active-border-style pane-base-index pane-border-format
 \ pane-border-indicators pane-border-lines pane-border-status pane-border-style
-\ pane-colors pane-colours pane-died pane-exited pane-focus-in pane-focus-out
-\ pane-mode-changed pane-set-clipboard pane-title-changed popup-border-lines
+\ pane-colours pane-died pane-exited pane-focus-in pane-focus-out pane-mode-changed
+\ pane-moved pane-set-clipboard pane-shell-prompt pane-title-changed popup-border-lines
 \ popup-border-style popup-style prefix prefix2 prompt-history-limit
 \ remain-on-exit remain-on-exit-format renumber-windows repeat-time
 \ scroll-on-clear session-closed session-created session-renamed
@@ -126,9 +126,9 @@ syn keyword tmuxOptions
 \ silence-action status status-bg status-fg status-format status-interval
 \ status-justify status-keys status-left status-left-length status-left-style
 \ status-position status-right status-right-length status-right-style
-\ status-style synchronize-panes terminal-features terminal-overrides
+\ status-style switch-mode-match-style synchronize-panes terminal-features terminal-overrides
 \ update-environment user-keys visual-activity visual-bell visual-silence
-\ window-active-style window-layout-changed window-linked window-pane-changed
+\ variation-selector-always-wide window-active-style window-layout-changed window-linked window-pane-changed
 \ window-renamed window-resized window-size window-status-activity-style
 \ window-status-bell-style window-status-current-format
 \ window-status-current-style window-status-format window-status-last-style
@@ -146,7 +146,7 @@ syn keyword tmuxCommands
 \ killp killw last last-pane last-window lastp link-window linkw list-buffers
 \ list-clients list-commands list-keys list-panes list-sessions list-windows
 \ load-buffer loadb lock lock-client lock-server lock-session lockc locks ls
-\ lsb lsc lscm lsk lsp lsw menu move-pane move-window movep movew new
+\ lsb lsc lscm lsk lsp lsw menu move-pane move-window movep movew new-pane newp new
 \ new-session new-window neww next next-layout next-window nextl paste-buffer
 \ pasteb pipe-pane pipep popup prev previous-layout previous-window prevl
 \ refresh refresh-client rename rename-session rename-window renamew
@@ -157,16 +157,16 @@ syn keyword tmuxCommands
 \ set-environment set-hook set-option set-window-option setb setenv setw show
 \ show-buffer show-environment show-hooks show-messages show-options
 \ show-prompt-history show-window-options showb showenv showmsgs showphist
-\ showw source source-file split-pane split-window splitp splitw start
+\ showw source source-file split-window splitw start
 \ start-server suspend-client suspendc swap-pane swap-window swapp swapw
-\ switch-client switchc unbind unbind-key unlink-window unlinkw wait wait-for
+\ switch-client switchc switch-mode unbind unbind-key unlink-window unlinkw wait wait-for
 
 syn keyword tmuxEnums
 \ absolute-centre all always any arrows bar blinking-bar blinking-block
-\ blinking-underline block both bottom centre color colour current default
+\ blinking-underline block both bottom buffer centre color colour csi-u current default
 \ double emacs external failed heavy keep-group keep-last largest latest left
-\ manual next no-detached none number off on other padded previous right
-\ rounded simple single smallest top underline vi
+\ manual next no-detached none number off on other padded previous request right
+\ rounded simple single smallest top underline vi xterm
 
 let &cpo = s:original_cpo
 unlet! s:original_cpo s:bg s:i
