@@ -522,9 +522,10 @@ sixel_image8_clear(sixel_image8_T *simg)
  * stride.  x/y/w/h are clamped to src's bounds, so a partially or fully
  * out-of-range rectangle is silently shrunk rather than reading out of bounds;
  * a rectangle with no overlap at all yields a zero-sized view (width==0 or
- * height==0), which sixel_encode_view() rejects.
+ * height==0), which sixel_encode_view() rejects. Returns OK on success and FAIL
+ * on failure.
  */
-    static void
+    static int
 sixel_image8_crop(
 	sixel_image8_T	*src,
 	int		 x,
@@ -536,7 +537,7 @@ sixel_image8_crop(
     int x0, y0, x1, y1;   // clamped rectangle, half-open [x0,x1) x [y0,y1)
 
     if (src == NULL || out == NULL)
-	return;
+	return FAIL;
 
     x0 = x < 0 ? 0 : x;
     y0 = y < 0 ? 0 : y;
@@ -551,6 +552,9 @@ sixel_image8_crop(
     if (y1 < y0)
 	y1 = y0;
 
+    if (x1 <= x0 || y1 <= y0)
+	return FAIL;
+
     out->stride = src->width;
     out->idx    = (x1 > x0 && y1 > y0)
 	? src->idx + (size_t)y0 * src->width + x0
@@ -559,6 +563,8 @@ sixel_image8_crop(
     out->height = y1 - y0;
     out->pal    = src->pal;
     out->npal   = src->npal;
+	
+    return OK;
 }
 
 /*
@@ -901,8 +907,8 @@ image_placement_sixel_draw(image_placement_T *place)
 
 	image_placement_subrect(place, rect, &row, &col, &x, &y, &w, &h, false);
 
-	sixel_image8_crop(&ictx->image8, x, y, w, h, &view);
-	if (sixel_encode_view(&view, seq) == FAIL)
+	if (sixel_image8_crop(&ictx->image8, x, y, w, h, &view) == FAIL
+		|| sixel_encode_view(&view, seq) == FAIL)
 	    continue;
 
 	windgoto(row, col);
