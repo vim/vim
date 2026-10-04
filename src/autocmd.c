@@ -2843,6 +2843,9 @@ has_autocmd(event_T event, char_u *sfname, buf_T *buf)
     char_u	*tail = gettail(sfname);
     int		retval = FALSE;
 
+    if (first_autopat[(int)event] == NULL)
+	return FALSE;
+
     fname = FullName_save(sfname, FALSE);
     if (fname == NULL)
 	return FALSE;
