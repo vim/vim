@@ -30,6 +30,7 @@ int mch_setperm(char_u *name, long perm);
 void mch_hide(char_u *name);
 int mch_ishidden(char_u *name);
 int mch_isdir(char_u *name);
+int mch_isdir_or_missing(char_u *name);
 int mch_isrealdir(char_u *name);
 int mch_mkdir(char_u *name);
 int mch_rmdir(char_u *name);
