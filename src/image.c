@@ -880,7 +880,7 @@ draw_image_placements(void)
 		    // cells that may have stale pixels still on them.
 		    //
 		    // Not needed for RGBA images, because we redraw the visible
-		    // region everytime anyways.
+		    // region every time anyways.
 		    if (img->fmt != IMAGE_FORMAT_RGBA)
 		    {
 			int		    min_w, min_h;
