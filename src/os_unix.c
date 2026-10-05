@@ -2850,9 +2850,9 @@ mch_FullName(
 mch_isFullName(char_u *fname)
 {
 #ifdef VMS
-    return ( fname[0] == '/'	       || fname[0] == '.'	    ||
-	     strchr((char *)fname,':') || strchr((char *)fname,'"') ||
-	    (strchr((char *)fname,'[') && strchr((char *)fname,']'))||
+    return ( fname[0] == '/'	       || fname[0] == '.'	     ||
+	     strchr((char *)fname,':') || strchr((char *)fname,'"')  ||
+	    (strchr((char *)fname,'[') && strchr((char *)fname,']')) ||
 	    (strchr((char *)fname,'<') && strchr((char *)fname,'>'))   );
 #else
     return (*fname == '/' || *fname == '~');
