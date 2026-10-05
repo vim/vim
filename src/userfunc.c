@@ -1830,13 +1830,13 @@ get_lambda_tv(
 	{
 	    // Add more lines, split by line breaks.  Thus is used when a
 	    // lambda with { cmds } is encountered.
-	    while (*line_end == '\n')
+	    while (line_end < end && *line_end == '\n')
 	    {
 		if (ga_grow(&newlines, 1) == FAIL)
 		    goto errret;
 		start = line_end + 1;
 		line_end = vim_strchr(start, '\n');
-		if (line_end == NULL)
+		if (line_end == NULL || line_end > end)
 		    line_end = end;
 		((char_u **)(newlines.ga_data))[newlines.ga_len++] =
 					 vim_strnsave(start, line_end - start);
