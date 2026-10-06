@@ -3627,6 +3627,63 @@ func Test_prop_with_text_above_screenline_motion()
   bwipe!
 endfunc
 
+func Test_prop_with_text_above_smoothscroll()
+  call NewWindow(6, 40)
+  setlocal smoothscroll scrolloff=0
+  let rowa = repeat('a', 40)
+  let rowb = repeat('b', 40)
+  let rowc = repeat('c', 20)
+  call setline(1, ['line 1', rowa .. rowb .. rowc]
+	\ + map(range(3, 12), '"line " .. v:val'))
+  call prop_type_add('test', #{highlight: 'Normal'})
+
+  let tests = [
+	\ ['Example', [
+	\   ['line 1', 'Example', rowa, rowb, rowc, 'line 3'],
+	\   ['Example', rowa, rowb, rowc, 'line 3', 'line 4'],
+	\   ['<<<' .. rowa[3 :], rowb, rowc, 'line 3', 'line 4', 'line 5'],
+	\   ['<<<' .. rowb[3 :], rowc, 'line 3', 'line 4', 'line 5', 'line 6'],
+	\   ['<<<' .. rowc[3 :], 'line 3', 'line 4', 'line 5', 'line 6',
+	\     'line 7'],
+	\   ['line 3', 'line 4', 'line 5', 'line 6', 'line 7', 'line 8'],
+	\ ]],
+	\ ['Second', [
+	\   ['line 1', 'Example', 'Second', rowa, rowb, rowc],
+	\   ['Example', 'Second', rowa, rowb, rowc, 'line 3'],
+	\   ['<<<ond', rowa, rowb, rowc, 'line 3', 'line 4'],
+	\   ['<<<' .. rowa[3 :], rowb, rowc, 'line 3', 'line 4', 'line 5'],
+	\   ['<<<' .. rowb[3 :], rowc, 'line 3', 'line 4', 'line 5', 'line 6'],
+	\   ['<<<' .. rowc[3 :], 'line 3', 'line 4', 'line 5', 'line 6',
+	\     'line 7'],
+	\   ['line 3', 'line 4', 'line 5', 'line 6', 'line 7', 'line 8'],
+	\ ]],
+	\ ]
+  for [vtext, screens] in tests
+    call prop_add(2, 0, #{type: 'test', text: vtext, text_align: 'above'})
+    normal! gg
+    redraw
+    call assert_equal(screens[0],
+	  \ ScreenLines([1, 6], 40)->map('trim(v:val, " ", 2)'))
+    for idx in range(1, len(screens) - 1)
+      exe "normal! \<C-E>"
+      redraw
+      call assert_equal(screens[idx],
+	    \ ScreenLines([1, 6], 40)->map('trim(v:val, " ", 2)'),
+	    \ vtext .. ': CTRL-E to screen ' .. idx)
+    endfor
+    for idx in range(len(screens) - 2, 0, -1)
+      exe "normal! \<C-Y>"
+      redraw
+      call assert_equal(screens[idx],
+	    \ ScreenLines([1, 6], 40)->map('trim(v:val, " ", 2)'),
+	    \ vtext .. ': CTRL-Y to screen ' .. idx)
+    endfor
+  endfor
+
+  call prop_type_delete('test')
+  bwipe!
+endfunc
+
 func Test_prop_with_text_below_after_match()
   CheckScreendump
   CheckRunVimInTerminal
