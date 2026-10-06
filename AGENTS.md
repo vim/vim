@@ -74,7 +74,7 @@ Before submitting any patch, at minimum:
 Vim uses a strict commit message format. The subject line is a
 one-sentence **problem statement**, not a description of the fix:
 
-    patch 9.2.NNNN: short description of the problem
+    short description of the problem
 
     Problem:  Restatement of the problem as a full sentence, possibly
               with a reporter attribution in parentheses.
