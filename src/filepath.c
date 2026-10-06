@@ -1230,7 +1230,7 @@ f_getfsize(typval_T *argvars, typval_T *rettv)
     fname = tv_get_string(&argvars[0]);
     if (mch_stat((char *)fname, &st) >= 0)
     {
-	if (mch_isdir(fname))
+	if (S_ISDIR(st.st_mode))
 	    rettv->vval.v_number = 0;
 	else
 	{
