@@ -5640,12 +5640,8 @@ find_match_text(colnr_T *startcol, int regstart, char_u *match_text)
     for (;;)
     {
 	match = TRUE;
-	// skip regstart
-	len2 = MB_CHAR2LEN(regstart);
-	if (enc_utf8 && len2 > 1 && MB_CHAR2LEN(PTR2CHAR(rex.line + col)) != len2)
-	    // because of case-folding of the previously matched text, we may need
-	    // to skip fewer bytes than mb_char2len(regstart)
-	    len2 = mb_char2len(utf_fold(regstart));
+	// Skip the input character: case-folding can change its byte length.
+	len2 = MB_CPTR2LEN(rex.line + col);
 	for (len1 = 0; match_text[len1] != NUL; len1 += MB_CHAR2LEN(c1))
 	{
 	    c1 = PTR2CHAR(match_text + len1);
@@ -5681,7 +5677,7 @@ find_match_text(colnr_T *startcol, int regstart, char_u *match_text)
 	}
 
 	// Try finding regstart after the current match.
-	col += MB_CHAR2LEN(regstart); // skip regstart
+	col += MB_CPTR2LEN(rex.line + col); // skip the input character
 	if (skip_to_start(regstart, &col) == FAIL)
 	    break;
     }
