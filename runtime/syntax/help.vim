@@ -2,7 +2,7 @@
 " Language:		Vim help file
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:		2026 Aug 24
+" Last Change:		2026 Oct 07
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -15,7 +15,7 @@ set cpo&vim
 syn iskeyword @,48-57,_,192-255
 
 if !exists('g:help_example_languages')
-  let g:help_example_languages = #{ vim: 'vim', vim9: 'vim' }
+  let g:help_example_languages = #{ vim: 'vim', vim9: 'vim', vim9mix: 'vim' }
 endif
 
 syn match helpHeadline		"^[A-Z.][-A-Z0-9 .,()_']*?\=\ze\(\s\+\*\|$\)"
@@ -33,17 +33,18 @@ endif
 for [s:lang, s:syntax] in g:help_example_languages->items()
   unlet! b:current_syntax
 
-  if s:lang == "vim9"
+  if s:lang ==# 'vim9'
     let b:vimsyn_force_vim9script = v:true
   endif
 
-  " silent! to prevent E403
-  execute 'silent! syn include' $'@helpExampleHighlight_{s:lang}'
-        \ $'syntax/{s:syntax}.vim'
-
-  if s:lang == "vim9"
-    unlet b:vimsyn_force_vim9script
+  " vim9mix also uses the vim9 cluster
+  if s:lang !=# 'vim9mix'
+    " silent! to prevent E403
+    execute 'silent! syn include' $'@helpExampleHighlight_{s:lang}'
+	  \ $'syntax/{s:syntax}.vim'
   endif
+
+  unlet! b:vimsyn_force_vim9script
 
   execute $'syn region helpExampleHighlight_{s:lang} matchgroup=helpIgnore'
         \ $'start=/\%(^\| \)>{s:lang}$/'
@@ -53,13 +54,14 @@ for [s:lang, s:syntax] in g:help_example_languages->items()
 endfor
 unlet! s:lang s:syntax
 
-if has_key(g:help_example_languages, "vim9")
-  " for example at :help vim9-mix
-  syn region vim9LegacyHeader_HelpExample
-	\ start=+" _legacy Vim script_ comments are placed here+
+if has_key(g:help_example_languages, "vim9mix")
+  " for examples at :help vim9-mix and :help vim9-comments
+  syn region vim9LegacyHeader_HelpExample contained
+	\ start="\%(\%(^\| \)>vim9mix\n\)\@<=\_."
 	\ end="^\ze\s*vim9s\%[cript]\>"
 	\ contains=@vimLegacyTop,vimComment,vimLineComment,vimLineStart
-  syn cluster helpExampleHighlight_vim9 add=vim9LegacyHeader_HelpExample
+  syn cluster helpExampleHighlight_vim9mix
+	\ contains=@helpExampleHighlight_vim9,vim9LegacyHeader_HelpExample
 endif
 
 if has("ebcdic")
