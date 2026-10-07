@@ -1112,7 +1112,8 @@
 # define FEAT_IMAGE_KITTY
 #endif
 
-#if defined(ALLOW_IMAGE) && (defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN))
+#if defined(ALLOW_IMAGE) && ((defined(FEAT_GUI_GTK) \
+	    && (defined(USE_GTK4) || defined(USE_GTK3))) || defined(FEAT_GUI_MSWIN))
 # define FEAT_IMAGE_GUI
 #endif
 
