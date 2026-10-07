@@ -12,6 +12,8 @@ A pull request has the advantage that it will trigger the Continuous
 Integration tests, you will be warned of problems (you can ignore the coverage
 warning, it's noisy).
 
+Do not submit a single PR that addresses multiple unrelated issues.
+
 Please always add a test, if possible. All new functionality should be tested
 and bug fixes should be tested for regressions: the test should fail before the
 fix and pass after the fix. Look through recent patches for examples and find
@@ -48,12 +50,35 @@ approvers are happy with that particular change.
 
 ## Using AI
 
-When using AI for contributions, please disclose this. Any AI-generated code
-must follow the Vim code style. In particular, [test_codestyle.vim][18]
-must not report any failures. Check the CI output for any test failures.
+Use of AI is allowed within the limits mentioned below, but you remain fully
+responsible for everything you submit. Disclosure of AI use is required, using
+an `Assisted-by:` trailer. See [AGENTS.md](AGENTS.md) for the AI guidance.
 
-Ensure that changes are properly tested. Do not submit a single PR that
-addresses multiple unrelated issues.
+### What is acceptable
+
+- Research, looking things up, understanding existing code.
+- Small, targeted fixes (e.g. for security issues).
+- Help with writing tests and benchmarks.
+
+### What is not acceptable
+
+- Large pull requests that were mostly generated. We may close pull
+  requests that are too large to review with confidence, whatever their
+  origin. Split large changes into smaller, reviewable steps.
+- Answering review questions by pasting AI output. Reviewers want to hear
+  your own understanding of the change.
+- Posting AI-generated reviews on other people's pull requests. Automated
+  CI checks are fine.
+
+### Your responsibility
+
+- You must understand every line of your change and be able to explain it.
+- You must have the right to submit the code under the Vim license.
+- You are expected to fix problems your change introduces.
+
+Maintainers decide whether a contribution is acceptable. See also the
+[Code of Conduct](CODE_OF_CONDUCT.md), which covers the use of AI in
+discussions.
 
 # Reporting issues
 
@@ -170,6 +195,5 @@ mailing list. For other questions you can join [`#vim`][19], use the
 [15]: https://en.wikipedia.org/wiki/Developer_Certificate_of_Origin
 [16]: https://github.com/vim/vim/blob/master/runtime/doc/helphelp.txt
 [17]: https://github.com/vim/vim/issues
-[18]: https://github.com/vim/vim/blob/master/src/testdir/test_codestyle.vim
 [19]: https://web.libera.chat/#vim
 [20]: https://github.com/vim/vim-win32-installer
