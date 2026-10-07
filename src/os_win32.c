@@ -3977,6 +3977,31 @@ mch_isdir(char_u *name)
 }
 
 /*
+ * Return TRUE if "name" is a directory or does not exist.
+ * Return FALSE otherwise, also when the attributes cannot be obtained for
+ * another reason.
+ */
+    int
+mch_isdir_or_missing(char_u *name)
+{
+    WCHAR	*p;
+    DWORD	attr;
+    DWORD	error = 0;
+
+    p = enc_to_utf16(name, NULL);
+    if (p == NULL)
+	return FALSE;
+    attr = GetFileAttributesW(p);
+    if (attr == INVALID_FILE_ATTRIBUTES)
+	error = GetLastError();
+    vim_free(p);
+
+    if (attr == INVALID_FILE_ATTRIBUTES)
+	return error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND;
+    return (attr & FILE_ATTRIBUTE_DIRECTORY) != 0;
+}
+
+/*
  * return TRUE if "name" is a directory, NOT a symlink to a directory
  * return FALSE if "name" is not a directory
  * return FALSE for error
