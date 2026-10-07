@@ -183,7 +183,10 @@ arg_exists(
 									 == OK)
 	{
 	    if (gen_load_outer != NULL)
+	    {
 		++*gen_load_outer;
+		cctx->ctx_outer_used = TRUE;
+	    }
 	    return OK;
 	}
     }
