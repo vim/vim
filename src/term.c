@@ -3852,7 +3852,15 @@ set_shellsize_inner(int width, int height, int mustset)
 
     if (State != MODE_ASKMORE && State != MODE_EXTERNCMD
 						      && State != MODE_CONFIRM)
+    {
+	// Most terminals reset the scroll region when they are resized, but a
+	// scroll region for the old size may have been sent before the resize
+	// was noticed (e.g. during startup) and still be in effect.  Set it
+	// again for the new size, otherwise lines below it are not drawn.
+	if (scroll_region && termcap_active)
+	    scroll_region_reset();
 	screenclear();
+    }
     else
 	screen_start();	    // don't know where cursor is now
 
