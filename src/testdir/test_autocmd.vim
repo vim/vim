@@ -4070,6 +4070,34 @@ func Test_autocmd_with_block()
   augroup END
 endfunc
 
+" Test for a lambda in an :autocmd block with the expression split over lines
+func Test_autocmd_block_multiline_lambda()
+  let lines =<< trim END
+      vim9script
+      autocmd CmdlineEnter * {
+          g:Lambda = () => true ?
+              'yes' :
+              'no' | g:after = 'done'
+        }
+      doautocmd CmdlineEnter
+      assert_equal('yes', g:Lambda())
+      assert_equal('done', g:after)
+
+      au! CmdlineEnter
+      autocmd CmdlineEnter * {
+          g:Lambda = () => false ?
+              'yes' :
+              'no'
+        }
+      doautocmd CmdlineEnter
+      assert_equal('no', g:Lambda())
+  END
+  call v9.CheckScriptSuccess(lines)
+
+  unlet g:Lambda g:after
+  au! CmdlineEnter
+endfunc
+
 " Test for a backslash line continuation in an :autocmd command
 func Test_autocmd_line_continuation()
   let lines =<< trim END
