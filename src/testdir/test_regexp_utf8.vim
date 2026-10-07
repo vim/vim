@@ -754,3 +754,35 @@ func Test_recognize_char_class_multibyte_old_engine()
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
+
+func Test_regexp_casefold_match_length()
+  CheckFeature multi_byte
+  let save_encoding = &encoding
+  try
+    set encoding=utf-8
+    new
+    for [text, literal] in [['ſa', 'sa'], ['Ka', 'ka'], ['sſ', 'ss'],
+          \ ['kK', 'kk'], ['sa', 'ſa'], ['ka', 'Ka'], ['Sa', 'sa'],
+          \ ['éa', 'Éa']]
+      let pat = '\%#=1\c' .. literal
+      call assert_equal([text, 0, strlen(text)], matchstrpos(text, pat))
+      call assert_equal('X', substitute(text, pat, 'X', ''))
+      call assert_equal('X', substitute(text, pat, 'X', 'g'))
+      call setline(1, text)
+      execute 's/' .. pat .. '/X/'
+      call assert_equal('X', getline(1))
+    endfor
+
+    " The helper also supplies the byte length consumed by backreferences.
+    for engine in [1, 2]
+      let pat = '\%#=' .. engine .. '\c\([sk]\)\1'
+      for text in ['sſ', 'kK', 'ſs', 'Kk']
+        call assert_equal([text, 0, strlen(text)], matchstrpos(text, pat))
+        call assert_equal('X', substitute(text, pat, 'X', ''))
+      endfor
+    endfor
+  finally
+    bwipe!
+    let &encoding = save_encoding
+  endtry
+endfunc
