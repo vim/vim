@@ -1721,7 +1721,8 @@ func Test_xx01_term_style_response()
         \ mouse: 's',
         \ kitty: 'u',
         \ rgb: 'u',
-        \ decrqm: 'u'
+        \ decrqm: 'u',
+        \ undercurl: 'u'
         \ }, terminalprops())
 
   set t_RV=
@@ -1758,7 +1759,8 @@ func Test_xx02_iTerm2_response()
         \ mouse: 's',
         \ kitty: 'u',
         \ rgb: 'u',
-        \ decrqm: 'y'
+        \ decrqm: 'y',
+        \ undercurl: 'u'
         \ }, terminalprops())
 
   set t_RV=
@@ -1780,7 +1782,8 @@ func Run_libvterm_konsole_response(code)
         \ mouse: 's',
         \ kitty: 'u',
         \ rgb: 'u',
-        \ decrqm: 'u'
+        \ decrqm: 'u',
+        \ undercurl: 'u'
         \ }, terminalprops())
 endfunc
 
@@ -1825,7 +1828,8 @@ func Test_xx04_Mac_Terminal_response()
         \ mouse: 's',
         \ kitty: 'u',
         \ rgb: 'u',
-        \ decrqm: 'n'
+        \ decrqm: 'n',
+        \ undercurl: 'u'
         \ }, terminalprops())
   call assert_equal("\<Esc>[58;2;%lu;%lu;%lum", &t_8u)
 
@@ -1858,7 +1862,8 @@ func Test_xx05_mintty_response()
         \ mouse: 's',
         \ kitty: 'u',
         \ rgb: 'u',
-        \ decrqm: 'u'
+        \ decrqm: 'u',
+        \ undercurl: 'u'
         \ }, terminalprops())
 
   set t_RV=
@@ -1896,7 +1901,8 @@ func Test_xx06_screen_response()
         \ mouse: 's',
         \ kitty: 'u',
         \ rgb: 'u',
-        \ decrqm: 'n'
+        \ decrqm: 'n',
+        \ undercurl: 'u'
         \ }, terminalprops())
 
   set t_RV=
@@ -1923,7 +1929,8 @@ func Do_check_t_8u_set_reset(set_by_user)
         \ mouse: 's',
         \ kitty: 'u',
         \ rgb: 'u',
-        \ decrqm: 'u'
+        \ decrqm: 'u',
+        \ undercurl: 'u'
         \ }, terminalprops())
   call assert_equal(a:set_by_user ? default_value : '', &t_8u)
 endfunc
@@ -1964,7 +1971,8 @@ func Test_xx07_xterm_response()
         \ mouse: 'u',
         \ kitty: 'u',
         \ rgb: 'u',
-        \ decrqm: 'u'
+        \ decrqm: 'u',
+        \ undercurl: 'u'
         \ }, terminalprops())
 
   " xterm >= 95 < 277 "xterm2"
@@ -1982,7 +1990,8 @@ func Test_xx07_xterm_response()
         \ mouse: '2',
         \ kitty: 'u',
         \ rgb: 'u',
-        \ decrqm: 'u'
+        \ decrqm: 'u',
+        \ undercurl: 'u'
         \ }, terminalprops())
 
   " xterm >= 277: "sgr"
@@ -2000,7 +2009,8 @@ func Test_xx07_xterm_response()
         \ mouse: 's',
         \ kitty: 'u',
         \ rgb: 'u',
-        \ decrqm: 'u'
+        \ decrqm: 'u',
+        \ undercurl: 'u'
         \ }, terminalprops())
 
   " xterm >= 279: "sgr" and cursor_style not reset; also check t_8u reset,
@@ -2031,7 +2041,8 @@ func Test_xx08_kitty_response()
         \ mouse: 's',
         \ kitty: 'y',
         \ rgb: 'u',
-        \ decrqm: 'y'
+        \ decrqm: 'y',
+        \ undercurl: 'u'
         \ }, terminalprops())
 
   call feedkeys("\<Esc>[?1u") " simulate the kitty keyboard protocol is enabled
@@ -2042,6 +2053,47 @@ func Test_xx08_kitty_response()
 
   set t_RV=
   call test_override('term_props', 0)
+endfunc
+
+" This checks the SGR response to the request of the curly underline.
+func Test_xx09_undercurl_response()
+  let save_Cs = &t_Cs
+  let save_Ce = &t_Ce
+  set t_Cs= t_Ce=
+  call test_option_not_set('t_Cs')
+  call test_option_not_set('t_Ce')
+
+  " SGR 4:3 is not taken
+  call feedkeys("\<Esc>P1$r0;4m\<Esc>\\", 'Lx!')
+  call assert_equal('n', terminalprops().undercurl)
+  call assert_equal('', &t_Cs)
+  call assert_equal('', &t_Ce)
+
+  " the request is not taken, the responses are not typed
+  new
+  let @" = 'x'
+  call feedkeys("\<Esc>P0$r\<Esc>\\", 'Lx!')
+  call feedkeys("\<Esc>P0$r0;4:3m\<Esc>\\", 'Lx!')
+  call assert_equal([''], getline(1, '$'))
+  call assert_equal('n', terminalprops().undercurl)
+  call assert_equal('', &t_Cs)
+  bwipe!
+
+  " SGR 4:3 is taken
+  call feedkeys("\<Esc>P1$r0;4:3m\<Esc>\\", 'Lx!')
+  call assert_equal('y', terminalprops().undercurl)
+  call assert_equal("\<Esc>[4:3m", &t_Cs)
+  call assert_equal("\<Esc>[4:0m", &t_Ce)
+
+  " t_Cs and t_Ce set by the user are kept
+  set t_Cs= t_Ce=
+  call feedkeys("\<Esc>P1$r0;4:3m\<Esc>\\", 'Lx!')
+  call assert_equal('y', terminalprops().undercurl)
+  call assert_equal('', &t_Cs)
+  call assert_equal('', &t_Ce)
+
+  let &t_Cs = save_Cs
+  let &t_Ce = save_Ce
 endfunc
 
 func Test_focus_events()
