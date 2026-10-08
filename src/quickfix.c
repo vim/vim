@@ -5291,6 +5291,7 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
 	    // Delete the empty line which is now at the end
 	    (void)ml_delete(lnum + 1);
 
+	list_unref(qftf_list);
 	qfga_clear();
     }
 
