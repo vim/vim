@@ -467,6 +467,19 @@ skip_for_popup(int row, int col)
     return FALSE;
 }
 
+/*
+ * Return true if any character from "start_col" up to "end_col" in "row" is
+ * to be skipped for a popup.
+ */
+    static bool
+skip_for_popup_range(int row, int start_col, int end_col)
+{
+    for (int col = start_col; col < end_col; ++col)
+	if (skip_for_popup(row, col))
+	    return true;
+    return false;
+}
+
 #ifdef FEAT_PROP_POPUP
 // Cells where ScreenLines[] was updated but terminal output was suppressed
 // because the cell was under an opacity popup.  For these cells the terminal
@@ -2852,7 +2865,9 @@ screen_fill(
 		&& !popup_is_under_opacity_range(row,
 						start_col, end_col)
 #endif
-		)
+		// Nor when the popup menu covers part of the range, clearing
+		// it and drawing it again flickers.
+		&& !skip_for_popup_range(row, start_col, end_col))
 	{
 	    /*
 	     * check if we really need to clear something
