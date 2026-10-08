@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Sep 30
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Oct 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5160,9 +5160,7 @@ getpos({expr})						*getpos()*
 		use |getcharpos()|.
 
 		The visual marks |'<| and |'>| refer to the beginning and end
-		of the visual selection relative to the buffer.  Note that
-		this differs from |setpos()|, where they are relative to the
-		cursor position.
+		of the visual selection relative to the buffer.
 
 		Note that for '< and '> Visual mode matters: when it is "V"
 		(visual line mode) the column of '< is zero and the column of
@@ -10629,14 +10627,20 @@ setpos({expr}, {list})					*setpos()*
 		preferred column is not set.  When it is present and setting a
 		mark position it is not used.
 
-		Note that for |'<| and |'>| changing the line number may
-		result in the marks to be effectively swapped, so that |'<| is
-		always before |'>|.
+		For |'<| and |'>|, the endpoints used by setters are assigned
+		when a new Visual selection is saved.  Later writes keep these
+		assignments, even when an endpoint crosses the other one.
+		Getting the marks still returns the earlier position for |'<|
+		and the later position for |'>|.  After a crossing, getter
+		names can therefore differ from the setter assignments, and
+		setpos(name, getpos(name)) need not leave a mark unchanged.
+		Deleting one endpoint preserves the other and its assignment.
+		When both are unset, |'<| uses the start slot and |'>| the end
+		slot until a new Visual selection is saved.  Old undo files
+		without endpoint assignments also use these fixed slots.
 
 		The visual marks |'<| and |'>| refer to the beginning and end
-		of the visual selection relative to the cursor position.
-		Note that this differs from |getpos()|, where they are
-		relative to the buffer.
+		of the visual selection relative to the buffer.
 
 		Returns 0 when the position could be set, -1 otherwise.
 		An error message is given if {expr} is invalid.

@@ -5,6 +5,117 @@
 
 source util/screendump.vim
 
+func Test_undo_visual_endpoint_identity()
+  new
+  let save_ul = &undolevels
+  defer execute('let &undolevels = ' .. save_ul)
+  set undolevels=100
+  call setline(1, 'abcdefghijk')
+  let &undolevels = &undolevels
+  execute "normal! gg0v6lo\<Esc>"
+  call setpos("'<", [0, 1, 8, 0])
+  call setline(1, 'abcdefghijK')
+  let &undolevels = &undolevels
+  execute "normal! gg0v2l\<Esc>"
+  undo
+  call assert_equal('abcdefghijk', getline(1))
+  call assert_equal([[0, 1, 7, 0], [0, 1, 8, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call setpos("'<", [0, 1, 5, 0])
+  call assert_equal([[0, 1, 5, 0], [0, 1, 7, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  redo
+  call assert_equal('abcdefghijK', getline(1))
+  call setpos("'<", [0, 1, 4, 0])
+  call assert_equal([[0, 1, 3, 0], [0, 1, 4, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call setpos("'>", [0, 1, 6, 0])
+  normal! gvy
+  call assert_equal('def', getreg('"'))
+  bwipe!
+endfunc
+
+func Test_undo_file_visual_endpoint_identity()
+  CheckFeature persistent_undo
+  let save_ul = &undolevels
+  defer execute('let &undolevels = ' .. save_ul)
+  new Xvisualidentity.txt
+  setlocal noswapfile
+  set undolevels=100
+  call setline(1, 'abcdefghijk')
+  let &undolevels = &undolevels
+  execute "normal! gg0v6lo\<Esc>"
+  call setpos("'<", [0, 1, 8, 0])
+  call setline(1, 'abcdefghijK')
+  write
+  defer delete('Xvisualidentity.txt')
+  wundo! Xvisualidentity.undo
+  defer delete('Xvisualidentity.undo')
+  bwipe!
+  edit Xvisualidentity.txt
+  rundo Xvisualidentity.undo
+  undo
+  call assert_equal('abcdefghijk', getline(1))
+  call assert_equal([[0, 1, 7, 0], [0, 1, 8, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call setpos("'<", [0, 1, 5, 0])
+  call assert_equal([[0, 1, 5, 0], [0, 1, 7, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  normal! gvy
+  call assert_equal('efg', getreg('"'))
+  bwipe!
+endfunc
+
+func Test_undo_file_visual_identity_errors()
+  CheckFeature persistent_undo
+  let save_ul = &undolevels
+  defer execute('let &undolevels = ' .. save_ul)
+  new Xvisualidentitybad.txt
+  setlocal noswapfile
+  set undolevels=100
+  call setline(1, 'one')
+  let &undolevels = &undolevels
+  call setline(1, 'two')
+  write
+  defer delete('Xvisualidentitybad.txt')
+  wundo! Xvisualidentitybad.undo
+  defer delete('Xvisualidentitybad.undo')
+  let blob = readfile('Xvisualidentitybad.undo', 'B')
+  let field = -1
+  for i in range(len(blob) - 401)
+    if blob[i] == 0x5f && blob[i + 1] == 0xd0
+          \ && blob[i + 18 : i + 20] == 0z000000
+          \ && blob[i + 21] > 0 && blob[i + 21] < 8
+      " The unchanged fixed header is 392 bytes, then UHP_SAVE_NR uses six.
+      call assert_equal(0z0401, blob[i + 392 : i + 393])
+      let field = i + 398
+      call assert_equal(0z0102, blob[field : field + 1])
+      break
+    endif
+  endfor
+  call assert_true(field >= 0, 'found optional Visual identity field')
+  if field < 0
+    bwipe!
+    return
+  endif
+  for [offset, value] in [[0, 2], [0, 255], [2, 2], [2, 255]]
+    let invalid = copy(blob)
+    let invalid[field + offset] = value
+    call writefile(invalid, 'Xvisualidentitybad.undo')
+    call assert_fails('rundo Xvisualidentitybad.undo', 'E825:')
+  endfor
+  " Reject a field truncated before its tag or before its one-byte value.
+  for last in [field, field + 1]
+    call writefile(blob[0 : last], 'Xvisualidentitybad.undo')
+    call assert_fails('rundo Xvisualidentitybad.undo', 'E825:')
+  endfor
+  call writefile(blob, 'Xvisualidentitybad.undo')
+  rundo Xvisualidentitybad.undo
+  undo
+  call assert_equal('one', getline(1))
+  bwipe!
+endfunc
+
 func Test_undotree()
   new
 
