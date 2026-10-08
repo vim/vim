@@ -15,10 +15,10 @@ function s:parse_vim_option(opt, missing_opt, term_out_code)
 		let item = {}
 
 		new
-		exec 'read ' . file_name
+		exec 'read' file_name
 		norm! gg
-		exec '/^.*\s*options\[\]\s*=\s*$/+1;/^\s*#\s*define\s*p_term(/-1yank a'
-		exec '/^#define\s\+p_term(/+1;/^};$/-1yank b'
+		/^.*\s*options\[\]\s*=\s*$/+1;/^\s*#\s*define\s*p_term(/-1yank a
+		/^#define\s\+p_term(/+1;/^};$/-1yank b
 		%delete _
 
 		put a
@@ -106,9 +106,9 @@ function s:parse_vim_command(cmd)
 		let item = {}
 
 		new
-		exec 'read ' . file_name
+		exec 'read' file_name
 		norm! gg
-		exec '/^}\?\s*cmdnames\[\]\s*=\s*$/+1;/^};/-1yank'
+		/^}\?\s*cmdnames\[\]\s*=\s*$/+1;/^};/-1yank
 		%delete _
 		put
 		/EXCMD(CMD_block,/s/\s\+\/\/.*//
@@ -230,9 +230,9 @@ function s:memoize_cmd_modifiers()
 				let file_name = $VIM_SRCDIR .. '/ex_docmd.c'
 
 				new
-				exec 'read ' .. file_name
+				exec 'read' file_name
 				norm! gg
-				exec ':/^static cmdmod_info_T cmdmod_info_tab\[] = {/+1;/^};/-1yank'
+				/^static cmdmod_info_T cmdmod_info_tab\[] = {/+1;/^};/-1yank
 				%delete _
 
 				put
@@ -547,9 +547,9 @@ function s:parse_vim_event(li)
 		let item = {}
 
 		new
-		exec 'read ' . file_name
+		exec 'read' file_name
 		norm! gg
-		exec '/^static keyvalue_T event_tab\[NUM_EVENTS] = {$/+1;/^};$/-1yank'
+		/^static keyvalue_T event_tab\[NUM_EVENTS] = {$/+1;/^};$/-1yank
 		%delete _
 
 		put
@@ -583,9 +583,9 @@ function s:parse_vim_function(li)
 		let item = {}
 
 		new
-		exec 'read ' . file_name
+		exec 'read' file_name
 		norm! gg
-		exec '/^static\s\+const\s\+funcentry_T\s\+global_functions\[\]\s*=\s*$/+1;/^};/-1yank'
+		/^static\s\+const\s\+funcentry_T\s\+global_functions\[\]\s*=\s*$/+1;/^};/-1yank
 		%delete _
 
 		put
@@ -618,7 +618,7 @@ function s:parse_vim_group(li)
 		let item = {}
 
 		new
-		exec 'read ' . file_name
+		exec 'read' file_name
 		g!/^\s*Syn\%(Color\|Link\)/d
 		%s/^\s*Syn\%(Color\|Link\)\s\+\(\w\+\).*/\1/
 
@@ -645,11 +645,11 @@ function s:parse_vim_hlgroup(li)
 		let item = {}
 
 		new
-		exec 'read ' . file_name
+		exec 'read' file_name
 		call cursor(1, 1)
-		exec '/^static\s\+char\s\+\*(highlight_init_both\[\])\s*=\%(\s*{\)\?$/+1;/^\s*};/-1yank a'
-		exec '/^static\s\+char\s\+\*(highlight_init_light\[\])\s*=\%(\s*{\)\?$/+1;/^\s*};/-1yank b'
-		exec '/^set_normal_colors(\%(void\)\?)$/+1;/^}$/-1yank d'
+		/^static\s\+char\s\+\*(highlight_init_both\[\])\s*=\%(\s*{\)\?$/+1;/^\s*};/-1yank a
+		/^static\s\+char\s\+\*(highlight_init_light\[\])\s*=\%(\s*{\)\?$/+1;/^\s*};/-1yank b
+		/^set_normal_colors(\%(void\)\?)$/+1;/^}$/-1yank d
 		%delete _
 		put a
 		for line in getline(1, line('$'))
@@ -723,9 +723,9 @@ function s:parse_vim_complete_name(li)
 		let item = {}
 
 		new
-		exec 'read ' . file_name
+		exec 'read' file_name
 		norm! gg
-		exec '/^static keyvalue_T command_complete_tab\[] =$/+1;/^};$/-1yank'
+		/^static keyvalue_T command_complete_tab\[] =$/+1;/^};$/-1yank
 		%delete _
 
 		put
@@ -756,9 +756,9 @@ function s:parse_vim_addr_name(li)
 		let item = {}
 
 		new
-		exec 'read ' . file_name
+		exec 'read' file_name
 		norm! gg
-		exec '/^static addrtype_T addr_type_complete_tab\[] =$/+1;/^};$/-1yank'
+		/^static addrtype_T addr_type_complete_tab\[] =$/+1;/^};$/-1yank
 		%delete _
 
 		put
@@ -794,9 +794,9 @@ function s:parse_vim_var(li)
 		let item = {}
 
 		new
-		exec 'read ' . file_name
+		exec 'read' file_name
 		norm! gg
-		exec '/^} vimvars\[VV_LEN] =\n{$/+1;/^};$/-1yank'
+		/^} vimvars\[VV_LEN] =\n{$/+1;/^};$/-1yank
 		%delete _
 
 		put
@@ -874,9 +874,9 @@ function s:update_syntax_vim_file(vim_info)
 		let str_info.end = ''
 
 		new
-		exec 'edit ' . target_fname
+		exec 'edit' target_fname
 		%d _
-		exec 'read ' . base_fname
+		exec 'read' base_fname
 		1delete _
 		call cursor(1, 1)
 
@@ -1088,7 +1088,7 @@ function s:check_help_doc(vim_info)
 		throw 'exit'
 	finally
 		call s:err_gen('Ex-cmd documentation consistency check completed.')
-		exec 'cd ' . cwd_save
+		exec 'cd' cwd_save
 		set wildignore&
 	endtry
 endfunc
