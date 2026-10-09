@@ -896,7 +896,12 @@ vim9_declare_dryrun(char_u *arg, int flags)
 	    p = skipwhite(p + 1);
 	    type = parse_type(&p, &si->sn_type_list, NULL, NULL, TRUE);
 	}
-	if (type != NULL && check_reserved_name(name, FALSE) == OK)
+	// ":const" and ":final" would create a variable outside the script,
+	// compiling does not need it.  ":var" gives the error for it.
+	if (type != NULL
+		&& !(flags != 0 && name[1] == ':'
+			    && vim_strchr((char_u *)"gbwt", *name) != NULL)
+		&& check_reserved_name(name, FALSE) == OK)
 	    declare_scriptvar_zero(name, type, flags);
 	vim_free(name);
 	if (type == NULL || !in_list)

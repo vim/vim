@@ -256,7 +256,8 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			or "any" when there is none, and a zero value; the
 			expression is not evaluated.  A static class variable
 			is treated the same way and an enum value is not
-			created.
+			created.  Neither is a variable with "g:", "b:", "w:"
+			or "t:".
 
 			Everything else is skipped, also `finish` and the
 			condition of an `if`, `while` or `for`; a definition

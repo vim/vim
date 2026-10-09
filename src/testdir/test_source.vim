@@ -983,6 +983,27 @@ func Test_source_dryrun_no_side_effect()
   call assert_equal('', getline(1))
   bwipe!
 
+  " a variable outside the script is not created, a normal source sets it
+  new
+  let lines =<< trim END
+    vim9script
+    const g:dryrun_const = 1
+    final b:dryrun_final = [1]
+  END
+  call writefile(lines, 'Xdryrun_scoped.vim', 'D')
+  source ++dryrun Xdryrun_scoped.vim
+  call assert_false(exists('g:dryrun_const'))
+  call assert_false(exists('b:dryrun_final'))
+  source Xdryrun_scoped.vim
+  call assert_equal(1, g:dryrun_const)
+  call assert_equal([1], b:dryrun_final)
+  unlet g:dryrun_const
+  bwipe!
+  " ":var" still gives the error for declaring it
+  call writefile(['vim9script', 'var g:dryrun_var = 1'], 'Xdryrun_var.vim',
+        \ 'D')
+  call assert_fails('source ++dryrun Xdryrun_var.vim', 'E1016:')
+
   call delete('Xdryrun_out')
 endfunc
 
