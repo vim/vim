@@ -256,7 +256,8 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			or "any" when there is none, and a zero value; the
 			expression is not evaluated.  A static class variable
 			is treated the same way and an enum value is not
-			created.
+			created.  Neither is a variable with "g:", "b:", "w:"
+			or "t:".
 
 			Everything else is skipped, also `finish` and the
 			condition of an `if`, `while` or `for`; a definition
@@ -264,9 +265,9 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			holds or not.  A function may therefore be defined
 			twice, the last definition counts.
 
-			In a legacy script `let` is not executed, thus a
-			script variable created by it does not exist.  A
-			|:def| function can use it with "s:", but reading it
+			In a legacy script `let` and `const` are not executed,
+			thus a script variable created by them does not exist.
+			A |:def| function can use it with "s:", but reading it
 			or calling it without "s:" gives an error.  Defining a
 			function in a Dictionary it holds, such as
 			`function s:obj.Method()`, fails as well.
@@ -277,6 +278,25 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			A class or enum in an autoload script is defined again
 			by a dry run, and after one by a normal load, since no
 			object was made from it; see |vim9-reload|.
+
+						*E1589*
+			Calling a function gives an error.  So do running a
+			shell command, writing a file and other things that
+			the |sandbox| does not allow.
+
+						*E1590*
+			A function defined by a dry run cannot be called, also
+			not after it.  A normal source of the script defines
+			it again, also without "!".
+
+						*E1591*
+			A dry run does not replace a function defined by
+			another script.
+
+						*E1588*
+			A script that was loaded by a normal source cannot be
+			read by a dry run.  A script that was only read by a
+			dry run can be read again.
 
 			Note: An error in a definition does not stop the
 			reading, the rest of the script is read as well.  And

@@ -891,12 +891,24 @@ vim9_declare_dryrun(char_u *arg, int flags)
 	name = vim_strnsave(name_start, p - name_start);
 	if (name == NULL)
 	    break;
+	// "s:name" cannot be declared at the Vim9 script level.
+	if (name[0] == 's' && name[1] == ':')
+	{
+	    semsg(_(e_cannot_use_s_colon_in_vim9_script_str), name_start);
+	    vim_free(name);
+	    break;
+	}
 	if (*p == ':')
 	{
 	    p = skipwhite(p + 1);
 	    type = parse_type(&p, &si->sn_type_list, NULL, NULL, TRUE);
 	}
-	if (type != NULL && check_reserved_name(name, FALSE) == OK)
+	// ":const" and ":final" would create a variable outside the script,
+	// compiling does not need it.  ":var" gives the error for it.
+	if (type != NULL
+		&& !(flags != 0 && name[1] == ':'
+			    && vim_strchr((char_u *)"gbwt", *name) != NULL)
+		&& check_reserved_name(name, FALSE) == OK)
 	    declare_scriptvar_zero(name, type, flags);
 	vim_free(name);
 	if (type == NULL || !in_list)

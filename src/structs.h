@@ -2140,6 +2140,7 @@ struct ufunc_S
 # define FC_NEW	    0x8000	// constructor
 # define FC_ABSTRACT 0x10000	// abstract method
 # define FC_GENERIC  0x20000	// generic function
+# define FC_DRYRUN   0x40000	// defined by ":source ++dryrun"
 
 // Is "ufunc" an object method?
 # define IS_OBJECT_METHOD(ufunc) ((ufunc->uf_flags & FC_OBJECT) == FC_OBJECT)
@@ -2326,6 +2327,7 @@ typedef struct
 
     int		sn_version;	// :scriptversion
     int		sn_state;	// SN_STATE_ values
+    int		sn_dryrun;	// last read by ":source ++dryrun"
     char_u	*sn_save_cpo;	// 'cpo' value when :vim9script found
     char	sn_is_vimrc;	// .vimrc file, do not restore 'cpo'
     char	sn_syml_checked;// flag: this has been checked for sym link

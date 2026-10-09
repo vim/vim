@@ -1629,6 +1629,8 @@ lambda_function_body(
     newlines.ga_data = NULL;
     if (sandbox)
 	ufunc->uf_flags |= FC_SANDBOX;
+    if (source_dryrun)
+	ufunc->uf_flags |= FC_DRYRUN;
     if (!ASCII_ISUPPER(*ufunc->uf_name))
 	ufunc->uf_flags |= FC_VIM9;
     ufunc->uf_script_ctx = current_sctx;
@@ -1881,6 +1883,8 @@ get_lambda_tv(
 #endif
 	if (sandbox)
 	    flags |= FC_SANDBOX;
+	if (source_dryrun)
+	    flags |= FC_DRYRUN;
 	// In legacy script a lambda can be called with more args than
 	// uf_args.ga_len.  In Vim9 script "...name" has to be used.
 	fp->uf_varargs = !vim9script || varargs;
@@ -3442,6 +3446,19 @@ check_user_func_argcount(ufunc_T *fp, int argcount)
 }
 
 /*
+ * Return TRUE and give an error when "fp" was defined by ":source ++dryrun".
+ */
+    int
+func_defined_by_dryrun(ufunc_T *fp)
+{
+    if ((fp->uf_flags & FC_DRYRUN) == 0)
+	return FALSE;
+    semsg(_(e_cannot_call_function_defined_by_dry_run_str),
+							printable_func_name(fp));
+    return TRUE;
+}
+
+/*
  * Call a user function after checking the arguments.
  */
     funcerror_T
@@ -3463,6 +3480,9 @@ call_user_func_check(
 	return (*cb)(argcount, argvars, rettv, fp->uf_cb_state);
     }
 #endif
+
+    if (func_defined_by_dryrun(fp))
+	return FCERR_OTHER;
 
     if (fp->uf_flags & FC_RANGE && funcexe->fe_doesrange != NULL)
 	*funcexe->fe_doesrange = TRUE;
@@ -3972,6 +3992,13 @@ call_func(
     // Initialize rettv so that it is safe for caller to invoke clear_tv(rettv)
     // even when call_func() returns FAIL.
     rettv->v_type = VAR_UNKNOWN;
+
+    // ":source ++dryrun" must not run any code.
+    if (source_dryrun && funcexe->fe_evaluate)
+    {
+	emsg(_(e_not_allowed_in_dry_run));
+	return FAIL;
+    }
 
     generic_func_args_table_init(&gfatab);
 
@@ -5522,10 +5549,12 @@ define_function(
 
 	    // Function can be replaced with "function!" and when sourcing the
 	    // same script again, but only once.  With ":source ++dryrun" both
-	    // branches of an ":if" define their function.
+	    // branches of an ":if" define their function.  A function defined
+	    // by a dry run can always be replaced.
 	    // A name that is used by an import can not be overruled.
 	    if (import != NULL
 		    || (!dead && !eap->forceit && !source_dryrun
+			&& (fp->uf_flags & FC_DRYRUN) == 0
 			&& (fp->uf_script_ctx.sc_sid != current_sctx.sc_sid
 			  || fp->uf_script_ctx.sc_seq == current_sctx.sc_seq)))
 	    {
@@ -5534,6 +5563,15 @@ define_function(
 		    emsg_funcname(e_name_already_defined_str, name);
 		else
 		    emsg_funcname(e_function_str_already_exists_add_bang_to_replace, name);
+		goto errret_keep;
+	    }
+	    if (source_dryrun && !dead
+		    && fp->uf_script_ctx.sc_sid != current_sctx.sc_sid
+		    && (fp->uf_flags & FC_DRYRUN) == 0)
+	    {
+		SOURCING_LNUM = sourcing_lnum_top;
+		emsg_funcname(e_cannot_replace_function_of_other_script_str,
+									 name);
 		goto errret_keep;
 	    }
 	    if (fp->uf_calls > 0)
@@ -5740,6 +5778,8 @@ define_function(
     fp->uf_varargs = varargs;
     if (sandbox)
 	flags |= FC_SANDBOX;
+    if (source_dryrun)
+	flags |= FC_DRYRUN;
     if (vim9script && !ASCII_ISUPPER(*fp->uf_name))
 	flags |= FC_VIM9;
     fp->uf_flags = flags;

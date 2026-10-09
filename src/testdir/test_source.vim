@@ -930,6 +930,210 @@ func Test_source_dryrun()
   call assert_fails('source ++dryrunx Xdryrun.vim', 'E484:')
 endfunc
 
+" Test that ":source ++dryrun" does not write a file or run a shell command,
+" also when a line that should have been skipped is taken for a command.
+func Test_source_dryrun_no_side_effect()
+  " a legacy ":const" is not executed
+  call writefile(['const s:val = writefile(["x"], "Xdryrun_out")'],
+        \ 'Xdryrun_const.vim', 'D')
+  source ++dryrun Xdryrun_const.vim
+  call assert_false(filereadable('Xdryrun_out'))
+
+  " a function is not called for a name with braces
+  let lines =<< trim END
+    function DryrunCurly{writefile(["x"], "Xdryrun_out")}()
+    endfunction
+  END
+  call writefile(lines, 'Xdryrun_curly.vim', 'D')
+  call assert_fails('source ++dryrun Xdryrun_curly.vim', 'E1589:')
+  call assert_false(filereadable('Xdryrun_out'))
+
+  " a function call in a skipped command gives no error
+  let lines =<< trim END
+    vim9script
+    range(1, 2)->foreach((_, n) => {
+      writefile(['x'], 'Xdryrun_out')
+    })
+  END
+  call writefile(lines, 'Xdryrun_skipped_call.vim', 'D')
+  source ++dryrun Xdryrun_skipped_call.vim
+  call assert_false(filereadable('Xdryrun_out'))
+
+  " the heredoc without a space before "<<" is not recognized, the lines
+  " after the "endfunction" inside it are read as commands
+  let lines =<< trim END
+    function DryrunOuter()
+      py3<<EOF
+    endfunction
+    w! Xdryrun_out
+    call system('echo x > Xdryrun_out')
+    EOF
+    endfunction
+  END
+  call writefile(lines, 'Xdryrun_leak.vim', 'D')
+  silent! source ++dryrun Xdryrun_leak.vim
+  call assert_false(filereadable('Xdryrun_out'))
+  delfunc DryrunOuter
+
+  " ":source!" is not done, with "| echo" it would run the Normal mode
+  " commands at once
+  new
+  call writefile(["Ohello\<Esc>"], 'Xdryrun_keys', 'D')
+  call assert_fails('source! ++dryrun Xdryrun_keys | echo', 'E475:')
+  call assert_equal('', getline(1))
+  bwipe!
+
+  " a variable outside the script is not created, a normal source sets it
+  new
+  let lines =<< trim END
+    vim9script
+    const g:dryrun_const = 1
+    final b:dryrun_final = [1]
+  END
+  call writefile(lines, 'Xdryrun_scoped.vim', 'D')
+  source ++dryrun Xdryrun_scoped.vim
+  call assert_false(exists('g:dryrun_const'))
+  call assert_false(exists('b:dryrun_final'))
+  source Xdryrun_scoped.vim
+  call assert_equal(1, g:dryrun_const)
+  call assert_equal([1], b:dryrun_final)
+  unlet g:dryrun_const
+  bwipe!
+  " ":var" still gives the error for declaring it
+  call writefile(['vim9script', 'var g:dryrun_var = 1'], 'Xdryrun_var.vim',
+        \ 'D')
+  call assert_fails('source ++dryrun Xdryrun_var.vim', 'E1016:')
+
+  " "s:" cannot be used, as in a normal source
+  call writefile(['vim9script', 'var s:dryrun_var = 1'], 'Xdryrun_s_var.vim',
+        \ 'D')
+  call assert_fails('source ++dryrun Xdryrun_s_var.vim', 'E1268:')
+  call writefile(['vim9script', 'const s:dryrun_const = 1'],
+        \ 'Xdryrun_s_const.vim', 'D')
+  call assert_fails('source ++dryrun Xdryrun_s_const.vim', 'E1268:')
+
+  call delete('Xdryrun_out')
+endfunc
+
+" Test that compiling a function in a dry run does not load an autoload script,
+" which would then be taken as loaded.
+func Test_source_dryrun_autoload_var()
+  call mkdir('Xdryrun_rtp/autoload', 'pR')
+  call writefile(['let xdryrun#var = 42'],
+        \ 'Xdryrun_rtp/autoload/xdryrun.vim')
+  let save_rtp = &rtp
+  set rtp^=Xdryrun_rtp
+  let lines =<< trim END
+    vim9script
+    def DryrunAutoloadVar(): number
+      return xdryrun#var
+    enddef
+  END
+  call writefile(lines, 'Xdryrun_autoload_var.vim', 'D')
+  source ++dryrun Xdryrun_autoload_var.vim
+  call assert_equal(42, g:xdryrun#var)
+  unlet g:xdryrun#var
+  let &rtp = save_rtp
+endfunc
+
+" Test that a function defined by ":source ++dryrun" cannot be called and that
+" a dry run does not replace a function of another script.
+func Test_source_dryrun_defined_function()
+  func DryrunExisting()
+    return 'existing'
+  endfunc
+  let lines =<< trim END
+    function DryrunLegacy()
+      call writefile(['x'], 'Xdryrun_out')
+    endfunction
+    function! DryrunExisting()
+      call writefile(['x'], 'Xdryrun_out')
+    endfunction
+    def g:DryrunDef()
+      writefile(['x'], 'Xdryrun_out')
+    enddef
+  END
+  call writefile(lines, 'Xdryrun_defined.vim', 'D')
+  call assert_fails('source ++dryrun Xdryrun_defined.vim', 'E1591:')
+  call assert_equal('existing', DryrunExisting())
+
+  call assert_fails('call DryrunLegacy()', 'E1590:')
+  call assert_fails('call g:DryrunDef()', 'E1590:')
+  call assert_fails('call call("DryrunLegacy", [])', 'E1590:')
+  " also from a compiled function
+  let lines =<< trim END
+    vim9script
+    def Caller()
+      g:DryrunDef()
+    enddef
+    Caller()
+  END
+  call writefile(lines, 'Xdryrun_caller.vim', 'D')
+  call assert_fails('source Xdryrun_caller.vim', 'E1590:')
+  call assert_false(filereadable('Xdryrun_out'))
+
+  " a normal source replaces the function without "!"
+  call writefile(['function DryrunLegacy()', '  return "normal"',
+        \ 'endfunction'], 'Xdryrun_normal_def.vim', 'D')
+  source Xdryrun_normal_def.vim
+  call assert_equal('normal', DryrunLegacy())
+
+  delfunc DryrunExisting
+  delfunc DryrunLegacy
+  delfunc g:DryrunDef
+endfunc
+
+" Test that ":source ++dryrun" does not read a script that was loaded by a
+" normal source, so that its functions and variables keep working.
+func Test_source_dryrun_loaded_script()
+  let lines =<< trim END
+    vim9script
+    var count = 5
+    def g:DryrunLoadedCount(): number
+      return count
+    enddef
+  END
+  call writefile(lines, 'Xdryrun_loaded.vim', 'D')
+
+  " a dry run can be done again
+  source ++dryrun Xdryrun_loaded.vim
+  source ++dryrun Xdryrun_loaded.vim
+
+  source Xdryrun_loaded.vim
+  call assert_equal(5, g:DryrunLoadedCount())
+  call assert_fails('source ++dryrun Xdryrun_loaded.vim', 'E1588:')
+  call assert_equal(5, g:DryrunLoadedCount())
+
+  " also when reading the lines from a buffer
+  new Xdryrun_loaded.vim
+  call assert_fails('%source ++dryrun', 'E1588:')
+  bwipe!
+  call assert_equal(5, g:DryrunLoadedCount())
+
+  delfunc g:DryrunLoadedCount
+endfunc
+
+" Test that a SourceCmd autocommand is used for sourcing a buffer.
+func Test_source_buffer_SourceCmd()
+  new
+  call setline(1, 'let g:sourced = 1')
+  let g:sourced = 0
+  let g:sourcecmd = 0
+  augroup XSourceCmd
+    au SourceCmd * let g:sourcecmd = 1
+  augroup END
+  %source
+  call assert_equal(0, g:sourced)
+  call assert_equal(1, g:sourcecmd)
+
+  augroup XSourceCmd
+    au!
+  augroup END
+  augroup! XSourceCmd
+  bwipe!
+  unlet g:sourced g:sourcecmd
+endfunc
+
 " Test that the modifier does not override the script type when sourcing files
 " with :vim9cmd and :legacy
 func Test_source_file_ignores_modifiers()

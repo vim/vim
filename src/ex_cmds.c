@@ -3986,6 +3986,13 @@ check_secure(void)
 	return TRUE;
     }
 #endif
+#ifdef FEAT_EVAL
+    if (source_dryrun)
+    {
+	emsg(_(e_not_allowed_in_dry_run));
+	return TRUE;
+    }
+#endif
     return FALSE;
 }
 
