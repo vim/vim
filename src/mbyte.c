@@ -1683,7 +1683,7 @@ utf_ptr2cells_len(char_u *p, int size)
     {
 	c = utf_ptr2char_and_len_len(p, size, &len);
 	if (len > size)
-	    return 1;  // truncated
+	    return 4;  // truncated, display as illegal byte
 	// An illegal byte is displayed as <xx>.
 	if (len == 1 || c == NUL)
 	    return 4;
