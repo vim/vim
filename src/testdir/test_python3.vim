@@ -188,6 +188,15 @@ func Test_skipped_python3_command_does_not_affect_pyxversion()
   call assert_equal(0, &pyxversion)  " This assertion would have failed with Vim 8.0.0251. (pyxversion was introduced in 8.0.0251.)
 endfunc
 
+func Test_skipped_pythonx_command_does_not_affect_pyxversion()
+  CheckFeature python_compiled
+  set pyxversion=0
+  if 0
+    pythonx import vim
+  endif
+  call assert_equal(0, &pyxversion)
+endfunc
+
 func _SetUpHiddenBuffer()
   new
   edit hidden
