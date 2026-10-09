@@ -891,6 +891,13 @@ vim9_declare_dryrun(char_u *arg, int flags)
 	name = vim_strnsave(name_start, p - name_start);
 	if (name == NULL)
 	    break;
+	// "s:name" cannot be declared at the Vim9 script level.
+	if (name[0] == 's' && name[1] == ':')
+	{
+	    semsg(_(e_cannot_use_s_colon_in_vim9_script_str), name_start);
+	    vim_free(name);
+	    break;
+	}
 	if (*p == ':')
 	{
 	    p = skipwhite(p + 1);

@@ -1004,6 +1004,14 @@ func Test_source_dryrun_no_side_effect()
         \ 'D')
   call assert_fails('source ++dryrun Xdryrun_var.vim', 'E1016:')
 
+  " "s:" cannot be used, as in a normal source
+  call writefile(['vim9script', 'var s:dryrun_var = 1'], 'Xdryrun_s_var.vim',
+        \ 'D')
+  call assert_fails('source ++dryrun Xdryrun_s_var.vim', 'E1268:')
+  call writefile(['vim9script', 'const s:dryrun_const = 1'],
+        \ 'Xdryrun_s_const.vim', 'D')
+  call assert_fails('source ++dryrun Xdryrun_s_const.vim', 'E1268:')
+
   call delete('Xdryrun_out')
 endfunc
 
