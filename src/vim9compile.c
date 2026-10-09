@@ -2772,6 +2772,8 @@ compile_assign_unlet(
 		    return FAIL;
 		isn->isn_arg.storeindex.si_vartype = dest_type;
 		isn->isn_arg.storeindex.si_class = NULL;
+		isn->isn_arg.storeindex.si_name = vim_strnsave(var_start,
+						       lhs->lhs_varlen_total);
 
 		if (dest_type == VAR_OBJECT)
 		{
@@ -2804,7 +2806,13 @@ compile_assign_unlet(
 	if (dest_type == VAR_TUPLE)
 	    emsg(_(e_tuple_is_immutable));
 	else
-	    emsg(_(e_indexable_type_required));
+	{
+	    char_u *name = vim_strnsave(var_start, lhs->lhs_varlen_total);
+
+	    semsg(_(e_indexable_type_required_str),
+					   name == NULL ? var_start : name);
+	    vim_free(name);
+	}
 	return FAIL;
     }
 

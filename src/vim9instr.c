@@ -2916,6 +2916,7 @@ delete_instr(isn_T *isn)
 
 	case ISN_STOREINDEX:
 	    class_unref(isn->isn_arg.storeindex.si_class);
+	    vim_free(isn->isn_arg.storeindex.si_name);
 	    break;
 
 	case ISN_TRY:
