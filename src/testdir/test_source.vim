@@ -975,6 +975,14 @@ func Test_source_dryrun_no_side_effect()
   call assert_false(filereadable('Xdryrun_out'))
   delfunc DryrunOuter
 
+  " ":source!" is not done, with "| echo" it would run the Normal mode
+  " commands at once
+  new
+  call writefile(["Ohello\<Esc>"], 'Xdryrun_keys', 'D')
+  call assert_fails('source! ++dryrun Xdryrun_keys | echo', 'E475:')
+  call assert_equal('', getline(1))
+  bwipe!
+
   call delete('Xdryrun_out')
 endfunc
 

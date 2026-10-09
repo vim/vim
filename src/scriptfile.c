@@ -1414,8 +1414,19 @@ cmd_source(char_u *fname, exarg_T *eap)
     else if (STRNCMP(fname, "++dryrun", 8) == 0
 				    && (fname[8] == NUL || fname[8] == ' '))
     {
+#ifdef FEAT_EVAL
+	// Normal mode commands define nothing, ":source!" would run them.
+	if (eap != NULL && eap->forceit)
+	{
+	    semsg(_(e_invalid_argument_str), eap->arg);
+	    return;
+	}
 	dryrun = TRUE;
 	fname = skipwhite(fname + 8);
+#else
+	emsg(_(e_sorry_command_is_not_available_in_this_version));
+	return;
+#endif
     }
 
     if (*fname != NUL && eap != NULL && eap->addr_count > 0)
