@@ -81,6 +81,7 @@ typedef struct qf_list_S
     qfline_T	*qf_last;	// pointer to the last error
     qfline_T	*qf_ptr;	// pointer to the current error
     int		qf_count;	// number of errors (0 means empty list)
+    int		qf_type_count[256]; // count of each error type
     int		qf_index;	// current index in the error list
     int		qf_nonevalid;	// TRUE if not a single valid entry found
     int		qf_has_user_data; // TRUE if at least one item has user_data attached
@@ -199,6 +200,8 @@ static void	wipe_dummy_buffer(buf_T *buf, char_u *dirname_start);
 static void	unload_dummy_buffer(buf_T *buf, char_u *dirname_start);
 static qf_info_T *ll_get_or_alloc_list(win_T *);
 static int	entry_is_closer_to_target(qfline_T *entry, qfline_T *other_entry, int target_fnum, int target_lnum, int target_col);
+static int	qf_getprop_keys2flags(dict_T *what, int loclist);
+static int	qf_getprop_total(qf_list_T *qfl, dict_T *retdict);
 
 // Quickfix window check helper macro
 # define IS_QF_WINDOW(wp) (bt_quickfix((wp)->w_buffer) && (wp)->w_llist_ref == NULL)
@@ -2341,10 +2344,15 @@ qf_add_entry(
     qfp->qf_cleared = FALSE;
     *lastp = qfp;
     ++qfl->qf_count;
-    if (qfl->qf_index == 0 && qfp->qf_valid)	// first valid entry
-    {
-	qfl->qf_index = qfl->qf_count;
-	qfl->qf_ptr = qfp;
+    if (qfp->qf_valid) {
+	// first valid entry
+	if (qfl->qf_index == 0)
+	{
+		qfl->qf_index = qfl->qf_count;
+		qfl->qf_ptr = qfp;
+	}
+	// increment the histogram for every valid item
+	qfl->qf_type_count[(char_u)qfp->qf_type]++;
     }
 
     return QF_OK;
@@ -4377,6 +4385,8 @@ qf_free_items(qf_list_T *qfl)
     qfl->qf_multiline = FALSE;
     qfl->qf_multiignore = FALSE;
     qfl->qf_multiscan = FALSE;
+    // reset type counter
+    vim_memset(qfl->qf_type_count, 0, sizeof(qfl->qf_type_count));
 }
 
 /*
@@ -7320,7 +7330,8 @@ enum {
     QF_GETLIST_FILEWINID	= 0x200,
     QF_GETLIST_QFBUFNR	= 0x400,
     QF_GETLIST_QFTF	= 0x800,
-    QF_GETLIST_ALL	= 0xFFF,
+    QF_GETLIST_TOTAL	= 0x1000,
+    QF_GETLIST_ALL	= 0x1FFF,
 };
 
 /*
@@ -7354,6 +7365,9 @@ qf_get_list_from_lines(dict_T *what, dictitem_T *di, dict_T *retdict)
     if (l == NULL)
 	return FAIL;
 
+    int flags = qf_getprop_keys2flags(what, FALSE);
+    status = OK;
+
     qi = qf_alloc_stack(QFLT_INTERNAL, 1);
     if (qi != NULL)
     {
@@ -7361,13 +7375,20 @@ qf_get_list_from_lines(dict_T *what, dictitem_T *di, dict_T *retdict)
 		    TRUE, (linenr_T)0, (linenr_T)0, NULL, NULL) > 0)
 	{
 	    (void)get_errorlist(qi, NULL, 0, 0, l);
+	if ((flags & QF_GETLIST_TOTAL)
+			&& (qf_getprop_total(&qi->qf_lists[0], retdict) == FAIL))
+		status = FAIL;
 	    qf_free(&qi->qf_lists[0]);
 	}
 
 	qf_free_lists(qi);
     }
-    dict_add_list(retdict, "items", l);
-    status = OK;
+
+	if (status == OK)
+	status = dict_add_list(retdict, "items", l);
+
+	if (status == FAIL)
+	list_free(l);
 
     return status;
 }
@@ -7457,6 +7478,9 @@ qf_getprop_keys2flags(dict_T *what, int loclist)
 
     if (dict_has_key(what, "quickfixtextfunc"))
 	flags |= QF_GETLIST_QFTF;
+
+    if (dict_has_key(what, "total"))
+	flags |= QF_GETLIST_TOTAL;
 
     return flags;
 }
@@ -7554,6 +7578,14 @@ qf_getprop_defaults(qf_info_T *qi, int flags, int locstack, dict_T *retdict)
 	status = qf_getprop_qfbufnr(qi, retdict);
     if ((status == OK) && (flags & QF_GETLIST_QFTF))
 	status = dict_add_string_len(retdict, "quickfixtextfunc", (char_u *)"", 0);
+    if ((status == OK) && (flags & QF_GETLIST_TOTAL))
+    {
+	dict_T	*d = dict_alloc();
+	if (d != NULL)
+	    status = dict_add_dict(retdict, "total", d);
+	else
+	    status = FAIL;
+    }
 
     return status;
 }
@@ -7675,6 +7707,42 @@ qf_getprop_qftf(qf_list_T *qfl, dict_T *retdict)
 }
 
 /*
+ * Return the count of each error type in a quickfix/location list.
+ * Returns OK on success and FAIL on failure.
+ */
+    static int
+qf_getprop_total(qf_list_T *qfl, dict_T *retdict)
+{
+    dict_T	*dict;
+    int		i;
+    char	key[2];
+
+    if ((dict = dict_alloc()) == NULL)
+	return FAIL;
+
+    for (i = 0; i < 256; ++i)
+    {
+	if (qfl->qf_type_count[i] > 0)
+	{
+	    if (i == 0)
+		key[0] = NUL;
+	    else
+	    {
+		key[0] = (char)i;
+		key[1] = NUL;
+	    }
+	    if (dict_add_number(dict, key, (long)qfl->qf_type_count[i]) == FAIL)
+	    {
+		dict_unref(dict);
+		return FAIL;
+	    }
+	}
+    }
+
+    return dict_add_dict(retdict, "total", dict);
+}
+
+/*
  * Return quickfix/location list details (title) as a
  * dictionary. 'what' contains the details to return. If 'list_idx' is -1,
  * then current list is used. Otherwise the specified list is used.
@@ -7741,6 +7809,8 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
 	status = qf_getprop_qfbufnr(qi, retdict);
     if ((status == OK) && (flags & QF_GETLIST_QFTF))
 	status = qf_getprop_qftf(qfl, retdict);
+    if ((status == OK) && (flags & QF_GETLIST_TOTAL))
+	status = qf_getprop_total(qfl, retdict);
 
     return status;
 }
