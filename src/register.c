@@ -3300,7 +3300,7 @@ str_to_reg(
 	    pp[lnum].string = vim_strnsave(*ss, pp[lnum].length);
 	    if (type == MBLOCK)
 	    {
-		int charlen = mb_string2cells(*ss, -1);
+		int charlen = vim_strsize(*ss);
 
 		if (charlen > maxlen)
 		    maxlen = charlen;
@@ -3318,7 +3318,13 @@ str_to_reg(
 		if (str[i] == '\n')
 		    break;
 		if (type == MBLOCK)
-		    charlen += mb_ptr2cells_len(str + i, len - i);
+		{
+		    if (str[i] >= 0x80)
+			charlen += mb_ptr2cells_len(str + i, len - i);
+		    else
+			charlen += byte2cells(str[i]);
+		}
+
 
 		if (str[i] == NUL)
 		    i++; // registers can have NUL chars
