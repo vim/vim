@@ -2997,6 +2997,11 @@ script_autoload(
     int		i;
     int		ret_sid;
 
+    // A dry run would leave the script marked as loaded without having run
+    // it.
+    if (source_dryrun)
+	return FALSE;
+
     // If the name starts with "<SNR>123_" then "123" is the script ID.
     if (name[0] == K_SPECIAL && name[1] == KS_EXTRA && name[2] == KE_SNR)
     {

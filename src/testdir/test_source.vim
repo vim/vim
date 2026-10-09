@@ -1015,6 +1015,27 @@ func Test_source_dryrun_no_side_effect()
   call delete('Xdryrun_out')
 endfunc
 
+" Test that compiling a function in a dry run does not load an autoload script,
+" which would then be taken as loaded.
+func Test_source_dryrun_autoload_var()
+  call mkdir('Xdryrun_rtp/autoload', 'pR')
+  call writefile(['let xdryrun#var = 42'],
+        \ 'Xdryrun_rtp/autoload/xdryrun.vim')
+  let save_rtp = &rtp
+  set rtp^=Xdryrun_rtp
+  let lines =<< trim END
+    vim9script
+    def DryrunAutoloadVar(): number
+      return xdryrun#var
+    enddef
+  END
+  call writefile(lines, 'Xdryrun_autoload_var.vim', 'D')
+  source ++dryrun Xdryrun_autoload_var.vim
+  call assert_equal(42, g:xdryrun#var)
+  unlet g:xdryrun#var
+  let &rtp = save_rtp
+endfunc
+
 " Test that a function defined by ":source ++dryrun" cannot be called and that
 " a dry run does not replace a function of another script.
 func Test_source_dryrun_defined_function()
