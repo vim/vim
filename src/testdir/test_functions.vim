@@ -2589,7 +2589,7 @@ func Test_getinfo()
 
   " An Ex command, also by an abbreviation, with the attributes of :command.
   call assert_equal({'name': 'substitute', 'kind': 'builtin',
-        \ 'available': v:true, 'nargs': '*', 'range': '.', 'count': v:false,
+        \ 'available': v:true, 'nargs': '*', 'range': '.', 'count': -1,
         \ 'bang': v:false, 'bar': v:false, 'register': v:false,
         \ 'addr': 'lines'}, getinfo('command', 's'))
   let info = getinfo('command', 'write')
@@ -2598,6 +2598,8 @@ func Test_getinfo()
   let info = getinfo('command', 'delete')
   call assert_equal([0, v:true, 'none'],
         \ [info.count, info.register, getinfo('command', 'echo').addr])
+  let info = getinfo('command', 'echo')
+  call assert_equal(['', -1], [info.range, info.count])
   let info = getinfo('command', 'bo')
   call assert_equal(['botright', 'modifier'], [info.name, info.kind])
   let info = getinfo('command', '2match')
@@ -2623,7 +2625,7 @@ func Test_getinfo()
   let info = getinfo('command', 'MyCmd')
   let sid = str2nr(matchstr(expand('<SID>'), '\d\+'))
   call assert_equal({'name': 'MyCmd', 'kind': 'user', 'available': v:true,
-        \ 'nargs': '1', 'range': '%', 'count': v:false, 'bang': v:true,
+        \ 'nargs': '1', 'range': '%', 'count': -1, 'bang': v:true,
         \ 'bar': v:true, 'register': v:true, 'addr': 'lines',
         \ 'buffer': v:false, 'complete': 'file', 'definition': 'echo 1',
         \ 'sid': sid, 'lnum': info.lnum}, info)
@@ -2635,11 +2637,24 @@ func Test_getinfo()
         \ info.complete])
   command! -nargs=+ -complete=custom,MyCompl MyCustom echo 3
   call assert_equal('custom,MyCompl', getinfo('command', 'MyCustom').complete)
+  " "range" is always a String and "count" always a Number.
+  command! MyRangeNone echo 4
+  command! -range MyRangeLine echo 5
+  command! -range=3 MyRangeCount echo 6
+  command! -count MyCount echo 7
+  call assert_equal([['', -1], ['.', -1], ['N', 3], ['.', 0]],
+        \ ['MyRangeNone', 'MyRangeLine', 'MyRangeCount', 'MyCount']
+        \ ->map({_, c -> [getinfo('command', c).range,
+        \                 getinfo('command', c).count]}))
   " An ambiguous abbreviation.
   call assert_equal({}, getinfo('command', 'My'))
   delcommand MyCmd
   delcommand MyBufCmd
   delcommand MyCustom
+  delcommand MyRangeNone
+  delcommand MyRangeLine
+  delcommand MyRangeCount
+  delcommand MyCount
 
   " An option, also by the short name and one that is hidden.
   call assert_equal({'name': 'textwidth', 'shortname': 'tw',
