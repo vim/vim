@@ -4845,12 +4845,15 @@ getinfo({kind}, {name} [, {opts}])			*getinfo()*
 				command
 			nargs	the arguments as for |:command-nargs|: "0",
 				"1", "_", "*", "?" or "+"
-			range	|FALSE| when a range is not allowed, otherwise
-				the default: "." for the cursor line, "%" for
-				the whole buffer or a Number as with
-				|:command-range|
-			count	|FALSE| when a count is not allowed, otherwise
-				the default count
+			range	a String with how a range is accepted, as
+				for |:command-range|:
+				""	a range is not allowed
+				"."	the default is the cursor line
+				"%"	the default is the whole buffer
+				"N"	a count in the line number position,
+					with the default in "count"
+			count	the default count as a Number, or -1 when
+				a count is not allowed, see |:command-count|
 			bang	|TRUE| when a "!" after the name is allowed
 			bar	|TRUE| when "|" ends the command, see |:bar|
 			register
@@ -4880,7 +4883,7 @@ getinfo({kind}, {name} [, {opts}])			*getinfo()*
 				echo getinfo('command', 's')
 <			{'name': 'substitute', 'kind': 'builtin',
 			'available': v:true, 'nargs': '*', 'range': '.',
-			'count': v:false, 'bang': v:false, 'bar': v:false,
+			'count': -1, 'bang': v:false, 'bar': v:false,
 			'register': v:false, 'addr': 'lines'}
 
 		"option"	an option, also one that is not supported in
