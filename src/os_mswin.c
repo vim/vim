@@ -454,6 +454,28 @@ mswin_stat_impl(const WCHAR *name, stat_T *stp, const int resolve)
 	return _wstat(name, stp);
 #endif
 
+    // Only reparse points need a directory query to identify symbolic links.
+    // In particular, avoid enumerating the directory for each missing file
+    // while searching 'runtimepath'.
+    attr = GetFileAttributesW(name);
+    if (attr == INVALID_FILE_ATTRIBUTES)
+    {
+	DWORD error = GetLastError();
+
+	// A missing file or path cannot provide stat information.  Other
+	// errors and UNC paths still need the CRT fallback.
+	if ((error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND)
+		&& !((name[0] == L'\\' || name[0] == L'/')
+		    && (name[1] == L'\\' || name[1] == L'/')))
+	{
+	    errno = ENOENT;
+	    return -1;
+	}
+	return _wstat(name, stp);
+    }
+    if (!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
+	return _wstat(name, stp);
+
     hFind = FindFirstFileW(name, &findDataW);
     if (hFind != INVALID_HANDLE_VALUE)
     {
