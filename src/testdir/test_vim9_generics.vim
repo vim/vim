@@ -3476,6 +3476,98 @@ def Test_generic_type_cast_in_lambda()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for implementing an interface generic method with a method that has a
+" different number of type variables
+def Test_generic_interface_method_type_var_count()
+  var lines =<< trim END
+    vim9script
+
+    interface I
+      def Fn<T>(t: T): T
+    endinterface
+
+    class A implements I
+      def Fn(t: number): number
+        return t
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1438: Number of type variables of method "Fn" differs from interface "I"', 11)
+
+  lines =<< trim END
+    vim9script
+
+    interface I
+      def Fn(t: number): number
+    endinterface
+
+    class A implements I
+      def Fn<T>(t: T): T
+        return t
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1438: Number of type variables of method "Fn" differs from interface "I"', 11)
+
+  lines =<< trim END
+    vim9script
+
+    interface I
+      def Fn<T>(t: T): T
+    endinterface
+
+    class A implements I
+      def Fn<X, Y>(t: X): X
+        return t
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1438: Number of type variables of method "Fn" differs from interface "I"', 11)
+
+  # The method is inherited from the parent class
+  lines =<< trim END
+    vim9script
+
+    interface I
+      def Fn<T>(t: T): T
+    endinterface
+
+    class A
+      def Fn<X, Y>(t: X): X
+        return t
+      enddef
+    endclass
+
+    class B extends A implements I
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1438: Number of type variables of method "Fn" differs from interface "I"', 14)
+
+  # Same number of type variables with different names
+  lines =<< trim END
+    vim9script
+
+    interface I
+      def Fn<T>(t: T): T
+      def Fn2<A, B>(a: A, b: B): B
+    endinterface
+
+    class A implements I
+      def Fn<U>(t: U): U
+        return t
+      enddef
+      def Fn2<X, Y>(a: X, b: Y): Y
+        return b
+      enddef
+    endclass
+
+    var i: I = A.new()
+    assert_equal(3, i.Fn<number>(3))
+    assert_equal('b', i.Fn2<number, string>(1, 'b'))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for using a generic method to initialize an object member variable
 def Test_generic_method_in_object_member_init_expr()
   var lines =<< trim END

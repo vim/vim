@@ -733,12 +733,25 @@ validate_interface_variables(
 }
 
 /*
- * Returns TRUE if the method signature of "if_method" and "cl_method" matches.
+ * Returns TRUE if the method signature of "if_method" of interface
+ * "intf_name" and "cl_method" matches.
  */
     static int
-intf_method_type_matches(ufunc_T *if_method, ufunc_T *cl_method)
+intf_method_type_matches(
+    ufunc_T	*if_method,
+    ufunc_T	*cl_method,
+    char_u	*intf_name)
 {
     where_T where = WHERE_INIT;
+
+    // A generic method must have the same number of type variables, like
+    // when overriding a method, see validate_extends_generic_method().
+    if (cl_method->uf_generic_argcount != if_method->uf_generic_argcount)
+    {
+	semsg(_(e_type_var_count_of_method_str_differs_from_interface_str),
+						cl_method->uf_name, intf_name);
+	return FALSE;
+    }
 
     // Ensure the type is matching.
     where.wt_func_name = (char *)if_method->uf_name;
@@ -751,16 +764,17 @@ intf_method_type_matches(ufunc_T *if_method, ufunc_T *cl_method)
 }
 
 /*
- * Returns TRUE if the interface method "if_ufunc" is present in the list of
- * methods in "cl_fp" or in the parent lineage of one of the extended classes
- * in "extends_cl".  For a class method, 'is_class_method' is TRUE.
+ * Returns TRUE if the method "if_ufunc" of interface "intf_name" is present in
+ * the list of methods in "cl_fp" or in the parent lineage of one of the
+ * extended classes in "extends_cl".
  */
     static int
 intf_method_present(
     ufunc_T *if_ufunc,
     ufunc_T **cl_fp,
     int	    cl_count,
-    class_T *extends_cl)
+    class_T *extends_cl,
+    char_u  *intf_name)
 {
     int		method_present  = FALSE;
 
@@ -769,7 +783,7 @@ intf_method_present(
 	if (STRCMP(if_ufunc->uf_name, cl_fp[cl_i]->uf_name) == 0)
 	{
 	    // Ensure the type is matching.
-	    if (!intf_method_type_matches(if_ufunc, cl_fp[cl_i]))
+	    if (!intf_method_type_matches(if_ufunc, cl_fp[cl_i], intf_name))
 		return FALSE;
 	    method_present = TRUE;
 	    break;
@@ -781,7 +795,7 @@ intf_method_present(
 	ufunc_T **ext_cl_fp = (ufunc_T **)(extends_cl->class_obj_methods);
 	int	ext_cl_count = extends_cl->class_obj_method_count;
 	return intf_method_present(if_ufunc, ext_cl_fp, ext_cl_count,
-						extends_cl->class_extends);
+					extends_cl->class_extends, intf_name);
     }
 
     return method_present;
@@ -813,7 +827,8 @@ validate_interface_methods(
     {
 	char_u	*if_name = if_fp[if_i]->uf_name;
 
-	if (!intf_method_present(if_fp[if_i], cl_fp, cl_count, extends_cl))
+	if (!intf_method_present(if_fp[if_i], cl_fp, cl_count, extends_cl,
+							    intf_class_name))
 	{
 	    semsg(_(e_method_str_of_interface_str_not_implemented),
 		    if_name, intf_class_name);
