@@ -3631,8 +3631,10 @@ EXTERN char e_can_only_compare_object_with_object[]
 	INIT(= N_("E1437: Can only compare Object with Object"));
 EXTERN char e_type_var_count_of_method_str_differs_from_interface_str[]
 	INIT(= N_("E1438: Number of type variables of method \"%s\" differs from interface \"%s\""));
+EXTERN char e_type_nested_too_deep[]
+	INIT(= N_("E1439: Type nested too deep"));
 #endif
-// E1439 - E1499 unused (reserved for Vim9 class support)
+// E1440 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1500: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]
