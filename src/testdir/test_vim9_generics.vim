@@ -2,7 +2,7 @@
 
 import './util/vim9.vim' as v9
 
-" Test for definint a generic function
+" Test for defining a generic function
 def Test_generic_func_definition()
   var lines =<< trim END
     vim9script
@@ -27,7 +27,7 @@ def Test_generic_func_definition()
     enddef
     defcompile
   END
-  v9.CheckSourceFailure(lines, 'E1555: Empty type list specified for generic function', 2)
+  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic '<SNR>", 2)
 
   lines =<< trim END
     vim9script
@@ -51,7 +51,7 @@ def Test_generic_func_definition()
     enddef
     defcompile
   END
-  v9.CheckSourceFailure(lines, 'E1553: Missing comma after type in generic function: T()', 2)
+  v9.CheckSourceFailure(lines, 'E1553: Missing comma after type in generic: T()', 2)
 
   lines =<< trim END
     vim9script
@@ -89,7 +89,7 @@ def Test_generic_func_definition()
     enddef
     defcompile
   END
-  v9.CheckSourceFailure(lines, 'E1553: Missing comma after type in generic function: My-type>()', 2)
+  v9.CheckSourceFailure(lines, 'E1553: Missing comma after type in generic: My-type>()', 2)
 
   # Use an existing type name as the generic type name
   lines =<< trim END
@@ -253,7 +253,7 @@ def Test_generic_func_invoke()
     enddef
     Fn<>()
   END
-  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic function '<>()'", 4)
+  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic '<>()'", 4)
 
   lines =<< trim END
     vim9script
@@ -261,7 +261,7 @@ def Test_generic_func_invoke()
     enddef
     Fn<>
   END
-  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic function '<>'", 4)
+  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic '<>'", 4)
 
   lines =<< trim END
     vim9script
@@ -277,7 +277,7 @@ def Test_generic_func_invoke()
     enddef
     Fn<
   END
-  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic function: <", 4)
+  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic: <", 4)
 
   lines =<< trim END
     vim9script
@@ -452,12 +452,17 @@ def Test_generic_func_arg_type()
       return x
     enddef
 
-    def F2<B>(y: dict<B>): dict<B>
+    def F2<B>(y: tuple<...list<B>>): tuple<...list<B>>
       return y
     enddef
 
+    def F3<C>(z: dict<C>): dict<C>
+      return z
+    enddef
+
     assert_equal(['a', 'b'], F1<string>(['a', 'b']))
-    assert_equal({a: 0z10, b: 0z20}, F2<blob>({a: 0z10, b: 0z20}))
+    assert_equal((8, 9), F2<number>((8, 9)))
+    assert_equal({a: 0z10, b: 0z20}, F3<blob>({a: 0z10, b: 0z20}))
   END
   v9.CheckSourceSuccess(lines)
 enddef
@@ -530,6 +535,141 @@ def Test_generic_func_ret_type()
 enddef
 
 " Test for using a generic type as the type of the vararg variable
+" Test for a very long list of type arguments given to a generic function, it
+" must not overflow a buffer
+def Test_generic_func_very_long_type_args()
+  var types = repeat(['number'], 500)->join(', ')
+  var lines =<< trim END
+    vim9script
+    def LongFn<T>(x: T): T
+      return x
+    enddef
+  END
+  var head = copy(lines)
+  for cmd in ['call LongFn<TYPES>(1)',
+              'echo call("LongFn<TYPES>", [1])',
+              'var F = LongFn<TYPES>']
+    lines = head + [substitute(cmd, 'TYPES', types, '')]
+    v9.CheckSourceFailure(lines, "E1556: Too many types specified for generic function '<SNR>", 5)
+  endfor
+
+  # legacy script with a function that is not generic
+  lines =<< trim END
+    function LongLegacyFn(x)
+      return a:x
+    endfunction
+    call LongLegacyFn<TYPES>(1)
+  END
+  lines[3] = substitute(lines[3], 'TYPES', types, '')
+  v9.CheckSourceFailure(lines, 'E117: Unknown function: LongLegacyFn<number, number', 4)
+  delfunc g:LongLegacyFn
+enddef
+
+" Test for the type arguments of a generic method inherited from a parent
+" class
+def Test_generic_inherited_method_type_args()
+  var lines =<< trim END
+    vim9script
+    class P
+      def Id<U>(x: U): U
+        return x
+      enddef
+    endclass
+    class C extends P
+    endclass
+    assert_equal(3, C.new().Id<number>(3))
+    C.new().Id<number>('str')
+  END
+  v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got string', 10)
+
+  lines =<< trim END
+    vim9script
+    class P
+      def Id<U>(x: U): U
+        return x
+      enddef
+    endclass
+    class C extends P
+    endclass
+    def Fn()
+      var n: number = C.new().Id<string>('abc')
+    enddef
+    defcompile Fn
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected number but got string', 1)
+
+  # The class type variable and the method type variable in a generic class
+  for cls in ['B<number>', 'D']
+    lines =<< trim eval END
+      vim9script
+      class A<T>
+        var a: T
+        def Both<U>(x: T, y: U): list<U>
+          return [y]
+        enddef
+      endclass
+      class B<T> extends A<T>
+      endclass
+      class D extends A<number>
+      endclass
+      assert_equal(['z'], {cls}.new(1).Both<string>(2, 'z'))
+      def Fn()
+        var l: list<string> = {cls}.new(1).Both<string>(2, 'z')
+        assert_equal(['z'], l)
+      enddef
+      Fn()
+      {cls}.new(1).Both<number>('x', 1)
+    END
+    v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got string', 18)
+  endfor
+enddef
+
+" Test for a dict type using a type variable in a generic function
+def Test_generic_func_dict_type()
+  var lines =<< trim END
+    vim9script
+    def Fn<T>(d: dict<T>): dict<T>
+      return d
+    enddef
+    assert_equal('func(dict<number>): dict<number>', typename(Fn<number>))
+    assert_equal({a: 'x'}, Fn<string>({a: 'x'}))
+    def Foo()
+      assert_equal({a: 1}, Fn<number>({a: 1}))
+    enddef
+    Foo()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Fn<T>(d: dict<T>)
+    enddef
+    Fn<number>({a: 'x'})
+  END
+  v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected dict<number> but got dict<string>', 4)
+
+  lines =<< trim END
+    vim9script
+    def Fn<T>(d: dict<T>)
+    enddef
+    def Foo()
+      Fn<string>({a: 1})
+    enddef
+    Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected dict<string> but got dict<number>', 1)
+
+  # An optional type is not a type argument, the error is given once
+  lines =<< trim END
+    vim9script
+    def Fn<T>(x: T): T
+      return x
+    enddef
+    echo Fn<?number>(1)
+  END
+  v9.CheckSourceFailureList(lines, ['E1008: Missing <type> after <', 'E1008: Missing <type> after <'], 5)
+enddef
+
 def Test_generic_func_varargs()
   var lines =<< trim END
     vim9script
@@ -540,8 +680,19 @@ def Test_generic_func_varargs()
 
     assert_equal([[1], [2], [3]], Fn<number>([1], [2], [3]))
     assert_equal([['a'], ['b'], ['c']], Fn<string>(['a'], ['b'], ['c']))
+    assert_equal('func(...list<list<number>>): list<list<number>>',
+                 typename(Fn<number>))
   END
   v9.CheckSourceSuccess(lines)
+
+  # The varargs type is used in the function type
+  lines =<< trim END
+    vim9script
+    def Fn<A>(...x: list<A>)
+    enddef
+    var F: func(...list<string>) = Fn<number>
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(...list<string>) but got func(...list<number>)', 4)
 enddef
 
 " Test for using func type as a generic function argument type
@@ -647,7 +798,7 @@ def Test_generic_failure_in_def_function()
     enddef
     defcompile
   END
-  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic function '<>()'", 1)
+  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic '<>()'", 1)
 
   lines =<< trim END
     vim9script
@@ -784,7 +935,7 @@ def Test_get_generic_funcref_using_function()
     enddef
     var Fx = function(Fn<>)
   END
-  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic function '<>)'", 4)
+  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic '<>)'", 4)
 
   # Get a generic funcref specifying only the opening bracket after name
   lines =<< trim END
@@ -802,7 +953,7 @@ def Test_get_generic_funcref_using_function()
     enddef
     var Fx = function(Fn<number)
   END
-  v9.CheckSourceFailure(lines, 'E1553: Missing comma after type in generic function:', 4)
+  v9.CheckSourceFailure(lines, 'E1553: Missing comma after type in generic:', 4)
 
   # Get a generic funcref without specifying a type after comma
   lines =<< trim END
@@ -911,7 +1062,7 @@ def Test_generic_funcref_string()
     enddef
     var Fx = function('Fn<>')
   END
-  v9.CheckSourceFailure(lines, 'E1555: Empty type list specified for generic function', 4)
+  v9.CheckSourceFailure(lines, 'E1555: Empty type list specified for generic', 4)
 
   # Get a generic funcref specifying only the opening bracket after name
   lines =<< trim END
@@ -920,7 +1071,7 @@ def Test_generic_funcref_string()
     enddef
     var Fx = function('Fn<')
   END
-  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic function: <", 4)
+  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic: <", 4)
 
   # Get a generic funcref specifying only the opening bracket and type
   lines =<< trim END
@@ -929,7 +1080,7 @@ def Test_generic_funcref_string()
     enddef
     var Fx = function('Fn<number')
   END
-  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic function: <number", 4)
+  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic: <number", 4)
 
   # Get a generic funcref without specifying a type after comma
   lines =<< trim END
@@ -938,7 +1089,7 @@ def Test_generic_funcref_string()
     enddef
     var Fx = function('Fn<number,')
   END
-  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic function: <number,", 4)
+  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic: <number,", 4)
 
   # Get a funcref to a regular function as a generic function
   lines =<< trim END
@@ -966,7 +1117,7 @@ def Test_generic_funcref_string()
     var Fx = function('Fn')
     Fx<>()
   END
-  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic function '<>()'", 5)
+  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic '<>()'", 5)
 
   lines =<< trim END
     vim9script
@@ -1062,7 +1213,7 @@ def Test_generic_funcref_string_from_another_function()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1555: Empty type list specified for generic function', 1)
+  v9.CheckSourceFailure(lines, 'E1555: Empty type list specified for generic', 1)
 
   # Get a generic funcref specifying only the opening bracket after name
   lines =<< trim END
@@ -1074,7 +1225,7 @@ def Test_generic_funcref_string_from_another_function()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic function: <", 1)
+  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic: <", 1)
 
   # Get a generic funcref specifying only the opening bracket and type
   lines =<< trim END
@@ -1086,7 +1237,7 @@ def Test_generic_funcref_string_from_another_function()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic function: <number", 1)
+  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic: <number", 1)
 
   # Get a generic funcref without specifying a type after comma
   lines =<< trim END
@@ -1098,7 +1249,7 @@ def Test_generic_funcref_string_from_another_function()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic function: <number,", 1)
+  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic: <number,", 1)
 
   # Get a funcref to a regular function as a generic function
   lines =<< trim END
@@ -1136,7 +1287,7 @@ def Test_generic_funcref_string_from_another_function()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1555: Empty type list specified for generic function', 2)
+  v9.CheckSourceFailure(lines, 'E1555: Empty type list specified for generic', 2)
 
   lines =<< trim END
     vim9script
@@ -1188,7 +1339,7 @@ def Test_generic_obj_method()
     endclass
     defcompile
   END
-  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic function 'Fn'", 4)
+  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic 'Fn'", 4)
 
   lines =<< trim END
     vim9script
@@ -1211,7 +1362,7 @@ def Test_generic_obj_method()
     var a = A.new()
     a.Fn<>()
   END
-  v9.CheckSourceFailureList(lines, ["E1555: Empty type list specified for generic function 'Fn'"])
+  v9.CheckSourceFailureList(lines, ["E1555: Empty type list specified for generic 'Fn'"])
 
   lines =<< trim END
     vim9script
@@ -1262,6 +1413,40 @@ def Test_generic_obj_method()
   v9.CheckSourceFailure(lines, 'E1560: Not a generic function: Fn', 8)
 enddef
 
+" Test for an error in the type arguments of a generic method called in a def
+" function, the type arguments table must be freed
+def Test_generic_method_type_args_error_in_def()
+  var lines =<< trim END
+    vim9script
+    class A
+      static var x = 1
+      def Get<T>(v: T): T
+        return v
+      enddef
+    endclass
+    def Fn()
+      echo A.x<number, string.x
+    enddef
+    defcompile Fn
+  END
+  v9.CheckSourceFailure(lines, 'E1553: Missing comma after type in generic: <number, string.x', 1)
+
+  lines =<< trim END
+    vim9script
+    class A
+      def Get<T>(v: T): T
+        return v
+      enddef
+    endclass
+    def Fn()
+      var a = A.new()
+      echo a.Get<number, >(1)
+    enddef
+    defcompile Fn
+  END
+  v9.CheckSourceFailure(lines, 'E1008: Missing <type> after <number, >(1)', 2)
+enddef
+
 def Test_generic_obj_method_call_from_another_method()
   var lines =<< trim END
     vim9script
@@ -1295,7 +1480,7 @@ def Test_generic_obj_method_call_from_another_method()
     enddef
     defcompile
   END
-  v9.CheckSourceFailureList(lines, ["E1555: Empty type list specified for generic function 'Fn'"])
+  v9.CheckSourceFailureList(lines, ["E1555: Empty type list specified for generic 'Fn'"])
 
   lines =<< trim END
     vim9script
@@ -1454,7 +1639,7 @@ def Test_generic_class_method()
     endclass
     defcompile
   END
-  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic function 'Fn'", 4)
+  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic 'Fn'", 4)
 
   lines =<< trim END
     vim9script
@@ -1476,7 +1661,7 @@ def Test_generic_class_method()
     endclass
     A.Fn<>()
   END
-  v9.CheckSourceFailureList(lines, ["E1555: Empty type list specified for generic function 'Fn'"])
+  v9.CheckSourceFailureList(lines, ["E1555: Empty type list specified for generic 'Fn'"])
 
   lines =<< trim END
     vim9script
@@ -1554,7 +1739,7 @@ def Test_generic_class_method_call_from_another_method()
     enddef
     defcompile
   END
-  v9.CheckSourceFailureList(lines, ["E1555: Empty type list specified for generic function 'Fn'"])
+  v9.CheckSourceFailureList(lines, ["E1555: Empty type list specified for generic 'Fn'"])
 
   lines =<< trim END
     vim9script
@@ -1689,7 +1874,7 @@ def Test_generic_funcref_use_from_def_method()
     enddef
     defcompile
   END
-  v9.CheckSourceFailure(lines, 'E1555: Empty type list specified for generic function', 1)
+  v9.CheckSourceFailure(lines, 'E1555: Empty type list specified for generic', 1)
 
   # Assigning a generic function specifying only the opening bracket
   lines =<< trim END
@@ -1703,7 +1888,7 @@ def Test_generic_funcref_use_from_def_method()
     enddef
     defcompile
   END
-  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic function: <", 1)
+  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic: <", 1)
 
   # Assigning a generic function without specifying the closing bracket
   lines =<< trim END
@@ -1717,7 +1902,7 @@ def Test_generic_funcref_use_from_def_method()
     enddef
     defcompile
   END
-  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic function: <number", 1)
+  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic: <number", 1)
 
   # Assigning a generic function without specifying a type after comma
   lines =<< trim END
@@ -1731,7 +1916,7 @@ def Test_generic_funcref_use_from_def_method()
     enddef
     defcompile
   END
-  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic function: <number,", 1)
+  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic: <number,", 1)
 
   # Create a funcref to a regular function as a generic function
   lines =<< trim END
@@ -1794,6 +1979,77 @@ def Test_generic_vim9_lambda()
 enddef
 
 " Test for using a generic type in a nested def function
+" Test for errors when using a nested generic function
+def Test_generic_nested_func_errors()
+  # The function with the types cannot be created from a closure
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      def Inner<U>(u: U): string
+        return typename(u)
+      enddef
+      var L = () => Inner<number>
+    enddef
+    defcompile Fn
+  END
+  v9.CheckSourceFailure(lines, 'E1594: Cannot use generic function from a closure: Inner', 1)
+
+  lines =<< trim END
+    vim9script
+    def Fn()
+      def Inner<U>(u: U): string
+        return typename(u)
+      enddef
+      def Inner2()
+        echo Inner<string>('a')
+      enddef
+    enddef
+    defcompile Fn
+  END
+  v9.CheckSourceFailure(lines, 'E1594: Cannot use generic function from a closure: Inner', 1)
+
+  # The type variable cannot have the name of the function
+  lines =<< trim END
+    vim9script
+    def Fn()
+      def Inner<A, Inner>(x: Inner): Inner
+        return x
+      enddef
+    enddef
+    defcompile Fn
+  END
+  v9.CheckSourceFailure(lines, 'E1041: Redefining script item: "Inner"', 1)
+
+  lines =<< trim END
+    vim9script
+    def Fn()
+      def Inner<Inn, InnerX>(x: Inn): Inn
+        return x
+      enddef
+      assert_equal(3, Inner<number, string>(3))
+    enddef
+    Fn()
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for calling a generic function without type arguments using a funcref
+def Test_generic_func_funcref_missing_type_args()
+  var lines =<< trim END
+    vim9script
+    class Pair<A, B>
+      var a: A
+      var b: B
+    endclass
+    def Take<T>(p: Pair<T, number>): number
+      return 1
+    enddef
+    var F = Take
+    F(Pair<string, number>.new('x', 1))
+  END
+  v9.CheckSourceFailure(lines, "E1559: Type arguments missing for generic function '<SNR>", 10)
+enddef
+
 def Test_generic_nested_def()
   var lines =<< trim END
     vim9script
@@ -2084,7 +2340,7 @@ def Test_generic_function_disassemble()
     vim9script
     disassemble Fn<number, dict<number>
   END
-  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic function: <number, dict<number>", 2)
+  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic: <number, dict<number>", 2)
 
   lines =<< trim END
     vim9script
@@ -2096,13 +2352,13 @@ def Test_generic_function_disassemble()
     vim9script
     disassemble Fn<number,
   END
-  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic function: <number,", 2)
+  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic: <number,", 2)
 
   lines =<< trim END
     vim9script
     disassemble Fn<
   END
-  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic function: <", 2)
+  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic: <", 2)
 
   lines =<< trim END
     vim9script
@@ -2142,7 +2398,7 @@ def Test_generic_function_disassemble()
     enddef
     disassemble Fn<>
   END
-  v9.CheckScriptFailure(lines, "E1555: Empty type list specified for generic function '<>'", 4)
+  v9.CheckScriptFailure(lines, "E1555: Empty type list specified for generic '<>'", 4)
 enddef
 
 " Test for disassembling a generic function calling another generic function
@@ -2223,7 +2479,7 @@ def Test_generic_disassemble_generic_obj_method()
     endclass
     disassemble Foo.Fn<number, dict<number>
   END
-  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic function: Fn<number, dict<number>", 6)
+  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic: Fn<number, dict<number>", 6)
 
   lines =<< trim END
     vim9script
@@ -2241,7 +2497,7 @@ def Test_generic_disassemble_generic_obj_method()
     endclass
     disassemble Foo.Fn<number,
   END
-  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic function: Fn<number,", 6)
+  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic: Fn<number,", 6)
 
   lines =<< trim END
     vim9script
@@ -2251,7 +2507,7 @@ def Test_generic_disassemble_generic_obj_method()
     endclass
     disassemble Foo.Fn<
   END
-  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic function: Fn<", 6)
+  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic: Fn<", 6)
 
   lines =<< trim END
     vim9script
@@ -2301,7 +2557,7 @@ def Test_generic_disassemble_generic_obj_method()
     endclass
     disassemble Foo.Fn<>
   END
-  v9.CheckScriptFailure(lines, "E1555: Empty type list specified for generic function 'Fn'", 6)
+  v9.CheckScriptFailure(lines, "E1555: Empty type list specified for generic 'Fn'", 6)
 enddef
 
 " Test for disassembling a generic class method
@@ -2351,7 +2607,7 @@ def Test_generic_disassemble_generic_class_method()
     endclass
     disassemble Foo.Fn<number, dict<number>
   END
-  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic function: Fn<number, dict<number>", 6)
+  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic: Fn<number, dict<number>", 6)
 
   lines =<< trim END
     vim9script
@@ -2361,7 +2617,7 @@ def Test_generic_disassemble_generic_class_method()
     endclass
     disassemble Foo.Fn<number,
   END
-  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic function: Fn<number,", 6)
+  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic: Fn<number,", 6)
 
   lines =<< trim END
     vim9script
@@ -2371,7 +2627,7 @@ def Test_generic_disassemble_generic_class_method()
     endclass
     disassemble Foo.Fn<
   END
-  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic function: Fn<", 6)
+  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic: Fn<", 6)
 
   lines =<< trim END
     vim9script
@@ -2421,7 +2677,7 @@ def Test_generic_disassemble_generic_class_method()
     endclass
     disassemble Foo.Fn<>
   END
-  v9.CheckScriptFailure(lines, "E1555: Empty type list specified for generic function 'Fn'", 6)
+  v9.CheckScriptFailure(lines, "E1555: Empty type list specified for generic 'Fn'", 6)
 enddef
 
 " Test for disassembling a generic function using a Funcref variable
@@ -2581,7 +2837,7 @@ def Test_generic_nested_functions()
     enddef
     defcompile
   END
-  v9.CheckScriptFailure(lines, 'E1555: Empty type list specified for generic function', 3)
+  v9.CheckScriptFailure(lines, 'E1555: Empty type list specified for generic', 3)
 
   lines =<< trim END
     vim9script
@@ -2602,7 +2858,7 @@ def Test_generic_nested_functions()
     enddef
     defcompile
   END
-  v9.CheckScriptFailure(lines, "E1553: Missing comma after type in generic function: <A()", 3)
+  v9.CheckScriptFailure(lines, "E1553: Missing comma after type in generic: <A()", 3)
 
   lines =<< trim END
     vim9script
@@ -2662,7 +2918,7 @@ def Test_generic_function_use_in_call_function_as_string()
     enddef
     call("Fn<>", [])
   END
-  v9.CheckSourceFailure(lines, 'E1555: Empty type list specified for generic function', 4)
+  v9.CheckSourceFailure(lines, 'E1555: Empty type list specified for generic', 4)
 
   # Test for passing no types
   lines =<< trim END
@@ -2680,7 +2936,7 @@ def Test_generic_function_use_in_call_function_as_string()
     enddef
     call("Fn<", [])
   END
-  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic function: <", 4)
+  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic: <", 4)
 
   # Test for missing types
   lines =<< trim END
@@ -2689,7 +2945,7 @@ def Test_generic_function_use_in_call_function_as_string()
     enddef
     call("Fn<number", [])
   END
-  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic function: <number", 4)
+  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic: <number", 4)
 
   # Test for missing types
   lines =<< trim END
@@ -2698,7 +2954,7 @@ def Test_generic_function_use_in_call_function_as_string()
     enddef
     call("Fn<number,", [])
   END
-  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic function: <number,", 4)
+  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic: <number,", 4)
 
   # Test for missing types
   lines =<< trim END
@@ -2783,7 +3039,7 @@ def Test_generic_use_in_call_func_as_string_in_method()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1555: Empty type list specified for generic function', 1)
+  v9.CheckSourceFailure(lines, 'E1555: Empty type list specified for generic', 1)
 
   # Test for passing no types
   lines =<< trim END
@@ -2807,7 +3063,7 @@ def Test_generic_use_in_call_func_as_string_in_method()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic function: <", 1)
+  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic: <", 1)
 
   # Test for missing types
   lines =<< trim END
@@ -2819,7 +3075,7 @@ def Test_generic_use_in_call_func_as_string_in_method()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic function: <number", 1)
+  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic: <number", 1)
 
   # Test for missing types
   lines =<< trim END
@@ -2831,7 +3087,7 @@ def Test_generic_use_in_call_func_as_string_in_method()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic function: <number,", 1)
+  v9.CheckSourceFailure(lines, "E1554: Missing '>' in generic: <number,", 1)
 
   # Test for missing types
   lines =<< trim END
@@ -2916,7 +3172,7 @@ def Test_generic_function_use_in_call_function_as_funcref()
     enddef
     call(Fn<>, [])
   END
-  v9.CheckSourceFailure(lines, 'E1555: Empty type list specified for generic function', 4)
+  v9.CheckSourceFailure(lines, 'E1555: Empty type list specified for generic', 4)
 
   # Test for passing no types
   lines =<< trim END
@@ -3027,7 +3283,7 @@ def Test_generic_function_use_call_cmd()
     enddef
     call Fn<>()
   END
-  v9.CheckSourceFailure(lines, 'E1555: Empty type list specified for generic function', 4)
+  v9.CheckSourceFailure(lines, 'E1555: Empty type list specified for generic', 4)
 
   # Test for passing no types
   lines =<< trim END
@@ -3418,6 +3674,98 @@ def Test_generic_abstract_method_override_fails()
   v9.CheckSourceFailure(lines, 'E1434: Mismatched number of type variables for generic method  "Fn" in class "A"', 11)
 enddef
 
+" Test for implementing an interface generic method with a method that has a
+" different number of type variables
+def Test_generic_interface_method_type_var_count()
+  var lines =<< trim END
+    vim9script
+
+    interface I
+      def Fn<T>(t: T): T
+    endinterface
+
+    class A implements I
+      def Fn(t: number): number
+        return t
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1598: Number of type variables of method "Fn" differs from interface "I"', 11)
+
+  lines =<< trim END
+    vim9script
+
+    interface I
+      def Fn(t: number): number
+    endinterface
+
+    class A implements I
+      def Fn<T>(t: T): T
+        return t
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1598: Number of type variables of method "Fn" differs from interface "I"', 11)
+
+  lines =<< trim END
+    vim9script
+
+    interface I
+      def Fn<T>(t: T): T
+    endinterface
+
+    class A implements I
+      def Fn<X, Y>(t: X): X
+        return t
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1598: Number of type variables of method "Fn" differs from interface "I"', 11)
+
+  # The method is inherited from the parent class
+  lines =<< trim END
+    vim9script
+
+    interface I
+      def Fn<T>(t: T): T
+    endinterface
+
+    class A
+      def Fn<X, Y>(t: X): X
+        return t
+      enddef
+    endclass
+
+    class B extends A implements I
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1598: Number of type variables of method "Fn" differs from interface "I"', 14)
+
+  # Same number of type variables with different names
+  lines =<< trim END
+    vim9script
+
+    interface I
+      def Fn<T>(t: T): T
+      def Fn2<A, B>(a: A, b: B): B
+    endinterface
+
+    class A implements I
+      def Fn<U>(t: U): U
+        return t
+      enddef
+      def Fn2<X, Y>(a: X, b: Y): Y
+        return b
+      enddef
+    endclass
+
+    var i: I = A.new()
+    assert_equal(3, i.Fn<number>(3))
+    assert_equal('b', i.Fn2<number, string>(1, 'b'))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for using a generic method to initialize an object member variable
 def Test_generic_method_in_object_member_init_expr()
   var lines =<< trim END
@@ -3533,7 +3881,7 @@ def Test_generic_enum_constructor_error()
       enddef
     endenum
   END
-  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic function '<>()'", 4)
+  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic '<>()'", 4)
 
   lines =<< trim END
     vim9script
@@ -3543,7 +3891,7 @@ def Test_generic_enum_constructor_error()
       enddef
     endenum
   END
-  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic function 'new'", 4)
+  v9.CheckSourceFailure(lines, "E1555: Empty type list specified for generic 'new'", 4)
 
   lines =<< trim END
     vim9script
@@ -3570,6 +3918,116 @@ def Test_generic_max_type_args()
     assert_equal(10, Fn<number, string, string, string, string, string, string, string, string, string, string, string>(10))
 
     assert_equal('abc', Fn<string, number, number, number, number, number, number, number, number, number, number, number>('abc'))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for calling a generic function again after creating a generic class
+" used in its return type failed
+def Test_generic_func_class_init_failed()
+  var lines =<< trim END
+    vim9script
+    var calls = 0
+    def Init(): number
+      calls += 1
+      if calls == 1
+        throw 'init failed'
+      endif
+      return 1
+    enddef
+    class Pair<A, B>
+      static var s: number = Init()
+      var a: A
+    endclass
+    def Make<T>(x: T): Pair<T, T>
+      return Pair<T, T>.new(x)
+    enddef
+    var caught = false
+    try
+      Make<number>(1)
+    catch /init failed/
+      caught = true
+    endtry
+    assert_true(caught)
+    assert_equal(2, Make<number>(2).a)
+    def Fn()
+      var p: Pair<number, number> = Make<number>(3)
+      assert_equal(3, p.a)
+    enddef
+    Fn()
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for running out of memory when copying a generic function to create a
+" concrete function or a concrete class
+func Test_generic_func_copy_alloc_fail()
+  let lines =<< trim END
+    vim9script
+    def g:GenId<T>(x: T): T
+      return x
+    enddef
+    g:r = g:GenId<number>(1)
+  END
+  call writefile(lines, 'Xgenericalloc.vim', 'D')
+  call test_alloc_fail(GetAllocId('generic_func_copy'), 0, 0)
+  call assert_fails('source Xgenericalloc.vim', 'E342:')
+  " the generic function is still defined
+  call assert_true(exists('*g:GenId'))
+  call test_garbagecollect_now()
+  source Xgenericalloc.vim
+  call assert_equal(1, g:r)
+  delfunc g:GenId
+
+  " generic method copied to the concrete class or the concrete method
+  let lines =<< trim END
+    vim9script
+    class B<T>
+      def Wrap<X>(x: X): list<X>
+        return [x]
+      enddef
+    endclass
+    g:r = B<number>.new().Wrap<bool>(true)
+  END
+  call writefile(lines, 'Xgenericalloc.vim')
+  for cnt in [0, 1]
+    unlet! g:r
+    call test_alloc_fail(GetAllocId('generic_func_copy'), cnt, 0)
+    call assert_fails('source Xgenericalloc.vim', 'E342:')
+    call assert_false(exists('g:r'))
+    call test_garbagecollect_now()
+    source Xgenericalloc.vim
+    call assert_equal([v:true], g:r)
+  endfor
+  unlet g:r
+endfunc
+
+" Test for a type cast using a type variable in a lambda in a generic function
+" or a method of a generic class
+def Test_generic_type_cast_in_lambda()
+  var lines =<< trim END
+    vim9script
+    g:X = 1
+    def Fn<T>(): func
+      return () => <T>g:X
+    enddef
+    def Fn2<T>(): func
+      return () => [<list<T>>[g:X]]
+    enddef
+    class Box<T>
+      def M(): func
+        return () => <list<T>>[g:X]
+      enddef
+    endclass
+    assert_equal(1, Fn<number>()())
+    assert_equal([[1]], Fn2<number>()())
+    assert_equal([1], Box<number>.new().M()())
+    assert_fails('Fn<string>()()', 'E1012: Type mismatch; expected string but got number')
+    assert_fails('Box<string>.new().M()()', 'E1012: Type mismatch; expected list<string> but got list<number>')
+
+    # the type is not checked when the expression is skipped
+    assert_equal(2, false ? <nosuch>1 : 2)
+    unlet g:X
   END
   v9.CheckSourceSuccess(lines)
 enddef

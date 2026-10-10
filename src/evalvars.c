@@ -1513,10 +1513,31 @@ skip_var_one(char_u *arg, int include_type)
     if (vim9 && end == arg + 2 && end[-1] == ':')
 	--end;
 
+    if (vim9)
+	end = skip_generic_class_member(arg, end, FNE_INCL_BR);
+
     if (include_type && vim9)
     {
 	if (*skipwhite(end) == ':')
 	    end = skip_type(skipwhite(skipwhite(end) + 1), FALSE);
+    }
+    return end;
+}
+
+/*
+ * When "end" is at the "<" of "GenericClass<type>.member" in "name", return
+ * the end of "member", found with find_name_end() using "flags".  Otherwise
+ * return "end".
+ */
+    char_u *
+skip_generic_class_member(char_u *name, char_u *end, int flags)
+{
+    if (*end == '<')
+    {
+	char_u	*p = skip_type(name, FALSE);
+
+	if (p > end && *p == '.')
+	    return find_name_end(p + 1, NULL, NULL, flags);
     }
     return end;
 }
@@ -3442,7 +3463,31 @@ eval_variable(
 		    }
 		}
 	    }
+
 	    ret = copy_tv(tv, rettv);
+
+	    // If a generic class is used, then use the class with the
+	    // specified type
+	    if (len > 0 && tv->v_type == VAR_CLASS
+				&& tv->vval.v_class != NULL
+				&& (flags & EVAL_VAR_NO_GENERIC) == 0)
+	    {
+		char_u	*argp = name + len;
+		class_T	*cl;
+
+		name[len] = cc;
+		cl = eval_generic_class(tv->vval.v_class, &argp, NULL);
+		name[len] = NUL;
+		if (cl == NULL)
+		{
+		    clear_tv(rettv);
+		    rettv->v_type = VAR_UNKNOWN;
+		    ret = FAIL;
+		    goto done;
+		}
+		if (cl != rettv->vval.v_class)
+		    tv_set_class(rettv, cl);
+	    }
 	}
     }
 
@@ -3455,19 +3500,22 @@ done:
 
 /*
  * Get the value of internal variable "name", also handling "import.name".
+ * "flags" can be EVAL_VAR_NO_GENERIC.
  * Return OK or FAIL.  If OK is returned "rettv" must be cleared.
  */
     int
 eval_variable_import(
     char_u	*name,
-    typval_T	*rettv)
+    typval_T	*rettv,
+    int		flags)
 {
     char_u  *s = name;
     while (ASCII_ISALNUM(*s) || *s == '_')
 	++s;
     int	    len = (int)(s - name);
 
-    if (eval_variable(name, len, 0, rettv, NULL, EVAL_VAR_IMPORT) == FAIL)
+    if (eval_variable(name, len, 0, rettv, NULL, EVAL_VAR_IMPORT | flags)
+								      == FAIL)
 	return FAIL;
     if (rettv->v_type == VAR_ANY && *s == '.')
     {
@@ -3476,7 +3524,7 @@ eval_variable_import(
 	while (ASCII_ISALNUM(*s) || *s == '_')
 	    ++s;
 	int sid = rettv->vval.v_number;
-	return eval_variable(ns, (int)(s - ns), sid, rettv, NULL, 0);
+	return eval_variable(ns, (int)(s - ns), sid, rettv, NULL, flags);
     }
     return OK;
 }
@@ -4915,7 +4963,29 @@ var_exists(char_u *var)
 	if (tofree != NULL)
 	    name = tofree;
 	n = (eval_variable(name, len, 0, &tv, NULL,
-				 EVAL_VAR_NOAUTOLOAD + EVAL_VAR_IMPORT) == OK);
+		  EVAL_VAR_NOAUTOLOAD + EVAL_VAR_IMPORT + EVAL_VAR_NO_GENERIC)
+									== OK);
+	if (n && TV_IS_GENERIC_CLASS(&tv))
+	{
+	    // A generic class: use the class with the specified types, without
+	    // giving an error message.
+	    class_T *cl = NULL;
+
+	    if (*arg == '<')
+	    {
+		++emsg_off;
+		cl = find_generic_class(tv.vval.v_class, &arg, NULL);
+		--emsg_off;
+	    }
+	    if (cl != NULL)
+		tv_set_class(&tv, cl);
+	    else if (*arg != NUL)
+	    {
+		// without the types only the class itself exists
+		clear_tv(&tv);
+		n = FALSE;
+	    }
+	}
 	if (n)
 	{
 	    // handle d.key, l[idx], f(expr)

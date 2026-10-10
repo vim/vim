@@ -3841,7 +3841,7 @@ find_ex_command(
 	    if (vim9 && *p == '<')
 	    {
 		// generic function type args
-		if (skip_generic_func_type_args(&p) == FAIL)
+		if (skip_generic_type_args(&p) == FAIL)
 		{
 		    eap->cmdidx = CMD_SIZE;
 		    return p;

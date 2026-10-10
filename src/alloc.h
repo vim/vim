@@ -47,5 +47,16 @@ typedef enum {
     aid_get_func,
     aid_defer,
     aid_tuple_append,
+    aid_generic_func_copy,
+    aid_type_ptr,
+    aid_func_type_args,
+    aid_copy_func_argtypes,
+    aid_class_methods,
+    aid_class_interfaces,
+    aid_class_members,
+    aid_class_add_member,
+    aid_expr_concat,
+    aid_func_this_arg,
+    aid_default_new,
     aid_last
 } alloc_id_T;

@@ -224,6 +224,7 @@ compile_lock_unlock(
 
 	char_u	*name = NULL;
 	int	len = end - p;
+	class_T	*push_cl = NULL;
 
 	if (lookup_local(p, len, NULL, cctx) == OK)
 	{
@@ -240,6 +241,16 @@ compile_lock_unlock(
 	    ch_log(NULL, "LKVAR:    ... lookup_local: name %s", name);
 #endif
 	}
+	if (name == NULL && *end == '<'
+			    && skip_generic_class_member(p, end, 0) != end)
+	{
+	    // "GenericClass<type>.member": push the class with the types,
+	    // these may use the type variables of the function or class.
+	    name = p;
+#ifdef LOG_LOCKVAR
+	    ch_log(NULL, "LKVAR:    ... generic class: name %s", name);
+#endif
+	}
 	if (name == NULL)
 	{
 	    class_T *cl;
@@ -247,9 +258,14 @@ compile_lock_unlock(
 	    {
 		if (*end != '.' && *end != '[')
 		{
-		    // Push the class of the bare class variable name
+		    // Push the class of the bare class variable name.  A
+		    // concrete class created from a generic class (e.g.
+		    // "Box<number>") is not a script variable, push the class
+		    // itself.
 		    name = cl->class_name.string;
 		    len = (int)cl->class_name.length;
+		    if (cl->class_generic_base != NULL)
+			push_cl = cl;
 #ifdef LOG_LOCKVAR
 		    ch_log(NULL, "LKVAR:    ... cctx_class_member: name %s",
 			   name);
@@ -287,7 +303,13 @@ compile_lock_unlock(
 #ifdef LOG_LOCKVAR
 	    ch_log(NULL, "LKVAR:    ... INS_LOCKUNLOCK %s", name);
 #endif
-	    if (compile_load(&name, len, name + len, cctx, FALSE, FALSE) == FAIL)
+	    int	r;
+
+	    if (push_cl != NULL)
+		r = generate_PUSHCLASS(cctx, push_cl);
+	    else
+		r = compile_load(&name, len, name + len, cctx, FALSE, FALSE);
+	    if (r == FAIL)
 		return FAIL;
 	    isn = ISN_LOCKUNLOCK;
 	}
@@ -1145,8 +1167,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		    goto failed;
 		}
 		p = skipwhite(p + 1);
-		lhs_type = parse_type(&p, cctx->ctx_type_list, cctx->ctx_ufunc,
-								cctx, TRUE);
+		lhs_type = parse_type(&p, cctx->ctx_type_list, cctx, TRUE);
 		if (lhs_type == NULL || !valid_declaration_type(lhs_type))
 		    goto failed;
 	    }

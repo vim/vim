@@ -1059,7 +1059,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     if (*name_end == '<')
     {
 	bracket_start = name_end;
-	if (skip_generic_func_type_args(&name_end) == FAIL)
+	if (skip_generic_type_args(&name_end) == FAIL)
 	    return NULL;
     }
 
@@ -1121,6 +1121,26 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	goto theend;
     }
 
+    // A type variable cannot have the name of the function.  The function is
+    // defined with the "<lambda>" name, check it here.
+    if (bracket_start != NULL)
+    {
+	size_t	len = STRLEN(func_name);
+
+	for (char_u *t = bracket_start + 1; *t != '>' && *t != NUL; )
+	{
+	    char_u *te = to_name_end(t, FALSE);
+
+	    if ((size_t)(te - t) == len && STRNCMP(t, func_name, len) == 0)
+	    {
+		semsg(_(e_redefining_script_item_str), func_name);
+		r = FAIL;
+		goto theend;
+	    }
+	    t = te == t ? t + 1 : te;
+	}
+    }
+
     // Make sure "KeyTyped" is not set, it may cause indent to be written.
     int save_KeyTyped = KeyTyped;
     KeyTyped = FALSE;
@@ -1145,18 +1165,9 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     }
 
     // copy over the block scope IDs before compiling
-    if (!is_global && cctx->ctx_ufunc->uf_block_depth > 0)
-    {
-	int block_depth = cctx->ctx_ufunc->uf_block_depth;
-
-	ufunc->uf_block_ids = ALLOC_MULT(int, block_depth);
-	if (ufunc->uf_block_ids != NULL)
-	{
-	    mch_memmove(ufunc->uf_block_ids, cctx->ctx_ufunc->uf_block_ids,
-						    sizeof(int) * block_depth);
-	    ufunc->uf_block_depth = block_depth;
-	}
-    }
+    if (!is_global)
+	function_set_block_ids(ufunc, cctx->ctx_ufunc->uf_block_ids,
+					    cctx->ctx_ufunc->uf_block_depth);
 
     // Define the funcref before compiling, so that it is found by any
     // recursive call.
@@ -1177,6 +1188,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	    func_ptr_unref(ufunc);
 	    goto theend;
 	}
+	lvar->lv_ufunc = ufunc;
 	if (generate_FUNCREF(cctx, ufunc, NULL, FALSE, 0, &funcref_isn_idx) == FAIL)
 	{
 	    func_ptr_unref(ufunc);
@@ -1395,7 +1407,7 @@ generate_loadvar(cctx_T *cctx, lhs_T *lhs)
 	case dest_script:
 	case dest_script_v9:
 	    res = compile_load_scriptvar(cctx,
-			    name + (name[1] == ':' ? 2 : 0), NULL, NULL, NULL);
+		    name + (name[1] == ':' ? 2 : 0), NULL, NULL, NULL, NULL);
 	    break;
 	case dest_env:
 	    // Include $ in the name here
@@ -2117,6 +2129,106 @@ compile_lhs_set_oc_member_type(
 }
 
 /*
+ * Set "lhs_varlen_total" for "var_start", where "var_start[lhs->lhs_varlen]"
+ * is '[' or '.'.  Only the last index is used, if there are others before it
+ * code is generated for the expression: the destination is "dest_expr" with
+ * type any.  Thus for "ll[1][2]" the expression is "ll[1]" and "[2]" is the
+ * index.
+ */
+    static void
+compile_lhs_set_index(lhs_T *lhs, char_u *var_start)
+{
+    char_u	*after = var_start + lhs->lhs_varlen;
+    char_u	*p;
+
+    for (;;)
+    {
+	p = skip_index(after);
+	if (*p != '[' && *p != '.')
+	{
+	    lhs->lhs_varlen_total = p - var_start;
+	    break;
+	}
+	after = p;
+    }
+    if (after > var_start + lhs->lhs_varlen)
+    {
+	lhs->lhs_varlen = after - var_start;
+	lhs->lhs_dest = dest_expr;
+	// We don't know the type before evaluating the expression,
+	// use "any" until then.  The member index is for the first name,
+	// not for the last index.
+	lhs->lhs_type = &t_any;
+	lhs->lhs_member_idx = -1;
+    }
+}
+
+/*
+ * Compile "GenericClass<type>.member" in an assignment.  "lhs->lhs_type" is
+ * the type of the generic class and "after" points to the "<".  The class
+ * variable "member" of the class with the specified types is the destination.
+ */
+    static int
+compile_lhs_generic_member(
+    cctx_T	*cctx,
+    lhs_T	*lhs,
+    char_u	*var_start,
+    char_u	*after)
+{
+    type_T	    *type = lhs->lhs_type;
+    class_T	    *cl;
+    char_u	    *p = after;
+
+    if (cctx->ctx_skip == SKIP_YES)
+    {
+	// The class may not be known, it is not used.
+	lhs->lhs_type = &t_any;
+	lhs->lhs_member_type = &t_any;
+	return OK;
+    }
+
+    if (type == NULL || type->tt_type != VAR_CLASS || type->tt_class == NULL
+					|| !IS_GENERIC_CLASS(type->tt_class))
+    {
+	semsg(_(e_not_a_generic_class_str), lhs->lhs_name);
+	return FAIL;
+    }
+
+    cl = find_generic_class(type->tt_class, &p, cctx);
+    if (cl == NULL)
+	return FAIL;
+    if (*p != '.')
+    {
+	semsg(_(e_trailing_characters_str), p);
+	return FAIL;
+    }
+
+    lhs->lhs_varlen = p - var_start;
+    char_u *name_end = to_name_end(p + 1, FALSE);
+    if (*name_end == '[' || *name_end == '.')
+    {
+	// "GenericClass<type>.member[idx]": like "ClassName.member[idx]" the
+	// expression before the last index is evaluated.
+	compile_lhs_set_index(lhs, var_start);
+	lhs->lhs_member_type = &t_any;
+	return OK;
+    }
+
+    // Check the class variable like for "ClassName.member".
+    lhs->lhs_type = &cl->class_type;
+    if (compile_lhs_set_oc_member_type(cctx, lhs, var_start) == FAIL)
+	return FAIL;
+
+    lhs->lhs_dest = dest_class_member;
+    lhs->lhs_class = cl;
+    lhs->lhs_classmember_idx = lhs->lhs_member_idx;
+    lhs->lhs_type = lhs->lhs_member_type;
+    lhs->lhs_has_index = FALSE;
+
+    return OK;
+}
+
+/*
  * When compiling a LHS variable, set the LHS variable type.
  */
     static int
@@ -2140,7 +2252,7 @@ compile_lhs_set_type(cctx_T *cctx, lhs_T *lhs, char_u *var_end, int is_decl)
 	}
 
 	p = skipwhite(var_end + 1);
-	lhs->lhs_type = parse_type(&p, cctx->ctx_type_list, cctx->ctx_ufunc, cctx, TRUE);
+	lhs->lhs_type = parse_type(&p, cctx->ctx_type_list, cctx, TRUE);
 	if (lhs->lhs_type == NULL
 		|| !valid_declaration_type(lhs->lhs_type))
 	    return FAIL;
@@ -2241,7 +2353,6 @@ compile_lhs_set_member_type(
 	return OK;
 
     char_u	*after = var_start + lhs->lhs_varlen;
-    char_u	*p;
 
     // Something follows after the variable: "var[idx]" or "var.key".
     if (is_decl && cctx->ctx_skip != SKIP_YES)
@@ -2253,30 +2364,19 @@ compile_lhs_set_member_type(
 	return FAIL;
     }
 
-    // Now: var_start[lhs->lhs_varlen] is '[' or '.'
-    // Only the last index is used below, if there are others
-    // before it generate code for the expression.  Thus for
-    // "ll[1][2]" the expression is "ll[1]" and "[2]" is the index.
-    for (;;)
-    {
-	p = skip_index(after);
-	if (*p != '[' && *p != '.')
-	{
-	    lhs->lhs_varlen_total = p - var_start;
-	    break;
-	}
-	after = p;
-    }
-    if (after > var_start + lhs->lhs_varlen)
-    {
-	lhs->lhs_varlen = after - var_start;
-	lhs->lhs_dest = dest_expr;
-	// We don't know the type before evaluating the expression,
-	// use "any" until then.  The member index is for the first name,
-	// not for the last index.
-	lhs->lhs_type = &t_any;
-	lhs->lhs_member_idx = -1;
-    }
+    // "GenericClass<type>.member" or "import.GenericClass<type>.member".
+    // For an import "lhs_varlen" is the length of the name after the dot.
+    char_u *lt = after;
+    char_u *dot = vim_strchr(var_start, '.');
+    if (*lt != '<' && lhs->lhs_type != NULL
+	    && lhs->lhs_type->tt_type == VAR_CLASS
+	    && lhs->lhs_type->tt_class != NULL
+	    && dot != NULL && dot < lhs->lhs_end)
+	lt = to_name_end(skipwhite(dot + 1), TRUE);
+    if (*lt == '<')
+	return compile_lhs_generic_member(cctx, lhs, var_start, lt);
+
+    compile_lhs_set_index(lhs, var_start);
 
     int use_class = lhs->lhs_type != NULL
 	&& (lhs->lhs_type->tt_type == VAR_CLASS
@@ -3855,6 +3955,23 @@ may_compile_assignment(exarg_T *eap, char_u **line, cctx_T *cctx)
 	else
 	    var_end = find_name_end(pskip, NULL, NULL,
 					FNE_CHECK_START | FNE_INCL_BR);
+	if (*var_end == '<')
+	{
+	    // "GenericClass<type>.member = expr" or
+	    // "import.GenericClass<type>.member = expr"
+	    char_u *q = skip_type(pskip, FALSE);
+
+	    if (q > var_end && *q == '['
+		    && assignment_len(skipwhite(skip_index(q)), &heredoc) > 0)
+	    {
+		// "GenericClass<type>[idx] = expr", same error as at the
+		// script level
+		semsg(_(e_trailing_characters_str), var_end);
+		return FAIL;
+	    }
+	    if (q > var_end && *q == '.')
+		var_end = find_name_end(q + 1, NULL, NULL, FNE_INCL_BR);
+	}
 	oplen = assignment_len(skipwhite(var_end), &heredoc);
 	if (oplen > 0)
 	{
@@ -4137,7 +4254,16 @@ obj_constructor_prologue(ufunc_T *ufunc, cctx_T *cctx)
 		generate_SCRIPTCTX_SET(cctx, current_sctx);
 	    }
 
+	    // An inherited variable uses the type variables of the class that
+	    // defined it.  The variables of a parent class come first.
+	    class_T *dcl = ufunc->uf_class;
+	    while (dcl->class_extends != NULL
+			&& i < dcl->class_extends->class_obj_member_count)
+		dcl = dcl->class_extends;
+	    class_T *save_cl = cctx->ctx_generic_class;
+	    cctx->ctx_generic_class = dcl;
 	    int r = compile_expr0(&expr, cctx);
+	    cctx->ctx_generic_class = save_cl;
 
 	    if (change_sctx)
 	    {
@@ -5220,13 +5346,18 @@ set_function_type(ufunc_T *ufunc)
     {
 	if (ufunc->uf_type_list.ga_itemsize == 0)
 	    ga_init2(&ufunc->uf_type_list, sizeof(type_T *), 10);
-	ufunc->uf_func_type = alloc_func_type(ufunc->uf_ret_type,
+	type_T *ft = alloc_func_type(ufunc->uf_ret_type,
 					   argcount, &ufunc->uf_type_list);
-	// Add argument types to the function type.
-	if (func_type_add_arg_types(ufunc->uf_func_type,
-				    argcount + varargs,
-				    &ufunc->uf_type_list) == FAIL)
+	// When out of memory a static type is returned, it must not be
+	// changed.  Use the type of any function then.
+	if ((ft->tt_flags & TTFLAG_STATIC)
+		|| func_type_add_arg_types(ft, argcount + varargs,
+					    &ufunc->uf_type_list) == FAIL)
+	{
+	    ufunc->uf_func_type = &t_func_any;
 	    return;
+	}
+	ufunc->uf_func_type = ft;
 	ufunc->uf_func_type->tt_argcount = argcount + varargs;
 	ufunc->uf_func_type->tt_min_argcount =
 				      argcount - ufunc->uf_def_args.ga_len;

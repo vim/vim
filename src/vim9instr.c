@@ -765,7 +765,7 @@ generate_PUSHOBJ(cctx_T *cctx)
 /*
  * Generate an ISN_PUSHCLASS instruction.  "class" can be NULL.
  */
-    static int
+    int
 generate_PUSHCLASS(cctx_T *cctx, class_T *class)
 {
     RETURN_OK_IF_SKIP(cctx);

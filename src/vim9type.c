@@ -31,7 +31,7 @@ get_type_ptr(garray_T *type_gap)
 
     if (ga_grow(type_gap, 1) == FAIL)
 	return NULL;
-    type = ALLOC_CLEAR_ONE(type_T);
+    type = ALLOC_CLEAR_ONE_ID(type_T, aid_type_ptr);
     if (type == NULL)
 	return NULL;
 
@@ -54,10 +54,14 @@ copy_type(type_T *type, garray_T *type_gap)
     *copy = *type;
     copy->tt_flags &= ~TTFLAG_STATIC;
 
-    if (type->tt_args != NULL
-	   && func_type_add_arg_types(copy, type->tt_argcount, type_gap) == OK)
+    if (type->tt_args != NULL)
+    {
+	// The copy must not use the argument types of "type".
+	if (func_type_add_arg_types(copy, type->tt_argcount, type_gap) == FAIL)
+	    return type;
 	for (int i = 0; i < type->tt_argcount; ++i)
 	    copy->tt_args[i] = type->tt_args[i];
+    }
 
     return copy;
 }
@@ -75,6 +79,9 @@ copy_type_deep_rec(type_T *type, garray_T *type_gap, garray_T *seen_types)
 	    return ((type_T **)seen_types->ga_data)[i * 2 + 1];
 
     type_T *copy = copy_type(type, type_gap);
+    if (copy == type)
+	// out of memory, "type" must not be changed
+	return type;
     if (ga_grow(seen_types, 1) == FAIL)
 	return copy;
     ((type_T **)seen_types->ga_data)[seen_types->ga_len * 2] = type;
@@ -189,6 +196,83 @@ free_type(type_T *type)
     free_type(type->tt_member);
 
     vim_free(type);
+}
+
+/*
+ * Type resolution context: the class and/or function being defined, whose
+ * type variables can be used in a type, see find_generic_type().  It is used
+ * when a type is parsed without a compile context, e.g. for the argument
+ * types of a function or the variables of a class.  When compiling a function
+ * the type variables are found through the compile context (the function and
+ * its class or "ctx_generic_class").
+ */
+static type_resolve_ctx_T trctx;
+
+/*
+ * Set the type resolution context to class "cl" and function "fp", either can
+ * be NULL.
+ */
+    void
+set_type_resolve_ctx(class_T *cl, ufunc_T *fp)
+{
+    trctx.trc_class = cl;
+    trctx.trc_ufunc = fp;
+}
+
+/*
+ * Set the function of the type resolution context to "fp", keep the class.
+ * Used for a method, which can use the type variables of its class.
+ */
+    void
+set_type_resolve_ctx_ufunc(ufunc_T *fp)
+{
+    trctx.trc_ufunc = fp;
+}
+
+/*
+ * Return the function of the type resolution context or NULL.
+ */
+    ufunc_T *
+get_type_resolve_ctx_ufunc(void)
+{
+    return trctx.trc_ufunc;
+}
+
+/*
+ * Return the class of the type resolution context or NULL.
+ */
+    class_T *
+get_type_resolve_ctx_class(void)
+{
+    return trctx.trc_class;
+}
+
+/*
+ * Clear the type resolution context, no type variables can be used.
+ */
+    void
+clear_type_resolve_ctx(void)
+{
+    set_type_resolve_ctx(NULL, NULL);
+}
+
+/*
+ * Save the type resolution context in "save".  Use this before changing the
+ * context, it may be in use by an outer function or class definition.
+ */
+    void
+save_type_resolve_ctx(type_resolve_ctx_T *save)
+{
+    *save = trctx;
+}
+
+/*
+ * Restore the type resolution context saved with save_type_resolve_ctx().
+ */
+    void
+restore_type_resolve_ctx(type_resolve_ctx_T *save)
+{
+    trctx = *save;
 }
 
 /*
@@ -407,7 +491,10 @@ get_dict_type(type_T *member_type, garray_T *type_gap)
     type_T *type;
 
     // recognize commonly used types
-    if (member_type == NULL || member_type->tt_type == VAR_ANY)
+    // A generic type is t_any initially before being set to a concrete type
+    // later.  So don't use the static t_dict_any for a generic type.
+    if (member_type == NULL || (member_type->tt_type == VAR_ANY
+					&& !IS_GENERIC_TYPE(member_type)))
 	return &t_dict_any;
     if (member_type->tt_type == VAR_VOID
 	    || member_type->tt_type == VAR_UNKNOWN)
@@ -523,7 +610,8 @@ func_type_add_arg_types(
     // pointer to type_gap.
     if (ga_grow(type_gap, 1) == FAIL)
 	return FAIL;
-    functype->tt_args = ALLOC_CLEAR_MULT(type_T *, argcount);
+    functype->tt_args = alloc_clear_id(sizeof(type_T *) * argcount,
+							   aid_func_type_args);
     if (functype->tt_args == NULL)
 	return FAIL;
     ((type_T **)type_gap->ga_data)[type_gap->ga_len] =
@@ -1305,6 +1393,59 @@ check_func_type_maybe(
 }
 
 /*
+ * Return the generic class that class "cl" was created from, or "cl" if it is
+ * a generic class.  Returns NULL if "cl" is not related to a generic class.
+ */
+    static class_T *
+generic_class_of(class_T *cl)
+{
+    if (IS_GENERIC_CLASS(cl))
+	return cl;
+    return cl->class_generic_base;
+}
+
+/*
+ * Return TRUE if class "cl", one of its parent classes or one of their
+ * interfaces is generic class "gcl" or created from it.
+ */
+    static int
+class_instance_of_generic(class_T *cl, class_T *gcl)
+{
+    for (; cl != NULL; cl = cl->class_extends)
+    {
+	if (generic_class_of(cl) == gcl)
+	    return TRUE;
+	for (int i = 0; i < cl->class_interface_count; ++i)
+	    for (class_T *ifcl = cl->class_interfaces_cl[i]; ifcl != NULL;
+						    ifcl = ifcl->class_extends)
+		if (generic_class_of(ifcl) == gcl)
+		    return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * Return TRUE if object type "type" uses a type variable: it is a generic
+ * class with type arguments (e.g. "Pair<T, number>") or a class created with
+ * a type variable as a type argument.
+ */
+    static int
+object_type_uses_type_vars(type_T *type)
+{
+    class_T *cl = type->tt_class;
+
+    if (cl == NULL)
+	return FALSE;
+    if (IS_GENERIC_CLASS(cl))
+	return TRUE;
+    if (cl->class_generic_base != NULL)
+	for (int i = 0; i < cl->class_generic_argcount; i++)
+	    if (type_has_generic(cl->class_generic_args[i].gt_type))
+		return TRUE;
+    return FALSE;
+}
+
+/*
  * Check if the expected and actual types match for an object
  * Returns OK if "expected" and "actual" are matching object types.
  * Returns FAIL if "expected" and "actual" are different types.
@@ -1327,6 +1468,19 @@ check_object_type_maybe(
     // t_object_any matches any object except for an enum item
     if (expected == &t_object_any && !IS_ENUM(actual->tt_class))
 	return OK;
+
+    // When a type variable is used (e.g. "Pair<T, number>" while compiling a
+    // generic function without type arguments) the types are only known
+    // at runtime.
+    if (expected->tt_class != NULL
+	    && (object_type_uses_type_vars(expected)
+				    || object_type_uses_type_vars(actual)))
+    {
+	class_T *ecl = generic_class_of(expected->tt_class);
+
+	if (ecl != NULL && class_instance_of_generic(actual->tt_class, ecl))
+	    return MAYBE;
+    }
 
     // For object method arguments, do a invariant type check in
     // an extended class.  For all others, do a covariance type check.
@@ -1509,25 +1663,44 @@ check_argument_types(
     return OK;
 }
 
+// Maximum nesting of types, e.g. "list<list<number>>" or
+// "Box<Box<number>>", to avoid running out of stack space.
+#define MAX_TYPE_DEPTH	1000
+
+static int parse_depth = 0;
+static int skip_depth = 0;
+
 /*
- * Skip over type in list<type>, dict<type> or tuple<type>.
+ * Skip over the type in:
+ *   list<type>
+ *   dict<type>
+ *   tuple<{type1}, {type2}, ....<type>>
+ *   class_name<{type1}, {type2}, ...>
  * Returns a pointer to the character after the type.  "syn_error" is set to
  * TRUE on syntax error.
  */
     static char_u *
 skip_member_type(char_u *start, char_u *p, int *syn_error)
 {
-    if (STRNCMP("tuple", start, 5) == 0)
+    char_u  *name = *start == '?' ? start + 1 : start;
+    size_t  len = p - name;
+    int	    tuple = len == 5 && STRNCMP(name, "tuple", 5) == 0;
+    int	    list_or_dict = len == 4 && (STRNCMP(name, "list", 4) == 0
+					    || STRNCMP(name, "dict", 4) == 0);
+
+    if (!list_or_dict)
     {
-	// handle tuple<{type1}, {type2}, ....<type>>
-	p = skipwhite(p + 1);
+	// handle tuple<{type1}, {type2}, ....<type>> and the type arguments
+	// of a generic class: Name<{type1}, {type2}, ...>
+	p = skipwhite(skipwhite(p) + 1);
 	while (*p != '>' && *p != NUL)
 	{
 	    char_u *sp = p;
 
-	    if (STRNCMP(p, "...", 3) == 0)
+	    if (tuple && STRNCMP(p, "...", 3) == 0)
 		p += 3;
-	    p = skip_type(p, TRUE);
+	    // a tuple item type can be optional: "?type"
+	    p = skip_type(p, tuple);
 	    if (p == sp)
 	    {
 		*syn_error = TRUE;
@@ -1535,6 +1708,10 @@ skip_member_type(char_u *start, char_u *p, int *syn_error)
 	    }
 	    if (*p == ',')
 		p = skipwhite(p + 1);
+	    else if (!tuple && VIM_ISWHITE(*p) && *skipwhite(p) == '>')
+		// white space before '>' of class type arguments, an error is
+		// given when parsing the type
+		p = skipwhite(p);
 	}
 	if (*p == '>')
 	    p++;
@@ -1604,6 +1781,31 @@ skip_type(char_u *start, int optional)
     char_u	*p = start;
     int		syn_error = FALSE;
 
+    // Too deeply nested: skip to the matching ">" without recursing, an
+    // error is given when parsing the type.
+    if (skip_depth >= MAX_TYPE_DEPTH)
+    {
+	int	depth = 0;
+
+	for ( ; *p != NUL; ++p)
+	{
+	    if (*p == '<')
+		++depth;
+	    else if (*p == '>')
+	    {
+		if (depth == 0)
+		    break;
+		if (--depth == 0)
+		    return p + 1;
+	    }
+	    else if (depth == 0 && !ASCII_ISALNUM(*p) && *p != '_'
+								&& *p != '.')
+		break;
+	}
+	return p;
+    }
+    ++skip_depth;
+
     if (optional && *p == '?')
 	++p;
 
@@ -1613,20 +1815,13 @@ skip_type(char_u *start, int optional)
 
     // Skip over "<type>"; this is permissive about white space.
     if (*skipwhite(p) == '<')
-    {
 	p = skip_member_type(start, p, &syn_error);
-	if (syn_error)
-	    return p;
-    }
     else if ((*p == '(' || (*p == ':' && VIM_ISWHITE(p[1])))
 					     && STRNCMP("func", start, 4) == 0)
-    {
 	// skip over function type
 	p = skip_func_type(p, &syn_error);
-	if (syn_error)
-	    return p;
-    }
 
+    --skip_depth;
     return p;
 }
 
@@ -1643,7 +1838,6 @@ parse_type_member(
 	garray_T    *type_gap,
 	int	    give_error,
 	char	    *info,
-	ufunc_T	    *ufunc,
 	cctx_T	    *cctx)
 {
     char_u  *arg_start = *arg;
@@ -1663,7 +1857,7 @@ parse_type_member(
     }
     *arg = skipwhite(*arg + 1);
 
-    member_type = parse_type(arg, type_gap, ufunc, cctx, give_error);
+    member_type = parse_type(arg, type_gap, cctx, give_error);
     if (member_type == NULL || !valid_declaration_type(member_type))
 	return NULL;
 
@@ -1692,7 +1886,6 @@ parse_type_func(
     size_t	len,
     garray_T	*type_gap,
     int		give_error,
-    ufunc_T	*ufunc,
     cctx_T	*cctx)
 {
     char_u  *p;
@@ -1733,7 +1926,7 @@ parse_type_func(
 		return NULL;
 	    }
 
-	    type = parse_type(&p, type_gap, ufunc, cctx, give_error);
+	    type = parse_type(&p, type_gap, cctx, give_error);
 	    if (type == NULL || !valid_declaration_type(type))
 		return NULL;
 	    if ((flags & TTFLAG_VARARGS) != 0 && type->tt_type != VAR_LIST)
@@ -1793,7 +1986,7 @@ parse_type_func(
 	if (!VIM_ISWHITE(**arg) && give_error)
 	    semsg(_(e_white_space_required_after_str_str), ":", *arg - 1);
 	*arg = skipwhite(*arg);
-	ret_type = parse_type(arg, type_gap, ufunc, cctx, give_error);
+	ret_type = parse_type(arg, type_gap, cctx, give_error);
 	if (ret_type == NULL)
 	    return NULL;
     }
@@ -1802,6 +1995,9 @@ parse_type_func(
     else
     {
 	type = alloc_func_type(ret_type, argcount, type_gap);
+	// out of memory when a static type is returned, it must not be changed
+	if (type->tt_flags & TTFLAG_STATIC)
+	    return NULL;
 	type->tt_flags = flags;
 	if (argcount > 0)
 	{
@@ -1827,7 +2023,6 @@ parse_type_tuple(
     char_u	**arg,
     garray_T	*type_gap,
     int		give_error,
-    ufunc_T	*ufunc,
     cctx_T	*cctx)
 {
     char_u	*p;
@@ -1865,7 +2060,7 @@ parse_type_tuple(
 	    p += 3;
 	}
 
-	type = parse_type(&p, type_gap, ufunc, cctx, give_error);
+	type = parse_type(&p, type_gap, cctx, give_error);
 	if (type == NULL || !valid_declaration_type(type))
 	    goto on_err;
 
@@ -1919,6 +2114,12 @@ parse_type_tuple(
     *arg = p + 1;
 
     ret_type = alloc_tuple_type(typecount, type_gap);
+    // out of memory when a static type is returned, it must not be changed
+    if (ret_type->tt_flags & TTFLAG_STATIC)
+    {
+	ret_type = NULL;
+	goto on_err;
+    }
     ret_type->tt_flags = flags;
     ret_type->tt_argcount = typecount;
     if (tuple_type_add_types(ret_type, typecount, type_gap) == FAIL)
@@ -1969,7 +2170,7 @@ parse_type_object(
     // skip spaces following "object<"
     *arg = skipwhite(*arg + 1);
 
-    object_type = parse_type(arg, type_gap, NULL, cctx, give_error);
+    object_type = parse_type(arg, type_gap, cctx, give_error);
     if (object_type == NULL)
 	return NULL;
 
@@ -1997,6 +2198,111 @@ parse_type_object(
 }
 
 /*
+ * Return TRUE if "type" is a generic type or contains a generic type.
+ */
+    int
+type_has_generic(type_T *type)
+{
+    if (type == NULL)
+	return FALSE;
+    if (IS_GENERIC_TYPE(type))
+	return TRUE;
+    if (type->tt_member != NULL && type_has_generic(type->tt_member))
+	return TRUE;
+    if (type->tt_args != NULL)
+	for (int i = 0; i < type->tt_argcount; ++i)
+	    if (type_has_generic(type->tt_args[i]))
+		return TRUE;
+    return FALSE;
+}
+
+/*
+ * Parse the optional type arguments of class "cl" at "*arg" and set the class
+ * of the object type "type".
+ * For a generic class with concrete type arguments, the concrete class is
+ * used.  When a type argument is a generic type (e.g. "Pair<T, U>" in a
+ * generic function or class) or the generic class is still being defined,
+ * the concrete class cannot be created yet.  Then "type" refers to the
+ * generic class and the type arguments are stored in "type->tt_args".  They
+ * are replaced when the generic function or class is instantiated.
+ * Return OK or FAIL.
+ */
+    static int
+parse_type_class_args(
+    char_u	**arg,
+    class_T	*cl,
+    type_T	*type,
+    garray_T	*type_gap,
+    cctx_T	*cctx)
+{
+    generic_args_tab_T	gatab;
+    char_u		*p;
+    int			ret = FAIL;
+    int			argcount;
+    int			count;
+    int			i;
+
+    if (!IS_GENERIC_CLASS(cl) || **arg != '<')
+    {
+	// gives an error for a missing or an unexpected type argument
+	type->tt_class = eval_generic_class(cl, arg, NULL);
+	return type->tt_class == NULL ? FAIL : OK;
+    }
+
+    generic_args_table_init(&gatab);
+
+    p = parse_generic_type_args(cl->class_name.string, cl->class_name.length,
+							*arg, &gatab, cctx);
+    if (p == NULL)
+	goto done;
+    *arg = p;
+
+    argcount = gatab.gat_args.ga_len;
+    for (i = 0; i < argcount; i++)
+	if (type_has_generic(
+		    ((generic_T *)gatab.gat_args.ga_data)[i].gt_type))
+	    break;
+    // While the generic class is being defined (e.g. "Box<number>" used in
+    // "Box<T>"), a concrete class cannot be created yet, it would not have
+    // all the methods.
+    if (i == argcount && (cl->class_flags & CLASS_INCOMPLETE) == 0)
+    {
+	// All the type arguments are concrete types
+	type->tt_class = generic_class_get(cl, &gatab);
+	if (type->tt_class != NULL)
+	    ret = OK;
+	goto done;
+    }
+
+    if (generic_class_check_args(cl, &gatab) == FAIL)
+	goto done;
+
+    // The type arguments are used by "type", move them to "type_gap", which
+    // owns them now.  generic_args_table_clear() must not free them.
+    count = gatab.gat_arg_types.ga_len;
+    if (func_type_add_arg_types(type, argcount, type_gap) == FAIL
+	    || ga_grow(type_gap, count) == FAIL)
+	goto done;
+    if (count > 0)
+    {
+	mch_memmove((type_T **)type_gap->ga_data + type_gap->ga_len,
+		gatab.gat_arg_types.ga_data, count * sizeof(type_T *));
+	type_gap->ga_len += count;
+	gatab.gat_arg_types.ga_len = 0;
+    }
+
+    for (i = 0; i < argcount; i++)
+	type->tt_args[i] = ((generic_T *)gatab.gat_args.ga_data)[i].gt_type;
+    type->tt_argcount = argcount;
+    type->tt_class = cl;
+    ret = OK;
+
+done:
+    generic_args_table_clear(&gatab);
+    return ret;
+}
+
+/*
  * Parse a user defined type at "*arg" and advance over it.
  * It can be a class or an interface or a typealias name, possibly imported.
  * Return NULL if a type is not found.
@@ -2007,30 +2313,34 @@ parse_type_user_defined(
     size_t	len,
     garray_T	*type_gap,
     int		give_error,
-    ufunc_T	*ufunc,
     cctx_T	*cctx)
 {
     int		did_emsg_before = did_emsg;
     typval_T	tv;
 
     tv.v_type = VAR_UNKNOWN;
-    if (eval_variable_import(*arg, &tv) == OK)
+    if (eval_variable_import(*arg, &tv, EVAL_VAR_NO_GENERIC) == OK)
     {
 	if (tv.v_type == VAR_CLASS && tv.vval.v_class != NULL)
 	{
+	    class_T *cl = tv.vval.v_class;
+
+	    clear_tv(&tv);
 	    type_T *type = get_type_ptr(type_gap);
 	    if (type != NULL)
 	    {
 		// Although the name is that of a class or interface, the type
 		// uses will be an object.
 		type->tt_type = VAR_OBJECT;
-		type->tt_class = tv.vval.v_class;
-		clear_tv(&tv);
 
 		*arg += len;
 		// Skip over ".ClassName".
 		while (ASCII_ISALNUM(**arg) || **arg == '_' || **arg == '.')
 		    ++*arg;
+
+		if (parse_type_class_args(arg, cl, type, type_gap, cctx)
+								      == FAIL)
+		    return NULL;
 
 		return type;
 	    }
@@ -2051,7 +2361,7 @@ parse_type_user_defined(
     }
 
     // Check whether it is a generic type
-    type_T *type = find_generic_type(*arg, len, ufunc, cctx);
+    type_T *type = find_generic_type(*arg, len, cctx);
     if (type != NULL)
     {
 	*arg += len;
@@ -2072,15 +2382,12 @@ parse_type_user_defined(
 }
 
 /*
- * Parse a type at "arg" and advance over it.
- * When "give_error" is TRUE give error messages, otherwise be quiet.
- * Return NULL for failure.
+ * Inner part of parse_type().
  */
-    type_T *
-parse_type(
+    static type_T *
+parse_type_inner(
     char_u	**arg,
     garray_T	*type_gap,
-    ufunc_T	*ufunc,
     cctx_T	*cctx,
     int		give_error)
 {
@@ -2125,8 +2432,7 @@ parse_type(
 	    {
 		*arg += len;
 		return parse_type_member(arg, &t_dict_any, type_gap,
-						give_error, "dict", ufunc,
-						cctx);
+						give_error, "dict", cctx);
 	    }
 	    break;
 	case 'f':
@@ -2136,8 +2442,7 @@ parse_type(
 		return &t_float;
 	    }
 	    if (len == 4 && STRNCMP(*arg, "func", len) == 0)
-		return parse_type_func(arg, len, type_gap, give_error, ufunc,
-									cctx);
+		return parse_type_func(arg, len, type_gap, give_error, cctx);
 	    break;
 	case 'j':
 	    if (len == 3 && STRNCMP(*arg, "job", len) == 0)
@@ -2151,8 +2456,7 @@ parse_type(
 	    {
 		*arg += len;
 		return parse_type_member(arg, &t_list_any, type_gap,
-						give_error, "list", ufunc,
-						cctx);
+						give_error, "list", cctx);
 	    }
 	    break;
 	case 'n':
@@ -2180,8 +2484,7 @@ parse_type(
 	    if (len == 5 && STRNCMP(*arg, "tuple", len) == 0)
 	    {
 		*arg += len;
-		return parse_type_tuple(arg, type_gap, give_error, ufunc,
-									cctx);
+		return parse_type_tuple(arg, type_gap, give_error, cctx);
 	    }
 	    break;
 	case 'v':
@@ -2194,8 +2497,33 @@ parse_type(
     }
 
     // User defined type
-    return parse_type_user_defined(arg, len, type_gap, give_error, ufunc,
-									cctx);
+    return parse_type_user_defined(arg, len, type_gap, give_error, cctx);
+}
+
+/*
+ * Parse a type at "arg" and advance over it.
+ * When "give_error" is TRUE give error messages, otherwise be quiet.
+ * Return NULL for failure.
+ */
+    type_T *
+parse_type(
+    char_u	**arg,
+    garray_T	*type_gap,
+    cctx_T	*cctx,
+    int		give_error)
+{
+    type_T	*type;
+
+    if (parse_depth >= MAX_TYPE_DEPTH)
+    {
+	if (give_error)
+	    emsg(_(e_type_nested_too_deep));
+	return NULL;
+    }
+    ++parse_depth;
+    type = parse_type_inner(arg, type_gap, cctx, give_error);
+    --parse_depth;
+    return type;
 }
 
 /*
@@ -2299,7 +2627,8 @@ common_type_var_func(
 	int i;
 
 	*dest = alloc_func_type(common, argcount, type_gap);
-	if (type1->tt_args != NULL && type2->tt_args != NULL)
+	if (((*dest)->tt_flags & TTFLAG_STATIC) == 0
+		&& type1->tt_args != NULL && type2->tt_args != NULL)
 	{
 	    if (func_type_add_arg_types(*dest, argcount,
 			type_gap) == OK)
@@ -2312,6 +2641,10 @@ common_type_var_func(
 	// Use -1 for "tt_argcount" to indicate an unknown number of
 	// arguments.
 	*dest = alloc_func_type(common, -1, type_gap);
+
+    // out of memory when a static type is returned, it must not be changed
+    if ((*dest)->tt_flags & TTFLAG_STATIC)
+	return;
 
     // Use the minimum of min_argcount.
     (*dest)->tt_min_argcount =
@@ -2681,13 +3014,33 @@ type_name_class_or_obj(char *name, type_T *type, char **tofree)
     else
 	STR_LITERAL_SET(class_name, "any");
 
-    size_t len = STRLEN(name) + class_name.length + 3;
-    *tofree = alloc(len);
-    if (*tofree == NULL)
-	return name;
+    garray_T	ga;
 
-    vim_snprintf(*tofree, len, "%s<%s>", name, class_name.string);
-    return *tofree;
+    ga_init2(&ga, 1, 50);
+    ga_concat(&ga, (char_u *)name);
+    ga_append(&ga, '<');
+    ga_concat_len(&ga, class_name.string, class_name.length);
+
+    // An object type using a generic class with type arguments that are not
+    // resolved yet: add the type arguments (e.g. "object<Pair<T, number>>").
+    if (type->tt_class != NULL && IS_GENERIC_CLASS(type->tt_class)
+						    && type->tt_args != NULL)
+    {
+	for (int i = 0; i < type->tt_argcount; i++)
+	{
+	    char	*arg_free = NULL;
+
+	    ga_concat(&ga, (char_u *)(i == 0 ? "<" : ", "));
+	    ga_concat(&ga, (char_u *)type_name(type->tt_args[i], &arg_free));
+	    vim_free(arg_free);
+	}
+	ga_append(&ga, '>');
+    }
+    ga_append(&ga, '>');
+    ga_append(&ga, NUL);
+
+    *tofree = ga.ga_data;
+    return *tofree == NULL ? name : *tofree;
 }
 
 /*

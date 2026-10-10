@@ -4097,4 +4097,319 @@ def Test_disassemble_loop_with_closure_after_loop()
     '30 RETURN void', g:instr)
 enddef
 
+" Disassemble instructions for the class variables of a class created from a
+" generic class
+def Test_disassemble_generic_class_variable()
+  var lines =<< trim END
+    vim9script
+    class Box<T>
+      public static var sv: number = 1
+      public static var l: list<T> = []
+      public static var d: dict<list<number>> = {x: [1]}
+    endclass
+    def Fn(): number
+      Box<number>.sv = 3
+      Box<number>.sv += 1
+      Box<number>.l[0] = 5
+      Box<number>.d.x = [2]
+      Box<number>.l[0] += 1
+      unlet Box<number>.d.x
+      lockvar Box<number>.sv
+      return Box<number>.sv
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d*_Fn\_s*' ..
+    'Box<number>.sv = 3\_s*' ..
+    '0 PUSHNR 3\_s*' ..
+    '1 STORE CLASSMEMBER Box<number>.sv\_s*' ..
+    'Box<number>.sv += 1\_s*' ..
+    '2 LOAD CLASSMEMBER Box<number>.sv\_s*' ..
+    '3 PUSHNR 1\_s*' ..
+    '4 OPNR +\_s*' ..
+    '5 STORE CLASSMEMBER Box<number>.sv\_s*' ..
+    'Box<number>.l\[0\] = 5\_s*' ..
+    '6 PUSHNR 5\_s*' ..
+    '7 PUSHNR 0\_s*' ..
+    '8 LOAD CLASSMEMBER Box<number>.l\_s*' ..
+    '9 STOREINDEX any\_s*' ..
+    'Box<number>.d.x = \[2\]\_s*' ..
+    '10 PUSHNR 2\_s*' ..
+    '11 NEWLIST size 1\_s*' ..
+    '12 PUSHS "x"\_s*' ..
+    '13 LOAD CLASSMEMBER Box<number>.d\_s*' ..
+    '14 STOREINDEX any\_s*' ..
+    'Box<number>.l\[0\] += 1\_s*' ..
+    '15 LOAD CLASSMEMBER Box<number>.l\_s*' ..
+    '16 PUSHNR 0\_s*' ..
+    '17 LISTINDEX\_s*' ..
+    '18 PUSHNR 1\_s*' ..
+    '19 OPANY +\_s*' ..
+    '20 PUSHNR 0\_s*' ..
+    '21 LOAD CLASSMEMBER Box<number>.l\_s*' ..
+    '22 STOREINDEX any\_s*' ..
+    'unlet Box<number>.d.x\_s*' ..
+    '23 PUSHS "x"\_s*' ..
+    '24 LOAD CLASSMEMBER Box<number>.d\_s*' ..
+    '25 UNLETINDEX\_s*' ..
+    'lockvar Box<number>.sv\_s*' ..
+    '26 PUSHCLASS Box<number>\_s*' ..
+    '27 LOCKUNLOCK lockvar 2 Box<number>.sv\_s*' ..
+    'return Box<number>.sv\_s*' ..
+    '28 LOAD CLASSMEMBER Box<number>.sv\_s*' ..
+    '29 RETURN', g:instr)
+
+  unlet g:instr
+enddef
+
+" Disassemble instructions for creating an object of a class created from a
+" generic class and accessing its variables
+def Test_disassemble_generic_class_object()
+  var lines =<< trim END
+    vim9script
+    class Pair<A, B>
+      var a: A
+      var b: B
+      var l: list<B> = []
+    endclass
+    class Box<T>
+      var v: T
+    endclass
+    class SubBox<T> extends Box<T>
+    endclass
+    def Fn(): string
+      var p = Pair<number, string>.new(1, 'a')
+      var o = Box<number>.new(2)
+      return p.b .. o.v
+    enddef
+    g:instr = execute('disassemble Fn')
+    g:instr_new = execute('disassemble Pair<number, string>.new')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d*_Fn\_s*' ..
+    'var p = Pair<number, string>.new(1, ''a'')\_s*' ..
+    '0 PUSHNR 1\_s*' ..
+    '1 PUSHS "a"\_s*' ..
+    '2 DCALL new(argc 2)\_s*' ..
+    '3 STORE $0\_s*' ..
+    'var o = Box<number>.new(2)\_s*' ..
+    '4 PUSHNR 2\_s*' ..
+    '5 DCALL new(argc 1)\_s*' ..
+    '6 STORE $1\_s*' ..
+    'return p.b .. o.v\_s*' ..
+    '7 LOAD $0\_s*' ..
+    '8 OBJ_MEMBER 1\_s*' ..
+    '9 LOAD $1\_s*' ..
+    '10 ITF_MEMBER 0 on Box<number>\_s*' ..
+    '11 2STRING stack\[-1\]\_s*' ..
+    '12 CONCAT size 2\_s*' ..
+    '13 RETURN', g:instr)
+  # The constructor uses the types of the class
+  assert_match('new\_s*' ..
+    '0 NEW Pair<number, string> size \d\+\_s*' ..
+    '1 PUSHNR 0\_s*' ..
+    '2 STORE_THIS 0\_s*' ..
+    '3 PUSHS "\[NULL\]"\_s*' ..
+    '4 STORE_THIS 1\_s*' ..
+    '5 NEWLIST size 0\_s*' ..
+    '6 SETTYPE list<string>\_s*' ..
+    '7 STORE_THIS 2\_s*', g:instr_new)
+
+  unlet g:instr g:instr_new
+enddef
+
+" Disassemble instructions for calling the methods of a class created from a
+" generic class and of a generic interface
+def Test_disassemble_generic_class_method_call()
+  var lines =<< trim END
+    vim9script
+    interface I<T>
+      def Get(): T
+    endinterface
+    class Box<T> implements I<T>
+      var v: T
+      def Get(): T
+        return this.v
+      enddef
+      def Map<U>(F: func(T): U): U
+        return F(this.v)
+      enddef
+      static def SFn(): number
+        return 1
+      enddef
+    endclass
+    class SubBox<T> extends Box<T>
+    endclass
+    def Fn(o: Box<number>, i: I<number>, s: SubBox<string>): string
+      var n = o.Get() + i.Get() + Box<number>.SFn()
+      return o.Map<string>((x) => string(x)) .. s.Get()
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d*_Fn\_s*' ..
+    'var n = o.Get() + i.Get() + Box<number>.SFn()\_s*' ..
+    '0 LOAD arg\[-3\]\_s*' ..
+    '1 METHODCALL Box<number>.Get(argc 0)\_s*' ..
+    '2 LOAD arg\[-2\]\_s*' ..
+    '3 METHODCALL I<number>.Get(argc 0)\_s*' ..
+    '4 OPNR +\_s*' ..
+    '5 DCALL SFn(argc 0)\_s*' ..
+    '6 OPNR +\_s*' ..
+    '7 STORE $0\_s*' ..
+    'return o.Map<string>((x) => string(x)) .. s.Get()\_s*' ..
+    '8 LOAD arg\[-3\]\_s*' ..
+    '9 FUNCREF <lambda>\d\+\_s*' ..
+    '10 METHODCALL Box<number>.Map(argc 1)\_s*' ..
+    '11 LOAD arg\[-1\]\_s*' ..
+    '12 DCALL Get(argc 0)\_s*' ..
+    '13 CONCAT size 2\_s*' ..
+    '14 RETURN', g:instr)
+
+  unlet g:instr
+enddef
+
+" Disassemble instructions for using a class created from a generic class as a
+" value or a type
+def Test_disassemble_generic_class_value()
+  var lines =<< trim END
+    vim9script
+    class Box<T>
+      var v: T
+      static def SFn(): number
+        return 1
+      enddef
+    endclass
+    def Fn(x: any): list<any>
+      var b = <Box<string>>x
+      var F = Box<number>.new
+      var G = Box<number>.SFn
+      return [instanceof(x, Box<number>), typename(Box<number>)]
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d*_Fn\_s*' ..
+    'var b = <Box<string>>x\_s*' ..
+    '0 LOAD arg\[-1\]\_s*' ..
+    '1 CHECKTYPE object<Box<string>> stack\[-1\]\_s*' ..
+    '2 STORE $0\_s*' ..
+    'var F = Box<number>.new\_s*' ..
+    '3 FUNCREF Box<number>.new\_s*' ..
+    '4 STORE $1\_s*' ..
+    'var G = Box<number>.SFn\_s*' ..
+    '5 FUNCREF Box<number>.SFn\_s*' ..
+    '6 STORE $2\_s*' ..
+    'return \[instanceof(x, Box<number>), typename(Box<number>)\]\_s*' ..
+    '7 LOAD arg\[-1\]\_s*' ..
+    '8 PUSHCLASS Box<number>\_s*' ..
+    '9 BCALL instanceof(argc 2)\_s*' ..
+    '10 PUSHCLASS Box<number>\_s*' ..
+    '11 BCALL typename(argc 1)\_s*' ..
+    '12 NEWLIST size 2\_s*' ..
+    '13 RETURN', g:instr)
+
+  unlet g:instr
+enddef
+
+" Disassemble instructions for a method of a generic class, each class
+" created from it uses its own types
+def Test_disassemble_generic_class_method_types()
+  var lines =<< trim END
+    vim9script
+    class Pair<A, B>
+      public static var d: dict<list<A>> = {}
+      def Conv(x: any): A
+        var l: list<B> = []
+        var c: A = <A>x
+        d.k = [c]
+        return c
+      enddef
+      static def Lock()
+        lockvar Pair<A, B>.d.k
+      enddef
+    endclass
+    defcompile Pair<number, string>
+    defcompile Pair<string, bool>
+    g:instr1 = execute('disassemble Pair<number, string>.Conv')
+    g:instr2 = execute('disassemble Pair<string, bool>.Conv')
+    g:instr3 = execute('disassemble Pair<string, bool>.Lock')
+  END
+  v9.CheckScriptSuccess(lines)
+  for [instr, ta, tb] in [[g:instr1, 'number', 'string'],
+                          [g:instr2, 'string', 'bool']]
+    assert_match('Conv\_s*' ..
+      'var l: list<B> = \[\]\_s*' ..
+      '0 NEWLIST size 0\_s*' ..
+      $'1 SETTYPE list<{tb}>\_s*' ..
+      '2 STORE $1\_s*' ..
+      'var c: A = <A>x\_s*' ..
+      '3 LOAD arg\[-1\]\_s*' ..
+      $'4 CHECKTYPE {ta} stack\[-1\]\_s*' ..
+      '5 STORE $2\_s*' ..
+      'd.k = \[c\]\_s*' ..
+      '6 LOAD $2\_s*' ..
+      '7 NEWLIST size 1\_s*' ..
+      '8 PUSHS "k"\_s*' ..
+      $'9 LOAD CLASSMEMBER Pair<{ta}, {tb}>.d\_s*' ..
+      '10 STOREINDEX dict\_s*' ..
+      'return c\_s*' ..
+      '11 LOAD $2\_s*' ..
+      '12 RETURN', instr)
+  endfor
+  # The type variables are replaced when the class is pushed
+  assert_match('Lock\_s*' ..
+    'lockvar Pair<A, B>.d.k\_s*' ..
+    '0 PUSHCLASS Pair<string, bool>\_s*' ..
+    '1 LOCKUNLOCK lockvar 2 Pair<A, B>.d.k\_s*' ..
+    '2 RETURN void', g:instr3)
+
+  unlet g:instr1 g:instr2 g:instr3
+enddef
+
+" Disassemble instructions for using an imported generic class
+def Test_disassemble_generic_class_imported()
+  var lines =<< trim END
+    vim9script
+    export class G<T>
+      public static var sv: number = 1
+      var v: T
+      def new(this.v)
+      enddef
+      def Get(): T
+        return this.v
+      enddef
+    endclass
+  END
+  writefile(lines, 'XdisGenericImp.vim', 'D')
+  lines =<< trim END
+    vim9script
+    import './XdisGenericImp.vim' as m
+    def Fn(): number
+      var o = m.G<number>.new(1)
+      m.G<number>.sv = 2
+      return m.G<number>.sv + o.Get()
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d*_Fn\_s*' ..
+    'var o = m.G<number>.new(1)\_s*' ..
+    '0 PUSHNR 1\_s*' ..
+    '1 DCALL new(argc 1)\_s*' ..
+    '2 STORE $0\_s*' ..
+    'm.G<number>.sv = 2\_s*' ..
+    '3 PUSHNR 2\_s*' ..
+    '4 STORE CLASSMEMBER G<number>.sv\_s*' ..
+    'return m.G<number>.sv + o.Get()\_s*' ..
+    '5 LOAD CLASSMEMBER G<number>.sv\_s*' ..
+    '6 LOAD $0\_s*' ..
+    '7 DCALL Get(argc 0)\_s*' ..
+    '8 OPNR +\_s*' ..
+    '9 RETURN', g:instr)
+
+  unlet g:instr
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
