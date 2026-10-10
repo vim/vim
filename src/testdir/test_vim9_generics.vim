@@ -3418,6 +3418,28 @@ def Test_generic_abstract_method_override_fails()
   v9.CheckSourceFailure(lines, 'E1434: Mismatched number of type variables for generic method  "Fn" in class "A"', 11)
 enddef
 
+" Test for a type cast using a type variable in a lambda in a generic function
+def Test_generic_type_cast_in_lambda()
+  var lines =<< trim END
+    vim9script
+    g:X = 1
+    def Fn<T>(): func
+      return () => <T>g:X
+    enddef
+    def Fn2<T>(): func
+      return () => [<list<T>>[g:X]]
+    enddef
+    assert_equal(1, Fn<number>()())
+    assert_equal([[1]], Fn2<number>()())
+    assert_fails('Fn<string>()()', 'E1012: Type mismatch; expected string but got number')
+
+    # the type is not checked when the expression is skipped
+    assert_equal(2, false ? <nosuch>1 : 2)
+    unlet g:X
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for using a generic method to initialize an object member variable
 def Test_generic_method_in_object_member_init_expr()
   var lines =<< trim END
