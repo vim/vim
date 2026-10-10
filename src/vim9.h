@@ -393,6 +393,8 @@ typedef struct {
     class_T	  *fre_class;		// class for a method
     int		  fre_object_method;	// class or object method
     int		  fre_method_idx;	// method index on "fre_class"
+    int		  fre_outer_depth;	// when > 0: use the context of the
+					// function this many levels up
 } funcref_extra_T;
 
 // arguments to ISN_FUNCREF
@@ -776,6 +778,8 @@ typedef struct {
 				// ASSIGN_FINAL (no assignment) or ASSIGN_CONST
 				// (value cannot be changed)
     int		lv_arg;		// when TRUE this is an argument
+    ufunc_T	*lv_ufunc;	// for a nested function: its ufunc, see
+				// compile_nested_generic_func()
 } lvar_T;
 
 // Destination for an assignment or ":unlet" with an index.
