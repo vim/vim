@@ -3476,6 +3476,40 @@ def Test_generic_type_cast_in_lambda()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for the type arguments of a generic method inherited from the parent
+" class
+def Test_generic_inherited_method_type_args()
+  var lines =<< trim END
+    vim9script
+    class P
+      def Id<U>(x: U): U
+        return x
+      enddef
+    endclass
+    class C extends P
+    endclass
+    assert_equal(3, C.new().Id<number>(3))
+    C.new().Id<number>('str')
+  END
+  v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got string', 10)
+
+  lines =<< trim END
+    vim9script
+    class P
+      def Id<U>(x: U): U
+        return x
+      enddef
+    endclass
+    class C extends P
+    endclass
+    def Fn()
+      var n: number = C.new().Id<number>('abc')
+    enddef
+    defcompile Fn
+  END
+  v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got string', 1)
+enddef
+
 " Test for using a generic method to initialize an object member variable
 def Test_generic_method_in_object_member_init_expr()
   var lines =<< trim END

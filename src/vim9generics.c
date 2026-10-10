@@ -865,6 +865,62 @@ update_generic_type(
 }
 
 /*
+ * Make a copy of the argument types, the return type, the vararg type and the
+ * function type of the generic function "fp" for "new_fp", a copy of "fp".
+ * The type variables of "fp" in these types are replaced with the types of
+ * the type variables of "new_fp", see update_generic_type().
+ */
+    void
+generic_func_copy_types(ufunc_T *fp, ufunc_T *new_fp)
+{
+    int		i;
+
+    // create a copy of
+    // - all the argument types
+    // - return type
+    // - vararg type
+    // - function type
+    // if any generic type is used, it will be replaced below).
+    if (fp->uf_arg_types != NULL)
+	for (i = 0; i < fp->uf_args.ga_len; i++)
+	    new_fp->uf_arg_types[i] = copy_type_deep(fp->uf_arg_types[i],
+						&new_fp->uf_type_list);
+
+    if (fp->uf_ret_type != NULL)
+	new_fp->uf_ret_type = copy_type_deep(fp->uf_ret_type,
+						&new_fp->uf_type_list);
+
+    if (fp->uf_va_type != NULL)
+	new_fp->uf_va_type = copy_type_deep(fp->uf_va_type,
+						&new_fp->uf_type_list);
+
+    if (fp->uf_func_type != NULL)
+	new_fp->uf_func_type = copy_type_deep(fp->uf_func_type,
+						&new_fp->uf_type_list);
+
+    type_T	*ft = new_fp->uf_func_type;
+
+    // Update any generic types in the function arguments
+    if (fp->uf_arg_types != NULL)
+	for (i = 0; i < fp->uf_args.ga_len; i++)
+	    update_generic_type(fp, new_fp, fp->uf_arg_types[i],
+			    &new_fp->uf_arg_types[i],
+			    ft != NULL && ft->tt_args != NULL
+					&& ft->tt_argcount > i
+						    ? &ft->tt_args[i] : NULL);
+
+    // Update the vararg type if it uses generic types
+    if (fp->uf_va_type != NULL)
+	update_generic_type(fp, new_fp, fp->uf_va_type, &new_fp->uf_va_type,
+			    NULL);
+
+    // Update the return type if it is a generic type
+    if (fp->uf_ret_type != NULL)
+	update_generic_type(fp, new_fp, fp->uf_ret_type, &new_fp->uf_ret_type,
+			    ft != NULL ? &ft->tt_member : NULL);
+}
+
+/*
  * Adds a new concrete instance of a generic function for a specific set of
  * type arguments.
  *
@@ -949,28 +1005,6 @@ generic_func_add(ufunc_T *fp, char_u *key, gfargs_tab_T *gfatab)
     gfitem->gfi_ufunc = new_fp;
     gfitem->gfi_ufunc->uf_def_status = UF_TO_BE_COMPILED;
 
-    // create a copy of
-    // - all the argument types
-    // - return type
-    // - vararg type
-    // - function type
-    // if any generic type is used, it will be replaced below).
-    for (i = 0; i < fp->uf_args.ga_len; i++)
-	new_fp->uf_arg_types[i] = copy_type_deep(fp->uf_arg_types[i],
-						&new_fp->uf_type_list);
-
-    if (fp->uf_ret_type != NULL)
-	new_fp->uf_ret_type = copy_type_deep(fp->uf_ret_type,
-						&new_fp->uf_type_list);
-
-    if (fp->uf_va_type != NULL)
-	new_fp->uf_va_type = copy_type_deep(fp->uf_va_type,
-						&new_fp->uf_type_list);
-
-    if (fp->uf_func_type != NULL)
-	new_fp->uf_func_type = copy_type_deep(fp->uf_func_type,
-						&new_fp->uf_type_list);
-
     // Replace the t_any generic types with the actual types
     for (i = 0; i < fp->uf_generic_argcount; i++)
     {
@@ -980,21 +1014,7 @@ generic_func_add(ufunc_T *fp, char_u *key, gfargs_tab_T *gfatab)
 	gt->gt_type = generic_arg->gt_type;
     }
 
-    // Update any generic types in the function arguments
-    for (i = 0; i < fp->uf_args.ga_len; i++)
-	update_generic_type(fp, new_fp, fp->uf_arg_types[i],
-			    &new_fp->uf_arg_types[i],
-			    &new_fp->uf_func_type->tt_args[i]);
-
-    // Update the vararg type if it uses generic types
-    if (fp->uf_va_type != NULL)
-	update_generic_type(fp, new_fp, fp->uf_va_type, &new_fp->uf_va_type,
-			    NULL);
-
-    // Update the return type if it is a generic type
-    if (fp->uf_ret_type != NULL)
-	update_generic_type(fp, new_fp, fp->uf_ret_type, &new_fp->uf_ret_type,
-			    &new_fp->uf_func_type->tt_member);
+    generic_func_copy_types(fp, new_fp);
 
     hash_add_item(ht, hi, gfitem->gfi_name, hash);
 
