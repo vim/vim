@@ -3476,6 +3476,105 @@ def Test_generic_type_cast_in_lambda()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for calling a generic method with type arguments in a def function
+" through an interface or a parent class.  The method of the object class is
+" called with the same type arguments.
+def Test_generic_method_call_through_interface()
+  var lines =<< trim END
+    vim9script
+    interface I
+      def Fn<T>(t: T): list<T>
+      def Conv<U>(x: any): U
+    endinterface
+    class A implements I
+      def Fn<T>(t: T): list<T>
+        return [t]
+      enddef
+      def Conv<U>(x: any): U
+        return x
+      enddef
+    endclass
+    class P
+      def Fn<T>(t: T): list<T>
+        return [t, t]
+      enddef
+    endclass
+    class C extends P
+      def Fn<X>(t: X): list<X>
+        return [t, t, t]
+      enddef
+    endclass
+
+    def UseI(i: I): list<any>
+      var l: list<string> = i.Fn<string>('a')
+      return [l, typename(l), i.Conv<number>(3)]
+    enddef
+    def UseP(p: P): list<any>
+      var l: list<number> = p.Fn<number>(1)
+      return [l, typename(l)]
+    enddef
+    assert_equal([['a'], 'list<string>', 3], UseI(A.new()))
+    assert_equal([[1, 1], 'list<number>'], UseP(P.new()))
+    assert_equal([[1, 1, 1], 'list<number>'], UseP(C.new()))
+    assert_match('METHODCALL I.Fn<string>(argc 1)',
+          execute('disassemble UseI'))
+    assert_match('METHODCALL P.Fn<number>(argc 1)',
+          execute('disassemble UseP'))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # The return type is checked with the type arguments of the call
+  lines =<< trim END
+    vim9script
+    interface I
+      def Conv<U>(x: any): U
+    endinterface
+    class A implements I
+      def Conv<U>(x: any): U
+        return x
+      enddef
+    endclass
+    def Fn(i: I): any
+      var s: string = i.Conv<string>(5)
+      return s
+    enddef
+    Fn(A.new())
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected string but got number', 1)
+
+  # The same call is used with objects of different classes
+  lines =<< trim END
+    vim9script
+    interface I
+      def Fn<T>(t: T): list<T>
+    endinterface
+    class A implements I
+      def Fn<T>(t: T): list<T>
+        return [t]
+      enddef
+    endclass
+    class B implements I
+      def Fn<T>(t: T): list<T>
+        return [t, t]
+      enddef
+    endclass
+    class C extends B
+    endclass
+    def Fn(l: list<I>): list<any>
+      var res = []
+      for i in l
+        var r: list<string> = i.Fn<string>('a')
+        res->add(r)
+      endfor
+      return res
+    enddef
+    var objs: list<I> = [A.new(), A.new(), B.new(), C.new(), A.new()]
+    assert_equal([['a'], ['a'], ['a', 'a'], ['a', 'a'], ['a']], Fn(objs))
+    assert_equal([['a', 'a'], ['a']], Fn([B.new(), A.new()]))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for using a generic method to initialize an object member variable
 def Test_generic_method_in_object_member_init_expr()
   var lines =<< trim END
