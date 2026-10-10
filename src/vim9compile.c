@@ -1121,6 +1121,26 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	goto theend;
     }
 
+    // A type variable cannot have the name of the function.  The function is
+    // defined with the "<lambda>" name, check it here.
+    if (bracket_start != NULL)
+    {
+	size_t	len = STRLEN(func_name);
+
+	for (char_u *t = bracket_start + 1; *t != '>' && *t != NUL; )
+	{
+	    char_u *te = to_name_end(t, FALSE);
+
+	    if ((size_t)(te - t) == len && STRNCMP(t, func_name, len) == 0)
+	    {
+		semsg(_(e_redefining_script_item_str), func_name);
+		r = FAIL;
+		goto theend;
+	    }
+	    t = te == t ? t + 1 : te;
+	}
+    }
+
     // Make sure "KeyTyped" is not set, it may cause indent to be written.
     int save_KeyTyped = KeyTyped;
     KeyTyped = FALSE;
@@ -1177,6 +1197,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	    func_ptr_unref(ufunc);
 	    goto theend;
 	}
+	lvar->lv_ufunc = ufunc;
 	if (generate_FUNCREF(cctx, ufunc, NULL, FALSE, 0, &funcref_isn_idx) == FAIL)
 	{
 	    func_ptr_unref(ufunc);

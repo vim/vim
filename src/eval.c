@@ -5394,6 +5394,11 @@ eval9_var_func_name(
 	{
 	    // skip the name
 	    check_vars(s, len);
+
+	    // Skip the type arguments of a generic function, its name starts
+	    // with an uppercase letter.
+	    if (vim9script && **arg == '<' && ASCII_ISUPPER(*s))
+		skip_generic_func_type_args(arg);
 	    ret = OK;
 	}
     }

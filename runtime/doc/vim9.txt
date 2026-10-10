@@ -5313,6 +5313,8 @@ An example:
 	enddef
 	Outer()
 <
+A nested generic function can also be called recursively and used in a
+closure, such as a lambda or another nested function.
 
 Using a type variable as a type argument ~
 
