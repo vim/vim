@@ -2158,6 +2158,7 @@ early_ret:
     class_T *cl = NULL;
     class_T *extends_cl = NULL;  // class from "extends" argument
     class_T **intf_classes = NULL;
+    int	    intf_count = 0;	// number of items in "intf_classes"
     int	    num_enum_values = 0;
 
     cl = ALLOC_CLEAR_ONE(class_T);
@@ -2682,7 +2683,10 @@ early_ret:
 	success = add_super_class_interfaces(extends_cl, &ga_impl,
 							&intf_classes_ga);
 
+    // When validating failed "intf_classes" may have fewer items than
+    // "ga_impl".
     intf_classes = intf_classes_ga.ga_data;
+    intf_count = intf_classes_ga.ga_len;
     intf_classes_ga.ga_len = 0;
 
     // Check no function argument name is used as a class member.
@@ -2798,7 +2802,7 @@ cleanup:
 
     if (intf_classes != NULL)
     {
-	for (int i = 0; i < ga_impl.ga_len; ++i)
+	for (int i = 0; i < intf_count; ++i)
 	    class_unref(intf_classes[i]);
 	vim_free(intf_classes);
     }
