@@ -3013,6 +3013,7 @@ ex_type(exarg_T *eap)
 	++tv.vval.v_typealias->ta_refcount;
 	tv.vval.v_typealias->ta_name = vim_strsave(name_start);
 	tv.vval.v_typealias->ta_type = type;
+	tv.vval.v_typealias->ta_depth = parse_type_depth();
     }
     else
     {
