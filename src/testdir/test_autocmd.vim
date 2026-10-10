@@ -124,6 +124,32 @@ if has('timers')
     set updatetime&
   endfunc
 
+  func Test_cursorhold_normal_ctrl_w()
+    au CursorHold * :
+    set updatetime=20
+    new
+    let bnr = bufnr()
+    call timer_start(100, { -> feedkeys("w", 't') })
+    call feedkeys("\<C-w>", 'tx!')
+    sleep 200m
+    call assert_equal(2, winnr())
+
+    " <C-w> with count
+    new
+    let bnr2 = bufnr()
+    call timer_start(100, { -> feedkeys("w", 't') })
+    call feedkeys("\<C-w>3", 'tx!')
+    sleep 200m
+    call assert_equal(3, winnr())
+    call feedkeys(":\<C-B>\"\<CR>", 'xt')
+    call assert_equal('"', @:)
+
+    exe 'bwipe!' bnr2
+    exe 'bwipe!' bnr
+    au! CursorHold
+    set updatetime&
+  endfunc
+
   func Test_OptionSet_modeline()
     call test_override('starting', 1)
     au! OptionSet

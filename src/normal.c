@@ -279,6 +279,7 @@ getcount:
 	    *ctrl_w = TRUE;
 	    cap->opcount = cap->count0;	// remember first count
 	    cap->count0 = 0;
+	    did_cursorhold = TRUE;
 	    ++no_mapping;
 	    ++allow_keys;		// no mapping for nchar, but keys
 	    c = plain_vgetc();		// get next character
