@@ -140,6 +140,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     bc: ['file.bc'],
     bdf: ['file.bdf'],
     beancount: ['file.beancount', 'file.bean'],
+    beast: ['file.btsx'],
     bib: ['file.bib'],
     bicep: ['file.bicep'],
     bicep-params: ['file.bicepparam'],
