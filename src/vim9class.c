@@ -825,14 +825,15 @@ validate_interface_methods(
 }
 
 /*
- * Validate all the "implements" classes when creating a new class.  The
- * classes are returned in "intf_classes".  The class functions, class members,
- * object methods and object members in the new class are in
+ * Validate all the "implements" classes when creating the new class "cl".
+ * The classes are returned in "intf_classes".  The class functions, class
+ * members, object methods and object members in the new class are in
  * "classfunctions_gap", "classmembers_gap", "objmethods_gap", and
  * "objmembers_gap" respectively.
  */
     static int
 validate_implements_classes(
+    class_T	*cl,
     garray_T	*impl_gap,
     garray_T	*intf_classes_gap,
     garray_T	*objmethods_gap,
@@ -878,14 +879,27 @@ validate_implements_classes(
 	// check the variables of the interface match the members of the class
 	success = validate_interface_variables(impl, ifcl, objmembers_gap,
 								extends_cl);
-
-	// check the functions/methods of the interface match the
-	// functions/methods of the class
-	if (success)
-	    success = validate_interface_methods(impl, ifcl, objmethods_gap,
-								extends_cl);
 	clear_tv(&tv);
     }
+
+    if (!success)
+	return FALSE;
+
+    // check if the functions/methods of the interface match the
+    // functions/methods of the class.  A method may return the new class
+    // where an interface or the parent class is expected, temporarily set
+    // them in "cl" to make the type check work.
+    cl->class_interfaces_cl = (class_T **)intf_classes_gap->ga_data;
+    cl->class_interface_count = intf_classes_gap->ga_len;
+    cl->class_extends = extends_cl;
+    for (int i = 0; i < impl_gap->ga_len && success; ++i)
+	success = validate_interface_methods(
+		((char_u **)impl_gap->ga_data)[i],
+		((class_T **)intf_classes_gap->ga_data)[i], objmethods_gap,
+		extends_cl);
+    cl->class_interfaces_cl = NULL;
+    cl->class_interface_count = 0;
+    cl->class_extends = NULL;
 
     return success;
 }
@@ -2675,7 +2689,7 @@ early_ret:
     ga_init2(&intf_classes_ga, sizeof(class_T *), 5);
 
     if (success && ga_impl.ga_len > 0)
-	success = validate_implements_classes(&ga_impl, &intf_classes_ga,
+	success = validate_implements_classes(cl, &ga_impl, &intf_classes_ga,
 					&objmethods, &objmembers, extends_cl);
 
     // inherit the super class interfaces
