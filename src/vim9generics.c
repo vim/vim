@@ -909,10 +909,17 @@ generic_func_copy_types(ufunc_T *fp, ufunc_T *new_fp)
 					&& ft->tt_argcount > i
 						    ? &ft->tt_args[i] : NULL);
 
-    // Update the vararg type if it uses generic types
+    // Update the vararg type if it uses generic types.  It is the last
+    // argument of the function type.
     if (fp->uf_va_type != NULL)
+    {
+	int	va_idx = fp->uf_args.ga_len;
+
 	update_generic_type(fp, new_fp, fp->uf_va_type, &new_fp->uf_va_type,
-			    NULL);
+			    ft != NULL && ft->tt_args != NULL
+					&& ft->tt_argcount > va_idx
+						? &ft->tt_args[va_idx] : NULL);
+    }
 
     // Update the return type if it is a generic type
     if (fp->uf_ret_type != NULL)

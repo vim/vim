@@ -3701,6 +3701,29 @@ def Test_generic_interface_method_type_var_count()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for the function type of a generic function with variable arguments
+def Test_generic_func_varargs_type()
+  var lines =<< trim END
+    vim9script
+    def Fn<T>(...l: list<T>): list<T>
+      return l
+    enddef
+    assert_equal('func(...list<number>): list<number>', typename(Fn<number>))
+    var F: func(...list<number>): list<number> = Fn<number>
+    assert_equal([1, 2], F(1, 2))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Fn<T>(...l: list<T>): list<T>
+      return l
+    enddef
+    var F: func(...list<string>): list<number> = Fn<number>
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(...list<string>): list<number> but got func(...list<number>): list<number>', 5)
+enddef
+
 " Test for using a generic method to initialize an object member variable
 def Test_generic_method_in_object_member_init_expr()
   var lines =<< trim END
