@@ -494,6 +494,13 @@ parse_generic_func_type_params(
 	return NULL;
     }
 
+    // Find the start of the function name before the '<'.  It is always
+    // preceded by "def" and white space, or "g:".
+    char_u	    *fname_start = p;
+    while (ASCII_ISALNUM(fname_start[-1]) || fname_start[-1] == '_')
+	--fname_start;
+    size_t	    fname_len = p - fname_start;
+
     char_u	    *start = ++p;
 
     while (*p && *p != '>')
@@ -528,6 +535,17 @@ parse_generic_func_type_params(
 	name_len = name_end - name_start;
 	cc = *name_end;
 	*name_end = NUL;
+
+	// The type variable cannot have the name of the function being
+	// defined.  Use the name as it appears before the '<', a nested
+	// function internally has a "<lambda>N" name.
+	if (fname_len == name_len
+			&& STRNCMP(fname_start, name_start, name_len) == 0)
+	{
+	    semsg(_(e_redefining_script_item_str), name_start);
+	    *name_end = cc;
+	    return NULL;
+	}
 
 	int name_exists = generic_name_exists(name_start, name_len, gfatab,
 									cctx);

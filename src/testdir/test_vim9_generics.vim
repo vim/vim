@@ -4011,6 +4011,100 @@ def Test_generic_func_varargs_type()
   v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(...list<string>): list<number> but got func(...list<number>): list<number>', 5)
 enddef
 
+" Test for a type variable with the name of the generic function
+def Test_generic_type_var_same_as_func_name()
+  var lines =<< trim END
+    vim9script
+    def Foo<Foo>(x: Foo): Foo
+      return x
+    enddef
+  END
+  v9.CheckSourceFailure(lines, 'E1041: Redefining script item: "Foo"', 2)
+
+  lines =<< trim END
+    vim9script
+    def g:Foo<A, Foo>(x: A): Foo
+      return x
+    enddef
+  END
+  v9.CheckSourceFailure(lines, 'E1041: Redefining script item: "Foo"', 2)
+
+  # Nested function
+  lines =<< trim END
+    vim9script
+    def Outer()
+      def Inner<Inner>(x: Inner): Inner
+        return x
+      enddef
+    enddef
+    Outer()
+  END
+  v9.CheckSourceFailure(lines, 'E1041: Redefining script item: "Inner"', 1)
+
+  # Nested global function
+  lines =<< trim END
+    vim9script
+    def Outer()
+      def g:Inner2<A, Inner2>(x: A): Inner2
+        return x
+      enddef
+    enddef
+    Outer()
+  END
+  v9.CheckSourceFailure(lines, 'E1041: Redefining script item: "Inner2"', 1)
+
+  # A name that starts with the function name is fine
+  lines =<< trim END
+    vim9script
+    def Foo<FooX>(x: FooX): FooX
+      return x
+    enddef
+    assert_equal(3, Foo<number>(3))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for a type variable with the name of an autoload generic function
+def Test_generic_type_var_same_as_autoload_func_name()
+  mkdir('Xgenautoload/autoload', 'pR')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xgenautoload'
+
+  # The type variable has the name of the function
+  var lines =<< trim END
+    vim9script
+    export def Bar<Bar>(x: Bar): Bar
+      return x
+    enddef
+  END
+  writefile(lines, 'Xgenautoload/autoload/XgenBad.vim')
+
+  # The type variable has the name of the autoload script, this is fine
+  lines =<< trim END
+    vim9script
+    export def Bar<XgenGood>(x: XgenGood): XgenGood
+      return x
+    enddef
+  END
+  writefile(lines, 'Xgenautoload/autoload/XgenGood.vim')
+
+  lines =<< trim END
+    vim9script
+    import autoload 'XgenGood.vim'
+    assert_equal(5, XgenGood.Bar<number>(5))
+    assert_equal(6, XgenGood#Bar<number>(6))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    XgenBad#Bar<number>(5)
+  END
+  v9.CheckSourceFailure(lines, 'E1041: Redefining script item: "Bar"', 2)
+
+  &rtp = save_rtp
+enddef
+
 " Test for using a generic method to initialize an object member variable
 def Test_generic_method_in_object_member_init_expr()
   var lines =<< trim END
