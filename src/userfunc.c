@@ -5782,6 +5782,9 @@ errret_2:
 	VIM_CLEAR(fp->uf_va_name);
 	VIM_CLEAR(fp->uf_name_exp);
 	clear_func_type_list(&fp->uf_type_list, &fp->uf_func_type);
+	// the generic types were moved from "gfatab" to "fp"
+	if (IS_GENERIC_FUNC(fp))
+	    generic_func_clear_items(fp);
     }
     if (free_fp)
 	VIM_CLEAR(fp);
