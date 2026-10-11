@@ -3691,7 +3691,7 @@ winframe_remove(
 	    }
 	}
 	frame_new_height(frp2, frp2->fr_height + frp_close->fr_height,
-			    frp2 == frp_close->fr_next, FALSE, FALSE);
+			    frp2 == frp_close->fr_next, !frame_fixed_height(frp2), FALSE);
 	*dirp = 'v';
     }
     else
@@ -3728,7 +3728,7 @@ winframe_remove(
 	    }
 	}
 	frame_new_width(frp2, frp2->fr_width + frp_close->fr_width,
-			    frp2 == frp_close->fr_next, FALSE);
+			    frp2 == frp_close->fr_next, !frame_fixed_width(frp2));
 	*dirp = 'h';
     }
 
