@@ -986,10 +986,18 @@ generic_func_add(ufunc_T *fp, char_u *key, gfargs_tab_T *gfatab)
 			    &new_fp->uf_arg_types[i],
 			    &new_fp->uf_func_type->tt_args[i]);
 
-    // Update the vararg type if it uses generic types
+    // Update the vararg type if it uses generic types.  It is the last
+    // argument of the function type.
     if (fp->uf_va_type != NULL)
+    {
+	type_T	*ft = new_fp->uf_func_type;
+	int	va_idx = fp->uf_args.ga_len;
+
 	update_generic_type(fp, new_fp, fp->uf_va_type, &new_fp->uf_va_type,
-			    NULL);
+			    ft != NULL && ft->tt_args != NULL
+					&& ft->tt_argcount > va_idx
+						? &ft->tt_args[va_idx] : NULL);
+    }
 
     // Update the return type if it is a generic type
     if (fp->uf_ret_type != NULL)
