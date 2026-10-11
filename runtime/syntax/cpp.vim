@@ -3,7 +3,7 @@
 " Maintainer:		This runtime file is looking for a new maintainer.
 " Previous Maintainers:	vim-jp (https://github.com/vim-jp/vim-cpp)
 "			Ken Shan <ccshan@post.harvard.edu>
-" Last Change:		2026 Sep 16
+" Last Change:		2026 Oct 11
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -125,7 +125,9 @@ if !exists("cpp_no_cpp26")
 endif
 
 " The minimum and maximum operators in GNU C++
-syn match cppMinMax "[<>]?"
+" Having two separate matches is faster than [<>]?
+syn match cppMinMax "<?"
+syn match cppMinMax ">?"
 
 " Default highlighting
 hi def link cppAccess			cppStatement
