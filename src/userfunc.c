@@ -1926,6 +1926,8 @@ errret:
     {
 	vim_free(fp->uf_arg_types);
 	vim_free(fp->uf_name_exp);
+	vim_free(fp->uf_va_name);
+	clear_type_list(&fp->uf_type_list);
 	vim_free(fp);
     }
     vim_free(pt);
