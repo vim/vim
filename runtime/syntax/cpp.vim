@@ -118,7 +118,7 @@ endif
 " C++ 26 extensions
 if !exists("cpp_no_cpp26")
   " attribute [[ ... ]] with optional value expr, eg [[=foo{1}]]
-  syn region cppAttribute	matchgroup=cppAttributeBracket start="\w\@1<!\[\[" end="\]\]" contains=TOP,@Spell
+  syn region cppAttribute	matchgroup=cppAttributeBracket start="\%#=1\w\@1<!\[\[" end="\]\]" contains=TOP,@Spell
   syn match cppReflect		"\^\^"
   syn keyword cppStatement	contract_assert
   " having two matches for cppSpliceBracket is faster
