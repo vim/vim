@@ -3476,6 +3476,42 @@ def Test_generic_type_cast_in_lambda()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for calling a generic function with very long type arguments
+def Test_generic_func_very_long_type_args()
+  var types = repeat(['number'], 500)->join(', ')
+  var lines =<< trim END
+    vim9script
+    def LongFn<T>(x: T): T
+      return x
+    enddef
+  END
+  var head = copy(lines)
+  for cmd in ['call LongFn<TYPES>(1)',
+              'echo call("LongFn<TYPES>", [1])',
+              'var F = LongFn<TYPES>']
+    lines = head + [substitute(cmd, 'TYPES', types, '')]
+    v9.CheckSourceFailure(lines, "E1556: Too many types specified for generic function '<SNR>", 5)
+  endfor
+
+  # a long type argument
+  var tuple = 'tuple<' .. repeat(['number'], 300)->join(', ') .. '>'
+  var value = '(' .. repeat(['1'], 300)->join(', ') .. ')'
+  lines = head + [$'call LongFn<{tuple}>({value})',
+                  $'assert_equal(300, len(call("LongFn<{tuple}>", [{value}])))']
+  v9.CheckSourceSuccess(lines)
+
+  # legacy script with a function that is not generic
+  lines =<< trim END
+    function LongLegacyFn(x)
+      return a:x
+    endfunction
+    call LongLegacyFn<TYPES>(1)
+  END
+  lines[3] = substitute(lines[3], 'TYPES', types, '')
+  v9.CheckSourceFailure(lines, 'E117: Unknown function: LongLegacyFn<number, number', 4)
+  delfunc g:LongLegacyFn
+enddef
+
 " Test for using a generic method to initialize an object member variable
 def Test_generic_method_in_object_member_init_expr()
   var lines =<< trim END
