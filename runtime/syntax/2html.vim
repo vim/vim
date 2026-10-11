@@ -1521,6 +1521,154 @@ if !settings.expand_tabs
   setlocal isprint+=9
 endif
 
+var use_textprop = !settings.ignore_textprop && has('textprop')
+
+# Cache of text property type information, keyed by the type name and the
+# buffer the type is defined for.
+var proptype_cache: dict<dict<any>> = {}
+
+def PropTypeInfo(prop: dict<any>): dict<any>
+  var key = prop.type .. "\n" .. prop.type_bufnr
+  if !has_key(proptype_cache, key)
+    var pt = prop.type_bufnr > 0
+      ? prop_type_get(prop.type, {bufnr: prop.type_bufnr})
+      : prop_type_get(prop.type)
+    proptype_cache[key] = {
+      hl_id: synIDtrans(hlID(get(pt, 'highlight', ''))),
+      priority: get(pt, 'priority', 0),
+      combine: get(pt, 'combine', 1),
+      override: get(pt, 'override', 0)
+    }
+  endif
+  return proptype_cache[key]
+enddef
+
+# Return the text properties in line "linenr": the ones that highlight text,
+# the virtual text grouped by where it is displayed, and the columns where the
+# text has to be split.
+def GetLineProps(linenr: number, linelen: number): dict<list<any>>
+  var props: list<dict<any>> = []
+  var bounds: list<number> = []
+  var vtexts: dict<list<dict<any>>> = {
+    inline: [], above: [], after: [], below: []
+  }
+  for p in prop_list(linenr)
+    var info = PropTypeInfo(p)
+    if has_key(p, 'text')
+      var align = p.col > 0 ? 'inline' : get(p, 'text_align', 'after')
+      add(vtexts[align == 'right' ? 'after' : align], {
+	col: p.col,
+	text: p.text,
+	right: align == 'right',
+	padding: get(p, 'text_padding_left', 0),
+	info: info
+      })
+      if p.col > 0
+	add(bounds, p.col)
+      endif
+      continue
+    endif
+    if p.length <= 0 || info.hl_id == 0
+      continue
+    endif
+    # the length includes the line break when the property continues in the
+    # next line
+    var endcol = min([p.col + p.length, linelen + 1])
+    add(props, {start: p.col, end: endcol, info: info})
+    extend(bounds, [p.col, endcol])
+  endfor
+  # Virtual text with a higher priority is displayed first, "right" aligned
+  # text after the other text at the end of the line.
+  for l in values(vtexts)
+    sort(l, (a, b) => a.right != b.right ? (a.right ? 1 : -1)
+      : b.info.priority - a.info.priority)
+  endfor
+  sort(vtexts.inline, (a, b) => a.col - b.col)
+  return extend({props: props, bounds: uniq(sort(bounds, 'n'))}, vtexts)
+enddef
+
+# Virtual text is put in an attribute and displayed with CSS generated content,
+# so that it cannot be copied.  Without a style sheet it is normal text.
+var vtext_generated = settings.use_css && !settings.no_doc
+var vtext_used = false
+
+def VirtText(text: string, hl_id: number): string
+  if !vtext_generated
+    return HtmlFormat(text, hl_id, 0, "", false)
+  endif
+  vtext_used = true
+  # Also replace ':' to avoid turning a URL into a link inside the attribute.
+  var content = strtrans(text)
+  content = substitute(content, '&', '\&amp;', 'g')
+  content = substitute(content, '<', '\&lt;', 'g')
+  content = substitute(content, '>', '\&gt;', 'g')
+  content = substitute(content, '"', '\&quot;', 'g')
+  content = substitute(content, ':', '\&#0058;', 'g')
+  if hl_id == 0
+    return '<span data-vtext-content="' .. content .. '"></span>'
+  endif
+  return BuildStyleWrapper(hl_id, 0,
+    'data-vtext-content="' .. content .. '" ', "", false, "")
+enddef
+
+# Return the line break for a line of virtual text "above" or "below".
+def VirtTextEndline(): string
+  if !vtext_generated
+    return HtmlEndline .. "\n"
+  endif
+  vtext_used = true
+  return '<span data-vtext-content="&#0010;"></span>'
+enddef
+
+# Return the width of the virtual text in "inline" inserted at column "col".
+def InlineWidth(inline: list<dict<any>>, col: number): number
+  var width = 0
+  for vt in inline
+    if vt.col == col
+      width += strwidth(vt.text)
+    endif
+  endfor
+  return width
+enddef
+
+# Return the empty fold column and number column for a line of virtual text.
+def VirtTextFoldCol(): string
+  return settings.dynamic_folds && !settings.no_foldcolumn && foldcolumn > 0
+    ? VirtText(repeat(' ', foldcolumn), FOLD_C_ID) : ""
+enddef
+
+def VirtTextNumCol(): string
+  return settings.number_lines ? VirtText(repeat(' ', margin), LINENR_ID) : ""
+enddef
+
+# Return virtual text "vt" with its padding.
+def VirtTextWithPadding(vt: dict<any>, padding: number): string
+  return (padding > 0 ? VirtText(repeat(' ', padding), 0) : "")
+    .. VirtText(vt.text, vt.info.hl_id)
+enddef
+
+# Like HtmlFormat(), but also apply the highlighting of the text properties
+# "props" that cover the text, in the same order as Vim does: the syntax
+# highlighting, the properties from low to high priority, the diff
+# highlighting, and the properties again if the highest one uses "override".
+def HtmlFormatProps(text: string, style_id: number, diff_style_id: number, props: list<dict<any>>): string
+  var used = sort(copy(props), (a, b) => a.info.priority != b.info.priority
+    ? a.info.priority - b.info.priority : b.start - a.start)
+  var prop_ids = mapnew(used, (_, p) => p.info.hl_id)
+  var top = used[-1].info
+  var layers = (top.combine ? [style_id] : []) + prop_ids
+  if diff_style_id > 0
+    layers += [diff_style_id] + (top.override ? prop_ids : [])
+  endif
+  # Nest the elements so that the inner ones override the attributes they
+  # set and inherit the others.
+  var formatted = HtmlFormat(text, layers[-1], 0, "", false)
+  for i in range(len(layers) - 2, 0, -1)
+    formatted = BuildStyleWrapper(layers[i], 0, "", formatted, false, "")
+  endfor
+  return formatted
+enddef
+
 def ProcessLines()
   var all_lines = getline(lnum, end)
   var start_lnum = lnum
@@ -1662,6 +1810,23 @@ def ProcessLines()
 	endif
       endif
 
+      var lineprops: dict<list<any>> = {props: [], bounds: [], inline: [],
+	above: [], after: [], below: []}
+      if use_textprop
+	lineprops = GetLineProps(lnum, len)
+      endif
+
+      # Virtual columns of the line include the virtual text "above".
+      var vcol_above = empty(lineprops.above) ? 0
+	: virtcol([lnum, 1], 1)[0] - 1
+
+      # Virtual text "above" takes the fold column of the line, the line
+      # number moves down to the line text.
+      for vt in lineprops.above
+	new ..= VirtTextNumCol() .. VirtTextWithPadding(vt, vt.padding)
+	  .. VirtTextEndline() .. VirtTextFoldCol()
+      endfor
+
       # Now continue with the unfolded line text
       if settings.number_lines
 	new ..= HtmlFormat_n(numcol, LINENR_ID, 0, lnum)
@@ -1684,6 +1849,15 @@ def ProcessLines()
       while col <= len || (col == 1 && diffattr != 0)
 	var id: number
 	var startcol = col # The start column for processing text
+	# Text is also split where the set of text properties changes; zero
+	# never matches a column.
+	var propbound = 0
+	for b in lineprops.bounds
+	  if b > startcol
+	    propbound = b
+	    break
+	  endif
+	endfor
 	if !settings.ignore_conceal && has('conceal')
 	  concealinfo = synconcealed(lnum, col)
 	endif
@@ -1700,13 +1874,14 @@ def ProcessLines()
 	  col = col + 1
 	  # Speed loop (it's small - that's the trick)
 	  # Go along till we find a change in hlID
-	  while col <= len && id == synID(lnum, col, 1) && diff_id == diff_hlID(lnum, col)
+	  while col <= len && id == synID(lnum, col, 1) && diff_id == diff_hlID(lnum, col) && col != propbound
 	    col = col + 1
 	  endwhile
-	  if len < &columns && !settings.no_pre
+	  if len < &columns && !settings.no_pre && empty(lineprops.after)
 	    # Add spaces at the end of the raw text line to extend the changed
-	    # line to the full width.
-	    line = line .. repeat(' ', &columns - virtcol([lnum, len]) - margin)
+	    # line to the full width.  With virtual text at the end of the line
+	    # this is done after it.
+	    line = line .. repeat(' ', &columns - (virtcol([lnum, len]) - vcol_above) - margin)
 	    len = &columns
 	  endif
 	else
@@ -1714,10 +1889,13 @@ def ProcessLines()
 	  col = col + 1
 	  # Speed loop (it's small - that's the trick)
 	  # Go along till we find a change in synID
-	  while col <= len && id == synID(lnum, col, 1) | col = col + 1 | endwhile
+	  while col <= len && id == synID(lnum, col, 1) && col != propbound | col = col + 1 | endwhile
 	endif
 	var expandedtab: string
+	var props: list<dict<any>> = []
 	if settings.ignore_conceal || !concealinfo[0]
+	  props = filter(copy(lineprops.props),
+	    (_, p) => p.start <= startcol && startcol < p.end)
 	  # Expand tabs if needed
 	  expandedtab = strpart(line, startcol - 1, col - startcol)
 	  if settings.expand_tabs
@@ -1731,40 +1909,23 @@ def ProcessLines()
 	    var tabwidth = 0
 	    var i: number
 	    while idx >= 0
-	      if startcol + idx == 1
-		i = tablist[0]
-	      else
-		# Get the character, which could be multiple bytes, which falls
-		# immediately before the found tab. Extract it by matching a
-		# character just prior to the column where the tab matches.
-		# We'll use this to get the byte index of the character
-		# immediately preceding the tab, so we can then look up the
-		# virtual column that character appears in, to determine how
-		# much of the current tabstop has been used up.
-		var prevc: string
-		if idx == 0
-		  # if the found tab is the first character in the text being
-		  # processed, we need to get the character prior to the text,
-		  # given by startcol.
-		  prevc = matchstr(line, '.\%' .. (startcol + offset) .. 'c')
-		else
-		  # Otherwise, the byte index of the tab into expandedtab is
-		  # given by idx.
-		  prevc = matchstr(expandedtab, '.\%' .. (idx + 1) .. 'c')
-		endif
-		var vcol = virtcol([lnum, startcol + idx + offset - len(prevc)])
+	      # Get the virtual column just before the found tab, to determine
+	      # how much of the current tabstop has been used up.  This includes
+	      # virtual text inserted before the tab.
+	      var tabcol = startcol + idx + offset
+	      var vcol = virtcol([lnum, tabcol], 1)[0] - 1 - vcol_above
+		+ InlineWidth(lineprops.inline, tabcol)
 
-		# find the tabstop interval to use for the tab we just found. Keep
-		# adding tabstops (which could be variable) until we would exceed
-		# the virtual screen position of the start of the found tab.
-		while vcol >= tabwidth + tablist[tabidx]
-		  tabwidth += tablist[tabidx]
-		  if tabidx < len(tablist) - 1
-		    tabidx = tabidx + 1
-		  endif
-		endwhile
-		i = tablist[tabidx] - (vcol - tabwidth)
-	      endif
+	      # find the tabstop interval to use for the tab we just found. Keep
+	      # adding tabstops (which could be variable) until we would exceed
+	      # the virtual screen position of the start of the found tab.
+	      while vcol >= tabwidth + tablist[tabidx]
+		tabwidth += tablist[tabidx]
+		if tabidx < len(tablist) - 1
+		  tabidx = tabidx + 1
+		endif
+	      endwhile
+	      i = tablist[tabidx] - (vcol - tabwidth)
 	      # update offset to keep the index within the line corresponding to
 	      # actual tab characters instead of replaced spaces; idx reflects
 	      # replaced spaces in expandedtab, offset cancels out all but
@@ -1783,12 +1944,49 @@ def ProcessLines()
 	  expandedtab = concealinfo[1]
 	endif
 
-	# Output the text with the same synID, with class set to the highlight ID
-	# name, unless it has been concealed completely.
+	for vt in lineprops.inline
+	  if startcol <= vt.col && vt.col < col
+	    new ..= VirtText(vt.text, vt.info.hl_id)
+	  endif
+	endfor
+
+	# Output the text with the same synID, with class set to the highlight
+	# ID name, unless it has been concealed completely.
 	if strlen(expandedtab) > 0
-	  new = new .. HtmlFormat(expandedtab, id, diff_id, "", false)
+	  if !empty(props)
+	    new ..= HtmlFormatProps(expandedtab, id, diff_id, props)
+	  else
+	    new ..= HtmlFormat(expandedtab, id, diff_id, "", false)
+	  endif
 	endif
       endwhile
+
+      # virtual text at the end of the line
+      for vt in lineprops.inline
+	if vt.col >= col
+	  new ..= VirtText(vt.text, vt.info.hl_id)
+	endif
+      endfor
+      if !empty(lineprops.after)
+	var width = (len > 0 ? virtcol([lnum, len]) - vcol_above : 0)
+	  + InlineWidth(lineprops.inline, len + 1)
+	for vt in lineprops.after
+	  var padding = vt.padding
+	  if vt.right && !settings.no_pre
+	    padding = max([padding, &columns - margin - width - strwidth(vt.text)])
+	  endif
+	  new ..= VirtTextWithPadding(vt, padding)
+	  width += padding + strwidth(vt.text)
+	endfor
+	if diffattr != 0 && width < &columns - margin && !settings.no_pre
+	  new ..= HtmlFormat(repeat(' ', &columns - margin - width), 0,
+	    diff_hlID(lnum, len + 1), "", false)
+	endif
+      endif
+      for vt in lineprops.below
+	new ..= VirtTextEndline() .. VirtTextFoldCol() .. VirtTextNumCol()
+	  .. VirtTextWithPadding(vt, vt.padding)
+      endfor
     endif
 
     extend(lines, split(new .. HtmlEndline, '\n', 1))
@@ -1880,6 +2078,13 @@ if settings.use_css && !settings.no_doc
   # browser-default blue/purple colors for links don't look like the existing theme and are unreadable on dark backgrounds
   append('.', 'a { color: inherit; }')
   :+
+  if vtext_used
+    append('.', [
+      '[data-vtext-content] { user-select: none; }',
+      '[data-vtext-content]::before { content: attr(data-vtext-content); white-space: pre; }'
+    ])
+    :+2
+  endif
   # if we use any input elements for unselectable content, make sure they look
   # like normal text
   if !empty(settings.prevent_copy)

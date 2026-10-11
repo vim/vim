@@ -7897,6 +7897,7 @@ g:html_hover_unfold	syntax.txt	/*g:html_hover_unfold*
 g:html_id_expr	syntax.txt	/*g:html_id_expr*
 g:html_ignore_conceal	syntax.txt	/*g:html_ignore_conceal*
 g:html_ignore_folding	syntax.txt	/*g:html_ignore_folding*
+g:html_ignore_textprop	syntax.txt	/*g:html_ignore_textprop*
 g:html_line_ids	syntax.txt	/*g:html_line_ids*
 g:html_no_doc	syntax.txt	/*g:html_no_doc*
 g:html_no_foldcolumn	syntax.txt	/*g:html_no_foldcolumn*

@@ -546,6 +546,16 @@ included in the generated HTML (unless it is folded): >
    :let g:html_ignore_conceal = 1
    :setl conceallevel=0
 <
+						      *g:html_ignore_textprop*
+Default: 0.
+When 0, the highlighting of |text-properties| is applied to the generated
+HTML, combined with the syntax highlighting in the same way as in Vim.
+|virtual-text| is included as well, using CSS generated content so that it is
+not copied along with the text.  Without a style sheet (|g:html_use_css| is 0
+or |g:html_no_doc| is 1) it is normal text.  With |g:html_no_pre| virtual text
+aligned "right" is displayed like "after".
+When 1, text properties are not used.
+
 						       *g:html_ignore_folding*
 Default: 0.
 When 0, text in a closed fold is replaced by the text shown for the fold in
