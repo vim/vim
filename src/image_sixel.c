@@ -474,6 +474,13 @@ rgb_to_paletted_fixed(
     return OK;
 }
 
+    static void
+sixel_image8_clear(sixel_image8_T *simg)
+{
+    vim_free(simg->idx);
+    vim_free(simg->pal);
+}
+
 /*
  * Quantize an RGB(A) image to an 8bpp paletted image. Returns OK on success,
  * FAIL on invalid input or OOM.
@@ -503,17 +510,10 @@ sixel_image_quantize(image_T *img, sixel_image8_T *out)
 
     if (out->pal == NULL || out->idx == NULL)
     {
-	vim_free(out->pal);
+	sixel_image8_clear(out);
 	return FAIL;
     }
     return OK;
-}
-
-    static void
-sixel_image8_clear(sixel_image8_T *simg)
-{
-    vim_free(simg->idx);
-    vim_free(simg->pal);
 }
 
 /*
