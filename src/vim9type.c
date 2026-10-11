@@ -54,10 +54,14 @@ copy_type(type_T *type, garray_T *type_gap)
     *copy = *type;
     copy->tt_flags &= ~TTFLAG_STATIC;
 
-    if (type->tt_args != NULL
-	   && func_type_add_arg_types(copy, type->tt_argcount, type_gap) == OK)
+    if (type->tt_args != NULL)
+    {
+	// The copy must not use the argument types of "type".
+	if (func_type_add_arg_types(copy, type->tt_argcount, type_gap) == FAIL)
+	    return type;
 	for (int i = 0; i < type->tt_argcount; ++i)
 	    copy->tt_args[i] = type->tt_args[i];
+    }
 
     return copy;
 }
@@ -75,6 +79,9 @@ copy_type_deep_rec(type_T *type, garray_T *type_gap, garray_T *seen_types)
 	    return ((type_T **)seen_types->ga_data)[i * 2 + 1];
 
     type_T *copy = copy_type(type, type_gap);
+    if (copy == type)
+	// out of memory, "type" must not be changed
+	return type;
     if (ga_grow(seen_types, 1) == FAIL)
 	return copy;
     ((type_T **)seen_types->ga_data)[seen_types->ga_len * 2] = type;
@@ -1872,6 +1879,9 @@ parse_type_func(
     else
     {
 	type = alloc_func_type(ret_type, argcount, type_gap);
+	// out of memory when a static type is returned, it must not be changed
+	if (type->tt_flags & TTFLAG_STATIC)
+	    return NULL;
 	type->tt_flags = flags;
 	if (argcount > 0)
 	{
@@ -2441,7 +2451,8 @@ common_type_var_func(
 	int i;
 
 	*dest = alloc_func_type(common, argcount, type_gap);
-	if (type1->tt_args != NULL && type2->tt_args != NULL)
+	if (((*dest)->tt_flags & TTFLAG_STATIC) == 0
+		&& type1->tt_args != NULL && type2->tt_args != NULL)
 	{
 	    if (func_type_add_arg_types(*dest, argcount,
 			type_gap) == OK)
@@ -2454,6 +2465,10 @@ common_type_var_func(
 	// Use -1 for "tt_argcount" to indicate an unknown number of
 	// arguments.
 	*dest = alloc_func_type(common, -1, type_gap);
+
+    // out of memory when a static type is returned, it must not be changed
+    if ((*dest)->tt_flags & TTFLAG_STATIC)
+	return;
 
     // Use the minimum of min_argcount.
     (*dest)->tt_min_argcount =

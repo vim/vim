@@ -5247,13 +5247,18 @@ set_function_type(ufunc_T *ufunc)
     {
 	if (ufunc->uf_type_list.ga_itemsize == 0)
 	    ga_init2(&ufunc->uf_type_list, sizeof(type_T *), 10);
-	ufunc->uf_func_type = alloc_func_type(ufunc->uf_ret_type,
+	type_T *ft = alloc_func_type(ufunc->uf_ret_type,
 					   argcount, &ufunc->uf_type_list);
-	// Add argument types to the function type.
-	if (func_type_add_arg_types(ufunc->uf_func_type,
-				    argcount + varargs,
-				    &ufunc->uf_type_list) == FAIL)
+	// When out of memory a static type is returned, it must not be
+	// changed.  Use the type of any function then.
+	if ((ft->tt_flags & TTFLAG_STATIC)
+		|| func_type_add_arg_types(ft, argcount + varargs,
+					    &ufunc->uf_type_list) == FAIL)
+	{
+	    ufunc->uf_func_type = &t_func_any;
 	    return;
+	}
+	ufunc->uf_func_type = ft;
 	ufunc->uf_func_type->tt_argcount = argcount + varargs;
 	ufunc->uf_func_type->tt_min_argcount =
 				      argcount - ufunc->uf_def_args.ga_len;
