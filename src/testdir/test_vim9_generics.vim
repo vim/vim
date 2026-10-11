@@ -3701,6 +3701,42 @@ def Test_generic_interface_method_type_var_count()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for a block lambda using the type variables of the generic function in
+" the argument types and the return type
+def Test_generic_block_lambda_arg_types()
+  var lines =<< trim END
+    vim9script
+    def Fn<T>(v: T): T
+      var L = (x: T): T => {
+        return x
+      }
+      return L(v)
+    enddef
+    assert_equal(3, Fn<number>(3))
+    assert_equal('a', Fn<string>('a'))
+    def Fn2<T>(v: T): list<T>
+      var L = (x: list<T>): list<T> => {
+        return x
+      }
+      return L([v])
+    enddef
+    assert_equal([4], Fn2<number>(4))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Fn<T>(v: any): T
+      var L = (x: T): T => {
+        return x
+      }
+      return L(v)
+    enddef
+    Fn<string>(3)
+  END
+  v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected string but got number', 4)
+enddef
+
 " Test for using a generic method to initialize an object member variable
 def Test_generic_method_in_object_member_init_expr()
   var lines =<< trim END
