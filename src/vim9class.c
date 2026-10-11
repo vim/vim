@@ -899,7 +899,7 @@ is_interface_class_present(garray_T *intf_classes_gap, class_T *ifcl)
 {
     for (int j = 0; j < intf_classes_gap->ga_len; j++)
     {
-	if (((class_T **)intf_classes_gap)[j] == ifcl)
+	if (((class_T **)intf_classes_gap->ga_data)[j] == ifcl)
 	    return TRUE;
     }
 
