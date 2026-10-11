@@ -3701,6 +3701,37 @@ def Test_generic_interface_method_type_var_count()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for an invalid type argument after valid ones in a def function, the
+" parsed type arguments must be freed
+def Test_generic_type_args_error_in_def()
+  var lines =<< trim END
+    vim9script
+    def Fn<T, U>(x: T): T
+      return x
+    enddef
+    def G()
+      var F = Fn<number, nosuch>
+    enddef
+    defcompile G
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: nosuch', 1)
+
+  lines =<< trim END
+    vim9script
+    class A
+      def M<T, U>(x: T): T
+        return x
+      enddef
+    endclass
+    def G()
+      var a = A.new()
+      echo a.M<number, nosuch>(1)
+    enddef
+    defcompile G
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: nosuch', 2)
+enddef
+
 " Test for using a generic method to initialize an object member variable
 def Test_generic_method_in_object_member_init_expr()
   var lines =<< trim END
