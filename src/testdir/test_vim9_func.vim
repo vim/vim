@@ -5069,4 +5069,32 @@ def Test_term_wait_in_job_exit_cb()
   v9.CheckDefSuccess(lines)
 enddef
 
+def Test_cmdmod_silent_nested_load_error()
+  var lines =<< trim END
+      vim9script
+      var result = ''
+
+      def H(): number
+        result ..= 'Hb'
+        echo g:nosuch
+        result ..= 'Ha'
+        return 1
+      enddef
+
+      def G()
+        result ..= 'Gb'
+        silent! H()
+        silent! g:out->add(H())
+        result ..= 'Ga'
+      enddef
+
+      g:out = []
+      G()
+      assert_equal('GbHbHaHbHaGa', result)
+      assert_equal([1], g:out)
+      unlet g:out
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
