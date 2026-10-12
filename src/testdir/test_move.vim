@@ -42,6 +42,11 @@ func Test_move()
   call assert_fails('move', 'E16:')
   call assert_fails("move 'r", 'E20:')
 
+  call assert_fails("move 1 trailing", 'E488:')
+  call assert_fails("move 1trailing", 'E488:')
+  call assert_fails("move 1 lp# trailing", 'E488:')
+  call assert_fails("move 1 lp#trailing", 'E488:')
+
   %bwipeout!
 endfunc
 
