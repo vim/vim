@@ -3582,6 +3582,51 @@ func Test_prop_with_text_above_screenpos()
   bwipe!
 endfunc
 
+func Test_prop_with_text_above_screenline_motion()
+  call NewWindow(20, 40)
+  let text = repeat('abcdefghij', 16)
+  call setline(1, [text, text, text])
+  call prop_type_add('test', #{highlight: 'Normal'})
+  call prop_add(2, 0, #{type: 'test', text: 'Example', text_align: 'above'})
+  redraw
+
+  for col in range(1, 40)
+    call cursor(1, col)
+    for [lnum, wantcol] in [[1, col + 40], [1, col + 80], [1, col + 120],
+	  \ [2, col], [2, col + 40], [2, col + 80], [2, col + 120], [3, col]]
+      normal! gj
+      call assert_equal([lnum, wantcol], getcurpos()[1 : 2],
+	    \ 'gj starting in column ' .. col)
+    endfor
+
+    call cursor(3, col)
+    for [lnum, wantcol] in [[2, col + 120], [2, col + 80], [2, col + 40],
+	  \ [2, col], [1, col + 120], [1, col + 80], [1, col + 40], [1, col]]
+      normal! gk
+      call assert_equal([lnum, wantcol], getcurpos()[1 : 2],
+	    \ 'gk starting in column ' .. col)
+    endfor
+  endfor
+
+  call cursor(1, 1)
+  normal! $
+  for [lnum, wantcol] in [[2, 40], [2, 80], [2, 120], [2, 160], [3, 40]]
+    normal! gj
+    call assert_equal([lnum, wantcol], getcurpos()[1 : 2], 'gj after "$"')
+  endfor
+
+  call cursor(3, 1)
+  normal! $
+  for [lnum, wantcol] in [[3, 120], [3, 80], [3, 40], [2, 160], [2, 120],
+	\ [2, 80], [2, 40], [1, 160]]
+    normal! gk
+    call assert_equal([lnum, wantcol], getcurpos()[1 : 2], 'gk after "$"')
+  endfor
+
+  call prop_type_delete('test')
+  bwipe!
+endfunc
+
 func Test_prop_with_text_below_after_match()
   CheckScreendump
   CheckRunVimInTerminal
