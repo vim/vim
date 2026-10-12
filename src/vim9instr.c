@@ -317,7 +317,8 @@ set_tuple_union_type_on_stack(type_T *type1, type_T *type2, cctx_T *cctx)
     type_T *new_tuple_type = get_tuple_type(&tuple_types_ga,
 							cctx->ctx_type_list);
     // result inherits the variadic flag from the operands
-    new_tuple_type->tt_flags |= (type1->tt_flags & TTFLAG_VARARGS)
+    if ((new_tuple_type->tt_flags & TTFLAG_STATIC) == 0)
+	new_tuple_type->tt_flags |= (type1->tt_flags & TTFLAG_VARARGS)
 					| (type2->tt_flags & TTFLAG_VARARGS);
 
     // set the type on the stack for the resulting tuple

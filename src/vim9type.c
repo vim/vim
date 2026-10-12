@@ -321,7 +321,8 @@ tuple_type_add_types(
     // pointer to type_gap.
     if (ga_grow(type_gap, 1) == FAIL)
 	return FAIL;
-    tupletype->tt_args = ALLOC_CLEAR_MULT(type_T *, typecount);
+    tupletype->tt_args = alloc_clear_id(sizeof(type_T *) * typecount,
+							  aid_tuple_type_args);
     if (tupletype->tt_args == NULL)
 	return FAIL;
     ((type_T **)type_gap->ga_data)[type_gap->ga_len] =
@@ -389,7 +390,7 @@ get_tuple_type(garray_T *tuple_types_gap, garray_T *type_gap)
     if (typecount > 0)
     {
 	if (tuple_type_add_types(type, typecount, type_gap) == FAIL)
-	    return NULL;
+	    return &t_any;
 	mch_memmove(type->tt_args, tuple_types, sizeof(type_T *) * typecount);
     }
     type->tt_argcount = typecount;
@@ -1919,13 +1920,14 @@ parse_type_tuple(
     *arg = p + 1;
 
     ret_type = alloc_tuple_type(typecount, type_gap);
-    ret_type->tt_flags = flags;
-    ret_type->tt_argcount = typecount;
-    if (tuple_type_add_types(ret_type, typecount, type_gap) == FAIL)
+    if (ret_type == &t_any
+	    || tuple_type_add_types(ret_type, typecount, type_gap) == FAIL)
     {
 	ret_type = NULL;
 	goto on_err;
     }
+    ret_type->tt_flags = flags;
+    ret_type->tt_argcount = typecount;
     mch_memmove(ret_type->tt_args, tuple_types_ga.ga_data,
 						sizeof(type_T *) * typecount);
 
