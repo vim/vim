@@ -195,7 +195,7 @@ elseif b:yaml_schema is# 'pyyaml'
     exe 'syn match   yamlNull /\%#=1'.s:_bounder.'\@1<!\~'.s:_bounder.'\@!/ contained containedin=@yamlScalarWithSpecials'
     exe 'syn match  yamlFloat /\%#=1'.s:_bounder.'\@1<!\%(\v[-+]?%(\d[0-9_]*)\.[0-9_]*%([eE][-+]\d+)?|\.[0-9_]+%([eE][-+]\d+)?|[-+]?%(\d[0-9_]*%(\:[0-5]?\d)+\.[0-9_]*|\.%(inf|Inf|INF))|\.%(nan|NaN|NAN)\m\)'.s:_bounder.'\@!/ contained containedin=@yamlScalarWithSpecials'
     exe 'syn match  yamlInteger /\%#=1'.s:_bounder.'\@1<!\%(\v[-+]?%(0b[0-1_]+|0[0-7_]+|%(0|[1-9][0-9_]*)|0x[0-9a-fA-F_]+|[1-9][0-9_]*%(:[0-5]?\d)+)\m\)'.s:_bounder.'\@!/ contained containedin=@yamlScalarWithSpecials'
-    exe 'syn match  yamlTimestamp /\%#=1'.s:_bounder.'\@1<!\%(\v\d\d\d\d\-\d\d\-\d\d|\d\d\d\d \-\d\d? \-\d\d?%([Tt]|[ \t]+)\d\d?\:\d\d \:\d\d %(\.\d*)?%([ \t]*%(Z|[-+]\d\d?%(\:\d\d)?))?\m\)'.s:_bounder.'\@!/ contained containedin=@yamlScalarWithSpecials'
+    exe 'syn match  yamlTimestamp /\%#=1\d\@='.s:_bounder.'\@1<!\%(\v\d\d\d\d\-\d\d\-\d\d|\d\d\d\d \-\d\d? \-\d\d?%([Tt]|[ \t]+)\d\d?\:\d\d \:\d\d %(\.\d*)?%([ \t]*%(Z|[-+]\d\d?%(\:\d\d)?))?\m\)'.s:_bounder.'\@!/ contained containedin=@yamlScalarWithSpecials'
 elseif b:yaml_schema is# 'failsafe'
     " Nothing
 endif
