@@ -3,7 +3,7 @@
 " Homepage:            https://github.com/cespare/vim-toml
 " Maintainer:          Aman Verma
 " Previous Maintainer: Caleb Spare <cespare@gmail.com>
-" Last Change:         Mar 10, 2026
+" Last Change:         Oct 12, 2026
 
 if exists('b:current_syntax')
   finish
@@ -34,7 +34,7 @@ syn match tomlInteger /[+-]\=\(inf\|nan\)/ display
 syn match tomlFloat /[+-]\=\d\(_\=\d\)*\.\d\+/ display
 syn match tomlFloat /[+-]\=\d\(_\=\d\)*\(\.\d\(_\=\d\)*\)\=[eE][+-]\=\d\(_\=\d\)*/ display
 
-syn match tomlBoolean /\<\%(true\|false\)\>/ display
+syn keyword tomlBoolean true false display
 
 " https://tools.ietf.org/html/rfc3339
 syn match tomlDate /\d\{4\}-\d\{2\}-\d\{2\}/ display
