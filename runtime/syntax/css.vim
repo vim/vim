@@ -7,8 +7,9 @@
 "               Nikolai Weibull (Add CSS2 support)
 " URL:          https://github.com/vim-language-dept/css-syntax.vim
 " Maintainer:   Jay Sitter <jay@jaysitter.com>
-" Last Change:  2024 Mar 2
+" Last Change:  2026 Oct 12
 " Changelog:
+" 2026 Oct 12: match some keywords as keywords instead of regex
 " 2025 Nov 11: improve support for cssBoxProperties #18717
 " 2026 Feb 13: add missing numeric units (baseline 2015, 2020, 2022, 2023, 2026) #19325
 " 2026 Jun 28: add scrollbar-gutter properties
@@ -42,8 +43,7 @@ syn keyword cssTagName link map menu meta noscript ol optgroup
 syn keyword cssTagName option p param picture pre q s samp script small
 syn keyword cssTagName span strong sub sup tbody td
 syn keyword cssTagName textarea tfoot th thead title tr ul u var
-syn keyword cssTagName object svg
-syn match   cssTagName /\<select\>\|\<style\>\|\<table\>/
+syn keyword cssTagName object svg select style table
 
 " 34 HTML5 tags
 syn keyword cssTagName article aside audio bdi canvas command data
@@ -146,7 +146,7 @@ syn match cssFunctionComma contained ","
 " Common Prop and Attr
 syn keyword cssCommonAttr contained auto none inherit all default normal
 syn keyword cssCommonAttr contained top bottom center stretch hidden visible
-syn match cssCommonAttr contained "\<\%(max-\|min-\|fit-\)content\>"
+syn keyword cssCommonAttr contained max-content min-content fit-content
 "------------------------------------------------
 " CSS Animations
 " http://www.w3.org/TR/css3-animations/
@@ -235,7 +235,7 @@ syn match cssColorProp contained "\<color-profile\>"
 syn match cssColorProp contained "\<rendering-intent\>"
 
 
-syn match cssDimensionProp contained "\<\%(min\|max\)-\%(width\|height\)\>"
+syn keyword cssDimensionProp contained min-width min-height max-width max-height
 syn keyword cssDimensionProp contained height
 syn keyword cssDimensionProp contained width
 
@@ -342,7 +342,7 @@ syn keyword cssPositioningAttr contained static relative absolute fixed subgrid 
 
 syn keyword cssPrintAttr contained landscape portrait crop cross always
 
-syn match cssTableProp contained "\<\%(caption-side\|table-layout\|border-collapse\|border-spacing\|empty-cells\)\>"
+syn keyword cssTableProp contained caption-side table-layout border-collapse border-spacing empty-cells
 syn keyword cssTableAttr contained fixed collapse separate show hide once always
 
 
