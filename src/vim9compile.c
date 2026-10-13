@@ -2502,12 +2502,14 @@ compile_assign_index(
 
 /*
  * For a LHS with an index, load the variable to be indexed.
+ * "range" is TRUE for "var[a : b]".
  */
     static int
 compile_load_lhs(
 	lhs_T	*lhs,
 	char_u	*var_start,
 	type_T	*rhs_type,
+	int	range,
 	cctx_T	*cctx)
 {
     if (lhs->lhs_dest == dest_expr)
@@ -2550,13 +2552,21 @@ compile_load_lhs(
 	// type yet, it depends on what member is used.
 	// The top item in the stack is the Dict, followed by the key and then
 	// the type of the value.
+	// For "var[a : b]" the value is a List or Blob, below two indexes.
 	vartype_T vartype = lhs->lhs_type->tt_type;
-	type_T *member_type = lhs->lhs_type->tt_member;
-	if (rhs_type != NULL && member_type != NULL
+	type_T *expected = lhs->lhs_type->tt_member;
+	int offset = -3;
+	if (range)
+	{
+	    expected = vartype == VAR_LIST || vartype == VAR_BLOB
+						       ? lhs->lhs_type : NULL;
+	    offset = -4;
+	}
+	if (rhs_type != NULL && expected != NULL
 		&& vartype != VAR_OBJECT && vartype != VAR_CLASS
 		&& rhs_type != &t_void
-		&& need_type(rhs_type, member_type, 0,
-					    -3, 0, cctx, FALSE, FALSE) == FAIL)
+		&& need_type(rhs_type, expected, 0, offset, 0, cctx, FALSE,
+								FALSE) == FAIL)
 	    return FAIL;
 
 	return OK;
@@ -2609,7 +2619,8 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 	else
 	{
 	    // load object variable or argument
-	    if (compile_load_lhs(lhs, var_start, lhs->lhs_type, cctx) == FAIL)
+	    if (compile_load_lhs(lhs, var_start, lhs->lhs_type, FALSE, cctx)
+								       == FAIL)
 		return FAIL;
 	}
 	if (IS_INTERFACE(cl))
@@ -2636,7 +2647,7 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 	return generate_CLASSMEMBER(cctx, TRUE, cl, lhs->lhs_member_idx);
     }
 
-    if (compile_load_lhs(lhs, var_start, NULL, cctx) == FAIL)
+    if (compile_load_lhs(lhs, var_start, NULL, FALSE, cctx) == FAIL)
 	return FAIL;
 
     if (lhs->lhs_has_index)
@@ -2747,7 +2758,7 @@ compile_assign_unlet(
     // - index
     // - for [a : b] second index
     // - variable
-    if (compile_load_lhs(lhs, var_start, rhs_type, cctx) == FAIL)
+    if (compile_load_lhs(lhs, var_start, rhs_type, range, cctx) == FAIL)
 	return FAIL;
 
     if (dest_type == VAR_LIST
@@ -3327,9 +3338,10 @@ compile_assign_valid_rhs_type(
     }
 
     // If assigning to a list or dict member, use the member type.
-    // Not for "list[:] =".
-    if (lhs->lhs_has_index &&
-	    !has_list_index(cac->cac_var_start + lhs->lhs_varlen, cctx))
+    // Not for "list[:] =", unless the list is an item or a member,
+    // "ll[0][:] =": its type is checked once it has been compiled.
+    if (lhs->lhs_has_index && (lhs->lhs_dest == dest_expr
+	    || !has_list_index(cac->cac_var_start + lhs->lhs_varlen, cctx)))
 	use_type = lhs->lhs_member_type;
 
     if (need_type_where(rhs_type, use_type, 0, -1, where, cctx, FALSE,

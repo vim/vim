@@ -12086,4 +12086,43 @@ def Test_index_object()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Assigning to a slice of a List or Blob object variable
+def Test_object_variable_slice_assign()
+  var lines =<< trim END
+    vim9script
+    class C
+      public var b: blob = 0z000000
+      public var l: list<number> = [1, 2, 3]
+      def Set()
+        this.b[0 : 1] = 0z0102
+        this.l[1 : 2] = [8, 9]
+      enddef
+    endclass
+    def Works()
+      var o = C.new()
+      o.Set()
+      assert_equal(0z010200, o.b)
+      assert_equal([1, 8, 9], o.l)
+      o.b[2 : 2] = 0z03
+      o.l[0 : 0] = [7]
+      assert_equal(0z010203, o.b)
+      assert_equal([7, 8, 9], o.l)
+    enddef
+    Works()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class C
+      var l: list<number> = [1, 2, 3]
+      def Set()
+        this.l[0 : 0] = ['x']
+      enddef
+    endclass
+    C.new().Set()
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected list<number> but got list<string>', 1)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -1738,6 +1738,23 @@ def Test_assign_list()
   END
   v9.CheckDefAndScriptSuccess(lines)
 
+  # A slice of a list or blob that is an item or member of another value
+  lines =<< trim END
+      var ll = [[1, 2]]
+      ll[0][0 : 0] = [9]
+      assert_equal([[9, 2]], ll)
+
+      var d = {a: [1, 2]}
+      d.a[1 : 1] = [8]
+      assert_equal({a: [1, 8]}, d)
+
+      var lb = [0z0000]
+      lb[0][1 : 1] = 0z01
+      assert_equal([0z0001], lb)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+  v9.CheckDefFailure(['var ll = [[1, 2]]', 'll[0][0 : 0] = 7'], 'E1012: Type mismatch; expected list<number> but got number', 2)
+
   lines =<< trim END
       var l = [1, 2]
       g:idx = 'x'
