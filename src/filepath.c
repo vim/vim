@@ -806,8 +806,10 @@ file_is_readable(char_u *fname)
 #ifndef O_NONBLOCK
 # define O_NONBLOCK 0
 #endif
-    if (*fname && !mch_isdir(fname)
-	      && (fd = mch_open((char *)fname, O_RDONLY | O_NONBLOCK, 0)) >= 0)
+    // Opening a file that does not exist is slow.
+    if (*fname == NUL || mch_isdir_or_missing(fname))
+	return FALSE;
+    if ((fd = mch_open((char *)fname, O_RDONLY | O_NONBLOCK, 0)) >= 0)
     {
 	close(fd);
 	return TRUE;
@@ -3755,16 +3757,13 @@ dos_expandpath(
 		}
 		else
 		{
-		    stat_T  sb;
-
 		    // no more wildcards, check if there is a match
 		    // remove backslashes for the remaining components only
 		    if (*path_end != 0)
 			backslash_halve(buf + len + 1);
-		    // add existing file
-		    if ((flags & EW_ALLLINKS) ? mch_lstat((char *)buf, &sb) >= 0
-			    : mch_getperm(buf) >= 0)
-			addfile(gap, buf, flags);
+		    // addfile() checks existence; do not stat the same path twice.
+		    // Even with EW_NOTFOUND, a literal suffix must exist.
+		    addfile(gap, buf, flags & ~EW_NOTFOUND);
 		}
 	    }
 	}
@@ -4273,10 +4272,25 @@ addfile(
     int		isdir;
     stat_T	sb;
 
-    // if the file/dir/link doesn't exist, may not add it
-    if (!(flags & EW_NOTFOUND) && ((flags & EW_ALLLINKS)
-			? mch_lstat((char *)f, &sb) < 0 : mch_getperm(f) < 0))
-	return;
+#ifdef MSWIN
+    if (!(flags & (EW_NOTFOUND | EW_ALLLINKS)))
+    {
+	long perm = mch_getperm(f);
+
+	if (perm < 0)
+	    return;
+	// The stat result already tells us whether this is a directory.
+	isdir = (perm & S_IFMT) == S_IFDIR;
+    }
+    else
+#endif
+    {
+	// if the file/dir/link doesn't exist, may not add it
+	if (!(flags & EW_NOTFOUND) && ((flags & EW_ALLLINKS)
+		    ? mch_lstat((char *)f, &sb) < 0 : mch_getperm(f) < 0))
+	    return;
+	isdir = mch_isdir(f);
+    }
 
 #ifdef FNAME_ILLEGAL
     // if the file/dir contains illegal characters, don't add it
@@ -4284,7 +4298,6 @@ addfile(
 	return;
 #endif
 
-    isdir = mch_isdir(f);
     if ((isdir && !(flags & EW_DIR)) || (!isdir && !(flags & EW_FILE)))
 	return;
 

@@ -108,6 +108,7 @@ struct compl_S
 					// cp_flags has CP_FREE_FNAME
     int		cp_flags;		// CP_ values
     int		cp_number;		// sequence number
+    int		cp_order;		// list position when first scored
     int		cp_score;		// fuzzy match score or proximity score
     int		cp_in_match_array;	// collected by compl_match_array
     int		cp_user_abbr_hl_id;	// highlight group ID for abbr
@@ -1042,6 +1043,7 @@ ins_compl_add(
 	return FAIL;
     }
     match->cp_number = flags & CP_ORIGINAL_TEXT ? 0 : -1;
+    match->cp_order = -1;
     if (new_str == NULL && (new_str = vim_strnsave(str, len)) == NULL)
     {
 	vim_free(match);
@@ -1579,7 +1581,11 @@ cp_compare_fuzzy(const void* a, const void* b)
 {
     int score_a = ((compl_T*)a)->cp_score;
     int score_b = ((compl_T*)b)->cp_score;
-    return (score_b > score_a) ? 1 : (score_b < score_a) ? -1 : 0;
+
+    if (score_a != score_b)
+	return (score_b > score_a) ? 1 : -1;
+
+    return ((compl_T *)a)->cp_order - ((compl_T *)b)->cp_order;
 }
 
     static int
@@ -1707,9 +1713,14 @@ set_fuzzy_score(void)
     }
 
     /* Score all completion matches */
+    int next = 0;
     compl = compl_first_match;
     do
     {
+	if (compl->cp_order < 0)
+	    compl->cp_order = next;
+	next = MAX(next, compl->cp_order + 1);
+
 	if (use_leader)
 	    pattern = get_leader_for_startcol(compl, TRUE)->string;
 

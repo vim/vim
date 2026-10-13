@@ -1908,9 +1908,9 @@ compile_lhs_script_var(
 			lhs->lhs_name);
 	    return FAIL;
 	}
-	// With ":source ++dryrun" the ":let" that creates it was not executed.
-	else if (script_namespace && !script_var && import == NULL
-							       && !source_dryrun)
+	else if (cctx->ctx_ufunc->uf_script_ctx_version == SCRIPT_VERSION_VIM9
+		&& script_namespace
+		&& !script_var && import == NULL)
 	{
 	    semsg(_(e_unknown_variable_str), lhs->lhs_name);
 	    return FAIL;
@@ -2337,16 +2337,7 @@ compile_lhs(
     {
 	// set the LHS variable type
 	if (compile_lhs_set_type(cctx, lhs, var_end, is_decl) == FAIL)
-	{
-	    // In a dry run declare the variable anyway, so that using it does
-	    // not add an error.
-	    if (source_dryrun && lhs->lhs_lvar == NULL
-		    && lhs->lhs_dest == dest_local
-		    && cctx->ctx_skip != SKIP_YES)
-		reserve_local(cctx, var_start, lhs->lhs_varlen, ASSIGN_VAR,
-								       &t_any);
 	    return FAIL;
-	}
     }
 
     if (oplen == 3 && !heredoc && !lhs_concatenable(lhs))
@@ -4308,8 +4299,6 @@ compile_def_function_body(
     char_u	*line = NULL;
     char_u	*p;
     int		did_emsg_before = did_emsg;
-    int		failed = FALSE;
-    int		stack_len = 0;
 #ifdef FEAT_PROFILE
     int		prof_lnum = -1;
 #endif
@@ -4322,12 +4311,10 @@ compile_def_function_body(
 	char_u	    *cmd;
 	cmdmod_T    local_cmdmod;
 
-	stack_len = cctx->ctx_type_stack.ga_len;
-
 	// Bail out on the first error to avoid a flood of errors and report
 	// the right line number when inside try/catch.
 	if (did_emsg_before != did_emsg)
-	    goto linefail;
+	    return FAIL;
 
 	if (line != NULL && *line == '|')
 	    // the line continues after a '|'
@@ -4337,10 +4324,10 @@ compile_def_function_body(
 						    || VIM_ISWHITE(line[-1]))))
 	{
 	    semsg(_(e_trailing_characters_str), line);
-	    goto linefail;
+	    return FAIL;
 	}
 	else if (line != NULL && vim9_bad_comment(skipwhite(line)))
-	    goto linefail;
+	    return FAIL;
 	else
 	{
 	    line = next_line_from_context(cctx, FALSE);
@@ -4375,7 +4362,7 @@ compile_def_function_body(
 	{
 	    // "#" starts a comment, but "#{" is an error
 	    if (vim9_bad_comment(ea.cmd))
-		goto linefail;
+		return FAIL;
 	    line = (char_u *)"";
 	    continue;
 	}
@@ -4415,7 +4402,7 @@ compile_def_function_body(
 		    else
 		    {
 			emsg(_(e_using_rcurly_outside_if_block_scope));
-			goto linefail;
+			return FAIL;
 		    }
 		    if (line != NULL)
 			line = skipwhite(ea.cmd + 1);
@@ -4439,7 +4426,7 @@ compile_def_function_body(
 	cctx->ctx_has_cmdmod = FALSE;
 	if (parse_command_modifiers(&ea, errormsg, &local_cmdmod, FALSE)
 								       == FAIL)
-	    goto linefail;
+	    return FAIL;
 	generate_cmdmods(cctx, &local_cmdmod);
 	undo_cmdmod(&local_cmdmod);
 
@@ -4475,7 +4462,7 @@ compile_def_function_body(
 		if (assign == OK)
 		    goto nextline;
 		if (assign == FAIL)
-		    goto linefail;
+		    return FAIL;
 	    }
 	}
 
@@ -4503,7 +4490,7 @@ compile_def_function_body(
 				   && !(local_cmdmod.cmod_flags & CMOD_LEGACY))
 		{
 		    semsg(_(e_colon_required_before_range_str), cmd);
-		    goto linefail;
+		    return FAIL;
 		}
 		ea.addr_count = 1;
 		if (ends_excmd2(line, ea.cmd))
@@ -4524,7 +4511,7 @@ compile_def_function_body(
 	{
 	    if (cctx->ctx_skip != SKIP_YES)
 		semsg(_(e_ambiguous_use_of_user_defined_command_str), ea.cmd);
-	    goto linefail;
+	    return FAIL;
 	}
 
 	// When using ":legacy cmd" always use compile_exec().
@@ -4549,7 +4536,7 @@ compile_def_function_body(
 		case CMD_finally:
 		case CMD_endtry:
 			semsg(_(e_cannot_use_legacy_with_command_str), ea.cmd);
-			goto linefail;
+			return FAIL;
 		default: break;
 	    }
 
@@ -4574,7 +4561,7 @@ compile_def_function_body(
 	    else
 	    {
 		semsg(_(e_command_not_recognized_str), ea.cmd);
-		goto linefail;
+		return FAIL;
 	    }
 	}
 
@@ -4591,7 +4578,7 @@ compile_def_function_body(
 	{
 	    semsg(_(e_unreachable_code_after_str),
 				     cctx->ctx_had_return ? "return" : "throw");
-	    goto linefail;
+	    return FAIL;
 	}
 
 	// When processing the end of an if-else or try-catch block, don't
@@ -4621,7 +4608,7 @@ compile_def_function_body(
 	    if ((ea.argt & EX_RANGE) == 0 && ea.addr_count > 0)
 	    {
 		emsg(_(e_no_range_allowed));
-		goto linefail;
+		return FAIL;
 	    }
 	}
 
@@ -4774,7 +4761,7 @@ compile_def_function_body(
 
 	    case CMD_substitute:
 		    if (check_global_and_subst(ea.cmd, p) == FAIL)
-			goto linefail;
+			return FAIL;
 		    if (cctx->ctx_skip == SKIP_YES)
 			line = (char_u *)"";
 		    else
@@ -4812,13 +4799,13 @@ compile_def_function_body(
 	    case CMD_t:
 	    case CMD_xit:
 		    not_in_vim9(&ea, false);
-		    goto linefail;
+		    return FAIL;
 
 	    case CMD_SIZE:
 		    if (cctx->ctx_skip != SKIP_YES)
 		    {
 			semsg(_(e_invalid_command_str), ea.cmd);
-			goto linefail;
+			return FAIL;
 		    }
 		    // We don't check for a next command here.
 		    line = (char_u *)"";
@@ -4846,30 +4833,30 @@ compile_def_function_body(
 		    if (cctx->ctx_skip != SKIP_YES)
 		    {
 			emsg(_(e_vim9script_can_only_be_used_in_script));
-			goto linefail;
+			return FAIL;
 		    }
 		    line = (char_u *)"";
 		    break;
 
 	    case CMD_class:
 		    emsg(_(e_class_can_only_be_used_in_script));
-		    goto linefail;
+		    return FAIL;
 
 	    case CMD_enum:
 		    emsg(_(e_enum_can_only_be_used_in_script));
-		    goto linefail;
+		    return FAIL;
 
 	    case CMD_interface:
 		    emsg(_(e_interface_can_only_be_used_in_script));
-		    goto linefail;
+		    return FAIL;
 
 	    case CMD_type:
 		    emsg(_(e_type_can_only_be_used_in_script));
-		    goto linefail;
+		    return FAIL;
 
 	    case CMD_global:
 		    if (check_global_and_subst(ea.cmd, p) == FAIL)
-			goto linefail;
+			return FAIL;
 		    // FALLTHROUGH
 	    default:
 		    // Not recognized, execute with do_cmdline_cmd().
@@ -4879,7 +4866,7 @@ compile_def_function_body(
 	}
 nextline:
 	if (line == NULL)
-	    goto linefail;
+	    return FAIL;
 	line = skipwhite(line);
 
 	// Undo any command modifiers.
@@ -4890,25 +4877,9 @@ nextline:
 	    iemsg("Type stack underflow");
 	    return FAIL;
 	}
-	continue;
-
-linefail:
-	// With ":source ++dryrun" go on with the next line, to report the
-	// errors in the rest of the function as well.
-	if (!source_dryrun)
-	    return FAIL;
-	if (*errormsg != NULL)
-	{
-	    emsg(*errormsg);
-	    *errormsg = NULL;
-	}
-	failed = TRUE;
-	did_emsg_before = did_emsg;
-	cctx->ctx_type_stack.ga_len = stack_len;
-	line = (char_u *)"";
     } // END of the loop over all the function body lines.
 
-    return failed ? FAIL : OK;
+    return OK;
 }
 
 /*

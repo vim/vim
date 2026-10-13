@@ -11,8 +11,8 @@ endif
 runtime! ftplugin/dosini.vim
 
 if has('unix') && executable('less') && has('terminal')
-  command! -buffer -nargs=1 SystemdKeywordPrg silent exe 'term ++close ' KeywordLookup_systemd(<q-args>)
-  silent! function KeywordLookup_systemd(keyword) abort
+  command! -buffer -nargs=1 SystemdKeywordPrg silent exe 'term ++close ' s:KeywordLookup_systemd(<q-args>)
+  function! s:KeywordLookup_systemd(keyword) abort
     let matches = matchlist(getline(search('\v^\s*\[\s*.+\s*\]\s*$', 'nbWz')), '\v^\s*\[\s*(\k+).*\]\s*$')
     if len(matches) > 1
       let section = matches[1]
