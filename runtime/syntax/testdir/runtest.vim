@@ -490,6 +490,7 @@ func RunTest()
     if out_time < 0 || in_time > out_time
       call ch_log('running tests for: ' .. fname)
       let filetype = substitute(root, '\([^_.]*\)[_.].*', '\1', '')
+      let filetype = substitute(filetype, '^vim9$', 'vim', '')
       let failed_root = 'failed/' .. root
 
       for pagename in glob(failed_root .. '_\d*\.dump', 1, 1)

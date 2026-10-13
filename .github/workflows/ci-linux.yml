@@ -48,7 +48,7 @@ jobs:
             extra: [nogui]
           - features: tiny
             compiler: gcc
-            extra: [nogui, syn_test_execs]
+            extra: [nogui, syn_test_execs_naming]
           - features: tiny
             compiler: gcc
             extra: [nogui]

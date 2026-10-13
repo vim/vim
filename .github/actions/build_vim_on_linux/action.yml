@@ -52,14 +52,14 @@ runs:
         make -C ci -f hlgroups.make
         echo '::endgroup::'
 
-    - name: Report executable syntax tests
-      if: contains(fromJSON(inputs.extra), 'syn_test_execs')
+    - name: Report executable and misnamed syntax tests
+      if: contains(fromJSON(inputs.extra), 'syn_test_execs_naming')
       shell: bash
       run: |
-        echo '::group::Report executable syntax tests'
-        # Search and list all found executable syntax tests, and exit with
-        # an error code.
-        make -C runtime/syntax executables
+        echo '::group::Report executable and misnamed syntax tests'
+        # Search and list all found executable and misnamed syntax tests, and
+        # exit with an error code.
+        make -k -C runtime/syntax executables misnomers
         echo '::endgroup::'
 
     - name: Add i386 packages to dpkg
