@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Sep 30
+*options.txt*	For Vim version 9.2.  Last change: 2026 Oct 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4698,6 +4698,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Only used when the GUI tab pages line is displayed.  'e' must be
 	present in 'guioptions'.  For the non-GUI tab pages line 'tabline' is
 	used.
+
+						*'guitabstyle'* *'gts'*
+'guitabstyle' 'gts'	string	(default "classic")
+			global
+			{only available when compiled with GUI enabled}
+	Style of the labels in the GUI tab pages line.  Possible values:
+	   rounded	Rounded tabs that share the width of the tab pages
+			line, with the label centered and a button to close
+			the tab page.  The close button is not shown when
+			there is only one tab page.
+	   classic	The tabs of the GUI toolkit, without a close button.
+	Currently only supported in the GTK 4 GUI, other GUIs always use the
+	"classic" style.
 
 						*'guitabtooltip'* *'gtt'*
 'guitabtooltip' 'gtt'	string	(default empty)

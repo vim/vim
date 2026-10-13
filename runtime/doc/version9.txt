@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Sep 28
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Oct 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52746,6 +52746,7 @@ Autocommands: ~
 
 Options: ~
 
+'guitabstyle'		Style of the GUI tab page labels.
 'imageprotocol'		Image backend to use for what terminal
 'modelinestrict'	Only allow safe options to be set from a modeline.
 'pumopt'		Additional options for the popup menu.

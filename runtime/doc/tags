@@ -387,6 +387,7 @@ $quote	eval.txt	/*$quote*
 'grepformat'	options.txt	/*'grepformat'*
 'grepprg'	options.txt	/*'grepprg'*
 'gtl'	options.txt	/*'gtl'*
+'gts'	options.txt	/*'gts'*
 'gtt'	options.txt	/*'gtt'*
 'guicursor'	options.txt	/*'guicursor'*
 'guifont'	options.txt	/*'guifont'*
@@ -397,6 +398,7 @@ $quote	eval.txt	/*$quote*
 'guioptions'	options.txt	/*'guioptions'*
 'guipty'	options.txt	/*'guipty'*
 'guitablabel'	options.txt	/*'guitablabel'*
+'guitabstyle'	options.txt	/*'guitabstyle'*
 'guitabtooltip'	options.txt	/*'guitabtooltip'*
 'hardtabs'	vi_diff.txt	/*'hardtabs'*
 'helpfile'	options.txt	/*'helpfile'*

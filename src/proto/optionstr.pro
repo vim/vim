@@ -98,6 +98,8 @@ char *did_set_guiligatures(optset_T *args);
 char *did_set_guioptions(optset_T *args);
 int expand_set_guioptions(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_guitablabel(optset_T *args);
+char *did_set_guitabstyle(optset_T *args);
+int expand_set_guitabstyle(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_helpfile(optset_T *args);
 char *did_set_helplang(optset_T *args);
 char *did_set_highlight(optset_T *args);

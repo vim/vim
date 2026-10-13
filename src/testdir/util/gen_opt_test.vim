@@ -235,6 +235,7 @@ let test_values = {
       \		'M', 'g', 't', 'T', 'r', 'R', 'l', 'L', 'b', 'h', 'v', 'p', 'F',
       \		'k', '!abvR'],
       \		['xxx', 'a,b']],
+      \ 'guitabstyle': [['rounded', 'classic'], ['', 'xxx', 'rounded,classic']],
       \ 'helplang': [['', 'de', 'de,it'], ['xxx']],
       \ 'highlight': [['', 'e:Error'], ['xxx']],
       \ 'imactivatekey': [[''], ['xxx']],

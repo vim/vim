@@ -69,6 +69,9 @@ static char *(p_fdo_values[]) = {"all", "block", "hor", "mark", "percent",
 				 "undo", "jump", NULL};
 #endif
 // Note: Keep this in sync with match_keyprotocol()
+#ifdef FEAT_GUI_TABLINE
+static char *(p_gts_values[]) = {"rounded", "classic", NULL};
+#endif
 static char *(p_kpc_protocol_values[]) = {"none", "mok2", "kitty", NULL};
 #ifdef FEAT_IMAGE
 // Note: Keep this in sync with match_imageprotocol()
@@ -2862,6 +2865,30 @@ did_set_guitablabel(optset_T *args UNUSED)
 {
     redraw_tabline = TRUE;
     return NULL;
+}
+
+/*
+ * The 'guitabstyle' option is changed.
+ */
+    char *
+did_set_guitabstyle(optset_T *args UNUSED)
+{
+    if (*p_gts == NUL || check_opt_strings(p_gts, p_gts_values, FALSE) != OK)
+	return e_invalid_argument;
+
+    redraw_tabline = TRUE;
+    return NULL;
+}
+
+    int
+expand_set_guitabstyle(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_gts_values,
+	    ARRAY_LENGTH(p_gts_values) - 1,
+	    numMatches,
+	    matches);
 }
 #endif
 
