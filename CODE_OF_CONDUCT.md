@@ -105,7 +105,8 @@ Report problems privately to the current conduct team.
 Reports are kept confidential. Members of the conduct team who are
 involved in a reported issue will not take part in handling it.
 
-Conduct team: Christian Brabandt, Doug Kearns, Yegappan Lakshmanan
+Conduct team: Christian Brabandt, Doug Kearns, Yegappan Lakshmanan,
+              Yasuhiro Matsumoto
 
 ## Enforcement
 
