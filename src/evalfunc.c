@@ -1883,7 +1883,7 @@ ret_remove(int argcount,
 	    return argtypes[0].type_curr->tt_member;
 	}
 	if (argtypes[0].type_curr->tt_type == VAR_BLOB)
-	    return &t_number;
+	    return argcount == 3 ? &t_blob : &t_number;
     }
     return &t_any;
 }

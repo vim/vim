@@ -9628,7 +9628,7 @@ remove({blob}, {idx}, {end})
 			:echo "last byte: " .. remove(myblob, -1)
 			:call remove(mylist, 0, 9)
 <
-		Return type: |Number|
+		Return type: |Number| or |Blob|
 
 
 remove({dict}, {key})

@@ -3752,6 +3752,12 @@ def Test_remove_return_type()
 
   var ll: list<number> = remove(range(3), 0, 1)
   ll->assert_equal([0, 1])
+
+  var n: number = remove(0z0102, 0)
+  n->assert_equal(1)
+
+  var bl: blob = remove(0z0102.03, 0, 1)
+  bl->assert_equal(0z0102)
 enddef
 
 def Test_rename()
