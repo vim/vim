@@ -52,7 +52,8 @@ approvers are happy with that particular change.
 
 Use of AI is allowed within the limits mentioned below, but you remain fully
 responsible for everything you submit. Disclosure of AI use is required, using
-an `Assisted-by:` trailer. See [AGENTS.md](AGENTS.md) for the AI guidance.
+an `Assisted-by:` trailer. [AGENTS.md](AGENTS.md) contains information and
+instructions for AI coding agents.
 
 ### What is acceptable
 
@@ -69,6 +70,9 @@ an `Assisted-by:` trailer. See [AGENTS.md](AGENTS.md) for the AI guidance.
   your own understanding of the change.
 - Posting AI-generated reviews on other people's pull requests. Automated
   CI checks are fine.
+- Generated commit messages or PR descriptions. Write them yourself
+  that ensures you have a good understanding of the change. Fixing
+  spelling, grammar and translations is fine.
 
 ### Your responsibility
 

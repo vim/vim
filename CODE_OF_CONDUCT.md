@@ -86,7 +86,7 @@ Discussions, reviews, and mailing list posts should be written by you, in
 your own words.
 
 - Fine: spell checking, grammar correction, and machine translation of text
-  you wrote yourself.
+  you wrote yourself (optionally mention that you used machine translation).
 - Not fine: posting AI-generated replies, reviews, summaries, or comments,
   whether marked as such or not. Anyone can generate such text at any
   time. It adds no value to a discussion and wastes readers' time.
@@ -128,21 +128,7 @@ behalf of the project.
 
 ## Attribution
 
-This Code of Conduct is licensed under CC BY-SA 4.0.
-
-This Code of Conduct is adapted from the Contributor Covenant, version 3.0,
-permanently available at
-[https://www.contributor-covenant.org/version/3/0/](https://www.contributor-covenant.org/version/3/0/).
-
-Contributor Covenant is stewarded by the Organization for Ethical Source and
-licensed under CC BY-SA 4.0. To view a copy of this license, visit
-[https://creativecommons.org/licenses/by-sa/4.0/](https://creativecommons.org/licenses/by-sa/4.0/).
-
-For answers to common questions about Contributor Covenant, see the FAQ at
-[https://www.contributor-covenant.org/faq](https://www.contributor-covenant.org/faq).
-Translations are provided at
-[https://www.contributor-covenant.org/translations](https://www.contributor-covenant.org/translations).
-Additional enforcement and community guideline resources can be found at
-[https://www.contributor-covenant.org/resources](https://www.contributor-covenant.org/resources).
-The enforcement ladder was inspired by the work of [Mozilla's code of conduct
-team](https://github.com/mozilla/inclusion).
+Adapted from the [Contributor Covenant](https://www.contributor-covenant.org/version/3/0/),
+version 3.0, by the Organization for Ethical Source, licensed under
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). This
+Code of Conduct is licensed under CC BY-SA 4.0 as well.
