@@ -1716,7 +1716,6 @@ struct itf2class_S {
 #define CLASS_EXTENDED	    0x2	    // another class extends this one
 #define CLASS_ABSTRACT	    0x4	    // abstract class
 #define CLASS_ENUM	    0x8	    // enum
-#define CLASS_DRYRUN	    0x10    // defined by ":source ++dryrun"
 
 // "class_T": used for v_class of typval of VAR_CLASS
 // Also used for an interface (class_flags has CLASS_INTERFACE).
@@ -2107,6 +2106,7 @@ struct ufunc_S
     sctx_T	uf_script_ctx;	// SCTX where function was defined,
 				// used for s: variables; sc_version changed
 				// for :function
+    int		uf_script_ctx_version;  // original sc_version of SCTX
     int		uf_refcount;	// reference count, see func_name_refcount()
 
     funccall_T	*uf_scoped;	// l: local variables for closure
