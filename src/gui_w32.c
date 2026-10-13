@@ -372,7 +372,6 @@ static int		showing_tabline = 0;
 #endif
 
 static WPARAM		s_wParam = 0;
-static LPARAM		s_lParam = 0;
 
 static HWND		s_textArea = NULL;
 
@@ -412,7 +411,9 @@ typedef enum DPI_AWARENESS {
 #define DEFAULT_DPI	96
 static int		s_dpi = DEFAULT_DPI;
 static BOOL		s_in_dpichanged = FALSE;
+#ifdef FEAT_MBYTE_IME
 static DPI_AWARENESS	s_process_dpi_aware = DPI_AWARENESS_INVALID;
+#endif
 static RECT		s_suggested_rect;
 
 static UINT (WINAPI *pGetDpiForSystem)(void) = NULL;
@@ -420,7 +421,9 @@ static UINT (WINAPI *pGetDpiForWindow)(HWND hwnd) = NULL;
 static int (WINAPI *pGetSystemMetricsForDpi)(int, UINT) = NULL;
 //static INT (WINAPI *pGetWindowDpiAwarenessContext)(HWND hwnd) = NULL;
 static DPI_AWARENESS_CONTEXT (WINAPI *pSetThreadDpiAwarenessContext)(DPI_AWARENESS_CONTEXT dpiContext) = NULL;
+#ifdef FEAT_MBYTE_IME
 static DPI_AWARENESS (WINAPI *pGetAwarenessFromDpiAwarenessContext)(DPI_AWARENESS_CONTEXT) = NULL;
+#endif
 
 static HINSTANCE hLibDwm = NULL;
 static HRESULT (WINAPI *pDwmSetWindowAttribute)(HWND, DWORD, LPCVOID, DWORD);
@@ -1526,7 +1529,6 @@ _TextAreaWndProc(
 
     s_uMsg = uMsg;
     s_wParam = wParam;
-    s_lParam = lParam;
 
 #ifdef FEAT_BEVAL_GUI
     track_user_activity(uMsg);
@@ -5393,7 +5395,6 @@ _WndProc(
 
     s_uMsg = uMsg;
     s_wParam = wParam;
-    s_lParam = lParam;
 
     switch (uMsg)
     {
@@ -5839,7 +5840,9 @@ load_dpi_func(void)
     pGetSystemMetricsForDpi = (int (WINAPI *)(int, UINT))GetProcAddress(hUser32, "GetSystemMetricsForDpi");
     //pGetWindowDpiAwarenessContext = (void*)GetProcAddress(hUser32, "GetWindowDpiAwarenessContext");
     pSetThreadDpiAwarenessContext = (DPI_AWARENESS_CONTEXT (WINAPI *)(DPI_AWARENESS_CONTEXT))GetProcAddress(hUser32, "SetThreadDpiAwarenessContext");
+#ifdef FEAT_MBYTE_IME
     pGetAwarenessFromDpiAwarenessContext = (DPI_AWARENESS (WINAPI *)(DPI_AWARENESS_CONTEXT))GetProcAddress(hUser32, "GetAwarenessFromDpiAwarenessContext");
+#endif
 
     if (pSetThreadDpiAwarenessContext != NULL)
     {
@@ -5848,12 +5851,14 @@ load_dpi_func(void)
 	if (oldctx != NULL)
 	{
 	    TRACE("DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 enabled");
+#ifdef FEAT_MBYTE_IME
 	    s_process_dpi_aware = pGetAwarenessFromDpiAwarenessContext(oldctx);
-#ifdef DEBUG
+# ifdef DEBUG
 	    if (s_process_dpi_aware == DPI_AWARENESS_UNAWARE)
 	    {
 		TRACE("WARNING: PerMonitorV2 is not enabled in the process level for some reasons. IME window may not shown correctly.");
 	    }
+# endif
 #endif
 	    return;
 	}
@@ -5865,7 +5870,9 @@ fail:
     pGetDpiForWindow = NULL;
     pGetSystemMetricsForDpi = stubGetSystemMetricsForDpi;
     pSetThreadDpiAwarenessContext = NULL;
+#ifdef FEAT_MBYTE_IME
     pGetAwarenessFromDpiAwarenessContext = NULL;
+#endif
 }
 
 /*
