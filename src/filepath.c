@@ -4079,7 +4079,7 @@ has_special_wildchar(char_u *p)
 	    if (*p == '{' && vim_strchr(p, '}') == NULL)
 		continue;
 	    // A quote and backtick must be followed by another one.
-	    if ((*p == '`' || *p == '\'') && vim_strchr(p, *p) == NULL)
+	    if ((*p == '`' || *p == '\'') && vim_strchr(p + 1, *p) == NULL)
 		continue;
 	    return TRUE;
 	}
