@@ -2831,12 +2831,11 @@ getnextac(
 }
 
 /*
- * Return TRUE if there is a matching autocommand for "fname".
- * To account for buffer-local autocommands, function needs to know
- * in which buffer the file will be opened.
+ * Implementation of has_autocmd() and has_autocmd_fullname().
+ * When "is_full" is TRUE "sfname" is already a full path name.
  */
-    int
-has_autocmd(event_T event, char_u *sfname, buf_T *buf)
+    static int
+has_autocmd_impl(event_T event, char_u *sfname, buf_T *buf, int is_full)
 {
     AutoPat	*ap;
     char_u	*fname;
@@ -2846,7 +2845,7 @@ has_autocmd(event_T event, char_u *sfname, buf_T *buf)
     if (first_autopat[(int)event] == NULL)
 	return FALSE;
 
-    fname = FullName_save(sfname, FALSE);
+    fname = is_full ? vim_strsave(sfname) : FullName_save(sfname, FALSE);
     if (fname == NULL)
 	return FALSE;
 
@@ -2879,6 +2878,28 @@ has_autocmd(event_T event, char_u *sfname, buf_T *buf)
 #endif
 
     return retval;
+}
+
+/*
+ * Return TRUE if there is a matching autocommand for "fname".
+ * To account for buffer-local autocommands, function needs to know
+ * in which buffer the file will be opened.
+ */
+    int
+has_autocmd(event_T event, char_u *sfname, buf_T *buf)
+{
+    return has_autocmd_impl(event, sfname, buf, FALSE);
+}
+
+/*
+ * Like has_autocmd(), but "fname" is already a full path name, e.g. as
+ * returned by fix_fname().  Avoids expanding it again, which is slow on
+ * MS-Windows.
+ */
+    int
+has_autocmd_fullname(event_T event, char_u *fname, buf_T *buf)
+{
+    return has_autocmd_impl(event, fname, buf, TRUE);
 }
 
 /*
