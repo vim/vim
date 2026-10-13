@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 9.2.  Last change: 2026 Aug 25
+*helphelp.txt*	For Vim version 9.2.  Last change: 2026 Oct 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -482,7 +482,7 @@ annotation (e.g. "vim") after a greater than (>) character.  E.g. >vim
 By default, help files only support Vim script highlighting.  If you need
 syntax highlighting for other languages, add to your |vimrc|: >
 	:let g:help_example_languages = #{
-	      \	vim: "vim", vim9: "vim", bash: "sh" }
+	      \	vim: "vim", vim9: "vim", vim9mix: "vim9", bash: "sh" }
 The key represents the annotation marker name, and the value is the 'syntax'
 name.
 

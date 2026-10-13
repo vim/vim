@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.2.  Last change: 2026 Sep 28
+*vim9.txt*	For Vim version 9.2.  Last change: 2026 Oct 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -320,18 +320,20 @@ A |fold-marker| (i.e., `#{{{`) used to start a fold, is still okay.
 When reading a script, Vim doesn't know whether it is |Vim9| script before
 finding the `vim9script` command.  Before it, comments must use legacy
 syntax, so a quotation mark:
->vim9
+>vim9mix
 	" legacy Vim script comment before vim9script
 	vim9script
 	# Vim9 script comment
 <
-That looks ugly (especially with the syntax highlighting not treating the
-initial Vim script comment in Comment highlight group as a command).
-It is better having the `vim9script` command as the first line:
+You may think that looks peculiar.  Placing all comments after the `vim9script`
+is tidier.
 >vim9
 	vim9script
-	# Vim9 script comment
+	# All comments here
 <
+	Note that in the |vim9-mix| scenario, legacy Vim script comments cannot
+	be avoided.
+
 In legacy Vim script, # is also used for the alternate file name.  In Vim9
 script you must use %% instead.  Instead of ##, use %%%, which stands for
 all arguments.  See |c_%%| and |c_%%%#|.
@@ -5485,7 +5487,7 @@ In the |vimrc| file sourced on startup this does not happen.
 
 							*vim9-mix*
 There is one way to use both legacy and Vim9 syntax in one script file:
->vim9
+>vim9mix
 	" _legacy Vim script_ comments are placed here
 	if !has('vim9script')
 	  " _legacy Vim script_ comments and commands are placed here
@@ -5506,7 +5508,7 @@ To prevent these, a safer check may be |v:version| >= 900 instead (because
 Sometimes it is prudent to cut off even later.  Vim9 script's feature set
 continues to grow so, for example, if tuples are used (introduced in Vim 9.1
 patch 1232), a better condition is:
->vim9
+>vim9mix
 	if !has('patch-9.1.1232')
 	  echowindow $"Fail: Vim does not have patch 9.1.1232"
 	  finish
