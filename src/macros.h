@@ -503,6 +503,6 @@
 	    (((typval_T *)t->tv_items.ga_data) + i)
 
 // Avoid open() on a non-existing file on MS-Windows
-#ifndef MSWIN
+#if !defined(MSWIN) && !defined(PROTO)
 # define mch_isdir_or_missing(f) mch_isdir(f)
 #endif
