@@ -1832,6 +1832,14 @@ func Test_search_with_last_substitute_pat()
     %s/foo/bar/
     call assert_equal(repeat(['barfoo'], 3), getline(1, '$'))
 
+    " this was crashing
+    call cursor(1, 1)
+    call assert_equal("/foo/e", execute('call feedkeys("//e\r", "tx")', '')->trim())
+    call assert_equal([0, 1, 6, 0], getpos('.'))
+    call cursor(1, 1)
+    call assert_equal("/foo", execute('call feedkeys("//\r", "tx")', '')->trim())
+    call assert_equal([0, 1, 4, 0], getpos('.'))
+
     call cursor(1, 1)
     call assert_equal("/foo", execute('call feedkeys("/\r", "tx")', '')->trim())
     call assert_equal([0, 1, 4, 0], getpos('.'))
