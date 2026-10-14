@@ -2542,4 +2542,36 @@ func Test_tuple_unpack_memory_fail()
   unlet t
 endfunc
 
+" Memory allocation failure while creating a tuple type
+func Test_tuple_type_memory_fail()
+  let lines =<< trim END
+    var t = (1, 'a')
+  END
+  call test_alloc_fail(GetAllocId('tuple_type_args'), 0, 0)
+  call v9.CheckSourceDefFailure(lines, 'E342:')
+
+  let lines =<< trim END
+    var t = (1,) + ('a',)
+  END
+  call test_alloc_fail(GetAllocId('tuple_type_args'), 2, 0)
+  call v9.CheckSourceDefFailure(lines, 'E342:')
+endfunc
+
+" Test for a tuple type with more than 127 items
+func Test_tuple_type_many_items()
+  let types = repeat(['number'], 300)->join(', ')
+  let lines =<< trim eval END
+    var t: tuple<{types}> = ({range(300)->join(', ')})
+    assert_equal(299, t[299])
+    assert_equal('tuple<{types}>', typename(t))
+  END
+  call v9.CheckSourceDefAndScriptSuccess(lines)
+
+  let types = repeat(['number'], 200)->join(', ')
+  let lines =<< trim eval END
+    var t: tuple<{types}> = ({repeat(["'x'"], 200)->join(', ')})
+  END
+  call v9.CheckSourceDefAndScriptFailure(lines, 'E1012:', 1)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

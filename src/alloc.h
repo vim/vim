@@ -47,5 +47,6 @@ typedef enum {
     aid_get_func,
     aid_defer,
     aid_tuple_append,
+    aid_tuple_type_args,
     aid_last
 } alloc_id_T;
