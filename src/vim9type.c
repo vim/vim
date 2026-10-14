@@ -408,7 +408,10 @@ get_dict_type(type_T *member_type, garray_T *type_gap)
     type_T *type;
 
     // recognize commonly used types
-    if (member_type == NULL || member_type->tt_type == VAR_ANY)
+    // A generic type is t_any initially before being set to a concrete type
+    // later.  So don't use the static t_dict_any for a generic type.
+    if (member_type == NULL || (member_type->tt_type == VAR_ANY
+					&& !IS_GENERIC_TYPE(member_type)))
 	return &t_dict_any;
     if (member_type->tt_type == VAR_VOID
 	    || member_type->tt_type == VAR_UNKNOWN)
