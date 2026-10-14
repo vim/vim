@@ -214,7 +214,7 @@ def Test_assignment()
   v9.CheckDefFailure(['var s:var = 123'], 'E1101:')
   v9.CheckDefFailure(['var s:var: number'], 'E1101:')
 
-  v9.CheckDefAndScriptFailure(['var $VAR: number'], ['E1016:', 'E475:'])
+  v9.CheckDefAndScriptFailure(['var $VAR: number'], ['E1000:', 'E475:'])
 
   lines =<< trim END
     vim9script
@@ -1638,8 +1638,8 @@ def Test_assignment_failure()
   v9.CheckDefFailure(['&g:option = 5'], 'E113:')
   v9.CheckScriptFailure(['vim9script', 'var &tabstop = 4'], 'E1052:')
 
-  v9.CheckDefFailure(['var $VAR = 5'], 'E1016: Cannot declare an environment variable:')
-  v9.CheckScriptFailure(['vim9script', 'var $ENV = "xxx"'], 'E1016:')
+  v9.CheckDefFailure(['var $VAR = 5'], 'E1000: Cannot declare an environment variable:')
+  v9.CheckScriptFailure(['vim9script', 'var $ENV = "xxx"'], 'E1000:')
 
   # read-only registers
   v9.CheckDefAndScriptFailure(['var @. = 5'], ['E354:', 'E1066:'], 1)

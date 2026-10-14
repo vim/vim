@@ -4229,6 +4229,7 @@ DirChangedPre	autocmd.txt	/*DirChangedPre*
 E	motion.txt	/*E*
 E10	message.txt	/*E10*
 E100	diff.txt	/*E100*
+E1000	vim9.txt	/*E1000*
 E1001	eval.txt	/*E1001*
 E1002	eval.txt	/*E1002*
 E1003	vim9.txt	/*E1003*

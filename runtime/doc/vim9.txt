@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.2.  Last change: 2026 Sep 28
+*vim9.txt*	For Vim version 9.2.  Last change: 2026 Oct 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1215,9 +1215,14 @@ declared.  They can also be deleted with |:unlet|, for example:
 <
 Declaring any of the following with `:var` gives an error:
 - a global, buffer, tab, or window variable
+- an environment variable
 - an option, or
 - a register.
 Examples:
+							*E1000*  >vim9
+	vim9script
+	var $X = 1  # E1000: Cannot declare an environment variable: $X
+<
 							*E1016*  >vim9
 	vim9script
 	var t:err = 'err'  # E1016: Cannot declare a tab variable: t:err

@@ -2636,8 +2636,9 @@ EXTERN char e_reduce_of_an_empty_str_with_no_initial_value[]
 #endif
 EXTERN char e_scriptversion_not_supported_nr[]
 	INIT(= N_("E999: scriptversion not supported: %d"));
-// E1000 unused
 #ifdef FEAT_EVAL
+EXTERN char e_cannot_declare_an_environment_variable_str[]
+	INIT(= N_("E1000: Cannot declare an environment variable: %s"));
 EXTERN char e_variable_not_found_str[]
 	INIT(= N_("E1001: Variable not found: %s"));
 EXTERN char e_syntax_error_at_str[]
@@ -2674,8 +2675,6 @@ EXTERN char e_name_expected_str[]
 	INIT(= N_("E1015: Name expected: %s"));
 EXTERN char e_cannot_declare_a_scope_variable_str[]
 	INIT(= N_("E1016: Cannot declare a %s variable: %s"));
-EXTERN char e_cannot_declare_an_environment_variable_str[]
-	INIT(= N_("E1016: Cannot declare an environment variable: %s"));
 EXTERN char e_variable_already_declared_str[]
 	INIT(= N_("E1017: Variable already declared: %s"));
 EXTERN char e_cannot_assign_to_constant_str[]
