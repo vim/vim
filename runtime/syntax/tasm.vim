@@ -72,8 +72,10 @@ syn keyword tasmMMXinst     PUNPCKHBQ PUNPCKHWD PUNPCKLBW PUNPCKLDQ PUNPCKLWD
 syn keyword tasmMMXinst     PXOR
 "FCMOV
 syn match tasmInstruction "\<\(CMPS\|MOVS\|OUTS\|SCAS\|STOS\|LODS\|INS\)[BWD]"
-syn match tasmInstruction "\<\(CMOV\|SET\|J\)N\=[ABCGLESXZ]\>"
+syn match tasmInstruction "\<\(CMOV\|SET\|J\)N\=[ABCGLEOPSZ]\>"
 syn match tasmInstruction "\<\(CMOV\|SET\|J\)N\=[ABGL]E\>"
+syn match tasmInstruction "\<\(CMOV\|SET\|J\)P[EO]\>"
+syn match tasmInstruction "\<JE\=CXZ\>"
 syn match tasmInstruction "\<\(LOOP\|REP\)N\=[EZ]\=\>"
 syn match tasmRegister "\<[A-D][LH]\>"
 syn match tasmRegister "\<E\=\([A-D]X\|[SD]I\|[BS]P\)\>"
