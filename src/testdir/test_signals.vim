@@ -44,6 +44,49 @@ func Test_signal_WINCH()
   endif
 endfunc
 
+" Test that the terminal being resized while Vim is starting up does not leave
+" the scroll region at the old size, which caused lines below the old size not
+" to be drawn.
+func Test_signal_WINCH_during_startup()
+  CheckRunVimInTerminal
+  if !HasSignal('WINCH')
+    throw 'Skipped: WINCH signal not supported'
+  endif
+
+  " If test fails once, it can leave temporary files and when rerunning the
+  " test Vim would then not wait for the resize if they are not deleted first.
+  call delete('XwinchStarted')
+  call delete('XwinchResized')
+
+  " The --cmd argument is executed after Vim got the terminal size.  Signal
+  " when that happened and wait until the terminal was resized, so that this
+  " happens before Vim sets the scroll region.
+  let lines =<< trim END
+    call writefile([], 'XwinchStarted')
+    while !filereadable('XwinchResized')
+      sleep 10m
+    endwhile
+  END
+  call writefile(lines, 'XsetupWinch', 'D')
+  call writefile(range(1, 30), 'XwinchStartup', 'D')
+
+  let cmd = '--cmd "source XsetupWinch" XwinchStartup'
+  let buf = RunVimInTerminal(cmd, {'rows': 6, 'wait_for_ruler': 0})
+  call WaitForAssert({-> assert_true(filereadable('XwinchStarted'))})
+  " This resizes the pty right away, Vim gets SIGWINCH before continuing.
+  call term_setsize(buf, 15, 75)
+  call writefile([], 'XwinchResized')
+
+  call WaitForAssert({-> assert_equal('14', term_getline(buf, 14))})
+  for lnum in range(1, 14)
+    call assert_equal(string(lnum), term_getline(buf, lnum))
+  endfor
+
+  call StopVimInTerminal(buf)
+  call delete('XwinchStarted')
+  call delete('XwinchResized')
+endfunc
+
 " Test signal PWR, which should update the swap file.
 func Test_signal_PWR()
   if !HasSignal('PWR')
