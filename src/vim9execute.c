@@ -3306,6 +3306,13 @@ load_namespace_var(ectx_T *ectx, isntype_T isn_type, isn_T *iptr)
 	else
 	    semsg(_(e_undefined_variable_char_str),
 					      namespace, iptr->isn_arg.string);
+	// Push a value anyway, the stack must have the expected size when the
+	// error is ignored because of ":silent!" in a calling function.
+	typval_T *tv = STACK_TV_BOT(0);
+	tv->v_type = VAR_NUMBER;
+	tv->v_lock = 0;
+	tv->vval.v_number = 0;
+	++ectx->ec_stack.ga_len;
 	return FAIL;
     }
     else
@@ -4268,7 +4275,14 @@ exec_instructions(ectx_T *ectx)
 		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (eval_variable(name, (int)STRLEN(name), 0,
 			      STACK_TV_BOT(0), NULL, EVAL_VAR_VERBOSE) == FAIL)
+		    {
+			tv = STACK_TV_BOT(0);
+			tv->v_type = VAR_NUMBER;
+			tv->v_lock = 0;
+			tv->vval.v_number = 0;
+			++ectx->ec_stack.ga_len;
 			goto on_error;
+		    }
 		    ++ectx->ec_stack.ga_len;
 		}
 		break;
