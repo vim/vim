@@ -5742,6 +5742,12 @@ call_func_rettv(
     funcexe.fe_lastline = curwin->w_cursor.lnum;
     funcexe.fe_evaluate = evaluate;
     funcexe.fe_partial = pt;
+    if (pt != NULL)
+    {
+	funcexe.fe_object = pt->pt_obj;
+	if (funcexe.fe_object != NULL)
+	    ++funcexe.fe_object->obj_refcount;
+    }
     funcexe.fe_selfdict = selfdict;
     funcexe.fe_basetv = basetv;
     if (evalarg != NULL)
