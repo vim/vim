@@ -250,6 +250,7 @@ static void tabline_enter_cb(GtkEventController *controller, double x, double y,
 static void on_select_tab(GtkNotebook *notebook, gpointer *page, gint idx, gpointer data);
 static void on_tab_reordered(GtkNotebook *notebook, gpointer *page, gint idx, gpointer data);
 static VimMenu *create_tabline_popup_menu(void);
+static void tabline_add_css(void);
 static void tabline_menu_press_event(GtkGestureClick *gesture, int n_press, double x, double y, GtkWidget *popover);
 #endif
 static void mainwin_destroy_cb(GObject *object, gpointer data);
@@ -559,6 +560,8 @@ gui_mch_init(void)
     gtk_notebook_set_show_border(GTK_NOTEBOOK(gui.tabline), FALSE);
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), TRUE);
     gtk_notebook_set_scrollable(GTK_NOTEBOOK(gui.tabline), TRUE);
+    gtk_widget_add_css_class(gui.tabline, "vim-tabline");
+    tabline_add_css();
     gtk_widget_set_visible(gui.tabline, FALSE);
     gtk_box_append(GTK_BOX(vbox), gui.tabline);
 
@@ -2879,6 +2882,83 @@ tabline_enter_cb(
     tabpage_hover = 0;
 }
 
+/*
+ * CSS for the tab pages line: flat rounded tabs, the current tab with a light
+ * background.  Only applies to the notebook with the "vim-tabline" CSS class.
+ */
+    static void
+tabline_add_css(void)
+{
+    GtkCssProvider  *provider;
+    static const char *css =
+	"notebook.vim-tabline > header {"
+	"  background: none; border: none; padding: 6px 1px; }"
+	"notebook.vim-tabline > header > tabs { margin: 0; }"
+	"notebook.vim-tabline > header > tabs > tab {"
+	"  min-height: 26px; padding: 4px; margin: 0 2px;"
+	"  border: none; border-radius: 9px; outline: none;"
+	"  box-shadow: none; background: none;"
+	"  transition: background 150ms ease-in-out; }"
+	"notebook.vim-tabline > header > tabs > tab:hover {"
+	"  background-color: alpha(currentColor, 0.07); }"
+	"notebook.vim-tabline > header > tabs > tab:checked {"
+	"  background-color: alpha(currentColor, 0.10); }"
+	"notebook.vim-tabline > header > tabs > tab:checked:hover {"
+	"  background-color: alpha(currentColor, 0.13); }"
+	"notebook.vim-tabline > header > tabs > tab:active {"
+	"  background-color: alpha(currentColor, 0.16); }"
+	// Separator between tabs, not before the first tab and not next to the
+	// current or hovered tab.
+	"notebook.vim-tabline > header > tabs > tab {"
+	"  background-image: linear-gradient(alpha(currentColor, 0.15),"
+	"    alpha(currentColor, 0.15));"
+	"  background-size: 1px 50%; background-position: left center;"
+	"  background-repeat: no-repeat; }"
+	"notebook.vim-tabline > header > tabs > arrow + tab,"
+	"notebook.vim-tabline > header > tabs > tab:first-child,"
+	"notebook.vim-tabline > header > tabs > tab:checked,"
+	"notebook.vim-tabline > header > tabs > tab:hover,"
+	"notebook.vim-tabline > header > tabs > tab:checked + tab,"
+	"notebook.vim-tabline > header > tabs > tab:hover + tab {"
+	"  background-image: none; }"
+	"notebook.vim-tabline.single-tab > header > tabs > tab {"
+	"  background: none; }"
+	"notebook.vim-tabline > header > tabs > tab button {"
+	"  padding: 0; margin: 0; min-width: 24px; min-height: 24px;"
+	"  border-radius: 99px; transition: opacity 150ms ease-in-out; }"
+	"notebook.vim-tabline > header > tabs > tab:not(:checked):not(:hover)"
+	"  button { opacity: 0; }"
+	// The last tab page cannot be closed.
+	"notebook.vim-tabline.single-tab > header > tabs > tab button {"
+	"  opacity: 0; }"
+	"notebook.vim-tabline > header > tabs > tab .vim-tab-spacer {"
+	"  min-width: 24px; }";
+
+    provider = gtk_css_provider_new();
+# if GTK_CHECK_VERSION(4, 12, 0)
+    gtk_css_provider_load_from_string(provider, css);
+# else
+    gtk_css_provider_load_from_data(provider, css, -1);
+# endif
+    gtk_style_context_add_provider_for_display(
+	    gtk_widget_get_display(gui.tabline), GTK_STYLE_PROVIDER(provider),
+	    GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    g_object_unref(provider);
+}
+
+/*
+ * Handle clicking the close button of a tab.
+ */
+    static void
+tab_close_clicked_cb(GtkButton *button UNUSED, gpointer data)
+{
+    int idx = gtk_notebook_page_num(GTK_NOTEBOOK(gui.tabline),
+							   GTK_WIDGET(data));
+
+    if (idx >= 0)
+	send_tabline_menu_event(idx + 1, TABLINE_MENU_CLOSE);
+}
+
     void
 gui_mch_update_tabline(void)
 {
@@ -2910,17 +2990,41 @@ gui_mch_update_tabline(void)
 	page = gtk_notebook_get_nth_page(GTK_NOTEBOOK(gui.tabline), nr);
 	if (page == NULL)
 	{
+	    GtkWidget	*spacer;
+	    GtkWidget	*close_button;
+
 	    page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	    gtk_widget_set_visible(page, TRUE);
 	    event_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	    gtk_widget_set_visible(event_box, TRUE);
+
+	    spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	    gtk_widget_add_css_class(spacer, "vim-tab-spacer");
+	    gtk_box_append(GTK_BOX(event_box), spacer);
+
 	    label = gtk_label_new("-Empty-");
+	    gtk_widget_set_hexpand(label, TRUE);
+	    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
 	    gtk_box_append(GTK_BOX(event_box), label);
 	    gtk_widget_set_visible(label, TRUE);
+	    g_object_set_data(G_OBJECT(event_box), "label", label);
+
+	    close_button = gtk_button_new_from_icon_name("window-close-symbolic");
+	    gtk_widget_add_css_class(close_button, "flat");
+	    gtk_widget_add_css_class(close_button, "circular");
+	    gtk_widget_set_valign(close_button, GTK_ALIGN_CENTER);
+	    gtk_widget_set_focus_on_click(close_button, FALSE);
+	    gtk_widget_set_tooltip_text(close_button, _("Close Tab"));
+	    g_signal_connect(close_button, "clicked",
+		    G_CALLBACK(tab_close_clicked_cb), page);
+	    gtk_box_append(GTK_BOX(event_box), close_button);
+
 	    gtk_notebook_insert_page(GTK_NOTEBOOK(gui.tabline),
 		    page, event_box, nr);
 	    gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(gui.tabline),
 		    page, TRUE);
+	    g_object_set(gtk_notebook_get_page(GTK_NOTEBOOK(gui.tabline), page),
+		    "tab-expand", TRUE, NULL);
 	}
 
 	// Attach motion event controller to detect which tab page is currently
@@ -2935,7 +3039,7 @@ gui_mch_update_tabline(void)
 	gtk_widget_add_controller(tab_widget, mcontroller);
 
 	event_box = gtk_notebook_get_tab_label(GTK_NOTEBOOK(gui.tabline), page);
-	label = gtk_widget_get_first_child(event_box);
+	label = g_object_get_data(G_OBJECT(event_box), "label");
 	get_tabline_label(tp, FALSE);
 	labeltext = CONVERT_TO_UTF8(NameBuff);
 	if (label != NULL && GTK_IS_LABEL(label))
@@ -2950,6 +3054,12 @@ gui_mch_update_tabline(void)
 
     while (gtk_notebook_get_nth_page(GTK_NOTEBOOK(gui.tabline), nr) != NULL)
 	gtk_notebook_remove_page(GTK_NOTEBOOK(gui.tabline), nr);
+
+    // With a single tab the tab is not highlighted and has no close button.
+    if (nr == 1)
+	gtk_widget_add_css_class(gui.tabline, "single-tab");
+    else
+	gtk_widget_remove_css_class(gui.tabline, "single-tab");
 
     if (gtk_notebook_get_current_page(GTK_NOTEBOOK(gui.tabline)) != curtabidx)
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(gui.tabline), curtabidx);
