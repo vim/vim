@@ -2835,7 +2835,7 @@ getnextac(
  * When "is_full" is TRUE "sfname" is already a full path name.
  */
     static int
-has_autocmd_impl(event_T event, char_u *sfname, buf_T *buf, int is_full)
+has_autocmd_ext(event_T event, char_u *sfname, buf_T *buf, bool is_full)
 {
     AutoPat	*ap;
     char_u	*fname;
