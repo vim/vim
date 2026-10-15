@@ -8671,7 +8671,9 @@ static int	*used_file_indexes = NULL; // indexes in global_argv[] for
 static int	used_file_count = 0;	// nr of entries in used_file_indexes
 static int	used_file_literal = FALSE;  // take file names literally
 static int	used_file_full_path = FALSE;  // file name was full path
+#ifdef FEAT_DIFF
 static int	used_file_diff_mode = FALSE;  // file name was with diff mode
+#endif
 static int	used_alist_count = 0;
 
 
@@ -8761,7 +8763,9 @@ used_file_arg(char *name, int literal, int full_path, int diff_mode)
 	}
     used_file_literal = literal;
     used_file_full_path = full_path;
+#ifdef FEAT_DIFF
     used_file_diff_mode = diff_mode;
+#endif
 }
 
 /*

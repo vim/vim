@@ -8,7 +8,7 @@ source util/screendump.vim
 import './util/vim9.vim' as v9
 
 func Test_proptype_global()
-  call prop_type_add('comment', {'highlight': 'Directory', 'priority': 123, 'start_incl': 1, 'end_incl': 1})
+  call prop_type_add('comment', {'highlight': 'Directory', 'priority': 123, 'start_incl': 1, 'end_incl': 1, 'override': 1})
   let proptypes = prop_type_list()
   call assert_equal(1, len(proptypes))
   call assert_equal('comment', proptypes[0])
@@ -18,6 +18,7 @@ func Test_proptype_global()
   call assert_equal(123, proptype['priority'])
   call assert_equal(1, proptype['start_incl'])
   call assert_equal(1, proptype['end_incl'])
+  call assert_equal(1, proptype['override'])
 
   call prop_type_delete('comment')
   call assert_equal(0, len(prop_type_list()))
@@ -29,6 +30,7 @@ func Test_proptype_global()
   call assert_equal(0, proptype['priority'])
   call assert_equal(0, proptype['start_incl'])
   call assert_equal(0, proptype['end_incl'])
+  call assert_equal(0, proptype['override'])
 
   call prop_type_add('two', {})
   call assert_equal(2, len(prop_type_list()))
@@ -40,7 +42,7 @@ endfunc
 
 func Test_proptype_buf()
   let bufnr = bufnr('')
-  call prop_type_add('comment', #{bufnr: bufnr, highlight: 'Directory', priority: 123, start_incl: 1, end_incl: 1})
+  call prop_type_add('comment', #{bufnr: bufnr, highlight: 'Directory', priority: 123, start_incl: 1, end_incl: 1, override: 1})
   let proptypes = prop_type_list({'bufnr': bufnr})
   call assert_equal(1, len(proptypes))
   call assert_equal('comment', proptypes[0])
@@ -50,6 +52,7 @@ func Test_proptype_buf()
   call assert_equal(123, proptype['priority'])
   call assert_equal(1, proptype['start_incl'])
   call assert_equal(1, proptype['end_incl'])
+  call assert_equal(1, proptype['override'])
 
   call prop_type_delete('comment', {'bufnr': bufnr})
   call assert_equal(0, len({'bufnr': bufnr}->prop_type_list()))
@@ -60,6 +63,7 @@ func Test_proptype_buf()
   call assert_equal(0, proptype['priority'])
   call assert_equal(0, proptype['start_incl'])
   call assert_equal(0, proptype['end_incl'])
+  call assert_equal(0, proptype['override'])
 
   call prop_type_add('two', {'bufnr': bufnr})
   call assert_equal(2, len(prop_type_list({'bufnr': bufnr})))
@@ -2200,11 +2204,11 @@ def Test_prop_bufnr_zero()
     ], list)
 
     assert_equal(
-      {highlight: 'ErrorMsg', end_incl: 0, start_incl: 0, priority: 0, combine: 1},
+      {highlight: 'ErrorMsg', end_incl: 0, start_incl: 0, priority: 0, combine: 1, override: 0},
       prop_type_get('bufnr-global', {bufnr: list[0].type_bufnr}))
 
     assert_equal(
-      {highlight: 'StatusLine', end_incl: 0, start_incl: 0, priority: 0, bufnr: bufnr, combine: 1},
+      {highlight: 'StatusLine', end_incl: 0, start_incl: 0, priority: 0, bufnr: bufnr, combine: 1, override: 0},
       prop_type_get('bufnr-buffer', {bufnr: list[1].type_bufnr}))
   finally
     bwipe!

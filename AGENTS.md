@@ -218,6 +218,14 @@ Further rules, not spelled out here, live in `runtime/doc/develop.txt`:
   `VerifyScreenDump`, and live dumps in `src/testdir/dumps/`.
 - `v9.CheckScriptSuccess(lines)` / `v9.CheckScriptFailure(lines, error, lnum)`
   are the standard way to test Vim9 script behavior at script-load time.
+- **Garbage Collection tests** Always write GC tests as a legacy func
+  Test_...(), using let lines =<< trim END and call
+  v9.CheckSourceSuccess(lines) with test_garbagecollect_now() invoked at script
+  level inside lines (see Test_enum_garbagecollect() in
+  src/testdir/test_vim9_enum.vim). Never call test_garbagecollect_now() while a
+  Vim9 :def function is on the call stack—including passing lines from a def
+  test—because :def stack values are not marked during GC, resulting in memory
+  errors or crashes.
 - When fixing a bug reported as an issue, include a test that
   reproduces the original report, not just a minimal synthetic case.
 - Tests for Syntax runtime are in `runtime/syntax/testdir`

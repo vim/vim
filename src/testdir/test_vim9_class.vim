@@ -7386,6 +7386,39 @@ def Test_object_funcref()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Calling an object method funcref directly, (a.M)(), must pass the object
+def Test_object_funcref_call_directly()
+  # Without the object the nested this.K() call crashed Vim
+  var lines =<< trim END
+    vim9script
+    class A
+      def K(): number
+        return 1
+      enddef
+      def M(): number
+        return this.K() + 10
+      enddef
+    endclass
+    var a = A.new()
+    assert_equal(11, (a.M)())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # "this" must be the object, not a number
+  lines =<< trim END
+    vim9script
+    class A
+      var val: number
+      def M(): string
+        return typename(this) .. this.val
+      enddef
+    endclass
+    var a = A.new(5)
+    assert_equal('object<A>5', (a.M)())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for using a class method as a funcref
 def Test_class_funcref()
   # Using class method funcref in a def function

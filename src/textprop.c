@@ -2781,6 +2781,8 @@ f_prop_type_get(typval_T *argvars, typval_T *rettv)
     dict_add_number(d, "priority", prop->pt_priority);
     dict_add_number(d, "combine",
 	    (prop->pt_flags & PT_FLAG_COMBINE) ? 1 : 0);
+    dict_add_number(d, "override",
+	    (prop->pt_flags & PT_FLAG_OVERRIDE) ? 1 : 0);
     dict_add_number(d, "start_incl",
 	    (prop->pt_flags & PT_FLAG_INS_START_INCL) ? 1 : 0);
     dict_add_number(d, "end_incl",
