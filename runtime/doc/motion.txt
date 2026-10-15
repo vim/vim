@@ -1,4 +1,4 @@
-*motion.txt*	For Vim version 9.2.  Last change: 2026 Jun 13
+*motion.txt*	For Vim version 9.2.  Last change: 2026 Oct 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -162,7 +162,10 @@ V		When used after an operator, before the motion command: Force
 CTRL-V		When used after an operator, before the motion command: Force
 		the operator to work blockwise.  This works like Visual block
 		mode selection, with the corners defined by the cursor
-		position before and after the motion.
+		position before and after the motion.  As in Visual block
+		mode, 'selection' decides if the end column is included, not
+		the motion: "y<C-V>l" yanks two columns, but only one when
+		'selection' is "exclusive".
 
 ==============================================================================
 2. Left-right motions					*left-right-motions*

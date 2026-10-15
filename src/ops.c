@@ -3747,8 +3747,9 @@ op_function(oparg_T *oap UNUSED)
 	// Set '[ and '] marks to text to be operated on.
 	curbuf->b_op_start = oap->start;
 	curbuf->b_op_end = oap->end;
-	if (oap->motion_type != MLINE && !oap->inclusive)
-	    // Exclude the end position.
+	// Exclude the end position.  For a block "oap->end" is already the
+	// last column.
+	if (oap->motion_type != MLINE && !oap->block_mode && !oap->inclusive)
 	    decl(&curbuf->b_op_end);
 
 	argv[0].v_type = VAR_STRING;
