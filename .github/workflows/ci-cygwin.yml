@@ -11,7 +11,7 @@ permissions:
 jobs:
   # Skip the run when nothing was committed since the previous one.
   check:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     outputs:
       changed: ${{ steps.check.outputs.changed }}
