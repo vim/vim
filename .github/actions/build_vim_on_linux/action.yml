@@ -226,7 +226,7 @@ runs:
         if ${{ contains(fromJSON(inputs.extra), 'no_x11_wl') }}; then
           CONFOPT="${CONFOPT} --without-x --disable-gui --without-wayland --enable-socketserver"
         fi
-        if ${{ inputs.coverage == true }}; then
+        if ${{ inputs.coverage == 'true' }}; then
           CFLAGS="${CFLAGS} --coverage -DUSE_GCOV_FLUSH"
           echo "LDFLAGS=--coverage"
         fi
