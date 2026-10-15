@@ -2888,7 +2888,7 @@ has_autocmd_ext(event_T event, char_u *sfname, buf_T *buf, bool is_full)
     int
 has_autocmd(event_T event, char_u *sfname, buf_T *buf)
 {
-    return has_autocmd_impl(event, sfname, buf, FALSE);
+    return has_autocmd_ext(event, sfname, buf, false);
 }
 
 /*
