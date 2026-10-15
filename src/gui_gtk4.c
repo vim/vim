@@ -560,6 +560,7 @@ gui_mch_init(void)
     gtk_notebook_set_show_border(GTK_NOTEBOOK(gui.tabline), FALSE);
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), TRUE);
     gtk_notebook_set_scrollable(GTK_NOTEBOOK(gui.tabline), TRUE);
+    gtk_widget_add_css_class(gui.tabline, "vim-tabline");
     tabline_add_css();
     gtk_widget_set_visible(gui.tabline, FALSE);
     gtk_box_append(GTK_BOX(vbox), gui.tabline);
@@ -2882,9 +2883,8 @@ tabline_enter_cb(
 }
 
 /*
- * CSS for the "rounded" 'guitabstyle': flat rounded tabs, the current tab
- * with a light background.  Only applies when the tab line has the
- * "vim-tabline" CSS class.
+ * CSS for the tab pages line: flat rounded tabs, the current tab with a light
+ * background.  Only applies to the notebook with the "vim-tabline" CSS class.
  */
     static void
 tabline_add_css(void)
@@ -2959,28 +2959,6 @@ tab_close_clicked_cb(GtkButton *button UNUSED, gpointer data)
 	send_tabline_menu_event(idx + 1, TABLINE_MENU_CLOSE);
 }
 
-/*
- * Set the style of one tab according to 'guitabstyle': "rounded" tabs share
- * the width of the tab line, have the label centered and a close button.
- */
-    static void
-tabline_set_tab_style(
-	GtkNotebookPage *page_widget,
-	GtkWidget	*event_box,
-	bool		rounded)
-{
-    GtkWidget	*label = g_object_get_data(G_OBJECT(event_box), "label");
-
-    g_object_set(page_widget, "tab-expand", rounded, NULL);
-    gtk_widget_set_visible(g_object_get_data(G_OBJECT(event_box), "spacer"),
-								      rounded);
-    gtk_widget_set_visible(g_object_get_data(G_OBJECT(event_box), "close"),
-								      rounded);
-    gtk_widget_set_hexpand(label, rounded);
-    gtk_label_set_ellipsize(GTK_LABEL(label),
-			     rounded ? PANGO_ELLIPSIZE_END : PANGO_ELLIPSIZE_NONE);
-}
-
     void
 gui_mch_update_tabline(void)
 {
@@ -2992,16 +2970,9 @@ gui_mch_update_tabline(void)
     int		tab_num;
     int		curtabidx = 0;
     char_u	*labeltext;
-    bool	rounded;
 
     if (gui.tabline == NULL)
 	return;
-
-    rounded = STRCMP(p_gts, "classic") != 0;
-    if (rounded)
-	gtk_widget_add_css_class(gui.tabline, "vim-tabline");
-    else
-	gtk_widget_remove_css_class(gui.tabline, "vim-tabline");
 
     ignore_tabline_evt = TRUE;
 
@@ -3030,9 +3001,10 @@ gui_mch_update_tabline(void)
 	    spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	    gtk_widget_add_css_class(spacer, "vim-tab-spacer");
 	    gtk_box_append(GTK_BOX(event_box), spacer);
-	    g_object_set_data(G_OBJECT(event_box), "spacer", spacer);
 
 	    label = gtk_label_new("-Empty-");
+	    gtk_widget_set_hexpand(label, TRUE);
+	    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
 	    gtk_box_append(GTK_BOX(event_box), label);
 	    gtk_widget_set_visible(label, TRUE);
 	    g_object_set_data(G_OBJECT(event_box), "label", label);
@@ -3046,12 +3018,13 @@ gui_mch_update_tabline(void)
 	    g_signal_connect(close_button, "clicked",
 		    G_CALLBACK(tab_close_clicked_cb), page);
 	    gtk_box_append(GTK_BOX(event_box), close_button);
-	    g_object_set_data(G_OBJECT(event_box), "close", close_button);
 
 	    gtk_notebook_insert_page(GTK_NOTEBOOK(gui.tabline),
 		    page, event_box, nr);
 	    gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(gui.tabline),
 		    page, TRUE);
+	    g_object_set(gtk_notebook_get_page(GTK_NOTEBOOK(gui.tabline), page),
+		    "tab-expand", TRUE, NULL);
 	}
 
 	// Attach motion event controller to detect which tab page is currently
@@ -3066,7 +3039,6 @@ gui_mch_update_tabline(void)
 	gtk_widget_add_controller(tab_widget, mcontroller);
 
 	event_box = gtk_notebook_get_tab_label(GTK_NOTEBOOK(gui.tabline), page);
-	tabline_set_tab_style(page_widget, event_box, rounded);
 	label = g_object_get_data(G_OBJECT(event_box), "label");
 	get_tabline_label(tp, FALSE);
 	labeltext = CONVERT_TO_UTF8(NameBuff);

@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2026 Oct 13
+" Last Change:	2026 Sep 30
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If there already is an option window, jump to that one.
@@ -589,8 +589,6 @@ call <SID>OptionG("tal", &tal)
 if has("gui")
   call <SID>AddOption("guitablabel", gettext("custom tab page label for the GUI"))
   call <SID>OptionG("gtl", &gtl)
-  call <SID>AddOption("guitabstyle", gettext("style of the tab page labels for the GUI: rounded or classic"))
-  call <SID>OptionG("gts", &gts)
   call <SID>AddOption("guitabtooltip", gettext("custom tab page tooltip for the GUI"))
   call <SID>OptionG("gtt", &gtt)
 endif

@@ -703,7 +703,6 @@ EXTERN char_u	*p_go;		// 'guioptions'
 #if defined(FEAT_GUI_TABLINE)
 EXTERN char_u	*p_gtl;		// 'guitablabel'
 EXTERN char_u	*p_gtt;		// 'guitabtooltip'
-EXTERN char_u	*p_gts;		// 'guitabstyle'
 #endif
 EXTERN char_u	*p_hf;		// 'helpfile'
 EXTERN long	p_hh;		// 'helpheight'

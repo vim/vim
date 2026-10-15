@@ -1325,16 +1325,6 @@ static struct vimoption options[] =
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCTX_INIT},
-    {"guitabstyle",  "gts", P_STRING|P_VI_DEF,
-#if defined(FEAT_GUI_TABLINE)
-			    (char_u *)&p_gts, PV_NONE, did_set_guitabstyle,
-			    expand_set_guitabstyle,
-			    {(char_u *)"classic", (char_u *)0L}
-#else
-			    (char_u *)NULL, PV_NONE, NULL, NULL,
-			    {(char_u *)NULL, (char_u *)0L}
-#endif
-			    SCTX_INIT},
     {"guitabtooltip",  "gtt", P_STRING|P_VI_DEF|P_RWIN|P_MLE,
 #if defined(FEAT_GUI_TABLINE)
 			    (char_u *)&p_gtt, PV_NONE, NULL, NULL,
