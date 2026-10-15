@@ -1253,7 +1253,9 @@ find_generic_type(
 	    return type;
     }
 
-    if (cctx != NULL && ufunc != cctx->ctx_ufunc)
+    // Also when "ufunc" is the compiled function: a lambda can use the type
+    // variables of the function it is defined in.
+    if (cctx != NULL)
 	return find_generic_type_in_cctx(gt_name, name_len, cctx);
 
     return NULL;

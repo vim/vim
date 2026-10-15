@@ -5020,11 +5020,18 @@ eval8(
     {
 	++*arg;
 	ga_init2(&type_list, sizeof(type_T *), 10);
-	want_type = parse_type(arg, &type_list, NULL, NULL, TRUE);
-	if (want_type == NULL && (evaluate || **arg != '>'))
+	if (!evaluate)
+	    // Only skip over the type, it may use a type variable that is only
+	    // known when the expression is compiled, e.g. in a lambda.
+	    *arg = skip_type(*arg, FALSE);
+	else
 	{
-	    clear_type_list(&type_list);
-	    return FAIL;
+	    want_type = parse_type(arg, &type_list, NULL, NULL, TRUE);
+	    if (want_type == NULL)
+	    {
+		clear_type_list(&type_list);
+		return FAIL;
+	    }
 	}
 
 	if (**arg != '>')
