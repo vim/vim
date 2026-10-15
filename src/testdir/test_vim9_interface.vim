@@ -1446,6 +1446,18 @@ def Test_implements_using_var_type_any()
   v9.CheckSourceFailure(lines, 'E1382: Variable "val": type mismatch, expected list<dict<string>> but got dict<number>', 1)
 enddef
 
+" Test for an error in a long "implements" list, after the first interface {{{1
+def Test_implements_many_with_error()
+  var lines =<< trim END
+    vim9script
+    interface I1
+    endinterface
+    class C implements I1, Nope, I3, I4, I5, I6, I7, I8, I9
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1346: Interface name not found: Nope', 5)
+enddef
+
 " Test interface garbage collection {{{1
 func Test_interface_garbagecollect()
   let lines =<< trim END
