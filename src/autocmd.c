@@ -2899,7 +2899,7 @@ has_autocmd(event_T event, char_u *sfname, buf_T *buf)
     int
 has_autocmd_fullname(event_T event, char_u *fname, buf_T *buf)
 {
-    return has_autocmd_impl(event, fname, buf, TRUE);
+    return has_autocmd_ext(event, fname, buf, true);
 }
 
 /*
