@@ -1870,33 +1870,43 @@ syn region	vimTypeObjectArgs	contained
       \ matchgroup=vimTypeObjectBracket
       \ start="<"
       \ end=">"
-      \ contains=vimTypeAny,vimTypeObject,vimUserType
+      \ contains=vimTypeAny,vimTypeObject,vimUserType,vim9UserGenericType
       \ oneline
       \ transparent
-syn match	vimType	contained	"\<\%(func\)\>"
-syn region	vimCompoundType	contained	matchgroup=vimType start="\<func("	          end=")" nextgroup=vimTypeSep contains=@vim9Continue,@vimType transparent
-syn region	vimCompoundType	contained	matchgroup=vimType start="\<tuple<"           end=">"                      contains=@vim9Continue,@vimType transparent
-syn region	vimCompoundType	contained	matchgroup=vimType start="\<\%(list\|dict\)<" end=">"		   contains=@vimType oneline       transparent
+syn match	vimType	contained	"\<func\>"
+syn region	vimGenericType	contained
+      \ matchgroup=vimType
+      \ start="\<func("
+      \ end=")"
+      \ nextgroup=vimTypeSep
+      \ contains=@vim9Continue,@vimType
+      \ transparent
+syn region	vimGenericType	contained
+      \ matchgroup=vimType
+      \ start="\<tuple<"
+      \ end=">"
+      \ contains=@vim9Continue,@vimType
+      \ transparent
+syn region	vimGenericType	contained
+      \ matchgroup=vimType
+      \ start="\<\%(list\|dict\)<"
+      \ end=">"
+      \ contains=@vimType
+      \ oneline
+      \ transparent
 syn match	vimUserType	contained	"\<\%(\h\w*\.\)*\u\w*\>"
 
-syn cluster vimType contains=vimType,vimTypeAny,vimTypeObject,vimCompoundType,vimUserType,vim9TypeConstructor
+syn cluster vimType contains=vimType,vimTypeAny,vimTypeObject,vimGenericType,vimUserType,vim9UserGenericType
 
 " Classes, Enums And Interfaces: {{{2
 " =============================
 
 if s:vim9script
 
-  syn match	vim9TypeConstructor	"\<\u\w*\ze<"	skipwhite nextgroup=vim9TypeConstructorArgs
-  syn region	vim9TypeConstructorArgs	contained
-        \ matchgroup=Delimiter
-        \ start="<\ze\a"
-        \ end=">"
-        \ nextgroup=vim9ConstructorDot
-        \ contains=@vimType
-        \ oneline
+  syn match	vim9UserGenericType		"\<\u\w*\ze<"	skipwhite nextgroup=vim9TypeArgs
   " TODO: dedicated new*() constructor group
   syn match	vim9ConstructorDot	contained	"\."	nextgroup=vim9MethodName
-  syn cluster	vim9ExprList	add=vim9TypeConstructor
+  syn cluster	vim9ExprList	add=vim9UserGenericType
 
   " Methods {{{3
   syn match	vim9MethodDef		contained	"\<def\>"	skipwhite nextgroup=vim9MethodDefName,vim9ConstructorDefName
@@ -2077,10 +2087,12 @@ if s:vim9script
 
   " Interfaces {{{3
   " TODO: limit to decl only - no init values
-  syn cluster	vim9InterfaceBodyList	contains=vim9Comment,vim9LineComment,@vim9Continue,vim9Extends,vim9Interface,vim9AbstractDef,vim9Var
+  syn cluster	vim9InterfaceBodyList	contains=vim9Comment,vim9LineComment,@vim9Continue,vim9InterfaceExtends,vim9Interface,vim9AbstractDef,vim9Var
 
   syn match	vim9Interface		contained	"\<interface\>"	skipwhite nextgroup=vim9InterfaceName
-  syn match	vim9InterfaceName		contained	"\<\u\w*\>"	skipwhite skipnl nextgroup=vim9Extends,vim9InterfaceTypeParams
+  syn match	vim9InterfaceName		contained	"\<\u\w*\>"	skipwhite skipnl nextgroup=vim9InterfaceExtends,vim9InterfaceTypeParams
+  syn keyword	vim9InterfaceExtends	contained	extends	skipwhite skipnl nextgroup=vim9SuperInterface
+  syn match	vim9SuperInterface	contained	"\<\u\w*\>"	skipwhite skipnl nextgroup=vim9SuperInterfaceTypeArgs
 
   syn keyword	vim9AbstractDef		contained	def	skipwhite nextgroup=vim9AbstractDefName
   syn match	vim9AbstractDefName	contained	"\<\h\w*\>"	skipwhite nextgroup=vim9AbstractDefParams,vim9AbstractDefTypeParams contains=@vim9MethodName
@@ -2111,13 +2123,18 @@ if s:vim9script
         \ matchgroup=Delimiter
         \ start="<"
         \ end=">"
-        \ nextgroup=vim9Extends
+        \ nextgroup=vim9InterfaceExtends
         \ contains=vim9InterfaceTypeParam
   syn region	vim9InterfaceTypeArgs	contained
         \ matchgroup=Delimiter
         \ start="<"
         \ end=">"
         \ nextgroup=vim9InterfaceListComma,vim9Extends
+        \ contains=@vimType
+  syn region	vim9SuperInterfaceTypeArgs	contained
+        \ matchgroup=Delimiter
+        \ start="<"
+        \ end=">"
         \ contains=@vimType
   syn match	vim9InterfaceTypeParam	contained	"\<\u\w*\>"
 
@@ -2296,22 +2313,22 @@ syn region	vim9VariableTypeObjectArgs	contained
       \ contains=vimTypeAny,vimTypeObject,vimUserType
       \ oneline
       \ transparent
-syn match	vim9VariableType		contained	"\<\%(func\)\>"			skipwhite nextgroup=vimLetHeredoc
-syn region	vim9VariableCompoundType	contained
+syn match	vim9VariableType		contained	"\<func\>"			skipwhite nextgroup=vimLetHeredoc
+syn region	vim9VariableGenericType	contained
       \ matchgroup=vim9VariableType
       \ start="\<func("
       \ end=")"
       \ skipwhite nextgroup=vim9VariableTypeSep,vimLetHeredoc
       \ contains=@vim9Continue,@vim9VariableType
       \ transparent
-syn region	vim9VariableCompoundType	contained
+syn region	vim9VariableGenericType	contained
       \ matchgroup=vim9VariableType
       \ start="\<tuple<"
       \ end=">"
       \ skipwhite nextgroup=vimLetHeredoc
       \ contains=@vim9Continue,@vim9VariableType
       \ transparent
-syn region	vim9VariableCompoundType	contained
+syn region	vim9VariableGenericType	contained
       \ matchgroup=vim9VariableType
       \ start="\<\%(list\|dict\)<"
       \ end=">"
@@ -2319,9 +2336,9 @@ syn region	vim9VariableCompoundType	contained
       \ contains=@vim9VariableType
       \ oneline
       \ transparent
-syn match	vim9VariableUserType	contained	"\<\%(\h\w*\.\)*\u\w*\>"	skipwhite nextgroup=vimLetHeredoc
+syn match	vim9VariableUserType	contained	"\<\%(\h\w*\.\)*\u\w*\><\@!"		skipwhite nextgroup=vimLetHeredoc
 
-syn cluster vim9VariableType contains=vim9VariableType,vim9VariableTypeAny,vim9VariableTypeObject,vim9VariableCompoundType,vim9VariableUserType
+syn cluster vim9VariableType contains=vim9VariableType,vim9VariableTypeAny,vim9VariableTypeObject,vim9VariableGenericType,vim9VariableUserType,vim9UserGenericType
 
 " Filename Patterns: {{{2
 " =================
@@ -2841,7 +2858,7 @@ syn cluster vim9Lhs contains=vim9Lhs.*
 "     : Continue shouldn't be included here.
 VimL syn match	vimLineStart	"^"	skipwhite nextgroup=vimCmdStart,@vimRange,@vimCmdList,@vimContinue,vimComment,vimLineComment
 									                    " FIXME: continued expressions
-Vim9 syn match	vim9LineStart	"^"	skipwhite nextgroup=vimCmdStart,@vimCmdList,@vim9Continue,vimCmdSep,vim9Comment,vim9LineComment,vim9Block,vim9Lhs.*,@vim9Func  ,vimOperParen,vimOper,vim9Boolean,vim9Null,vimNumber,vimString,vim9TypeConstructor
+Vim9 syn match	vim9LineStart	"^"	skipwhite nextgroup=vimCmdStart,@vimCmdList,@vim9Continue,vimCmdSep,vim9Comment,vim9LineComment,vim9Block,vim9Lhs.*,@vim9Func  ,vimOperParen,vimOper,vim9Boolean,vim9Null,vimNumber,vimString,vim9UserGenericType
 
 syn match vimCmdSep	"\\\@1<!|\%(\%(\s*\n\s*["#]\\ .*\)*\s*\n\s*\\\)\="	skipwhite nextgroup=vimCmdStart,@vimRange,@vimCmdList,@vimFunc,@vim9Func,vim9Block,vim9Lhs.*  contains=@vimCmdSepContinue
 syn match vimCmdSep     contained	"|\%(\%(\s*\n\s*["#]\\ .*\)*\s*\n\s*\\\)\="	skipwhite nextgroup=vimCmdStart,@vimRange,@vimCmdList,@vimFunc,@vim9Func,vim9Block,vim9Lhs.*  contains=@vimCmdSepContinue
@@ -2900,8 +2917,8 @@ syn region	vim9TypeArgs	contained
       \ matchgroup=Delimiter
       \ start="<\ze\a"
       \ end=">"
-      \ nextgroup=vimOperParen
-      \ contains=@vimType
+      \ nextgroup=vimOperParen,vim9ConstructorDot
+      \ contains=@vim9Continue,@vimType
       \ oneline
 
 " Vim9 script Regions: {{{2
@@ -3424,6 +3441,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vim9Implements	Keyword
  hi def link vim9AbstractDef	vimCommand
  hi def link vim9Interface	vimCommand
+ hi def link vim9InterfaceExtends	vim9Extends
  hi def link vim9LambdaOperator	vimOper
  hi def link vim9LambdaOperatorComment	vim9Comment
  hi def link vim9LambdaParen	vimParenSep
