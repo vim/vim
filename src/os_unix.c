@@ -7092,7 +7092,7 @@ mch_expand_wildcards(
     static int	did_find_nul = FALSE;
     int		ampersand = FALSE;
 				// vimglob() function to define for Posix shell
-    static string_T sh_vimglob_func = STR_LITERAL_INIT("vimglob() { while [ $# -ge 1 ]; do echo \"$1\"; shift; done }; vimglob >");
+    static string_T sh_vimglob_func = STR_LITERAL_INIT("vimglob() { while [ $# -ge 1 ]; do printf '%s\n' \"$1\"; shift; done }; vimglob >");
 				// vimglob() function with globstar setting enabled, only for bash >= 4.X
     static string_T sh_globstar_opt = STR_LITERAL_INIT("[[ ${BASH_VERSINFO[0]} -ge 4 ]] && shopt -s globstar; ");
 
