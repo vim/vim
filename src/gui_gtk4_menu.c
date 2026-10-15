@@ -450,6 +450,7 @@ vim_menu_item_set_accel(VimMenuItem *self, const char *accel_text)
     assert(self->aux_widget == NULL);
 
     vim_menu_item_set_aux_widget(self, gtk_label_new(accel_text));
+    gtk_widget_add_css_class(self->aux_widget, "dim-label");
     gtk_widget_insert_after(self->aux_widget, GTK_WIDGET(self), self->label);
 }
 
