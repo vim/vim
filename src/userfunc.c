@@ -6311,6 +6311,14 @@ copy_function(ufunc_T *fp, int extra_namelen)
     ufunc->uf_def_status = UF_TO_BE_COMPILED;
     ufunc->uf_dfunc_idx = 0;
     ufunc->uf_class = NULL;
+#ifdef FEAT_PROFILE
+    // The copy gets its own profiling data, see below.
+    ufunc->uf_profiling = FALSE;
+    ufunc->uf_prof_initialized = FALSE;
+    ufunc->uf_tml_count = NULL;
+    ufunc->uf_tml_total = NULL;
+    ufunc->uf_tml_self = NULL;
+#endif
 
     ga_copy_strings(&fp->uf_args, &ufunc->uf_args);
     ga_copy_strings(&fp->uf_def_args, &ufunc->uf_def_args);
@@ -6351,6 +6359,13 @@ copy_function(ufunc_T *fp, int extra_namelen)
     ufunc->uf_block_ids = NULL;
 
     ga_copy_strings(&fp->uf_lines, &ufunc->uf_lines);
+
+#ifdef FEAT_PROFILE
+    // Profile the copy when the function is profiled, e.g. after
+    // ":profile! file", which only applies when a function is defined.
+    if (fp->uf_profiling)
+	func_do_profile(ufunc);
+#endif
 
     ufunc->uf_refcount = 1;
 
