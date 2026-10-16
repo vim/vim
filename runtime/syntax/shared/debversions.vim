@@ -1,17 +1,26 @@
 " Vim syntax file
 " Language:     Debian version information
 " Maintainer:   Debian Vim Maintainers
-" Last Change:  2026 Jul 18
+" Last Change:  2026 Oct 15
 " URL: https://salsa.debian.org/vim-team/vim-debian/blob/main/syntax/shared/debversions.vim
 
 let s:cpo = &cpo
 set cpo-=C
 
 " Try to get up-to-date versions from distro-info
-let s:supported_debian_versions = executable('debian-distro-info') ? systemlist('debian-distro-info --supported') : []
-let s:supported_ubuntu_versions = executable('ubuntu-distro-info') ? systemlist('ubuntu-distro-info --supported') : []
-let s:unsupported_debian_versions = executable('debian-distro-info') ? systemlist('debian-distro-info --unsupported') : []
-let s:unsupported_ubuntu_versions = executable('ubuntu-distro-info') ? systemlist('ubuntu-distro-info --unsupported') : []
+let s:supported_debian_versions = []
+let s:unsupported_debian_versions = []
+if executable('debian-distro-info')
+  let s:supported_debian_versions = systemlist('debian-distro-info --supported')
+  let s:unsupported_debian_versions = systemlist('debian-distro-info --unsupported')
+endif
+
+let s:supported_ubuntu_versions = []
+let s:unsupported_ubuntu_versions = []
+if executable('ubuntu-distro-info')
+  let s:supported_ubuntu_versions = systemlist('ubuntu-distro-info --supported')
+  let s:unsupported_ubuntu_versions = systemlist('ubuntu-distro-info --unsupported')
+endif
 
 " Version names that are upcoming or released and still within the standard support window
 let g:debSharedSupportedVersions = s:supported_debian_versions + s:supported_ubuntu_versions
