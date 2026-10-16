@@ -3476,6 +3476,126 @@ def Test_generic_type_cast_in_lambda()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for using a nested generic function with type arguments
+def Test_generic_nested_func_type_args()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      def Inner<U>(u: U): string
+        return typename(u)
+      enddef
+      assert_equal('number', Inner<number>(5))
+      assert_equal('string', Inner<string>('a'))
+      Inner<number>('x')
+    enddef
+    Fn()
+  END
+  v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got string', 6)
+
+  # Recursive call of a nested generic function
+  lines =<< trim END
+    vim9script
+    def Fn(): number
+      def Fact<U>(n: U): U
+        return n <= 1 ? 1 : n * Fact<U>(n - 1)
+      enddef
+      return Fact<number>(5)
+    enddef
+    assert_equal(120, Fn())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using a nested generic function in a lambda and in a nested function
+  lines =<< trim END
+    vim9script
+    def Fn(): list<any>
+      var sfx = '1'
+      def Inner<U>(u: U): string
+        return typename(u) .. sfx
+      enddef
+      def Fact<U>(n: U): U
+        return n <= 1 ? 2 : n * Fact<U>(n - 1)
+      enddef
+      var L1 = () => Inner<number>(5)
+      var L2 = () => () => Inner<string>('a')
+      def Inner2(): string
+        return Inner<bool>(true)
+      enddef
+      var L3 = () => Inner<list<number>>
+      var L4 = () => Fact<number>(4)
+      sfx = '2'
+      return [L1, L2, Inner2, L3, L4]
+    enddef
+    var l = Fn()
+    assert_equal('number2', l[0]())
+    assert_equal('string2', l[1]()())
+    assert_equal('bool2', l[2]())
+    assert_equal('list<number>2', l[3]()([1]))
+    assert_equal(48, l[4]())
+    assert_fails('l[3]()("a")', 'E1013: Argument 1: type mismatch, expected list<number> but got string')
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # The type variable cannot have the name of the function
+  lines =<< trim END
+    vim9script
+    def Fn()
+      def Inner<A, Inner>(x: Inner): Inner
+        return x
+      enddef
+    enddef
+    defcompile Fn
+  END
+  v9.CheckSourceFailure(lines, 'E1041: Redefining script item: "Inner"', 1)
+
+  lines =<< trim END
+    vim9script
+    def Fn()
+      def Inner<Inn, InnerX>(x: Inn): Inn
+        return x
+      enddef
+      assert_equal(3, Inner<number, string>(3))
+    enddef
+    Fn()
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for garbage collection with a nested generic function used in a closure
+func Test_generic_nested_func_garbagecollect()
+  let lines =<< trim END
+    vim9script
+    def Fn(): list<any>
+      var sfx = ['1']
+      def Inner<U>(u: U): string
+        return typename(u) .. sfx[0]
+      enddef
+      def Fact<U>(n: U): U
+        test_garbagecollect_now()
+        return n <= 1 ? 2 : n * Fact<U>(n - 1)
+      enddef
+      var L1 = () => Inner<number>(5)
+      var L2 = () => () => Inner<string>('a')
+      var L3 = () => Inner<list<number>>
+      var L4 = () => Fact<number>(4)
+      sfx = ['2']
+      return [L1, L2, L3, L4]
+    enddef
+    var l = Fn()
+    test_garbagecollect_now()
+    assert_equal('number2', l[0]())
+    var L = l[1]()
+    test_garbagecollect_now()
+    assert_equal('string2', L())
+    var F = l[2]()
+    l = []
+    test_garbagecollect_now()
+    assert_equal('list<number>2', F([1]))
+    assert_equal(48, Fn()[3]())
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
 " Test for using a generic method to initialize an object member variable
 def Test_generic_method_in_object_member_init_expr()
   var lines =<< trim END
