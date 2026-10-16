@@ -6938,6 +6938,134 @@ func Test_script_lines()
     call writefile(line, 'Xfunc', 'D')
     call assert_fails('source Xfunc', 'E183: User defined commands must start with an uppercase letter')
 
+    " :python
+    try
+	call DefineFunction('T_Python', [
+		    \ 'python << EOF',
+		    \ 'append',
+		    \ 'EOF',
+		    \ ])
+    catch
+	call assert_report("Can't define function")
+    endtry
+    try
+	call DefineFunction('T_Python', [
+		    \ 'python << EOF',
+		    \ 'abc',
+		    \ ])
+	call assert_report("Shouldn't be able to define function")
+    catch
+	call assert_exception('Vim(function):E1145: Missing heredoc end marker: EOF')
+    endtry
+    try
+	call DefineFunction('T_Python', [
+		    \ 'python <<',
+		    \ 'append',
+		    \ '.',
+		    \ ])
+    catch
+	call assert_report("Can't define function")
+    endtry
+    try
+	call DefineFunction('T_Python', [
+		    \ 'python <<',
+		    \ 'abc',
+		    \ ])
+	call assert_report("Shouldn't be able to define function")
+    catch
+	call assert_exception('Vim(function):E1145: Missing heredoc end marker: .')
+    endtry
+
+    try
+	call DefineFunction('T_Python', [
+		    \ 'python<<EOF',
+		    \ 'append',
+		    \ 'EOF',
+		    \ ])
+    catch
+	call assert_report("Can't define function")
+    endtry
+    try
+	call DefineFunction('T_Python', [
+		    \ 'python<<',
+		    \ 'append',
+		    \ '.',
+		    \ ])
+    catch
+	call assert_report("Can't define function")
+    endtry
+    try
+	call DefineFunction('T_Python', [
+		    \ 'python<<EOF',
+		    \ 'abc',
+		    \ ])
+	call assert_report("Shouldn't be able to define function")
+    catch
+	call assert_exception('Vim(function):E1145: Missing heredoc end marker: EOF')
+    endtry
+    try
+	call DefineFunction('T_Python', [
+		    \ 'python<<',
+		    \ 'abc',
+		    \ ])
+	call assert_report("Shouldn't be able to define function")
+    catch
+	call assert_exception('Vim(function):E1145: Missing heredoc end marker: .')
+    endtry
+
+    " regression tests
+    "   - invalid optional tails, e.g., :pyt[hagoras] 
+    "   - :tc parsed as :tcl
+    " NOTE: :lua has no optional tail
+    try
+	call DefineFunction('T_Perxyz', [
+		    \ 'perxyz <<',
+		    \ 'abc',
+		    \ ])
+    catch
+	call assert_report("Can't define function")
+    endtry
+    try
+	call DefineFunction('T_Pytxyz', [
+		    \ 'pytxyz <<',
+		    \ 'abc',
+		    \ ])
+    catch
+	call assert_report("Can't define function")
+    endtry
+    try
+	call DefineFunction('T_Rubyxyz', [
+		    \ 'rubyxyz <<',
+		    \ 'abc',
+		    \ ])
+    catch
+	call assert_report("Can't define function")
+    endtry
+    try
+	call DefineFunction('T_Mzsxyz', [
+		    \ 'mzsxyz <<',
+		    \ 'abc',
+		    \ ])
+    catch
+	call assert_report("Can't define function")
+    endtry
+    try
+	call DefineFunction('T_Tclxyz', [
+		    \ 'tclxyz <<',
+		    \ 'abc',
+		    \ ])
+    catch
+	call assert_report("Can't define function")
+    endtry
+    try
+	call DefineFunction('T_Tc', [
+		    \ 'tc <<',
+		    \ 'abc',
+		    \ ])
+    catch
+	call assert_report("Can't define function")
+    endtry
+
 endfunc
 
 "-------------------------------------------------------------------------------
