@@ -27,7 +27,7 @@ let g:debSharedSupportedVersions = s:supported_debian_versions + s:supported_ubu
 if empty(g:debSharedSupportedVersions)
   " Hard-coded fallback in case distro-info is not available
   let g:debSharedSupportedVersions = [
-      \ 'bookworm', 'trixie', 'forky', 'duke', 'sid', 'rc-buggy',
+      \ 'trixie', 'forky', 'duke', 'sid', 'rc-buggy',
       \
       \ 'jammy', 'noble', 'questing', 'resolute', 'stonking',
       \ ]
@@ -45,7 +45,7 @@ if empty(g:debSharedUnsupportedVersions)
   let g:debSharedUnsupportedVersions = [
       \ 'buzz', 'rex', 'bo', 'hamm', 'slink', 'potato',
       \ 'woody', 'sarge', 'etch', 'lenny', 'squeeze', 'wheezy',
-      \ 'jessie', 'stretch', 'buster', 'bullseye',
+      \ 'jessie', 'stretch', 'buster', 'bullseye', 'bookworm',
       \
       \ 'warty', 'hoary', 'breezy', 'dapper', 'edgy', 'feisty',
       \ 'gutsy', 'hardy', 'intrepid', 'jaunty', 'karmic', 'lucid',
