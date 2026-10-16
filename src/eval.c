@@ -5020,11 +5020,18 @@ eval8(
     {
 	++*arg;
 	ga_init2(&type_list, sizeof(type_T *), 10);
-	want_type = parse_type(arg, &type_list, NULL, NULL, TRUE);
-	if (want_type == NULL && (evaluate || **arg != '>'))
+	if (!evaluate)
+	    // Only skip over the type, it may use a type variable that is only
+	    // known when the expression is compiled, e.g. in a lambda.
+	    *arg = skip_type(*arg, FALSE);
+	else
 	{
-	    clear_type_list(&type_list);
-	    return FAIL;
+	    want_type = parse_type(arg, &type_list, NULL, NULL, TRUE);
+	    if (want_type == NULL)
+	    {
+		clear_type_list(&type_list);
+		return FAIL;
+	    }
 	}
 
 	if (**arg != '>')
@@ -5742,6 +5749,12 @@ call_func_rettv(
     funcexe.fe_lastline = curwin->w_cursor.lnum;
     funcexe.fe_evaluate = evaluate;
     funcexe.fe_partial = pt;
+    if (pt != NULL)
+    {
+	funcexe.fe_object = pt->pt_obj;
+	if (funcexe.fe_object != NULL)
+	    ++funcexe.fe_object->obj_refcount;
+    }
     funcexe.fe_selfdict = selfdict;
     funcexe.fe_basetv = basetv;
     if (evalarg != NULL)

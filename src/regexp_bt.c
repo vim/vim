@@ -5079,21 +5079,24 @@ bt_regexec_both(
 	if (!rex.reg_ic && !has_mbyte)
 	    while ((s = vim_strbyte(s, c)) != NULL)
 	    {
-		if (cstrncmp(s, prog->regmust, &prog->regmlen) == 0)
+		int len = prog->regmlen;
+		if (cstrncmp(s, prog->regmust, &len) == 0)
 		    break;		// Found it.
 		++s;
 	    }
 	else if (!rex.reg_ic || (!enc_utf8 && mb_char2len(c) > 1))
 	    while ((s = vim_strchr(s, c)) != NULL)
 	    {
-		if (cstrncmp(s, prog->regmust, &prog->regmlen) == 0)
+		int len = prog->regmlen;
+		if (cstrncmp(s, prog->regmust, &len) == 0)
 		    break;		// Found it.
 		MB_PTR_ADV(s);
 	    }
 	else
 	    while ((s = cstrchr(s, c)) != NULL)
 	    {
-		if (cstrncmp(s, prog->regmust, &prog->regmlen) == 0)
+		int len = prog->regmlen;
+		if (cstrncmp(s, prog->regmust, &len) == 0)
 		    break;		// Found it.
 		MB_PTR_ADV(s);
 	    }

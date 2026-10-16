@@ -1471,9 +1471,19 @@ do_search(
 
 	if (pat != NULL && *pat != NUL)	// look for (new) offset
 	{
+	    char_u	*prev_searchstr = searchstr;
+	    size_t	prev_searchstrlen = searchstrlen;
+
 	    searchcmdlen += parse_search_pattern_offset(&pat, &patlen,
 				search_delim, options, &strcopy, &searchstr,
 				&searchstrlen, &dircp, &spats[0].off);
+	    // An empty pattern (e.g. "//e") uses the previous pattern selected
+	    // above.
+	    if (*searchstr == NUL)
+	    {
+		searchstr = prev_searchstr;
+		searchstrlen = prev_searchstrlen;
+	    }
 	}
 
 	show_search_stats = FALSE;

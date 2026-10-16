@@ -3418,6 +3418,64 @@ def Test_generic_abstract_method_override_fails()
   v9.CheckSourceFailure(lines, 'E1434: Mismatched number of type variables for generic method  "Fn" in class "A"', 11)
 enddef
 
+" Test for a dict type using a type variable in a generic function
+def Test_generic_func_dict_type()
+  var lines =<< trim END
+    vim9script
+    def Fn<T>(d: dict<T>): dict<T>
+      return d
+    enddef
+    assert_equal('func(dict<number>): dict<number>', typename(Fn<number>))
+    assert_equal({a: 'x'}, Fn<string>({a: 'x'}))
+    def Foo()
+      assert_equal({a: 1}, Fn<number>({a: 1}))
+    enddef
+    Foo()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Fn<T>(d: dict<T>)
+    enddef
+    Fn<number>({a: 'x'})
+  END
+  v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected dict<number> but got dict<string>', 4)
+
+  lines =<< trim END
+    vim9script
+    def Fn<T>(d: dict<T>)
+    enddef
+    def Foo()
+      Fn<string>({a: 1})
+    enddef
+    Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected dict<string> but got dict<number>', 1)
+enddef
+
+" Test for a type cast using a type variable in a lambda in a generic function
+def Test_generic_type_cast_in_lambda()
+  var lines =<< trim END
+    vim9script
+    g:X = 1
+    def Fn<T>(): func
+      return () => <T>g:X
+    enddef
+    def Fn2<T>(): func
+      return () => [<list<T>>[g:X]]
+    enddef
+    assert_equal(1, Fn<number>()())
+    assert_equal([[1]], Fn2<number>()())
+    assert_fails('Fn<string>()()', 'E1012: Type mismatch; expected string but got number')
+
+    # the type is not checked when the expression is skipped
+    assert_equal(2, false ? <nosuch>1 : 2)
+    unlet g:X
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for using a generic method to initialize an object member variable
 def Test_generic_method_in_object_member_init_expr()
   var lines =<< trim END

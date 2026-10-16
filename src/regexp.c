@@ -1748,6 +1748,7 @@ mb_decompose(int c, int *c1, int *c2, int *c3)
 /*
  * Compare two strings, ignore case if rex.reg_ic set.
  * Return 0 if strings match, non-zero otherwise.
+ * "*n" is the byte length of s1 on entry and of the match in s2 on success.
  * Correct the length "*n" when composing characters are ignored
  * or for utf8 when both utf codepoints are considered equal because of
  * case-folding but have different length (e.g. 's' and 'ſ')
@@ -1779,7 +1780,7 @@ cstrncmp(char_u *s1, char_u *s2, int *n)
 	n2 = p - s2;
 
 	result = MB_STRNICMP2(s1, s2, *n, n2);
-	if (result == 0 && n2 < *n)
+	if (result == 0)
 	    *n = n2;
     }
     else

@@ -4585,7 +4585,16 @@ func Test_glob_symlinks()
   call assert_equal(['Xglob1', 'XglobBad', 'XglobOk'], sort(glob('Xglob*', 0, 1, 1)))
   call assert_equal(['Xglob1', 'XglobOk'], sort(glob('Xglob*', 0, 1, 0)))
 
+  " Also check literal paths, as used when searching for autoload scripts.
+  call assert_equal(['XglobOk'], glob('XglobOk', 0, 1))
+  call assert_equal([], glob('XglobBad', 0, 1))
+  call assert_equal(['XglobBad'], glob('XglobBad', 0, 1, 1))
+  call assert_equal(getfperm('Xglob1'), getfperm('XglobOk'))
+  call assert_equal(getfsize('Xglob1'), getfsize('XglobOk'))
+
   call delete('Xglob1')
+  call assert_equal([], glob('XglobOk', 0, 1))
+  call assert_equal(['XglobOk'], glob('XglobOk', 0, 1, 1))
   call delete('XglobBad')
   call delete('XglobOk')
 endfunc
@@ -4636,6 +4645,26 @@ func Test_glob_literal_suffix_win32()
           \ glob('XglobSuffix/**/script.vim', 0, 1))
   finally
     let &shellslash = save_shellslash
+  endtry
+endfunc
+
+func Test_glob_junction_win32()
+  CheckMSWindows
+
+  call mkdir('XglobTarget', 'R')
+  call writefile(['autoload'], 'XglobTarget/script.vim')
+  silent !mklink /J XglobJunction XglobTarget
+  if v:shell_error
+    throw 'Skipped: cannot create junctions'
+  endif
+  try
+    call assert_equal(['XglobJunction'], glob('XglobJunction', 0, 1))
+    call assert_equal(getfperm('XglobTarget'), getfperm('XglobJunction'))
+    call assert_equal(getfsize('XglobTarget/script.vim'),
+          \ getfsize('XglobJunction/script.vim'))
+    call assert_equal([], glob('XglobJunction/missing.vim', 0, 1))
+  finally
+    call delete('XglobJunction')
   endtry
 endfunc
 
