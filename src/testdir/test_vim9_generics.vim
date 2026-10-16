@@ -3476,6 +3476,59 @@ def Test_generic_type_cast_in_lambda()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for a type variable with the name of the generic function
+def Test_generic_type_var_same_as_func_name()
+  var lines =<< trim END
+    vim9script
+    def Foo<Foo>(x: Foo): Foo
+      return x
+    enddef
+  END
+  v9.CheckSourceFailure(lines, 'E1041: Redefining script item: "Foo"', 2)
+
+  lines =<< trim END
+    vim9script
+    def g:Foo<A, Foo>(x: A): Foo
+      return x
+    enddef
+  END
+  v9.CheckSourceFailure(lines, 'E1041: Redefining script item: "Foo"', 2)
+
+  # Nested function
+  lines =<< trim END
+    vim9script
+    def Outer()
+      def Inner<Inner>(x: Inner): Inner
+        return x
+      enddef
+    enddef
+    Outer()
+  END
+  v9.CheckSourceFailure(lines, 'E1041: Redefining script item: "Inner"', 1)
+
+  # Nested global function
+  lines =<< trim END
+    vim9script
+    def Outer()
+      def g:Inner2<A, Inner2>(x: A): Inner2
+        return x
+      enddef
+    enddef
+    Outer()
+  END
+  v9.CheckSourceFailure(lines, 'E1041: Redefining script item: "Inner2"', 1)
+
+  # A name that starts with the function name is fine
+  lines =<< trim END
+    vim9script
+    def Foo<FooX>(x: FooX): FooX
+      return x
+    enddef
+    assert_equal(3, Foo<number>(3))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for using a generic method to initialize an object member variable
 def Test_generic_method_in_object_member_init_expr()
   var lines =<< trim END
