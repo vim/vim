@@ -1458,6 +1458,36 @@ def Test_implements_many_with_error()
   v9.CheckSourceFailure(lines, 'E1346: Interface name not found: Nope', 5)
 enddef
 
+" Test for a class inheriting an interface from the parent class, while it
+" implements several interfaces itself
+def Test_implements_with_parent_interface()
+  var lines =<< trim END
+    vim9script
+    interface I1
+    endinterface
+    interface I2
+    endinterface
+    interface I3
+    endinterface
+    interface I4
+    endinterface
+    interface I5
+      def F(): number
+    endinterface
+    class A implements I5
+      def F(): number
+        return 5
+      enddef
+    endclass
+    class B extends A implements I1, I2, I3, I4
+    endclass
+    var i5: I5 = B.new()
+    assert_equal(5, i5.F())
+    assert_true(instanceof(B.new(), I1, I4, I5))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test interface garbage collection {{{1
 func Test_interface_garbagecollect()
   let lines =<< trim END
