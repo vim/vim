@@ -426,7 +426,8 @@ generic_name_exists(
     {
 	generic_T *generic = &((generic_T *)gfatab->gfat_args.ga_data)[i];
 
-	if (STRNCMP(gt_name, generic->gt_name, name_len) == 0)
+	if (STRNCMP(gt_name, generic->gt_name, name_len) == 0
+				&& generic->gt_name[name_len] == NUL)
 	{
 	    semsg(_(e_duplicate_type_var_name_str), gt_name);
 	    return TRUE;
@@ -1187,7 +1188,8 @@ find_generic_type_in_ufunc(char_u *gt_name, size_t name_len, ufunc_T *ufunc)
 	generic_T *generic;
 
 	generic = ((generic_T *)ufunc->uf_generic_args) + i;
-	if (STRNCMP(generic->gt_name, gt_name, name_len) == 0)
+	if (STRNCMP(generic->gt_name, gt_name, name_len) == 0
+				&& generic->gt_name[name_len] == NUL)
 	{
 	    type_T *type = generic->gt_type;
 	    return type;
