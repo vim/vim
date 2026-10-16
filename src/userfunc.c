@@ -1607,16 +1607,17 @@ lambda_function_body(
     lnum_save = SOURCING_LNUM;
     SOURCING_LNUM = sourcing_lnum_top;
 
-    // parse argument types
+    // parse argument types, the type variables of the function being
+    // compiled may be used
     if (parse_argument_types(ufunc, argtypes, varargs, NULL, NULL, 0,
-		NULL) == FAIL)
+					    evalarg->eval_cctx) == FAIL)
     {
 	SOURCING_LNUM = lnum_save;
 	goto erret;
     }
 
     // parse the return type, if any
-    if (parse_return_type(ufunc, ret_type, NULL) == FAIL)
+    if (parse_return_type(ufunc, ret_type, evalarg->eval_cctx) == FAIL)
 	goto erret;
 
     pt = ALLOC_CLEAR_ONE(partial_T);
