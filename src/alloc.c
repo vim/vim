@@ -862,6 +862,11 @@ ga_concat_len(garray_T *gap, char_u *s, size_t len)
 {
     if (s == NULL || *s == NUL || len == 0)
 	return;
+    if (len > (size_t)(INT_MAX - gap->ga_len))
+    {
+	emsg(_(e_resulting_text_too_long));
+	return;
+    }
     if (ga_grow(gap, (int)len) == OK)
     {
 	mch_memmove((char *)gap->ga_data + gap->ga_len, s, len);
