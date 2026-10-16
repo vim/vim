@@ -1648,6 +1648,9 @@ do_source_ext(
     char_u		    *firstline = NULL;
     int			    retval = FAIL;
     sctx_T		    save_current_sctx;
+#ifdef FEAT_EVAL
+    type_resolve_ctx_T	    save_trctx;
+#endif
 #ifdef STARTUPTIME
     struct timeval	    tv_rel;
     struct timeval	    tv_start;
@@ -1829,6 +1832,12 @@ do_source_ext(
     // Don't use local function variables, if called from a function.
     // Also starts profiling timer for nested script.
     save_funccal(&funccalp_entry);
+
+    // The type variables of a function or class being defined are not
+    // visible in the sourced script (e.g. an autoload script sourced for a
+    // type).
+    save_type_resolve_ctx(&save_trctx);
+    clear_type_resolve_ctx();
 
     // Reset "KeyTyped" to avoid some commands thinking they are invoked
     // interactively.  E.g. defining a function would output indent.
@@ -2044,6 +2053,7 @@ almosttheend:
     }
     VIM_CLEAR(si->sn_save_cpo);
 
+    restore_type_resolve_ctx(&save_trctx);
     restore_funccal();
 # ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)

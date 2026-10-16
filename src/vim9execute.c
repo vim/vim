@@ -3242,6 +3242,25 @@ set_ref_in_loopvars(int copyID)
 }
 
 /*
+ * A generic class can only be used with type arguments.  When the type of
+ * a value is only known at runtime (e.g. an item of an autoload script that
+ * was not loaded when compiling) check that "tv" is not a generic class.
+ * Returns FAIL and gives an error if it is.
+ */
+    static int
+check_generic_class_value(typval_T *tv, isn_T *iptr)
+{
+    if (TV_IS_GENERIC_CLASS(tv))
+    {
+	SOURCING_LNUM = iptr->isn_lnum;
+	semsg(_(e_generic_class_missing_type_args_str),
+					tv->vval.v_class->class_name.string);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Load instruction for w:/b:/g:/t: variable.
  * "isn_type" is used instead of "iptr->isn_type".
  */
@@ -4234,6 +4253,9 @@ exec_instructions(ectx_T *ectx)
 				}
 			    }
 			}
+			if (check_generic_class_value(&di->di_tv, iptr)
+								      == FAIL)
+			    goto on_error;
 			if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			    goto theend;
 			copy_tv(&di->di_tv, STACK_TV_BOT(0));
@@ -4778,6 +4800,8 @@ exec_instructions(ectx_T *ectx)
 		    case ISN_PUSHCLASS:
 			tv->v_type = VAR_CLASS;
 			tv->vval.v_class = iptr->isn_arg.classarg;
+			if (tv->vval.v_class != NULL)
+			    ++tv->vval.v_class->class_refcount;
 			break;
 		    default:
 			tv->v_type = VAR_STRING;
@@ -4809,6 +4833,13 @@ exec_instructions(ectx_T *ectx)
 			    goto theend;
 			if (res == FAIL)
 			    goto on_error;
+			tv = STACK_TV_BOT(-1);
+			if (check_generic_class_value(tv, iptr) == FAIL)
+			{
+			    clear_tv(tv);
+			    --ectx->ec_stack.ga_len;
+			    goto on_error;
+			}
 		    }
 		}
 		break;
@@ -4937,6 +4968,16 @@ exec_instructions(ectx_T *ectx)
 			int idx = object_index_from_itf_index(mfunc->cmf_itf,
 						     TRUE, mfunc->cmf_idx, cl);
 			ufunc = cl->class_obj_methods[idx];
+		    }
+
+		    // A generic method: use the method with the type arguments
+		    // used when compiling.
+		    if (mfunc->cmf_ufunc != NULL && IS_GENERIC_FUNC(ufunc))
+		    {
+			ufunc = generic_func_get_same_types(ufunc,
+							    mfunc->cmf_ufunc);
+			if (ufunc == NULL)
+			    goto on_error;
 		    }
 
 		    if (call_ufunc(ufunc, NULL, mfunc->cmf_argcount, ectx,
@@ -7590,7 +7631,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 
 		    smsg("%s%4d METHODCALL %s.%s(argc %d)", pfx, current,
 			    mfunc->cmf_itf->class_name.string,
-			    mfunc->cmf_itf->class_obj_methods[
+			    mfunc->cmf_ufunc != NULL
+				? mfunc->cmf_ufunc->uf_name
+				: mfunc->cmf_itf->class_obj_methods[
 						      mfunc->cmf_idx]->uf_name,
 			    mfunc->cmf_argcount);
 		}

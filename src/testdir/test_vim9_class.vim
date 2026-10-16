@@ -8453,6 +8453,54 @@ def Test_compile_many_def_functions_in_funcref_instr()
   assert_equal(0, v:shell_error)
 enddef
 
+" Test for a lambda defined in a method that is compiled again after the class
+" was freed.  Profiling is used to compile it again, run it in another Vim, it
+" cannot be stopped.
+def Test_lambda_in_method_after_class_freed()
+  CheckFeature profile
+
+  var lines =<< trim END
+    vim9script
+    v:testing = 1
+    var lib =<< trim LIB
+      vim9script
+      class Foo
+        static def _P(): number
+          return 1
+        enddef
+        def Mk(): func
+          return () => Foo._P()
+        enddef
+      endclass
+    LIB
+    writefile(lib + ['g:F = Foo.new().Mk()'], 'XlambdaLib.vim')
+    source XlambdaLib.vim
+    var result: list<any> = [g:F()]
+
+    # Source the script again, the class is freed and the lambda is kept.
+    writefile(lib, 'XlambdaLib.vim')
+    source XlambdaLib.vim
+    delete('XlambdaLib.vim')
+    test_garbagecollect_now()
+
+    # Profiling compiles the lambda again, "Foo" is now another class.
+    profile start XlambdaProf
+    profile func *
+    try
+      result->add(g:F())
+    catch
+      result->add(matchstr(v:exception, 'E\d\+'))
+    endtry
+    writefile([string(result)], 'XlambdaResult')
+  END
+  writefile(lines, 'Xscript', 'D')
+  defer delete('XlambdaProf')
+  defer delete('XlambdaResult')
+  g:RunVim([], [], '-u NONE -S Xscript -c qa')
+  assert_equal(0, v:shell_error)
+  assert_equal(["[1, 'E1366']"], readfile('XlambdaResult'))
+enddef
+
 " Test for 'final' class and object variables
 def Test_final_class_object_variable()
   # Test for changing a final object variable from an object function
@@ -11772,7 +11820,13 @@ def Test_object_of_class_type()
     vim9script
     var x: object<any,any>
   END
-  v9.CheckSourceFailure(lines, 'E488: Trailing characters: ,any>')
+  v9.CheckSourceFailure(lines, 'E1009: Missing > after type: <any,any>')
+
+  lines =<< trim END
+    vim9script
+    var x: object<any, any>
+  END
+  v9.CheckSourceFailure(lines, 'E1009: Missing > after type: <any, any>')
 
   lines =<< trim END
     var x: object<number>

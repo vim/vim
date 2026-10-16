@@ -5834,7 +5834,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	{
 	    // generic function
 	    start_bracket = name;
-	    if (skip_generic_func_type_args(&name) == FAIL)
+	    if (skip_generic_type_args(&name) == FAIL)
 		goto theend;
 	}
 	if (*name != NUL)
@@ -6702,7 +6702,7 @@ getinfo_argtypes(
 		semsg(_(e_too_many_arguments_for_function_str), fe->f_name);
 		return -1;
 	    }
-	    type = parse_type(&p, type_gap, NULL, NULL, TRUE);
+	    type = parse_type(&p, type_gap, NULL, TRUE);
 	    if (type == NULL)
 		return -1;
 	    if (*skipwhite(p) != NUL)

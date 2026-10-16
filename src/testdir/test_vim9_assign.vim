@@ -434,6 +434,35 @@ def Test_type_with_extra_white()
   v9.CheckDefExecAndScriptFailure(lines, 'E1059:')
 enddef
 
+" A very deeply nested type gives an error instead of running out of stack
+def Test_type_nested_too_deep()
+  var lines = ['vim9script',
+        'var x: ' .. repeat('list<', 1001) .. 'number' .. repeat('>', 1001)]
+  v9.CheckSourceFailure(lines, 'E1596: Type nested too deep', 2)
+
+  lines[1] = 'var x: ' .. repeat('list<', 900) .. 'number' .. repeat('>', 900)
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" White space before the ">" of a list or dict type is skipped
+def Test_type_with_white_before_closing_angle()
+  var lines =<< trim END
+      var x: list<number > = [1]
+      var y: dict<list<number> > = {a: [2]}
+      assert_equal([[1], {a: [2]}], [x, y])
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def Fn(a: dict<list<number> >): list<number >
+        return a.k
+      enddef
+      assert_equal([3], Fn({k: [3]}))
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_keep_type_after_assigning_null()
   var lines =<< trim END
       var b: blob
