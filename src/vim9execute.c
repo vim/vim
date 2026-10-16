@@ -4925,18 +4925,46 @@ exec_instructions(ectx_T *ectx)
 		    }
 
 		    ufunc_T *ufunc;
+		    class_T *cl;
 		    if (mfunc->cmf_is_super)
+		    {
 			// Doing "super.Func", use the specific ufunc.
-			ufunc = mfunc->cmf_itf->class_obj_methods[
-							    mfunc->cmf_idx];
+			cl = mfunc->cmf_itf;
+			ufunc = cl->class_obj_methods[mfunc->cmf_idx];
+		    }
 		    else
 		    {
-			class_T *cl = obj->obj_class;
+			cl = obj->obj_class;
 
 			// convert the interface index to the object index
 			int idx = object_index_from_itf_index(mfunc->cmf_itf,
 						     TRUE, mfunc->cmf_idx, cl);
 			ufunc = cl->class_obj_methods[idx];
+		    }
+
+		    // A generic method: use the method with the type arguments
+		    // used when compiling.  The last one is cached, since
+		    // looking it up is slow.
+		    if (mfunc->cmf_ufunc != NULL && IS_GENERIC_FUNC(ufunc))
+		    {
+			if (mfunc->cmf_cache_cl == cl
+				&& mfunc->cmf_cache_generic == ufunc)
+			    ufunc = mfunc->cmf_cache_ufunc;
+			else
+			{
+			    ufunc_T *generic_ufunc = ufunc;
+
+			    ufunc = generic_func_get_same_types(generic_ufunc,
+							    mfunc->cmf_ufunc);
+			    if (ufunc == NULL)
+				goto on_error;
+
+			    ++cl->class_refcount;
+			    class_unref(mfunc->cmf_cache_cl);
+			    mfunc->cmf_cache_cl = cl;
+			    mfunc->cmf_cache_generic = generic_ufunc;
+			    mfunc->cmf_cache_ufunc = ufunc;
+			}
 		    }
 
 		    if (call_ufunc(ufunc, NULL, mfunc->cmf_argcount, ectx,
@@ -7590,7 +7618,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 
 		    smsg("%s%4d METHODCALL %s.%s(argc %d)", pfx, current,
 			    mfunc->cmf_itf->class_name.string,
-			    mfunc->cmf_itf->class_obj_methods[
+			    mfunc->cmf_ufunc != NULL
+				? mfunc->cmf_ufunc->uf_name
+				: mfunc->cmf_itf->class_obj_methods[
 						      mfunc->cmf_idx]->uf_name,
 			    mfunc->cmf_argcount);
 		}

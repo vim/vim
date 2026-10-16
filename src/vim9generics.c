@@ -1120,6 +1120,72 @@ generic_func_get(ufunc_T *fp, gfargs_tab_T *gfatab)
 }
 
 /*
+ * Returns the concrete function of the generic function "fp" for the type
+ * arguments of "inst", a concrete function of another generic function with
+ * the same number of type variables.  E.g. "inst" is the interface method
+ * "Get<string>" and "fp" the generic method "Get" of the object class.  It is
+ * created when it does not exist yet.
+ * Returns NULL on failure, an error was given then (except for memory
+ * allocation failure).
+ */
+    ufunc_T *
+generic_func_get_same_types(ufunc_T *fp, ufunc_T *inst)
+{
+    gfargs_tab_T	gfatab;
+    ufunc_T		*new_fp = NULL;
+    int			argcount = inst->uf_generic_argcount;
+    int			i;
+
+    generic_func_args_table_init(&gfatab);
+
+    if (ga_grow(&gfatab.gfat_args, argcount) == FAIL)
+	goto done;
+    for (i = 0; i < argcount; i++)
+    {
+	generic_T	*generic_arg = (generic_T *)gfatab.gfat_args.ga_data + i;
+	type_T		*type = inst->uf_generic_args[i].gt_type;
+	char		*tofree = NULL;
+
+	generic_arg->gt_name = vim_strsave(
+				    (char_u *)type_name(type, &tofree));
+	vim_free(tofree);
+	if (generic_arg->gt_name == NULL)
+	    goto done;
+	// The types of "inst" are used for the lookup, see below.
+	generic_arg->gt_type = type;
+	gfatab.gfat_args.ga_len++;
+    }
+
+    // Usually the function exists, look it up first to avoid copying the
+    // types.
+    garray_T	gfkey_ga;
+
+    ga_init2(&gfkey_ga, 1, 80);
+    new_fp = generic_lookup_func(fp, &gfatab, &gfkey_ga);
+    ga_clear(&gfkey_ga);
+    if (new_fp != NULL)
+	goto done;
+
+    // The new function owns the types, use a copy of the types of "inst".
+    for (i = 0; i < argcount; i++)
+    {
+	generic_T   *generic_arg = (generic_T *)gfatab.gfat_args.ga_data + i;
+	type_T	    *type = copy_type_deep(generic_arg->gt_type,
+							&gfatab.gfat_arg_types);
+
+	// out of memory when the type is returned, it must not be used
+	if (type == generic_arg->gt_type)
+	    goto done;
+	generic_arg->gt_type = type;
+    }
+    new_fp = generic_func_get(fp, &gfatab);
+
+done:
+    generic_func_args_table_clear(&gfatab);
+    return new_fp;
+}
+
+/*
  * Looks up or creates a concrete instance of a generic function "ufunc" using
  * the type arguments specified after the function name in "name".
  *
