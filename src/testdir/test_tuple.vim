@@ -214,6 +214,20 @@ func Test_tuple_indexing()
   call v9.CheckSourceDefAndScriptSuccess(lines)
 endfunc
 
+" Test for the type of an item from indexing a tuple literal with one item
+def Test_tuple_single_item_index_type()
+  v9.CheckSourceDefFailure(['var s: string = (1,)[0]'],
+    'E1012: Type mismatch; expected string but got number', 1)
+
+  var lines =<< trim END
+    var n: number = (1,)[0]
+    assert_equal(1, n)
+    var l: list<number> = ([1, 2],)[0]
+    assert_equal([1, 2], l)
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+enddef
+
 " Indexing a tuple in a Dict
 func Test_tuple_in_a_dict_index()
   let lines =<< trim END
