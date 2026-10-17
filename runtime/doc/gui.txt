@@ -1,4 +1,4 @@
-*gui.txt*	For Vim version 9.2.  Last change: 2026 Aug 04
+*gui.txt*	For Vim version 9.2.  Last change: 2026 Oct 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1205,7 +1205,7 @@ automatically.  If 'guifontwide' is empty Pango/Xft will choose the font for
 characters not available in 'guifont'.  Thus you do not need to set
 'guifontwide' at all unless you want to override the choice made by Pango/Xft.
 
-Windows +multibyte only:		*guifontwide_win_mbyte*
+Windows |+multi_byte_ime| only:		*guifontwide_win_mbyte*
 
 If set and valid, 'guifontwide' is used for IME instead of 'guifont'.
 

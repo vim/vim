@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.2.  Last change: 2026 Sep 30
+*eval.txt*	For Vim version 9.2.  Last change: 2026 Oct 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3956,7 +3956,7 @@ text...
 			this number of seconds.  The last `:echowindow` with a
 			count matters, it is used once only.
 			The message window is available when Vim was compiled
-			with the +timer and the +popupwin features.
+			with the |+timers| and the |+popupwin| features.
 
 							*:echoe* *:echoerr*
 :echoe[rr] {expr1} ...	Echo the expression(s) as an error message, saving the
