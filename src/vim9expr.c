@@ -122,7 +122,7 @@ compile_tuple_member(
 			typep->type_decl = typep->type_decl->tt_args[0];
 		}
 		else
-		    typep->type_curr = &t_any;
+		    typep->type_decl = &t_any;
 	    }
 	    else
 		typep->type_decl = typep->type_curr;
