@@ -1,4 +1,4 @@
-*version6.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*version6.txt*	For Vim version 9.2.  Last change: 2026 Oct 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -320,7 +320,7 @@ The patterns in 'errorformat' would sometimes ignore case (MS-Windows) and
 sometimes not (Unix).  Now case is always ignored.  Add "\C" to the pattern to
 match case.
 
-The 16 bit MS-DOS version is now compiled without the +listcmds feature
+The 16 bit MS-DOS version is now compiled without the |+listcmds| feature
 (buffer list manipulation commands).  They are not often needed and this
 executable needs to be smaller.
 
@@ -2111,11 +2111,11 @@ disables multiple windows for a really small Vim.
 For the tiny version or when FEAT_WINDOWS is not defined: Firstwin and lastwin
 are equal to curwin and don't use w_next and w_prev.
 
-Added the +listcmds feature.  Can be used to compile without the Vim commands
+Added the |+listcmds| feature.  Can be used to compile without the Vim commands
 that manipulate the buffer list and argument list (the buffer list itself is
 still there, can't do without it).
 
-Added the +vreplace feature.  It is disabled in the "small" version to avoid
+Added the |+vreplace| feature.  It is disabled in the "small" version to avoid
 that the 16 bit DOS version runs out of memory.
 
 Removed GTK+ support for versions older than 1.1.16.
@@ -2339,7 +2339,7 @@ name. (Zoltan Arpadffy)
 After ":hi Normal ctermbg=black ctermfg=white" and suspending Vim not all
 characters are redrawn with the right background.
 
-When doing "make test" without +eval or +windows feature, many tests failed.
+When doing "make test" without |+eval| or |+windows| feature, many tests failed.
 Now have test1 generate a script to copy the correct output, so that a test
 that doesn't work is skipped.
 
@@ -2762,7 +2762,7 @@ all commands that cause too much recursiveness.
 Removed "Failed to open input method" error message, too many people got this
 when they didn't want to use a XIM.
 
-GUI: When compiled without the +windows feature, the scrollbar would start
+GUI: When compiled without the |+windows| feature, the scrollbar would start
 below line one.
 
 Removed the trick with redefining character class functions from regexp.c.
@@ -3144,7 +3144,7 @@ the Vim window. (Marcin Dalecki)
 Win32 GUI: when setting 'lines' to a huge number, would not compute the
 available space correctly.  Was counting the menu height twice.
 
-Conversion of the docs to HTML didn't handle the line with the +quickfix tag
+Conversion of the docs to HTML didn't handle the line with the |+quickfix| tag
 correctly. (Antonio Colombo)
 
 Win32: fname_case() didn't handle multibyte characters correctly. (Yasuhiro
