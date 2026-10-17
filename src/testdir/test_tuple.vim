@@ -2155,6 +2155,248 @@ func Test_tuple_refcount()
   call v9.CheckSourceLegacyAndVim9Success(lines)
 endfunc
 
+" Test for garbage collection of tuples in global, script-local, buffer,
+" window and tab page variables.  The List and Dict items must not be freed.
+func Test_tuple_gc_variables()
+  let lines =<< trim END
+    let g:gt = ([1, 2], {'a': [3]}, ('x', [4]))
+    let s:st = ([5], {'b': [6]})
+    let b:bt = ([7],)
+    let w:wt = ({'c': [8]},)
+    let t:tt = (([9],),)
+    call test_garbagecollect_now()
+    call assert_equal(([1, 2], {'a': [3]}, ('x', [4])), g:gt)
+    call assert_equal(([5], {'b': [6]}), s:st)
+    call assert_equal(([7],), b:bt)
+    call assert_equal(({'c': [8]},), w:wt)
+    call assert_equal((([9],),), t:tt)
+    unlet g:gt b:bt w:wt t:tt
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " Vim9 script variables, with and without a declared type
+  let lines =<< trim END
+    vim9script
+    var t1 = ([1], {a: [2]})
+    var t2: tuple<list<number>, dict<list<number>>> = ([3], {b: [4]})
+    var t3: any = (([5],),)
+    test_garbagecollect_now()
+    assert_equal(([1], {a: [2]}), t1)
+    assert_equal(([3], {b: [4]}), t2)
+    assert_equal((([5],),), t3)
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Test for garbage collection of tuples in function variables and arguments
+func Test_tuple_gc_func_vars()
+  let lines =<< trim END
+    func s:Fn(t, ...)
+      let l = ([1], {'a': [2]})
+      call test_garbagecollect_now()
+      call assert_equal(([1], {'a': [2]}), l)
+      call assert_equal(([3],), a:t)
+      call assert_equal([([4],), ([5],)], a:000)
+    endfunc
+    call s:Fn(([3],), ([4],), ([5],))
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Test for garbage collection of tuples used in a closure
+func Test_tuple_gc_closure()
+  let lines =<< trim END
+    func s:GetClosure()
+      let t = ([1], {'a': [2]})
+      func s:Inner() closure
+        return t
+      endfunc
+      return funcref('s:Inner')
+    endfunc
+    let F = s:GetClosure()
+    call test_garbagecollect_now()
+    call assert_equal(([1], {'a': [2]}), F())
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " closure in a compiled function and in a loop in a compiled function
+  let lines =<< trim END
+    vim9script
+    def GetClosure(): func
+      var t = ([1], {a: [2]})
+      return () => t
+    enddef
+    def GetLoopClosures(): list<func>
+      var fl: list<func> = []
+      for i in range(2)
+        var t = ([i], {a: [i]})
+        fl->add(() => t)
+      endfor
+      return fl
+    enddef
+    var F = GetClosure()
+    var FL = GetLoopClosures()
+    test_garbagecollect_now()
+    assert_equal(([1], {a: [2]}), F())
+    assert_equal(([0], {a: [0]}), FL[0]())
+    assert_equal(([1], {a: [1]}), FL[1]())
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Test for garbage collection of tuples used as the arguments of a partial and
+" in a callback
+func Test_tuple_gc_partial_and_callback()
+  let lines =<< trim END
+    func s:Cb(t, ...)
+      return a:t
+    endfunc
+    let P = function('s:Cb', [([1], {'a': [2]})])
+    let d = {'t': ([3],)}
+    let DP = function('s:Cb', [([4],)], d)
+    let tp = (function('s:Cb', [([5],)]),)
+    call test_garbagecollect_now()
+    call assert_equal(([1], {'a': [2]}), P())
+    call assert_equal(([4],), DP())
+    call assert_equal(([3],), d.t)
+    call assert_equal(([5],), tp[0]())
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " a timer callback is only referenced by the timer
+  if has('timers')
+    let lines =<< trim END
+      func s:TimerCb(t, id)
+      endfunc
+      let id = timer_start(100000, function('s:TimerCb', [([1], {'a': [2]})]))
+      call test_garbagecollect_now()
+      call assert_equal([([1], {'a': [2]})],
+            \ get(timer_info(id)[0].callback, 'args'))
+      call timer_stop(id)
+    END
+    call v9.CheckSourceSuccess(lines)
+  endif
+
+  " a popup callback is only referenced by the popup
+  if has('popupwin')
+    let lines =<< trim END
+      func s:PopupCb(t, id, result)
+      endfunc
+      let id = popup_create('x',
+            \ {'callback': function('s:PopupCb', [([1], {'a': [2]})])})
+      call test_garbagecollect_now()
+      call assert_equal([([1], {'a': [2]})],
+            \ get(popup_getoptions(id).callback, 'args'))
+      call popup_close(id)
+    END
+    call v9.CheckSourceSuccess(lines)
+  endif
+endfunc
+
+" Test for garbage collection of tuples in an object and a class variable
+func Test_tuple_gc_object()
+  let lines =<< trim END
+    vim9script
+    class A
+      var t: tuple<list<number>, dict<list<number>>> = ([1], {a: [2]})
+      static var st: tuple<list<number>> = ([3],)
+    endclass
+    var obj = A.new()
+    test_garbagecollect_now()
+    assert_equal(([1], {a: [2]}), obj.t)
+    assert_equal(([3],), A.st)
+
+    # object -> tuple -> object cycle
+    class B
+      public var t: tuple<any, list<number>>
+    endclass
+    var b = B.new()
+    b.t = (b, [4])
+    test_garbagecollect_now()
+    assert_true(b.t[0] is b)
+    assert_equal([4], b.t[1])
+
+    # an unreachable cycle is freed
+    var shared = [5]
+    var b2 = B.new()
+    b2.t = (b2, shared)
+    assert_equal(2, test_refcount(shared))
+    b2 = null_object
+    test_garbagecollect_now()
+    assert_equal(1, test_refcount(shared))
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Test for garbage collection of tuples in a quickfix list
+func Test_tuple_gc_quickfix()
+  CheckFeature quickfix
+
+  let lines =<< trim END
+    call setqflist([], ' ', {'context': ([1], {'a': [2]})})
+    call setqflist([{'text': 'x', 'user_data': ([3],)}], 'a')
+    call test_garbagecollect_now()
+    call assert_equal(([1], {'a': [2]}), getqflist({'context': 1}).context)
+    call assert_equal(([3],), getqflist()[0].user_data)
+    call setqflist([], 'f')
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Test for garbage collection of deeply nested tuples and of tuples nested in
+" Lists and Dicts
+func Test_tuple_gc_nested()
+  let lines =<< trim END
+    let t = ([0],)
+    for i in range(1, 1000)
+      let t = (t, [i])
+    endfor
+    call test_garbagecollect_now()
+    let x = t
+    let i = 1000
+    while i > 0
+      call assert_equal([i], x[1])
+      let x = x[0]
+      let i -= 1
+    endwhile
+    call assert_equal(([0],), x)
+
+    let v = [{'a': ([{'b': ([1],)}],)}]
+    call test_garbagecollect_now()
+    call assert_equal([{'a': ([{'b': ([1],)}],)}], v)
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Test for garbage collection of a cycle through a tuple
+func Test_tuple_gc_cycle()
+  let lines =<< trim END
+    " list -> tuple -> list cycle
+    let l = [1]
+    let t = (l, [2])
+    call add(l, t)
+    " dict -> tuple -> dict cycle
+    let d = {}
+    let d.t = (d, [3])
+    call test_garbagecollect_now()
+    call assert_true(l[1] is t)
+    call assert_true(t[0] is l)
+    call assert_equal([2], t[1])
+    call assert_true(d.t[0] is d)
+    call assert_equal([3], d.t[1])
+
+    " an unreachable cycle is freed
+    let shared = [4]
+    let l2 = []
+    call add(l2, (l2, shared))
+    call assert_equal(2, test_refcount(shared))
+    unlet l2
+    call test_garbagecollect_now()
+    call assert_equal(1, test_refcount(shared))
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
 " Test for repeat()
 func Test_tuple_repeat()
   let lines =<< trim END
