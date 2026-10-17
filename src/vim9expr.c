@@ -85,8 +85,13 @@ compile_tuple_member(
 	if (typep->type_decl->tt_type == VAR_TUPLE)
 	    typep->type_decl = &t_tuple_any;
 
+	// Except for a variadic tuple with one item type, the number of items
+	// in the slice and their types are not known.
+	if (!((typep->type_curr->tt_flags & TTFLAG_VARARGS)
+				    && typep->type_curr->tt_argcount == 1))
+	    typep->type_curr = &t_tuple_any;
 	// a copy is made, the composite is no longer "const"
-	if (typep->type_curr->tt_flags & TTFLAG_CONST)
+	else if (typep->type_curr->tt_flags & TTFLAG_CONST)
 	{
 	    type_T *type = copy_type(typep->type_curr, cctx->ctx_type_list);
 

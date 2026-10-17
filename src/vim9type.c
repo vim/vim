@@ -1193,8 +1193,14 @@ check_tuple_type_maybe(
     type_T	*actual,
     where_T	where)
 {
-    if (expected->tt_argcount == -1 || actual->tt_argcount == -1
-		|| expected->tt_args == NULL || actual->tt_args == NULL)
+    if (expected->tt_argcount == -1 || expected->tt_args == NULL)
+	return OK;
+
+    // When the number of items is not known, a runtime check is needed.
+    if (actual->tt_argcount == -1)
+	return MAYBE;
+
+    if (actual->tt_args == NULL)
 	return OK;
 
     // For a non-variadic tuple, the number of items must match

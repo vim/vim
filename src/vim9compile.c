@@ -518,9 +518,11 @@ use_typecheck(type_T *actual, type_T *expected)
 	return TRUE;
     if (actual->tt_type == VAR_OBJECT && expected->tt_type == VAR_OBJECT)
 	return TRUE;
-    if ((actual->tt_type == VAR_LIST
-		|| actual->tt_type == VAR_TUPLE
-		|| actual->tt_type == VAR_DICT)
+    if (actual->tt_type == VAR_TUPLE && expected->tt_type == VAR_TUPLE)
+	// A tuple type doesn't have a member type.  The number of items of
+	// "actual" is not known.
+	return TRUE;
+    if ((actual->tt_type == VAR_LIST || actual->tt_type == VAR_DICT)
 	    && actual->tt_type == expected->tt_type)
 	// This takes care of a nested list or dict.
 	return use_typecheck(actual->tt_member, expected->tt_member);
@@ -3297,11 +3299,13 @@ compile_assign_set_lhs_type_from_rhs(
     type_T *type;
 
     // An empty list or dict has a &t_unknown member, for a variable that
-    // implies &t_any.
+    // implies &t_any.  Similarly for an empty tuple.
     if (rhs_type == &t_list_empty)
 	type = &t_list_any;
     else if (rhs_type == &t_dict_empty)
 	type = &t_dict_any;
+    else if (rhs_type == &t_tuple_empty)
+	type = &t_tuple_any;
     else if (rhs_type == &t_unknown)
 	type = &t_any;
     else
