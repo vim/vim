@@ -3576,26 +3576,26 @@ exec_unpack_tuple(ectx_T *ectx, isn_T *iptr, typval_T *tv)
 	return EXEC_DONE;
     ectx->ec_stack.ga_len += count - 1;
 
-    // Variable after semicolon gets a list with the remaining
+    // Variable after semicolon gets a tuple with the remaining
     // items.
     if (semicolon)
     {
-	list_T	*rem_list =
-	    list_alloc_with_items(TUPLE_LEN(tuple) - count + 1);
+	tuple_T	*rem_tuple =
+	    tuple_alloc_with_items(TUPLE_LEN(tuple) - count + 1);
 
-	if (rem_list == NULL)
+	if (rem_tuple == NULL)
 	    return EXEC_DONE;
 	tv = STACK_TV_BOT(-count);
-	tv->v_type = VAR_LIST;
-	tv->vval.v_list = rem_list;
-	++rem_list->lv_refcount;
+	tv->v_type = VAR_TUPLE;
+	tv->vval.v_tuple = rem_tuple;
+	++rem_tuple->tv_refcount;
 	tv->v_lock = 0;
 	for (i = count - 1; i < TUPLE_LEN(tuple); ++i)
 	{
 	    typval_T tvcopy;
 
 	    copy_tv(TUPLE_ITEM(tuple, i), &tvcopy);
-	    list_set_item(rem_list, i - (count - 1), &tvcopy);
+	    tuple_set_item(rem_tuple, i - (count - 1), &tvcopy);
 	}
 	--count;
     }
