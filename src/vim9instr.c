@@ -307,6 +307,14 @@ set_tuple_union_type_on_stack(type_T *type1, type_T *type2, cctx_T *cctx)
     // The concatenated tuple has the union of types from both the tuples
     garray_T	tuple_types_ga;
 
+    // When the number of items in one of the tuples is not known, then the
+    // item types of the resulting tuple are not known either.
+    if (type1->tt_argcount < 0 || type2->tt_argcount < 0)
+    {
+	set_type_on_stack(cctx, &t_tuple_any, 0);
+	return OK;
+    }
+
     ga_init2(&tuple_types_ga, sizeof(type_T *), 10);
 
     if (type1->tt_argcount > 0)

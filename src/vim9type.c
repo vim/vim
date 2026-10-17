@@ -281,8 +281,12 @@ set_tv_type_tuple(tuple_T *tuple, type_T *type)
 	    // For a variadic tuple, the last type is a List.  So use the
 	    // List member type.
 	    item_type = type->tt_args[type->tt_argcount - 1]->tt_member;
-	else
+	else if (i < type->tt_argcount)
 	    item_type = type->tt_args[i];
+	else
+	    // The tuple has more items than the type, don't read past the end
+	    // of "tt_args".
+	    break;
 
 	set_tv_type(TUPLE_ITEM(tuple, i), item_type);
     }

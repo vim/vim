@@ -506,6 +506,31 @@ func Test_tuple_concatenate()
   call v9.CheckSourceDefAndScriptSuccess(lines)
 endfunc
 
+" Test for concatenating a tuple with an unknown number of items in a compiled
+" function.  The resulting tuple type must not have fewer items than the
+" tuple.
+def Test_tuple_concatenate_unknown_item_count()
+  var lines =<< trim END
+    vim9script
+    def Fn1(): tuple<any, ...list<any>>
+      var t = ()
+      t = (1, 2, 3)
+      var u = t + ('x',)
+      return u
+    enddef
+    def Fn2(): tuple<any, ...list<any>>
+      var a: tuple<number> = (1,)
+      var t = ()
+      t = ([2], {k: 3}, [4])
+      var u = a + t
+      return u
+    enddef
+    assert_equal((1, 2, 3, 'x'), Fn1())
+    assert_equal((1, [2], {k: 3}, [4]), Fn2())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for comparing tuples
 func Test_tuple_compare()
   let lines =<< trim END
