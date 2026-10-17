@@ -34,8 +34,10 @@
 #define INVESTIGATE 2
 
 typedef struct s_xdlclass {
+	uint64_t line_hash;
 	struct s_xdlclass *next;
-	xrecord_t rec;
+	const uint8_t *ptr;
+	size_t size;
 	long idx;
 	long len1, len2;
 } xdlclass_t;
@@ -92,15 +94,16 @@ static void xdl_free_classifier(xdlclassifier_t *cf) {
 }
 
 
-static int xdl_classify_record(unsigned int pass, xdlclassifier_t *cf, xrecord_t *rec) {
-	long hi;
+static int xdl_classify_record(unsigned int pass, xdlclassifier_t *cf, xrecord_t *rec,
+			       uint64_t line_hash) {
+	size_t hi;
 	xdlclass_t *rcrec;
 
-	hi = (long) XDL_HASHLONG(rec->ha, cf->hbits);
+	hi = XDL_HASHLONG(line_hash, cf->hbits);
 	for (rcrec = cf->rchash[hi]; rcrec; rcrec = rcrec->next)
-		if (rcrec->rec.ha == rec->ha &&
-				xdl_recmatch(rcrec->rec.ptr, rcrec->rec.size,
-					rec->ptr, rec->size, cf->flags))
+		if (rcrec->line_hash == line_hash &&
+				xdl_recmatch((const char *)rcrec->ptr, (long)rcrec->size,
+					(const char *)rec->ptr, (long)rec->size, cf->flags))
 			break;
 
 	if (!rcrec) {
@@ -112,7 +115,9 @@ static int xdl_classify_record(unsigned int pass, xdlclassifier_t *cf, xrecord_t
 		if (XDL_ALLOC_GROW(cf->rcrecs, cf->count, cf->alloc))
 				return -1;
 		cf->rcrecs[rcrec->idx] = rcrec;
-		rcrec->rec = *rec;
+		rcrec->line_hash = line_hash;
+		rcrec->ptr = rec->ptr;
+		rcrec->size = rec->size;
 		rcrec->len1 = rcrec->len2 = 0;
 		rcrec->next = cf->rchash[hi];
 		cf->rchash[hi] = rcrec;
@@ -120,7 +125,7 @@ static int xdl_classify_record(unsigned int pass, xdlclassifier_t *cf, xrecord_t
 
 	(pass == 1) ? rcrec->len1++ : rcrec->len2++;
 
-	rec->ha = (unsigned long) rcrec->idx;
+	rec->minimal_perfect_hash = (size_t)rcrec->idx;
 
 	return 0;
 }
@@ -128,7 +133,7 @@ static int xdl_classify_record(unsigned int pass, xdlclassifier_t *cf, xrecord_t
 
 static void xdl_free_ctx(xdfile_t *xdf)
 {
-	xdl_free(xdf->rindex);
+	xdl_free(xdf->reference_index);
 	xdl_free(xdf->changed - 1);
 	xdl_free(xdf->recs);
 }
@@ -137,11 +142,11 @@ static void xdl_free_ctx(xdfile_t *xdf)
 static int xdl_prepare_ctx(unsigned int pass, mmfile_t *mf, long narec, xpparam_t const *xpp,
 			   xdlclassifier_t *cf, xdfile_t *xdf) {
 	long bsize;
-	unsigned long hav;
-	char const *blk, *cur, *top, *prev;
+	uint64_t hav;
+	uint8_t const *blk, *cur, *top, *prev;
 	xrecord_t *crec;
 
-	xdf->rindex = NULL;
+	xdf->reference_index = NULL;
 	xdf->changed = NULL;
 	xdf->recs = NULL;
 
@@ -153,25 +158,18 @@ static int xdl_prepare_ctx(unsigned int pass, mmfile_t *mf, long narec, xpparam_
 		for (top = blk + bsize; cur < top; ) {
 			prev = cur;
 			hav = xdl_hash_record(&cur, top, xpp->flags);
-			if (XDL_ALLOC_GROW(xdf->recs, xdf->nrec + 1, narec))
+			if (XDL_ALLOC_GROW(xdf->recs, (long)xdf->nrec + 1, narec))
 				goto abort;
 			crec = &xdf->recs[xdf->nrec++];
 			crec->ptr = prev;
-			crec->size = (long) (cur - prev);
-			crec->ha = hav;
-			if (xdl_classify_record(pass, cf, crec) < 0)
+			crec->size = cur - prev;
+			if (xdl_classify_record(pass, cf, crec, hav) < 0)
 				goto abort;
 		}
 	}
 
 	if (!XDL_CALLOC_ARRAY(xdf->changed, xdf->nrec + 2))
 		goto abort;
-
-	if ((XDF_DIFF_ALG(xpp->flags) != XDF_PATIENCE_DIFF) &&
-	    (XDF_DIFF_ALG(xpp->flags) != XDF_HISTOGRAM_DIFF)) {
-		if (!XDL_ALLOC_ARRAY(xdf->rindex, xdf->nrec + 1))
-			goto abort;
-	}
 
 	xdf->changed += 1;
 	xdf->nreff = 0;
@@ -193,8 +191,9 @@ void xdl_free_env(xdfenv_t *xe) {
 }
 
 
-static bool xdl_clean_mmatch(uint8_t const *action, long i, long s, long e) {
-	long r, rdis0, rpdis0, rdis1, rpdis1;
+static bool xdl_clean_mmatch(uint8_t const *action, ptrdiff_t i, ptrdiff_t len) {
+	ptrdiff_t r, rdis0, rpdis0, rdis1, rpdis1;
+	ptrdiff_t s = 0, e = len - 1;
 
 	/*
 	 * Limits the window that is examined during the similar-lines
@@ -264,22 +263,24 @@ static bool xdl_clean_mmatch(uint8_t const *action, long i, long s, long e) {
  * might be potentially discarded if they appear in a run of discardable.
  */
 static int xdl_cleanup_records(xdlclassifier_t *cf, xdfile_t *xdf1, xdfile_t *xdf2) {
-	long i, nm, nreff, mlim;
-	xrecord_t *recs;
+	ptrdiff_t i, nm, mlim1, mlim2;
 	xdlclass_t *rcrec;
 	uint8_t *action1 = NULL, *action2 = NULL;
 	bool need_min = !!(cf->flags & XDF_NEED_MINIMAL);
 	int ret = 0;
+	ptrdiff_t off = xdf1->dstart;
+	ptrdiff_t len1 = xdf1->dend - off + 1;
+	ptrdiff_t len2 = xdf2->dend - off + 1;
 
 	/*
 	 * Create temporary arrays that will help us decide if
 	 * changed[i] should remain false, or become true.
 	 */
-	if (!XDL_CALLOC_ARRAY(action1, xdf1->nrec + 1)) {
-		ret = -1;
-		goto cleanup;
-	}
-	if (!XDL_CALLOC_ARRAY(action2, xdf2->nrec + 1)) {
+	if (!XDL_CALLOC_ARRAY(action1, len1) ||
+	    !XDL_CALLOC_ARRAY(action2, len2) ||
+	    !XDL_ALLOC_ARRAY(xdf1->reference_index, len1) ||
+	    !XDL_ALLOC_ARRAY(xdf2->reference_index, len2))
+	{
 		ret = -1;
 		goto cleanup;
 	}
@@ -287,49 +288,91 @@ static int xdl_cleanup_records(xdlclassifier_t *cf, xdfile_t *xdf1, xdfile_t *xd
 	/*
 	 * Initialize temporary arrays with DISCARD, KEEP, or INVESTIGATE.
 	 */
-	if ((mlim = xdl_bogosqrt(xdf1->nrec)) > XDL_MAX_EQLIMIT)
-		mlim = XDL_MAX_EQLIMIT;
-	for (i = xdf1->dstart, recs = &xdf1->recs[xdf1->dstart]; i <= xdf1->dend; i++, recs++) {
-		rcrec = cf->rcrecs[recs->ha];
+	if (need_min) {
+		/* i.e. infinity */
+		mlim1 = PTRDIFF_MAX;
+	} else {
+		mlim1 = xdl_bogosqrt((uint64_t)xdf1->nrec);
+		if (mlim1 > XDL_MAX_EQLIMIT)
+			mlim1 = XDL_MAX_EQLIMIT;
+	}
+	for (i = 0; i < len1; i++) {
+		size_t mph1 = xdf1->recs[i + off].minimal_perfect_hash;
+		rcrec = cf->rcrecs[mph1];
 		nm = rcrec ? rcrec->len2 : 0;
-		action1[i] = (nm == 0) ? DISCARD: (nm >= mlim && !need_min) ? INVESTIGATE: KEEP;
+		if (nm == 0)
+			action1[i] = DISCARD;
+		else if (nm < mlim1)
+			action1[i] = KEEP;
+		else /* nm >= mlim1 */
+			action1[i] = INVESTIGATE;
 	}
 
-	if ((mlim = xdl_bogosqrt(xdf2->nrec)) > XDL_MAX_EQLIMIT)
-		mlim = XDL_MAX_EQLIMIT;
-	for (i = xdf2->dstart, recs = &xdf2->recs[xdf2->dstart]; i <= xdf2->dend; i++, recs++) {
-		rcrec = cf->rcrecs[recs->ha];
+	if (need_min) {
+		/* i.e. infinity */
+		mlim2 = PTRDIFF_MAX;
+	} else {
+		mlim2 = xdl_bogosqrt((uint64_t)xdf2->nrec);
+		if (mlim2 > XDL_MAX_EQLIMIT)
+			mlim2 = XDL_MAX_EQLIMIT;
+	}
+	for (i = 0; i < len2; i++) {
+		size_t mph2 = xdf2->recs[i + off].minimal_perfect_hash;
+		rcrec = cf->rcrecs[mph2];
 		nm = rcrec ? rcrec->len1 : 0;
-		action2[i] = (nm == 0) ? DISCARD: (nm >= mlim && !need_min) ? INVESTIGATE: KEEP;
+		if (nm == 0)
+			action2[i] = DISCARD;
+		else if (nm < mlim2)
+			action2[i] = KEEP;
+		else /* nm >= mlim2 */
+			action2[i] = INVESTIGATE;
 	}
 
 	/*
 	 * Use temporary arrays to decide if changed[i] should remain
 	 * false, or become true.
 	 */
-	for (nreff = 0, i = xdf1->dstart, recs = &xdf1->recs[xdf1->dstart];
-	     i <= xdf1->dend; i++, recs++) {
-		if (action1[i] == KEEP ||
-		    (action1[i] == INVESTIGATE && !xdl_clean_mmatch(action1, i, xdf1->dstart, xdf1->dend))) {
-			xdf1->rindex[nreff++] = i;
-			/* changed[i] remains false, i.e. keep */
-		} else
-			xdf1->changed[i] = true;
-			/* i.e. discard */
-	}
-	xdf1->nreff = nreff;
+	xdf1->nreff = 0;
+	for (i = 0; i < len1; i++) {
+		uint8_t action = action1[i];
 
-	for (nreff = 0, i = xdf2->dstart, recs = &xdf2->recs[xdf2->dstart];
-	     i <= xdf2->dend; i++, recs++) {
-		if (action2[i] == KEEP ||
-		    (action2[i] == INVESTIGATE && !xdl_clean_mmatch(action2, i, xdf2->dstart, xdf2->dend))) {
-			xdf2->rindex[nreff++] = i;
-			/* changed[i] remains false, i.e. keep */
-		} else
-			xdf2->changed[i] = true;
-			/* i.e. discard */
+		if (action == INVESTIGATE) {
+			if (!xdl_clean_mmatch(action1, i, len1))
+				action = KEEP;
+			else
+				action = DISCARD;
+		}
+
+		if (action == KEEP) {
+			xdf1->reference_index[xdf1->nreff++] = i + off;
+			/* changed[i] remains false */
+		} else if (action == DISCARD) {
+			xdf1->changed[i + off] = true;
+		} else {
+			BUG("Illegal state for action");
+		}
 	}
-	xdf2->nreff = nreff;
+
+	xdf2->nreff = 0;
+	for (i = 0; i < len2; i++) {
+		uint8_t action = action2[i];
+
+		if (action == INVESTIGATE) {
+			if (!xdl_clean_mmatch(action2, i, len2))
+				action = KEEP;
+			else
+				action = DISCARD;
+		}
+
+		if (action == KEEP) {
+			xdf2->reference_index[xdf2->nreff++] = i + off;
+			/* changed[i] remains false */
+		} else if (action == DISCARD) {
+			xdf2->changed[i + off] = true;
+		} else {
+			BUG("Illegal state for action");
+		}
+	}
 
 cleanup:
 	xdl_free(action1);
@@ -348,9 +391,9 @@ static int xdl_trim_ends(xdfile_t *xdf1, xdfile_t *xdf2) {
 
 	recs1 = xdf1->recs;
 	recs2 = xdf2->recs;
-	for (i = 0, lim = XDL_MIN(xdf1->nrec, xdf2->nrec); i < lim;
+	for (i = 0, lim = (long)XDL_MIN(xdf1->nrec, xdf2->nrec); i < lim;
 	     i++, recs1++, recs2++)
-		if (recs1->ha != recs2->ha)
+		if (recs1->minimal_perfect_hash != recs2->minimal_perfect_hash)
 			break;
 
 	xdf1->dstart = xdf2->dstart = i;
@@ -358,11 +401,11 @@ static int xdl_trim_ends(xdfile_t *xdf1, xdfile_t *xdf2) {
 	recs1 = xdf1->recs + xdf1->nrec - 1;
 	recs2 = xdf2->recs + xdf2->nrec - 1;
 	for (lim -= i, i = 0; i < lim; i++, recs1--, recs2--)
-		if (recs1->ha != recs2->ha)
+		if (recs1->minimal_perfect_hash != recs2->minimal_perfect_hash)
 			break;
 
-	xdf1->dend = xdf1->nrec - i - 1;
-	xdf2->dend = xdf2->nrec - i - 1;
+	xdf1->dend = (long)xdf1->nrec - i - 1;
+	xdf2->dend = (long)xdf2->nrec - i - 1;
 
 	return 0;
 }

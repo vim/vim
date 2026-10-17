@@ -22,9 +22,9 @@
 
 #include "xinclude.h"
 
-static unsigned long get_hash(xdfile_t *xdf, long index)
+static size_t get_hash(xdfile_t *xdf, long index)
 {
-	return xdf->recs[xdf->rindex[index]].ha;
+	return xdf->recs[xdf->reference_index[index]].minimal_perfect_hash;
 }
 
 #define XDL_MAX_COST_MIN 256
@@ -278,10 +278,10 @@ int xdl_recs_cmp(xdfile_t *xdf1, long off1, long lim1,
 	 */
 	if (off1 == lim1) {
 		for (; off2 < lim2; off2++)
-			xdf2->changed[xdf2->rindex[off2]] = true;
+			xdf2->changed[xdf2->reference_index[off2]] = true;
 	} else if (off2 == lim2) {
 		for (; off1 < lim1; off1++)
-			xdf1->changed[xdf1->rindex[off1]] = true;
+			xdf1->changed[xdf1->reference_index[off1]] = true;
 	} else {
 		xdpsplit_t spl;
 		spl.i1 = spl.i2 = 0;
@@ -348,7 +348,7 @@ int xdl_do_diff(mmfile_t *mf1, mmfile_t *mf2, xpparam_t const *xpp,
 	kvdf += xe->xdf2.nreff + 1;
 	kvdb += xe->xdf2.nreff + 1;
 
-	xenv.mxcost = xdl_bogosqrt(ndiags);
+	xenv.mxcost = (long)xdl_bogosqrt((uint64_t)ndiags);
 	if (xenv.mxcost < XDL_MAX_COST_MIN)
 		xenv.mxcost = XDL_MAX_COST_MIN;
 	xenv.snake_cnt = XDL_SNAKE_CNT;
@@ -385,7 +385,7 @@ static xdchange_t *xdl_add_change(xdchange_t *xscr, long i1, long i2, long chg1,
 
 static int recs_match(xrecord_t *rec1, xrecord_t *rec2)
 {
-	return (rec1->ha == rec2->ha);
+	return rec1->minimal_perfect_hash == rec2->minimal_perfect_hash;
 }
 
 /*
@@ -403,11 +403,10 @@ static int recs_match(xrecord_t *rec1, xrecord_t *rec2)
  */
 static int get_indent(xrecord_t *rec)
 {
-	long i;
 	int ret = 0;
 
-	for (i = 0; i < rec->size; i++) {
-		char c = rec->ptr[i];
+	for (size_t i = 0; i < rec->size; i++) {
+		char c = (char) rec->ptr[i];
 
 		if (!XDL_ISSPACE(c))
 			return ret;
@@ -484,7 +483,7 @@ static void measure_split(const xdfile_t *xdf, long split,
 {
 	long i;
 
-	if (split >= xdf->nrec) {
+	if (split >= (long)xdf->nrec) {
 		m->end_of_file = 1;
 		m->indent = -1;
 	} else {
@@ -507,7 +506,7 @@ static void measure_split(const xdfile_t *xdf, long split,
 
 	m->post_blank = 0;
 	m->post_indent = -1;
-	for (i = split + 1; i < xdf->nrec; i++) {
+	for (i = split + 1; i < (long)xdf->nrec; i++) {
 		m->post_indent = get_indent(&xdf->recs[i]);
 		if (m->post_indent != -1)
 			break;
@@ -718,7 +717,7 @@ static void group_init(xdfile_t *xdf, struct xdlgroup *g)
  */
 static inline int group_next(xdfile_t *xdf, struct xdlgroup *g)
 {
-	if (g->end == xdf->nrec)
+	if (g->end == (long)xdf->nrec)
 		return -1;
 
 	g->start = g->end + 1;
@@ -751,7 +750,7 @@ static inline int group_previous(xdfile_t *xdf, struct xdlgroup *g)
  */
 static int group_slide_down(xdfile_t *xdf, struct xdlgroup *g)
 {
-	if (g->end < xdf->nrec &&
+	if (g->end < (long)xdf->nrec &&
 	    recs_match(&xdf->recs[g->start], &xdf->recs[g->end])) {
 		xdf->changed[g->start++] = false;
 		xdf->changed[g->end++] = true;
@@ -793,6 +792,7 @@ static int group_slide_up(xdfile_t *xdf, struct xdlgroup *g)
  */
 int xdl_change_compact(xdfile_t *xdf, xdfile_t *xdfo, long flags) {
 	struct xdlgroup g, go;
+	struct xdlgroup g_orig;
 	long earliest_end, end_matching_other;
 	long groupsize;
 
@@ -806,10 +806,12 @@ int xdl_change_compact(xdfile_t *xdf, xdfile_t *xdfo, long flags) {
 		if (g.end == g.start)
 			goto next;
 
+		g_orig = g;
+
 		/*
 		 * Now shift the change up and then down as far as possible in
 		 * each direction. If it bumps into any other changes, merge
-		 * them.
+		 * them and restart the process.
 		 */
 		do {
 			groupsize = g.end - g.start;
@@ -862,7 +864,8 @@ int xdl_change_compact(xdfile_t *xdf, xdfile_t *xdfo, long flags) {
 			/*
 			 * Move the possibly merged group of changes back to
 			 * line up with the last group of changes from the
-			 * other file that it can align with.
+			 * other file that it can align with. This avoids breaking
+			 * a single change into a separate addition/deletion.
 			 */
 			while (go.end == go.start) {
 				if (group_slide_up(xdf, &g))
@@ -912,6 +915,45 @@ int xdl_change_compact(xdfile_t *xdf, xdfile_t *xdfo, long flags) {
 					BUG("best shift unreached");
 				if (group_previous(xdfo, &go))
 					BUG("group sync broken sliding to blank line");
+			}
+		}
+
+		/*
+		 * If we merged change groups during shifting, the new
+		 * combined group could now have matching lines in both files,
+		 * even if the original separate groups did not. Re-diff the
+		 * new group to find these matching lines to mark them as
+		 * unchanged.
+		 *
+		 * Only do this if the corresponding group in the other file is
+		 * non-empty, as it's trivial otherwise.
+		 *
+		 * Only do this for histogram diff as its LCS algorithm allows
+		 * for this scenario. In contrast, patience diff finds LCS
+		 * of unique lines that groups cannot be shifted across.
+		 * Myer's diff (standalone or used as fall-back in patience
+		 * diff) already finds minimal edits so it is not possible for
+		 * shifted groups to result in a smaller diff. (Without
+		 * XDF_NEED_MINIMAL, Myer's isn't technically guaranteed to be
+		 * minimal, but it should be so most of the time)
+		 */
+		if (go.end != go.start &&
+				XDF_DIFF_ALG(flags) == XDF_HISTOGRAM_DIFF &&
+				(g.start != g_orig.start ||
+				 g.end != g_orig.end)) {
+			xpparam_t xpp;
+			xdfenv_t xe;
+
+			memset(&xpp, 0, sizeof(xpp));
+			xpp.flags = flags & ~XDF_DIFF_ALGORITHM_MASK;
+
+			xe.xdf1 = *xdf;
+			xe.xdf2 = *xdfo;
+
+			if (xdl_fall_back_diff(&xe, &xpp,
+					       g.start + 1, g.end - g.start,
+					       go.start + 1, go.end - go.start)) {
+				return -1;
 			}
 		}
 
@@ -993,11 +1035,11 @@ static void xdl_mark_ignorable_lines(xdchange_t *xscr, xdfenv_t *xe, long flags)
 
 		rec = &xe->xdf1.recs[xch->i1];
 		for (i = 0; i < xch->chg1 && ignore; i++)
-			ignore = xdl_blankline(rec[i].ptr, rec[i].size, flags);
+			ignore = xdl_blankline((const char *)rec[i].ptr, (long)rec[i].size, flags);
 
 		rec = &xe->xdf2.recs[xch->i2];
 		for (i = 0; i < xch->chg2 && ignore; i++)
-			ignore = xdl_blankline(rec[i].ptr, rec[i].size, flags);
+			ignore = xdl_blankline((const char *)rec[i].ptr, (long)rec[i].size, flags);
 
 		xch->ignore = ignore;
 	}
@@ -1008,7 +1050,7 @@ static int record_matches_regex(xrecord_t *rec, xpparam_t const *xpp) {
 	size_t i;
 
 	for (i = 0; i < xpp->ignore_regex_nr; i++)
-		if (!regexec_buf(xpp->ignore_regex[i], rec->ptr, rec->size, 1,
+		if (!regexec_buf(xpp->ignore_regex[i], (const char *)rec->ptr, rec->size, 1,
 				 &regmatch, 0))
 			return 1;
 
