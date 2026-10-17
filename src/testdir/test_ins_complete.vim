@@ -6993,6 +6993,14 @@ func Test_ins_complete_files_in_path()
   set path=Xfilecptdir
   call setline(1, 'on')
   call feedkeys("A\<C-X>\<C-f>\<Esc>", 'tx')
+  call assert_equal('on', getline(1))
+
+  " consulting 'path' for file completion requires pathopt in 'completeopt'
+  set completeopt+=pathopt
+
+  " complete a file name found in a directory in 'path'
+  call setline(1, 'on')
+  call feedkeys("A\<C-X>\<C-f>\<Esc>", 'tx')
   call assert_equal('one.txt', getline(1))
 
   " complete a directory name found in a directory in 'path' followed by a file
@@ -7053,6 +7061,7 @@ func Test_ins_complete_files_in_path()
 
   %bwipe!
   set path&
+  set completeopt&
   call delete('Xcwdfile.txt')
   call delete('Xfilecptdir', 'rf')
 endfunc

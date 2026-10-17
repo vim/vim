@@ -4913,7 +4913,7 @@ get_next_filename_completion(void)
     }
 
     if (expand_wildcards(1, &compl_pattern.string, &num_matches, &matches,
-		EW_FILE|EW_DIR|EW_ADDSLASH|EW_SILENT|EW_PATH) != OK)
+		EW_FILE|EW_DIR|EW_ADDSLASH|EW_SILENT|((get_cot_flags() & COT_PATHOPT) ? EW_PATH : 0)) != OK)
 	return;
 
     // May change home directory back to "~".
