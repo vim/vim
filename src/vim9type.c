@@ -1198,6 +1198,13 @@ check_tuple_type_maybe(
 	    && expected->tt_argcount != actual->tt_argcount)
 	return FAIL;
 
+    // For a variadic tuple, a non-variadic tuple must have at least the
+    // items before the variadic type.
+    if ((expected->tt_flags & TTFLAG_VARARGS)
+	    && !(actual->tt_flags & TTFLAG_VARARGS)
+	    && actual->tt_argcount < expected->tt_argcount - 1)
+	return FAIL;
+
     // compare the type of each tuple item
     for (int i = 0; i < actual->tt_argcount; ++i)
     {
