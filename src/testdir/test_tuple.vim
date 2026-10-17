@@ -1721,8 +1721,27 @@ func Test_tuple_deepcopy()
     VAR tuple = (l,)
     call add(l, tuple)
     call assert_equal('([(...)], )', string(deepcopy(tuple)))
+
+    #" items referring to the same List refer to the same copy
+    VAR l2 = [1]
+    VAR t4 = (l2, l2)
+    VAR t5 = deepcopy(t4)
+    call assert_true(t5[0] is t5[1])
+    call assert_false(t5[0] is l2)
   END
   call v9.CheckSourceLegacyAndVim9Success(lines)
+
+  " a copy of a locked tuple is not locked
+  let g:t = (1, [2])
+  lockvar 2 g:t
+  let g:t2 = deepcopy(g:t)
+  call assert_equal(1, islocked('g:t'))
+  call assert_equal(0, islocked('g:t2'))
+  call assert_equal(0, islocked('g:t2[1]'))
+  call add(g:t2[1], 3)
+  call assert_equal((1, [2, 3]), g:t2)
+  unlockvar 2 g:t
+  unlet g:t g:t2
 endfunc
 
 " Test for empty()
@@ -1752,12 +1771,20 @@ func Test_tuple_extend()
   let lines =<< trim END
     VAR t = (1, 2, 3)
     call extend(t, (4, 5))
-    call extendnew(t, (4, 5))
   END
   call v9.CheckSourceLegacyAndVim9Failure(lines, [
         \ 'E896: Argument of extend() must be a List, Dictionary or Blob',
         \ 'E1013: Argument 1: type mismatch, expected list<any> but got tuple<number, number, number>',
         \ 'E896: Argument of extend() must be a List, Dictionary or Blob'])
+
+  let lines =<< trim END
+    VAR t = (1, 2, 3)
+    call extendnew(t, (4, 5))
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E896: Argument of extendnew() must be a List, Dictionary or Blob',
+        \ 'E1013: Argument 1: type mismatch, expected list<any> but got tuple<number, number, number>',
+        \ 'E896: Argument of extendnew() must be a List, Dictionary or Blob'])
 endfunc
 
 " Test for filter() with a tuple
@@ -1922,6 +1949,14 @@ func Test_tuple_insert()
   let lines =<< trim END
     VAR t = (1, 2, 3)
     call insert(t, 4)
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E899: Argument of insert() must be a List or Blob',
+        \ 'E1013: Argument 1: type mismatch, expected list<any> but got tuple<number, number, number>',
+        \ 'E1226: List or Blob required for argument 1'])
+
+  let lines =<< trim END
+    VAR t = (1, 2, 3)
     call insert(t, 4, 2)
   END
   call v9.CheckSourceLegacyAndVim9Failure(lines, [
@@ -2573,5 +2608,201 @@ func Test_tuple_type_many_items()
   END
   call v9.CheckSourceDefAndScriptFailure(lines, 'E1012:', 1)
 endfunc
+
+" Test for comparing tuples with items of different types
+func Test_tuple_compare_items()
+  let lines =<< trim END
+    #" ignoring case for String items
+    call assert_true(('abc', 1) ==? ('ABC', 1))
+    call assert_false(('abc', 1) ==# ('ABC', 1))
+    call assert_true(('abc', 1) !=# ('ABC', 1))
+    call assert_false(('abc', 1) !=? ('ABC', 1))
+
+    #" List, Dict and Tuple items are compared by value
+    call assert_true(([1, 2], {'a': 3}, (4,)) == ([1, 2], {'a': 3}, (4,)))
+    call assert_false(([1, 2], {'a': 3}, (4,)) == ([1, 2], {'a': 3}, (5,)))
+    call assert_true(([1, 2],) != ([1, 3],))
+
+    #" a Number item is not equal to a Float item
+    call assert_false((1,) == (1.0,))
+    call assert_true((1.5,) == (1.5,))
+
+    #" a tuple item is not equal to a list item
+    call assert_false(((1,),) == ([1],))
+  END
+  call v9.CheckSourceLegacyAndVim9Success(lines)
+endfunc
+
+" Test for using tuples as items in a List
+func Test_tuple_as_list_item()
+  let lines =<< trim END
+    VAR l = [(3, 'c'), (1, 'a'), (2, 'b'), (1, 'a')]
+    call assert_equal(1, index(l, (1, 'a')))
+    call assert_equal(-1, index(l, (1, 'b')))
+    call assert_equal(2, count(l, (1, 'a')))
+    call assert_equal([(1, 'a'), (1, 'a'), (2, 'b'), (3, 'c')], sort(copy(l)))
+    call assert_equal([(1, 'a'), (2, 'b'), (3, 'c')], uniq(sort(copy(l))))
+  END
+  call v9.CheckSourceLegacyAndVim9Success(lines)
+endfunc
+
+" Test for functions that don't support a tuple argument
+func Test_tuple_unsupported_funcs()
+  let lines =<< trim END
+    VAR t = (1, 2)
+    call mapnew(t, 'v:val')
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E1524: Cannot use a tuple with function mapnew()',
+        \ 'E1013: Argument 1: type mismatch, expected list<any> but got tuple<number, number>',
+        \ 'E1524: Cannot use a tuple with function mapnew()'])
+
+  let lines =<< trim END
+    VAR t = (1, 2)
+    call uniq(t)
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E686: Argument of uniq() must be a List',
+        \ 'E1013: Argument 1: type mismatch, expected list<any> but got tuple<number, number>',
+        \ 'E1211: List required for argument 1'])
+
+  let lines =<< trim END
+    VAR t = (2, 1)
+    call sort(t)
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E686: Argument of sort() must be a List',
+        \ 'E1013: Argument 1: type mismatch, expected list<any> but got tuple<number, number>',
+        \ 'E1211: List required for argument 1'])
+
+  " a tuple cannot be used for the arguments of call() and function()
+  let lines =<< trim END
+    call call('max', (1, 2))
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E1211: List required for argument 2',
+        \ 'E1013: Argument 2: type mismatch, expected list<any> but got tuple<number, number>',
+        \ 'E1211: List required for argument 2'])
+
+  let lines =<< trim END
+    VAR Fn = function('max', ((1, 2),))
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E923: Second argument of function() must be a list or a dict',
+        \ 'E1013: Argument 2: type mismatch, expected list<any> but got tuple<tuple<number, number>>',
+        \ 'E1211: List required for argument 2'])
+endfunc
+
+" Test for using a tuple with printf()
+func Test_tuple_printf()
+  let lines =<< trim END
+    call assert_equal("(1, 'a')", printf('%s', (1, 'a')))
+    call assert_equal('()', printf('%s', ()))
+    call assert_equal('()', printf('%s', test_null_tuple()))
+  END
+  call v9.CheckSourceLegacyAndVim9Success(lines)
+
+  let lines =<< trim END
+    call printf('%d', (1,))
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, 'E1520: Using a Tuple as a Number')
+endfunc
+
+" Test for removing a tuple item and using a compound operator on a tuple item
+func Test_tuple_modify_item_error()
+  let lines =<< trim END
+    VAR t = (1, 2)
+    unlet t[0]
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, 'E1532: Cannot modify a tuple')
+
+  let lines =<< trim END
+    VAR t = (1, 2)
+    LET t[0] += 1
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E1532: Cannot modify a tuple',
+        \ 'E734: Wrong variable type for +=',
+        \ 'E1532: Cannot modify a tuple'])
+endfunc
+
+" Test for using a tuple as a Dict key
+func Test_tuple_dict_key()
+  let lines =<< trim END
+    VAR d = {}
+    LET d[(1,)] = 2
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E1522: Using a Tuple as a String',
+        \ 'E1105: Cannot convert tuple to string',
+        \ 'E1522: Using a Tuple as a String'])
+endfunc
+
+" Test for exists() with a tuple item
+func Test_tuple_exists()
+  let g:t = (1, 'a')
+  call assert_true(exists('g:t'))
+  call assert_true(exists('g:t[0]'))
+  call assert_true(exists('g:t[-1]'))
+  call assert_false(exists('g:t[2]'))
+  call assert_false(exists('g:t[-3]'))
+  unlet g:t
+endfunc
+
+" Test for :break and :continue in a :for loop over a tuple
+func Test_tuple_for_break_continue()
+  let lines =<< trim END
+    VAR r = []
+    for v in (1, 2, 3, 4, 5)
+      if v == 2
+        continue
+      endif
+      if v == 4
+        break
+      endif
+      call add(r, v)
+    endfor
+    call assert_equal([1, 3], r)
+
+    #" nested loops over the same tuple
+    VAR t = (1, 2)
+    LET r = []
+    for a in t
+      for b in t
+        call add(r, [a, b])
+      endfor
+    endfor
+    call assert_equal([[1, 1], [1, 2], [2, 1], [2, 2]], r)
+  END
+  call v9.CheckSourceLegacyAndVim9Success(lines)
+endfunc
+
+" Test for using a tuple as a default argument value and in a closure
+def Test_tuple_default_arg_and_closure()
+  var lines =<< trim END
+    vim9script
+    def Fn(t: tuple<number, string> = (1, 'a')): tuple<number, string>
+      return t
+    enddef
+    assert_equal((1, 'a'), Fn())
+    assert_equal((2, 'b'), Fn((2, 'b')))
+
+    def GetClosure(): func(): tuple<number, ...list<number>>
+      var t = (1, 2, 3)
+      return () => t
+    enddef
+    var Closure = GetClosure()
+    assert_equal((1, 2, 3), Closure())
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Fn(t: tuple<number> = ('a',))
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected tuple<number> but got tuple<string>')
+enddef
 
 " vim: shiftwidth=2 sts=2 expandtab
