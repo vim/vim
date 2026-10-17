@@ -1,4 +1,4 @@
-*version7.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*version7.txt*	For Vim version 9.2.  Last change: 2026 Oct 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2888,7 +2888,7 @@ using ":normal" to avoid nasty side effects.
 Compilation error on HP-UX, use of "dlerr" must be inside a #ifdef.
 (Gary Johnson)
 
-Report +reltime feature in ":version" output.
+Report |+reltime| feature in ":version" output.
 
 The tar and zip plugins detect failure to get the contents of the archive and
 edit the file as-is.
