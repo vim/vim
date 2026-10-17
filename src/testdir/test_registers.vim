@@ -1358,4 +1358,30 @@ func Test_writing_readonly_regs()
   call assert_fails('let @~ = "foo"', 'E354:')
 endfunc
 
+func s:ProviderPaste(reg)
+  return g:provider_paste_ret
+endfunc
+
+" A clipboard provider "paste" callback returning a null tuple or a null list
+" used to cause a crash.  The register should not change.
+func Test_clipboard_provider_paste_null_value()
+  CheckFeature clipboard_provider
+
+  let v:clipproviders['Xnull'] = {
+        \ 'paste': {'+': function('s:ProviderPaste'),
+        \           '*': function('s:ProviderPaste')}}
+  set clipmethod=Xnull
+
+  let g:provider_paste_ret = ('', ['one', 'two'])
+  call assert_equal(['one', 'two'], getreg('+', 1, 1))
+  let g:provider_paste_ret = test_null_tuple()
+  call assert_equal(['one', 'two'], getreg('+', 1, 1))
+  let g:provider_paste_ret = test_null_list()
+  call assert_equal(['one', 'two'], getreg('+', 1, 1))
+
+  set clipmethod&
+  call remove(v:clipproviders, 'Xnull')
+  unlet g:provider_paste_ret
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
