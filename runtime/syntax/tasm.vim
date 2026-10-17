@@ -1,7 +1,10 @@
 " Vim syntax file
-" Language: TASM: turbo assembler by Borland
-" Maintainer: FooLman of United Force <foolman@bigfoot.com>
-" Last Change: 2012 Feb 03 by Thilo Six, and 2018 Nov 27.
+" Language:	TASM: Turbo Assembler by Borland
+" Maintainer:	FooLman of United Force <foolman@bigfoot.com> (invalid)
+" Last Change:	2000 Aug 22
+" 2012 Feb 03 by Thilo Six: add cpo save/restore
+" 2018 Nov 27 by Thilo Six: fix typos
+" 2026 Apr 20 by Brad Forschinger: add missing condition codes #21532
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
