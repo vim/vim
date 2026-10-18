@@ -2578,6 +2578,7 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
     sortinfo_T	*old_sortinfo;
     sortinfo_T	info;
     long	len;
+    int		prev_lock;
 
     if (in_vim9script()
 	    && (check_for_list_arg(argvars, 0) == FAIL
@@ -2614,10 +2615,16 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
     if (parse_sort_uniq_args(argvars, &info) == FAIL)
 	goto theend;
 
+    // A user-supplied compare function could otherwise add, remove or
+    // reorder items while do_sort() or do_uniq() still hold pointers into
+    // the list, causing them to use an already freed list item.
+    prev_lock = l->lv_lock;
+    l->lv_lock = VAR_FIXED;
     if (sort)
 	do_sort(l, &info);
     else
 	do_uniq(l, &info);
+    l->lv_lock = prev_lock;
 
 theend:
     sortinfo = old_sortinfo;
