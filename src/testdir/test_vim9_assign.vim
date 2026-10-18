@@ -2022,6 +2022,25 @@ def Test_assign_list_with_op()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
+" When "+=" fails because of an item type the List is not changed.
+def Test_assign_list_add_wrong_item_type()
+  var lines =<< trim END
+    var l: list<number> = [1]
+    var good: list<any> = [2, 3]
+    l += good
+    assert_equal([1, 2, 3], l)
+
+    var bad: list<any> = [4, 'x']
+    try
+      l += bad
+      assert_report('expected an error')
+    catch /E1012:/
+    endtry
+    assert_equal([1, 2, 3], l)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_assign_with_op_fails()
   var lines =<< trim END
       var s = 'abc'
