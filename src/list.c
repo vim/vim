@@ -847,9 +847,14 @@ check_range_index_one(list_T *l, long *n1, int can_append, int quiet)
 	return li;
 
     // Vim9: Allow for adding an item at the end.
-    if (can_append && in_vim9script()
-	    && *n1 == l->lv_len && l->lv_lock == 0)
+    if (can_append && in_vim9script() && *n1 == l->lv_len)
     {
+	if (l->lv_lock != 0)
+	{
+	    if (!quiet)
+		emsg(_(e_cannot_change_locked_list));
+	    return NULL;
+	}
 	if (list_append_new_item(l) == FAIL)
 	    return NULL;
 	li = list_find_index(l, n1);

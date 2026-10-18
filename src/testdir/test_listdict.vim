@@ -2355,6 +2355,29 @@ def Test_list_length_as_index()
   END
   v9.CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected string but got number', 2)
 
+  # Cannot add an item to a locked List
+  lines =<< trim END
+    vim9script
+    var l = [1]
+    lockvar 1 l
+    l[1] = 2
+  END
+  v9.CheckScriptFailure(lines, 'E1118: Cannot change locked list', 4)
+  lines =<< trim END
+    vim9script
+    const l = [1]
+    l[1] = 2
+  END
+  v9.CheckScriptFailure(lines, 'E1118: Cannot change locked list', 3)
+  lines =<< trim END
+    g:locked_list = [1]
+    lockvar 1 g:locked_list
+    g:locked_list[1] = 2
+  END
+  v9.CheckDefExecFailure(lines, 'E1118: Cannot change locked list', 3)
+  unlockvar g:locked_list
+  unlet g:locked_list
+
   # In legacy script, appending a new item to a list should fail.
   lines =<< trim END
     let l = []
