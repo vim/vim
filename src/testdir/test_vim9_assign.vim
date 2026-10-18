@@ -444,6 +444,21 @@ def Test_null_values()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
+" Indexing a declared but not yet initialized script-level list allocates
+" an empty list for it; that list must get the declared member type, the
+" same as when the list is given an initial value.
+def Test_assign_index_sets_type_of_empty_list()
+  var lines =<< trim END
+    vim9script
+    var a: list<string>
+    a[0] = 'x'
+    assert_equal('list<string>', typename(a))
+    assert_fails('a->add(123)', 'E1012: Type mismatch; expected string but got number')
+    assert_equal(['x'], a)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_type_with_extra_white()
   var lines =<< trim END
       const x : number = 3
