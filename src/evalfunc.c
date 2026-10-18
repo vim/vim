@@ -2383,7 +2383,7 @@ static const funcentry_T global_functions[] =
     {"digraph_set",	2, 2, FEARG_1,	    arg2_string,
 			"chars, digraph",
 			ret_bool,	f_digraph_set},
-    {"digraph_setlist",	1, 1, FEARG_1,	    arg1_list_string,
+    {"digraph_setlist",	1, 1, FEARG_1,	    arg1_list_any,
 			"digraphlist",
 			ret_bool,	    f_digraph_setlist},
     {"echoraw",		1, 1, FEARG_1,	    arg1_string,

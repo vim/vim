@@ -1,6 +1,7 @@
 " Tests for digraphs
 
 CheckFeature digraphs
+import './util/vim9.vim' as v9
 
 func Put_Dig(chars)
   exe "norm! o\<c-k>".a:chars
@@ -598,6 +599,19 @@ func Test_digraph_setlist_function()
   call assert_fails('call digraph_setlist({})', 'E1216:')
   call assert_fails('call digraph_setlist([{}])', 'E1216:')
   call assert_true(digraph_setlist(test_null_list()))
+endfunc
+
+func Test_digraph_setlist_vim9()
+  let lines =<< trim END
+    vim9script
+    def Dig(): void
+      digraph_setlist([['aa', 'あ'], ['ii', 'い']])
+    enddef
+    Dig()
+    assert_equal('あ', digraph_get('aa'))
+    assert_equal('い', digraph_get('ii'))
+  END
+  call v9.CheckSourceSuccess(lines)
 endfunc
 
 func Test_digraph_getlist_function()
