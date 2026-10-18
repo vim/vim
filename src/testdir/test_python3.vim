@@ -808,6 +808,16 @@ func Test_python3_list_del_items()
   py3 del l[2]
   call assert_equal("[0, function('strlen')]", string(l))
 
+  " items allocated together with the List
+  let l = copy([1, 2, 3, 4])
+  py3 l = vim.bindeval('l')
+  py3 del l[0]
+  py3 del l[-1]
+  call assert_equal([2, 3], l)
+  call add(l, 5)
+  py3 del l[2]
+  call assert_equal([2, 3], l)
+
   let l = range(8)
   py3 l = vim.bindeval('l')
   py3 del l[:3]
