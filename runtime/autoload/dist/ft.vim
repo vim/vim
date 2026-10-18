@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Sep 24
+# Last Change:		2026 Oct 18
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -2299,6 +2299,9 @@ const ft_from_ext = {
   "INI": "dosini",
   # Inko
   "inko": "inko",
+  # ISPC (Implicit SPMD Program Compiler)
+  "ispc": "ispc",
+  "isph": "ispc",
   # Inno Setup
   "iss": "iss",
   # J
