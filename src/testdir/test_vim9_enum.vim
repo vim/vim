@@ -1542,6 +1542,94 @@ def Test_enum_object_variable()
   v9.CheckSourceFailure(lines, 'E119: Not enough arguments for function: new', 8)
 enddef
 
+" Test for changing public object and class variables of an enum in a def
+" function {{{1
+def Test_enum_public_variable_in_def()
+  var lines =<< trim END
+    vim9script
+    enum Shape
+      Triangle, Square
+      public var tag: string
+      public var sizes: list<number> = [1, 2]
+      public static var level: number = 1
+    endenum
+
+    def SetTag(s: Shape, t: string)
+      s.tag = t
+    enddef
+
+    def Fn()
+      Shape.Square.tag = 'square'
+      Shape.Square.sizes[0] = 10
+      Shape.level += 2
+    enddef
+
+    Fn()
+    SetTag(Shape.Triangle, 'triangle')
+    assert_equal('square', Shape.Square.tag)
+    assert_equal('triangle', Shape.Triangle.tag)
+    assert_equal([10, 2], Shape.Square.sizes)
+    assert_equal(3, Shape.level)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # a read-only class variable cannot be changed
+  lines =<< trim END
+    vim9script
+    enum Shape
+      Triangle, Square
+      static var level: number = 1
+    endenum
+    def Fn()
+      Shape.level = 2
+    enddef
+    Fn()
+  END
+  v9.CheckSourceFailure(lines, 'E1335: Variable "level" in class "Shape" is not writable', 1)
+
+  # a read-only class variable with an enum type is not an enum value
+  lines =<< trim END
+    vim9script
+    enum Shape
+      Triangle, Square
+      static var first = Shape.Triangle
+    endenum
+    def Fn()
+      Shape.first = Shape.Square
+    enddef
+    Fn()
+  END
+  v9.CheckSourceFailure(lines, 'E1335: Variable "first" in class "Shape" is not writable', 1)
+
+  # a read-only object variable cannot be changed
+  lines =<< trim END
+    vim9script
+    enum Shape
+      Triangle, Square
+      var tag: string
+    endenum
+    def Fn(s: Shape)
+      s.tag = 'x'
+    enddef
+    Fn(Shape.Square)
+  END
+  v9.CheckSourceFailure(lines, 'E1335: Variable "tag" in class "Shape" is not writable', 1)
+
+  # a protected object variable cannot be changed
+  lines =<< trim END
+    vim9script
+    enum Shape
+      Triangle, Square
+      var _tag: string
+    endenum
+    def Fn()
+      Shape.Square._tag = 'x'
+    enddef
+    Fn()
+  END
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access protected variable "_tag" in class "Shape"', 1)
+enddef
+
 " Test for using a custom constructor with an enum {{{1
 def Test_enum_custom_constructor()
   # space before "("
