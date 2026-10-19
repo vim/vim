@@ -3629,8 +3629,10 @@ EXTERN char e_interface_can_only_be_used_in_script[]
 	INIT(= N_("E1436: Interface can only be used in a script"));
 EXTERN char e_can_only_compare_object_with_object[]
 	INIT(= N_("E1437: Can only compare Object with Object"));
+EXTERN char e_type_var_count_of_method_str_differs_from_interface_str[]
+	INIT(= N_("E1438: Number of type variables of method \"%s\" differs from interface \"%s\""));
 #endif
-// E1438 - E1499 unused (reserved for Vim9 class support)
+// E1439 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1500: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]

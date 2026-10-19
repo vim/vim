@@ -5373,6 +5373,10 @@ A generic class method in a base class can be overridden by a generic method
 in a child class.  The number of type variables must match between both
 methods.  A concrete class method cannot be overridden by a generic method,
 and vice versa.
+							*E1438*
+A method that implements an interface method must have the same number of
+type variables as the interface method.  A generic method cannot implement a
+regular method, and vice versa.
 
 
 Generic function reference~

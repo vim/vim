@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-10-19 15:49+0000\n"
+"POT-Creation-Date: 2026-10-19 16:29+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8612,6 +8612,12 @@ msgid "E1436: Interface can only be used in a script"
 msgstr ""
 
 msgid "E1437: Can only compare Object with Object"
+msgstr ""
+
+#, c-format
+msgid ""
+"E1438: Number of type variables of method \"%s\" differs from interface "
+"\"%s\""
 msgstr ""
 
 #, c-format
