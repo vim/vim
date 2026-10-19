@@ -1561,12 +1561,7 @@ may_adjust_key_for_ctrl(int modifiers, int key)
 	return key;
 
     if (ASCII_ISALPHA(key))
-    {
-#ifdef FEAT_TERMINAL
-	check_no_reduce_keys();  // may update the no_reduce_keys flag
-#endif
 	return no_reduce_keys == 0 ? TOUPPER_ASC(key) : key;
-    }
     if (key == '2')
 	return '@';
     if (key == '6')

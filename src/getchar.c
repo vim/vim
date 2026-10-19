@@ -3152,9 +3152,9 @@ handle_mapping(
 	    // If no termcode matched, try to include the modifier into the
 	    // key.  This is for when modifyOtherKeys is working.
 #ifdef FEAT_TERMINAL
-	    check_no_reduce_keys();  // may update the no_reduce_keys flag
+	    check_no_simplify_keys();  // may update the no_simplify_keys flag
 #endif
-	    if (keylen == 0 && !no_reduce_keys)
+	    if (keylen == 0 && !no_reduce_keys && !no_simplify_keys)
 	    {
 		keylen = check_simplify_modifier(max_mlen + 1);
 		if (keylen < 0)
