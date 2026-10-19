@@ -1824,8 +1824,10 @@ enum_parse_values(
 
 	++*num_enum_values;
 
-	if (*p != '#')
-	    last_char = *p;
+	// Remember the character after the enum value.  When it is a comment
+	// the enum value list ends here, even when an earlier enum value in
+	// the same line was followed by a comma.
+	last_char = *p;
 
 	if (*p != NUL && *p != ',')
 	    break;
