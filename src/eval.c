@@ -1491,7 +1491,7 @@ get_lval_blob(
  * 'var1' specifies the starting List index and 'var2' specifies the ending
  * List index.  If the first index is not specified in a range, then 'empty1'
  * is TRUE.  If 'quiet' is TRUE, then error messages are not displayed for
- * invalid indexes.
+ * invalid indexes.  'next' points to what follows the index.
  *
  * The List is returned in 'lp'.  Returns OK on success and FAIL on failure.
  */
@@ -1502,7 +1502,8 @@ get_lval_list(
     typval_T	*var2,
     int		empty1,
     int		flags,
-    int		quiet)
+    int		quiet,
+    char_u	*next)
 {
     /*
      * Get the number and item for the only or first index of the List.
@@ -1518,6 +1519,36 @@ get_lval_list(
     lp->ll_class = NULL;
     lp->ll_tuple = NULL;
     lp->ll_list = lp->ll_tv->vval.v_list;
+
+    // Vim9: Assigning to an object variable of an item appended to a List of
+    // enum values would create a new enum value, which is not allowed.
+    list_T *l = lp->ll_list;
+    type_T *member_type = (l != NULL && l->lv_type != NULL)
+						? l->lv_type->tt_member : NULL;
+    int	    is_enum_list = member_type != NULL
+				&& member_type->tt_type == VAR_OBJECT
+				&& member_type->tt_class != NULL
+				&& IS_ENUM(member_type->tt_class);
+    int	    new_enum_value = is_enum_list && *next == '.'
+				&& in_vim9script() && lp->ll_n1 == l->lv_len;
+
+    if (new_enum_value)
+    {
+	if (!quiet)
+	{
+	    char_u *name = next + 1;
+	    char_u *name_end = find_name_end(name, NULL, NULL,
+							    FNE_CHECK_START);
+	    char_u *varname = vim_strnsave(name, name_end - name);
+
+	    semsg(_(e_enumvalue_str_cannot_be_modified),
+		    member_type->tt_class->class_name.string,
+		    varname == NULL ? (char_u *)"" : varname);
+	    vim_free(varname);
+	}
+	return FAIL;
+    }
+
     lp->ll_li = check_range_index_one(lp->ll_list, &lp->ll_n1,
 				(flags & GLV_ASSIGN_WITH_OP) == 0, quiet);
     if (lp->ll_li == NULL)
@@ -2048,7 +2079,8 @@ get_lval_subscript(
 	}
 	else if (v_type == VAR_LIST)
 	{
-	    if (get_lval_list(lp, &var1, &var2, empty1, flags, quiet) == FAIL)
+	    if (get_lval_list(lp, &var1, &var2, empty1, flags, quiet, p)
+								      == FAIL)
 		goto done;
 	}
 	else if (v_type == VAR_TUPLE)
