@@ -1417,6 +1417,23 @@ def Test_enum_invoke_constructor()
     endenum
   END
   v9.CheckSourceFailureList(lines, ['E1100:', 'E1100:'], 1)
+
+  # an enum cannot be instantiated after initializing an enum value failed
+  lines =<< trim END
+    vim9script
+    def g:EnumNewAfterInitFailure(): string
+      return Planet.new().name
+    enddef
+    enum Planet
+      earth(1),
+      mars(g:enum_no_such_var)
+      var n: number
+    endenum
+  END
+  v9.CheckSourceFailure(lines, 'E121: Undefined variable: g:enum_no_such_var', 9)
+  assert_fails('g:EnumNewAfterInitFailure()',
+               'E1325: Method "new" not found in class "Planet"')
+  delfunc g:EnumNewAfterInitFailure
 enddef
 
 " Test for checking "this" in an enum constructor {{{1
