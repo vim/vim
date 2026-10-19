@@ -7220,8 +7220,10 @@ end-of-file	pattern.txt	/*end-of-file*
 enlightened-terminal	syntax.txt	/*enlightened-terminal*
 enum	vim9class.txt	/*enum*
 enum-constructor	vim9class.txt	/*enum-constructor*
+enum-export	vim9class.txt	/*enum-export*
 enum-name	vim9class.txt	/*enum-name*
 enum-ordinal	vim9class.txt	/*enum-ordinal*
+enum-type	vim9class.txt	/*enum-type*
 enum-values	vim9class.txt	/*enum-values*
 enumvalue	vim9class.txt	/*enumvalue*
 environ()	builtin.txt	/*environ()*
