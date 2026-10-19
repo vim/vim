@@ -2521,11 +2521,9 @@ compile_parenthesis(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	++*arg;
     else if (ret == OK)
     {
-	// Show where the expression stopped, unless at the end.
-	if (**arg == NUL)
-	    emsg(_(e_missing_closing_paren));
-	else
-	    semsg(_(e_missing_closing_paren_str), *arg);
+	// Show where the expression stopped.  It is not at the end of the
+	// line, may_get_next_line_error() went to the next line or failed.
+	semsg(_(e_missing_closing_paren_str), *arg);
 	ret = FAIL;
     }
     return ret;
