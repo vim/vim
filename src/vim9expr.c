@@ -3637,6 +3637,14 @@ compile_expr4(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	if (compile_expr5(arg, cctx, ppconst) == FAIL)
 	    return FAIL;
 
+	// Another comparison operator cannot follow: "a < b < c".
+	p = may_peek_next_line(cctx, *arg, &next);
+	if (get_compare_type(p, &len, &type_is) != EXPR_UNKNOWN)
+	{
+	    semsg(_(e_comparison_operators_cannot_be_chained_str), p);
+	    return FAIL;
+	}
+
 	if (ppconst->pp_used == ppconst_used + 2)
 	{
 	    typval_T	*tv1 = &ppconst->pp_tv[ppconst->pp_used - 2];
