@@ -1589,7 +1589,14 @@ add_classfuncs_objmethods(
 		// methods may be overruled, then "super.Method()" is used to
 		// find a method from the parent.
 		ufunc_T *pf = (extends_cl->class_obj_methods)[i];
-		(*fup)[gap->ga_len + i] = copy_function(pf, 0);
+		ufunc_T *nf = copy_function(pf, 0);
+		(*fup)[gap->ga_len + i] = nf;
+
+		// The types of a generic method use the type variables of the
+		// parent method, make them use the type variables of the copy.
+		if (nf != NULL && IS_GENERIC_FUNC(nf)
+					      && nf->uf_generic_args != NULL)
+		    generic_func_copy_types(pf, nf);
 
 		// If the child class overrides a function from the parent
 		// the signature must be equal.
