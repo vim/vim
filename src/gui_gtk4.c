@@ -3629,28 +3629,29 @@ static const char * const toolbar_icon_names[] =
     /* 06 */ "edit-copy",
     /* 07 */ "edit-paste",
     /* 08 */ "document-print",
-    /* 09 */ "help-browser",
+    /* 09 */ "help-contents",		// help
     /* 10 */ "edit-find",
-    /* 11 */ "document-save",		// save all (no standard icon)
-    /* 12 */ "document-save",		// session save
+    /* 11 */ "document-save-as",	// save all (no standard icon)
+    /* 12 */ "document-send",		// session save
     /* 13 */ "document-new",		// session new
-    /* 14 */ "document-open",		// session load
-    /* 15 */ "system-run",
+    /* 14 */ "document-open-recent",	// session load
+    /* 15 */ "system-run",		// run script
     /* 16 */ "edit-find-replace",
-    /* 17 */ "window-close",
-    /* 18 */ "window-maximize-symbolic",	// maximize
-    /* 19 */ "window-minimize-symbolic",	// minimize
-    /* 20 */ "window-maximize-symbolic",	// split (no standard icon)
+    /* 17 */ "process-stop",		// window close
+    /* 18 */ "view-fullscreen",		// maximize
+    /* 19 */ "view-restore",		// minimize
+    /* 20 */ "view-continuous",		// split (no standard icon)
     /* 21 */ "utilities-terminal",	// shell
-    /* 22 */ "go-previous",
-    /* 23 */ "go-next",
-    /* 24 */ "help-browser",		// find help
-    /* 25 */ "edit-find",		// convert (no standard icon)
-    /* 26 */ "go-jump",
-    /* 27 */ "go-previous",		// back (reuse)
-    /* 28 */ "go-next",			// forward (reuse)
-    /* 29 */ "image-missing",
-    /* 30 */ "image-missing",
+    /* 22 */ "go-previous",		// find previous
+    /* 23 */ "go-next",			// find next
+    /* 24 */ "system-search",		// find help
+    /* 25 */ "media-playback-start",	// make
+    /* 26 */ "go-last",			// tag jump
+    /* 27 */ "insert-link",		// run ctags
+    /* 28 */ "view-dual",		// vertical split
+    /* 29 */ "format-justify-fill",	// maximize width
+    /* 30 */ "format-justify-center",	// minimize width
+    /* 31 */ "application-exit",	// exit
 };
 
     static void
