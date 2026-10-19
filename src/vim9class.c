@@ -2057,12 +2057,14 @@ ex_class(exarg_T *eap)
 	else
 	    semsg(_(e_interface_name_must_start_with_uppercase_letter_str),
 									  arg);
+	skip_class_body(eap);
 	return;
     }
     char_u *name_end = find_name_end(arg, NULL, NULL, FNE_CHECK_START);
     if (!IS_WHITE_OR_NUL(*name_end))
     {
 	semsg(_(e_white_space_required_after_name_str), arg);
+	skip_class_body(eap);
 	return;
     }
     char_u *name_start = arg;
@@ -2170,6 +2172,7 @@ ex_class(exarg_T *eap)
 early_ret:
 	    vim_free(extends);
 	    ga_clear_strings(&ga_impl);
+	    skip_class_body(eap);
 	    return;
 	}
     }
@@ -2232,7 +2235,11 @@ early_ret:
     SOURCING_LNUM = start_lnum;
     int rc = set_var_const(cl->class_name.string, 0, NULL, &tv, FALSE, 0, 0);
     if (rc == FAIL)
+    {
+	// Don't execute the body as commands.
+	skip_class_body(eap);
 	goto cleanup;
+    }
 
     if (is_enum)
     {
