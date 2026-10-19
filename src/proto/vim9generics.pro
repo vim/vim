@@ -14,6 +14,7 @@ ufunc_T *eval_generic_func(ufunc_T *ufunc, char_u *name, char_u **argp);
 int generic_func_call(char_u **argp);
 void generic_func_copy_types(ufunc_T *fp, ufunc_T *new_fp);
 ufunc_T *generic_func_get(ufunc_T *fp, gfargs_tab_T *gfatab);
+ufunc_T *generic_func_get_same_types(ufunc_T *fp, ufunc_T *inst);
 ufunc_T *find_generic_func(ufunc_T *ufunc, char_u *name, char_u **argp);
 type_T *find_generic_type(char_u *gt_name, size_t name_len, ufunc_T *ufunc, cctx_T *cctx);
 void generic_func_clear_items(ufunc_T *fp);
