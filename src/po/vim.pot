@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-09-30 21:33+0000\n"
+"POT-Creation-Date: 2026-10-19 15:49+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -459,11 +459,6 @@ msgid ""
 "\tLast set from "
 msgstr ""
 
-#.
-#. * Yes this is ugly, I don't particularly like it either.  But doing it
-#. * this way has the compelling advantage that translations need not to
-#. * be touched at all.  See below what 'ok' and 'ync' are used for.
-#.
 msgid "&Ok"
 msgstr ""
 
@@ -897,18 +892,6 @@ msgid ""
 "&Cancel"
 msgstr ""
 
-msgid "OK"
-msgstr ""
-
-msgid "Yes"
-msgstr ""
-
-msgid "No"
-msgstr ""
-
-msgid "Cancel"
-msgstr ""
-
 msgid "Input _Methods"
 msgstr ""
 
@@ -1069,6 +1052,12 @@ msgid "no specific match"
 msgstr ""
 
 msgid "Vim - Font Selector"
+msgstr ""
+
+msgid "OK"
+msgstr ""
+
+msgid "Cancel"
 msgstr ""
 
 msgid "Name:"
