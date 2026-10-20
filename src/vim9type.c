@@ -1513,6 +1513,16 @@ check_argument_types(
     return OK;
 }
 
+// Maximum nesting of types, to avoid running out of stack space.  E.g.
+// "list<list<number>>" is nested twice.
+#define MAX_TYPE_DEPTH	1000
+
+// Current number of levels of parse_type() and the deepest level reached while
+// parsing the current type.  The nesting is one less than the number of
+// levels.
+static int	parse_depth = 0;
+static int	parse_max_depth = 0;
+
 /*
  * Skip over type in list<type>, dict<type> or tuple<type>.
  * Returns a pointer to the character after the type.  "syn_error" is set to
@@ -1599,11 +1609,10 @@ skip_func_type(char_u *p, int *syn_error)
 }
 
 /*
- * Skip over a type definition and return a pointer to just after it.
- * When "optional" is TRUE then a leading "?" is accepted.
+ * Inner part of skip_type().
  */
-    char_u *
-skip_type(char_u *start, int optional)
+    static char_u *
+skip_type_inner(char_u *start, int optional)
 {
     char_u	*p = start;
     int		syn_error = FALSE;
@@ -1631,6 +1640,46 @@ skip_type(char_u *start, int optional)
 	    return p;
     }
 
+    return p;
+}
+
+/*
+ * Skip over a type definition and return a pointer to just after it.
+ * When "optional" is TRUE then a leading "?" is accepted.
+ */
+    char_u *
+skip_type(char_u *start, int optional)
+{
+    static int	skip_depth = 0;
+    char_u	*p = start;
+
+    // Too deeply nested: skip to the matching ">" without recursing, an
+    // error is given when parsing the type.
+    if (skip_depth > MAX_TYPE_DEPTH)
+    {
+	int	depth = 0;
+
+	for ( ; *p != NUL; ++p)
+	{
+	    if (*p == '<')
+		++depth;
+	    else if (*p == '>')
+	    {
+		if (depth == 0)
+		    break;
+		if (--depth == 0)
+		    return p + 1;
+	    }
+	    else if (depth == 0 && !ASCII_ISALNUM(*p) && *p != '_'
+								&& *p != '.')
+		break;
+	}
+	return p;
+    }
+
+    ++skip_depth;
+    p = skip_type_inner(start, optional);
+    --skip_depth;
     return p;
 }
 
@@ -2043,6 +2092,20 @@ parse_type_user_defined(
 	else if (tv.v_type == VAR_TYPEALIAS)
 	{
 	    // user defined type
+	    // The type alias may itself be a nested type, check the resulting
+	    // nesting depth.
+	    int	depth = parse_depth - 1
+				+ MAX(tv.vval.v_typealias->ta_depth, 1);
+	    if (depth - 1 > MAX_TYPE_DEPTH)
+	    {
+		clear_tv(&tv);
+		if (give_error)
+		    emsg(_(e_type_nested_too_deep));
+		return NULL;
+	    }
+	    if (depth > parse_max_depth)
+		parse_max_depth = depth;
+
 	    type_T *type = copy_type(tv.vval.v_typealias->ta_type, type_gap);
 	    *arg += len;
 	    clear_tv(&tv);
@@ -2077,12 +2140,10 @@ parse_type_user_defined(
 }
 
 /*
- * Parse a type at "arg" and advance over it.
- * When "give_error" is TRUE give error messages, otherwise be quiet.
- * Return NULL for failure.
+ * Inner part of parse_type().
  */
-    type_T *
-parse_type(
+    static type_T *
+parse_type_inner(
     char_u	**arg,
     garray_T	*type_gap,
     ufunc_T	*ufunc,
@@ -2201,6 +2262,46 @@ parse_type(
     // User defined type
     return parse_type_user_defined(arg, len, type_gap, give_error, ufunc,
 									cctx);
+}
+
+/*
+ * Parse a type at "arg" and advance over it.
+ * When "give_error" is TRUE give error messages, otherwise be quiet.
+ * Return NULL for failure.
+ */
+    type_T *
+parse_type(
+    char_u	**arg,
+    garray_T	*type_gap,
+    ufunc_T	*ufunc,
+    cctx_T	*cctx,
+    int		give_error)
+{
+    type_T	*type;
+
+    if (parse_depth > MAX_TYPE_DEPTH)
+    {
+	if (give_error)
+	    emsg(_(e_type_nested_too_deep));
+	return NULL;
+    }
+    if (parse_depth == 0)
+	parse_max_depth = 0;
+    ++parse_depth;
+    if (parse_depth > parse_max_depth)
+	parse_max_depth = parse_depth;
+    type = parse_type_inner(arg, type_gap, ufunc, cctx, give_error);
+    --parse_depth;
+    return type;
+}
+
+/*
+ * Return the number of levels of the type last parsed by parse_type().
+ */
+    int
+parse_type_depth(void)
+{
+    return parse_max_depth;
 }
 
 /*

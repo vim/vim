@@ -1785,6 +1785,7 @@ struct typealias_S
     int	    ta_refcount;
     type_T  *ta_type;
     char_u  *ta_name;
+    int	    ta_depth;	    // number of levels of "ta_type"
 };
 
 /*
