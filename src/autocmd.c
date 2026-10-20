@@ -2839,43 +2839,50 @@ getnextac(
 has_autocmd(event_T event, char_u *sfname, buf_T *buf)
 {
     AutoPat	*ap;
-    char_u	*fname;
+    char_u	*fname = NULL;
     char_u	*tail = gettail(sfname);
+#ifdef BACKSLASH_IN_FILENAME
+    char_u	*sfname_copy = NULL;
+#endif
     int		retval = FALSE;
 
     if (first_autopat[(int)event] == NULL)
 	return FALSE;
 
-    fname = FullName_save(sfname, FALSE);
-    if (fname == NULL)
-	return FALSE;
-
-#ifdef BACKSLASH_IN_FILENAME
-    /*
-     * Replace all backslashes with forward slashes.  This makes the
-     * autocommand patterns portable between Unix and MS-DOS.
-     */
-    sfname = vim_strsave(sfname);
-    if (sfname != NULL)
-	forward_slash(sfname);
-    forward_slash(fname);
-#endif
-
     FOR_ALL_AUTOCMD_PATTERNS(event, ap)
-	if (ap->pat != NULL && ap->cmds != NULL
-	      && (ap->buflocal_nr == 0
+    {
+	if (ap->pat == NULL || ap->cmds == NULL)
+	    continue;
+
+	// Only patterns containing a directory need the full file name.
+	if (ap->buflocal_nr == 0 && ap->allow_dirs && fname == NULL)
+	{
+	    fname = FullName_save(sfname, FALSE);
+	    if (fname == NULL)
+		break;
+#ifdef BACKSLASH_IN_FILENAME
+	    // Use forward slashes to make autocommand patterns portable.
+	    sfname_copy = vim_strsave(sfname);
+	    sfname = sfname_copy;
+	    if (sfname != NULL)
+		forward_slash(sfname);
+	    forward_slash(fname);
+#endif
+	}
+	if (ap->buflocal_nr == 0
 		? match_file_pat(NULL, &ap->reg_prog,
 					  fname, sfname, tail, ap->allow_dirs)
 		: buf != NULL && ap->buflocal_nr == buf->b_fnum
-	   ))
+	   )
 	{
 	    retval = TRUE;
 	    break;
 	}
+    }
 
     vim_free(fname);
 #ifdef BACKSLASH_IN_FILENAME
-    vim_free(sfname);
+    vim_free(sfname_copy);
 #endif
 
     return retval;
