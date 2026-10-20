@@ -2483,6 +2483,16 @@ def Test_class_extends()
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1315: White space required after name: A"', 4)
+
+  # this was reading past end of the string
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    execute "class B extends A"
+    endclass
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 def Test_using_base_class()
