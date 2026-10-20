@@ -3942,6 +3942,52 @@ def Test_generic_type_args_error_in_def()
   v9.CheckSourceFailure(lines, 'E1010: Type not recognized: nosuch', 2)
 enddef
 
+" Test for type variable names where one name starts with another one
+def Test_generic_type_var_name_prefix()
+  var lines =<< trim END
+    vim9script
+    def Fn<TT, T>(a: TT, b: T): list<any>
+      return [a, b]
+    enddef
+    assert_equal([1, 'x'], Fn<number, string>(1, 'x'))
+    def Fn2<Key, K, KeyX>(a: Key, b: K, c: KeyX): list<any>
+      return [a, b, c]
+    enddef
+    assert_equal([1, 'x', true], Fn2<number, string, bool>(1, 'x', true))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Fn<TT, T, TT>()
+    enddef
+  END
+  v9.CheckSourceFailure(lines, 'E1561: Duplicate type variable name: TT', 2)
+
+  # a nested function
+  lines =<< trim END
+    vim9script
+    def Outer<TT>(): string
+      def Inner<T>(x: T): string
+        return typename(x)
+      enddef
+      return Inner<number>(1)
+    enddef
+    assert_equal('number', Outer<string>())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # "T" is not the type variable "TT"
+  lines =<< trim END
+    vim9script
+    def Fn<TT>(x: T): T
+      return x
+    enddef
+    Fn<number>(1)
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: T', 2)
+enddef
+
 " Test for using a generic method to initialize an object member variable
 def Test_generic_method_in_object_member_init_expr()
   var lines =<< trim END
