@@ -3454,6 +3454,22 @@ def Test_imported_class_as_def_func_rettype()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for an autoload script sourced for the value of an exported variable
+def Test_export_value_sources_autoload_script()
+  for kind in ['var', 'const', 'final']
+    writefile(['vim9script', 'export const VALUE = 42',
+      'export def Get(): number', '  return 7', 'enddef'],
+      $'Xexportvalue_{kind}1.vim', 'D')
+    writefile(['vim9script',
+      $"import autoload './Xexportvalue_{kind}1.vim' as A",
+      $'export {kind} x = A.VALUE + A.Get()'],
+      $'Xexportvalue_{kind}2.vim', 'D')
+    v9.CheckScriptSuccess(['vim9script',
+      $"import './Xexportvalue_{kind}2.vim' as B",
+      'assert_equal(49, B.x)'])
+  endfor
+enddef
+
 " Test for don't crash when using a combination of import and class extends
 def Test_vim9_import_and_class_extends()
   var lines =<< trim END
