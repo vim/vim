@@ -416,7 +416,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	name_end = parse_generic_func_type_args(name, len, name_end,
 							&gfatab, cctx);
 	if (name_end == NULL)
-	    return FAIL;
+	    goto done;
     }
 
     if (*name_end == '(')
@@ -972,7 +972,10 @@ compile_load(
 	// generic function call
 	if (parse_generic_func_type_args(*arg, namelen,
 			*arg + namelen, &gfatab, cctx) == NULL)
+	{
+	    generic_func_args_table_clear(&gfatab);
 	    return FAIL;
+	}
 	// Temporarily terminate the name, the line may be compiled again.
 	lt = *arg + namelen;
 	*lt = NUL;
