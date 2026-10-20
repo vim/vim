@@ -202,7 +202,7 @@ skip_generic_func_type_args(char_u **argp)
  * Returns:
  *   A newly allocated string with the combined function name and type
  *   arguments, or NULL if there is a syntax error in the generic type
- *   arguments.
+ *   arguments or if there is an allocation failure.
  *
  * The caller is responsible for freeing the returned string.
  */
@@ -212,17 +212,25 @@ append_generic_func_type_args(
     size_t	namelen,
     char_u	**argp)
 {
-    char_u *p = generic_func_find_close_bracket(*argp);
+    char_u	*p = generic_func_find_close_bracket(*argp);
+    size_t	argslen;
+    char_u	*name;
 
     if (p == NULL)
 	return NULL;
 
-    vim_strncpy(IObuff, funcname, namelen);
-    STRNCAT(IObuff, *argp, p - *argp + 1);
+    // The type arguments can be of any length, do not use IObuff.
+    argslen = (size_t)(p - *argp) + 1;
+    name = alloc(namelen + argslen + 1);
+    if (name == NULL)
+	return NULL;
+    mch_memmove(name, funcname, namelen);
+    mch_memmove(name + namelen, *argp, argslen);
+    name[namelen + argslen] = NUL;
 
     *argp = p + 1;
 
-    return vim_strsave(IObuff);
+    return name;
 }
 
 /*
