@@ -5176,7 +5176,31 @@ exec_instructions(ectx_T *ectx)
 			vim_free(pt);
 			goto theend;
 		    }
-		    if (fill_partial_and_closure(pt, ufunc,
+		    if (extra != NULL && extra->fre_outer_depth > 0
+					   && (ufunc->uf_flags & FC_CLOSURE))
+		    {
+			// Use the context of the function where the nested
+			// generic function is defined.
+			partial_T *outer_pt = ectx->ec_outer_ref == NULL
+				    ? NULL : ectx->ec_outer_ref->or_partial;
+
+			for (int depth = 1; outer_pt != NULL
+				    && depth < extra->fre_outer_depth; ++depth)
+			    outer_pt = get_pt_outer(outer_pt)->out_up_partial;
+			if (outer_pt == NULL)
+			{
+			    SOURCING_LNUM = iptr->isn_lnum;
+			    iemsg("outer partial unexpectedly NULL for FUNCREF");
+			    vim_free(pt);
+			    goto theend;
+			}
+			pt->pt_func = ufunc;
+			pt->pt_refcount = 1;
+			pt->pt_outer_partial = outer_pt;
+			++outer_pt->pt_refcount;
+			++ufunc->uf_refcount;
+		    }
+		    else if (fill_partial_and_closure(pt, ufunc,
 			       extra == NULL ? NULL : &extra->fre_loopvar_info,
 								 ectx) == FAIL)
 		    {
