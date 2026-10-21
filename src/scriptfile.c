@@ -1704,7 +1704,11 @@ do_source_ext(
 #endif
 
     // Apply SourceCmd autocommands, they should get the file and source it.
-    if (has_autocmd(EVENT_SOURCECMD, fname_exp, NULL)
+    // When sourcing a file "fname_exp" was made a full path name by
+    // fix_fname() above, avoid expanding it again.
+    if ((fname == NULL
+		? has_autocmd(EVENT_SOURCECMD, fname_exp, NULL)
+		: has_autocmd_fullname(EVENT_SOURCECMD, fname_exp, NULL))
 	    && apply_autocmds(EVENT_SOURCECMD, fname_exp, fname_exp,
 							       FALSE, curbuf))
     {
