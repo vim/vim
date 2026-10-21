@@ -3046,8 +3046,15 @@ ex_type(exarg_T *eap)
 	tv.v_type = VAR_TYPEALIAS;
 	tv.v_lock = 0;
 	tv.vval.v_typealias = ALLOC_CLEAR_ONE(typealias_T);
+	if (tv.vval.v_typealias == NULL)
+	    goto done;
 	++tv.vval.v_typealias->ta_refcount;
 	tv.vval.v_typealias->ta_name = vim_strsave(name_start);
+	if (tv.vval.v_typealias->ta_name == NULL)
+	{
+	    vim_free(tv.vval.v_typealias);
+	    goto done;
+	}
 	tv.vval.v_typealias->ta_type = type;
 	tv.vval.v_typealias->ta_depth = parse_type_depth();
     }
