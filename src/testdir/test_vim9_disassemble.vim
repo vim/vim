@@ -1822,6 +1822,137 @@ def Test_disassemble_typecast()
         instr)
 enddef
 
+" Disassemble instructions for using a type alias in a type
+def Test_disassemble_typealias()
+  var lines =<< trim END
+    vim9script
+    type ListOfNum = list<number>
+    def Arg(x: ListOfNum): ListOfNum
+      return g:val
+    enddef
+    def Foo()
+      var l: ListOfNum = g:val
+      var d: dict<ListOfNum> = {a: [1]}
+      var c = <ListOfNum>g:val
+      Arg(g:val)
+    enddef
+    g:instr = execute('disassemble Foo')
+    g:instr2 = execute('disassemble Arg')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Foo\_s*' ..
+    'var l: ListOfNum = g:val\_s*' ..
+    '0 LOADG g:val\_s*' ..
+    '1 CHECKTYPE list<number> stack\[-1\]\_s*' ..
+    '2 SETTYPE list<number>\_s*' ..
+    '3 STORE $0\_s*' ..
+    'var d: dict<ListOfNum> = {a: \[1\]}\_s*' ..
+    '4 PUSHS "a"\_s*' ..
+    '5 PUSHNR 1\_s*' ..
+    '6 NEWLIST size 1\_s*' ..
+    '7 NEWDICT size 1\_s*' ..
+    '8 SETTYPE dict<list<number>>\_s*' ..
+    '9 STORE $1\_s*' ..
+    'var c = <ListOfNum>g:val\_s*' ..
+    '10 LOADG g:val\_s*' ..
+    '11 CHECKTYPE list<number> stack\[-1\]\_s*' ..
+    '12 SETTYPE list<number>\_s*' ..
+    '13 STORE $2\_s*' ..
+    'Arg(g:val)\_s*' ..
+    '14 LOADG g:val\_s*' ..
+    '15 CHECKTYPE list<number> stack\[-1\] arg 1\_s*' ..
+    '16 DCALL <SNR>\d\+_Arg(argc 1)\_s*' ..
+    '17 DROP\_s*' ..
+    '18 RETURN void', g:instr)
+  assert_match('<SNR>\d\+_Arg\_s*' ..
+    'return g:val\_s*' ..
+    '0 LOADG g:val\_s*' ..
+    '1 CHECKTYPE list<number> stack\[-1\]\_s*' ..
+    '2 RETURN', g:instr2)
+  unlet g:instr g:instr2
+enddef
+
+" Disassemble instructions for using a type alias as an argument to a builtin
+" function and a type alias for a class
+def Test_disassemble_typealias_value()
+  var lines =<< trim END
+    vim9script
+    type ListOfNum = list<number>
+    class C
+      static var count = 1
+    endclass
+    type ClassAlias = C
+    def Foo()
+      var a = typename(ListOfNum)
+      var b = type(ListOfNum)
+      var c = string(ListOfNum)
+      var o: ClassAlias = ClassAlias.new()
+      var n = ClassAlias.count
+      var r = instanceof(o, ClassAlias)
+    enddef
+    g:instr = execute('disassemble Foo')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Foo\_s*' ..
+    'var a = typename(ListOfNum)\_s*' ..
+    '0 LOADSCRIPT ListOfNum-\d\+ from .*\_s*' ..
+    '1 BCALL typename(argc 1)\_s*' ..
+    '2 STORE $0\_s*' ..
+    'var b = type(ListOfNum)\_s*' ..
+    '3 LOADSCRIPT ListOfNum-\d\+ from .*\_s*' ..
+    '4 BCALL type(argc 1)\_s*' ..
+    '5 STORE $1\_s*' ..
+    'var c = string(ListOfNum)\_s*' ..
+    '6 LOADSCRIPT ListOfNum-\d\+ from .*\_s*' ..
+    '7 BCALL string(argc 1)\_s*' ..
+    '8 STORE $2\_s*' ..
+    'var o: ClassAlias = ClassAlias.new()\_s*' ..
+    '9 DCALL new(argc 0)\_s*' ..
+    '10 STORE $3\_s*' ..
+    'var n = ClassAlias.count\_s*' ..
+    '11 LOAD CLASSMEMBER C.count\_s*' ..
+    '12 STORE $4\_s*' ..
+    'var r = instanceof(o, ClassAlias)\_s*' ..
+    '13 LOAD $3\_s*' ..
+    '14 LOADSCRIPT ClassAlias-\d\+ from .*\_s*' ..
+    '15 BCALL instanceof(argc 2)\_s*' ..
+    '16 STORE $5\_s*' ..
+    '17 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble instructions for using an imported type alias
+def Test_disassemble_typealias_import()
+  var lines =<< trim END
+    vim9script
+    export type ImpList = list<number>
+  END
+  writefile(lines, 'Xdisasmtypealias.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './Xdisasmtypealias.vim' as Imp
+    def Foo()
+      var l: Imp.ImpList = g:val
+      var t = typename(Imp.ImpList)
+    enddef
+    g:instr = execute('disassemble Foo')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Foo\_s*' ..
+    'var l: Imp.ImpList = g:val\_s*' ..
+    '0 LOADG g:val\_s*' ..
+    '1 CHECKTYPE list<number> stack\[-1\]\_s*' ..
+    '2 SETTYPE list<number>\_s*' ..
+    '3 STORE $0\_s*' ..
+    'var t = typename(Imp.ImpList)\_s*' ..
+    '4 LOADSCRIPT ImpList-0 from .*Xdisasmtypealias.vim\_s*' ..
+    '5 BCALL typename(argc 1)\_s*' ..
+    '6 STORE $1\_s*' ..
+    '7 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
 def Test_disassemble_object_cast()
   # Downcasting.
   var lines =<< trim END
