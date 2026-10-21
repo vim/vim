@@ -546,6 +546,88 @@ def Test_typealias_instanceof()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for text after a type alias or class name in a type
+def Test_typealias_trailing_name()
+  var lines =<< trim END
+    vim9script
+    type A = number
+    var x: A.foo = 1
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: A.foo', 3)
+
+  lines =<< trim END
+    vim9script
+    type A = number
+    def Foo(): A.foo
+      return 1
+    enddef
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: A.foo', 3)
+
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    var o: C.foo = C.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: C.foo', 4)
+
+  lines =<< trim END
+    vim9script
+    export type MyType = number
+  END
+  writefile(lines, 'Xtypetrailing.vim', 'D')
+  lines =<< trim END
+    vim9script
+    import './Xtypetrailing.vim' as Imp
+    var n: Imp.MyType = 1
+    assert_equal(1, n)
+    var m: Imp.MyType.foo = 1
+  END
+  v9.CheckScriptFailure(lines, 'E1010: Type not recognized: Imp.MyType.foo', 5)
+
+  # type alias and class from an imported script and an autoload script
+  lines =<< trim END
+    vim9script
+    export type MyList = list<number>
+    export class MyClass
+    endclass
+  END
+  writefile(lines, 'Xtypetrailing2.vim', 'D')
+  writefile(lines, 'Xtypetrailing3.vim', 'D')
+  lines =<< trim END
+    vim9script
+    import './Xtypetrailing2.vim' as Imp
+    import autoload './Xtypetrailing3.vim' as Au
+    var l1: Imp.MyList = [1]
+    var o1: Imp.MyClass = Imp.MyClass.new()
+    var l2: Au.MyList = [2]
+    var o2: Au.MyClass = Au.MyClass.new()
+    def Foo(x: Au.MyList): string
+      var y: Imp.MyList = x
+      return typename(y)
+    enddef
+    assert_equal('list<number>', Foo([3]))
+    assert_equal('object<MyClass>', typename(o1))
+    assert_equal('object<MyClass>', typename(o2))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    import './Xtypetrailing2.vim' as Imp
+    var o: Imp.MyClass.foo = Imp.MyClass.new()
+  END
+  v9.CheckScriptFailure(lines, 'E1010: Type not recognized: Imp.MyClass.foo', 3)
+
+  lines =<< trim END
+    vim9script
+    import autoload './Xtypetrailing3.vim' as Au
+    var l: Au.MyList.foo = [1]
+  END
+  v9.CheckScriptFailure(lines, 'E1010: Type not recognized: Au.MyList.foo', 3)
+enddef
+
 " Test for type aliasing a class
 def Test_typealias_class()
   var lines =<< trim END

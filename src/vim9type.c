@@ -2062,6 +2062,24 @@ parse_type_object(
 }
 
 /*
+ * Return the end of the user defined type name at "arg", where the first name
+ * is "len" bytes.  A ".Name" part is only used after an imported script name.
+ */
+    static char_u *
+user_type_name_end(char_u *arg, size_t len)
+{
+    char_u  *p = arg + len;
+
+    if (*p == '.' && find_imported(arg, len, FALSE) != NULL)
+    {
+	++p;
+	while (ASCII_ISALNUM(*p) || *p == '_')
+	    ++p;
+    }
+    return p;
+}
+
+/*
  * Parse a user defined type at "*arg" and advance over it.
  * It can be a class or an interface or a typealias name, possibly imported.
  * Return NULL if a type is not found.
@@ -2081,7 +2099,11 @@ parse_type_user_defined(
     tv.v_type = VAR_UNKNOWN;
     if (eval_variable_import(*arg, &tv) == OK)
     {
-	if (tv.v_type == VAR_CLASS && tv.vval.v_class != NULL)
+	char_u	*name_end = user_type_name_end(*arg, len);
+
+	if (*name_end == '.')
+	    ;	// trailing ".name" after a class or type alias name
+	else if (tv.v_type == VAR_CLASS && tv.vval.v_class != NULL)
 	{
 	    type_T *type = get_type_ptr(type_gap);
 	    if (type != NULL)
@@ -2091,12 +2113,7 @@ parse_type_user_defined(
 		type->tt_type = VAR_OBJECT;
 		type->tt_class = tv.vval.v_class;
 		clear_tv(&tv);
-
-		*arg += len;
-		// Skip over ".ClassName".
-		while (ASCII_ISALNUM(**arg) || **arg == '_' || **arg == '.')
-		    ++*arg;
-
+		*arg = name_end;
 		return type;
 	    }
 	}
@@ -2118,11 +2135,8 @@ parse_type_user_defined(
 		parse_max_depth = depth;
 
 	    type_T *type = copy_type(tv.vval.v_typealias->ta_type, type_gap);
-	    *arg += len;
+	    *arg = name_end;
 	    clear_tv(&tv);
-	    // Skip over ".TypeName".
-	    while (ASCII_ISALNUM(**arg) || **arg == '_' || **arg == '.')
-		++*arg;
 	    return type;
 	}
 
