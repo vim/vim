@@ -605,6 +605,64 @@ def Test_typealias_class()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for a type alias for "object<any>"
+def Test_typealias_object_any()
+  var lines =<< trim END
+    vim9script
+    type AnyObj = object<any>
+    class C
+    endclass
+    var o: AnyObj = C.new()
+    assert_equal('object<C>', typename(o))
+    assert_equal('typealias<object<any>>', typename(AnyObj))
+    assert_equal(v:t_typealias, type(AnyObj))
+    def Foo(x: AnyObj): AnyObj
+      return x
+    enddef
+    assert_equal(o, Foo(o))
+    assert_fails('instanceof(o, AnyObj)', 'E693: Class or class typealias required for argument 2')
+
+    def G<T>(x: T): T
+      return x
+    enddef
+    assert_equal(o, G<AnyObj>(o))
+    class D
+      var m: AnyObj = C.new()
+    endclass
+    assert_equal('object<C>', typename(D.new().m))
+    var l: list<AnyObj> = [o, D.new()]
+    assert_equal('list<object<any>>', typename(l))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    type AnyObj = object<any>
+    var o: AnyObj = 10
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected object<any> but got number', 3)
+enddef
+
+" Test for garbage collection with a type alias for "object<any>"
+func Test_typealias_object_any_garbagecollect()
+  let lines =<< trim END
+    vim9script
+    type AnyObj = object<any>
+    class C
+      public var other: any
+    endclass
+    var o: AnyObj = C.new()
+    o.other = o
+    test_garbagecollect_now()
+    assert_equal('object<C>', typename(o.other))
+    o = null_object
+    test_garbagecollect_now()
+    var p: AnyObj = C.new()
+    assert_equal('object<C>', typename(p))
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
 " Test for typealias as function arg and return value
 def Test_type_as_func_argument_or_return_value()
   # check typealias as arg, function call in script level

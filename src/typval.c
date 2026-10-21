@@ -1124,8 +1124,9 @@ check_for_object_arg(typval_T *args, int idx)
     static int
 tv_class_alias(typval_T *tv)
 {
-    return tv->v_type == VAR_TYPEALIAS &&
-			tv->vval.v_typealias->ta_type->tt_type == VAR_OBJECT;
+    return tv->v_type == VAR_TYPEALIAS
+		&& tv->vval.v_typealias->ta_type->tt_type == VAR_OBJECT
+		&& tv->vval.v_typealias->ta_type->tt_class != NULL;
 }
 
 /*
