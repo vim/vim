@@ -299,6 +299,18 @@ func Test_cscopeWithCscopeConnections()
     call CscopeSetupOrClean(0)
 endfunc
 
+" Test that the list of matches shows the text after a Tab
+func Test_cscope_list_with_tab()
+  call CscopeSetupOrClean(1)
+  set cscopequickfix=
+  call feedkeys("\<CR>", 't')
+  let a = execute('cs find t num_buckets')
+  call assert_match('\n\s\+long_u^I   num_buckets;\n', a)
+  call assert_match('\n\s\+num_buckets = ht.mht_mask + 1;\n', a)
+  set cscopequickfix&
+  call CscopeSetupOrClean(0)
+endfunc
+
 " Test ":cs add {dir}"  (add the {dir}/cscope.out database)
 func Test_cscope_add_dir()
   call mkdir('Xcscopedir', 'pD')
