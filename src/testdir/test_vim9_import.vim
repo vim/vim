@@ -3457,16 +3457,28 @@ enddef
 " Test for an autoload script sourced for the value of an exported variable
 def Test_export_value_sources_autoload_script()
   for kind in ['var', 'const', 'final']
-    writefile(['vim9script', 'export const VALUE = 42',
-      'export def Get(): number', '  return 7', 'enddef'],
-      $'Xexportvalue_{kind}1.vim', 'D')
-    writefile(['vim9script',
-      $"import autoload './Xexportvalue_{kind}1.vim' as A",
-      $'export {kind} x = A.VALUE + A.Get()'],
-      $'Xexportvalue_{kind}2.vim', 'D')
-    v9.CheckScriptSuccess(['vim9script',
-      $"import './Xexportvalue_{kind}2.vim' as B",
-      'assert_equal(49, B.x)'])
+    var lines =<< trim END
+      vim9script
+      export const VALUE = 42
+      export def Get(): number
+        return 7
+      enddef
+    END
+    writefile(lines, $'Xexportvalue_{kind}1.vim', 'D')
+
+    lines =<< eval trim END
+      vim9script
+      import autoload './Xexportvalue_{kind}1.vim' as A
+      export {kind} x = A.VALUE + A.Get()
+    END
+    writefile(lines, $'Xexportvalue_{kind}2.vim', 'D')
+
+    lines =<< eval trim END
+      vim9script
+      import './Xexportvalue_{kind}2.vim' as B
+      assert_equal(49, B.x)
+    END
+    v9.CheckScriptSuccess(lines)
   endfor
 enddef
 
