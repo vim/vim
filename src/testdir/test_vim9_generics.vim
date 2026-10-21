@@ -2446,6 +2446,30 @@ def Test_generic_disassemble_variable()
   unlet g:instr
 enddef
 
+" Disassemble a generic function using a type variable with the same name as
+" a type alias defined after the function
+def Test_generic_disassemble_type_var_name_defined_later()
+  var lines =<< trim END
+    vim9script
+    def Foo<T>(): T
+      var y: T = g:val
+      return y
+    enddef
+    type T = string
+    g:instr = execute('disassemble Foo<number>')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Foo<number>\_s*' ..
+    'var y: T = g:val\_s*' ..
+    '0 LOADG g:val\_s*' ..
+    '1 CHECKTYPE number stack\[-1\]\_s*' ..
+    '2 STORE $0\_s*' ..
+    'return y\_s*' ..
+    '3 LOAD $0\_s*' ..
+    '4 RETURN', g:instr)
+  unlet g:instr
+enddef
+
 def Test_generic_duplicate_names()
   var lines =<< trim END
     vim9script
@@ -2505,6 +2529,65 @@ def Test_generic_duplicate_names()
     enddef
   END
   v9.CheckScriptFailure(lines, 'E1041: Redefining script item: "I"', 7)
+enddef
+
+" Test for a type alias or class with the name of a type variable, defined
+" after the generic function
+def Test_generic_type_var_name_defined_later()
+  var lines =<< trim END
+    vim9script
+    def Fn<T>(x: T): T
+      var y: T = x
+      return <T>y
+    enddef
+    type T = string
+    assert_equal(3, Fn<number>(3))
+    assert_equal('abc', Fn<string>('abc'))
+    var s: T = 'xyz'
+    assert_equal('xyz', s)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Fn<T>(x: T): T
+      var y: T = x
+      return y
+    enddef
+    class T
+    endclass
+    assert_equal(3, Fn<number>(3))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # type variable used in a lambda in the generic function
+  lines =<< trim END
+    vim9script
+    def Fn<T>(x: T): T
+      var F = (): T => {
+        var y: T = x
+        return y
+      }
+      return F()
+    enddef
+    type T = string
+    assert_equal(3, Fn<number>(3))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # type variable of a generic method
+  lines =<< trim END
+    vim9script
+    class A
+      def Fn<T>(x: T): T
+        var y: T = x
+        return y
+      enddef
+    endclass
+    type T = string
+    assert_equal(3, A.new().Fn<number>(3))
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 " Test for nested generic functions
