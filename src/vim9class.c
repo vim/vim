@@ -1970,35 +1970,6 @@ enum_set_internal_obj_vars(class_T *en, object_T *enval)
 }
 
 /*
- * Read the body up to ":endclass", ":endenum" or ":endinterface" and throw it
- * away.  Used while skipping.
- */
-    static void
-skip_class_body(exarg_T *eap)
-{
-    for (;;)
-    {
-	char_u	*theline = eap->ea_getline(':', eap->cookie, 0,
-							  GETLINE_CONCAT_ALL);
-	if (theline == NULL)
-	    break;
-
-	char_u	*p = theline;
-	int	found;
-
-	// skip ':' and blanks
-	for (; VIM_ISWHITE(*p) || *p == ':'; ++p)
-	    ;
-	found = checkforcmd(&p, "endclass", 4)
-			|| checkforcmd(&p, "endenum", 4)
-			|| checkforcmd(&p, "endinterface", 5);
-	vim_free(theline);
-	if (found)
-	    break;
-    }
-}
-
-/*
  * Handle ":class" and ":abstract class" up to ":endclass".
  * Handle ":enum" up to ":endenum".
  * Handle ":interface" up to ":endinterface".
@@ -2014,17 +1985,12 @@ ex_class(exarg_T *eap)
     long	start_lnum = SOURCING_LNUM;
     char_u	*arg = eap->arg;
 
-    if (eap->skip)
-    {
-	skip_class_body(eap);
-	return;
-    }
-
     if (is_abstract)
     {
 	if (STRNCMP(arg, "class", 5) != 0 || !VIM_ISWHITE(arg[5]))
 	{
-	    semsg(_(e_invalid_argument_str), arg);
+	    if (!eap->skip)
+		semsg(_(e_invalid_argument_str), arg);
 	    return;
 	}
 	arg = skipwhite(arg + 5);
@@ -2037,16 +2003,19 @@ ex_class(exarg_T *eap)
 		|| (cmdmod.cmod_flags & CMOD_LEGACY)
 		|| !getline_equal(eap->ea_getline, eap->cookie, getsourceline))
     {
-	if (is_class)
-	    emsg(_(e_class_can_only_be_defined_in_vim9_script));
-	else if (is_enum)
-	    emsg(_(e_enum_can_only_be_defined_in_vim9_script));
-	else
-	    emsg(_(e_interface_can_only_be_defined_in_vim9_script));
+	if (!eap->skip)
+	{
+	    if (is_class)
+		emsg(_(e_class_can_only_be_defined_in_vim9_script));
+	    else if (is_enum)
+		emsg(_(e_enum_can_only_be_defined_in_vim9_script));
+	    else
+		emsg(_(e_interface_can_only_be_defined_in_vim9_script));
+	}
 	return;
     }
 
-    if (!ASCII_ISUPPER(*arg))
+    if (!eap->skip && !ASCII_ISUPPER(*arg))
     {
 	if (is_class)
 	    semsg(_(e_class_name_must_start_with_uppercase_letter_str), arg);
@@ -2058,7 +2027,7 @@ ex_class(exarg_T *eap)
 	return;
     }
     char_u *name_end = find_name_end(arg, NULL, NULL, FNE_CHECK_START);
-    if (!IS_WHITE_OR_NUL(*name_end))
+    if (!eap->skip && !IS_WHITE_OR_NUL(*name_end))
     {
 	semsg(_(e_white_space_required_after_name_str), arg);
 	return;
@@ -2076,7 +2045,7 @@ ex_class(exarg_T *eap)
     ga_init2(&ga_impl, sizeof(char_u *), 5);
 
     arg = skipwhite(name_end);
-    while (*arg != NUL && *arg != '#' && *arg != '\n')
+    while (!eap->skip && *arg != NUL && *arg != '#' && *arg != '\n')
     {
 	// TODO:
 	//    specifies SomeInterface
@@ -2197,42 +2166,45 @@ early_ret:
     int	    intf_count = 0;	// number of items in "intf_classes"
     int	    num_enum_values = 0;
 
-    cl = ALLOC_CLEAR_ONE(class_T);
-    if (cl == NULL)
-	goto cleanup;
+    if (!eap->skip)
+    {
+	cl = ALLOC_CLEAR_ONE(class_T);
+	if (cl == NULL)
+	    goto cleanup;
 
-    if (is_enum)
-	cl->class_flags = CLASS_ENUM;
-    else if (is_interface)
-	cl->class_flags = CLASS_INTERFACE;
-    else if (is_abstract)
-	cl->class_flags = CLASS_ABSTRACT;
+	if (is_enum)
+	    cl->class_flags = CLASS_ENUM;
+	else if (is_interface)
+	    cl->class_flags = CLASS_INTERFACE;
+	else if (is_abstract)
+	    cl->class_flags = CLASS_ABSTRACT;
 
-    cl->class_refcount = 1;
-    cl->class_name.length = (size_t)(name_end - name_start);
-    cl->class_name.string = vim_strnsave(name_start, cl->class_name.length);
-    if (cl->class_name.string == NULL)
-	goto cleanup;
+	cl->class_refcount = 1;
+	cl->class_name.length = (size_t)(name_end - name_start);
+	cl->class_name.string = vim_strnsave(name_start, cl->class_name.length);
+	if (cl->class_name.string == NULL)
+	    goto cleanup;
 
-    cl->class_type.tt_type = VAR_CLASS;
-    cl->class_type.tt_class = cl;
-    cl->class_object_type.tt_type = VAR_OBJECT;
-    cl->class_object_type.tt_class = cl;
+	cl->class_type.tt_type = VAR_CLASS;
+	cl->class_type.tt_class = cl;
+	cl->class_object_type.tt_type = VAR_OBJECT;
+	cl->class_object_type.tt_class = cl;
 
-    eap->ea_class = cl;
+	eap->ea_class = cl;
 
-    // Add the class to the script-local variables.
-    // TODO: handle other context, e.g. in a function
-    // TODO: does uf_hash need to be cleared?
-    typval_T tv;
-    tv.v_type = VAR_CLASS;
-    tv.vval.v_class = cl;
-    SOURCING_LNUM = start_lnum;
-    int rc = set_var_const(cl->class_name.string, 0, NULL, &tv, FALSE, 0, 0);
-    if (rc == FAIL)
-	goto cleanup;
+	// Add the class to the script-local variables.
+	// TODO: handle other context, e.g. in a function
+	// TODO: does uf_hash need to be cleared?
+	typval_T tv;
+	tv.v_type = VAR_CLASS;
+	tv.vval.v_class = cl;
+	SOURCING_LNUM = start_lnum;
+	int rc = set_var_const(cl->class_name.string, 0, NULL, &tv, FALSE, 0, 0);
+	if (rc == FAIL)
+	    goto cleanup;
+    }
 
-    if (is_enum)
+    if (!eap->skip && is_enum)
     {
 	// All the enum classes have the name and ordinal object variables.
 	char_u *varname = (char_u *)"name";
@@ -2338,11 +2310,15 @@ early_ret:
 	    // In an enum, all the enumerated values are at the beginning
 	    // separated by comma.  The class and object variables/methods
 	    // follow the values.
+	    // TODO: hopscotch the enum value parse properly
+	    if (!eap->skip)
+	    {
 	    if (enum_parse_values(eap, cl, line, &classmembers,
 					&num_enum_values, &enum_end) == FAIL)
 		break;
+	    }
 
-	    if (enum_end)
+	    if (!eap->skip && enum_end)
 	    {
 		// Add the enum "values" class variable.
 		enum_add_values_member(cl, &classmembers, num_enum_values,
@@ -2355,68 +2331,72 @@ early_ret:
 	int has_public = FALSE;
 	if (checkforcmd(&p, "public", 3))
 	{
-	    if (STRNCMP(line, "public", 6) != 0)
+	    if (!eap->skip)
 	    {
-		semsg(_(e_command_cannot_be_shortened_str), line);
-		break;
-	    }
-	    if (is_interface)
-	    {
-		emsg(_(e_public_variable_not_supported_in_interface));
-		break;
+		if (STRNCMP(line, "public", 6) != 0)
+		{
+		    semsg(_(e_command_cannot_be_shortened_str), line);
+		    break;
+		}
+		if (is_interface)
+		{
+		    emsg(_(e_public_variable_not_supported_in_interface));
+		    break;
+		}
+
+		if (STRNCMP(p, "def", 3) == 0)
+		{
+		    emsg(_(e_public_keyword_not_supported_for_method));
+		    break;
+		}
+
+		if (STRNCMP(p, "var", 3) != 0 && STRNCMP(p, "static", 6) != 0
+		    && STRNCMP(p, "final", 5) != 0 && STRNCMP(p, "const", 5) != 0)
+		{
+		    emsg(_(e_public_must_be_followed_by_var_static_final_or_const));
+		    break;
+		}
 	    }
 	    has_public = TRUE;
-	    p = skipwhite(line + 6);
-
-	    if (STRNCMP(p, "def", 3) == 0)
-	    {
-		emsg(_(e_public_keyword_not_supported_for_method));
-		break;
-	    }
-
-	    if (STRNCMP(p, "var", 3) != 0 && STRNCMP(p, "static", 6) != 0
-		&& STRNCMP(p, "final", 5) != 0 && STRNCMP(p, "const", 5) != 0)
-	    {
-		emsg(_(e_public_must_be_followed_by_var_static_final_or_const));
-		break;
-	    }
 	}
 
 	int abstract_method = FALSE;
 	char_u *pa = p;
 	if (checkforcmd(&p, "abstract", 3))
 	{
-	    if (STRNCMP(pa, "abstract", 8) != 0)
+	    if (!eap->skip)
 	    {
-		semsg(_(e_command_cannot_be_shortened_str), pa);
-		break;
-	    }
+		if (STRNCMP(pa, "abstract", 8) != 0)
+		{
+		    semsg(_(e_command_cannot_be_shortened_str), pa);
+		    break;
+		}
 
-	    if (is_enum)
-	    {
-		// "abstract" not supported in an enum
-		emsg(_(e_abstract_cannot_be_used_in_enum));
-		break;
-	    }
+		if (is_enum)
+		{
+		    // "abstract" not supported in an enum
+		    emsg(_(e_abstract_cannot_be_used_in_enum));
+		    break;
+		}
 
-	    if (is_interface)
-	    {
-		// "abstract" not supported in an interface
-		emsg(_(e_abstract_cannot_be_used_in_interface));
-		break;
-	    }
+		if (is_interface)
+		{
+		    // "abstract" not supported in an interface
+		    emsg(_(e_abstract_cannot_be_used_in_interface));
+		    break;
+		}
 
-	    if (!is_abstract)
-	    {
-		semsg(_(e_abstract_method_in_concrete_class), pa);
-		break;
-	    }
+		if (!is_abstract)
+		{
+		    semsg(_(e_abstract_method_in_concrete_class), pa);
+		    break;
+		}
 
-	    p = skipwhite(pa + 8);
-	    if (STRNCMP(p, "def", 3) != 0)
-	    {
-		emsg(_(e_abstract_must_be_followed_by_def));
-		break;
+		if (STRNCMP(p, "def", 3) != 0)
+		{
+		    emsg(_(e_abstract_must_be_followed_by_def));
+		    break;
+		}
 	    }
 
 	    abstract_method = TRUE;
@@ -2426,26 +2406,28 @@ early_ret:
 	char_u *ps = p;
 	if (checkforcmd(&p, "static", 4))
 	{
-	    if (STRNCMP(ps, "static", 6) != 0)
+	    if (!eap->skip)
 	    {
-		semsg(_(e_command_cannot_be_shortened_str), ps);
-		break;
-	    }
+		if (STRNCMP(ps, "static", 6) != 0)
+		{
+		    semsg(_(e_command_cannot_be_shortened_str), ps);
+		    break;
+		}
 
-	    if (is_interface)
-	    {
-		emsg(_(e_static_member_not_supported_in_interface));
-		break;
+		if (is_interface)
+		{
+		    emsg(_(e_static_member_not_supported_in_interface));
+		    break;
+		}
+
+		if (STRNCMP(p, "var", 3) != 0 && STRNCMP(p, "def", 3) != 0
+		    && STRNCMP(p, "final", 5) != 0 && STRNCMP(p, "const", 5) != 0)
+		{
+		    emsg(_(e_static_must_be_followed_by_var_def_final_or_const));
+		    break;
+		}
 	    }
 	    has_static = TRUE;
-	    p = skipwhite(ps + 6);
-
-	    if (STRNCMP(p, "var", 3) != 0 && STRNCMP(p, "def", 3) != 0
-		&& STRNCMP(p, "final", 5) != 0 && STRNCMP(p, "const", 5) != 0)
-	    {
-		emsg(_(e_static_must_be_followed_by_var_def_final_or_const));
-		break;
-	    }
 	}
 
 	int has_final = FALSE;
@@ -2455,7 +2437,7 @@ early_ret:
 	    has_var = TRUE;
 	else if (checkforcmd(&p, "final", 5))
 	{
-	    if (is_interface)
+	    if (!eap->skip && is_interface)
 	    {
 		emsg(_(e_final_variable_not_supported_in_interface));
 		break;
@@ -2464,7 +2446,7 @@ early_ret:
 	}
 	else if (checkforcmd(&p, "const", 5))
 	{
-	    if (is_interface)
+	    if (!eap->skip && is_interface)
 	    {
 		emsg(_(e_const_variable_not_supported_in_interface));
 		break;
@@ -2503,6 +2485,9 @@ early_ret:
 
 	    if (!eval_isnamec1(*p))
 	    {
+		if (eap->skip)
+		    continue;
+
 		if (has_static)
 		    semsg(_(e_invalid_class_variable_declaration_str), line);
 		else
@@ -2510,7 +2495,7 @@ early_ret:
 		break;
 	    }
 
-	    if (is_interface && *varname == '_')
+	    if (!eap->skip && is_interface && *varname == '_')
 	    {
 		// private variables are not supported in an interface
 		semsg(_(e_protected_variable_not_supported_in_interface),
@@ -2518,6 +2503,9 @@ early_ret:
 		break;
 	    }
 
+	    // TODO: hopscotch the member parse properly
+	    if (eap->skip)
+		continue;
 	    if (parse_member(eap, line, varname, has_public,
 			  &varname_end, &has_type, &type_list, &type,
 			  !is_interface ? &init_expr: NULL) == FAIL)
@@ -2558,7 +2546,7 @@ early_ret:
 	    int		is_new = STRNCMP(p, "new", 3) == 0
 						|| STRNCMP(p, "_new", 4) == 0;
 
-	    if (has_public)
+	    if (!eap->skip && has_public)
 	    {
 		// "public" keyword is not supported when defining an object or
 		// class method
@@ -2568,23 +2556,28 @@ early_ret:
 
 	    if (*p == NUL)
 	    {
+		if (eap->skip)
+		    continue;
 		// No method name following def
 		semsg(_(e_not_valid_command_in_class_str), line);
 		break;
 	    }
 
-	    if (is_interface && *p == '_')
+	    if (!eap->skip)
 	    {
-		// private methods are not supported in an interface
-		semsg(_(e_protected_method_not_supported_in_interface), p);
-		break;
-	    }
+		if (is_interface && *p == '_')
+		{
+		    // private methods are not supported in an interface
+		    semsg(_(e_protected_method_not_supported_in_interface), p);
+		    break;
+		}
 
-	    if (has_static && !is_new && SAFE_islower(*p) &&
-					is_valid_builtin_obj_methodname(p))
-	    {
-		semsg(_(e_builtin_class_method_not_supported), p);
-		break;
+		if (has_static && !is_new && SAFE_islower(*p) &&
+					    is_valid_builtin_obj_methodname(p))
+		{
+		    semsg(_(e_builtin_class_method_not_supported), p);
+		    break;
+		}
 	    }
 
 	    CLEAR_FIELD(ea);
@@ -2593,6 +2586,7 @@ early_ret:
 	    ea.cmdidx = CMD_def;
 	    ea.ea_getline = eap->ea_getline;
 	    ea.cookie = eap->cookie;
+	    ea.skip = eap->skip;
 
 	    ga_init2(&lines_to_free, sizeof(char_u *), 50);
 	    int class_flags;
@@ -2651,13 +2645,16 @@ early_ret:
 
 	else
 	{
-	    if (is_class)
-		semsg(_(e_not_valid_command_in_class_str), line);
-	    else if (is_enum)
-		semsg(_(e_not_valid_command_in_enum_str), line);
-	    else
-		semsg(_(e_not_valid_command_in_interface_str), line);
-	    break;
+	    if (!eap->skip)
+	    {
+		if (is_class)
+		    semsg(_(e_not_valid_command_in_class_str), line);
+		else if (is_enum)
+		    semsg(_(e_not_valid_command_in_enum_str), line);
+		else
+		    semsg(_(e_not_valid_command_in_interface_str), line);
+		break;
+	    }
 	}
     }
 
@@ -2665,6 +2662,12 @@ early_ret:
 	emsg(_(e_missing_endenum));
 
     vim_free(theline);
+
+    //
+    // Mental hopscotch, ready or not I'm going away!
+    //
+    if (eap->skip)
+	goto cleanup;
 
     if (success && is_enum && (num_enum_values == 0 || !added_enum_values))
 	// Empty enum statement. Add an empty "values" class variable

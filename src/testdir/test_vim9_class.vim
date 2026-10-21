@@ -12027,6 +12027,48 @@ def Test_class_body_skipped()
   unlet g:skipped
 enddef
 
+" this used to crash after v9.2.1132
+def Test_class_skip_no_getline_crash_djk()
+  var lines = ["call execute('if 0 | class | endif')"]
+  v9.CheckSourceSuccess(lines)
+  lines =<< trim END
+    vim9script
+    execute('if 0 | class | endif')
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+def Test_class_skip_heredoc_djk()
+  var lines =<< trim END
+    vim9script
+    if false
+      class Foo
+        def Bar()
+          var code =<< trim EOF
+            endclass
+            endif
+          EOF
+        enddef
+      endclass
+    endif
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+def Test_class_body_skip_legacy_djk()
+  var lines =<< trim END
+    if 0
+      endclass
+      endinterface
+      endenum
+      class
+      interface
+      enum
+    endif
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 def Test_index_object()
   # Used to write past the end of the object member array.
   var lines =<< trim END
