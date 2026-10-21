@@ -3040,8 +3040,9 @@ ex_type(exarg_T *eap)
 	goto done;
     }
 
-    // Create a script-local variable for the type alias.
-    if (type->tt_type != VAR_OBJECT)
+    // Create a script-local variable for the type alias.  "object<any>" has
+    // no class, it is handled like other types.
+    if (type->tt_type != VAR_OBJECT || type->tt_class == NULL)
     {
 	tv.v_type = VAR_TYPEALIAS;
 	tv.v_lock = 0;
