@@ -461,6 +461,51 @@ def Test_typealias_func_argument()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for a type alias for a type that is compared by pointer, like "bool"
+" and "string"
+def Test_typealias_static_type()
+  var lines =<< trim END
+    vim9script
+    type MyBool = bool
+    var b: MyBool = 1
+    assert_equal(true, b)
+    assert_equal('bool', typename(b))
+    def Foo(x: MyBool): MyBool
+      return x
+    enddef
+    def Bar(): MyBool
+      var c: MyBool = 0
+      return c
+    enddef
+    def Baz(): MyBool
+      return Foo(1)
+    enddef
+    assert_equal(false, Bar())
+    assert_equal(true, Baz())
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    type MyBool = bool
+    var b: MyBool = 2
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected bool but got number', 3)
+
+  # A number can be appended to a string
+  lines =<< trim END
+    vim9script
+    type MyStr = string
+    def Foo(): MyStr
+      var s: MyStr = 'a'
+      s ..= 1
+      return s
+    enddef
+    assert_equal('a1', Foo())
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " Using a type alias with a builtin function
 def Test_typealias_with_builtin_functions()
   var lines =<< trim END

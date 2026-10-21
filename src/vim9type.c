@@ -2110,7 +2110,11 @@ parse_type_user_defined(
 	    if (depth > parse_max_depth)
 		parse_max_depth = depth;
 
-	    type_T *type = copy_type(tv.vval.v_typealias->ta_type, type_gap);
+	    // A static type is never freed and may be compared by pointer
+	    // (e.g. with t_bool), use it as-is.
+	    type_T *type = tv.vval.v_typealias->ta_type;
+	    if ((type->tt_flags & TTFLAG_STATIC) == 0)
+		type = copy_type(type, type_gap);
 	    *arg += len;
 	    clear_tv(&tv);
 	    // Skip over ".TypeName".

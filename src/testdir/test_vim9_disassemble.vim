@@ -3403,6 +3403,39 @@ def Test_checktype_float()
   unlet g:instr
 enddef
 
+" Disassemble instructions for a type alias for "bool" and "string", the
+" conversion must be the same as for the type itself
+def Test_disassemble_typealias_static_type()
+  var lines =<< trim END
+    vim9script
+    type MyBool = bool
+    type MyStr = string
+    def Foo()
+      var b: MyBool = 1
+      var s: MyStr = 'a'
+      s ..= 1
+    enddef
+    g:instr = execute('disassemble Foo')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Foo\_s*' ..
+    'var b: MyBool = 1\_s*' ..
+    '0 PUSHNR 1\_s*' ..
+    '1 2BOOL -1 (!!val)\_s*' ..
+    '2 STORE $0\_s*' ..
+    "var s: MyStr = 'a'\\_s*" ..
+    '3 PUSHS "a"\_s*' ..
+    '4 STORE $1\_s*' ..
+    's ..= 1\_s*' ..
+    '5 LOAD $1\_s*' ..
+    '6 PUSHNR 1\_s*' ..
+    '7 2STRING stack\[-1\]\_s*' ..
+    '8 CONCAT size 2\_s*' ..
+    '9 STORE $1\_s*' ..
+    '10 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
 " Disassemble instructions for ISN_FUNCREF with a class
 def Test_funcref_with_class()
   var lines =<< trim END
