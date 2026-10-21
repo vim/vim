@@ -6942,7 +6942,7 @@ func Test_script_lines()
     try
 	call DefineFunction('T_Python', [
 		    \ 'python << EOF',
-                    \ 'endfunction',
+		    \ 'endfunction',
 		    \ 'EOF',
 		    \ ])
     catch
@@ -6951,7 +6951,7 @@ func Test_script_lines()
     try
 	call DefineFunction('T_Python', [
 		    \ 'python << EOF trailing text',
-                    \ 'endfunction',
+		    \ 'endfunction',
 		    \ 'EOF',
 		    \ ])
     catch
@@ -6969,7 +6969,7 @@ func Test_script_lines()
     try
 	call DefineFunction('T_Python', [
 		    \ 'python <<',
-                    \ 'endfunction',
+		    \ 'endfunction',
 		    \ '.',
 		    \ ])
     catch
@@ -6988,7 +6988,7 @@ func Test_script_lines()
     try
 	call DefineFunction('T_Python', [
 		    \ 'python<<EOF',
-                    \ 'endfunction',
+		    \ 'endfunction',
 		    \ 'EOF',
 		    \ ])
     catch
@@ -6997,7 +6997,7 @@ func Test_script_lines()
     try
 	call DefineFunction('T_Python', [
 		    \ 'python<<EOF trailing text',
-                    \ 'endfunction',
+		    \ 'endfunction',
 		    \ 'EOF',
 		    \ ])
     catch
@@ -7006,7 +7006,7 @@ func Test_script_lines()
     try
 	call DefineFunction('T_Python', [
 		    \ 'python<<',
-                    \ 'endfunction',
+		    \ 'endfunction',
 		    \ '.',
 		    \ ])
     catch
