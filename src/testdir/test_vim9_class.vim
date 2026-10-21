@@ -8453,6 +8453,47 @@ def Test_compile_many_def_functions_in_funcref_instr()
   assert_equal(0, v:shell_error)
 enddef
 
+" Test that freeing a class does not remove a global function with the same
+" name as a method
+def Test_class_free_keeps_global_func()
+  var lines =<< trim END
+    vim9script
+    var cls =<< trim CLS
+      vim9script
+      class A
+        def Get(): number
+          return 1
+        enddef
+        static def Make(): number
+          return 2
+        enddef
+      endclass
+      class B extends A
+      endclass
+      g:o = B.new()
+    CLS
+    writefile(cls, 'XclassFreeFunc.vim')
+    def g:Get(): string
+      return 'global Get'
+    enddef
+    def g:Make(): string
+      return 'global Make'
+    enddef
+    source XclassFreeFunc.vim
+    assert_equal(1, g:o.Get())
+    unlet g:o
+    # Sourcing the script again frees the classes and their methods.
+    writefile(['vim9script'], 'XclassFreeFunc.vim')
+    source XclassFreeFunc.vim
+    assert_equal('global Get', g:Get())
+    assert_equal('global Make', g:Make())
+    delete('XclassFreeFunc.vim')
+    delfunc g:Get
+    delfunc g:Make
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for 'final' class and object variables
 def Test_final_class_object_variable()
   # Test for changing a final object variable from an object function
