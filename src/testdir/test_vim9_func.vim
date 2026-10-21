@@ -5109,4 +5109,36 @@ def Test_term_wait_in_job_exit_cb()
   v9.CheckDefSuccess(lines)
 enddef
 
+" Test for an error in the return type of a lambda after argument types that
+" were allocated, these must be freed
+def Test_lambda_type_error()
+  var lines =<< trim END
+    vim9script
+    var L = (x: dict<list<string>>): nosuch => x
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: nosuch', 2)
+
+  lines =<< trim END
+    vim9script
+    def Fn()
+      var L = (x: list<list<number>>, Y: func(number): string): nosuch => x
+    enddef
+    defcompile Fn
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: nosuch', 1)
+
+  # the variable arguments name must also be freed
+  lines =<< trim END
+    vim9script
+    var L = (...x: list<list<number>>): nosuch => x
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: nosuch', 2)
+
+  lines =<< trim END
+    vim9script
+    var M = (y: list<list<number>>, ...x: number) => x
+  END
+  v9.CheckSourceFailure(lines, 'E1180: Variable arguments type must be a list: number', 2)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
