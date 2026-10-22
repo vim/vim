@@ -2453,6 +2453,20 @@ func Test_python3_new()
         \ py3eval('vim.Function(''tr'', self={}, auto_rebind=False)'))
   call assert_equal(function('tr', [123, 3, 4], {}),
         \ py3eval('vim.Function(''tr'', args=[123, 3, 4], self={}, auto_rebind=False)'))
+
+  " error when getting the value of "auto_rebind"
+  py3 << trim EOF
+    class BadBool:
+        def __bool__(self):
+            raise ValueError('bad bool')
+    try:
+        vim.Function('tr', args=[123, 3, 4], self={}, auto_rebind=BadBool())
+        auto_rebind_error = ''
+    except ValueError as e:
+        auto_rebind_error = str(e)
+  EOF
+  call assert_equal('bad bool', py3eval('auto_rebind_error'))
+  py3 del BadBool, auto_rebind_error
 endfunc
 
 " Test vim.Function
