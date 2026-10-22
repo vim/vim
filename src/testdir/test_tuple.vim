@@ -2542,6 +2542,29 @@ func Test_tuple_unpack_memory_fail()
   unlet t
 endfunc
 
+" Memory allocation failure while adding an item to a tuple should not leak
+" the item.
+func Test_tuple_append_item_memory_fail()
+  let s = 'ab'
+  let t1 = (1,)
+  let t2 = (s .. 'cd',)
+  let t3 = (s .. 'ef', s .. 'gh')
+
+  " concatenating tuples
+  call test_alloc_fail(GetAllocId('tuple_append'), 0, 0)
+  call assert_fails('let x = t1 + t2', 'E342:')
+  " slicing a tuple
+  call test_alloc_fail(GetAllocId('tuple_append'), 0, 0)
+  call assert_fails('let x = t3[0 : 1]', 'E342:')
+  " first item of a tuple literal
+  call test_alloc_fail(GetAllocId('tuple_append'), 0, 0)
+  call assert_fails("let x = (s .. 'ij', 2)", 'E342:')
+  call assert_false(exists('x'))
+
+  call assert_equal((1, 'abcd'), t1 + t2)
+  call assert_equal(('abef', 'abgh'), t3[0 : 1])
+endfunc
+
 " Memory allocation failure while creating a tuple type
 func Test_tuple_type_memory_fail()
   let lines =<< trim END
