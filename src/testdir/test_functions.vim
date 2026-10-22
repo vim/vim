@@ -1286,6 +1286,33 @@ func Test_match_list_changed_while_matching()
   unlet g:mlist g:removed
 endfunc
 
+" Same, but the string() method unlocks the list first.
+func Test_match_list_unlocked_while_matching()
+  let lines =<< trim END
+    vim9script
+    class C
+      def string(): string
+        if !g:removed
+          g:removed = true
+          unlockvar g:mlist
+          remove(g:mlist, 0)
+        endif
+        return 'nostring'
+      enddef
+    endclass
+    g:mlist = [C.new(), C.new(), C.new()]
+  END
+  call writefile(lines, 'Xmatchunlock.vim', 'D')
+  source Xmatchunlock.vim
+  let g:removed = v:false
+  call assert_fails('call match(g:mlist, "xyz")', 'E742:')
+  call assert_equal(3, len(g:mlist))
+  let g:removed = v:false
+  call assert_fails('call matchstr(g:mlist, "xyz")', 'E742:')
+  call assert_equal(3, len(g:mlist))
+  unlet g:mlist g:removed
+endfunc
+
 " Same for join() and string().
 func Test_join_list_changed_while_stringified()
   let lines =<< trim END

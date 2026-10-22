@@ -10338,6 +10338,8 @@ find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
 	    prev_lock = l->lv_lock;
 	    if (l->lv_lock == 0)
 		l->lv_lock = VAR_LOCKED;
+	    // ":unlockvar" only resets VAR_LOCKED
+	    l->lv_lock |= VAR_FIXED;
 	}
 
 	for (;;)
