@@ -229,6 +229,37 @@ func Test_foreach_and_modify()
   call assert_fails('call foreach(b, "let a = remove(b, 0)")', 'E741:')
 endfunc
 
+func s:UnlockAndRemove(idx, val)
+  if a:idx == 0
+    unlockvar g:Xlist
+    call remove(g:Xlist, 1)
+  endif
+  return a:val
+endfunc
+
+" Using :unlockvar in the expression must not allow changing the list while
+" map(), filter() or foreach() is going over it.
+func Test_map_filter_unlock_and_modify()
+  for fname in ['map', 'filter', 'foreach']
+    let g:Xlist = [10, 20, 30]
+    call assert_fails('call ' .. fname
+          \ .. '(g:Xlist, function("s:UnlockAndRemove"))', 'E742:', fname)
+    call assert_equal([10, 20, 30], g:Xlist, fname)
+    call assert_equal(0, islocked('g:Xlist'), fname)
+
+    " also when the list was locked before, filter() does not accept that
+    if fname != 'filter'
+      let g:Xlist = [10, 20, 30]
+      lockvar 1 g:Xlist
+      call assert_fails('call ' .. fname
+            \ .. '(g:Xlist, function("s:UnlockAndRemove"))', 'E742:', fname)
+      call assert_equal([10, 20, 30], g:Xlist, fname)
+      unlockvar g:Xlist
+    endif
+  endfor
+  unlet g:Xlist
+endfunc
+
 func Test_mapnew_dict()
   let din = #{one: 1, two: 2}
   let dout = mapnew(din, {k, v -> string(v)})
