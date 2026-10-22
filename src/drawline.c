@@ -1768,7 +1768,6 @@ win_line(
 			skipcol_in_text_prop_above += text_width;
 			for (int j = i + 1; j < text_prop_count; ++j)
 			    text_props[j - 1] = text_props[j];
-			++i;
 			--text_prop_count;
 		    }
 		    else
@@ -1836,6 +1835,9 @@ win_line(
 
 	init_chartabsize_arg(&cts, wp, lnum, wlv.vcol, line, ptr);
 	cts.cts_max_head_vcol = v;
+#ifdef FEAT_PROP_POPUP
+	cts.cts_no_above = true;
+#endif
 	while (cts.cts_vcol < v)
 	{
 	    head = 0;
