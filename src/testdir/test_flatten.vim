@@ -106,4 +106,23 @@ func Test_flattennew()
   call assert_equal([1, 11, 101, 1001], flattennew(l4))
 endfunc
 
+" flatten() of a List with a type, passed from Vim9 script, fails without
+" changing the List.
+func Test_flatten_typed_list()
+  let lines =<< trim END
+    vim9script
+    g:inner = [1, 2]
+    var typed: list<list<number>> = [g:inner, [3]]
+    g:typed = typed
+  END
+  call writefile(lines, 'Xflattentyped.vim', 'D')
+  source Xflattentyped.vim
+  let rc = test_refcount(g:inner)
+  call assert_fails('call flatten(g:typed)', 'E1012:')
+  call assert_equal([[1, 2], [3]], g:typed)
+  call assert_true(g:typed[0] is g:inner)
+  call assert_equal(rc, test_refcount(g:inner))
+  unlet g:inner g:typed
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
