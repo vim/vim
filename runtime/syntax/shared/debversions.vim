@@ -12,7 +12,7 @@ let g:debSharedSupportedVersions = [
       \ 'oldstable', 'stable', 'testing', 'unstable', 'experimental', 'sid', 'rc-buggy',
       \ 'bookworm', 'trixie', 'forky', 'duke',
       \
-      \ 'jammy', 'noble', 'questing', 'resolute', 'stonking', 'tenacious',
+      \ 'jammy', 'noble', 'resolute', 'stonking', 'tenacious',
       \ 'devel'
       \ ]
 " Historic version names, no longer under standard support
@@ -27,6 +27,6 @@ let g:debSharedUnsupportedVersions = [
       \ 'trusty', 'utopic', 'vivid', 'wily', 'xenial', 'yakkety', 'zesty',
       \ 'artful', 'bionic', 'cosmic', 'disco', 'eoan', 'focal', 'groovy',
       \ 'hirsute', 'impish', 'kinetic', 'lunar', 'mantic', 'oracular',
-      \ 'plucky', ]
+      \ 'plucky', 'questing', ]
 
 let &cpo=s:cpo
