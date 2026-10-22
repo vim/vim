@@ -1,0 +1,17 @@
+boolean: [true, True, TRUE, false, False, FALSE]
+yaml 1.1 boolean: [yes, Yes, YES, no, No, NO, on, On, ON, off, Off, OFF]
+null: [null, Null, NULL, ~]
+integer: [0, 12345, -12_345, +12_345]
+binary: [0b101010, -0b1010_1010, +0b1010_1010]
+octal: [0777, -0777, +0777]
+hexadecimal: [0xFEFF_0000, -0xabcd_ef00, +0x1234_5678]
+sexagesimal: [10:20:30, -19:29:39, +19:29:39]
+float: [
+  12345.15, -12_345.15, +12_345.15, 1.23015e+3,
+  -12_345.15e+10, +12_345.15e-10, 1.234_515e-10,
+  .5, .5e+3
+]
+infinity: [.inf, -.Inf, +.INF]
+not a number: [.nan, .NaN, .NAN]
+timestamp: [2001-12-14, 2001-12-14T21:59:43.10-05:00, 2001-12-14 21:59:43.10 -5]
+not numbers: [0o777, 1_, 12abc, x2001-12-14, +, -]
