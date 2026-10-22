@@ -762,6 +762,20 @@ func Test_multi_assign_from_tuple()
   call v9.CheckSourceFailure(lines, 'E1093: Expected 2 items but got 0')
 endfunc
 
+" Test for the value of the variable after ";" when unpacking a tuple in a
+" :for loop.  It must be a tuple, also in a compiled function.
+def Test_tuple_for_unpack_rest_is_tuple()
+  var lines =<< trim END
+    var r = []
+    for [a; b] in ((1, 2, 3), (4,))
+      assert_equal(v:t_tuple, type(b))
+      r->add(b)
+    endfor
+    assert_equal([(2, 3), ()], r)
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+enddef
+
 " Test for performing an arithmetic operation on multiple variables using
 " items from a tuple
 func Test_multi_arithmetic_op_from_tuple()
