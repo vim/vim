@@ -1579,10 +1579,12 @@ list_join_inner(
     // Stringify each item in the list.
     CHECK_LIST_MATERIALIZE(l);
     // Lock the list, the string() method of an object item could remove the
-    // item the loop is standing on.
+    // item the loop is standing on.  Also set VAR_FIXED, ":unlockvar" only
+    // resets VAR_LOCKED.
     prev_lock = l->lv_lock;
     if (l->lv_lock == 0)
 	l->lv_lock = VAR_LOCKED;
+    l->lv_lock |= VAR_FIXED;
     for (item = l->lv_first; item != NULL && !got_int; item = item->li_next)
     {
 	s.string = echo_string_core(&item->li_tv, &tofree, numbuf, copyID,
