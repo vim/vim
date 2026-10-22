@@ -2256,6 +2256,25 @@ func Test_tuple_string()
   call v9.CheckSourceLegacyAndVim9Success(lines)
 endfunc
 
+" Test for using a tuple with :echomsg and :echoerr
+func Test_tuple_echomsg()
+  CheckNotMSWindows
+  let lines =<< trim END
+    VAR t = (1, 'a')
+    messages clear
+    echomsg t
+    call assert_equal("(1, 'a')", execute(':1messages')->trim())
+    echomsg 'x' (2,) () test_null_tuple()
+    call assert_equal("x (2, ) () ()", execute(':1messages')->trim())
+    try
+      echoerr t
+    catch
+      call assert_match("(1, 'a')$", v:exception)
+    endtry
+  END
+  call v9.CheckSourceLegacyAndVim9Success(lines)
+endfunc
+
 " Test for type()
 func Test_tuple_type()
   let lines =<< trim END
