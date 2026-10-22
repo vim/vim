@@ -2057,9 +2057,9 @@ list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
 	return;
     }
 
-    vimlist_remove(l, item, item2);
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
+    vimlist_remove(l, item, item2);
 
     rl = rettv->vval.v_list;
 
@@ -2071,14 +2071,18 @@ list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
 	// have been allocated separately, these need to be freed.
 	while (item != NULL)
 	{
+	    next = item == item2 ? NULL : item->li_next;
 	    li = listitem_alloc();
 	    if (li == NULL)
-		return;
-	    next = item == item2 ? NULL : item->li_next;
-	    li->li_tv = item->li_tv;
-	    init_tv(&item->li_tv);
-	    list_append(rl, li);
-	    list_free_item(l, item);
+		// out of memory, the value is lost
+		listitem_free(l, item);
+	    else
+	    {
+		li->li_tv = item->li_tv;
+		init_tv(&item->li_tv);
+		list_append(rl, li);
+		list_free_item(l, item);
+	    }
 	    item = next;
 	}
     }
