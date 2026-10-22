@@ -3757,6 +3757,7 @@ FunctionConstructor(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
 		    copy_tv(&li->li_tv, curtv++);
 	    }
 	    list_unref(argslist);
+	    argslist = NULL;
 	}
 	if (selfdict != NULL)
 	{
