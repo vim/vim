@@ -342,6 +342,21 @@ func Test_list_func_remove()
   call assert_equal([], r)
 endfunc
 
+" remove() of a range from a List that has items allocated together with the
+" List and items appended later.
+func Test_list_func_remove_range_mixed_items()
+  let lines =<< trim END
+    VAR l = copy([1, 2])
+    call extend(l, [3, 4, 5])
+    call assert_equal([2, 3, 4], remove(l, 1, 3))
+    call assert_equal([1, 5], l)
+    call add(l, 6)
+    call assert_equal([1, 5, 6], remove(l, 0, -1))
+    call assert_equal([], l)
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+endfunc
+
 " List add() function
 func Test_list_add()
   let lines =<< trim END
