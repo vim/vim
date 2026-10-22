@@ -602,6 +602,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     nim: ['file.nim', 'file.nims', 'file.nimble'],
     ninja: ['file.ninja'],
     nix: ['file.nix'],
+    nlp: ['file.nlp'],
     norg: ['file.norg'],
     nq: ['file.nq'],
     nqc: ['file.nqc'],
