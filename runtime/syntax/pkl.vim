@@ -124,16 +124,16 @@ syn region	pklIdentifierExplicit	start=+`+ end=+`+
 
 " --- Numbers ---
 " Digits can be separated by '_', e.g. 1_000_000 or 0xFF_FF
-syn match	pklNumber	display "\<\d[0-9_]*\>"
-syn match	pklNumber	display "\<0x\x[0-9A-Fa-f_]*\>"
-syn match	pklNumber	display "\<0b[01][01_]*\>"
-syn match	pklNumber	display "\<0o\o[0-7_]*\>"
+syn match	pklNumber	display "\<\d\+\%(_\d\+\)*\>"
+syn match	pklNumber	display "\<0x\x\+\%(_\x\+\)*\>"
+syn match	pklNumber	display "\<0b[01]\+\%(_[01]\+\)*\>"
+syn match	pklNumber	display "\<0o[0-7]\+\%(_[0-7]\+\)*\>"
 " floating point number, with dot, optional exponent
-syn match	pklFloat	display "\<\d[0-9_]*\.\d[0-9_]*\%([eE][-+]\=\d[0-9_]*\)\=\>"
+syn match	pklFloat	display "\<\d\+\%(_\d\+\)*\.\d\+\%(_\d\+\)*\%([eE][-+]\=\d\+\%(_\d\+\)*\)\=\>"
 " floating point number, starting with a dot, optional exponent
-syn match	pklFloat	display "\%(\k\|)\)\@1<!\.\d[0-9_]*\%([eE][-+]\=\d[0-9_]*\)\=\>"
+syn match	pklFloat	display "\%(\k\|)\)\@1<!\.\d\+\%(_\d\+\)*\%([eE][-+]\=\d\+\%(_\d\+\)*\)\=\>"
 " floating point number, without dot, with exponent
-syn match	pklFloat	display "\<\d[0-9_]*[eE][-+]\=\d[0-9_]*\>"
+syn match	pklFloat	display "\<\d\+\%(_\d\+\)*[eE][-+]\=\d\+\%(_\d\+\)*\>"
 
 " --- Brackets, operators, functions ---
 syn region	pklParen	matchgroup=pklBrackets start='(' end=')' contains=ALLBUT,pklUnicode,pklTypeGroup transparent
