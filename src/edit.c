@@ -2870,7 +2870,7 @@ oneright(void)
     char_u	*ptr;
     int		l;
 
-    if (virtual_active())
+    if ((get_ve_flags() != 0 || virtual_op != MAYBE) && virtual_active())
     {
 	pos_T	prevpos = curwin->w_cursor;
 
@@ -2901,7 +2901,8 @@ oneright(void)
     curwin->w_cursor.col += l;
 
     curwin->w_set_curswant = true;
-    adjust_skipcol();
+    if (curwin->w_p_wrap && curwin->w_p_sms)
+	adjust_skipcol();
     return OK;
 }
 
