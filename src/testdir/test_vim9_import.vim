@@ -3922,4 +3922,51 @@ def Test_autoload_reload_export_class()
   &rtp = save_rtp
 enddef
 
+
+" Using the class variables and class methods of an imported class.
+def Test_imported_class_static_members()
+  var lines =<< trim END
+    vim9script
+    export class A
+      public static var sv: number = 10
+      static var ro: string = 'read-only'
+      var n: number = 1
+      static def F(): string
+        return 'F'
+      enddef
+    endclass
+  END
+  writefile(lines, 'XimportStaticMembers.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './XimportStaticMembers.vim' as X
+
+    assert_equal('F', X.A.F())
+    assert_equal(10, X.A.sv)
+    assert_equal('read-only', X.A.ro)
+    X.A.sv = 20
+    assert_equal(20, X.A.sv)
+
+    var l: list<X.A> = [X.A.new()]
+    assert_equal(1, l[0].n)
+    assert_true(instanceof(l[0], X.A))
+
+    def Compiled(): string
+      X.A.sv += 1
+      return X.A.F() .. X.A.sv
+    enddef
+    assert_equal('F21', Compiled())
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # A read-only class variable cannot be changed using the import
+  lines =<< trim END
+    vim9script
+    import './XimportStaticMembers.vim' as X
+    X.A.ro = 'x'
+  END
+  v9.CheckScriptFailure(lines, 'E1335: Variable "ro" in class "A" is not writable', 3)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
