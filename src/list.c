@@ -776,6 +776,7 @@ list_insert(list_T *l, listitem_T *ni, listitem_T *item)
 list_append_new_item(list_T *l)
 {
     typval_T	tv;
+    int		ret;
 
     if (l->lv_type != NULL && l->lv_type->tt_member != NULL)
 	tv.v_type = l->lv_type->tt_member->tt_type;
@@ -823,7 +824,12 @@ list_append_new_item(list_T *l)
     if (l->lv_type != NULL && l->lv_type->tt_member != NULL)
 	set_tv_type(&tv, l->lv_type->tt_member);
 
-    return list_append_tv(l, &tv);
+    ret = list_append_tv(l, &tv);
+    // list_append_tv() makes a copy, alloc_object() already added a
+    // reference, the other values are not referenced yet.
+    if (tv.v_type == VAR_OBJECT)
+	clear_tv(&tv);
+    return ret;
 }
 
 /*
