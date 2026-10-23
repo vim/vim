@@ -2,7 +2,7 @@
 " Language:             Zsh shell script
 " Maintainer:           Christian Brabandt <cb@256bit.org>
 " Previous Maintainer:  Nikolai Weibull <now@bitwi.se>
-" Latest Revision:      2026 Sep 01
+" Latest Revision:      2026 Oct 23
 " License:              Vim (see :h license)
 " Repository:           https://github.com/chrisbra/vim-zsh
 
@@ -29,8 +29,12 @@ if executable('zsh') && &shell !~# '/\%(nologin\|false\)$'
   elseif has("patch-9.2.0250")
     command! -buffer -nargs=1 ZshKeywordPrg echo system(['zsh', '-c', 'autoload -Uz run-help; MANPAGER= run-help "$1" 2>/dev/null', '--', <q-args>])
   endif
-  setlocal keywordprg=:ZshKeywordPrg
-  let b:undo_ftplugin .= '| setl keywordprg< | sil! delc -buffer ZshKeywordPrg'
+  " Without term_start() and patch 9.2.0250 there is no ZshKeywordPrg command,
+  " so keep the default 'keywordprg' rather than pointing it at nothing.
+  if exists(':ZshKeywordPrg') == 2
+    setlocal keywordprg=:ZshKeywordPrg
+    let b:undo_ftplugin .= '| setl keywordprg< | sil! delc -buffer ZshKeywordPrg'
+  endif
 
   if !exists('current_compiler')
     compiler zsh
