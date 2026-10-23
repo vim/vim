@@ -4568,12 +4568,10 @@ Similarly for a permissive dictionary:
 	echo de->extend(da)->string()
 <
 And, although tuples themselves are immutable, permissive tuple concatenation
-can be achieved with either "any" or an empty tuple:
+can be achieved with an empty tuple (a variadic tuple can only be concatenated
+with a tuple of the same type, see |E1540|):
 >vim9
 	vim9script
-	var t_any: tuple<...list<any>> = (3, '2')
-	t_any = t_any + (true, )
-	echo t_any
 	var t_dec_empty = ()
 	t_dec_empty = t_dec_empty + (3, '2', true)
 	echo t_dec_empty
