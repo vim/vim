@@ -3560,7 +3560,10 @@ compile_assign_compound_op(cctx_T *cctx, cac_T *cac)
 		&& need_type(stacktype, expected, 0, -1, 0, cctx,
 					FALSE, FALSE) == FAIL)
 	    return FAIL;
-	else if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
+	// As with "a .. b", convert both operands: when the target type is
+	// any, its current value can be a number.
+	else if (may_generate_2STRING(-2, TOSTRING_NONE, cctx) == FAIL
+		|| may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 	    return FAIL;
     }
     else
