@@ -1883,6 +1883,16 @@ typval_compare_object(
 {
     int res_match = type == EXPR_EQUAL || type == EXPR_IS ? TRUE : FALSE;
 
+    // Objects can only be compared for being equal or the same.  The check
+    // for an expression is done when compiling and evaluating it, this is
+    // for other callers, e.g. max() and min(), and in a legacy script.
+    if (type != EXPR_EQUAL && type != EXPR_NEQUAL
+	    && type != EXPR_IS && type != EXPR_ISNOT)
+    {
+	semsg(_(e_invalid_operation_for_str), vartype_name(VAR_OBJECT));
+	return FAIL;
+    }
+
     if (tv1->vval.v_object == NULL && tv2->vval.v_object == NULL)
     {
 	*res = res_match;
