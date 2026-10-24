@@ -125,6 +125,7 @@ jobs:
           pacboy: >-
             make:p gcc:p
           msystem: ${{ env.MSYSTEM }}
+          suppress-deprecation-warnings: msystem-mingw32
           release: false
 
       - name: Checkout repository from GitHub
