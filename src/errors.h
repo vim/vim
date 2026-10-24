@@ -3847,3 +3847,7 @@ EXTERN char e_changing_image_backend_failed[]
 EXTERN char e_image_id_nr_does_not_exist[]
 	INIT(= N_("E1587: Image ID %d does not exist"));
 #endif
+#ifdef FEAT_EVAL
+EXTERN char e_comparison_operators_cannot_be_chained_str[]
+	INIT(= N_("E1588: Comparison operators cannot be chained, use parentheses: %s"));
+#endif

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.2.  Last change: 2026 Sep 30
+*eval.txt*	For Vim version 9.2.  Last change: 2026 Oct 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1354,6 +1354,14 @@ Examples:
 "abc" ==? "Abc"	  evaluates to 1
 "abc" == "Abc"	  evaluates to 1 if 'ignorecase' is set, 0 otherwise
 NOTE: In |Vim9| script 'ignorecase' is not used.
+
+							*E1588*
+Comparisons cannot be chained: "1 < x < 3" is an error, also inside
+parentheses.  Use "&&" to combine comparisons, or parentheses to compare the
+result of a comparison: >
+	if 1 < x && x < 3
+	echo (1 != 2) == (3 < 4)
+<
 
 						*E691* *E692* *E1517* *E1518*
 A |List| can only be compared with a |List| and only "equal", "not equal",

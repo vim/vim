@@ -238,6 +238,114 @@ func Test_compare_with_null()
   unlet s:value
 endfunc
 
+" A comparison cannot be followed by another one, with or without parentheses.
+func Test_compare_chained()
+  call v9.CheckLegacyAndVim9Failure(['echo (1 != 2 > 3)'], 'E1588: Comparison operators cannot be chained, use parentheses: > 3)')
+  call v9.CheckLegacyAndVim9Failure(['echo 1 != 2 > 3'], 'E1588:')
+  call v9.CheckLegacyAndVim9Failure(['echo 1 == 1 == 1'], 'E1588:')
+  call v9.CheckLegacyAndVim9Failure(['echo 1 < 2 <= 3'], 'E1588:')
+  call v9.CheckLegacyAndVim9Failure(['echo "a" =~ "a" !~ "b"'], 'E1588:')
+  call v9.CheckLegacyAndVim9Failure(['echo [] is [] isnot []'], 'E1588:')
+  call v9.CheckLegacyAndVim9Failure(['VAR x = 1 ==# 1 ==? 1'], 'E1588:')
+
+  " a comparison on its own and with parentheses is fine
+  let lines =<< trim END
+      call assert_equal(TRUE, TRUE != (2 > 3))
+      call assert_equal(TRUE, (1 != 2) == (3 < 4))
+      call assert_equal(TRUE, 1 < 2 && 2 < 3)
+      call assert_equal(FALSE, 1 == 1 ? 2 > 3 : 3 > 2)
+      VAR is_ok = 1
+      call assert_equal(TRUE, is_ok == 1)
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+
+  " a continuation line does not hide it
+  let lines =<< trim END
+      vim9script
+      var x = 1 < 2
+            < 3
+  END
+  call v9.CheckScriptFailure(lines, 'E1588:', 2)
+endfunc
+
+" A program translated from C, that computes the digits of pi: in C ">" binds
+" tighter than "!=", "k != j > 2" means "k != (j > 2)".  Taken over as it is,
+" it is a chained comparison.
+func Test_compare_chained_from_c()
+  let lines =<< trim END
+      vim9script
+      def Pi(): string
+        var x: string = ''
+        var k: number = 300
+        var p: number = 0
+        var q: number = 0
+        var t = 1000
+        var j: number = 0
+        var a = [2]
+        while a[j] != 0 && k != 0
+          p = 1 + 2 * k
+          while j < 23
+            if !(k != j > 2)
+              x ..= printf("%.3d", a[j - 2] % t + q / p / t)
+            endif
+            q = a[j] * k + q % p * t
+            a[j] = q / p
+            add(a, 0)
+            j += 1
+          endwhile
+          j = 0
+          q = 0
+          a[j] += 2
+          k -= 1
+        endwhile
+        return x
+      enddef
+      Pi()
+  END
+  call v9.CheckScriptFailure(lines, 'E1588: Comparison operators cannot be chained, use parentheses: > 2)')
+endfunc
+
+" The same program written for Vim9: the comparison C meant is
+" "k != (j > 2)".  In C "j > 2" is the number 0 or 1, in Vim9 it is a bool,
+" and a number cannot be compared with a bool (E1072), so the bool is made a
+" number with "?:".  "!(k != ...)" is "k == ...": digits are added in the last
+" round only (k is 1), from the third item of "a" on.
+func Test_compare_chained_from_c_fixed()
+  let lines =<< trim END
+      vim9script
+      def Pi(): string
+        var x: string = ''
+        var k: number = 300
+        var p: number = 0
+        var q: number = 0
+        var t = 1000
+        var j: number = 0
+        var a = [2]
+        while a[j] != 0 && k != 0
+          p = 1 + 2 * k
+          while j < 23
+            # C: if (!(k != j > 2))
+            if k == (j > 2 ? 1 : 0)
+              x ..= printf("%.3d", a[j - 2] % t + q / p / t)
+            endif
+            q = a[j] * k + q % p * t
+            a[j] = q / p
+            add(a, 0)
+            j += 1
+          endwhile
+          j = 0
+          q = 0
+          a[j] += 2
+          k -= 1
+        endwhile
+        return x
+      enddef
+      # the first 60 decimals of pi
+      assert_equal('141592653589793238462643383279502884197169399375105820974944', Pi())
+  END
+  call v9.CheckScriptSuccess(lines)
+endfunc
+
 func Test_setreg_null_list()
   let lines =<< trim END
       call setreg('x', test_null_list())
