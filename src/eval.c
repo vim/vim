@@ -5314,7 +5314,11 @@ eval9_nested_expr(
 		++*arg;
 	    else if (ret == OK)
 	    {
-		emsg(_(e_missing_closing_paren));
+		// Show where the expression stopped, unless at the end.
+		if (**arg == NUL)
+		    emsg(_(e_missing_closing_paren));
+		else
+		    semsg(_(e_missing_closing_paren_str), *arg);
 		clear_tv(rettv);
 		ret = FAIL;
 	    }

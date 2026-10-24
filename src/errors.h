@@ -269,6 +269,8 @@ EXTERN char e_missing_colon_after_questionmark[]
 	INIT(= N_("E109: Missing ':' after '?'"));
 EXTERN char e_missing_closing_paren[]
 	INIT(= N_("E110: Missing ')'"));
+EXTERN char e_missing_closing_paren_str[]
+	INIT(= N_("E110: Missing ')': %s"));
 EXTERN char e_missing_closing_square_brace[]
 	INIT(= N_("E111: Missing ']'"));
 EXTERN char e_option_name_missing_str[]
