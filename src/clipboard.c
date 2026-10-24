@@ -3540,6 +3540,7 @@ clip_provider_paste(char_u *reg, char_u *provider)
     if (ret == FAIL)
 	goto exit;
     else if (rettv.v_type == VAR_TUPLE
+	    && rettv.vval.v_tuple != NULL
 	    && TUPLE_LEN(rettv.vval.v_tuple) == 2
 	    && TUPLE_ITEM(rettv.vval.v_tuple, 0)->v_type == VAR_STRING
 	    && TUPLE_ITEM(rettv.vval.v_tuple, 1)->v_type == VAR_LIST)
@@ -3548,6 +3549,7 @@ clip_provider_paste(char_u *reg, char_u *provider)
 	lines = TUPLE_ITEM(rettv.vval.v_tuple, 1)->vval.v_list;
     }
     else if (rettv.v_type == VAR_LIST
+	    && rettv.vval.v_list != NULL
 	    && rettv.vval.v_list->lv_len == 2
 	    && rettv.vval.v_list->lv_first->li_tv.v_type == VAR_STRING
 	    && rettv.vval.v_list->lv_first->li_next->li_tv.v_type == VAR_LIST)
