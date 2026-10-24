@@ -3659,7 +3659,9 @@ setfname(
 		return FAIL;
 	    }
 	    // delete from the list
+	    ++buf->b_locked;
 	    close_buffer(NULL, obuf, DOBUF_WIPE, FALSE, FALSE, FALSE);
+	    --buf->b_locked;
 	}
 	sfname = vim_strsave(sfname);
 	if (ffname == NULL || sfname == NULL)
