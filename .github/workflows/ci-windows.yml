@@ -83,14 +83,14 @@ jobs:
             echo "VCARCH=amd64" >> $GITHUB_ENV
             echo "WARCH=x64" >> $GITHUB_ENV
             echo "BITS=64" >> $GITHUB_ENV
-            echo "MSYSTEM=MINGW64" >> $GITHUB_ENV
+            echo "MSYSTEM=UCRT64" >> $GITHUB_ENV
           else
             cygreg=registry32
             pyreg=-32
             echo "VCARCH=x86" >> $GITHUB_ENV
             echo "WARCH=ia32" >> $GITHUB_ENV
             echo "BITS=32" >> $GITHUB_ENV
-            echo "MSYSTEM=MINGW32" >> $GITHUB_ENV
+            echo "MSYSTEM=CLANG32" >> $GITHUB_ENV
           fi
 
           echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV
