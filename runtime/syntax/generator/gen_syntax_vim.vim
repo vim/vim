@@ -379,6 +379,7 @@ function s:get_vim_command_type(cmd_name)
 		mark
 		match
 		menutranslate
+		move
 		mzfile
 		mzscheme
 		noremap
