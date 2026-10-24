@@ -4535,4 +4535,16 @@ func Test_expr_fails()
   call v9.CheckDefAndScriptFailure(["echo doesnotexist()"], 'E117:', 1)
 endfunc
 
+" Deeply nested parentheses must not run out of stack when compiling
+def Test_expr_deeply_nested_parens()
+  var lines = [
+    'vim9script',
+    'def F()',
+    '  var x = ' .. repeat('(', 10000) .. '1' .. repeat(')', 10000),
+    'enddef',
+    'defcompile F',
+  ]
+  v9.CheckSourceFailure(lines, 'E1169:')
+enddef
+
 " vim: shiftwidth=2 sts=2 expandtab
