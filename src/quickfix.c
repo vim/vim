@@ -8738,7 +8738,7 @@ ex_cexpr(exarg_T *eap)
 {
     typval_T	*tv;
 
-    if (trigger_cexpr_autocmd(eap->cmdidx) == FAIL)
+    if (!eap->skip && trigger_cexpr_autocmd(eap->cmdidx) == FAIL)
 	return;
 
     // Evaluate the expression.  When the result is a string or a list we can
@@ -8747,7 +8747,8 @@ ex_cexpr(exarg_T *eap)
     if (tv == NULL)
 	return;
 
-    (void)cexpr_core(eap, tv);
+    if (!eap->skip)
+	(void)cexpr_core(eap, tv);
     free_tv(tv);
 }
 # endif
