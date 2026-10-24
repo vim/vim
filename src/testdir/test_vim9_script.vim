@@ -4957,7 +4957,7 @@ def Test_vim9_comment_not_compiled()
   v9.CheckScriptFailure([
       'vim9script',
       'var $VARIABLE = "text"',
-      ], 'E1016: Cannot declare an environment variable:')
+      ], 'E1000: Cannot declare an environment variable:')
 
   v9.CheckScriptFailure([
       'vim9script',
