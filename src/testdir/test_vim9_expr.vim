@@ -2342,6 +2342,9 @@ def Test_expr8()
   v9.CheckDefAndScriptFailure(["var x = <nr>123"], 'E1010:', 1)
   v9.CheckDefFailure(["var x = <number>"], 'E1097:', 3)
   v9.CheckDefFailure(["var x = <number>string(1)"], 'E1012:', 1)
+  # A failed type check must free the value, a leak is only detected with
+  # valgrind or ASAN
+  v9.CheckScriptFailure(['vim9script', "var x = <number>'a'"], 'E1012: Type mismatch; expected number but got string', 2)
   v9.CheckScriptFailure(['vim9script', "var x = <number>"], 'E15:', 2)
   v9.CheckDefAndScriptFailure(["var x = <number >123"], 'E1068:', 1)
   v9.CheckDefAndScriptFailure(["var x = <number 123"], 'E1104:', 1)
