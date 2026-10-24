@@ -2587,15 +2587,34 @@ compile_leader(cctx_T *cctx, int numeric_only, char_u *start, char_u **end)
     static int
 compile_parenthesis(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
-    int	    ret;
-    char_u  *p = *arg + 1;
+    int		ret = FAIL;
+    static int	recurse = 0;
+    char_u	*p = *arg + 1;
+
+    // Limit recursion to 1000 levels.  At least at 10000 we run out of stack
+    // and crash.  With MSVC the stack is smaller.
+    if (recurse ==
+#ifdef _MSC_VER
+		    300
+#else
+		    1000
+#endif
+		    )
+    {
+	semsg(_(e_expression_too_recursive_str), *arg);
+	return ret;
+    }
+    ++recurse;
 
     if (may_get_next_line_error(p, arg, cctx) == FAIL)
-	return FAIL;
+	goto done;
 
     if (**arg == ')')
+    {
 	// empty tuple
-	return compile_tuple(arg, cctx, ppconst, FALSE);
+	ret = compile_tuple(arg, cctx, ppconst, FALSE);
+	goto done;
+    }
 
     if (ppconst->pp_used <= PPSIZE - 10)
     {
@@ -2605,18 +2624,25 @@ compile_parenthesis(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     {
 	// Not enough space in ppconst, flush constants.
 	if (generate_ppconst(cctx, ppconst) == FAIL)
-	    return FAIL;
+	    goto done;
 	ret = compile_expr0(arg, cctx);
     }
     if (may_get_next_line_error(*arg, arg, cctx) == FAIL)
-	return FAIL;
+    {
+	ret = FAIL;
+	goto done;
+    }
     if (ret == OK && **arg == ',')
     {
 	// tuple
 	int is_const = ppconst->pp_used > 0 || ppconst->pp_is_const;
 	if (generate_ppconst(cctx, ppconst) == FAIL)
-	    return FAIL;
-	return compile_tuple(arg, cctx, ppconst, is_const);
+	{
+	    ret = FAIL;
+	    goto done;
+	}
+	ret = compile_tuple(arg, cctx, ppconst, is_const);
+	goto done;
     }
 
     if (**arg == ')')
@@ -2626,6 +2652,9 @@ compile_parenthesis(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	emsg(_(e_missing_closing_paren));
 	ret = FAIL;
     }
+
+done:
+    --recurse;
     return ret;
 }
 
