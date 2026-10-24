@@ -1542,8 +1542,9 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	    curbuf->b_op_start.col = 0;
 	    curbuf->b_op_end.col = MAXCOL;
 	}
-	if (yanktype != MLINE && !oap->inclusive)
-	    // Exclude the end position.
+	// Exclude the end position.  For a block "oap->end" is already the
+	// last column.
+	if (yanktype != MLINE && !oap->block_mode && !oap->inclusive)
 	    decl(&curbuf->b_op_end);
     }
 
