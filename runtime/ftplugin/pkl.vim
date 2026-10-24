@@ -3,6 +3,7 @@
 " Maintainer:	Riley Bruins <ribru17@gmail.com>
 " Last Change:	2025 Jul 14
 " 2025 Oct 03 by Vim Project Add foldmethod #18274
+" 2026 Oct 20 by Vim Project Add formatoptions and suffixesadd
 
 if exists('b:did_ftplugin')
   finish
@@ -13,4 +14,4 @@ setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,:///,://
 setlocal commentstring=//\ %s
 setlocal foldmethod=syntax
 
-let b:undo_ftplugin = 'setl com< cms< fdm<'
+let b:undo_ftplugin = 'setl com< cms< fdm< fo< sua<'
