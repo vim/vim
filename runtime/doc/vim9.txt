@@ -235,11 +235,13 @@ Vim script and Vim9 script, including `:def` functions:
 - Many commands cannot be shortened.  Trying to use a shortened command will
   give E1065.  Specifically, these commands' full names must be used:
 
-  - Flow control commands: `:break`, `:catch`, `:continue`, `:else`, `:elseif`, `:endfor`,
-    `:endif`, `:endtry`, `:endwhile`, `:finally`, `:finish`, `:return`, `:throw`, `:while`
-  - Declaration keywords: `:abstract`, `:class`, `:const`, `:def`, `:endclass`, `:enddef`,
-    `:endenum`, `:endinterface`, `:enum`, `:export`, `:final`, `:import`, `:interface`,
-    `:public`, `:static`, `:this`, `:type`, `:var`
+  - Flow control commands: `:break`, `:catch`, `:continue`, `:else`,
+    `:elseif`, `:endfor`, `:endif`, `:endtry`, `:endwhile`, `:finally`,
+    `:finish`, `:return`, `:throw`, `:while`
+  - Declaration keywords: `:abstract`, `:class`, `:const`, `:def`,
+    `:endclass`, `:enddef`, `:endenum`, `:endinterface`, `:enum`, `:export`,
+    `:final`, `:import`, `:interface`, `:public`, `:static`, `:this`, `:type`,
+    `:var`
 
 - `:final` cannot be used as a shortened form of `:finally`.  That is because
   it means |:final| in Vim9 script.  By itself, `:final` lists all variables,
@@ -666,8 +668,8 @@ autoload script, `:export` needs to be used for those to be used elsewhere.
 <
 							*E1075*
 Using "s:" (like in a legacy Vim script function), is not allowed.  If used in
-a script level `:def` function, |E1268| is given, and, if used in a nested `:def`
-function, E1075.  For example:
+a script level `:def` function, |E1268| is given, and, if used in a nested
+`:def` function, E1075.  For example:
 >vim9
 	vim9script
 	def F1075(): void
@@ -758,7 +760,7 @@ script examples.
 	  call Cos()	" E117: Unknown function: Cos
 	endfunction
 	Call_Cos()
-<							*vim9-s-namespace* *E1268*
+<						*vim9-s-namespace* *E1268*
 Within a Vim9 script's `:def` function, "s:" cannot be used.  Compare these
 two scripts: first, legacy Vim script where "s:" may be used in a `:def` then,
 second, Vim9 script where E1268 is given:
@@ -978,7 +980,7 @@ means there is one argument too few and E1190 is given:
 <
 
 Variable declarations with :var, :final, and :const ~
-							*vim9-declaration* *:var*
+						*vim9-declaration* *:var*
 Local variables need to be declared with `:var`.  Local constants need to be
 declared with either `:final` or `:const`.  Collectively they are referred to
 as "variables" in this section.  Shortening `:var`, `:final`, or `:const` is not
@@ -1484,7 +1486,7 @@ level, is given in a `:def` function if ";" is used more than once:
 <
 
 Constants ~
-							*vim9-const* *vim9-final*
+						*vim9-const* *vim9-final*
 How constants work varies between languages.  Some consider a variable that
 can't be assigned another value a constant.  JavaScript is an example.  Others
 also make the value immutable, thus when a constant uses a list, the list
@@ -1824,7 +1826,8 @@ reports on three "local to buffer" options:
 	}
 	echowindow Get_bv('modifiable', 'tabstop', 'textwidth')
 <
-This is also useful for a |Channel|, |Job|, or |timer|.  This is a timer example:
+This is also useful for a |Channel|, |Job|, or |timer|.  This is a timer
+example:
 >vim9
 	vim9script
 	echowindow "Handler calling..."
@@ -2447,9 +2450,9 @@ Similarly, adding modifiers to any of |:try|, |:endtry|, |:for|, |:endfor|,
 |:while|, |:endwhile|, |:catch|, or |:finally| may result in an E1176 error,
 though it depends on the redundant modifier used.  For example, adding the
 |:silent| modifier to |:for| is ignored whereas adding |:keepmarks| to
-|:endfor| is an error.  (Note the behavior of `:silent` is intentional.  It works
-like that so that error messages are suppressed when Vim does not support
-the |+eval| feature.)
+|:endfor| is an error.  (Note the behavior of `:silent` is intentional.  It
+works like that so that error messages are suppressed when Vim does not
+support the |+eval| feature.)
 							*E1082*
 Also, using a command modifier without a following command gives E1082:
 >vim9
@@ -2841,11 +2844,11 @@ The falsy (|??|) and logical NOT (|expr-!|) operators use truthiness rules.
 
 – Strict Boolean Expressions ~
 							*vim9-boolean*
-In Vim9 script, the conditionals |:if|, |ternary|, |:while|, `||` (|expr-barbar|),
-and `&&` (|expr-&&|), require strict boolean types.  This is different to
-legacy Vim script, which treats any non-zero number as 1 and implicitly infers
-a string or |Special| as a number equivalent.  To illustrate, in legacy Vim
-script, all these conditional expressions work:
+In Vim9 script, the conditionals |:if|, |ternary|, |:while|, `||`
+(|expr-barbar|), and `&&` (|expr-&&|), require strict boolean types.  This is
+different to legacy Vim script, which treats any non-zero number as 1 and
+implicitly infers a string or |Special| as a number equivalent.  To
+illustrate, in legacy Vim script, all these conditional expressions work:
 >vim
 	" legacy Vim script
 	" These evaluate to 1:
@@ -3016,9 +3019,9 @@ because "t" has already been evaluated to `true`:
 <
 
 Predefined values ~
-				*false* *true* *null* *null_blob* *null_channel*
-				*null_class* *null_dict* *null_function* *null_job*
-				*null_list* *null_object* *null_partial* *null_string*
+			*false* *true* *null* *null_blob* *null_channel*
+			*null_class* *null_dict* *null_function* *null_job*
+			*null_list* *null_object* *null_partial* *null_string*
 Vim9 script has predefined values representing true, false, and null states.
 The following table lists those predefined values, along with their
 |type()|, |typename()|, and |string()| representations:
@@ -5803,8 +5806,8 @@ script.  The imported namespace still becomes script-local, even when the
 	call s:myfile.MyFunc()
 
 When using the "as name" form, the namespace cannot be resolved on its own
-(see also |E1060|).  This example demonstrates using `:imp` with `as` successfully,
-then the error:
+(see also |E1060|).  This example demonstrates using `:imp` with `as`
+successfully, then the error:
 >vim
 	let s:tmp = $'{tempname()}.vim'->substitute('\\', '/', 'g')
 	call writefile(['vim9script',
@@ -5833,7 +5836,7 @@ defined.  This does not apply to autoload imports, see the next section.
 
 
 Importing an autoload script ~
-						*vim9-autoload* *import-autoload*
+					*vim9-autoload* *import-autoload*
 For optimal startup speed, loading scripts should be postponed until they are
 actually needed.  Using the autoload mechanism is recommended:
 							*E1264*
