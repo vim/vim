@@ -564,6 +564,27 @@ func Test_global_local_virtualedit()
   set virtualedit&
 endfunc
 
+func Test_virtualedit_oneright()
+  new
+  call setline(1, 'abc')
+  normal! $
+  normal! l
+  call assert_equal(3, col('.'))
+
+  set virtualedit=onemore
+  normal! l
+  call assert_equal(4, col('.'))
+  normal! l
+  call assert_equal(4, col('.'))
+
+  set virtualedit=all
+  normal! l
+  call assert_equal(5, virtcol('.'))
+
+  set virtualedit&
+  bwipe!
+endfunc
+
 func Test_virtualedit_setlocal()
   enew
   setglobal virtualedit=all
