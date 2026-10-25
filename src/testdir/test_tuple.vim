@@ -3689,6 +3689,13 @@ func Test_tuple_modify_item_error()
   END
   call v9.CheckSourceLegacyAndVim9Failure(lines, 'E1532: Cannot modify a tuple')
 
+  " with type "any" it is only known at runtime that it is a tuple
+  let lines =<< trim END
+    var t: any = (1, 2)
+    unlet t[0]
+  END
+  call v9.CheckSourceDefExecAndScriptFailure(lines, 'E1532: Cannot modify a tuple', 2)
+
   let lines =<< trim END
     VAR t = (1, 2)
     LET t[0] += 1
