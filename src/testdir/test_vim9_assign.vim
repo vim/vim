@@ -621,6 +621,19 @@ def Test_assign_unpack()
   END
   v9.CheckDefFailure(lines, 'E1093: Expected 2 items but got 1', 3)
 
+  # null_list and null_tuple have no items
+  for null_value in ['null_list', 'null_tuple']
+    lines =<< trim eval END
+        var [v1, v2] = {null_value}
+    END
+    v9.CheckDefFailure(lines, 'E1093: Expected 2 items but got 0', 1)
+
+    lines =<< trim eval END
+        var [v1; v2] = {null_value}
+    END
+    v9.CheckDefFailure(lines, 'E1093: Expected 1 items but got 0', 1)
+  endfor
+
   lines =<< trim END
       var v1: number
       var v2: number
