@@ -3657,6 +3657,14 @@ def Test_enum_from_auloaded_script()
       assert_equal('Green', c.name)
     enddef
     CheckColor()
+
+    # the autoloaded enum can be used as an argument type
+    def Paint(c: color.Color): string
+      return c.name .. c.ordinal
+    enddef
+    assert_equal('Blue2', Paint(color.Color.Blue))
+    assert_equal(['Red', 'Green', 'Blue'],
+                 color.Color.values->mapnew((_, v) => v.name))
   END
   v9.CheckScriptSuccess(lines)
 
