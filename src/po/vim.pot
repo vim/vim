@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-10-20 14:16+0000\n"
+"POT-Creation-Date: 2026-10-25 09:35+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -7084,6 +7084,10 @@ msgid "E999: scriptversion not supported: %d"
 msgstr ""
 
 #, c-format
+msgid "E1000: Cannot declare an environment variable: %s"
+msgstr ""
+
+#, c-format
 msgid "E1001: Variable not found: %s"
 msgstr ""
 
@@ -7150,10 +7154,6 @@ msgstr ""
 
 #, c-format
 msgid "E1016: Cannot declare a %s variable: %s"
-msgstr ""
-
-#, c-format
-msgid "E1016: Cannot declare an environment variable: %s"
 msgstr ""
 
 #, c-format
