@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Oct 13
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Oct 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52662,6 +52662,8 @@ Other ~
 - The "term_finish" option of term_start() supports a "noclose" value.
 - Control Vim via a channel using stdin/stdout |channel-stdio|.
 - 'tagfunc' is now also used for :tag completion.
+- 'completeopt' takes the new value "pathopt" to make the file name completion
+  consult the 'path' option |i_CTRL-X_CTRL-F|.
 
 Platform specific ~
 -----------------

@@ -4912,8 +4912,13 @@ get_next_filename_completion(void)
 	}
     }
 
+    int flags = EW_FILE|EW_DIR|EW_ADDSLASH|EW_SILENT;
+
+    if (get_cot_flags() & COT_PATHOPT)
+	flags |= EW_PATH;
+
     if (expand_wildcards(1, &compl_pattern.string, &num_matches, &matches,
-		EW_FILE|EW_DIR|EW_ADDSLASH|EW_SILENT) != OK)
+		flags) != OK)
 	return;
 
     // May change home directory back to "~".
