@@ -3697,6 +3697,26 @@ func Test_tuple_modify_item_error()
         \ 'E1532: Cannot modify a tuple',
         \ 'E734: Wrong variable type for +=',
         \ 'E1532: Cannot modify a tuple'])
+
+  " removing a range of items
+  let lines =<< trim END
+    VAR t = (1, 2, 3)
+    unlet t[0 : 1]
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, 'E1533: Cannot slice a tuple')
+
+  let lines =<< trim END
+    var t = (1, 2, 3)
+    unlet t[1 :]
+  END
+  call v9.CheckSourceDefFailure(lines, 'E1533: Cannot slice a tuple', 2)
+
+  " with type "any" it is only known at runtime that it is a tuple
+  let lines =<< trim END
+    var t: any = (1, 2, 3)
+    unlet t[0 : 1]
+  END
+  call v9.CheckSourceDefExecAndScriptFailure(lines, 'E1533: Cannot slice a tuple', 2)
 endfunc
 
 " Test for using a tuple as a Dict key
