@@ -1,4 +1,4 @@
-*os_vms.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*os_vms.txt*	For Vim version 9.2.  Last change: 2026 Oct 17
 
 
 		  VIM REFERENCE MANUAL
@@ -106,7 +106,7 @@ http://www.polarhome.com/ctags/
 
 Advanced users may try some acrobatics in FEATURE.H file as well.
 
-It is possible to compile with +xfontset +xim options too, but then you have
+It is possible to compile with |+xfontset| |+xim| options too, but then you have
 to set up GUI fonts etc. correctly.  See :help xim from Vim command prompt.
 
 You may want to use GUI with GTK icons, then you have to download and install

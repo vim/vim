@@ -1,4 +1,4 @@
-*version8.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*version8.txt*	For Vim version 9.2.  Last change: 2026 Oct 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -480,7 +480,7 @@ was shut down.  It can now be found at https://github.com/vim/vim.
 Functions now use ANSI-C declarations.  At least a C-89 compatible compiler is
 required.
 
-The +visual feature is now always included.
+The |+visual| feature is now always included.
 
 ==============================================================================
 PATCHES						*patches-8* *bug-fixes-8*
