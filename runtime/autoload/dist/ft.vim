@@ -2780,6 +2780,8 @@ const ft_from_ext = {
   "rjs": "ruby",
   # Sorbet (Ruby typechecker)
   "rbi": "ruby",
+  # RGC
+  "rg": "rgc",
   # Rust
   "rs": "rust",
   # S-lang

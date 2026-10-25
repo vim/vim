@@ -7714,6 +7714,7 @@ ft-rasi-syntax	syntax.txt	/*ft-rasi-syntax*
 ft-readline-syntax	syntax.txt	/*ft-readline-syntax*
 ft-rego-syntax	syntax.txt	/*ft-rego-syntax*
 ft-rexx-syntax	syntax.txt	/*ft-rexx-syntax*
+ft-rgc-plugin	filetype.txt	/*ft-rgc-plugin*
 ft-rmd-plugin	filetype.txt	/*ft-rmd-plugin*
 ft-rmd-syntax	syntax.txt	/*ft-rmd-syntax*
 ft-rnoweb-plugin	filetype.txt	/*ft-rnoweb-plugin*

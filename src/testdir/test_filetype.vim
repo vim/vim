@@ -710,6 +710,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     resolv: ['resolv.conf'],
     reva: ['file.frt'],
     rexx: ['file.rex', 'file.orx', 'file.rxo', 'file.rxj', 'file.jrexx', 'file.rexxj', 'file.rexx', 'file.testGroup', 'file.testUnit'],
+    rgc: ['file.rg'],
     rhelp: ['file.rd'],
     rib: ['file.rib'],
     rmd: ['file.rmd', 'file.smd'],

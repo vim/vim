@@ -1117,6 +1117,13 @@ To enable this behavior, set the following variable in your vimrc: >
 	let g:rst_style = 1
 
 
+RGC								*ft-rgc-plugin*
+
+The following local options are set for RGC source files: >
+	setlocal commentstring=#\ %s
+	setlocal expandtab shiftwidth=4 softtabstop=4 tabstop=4
+
+
 RNOWEB							*ft-rnoweb-plugin*
 
 The 'formatexpr' option is set dynamically with different values for R code
