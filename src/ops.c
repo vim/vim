@@ -4274,9 +4274,10 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	curwin->w_set_curswant = true;
 
 	// oap->empty is set when start and end are the same.  The inclusive
-	// flag affects this too, unless yanking and the end is on a NUL.
+	// flag affects this too, unless yanking and the end is on a NUL.  For
+	// a block "oap->end" is already the last column.
 	oap->empty = (oap->motion_type == MCHAR
-		    && (!oap->inclusive
+		    && ((!oap->inclusive && !oap->block_mode)
 			|| (oap->op_type == OP_YANK
 			    && gchar_pos(&oap->end) == NUL))
 		    && EQUAL_POS(oap->start, oap->end)

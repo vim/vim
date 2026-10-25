@@ -1,4 +1,4 @@
-*motion.txt*	For Vim version 9.2.  Last change: 2026 Jun 13
+*motion.txt*	For Vim version 9.2.  Last change: 2026 Oct 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -86,6 +86,8 @@ A character motion is either inclusive or exclusive.  When inclusive, the
 start and end position of the motion are included in the operation.  When
 exclusive, the last character towards the end of the buffer is not included.
 Linewise motions always include the start and end position.
+For |o_CTRL-V| the motion is always inclusive, unless 'selection' is
+"exclusive".
 
 Which motions are linewise, inclusive or exclusive is mentioned with the
 command.  There are however, two general exceptions:
