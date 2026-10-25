@@ -86,7 +86,8 @@ A character motion is either inclusive or exclusive.  When inclusive, the
 start and end position of the motion are included in the operation.  When
 exclusive, the last character towards the end of the buffer is not included.
 Linewise motions always include the start and end position.
-Inclusive and exclusive do not apply to |o_CTRL-V|.
+For |o_CTRL-V| the motion is always inclusive, unless 'selection' is
+"exclusive".
 
 Which motions are linewise, inclusive or exclusive is mentioned with the
 command.  There are however, two general exceptions:
