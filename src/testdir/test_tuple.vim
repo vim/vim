@@ -1721,8 +1721,27 @@ func Test_tuple_deepcopy()
     VAR tuple = (l,)
     call add(l, tuple)
     call assert_equal('([(...)], )', string(deepcopy(tuple)))
+
+    #" items referring to the same List refer to the same copy
+    VAR l2 = [1]
+    VAR t4 = (l2, l2)
+    VAR t5 = deepcopy(t4)
+    call assert_true(t5[0] is t5[1])
+    call assert_false(t5[0] is l2)
   END
   call v9.CheckSourceLegacyAndVim9Success(lines)
+
+  " a copy of a locked tuple is not locked
+  let g:t = (1, [2])
+  lockvar 2 g:t
+  let g:t2 = deepcopy(g:t)
+  call assert_equal(1, islocked('g:t'))
+  call assert_equal(0, islocked('g:t2'))
+  call assert_equal(0, islocked('g:t2[1]'))
+  call add(g:t2[1], 3)
+  call assert_equal((1, [2, 3]), g:t2)
+  unlockvar 2 g:t
+  unlet g:t g:t2
 endfunc
 
 " Test for empty()
@@ -1752,12 +1771,20 @@ func Test_tuple_extend()
   let lines =<< trim END
     VAR t = (1, 2, 3)
     call extend(t, (4, 5))
-    call extendnew(t, (4, 5))
   END
   call v9.CheckSourceLegacyAndVim9Failure(lines, [
         \ 'E896: Argument of extend() must be a List, Dictionary or Blob',
         \ 'E1013: Argument 1: type mismatch, expected list<any> but got tuple<number, number, number>',
         \ 'E896: Argument of extend() must be a List, Dictionary or Blob'])
+
+  let lines =<< trim END
+    VAR t = (1, 2, 3)
+    call extendnew(t, (4, 5))
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E896: Argument of extendnew() must be a List, Dictionary or Blob',
+        \ 'E1013: Argument 1: type mismatch, expected list<any> but got tuple<number, number, number>',
+        \ 'E896: Argument of extendnew() must be a List, Dictionary or Blob'])
 endfunc
 
 " Test for filter() with a tuple
@@ -1922,6 +1949,14 @@ func Test_tuple_insert()
   let lines =<< trim END
     VAR t = (1, 2, 3)
     call insert(t, 4)
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E899: Argument of insert() must be a List or Blob',
+        \ 'E1013: Argument 1: type mismatch, expected list<any> but got tuple<number, number, number>',
+        \ 'E1226: List or Blob required for argument 1'])
+
+  let lines =<< trim END
+    VAR t = (1, 2, 3)
     call insert(t, 4, 2)
   END
   call v9.CheckSourceLegacyAndVim9Failure(lines, [
@@ -2359,6 +2394,621 @@ func Test_tuple_viminfo()
   call delete('Xviminfo')
 endfunc
 
+" Test for using a type alias for a tuple type
+def Test_tuple_type_alias()
+  var lines =<< trim END
+    vim9script
+    type Pair = tuple<number, string>
+    type Nums = tuple<...list<number>>
+    def Next(x: Pair): Pair
+      return (x[0] + 1, x[1])
+    enddef
+    var p: Pair = (1, 'a')
+    assert_equal((2, 'a'), Next(p))
+    assert_equal('tuple<number, string>', typename(p))
+    var n: Nums = (1, 2, 3)
+    assert_equal('tuple<...list<number>>', typename(n))
+    var t: tuple<Pair, Pair> = ((1, 'a'), (2, 'b'))
+    assert_equal('b', t[1][1])
+    assert_equal('tuple<tuple<number, string>, tuple<number, string>>',
+          typename(t))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    type Pair = tuple<number, string>
+    var p: Pair = (1, 2)
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected tuple<number, string> but got tuple<number, number>', 3)
+
+  lines =<< trim END
+    vim9script
+    type Pair = tuple<number, string>
+    def Fn()
+      var p: Pair = (1, 2)
+    enddef
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected tuple<number, string> but got tuple<number, number>', 1)
+enddef
+
+" Test for unpacking a tuple into variables with a declared type and into "_"
+def Test_tuple_typed_unpack()
+  var lines =<< trim END
+    var [a: number, b: string] = (1, 'x')
+    assert_equal([1, 'x'], [a, b])
+    var [_, c] = (2, 3)
+    var [d; _] = (4, 5, 6)
+    assert_equal([3, 4], [c, d])
+    var r = []
+    for [n: number, s: string] in [(1, 'a'), (2, 'b')]
+      r->add(s .. n)
+    endfor
+    assert_equal(['a1', 'b2'], r)
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+    var [a: string, b] = (1, 2)
+  END
+  v9.CheckSourceDefExecAndScriptFailure(lines, [
+        \ 'E1163: Variable 1: type mismatch, expected string but got number',
+        \ 'E1012: Type mismatch; expected string but got number'], 1)
+
+  lines =<< trim END
+    for [n: string, s: string] in [(1, 'a')]
+    endfor
+  END
+  v9.CheckSourceDefExecAndScriptFailure(lines, [
+        \ 'E1163: Variable 1: type mismatch, expected string but got number',
+        \ 'E1012: Type mismatch; expected string but got number'], 1)
+enddef
+
+" Test for using a tuple type in an interface and in an enum
+def Test_tuple_interface_and_enum()
+  var lines =<< trim END
+    vim9script
+    interface I
+      var t: tuple<number>
+      def Get(): tuple<number, string>
+    endinterface
+    class A implements I
+      var t: tuple<number> = (5,)
+      def Get(): tuple<number, string>
+        return (1, 'a')
+      enddef
+    endclass
+    var i: I = A.new()
+    assert_equal((5,), i.t)
+    assert_equal((1, 'a'), i.Get())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    interface I
+      def Get(): tuple<number, string>
+    endinterface
+    class A implements I
+      def Get(): tuple<string, number>
+        return ('a', 1)
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1383: Method "Get": type mismatch, expected func(): tuple<number, string> but got func(): tuple<string, number>', 9)
+
+  lines =<< trim END
+    vim9script
+    enum Color
+      Red((255, 0, 0)),
+      Green((0, 255, 0))
+      final rgb: tuple<number, number, number>
+      def new(this.rgb)
+      enddef
+    endenum
+    assert_equal((255, 0, 0), Color.Red.rgb)
+    assert_equal(255, Color.Green.rgb[1])
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for a tuple argument of a lambda and a variable number of tuple
+" arguments
+def Test_tuple_lambda_and_varargs()
+  var lines =<< trim END
+    var Fn = (t: tuple<number, string>): string => t[1] .. t[0]
+    assert_equal('x1', Fn((1, 'x')))
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+    var Fn = (t: tuple<number, string>): string => t[1]
+    Fn((1, 2))
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected tuple<number, string> but got tuple<number, number>', 2)
+
+  lines =<< trim END
+    vim9script
+    def Sum(...args: list<tuple<number>>): number
+      return args->reduce((acc, t) => acc + t[0], 0)
+    enddef
+    assert_equal(0, Sum())
+    assert_equal(6, Sum((1,), (2,), (3,)))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Sum(...args: list<tuple<number>>)
+    enddef
+    Sum((1,), ('a',))
+  END
+  v9.CheckSourceFailure(lines, 'E1013: Argument 2: type mismatch, expected tuple<number> but got tuple<string>', 4)
+enddef
+
+" Test for ignoring case when comparing tuples and with count() and index()
+func Test_tuple_ignorecase()
+  " 'ignorecase' is used for "==" in legacy script, not in Vim9 script
+  set ignorecase
+  call assert_true(('a', 1) == ('A', 1))
+  call assert_false(('a', 1) ==# ('A', 1))
+  call v9.CheckSourceDefAndScriptSuccess([
+        \ "assert_false(('a', 1) == ('A', 1))",
+        \ "assert_true(('a', 1) ==? ('A', 1))"])
+  set ignorecase&
+
+  let lines =<< trim END
+    VAR t = ('a', 'A', 'b')
+    call assert_equal(1, count(t, 'a'))
+    call assert_equal(2, count(t, 'a', TRUE))
+    call assert_equal(1, index(t, 'A'))
+    call assert_equal(0, index(t, 'A', 0, TRUE))
+  END
+  call v9.CheckSourceLegacyAndVim9Success(lines)
+endfunc
+
+" Test for a tuple declared with :const and :final
+func Test_tuple_const_and_final()
+  " :const locks the List, Dict and Tuple items of a tuple literal
+  let lines =<< trim END
+    const t = ([1], {a: [2]}, ([3],))
+    t[0]->add(9)
+  END
+  call v9.CheckSourceDefExecAndScriptFailure(lines, 'E741: Value is locked: add() argument', 2)
+
+  let lines =<< trim END
+    const t = ([1], {a: [2]}, ([3],))
+    t[1].b = [3]
+  END
+  call v9.CheckSourceDefExecAndScriptFailure(lines, [
+        \ 'E1120: Cannot change dict',
+        \ 'E741: Value is locked:'], 2)
+
+  let lines =<< trim END
+    const t = ([1], {a: [2]}, ([3],))
+    t[2][0]->add(4)
+  END
+  call v9.CheckSourceDefExecAndScriptFailure(lines, 'E741: Value is locked: add() argument', 2)
+
+  " :const does not lock a List that is also referenced elsewhere
+  let lines =<< trim END
+    var l = [1]
+    const t = (l,)
+    l->add(2)
+    assert_equal(([1, 2],), t)
+  END
+  call v9.CheckSourceDefAndScriptSuccess(lines)
+
+  " :final does not lock the items, but the variable cannot be changed
+  let lines =<< trim END
+    final t = (1, [2])
+    t[1]->add(3)
+    assert_equal((1, [2, 3]), t)
+  END
+  call v9.CheckSourceDefAndScriptSuccess(lines)
+
+  let lines =<< trim END
+    final t = (1, [2])
+    t = (3,)
+  END
+  call v9.CheckSourceDefAndScriptFailure(lines, [
+        \ 'E1018: Cannot assign to a constant: t',
+        \ 'E46: Cannot change read-only variable "t"'], 2)
+endfunc
+
+" Test for an error when evaluating a tuple item
+func Test_tuple_item_eval_error()
+  let lines =<< trim END
+    var l: list<number> = []
+    var t = (1, l[0])
+  END
+  call v9.CheckSourceDefExecAndScriptFailure(lines, 'E684: List index out of range: 0', 2)
+
+  " the variable is not changed when evaluating an item throws an exception
+  let lines =<< trim END
+    vim9script
+    def Thrower(): number
+      throw 'oops'
+    enddef
+    def Fn(): tuple<number, ...list<number>>
+      var t: tuple<number, ...list<number>> = (0,)
+      try
+        t = (1, Thrower())
+      catch /oops/
+      endtry
+      return t
+    enddef
+    assert_equal((0,), Fn())
+    var t = (0,)
+    try
+      t = (1, Thrower())
+    catch /oops/
+    endtry
+    assert_equal((0,), t)
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Test for using a String as a tuple index
+func Test_tuple_string_index()
+  " in legacy script the String is converted to a Number
+  let t = ('a', 'b')
+  call assert_equal('b', t['1'])
+  call assert_equal('a', t['x'])
+
+  let lines =<< trim END
+    var t = ('a', 'b')
+    echo t['1']
+  END
+  call v9.CheckSourceDefAndScriptFailure(lines, [
+        \ 'E1012: Type mismatch; expected number but got string',
+        \ 'E1030: Using a String as a Number: "1"'], 2)
+endfunc
+
+" Test for exporting and importing a tuple variable, constant and type alias
+func Test_tuple_import_export()
+  let export_lines =<< trim END
+    vim9script
+    export const CT = (1, 'a')
+    export var vt: tuple<number, ...list<number>> = (1, 2)
+    export type Pair = tuple<number, string>
+    export def Make(): Pair
+      return (7, 'x')
+    enddef
+  END
+  call writefile(export_lines, 'Xtupleexport.vim', 'D')
+
+  let lines =<< trim END
+    vim9script
+    import './Xtupleexport.vim' as E
+    var p: E.Pair = E.Make()
+    assert_equal([(1, 'a'), 'a', (1, 2), (7, 'x')], [E.CT, E.CT[1], E.vt, p])
+    assert_equal('tuple<number, string>', typename(p))
+    def Fn(): list<any>
+      var q: E.Pair = E.Make()
+      return [E.CT[0], E.vt[-1], q[1]]
+    enddef
+    assert_equal([1, 2, 'x'], Fn())
+    E.vt = (5, 6, 7)
+    assert_equal((5, 6, 7), E.vt)
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  let lines =<< trim END
+    vim9script
+    import './Xtupleexport.vim' as E
+    E.CT = (2,)
+  END
+  call v9.CheckSourceFailure(lines, 'E46: Cannot change read-only variable "CT"', 3)
+
+  let lines =<< trim END
+    vim9script
+    import './Xtupleexport.vim' as E
+    E.vt = ('a',)
+  END
+  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected tuple<number, ...list<number>> but got tuple<string>', 3)
+
+  let lines =<< trim END
+    vim9script
+    import './Xtupleexport.vim' as E
+    def Fn()
+      E.vt = ('a',)
+    enddef
+    defcompile
+  END
+  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected tuple<number, ...list<number>> but got tuple<string>', 1)
+
+  let lines =<< trim END
+    vim9script
+    import './Xtupleexport.vim' as E
+    var p: E.Pair = (1, 2)
+  END
+  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected tuple<number, string> but got tuple<number, number>', 3)
+endfunc
+
+" Test for the tuple<any> type, which is a tuple with one item of any type
+def Test_tuple_any_type()
+  var lines =<< trim END
+    var t: tuple<any> = ('x',)
+    var u: tuple<...list<any>> = (1, 'a', [])
+    assert_equal([('x',), (1, 'a', [])], [t, u])
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+    var t: tuple<any> = (1, 2)
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, 'E1012: Type mismatch; expected tuple<any> but got tuple<number, number>', 1)
+enddef
+
+" Test for passing a tuple to a function and returning it: it is the same
+" tuple
+def Test_tuple_func_return_identity()
+  var lines =<< trim END
+    vim9script
+    def Id(x: tuple<any, ...list<any>>): tuple<any, ...list<any>>
+      return x
+    enddef
+    var t1 = (1, [2])
+    var t2 = Id(t1)
+    assert_true(t2 is t1)
+    t2[1]->add(3)
+    assert_equal((1, [2, 3]), t1)
+    assert_false(copy(t1) is t1)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using builtin functions with a List of tuples and for slice() with
+" negative indexes
+def Test_tuple_list_of_tuples_funcs()
+  var lines =<< trim END
+    var l = [(1, 2), (3, 4)]
+    map(l, (_, v) => (v[1], v[0]))
+    assert_equal([(2, 1), (4, 3)], l)
+    assert_equal('list<tuple<number, number>>', typename(l))
+
+    var m = mapnew(l, (_, v) => (v[0], 'x'))
+    assert_equal([(2, 'x'), (4, 'x')], m)
+    assert_equal('list<tuple<number, string>>', typename(m))
+
+    var s = [(3, 'c'), (1, 'a'), (2, 'b')]
+    sort(s, (a, b) => a[0] - b[0])
+    assert_equal([(1, 'a'), (2, 'b'), (3, 'c')], s)
+
+    # flattennew() does not flatten a tuple
+    assert_equal([1, (2, [3]), (4,)], flattennew([1, (2, [3]), [(4,)]]))
+
+    var d = {x: (1, 'a'), y: (2, 'b')}
+    assert_equal([(1, 'a'), (2, 'b')], sort(values(d)))
+    var pairs = [(1, 2), (3, 4)]
+    assert_equal(14, pairs->reduce((acc, v) => acc + v[0] * v[1], 0))
+
+    assert_equal((2, 3), slice((1, 2, 3, 4), 1, -1))
+    assert_equal((3, 4), slice((1, 2, 3, 4), -2))
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+
+  # map() cannot change the item type of a List of tuples
+  lines =<< trim END
+    var l = [(1, 2), (3, 4)]
+    map(l, (_, v) => (v[0], 'x'))
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, [
+        \ 'E1013: Argument 2: type mismatch, expected func(?number, ?tuple<number, number>): tuple<number, number> but got func(any, any): tuple<any, string>',
+        \ 'E1012: Type mismatch; expected tuple<number, number> but got tuple<number, string> in map()'], 2)
+enddef
+
+" Test for the operators that cannot be used with a tuple
+func Test_tuple_invalid_operators()
+  " only "==", "!=", "is" and "isnot" can be used to compare tuples
+  for op in ['<', '<=', '>', '>=']
+    let lines =<< trim eval END
+      echo (1,) {op} (2,)
+    END
+    call v9.CheckSourceLegacyAndVim9Failure(lines,
+          \ 'E1518: Invalid operation for Tuple')
+  endfor
+
+  " "+" can only be used with two tuples
+  let lines =<< trim END
+    echo (1,) + [2]
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E1520: Using a Tuple as a Number',
+        \ 'E1051: Wrong argument type for +',
+        \ 'E1520: Using a Tuple as a Number'])
+
+  let lines =<< trim END
+    echo (1,) + 1
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E1520: Using a Tuple as a Number',
+        \ 'E1051: Wrong argument type for +',
+        \ 'E1520: Using a Tuple as a Number'])
+
+  for op in ['-', '*']
+    let lines =<< trim eval END
+      echo (1,) {op} (2,)
+    END
+    call v9.CheckSourceLegacyAndVim9Failure(lines, [
+          \ 'E1520: Using a Tuple as a Number',
+          \ $'E1036: {op} requires number or float arguments',
+          \ 'E1520: Using a Tuple as a Number'])
+  endfor
+
+  let lines =<< trim END
+    VAR t = (1,)
+    echo -t
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E1520: Using a Tuple as a Number',
+        \ 'E1012: Type mismatch; expected number but got tuple<number>',
+        \ 'E1520: Using a Tuple as a Number'])
+
+  " a tuple cannot be used as a String
+  let lines =<< trim END
+    echo 'a' .. (1,)
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E1522: Using a Tuple as a String',
+        \ 'E1105: Cannot convert tuple to string',
+        \ 'E1522: Using a Tuple as a String'])
+
+  let lines =<< trim END
+    throw (1, 2)
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E1522: Using a Tuple as a String',
+        \ 'E1105: Cannot convert tuple to string',
+        \ 'E1522: Using a Tuple as a String'])
+endfunc
+
+" Test for using a tuple as a condition
+func Test_tuple_bool_context()
+  " In Vim9 script "!" works on a tuple, it is falsy when empty
+  let lines =<< trim END
+    assert_equal([false, true], [!(1,), !()])
+  END
+  call v9.CheckSourceDefAndScriptSuccess(lines)
+  call assert_fails('echo !(1,)', 'E1520: Using a Tuple as a Number')
+
+  " a tuple cannot be used as a bool
+  let lines =<< trim END
+    VAR t = (1,)
+    if t
+    endif
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E1520: Using a Tuple as a Number',
+        \ 'E1012: Type mismatch; expected bool but got tuple<number>',
+        \ 'E1520: Using a Tuple as a Number'])
+
+  let lines =<< trim END
+    VAR t = (1,)
+    echo t || 0
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E1520: Using a Tuple as a Number',
+        \ 'E1012: Type mismatch; expected bool but got tuple<number>',
+        \ 'E1520: Using a Tuple as a Number'])
+
+  let lines =<< trim END
+    VAR t = (1,)
+    echo t ? 1 : 2
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines,
+        \ 'E1520: Using a Tuple as a Number')
+endfunc
+
+" Test for calling a Funcref that is a tuple item
+func Test_tuple_funcref_item()
+  let lines =<< trim END
+    VAR t = (function('max'), function('min'))
+    call assert_equal([3, 1], [t[0]([1, 3]), t[1]([1, 3])])
+    call assert_equal(3, call(t[0], [[1, 3]]))
+  END
+  call v9.CheckSourceLegacyAndVim9Success(lines)
+endfunc
+
+" Test for a type mismatch in a nested tuple type
+def Test_tuple_nested_type_mismatch()
+  var lines =<< trim END
+    var t: tuple<tuple<number>> = (('a',),)
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, 'E1012: Type mismatch; expected tuple<tuple<number>> but got tuple<tuple<string>>', 1)
+
+  lines =<< trim END
+    var t: tuple<number, tuple<string, number>> = (1, ('a', 'b'))
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, 'E1012: Type mismatch; expected tuple<number, tuple<string, number>> but got tuple<number, tuple<string, string>>', 1)
+
+  lines =<< trim END
+    def Fn(t: tuple<tuple<number>>)
+    enddef
+    Fn((('a',),))
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected tuple<tuple<number>> but got tuple<tuple<string>>', 3)
+enddef
+
+" Test for repeatedly building and shrinking a tuple that contains a List.
+" The List reference count must be correct every time.
+def Test_tuple_repeated_concat_and_slice()
+  var lines =<< trim END
+    var l = [1]
+    assert_equal(1, test_refcount(l))
+    var t: tuple<...list<list<number>>> = ()
+    for i in range(10)
+      t = (l,) + t
+    endfor
+    assert_equal(10, len(t))
+    assert_true(t[0] is l && t[-1] is l)
+    assert_equal(11, test_refcount(l))
+    t = t[5 :]
+    assert_equal(5, len(t))
+    assert_equal(6, test_refcount(l))
+    var n = 0
+    while !empty(t)
+      t = t[1 :]
+      n += 1
+    endwhile
+    assert_equal(5, n)
+    assert_equal(1, test_refcount(l))
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+
+  # a tuple with a variadic type can only be followed by the same type
+  lines =<< trim END
+    var t: tuple<...list<number>> = ()
+    var u: tuple<number> = (1,)
+    t = t + u
+  END
+  v9.CheckSourceDefExecAndScriptFailure(lines, 'E1540: Cannot use a variadic tuple in concatenation', 3)
+enddef
+
+" Test for using a tuple from an autoload script
+func Test_tuple_autoload()
+  let dir = 'Xtupleautoload'
+  call mkdir(dir .. '/autoload', 'pR')
+  let lines =<< trim END
+    vim9script
+    export const Origin = (0, 0)
+    export def Pair(a: number, b: string): tuple<number, string>
+      return (a, b)
+    enddef
+  END
+  call writefile(lines, dir .. '/autoload/tupleal.vim')
+  let save_rtp = &rtp
+  exe 'set rtp^=' .. dir
+
+  let lines =<< trim END
+    vim9script
+    import autoload 'tupleal.vim'
+    assert_equal((0, 0), tupleal.Origin)
+    assert_equal('tuple<number, string>', typename(tupleal.Pair(1, 'a')))
+    def Fn(): tuple<number, string>
+      var p: tuple<number, string> = tupleal.Pair(2, 'b')
+      return p
+    enddef
+    assert_equal((2, 'b'), Fn())
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " the type is checked when the autoload function is called
+  let lines =<< trim END
+    vim9script
+    import autoload 'tupleal.vim'
+    def Fn()
+      var p: tuple<string, string> = tupleal.Pair(2, 'b')
+    enddef
+    Fn()
+  END
+  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected tuple<string, string> but got tuple<number, string>', 1)
+
+  let &rtp = save_rtp
+endfunc
+
 " Test for list2tuple()
 func Test_list2tuple()
   let lines =<< trim END
@@ -2573,5 +3223,212 @@ func Test_tuple_type_many_items()
   END
   call v9.CheckSourceDefAndScriptFailure(lines, 'E1012:', 1)
 endfunc
+
+" Test for comparing tuples with items of different types
+func Test_tuple_compare_items()
+  let lines =<< trim END
+    #" ignoring case for String items
+    call assert_true(('abc', 1) ==? ('ABC', 1))
+    call assert_false(('abc', 1) ==# ('ABC', 1))
+    call assert_true(('abc', 1) !=# ('ABC', 1))
+    call assert_false(('abc', 1) !=? ('ABC', 1))
+
+    #" List, Dict and Tuple items are compared by value
+    call assert_true(([1, 2], {'a': 3}, (4,)) == ([1, 2], {'a': 3}, (4,)))
+    call assert_false(([1, 2], {'a': 3}, (4,)) == ([1, 2], {'a': 3}, (5,)))
+    call assert_true(([1, 2],) != ([1, 3],))
+
+    #" a Number item is not equal to a Float item
+    call assert_false((1,) == (1.0,))
+    call assert_true((1.5,) == (1.5,))
+
+    #" a tuple item is not equal to a list item
+    call assert_false(((1,),) == ([1],))
+
+    #" nested tuples are compared by value, including their length
+    call assert_true(((1, (2, 3)),) == ((1, (2, 3)),))
+    call assert_false(((1, 2),) == ((1,),))
+    call assert_false(((1,),) == ((1, 2),))
+
+    #" Funcref and Blob items
+    call assert_true((function('min'),) == (function('min'),))
+    call assert_false((function('min'),) == (function('max'),))
+    call assert_true((0z0102,) == (0z0102,))
+    call assert_false((0z01,) == (0z02,))
+  END
+  call v9.CheckSourceLegacyAndVim9Success(lines)
+endfunc
+
+" Test for using tuples as items in a List
+func Test_tuple_as_list_item()
+  let lines =<< trim END
+    VAR l = [(3, 'c'), (1, 'a'), (2, 'b'), (1, 'a')]
+    call assert_equal(1, index(l, (1, 'a')))
+    call assert_equal(-1, index(l, (1, 'b')))
+    call assert_equal(2, count(l, (1, 'a')))
+    call assert_equal([(1, 'a'), (1, 'a'), (2, 'b'), (3, 'c')], sort(copy(l)))
+    call assert_equal([(1, 'a'), (2, 'b'), (3, 'c')], uniq(sort(copy(l))))
+  END
+  call v9.CheckSourceLegacyAndVim9Success(lines)
+endfunc
+
+" Test for functions that don't support a tuple argument
+func Test_tuple_unsupported_funcs()
+  let lines =<< trim END
+    VAR t = (1, 2)
+    call mapnew(t, 'v:val')
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E1524: Cannot use a tuple with function mapnew()',
+        \ 'E1013: Argument 1: type mismatch, expected list<any> but got tuple<number, number>',
+        \ 'E1524: Cannot use a tuple with function mapnew()'])
+
+  let lines =<< trim END
+    VAR t = (1, 2)
+    call uniq(t)
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E686: Argument of uniq() must be a List',
+        \ 'E1013: Argument 1: type mismatch, expected list<any> but got tuple<number, number>',
+        \ 'E1211: List required for argument 1'])
+
+  let lines =<< trim END
+    VAR t = (2, 1)
+    call sort(t)
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E686: Argument of sort() must be a List',
+        \ 'E1013: Argument 1: type mismatch, expected list<any> but got tuple<number, number>',
+        \ 'E1211: List required for argument 1'])
+
+  " a tuple cannot be used for the arguments of call() and function()
+  let lines =<< trim END
+    call call('max', (1, 2))
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E1211: List required for argument 2',
+        \ 'E1013: Argument 2: type mismatch, expected list<any> but got tuple<number, number>',
+        \ 'E1211: List required for argument 2'])
+
+  let lines =<< trim END
+    VAR Fn = function('max', ((1, 2),))
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E923: Second argument of function() must be a list or a dict',
+        \ 'E1013: Argument 2: type mismatch, expected list<any> but got tuple<tuple<number, number>>',
+        \ 'E1211: List required for argument 2'])
+endfunc
+
+" Test for using a tuple with printf()
+func Test_tuple_printf()
+  let lines =<< trim END
+    call assert_equal("(1, 'a')", printf('%s', (1, 'a')))
+    call assert_equal('()', printf('%s', ()))
+    call assert_equal('()', printf('%s', test_null_tuple()))
+  END
+  call v9.CheckSourceLegacyAndVim9Success(lines)
+
+  let lines =<< trim END
+    call printf('%d', (1,))
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, 'E1520: Using a Tuple as a Number')
+endfunc
+
+" Test for removing a tuple item and using a compound operator on a tuple item
+func Test_tuple_modify_item_error()
+  let lines =<< trim END
+    VAR t = (1, 2)
+    unlet t[0]
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, 'E1532: Cannot modify a tuple')
+
+  let lines =<< trim END
+    VAR t = (1, 2)
+    LET t[0] += 1
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E1532: Cannot modify a tuple',
+        \ 'E734: Wrong variable type for +=',
+        \ 'E1532: Cannot modify a tuple'])
+endfunc
+
+" Test for using a tuple as a Dict key
+func Test_tuple_dict_key()
+  let lines =<< trim END
+    VAR d = {}
+    LET d[(1,)] = 2
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E1522: Using a Tuple as a String',
+        \ 'E1105: Cannot convert tuple to string',
+        \ 'E1522: Using a Tuple as a String'])
+endfunc
+
+" Test for exists() with a tuple item
+func Test_tuple_exists()
+  let g:t = (1, 'a')
+  call assert_true(exists('g:t'))
+  call assert_true(exists('g:t[0]'))
+  call assert_true(exists('g:t[-1]'))
+  call assert_false(exists('g:t[2]'))
+  call assert_false(exists('g:t[-3]'))
+  unlet g:t
+endfunc
+
+" Test for :break and :continue in a :for loop over a tuple
+func Test_tuple_for_break_continue()
+  let lines =<< trim END
+    VAR r = []
+    for v in (1, 2, 3, 4, 5)
+      if v == 2
+        continue
+      endif
+      if v == 4
+        break
+      endif
+      call add(r, v)
+    endfor
+    call assert_equal([1, 3], r)
+
+    #" nested loops over the same tuple
+    VAR t = (1, 2)
+    LET r = []
+    for a in t
+      for b in t
+        call add(r, [a, b])
+      endfor
+    endfor
+    call assert_equal([[1, 1], [1, 2], [2, 1], [2, 2]], r)
+  END
+  call v9.CheckSourceLegacyAndVim9Success(lines)
+endfunc
+
+" Test for using a tuple as a default argument value and in a closure
+def Test_tuple_default_arg_and_closure()
+  var lines =<< trim END
+    vim9script
+    def Fn(t: tuple<number, string> = (1, 'a')): tuple<number, string>
+      return t
+    enddef
+    assert_equal((1, 'a'), Fn())
+    assert_equal((2, 'b'), Fn((2, 'b')))
+
+    def GetClosure(): func(): tuple<number, ...list<number>>
+      var t = (1, 2, 3)
+      return () => t
+    enddef
+    var Closure = GetClosure()
+    assert_equal((1, 2, 3), Closure())
+  END
+  v9.CheckSourceScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Fn(t: tuple<number> = ('a',))
+    enddef
+    defcompile
+  END
+  v9.CheckSourceScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected tuple<number> but got tuple<string>')
+enddef
 
 " vim: shiftwidth=2 sts=2 expandtab
