@@ -3531,6 +3531,7 @@ $quote	eval.txt	/*$quote*
 :syn-oneline	syntax.txt	/*:syn-oneline*
 :syn-pattern	syntax.txt	/*:syn-pattern*
 :syn-pattern-offset	syntax.txt	/*:syn-pattern-offset*
+:syn-performance	syntax.txt	/*:syn-performance*
 :syn-priority	syntax.txt	/*:syn-priority*
 :syn-qstart	syntax.txt	/*:syn-qstart*
 :syn-region	syntax.txt	/*:syn-region*
