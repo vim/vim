@@ -359,3 +359,12 @@ let b:current_syntax = "zsh"
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
+
+" Highlight Zsh Prompt Expansion (% sequences) inside strings
+syn match zshPromptEscape /%[BBSUuxXFKnNmMDtT\*@?#iL_c\.v^]/ contained containedin=zshString,zshDString
+syn match zshPromptComplexEscape /%[0-9]*[FfKkCcD]{[^}]*}/ contained containedin=zshString,zshDString
+syn match zshPromptConditional /%(\([A-Za-z0-9]\|?[^)]*\))\|%)/ contained containedin=zshString,zshDString
+
+hi def link zshPromptEscape        Special
+hi def link zshPromptComplexEscape Special
+hi def link zshPromptConditional   Conditional
