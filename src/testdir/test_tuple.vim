@@ -1136,6 +1136,39 @@ func Test_tuple_type_check()
   call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected tuple<number, ...list<string>> but got tuple<number, ...list<bool>>')
 endfunc
 
+" Test for using a tuple with fewer items than required by a variadic tuple
+" type
+def Test_tuple_variadic_min_items()
+  var lines =<< trim END
+    var t: tuple<number, string, ...list<number>> = (1,)
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, 'E1012: Type mismatch; expected tuple<number, string, ...list<number>> but got tuple<number>')
+
+  lines =<< trim END
+    var x: tuple<number> = (1,)
+    var t: tuple<number, string, ...list<number>> = x
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, 'E1012: Type mismatch; expected tuple<number, string, ...list<number>> but got tuple<number>')
+
+  lines =<< trim END
+    vim9script
+    def Fn(t: tuple<number, string, ...list<number>>)
+    enddef
+    var x: any = (1,)
+    Fn(x)
+  END
+  v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected tuple<number, string, ...list<number>> but got tuple<number>', 5)
+
+  lines =<< trim END
+    var t1: tuple<number, string, ...list<number>> = (1, 'a')
+    var t2: tuple<number, string, ...list<number>> = (1, 'a', 2, 3)
+    var t3: tuple<number, ...list<string>> = (1,)
+    var t4: tuple<number, string, ...list<number>> = ()
+    assert_equal((1, 'a', 2, 3), t2)
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+enddef
+
 " Test for setting the type of a script variable to tuple
 func Test_tuple_scriptvar_type()
   " Uninitialized script variable should retain the type
