@@ -183,7 +183,7 @@ src/INSTALLpc.txt file for instructions.
 2. MSYS2 with MinGW
 ===================
 
-2.1 Building x86 32bit or 64bit versions.
+2.1 Building an x86_64 (64-bit) version
 
 2.1.1. Setup the basic msys2 environment
 
@@ -191,8 +191,6 @@ Go to the official page of MSYS2: https://www.msys2.org
 Download an installer:
 
 * msys2-x86_64-YYYYMMDD.exe for 64-bit Windows
-  (Even if you want to build 32-bit Vim)
-* msys2-i686-YYYYMMDD.exe for 32-bit Windows
 
 Execute the installer and follow the instructions to update basic packages.
 At the end keep the checkbox checked to run msys2 now.  If needed, you can
@@ -201,9 +199,8 @@ open the window from the start menu, MSYS2 64 bit / MSYS2 MSYS.
 Execute:
     $ pacman -Syu
 
-And restart MSYS2 console (select "MSYS2 MSYS 32-Bit" icon from the Start
-Menu for building 32 bit Vim, otherwise select "MSYS2 MinGW 64-Bit").
-Then execute:
+And restart MSYS2 console (select "MSYS2 MinGW 64-Bit" icon from the Start
+Menu).  Then execute:
     $ pacman -Su
 
 If pacman complains that `catgets` and `libcatgets` conflict with another
@@ -215,7 +212,6 @@ package, select `y` to remove them.
 The following package groups are required for building Vim:
 
 * base-devel
-* mingw-w64-i686-toolchain (for building 32-bit Vim)
 * mingw-w64-x86_64-toolchain (for building 64-bit Vim)
 * git (optional, to clone the repository)
 * pactoys (optional for the pacboy command)
@@ -223,16 +219,15 @@ The following package groups are required for building Vim:
 (These groups also include some useful packages which are not used by Vim.)
 Use the following command to install them:
 
-    $ pacman -S base-devel mingw-w64-i686-toolchain \
-      mingw-w64-x86_64-toolchain pactoys git
+    $ pacman -S base-devel mingw-w64-x86_64-toolchain pactoys git
 
 Or you can use the `pacboy` command to avoid long package names:
 
-    $ pacboy -S base-devel: toolchain:m
+    $ pacboy -S base-devel: toolchain:x
 
 The suffix ":" means that it disables the package name translation.
-The suffix ":m" means both i686 and x86_64.  You can also use the ":i" suffix
-to install only i686, the ":x" suffix for x86_64 and ":a" for "aarch64".
+The suffix ":x" means x86_64.  You can also use the ":i" suffix
+to install only i686, and ":a" for "aarch64".
 (See `pacboy help` for the help.)
 
 See also the pacman page in ArchWiki for the general usage of pacman:
@@ -253,9 +248,8 @@ In that case, you just need to execute the command:
 
 2.1.4. Build Vim
 
-Select one of the following icon from the Start Menu:
+Select the following icon from the Start Menu:
 
-* MSYS2 MinGW 32-bit (To build 32-bit versions of Vim)
 * MSYS2 MinGW 64-bit (To build 64-bit versions of Vim)
 
 Before building look through notes for MinGW in part 3 below.
@@ -269,11 +263,9 @@ Go to the source directory of Vim, then execute the make command.  E.g.:
 NOTE: you can't execute vim.exe in the MSYS2 console, open a normal Windows
 console for that.  You need to set $PATH to be able to build there, e.g.:
 
-    set PATH=c:\msys64\mingw32\bin;c:\msys64\usr\bin;%PATH%
-
-This command is in msys32.bat.  Or for the 64 bit compiler use msys64.bat:
-
     set PATH=c:\msys64\mingw64\bin;c:\msys64\usr\bin;%PATH%
+
+This command is in msys64.bat.
 
 If you have msys64 in another location you will need to adjust the paths for
 that.
@@ -334,8 +326,8 @@ Or you can use the `pacboy` command to avoid long package names:
     $ pacboy -S base-devel: toolchain:a
 
 The suffix ":" means that it disables the package name translation.
-The suffix ":m" means both i686 and x86_64.  You can also use the ":i" suffix
-to install only i686, the ":x" suffix for x86_64 and ":a" for "aarch64".
+The suffix ":x" means x86_64.  You can also use the ":i" suffix
+to install only i686, and ":a" for "aarch64".
 (See `pacboy help` for the help.)
 
 See also the pacman page in ArchWiki for the general usage of pacman:
@@ -405,11 +397,8 @@ Once you have downloaded the compiler binaries, unpack them on your hard disk
 somewhere, and put them on your PATH.  Go to the Control Panel, (Performance
 and Maintenance), System, Advanced, and edit the environment from there.  If
 you use the standalone MinGW-w64 compiler, the path may depend on your
-installation.  If you use msys2 compilers, set your installed paths (normally
-one of the following):
+installation.  If you use msys2 compilers, set your installed path (normally):
 
-    C:\msys32\mingw32\bin   (32-bit msys2, targeting 32-bit builds)
-    C:\msys64\mingw32\bin   (64-bit msys2, targeting 32-bit builds)
     C:\msys64\mingw64\bin   (64-bit msys2, targeting 64-bit builds)
 
 Test if gcc is on your path.  From a Command Prompt window:
@@ -433,8 +422,7 @@ and you type:
     mingw32-make -f Make_ming.mak ARCH=x86-64 gvim.exe
 
 Note, ARCH is necessary if you don't have the sed command in your $PATH. Just
-make sure that the correct value is used with ARCH. In the example above the
-value corresponds to 64-bit architecture. For 32-bit the value is "i686".
+make sure that the correct value is used with ARCH.
 
 After churning for a while, you will end up with 'gvim.exe' in the 'vim\src'
 directory.
@@ -530,7 +518,7 @@ When using msys2 and link with Python2 bundled with msys2 (as one line):
         DYNAMIC_PYTHON_DLL=libpython2.7.dll
         STATIC_STDCPLUS=yes
 
-(This is for 64-bit builds.  For 32-bit builds, replace mingw64 with mingw32.)
+(This is for 64-bit builds.)
 (STATIC_STDCPLUS is optional.  Set to yes if you don't want to require
 libstdc++-6.dll.)
 
@@ -591,7 +579,7 @@ When using msys2 and link with Python3 bundled with msys2 (as one line):
         DYNAMIC_PYTHON3_DLL=libpython3.6m.dll
         STATIC_STDCPLUS=yes
 
-(This is for 64-bit builds.  For 32-bit builds, replace mingw64 with mingw32.)
+(This is for 64-bit builds.)
 (STATIC_STDCPLUS is optional.  Set to yes if you don't want to require
 libstdc++-6.dll.)
 
@@ -699,16 +687,14 @@ do the part up to "Build".
 Go to the Download page of LuaBinaries:
   http://luabinaries.sourceforge.net/download.html
 
-Download lua-X.Y.Z_Win32_dllw4_lib.zip for x86 or
-lua-X.Y.Z_Win64_dllw4_lib.zip for x64.  You can use them both for MSVC and
-MinGW.
+Download lua-X.Y.Z_Win64_dllw4_lib.zip for x64.  You can use it both for MSVC
+and MinGW.
 
 Unpack it to a working directory. E.g. C:\projects\lua53.
 Lua's header files will be installed under the include directory.
 
 Copy luaXY.dll to your Windows system directory. The system directory depends
 on your Windows bitness and Vim bitness:
-  32-bit Vim on 32-bit Windows: C:\Windows\System32
   32-bit Vim on 64-bit Windows: C:\Windows\SysWOW64
   64-bit Vim on 64-bit Windows: C:\Windows\System32
 
@@ -783,7 +769,7 @@ you need some tricks described below.
 
 When building, you need to set the following variables at least:
 
-    RUBY:              Where ruby is installed. E.g. C:\Ruby24
+    RUBY:              Where ruby is installed. E.g. C:\Ruby24-x64
     DYNAMIC_RUBY:      Whether dynamic linking is used. Usually, set to yes.
     RUBY_VER:          Ruby version. E.g. 24 for Ruby 2.4.X.
     RUBY_API_VER_LONG: Ruby API version in a long format.
@@ -811,7 +797,7 @@ config.h and Ruby's DLL name. Here are the steps for working around them:
   1) Download and Install RubyInstaller.
     You can install RubyInstaller with the default options and directory.
     E.g.:
-      C:\Ruby24 (32-bit) or C:\Ruby24-x64 (64-bit)
+      C:\Ruby24-x64
 
     Ruby 2.4.X is used in this example.
 
@@ -825,18 +811,10 @@ config.h and Ruby's DLL name. Here are the steps for working around them:
 
     Note that ruby_2_4 is the branch name for Ruby 2.4.X's source code.
     There is no need to build whole Ruby, just config.h is needed.
-    If you use 32-bit MSVC 2015, the config.h is generated in the
-    .ext\include\i386-mswin32_140 directory.
     If you use 64-bit MSVC 2015, the config.h is generated in the
     .ext\include\x64-mswin64_140 directory.
 
   3) Install the generated config.h.
-
-    For 32-bit version:
-
-      xcopy /s .ext\include C:\Ruby24\include\ruby-2.4.0
-
-    For 64-bit version:
 
       xcopy /s .ext\include C:\Ruby24-x64\include\ruby-2.4.0
 
@@ -845,14 +823,10 @@ config.h and Ruby's DLL name. Here are the steps for working around them:
 
   4) Build Vim. Note that you need to adjust some variables (as one line):
 
-    For 32-bit version:
-
       nmake -f Make_mvc.mak
-          RUBY=C:\Ruby24 DYNAMIC_RUBY=yes RUBY_VER=24 RUBY_API_VER_LONG=2.4.0
+          RUBY=C:\Ruby24-x64 DYNAMIC_RUBY=yes RUBY_VER=24 RUBY_API_VER_LONG=2.4.0
           RUBY_MSVCRT_NAME=msvcrt
           WINVER=0x601
-
-    For 64-bit version, replace RUBY=C:\Ruby24 with RUBY=C:\Ruby24-x64.
 
     If you set WINVER explicitly, it must be set to >=0x500, when building
     with Ruby 2.1 or later.  (Default is 0x601.)
@@ -865,10 +839,9 @@ Using MinGW is easier than using MSVC when linking with RubyInstaller.
 After you install RubyInstaller, just type this (as one line):
 
     mingw32-make -f Make_ming.mak
-        RUBY=C:/Ruby24 DYNAMIC_RUBY=yes RUBY_VER=24 RUBY_API_VER_LONG=2.4.0
+        RUBY=C:/Ruby24-x64 DYNAMIC_RUBY=yes RUBY_VER=24 RUBY_API_VER_LONG=2.4.0
         WINVER=0x601
 
-For 64-bit version, replace RUBY=C:/Ruby24 with RUBY=C:/Ruby24-x64.
 If you set WINVER explicitly, it must be set to >=0x500, when building with
 Ruby 2.1 or later.  (Default is 0x601.)
 
@@ -886,8 +859,8 @@ Alternatively, you can use the binaries provided by IronTcl from
 
     https://www.irontcl.com/
 
-They might lack behind the latest version a bit, but should provide 64bit
-and 32bit versions even if ActiveTcl does not provide them anymore.
+They might lack behind the latest version a bit, but should provide a 64bit
+version even if ActiveTcl does not provide it anymore.
 
 For building with MSVC 2015 use version 8.6.6 or later.
 When building, you need to set the following variables:
@@ -968,8 +941,6 @@ B) Using MinGW
 If you use msys2, you can install the libsodium package by pacman (or pacboy):
 
     $ pacman -S mingw-w64-x86_64-libsodium	# for 64-bit Vim
-    $ pacman -S mingw-w64-i686-libsodium	# for 32-bit Vim
-    $ pacboy -S libsodium:m		# for both 32-bit and 64-bit Vim
 
 Then set SODIUM to yes:
 
