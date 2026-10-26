@@ -10197,6 +10197,37 @@ def Test_class_object_index()
   v9.CheckScriptFailure(lines, 'E689: Index not allowed after a object: a[10] = 1', 5)
 enddef
 
+" Calling a method of a class variable in a skipped part of an expression in
+" a constructor
+def Test_method_call_in_skipped_expr()
+  var lines =<< trim END
+    vim9script
+
+    class A
+      def True(): bool
+        return true
+      enddef
+    endclass
+
+    class B
+      static var AO: A
+      static var result = ''
+
+      def new()
+        AO = A.new()
+
+        if has('eval') || AO.True()
+          result = 'works'
+        endif
+      enddef
+    endclass
+
+    var BO: B = B.new()
+    assert_equal('works', B.result)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 def Test_class_member_init_typecheck()
   # Ensure the class member is assigned its declared type.
   var lines =<< trim END
