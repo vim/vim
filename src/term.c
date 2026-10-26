@@ -4336,13 +4336,15 @@ check_terminal_behavior(void)
     void
 may_req_bg_color(void)
 {
-    if (can_get_termresponse() && starting == 0)
+    if (can_get_termresponse()
+			      && (starting == 0 || starting == NO_BUFFERS))
     {
 	int didit = FALSE;
 
 # ifdef FEAT_TERMINAL
-	// Only request foreground if t_RF is set.
-	if (rfg_status.tr_progress == STATUS_GET && *T_RFG != NUL)
+	// The foreground is not needed before the first redraw.
+	if (starting == 0 && rfg_status.tr_progress == STATUS_GET
+							      && *T_RFG != NUL)
 	{
 	    MAY_WANT_TO_LOG_THIS;
 	    LOG_TR1("Sending FG request");
@@ -4352,8 +4354,10 @@ may_req_bg_color(void)
 	}
 # endif
 
-	// Only request background if t_RB is set.
-	if (rbg_status.tr_progress == STATUS_GET && *T_RBG != NUL)
+	// Only request background if t_RB is set.  During startup this is only
+	// needed when 'background' was not explicitly set.
+	if (rbg_status.tr_progress == STATUS_GET && *T_RBG != NUL
+		      && (starting == 0 || !option_was_set((char_u *)"bg")))
 	{
 	    MAY_WANT_TO_LOG_THIS;
 	    LOG_TR1("Sending BG request");
@@ -4364,10 +4368,37 @@ may_req_bg_color(void)
 
 	if (didit)
 	{
+	    int count = 0;
+	    int c;
+
 	    // check for the characters now, otherwise they might be eaten by
 	    // get_keystroke()
 	    out_flush();
-	    (void)vpeekc_nomap();
+	    for (;;)
+	    {
+		c = vpeekc_nomap();
+		if (starting == 0)
+		    break;
+
+		// Discard the OSC notification, not typed characters.  Leaving
+		// it in typeahead can interfere with feedkeys() during startup.
+		if (c == K_SPECIAL && typebuf.tb_len >= 3
+			&& typebuf.tb_buf[typebuf.tb_off] == K_SPECIAL
+			&& typebuf.tb_buf[typebuf.tb_off + 1] == KS_EXTRA
+			&& typebuf.tb_buf[typebuf.tb_off + 2] == KE_OSC)
+		{
+		    del_typebuf(3, 0);
+		    c = NUL;
+		}
+
+		// Avoid painting with the wrong background before the terminal
+		// has replied.  Wait at most 100 ms, and leave typeahead alone.
+		// A late response is still used.
+		if (rbg_status.tr_progress != STATUS_SENT
+			      || c != NUL || got_int || count++ == 10)
+		    break;
+		ui_delay(10L, FALSE);
+	    }
 	}
     }
 }

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Oct 25
+*options.txt*	For Vim version 9.2.  Last change: 2026 Oct 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1093,6 +1093,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	screen is redrawn.  This may have side effects, make |t_RB| empty in
 	your .vimrc if you suspect this problem.  The response to |t_RB| can
 	be found in |v:termrbgresp|.
+	During interactive startup, if 'background' was not explicitly set,
+	Vim waits up to 100 ms for this response before clearing the screen.
+	If the response arrives later, the colors are adjusted then.
 
 	When starting the GUI, the default value for 'background' will be
 	"light".  When the value is not set in the .gvimrc, and Vim detects

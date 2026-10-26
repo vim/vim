@@ -495,6 +495,41 @@ func Test_reverse()
   call delete('Xtest_reverse')
 endfunc
 
+" Detect the terminal background before the first screen clear and -c redraw.
+func Test_startup_background()
+  CheckRunVimInTerminal
+  CheckFeature termresponse
+  CheckFeature termguicolors
+  CheckUnix
+
+  let lines =<< trim END
+    set nocompatible
+    set termguicolors
+    colorscheme lunaperche
+  END
+  call writefile(lines, 'Xbgvimrc', 'D')
+  defer delete('Xbackground')
+
+  hi StartupBackground guifg=#ffffff guibg=#000000 ctermfg=15 ctermbg=0
+  let output = []
+  let cmd = GetVimCommandCleanTerm() .. ' -u Xbgvimrc'
+        \ .. ' -c "redraw! | sleep 100m | call writefile([&background], ''Xbackground'')"'
+  let buf = term_start(cmd, #{term_rows: 10,
+        \ term_highlight: 'StartupBackground',
+        \ env: #{TERM: 'xterm', COLORFGBG: ''},
+        \ out_cb: {ch, msg -> add(output, msg)}})
+  try
+    call WaitForAssert({-> assert_true(getfsize('Xbackground') > 0)})
+    call assert_equal(['dark'], readfile('Xbackground'))
+    " A final screendump would miss the flash: check the first background SGR.
+    call assert_equal("\<Esc>[48;2;0;0;0m",
+          \ matchstr(join(output, ''), '\e\[48;2;[0-9;]*m'))
+  finally
+    call StopVimInTerminal(buf)
+    hi clear StartupBackground
+  endtry
+endfunc
+
 " Test the -background and -foreground arguments (for GUI only).
 func Test_background_foreground()
   CheckCanRunGui
