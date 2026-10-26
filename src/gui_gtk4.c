@@ -3632,25 +3632,25 @@ static const char * const toolbar_icon_names[] =
     /* 09 */ "help-contents",		// help
     /* 10 */ "edit-find",
     /* 11 */ "document-save-as",	// save all (no standard icon)
-    /* 12 */ "document-send",		// session save
+    /* 12 */ "document-save-as",	// session save
     /* 13 */ "document-new",		// session new
     /* 14 */ "document-open-recent",	// session load
     /* 15 */ "system-run",		// run script
     /* 16 */ "edit-find-replace",
-    /* 17 */ "process-stop",		// window close
+    /* 17 */ "window-close",		// window close
     /* 18 */ "view-fullscreen",		// maximize
     /* 19 */ "view-restore",		// minimize
-    /* 20 */ "view-continuous",		// split (no standard icon)
+    /* 20 */ "window-new",		// split (no standard icon)
     /* 21 */ "utilities-terminal",	// shell
     /* 22 */ "go-previous",		// find previous
     /* 23 */ "go-next",			// find next
-    /* 24 */ "system-search",		// find help
-    /* 25 */ "media-playback-start",	// make
-    /* 26 */ "go-last",			// tag jump
-    /* 27 */ "insert-link",		// run ctags
-    /* 28 */ "view-dual",		// vertical split
-    /* 29 */ "format-justify-fill",	// maximize width
-    /* 30 */ "format-justify-center",	// minimize width
+    /* 24 */ "help-browser",		// find help
+    /* 25 */ "media-playback-start",	// make (no standard icon)
+    /* 26 */ "go-jump",			// tag jump
+    /* 27 */ "view-refresh",		// run ctags
+    /* 28 */ "view-dual",		// vertical split (no standard icon)
+    /* 29 */ "zoom-in",			// win max width
+    /* 30 */ "zoom-out",			// win min width
     /* 31 */ "application-exit",	// exit
 };
 
