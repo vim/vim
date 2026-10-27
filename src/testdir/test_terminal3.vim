@@ -1247,9 +1247,11 @@ func Test_term_getpos()
   defer delete('XTest_getpos_result')
 
   let lines =<< trim EOL
-     let $PS1=''
-     let $HOME='/nonexisting'
-     term ++curwin sh
+     source util/term_util.vim
+     set shell=sh
+     " Disable the shell line editor to avoid echoing the command twice.
+     call Run_shell_in_terminal({'curwin': 1,
+           \ 'env': {'PS1': '', 'HOME': '/nonexisting'}})
   EOL
   call writefile(lines, 'XTest_getpos', 'D')
   let buf = RunVimInTerminal('-S XTest_getpos', {'rows': 15})
