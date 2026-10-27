@@ -68,6 +68,46 @@ static char_u *socketserver_get_path(char_u *name, bool new, bool quiet, bool ig
 static void socketserver_accept(channel_T *channel);
 static void socketserver_close(channel_T *channel);
 static ss_reply_T *socketserver_add_reply(char_u *sender);
+static bool socketserver_name_is_path(char_u *name);
+static bool socketserver_is_self(char_u *name);
+
+/*
+ * Return true if "name" is not a generic server name but a path to the socket.
+ */
+    static bool
+socketserver_name_is_path(char_u *name)
+{
+    return name[0] == '/' || STRNICMP(name, "./", 2) == 0
+	    || STRNICMP(name, "../", 3) == 0;
+}
+
+/*
+ * Return true if "name" refers to this Vim's server: either the name of this
+ * server or the path/address of our own socket.  Used to execute a command
+ * locally instead of connecting to our own socket.
+ */
+    static bool
+socketserver_is_self(char_u *name)
+{
+    if (name == NULL || *name == NUL)
+	return false;
+
+    // The user-visible name of this server, e.g. "VIM", or the path that was
+    // given as the server name.
+    if (serverName != NULL && STRICMP(name, serverName) == 0)
+	return true;
+
+    // Also accept the path to our socket; that is what is used internally.
+    if (server_address != NULL && socketserver_name_is_path(name))
+    {
+	char_u	buf[MAXPATHL];
+
+	buf[0] = NUL;
+	if (mch_FullName(name, buf, MAXPATHL, false) == OK)
+	    return STRCMP(buf, server_address) == 0;
+    }
+    return false;
+}
 
 /*
  * Start the socketserver using the given name. Returns OK on success and FAIL
@@ -133,14 +173,24 @@ socketserver_start(char_u *name, bool quiet)
 	    mch_FullName(address, buf, MAXPATHL, false);
 	}
     }
-    vim_free(address);
 
     if (buf != NULL)
     {
 	server_address = vim_strsave(buf);
-	serverName = buf;
+
+	// Use the name as specified by the user for "v:servername"; the path
+	// to the socket is an implementation detail.  For a generic name use
+	// the name of the socket file, which has a number appended to it when
+	// the name was already taken.
+	if (address != NULL && STRNICMP(name, "channel:", 8) != 0
+		&& !socketserver_name_is_path(name))
+	    serverName = vim_strsave(gettail(address));
+	else
+	    serverName = vim_strsave(name);
 	set_vim_var_string(VV_SEND_SERVER, serverName, -1);
     }
+    vim_free(address);
+    vim_free(buf);
 
     vim_free(server_addr_cwd);
     if (mch_dirname(dirbuf, sizeof(dirbuf)) == OK)
@@ -1102,7 +1152,7 @@ socketserver_send(
     }
 
     // Execute locally if target is ourselves
-    if (serverName != NULL && STRICMP(name, serverName) == 0)
+    if (socketserver_is_self(name))
 	return sendToLocalVim(str, is_expr, result);
 
     channel = socketserver_get_channel(name, silent, NULL);

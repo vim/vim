@@ -363,6 +363,10 @@ func Test_client_server_socketserver_custom_path()
     call WaitForAssert({-> assert_equal("run", job_status(job))})
     call WaitForAssert({-> assert_equal(path, glob(path))})
 
+    " v:servername is the path as given with --servername
+    call WaitForAssert({-> assert_equal(path,
+        \ trim(system(actual .. ' --remote-expr "v:servername"')))})
+
     call system(actual .. " --remote-expr 'execute(\"qa!\")'")
     try
       call WaitForAssert({-> assert_equal("dead", job_status(job))})
@@ -373,6 +377,60 @@ func Test_client_server_socketserver_custom_path()
       endif
     endtry
   endfor
+endfunc
+
+" Test that v:servername is the name as specified with --servername and not
+" the path to the socket file, for the socketserver backend.
+func Test_client_server_socketserver_servername()
+  CheckFeature socketserver
+  CheckNotMSWindows
+
+  let g:test_is_flaky = 1
+  let cmd = GetVimCommand()
+
+  if cmd == ''
+    throw 'GetVimCommand() failed'
+  endif
+
+  let name = 'VIMTESTSOCKSN'
+  let othername = 'VIMTESTSOCKOTHER'
+
+  " Start a server with a generic name, another Vim must see the same name in
+  " v:servername, not the path of the socket file.
+  let actual = cmd .. ' --clientserver socket --servername ' .. name
+  let job = job_start(actual, {'stoponexit': 'kill', 'out_io': 'null'})
+  call WaitForAssert({-> assert_equal("run", job_status(job))})
+  call WaitForAssert({-> assert_equal(name,
+        \ trim(system(actual .. ' --remote-expr "v:servername"')))})
+
+  " A server sending to itself using its name works, the evaluated expression
+  " returns "2" and v:servername is the name and not the path of the socket.
+  call delete('Xserver_selfsend')
+  call system(cmd .. ' -es --clientserver socket --servername ' .. othername
+        \ .. " -c 'call writefile([v:servername, remote_expr(v:servername, \"1+1\"), remote_expr(\"" .. othername .. "\", \"1+1\")], \"Xserver_selfsend\")' -c 'qa!'")
+  call WaitForAssert({-> assert_equal([othername, '2', '2'],
+        \ readfile('Xserver_selfsend'))})
+
+  " When the name is already taken, v:servername shows the used name, which
+  " has a number appended to it.
+  call delete('Xserver_taken')
+  call system(cmd .. ' -es --clientserver socket --servername ' .. name
+        \ .. " -c 'call writefile([v:servername], \"Xserver_taken\")' -c 'qa!'")
+  call WaitForAssert({-> assert_match('^' .. name .. '\d\+$',
+        \ readfile('Xserver_taken')[0])})
+
+  call system(actual .. " --remote-expr 'execute(\"qa!\")'")
+  try
+    call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  finally
+    if job_status(job) != 'dead'
+      call assert_report('Server did not exit')
+      call job_stop(job, 'kill')
+    endif
+  endtry
+
+  call delete('Xserver_selfsend')
+  call delete('Xserver_taken')
 endfunc
 
 " Test if "channel:" prefix works correctly to use channel address for

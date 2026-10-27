@@ -1,4 +1,4 @@
-*remote.txt*	For Vim version 9.2.  Last change: 2026 Jun 05
+*remote.txt*	For Vim version 9.2.  Last change: 2026 Oct 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -275,8 +275,13 @@ Most of the functionality is the same as the other clientserver backends.
 
 However, the server id or client id will not be a number like X11 or
 MS-Windows (shown in hex representation), instead it is the absolute path to
-the socket.  This can be seen via the |v:servername| variable.  If the name is
-a channel address, then it will be the address with the "a/" prefix as well.
+the socket.  This is used internally, e.g. as the address of a client that
+sent a command, but it is not what |v:servername| shows.  That variable
+contains the name as it was specified with |--servername| (upper-cased), so
+that it looks the same as with the other backends.  For a generic name this is
+the name of the socket file, which has a number appended to it when the name
+was already taken.  If the name is a path or a channel address, then it is
+used as it was given.
 
 Note when using |--remote-wait|, the client id will look like "t/<some
 number>". This naming is specifically for this command, and attempting to use
