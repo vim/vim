@@ -1248,6 +1248,24 @@ def Test_extend_dict_item_type()
   v9.CheckSourceDefAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<bool> but got dict<number>', 2)
 enddef
 
+" A type error in extend() is given before the Dict is changed
+def Test_extend_dict_type_error_unchanged()
+  var lines =<< trim END
+    var d: dict<number> = {a: 1}
+    var src: dict<any> = {}
+    for i in range(30)
+      src['k' .. i] = i
+    endfor
+    src.k15 = 'bad'
+    try
+      extend(d, src)
+    catch /E1013:/
+    endtry
+    assert_equal({a: 1}, d)
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+enddef
+
 func g:ExtendList(l)
   call extend(a:l, ['x'])
 endfunc

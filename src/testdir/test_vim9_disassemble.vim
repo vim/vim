@@ -819,6 +819,146 @@ def Test_disassemble_unlet()
         res)
 enddef
 
+def s:DictStoreUnlet(): dict<number>
+  var d: dict<number> = {a: 5}
+  d[7] = 1
+  var k: any = 'b'
+  d[k] = 2
+  var r = d[7] + d[k]
+  unlet d['a']
+  unlet d[7]
+  unlet d.b
+  d.r = r
+  return d
+enddef
+
+" A number key for a dict is converted to a string, a key of type any is
+" checked at runtime, for storing, reading and unlet.
+def Test_disassemble_dict_store_unlet()
+  var res = execute('disass s:DictStoreUnlet')
+  assert_match('<SNR>\d*_DictStoreUnlet\_s*' ..
+        'var d: dict<number> = {a: 5}\_s*' ..
+        '\d\+ PUSHS "a"\_s*' ..
+        '\d\+ PUSHNR 5\_s*' ..
+        '\d\+ NEWDICT size 1\_s*' ..
+        '\d\+ SETTYPE dict<number>\_s*' ..
+        '\d\+ STORE $0\_s*' ..
+        'd\[7\] = 1\_s*' ..
+        '\d\+ PUSHNR 1\_s*' ..
+        '\d\+ PUSHNR 7\_s*' ..
+        '\d\+ 2STRING stack\[-1\]\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ STOREINDEX dict\_s*' ..
+        'var k: any = ''b''\_s*' ..
+        '\d\+ PUSHS "b"\_s*' ..
+        '\d\+ STORE $1\_s*' ..
+        'd\[k\] = 2\_s*' ..
+        '\d\+ PUSHNR 2\_s*' ..
+        '\d\+ LOAD $1\_s*' ..
+        '\d\+ 2STRING_ANY stack\[-1\]\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ STOREINDEX dict\_s*' ..
+        'var r = d\[7\] + d\[k\]\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ PUSHNR 7\_s*' ..
+        '\d\+ 2STRING stack\[-1\]\_s*' ..
+        '\d\+ MEMBER\_s*' ..
+        '\d\+ USEDICT\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ LOAD $1\_s*' ..
+        '\d\+ 2STRING_ANY stack\[-1\]\_s*' ..
+        '\d\+ MEMBER\_s*' ..
+        '\d\+ USEDICT\_s*' ..
+        '\d\+ OPNR +\_s*' ..
+        '\d\+ STORE $2\_s*' ..
+        'unlet d\[''a''\]\_s*' ..
+        '\d\+ PUSHS "a"\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ UNLETINDEX\_s*' ..
+        'unlet d\[7\]\_s*' ..
+        '\d\+ PUSHNR 7\_s*' ..
+        '\d\+ 2STRING stack\[-1\]\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ UNLETINDEX\_s*' ..
+        'unlet d.b\_s*' ..
+        '\d\+ PUSHS "b"\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ UNLETINDEX\_s*',
+        res)
+  assert_equal({r: 3}, s:DictStoreUnlet())
+enddef
+
+def s:TakeNumberDict(td: dict<number>): number
+  return len(td)
+enddef
+
+def s:DictTypedNested(): list<any>
+  var d: dict<any> = {a: {}}
+  d.a.b = 1
+  var k = 'a'
+  d[k]['c'] = 2
+  var ad: any = {x: 1}
+  var nd: dict<number> = ad
+  var e: dict<string>
+  return [d, nd, e, s:TakeNumberDict(ad)]
+enddef
+
+" A nested dict item is stored with the member type not known at compile
+" time.  A dict<any> does not get a type set, a dict<number> does.  A value of
+" type any is checked when assigned to a dict<number> or passed as an argument.
+def Test_disassemble_dict_typed_nested()
+  var res = execute('disass s:DictTypedNested')
+  assert_match('<SNR>\d*_DictTypedNested\_s*' ..
+        'var d: dict<any> = {a: {}}\_s*' ..
+        '\d\+ PUSHS "a"\_s*' ..
+        '\d\+ NEWDICT size 0\_s*' ..
+        '\d\+ NEWDICT size 1\_s*' ..
+        '\d\+ STORE $0\_s*' ..
+        'd.a.b = 1\_s*' ..
+        '\d\+ PUSHNR 1\_s*' ..
+        '\d\+ PUSHS "b"\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ MEMBER a\_s*' ..
+        '\d\+ USEDICT\_s*' ..
+        '\d\+ STOREINDEX any\_s*' ..
+        'var k = ''a''\_s*' ..
+        '\d\+ PUSHS "a"\_s*' ..
+        '\d\+ STORE $1\_s*' ..
+        'd\[k\]\[''c''\] = 2\_s*' ..
+        '\d\+ PUSHNR 2\_s*' ..
+        '\d\+ PUSHS "c"\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ LOAD $1\_s*' ..
+        '\d\+ MEMBER\_s*' ..
+        '\d\+ USEDICT\_s*' ..
+        '\d\+ STOREINDEX any\_s*' ..
+        'var ad: any = {x: 1}\_s*' ..
+        '\d\+ PUSHS "x"\_s*' ..
+        '\d\+ PUSHNR 1\_s*' ..
+        '\d\+ NEWDICT size 1\_s*' ..
+        '\d\+ STORE $2\_s*' ..
+        'var nd: dict<number> = ad\_s*' ..
+        '\d\+ LOAD $2\_s*' ..
+        '\d\+ CHECKTYPE dict<number> stack\[-1\]\_s*' ..
+        '\d\+ SETTYPE dict<number>\_s*' ..
+        '\d\+ STORE $3\_s*' ..
+        'var e: dict<string>\_s*' ..
+        '\d\+ NEWDICT size 0\_s*' ..
+        '\d\+ SETTYPE dict<string>\_s*' ..
+        '\d\+ STORE $4\_s*' ..
+        'return \[d, nd, e, s:TakeNumberDict(ad)\]\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ LOAD $3\_s*' ..
+        '\d\+ LOAD $4\_s*' ..
+        '\d\+ LOAD $2\_s*' ..
+        '\d\+ CHECKTYPE dict<number> stack\[-1\] arg 1\_s*' ..
+        '\d\+ DCALL <SNR>\d\+_TakeNumberDict(argc 1)\_s*' ..
+        '\d\+ NEWLIST size 4\_s*' ..
+        '\d\+ RETURN',
+        res)
+  assert_equal([{a: {b: 1, c: 2}}, {x: 1}, {}, 1], s:DictTypedNested())
+enddef
+
 def s:LockLocal()
   var d = {a: 1}
   lockvar d.a

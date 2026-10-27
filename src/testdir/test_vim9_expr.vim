@@ -4513,6 +4513,21 @@ def Test_expr9_dict_subscript()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
+" A missing key in a null Dict gives E716, like in an empty Dict
+def Test_expr9_null_dict_missing_key()
+  v9.CheckDefExecAndScriptFailure(['var d: dict<number> = null_dict', "echo d['k']"], 'E716: Key not present in Dictionary: "k"', 2)
+  v9.CheckDefExecAndScriptFailure(['var d: dict<number> = null_dict', 'var k = "k"', 'echo d[k]'], 'E716: Key not present in Dictionary: "k"', 3)
+  v9.CheckScriptFailure(['vim9script', 'var d: dict<number> = null_dict', 'echo d.k'], 'E716: Key not present in Dictionary: "k"', 3)
+  v9.CheckLegacyAndVim9Success(['call assert_equal(7, get(test_null_dict(), "k", 7))'])
+
+  var lines =<< trim END
+    let d = test_null_dict()
+    call assert_fails('echo d.k', 'E716:')
+    call assert_fails("echo d['k']", 'E716:')
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 def Test_expr9_blob_subscript()
   var lines =<< trim END
       var b = 0z112233
