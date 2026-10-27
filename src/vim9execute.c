@@ -2373,6 +2373,25 @@ storeindex_check_list_member_type(
 }
 
 /*
+ * Do a runtime check of the RHS value against the LHS Dict member type.
+ * This is used by the STOREINDEX instruction to perform a type check
+ * at runtime if compile time type check cannot be performed (VAR_ANY).
+ * Returns FAIL if there is a type mismatch.
+ */
+    static int
+storeindex_check_dict_member_type(
+    dict_T	*lhs_dict,
+    typval_T	*rhs_tv,
+    ectx_T	*ectx)
+{
+    if (lhs_dict->dv_type == NULL || lhs_dict->dv_type->tt_member == NULL)
+	return OK;
+
+    return check_typval_type(lhs_dict->dv_type->tt_member, rhs_tv,
+			     ectx->ec_where);
+}
+
+/*
  * Store a value in a list, dict, blob or object variable.
  * Returns OK, FAIL or NOTDONE (uncatchable error).
  */
@@ -2532,6 +2551,12 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    }
 	    if (key == NULL)
 		key = (char_u *)"";
+
+	    // Do a runtime type check for VAR_ANY
+	    if (check_rhs_type &&
+		    storeindex_check_dict_member_type(dict, tv, ectx) == FAIL)
+		return FAIL;
+
 	    di = dict_find(dict, key, -1);
 	    if (di != NULL)
 	    {
