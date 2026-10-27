@@ -5930,18 +5930,18 @@ handle_csi(
     else if (win_resize_enabled && argc >= 3 && arg[0] == 48)
     {
 	int height = arg[1], width = arg[2];
-#if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
+# if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
 	int px_h = arg[3], px_w = arg[4]; // Window size in pixels
-#endif
+# endif
 
 	*slen = csi_len;
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;
 
-#if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
+# if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
 	if (px_w > 0 && px_h > 0)
 	    set_cell_size(px_w / width, px_h / height);
-#endif
+# endif
 
 	// Only update if needed. Avoids intro message from disappearing on
 	// startup (due to initial event).
