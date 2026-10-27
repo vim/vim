@@ -5053,7 +5053,8 @@ parse_osc(int command, VTermStringFragment frag, void *user)
 
 /*
  * Called by libvterm when it cannot recognize a CSI sequence.
- * We recognize the window position report.
+ * We recognize the window position report. Also handle CSI 14 t and CSI 16 t
+ * (get terminal size in pixels, get cell size in pixels).
  */
     static int
 parse_csi(
@@ -5067,46 +5068,60 @@ parse_csi(
     term_T	*term = (term_T *)user;
     char	buf[100];
     int		len;
-    int		x = 0;
-    int		y = 0;
-    win_T	*wp;
 
-    // We recognize only CSI 13 t
-    if (command != 't' || argcount != 1 || args[0] != 13)
+    if (command != 't' || argcount != 1)
 	return 0; // not handled
 
-    // When getting the window position is not possible or it fails it results
-    // in zero/zero.
+    if (args[0] == 14)
+    {
+	len = vim_snprintf(buf, 100, "\x1b[4;%ld;%ldt",
+		cell_height * Rows, cell_width * Columns);
+    }
+    else if (args[0] == 16)
+    {
+	len = vim_snprintf(buf, 100, "\x1b[6;%d;%dt", cell_height, cell_width);
+    }
+    else if (args[0] == 13)
+    {
+	int	x = 0;
+	int	y = 0;
+	win_T	*wp;
+	// When getting the window position is not possible or it fails it
+	// results in zero/zero.
 #if defined(FEAT_GUI) \
 	|| (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE)) \
 	|| defined(MSWIN)
-    (void)ui_get_winpos(&x, &y, (varnumber_T)100);
+	(void)ui_get_winpos(&x, &y, (varnumber_T)100);
 #endif
 
-    FOR_ALL_WINDOWS(wp)
-	if (wp->w_buffer == term->tl_buffer)
-	    break;
-    if (wp != NULL)
-    {
+	FOR_ALL_WINDOWS(wp)
+	    if (wp->w_buffer == term->tl_buffer)
+		break;
+	if (wp != NULL)
+	{
 #ifdef FEAT_GUI
-	if (gui.in_use)
-	{
-	    x += wp->w_wincol * gui.char_width;
-	    y += W_WINROW(wp) * gui.char_height;
-	}
-	else
+	    if (gui.in_use)
+	    {
+		x += wp->w_wincol * gui.char_width;
+		y += W_WINROW(wp) * gui.char_height;
+	    }
+	    else
 #endif
-	{
-	    // We roughly estimate the position of the terminal window inside
-	    // the Vim window by assuming a 10 x 7 character cell.
-	    x += wp->w_wincol * 7;
-	    y += W_WINROW(wp) * 10;
+	    {
+		// We roughly estimate the position of the terminal window
+		// inside the Vim window by assuming a 10 x 7 character cell.
+		x += wp->w_wincol * 7;
+		y += W_WINROW(wp) * 10;
+	    }
 	}
-    }
 
-    len = vim_snprintf(buf, 100, "\x1b[3;%d;%dt", x, y);
+	len = vim_snprintf(buf, 100, "\x1b[3;%d;%dt", x, y);
+    }
+    else
+	return 0;
+
     channel_send(term->tl_job->jv_channel, get_tty_part(term),
-						     (char_u *)buf, len, NULL);
+	    (char_u *)buf, len, NULL);
     return 1;
 }
 
