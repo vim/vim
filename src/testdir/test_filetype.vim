@@ -411,6 +411,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     inko: ['file.inko'],
     ipfilter: ['ipf.conf', 'ipf6.conf', 'ipf.rules'],
     ipkg: ['file.ipkg'],
+    ispc: ['file.ispc', 'file.isph'],
     iss: ['file.iss'],
     ist: ['file.ist', 'file.mst'],
     j: ['file.ijs'],
