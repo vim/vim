@@ -677,7 +677,11 @@ tuple_join_inner(
 	s.length = STRLEN(s.string);
 	sumlen += (int)s.length;
 
-	(void)ga_grow(join_gap, 1);
+	if (ga_grow(join_gap, 1) == FAIL)
+	{
+	    vim_free(tofree);
+	    return FAIL;
+	}
 	p = ((join_T *)join_gap->ga_data) + (join_gap->ga_len++);
 	if (tofree != NULL || s.string != numbuf)
 	{
