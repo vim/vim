@@ -3743,6 +3743,18 @@ win_new_shellsize(void)
 }
 
 #if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
+    static void
+set_cell_size(int new_cw, int new_ch)
+{
+    if (new_cw == cell_width && new_ch == cell_height)
+	return;
+
+    cell_width = new_cw;
+    cell_height = new_ch;
+
+    update_screen(UPD_VALID);
+}
+
     void
 update_cell_size(void)
 {
@@ -3759,15 +3771,9 @@ update_cell_size(void)
 
 	mch_calc_cell_size(&cell_sz);
 	if (cell_sz.cs_xpixel <= 0 || cell_sz.cs_ypixel <= 0)
-	{
-	    cell_width = 8;
-	    cell_height = 16;
-	}
+	    set_cell_size(8, 16);
 	else
-	{
-	    cell_width = cell_sz.cs_xpixel;
-	    cell_height = cell_sz.cs_ypixel;
-	}
+	    set_cell_size(cell_sz.cs_xpixel, cell_sz.cs_ypixel);
     }
 }
 #endif
@@ -5847,14 +5853,12 @@ handle_csi(
 	if (arg[0] == 4)
 	{
 	    LOG_TRN("Received CSI 14 t response: %s", tp);
-	    cell_width = arg[2] / Columns;
-	    cell_height = arg[1] / Rows;
+	    set_cell_size(arg[2] / Columns, arg[1] / Rows);
 	}
 	else
 	{
 	    LOG_TRN("Received CSI 16 t response: %s", tp);
-	    cell_width = arg[2];
-	    cell_height = arg[1];
+	    set_cell_size(arg[2], arg[1]);
 	}
 
 	key_name[0] = (int)KS_EXTRA;
@@ -5936,10 +5940,7 @@ handle_csi(
 
 #if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
 	if (px_w > 0 && px_h > 0)
-	{
-	    cell_width = px_w / width;
-	    cell_height = px_h / height;
-	}
+	    set_cell_size(px_w / width, px_h / height);
 #endif
 
 	// Only update if needed. Avoids intro message from disappearing on
