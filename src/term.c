@@ -5740,8 +5740,8 @@ handle_csi(
 {
     int		first = -1;  // optional char right after {lead}
     int		trail;	     // char that ends CSI sequence
-    int		arg[3] = {-1, -1, -1};	// argument numbers
-    int		argc = 0;		// number of arguments
+    int		arg[5] = {-1, -1, -1, -1, -1};	// argument numbers
+    int		argc = 0;			// number of arguments
     char_u	*ap = argp;
     int		csi_len;
 
@@ -5759,8 +5759,8 @@ handle_csi(
     }
     else
     {
-	// Find up to three argument numbers.
-	for (argc = 0; argc < 3; )
+	// Find up to five argument numbers.
+	for (argc = 0; argc < 5; )
 	{
 	    if (ap >= tp + len)
 		return -1;
@@ -5926,10 +5926,21 @@ handle_csi(
     else if (win_resize_enabled && argc >= 3 && arg[0] == 48)
     {
 	int height = arg[1], width = arg[2];
+#if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
+	int px_h = arg[3], px_w = arg[4]; // Window size in pixels
+#endif
 
 	*slen = csi_len;
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;
+
+#if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
+	if (px_w > 0 && px_h > 0)
+	{
+	    cell_width = px_w / width;
+	    cell_height = px_h / height;
+	}
+#endif
 
 	// Only update if needed. Avoids intro message from disappearing on
 	// startup (due to initial event).
