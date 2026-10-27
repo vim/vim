@@ -1389,8 +1389,14 @@ get_lval_dict_item(
     }
 
     if (lp->ll_valtype != NULL)
+    {
 	// use the type of the member
 	lp->ll_valtype = lp->ll_valtype->tt_member;
+	// If the LHS member type is not known (VAR_ANY), then get it from
+	// the type of the dict
+	if (lp->ll_valtype == NULL && lp->ll_dict->dv_type != NULL)
+	    lp->ll_valtype = lp->ll_dict->dv_type->tt_member;
+    }
 
     if (lp->ll_di == NULL)
     {
