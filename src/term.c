@@ -8052,8 +8052,9 @@ find_first_tcap(
 
 /*
  * For Win32 console: replace the sequence immediately after termguicolors.
+ * Returns true when the mode changes.
  */
-    void
+    bool
 swap_tcap(void)
 {
 # ifdef FEAT_TERMGUICOLORS
@@ -8089,7 +8090,7 @@ swap_tcap(void)
 	mode = CMODE_INDEXED;
 
     if (mode == curr_mode)
-	return;
+	return false;
 
     for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
     {
@@ -8099,7 +8100,9 @@ swap_tcap(void)
     }
 
     curr_mode = mode;
-# endif
+    return true;
+# endif // FEAT_TERMGUICOLORS
+    return false;
 }
 
 #endif

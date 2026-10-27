@@ -4846,8 +4846,7 @@ did_set_term_option(optset_T *args)
 #if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
 	    if (is_term_win32())
 	    {
-		swap_tcap();
-		args->os_did_swaptcap = TRUE;
+		args->os_did_swaptcap = swap_tcap();
 	    }
 #endif
 	    // We now have a different color setup, initialize it again.
