@@ -114,6 +114,7 @@ char_u *get_highlight_default(void);
 char_u *get_encoding_default(void);
 int is_option_allocated(char *name);
 int makeset(FILE *fd, int opt_flags, int local_only);
+int makespecialset(FILE *fd, int opt_flags);
 int makefoldset(FILE *fd);
 void clear_termoptions(void);
 void free_termoptions(void);

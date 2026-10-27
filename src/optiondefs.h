@@ -2678,7 +2678,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_tenc, PV_NONE, did_set_encoding, expand_set_encoding,
 			    {(char_u *)"", (char_u *)0L}
 			    SCTX_INIT},
-    {"termguicolors", "tgc", P_BOOL|P_VI_DEF|P_VIM|P_RCLR,
+    {"termguicolors", "tgc", P_BOOL|P_VI_DEF|P_VIM|P_RCLR|P_NO_MKRC,
 #ifdef FEAT_TERMGUICOLORS
 			    (char_u *)&p_tgc, PV_NONE, did_set_termguicolors, NULL,
 			    {(char_u *)FALSE, (char_u *)FALSE}
