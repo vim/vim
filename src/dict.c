@@ -817,10 +817,12 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
     ga_append(&ga, '{');
 
     // Lock the dict, the string() method of an object item could remove an
-    // item or make the hashtab resize while we iterate over it.
+    // item or make the hashtab resize while we iterate over it.  Also set
+    // VAR_FIXED, ":unlockvar" only resets VAR_LOCKED.
     prev_lock = d->dv_lock;
     if (d->dv_lock == 0)
 	d->dv_lock = VAR_LOCKED;
+    d->dv_lock |= VAR_FIXED;
     hash_lock(&d->dv_hashtab);
 
     todo = (int)d->dv_hashtab.ht_used;
