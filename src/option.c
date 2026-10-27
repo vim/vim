@@ -6641,6 +6641,62 @@ makeset(FILE *fd, int opt_flags, int local_only)
     return OK;
 }
 
+/*
+ * Write special options as ":set" commands to a file.
+ * These options are special because makeset() cannot fulfill
+ * the requirements for them.
+ *
+ * Return FAIL on error, OK otherwise.
+ */
+    int
+makespecialset(FILE *fd, int opt_flags)
+{
+    // 'termguicolors' is a special option because:
+    // * Requires conditional logic for its inclusion
+    // * May be linked with keycodes that must be recorded too
+#ifdef FEAT_TERMGUICOLORS
+    if ((opt_flags & OPT_GLOBAL) && p_tgc)
+    {
+	// Only set if the feature is available and the terminal matches.
+	// Otherwise the keycodes will mismatch and break the terminal.
+	if (fprintf(fd, "if has('termguicolors') && !has('gui_running')") < 0
+	    || put_eol(fd) == FAIL
+	    || put_line(fd, "  set termguicolors") == FAIL)
+	    return FAIL;
+
+	// Set only those keycodes with non-default values
+	bool term_match_cond = false;
+	for (struct vimoption *p = options; p->fullname != NULL; ++p)
+	{
+	    if (!istermoption(p))
+		continue;
+
+	    char_u **varp = (char_u **)(p->var);
+	    if (*varp != empty_option && STRCMP(p->def_val[VI_DEFAULT], *varp) != 0)
+	    {
+		if (!term_match_cond)
+		{
+		    term_match_cond = true;
+		    if (fprintf(fd, "  if &term ==# '%s'", T_NAME) < 0
+			|| put_eol(fd) == FAIL)
+			return FAIL;
+		}
+
+		if (put_setstring(fd, false, "    set", p->fullname, varp, p->flags) == FAIL)
+		    return FAIL;
+	    }
+	}
+
+	if (term_match_cond && put_line(fd, "  endif") == FAIL)
+	    return FAIL;
+
+	if (put_line(fd, "endif") == FAIL)
+	    return FAIL;
+    }
+#endif
+    return OK;
+}
+
 #if defined(FEAT_FOLDING)
 /*
  * Generate set commands for the local fold options only.  Used when
