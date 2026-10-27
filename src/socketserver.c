@@ -77,8 +77,8 @@ static bool socketserver_is_self(char_u *name);
     static bool
 socketserver_name_is_path(char_u *name)
 {
-    return name[0] == '/' || STRNICMP(name, "./", 2) == 0
-	    || STRNICMP(name, "../", 3) == 0;
+    return name[0] == '/' || STRNCMP(name, "./", 2) == 0
+	    || STRNCMP(name, "../", 3) == 0;
 }
 
 /*
@@ -474,8 +474,7 @@ socketserver_get_path(
     }
 
     // Ignore if name is a path
-    if (name[0] == '/' || STRNCMP(name, "./", 2) == 0 ||
-	    STRNCMP(name, "../", 3) == 0)
+    if (socketserver_name_is_path(name))
 	return vim_strsave(name);
 
     if (STRNICMP(name, "channel:", 8) == 0 && STRLEN(name) > 8)
