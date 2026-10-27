@@ -1338,6 +1338,33 @@ func Test_dict_changed_while_stringified()
   unlet g:d g:removed
 endfunc
 
+" Same, but the string() method unlocks the dict first.
+func Test_dict_unlocked_while_stringified()
+  let lines =<< trim END
+    vim9script
+    class C
+      def string(): string
+        if !g:removed
+          g:removed = true
+          unlockvar g:d
+          for k in keys(g:d)
+            remove(g:d, k)
+          endfor
+        endif
+        return 'nostring'
+      enddef
+    endclass
+    g:d = {'a': C.new(), 'b': C.new(), 'c': C.new()}
+  END
+  call writefile(lines, 'Xdictunlock.vim', 'D')
+  let g:removed = v:false
+  source Xdictunlock.vim
+  call assert_fails('call string(g:d)', 'E742:')
+  call assert_equal(3, len(g:d))
+  call assert_equal(0, islocked('g:d'))
+  unlet g:d g:removed
+endfunc
+
 " Test for matchstrlist()
 func Test_matchstrlist()
   let lines =<< trim END
