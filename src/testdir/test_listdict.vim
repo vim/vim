@@ -926,6 +926,51 @@ func Test_dict_scope_var_remove()
   call Tfunc1('testval')
 endfunc
 
+func s:LegacyUnletVictim()
+  unlet g:['Xvictim']
+endfunc
+
+" Removing a variable while ":let" is listing the variables must fail and
+" keep the variable.
+func Test_dict_remove_while_listing_vars()
+  let lines =<< trim END
+    vim9script
+    class A
+      def string(): string
+        try
+          if g:Xmode == 'remove'
+            remove(g:, 'Xvictim')
+          elseif g:Xmode == 'unlet'
+            g:LegacyUnlet()
+          elseif g:Xmode == 'unletindex'
+            var gd = g:
+            unlet gd['Xvictim']
+          else
+            filter(g:, (k, _) => k != 'Xvictim')
+          endif
+        catch /E1313:/
+          g:Xcaught = true
+        endtry
+        return 'A'
+      enddef
+    endclass
+    g:Xobj = A.new()
+  END
+  call writefile(lines, 'Xremovelisting.vim', 'D')
+  source Xremovelisting.vim
+  let g:LegacyUnlet = function('s:LegacyUnletVictim')
+
+  for mode in ['remove', 'unlet', 'unletindex', 'filter']
+    let g:Xmode = mode
+    let g:Xvictim = 'x'
+    let g:Xcaught = v:false
+    silent let g:
+    call assert_true(g:Xcaught, mode)
+    call assert_equal('x', g:Xvictim, mode)
+  endfor
+  unlet g:Xobj g:Xvictim g:Xcaught g:Xmode g:LegacyUnlet
+endfunc
+
 " No extend() of write-protected scope-level variable
 func Test_dict_scope_var_extend()
   call assert_fails("call extend(a:, {'this_is_a_long_parameter_name': 1234})", 'E742:')
