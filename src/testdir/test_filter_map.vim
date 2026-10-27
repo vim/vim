@@ -229,6 +229,45 @@ func Test_foreach_and_modify()
   call assert_fails('call foreach(b, "let a = remove(b, 0)")', 'E741:')
 endfunc
 
+func s:DictUnlockAndRemove(key, val)
+  unlockvar g:Xdict
+  for k in keys(g:Xdict)
+    if k != a:key
+      call remove(g:Xdict, k)
+    endif
+  endfor
+  return a:val
+endfunc
+
+func s:DictUnlockAndAdd(key, val)
+  unlockvar g:Xdict
+  let g:Xdict['new_' .. a:key] = 0
+  return a:val
+endfunc
+
+" Using :unlockvar in the expression must not allow changing the dict while
+" map(), filter() or foreach() is going over it.
+func Test_map_filter_dict_unlock_and_modify()
+  for fname in ['map', 'filter', 'foreach']
+    for Cb in [function('s:DictUnlockAndRemove'), function('s:DictUnlockAndAdd')]
+      let g:Xdict = #{a: 1, b: 2, c: 3}
+      call assert_fails('call ' .. fname .. '(g:Xdict, Cb)', 'E742:', fname)
+      call assert_equal(#{a: 1, b: 2, c: 3}, g:Xdict, fname)
+      call assert_equal(0, islocked('g:Xdict'), fname)
+
+      " also when the dict was locked before, filter() does not accept that
+      if fname != 'filter'
+        let g:Xdict = #{a: 1, b: 2, c: 3}
+        lockvar 1 g:Xdict
+        call assert_fails('call ' .. fname .. '(g:Xdict, Cb)', 'E742:', fname)
+        call assert_equal(#{a: 1, b: 2, c: 3}, g:Xdict, fname)
+        unlockvar g:Xdict
+      endif
+    endfor
+  endfor
+  unlet g:Xdict
+endfunc
+
 func Test_mapnew_dict()
   let din = #{one: 1, two: 2}
   let dout = mapnew(din, {k, v -> string(v)})
