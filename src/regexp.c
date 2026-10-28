@@ -1765,17 +1765,22 @@ cstrncmp(char_u *s1, char_u *s2, int *n)
 	char_u *p = s1;
 	int n2 = 0;
 	int n1 = *n;
-	// count the number of characters for byte-length of s1
+	// count the number of code points for the byte-length of s1, excluding
+	// composing characters; those are handled by the RE_COMPOSING check in
+	// the caller, the same way as without 'ignorecase'
 	while (n1 > 0 && *p != NUL)
 	{
-	    n1 -= mb_ptr2len(p);
-	    MB_PTR_ADV(p);
+	    int l = utf_ptr2len(p);
+
+	    n1 -= l;
+	    p += l;
 	    n2++;
 	}
-	// count the number of bytes to advance the same number of chars for s2
+	// count the number of bytes to advance the same number of code points
+	// for s2, again excluding composing characters
 	p = s2;
 	while (n2-- > 0 && *p != NUL)
-	    MB_PTR_ADV(p);
+	    p += utf_ptr2len(p);
 
 	n2 = p - s2;
 

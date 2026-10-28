@@ -447,8 +447,8 @@ func Run_regexp_multibyte_magic()
     b ã¡ã‚«ãƒ¨ã¯
     c x Â¬â‚¬x
     d å¤©ä½¿x
-    e ü’…™¸y
-    f ü’Š¯z
+    e ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½y
+    f ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½z
     g aå•·bb
     j 0123â¤x
     k combinations
@@ -822,6 +822,113 @@ func Test_regexp_casefold_match_length()
   finally
     bwipe!
     let &encoding = save_encoding
+  endtry
+endfunc
+
+" A literal followed by "\%C" must match a character with composing
+" characters also with 'ignorecase' or "\c": "\%C" skips the composing
+" characters after the previous atom, so the case-insensitive comparison of
+" the literal must not include them in the character length.  The
+" backtracking engine compared the whole character (including its composing
+" characters) with the literal and never reached the RE_COMPOSING skip.
+" From issue #21676: match("ca\u0300t", 'a\%C') must be 1 for every value of
+" 'regexpengine' and 'ignorecase'.
+func Test_composing_ignorecase_after_literal()
+  CheckFeature multi_byte
+  let save_encoding = &encoding
+  let save_ic = &ignorecase
+  let save_re = &regexpengine
+  try
+    set encoding=utf-8
+    let a = nr2char(0x61)
+    let grave = nr2char(0x300)
+    let acute = nr2char(0x301)
+    " "c", "a", U+0300 COMBINING GRAVE ACCENT, "t"
+    let text = 'c' . a . grave . 't'
+    " [pattern, expected match, index with 'noignorecase', index with
+    " 'ignorecase']
+    let tests = [
+          \ ['a\%C',   a . grave,        1,  1],
+          \ ['A\%C',   a . grave,       -1,  1],
+          \ ['a',      '',               -1, -1],
+          \ ['A',      '',               -1, -1],
+          \ ['ca\%C',  'c' . a . grave,   0,  0],
+          \ ['ca\%Ct', text,             0,  0],
+          \ ['Ca\%Ct', text,            -1,  0],
+          \ ['a\%Ct',  a . grave . 't',   1,  1],
+          \ ['a\%Cc',  '',               -1, -1],
+          \ ['[a]\%C', a . grave,        1,  1],
+          \ ['[A]\%C', a . grave,       -1,  1],
+          \ ['a\%C.',  a . grave . 't',   1,  1],
+          \ ]
+    " More than one composing character after the literal.
+    let text2 = 'x' . a . grave . acute . 'y'
+    let tests2 = [
+          \ ['a\%C',  a . grave . acute,       1,  1],
+          \ ['A\%C',  a . grave . acute,      -1,  1],
+          \ ['a\%Cy', a . grave . acute . 'y', 1,  1],
+          \ ['xa\%C', 'x' . a . grave . acute, 0,  0],
+          \ ['xa',    '',                       -1, -1],
+          \ ]
+    " A multi-byte character before "\%C" ("Ã¨" with one extra combining
+    " character in the text).
+    let egrave = nr2char(0xe8)
+    let Egrave = nr2char(0xc8)
+    let text3 = 'x' . egrave . acute . 'y'
+    let tests3 = [
+          \ [egrave . '\%C', egrave . acute,  1,  1],
+          \ [Egrave . '\%C', egrave . acute, -1,  1],
+          \ [egrave,         '',              -1, -1],
+          \ ]
+
+    for prefix in ['', '\c']
+      for [check_text, check_tests] in [[text, tests],
+            \ [text2, tests2], [text3, tests3]]
+        for engine in [0, 1, 2]
+          exe 'set regexpengine=' .. engine
+          for ic in [0, 1]
+            exe 'set ' .. (ic ? 'ignorecase' : 'noignorecase')
+            for [pat, matched, noic_idx, ic_idx] in check_tests
+              let pattern = prefix .. pat
+              " "\c" in the pattern overrules 'ignorecase'
+              let idx = (prefix == '\c' || ic) ? ic_idx : noic_idx
+              let context = string([engine, &ignorecase, pattern])
+              call assert_equal(idx, match(check_text, pattern), context)
+              call assert_equal(idx >= 0 ? matched : '',
+                    \ matchstr(check_text, pattern), context)
+            endfor
+          endfor
+        endfor
+      endfor
+    endfor
+
+    " Searching must not miss the match either.  The text is "x", " ", "a",
+    " "b", U+0300, "y"; the "\<" makes the engine use the "must appear"
+    " string optimization.
+    new
+    try
+      call setline(1, 'x ab' . grave . 'y')
+      for [pat, noic_pos, ic_pos] in [['\<ab\%C', [1, 3], [1, 3]],
+            \ ['\<AB\%C', [0, 0], [1, 3]],
+            \ ['\<ab\%Cy', [1, 3], [1, 3]],
+            \ ['\<a\%C', [1, 3], [1, 3]]]
+        for engine in [0, 1, 2]
+          exe 'set regexpengine=' .. engine
+          for ic in [0, 1]
+            exe 'set ' .. (ic ? 'ignorecase' : 'noignorecase')
+            call cursor(1, 1)
+            call assert_equal(ic ? ic_pos : noic_pos, searchpos(pat, 'W'),
+                  \ string([engine, &ignorecase, pat]))
+          endfor
+        endfor
+      endfor
+    finally
+      bwipe!
+    endtry
+  finally
+    let &encoding = save_encoding
+    let &ignorecase = save_ic
+    let &regexpengine = save_re
   endtry
 endfunc
 
