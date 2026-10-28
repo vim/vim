@@ -109,6 +109,7 @@ static image_backend_T image_backend = IMAGE_BACKEND_NONE;
 static image_T *images = NULL;
 // Sorted from highest zindex to lowest zindex
 static image_placement_T    *placements = NULL;
+static image_placement_T    *freed_placements = NULL;
 static int		    n_placements = 0;
 
 // If > 0, then mark_dirty_region_for_images() will be a no-op
@@ -280,7 +281,7 @@ image_get_dimensions(image_T *img, int *w, int *h)
  * Replace the current image contents with "data". "data" should be the exact
  * same format, width, and height. Return OK on success and FAIL on failure.
  */
-    int
+    static int
 image_update(image_T *img, uint8_t *data)
 {
     int w, h;
@@ -314,6 +315,7 @@ image_placement_unlink(image_placement_T *place)
 	place->next->prev = place->prev;
     if (placements == place)
 	placements = place->next;
+    place->prev = place->next = NULL;
     n_placements--;
 }
 
@@ -445,8 +447,8 @@ image_placement_clear(image_placement_T *place)
     image_placement_clear_int(place, updating_screen);
 }
 
-    void
-image_placement_free(image_placement_T *place)
+    static void
+image_placement_free_int(image_placement_T *place, bool unlink)
 {
     if (backend_available(false) && place->backend_data != NULL)
     {
@@ -459,11 +461,31 @@ image_placement_free(image_placement_T *place)
 	pixman_region32_fini(&place->visible);
 	pixman_region32_fini(&place->visible_abs);
     }
-    image_placement_unlink(place);
+    if (unlink)
+	image_placement_unlink(place);
 
     if (place->img != NULL)
 	image_unref(place->img);
     vim_free(place);
+}
+
+    void
+image_placement_free(image_placement_T *place)
+{
+    image_placement_free_int(place, true);
+}
+
+/*
+ * Mark the image placement to be freed (and have the image on screen cleared)
+ * on the next redraw.
+ */
+    void
+image_placement_mark_free(image_placement_T *place)
+{
+    image_placement_unlink(place);
+
+    place->next = freed_placements;
+    freed_placements = place;
 }
 
     void
@@ -691,6 +713,17 @@ draw_image_placements(void)
     // Save current cursor position
     int			cur_row = screen_cur_row;
     int			cur_col = screen_cur_col;
+
+    // Free any images marked to be freed
+    place = freed_placements;
+    while (place != NULL)
+    {
+	image_placement_T *next = place->next;
+
+	image_placement_free_int(place, false);
+	place = next;
+    }
+    freed_placements = NULL;
 
     // Check if all placements have no backing image. If so, then do nothing
     FOR_ALL_PLACEMENTS(place)
