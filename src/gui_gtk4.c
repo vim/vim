@@ -5385,9 +5385,8 @@ image_placement_gui_draw(image_placement_T *place)
     image_get_dimensions(img, &iw, &ih);
     texture_node = gsk_texture_node_new(ictx->texture,
 	    &GRAPHENE_RECT_INIT(
-		FILL_X(place->col) - FILL_X(place->crop_box.x1),
-		FILL_Y(place->row) - FILL_Y(place->crop_box.y1)
-		+ FILL_Y(place->row_off),
+		FILL_X(place->col - place->x_off),
+		FILL_Y(place->row - place->y_off + place->row_off),
 		PHY2LOG(iw), PHY2LOG(ih)));
 
     if (texture_node == NULL)
