@@ -5074,6 +5074,9 @@ eval8(
 		    where_T where = WHERE_INIT;
 
 		    res = check_type(want_type, actual, TRUE, where);
+		    if (res == FAIL)
+			// the caller does not free the value on failure
+			clear_tv(rettv);
 		}
 	    }
 	}
