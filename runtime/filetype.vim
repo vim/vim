@@ -90,6 +90,8 @@ au BufNewFile,BufRead */.aptitude/config       setf aptconf
 
 " Arch Inventory file
 au BufNewFile,BufRead .arch-inventory,=tagging-method	setf arch
+" Ascend C
+au BufNewFile,BufRead *.asc			setf ascendc
 
 " atlas or kawasaki_as
 au BufNewFile,BufRead *.as call dist#ft#FTas()

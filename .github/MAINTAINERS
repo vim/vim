@@ -504,6 +504,7 @@ runtime/syntax/amiga.vim				@sodero
 runtime/syntax/ant.vim					@dkearns
 runtime/syntax/antlr4.vim				@jiangyinzuo
 runtime/syntax/arduino.vim				@johshoff
+runtime/syntax/ascendc.vim					@jiangyinzuo
 runtime/syntax/asciidoc.vim				@aerostitch
 runtime/syntax/asm.vim					@dkearns
 runtime/syntax/asmh8300.vim				@dkearns

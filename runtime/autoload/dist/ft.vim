@@ -1809,6 +1809,8 @@ const ft_from_ext = {
   "aml": "aml",
   # ART*Enterprise (formerly ART-IM)
   "art": "art",
+  # Ascend C
+  "asc": "asc",
   # AsciiDoc
   "asciidoc": "asciidoc",
   "adoc": "asciidoc",
