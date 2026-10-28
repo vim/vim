@@ -326,7 +326,9 @@ func Test_popup_image_sixel_leave_tabpage()
     call ch_sendraw(job, ":tabedit\<CR>")
     call s:WaitForPtyOutput(s:tabline, start)
     let mid = len(s:pty_out)
-    call assert_equal(-1, match(s:pty_out[start : mid], s:sixel_start_pat))
+    " Vim instance may not have flushed output to pty when "mid" was calculated.
+    let tabpos = stridx(s:pty_out[start : mid], ":tabedit\<CR>")
+    call assert_equal(-1, match(s:pty_out[start + tabpos : mid], s:sixel_start_pat))
 
     " Entering the tab page draws it again.
     call ch_sendraw(job, ":tabnext\<CR>")
