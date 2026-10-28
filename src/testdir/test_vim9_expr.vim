@@ -3143,6 +3143,13 @@ def Test_expr9_dict()
       var n = 123
       var dictnr = {[n]: 1}
 
+      # a key that is not a constant, the expression ends in a constant
+      var c = true
+      assert_equal({1: 'x'}, {[c ? 1 : 2]: 'x'})
+      c = false
+      assert_equal({2: 'x'}, {[c ? 1 : 2]: 'x'})
+      assert_equal({a: 1, b: 2}, {[c ? 'b' : 'a']: 1, b: 2})
+
       # comment to start fold is OK
       var x1: number #{{ fold
       var x2 = 9 #{{ fold
@@ -3177,6 +3184,7 @@ def Test_expr9_dict()
   g:key = 'x'
   v9.CheckDefExecAndScriptFailure(["var x = {[g:key]: 'text', [g:key]: 'text'}"], 'E721:', 1)
   unlet g:key
+  v9.CheckDefExecAndScriptFailure(["var c = false", "var x = {[c ? 'a' : 'b']: 1, b: 2}"], 'E721: Duplicate key in Dictionary: "b"', 2)
   v9.CheckDefExecAndScriptFailure(["var x = {[notexists]: 'text'}"], ['E1001:', 'E121: Undefined variable: notexists'], 1)
   v9.CheckDefExecAndScriptFailure(["var x = g:anint.member"], ['E715:', 'E488:'], 1)
   v9.CheckDefExecAndScriptFailure(["var x = g:dict_empty.member"], 'E716:', 1)

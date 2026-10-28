@@ -2057,10 +2057,14 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
 	    // {[expr]: value} uses an evaluated key.
 	    *arg = skipwhite(*arg + 1);
-	    if (compile_expr0(arg, cctx) == FAIL)
+	    if (compile_expr0_ext(arg, cctx, &is_const) == FAIL)
 		goto failret;
+	    // Only when the key is a constant the last instruction pushes
+	    // it, e.g. for "c ? 1 : 2" it only pushes the second value.
 	    isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
-	    if (isn->isn_type == ISN_PUSHNR)
+	    if (!is_const)
+		isn = NULL;
+	    if (isn != NULL && isn->isn_type == ISN_PUSHNR)
 	    {
 		char buf[NUMBUFLEN];
 
@@ -2069,7 +2073,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 		isn->isn_type = ISN_PUSHS;
 		isn->isn_arg.string = vim_strsave((char_u *)buf);
 	    }
-	    if (isn->isn_type == ISN_PUSHS)
+	    if (isn != NULL && isn->isn_type == ISN_PUSHS)
 		key = isn->isn_arg.string;
 	    else if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 		goto failret;
