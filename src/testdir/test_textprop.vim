@@ -1518,6 +1518,25 @@ func Test_textprop_in_empty_popup()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_emptying_buffer_with_textprop_text()
+  CheckScreendump
+
+  let lines =<< trim END
+    set cursorline wrap linebreak
+    call setline(1, "abc")
+    call prop_type_add("foo", {})
+    call prop_add(1, 3, #{text: "x", type: "foo"})
+  END
+  call writefile(lines, 'XtestPropEmptyingBuffer', 'D')
+  let buf = RunVimInTerminal('-S XtestPropEmptyingBuffer', {'rows': 6})
+  call VerifyScreenDump(buf, 'Test_emptying_buffer_with_textprop_text_1', {})
+  call term_sendkeys(buf, 'dd')
+  call VerifyScreenDump(buf, 'Test_emptying_buffer_with_textprop_text_2', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_textprop_with_syntax()
   CheckScreendump
 

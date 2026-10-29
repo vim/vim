@@ -3926,7 +3926,7 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int flags)
 	    set_keep_msg((char_u *)_(no_lines_msg), 0);
 
 	// FEAT_BYTEOFF already handled in there, don't worry 'bout it below
-	i = ml_replace((linenr_T)1, (char_u *)"", TRUE);
+	i = ml_replace_len((linenr_T)1, (char_u *)"", 1, TRUE, TRUE);
 	buf->b_ml.ml_flags |= ML_EMPTY;
 
 	return i;
