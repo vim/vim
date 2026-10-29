@@ -313,10 +313,12 @@ function s:get_vim_command_type(cmd_name)
 		debug
 		debuggreedy
 		def
+		defcompile
 		defer
 		delcommand
 		delete
 		delfunction
+		disassemble
 		doautoall
 		doautocmd
 		echo
