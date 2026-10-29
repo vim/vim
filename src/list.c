@@ -871,6 +871,14 @@ check_range_index_two(
 	long	    *n2,
 	int	    quiet)
 {
+    if (*n1 < 0)
+    {
+	if (l->lv_u.mat.lv_idx_item == li1)
+	    *n1 = l->lv_u.mat.lv_idx;
+	else
+	    *n1 = list_idx_of_item(l, li1);
+    }
+
     if (*n2 < 0)
     {
 	listitem_T	*ni = list_find(l, *n2);
@@ -881,12 +889,11 @@ check_range_index_two(
 		semsg(_(e_list_index_out_of_range_nr), *n2);
 	    return FAIL;
 	}
-	*n2 = list_idx_of_item(l, ni);
+	// list_find() caches the normalized index.
+	*n2 = l->lv_u.mat.lv_idx;
     }
 
     // Check that n2 isn't before n1.
-    if (*n1 < 0)
-	*n1 = list_idx_of_item(l, li1);
     if (*n2 < *n1)
     {
 	if (!quiet)
