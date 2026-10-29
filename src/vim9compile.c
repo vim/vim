@@ -3146,13 +3146,18 @@ compile_assign_list_check_length(cctx_T *cctx, cac_T *cac)
 
 	if (isn->isn_type == ISN_NEWLIST || isn->isn_type == ISN_NEWTUPLE)
 	{
+	    // a size of -1 is used for null_list and null_tuple, they have no
+	    // items
+	    int	    list_len = isn->isn_arg.number < 0
+					    ? 0 : (int)isn->isn_arg.number;
+
 	    did_check = TRUE;
 	    if (cac->cac_semicolon ?
-			isn->isn_arg.number < needed_list_len
-			: isn->isn_arg.number != needed_list_len)
+			list_len < needed_list_len
+			: list_len != needed_list_len)
 	    {
 		semsg(_(e_expected_nr_items_but_got_nr),
-			needed_list_len, (int)isn->isn_arg.number);
+			needed_list_len, list_len);
 		return FAIL;
 	    }
 	}
