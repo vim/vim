@@ -510,6 +510,9 @@ func Test_startup_background()
   call writefile(lines, 'Xbgvimrc', 'D')
   defer delete('Xbackground')
 
+  " Use the RGB background even when the parent terminal only has 8 colors.
+  let save_tgc = &termguicolors
+  set termguicolors
   hi StartupBackground guifg=#ffffff guibg=#000000 ctermfg=15 ctermbg=0
   let output = []
   let cmd = GetVimCommandCleanTerm() .. ' -u Xbgvimrc'
@@ -527,6 +530,7 @@ func Test_startup_background()
   finally
     call StopVimInTerminal(buf)
     hi clear StartupBackground
+    let &termguicolors = save_tgc
   endtry
 endfunc
 
