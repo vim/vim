@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2026 Sep 30
+" Last Change:	   2026 Sep 29
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -871,7 +871,7 @@ syn region	vimCatchPattern	contained	matchgroup=Delimiter start="\z([!#$%&'()*+,
 " =======
 if s:vim9script
   syn keyword	vim9Export	export	contained
-        \ skipwhite nextgroup=vim9Abstract,vim9ClassBody,vim9Const,vimDef,vimDefFold,vim9EnumBody,vim9Final,vim9InterfaceBody,vim9Type,vim9Var
+        \ skipwhite nextgroup=vim9Abstract,vim9ClassBody,vim9Const,vimDef,vimDefFold,vim9EnumBody,vim9Final,vimFunction,vimFunctionFold,vim9InterfaceBody,vim9Type,vim9Var
 endif
 
 " :filetype {{{3
