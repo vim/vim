@@ -36,6 +36,334 @@ func Test_previous_jump_mark()
   bwipe!
 endfunc
 
+func Test_visual_setpos_reverse_endpoint()
+  new
+  call setline(1, 'abcdefghijk')
+  for command in ["gg0v6l\<Esc>", "gg0v6lo\<Esc>"]
+    execute 'normal! ' .. command
+    call setpos("'<", getpos("'<"))
+    call setpos("'>", getpos("'>"))
+    call assert_equal([[0, 1, 1, 0], [0, 1, 7, 0]],
+          \ [getpos("'<"), getpos("'>")], command)
+    normal! gvy
+    call assert_equal('abcdefg', getreg('"'), command)
+
+    execute 'normal! ' .. command
+    call setpos("'<", [0, 1, 2, 0])
+    call assert_equal([[0, 1, 2, 0], [0, 1, 7, 0]],
+          \ [getpos("'<"), getpos("'>")], command)
+    normal! gvy
+    call assert_equal('bcdefg', getreg('"'), command)
+
+    execute 'normal! ' .. command
+    call setpos("'>", [0, 1, 6, 0])
+    call assert_equal([[0, 1, 1, 0], [0, 1, 6, 0]],
+          \ [getpos("'<"), getpos("'>")], command)
+    normal! gvy
+    call assert_equal('abcdef', getreg('"'), command)
+  endfor
+  bwipe!
+endfunc
+
+func Test_visual_setpos_stable_crossing()
+  new
+  call setline(1, 'abcdefghijk')
+  for reversed in [0, 1]
+    for positions in [[1, 7, 8, 10], [5, 9, 2, 4], [1, 7, 5, 8]]
+      for order in [['<', '>'], ['>', '<']]
+        execute "normal! gg0" .. repeat('l', positions[0] - 1) .. 'v'
+              \ .. repeat('l', positions[1] - positions[0])
+              \ .. (reversed ? 'o' : '') .. "\<Esc>"
+        let expected = positions[0 : 1]
+        for mark in order
+          let slot = mark == '<' ? 0 : 1
+          let expected[slot] = positions[slot + 2]
+          call setpos("'" .. mark, [0, 1, expected[slot], 0])
+          call assert_equal([[0, 1, min(expected), 0],
+                \ [0, 1, max(expected), 0]],
+                \ [getpos("'<"), getpos("'>")],
+                \ string([reversed, positions, order, mark]))
+        endfor
+        normal! gvy
+        call assert_equal(strpart(getline(1), min(expected) - 1,
+              \ max(expected) - min(expected) + 1), getreg('"'),
+              \ string([reversed, positions, order]))
+      endfor
+    endfor
+  endfor
+  bwipe!
+endfunc
+
+func Test_visual_setpos_endpoint_history()
+  new
+  call setline(1, 'abcdefghijk')
+  execute "normal! gg0v6l\<Esc>"
+  call setpos("'<", [0, 1, 8, 0])
+  let crossed = [getpos("'<"), getpos("'>")]
+  call setpos("'<", [0, 1, 5, 0])
+  call assert_equal([[0, 1, 5, 0], [0, 1, 7, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  normal! gvy
+  call assert_equal('efg', getreg('"'))
+
+  " The same anchor/cursor coordinates have a different assignment history.
+  execute "normal! gg06lvlo\<Esc>"
+  call assert_equal(crossed, [getpos("'<"), getpos("'>")])
+  call setpos("'<", [0, 1, 5, 0])
+  call assert_equal([[0, 1, 5, 0], [0, 1, 8, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  normal! gvy
+  call assert_equal('efgh', getreg('"'))
+
+  " A sorted getter does not rebind the setter after a crossing.
+  execute "normal! gg0v6l\<Esc>"
+  call setpos("'<", [0, 1, 8, 0])
+  call setpos("'<", getpos("'<"))
+  call assert_equal([[0, 1, 7, 0], [0, 1, 7, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  bwipe!
+endfunc
+
+func Test_visual_setpos_unset_identity()
+  new
+  call setline(1, 'abcdefghijk')
+  for command in ["gg0v6l\<Esc>", "gg0v6lo\<Esc>"]
+    for mark in ['<', '>']
+      for method in ['setpos', 'delmarks']
+        execute 'normal! ' .. command
+        if method == 'setpos'
+          call setpos("'" .. mark, [0, 0, 0, 0])
+        else
+          execute 'delmarks ' .. mark
+        endif
+        let remaining = mark == '<' ? 7 : 1
+        call assert_equal([[0, 1, remaining, 0], [0, 1, remaining, 0]],
+              \ [getpos("'<"), getpos("'>")], string([command, mark, method]))
+        call setpos("'" .. mark, [0, 1, mark == '<' ? 2 : 6, 0])
+        call setpos("'" .. (mark == '<' ? '>' : '<'),
+              \ [0, 1, mark == '<' ? 10 : 2, 0])
+        call assert_equal([[0, 1, 2, 0], [0, 1, mark == '<' ? 10 : 6, 0]],
+              \ [getpos("'<"), getpos("'>")], string([command, mark, method]))
+      endfor
+    endfor
+    execute 'normal! ' .. command
+    delmarks <>
+    call assert_equal([[0, 0, 0, 0], [0, 0, 0, 0]],
+          \ [getpos("'<"), getpos("'>")])
+    call setpos("'<", [0, 1, 7, 0])
+    call setpos("'>", [0, 1, 1, 0])
+    call setpos("'<", [0, 1, 4, 0])
+    call assert_equal([[0, 1, 1, 0], [0, 1, 4, 0]],
+          \ [getpos("'<"), getpos("'>")])
+  endfor
+
+  " delmarks! does not clear Visual marks or their endpoint identities.
+  execute "normal! gg0v6lo\<Esc>"
+  delmarks!
+  call setpos("'<", [0, 1, 8, 0])
+  call assert_equal([[0, 1, 7, 0], [0, 1, 8, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call setpos("'>", [0, 1, 10, 0])
+  call assert_equal([[0, 1, 8, 0], [0, 1, 10, 0]],
+        \ [getpos("'<"), getpos("'>")])
+
+  " Equal endpoints bind '<' to the anchor and '>' to the cursor.
+  execute "normal! gg03lv\<Esc>"
+  call setpos("'<", [0, 1, 6, 0])
+  call setpos("'>", [0, 1, 8, 0])
+  call assert_equal([[0, 1, 6, 0], [0, 1, 8, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  normal! gvy
+  call assert_equal('fgh', getreg('"'))
+  bwipe!
+endfunc
+
+func Test_visual_setcharpos_crossing()
+  new
+  call setline(1, 'aβcδεzqt')
+  for command in ["gg0v4l\<Esc>", "gg0v4lo\<Esc>"]
+    execute 'normal! ' .. command
+    call setcharpos("'<", [0, 1, 6, 0])
+    call setcharpos("'>", [0, 1, 7, 0])
+    call assert_equal([[0, 1, 6, 0], [0, 1, 7, 0]],
+          \ [getcharpos("'<"), getcharpos("'>")])
+    call assert_equal([[0, 1, 9, 0], [0, 1, 10, 0]],
+          \ [getpos("'<"), getpos("'>")])
+    normal! gvy
+    call assert_equal('zq', getreg('"'))
+  endfor
+  bwipe!
+endfunc
+
+func Test_visual_setpos_virtual_identity()
+  let save_ve = &virtualedit
+  defer execute('let &virtualedit = ' .. string(save_ve))
+  set virtualedit=all
+  new
+  call setline(1, 'abc')
+  for command in ["gg$v2l\<Esc>", "gg$v2lo\<Esc>"]
+    execute 'normal! ' .. command
+    call setpos("'<", [0, 1, 3, 3])
+    call setpos("'>", [0, 1, 3, 5])
+    call assert_equal([[0, 1, 3, 3], [0, 1, 3, 5]],
+          \ [getpos("'<"), getpos("'>")])
+    normal! gv
+    call assert_equal([[0, 1, 3, 3], [0, 1, 3, 5]],
+          \ command =~ 'o' ? [getpos('.'), getpos('v')]
+          \ : [getpos('v'), getpos('.')])
+    normal! y
+    call assert_equal('c', getreg('"'))
+  endfor
+  bwipe!
+endfunc
+
+func Test_visual_setpos_line_and_block()
+  new
+  call setline(1, repeat(['abcdefghijk'], 5))
+  for command in ["ggV2j\<Esc>", "ggV2jo\<Esc>"]
+    execute 'normal! ' .. command
+    call setpos("'<", [0, 4, 5, 0])
+    call setpos("'>", [0, 5, 2, 0])
+    call assert_equal([[0, 4, 1, 0], [0, 5, v:maxcol, 0]],
+          \ [getpos("'<"), getpos("'>")])
+    normal! gvy
+    call assert_equal("abcdefghijk\nabcdefghijk\n", getreg('"'))
+  endfor
+  for corners in [[1, 2, 3, 6], [1, 6, 3, 2],
+        \ [3, 2, 1, 6], [3, 6, 1, 2]]
+    call cursor(corners[0], corners[1])
+    execute "normal! \<C-V>" .. corners[2] .. 'G0'
+          \ .. repeat('l', corners[3] - 1) .. "\<Esc>"
+    call setpos("'<", [0, 4, 5, 0])
+    call setpos("'>", [0, 5, 2, 0])
+    call assert_equal([[0, 4, 5, 0], [0, 5, 2, 0]],
+          \ [getpos("'<"), getpos("'>")], string(corners))
+    normal! gvy
+    call assert_equal("bcde\nbcde", getreg('"'), string(corners))
+  endfor
+  bwipe!
+endfunc
+
+func Test_visual_setpos_new_selection_identity()
+  new
+  call setline(1, 'abcdefghijk')
+  execute "normal! gg0v6lo\<Esc>"
+  call feedkeys('gg02lv2l', 'xt')
+  call assert_equal('v', mode())
+  call setpos("'<", [0, 1, 8, 0])
+  call setpos("'>", [0, 1, 10, 0])
+  call assert_equal([[0, 1, 8, 0], [0, 1, 10, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call feedkeys("\<Esc>", 'xt')
+  call assert_equal([[0, 1, 3, 0], [0, 1, 5, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call setpos("'<", [0, 1, 6, 0])
+  call assert_equal([[0, 1, 5, 0], [0, 1, 6, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call setpos("'>", [0, 1, 9, 0])
+  normal! gvy
+  call assert_equal('fghi', getreg('"'))
+  bwipe!
+endfunc
+
+func Test_visual_setpos_active_gv_identity()
+  new
+  call setline(1, 'abcdefghijk')
+  execute "normal! gg0v6l\<Esc>"
+  call feedkeys('gg08lv3hgv', 'xt')
+  call assert_equal('v', mode())
+  call assert_equal([0, 1, 1, 0], getpos('v'))
+  call assert_equal([0, 1, 7, 0], getpos('.'))
+  call assert_equal([[0, 1, 6, 0], [0, 1, 9, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call setpos("'<", [0, 1, 10, 0])
+  call assert_equal([[0, 1, 9, 0], [0, 1, 10, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call setpos("'>", [0, 1, 11, 0])
+  call feedkeys('gv', 'xt')
+  call assert_equal([0, 1, 11, 0], getpos('v'))
+  call assert_equal([0, 1, 10, 0], getpos('.'))
+  call assert_equal([[0, 1, 1, 0], [0, 1, 7, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call setpos("'<", [0, 1, 8, 0])
+  call assert_equal([[0, 1, 7, 0], [0, 1, 8, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call feedkeys("\<Esc>", 'xt')
+  bwipe!
+endfunc
+
+func Test_visual_setpos_put_and_operator()
+  new
+  call setline(1, 'abcdefghijk')
+  for command in ['gg0v6ly', 'gg0v6loy']
+    execute 'normal! ' .. command
+    call setpos("'<", [0, 1, 8, 0])
+    call assert_equal([[0, 1, 7, 0], [0, 1, 8, 0]],
+          \ [getpos("'<"), getpos("'>")], command)
+    call setpos("'>", [0, 1, 10, 0])
+    normal! gvy
+    call assert_equal('hij', getreg('"'), command)
+  endfor
+
+  call setreg('a', 'XYZ')
+  normal! gg02lv2lo"ap
+  call assert_equal('abXYZfghijk', getline(1))
+  call assert_equal([[0, 1, 3, 0], [0, 1, 5, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call setpos("'<", [0, 1, 6, 0])
+  call assert_equal([[0, 1, 5, 0], [0, 1, 6, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call setpos("'>", [0, 1, 8, 0])
+  normal! gvy
+  call assert_equal('fgh', getreg('"'))
+  bwipe!
+endfunc
+
+func Test_visual_setpos_adjust_identity()
+  new
+  call setline(1, ['a', 'b', 'c', 'd', 'e', 'f'])
+  execute "normal! 3G0vgg\<Esc>"
+  call setpos("'<", [0, 4, 1, 0])
+  call setpos("'>", [0, 5, 1, 0])
+  call append(0, 'pad')
+  call assert_equal([[0, 5, 1, 0], [0, 6, 1, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call setpos("'<", [0, 3, 1, 0])
+  call assert_equal([[0, 3, 1, 0], [0, 6, 1, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  normal! gvy
+  call assert_equal("b\nc\nd\ne", getreg('"'))
+  bwipe!
+endfunc
+
+func Test_visual_setpos_target_buffer()
+  new
+  call setline(1, 'abcdefghijk')
+  let first = bufnr()
+  let firstwin = win_getid()
+  execute "normal! gg0v6lo\<Esc>"
+  new
+  call setline(1, 'abcdefghijk')
+  let second = bufnr()
+  let secondwin = win_getid()
+  execute "normal! gg0v6l\<Esc>"
+  call setpos("'<", [first, 1, 8, 0])
+  call win_gotoid(firstwin)
+  call assert_equal([[0, 1, 7, 0], [0, 1, 8, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call win_gotoid(secondwin)
+  call setpos("'>", [first, 1, 10, 0])
+  call assert_equal([[0, 1, 1, 0], [0, 1, 7, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call win_gotoid(firstwin)
+  call assert_equal([[0, 1, 8, 0], [0, 1, 10, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  normal! gvy
+  call assert_equal('hij', getreg('"'))
+  execute 'bwipe! ' .. first
+  execute 'bwipe! ' .. second
+endfunc
+
 func Test_setpos()
   new Xone
   let onebuf = bufnr('%')
@@ -45,6 +373,110 @@ func Test_setpos()
   let twobuf = bufnr('%')
   let twowin = win_getid()
   call setline(1, ['aaa', 'bbb', 'ccc'])
+
+  " setpos() uses the same buffer-relative visual marks as getpos()
+  new Xvisual
+  call setline(1, 'hello world')
+  for normal_cmd in ["normal! gg0vw\<Esc>", "normal! gg0vwo\<Esc>"]
+    execute normal_cmd
+    call setpos("'<", [0, 1, 2, 0])
+    call assert_equal([[0, 1, 2, 0], [0, 1, 7, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+    call setpos("'>", [0, 1, 6, 0])
+    call assert_equal([[0, 1, 2, 0], [0, 1, 6, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+
+    execute normal_cmd
+    call setpos("'>", [0, 1, 6, 0])
+    call assert_equal([[0, 1, 1, 0], [0, 1, 6, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+
+    " Crossings preserve setter identities while getters stay ordered.
+    call setpos("'<", [0, 1, 8, 0])
+    call assert_equal([[0, 1, 6, 0], [0, 1, 8, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+    call setpos("'>", [0, 1, 10, 0])
+    call assert_equal([[0, 1, 8, 0], [0, 1, 10, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+    call setpos("'>", [0, 1, 4, 0])
+    call assert_equal([[0, 1, 4, 0], [0, 1, 8, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+    call setpos("'<", [0, 1, 2, 0])
+    call assert_equal([[0, 1, 2, 0], [0, 1, 4, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+
+    " Deleting and recreating either end preserves the other end.
+    execute normal_cmd
+    call setpos("'<", [0, 0, 0, 0])
+    call assert_equal([[0, 1, 7, 0], [0, 1, 7, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+    call setpos("'<", [0, 1, 2, 0])
+    call assert_equal([[0, 1, 2, 0], [0, 1, 7, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+    normal! gvy
+    call assert_equal('ello w', getreg('"'), normal_cmd)
+
+    execute normal_cmd
+    call setpos("'>", [0, 0, 0, 0])
+    call assert_equal([[0, 1, 1, 0], [0, 1, 1, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+    call setpos("'>", [0, 1, 6, 0])
+    call assert_equal([[0, 1, 1, 0], [0, 1, 6, 0]],
+          \ [getpos("'<"), getpos("'>")], normal_cmd)
+    normal! gvy
+    call assert_equal('hello ', getreg('"'), normal_cmd)
+  endfor
+
+  " While Visual mode is active the marks still refer to the last completed
+  " selection.  Leaving Visual mode replaces them with the current selection.
+  execute "normal! gg0vwo\<Esc>"
+  call feedkeys("gg02lv2l", 'xt')
+  call assert_equal('v', mode())
+  call setpos("'<", [0, 1, 2, 0])
+  call assert_equal([[0, 1, 2, 0], [0, 1, 7, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  call feedkeys("\<Esc>", 'xt')
+  call assert_equal([[0, 1, 3, 0], [0, 1, 5, 0]],
+        \ [getpos("'<"), getpos("'>")])
+
+  " Moving one logical mark past the other must not discard the old range.
+  %delete _
+  call setline(1, ['one', 'two', 'three'])
+  normal! 2GVjy
+  call setpos("'>", [0, 1, 1, 0])
+  call assert_equal([[0, 1, 1, 0], [0, 2, v:maxcol, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  '<,'>d
+  call assert_equal(['three'], getline(1, '$'))
+
+  " Check crossing the line boundary in the other direction as well.
+  call setline(1, ['one', 'two', 'three'])
+  normal! ggVjy
+  call setpos("'<", [0, 3, 1, 0])
+  call assert_equal([[0, 2, 1, 0], [0, 3, v:maxcol, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  '<,'>d
+  call assert_equal(['one'], getline(1, '$'))
+  bwipe!
+
+  " visual marks can still be initialized independently
+  new Xvisual
+  call setline(1, 'hello world')
+  call setpos("'<", [0, 1, 2, 0])
+  call setpos("'>", [0, 1, 4, 0])
+  call assert_equal([[0, 1, 2, 0], [0, 1, 4, 0]],
+        \ [getpos("'<"), getpos("'>")])
+  bwipe!
+
+  " setcharpos() uses the same visual mark path
+  new Xvisual
+  call setline(1, 'aβcδεz')
+  execute "normal! gg0v$\<Esc>"
+  call setcharpos("'<", [0, 1, 2, 0])
+  call setcharpos("'>", [0, 1, 5, 0])
+  call assert_equal([[0, 1, 2, 0], [0, 1, 5, 0]],
+        \ [getcharpos("'<"), getcharpos("'>")])
+  bwipe!
 
   " for the cursor the buffer number is ignored
   call setpos(".", [0, 2, 1, 0])
