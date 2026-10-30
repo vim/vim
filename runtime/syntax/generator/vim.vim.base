@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2026 Sep 20
+" Last Change:	   2026 Oct 29
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -299,7 +299,7 @@ syn cluster vimExprList	contains=@vimSpecialVar,@vimFunc,vimNumber,vimOper,vimOp
 syn cluster vim9ExprList	contains=vim9Boolean,vim9LambdaParams,vim9Null
 
 " Commands {{{2
-syn cluster vimCmdList	contains=@vim9CmdList,@vimExUserCmdList,vimAbb,vimAt,vimAugroup,vimAutocmd,vimBehave,vimBreakadd,vimBreakdel,vimBreaklist,vimBuffer,vimCall,vimCatch,vimCd,vimCommand,vimCommandModifier,vimConst,vimCopy,vimDebug,vimDebuggreedy,vimDef,vimDefFold,vimDefer,vimDelcommand,vimDelete,vimDelfunction,vimDoCommand,vimDoautocmd,vimTextInputFold,@vimEcho,vimElse,vimElseif,vimEnddef,vimEndfunction,vimEndif,vimEquals,vimEval,vimExFilter,vimExecute,vimExtCmd,vimFiletype,vimFor,vimFunction,vimFunctionFold,vimGlobal,vimGrep,vimGrepadd,vimHelp,vimHelpgrep,vimHighlight,vimHistory,vimIf,vimImport,vimLanguage,vimLet,vimLoadkeymap,vimLockvar,vimLua,vimMake,vimMap,vimMark,vimMatch,vimMenu,vimMenutranslate,vimMzScheme,vimNormal,vimPackadd,vimPerl,vimPound,vimProfdel,vimProfile,vimPrompt,vimPython,vimPython3,vimPythonX,vimRedir,vimReturn,vimRuby,vimRuntime,vimSet,vimShiftLeft,vimShiftRight,vimSleep,vimSort,vimSubst,vimSynColor,vimSynLink,vimSyntax,vimSyntime,vimTcl,vimTerminal,vimThrow,vimUniq,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimUsrCmd,vimVimgrep,vimVimgrepadd,vimWhile,vimWincmd,vimWrite
+syn cluster vimCmdList	contains=@vim9CmdList,@vimExUserCmdList,vimAbb,vimAt,vimAugroup,vimAutocmd,vimBehave,vimBreakadd,vimBreakdel,vimBreaklist,vimBuffer,vimCall,vimCatch,vimCd,vimCommand,vimCommandModifier,vimConst,vimCopy,vimDebug,vimDebuggreedy,vimDef,vimDefcompile,vimDisassemble,vimDefFold,vimDefer,vimDelcommand,vimDelete,vimDelfunction,vimDoCommand,vimDoautocmd,vimTextInputFold,@vimEcho,vimElse,vimElseif,vimEnddef,vimEndfunction,vimEndif,vimEquals,vimEval,vimExFilter,vimExecute,vimExtCmd,vimFiletype,vimFor,vimFunction,vimFunctionFold,vimGlobal,vimGrep,vimGrepadd,vimHelp,vimHelpgrep,vimHighlight,vimHistory,vimIf,vimImport,vimLanguage,vimLet,vimLoadkeymap,vimLockvar,vimLua,vimMake,vimMap,vimMark,vimMatch,vimMenu,vimMenutranslate,vimMzScheme,vimNormal,vimPackadd,vimPerl,vimPound,vimProfdel,vimProfile,vimPrompt,vimPython,vimPython3,vimPythonX,vimRedir,vimReturn,vimRuby,vimRuntime,vimSet,vimShiftLeft,vimShiftRight,vimSleep,vimSort,vimSubst,vimSynColor,vimSynLink,vimSyntax,vimSyntime,vimTcl,vimTerminal,vimThrow,vimUniq,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimUsrCmd,vimVimgrep,vimVimgrepadd,vimWhile,vimWincmd,vimWrite
 syn cluster vim9CmdList	contains=vim9Abstract,vim9ClassBody,vim9Const,vim9EnumBody,vim9Export,vim9Final,vim9For,vim9InterfaceBody,vim9Type,vim9Var,vim9Wincmd
 
 syn match	vimCmdStart	contained	":\+"	skipwhite nextgroup=vimCmdStart,@vimRange,@vimCmdList,vimComment
@@ -690,6 +690,12 @@ syn match	vimDebuggreedy_	contained	"debugg\%[reedy]\>"
 " ======
 syn keyword	vimDefer	contained	defe[r]	skipwhite nextgroup=@vimFunc,vim9LambdaParams
 
+" :defcompile {{{3
+" ===========
+syn keyword	vimDefcompile	contained	defc[ompile]	skipwhite nextgroup=vimDefcompileArg,vimVar,vim9UserFunc,vimCmdSep,vimComment,vim9Comment
+syn keyword	vimDefcompileArg	contained	debug	skipwhite nextgroup=vimVar,vim9UserFunc
+syn keyword	vimDefcompileArg	contained	profile	skipwhite nextgroup=vimVar,vim9UserFunc
+
 " :delete {{{3
 " =======
 " TODO: handle Vim9
@@ -709,6 +715,12 @@ syn match	vimDeleteRegister	contained	+[-*+_]\|\\"+	skipwhite nextgroup=vimDelet
 syn match	vimDeleteRegister	contained	+\<\a+	skipwhite nextgroup=vimDeleteCount,vimPrintFlag
 
 syn match	vimDeleteCount	contained	"\d\+"	skipwhite nextgroup=vimPrintFlag
+
+" :disassemble {{{3
+" ============
+syn keyword	vimDisassemble	contained	disa[ssemble]	skipwhite nextgroup=vimDisassembleArg,vimVar,vim9UserFunc
+syn keyword	vimDisassembleArg	contained	debug	skipwhite nextgroup=vimVar,vim9UserFunc
+syn keyword	vimDisassembleArg	contained	profile	skipwhite nextgroup=vimVar,vim9UserFunc
 
 " :echo, :execute {{{3
 " ===============
@@ -2839,7 +2851,7 @@ syn match	vimUserFunc	contained	"\<\%(g:\)\=\%(\h\w*#\)\+\h\w*\ze\%(\s*(\|<.*>(\
 syn match	vimUserFunc	contained	"\%(\<[sgbwtlav]:\|<[sS][iI][dD]>\)\h\w*\ze\%(\s*(\|<.*>(\)"		skipwhite nextgroup=vimOperParen,vim9TypeArgs	contains=vimVarScope,vimNotation
 
 Vim9 syn match	vim9UserFunc	contained	"\s\=\%([sgbwtv]:\|<[sS][iI][dD]>\)\=\h\w*\ze[(<]"			skipwhite nextgroup=vimOperParen,vim9TypeArgs	contains=vimVarScope,vimNotation,vim9MethodName,vim9Super,vim9This,vimWhitespace
-Vim9 syn match	vim9UserFunc	contained	"\s\=\%(g:\)\=\%(\h\w*#\)\+\h\w*\ze[(<]"			skipwhite nextgroup=vimOperParen		contains=vimVarScope,vimWhitespace
+Vim9 syn match	vim9UserFunc	contained	"\s\=\%(g:\)\=\%(\h\w*#\)\+\h\w*\ze[(<]"			skipwhite nextgroup=vimOperParen,vim9TypeArgs	contains=vimVarScope,vimWhitespace
 Vim9 syn match	vim9Func	contained	"\l\w*\ze("					skipwhite nextgroup=vimOperParen		contains=vimFuncName
 " higher priority for matches in command position
 Vim9 syn match	vim9FuncWrap	contained	"\s\+\l\w*\ze("					contains=vim9Func transparent
@@ -2994,6 +3006,8 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimDef	vimCommand
  hi def link vimDefBang	vimBang
  hi def link vimDefComment	vim9Comment
+ hi def link vimDefcompile	vimCommand
+ hi def link vimDefcompileArg	Special
  hi def link vimDefer	vimCommand
  hi def link vimDefParam	vimVar
  hi def link vimDelcommand	vimCommand
@@ -3004,6 +3018,8 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimDeleteRegister	Constant
  hi def link vimDelfunction	vimCommand
  hi def link vimDelfunctionBang	vimBang
+ hi def link vimDisassemble	vimCommand
+ hi def link vimDisassembleArg	Special
  hi def link vimDoautocmd	vimCommand
  hi def link vimDoautocmdMod	Special
  hi def link vimDoCommand	vimCommand
