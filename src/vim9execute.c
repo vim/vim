@@ -2812,6 +2812,11 @@ execute_unletindex(isn_T *iptr, ectx_T *ectx)
 	    }
 	}
     }
+    else if (tv_dest->v_type == VAR_TUPLE)
+    {
+	status = FAIL;
+	emsg(_(e_tuple_is_immutable));
+    }
     else
     {
 	status = FAIL;
