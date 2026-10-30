@@ -6397,6 +6397,7 @@ base64_decode()	builtin.txt	/*base64_decode()*
 base64_encode()	builtin.txt	/*base64_encode()*
 base_font_name_list	mbyte.txt	/*base_font_name_list*
 basic.vim	syntax.txt	/*basic.vim*
+bats.vim	syntax.txt	/*bats.vim*
 beep	options.txt	/*beep*
 beos	os_beos.txt	/*beos*
 better-python-interface	version7.txt	/*better-python-interface*
@@ -7560,6 +7561,7 @@ ft-asy-syntax	syntax.txt	/*ft-asy-syntax*
 ft-awk-plugin	filetype.txt	/*ft-awk-plugin*
 ft-bash-syntax	syntax.txt	/*ft-bash-syntax*
 ft-basic-syntax	syntax.txt	/*ft-basic-syntax*
+ft-bats-syntax	syntax.txt	/*ft-bats-syntax*
 ft-beancount-plugin	filetype.txt	/*ft-beancount-plugin*
 ft-c-omni	insert.txt	/*ft-c-omni*
 ft-c-syntax	syntax.txt	/*ft-c-syntax*

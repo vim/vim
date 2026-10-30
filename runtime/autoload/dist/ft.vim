@@ -1855,6 +1855,8 @@ const ft_from_ext = {
   "bazelrc": "bazelrc",
   # Batch file for MSDOS. See dist#ft#FTsys for *.sys
   "bat": "dosbatch",
+  # Bats (Bash Automated Testing System)
+  "bats": "bats",
   # BC calculator
   "bc": "bc",
   # BDF font
