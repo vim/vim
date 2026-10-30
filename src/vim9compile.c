@@ -4835,9 +4835,10 @@ compile_def_function_body(
 	    case CMD_lua:
 	    case CMD_mzscheme:
 	    case CMD_perl:
+	    case CMD_python:
 	    case CMD_py3:
 	    case CMD_python3:
-	    case CMD_python:
+	    case CMD_pyx:
 	    case CMD_pythonx:
 	    case CMD_ruby:
 	    case CMD_tcl:
