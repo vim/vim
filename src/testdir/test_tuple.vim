@@ -335,6 +335,25 @@ func Test_tuple_slice()
   call v9.CheckSourceLegacyAndVim9Success(lines)
 endfunc
 
+" Test for the type of a tuple slice
+def Test_tuple_slice_type()
+  var lines =<< trim END
+    var s: tuple<string> = (1, 'a')[1 :]
+    assert_equal(('a',), s)
+    assert_equal('tuple<string>', typename((1, 'a')[1 :]))
+    var v: tuple<...list<number>> = (1, 2, 3)
+    var w: tuple<...list<number>> = v[1 :]
+    assert_equal((2, 3), w)
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+    var t: tuple<number, string> = (1, 'a')
+    var s: tuple<number, string> = t[1 :]
+  END
+  v9.CheckSourceDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected tuple<number, string> but got tuple<string>')
+enddef
+
 " Test for concatenating tuples
 func Test_tuple_concatenate()
   let lines =<< trim END

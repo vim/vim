@@ -3754,11 +3754,10 @@ def Test_disassemble_tuple_indexing()
     '11 PUSHNR 1\_s*' ..
     '12 PUSHNR 2\_s*' ..
     '13 TUPLESLICE\_s*' ..
-    '14 SETTYPE tuple<number, number, number>\_s*' ..
-    '15 STORE $2\_s*' ..
+    '14 STORE $2\_s*' ..
     'return t\_s*' ..
-    '16 LOAD $0\_s*' ..
-    '17 RETURN', g:instr)
+    '15 LOAD $0\_s*' ..
+    '16 RETURN', g:instr)
   unlet g:instr
 enddef
 
@@ -3927,9 +3926,8 @@ def Test_disassemble_tuple_const()
     '8 PUSHNR 1\_s*' ..
     '9 PUSHNR 2\_s*' ..
     '10 TUPLESLICE\_s*' ..
-    '11 SETTYPE tuple<number, number, number>\_s*' ..
-    '12 STORE $1\_s*' ..
-    '13 RETURN void', g:instr)
+    '11 STORE $1\_s*' ..
+    '12 RETURN void', g:instr)
   unlet g:instr
 enddef
 
