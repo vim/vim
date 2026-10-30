@@ -1890,6 +1890,31 @@ def Test_disassemble_object_cast()
         g:instr)
 enddef
 
+" Disassemble instructions for a type alias for "object<any>"
+def Test_disassemble_typealias_object_any()
+  var lines =<< trim END
+    vim9script
+    type AnyObj = object<any>
+    def Foo()
+      var o: AnyObj = g:val
+      var l: list<AnyObj> = []
+    enddef
+    g:instr = execute('disassemble Foo')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Foo\_s*' ..
+    'var o: AnyObj = g:val\_s*' ..
+    '0 LOADG g:val\_s*' ..
+    '1 CHECKTYPE object<any> stack\[-1\]\_s*' ..
+    '2 STORE $0\_s*' ..
+    'var l: list<AnyObj> = \[\]\_s*' ..
+    '3 NEWLIST size 0\_s*' ..
+    '4 SETTYPE list<object<any>>\_s*' ..
+    '5 STORE $1\_s*' ..
+    '6 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
 def s:Computing()
   var nr = 3
   var nrres = nr + 7
@@ -3400,6 +3425,39 @@ def Test_checktype_float()
     '5 OPANY +\_s*' ..
     '6 STORE $0\_s*' ..
     '7 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble instructions for a type alias for "bool" and "string", the
+" conversion must be the same as for the type itself
+def Test_disassemble_typealias_static_type()
+  var lines =<< trim END
+    vim9script
+    type MyBool = bool
+    type MyStr = string
+    def Foo()
+      var b: MyBool = 1
+      var s: MyStr = 'a'
+      s ..= 1
+    enddef
+    g:instr = execute('disassemble Foo')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Foo\_s*' ..
+    'var b: MyBool = 1\_s*' ..
+    '0 PUSHNR 1\_s*' ..
+    '1 2BOOL -1 (!!val)\_s*' ..
+    '2 STORE $0\_s*' ..
+    "var s: MyStr = 'a'\\_s*" ..
+    '3 PUSHS "a"\_s*' ..
+    '4 STORE $1\_s*' ..
+    's ..= 1\_s*' ..
+    '5 LOAD $1\_s*' ..
+    '6 PUSHNR 1\_s*' ..
+    '7 2STRING stack\[-1\]\_s*' ..
+    '8 CONCAT size 2\_s*' ..
+    '9 STORE $1\_s*' ..
+    '10 RETURN void', g:instr)
   unlet g:instr
 enddef
 

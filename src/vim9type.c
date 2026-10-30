@@ -2117,7 +2117,11 @@ parse_type_user_defined(
 	    if (depth > parse_max_depth)
 		parse_max_depth = depth;
 
-	    type_T *type = copy_type(tv.vval.v_typealias->ta_type, type_gap);
+	    // A static type is never freed and may be compared by pointer
+	    // (e.g. with t_bool), use it as-is.
+	    type_T *type = tv.vval.v_typealias->ta_type;
+	    if ((type->tt_flags & TTFLAG_STATIC) == 0)
+		type = copy_type(type, type_gap);
 	    *arg += len;
 	    clear_tv(&tv);
 	    // Skip over ".TypeName".
@@ -2932,13 +2936,7 @@ f_typename(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     ga_init2(&type_list, sizeof(type_T *), 10);
     if (argvars[0].v_type == VAR_TYPEALIAS)
-    {
 	type = copy_type(argvars[0].vval.v_typealias->ta_type, &type_list);
-	// A type alias for a class has the type set to VAR_OBJECT.  Change it
-	// to VAR_CLASS, so that the name is "typealias<class<xxx>>"
-	if (type->tt_type == VAR_OBJECT)
-	    type->tt_type = VAR_CLASS;
-    }
     else
 	type = typval2type(argvars, get_copyID(), &type_list, TVTT_DO_MEMBER);
     name = type_name(type, &tofree);
