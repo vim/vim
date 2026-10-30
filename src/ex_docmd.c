@@ -2514,9 +2514,11 @@ do_one_cmd(
 	    case CMD_dsearch:
 	    case CMD_dsplit:
 	    case CMD_echo:
+	    case CMD_echoconsole:
 	    case CMD_echoerr:
 	    case CMD_echomsg:
 	    case CMD_echon:
+	    case CMD_echowindow:
 	    case CMD_eval:
 	    case CMD_execute:
 	    case CMD_filter:
