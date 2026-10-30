@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Oct 18
+# Last Change:		2026 Oct 30
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -2542,6 +2542,8 @@ const ft_from_ext = {
   "ninja": "ninja",
   # Nix
   "nix": "nix",
+  # NLP++
+  "nlp": "nlp",
   # Norg
   "norg": "norg",
   # Novell netware batch files
