@@ -1,5 +1,5 @@
 " Vim syntax file
-" Language:		PKL
+" Language:		Pkl
 " Maintainer:		Jan Claußen <jan DOT claussen10 AT web DOT de>
 " Last Change:		2026 Oct 20
 
