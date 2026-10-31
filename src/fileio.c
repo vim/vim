@@ -4723,6 +4723,7 @@ buf_reload(buf_T *buf, int orig_mode, int reload_options)
 	curwin->w_cursor = old_cursor;
 	check_cursor();
 	update_topline();
+	check_lnums(FALSE);
 	curbuf->b_keep_filetype = false;
 #ifdef FEAT_FOLDING
 	{
