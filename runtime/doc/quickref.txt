@@ -1,4 +1,4 @@
-*quickref.txt*	For Vim version 9.2.  Last change: 2026 May 17
+*quickref.txt*	For Vim version 9.2.  Last change: 2026 Oct 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -965,6 +965,7 @@ Short explanation of each option:		*option-list*
 'tagstack'	  'tgst'    push tags onto the tag stack
 'tcldll'		    name of the Tcl dynamic library
 'term'			    name of the terminal
+'termbackgroundwait' 'tbw'   time to wait for background detection at startup
 'termbidi'	  'tbidi'   terminal takes care of bi-directionality
 'termencoding'	  'tenc'    character encoding used by the terminal
 'termguicolors'	  'tgc'     use GUI colors for the terminal

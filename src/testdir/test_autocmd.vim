@@ -5094,6 +5094,8 @@ func Test_Changed_ChangedI()
   call writefile(['one', 'two', 'three'], 'XTextChangedI2', 'D')
   let before =<< trim END
       set ttimeout ttimeoutlen=10
+      " SafeState must also work when only the background color was queried.
+      set t_RF=
       let [g:autocmd_n, g:autocmd_i] = ['','']
 
       func TextChangedAutocmd(char)

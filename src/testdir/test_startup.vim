@@ -495,6 +495,160 @@ func Test_reverse()
   call delete('Xtest_reverse')
 endfunc
 
+" Detect the terminal background before the first screen clear and -c redraw.
+func Test_startup_background()
+  CheckRunVimInTerminal
+  CheckFeature termresponse
+  CheckFeature termguicolors
+  CheckUnix
+
+  let lines =<< trim END
+    set nocompatible
+    set termguicolors termbackgroundwait=1000
+    colorscheme lunaperche
+  END
+  call writefile(lines, 'Xbgvimrc', 'D')
+  let after =<< trim END
+    " The OSC notification must not interfere with startup feedkeys().
+    call feedkeys("istartup input\<Esc>", 'xt')
+    sleep 100m
+    call writefile([&background, getline(1)], 'Xbackground')
+  END
+  call writefile(after, 'Xbgafter', 'D')
+  defer delete('Xbackground')
+
+  " Use the RGB background even when the parent terminal only has 8 colors.
+  let save_tgc = &termguicolors
+  set termguicolors
+  hi StartupBackground guifg=#ffffff guibg=#000000 ctermfg=15 ctermbg=0
+  let output = []
+  let cmd = GetVimCommandCleanTerm() .. ' -u Xbgvimrc'
+        \ .. ' -c "redraw! | source Xbgafter"'
+  let buf = term_start(cmd, #{term_rows: 10,
+        \ term_highlight: 'StartupBackground',
+        \ env: #{TERM: 'xterm', COLORFGBG: ''},
+        \ out_cb: {ch, msg -> add(output, msg)}})
+  try
+    call WaitForAssert({-> assert_true(getfsize('Xbackground') > 0)})
+    call assert_equal(['dark', 'startup input'], readfile('Xbackground'))
+    " A final screendump would miss the flash: check the first background SGR.
+    call assert_equal("\<Esc>[48;2;0;0;0m",
+          \ matchstr(join(output, ''), '\e\[48;2;[0-9;]*m'))
+  finally
+    call StopVimInTerminal(buf)
+    hi clear StartupBackground
+    let &termguicolors = save_tgc
+  endtry
+endfunc
+
+" The custom query gets no reply from the terminal, so waiting must time out.
+" Record both the requested delays and the time spent before startup commands.
+func RunStartupBackgroundWait(settings)
+  let lines = [
+        \ 'set nocompatible t_RV= t_RF= t_u7=',
+        \ 'set t_RB=background-query',
+        \ ] + a:settings + ['call ch_logfile("Xbgwaitlog", "wo")',
+        \ 'let g:bgwaitstart = reltime()']
+  call writefile(lines, 'Xbgwaitvimrc', 'D')
+  let after =<< trim END
+    let elapsed = float2nr(reltimefloat(reltime(g:bgwaitstart)) * 1000)
+    call test_override('ui_delay', 0)
+    call ch_logfile('')
+    call feedkeys('', 'x')
+    call writefile([string(elapsed), getline(1)], 'Xbgwaitdone')
+  END
+  call writefile(after, 'Xbgwaitafter', 'D')
+  defer delete('Xbgwaitlog')
+  defer delete('Xbgwaitdone')
+
+  let cmd = GetVimCommandCleanTerm()
+        \ .. ' -u Xbgwaitvimrc -S Xbgwaitafter'
+  let buf = term_start(cmd, #{term_rows: 10,
+        \ env: #{TERM: 'xterm', COLORFGBG: ''}})
+  try
+    call WaitForAssert({-> assert_true(getfsize('Xbgwaitdone') > 0)})
+    let log = readfile('Xbgwaitlog')
+    let done = readfile('Xbgwaitdone')
+    return #{delays: filter(copy(log), {_, v -> v =~ 'ui_delay('})
+          \ ->map({_, v -> str2nr(matchstr(v, 'ui_delay(\zs\d\+'))}),
+          \ queried: match(log, 'background-query') >= 0,
+          \ elapsed: str2nr(done[0]), text: done[1:]}
+  finally
+    call StopVimInTerminal(buf)
+  endtry
+endfunc
+
+func Test_startup_background_wait()
+  CheckRunVimInTerminal
+  CheckFeature termresponse
+  CheckFeature reltime
+  CheckUnix
+
+  " By default the query is still sent, but no startup delay is imposed.
+  let result = RunStartupBackgroundWait([])
+  call assert_true(result.queried)
+  call assert_equal([], result.delays)
+
+  " Zero disables waiting; a positive value bounds the total delay, including
+  " values smaller than or not divisible by the polling interval.
+  for wait in [0, 1, 25, 100]
+    let result = RunStartupBackgroundWait(['set termbackgroundwait=' .. wait])
+    call assert_true(result.queried)
+    if wait == 0
+      call assert_equal([], result.delays)
+    else
+      " Allow for the millisecond resolution of the elapsed-time check.
+      call assert_inrange(wait - 1, 5000, result.elapsed, 'wait=' .. wait)
+      for delay in result.delays
+        call assert_inrange(1, min([wait, 10]), delay)
+      endfor
+    endif
+  endfor
+
+  " Simulate ui_delay() waking early: only actual elapsed time counts.
+  let result = RunStartupBackgroundWait(['set tbw=100',
+        \ 'call test_override("ui_delay", 1)'])
+  call assert_true(result.queried)
+  " Allow for the millisecond resolution of the elapsed-time check.
+  call assert_inrange(99, 5000, result.elapsed)
+
+  " Explicit background and an empty query skip both the query and the wait.
+  for setting in ['set background=dark', 'set background=light', 'set t_RB=']
+    let result = RunStartupBackgroundWait(['set tbw=100', setting])
+    call assert_false(result.queried, setting)
+    call assert_equal([], result.delays, setting)
+  endfor
+
+  " Pending input must not be consumed by the startup wait.
+  let result = RunStartupBackgroundWait(['set tbw=100',
+        \ 'call feedkeys("ipending input\<Esc>", "t")'])
+  call assert_true(result.queried)
+  call assert_equal([], result.delays)
+  call assert_equal(['pending input'], result.text)
+endfunc
+
+func Test_startup_background_wait_redirected()
+  CheckFeature termresponse
+  CheckUnix
+  CheckNotGui
+
+  let before = ['set termbackgroundwait=100 t_RB=background-query',
+        \ 'call ch_logfile("Xbgwaitlog", "wo")']
+  let after =<< trim END
+    call ch_logfile('')
+    call feedkeys("istartup input\<Esc>", 'xt')
+    call writefile(getline(1, '$'), 'Xbgwaittext')
+    qall!
+  END
+  defer delete('Xbgwaitlog')
+  defer delete('Xbgwaittext')
+  if RunVimPiped(before, after, '-', 'echo redirected input |')
+    call assert_equal(['startup inputredirected input'], readfile('Xbgwaittext'))
+    call assert_equal([], filter(readfile('Xbgwaitlog'),
+          \ {_, v -> v =~ 'ui_delay(\|background-query'}))
+  endif
+endfunc
+
 " Test the -background and -foreground arguments (for GUI only).
 func Test_background_foreground()
   CheckCanRunGui

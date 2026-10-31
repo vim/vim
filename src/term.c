@@ -4336,13 +4336,15 @@ check_terminal_behavior(void)
     void
 may_req_bg_color(void)
 {
-    if (can_get_termresponse() && starting == 0)
+    if (can_get_termresponse()
+			      && (starting == 0 || starting == NO_BUFFERS))
     {
 	int didit = FALSE;
 
 # ifdef FEAT_TERMINAL
-	// Only request foreground if t_RF is set.
-	if (rfg_status.tr_progress == STATUS_GET && *T_RFG != NUL)
+	// The foreground is not needed before the first redraw.
+	if (starting == 0 && rfg_status.tr_progress == STATUS_GET
+							      && *T_RFG != NUL)
 	{
 	    MAY_WANT_TO_LOG_THIS;
 	    LOG_TR1("Sending FG request");
@@ -4352,8 +4354,10 @@ may_req_bg_color(void)
 	}
 # endif
 
-	// Only request background if t_RB is set.
-	if (rbg_status.tr_progress == STATUS_GET && *T_RBG != NUL)
+	// Only request background if t_RB is set.  During startup this is only
+	// needed when 'background' was not explicitly set.
+	if (rbg_status.tr_progress == STATUS_GET && *T_RBG != NUL
+		      && (starting == 0 || !option_was_set((char_u *)"bg")))
 	{
 	    MAY_WANT_TO_LOG_THIS;
 	    LOG_TR1("Sending BG request");
@@ -4362,12 +4366,60 @@ may_req_bg_color(void)
 	    didit = TRUE;
 	}
 
-	if (didit)
+	// Also check for a response to the earlier background request when
+	// no foreground request was sent after startup commands.
+	if (didit || rbg_status.tr_progress != STATUS_GET)
 	{
+	    long wait = p_tbw;
+	    long remaining = wait;
+	    long delay;
+	    int c;
+# ifdef ELAPSED_FUNC
+	    elapsed_T start_tv;
+
+	    if (starting != 0 && wait > 0)
+		ELAPSED_INIT(start_tv);
+# endif
+
 	    // check for the characters now, otherwise they might be eaten by
 	    // get_keystroke()
 	    out_flush();
-	    (void)vpeekc_nomap();
+	    for (;;)
+	    {
+		c = vpeekc_nomap();
+
+		// Discard OSC notifications, not typed characters.  Leaving
+		// them in typeahead can interfere with feedkeys() during startup
+		// and prevent SafeState from being triggered afterwards.
+		if (c == K_SPECIAL && typebuf.tb_len >= 3
+			&& typebuf.tb_buf[typebuf.tb_off] == K_SPECIAL
+			&& typebuf.tb_buf[typebuf.tb_off + 1] == KS_EXTRA
+			&& typebuf.tb_buf[typebuf.tb_off + 2] == KE_OSC)
+		{
+		    del_typebuf(3, 0);
+		    continue;
+		}
+		if (starting == 0)
+		    break;
+
+# ifdef ELAPSED_FUNC
+		// ui_delay() can return early when terminal input arrives.
+		if (wait > 0)
+		    remaining = wait - ELAPSED_FUNC(start_tv);
+# endif
+		// Avoid painting with the wrong background before the terminal
+		// has replied, but only when explicitly enabled.  Leave
+		// typeahead alone.  A late response is still used.
+		if (rbg_status.tr_progress != STATUS_SENT
+			      || c != NUL || got_int || remaining <= 0)
+		    break;
+		delay = MIN(remaining, 10L);
+		ui_delay(delay, FALSE);
+# ifndef ELAPSED_FUNC
+		// Approximate the wait when no elapsed-time clock is available.
+		remaining -= delay;
+# endif
+	    }
 	}
     }
 }

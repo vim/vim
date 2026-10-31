@@ -175,8 +175,17 @@ jobs:
       - name: Generate gcov files
         if: matrix.coverage
         run: |
-          cd "${SRCDIR}"
-          find . -type f -name '*.gcno' -exec gcov -pb {} + || true
+          # Each build uses source paths relative to its own working directory
+          for dir in "${SRCDIR}" "${SRCDIR}/libvterm" "${SRCDIR}/xxd"; do
+            (
+              cd "$dir"
+              find . \( -path ./libvterm -o -path ./xxd \) -prune -o \
+                -type f -name '*.gcno' -exec gcov -pb {} + || true
+              # Disambiguate files such as mouse.c before uploading to Codecov
+              find . -maxdepth 1 -type f -name '*.gcov' -exec \
+                sed -i "s|:Source:\([^/]\)|:Source:${PWD}/\1|" {} +
+            )
+          done
 
       - name: Codecov
         timeout-minutes: 20
@@ -185,3 +194,5 @@ jobs:
         with:
           flags: linux,${{ matrix.features }}-${{ matrix.compiler }}-${{ join(matrix.extra, '-') }}
           token: ${{ secrets.CODECOV_TOKEN }}
+          # Upload the reports above without regenerating them from the repo root
+          gcov_ignore: '*.gcno'
