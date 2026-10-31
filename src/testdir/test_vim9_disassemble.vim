@@ -3035,6 +3035,78 @@ def Test_disassemble_dict_stack()
         res)
 enddef
 
+" A dict member or object method that is called, indexed, used with "->" or
+" followed by another member in a skipped part of an expression does not
+" generate instructions.
+def Test_disassemble_skipped_member_call()
+  var lines =<< trim END
+    vim9script
+    class A
+      def True(): bool
+        return true
+      enddef
+    endclass
+    def SkippedMember(): list<bool>
+      var d = {Fn: () => true, l: [1], sub: {x: 1}}
+      var o = A.new()
+      return [true || d.Fn(),
+          true || d.l->len() > 0,
+          true || d.l[0] == 1,
+          true || d.sub.x == 1,
+          false && d.Fn(),
+          true || o.True()]
+    enddef
+    def SkippedIf(): string
+      var o = A.new()
+      if has('eval') || o.True()
+        return 'works'
+      endif
+      return 'no'
+    enddef
+    assert_equal([true, true, true, true, false, true], SkippedMember())
+    assert_equal('works', SkippedIf())
+    g:instr = execute('disassemble SkippedMember')
+    g:instr_if = execute('disassemble SkippedIf')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_SkippedMember\_s*' ..
+    'var d = {Fn: () => true, l: \[1\], sub: {x: 1}}\_s*' ..
+    '.*' ..
+    '\d\+ STORE $0\_s*' ..
+    'var o = A.new()\_s*' ..
+    '\d\+ DCALL new(argc 0)\_s*' ..
+    '\d\+ STORE $1\_s*' ..
+    'return \[true || d.Fn(),\_s*' ..
+    '\d\+ PUSH true\_s*' ..
+    'true || d.l->len() > 0,\_s*' ..
+    '\d\+ PUSH true\_s*' ..
+    'true || d.l\[0\] == 1,\_s*' ..
+    '\d\+ PUSH true\_s*' ..
+    'true || d.sub.x == 1,\_s*' ..
+    '\d\+ PUSH true\_s*' ..
+    'false && d.Fn(),\_s*' ..
+    '\d\+ PUSH false\_s*' ..
+    'true || o.True()\]\_s*' ..
+    '\d\+ PUSH true\_s*' ..
+    '\d\+ NEWLIST size 6\_s*' ..
+    '\d\+ RETURN', g:instr)
+  assert_match('<SNR>\d\+_SkippedIf\_s*' ..
+    'var o = A.new()\_s*' ..
+    '0 DCALL new(argc 0)\_s*' ..
+    '1 STORE $0\_s*' ..
+    'if has(''eval'') || o.True()\_s*' ..
+    '2 PUSH true\_s*' ..
+    '3 JUMP_IF_FALSE -> 6\_s*' ..
+    'return ''works''\_s*' ..
+    '4 PUSHS "works"\_s*' ..
+    '5 RETURN\_s*' ..
+    'endif\_s*' ..
+    'return ''no''\_s*' ..
+    '6 PUSHS "no"\_s*' ..
+    '7 RETURN', g:instr_if)
+  unlet g:instr g:instr_if
+enddef
+
 def s:RetLegacy(): string
   legacy return "yes"
 enddef
