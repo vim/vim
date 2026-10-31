@@ -1751,6 +1751,15 @@ key_release_event(GtkEventControllerKey *controller UNUSED,
 	guint keyval UNUSED, guint keycode UNUSED,
 	GdkModifierType state UNUSED, gpointer data UNUSED)
 {
+#ifdef FEAT_XIM
+    if (xic != NULL)
+    {
+	GdkEvent *event = gtk_event_controller_get_current_event(
+		GTK_EVENT_CONTROLLER(controller));
+	if (event != NULL)
+	    gtk_im_context_filter_keypress(xic, event);
+    }
+#endif
 }
 
 static int mouse_timed_out = TRUE;
