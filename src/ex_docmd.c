@@ -3129,6 +3129,7 @@ parse_command_modifiers(
 				break;
 			    if (!skip_only)
 			    {
+				vim_regfree(cmod->cmod_filter_regmatch.regprog);
 				cmod->cmod_filter_regmatch.regprog =
 						vim_regcomp(reg_pat, RE_MAGIC);
 				if (cmod->cmod_filter_regmatch.regprog == NULL)
