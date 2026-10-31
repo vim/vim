@@ -14,4 +14,4 @@ setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,:///,://
 setlocal commentstring=//\ %s
 setlocal foldmethod=syntax
 
-let b:undo_ftplugin = 'setl com< cms< fdm< fo< sua<'
+let b:undo_ftplugin = 'setl com< cms< fdm<'
