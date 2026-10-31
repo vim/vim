@@ -2895,6 +2895,12 @@ execute_unletrange(isn_T *iptr, ectx_T *ectx)
 	    }
 	}
     }
+    else if (tv_dest->v_type == VAR_TUPLE)
+    {
+	status = FAIL;
+	SOURCING_LNUM = iptr->isn_lnum;
+	emsg(_(e_cannot_slice_tuple));
+    }
     else
     {
 	status = FAIL;

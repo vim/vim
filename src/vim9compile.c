@@ -2814,7 +2814,7 @@ compile_assign_unlet(
     else
     {
 	if (dest_type == VAR_TUPLE)
-	    emsg(_(e_tuple_is_immutable));
+	    emsg(range ? _(e_cannot_slice_tuple) : _(e_tuple_is_immutable));
 	else
 	    emsg(_(e_indexable_type_required));
 	return FAIL;
