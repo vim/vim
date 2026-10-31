@@ -64,7 +64,7 @@ jobs:
         uses: actions/checkout@v7.0.1
 
       - name: Install Cygwin
-        uses: cygwin/cygwin-install-action@v6
+        uses: cygwin/cygwin-install-action@v7
         with:
           add-to-path: false
           packages: >-
