@@ -4368,7 +4368,8 @@ may_req_bg_color(void)
 
 	if (didit)
 	{
-	    int count = 0;
+	    long remaining = p_tbw;
+	    long delay;
 	    int c;
 
 	    // check for the characters now, otherwise they might be eaten by
@@ -4392,12 +4393,14 @@ may_req_bg_color(void)
 		}
 
 		// Avoid painting with the wrong background before the terminal
-		// has replied.  Wait at most 100 ms, and leave typeahead alone.
-		// A late response is still used.
+		// has replied, but only when explicitly enabled.  Leave
+		// typeahead alone.  A late response is still used.
 		if (rbg_status.tr_progress != STATUS_SENT
-			      || c != NUL || got_int || count++ == 10)
+			      || c != NUL || got_int || remaining <= 0)
 		    break;
-		ui_delay(10L, FALSE);
+		delay = MIN(remaining, 10L);
+		ui_delay(delay, FALSE);
+		remaining -= delay;
 	    }
 	}
     }

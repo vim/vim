@@ -100,6 +100,7 @@ let test_values = {
       \ 'sidescroll': [[0, 1, 8, 999], [-1]],
       \ 'sidescrolloff': [[0, 1, 8, 999], [-1]],
       \ 'tabstop': [[1, 4, 8, 12, 9999], [-1, 0, 10000]],
+      \ 'termbackgroundwait': [[0, 1, 25, 100, 9999], [-1]],
       \ 'termwinscroll': [[1, 100, 99999], [-1, 0]],
       \ 'textwidth': [[0, 1, 8, 99], [-1]],
       \ 'timeoutlen': [[0, 8, 99999], [-1]],

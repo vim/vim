@@ -367,13 +367,27 @@ func Test_message_more_scrollback()
   let lines =<< trim END
       set t_ut=
       hi Normal ctermfg=15 ctermbg=0
+      if has('termresponse')
+          autocmd TermResponseAll osc call writefile([v:termosc], 'XmoreOsc')
+      endif
       for i in range(100)
           echo i
       endfor
   END
   call writefile(lines, 'XmoreScrollback', 'D')
+  defer delete('XmoreOsc')
   let buf = RunVimInTerminal('-S XmoreScrollback', {'rows': 10})
   call VerifyScreenDump(buf, 'Test_more_scrollback_1', {})
+
+  if has('termresponse')
+    " A late OSC response is not an invalid key at the more prompt.
+    for response in ["\<Esc>]15;more\x07", "\<Esc>]15;more\<Esc>\\"]
+      call term_sendkeys(buf, response)
+      call WaitForAssert({-> assert_equal([response],
+            \ filereadable('XmoreOsc') ? readfile('XmoreOsc') : [])})
+      call VerifyScreenDump(buf, 'Test_more_scrollback_1', {})
+    endfor
+  endif
 
   call term_sendkeys(buf, 'f')
   call TermWait(buf)

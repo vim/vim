@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Oct 26
+*options.txt*	For Vim version 9.2.  Last change: 2026 Oct 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1093,9 +1093,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	screen is redrawn.  This may have side effects, make |t_RB| empty in
 	your .vimrc if you suspect this problem.  The response to |t_RB| can
 	be found in |v:termrbgresp|.
-	During interactive startup, if 'background' was not explicitly set,
-	Vim waits up to 100 ms for this response before clearing the screen.
-	If the response arrives later, the colors are adjusted then.
+	By default Vim does not wait for this response during startup.  If you
+	see a light-background flash in a dark terminal, set 'termbackgroundwait'
+	in your vimrc to wait briefly before the first screen clear.  For
+	example: >
+		set termbackgroundwait=100
+<	This may delay startup by up to 100 ms.  If the response arrives later,
+	the colors are adjusted then, so a flash may still occur.
 
 	When starting the GUI, the default value for 'background' will be
 	"light".  When the value is not set in the .gvimrc, and Vim detects
@@ -9339,6 +9343,26 @@ A jump table for the options with a short description can be found at |Q_op|.
 	For example: >
 		:set term=$TERM
 <	See |termcap|.
+
+					*'termbackgroundwait'* *'tbw'*
+'termbackgroundwait' 'tbw' number (default 0)
+			global
+			{only available when compiled with the |+termresponse|
+			feature}
+	Maximum time in milliseconds to wait for the terminal background color
+	response during interactive startup, before the first screen clear.
+	Zero (the default) disables waiting.  The value must not be negative.
+	Set this in your vimrc, for example: >
+		set termbackgroundwait=100
+<	This can avoid a light-background flash in a dark terminal, at the cost
+	of delaying startup when the terminal does not respond promptly.
+
+	Vim only waits when 'background' has not been explicitly set, |t_RB| is
+	not empty, and both input and output are terminals.  Waiting ends early
+	when a response, typed input, or an interrupt is received.  Responses
+	arriving after the timeout are still used to adjust 'background', so
+	this option cannot prevent every flash.  It has no effect in the GUI
+	or after startup.
 
 						*'termbidi'* *'tbidi'*
 						*'notermbidi'* *'notbidi'*

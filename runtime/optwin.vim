@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2026 Sep 30
+" Last Change:	2026 Oct 31
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If there already is an option window, jump to that one.
@@ -437,6 +437,10 @@ endif
 call <SID>Header(gettext("syntax, highlighting and spelling"))
 call <SID>AddOption("background", gettext("\"dark\" or \"light\"; the background color brightness"))
 call <SID>OptionG("bg", &bg)
+if has("termresponse")
+  call <SID>AddOption("termbackgroundwait", gettext("time in msec to wait for background detection at startup"))
+  call <SID>OptionG("tbw", &tbw)
+endif
 call <SID>AddOption("filetype", gettext("type of file; triggers the FileType event when set"))
 call append("$", "\t" .. s:local_to_buffer)
 call <SID>OptionL("ft")
