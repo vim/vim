@@ -1028,8 +1028,11 @@ getdecchrs(void)
 	c = regparse[0];
 	if (c < '0' || c > '9')
 	    break;
-	nr *= 10;
-	nr += c - '0';
+	if (nr <= INT_MAX)
+	{
+	    nr *= 10;
+	    nr += c - '0';
+	}
 	++regparse;
 	curchr = -1; // no longer valid
     }
