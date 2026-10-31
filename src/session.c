@@ -1330,7 +1330,8 @@ ex_mkrc(exarg_T	*eap)
 
 	    if (do_mappings)
 		failed |= (makemap(fd, NULL) == FAIL
-					 || makeset(fd, flags, FALSE) == FAIL);
+					 || makeset(fd, flags, FALSE) == FAIL
+					 || makespecialset(fd, flags) == FAIL);
 
 #if defined(FEAT_EVAL)
 	    // Save delay load import modules.
