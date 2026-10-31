@@ -2506,6 +2506,9 @@ do_one_cmd(
 	    case CMD_botright:
 	    case CMD_browse:
 	    case CMD_call:
+	    case CMD_caddexpr:
+	    case CMD_cexpr:
+	    case CMD_cgetexpr:
 	    case CMD_confirm:
 	    case CMD_const:
 	    case CMD_delfunction:
@@ -2532,8 +2535,11 @@ do_one_cmd(
 	    case CMD_keepjumps:
 	    case CMD_keepmarks:
 	    case CMD_keeppatterns:
+	    case CMD_laddexpr:
 	    case CMD_leftabove:
 	    case CMD_let:
+	    case CMD_lexpr:
+	    case CMD_lgetexpr:
 	    case CMD_lockmarks:
 	    case CMD_lockvar:
 	    case CMD_lua:
