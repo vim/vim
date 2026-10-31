@@ -1093,6 +1093,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	screen is redrawn.  This may have side effects, make |t_RB| empty in
 	your .vimrc if you suspect this problem.  The response to |t_RB| can
 	be found in |v:termrbgresp|.
+							*background-flash*
 	By default Vim does not wait for this response during startup.  If you
 	see a light-background flash in a dark terminal, set 'termbackgroundwait'
 	in your vimrc to wait briefly before the first screen clear.  For
@@ -9352,10 +9353,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Maximum time in milliseconds to wait for the terminal background color
 	response during interactive startup, before the first screen clear.
 	Zero (the default) disables waiting.  The value must not be negative.
-	Set this in your vimrc, for example: >
-		set termbackgroundwait=100
-<	This can avoid a light-background flash in a dark terminal, at the cost
-	of delaying startup when the terminal does not respond promptly.
+	See |background-flash| for an example.
 
 	Vim only waits when 'background' has not been explicitly set, |t_RB| is
 	not empty, and both input and output are terminals.  Waiting ends early

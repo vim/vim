@@ -4366,7 +4366,9 @@ may_req_bg_color(void)
 	    didit = TRUE;
 	}
 
-	if (didit)
+	// Also check for a response to the earlier background request when
+	// no foreground request was sent after startup commands.
+	if (didit || rbg_status.tr_progress != STATUS_GET)
 	{
 	    long remaining = p_tbw;
 	    long delay;
@@ -4378,19 +4380,20 @@ may_req_bg_color(void)
 	    for (;;)
 	    {
 		c = vpeekc_nomap();
-		if (starting == 0)
-		    break;
 
-		// Discard the OSC notification, not typed characters.  Leaving
-		// it in typeahead can interfere with feedkeys() during startup.
+		// Discard OSC notifications, not typed characters.  Leaving
+		// them in typeahead can interfere with feedkeys() during startup
+		// and prevent SafeState from being triggered afterwards.
 		if (c == K_SPECIAL && typebuf.tb_len >= 3
 			&& typebuf.tb_buf[typebuf.tb_off] == K_SPECIAL
 			&& typebuf.tb_buf[typebuf.tb_off + 1] == KS_EXTRA
 			&& typebuf.tb_buf[typebuf.tb_off + 2] == KE_OSC)
 		{
 		    del_typebuf(3, 0);
-		    c = NUL;
+		    continue;
 		}
+		if (starting == 0)
+		    break;
 
 		// Avoid painting with the wrong background before the terminal
 		// has replied, but only when explicitly enabled.  Leave
