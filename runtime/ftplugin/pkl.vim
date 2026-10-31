@@ -3,7 +3,6 @@
 " Maintainer:	Riley Bruins <ribru17@gmail.com>
 " Last Change:	2025 Jul 14
 " 2025 Oct 03 by Vim Project Add foldmethod #18274
-" 2026 Oct 20 by Vim Project Add formatoptions and suffixesadd
 
 if exists('b:did_ftplugin')
   finish
