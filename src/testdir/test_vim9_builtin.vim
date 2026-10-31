@@ -2809,6 +2809,31 @@ def Test_map_failure()
   v9.CheckSourceDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got bool')
 enddef
 
+" An error in a :def function or lambda used with ":silent! map()" should set
+" v:errmsg to that error, not to E1099.
+def Test_map_silent_errmsg()
+  var lines =<< trim END
+    vim9script
+    def Second(key: number, val: list<number>): number
+      return val[1]
+    enddef
+
+    b:la = [[1, 2], [3], [4, 5]]
+    v:errmsg = ''
+    silent! map(b:la, Second)
+    assert_equal([2, [3], [4, 5]], b:la)
+    assert_equal('E684: List index out of range: 1', v:errmsg)
+
+    b:la = [[1, 2], [3], [4, 5]]
+    v:errmsg = ''
+    silent! map(b:la, (_, v) => v[1])
+    assert_equal([2, [3], [4, 5]], b:la)
+    assert_equal('E684: List index out of range: 1', v:errmsg)
+    unlet b:la
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 def Test_map_const()
   var lines =<< trim END
       const l = [1, 2, 3]
