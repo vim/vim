@@ -452,6 +452,7 @@ runtime/indent/nu.vim					@elkasztano
 runtime/indent/occam.vim				@dkearns
 runtime/indent/perl.vim					@petdance
 runtime/indent/php.vim					@2072
+runtime/indent/pkl.vim					@jclsn
 runtime/indent/postscr.vim				@mrdubya
 runtime/indent/prolog.vim				@dkearns
 runtime/indent/proto.vim				@Limero
