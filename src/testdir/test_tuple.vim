@@ -593,6 +593,36 @@ func Test_tuple_compare()
         \ 'E1518: Invalid operation for Tuple'])
 endfunc
 
+" Test for concatenating a variadic tuple with a tuple literal.  The type of
+" the literal must also be checked when not in a compiled function.
+def Test_tuple_concatenate_variadic_with_literal()
+  var lines =<< trim END
+    var t: tuple<...list<number>> = (1, 2)
+    t = t + (3,)
+  END
+  v9.CheckSourceDefExecAndScriptFailure(lines, 'E1540: Cannot use a variadic tuple in concatenation', 2)
+
+  lines =<< trim END
+    var t: tuple<...list<number>> = ()
+    t = t + ('a', 'b')
+  END
+  v9.CheckSourceDefExecAndScriptFailure(lines, 'E1540: Cannot use a variadic tuple in concatenation', 2)
+
+  # A tuple with the same variadic type, an empty tuple and a tuple without a
+  # variadic type can be used
+  lines =<< trim END
+    var t: tuple<...list<number>> = (1, 2)
+    var u: tuple<...list<number>> = (3,)
+    t = t + u
+    t = t + ()
+    assert_equal((1, 2, 3), t)
+    var f: tuple<number, number> = (1, 2)
+    assert_equal((1, 2, 3), f + (3,))
+    assert_equal((1, 2, 3), (1,) + (2, 3))
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+enddef
+
 " Test for assigning multiple items from a tuple
 func Test_multi_assign_from_tuple()
   let lines =<< trim END

@@ -4407,12 +4407,24 @@ eval_addtuple(typval_T *tv1, typval_T *tv2)
     int		vim9script = in_vim9script();
     typval_T	var3;
 
+    // A tuple without a type, e.g. a tuple literal, is never variadic, thus
+    // only check when the first tuple has a type.
     if (vim9script && tv1->vval.v_tuple != NULL && tv2->vval.v_tuple != NULL
-	    && tv1->vval.v_tuple->tv_type != NULL
-	    && tv2->vval.v_tuple->tv_type != NULL)
+	    && tv1->vval.v_tuple->tv_type != NULL)
     {
-	if (!check_tuples_addable(tv1->vval.v_tuple->tv_type,
-						tv2->vval.v_tuple->tv_type))
+	type_T	    *type2 = tv2->vval.v_tuple->tv_type;
+	garray_T    type_list;
+	int	    addable;
+
+	// When the second tuple does not have a type, use the type of its
+	// value.
+	ga_init2(&type_list, sizeof(type_T *), 10);
+	if (type2 == NULL)
+	    type2 = typval2type(tv2, get_copyID(), &type_list, TVTT_DO_MEMBER);
+	addable = type2 == NULL
+		|| check_tuples_addable(tv1->vval.v_tuple->tv_type, type2);
+	clear_type_list(&type_list);
+	if (!addable)
 	    return FAIL;
     }
 
