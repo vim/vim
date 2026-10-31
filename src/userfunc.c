@@ -1295,23 +1295,20 @@ get_function_body(
 		p = tp;
 
 	    // Check for ":python <<EOF", ":tcl <<EOF", etc.
-	    arg = skipwhite(skiptowhite(p));
-	    if (arg[0] == '<' && arg[1] =='<'
-		    && ((p[0] == 'p' && p[1] == 'y'
-				    && (!ASCII_ISALNUM(p[2]) || p[2] == 't'
-					|| ((p[2] == '3' || p[2] == 'x')
-						   && !ASCII_ISALPHA(p[3]))))
-			|| (p[0] == 'p' && p[1] == 'e'
-				    && (!ASCII_ISALPHA(p[2]) || p[2] == 'r'))
-			|| (p[0] == 't' && p[1] == 'c'
-				    && (!ASCII_ISALPHA(p[2]) || p[2] == 'l'))
-			|| (p[0] == 'l' && p[1] == 'u' && p[2] == 'a'
-				    && !ASCII_ISALPHA(p[3]))
-			|| (p[0] == 'r' && p[1] == 'u' && p[2] == 'b'
-				    && (!ASCII_ISALPHA(p[3]) || p[3] == 'y'))
-			|| (p[0] == 'm' && p[1] == 'z'
-				    && (!ASCII_ISALPHA(p[2]) || p[2] == 's'))
-			))
+	    arg = p;
+	    if ((checkforcmd(&arg, "lua", 3)
+			|| checkforcmd(&arg, "mzscheme", 2)
+			|| checkforcmd(&arg, "perl", 2)
+			|| checkforcmd(&arg, "py3", 3)
+			|| checkforcmd(&arg, "python3", 7)
+			|| checkforcmd(&arg, "pyx", 3)
+			|| checkforcmd(&arg, "pythonx", 7)
+			// check after :py3/:python3 - checkforcmd() treats the
+			// "3" as an argument when testing :py[thon]
+			|| checkforcmd(&arg, "python", 2)
+			|| checkforcmd(&arg, "ruby", 3)
+			|| checkforcmd(&arg, "tcl", 3))
+		    && STRNCMP(arg, "<<", 2) == 0)
 	    {
 		// ":python <<" continues until a dot, like ":append"
 		p = skipwhite(arg + 2);
