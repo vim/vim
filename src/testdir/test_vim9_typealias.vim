@@ -103,6 +103,23 @@ def Test_typealias()
   END
   v9.CheckSourceFailure(lines, 'E1010: Type not recognized: integer', 2)
 
+  # text after a type alias name
+  lines =<< trim END
+    vim9script
+    type A = number
+    var x: A.foo = 1
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: A.foo', 3)
+
+  # text after a class name
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    var o: C.garbage = C.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: C.garbage', 4)
+
   # type alias starting with lower-case letter
   lines =<< trim END
     vim9script
@@ -370,6 +387,15 @@ def Test_typealias_import()
     var myNum: A.SomeType = 10
   END
   v9.CheckScriptFailure(lines, 'E1010: Type not recognized: A.SomeType', 4)
+
+  # text after an imported type alias name
+  lines =<< trim END
+    vim9script
+    import './Xtypeexport.vim' as A
+
+    var myList: A.MyType.foo = [1, 2, 3]
+  END
+  v9.CheckScriptFailure(lines, 'E1010: Type not recognized: A.MyType.foo', 4)
 
   # Use a type alias that is not exported
   lines =<< trim END
