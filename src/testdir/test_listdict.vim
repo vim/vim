@@ -367,8 +367,65 @@ func Test_dict_identity()
       call assert_true(d == dx)
       call assert_false(d is dx)
       call assert_true(d isnot dx)
+      #" copy() shares the nested containers, deepcopy() does not
+      call assert_true(dx['b'] is d['b'])
+      call assert_true(dx[-1] is d[-1])
+      VAR dy = deepcopy(d)
+      call assert_true(dy == d)
+      call assert_true(dy['b'] isnot d['b'])
+      call assert_true(dy[-1] isnot d[-1])
+      LET dy[-1].a = 2
+      call assert_equal({'a': 1}, d[-1])
   END
   call v9.CheckLegacyAndVim9Success(lines)
+endfunc
+
+func s:AddToDict(d)
+  let a:d.added = 1
+  call add(a:d.l, 9)
+  return a:d
+endfunc
+
+" A dict passed to a function is not copied: changes made in the function are
+" visible to the caller and the returned dict is the same.
+func Test_dict_func_arg_alias()
+  let d = {'l': [1]}
+  let alias = d
+  let ret = s:AddToDict(d)
+  call assert_true(ret is d)
+  call assert_equal({'l': [1, 9], 'added': 1}, alias)
+  " a copy shares the nested list but not the dict itself
+  let c = copy(d)
+  let c.cadded = 2
+  call s:AddToDict(c)
+  call assert_equal([1, 9, 9], d.l)
+  call assert_false(has_key(d, 'cadded'))
+
+  let lines =<< trim END
+    vim9script
+    def AddItem(dd: dict<any>): dict<any>
+      dd.added = 1
+      dd.l->add(9)
+      return dd
+    enddef
+    def Test()
+      var d: dict<any> = {l: [1]}
+      var alias = d
+      assert_true(AddItem(d) is d)
+      assert_equal({l: [1, 9], added: 1}, alias)
+      var c = copy(d)
+      c.cadded = 2
+      AddItem(c)
+      assert_equal([1, 9, 9], d.l)
+      assert_false(has_key(d, 'cadded'))
+      var dc = deepcopy(d)
+      AddItem(dc)
+      assert_equal([1, 9, 9], d.l)
+      assert_equal([1, 9, 9, 9], dc.l)
+    enddef
+    Test()
+  END
+  call v9.CheckSourceSuccess(lines)
 endfunc
 
 " removing items with :unlet
@@ -586,6 +643,8 @@ func Test_dict_deepcopy()
       VAR l = [4, d, 6]
       LET d[3] = l
       VAR dc = deepcopy(d)
+      call assert_true(dc[3][1] is dc)
+      call assert_true(dc isnot d)
       call deepcopy(d, 1)
   END
   call v9.CheckLegacyAndVim9Failure(lines, 'E698:')
@@ -870,7 +929,10 @@ func Test_dict_item_lock_map()
       VAR d = {'a': 99, 'b': 100, 'c': 101}
       lockvar d.b
       call assert_fails("echo map(d, 'v:val + 200')", 'E741:')
-      call assert_equal({'a': 299, 'b': 100, 'c': 101}, d)
+      #" the order of the items is unspecified, items before "b" are changed
+      call assert_equal(100, d.b)
+      call assert_true(index([99, 299], d.a) >= 0)
+      call assert_true(index([101, 301], d.c) >= 0)
   END
   " This won't work in a :def function
   call v9.CheckTransLegacySuccess(lines)
@@ -1279,7 +1341,7 @@ func Test_listdict_extend()
   call v9.CheckLegacyAndVim9Success(lines)
 
   let d = {'a': 'A', 'b': 'B'}
-  call assert_fails("call extend(d, {'b': 0, 'c':'C'}, 'error')", 'E737:')
+  call assert_fails("call extend(d, {'b': 0}, 'error')", 'E737:')
   call assert_fails("call extend(d, {'b': 0}, [])", 'E730:')
   call assert_fails("call extend(d, {'b': 0, 'c':'C'}, 'xxx')", 'E475:')
   call assert_fails("call extend(d, {'b': 0, 'c':'C'}, 1.2)", 'E475:')
@@ -1523,6 +1585,197 @@ func Test_deep_nested_dict()
   call assert_fails('let x = execute("echo deep_dict")', 'E724:')
   call test_garbagecollect_now()
   unlet deep_dict
+endfunc
+
+" Garbage collection of dicts in a reference cycle.  The reference count of a
+" shared List shows whether the dict holding it was freed.
+func Test_dict_cycle_garbagecollect()
+  let lines =<< trim END
+    vim9script
+    var l = [1]
+    const base = test_refcount(l)
+
+    # a dict that refers to itself is only freed by garbage collection
+    var d: dict<any> = {l: l}
+    d.self = d
+    assert_equal(base + 1, test_refcount(l))
+    d = null_dict
+    assert_equal(base + 1, test_refcount(l))
+    test_garbagecollect_now()
+    assert_equal(base, test_refcount(l))
+
+    # a cycle through a List
+    var d2: dict<any> = {l: l}
+    var l2: list<any> = [d2]
+    d2.back = l2
+    d2 = null_dict
+    l2 = null_list
+    assert_equal(base + 1, test_refcount(l))
+    test_garbagecollect_now()
+    assert_equal(base, test_refcount(l))
+
+    # a cycle that is still referenced is kept
+    var d3: dict<any> = {l: l, n: {x: 7}}
+    d3.self = d3
+    test_garbagecollect_now()
+    assert_true(d3.self is d3)
+    assert_true(d3.self.self.l is l)
+    assert_equal({x: 7}, d3.self.n)
+    assert_equal(base + 1, test_refcount(l))
+    d3 = null_dict
+    test_garbagecollect_now()
+    assert_equal(base, test_refcount(l))
+
+    # a dict shared by two dicts is kept while one of them is referenced
+    var shared = {s: l}
+    const sbase = test_refcount(shared)
+    var a: dict<any> = {sh: shared}
+    var b: dict<any> = {sh: shared}
+    assert_equal(sbase + 2, test_refcount(shared))
+    a = null_dict
+    assert_equal(sbase + 1, test_refcount(shared))
+    test_garbagecollect_now()
+    assert_true(b.sh is shared)
+    assert_true(b.sh.s is l)
+    shared = null_dict
+    test_garbagecollect_now()
+    assert_equal([1], b.sh.s)
+    b = null_dict
+    test_garbagecollect_now()
+    assert_equal(base, test_refcount(l))
+
+    # a dict only referenced by a closure is kept
+    def MakeClosure(): func(): list<number>
+      var cd = {cl: l}
+      return () => cd.cl
+    enddef
+    var F = MakeClosure()
+    test_garbagecollect_now()
+    assert_true(F() is l)
+    F = null_function
+    test_garbagecollect_now()
+    assert_equal(base, test_refcount(l))
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " a dict only referenced by a partial for a dict function is kept
+  let lines =<< trim END
+    let s:l = [1]
+    let s:base = test_refcount(s:l)
+    let s:d = {'l': s:l}
+    func s:d.GetList() dict
+      return self.l
+    endfunc
+    let s:F = s:d.GetList
+    unlet s:d
+    call test_garbagecollect_now()
+    call assert_true(s:F() is s:l)
+    unlet s:F
+    call test_garbagecollect_now()
+    call assert_equal(s:base, test_refcount(s:l))
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Adding, replacing and removing a dict item takes and releases a reference
+" to the value, also when evaluating a dict fails.  Checked with the reference
+" count of a List stored in the dict.
+func Test_dict_item_refcount()
+  let lines =<< trim END
+    vim9script
+    var l = [1]
+    const base = test_refcount(l)
+
+    # at script level
+    var d: dict<any> = {a: l}
+    assert_equal(base + 1, test_refcount(l))
+    d.b = l
+    assert_equal(base + 2, test_refcount(l))
+    d.b = 0
+    assert_equal(base + 1, test_refcount(l))
+    unlet d.a
+    assert_equal(base, test_refcount(l))
+    d.a = l
+    var v: any = remove(d, 'a')
+    assert_equal(base + 1, test_refcount(l))
+    v = 0
+    assert_equal(base, test_refcount(l))
+
+    # builtin functions
+    d = {a: l, b: l}
+    filter(d, (k, _) => k == 'a')
+    assert_equal(base + 1, test_refcount(l))
+    map(d, (_, _) => 0)
+    assert_equal(base, test_refcount(l))
+    d = {a: l}
+    extend(d, {a: 0})
+    assert_equal(base, test_refcount(l))
+    extend(d, {a: l}, 'keep')
+    assert_equal(base, test_refcount(l))
+    var c = copy({a: l})
+    assert_equal(base + 1, test_refcount(l))
+    var dc = deepcopy({a: l})
+    assert_equal(base + 1, test_refcount(l))
+    c = {}
+    assert_equal(base, test_refcount(l))
+
+    # in a compiled function, also through a variable of type any
+    def Compiled()
+      var cd: dict<any> = {a: l}
+      assert_equal(base + 1, test_refcount(l))
+      cd.b = l
+      assert_equal(base + 2, test_refcount(l))
+      cd.b = 0
+      assert_equal(base + 1, test_refcount(l))
+      unlet cd.a
+      assert_equal(base, test_refcount(l))
+      var x: any = cd
+      x['c'] = l
+      assert_equal(base + 1, test_refcount(l))
+      x['c'] = 0
+      assert_equal(base, test_refcount(l))
+    enddef
+    Compiled()
+    assert_equal(base, test_refcount(l))
+
+    # evaluating a dict literal fails after an item was evaluated
+    def Throw(): number
+      throw 'oops'
+    enddef
+    try
+      var e = {a: l, b: Throw()}
+    catch /oops/
+    endtry
+    assert_equal(base, test_refcount(l))
+    try
+      var e = {a: l, a: l}
+    catch /E721:/
+    endtry
+    assert_equal(base, test_refcount(l))
+    def DefFail()
+      try
+        var e = {a: l, b: Throw()}
+      catch /oops/
+      endtry
+      var k = 'a'
+      try
+        var e = {[k]: l, z: l, [k]: l}
+      catch /E721:/
+      endtry
+    enddef
+    DefFail()
+    assert_equal(base, test_refcount(l))
+
+    # extending a typed dict fails
+    var td: dict<number> = {}
+    try
+      extend(td, {x: l})
+    catch /E1013:/
+    endtry
+    assert_equal({}, td)
+    assert_equal(base, test_refcount(l))
+  END
+  call v9.CheckSourceSuccess(lines)
 endfunc
 
 " List and dict indexing tests
