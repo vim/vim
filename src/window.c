@@ -5494,7 +5494,8 @@ win_find_nr(int winnr)
 }
 #endif
 
-#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) \
+	|| (defined(FEAT_DIFF) && defined(FEAT_FOLDING))
 /*
  * Find the tabpage for window "win".
  */
