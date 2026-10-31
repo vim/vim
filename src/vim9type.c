@@ -2077,9 +2077,18 @@ parse_type_user_defined(
 {
     int		did_emsg_before = did_emsg;
     typval_T	tv;
+    char_u	*end = *arg + len;
+
+    // A ".Name" part is only valid after the name of an imported script.
+    if (*end == '.' && find_imported(*arg, len, FALSE) != NULL)
+    {
+	++end;
+	while (ASCII_ISALNUM(*end) || *end == '_')
+	    ++end;
+    }
 
     tv.v_type = VAR_UNKNOWN;
-    if (eval_variable_import(*arg, &tv) == OK)
+    if (*end != '.' && eval_variable_import(*arg, &tv) == OK)
     {
 	if (tv.v_type == VAR_CLASS && tv.vval.v_class != NULL)
 	{
@@ -2092,11 +2101,7 @@ parse_type_user_defined(
 		type->tt_class = tv.vval.v_class;
 		clear_tv(&tv);
 
-		*arg += len;
-		// Skip over ".ClassName".
-		while (ASCII_ISALNUM(**arg) || **arg == '_' || **arg == '.')
-		    ++*arg;
-
+		*arg = end;
 		return type;
 	    }
 	}
@@ -2118,11 +2123,8 @@ parse_type_user_defined(
 		parse_max_depth = depth;
 
 	    type_T *type = copy_type(tv.vval.v_typealias->ta_type, type_gap);
-	    *arg += len;
+	    *arg = end;
 	    clear_tv(&tv);
-	    // Skip over ".TypeName".
-	    while (ASCII_ISALNUM(**arg) || **arg == '_' || **arg == '.')
-		++*arg;
 	    return type;
 	}
 
