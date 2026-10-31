@@ -2078,6 +2078,15 @@ parse_type_user_defined(
     int		did_emsg_before = did_emsg;
     typval_T	tv;
 
+    // A type variable of a generic function is used before a script item
+    // with the same name, which may be defined after the function.
+    type_T *gen_type = find_generic_type(*arg, len, ufunc, cctx);
+    if (gen_type != NULL)
+    {
+	*arg += len;
+	return gen_type;
+    }
+
     tv.v_type = VAR_UNKNOWN;
     if (eval_variable_import(*arg, &tv) == OK)
     {
@@ -2127,14 +2136,6 @@ parse_type_user_defined(
 	}
 
 	clear_tv(&tv);
-    }
-
-    // Check whether it is a generic type
-    type_T *type = find_generic_type(*arg, len, ufunc, cctx);
-    if (type != NULL)
-    {
-	*arg += len;
-	return type;
     }
 
     if (give_error && (did_emsg == did_emsg_before))
