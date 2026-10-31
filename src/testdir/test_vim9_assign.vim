@@ -1088,9 +1088,9 @@ def Test_assignment_list()
   assert_equal(['sdf', 'asdf', 'end'], list3)
 
   v9.CheckDefExecFailure(['var ll = [1, 2, 3]', 'll[-4] = 6'], 'E684:')
-  v9.CheckDefExecFailure(['var ll = [1, 2, 3]', 'unlet ll[8 : 9]'], 'E684:')
-  v9.CheckDefExecFailure(['var ll = [1, 2, 3]', 'unlet ll[1 : -9]'], 'E684:')
-  v9.CheckDefExecFailure(['var ll = [1, 2, 3]', 'unlet ll[2 : 1]'], 'E684:')
+  v9.CheckDefExecAndScriptFailure(['var ll = [1, 2, 3]', 'unlet ll[8 : 9]'], 'E684:')
+  v9.CheckDefExecAndScriptFailure(['var ll = [1, 2, 3]', 'unlet ll[1 : -9]'], 'E684:')
+  v9.CheckDefExecAndScriptFailure(['var ll = [1, 2, 3]', 'unlet ll[2 : 1]'], 'E684:')
 
   # type becomes list<any>
   var somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
