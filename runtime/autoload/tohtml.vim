@@ -734,6 +734,7 @@ export def GetUserSettings(): dict<any> #{{{
     GetOption(user_settings,          'pre_wrap', &wrap )
     GetOption(user_settings,           'use_css', 1 )
     GetOption(user_settings,    'ignore_conceal', 0 )
+    GetOption(user_settings,   'ignore_textprop', 0 )
     GetOption(user_settings,    'ignore_folding', 0 )
     GetOption(user_settings,     'dynamic_folds', 0 )
     GetOption(user_settings,     'no_foldcolumn', user_settings.ignore_folding)
