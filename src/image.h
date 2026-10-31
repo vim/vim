@@ -133,8 +133,6 @@ struct image_placement_S
     int cell_width; // Cell dimensions used to draw this placement
     int cell_height;
 
-    int row_off;
-
     image_placement_use_T use;
 
     image_placement_T *next;

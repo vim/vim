@@ -968,7 +968,11 @@ apply_general_options(win_T *wp, dict_T *dict)
 	}
 
 	if (wp->w_popup_imagep != NULL)
-	    image_placement_free(wp->w_popup_imagep);
+	    // Do not clear the image immediately. Instead defer clearing it
+	    // until the next redraw. This is so that if the image is updated
+	    // from a timer callback while inside a hit enter prompt (where
+	    // update_screen() is not called), the image is not cleared.
+	    image_placement_mark_free(wp->w_popup_imagep);
 	wp->w_popup_imagep = place;
 
 	image_get_cell_dimensions(img, &cw, &ch);
@@ -990,7 +994,7 @@ image_done:
 	// Create a image placement with no backing images. This is so that it
 	// will affect the calculations of other popup images.
 	if (wp->w_popup_imagep != NULL)
-	    image_placement_free(wp->w_popup_imagep);
+	    image_placement_mark_free(wp->w_popup_imagep);
 	wp->w_popup_imagep = image_placement_new(NULL, wp->w_id,
 		iplace_use, true);
 

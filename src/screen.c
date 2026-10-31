@@ -3672,7 +3672,6 @@ screenclear2(int doclear)
     msg_didany = FALSE;
     msg_didout = FALSE;
 #ifdef FEAT_IMAGE
-    shift_reset_image_placements(); // Reset "row_off" for every placement
     clear_all_image_placements();
 #endif
 
@@ -4254,8 +4253,12 @@ win_do_lines(
     }
 
 #ifdef FEAT_PROP_POPUP
-    // this doesn't work when there are popups visible
+    // this doesn't work when there are popups or image placements visible
     if (popup_visible)
+	return FAIL;
+#endif
+#ifdef FEAT_IMAGE
+    if (visible_image_placements())
 	return FAIL;
 #endif
 
@@ -4385,9 +4388,16 @@ screen_ins_lines(
      * - the line count is more than 'ttyscroll'
      * - "end" is more than "Rows" (safety check, should not happen)
      * - redrawing for a callback and there is a modeless selection
-     * - there is a popup window
+     * - there is a popup window or image placement
      */
-    if (!screen_valid(TRUE)
+    if (
+#ifdef FEAT_PROP_POPUP
+	    popup_visible ||
+#endif
+#ifdef FEAT_IMAGE
+	    visible_image_placements() ||
+#endif
+	    !screen_valid(TRUE)
 	     || line_count <= 0 || line_count > p_ttyscroll
 	     || end > Rows
 #ifdef FEAT_CLIPBOARD
@@ -4396,17 +4406,6 @@ screen_ins_lines(
 #endif
 	     )
 	return FAIL;
-
-#ifdef FEAT_PROP_POPUP
-    if (popup_visible)
-    {
-# ifdef FEAT_IMAGE
-	// Always make sure images are correctly shifted
-	shift_image_placements(off + row, off + end, line_count);
-# endif
-	return FAIL;
-    }
-#endif
 
     /*
      * There are seven ways to insert lines:
@@ -4484,9 +4483,6 @@ screen_ins_lines(
 	clip_clear_selection(&clip_star);
     else
 	clip_scroll_selection(-line_count);
-#endif
-#ifdef FEAT_IMAGE
-    shift_image_placements(off + row, off + end, line_count);
 #endif
 
 #ifdef FEAT_GUI_HAIKU
@@ -4715,9 +4711,6 @@ screen_del_lines(
 	clip_clear_selection(&clip_star);
     else
 	clip_scroll_selection(line_count);
-#endif
-#ifdef FEAT_IMAGE
-    shift_image_placements(off + row, off + end, -line_count);
 #endif
 
 #ifdef FEAT_GUI_HAIKU
