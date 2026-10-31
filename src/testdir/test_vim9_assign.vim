@@ -313,6 +313,17 @@ def Test_assign_concat()
       ls[-1] ..= 'foo'
   END
   v9.CheckDefExecAndScriptFailure(lines, 'E684: List index out of range: -1', 2)
+
+  # a target of type any that holds a number is converted too
+  lines =<< trim END
+      var d: dict<any> = {a: 1}
+      d.a ..= 'z'
+      assert_equal({a: '1z'}, d)
+      var n: any = 0
+      n ..= 'zero'
+      assert_equal('0zero', n)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_assign_register()
