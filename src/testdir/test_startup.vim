@@ -541,18 +541,21 @@ func Test_startup_background()
   endtry
 endfunc
 
-" Record startup delays without depending on wall-clock timing.  The custom
-" query gets no reply from the terminal, so waiting must time out.
+" The custom query gets no reply from the terminal, so waiting must time out.
+" Record both the requested delays and the time spent before startup commands.
 func RunStartupBackgroundWait(settings)
   let lines = [
         \ 'set nocompatible t_RV= t_RF= t_u7=',
         \ 'set t_RB=background-query',
-        \ ] + a:settings + ['call ch_logfile("Xbgwaitlog", "wo")']
+        \ ] + a:settings + ['call ch_logfile("Xbgwaitlog", "wo")',
+        \ 'let g:bgwaitstart = reltime()']
   call writefile(lines, 'Xbgwaitvimrc', 'D')
   let after =<< trim END
+    let elapsed = float2nr(reltimefloat(reltime(g:bgwaitstart)) * 1000)
+    call test_override('ui_delay', 0)
     call ch_logfile('')
     call feedkeys('', 'x')
-    call writefile([getline(1)], 'Xbgwaitdone')
+    call writefile([string(elapsed), getline(1)], 'Xbgwaitdone')
   END
   call writefile(after, 'Xbgwaitafter', 'D')
   defer delete('Xbgwaitlog')
@@ -565,10 +568,11 @@ func RunStartupBackgroundWait(settings)
   try
     call WaitForAssert({-> assert_true(getfsize('Xbgwaitdone') > 0)})
     let log = readfile('Xbgwaitlog')
+    let done = readfile('Xbgwaitdone')
     return #{delays: filter(copy(log), {_, v -> v =~ 'ui_delay('})
           \ ->map({_, v -> str2nr(matchstr(v, 'ui_delay(\zs\d\+'))}),
           \ queried: match(log, 'background-query') >= 0,
-          \ text: readfile('Xbgwaitdone')}
+          \ elapsed: str2nr(done[0]), text: done[1:]}
   finally
     call StopVimInTerminal(buf)
   endtry
@@ -577,6 +581,7 @@ endfunc
 func Test_startup_background_wait()
   CheckRunVimInTerminal
   CheckFeature termresponse
+  CheckFeature reltime
   CheckUnix
 
   " By default the query is still sent, but no startup delay is imposed.
@@ -586,12 +591,26 @@ func Test_startup_background_wait()
 
   " Zero disables waiting; a positive value bounds the total delay, including
   " values smaller than or not divisible by the polling interval.
-  for [wait, expected] in [[0, []], [1, [1]], [25, [10, 10, 5]],
-        \ [100, repeat([10], 10)]]
+  for wait in [0, 1, 25, 100]
     let result = RunStartupBackgroundWait(['set termbackgroundwait=' .. wait])
     call assert_true(result.queried)
-    call assert_equal(expected, result.delays, 'wait=' .. wait)
+    if wait == 0
+      call assert_equal([], result.delays)
+    else
+      " Allow for the millisecond resolution of the elapsed-time check.
+      call assert_inrange(wait - 1, 5000, result.elapsed, 'wait=' .. wait)
+      for delay in result.delays
+        call assert_inrange(1, min([wait, 10]), delay)
+      endfor
+    endif
   endfor
+
+  " Simulate ui_delay() waking early: only actual elapsed time counts.
+  let result = RunStartupBackgroundWait(['set tbw=100',
+        \ 'call test_override("ui_delay", 1)'])
+  call assert_true(result.queried)
+  " Allow for the millisecond resolution of the elapsed-time check.
+  call assert_inrange(99, 5000, result.elapsed)
 
   " Explicit background and an empty query skip both the query and the wait.
   for setting in ['set background=dark', 'set background=light', 'set t_RB=']

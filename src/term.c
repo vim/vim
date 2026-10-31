@@ -4370,9 +4370,16 @@ may_req_bg_color(void)
 	// no foreground request was sent after startup commands.
 	if (didit || rbg_status.tr_progress != STATUS_GET)
 	{
-	    long remaining = p_tbw;
+	    long wait = p_tbw;
+	    long remaining = wait;
 	    long delay;
 	    int c;
+# ifdef ELAPSED_FUNC
+	    elapsed_T start_tv;
+
+	    if (starting != 0 && wait > 0)
+		ELAPSED_INIT(start_tv);
+# endif
 
 	    // check for the characters now, otherwise they might be eaten by
 	    // get_keystroke()
@@ -4395,6 +4402,11 @@ may_req_bg_color(void)
 		if (starting == 0)
 		    break;
 
+# ifdef ELAPSED_FUNC
+		// ui_delay() can return early when terminal input arrives.
+		if (wait > 0)
+		    remaining = wait - ELAPSED_FUNC(start_tv);
+# endif
 		// Avoid painting with the wrong background before the terminal
 		// has replied, but only when explicitly enabled.  Leave
 		// typeahead alone.  A late response is still used.
@@ -4403,7 +4415,10 @@ may_req_bg_color(void)
 		    break;
 		delay = MIN(remaining, 10L);
 		ui_delay(delay, FALSE);
+# ifndef ELAPSED_FUNC
+		// Approximate the wait when no elapsed-time clock is available.
 		remaining -= delay;
+# endif
 	    }
 	}
     }
