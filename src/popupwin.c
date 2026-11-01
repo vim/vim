@@ -5617,7 +5617,7 @@ popup_textprop_removed_win(win_T *wp, buf_T *buf)
 {
     if (wp->w_popup_prop_type > 0 && win_valid(wp->w_popup_prop_win)
 				    && wp->w_popup_prop_win->w_buffer == buf)
-	wp->w_popup_prop_changedtick = CHANGEDTICK(buf) - 1;
+	wp->w_popup_prop_changedtick = - 1;
 }
 
 /*
