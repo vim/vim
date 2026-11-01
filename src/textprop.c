@@ -1891,7 +1891,7 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
 		for (idx = um.prop_count - 1; idx >= 0; --idx)
 		{
 		    if (um.props[idx].tp_id < 0)
-			removed_text = TRUE;
+			removed_text = true;
 		    um_delete_prop(&um, idx);
 		}
 		if (first_changed == 0)
