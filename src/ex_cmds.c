@@ -3114,6 +3114,11 @@ do_ecmd(
 		if (curbuf == old_curbuf.br_buf)
 		    buf_copy_options(buf, BCO_ENTER);
 
+#ifdef FEAT_SYN_HL
+		// The window-local syntax does not apply to the new buffer.
+		reset_synblock(curwin);
+#endif
+
 		// Close the link to the current buffer. This may set
 		// curwin->w_buffer to NULL.
 		u_sync(FALSE);
