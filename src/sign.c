@@ -605,7 +605,7 @@ buf_delsign(buf_T *buf, // buffer sign is stored in
                 sign_group_unref(sign->se_group->sg_name);
 
             vim_free(sign);
-            redraw_buf_line_later(buf, lnum);
+            redraw_buf_range_later(buf, lnum, lnum);
 
             // Check whether only one sign needs to be deleted
             // If deleting a sign with a specific identifier in a particular
@@ -1240,7 +1240,7 @@ sign_place(int *sign_id,
 
     if (lnum > 0)
     {
-        redraw_buf_line_later(buf, lnum);
+        redraw_buf_range_later(buf, lnum, lnum);
 
         // When displaying signs in the 'number' column, if the width of the
         // number column is less than 2, then force recomputing the width.

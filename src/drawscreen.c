@@ -3060,7 +3060,7 @@ update_debug_sign(buf_T *buf, linenr_T lnum)
 # endif
 
     // update/delete a specific sign
-    redraw_buf_line_later(buf, lnum);
+    redraw_buf_range_later(buf, lnum, lnum);
 
     // check if it resulted in the need to redraw a window
     FOR_ALL_WINDOWS(wp)
@@ -3473,13 +3473,11 @@ redraw_buf_later(buf_T *buf, int type)
 #endif
 }
 
-#if defined(FEAT_PROP_POPUP)
+#if defined(FEAT_PROP_POPUP) || defined(FEAT_SIGNS)
 /*
  * Redraw lines "first" to "last" of buffer "buf" in the windows that show it,
- * without marking the text as changed.  Used when only the highlighting of
- * the lines changed, the text and the syntax state remain valid.
- * Popup windows are not handled here, redraw_buf_later() redraws all their
- * lines.
+ * without marking the text as changed: the text, syntax state and line
+ * heights remain valid. Popup windows are not handled here.
  */
     void
 redraw_buf_range_later(buf_T *buf, linenr_T first, linenr_T last)
@@ -3489,19 +3487,6 @@ redraw_buf_range_later(buf_T *buf, linenr_T first, linenr_T last)
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_buffer == buf)
 	    redraw_win_range_later(wp, first, last);
-}
-#endif
-
-#if defined(FEAT_SIGNS)
-    void
-redraw_buf_line_later(buf_T *buf, linenr_T lnum)
-{
-    win_T	*wp;
-
-    FOR_ALL_WINDOWS(wp)
-	if (wp->w_buffer == buf && lnum >= wp->w_topline
-						  && lnum < wp->w_botline)
-	    redrawWinline(wp, lnum);
 }
 #endif
 
