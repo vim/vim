@@ -649,6 +649,95 @@ func Test_startup_background_wait_redirected()
   endif
 endfunc
 
+" Reply after the startup wait, while Vim is handing the terminal back.
+func StartupBackgroundHandoffOutput(state, channel, msg)
+  let a:state.output ..= a:msg
+  if !a:state.queried && a:state.output =~ "\e]11;?"
+    let a:state.queried = 1
+    if a:state.interrupt
+      call add(a:state.timers, timer_start(70,
+            \ {-> ch_sendraw(a:channel, "\<C-C>")}))
+    endif
+    call add(a:state.timers, timer_start(a:state.delay,
+          \ {-> ch_sendraw(a:channel, "\<Esc>]11;rgb:0000/0000/0000\x07")}))
+  endif
+  if !a:state.quit && a:state.output =~ 'Press ENTER'
+    let a:state.quit = 1
+    call ch_sendraw(a:channel, "\<CR>:qall!\<CR>")
+  endif
+endfunc
+
+func Test_startup_background_handoff()
+  CheckUnix
+  CheckFeature job
+  CheckFeature timers
+  CheckFeature termresponse
+  CheckFeature termguicolors
+  CheckExecutable python3
+
+  let reader =<< trim END
+    import os, select, termios, tty
+    old = termios.tcgetattr(0)
+    tty.setraw(0)
+    os.write(1, b'CHILD-START')
+    data = os.read(0, 1024) if select.select([0], [], [], 0.3)[0] else b''
+    termios.tcsetattr(0, termios.TCSANOW, old)
+    with open('Xbghandoffinput', 'wb') as out:
+        out.write(data)
+  END
+  call writefile(reader, 'Xbghandoff.py', 'D')
+  defer delete('Xbghandoffinput')
+
+  " Immediate exit, interrupted wait before :!, and :! without an alternate
+  " screen exercise distinct ways a late response can escape to the caller.
+  for kind in ['exit', 'interrupt', 'colors']
+    let lines = ['set nocompatible termguicolors t_RV= t_RF= t_u7=',
+          \ 'colorscheme lunaperche']
+    if kind != 'exit'
+      call add(lines, 'set termbackgroundwait=50')
+    endif
+    if kind == 'colors'
+      call add(lines, 'set t_ti= t_te=')
+    endif
+    call writefile(lines, 'Xbghandoffvimrc', 'D')
+    call delete('Xbghandoffinput')
+    let cmd = GetVimCommandCleanTerm() .. ' -u Xbghandoffvimrc'
+    if kind != 'exit'
+      let cmd ..= ' -c "!python3 Xbghandoff.py"'
+    endif
+    let state = #{output: '', queried: 0, quit: 0, timers: [],
+          \ interrupt: kind == 'interrupt',
+          \ delay: kind == 'exit' ? 20 : kind == 'interrupt' ? 110 : 80}
+    let job = job_start(cmd .. ' -c "qall!"', #{pty: 1, out_mode: 'raw',
+          \ env: #{TERM: 'xterm', COLORFGBG: ''},
+          \ out_cb: function('StartupBackgroundHandoffOutput', [state])})
+    try
+      call WaitForAssert({-> assert_equal('dead', job_status(job))})
+      call assert_equal(0, job_info(job).exitval, kind)
+      call assert_true(state.queried, kind)
+      " The reply timer must have fired, not been cancelled by an early exit.
+      call assert_equal([], timer_info(state.timers[-1]), kind)
+      call assert_notmatch(']11;rgb:', state.output, kind)
+      if kind != 'exit'
+        call assert_match('CHILD-START', state.output, kind)
+        call assert_equal([], readfile('Xbghandoffinput'), kind)
+      endif
+      if kind == 'colors'
+        let before_child = split(state.output, 'CHILD-START')[0]
+        let sgrs = split(before_child, '\e\[')
+              \ ->filter({_, v -> v =~ '^[0-9;]*m'})
+              \ ->map({_, v -> matchstr(v, '^[0-9;]*m')})
+        call assert_equal('39;49m', sgrs[-1])
+      endif
+    finally
+      for timer in state.timers
+        call timer_stop(timer)
+      endfor
+      call job_stop(job, 'kill')
+    endtry
+  endfor
+endfunc
+
 " Test the -background and -foreground arguments (for GUI only).
 func Test_background_foreground()
   CheckCanRunGui

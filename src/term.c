@@ -4066,6 +4066,14 @@ settmode(tmode_T tmode)
 	    check_for_codes_from_term();
 	}
 #endif
+	// Messages or terminal responses after stoptermcap() may have used
+	// Normal colors again.  Restore the defaults before handing over the
+	// terminal, including when no alternate screen is used.
+	if (tmode == TMODE_COOK && !termcap_active)
+	{
+	    screen_stop_highlight();
+	    reset_cterm_colors();
+	}
 	if (tmode != TMODE_RAW)
 	    mch_setmouse(FALSE);	// switch mouse off
 
@@ -4155,8 +4163,9 @@ stoptermcap(void)
 	if (termrequest_any_pending())
 	{
 # ifdef UNIX
-	    // Give the terminal a chance to respond.
-	    mch_delay(100L, 0);
+	    // Give the terminal a chance to respond, even if input such as
+	    // CTRL-C arrives before the response.
+	    mch_delay(100L, MCH_DELAY_IGNOREINPUT);
 # endif
 # ifdef TCIFLUSH
 	    // Discard data received but not read.
@@ -7863,28 +7872,29 @@ check_for_codes_from_term(void)
 {
     int		c;
 
-    // If no codes requested or all are answered, no need to wait.
-    if (xt_index_out == 0 || xt_index_out == xt_index_in)
+    // Color and other responses also need handling when no XT codes were
+    // requested, e.g. before executing startup commands.
+    if ((xt_index_out == 0 || xt_index_out == xt_index_in)
+	    && !termrequest_any_pending())
 	return;
 
     // Vgetc() will check for and handle any response.
     // Keep calling vpeekc() until we don't get any responses.
     ++no_mapping;
     ++allow_keys;
+    ++allow_osc_key;
     for (;;)
     {
 	c = vpeekc();
 	if (c == NUL)	    // nothing available
 	    break;
 
-	// If a response is recognized it's replaced with K_IGNORE, must read
-	// it from the input stream.  If there is no K_IGNORE we can't do
-	// anything, break here (there might be some responses further on, but
-	// we don't want to throw away any typed chars).
-	if (c != K_SPECIAL && c != K_IGNORE)
+	// Recognized responses are replaced with K_IGNORE or K_OSC.  Read
+	// these from the input stream, but leave typed characters alone.
+	if (c != K_SPECIAL && c != K_IGNORE && c != K_OSC)
 	    break;
 	c = vgetc();
-	if (c != K_IGNORE)
+	if (c != K_IGNORE && c != K_OSC)
 	{
 	    vungetc(c);
 	    break;
@@ -7892,6 +7902,7 @@ check_for_codes_from_term(void)
     }
     --no_mapping;
     --allow_keys;
+    --allow_osc_key;
 }
 #endif
 
