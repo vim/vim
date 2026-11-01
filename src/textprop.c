@@ -2392,7 +2392,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     linenr_T	lnum;
     linenr_T	first_changed = 0;
     linenr_T	last_changed = 0;
-    int		removed_text = FALSE;
+    bool	removed_text = false;
     dict_T	*dict;
     buf_T	*buf = curbuf;
     int		do_all;
