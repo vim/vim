@@ -5477,7 +5477,6 @@ endfunc
 " global and a tab-local popup window updates the popups, also without
 " ":redraw".
 func Test_prop_highlight_in_global_popup()
-  CheckScreendump
   CheckRunVimInTerminal
 
   let lines =<< trim END
