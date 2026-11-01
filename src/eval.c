@@ -4322,6 +4322,18 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    clear_tv(rettv);
 	    return FAIL;
 	}
+
+	// Another comparison operator cannot follow: "a < b < c".
+	p = eval_next_non_blank(*arg, evalarg, &getnext);
+	if (get_compare_type(p, &len, &type_is) != EXPR_UNKNOWN)
+	{
+	    semsg(_(e_comparison_operators_cannot_be_chained_str), p);
+	    clear_tv(rettv);
+	    if (evaluate)
+		clear_tv(&var2);
+	    return FAIL;
+	}
+
 	if (evaluate)
 	{
 	    int ret;
