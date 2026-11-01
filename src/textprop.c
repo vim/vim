@@ -2533,7 +2533,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 			 : matches_id || matches_type)
 		{
 		    if (prop->tp_id < 0)
-			removed_text = TRUE;
+			removed_text = true;
 		    um_delete_prop(&um, idx);
 
 		    if (first_changed == 0)
