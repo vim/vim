@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.2.  Last change: 2026 Oct 17
+*eval.txt*	For Vim version 9.2.  Last change: 2026 Nov 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1976,6 +1976,12 @@ evaluates to.  Use |eval()| to evaluate it.
 nesting						*expr-nesting* *E110*
 -------
 (expr1)			nested expression
+
+If text follows the expression, E110 includes it, to show where the expression
+should end: >
+	echo (0!)
+<	E110: Missing ')': !) ~
+Vim expects the ")" where the "!" is.
 
 
 environment variable					*expr-env*
