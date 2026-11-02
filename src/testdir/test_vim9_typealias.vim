@@ -439,6 +439,13 @@ def Test_typealias_type_check()
   lines =<< trim END
     vim9script
     type Num = number
+    var x = <Num>'a'
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected number but got string', 3)
+
+  lines =<< trim END
+    vim9script
+    type Num = number
     def Foo()
       var x = <Num>'a'
     enddef
