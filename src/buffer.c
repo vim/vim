@@ -6543,6 +6543,7 @@ buf_contents_changed(buf_T *buf)
     {
 	// Failed to find a window for "newbuf".
 	wipe_buffer(newbuf, FALSE);
+	vim_free(ea.cmd);
 	return TRUE;
     }
 
