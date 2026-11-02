@@ -5,7 +5,7 @@
 .\" Mise à jour de la traduction par Dominique Pellé
 .\" (dominique.pelle@gmail.com) 2013-05-10
 .\"
-.TH VIM 1 "22 février 2002"
+.TH VIM 1 "2 novembre 2026"
 .SH NOM
 vim \- Vi IMproved, éditeur de texte pour programmeurs
 .SH SYNOPSIS
@@ -17,7 +17,7 @@ vim \- Vi IMproved, éditeur de texte pour programmeurs
 [options] \-
 .br
 .B vim
-[options] \-t marqueur
+[options] \-t tag
 .br
 .B vim
 [options] \-q [fichiererreurs]
@@ -43,8 +43,8 @@ avec Vi. Il permet d'éditer n'importe quel type de texte brut.
 Il est particulièrement adapté pour l'édition des programmes.
 .PP
 Il comporte de nombreuses améliorations par rapport à Vi : annulation sur
-plusieurs niveaux, fenêtres et tampons multiples, coloration syntaxique,
-édition en ligne de commande, complètement des noms de fichiers, aide en
+plusieurs niveaux, fenêtres et buffers multiples, coloration syntaxique,
+édition en ligne de commande, complétion des noms de fichiers, aide en
 ligne, sélection visuelle, etc.
 Voir ":help vi_diff.txt" pour un résumé des différences entre
 .B Vim
@@ -68,14 +68,14 @@ est lancé avec :
 .PP
 	vim [options] [listefichiers]
 .PP
-Si la listefichiers est omise, l'éditeur démarre avec un tampon vide.
+Si la listefichiers est omise, l'éditeur démarre avec un buffer vide.
 Autrement, l'une des quatre méthodes suivantes vous permettra de choisir
 un ou plusieurs fichiers à éditer.
 .TP 12
 fichier ...
 Une liste de noms de fichiers.
-Le premier sera le fichier courant et sera lu dans le tampon.
-Le curseur sera placé sur la première ligne du tampon.
+Le premier sera le fichier courant et sera lu dans le buffer.
+Le curseur sera placé sur la première ligne du buffer.
 Vous pouvez passer aux autres fichiers avec la commande ":next".
 Pour éditer un fichier débutant par un tiret, faites précéder la
 liste de fichiers par "\-\-".
@@ -84,12 +84,12 @@ liste de fichiers par "\-\-".
 Le fichier à éditer est lu sur l'entrée standard (stdin). Les commandes sont
 lues depuis stderr, qui devrait être un terminal.
 .TP
-\-t {marqueur}
+\-t {tag}
 Le fichier à éditer et la position initiale du curseur dépendent
-d'un "marqueur", qui est une sorte d'étiquette.
-{marqueur} est recherché dans le fichier des marqueurs, le fichier correspondant
+d'un "tag", qui est une sorte de label de saut.
+{tag} est recherché dans le fichier des tags, le fichier correspondant
 devient le fichier courant et la commande associée est exécutée.
-Principalement utile pour les programmes en C ; dans ce cas, {marqueur}
+Principalement utile pour les programmes en C ; dans ce cas, {tag}
 peut être le nom d'une fonction.
 Au final, le fichier contenant cette fonction devient le fichier
 courant et le curseur est placé au début de la fonction.
@@ -292,7 +292,7 @@ Active les options 'lisp' et 'showmatch'.
 \-m
 Empêche la modification des fichiers.
 Désactive l'option 'write'.
-Vous pouvez toujours modifier le tampon, mais il vous sera impossible
+Vous pouvez toujours modifier le buffer, mais il vous sera impossible
 d'écrire le fichier.
 .TP
 \-M
@@ -334,7 +334,7 @@ Quand N est omis, ouvre un onglet pour chaque fichier fichier.
 \-R
 Mode Lecture-Seule.
 Active l'option 'readonly'.
-Vous pouvez toujours éditer le tampon, mais il vous sera impossible de
+Vous pouvez toujours éditer le buffer, mais il vous sera impossible de
 d'écraser accidentellement un fichier.
 Si vous voulez écraser un fichier, ajoutez un point d'exclamation à la commande
 Ex, comme dans ":w!".
@@ -404,7 +404,7 @@ en mode Vi, comme si l'exécutable s'appelait "vi". Cela n'a d'effet que si
 l'exécutable invoqué est "ex".
 .TP
 \-w {scriptSortie}
-Tous les caractères que vous tapez sont enregistrés dans le fichier
+Tous les caractères que vous saisissez sont enregistrés dans le fichier
 {scriptSortie}, jusqu'à ce que vous quittiez
 .B Vim.
 C'est utile quand vous voulez créer un fichier de script à utiliser avec
@@ -489,14 +489,14 @@ fonctionner gvim dans une autre fenêtre.
 \-\-version
 Affiche les informations sur la version puis quitte.
 .SH AIDE EN LIGNE
-Taper ":help" dans
+Saisir ":help" dans
 .B Vim
 pour commencer.
-Taper ":help sujet" pour obtenir de l'aide sur un sujet précis.
+Saisir ":help sujet" pour obtenir de l'aide sur un sujet précis.
 Par exemple : ":help ZZ" pour consulter l'aide sur la commande "ZZ".
 Utiliser <Tab> et CTRL\-D pour compléter les sujets (":help
 cmdline\-completion").
-Des marqueurs sont inclus dans l'aide et vous permettent de sauter d'un endroit
+Des tags sont inclus dans l'aide et vous permettent de sauter d'un endroit
 à un autre (comme des liens hypertextes, voir ":help").
 L'ensemble des fichiers de la documentation peut être consulté de cette
 façon, par exemple ":help syntax.txt".
@@ -508,7 +508,7 @@ Les fichiers de la documentation de
 Utiliser ":help doc\-file\-list" pour obtenir la liste complète.
 .TP
 /usr/local/lib/vim/doc/tags
-Le fichier des marqueurs utilisé pour trouver les informations dans les
+Le fichier des tags utilisé pour trouver les informations dans les
 fichiers de la documentation.
 .TP
 /usr/local/lib/vim/syntax/syntax.vim
@@ -578,7 +578,7 @@ NOTE : Remarquez que bon nombre de points, qui pourraient être considérés comme
 des bugs par certains, sont en fait dus à une reproduction trop fidèle
 du comportement de Vi. Et si vous pensez que d'autres points sont des
 bugs "parce que Vi le fait différemment", vous devriez jeter un oeil
-attentif au fichier vi_diff.txt (ou taper ":help vi_diff.txt" dans Vim).
+attentif au fichier vi_diff.txt (ou saisir ":help vi_diff.txt" dans Vim).
 Regardez aussi les options 'compatible' et 'coptions'.
 .SH TRADUCTION
 Cette page de manuel a été traduite par Richard Hitier.
