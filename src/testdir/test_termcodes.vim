@@ -1811,7 +1811,7 @@ func Test_xx04_Mac_Terminal_response()
 
   set ttymouse=xterm
   " t_8u is not reset
-  let &t_8u = "\<Esc>[58;2;%lu;%lu;%lum"
+  let &t_8u = "\<Esc>[58:2::%lu:%lu:%lum"
   call test_option_not_set('ttymouse')
   let seq = "\<Esc>[>1;95;0c"
   call feedkeys(seq, 'Lx!')
@@ -1827,7 +1827,7 @@ func Test_xx04_Mac_Terminal_response()
         \ rgb: 'u',
         \ decrqm: 'n'
         \ }, terminalprops())
-  call assert_equal("\<Esc>[58;2;%lu;%lu;%lum", &t_8u)
+  call assert_equal("\<Esc>[58:2::%lu:%lu:%lum", &t_8u)
 
   " Reset is_not_xterm and is_mac_terminal.
   set t_RV=
@@ -1906,7 +1906,7 @@ endfunc
 func Do_check_t_8u_set_reset(set_by_user)
   set ttymouse=xterm
   call test_option_not_set('ttymouse')
-  let default_value = "\<Esc>[58;2;%lu;%lu;%lum"
+  let default_value = "\<Esc>[58:2::%lu:%lu:%lum"
   let &t_8u = default_value
   if !a:set_by_user
     call test_option_not_set('t_8u')

@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Oct 25
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Nov 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52719,6 +52719,8 @@ Changed ~
 - The highlighting groups |hl-CursorLineFold| and |hl-CursorLineSign| are
   always used when 'cursorline' is set.
 - Virtual text above a line is now counted by |screenpos()| and |virtcol()|.
+- The default values of |t_AU| and |t_8u| use colons to separate the
+  parameters of the color for |underline| and |undercurl|.
 
 							*added-9.3*
 Added ~
