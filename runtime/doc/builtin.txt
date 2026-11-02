@@ -5651,7 +5651,7 @@ gettabwinvar({tabnr}, {winid}, {varname} [, {def}])	*gettabwinvar()*
 			gettabwinvar({tabnr}, {winid}, '&')
 
 <		Can also be used as a |method|: >
-			GetTabnr()->gettabwinvar(winid varname)
+			GetTabnr()->gettabwinvar(winid, varname)
 <
 		Return type: any, depending on {varname}
 
