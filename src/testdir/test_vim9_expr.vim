@@ -713,6 +713,45 @@ def Test_expr2_fails()
 enddef
 
 " test &&
+" Using a member of a dict in an expression that is skipped because of a
+" constant "||" or "&&" operand: a function call, a method call, an index or
+" another member.  The expression is not evaluated.
+def Test_expr2_skipped_member_call()
+  var lines =<< trim END
+      var d = {Fn: () => g:Record(1), l: [1], sub: {x: 1}}
+      g:vals = []
+      assert_true(true || d.Fn())
+      assert_true(true || d.l->len() > 0)
+      assert_true(true || d.l[0] == 1)
+      assert_true(true || d.sub.x == 1)
+      assert_false(false && d.Fn())
+      assert_equal([], g:vals)
+      assert_true(false || d.Fn())
+      assert_equal([1], g:vals)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Calling an object method in a skipped expression
+  lines =<< trim END
+      vim9script
+      class A
+        def True(): bool
+          g:vals->add('called')
+          return true
+        enddef
+      endclass
+      def F(): list<bool>
+        var o = A.new()
+        return [has('eval') || o.True(), !has('eval') && o.True()]
+      enddef
+      g:vals = []
+      assert_equal([true, false], F())
+      assert_equal([], g:vals)
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:vals
+enddef
+
 def Test_expr3()
   var lines =<< trim END
       assert_equal(false, 1 && 0)
