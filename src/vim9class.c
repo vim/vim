@@ -2366,7 +2366,6 @@ early_ret:
 		break;
 	    }
 	    has_public = TRUE;
-	    p = skipwhite(line + 6);
 
 	    if (STRNCMP(p, "def", 3) == 0)
 	    {
@@ -2412,7 +2411,6 @@ early_ret:
 		break;
 	    }
 
-	    p = skipwhite(pa + 8);
 	    if (STRNCMP(p, "def", 3) != 0)
 	    {
 		emsg(_(e_abstract_must_be_followed_by_def));
@@ -2438,7 +2436,6 @@ early_ret:
 		break;
 	    }
 	    has_static = TRUE;
-	    p = skipwhite(ps + 6);
 
 	    if (STRNCMP(p, "var", 3) != 0 && STRNCMP(p, "def", 3) != 0
 		&& STRNCMP(p, "final", 5) != 0 && STRNCMP(p, "const", 5) != 0)
@@ -2471,7 +2468,6 @@ early_ret:
 	    }
 	    has_const = TRUE;
 	}
-	p = skipwhite(p);
 
 	// object members (public, read access, private):
 	//	"var _varname"
