@@ -1238,6 +1238,8 @@ win_line(
     int		text_prop_follows = FALSE;  // another text prop to display
     int		text_prop_start_bcol = 0;   // byte column where the displayed
 					    // part of the line starts
+    int		text_prop_first_right = -1; // index of the first "right"
+					    // aligned text prop after the line
     int		saved_search_attr = 0;	// search_attr to be used when n_extra
 					// goes to zero
     int		saved_area_attr = 0;	// idem for area_attr
@@ -1791,6 +1793,21 @@ win_line(
 			++wlv.text_prop_above_count;
 		}
 
+	    // Must use the same number of screen lines as
+	    // prop_count_above_below().
+	    int right_count = 0;
+	    for (int i = 0; i < text_prop_count; ++i)
+		if (text_props[i].tp_col == MAXCOL
+			&& (text_props[i].tp_flags & TP_FLAG_ALIGN_RIGHT)
+			&& text_prop_type_valid(wp->w_buffer, &text_props[i]))
+		    text_prop_idxs[right_count++] = i;
+	    if (right_count > 0)
+	    {
+		sort_text_props(wp->w_buffer, text_props, text_prop_idxs,
+								  right_count);
+		text_prop_first_right = text_prop_idxs[right_count - 1];
+	    }
+
 	    text_prop_suffix_flags[text_prop_count] = 0;
 	    for (int i = text_prop_count - 1; i >= 0; --i)
 	    {
@@ -1799,7 +1816,11 @@ win_line(
 		if (text_props[i].tp_col == MAXCOL)
 		{
 		    flags |= 1;
-		    if (text_props[i].tp_flags & TP_FLAG_ALIGN_BELOW)
+		    if ((text_props[i].tp_flags & TP_FLAG_ALIGN_BELOW)
+			    || (text_prop_first_right >= 0
+				&& i != text_prop_first_right
+				&& (text_props[i].tp_flags
+							& TP_FLAG_ALIGN_RIGHT)))
 			flags |= 2;
 		}
 		text_prop_suffix_flags[i] = flags;
@@ -2237,11 +2258,15 @@ win_line(
 			    break;
 			else
 			{
-			    // With 'nowrap' and not in the first screen line only "below"
-			    // text prop can show.
+			    // With 'nowrap' and not in the first screen line
+			    // only "below" text prop and "right" text prop that
+			    // goes below can show.
 			    active = wp->w_p_wrap
 				  || wlv.row == startrow
-				  || (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
+				  || (tp->tp_flags & TP_FLAG_ALIGN_BELOW)
+				  || (text_prop_first_right >= 0
+				      && text_prop_next != text_prop_first_right
+				      && (tp->tp_flags & TP_FLAG_ALIGN_RIGHT));
 			}
 		    }
 		    else
@@ -2440,6 +2465,16 @@ win_line(
 				    bail_out = TRUE;
 				}
 			    }
+			}
+
+			// With 'nowrap' "right" aligned text left of the window
+			// must not be shifted.
+			if (skip_cells > 0 && !wp->w_p_wrap
+				&& tp->tp_col == MAXCOL
+				&& (tp->tp_flags & TP_FLAG_ALIGN_RIGHT))
+			{
+			    skipped_cells += skip_cells;
+			    skip_cells = 0;
 			}
 
 			// If the text didn't reach until the first window
