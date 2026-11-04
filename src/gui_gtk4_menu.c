@@ -695,6 +695,21 @@ vim_menu_reset_parent_prelight(VimMenu *self)
 }
 
 /*
+ * Return the menu that "self" is a submenu of, NULL if there is none.
+ */
+    static VimMenu *
+vim_menu_get_parent_menu(VimMenu *self)
+{
+    GtkWidget *parent = gtk_widget_get_parent(GTK_WIDGET(self));
+
+    // gtk_widget_get_ancestor assumes the widget itself is also an ancestor, so
+    // we must get parent of menu first.
+    if (parent == NULL)
+	return NULL;
+    return VIM_MENU(gtk_widget_get_ancestor(parent, VIM_TYPE_MENU));
+}
+
+/*
  * Close all submenus in the menubar given a menu widget
  */
     static void
@@ -706,10 +721,34 @@ vim_menu_close_all(VimMenu *self)
     if (menubar != NULL)
 	vim_menu_bar_set_active_item(menubar, NULL, TRUE);
     else
-	gtk_popover_popdown(GTK_POPOVER(self));
+    {
+	VimMenu *menu = self;
+
+	// Since the "cascade-popdown" property is FALSE, closing a submenu
+	// leaves its parent menus open.
+	while (menu != NULL)
+	{
+	    VimMenu *parent_menu = vim_menu_get_parent_menu(menu);
+
+	    gtk_popover_popdown(GTK_POPOVER(menu));
+	    menu = parent_menu;
+	}
+    }
 
     // Grab focus after popup menus without a menubar are closed
     gtk_widget_grab_focus(gui.drawarea);
+}
+
+    static void
+vim_menu_pressed_cb(
+	GtkGesture  *gesture,
+	int	    n_press UNUSED,
+	double	    x UNUSED,
+	double	    y UNUSED,
+	VimMenu	    *self)
+{
+    if (gui_gtk_claim_window_press(gesture, GTK_WIDGET(self)))
+	vim_menu_close_all(self);
 }
 
     static gboolean
@@ -897,6 +936,9 @@ vim_menu_init(VimMenu *self)
     g_signal_connect_object(controller, "motion",
 	    G_CALLBACK(vim_menu_motion_cb), self, G_CONNECT_DEFAULT);
     gtk_widget_add_controller(GTK_WIDGET(self), controller);
+
+    gui_gtk_popover_add_press(GTK_WIDGET(self),
+					    G_CALLBACK(vim_menu_pressed_cb));
 
     g_signal_connect(self, "closed", G_CALLBACK(vim_menu_closed_cb), NULL);
 

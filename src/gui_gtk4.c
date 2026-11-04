@@ -885,6 +885,49 @@ gui_mch_set_fullscreen(int flag)
 	gtk_window_unfullscreen(GTK_WINDOW(gui.mainwin));
 }
 
+/*
+ * Add a gesture to "popover" that calls "pressed_cb" when a mouse button is
+ * pressed.  That callback must use gui_gtk_claim_window_press().
+ */
+    void
+gui_gtk_popover_add_press(GtkWidget *popover, GCallback pressed_cb)
+{
+    GtkEventController *controller;
+
+    controller = GTK_EVENT_CONTROLLER(gtk_gesture_click_new());
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(controller), 0);
+    gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_CAPTURE);
+    g_signal_connect_object(controller, "pressed", pressed_cb, popover,
+							    G_CONNECT_DEFAULT);
+    gtk_widget_add_controller(popover, controller);
+}
+
+/*
+ * A mouse button was pressed while "popover" is open.  Return TRUE if the
+ * press is in the window, then the popover must be closed.
+ *
+ * Normally GTK closes a popover for a press in the window and this is not
+ * reached for it.  But when a popover inside this one was closed, like a
+ * submenu or the list of a combo row, GTK does not do that any more and it
+ * sends the press to this popover instead of the window.
+ */
+    int
+gui_gtk_claim_window_press(GtkGesture *gesture, GtkWidget *popover)
+{
+    GdkEvent	*event = gtk_event_controller_get_current_event(
+						GTK_EVENT_CONTROLLER(gesture));
+    GtkRoot	*root = gtk_widget_get_root(popover);
+
+    if (event == NULL || root == NULL || gdk_event_get_surface(event)
+				!= gtk_native_get_surface(GTK_NATIVE(root)))
+	return FALSE;
+
+    // Like when GTK closes the popover, the press is not used for anything
+    // else.
+    gtk_gesture_set_state(gesture, GTK_EVENT_SEQUENCE_CLAIMED);
+    return TRUE;
+}
+
     static void
 mainwin_fullscreened_cb(GObject *obj,
 	GParamSpec *pspec UNUSED, gpointer user_data UNUSED)
