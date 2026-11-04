@@ -2916,19 +2916,20 @@ check_need_cap(win_T *wp, linenr_T lnum, colnr_T col)
 		need_cap = TRUE;
 	    else
 	    {
+		colnr_T len = ml_get_buf_len(wp->w_buffer, lnum - 1);
 		// Append a space in place of the line break.
 		line_copy = concat_str(line, (char_u *)" ");
 		if (line_copy == NULL)
 		    return FALSE;
 
 		line = line_copy;
-		endcol = (colnr_T)STRLEN(line);
+		endcol = len + 1;
 	    }
 	}
     }
     else
     {
-	colnr_T len = (colnr_T)STRLEN(line);
+	colnr_T len = ml_get_buf_len(wp->w_buffer, lnum);
 	endcol = col > len ? len : col;
     }
 
