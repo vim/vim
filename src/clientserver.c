@@ -186,7 +186,8 @@ serverConvert(
 static char_u *build_drop_cmd(int filec, char **filev, int tabs, int sendReply);
 
 /*
- * Do the client-server stuff, unless "--servername ''" was used.
+ * Do the client-server stuff, unless "--servername ''" or "--stdio-channel"
+ * was used.
  */
     void
 exec_on_server(mparm_T *parmp)
@@ -195,6 +196,10 @@ exec_on_server(mparm_T *parmp)
 
     if (parmp->serverName_arg != NULL && *parmp->serverName_arg == NUL)
 	return;
+# ifdef FEAT_JOB_CHANNEL
+    if (use_stdio_channel)
+	return;
+# endif
 
 # ifdef MSWIN
     // Initialise the client/server messaging infrastructure.
