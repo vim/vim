@@ -3347,10 +3347,23 @@ gui_gtk_set_mnemonics(int enable)
     }
 }
 
+    static gboolean
+popupmenu_unparent_idle_cb(gpointer data)
+{
+    GtkWidget *popover = data;
+
+    if (gtk_widget_get_parent(popover) != NULL)
+	gtk_widget_unparent(popover);
+    g_object_unref(popover);
+    return G_SOURCE_REMOVE;
+}
+
     static void
 popupmenu_closed_cb(GtkWidget *popover, void *udata UNUSED)
 {
-    gtk_widget_unparent(popover);
+    // Unparenting destroys the popover, which GTK and the menu code still use
+    // after this signal.
+    g_idle_add(popupmenu_unparent_idle_cb, g_object_ref(popover));
     if (gui.drawarea != NULL)
 	gtk_widget_queue_draw(gui.drawarea);
 }
