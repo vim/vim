@@ -1062,4 +1062,51 @@ func Test_nb_defineAnnoType_injection()
   call ch_log('Test_nb_defineAnnoType_injection')
   call s:run_server('Nb_defineAnnoType_injection')
 endfunc
+
+" getText with a single line of only quote characters: every character is
+" doubled by the quoting, this used to write past the allocated buffer.
+func Nb_getText_quotes(port)
+  call writefile([], "Xnetbeans", 'D')
+  let g:last = 0
+
+  exe 'nbstart :localhost:' .. a:port .. ':bunny'
+  call assert_true(has("netbeans_enabled"))
+  call WaitFor('len(ReadXnetbeans()) > (g:last + 2)')
+  let g:last += 3
+
+  split Xcmdbuf
+  let cmdbufnr = bufnr()
+  call WaitFor('len(ReadXnetbeans()) > (g:last + 2)')
+  let g:last += 3
+  hide
+
+  sleep 1m
+
+  " "editFile_Test" opens Xfile3 as buffer 2
+  call writefile([repeat('"', 10)], 'Xfile3', 'D')
+  call appendbufline(cmdbufnr, '$', 'editFile_Test')
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 4)')
+  call assert_equal('Xfile3', bufname())
+  let g:last += 4
+
+  let expected = '56 "' .. repeat('\"', 10) .. '\n"'
+  for eol in [1, 0]
+    let &l:eol = eol
+    call appendbufline(cmdbufnr, '$', 'getText_Test')
+    call WaitFor('len(ReadXnetbeans()) >= (g:last + 4)')
+    let l = ReadXnetbeans()
+    call assert_equal(['send: 2:getText/56', expected], l[-2:], 'eol=' .. eol)
+    let g:last += 4
+  endfor
+
+  bwipe! Xfile3
+  bwipe! Xcmdbuf
+  nbclose
+endfunc
+
+func Test_nb_getText_quotes()
+  call ch_log('Test_nb_getText_quotes')
+  call s:run_server('Nb_getText_quotes')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
