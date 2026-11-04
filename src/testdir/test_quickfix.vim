@@ -2481,6 +2481,7 @@ func Test_two_windows()
   bwipe!
   call win_gotoid(two_id)
   bwipe!
+  set efm&
 endfunc
 
 func XbottomTests(cchar)
@@ -6958,7 +6959,7 @@ func Xtest_Xhistory_check_order(cchar)
 
   Xopen
   for i in range(100, 1, -1)
-    let l:ret = assert_equal("|| " .. i, getline(1))
+    let ret = assert_equal("|| " .. i, getline(1))
 
     if ret == 1 || i == 1
       break
@@ -6966,27 +6967,22 @@ func Xtest_Xhistory_check_order(cchar)
     Xolder
   endfor
 
+  " Adding lists to the oldest list frees the newer ones
   for i in range(1, 50)
     Xexpr string(i)
   endfor
+  call assert_equal(51, g:Xgetlist({'nr': '$'}).nr)
 
   for i in range(50, 1, -1)
-    let l:ret = assert_equal("|| " .. i, getline(1))
+    let ret = assert_equal("|| " .. i, getline(1))
 
-    if ret == 1 || i == 50
+    if ret == 1
       break
     endif
     Xolder
   endfor
-
-  for i in range(50, 1, -1)
-    let l:ret = assert_equal("|| " .. i, getline(1))
-
-    if ret == 1 || i == 50
-      break
-    endif
-    Xolder
-  endfor
+  call assert_equal(1, g:Xgetlist({'nr': 0}).nr)
+  call assert_equal("|| 1", getline(1))
 
   Xsethistdefault
 endfunc
@@ -7114,7 +7110,7 @@ func Test_vimgrep_dummy_buffer_keep()
           \| tab split | call interrupt()
   augroup END
 
-  call assert_fails('vimgrep /./ .')
+  call assert_fails('vimgrep /./ .', 'E480: No match: .')
   call assert_equal(1, bufexists(s:dummy_buf))
   " Ensure it's no longer considered a dummy; should be able to switch to it.
   execute s:dummy_buf 'sbuffer'
@@ -7242,6 +7238,131 @@ func Test_qf_statusline_height()
   wincmd p
   call assert_equal(prev_wh, winheight('.'))
   %bw!
+endfunc
+
+" Test that a command failing because of an invalid 'errorformat' does not
+" change the lists in the quickfix stack.
+func Xtest_failed_efm_keeps_lists(cchar)
+  call s:setup_commands(a:cchar)
+
+  Xgetexpr ['Xfile1:1:one']
+  Xgetexpr ['Xfile2:2:two']
+  let ids = [g:Xgetlist({'nr': 1, 'id': 0}).id,
+        \ g:Xgetlist({'nr': 2, 'id': 0}).id]
+
+  let save_efm = &efm
+  set efm=%f:%l:%m,%x
+  call assert_fails('Xgetexpr ["Xfile3:3:three"]',
+        \ 'E376: Invalid %x in format string prefix')
+  let &efm = save_efm
+
+  call assert_equal(2, g:Xgetlist({'nr': '$'}).nr)
+  call assert_equal(2, g:Xgetlist({'nr': 0}).nr)
+  call assert_equal(ids, [g:Xgetlist({'nr': 1, 'id': 0}).id,
+        \ g:Xgetlist({'nr': 2, 'id': 0}).id])
+  call assert_equal(['two'], map(g:Xgetlist(), 'v:val.text'))
+
+  " Adding lines with an invalid "efm" fails and keeps the list unchanged
+  let tick = g:Xgetlist({'changedtick': 0}).changedtick
+  call assert_fails("call g:Xsetlist([], 'a', {'lines': ['Xfile3:3:three'], 'efm': '%x'})",
+        \ 'E376: Invalid %x in format string prefix')
+  call assert_equal(['two'], map(g:Xgetlist(), 'v:val.text'))
+  call assert_equal(tick, g:Xgetlist({'changedtick': 0}).changedtick)
+  call assert_equal(2, g:Xgetlist({'nr': '$'}).nr)
+
+  call g:Xsetlist([], 'f')
+endfunc
+
+func Test_failed_efm_keeps_lists()
+  call Xtest_failed_efm_keeps_lists('c')
+  call Xtest_failed_efm_keeps_lists('l')
+endfunc
+
+" Test that the buffer-local 'errorformat' is used when reading errors from a
+" file or a buffer, while :cexpr and the "lines" item of setqflist() and
+" getqflist() use the global value.
+func Xtest_efm_local_value_per_source(cchar)
+  call s:setup_commands(a:cchar)
+
+  let save_efm = &g:efm
+  set efm=%f:%l:%m
+  call writefile(['Xlocalefm.txt@3@msg'], 'Xlocalefm', 'D')
+  edit Xlocalefm
+  setlocal efm=%f@%l@%m
+
+  Xgetfile Xlocalefm
+  let item = g:Xgetlist()[0]
+  call assert_equal([1, 3, 'msg'], [item.valid, item.lnum, item.text])
+  Xgetbuffer
+  let item = g:Xgetlist()[0]
+  call assert_equal([1, 3, 'msg'], [item.valid, item.lnum, item.text])
+
+  Xgetexpr ['Xlocalefm.txt@3@msg']
+  let item = g:Xgetlist()[0]
+  call assert_equal([0, 0], [item.valid, item.lnum])
+  call g:Xsetlist([], ' ', {'lines': ['Xlocalefm.txt@3@msg']})
+  let item = g:Xgetlist()[0]
+  call assert_equal([0, 0], [item.valid, item.lnum])
+  let items = g:Xgetlist({'lines': ['Xlocalefm.txt@3@msg']}).items
+  call assert_equal([0, 0], [items[0].valid, items[0].lnum])
+
+  let &g:efm = save_efm
+  call g:Xsetlist([], 'f')
+  %bw!
+endfunc
+
+func Test_efm_local_value_per_source()
+  call Xtest_efm_local_value_per_source('c')
+  call Xtest_efm_local_value_per_source('l')
+endfunc
+
+"" Test that the "%s" item in 'errorformat' locates the error line by searching
+" for the text.
+func Test_efm_search_text_jump()
+  let save_efm = &efm
+  call writefile(['first', 'int a b;', 'last'], 'Xsearchtext', 'D')
+  set efm=%f\|%s
+  cexpr 'Xsearchtext|int a b;'
+  call assert_equal('^\Vint a b;\$', getqflist()[0].pattern)
+  call assert_equal(0, getqflist()[0].lnum)
+  call assert_equal('Xsearchtext', bufname())
+  call assert_equal(2, line('.'))
+
+  let &efm = save_efm
+  call setqflist([], 'f')
+  %bw!
+endfunc
+
+" Test that jumping to an entry with a line or column beyond the end of the
+" buffer puts the cursor on the last line or column, and that a failed jump at
+" either end of the list keeps the current entry.
+func Xtest_jump_clamps_position(cchar)
+  call s:setup_commands(a:cchar)
+
+  call writefile(['one', 'two', 'three'], 'Xclamp', 'D')
+  call g:Xsetlist([
+        \ {'filename': 'Xclamp', 'lnum': 100, 'col': 1, 'text': 'past end'},
+        \ {'filename': 'Xclamp', 'lnum': 2, 'col': 100, 'text': 'past eol'}])
+  Xfirst
+  call assert_equal('Xclamp', bufname())
+  call assert_equal([3, 1], [line('.'), col('.')])
+  Xnext
+  call assert_equal([2, 3], [line('.'), col('.')])
+
+  call assert_fails('Xnext', 'E553: No more items')
+  call assert_equal(2, g:Xgetlist({'idx': 0}).idx)
+  Xfirst
+  call assert_fails('Xprev', 'E553: No more items')
+  call assert_equal(1, g:Xgetlist({'idx': 0}).idx)
+  call assert_equal([3, 1], [line('.'), col('.')])
+
+  call g:Xsetlist([], 'f')
+  %bw!
+endfunc
+
+func Test_jump_clamps_position()
+  call Xtest_jump_clamps_position('c')
+  call Xtest_jump_clamps_position('l')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
