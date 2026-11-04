@@ -238,6 +238,39 @@ func Test_compare_with_null()
   unlet s:value
 endfunc
 
+" A comparison cannot be followed by another one, with or without parentheses.
+func Test_compare_chained()
+  call v9.CheckLegacyAndVim9Failure(['echo (1 != 2 > 3)'], 'E1588: Comparison operators cannot be chained, use parentheses: > 3)')
+  call v9.CheckLegacyAndVim9Failure(['echo 1 != 2 > 3'], 'E1588:')
+  call v9.CheckLegacyAndVim9Failure(['echo 1 == 1 == 1'], 'E1588:')
+  call v9.CheckLegacyAndVim9Failure(['echo 1 < 2 <= 3'], 'E1588:')
+  call v9.CheckLegacyAndVim9Failure(['echo "a" =~ "a" !~ "b"'], 'E1588:')
+  call v9.CheckLegacyAndVim9Failure(['echo [] is [] isnot []'], 'E1588:')
+  call v9.CheckLegacyAndVim9Failure(['VAR x = 1 ==# 1 ==? 1'], 'E1588:')
+
+  " also when it is not evaluated
+  call v9.CheckLegacyAndVim9Failure(['echo 0 && (1 < 2 < 3)'], 'E1588:')
+
+  " a comparison on its own and with parentheses is fine
+  let lines =<< trim END
+      call assert_equal(TRUE, TRUE != (2 > 3))
+      call assert_equal(TRUE, (1 != 2) == (3 < 4))
+      call assert_equal(TRUE, 1 < 2 && 2 < 3)
+      call assert_equal(FALSE, 1 == 1 ? 2 > 3 : 3 > 2)
+      VAR is_ok = 1
+      call assert_equal(TRUE, is_ok == 1)
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+
+  " a continuation line does not hide it
+  let lines =<< trim END
+      vim9script
+      var x = 1 < 2
+            < 3
+  END
+  call v9.CheckScriptFailure(lines, 'E1588:', 2)
+endfunc
+
 func Test_setreg_null_list()
   let lines =<< trim END
       call setreg('x', test_null_list())
