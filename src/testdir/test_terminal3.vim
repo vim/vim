@@ -1559,4 +1559,37 @@ func Test_terminal_tmap_with_modify_other_keys()
         \ ctrl_f .. ctrl_shift_f .. 'a')
 endfunc
 
+" In the MS-Windows console with 'termguicolors' an SGR sequence set by the
+" user, such as "t_Cs" for undercurl, must reach the terminal and must not
+" drop the text that follows it.  Uses a plain underline, the console behind
+" ConPTY may not understand "\e[4:3m".
+func Test_terminal_mswin_vtp_sgr_passthrough()
+  CheckMSWindows
+  CheckFeature termguicolors
+
+  let lines =<< trim END
+    set termguicolors
+    let &t_Cs = "\e[4m"
+    let &t_Ce = "\e[24m"
+    hi Curl cterm=undercurl gui=undercurl
+    call setline(1, 'foo bar')
+    call matchadd('Curl', 'foo')
+  END
+  call writefile(lines, 'XsgrScript', 'D')
+  let buf = term_start(GetVimCommandCleanTerm() .. '-S XsgrScript',
+        \ #{term_rows: 5, term_cols: 40})
+  call WaitForAssert({-> assert_equal('foo bar', trim(term_getline(buf, 1)))})
+
+  " "foo" is underlined, "bar" is not
+  call WaitForAssert({-> assert_equal(1,
+        \ term_getattr(term_scrape(buf, 1)[0].attr, 'underline'))})
+  let cells = term_scrape(buf, 1)
+  call assert_equal(1, term_getattr(cells[2].attr, 'underline'))
+  call assert_equal(0, term_getattr(cells[4].attr, 'underline'))
+
+  call term_sendkeys(buf, ":qa!\<CR>")
+  call WaitForAssert({-> assert_equal('dead', job_status(term_getjob(buf)))})
+  exe buf .. 'bwipe!'
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
