@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-11-04 18:15+0000\n"
+"POT-Creation-Date: 2026-11-04 18:29+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4105,6 +4105,10 @@ msgid "E109: Missing ':' after '?'"
 msgstr ""
 
 msgid "E110: Missing ')'"
+msgstr ""
+
+#, c-format
+msgid "E110: Missing ')': %s"
 msgstr ""
 
 msgid "E111: Missing ']'"
