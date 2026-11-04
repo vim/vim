@@ -1072,6 +1072,7 @@ MSWIN_FILE	= $(DESTDIR)$(SCRIPTLOC)/mswin.vim
 
 ### Name of the menu file target.
 SYS_MENU_FILE	= $(DESTDIR)$(SCRIPTLOC)/menu.vim
+SYS_ADWMENU_FILE = $(DESTDIR)$(SCRIPTLOC)/menu_adwaita.vim
 SYS_SYNMENU_FILE = $(DESTDIR)$(SCRIPTLOC)/synmenu.vim
 SYS_DELMENU_FILE = $(DESTDIR)$(SCRIPTLOC)/delmenu.vim
 
@@ -1245,6 +1246,7 @@ GTK4_SRC	= gui.c gui_gtk4.c gui_gtk4_f.c \
 			gui_beval.o \
 			gui_gtk4_tb.c \
 			gui_gtk4_menu.c \
+			gui_gtk4_adw.c \
 			$(GRESOURCE_SRC)
 GTK4_OBJ	= objects/gui.o objects/gui_gtk4.o \
 			objects/gui_gtk4_f.o \
@@ -1253,6 +1255,7 @@ GTK4_OBJ	= objects/gui.o objects/gui_gtk4.o \
 			objects/gui_beval.o \
 			objects/gui_gtk4_tb.o \
 			objects/gui_gtk4_menu.o \
+			objects/gui_gtk4_adw.o \
 			$(GRESOURCE_OBJ)
 GTK4_DEFS	= -DFEAT_GUI_GTK $(NARROW_PROTO)
 GTK4_IPATH	= $(GUI_INC_LOC)
@@ -1322,8 +1325,8 @@ HAIKUGUI_TESTTARGET = gui
 HAIKUGUI_BUNDLE =
 
 # All GUI files
-ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_gtk4.c gui_gtk4_f.c gui_gtk4_cb.c gui_gtk4_da.c gui_gtk4_tb.c gui_gtk4_menu.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_gtk_x11.c gui_x11.c gui_haiku.cc
-ALL_GUI_PRO  = proto/gui.pro proto/gui_gtk.pro proto/gui_gtk4.pro proto/gui_motif.pro proto/gui_xmdlg.pro proto/gui_gtk_x11.pro proto/gui_x11.pro proto/gui_w32.pro proto/gui_photon.pro
+ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_gtk4.c gui_gtk4_f.c gui_gtk4_cb.c gui_gtk4_da.c gui_gtk4_tb.c gui_gtk4_menu.c gui_gtk4_adw.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_gtk_x11.c gui_x11.c gui_haiku.cc
+ALL_GUI_PRO  = proto/gui.pro proto/gui_gtk.pro proto/gui_gtk4.pro proto/gui_gtk4_adw.pro proto/gui_motif.pro proto/gui_xmdlg.pro proto/gui_gtk_x11.pro proto/gui_x11.pro proto/gui_w32.pro proto/gui_photon.pro
 
 # }}}
 
@@ -2431,6 +2434,8 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(VIMTARGET) $(DEST_RT) \
 # install the menu files
 	$(INSTALL_DATA) $(SCRIPTSOURCE)/menu.vim $(SYS_MENU_FILE)
 	chmod $(VIMSCRIPTMOD) $(SYS_MENU_FILE)
+	$(INSTALL_DATA) $(SCRIPTSOURCE)/menu_adwaita.vim $(SYS_ADWMENU_FILE)
+	chmod $(VIMSCRIPTMOD) $(SYS_ADWMENU_FILE)
 	$(INSTALL_DATA) $(SCRIPTSOURCE)/synmenu.vim $(SYS_SYNMENU_FILE)
 	chmod $(VIMSCRIPTMOD) $(SYS_SYNMENU_FILE)
 	$(INSTALL_DATA) $(SCRIPTSOURCE)/delmenu.vim $(SYS_DELMENU_FILE)
@@ -2966,7 +2971,7 @@ uninstall_runtime:
 	-rm -f $(DEST_MAN_SV)/xxd.1 $(DEST_MAN_SV_I)/xxd.1 $(DEST_MAN_SV_U)/xxd.1
 	-rm -f $(DEST_HELP)/*.txt $(DEST_HELP)/tags $(DEST_HELP)/*.pl
 	-rm -f $(DEST_HELP)/*.??x $(DEST_HELP)/tags-??
-	-rm -f $(SYS_MENU_FILE) $(SYS_SYNMENU_FILE) $(SYS_DELMENU_FILE)
+	-rm -f $(SYS_MENU_FILE) $(SYS_ADWMENU_FILE) $(SYS_SYNMENU_FILE) $(SYS_DELMENU_FILE)
 	-rm -f $(SYS_BUGR_FILE) $(VIM_DEFAULTS_FILE) $(EVIM_FILE) $(MSWIN_FILE)
 	-rm -f $(DEST_SCRIPT)/gvimrc_example.vim $(DEST_SCRIPT)/vimrc_example.vim
 	-rm -f $(SYS_FILETYPE_FILE) $(SYS_FTOFF_FILE) $(SYS_SCRIPTS_FILE)
@@ -3437,6 +3442,9 @@ objects/gui_gtk4_tb.o: gui_gtk4_tb.c
 
 objects/gui_gtk4_menu.o: gui_gtk4_menu.c
 	$(CCC) -o $@ gui_gtk4_menu.c
+
+objects/gui_gtk4_adw.o: gui_gtk4_adw.c
+	$(CCC) -o $@ gui_gtk4_adw.c
 
 
 objects/gui_haiku.o: gui_haiku.cc
@@ -4571,6 +4579,11 @@ objects/gui_gtk4_menu.o: auto/osdef.h gui_gtk4_menu.c vim.h protodef.h auto/conf
  beval.h structs.h regexp.h gui.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
  ex_cmds.h spell.h proto.h globals.h errors.h gui_gtk4_menu.h
+objects/gui_gtk4_adw.o: auto/osdef.h gui_gtk4_adw.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h gui_gtk4_menu.h
 objects/gui_gtk_f.o: auto/osdef.h gui_gtk_f.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
  beval.h structs.h regexp.h gui.h \
@@ -4952,6 +4965,7 @@ proto/window.pro: window.c
 proto/gui.pro: gui.c
 proto/gui_gtk.pro: gui_gtk.c
 proto/gui_gtk4.pro: gui_gtk4.c
+proto/gui_gtk4_adw.pro: gui_gtk4_adw.c
 proto/gui_motif.pro: gui_motif.c
 proto/gui_xmdlg.pro: gui_xmdlg.c
 proto/gui_gtk_x11.pro: gui_gtk_x11.c

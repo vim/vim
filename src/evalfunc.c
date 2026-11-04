@@ -8177,6 +8177,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 		},
 	{"gui_neXtaw", 0 },
+	{"gui_adwaita",
+#if defined(FEAT_GUI_GTK) && defined(USE_LIBADWAITA)
+		1
+#else
+		0
+#endif
+		},
 	{"gui_athena", 0 },
 	{"gui_gtk",
 #ifdef FEAT_GUI_GTK

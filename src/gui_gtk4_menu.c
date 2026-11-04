@@ -142,21 +142,8 @@ vim_menu_bar_new(void)
 vim_menu_bar_to_menu(VimMenuBar *self)
 {
     GtkWidget	*menu = vim_menu_new();
-    int		i = 0;
 
-    for (GList *l = self->items; l != NULL; l = l->next, i++)
-    {
-	VimMenuBarItem	*baritem = l->data;
-	GtkWidget	*item;
-
-	item = vim_menu_item_new(
-		gtk_button_get_label(GTK_BUTTON(baritem)), NULL, NULL);
-
-	vim_menu_item_set_submenu(VIM_MENU_ITEM(item),
-		VIM_MENU(vim_menu_copy(VIM_MENU(baritem->menu))));
-
-	vim_menu_insert_item(VIM_MENU(menu), VIM_MENU_ITEM(item), i);
-    }
+    vim_menu_bar_append_to_menu(self, VIM_MENU(menu));
     return menu;
 }
 
@@ -471,6 +458,7 @@ vim_menu_item_set_accel(VimMenuItem *self, const char *accel_text)
 
     vim_menu_item_set_aux_widget(self, gtk_label_new(accel_text));
     gtk_widget_add_css_class(self->aux_widget, "dim-label");
+    gtk_widget_add_css_class(self->aux_widget, "dimmed");
     gtk_widget_insert_after(self->aux_widget, GTK_WIDGET(self), self->label);
 }
 
@@ -1123,6 +1111,29 @@ vim_menu_copy(VimMenu *self)
 	vim_menu_insert_item(VIM_MENU(copy), VIM_MENU_ITEM(item_copy), i);
     }
     return copy;
+}
+
+/*
+ * Add a copy of the menus of the menubar "self" to the end of "menu".
+ */
+    void
+vim_menu_bar_append_to_menu(VimMenuBar *self, VimMenu *menu)
+{
+    int i = (int)g_list_length(menu->items);
+
+    for (GList *l = self->items; l != NULL; l = l->next, i++)
+    {
+	VimMenuBarItem	*baritem = l->data;
+	GtkWidget	*item;
+
+	item = vim_menu_item_new(
+		gtk_button_get_label(GTK_BUTTON(baritem)), NULL, NULL);
+
+	vim_menu_item_set_submenu(VIM_MENU_ITEM(item),
+		VIM_MENU(vim_menu_copy(VIM_MENU(baritem->menu))));
+
+	vim_menu_insert_item(menu, VIM_MENU_ITEM(item), i);
+    }
 }
 
 #endif // FEAT_MENU

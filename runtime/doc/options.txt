@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Oct 25
+*options.txt*	For Vim version 9.2.  Last change: 2026 Nov 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4540,6 +4540,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'guioptions' 'go'	string	(default "egmrLtT"   (MS-Windows,
 					   "t" is removed in |defaults.vim|),
 					 "aegimrLtT" (GTK and Motif),
+					 "aegirLt" (GTK 4 with libadwaita),
 					 )
 			global
 			{only available when compiled with GUI enabled}
@@ -6401,7 +6402,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The mouse pointer is restored when the mouse is moved.
 
 						*'mousemodel'* *'mousem'*
-'mousemodel' 'mousem'	string	(default "extend", "popup" for Win32)
+'mousemodel' 'mousem'	string	(default "extend", "popup" for Win32 and
+					 the GTK 4 GUI with libadwaita)
 			global
 	Sets the model to use for the mouse.  The name mostly specifies what
 	the right mouse button is used for:

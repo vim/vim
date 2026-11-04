@@ -1,4 +1,4 @@
-*gui_x11.txt*	For Vim version 9.2.  Last change: 2026 Aug 10
+*gui_x11.txt*	For Vim version 9.2.  Last change: 2026 Nov 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -388,6 +388,30 @@ to use software rendering: >
     $ GSK_RENDERER=cairo gvim
     $ LIBGL_ALWAYS_SOFTWARE=true gvim
 <
+Libadwaita ~
+							*gtk4-libadwaita*
+The GTK 4 GUI can use libadwaita 1.5 or later to look like a GNOME
+application.  This requires compiling Vim with: >
+
+    --enable-gui=gtk4 --with-libadwaita
+<
+The window then has a header bar with buttons to open a file, open a new tab
+page, show the properties of the current buffer and show the main menu.  By
+default 'guioptions' does not include "m" and "T" and in the GUI 'mousemodel'
+is "popup".  <F10> shows the whole menu of Vim, unless <F10> is mapped.  Use
+has("gui_adwaita") to check for this.
+
+The header bar and the dialogs use the dark or light style of the desktop, or
+the dark style with the "d" flag in 'guioptions'.  The text area does not
+follow it, use 'background' and |:colorscheme| for its colors.
+
+The main menu is the |hidden-menus| "]HeaderBar", defined in
+$VIMRUNTIME/menu_adwaita.vim, followed by the menus of Vim.  It can be changed
+like other menus: >
+
+    :an 1.72 ]HeaderBar.&Spell	:set spell!<CR>
+<
+
 Tooltip Colors ~
 							*gtk-tooltip-colors*
 Example, which sets the tooltip colors to black on light-yellow: >

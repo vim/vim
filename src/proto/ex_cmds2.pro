@@ -3,6 +3,7 @@ int autowrite(buf_T *buf, int forceit);
 void autowrite_all(void);
 int check_changed(buf_T *buf, int flags);
 void browse_save_fname(buf_T *buf);
+void dialog_write_buf(buf_T *buf, exarg_T *eap);
 void dialog_changed(buf_T *buf, int checkall);
 int can_abandon(buf_T *buf, int forceit);
 int check_changed_any(int hidden, int unload);

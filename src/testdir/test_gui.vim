@@ -677,6 +677,99 @@ func Test_set_guiheadroom()
   call assert_equal(50, &guiheadroom)
 endfunc
 
+" With libadwaita the GUI defaults to the popup menu, a value set by the user
+" is kept.
+func Test_gui_adwaita_mousemodel()
+  CheckFeature gui_adwaita
+
+  let save_mousemodel = &mousemodel
+  set mousemodel&
+  call assert_equal('popup', &mousemodel)
+  let &mousemodel = save_mousemodel
+
+  let after =<< trim END
+    call writefile([&mousemodel], 'Xmousemodel')
+    qall!
+  END
+  defer delete('Xmousemodel')
+  if RunVim(['set mousemodel=extend'], after, '-g -f')
+    call assert_equal(['extend'], readfile('Xmousemodel'))
+  endif
+  if RunVim([], after, '-g -f')
+    call assert_equal(['popup'], readfile('Xmousemodel'))
+  endif
+endfunc
+
+" The main menu of the header bar.  With --gui-dialog-file a dialog uses the
+" default button, which is "Cancel" for "Discard Changes".
+func Test_gui_adwaita_header_menu()
+  CheckFeature gui_adwaita
+
+  call writefile(['one'], 'Xdiscard', 'D')
+  defer delete('Xresult')
+  defer delete('Xdialog')
+  let after =<< trim END
+    let result = [empty(menu_info(']HeaderBar.Discard Changes')) ? 'no menu' : 'menu']
+    edit Xdiscard
+    call setline(1, 'changed')
+    emenu ]HeaderBar.Discard Changes
+    call add(result, getline(1))
+    set nomodified
+    call writefile(['two'], 'Xdiscard')
+    emenu ]HeaderBar.Discard Changes
+    call add(result, getline(1))
+    call writefile(result, 'Xresult')
+    qall!
+  END
+  if RunVim(['set noswapfile'], after, '-g -f --gui-dialog-file Xdialog')
+    call assert_equal(['menu', 'changed', 'two'], readfile('Xresult'))
+    call assert_match('Discard all changes and read the file again?',
+          \ readfile('Xdialog')->join('<NL>'))
+  endif
+endfunc
+
+" With 'c' in 'guioptions' abandoning a changed buffer uses a console dialog.
+func Test_gui_adwaita_console_dialog()
+  CheckFeature gui_adwaita
+
+  defer delete('Xresult')
+  defer delete('Xdialog')
+  defer delete('Xconsoledialog')
+  let after =<< trim END
+    set guioptions+=c
+    file Xconsoledialog
+    call setline(1, 'changed')
+    " The dialog does not read typeahead, it gets a typed key.
+    call test_feedinput("\<Esc>")
+    confirm quit
+    call writefile([&modified], 'Xresult')
+    qall!
+  END
+  if RunVim(['set noswapfile'], after, '-g -f --gui-dialog-file Xdialog')
+    call assert_equal(['1'], readfile('Xresult'))
+    call assert_false(filereadable('Xdialog'))
+    call assert_false(filereadable('Xconsoledialog'))
+  endif
+endfunc
+
+" The 'd' flag in 'guioptions' must use the libadwaita way to set a dark style,
+" libadwaita warns about the GTK way and ignores it.
+func Test_gui_adwaita_dark_theme()
+  CheckFeature gui_adwaita
+
+  defer delete('Xdarkerr')
+  defer delete('Xdarkresult')
+  let after =<< trim END
+    call writefile([&guioptions], 'Xdarkresult')
+    qall!
+  END
+  if RunVim(['set guioptions+=d'], after, '-g -f 2>Xdarkerr')
+    call assert_match('d', readfile('Xdarkresult')[0])
+    call assert_notmatch('prefer-dark-theme',
+          \ readfile('Xdarkerr')->join("\n"))
+  endif
+endfunc
+
 func Test_set_guioptions()
   let guioptions_saved = &guioptions
   let duration = '200m'
@@ -701,9 +794,11 @@ func Test_set_guioptions()
     call assert_equal('egmrLtT', &guioptions)
 
   else
-    " Default Value
+    " Default Value, with libadwaita there is no menu bar and no toolbar.
+    let menu_flag = has('gui_adwaita') ? '' : 'm'
     set guioptions&
-    call assert_equal('aegimrLtT', &guioptions)
+    call assert_equal('aegi' .. menu_flag .. 'rLt'
+          \ .. (has('gui_adwaita') ? '' : 'T'), &guioptions)
 
     " To activate scrollbars of type 'L' or 'R'.
     wincmd v
@@ -712,16 +807,16 @@ func Test_set_guioptions()
     " Remove all default GUI ornaments
     set guioptions-=T
     exec 'sleep' . duration
-    call assert_equal('aegimrLt', &guioptions)
+    call assert_equal('aegi' .. menu_flag .. 'rLt', &guioptions)
     set guioptions-=t
     exec 'sleep' . duration
-    call assert_equal('aegimrL', &guioptions)
+    call assert_equal('aegi' .. menu_flag .. 'rL', &guioptions)
     set guioptions-=L
     exec 'sleep' . duration
-    call assert_equal('aegimr', &guioptions)
+    call assert_equal('aegi' .. menu_flag .. 'r', &guioptions)
     set guioptions-=r
     exec 'sleep' . duration
-    call assert_equal('aegim', &guioptions)
+    call assert_equal('aegi' .. menu_flag, &guioptions)
     set guioptions-=m
     exec 'sleep' . duration
     call assert_equal('aegi', &guioptions)

@@ -1434,8 +1434,8 @@ test_gui_mouse_event(dict_T *args)
 	{
 	    // calculate the middle of the character cell
 	    // Note: Cell coordinates are 1-based from Vim script
-	    pY = (row - 1) * gui.char_height + gui.char_height / 2;
-	    pX = (col - 1) * gui.char_width + gui.char_width / 2;
+	    pY = FILL_Y(row - 1) + gui.char_height / 2;
+	    pX = FILL_X(col - 1) + gui.char_width / 2;
 	}
 	gui_mouse_moved(pX, pY);
     }

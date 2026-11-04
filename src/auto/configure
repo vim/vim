@@ -876,6 +876,7 @@ enable_gtk4_check
 enable_gtk3_check
 enable_motif_check
 enable_gtktest
+with_libadwaita
 with_gnome_includes
 with_gnome_libs
 with_gnome
@@ -1596,6 +1597,7 @@ Optional Packages:
   --with-ruby-command=RUBY  name of the Ruby command (default: ruby)
   --with-wayland	  Include support for the Wayland protocol.
   --with-x                use the X Window System
+  --with-libadwaita       Use libadwaita for the GTK 4 GUI.
   --with-gnome-includes=DIR Specify location of GNOME headers
   --with-gnome-libs=DIR   Specify location of GNOME libs
   --with-gnome            Specify prefix for GNOME files
@@ -11087,6 +11089,37 @@ fi
       X_LIB=
             if test "$enable_xim" = "auto"; then
         enable_xim="yes"
+      fi
+
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --with-libadwaita argument" >&5
+printf %s "checking --with-libadwaita argument... " >&6; }
+
+# Check whether --with-libadwaita was given.
+if test ${with_libadwaita+y}
+then :
+  withval=$with_libadwaita; with_libadwaita=$withval
+else case e in #(
+  e) with_libadwaita=no ;;
+esac
+fi
+
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $with_libadwaita" >&5
+printf "%s\n" "$with_libadwaita" >&6; }
+      if test "x$with_libadwaita" != "xno"; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libadwaita-1 >= 1.5" >&5
+printf %s "checking for libadwaita-1 >= 1.5... " >&6; }
+        if $PKG_CONFIG --atleast-version=1.5 libadwaita-1; then
+          { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+          GUI_INC_LOC="$GUI_INC_LOC `$PKG_CONFIG --cflags libadwaita-1`"
+          GTK_LIBNAME="$GTK_LIBNAME `$PKG_CONFIG --libs libadwaita-1`"
+          printf "%s\n" "#define USE_LIBADWAITA 1" >>confdefs.h
+
+        else
+          { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+          as_fn_error $? "libadwaita-1 >= 1.5 not found" "$LINENO" 5
+        fi
       fi
     fi
   fi

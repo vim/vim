@@ -1254,7 +1254,7 @@ state_no_longer_safe(char *reason UNUSED)
     was_safe = FALSE;
 }
 
-#if defined(FEAT_EVAL) || defined(MESSAGE_QUEUE)
+#if defined(FEAT_EVAL) || defined(MESSAGE_QUEUE) || defined(USE_LIBADWAITA)
     int
 get_was_safe_state(void)
 {

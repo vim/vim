@@ -532,6 +532,7 @@ SRC_UNIX =	\
 		src/gui_gtk4_tb.h \
 		src/gui_gtk4_menu.c \
 		src/gui_gtk4_menu.h \
+		src/gui_gtk4_adw.c \
 		src/gui_gtk_res.xml \
 		src/gui_motif.c \
 		src/gui_xmdlg.c \
@@ -562,6 +563,7 @@ SRC_UNIX =	\
 		src/proto/gui_gtk_x11.pro \
 		src/proto/gui_gtk_gresources.pro \
 		src/proto/gui_gtk4.pro \
+		src/proto/gui_gtk4_adw.pro \
 		src/proto/gui_motif.pro \
 		src/proto/gui_xmdlg.pro \
 		src/proto/gui_x11.pro \
@@ -909,6 +911,7 @@ RT_SCRIPTS =	\
 		runtime/filetype.vim \
 		runtime/scripts.vim \
 		runtime/menu.vim \
+		runtime/menu_adwaita.vim \
 		runtime/macmap.vim \
 		runtime/delmenu.vim \
 		runtime/synmenu.vim \

@@ -4254,6 +4254,25 @@ msg_warn_missing_clipboard(void)
 }
 
 #if defined(FEAT_CON_DIALOG)
+# ifdef FEAT_GUI_DIALOG
+/*
+ * To be called after a GUI dialog was closed.
+ */
+    void
+gui_dialog_done(void)
+{
+    // avoid a hit-enter prompt without clearing the cmdline
+    need_wait_return = FALSE;
+    emsg_on_display = FALSE;
+    cmdline_row = msg_row;
+
+    // Flush output to avoid that further messages and redrawing is done
+    // in the wrong order.
+    out_flush();
+    gui_mch_update();
+}
+# endif
+
 /*
  * Used for "confirm()" function, and the :confirm command prefix.
  * Versions which haven't got flexible dialogs yet, and console
@@ -4309,16 +4328,7 @@ do_dialog(
 	else
 	    c = gui_mch_dialog(type, title, message, buttons, dfltbutton,
 							   textfield, ex_cmd);
-	// avoid a hit-enter prompt without clearing the cmdline
-	need_wait_return = FALSE;
-	emsg_on_display = FALSE;
-	cmdline_row = msg_row;
-
-	// Flush output to avoid that further messages and redrawing is done
-	// in the wrong order.
-	out_flush();
-	gui_mch_update();
-
+	gui_dialog_done();
 	return c;
     }
 # endif

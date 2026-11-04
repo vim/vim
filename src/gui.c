@@ -568,6 +568,17 @@ gui_init(void)
 	    set_string_option_direct((char_u *)"mouse", -1,
 					   (char_u *)"a", OPT_FREE, SID_NONE);
 
+#ifdef USE_LIBADWAITA
+	/*
+	 * The right mouse button opens the popup menu in the GUI, unless the
+	 * user changed 'mousemodel' already.  The terminal is not affected.
+	 */
+	set_string_default("mousem", (char_u *)"popup");
+	if (!option_was_set((char_u *)"mousemodel"))
+	    set_string_option_direct((char_u *)"mousemodel", -1,
+				       (char_u *)"popup", OPT_FREE, SID_NONE);
+#endif
+
 	/*
 	 * If -U option given, use only the initializations from that file and
 	 * nothing else.  Skip all initializations for "-U NONE" or "-u NORC".
@@ -4029,7 +4040,15 @@ get_tabline_label(
 	// Get the buffer name into NameBuff[] and shorten it.
 	get_trans_bufname(tp == curtab ? curbuf : tp->tp_curwin->w_buffer);
 	if (!tooltip)
+	{
+# if defined(FEAT_GUI_GTK) && defined(USE_LIBADWAITA)
+	    // Like GNOME applications, only the file name, the tooltip has the
+	    // path.
+	    STRMOVE(NameBuff, gettail(NameBuff));
+# else
 	    shorten_dir(NameBuff);
+# endif
+	}
 
 	FOR_ALL_WINDOWS_IN_TAB(tp, wp)
 	{

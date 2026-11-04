@@ -499,6 +499,9 @@
 /* Define if GTK GUI is to be linked against GTK 4 */
 #undef USE_GTK4
 
+/* Define if the GTK 4 GUI uses libadwaita */
+#undef USE_LIBADWAITA
+
 /* Define to use Pango and Cairo for hardcopy printing */
 #undef FEAT_PRINT_PANGO
 

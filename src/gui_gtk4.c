@@ -28,6 +28,9 @@
 #include <gdk/gdkkeysyms.h>
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
+#ifdef USE_LIBADWAITA
+# include <adwaita.h>
+#endif
 #include "gui_gtk4_f.h"
 #include "gui_gtk4_cb.h"
 #include "gui_gtk4_da.h"
@@ -246,12 +249,20 @@ static void focus_out_event(GtkEventControllerFocus *controller, gpointer data);
 static gboolean drop_cb(GtkDropTargetAsync *target, GdkDrop *drop, double x, double y, void *data);
 #endif
 #ifdef FEAT_GUI_TABLINE
+# ifdef USE_LIBADWAITA
+static void tab_view_selected_cb(GObject *obj, GParamSpec *pspec, gpointer data);
+static void tab_view_page_reordered_cb(AdwTabView *view, AdwTabPage *page, int position, gpointer data);
+static gboolean tab_view_close_page_cb(AdwTabView *view, AdwTabPage *page, gpointer data);
+static void tab_view_setup_menu_cb(AdwTabView *view, AdwTabPage *page, gpointer data);
+static void tabline_action_cb(GSimpleAction *action, GVariant *parameter, gpointer data);
+# else
 static void tabline_enter_cb(GtkEventController *controller, double x, double y, void *udata);
 static void on_select_tab(GtkNotebook *notebook, gpointer *page, gint idx, gpointer data);
 static void on_tab_reordered(GtkNotebook *notebook, gpointer *page, gint idx, gpointer data);
 static VimMenu *create_tabline_popup_menu(void);
 static void tabline_add_css(void);
 static void tabline_menu_press_event(GtkGestureClick *gesture, int n_press, double x, double y, GtkWidget *popover);
+# endif
 #endif
 static void mainwin_destroy_cb(GObject *object, gpointer data);
 static gboolean delete_event_cb(GtkWindow *window, gpointer data);
@@ -264,8 +275,25 @@ static void clipboard_changed_cb(GdkClipboard *clipboard, gpointer user_data);
 #ifdef FEAT_MENU
 static void show_menubar_popover(void);
 #endif
+#ifdef USE_LIBADWAITA
+static void mainwin_realize_cb(GtkWidget *widget, gpointer data);
+#endif
 
 static const char *prgname = NULL;
+
+#ifdef USE_LIBADWAITA
+// Holds the header bar and the tab line above the vertical box.
+static GtkWidget *toolbar_view = NULL;
+# ifdef FEAT_GUI_TABLINE
+// The tab pages of the tab line.  It is not shown, the text area is not in it.
+static GtkWidget *tab_view = NULL;
+# endif
+
+// Border around the text area when the corners of the window are rounded, so
+// that they do not cut the text.  The radius of the corners is 15 pixels, at
+// least 15 * (1 - 1 / sqrt(2)) pixels are needed.
+# define CORNER_BORDER 6
+#endif
 
 /*
  * Check if "s" is the option "name" (which includes the leading dash(es)).
@@ -499,6 +527,9 @@ gui_mch_init_check(void)
     // Call gtk_init() here after fork().  Calling it before fork() breaks
     // the display connection in the child process.
     gtk_init();
+#ifdef USE_LIBADWAITA
+    adw_init();
+#endif
     return OK;
 }
 
@@ -523,7 +554,11 @@ gui_mch_init(void)
     gui.scrollbar_height = SB_DEFAULT_WIDTH;
 
     // Create the main window.
+#ifdef USE_LIBADWAITA
+    gui.mainwin = adw_window_new();
+#else
     gui.mainwin = gtk_window_new();
+#endif
     gtk_widget_set_name(gui.mainwin, "vim-main-window");
 
     // Create the PangoContext used for drawing all text.
@@ -538,7 +573,28 @@ gui_mch_init(void)
     // A vertical box holds the menubar, toolbar and main text window.
     vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
+#ifdef USE_LIBADWAITA
+    {
+	GtkWidget *header_bar = adw_header_bar_new();
+
+	toolbar_view = adw_toolbar_view_new();
+
+	gui_adw_fill_header_bar(header_bar);
+
+	// The header bar replaces the title bar of the window manager and
+	// shows the window title.
+	adw_toolbar_view_add_top_bar(ADW_TOOLBAR_VIEW(toolbar_view),
+		header_bar);
+	adw_toolbar_view_set_content(ADW_TOOLBAR_VIEW(toolbar_view), vbox);
+	adw_window_set_content(ADW_WINDOW(gui.mainwin), toolbar_view);
+
+	// The state of the window tells whether its corners are rounded.
+	g_signal_connect(G_OBJECT(gui.mainwin), "realize",
+		G_CALLBACK(mainwin_realize_cb), NULL);
+    }
+#else
     gtk_window_set_child(GTK_WINDOW(gui.mainwin), vbox);
+#endif
 
 #ifdef FEAT_MENU
     gui.menubar = vim_menu_bar_new();
@@ -555,7 +611,63 @@ gui_mch_init(void)
     vim_toolbar_set_style(VIM_TOOLBAR(gui.toolbar), toolbar_flags, tbis_flags);
 #endif
 
-#ifdef FEAT_GUI_TABLINE
+#if defined(FEAT_GUI_TABLINE) && defined(USE_LIBADWAITA)
+    // Like GNOME applications, use an AdwTabBar below the header bar.  Its
+    // pages are in an AdwTabView, which is not shown: Vim draws the text of
+    // all the tab pages in the same text area.
+    tab_view = GTK_WIDGET(adw_tab_view_new());
+    // The keys belong to Vim.
+    adw_tab_view_set_shortcuts(ADW_TAB_VIEW(tab_view),
+						ADW_TAB_VIEW_SHORTCUT_NONE);
+    gtk_widget_set_visible(tab_view, FALSE);
+    gtk_box_append(GTK_BOX(vbox), tab_view);
+
+    gui.tabline = GTK_WIDGET(adw_tab_bar_new());
+    adw_tab_bar_set_view(ADW_TAB_BAR(gui.tabline), ADW_TAB_VIEW(tab_view));
+    // Vim decides when to show the tab line, see 'showtabline'.
+    adw_tab_bar_set_autohide(ADW_TAB_BAR(gui.tabline), FALSE);
+    gtk_widget_set_visible(gui.tabline, FALSE);
+    adw_toolbar_view_add_top_bar(ADW_TOOLBAR_VIEW(toolbar_view), gui.tabline);
+
+    g_signal_connect(G_OBJECT(tab_view), "notify::selected-page",
+		     G_CALLBACK(tab_view_selected_cb), NULL);
+    g_signal_connect(G_OBJECT(tab_view), "page-reordered",
+		     G_CALLBACK(tab_view_page_reordered_cb), NULL);
+    g_signal_connect(G_OBJECT(tab_view), "close-page",
+		     G_CALLBACK(tab_view_close_page_cb), NULL);
+    g_signal_connect(G_OBJECT(tab_view), "setup-menu",
+		     G_CALLBACK(tab_view_setup_menu_cb), NULL);
+
+    // The menu of the tab pages, like the one of the GtkNotebook.
+    {
+	GSimpleActionGroup  *group = g_simple_action_group_new();
+	GMenu		    *menu = g_menu_new();
+	const char	    *names[] = {"close", "new", "open"};
+	int		    events[] = {TABLINE_MENU_CLOSE, TABLINE_MENU_NEW,
+							    TABLINE_MENU_OPEN};
+
+	for (int i = 0; i < 3; i++)
+	{
+	    GSimpleAction *action = g_simple_action_new(names[i], NULL);
+
+	    g_signal_connect(action, "activate",
+		    G_CALLBACK(tabline_action_cb), GINT_TO_POINTER(events[i]));
+	    g_action_map_add_action(G_ACTION_MAP(group), G_ACTION(action));
+	    g_object_unref(action);
+	}
+	// Not on the tab line: the menu would not find them there.
+	gtk_widget_insert_action_group(gui.mainwin, "vimtab",
+							G_ACTION_GROUP(group));
+	g_object_unref(group);
+
+	g_menu_append(menu, _("Close Tab"), "vimtab.close");
+	g_menu_append(menu, _("New Tab"), "vimtab.new");
+	g_menu_append(menu, _("Open Tab..."), "vimtab.open");
+	adw_tab_view_set_menu_model(ADW_TAB_VIEW(tab_view),
+							G_MENU_MODEL(menu));
+	g_object_unref(menu);
+    }
+#elif defined(FEAT_GUI_TABLINE)
     gui.tabline = gtk_notebook_new();
     gtk_notebook_set_show_border(GTK_NOTEBOOK(gui.tabline), FALSE);
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), TRUE);
@@ -695,6 +807,10 @@ gui_mch_init(void)
 #endif
 
     gui.border_offset = gui.border_width;
+#ifdef USE_LIBADWAITA
+    // The window is not maximized when it is opened, its corners are rounded.
+    gui.border_offset += CORNER_BORDER;
+#endif
 
     // Create a blank (invisible) cursor for hiding the mouse pointer.
     gui.blank_pointer = gdk_cursor_new_from_name("none", NULL);
@@ -820,7 +936,7 @@ gui_mch_exit(int rc UNUSED)
 {
     if (gui.mainwin != NULL)
     {
-#ifdef FEAT_GUI_TABLINE
+#if defined(FEAT_GUI_TABLINE) && !defined(USE_LIBADWAITA)
 	// Must unparent popover menu for tabline or we will get warning
 	gtk_widget_unparent(g_object_get_data(G_OBJECT(gui.tabline), "menu"));
 #endif
@@ -884,6 +1000,54 @@ gui_mch_set_fullscreen(int flag)
     else
 	gtk_window_unfullscreen(GTK_WINDOW(gui.mainwin));
 }
+
+#ifdef USE_LIBADWAITA
+/*
+ * The bottom corners of the window are rounded, unless it is maximized,
+ * fullscreen or tiled.  Add a border around the text area when they are.
+ */
+    static void
+update_corner_border(void)
+{
+    GdkSurface	*surface = gtk_native_get_surface(GTK_NATIVE(gui.mainwin));
+    int		border = gui.border_width;
+
+    if (surface == NULL)
+	return;
+    if ((gdk_toplevel_get_state(GDK_TOPLEVEL(surface))
+		& (GDK_TOPLEVEL_STATE_MAXIMIZED | GDK_TOPLEVEL_STATE_FULLSCREEN
+		    | GDK_TOPLEVEL_STATE_TILED | GDK_TOPLEVEL_STATE_TOP_TILED
+		    | GDK_TOPLEVEL_STATE_RIGHT_TILED
+		    | GDK_TOPLEVEL_STATE_BOTTOM_TILED
+		    | GDK_TOPLEVEL_STATE_LEFT_TILED)) == 0)
+	border += CORNER_BORDER;
+    if (border == gui.border_offset)
+	return;
+
+    // Recompute the number of lines and columns and redraw everything.
+    gui.border_offset = border;
+    gui.force_redraw = TRUE;
+    gui_resize_shell(gtk_widget_get_width(gui.formwin),
+					gtk_widget_get_height(gui.formwin));
+}
+
+    static void
+surface_state_cb(GObject *obj UNUSED, GParamSpec *pspec UNUSED,
+							gpointer data UNUSED)
+{
+    update_corner_border();
+}
+
+    static void
+mainwin_realize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
+{
+    GdkSurface *surface = gtk_native_get_surface(GTK_NATIVE(gui.mainwin));
+
+    g_signal_connect(G_OBJECT(surface), "notify::state",
+	    G_CALLBACK(surface_state_cb), NULL);
+    update_corner_border();
+}
+#endif
 
 /*
  * Add a gesture to "popover" that calls "pressed_cb" when a mouse button is
@@ -1092,11 +1256,18 @@ gui_mch_show_toolbar(int showit)
     void
 gui_mch_set_dark_theme(int dark)
 {
+#ifdef USE_LIBADWAITA
+    // Libadwaita ignores the GtkSettings property.  Without the flag use the
+    // style of the desktop.
+    adw_style_manager_set_color_scheme(adw_style_manager_get_default(),
+	    dark ? ADW_COLOR_SCHEME_FORCE_DARK : ADW_COLOR_SCHEME_DEFAULT);
+#else
     // GTK4: use GtkSettings
     GtkSettings *settings = gtk_settings_get_default();
     if (settings != NULL)
 	g_object_set(settings, "gtk-application-prefer-dark-theme",
 		(gboolean)dark, NULL);
+#endif
 }
 
 /*
@@ -2902,6 +3073,171 @@ gui_mch_showing_tabline(void)
 }
 
 static int ignore_tabline_evt = FALSE;
+
+# ifdef USE_LIBADWAITA
+// Tab page of the tab line menu, zero indicates none
+static int tabline_menu_tab = 0;
+
+    void
+gui_mch_update_tabline(void)
+{
+    AdwTabView	*view;
+    tabpage_T	*tp;
+    int		nr = 0;
+    int		curtabidx = 0;
+    char_u	*labeltext;
+    char	*tooltip;
+
+    if (gui.tabline == NULL || tab_view == NULL)
+	return;
+    view = ADW_TAB_VIEW(tab_view);
+
+    ignore_tabline_evt = TRUE;
+
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next, ++nr)
+    {
+	AdwTabPage *page;
+
+	if (tp == curtab)
+	    curtabidx = nr;
+
+	// The pages are empty, Vim draws the text of the tab page.
+	if (nr < adw_tab_view_get_n_pages(view))
+	    page = adw_tab_view_get_nth_page(view, nr);
+	else
+	    page = adw_tab_view_append(view,
+				    gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+	g_object_set_data(G_OBJECT(page), "tabpage", tp);
+
+	get_tabline_label(tp, FALSE);
+	labeltext = CONVERT_TO_UTF8(NameBuff);
+	adw_tab_page_set_title(page, (const char *)labeltext);
+	CONVERT_TO_UTF8_FREE(labeltext);
+
+	// The tooltip uses markup.
+	get_tabline_label(tp, TRUE);
+	labeltext = CONVERT_TO_UTF8(NameBuff);
+	tooltip = g_markup_escape_text((const char *)labeltext, -1);
+	adw_tab_page_set_tooltip(page, tooltip);
+	g_free(tooltip);
+	CONVERT_TO_UTF8_FREE(labeltext);
+    }
+
+    // Remove the pages of closed tab pages, see tab_view_close_page_cb().
+    for (int i = adw_tab_view_get_n_pages(view) - 1; i >= nr; --i)
+	adw_tab_view_close_page(view, adw_tab_view_get_nth_page(view, i));
+
+    if (nr > 0)
+	adw_tab_view_set_selected_page(view,
+				    adw_tab_view_get_nth_page(view, curtabidx));
+
+    ignore_tabline_evt = FALSE;
+}
+
+    void
+gui_mch_set_curtab(int nr)
+{
+    AdwTabView *view;
+
+    if (tab_view == NULL)
+	return;
+    view = ADW_TAB_VIEW(tab_view);
+    if (nr < 1 || nr > adw_tab_view_get_n_pages(view))
+	return;
+
+    ignore_tabline_evt = TRUE;
+    adw_tab_view_set_selected_page(view, adw_tab_view_get_nth_page(view, nr - 1));
+    ignore_tabline_evt = FALSE;
+}
+
+/*
+ * Handle selecting one of the tabs.
+ */
+    static void
+tab_view_selected_cb(GObject *obj, GParamSpec *pspec UNUSED,
+							gpointer data UNUSED)
+{
+    AdwTabView *view = ADW_TAB_VIEW(obj);
+    AdwTabPage *page = adw_tab_view_get_selected_page(view);
+
+    if (!ignore_tabline_evt && page != NULL)
+	send_tabline_event(adw_tab_view_get_page_position(view, page) + 1);
+}
+
+    static gboolean
+update_tabline_idle_cb(gpointer data UNUSED)
+{
+    gui_mch_update_tabline();
+    return G_SOURCE_REMOVE;
+}
+
+/*
+ * Handle reordering the tabs (using D&D).
+ */
+    static void
+tab_view_page_reordered_cb(
+	AdwTabView  *view UNUSED,
+	AdwTabPage  *page,
+	int	    position,
+	gpointer    data UNUSED)
+{
+    if (ignore_tabline_evt)
+	return;
+
+    // The dragged tab page was selected when starting to drag it.  When it
+    // is not the current tab page, make the tab line match the tab pages
+    // again.
+    if (g_object_get_data(G_OBJECT(page), "tabpage") != curtab)
+    {
+	g_idle_add(update_tabline_idle_cb, NULL);
+	return;
+    }
+
+    if ((tabpage_index(curtab) - 1) < position)
+	tabpage_move(position + 1);
+    else
+	tabpage_move(position);
+}
+
+/*
+ * Closing a tab with its close button or the middle mouse button: let Vim
+ * close the tab page, it updates the tab line.
+ */
+    static gboolean
+tab_view_close_page_cb(AdwTabView *view, AdwTabPage *page, gpointer data UNUSED)
+{
+    // Closed by gui_mch_update_tabline(), the default handler closes it.
+    if (ignore_tabline_evt)
+	return GDK_EVENT_PROPAGATE;
+
+    adw_tab_view_close_page_finish(view, page, FALSE);
+    send_tabline_menu_event(adw_tab_view_get_page_position(view, page) + 1,
+							    TABLINE_MENU_CLOSE);
+    return GDK_EVENT_STOP;
+}
+
+/*
+ * The menu of a tab is shown, remember for which tab page.  Called with NULL
+ * when it is closed, which may be before an item is activated.
+ */
+    static void
+tab_view_setup_menu_cb(AdwTabView *view, AdwTabPage *page, gpointer data UNUSED)
+{
+    if (page != NULL)
+	tabline_menu_tab = adw_tab_view_get_page_position(view, page) + 1;
+}
+
+/*
+ * Handle selecting an item in the tab line menu, "data" is the event.
+ */
+    static void
+tabline_action_cb(GSimpleAction *action UNUSED, GVariant *parameter UNUSED,
+								gpointer data)
+{
+    send_tabline_menu_event(tabline_menu_tab, GPOINTER_TO_INT(data));
+}
+
+# else
 // Page hovered over in tab line, zero indicates none
 static int tabpage_hover = 0;
 
@@ -2978,11 +3314,11 @@ tabline_add_css(void)
 	"  min-width: 24px; }";
 
     provider = gtk_css_provider_new();
-# if GTK_CHECK_VERSION(4, 12, 0)
+#  if GTK_CHECK_VERSION(4, 12, 0)
     gtk_css_provider_load_from_string(provider, css);
-# else
+#  else
     gtk_css_provider_load_from_data(provider, css, -1);
-# endif
+#  endif
     gtk_style_context_add_provider_for_display(
 	    gtk_widget_get_display(gui.tabline), GTK_STYLE_PROVIDER(provider),
 	    GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
@@ -3221,6 +3557,7 @@ tabline_menu_press_event(
 	    send_tabline_menu_event(tabpage_hover, TABLINE_MENU_CLOSE);
     }
 }
+# endif
 #endif
 
 /*
@@ -4496,7 +4833,7 @@ gui_mch_browsedir(char_u *title, char_u *initdir)
  * "button_string" is duplicated; caller must free the duplicated string via
  * *tofree.
  */
-    static char **
+    char **
 split_button_string(char_u *button_string, int *n_buttons, char **tofree)
 {
     char	    **array;
@@ -4534,6 +4871,7 @@ split_button_string(char_u *button_string, int *n_buttons, char **tofree)
     return array;
 }
 
+#ifndef USE_LIBADWAITA
 /*
  * Convert VIM_GENERIC, VIM_ERROR, etc into an icon name. Returns NULL for
  * VIM_GENERIC.
@@ -4797,6 +5135,7 @@ gui_mch_dialog(
     // Vim buttons are indexed starting from one.
     return response == -1 ? 0 : response + 1;
 }
+#endif
 
 /*
  * ============================================================

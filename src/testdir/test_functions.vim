@@ -20,6 +20,13 @@ func Test_00_bufexists()
   call assert_equal(0, bufexists('Xfoo'))
 endfunc
 
+func Test_has_gui_adwaita()
+  " libadwaita is only used with GTK 4.
+  if has('gui_adwaita')
+    call assert_equal(1, has('gui_gtk4'))
+  endif
+endfunc
+
 func Test_has()
   call assert_equal(1, has('eval'))
   call assert_equal(1, has('eval', 1))

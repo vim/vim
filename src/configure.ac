@@ -3070,6 +3070,24 @@ if test -z "$SKIP_GTK4"; then
       if test "$enable_xim" = "auto"; then
         enable_xim="yes"
       fi
+
+      AC_MSG_CHECKING(--with-libadwaita argument)
+      AC_ARG_WITH(libadwaita,
+	[  --with-libadwaita       Use libadwaita for the GTK 4 GUI.],
+	[with_libadwaita=$withval], [with_libadwaita=no])
+      AC_MSG_RESULT($with_libadwaita)
+      if test "x$with_libadwaita" != "xno"; then
+        AC_MSG_CHECKING(for libadwaita-1 >= 1.5)
+        if $PKG_CONFIG --atleast-version=1.5 libadwaita-1; then
+          AC_MSG_RESULT(yes)
+          GUI_INC_LOC="$GUI_INC_LOC `$PKG_CONFIG --cflags libadwaita-1`"
+          GTK_LIBNAME="$GTK_LIBNAME `$PKG_CONFIG --libs libadwaita-1`"
+          AC_DEFINE(USE_LIBADWAITA)
+        else
+          AC_MSG_RESULT(no)
+          AC_MSG_ERROR([libadwaita-1 >= 1.5 not found])
+        fi
+      fi
     fi
   fi
 fi

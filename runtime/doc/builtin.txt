@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Nov 01
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Nov 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -13737,11 +13737,14 @@ footer			Compiled with GUI footer support. |gui-footer|
 fork			Compiled to use fork()/exec() instead of system().
 gettext			Compiled with message translation |multi-lang|
 gui			Compiled with GUI enabled.
+gui_adwaita		Compiled with GTK 4 GUI using libadwaita (gui_gtk4 is
+			also defined).
 gui_athena		Compiled with Athena GUI (always false).
 gui_gnome		Compiled with Gnome support (gui_gtk is also defined).
 gui_gtk			Compiled with GTK+ GUI (any version).
 gui_gtk2		Compiled with GTK+ 2 GUI (gui_gtk is also defined).
 gui_gtk3		Compiled with GTK+ 3 GUI (gui_gtk is also defined).
+gui_gtk4		Compiled with GTK 4 GUI (gui_gtk is also defined).
 gui_haiku		Compiled with Haiku GUI.
 gui_mac			Compiled with Macintosh GUI.
 gui_motif		Compiled with Motif GUI.

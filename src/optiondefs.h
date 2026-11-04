@@ -1299,7 +1299,9 @@ static struct vimoption options[] =
     {"guioptions",  "go",   P_STRING|P_VI_DEF|P_RALL|P_FLAGLIST,
 #if defined(FEAT_GUI)
 			    (char_u *)&p_go, PV_NONE, did_set_guioptions, expand_set_guioptions,
-# if defined(UNIX)
+# if defined(USE_LIBADWAITA)
+			    {(char_u *)"aegirLt", (char_u *)0L}
+# elif defined(UNIX)
 			    {(char_u *)"aegimrLtT", (char_u *)0L}
 # else
 			    {(char_u *)"egmrLtT", (char_u *)0L}

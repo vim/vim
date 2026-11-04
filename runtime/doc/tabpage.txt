@@ -1,4 +1,4 @@
-*tabpage.txt*	For Vim version 9.2.  Last change: 2026 May 04
+*tabpage.txt*	For Vim version 9.2.  Last change: 2026 Oct 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -529,6 +529,9 @@ label separately.
 'guitabtooltip' is very similar and is used for the tooltip of the same label.
 This only appears when the mouse pointer hovers over the label, thus it
 usually is longer.  Only supported on some systems though.
+
+The default label has the shortened path of the buffer name.  With GTK 4 and
+libadwaita it only has the file name, the default tooltip has the path.
 
 See the 'statusline' option for the format of the value.
 

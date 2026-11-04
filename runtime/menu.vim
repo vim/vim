@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2026 Oct 13
+" Last Change:	2026 Nov 03
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
@@ -16,6 +16,12 @@ set cpo&vim
 " Avoid installing the menus twice
 if !exists("did_install_default_menus")
 let did_install_default_menus = 1
+
+" The menus are shown from the main menu of the header bar, without entries to
+" load parts of them first, which would close that menu.
+if has("gui_adwaita") && !exists("do_no_lazyload_menus")
+  let do_no_lazyload_menus = 1
+endif
 
 
 if exists("v:lang") || &langmenu != ""
@@ -1183,6 +1189,11 @@ def s:SaveVimSesn()
   execute "browse mksession! " .. fnameescape(v:this_session)
 enddef
 
+endif
+
+" The main menu of the header bar (GTK 4 with libadwaita).
+if has("gui_adwaita")
+  source $VIMRUNTIME/menu_adwaita.vim
 endif
 
 endif " !exists("did_install_default_menus")

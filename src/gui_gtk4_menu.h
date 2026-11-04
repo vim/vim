@@ -41,6 +41,7 @@ void vim_menu_bar_item_set_text(VimMenuBarItem *self, const char *text);
 
 GtkWidget *vim_menu_bar_new(void);
 GtkWidget *vim_menu_bar_to_menu(VimMenuBar *self);
+void vim_menu_bar_append_to_menu(VimMenuBar *self, VimMenu *menu);
 void vim_menu_bar_insert_item(VimMenuBar *self, VimMenuBarItem *item, int idx);
 void vim_menu_bar_remove(VimMenuBar *self, GtkWidget *item);
 void vim_menu_bar_show(VimMenuBar *self, VimMenuBarItem *item);
