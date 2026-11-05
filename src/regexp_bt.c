@@ -2198,7 +2198,7 @@ regpiece(int *flagp)
 		int	lop = END;
 		long	nr;
 
-		nr = (long)getdecchrs();
+		nr = get_at_limit();
 		switch (no_Magic(getchr()))
 		{
 		    case '=': lop = MATCH; break;		  // \@=
