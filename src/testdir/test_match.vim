@@ -314,6 +314,17 @@ func Test_matchaddpos_error()
   call assert_fails("call matchaddpos('Search', [[3, 4, {}]])", 'E728:')
 endfunc
 
+" A position given as a range() List
+func Test_matchaddpos_range_position()
+  new
+  call setline(1, ['abcd', 'efgh'])
+  let id = matchaddpos('Search', [range(1, 2), range(2, 4)])
+  call assert_equal([1, 2, 1], getmatches()[0].pos1)
+  call assert_equal([2, 3, 4], getmatches()[0].pos2)
+  call matchdelete(id)
+  bwipe!
+endfunc
+
 " setmatches() with more than one "posN" entry used to keep a reference to
 " every position list, so they were not released until the next garbage
 " collection.  A "posN" value that is not a List made it bail out early
