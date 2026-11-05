@@ -1981,7 +1981,10 @@ DictionarySetattr(PyObject *self_obj, char *name, PyObject *valObject)
 
     if (strcmp(name, "locked") == 0)
     {
-	if (self->dict->dv_lock == VAR_FIXED)
+	// Also when VAR_LOCKED is set, e.g. while map() is going over the
+	// dict, or after ":lockvar", resetting the lock would also remove
+	// VAR_FIXED.
+	if (self->dict->dv_lock & VAR_FIXED)
 	{
 	    PyErr_SET_STRING(PyExc_TypeError,
 		    N_("cannot modify fixed dictionary"));
