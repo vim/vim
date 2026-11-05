@@ -2065,18 +2065,21 @@ list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
 
     if (l->lv_with_items > 0)
     {
-	// need to copy the list items and move the value
+	listitem_T	*next;
+
+	// Need to copy the list items and move the value.  Some items may
+	// have been allocated separately, these need to be freed.
 	while (item != NULL)
 	{
 	    li = listitem_alloc();
 	    if (li == NULL)
 		return;
+	    next = item == item2 ? NULL : item->li_next;
 	    li->li_tv = item->li_tv;
 	    init_tv(&item->li_tv);
 	    list_append(rl, li);
-	    if (item == item2)
-		break;
-	    item = item->li_next;
+	    list_free_item(l, item);
+	    item = next;
 	}
     }
     else
