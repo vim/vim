@@ -989,6 +989,45 @@ func Test_python3_slice_assignment()
         \ "Vim(py3):ValueError: slice step cannot be zero")
 endfunc
 
+" popitem() cannot remove an item from a locked Dict.  In a map() callback
+" this used to free the item that map() was using, which is only detected
+" with valgrind or ASAN.
+func Test_python3_dict_popitem_locked()
+  let d = {'a': 1, 'b': 2}
+  lockvar d
+  try
+    py3 vim.bindeval('d').popitem()
+    call assert_report('popitem() did not fail')
+  catch
+    call assert_match('vim.error: dictionary is locked', v:exception)
+  endtry
+  call assert_equal({'a': 1, 'b': 2}, d)
+  unlockvar d
+
+  let g:pd = {}
+  for i in range(20)
+    let g:pd['k' .. i] = [i]
+  endfor
+  func g:PopItemCb(k, v)
+    py3 vim.bindeval('g:pd').popitem()
+    return a:v
+  endfunc
+  try
+    call map(g:pd, function('g:PopItemCb'))
+    call assert_report('map() did not fail')
+  catch
+    call assert_match('vim.error: dictionary is locked', v:exception)
+  endtry
+  call assert_equal(20, len(g:pd))
+  unlet g:pd
+  delfunc g:PopItemCb
+
+  " popitem() on a Dict that is not locked works
+  let d = {'a': 1}
+  py3 vim.bindeval('d').popitem()
+  call assert_equal({}, d)
+endfunc
+
 " Locked variables
 func Test_python3_lockedvar()
   new
