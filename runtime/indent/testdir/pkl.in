@@ -1,0 +1,82 @@
+// vim: set ft=pkl sw=2 :
+
+// START_INDENT
+/// Objects, classes and lists
+class Renderer extends ValueRenderer {
+converters: Mapping<Class, (unknown) -> Any>
+foo: String?
+bar = new Listing<String> {
+"a"
+"b"
+}
+local function baz(a: Int, b: Int): Int =
+a + b
+}
+
+x = foo(
+a,
+b)
+y = 2
+
+z = new Mapping {
+["key"] {
+nested = true
+}
+for (k, v in m) {
+[k] = v
+}
+when (enabled) {
+on = true
+} else {
+on = false
+}
+}
+// END_INDENT
+
+// START_INDENT
+// if, else and let expressions
+function authority(): String? =
+if (hasAuthority())
+List(
+"//",
+if (port != null) ":\(port)" else ""
+)
+.join("")
+else null
+
+function mapOf(thing): Map =
+if (thing is Map) thing else thing?.toMap() ?? Map()
+
+local function availableAfter(version: String) =
+if ($schema == null) // If $schema is unset, skip this check.
+true
+else
+let (a = 1)
+let (b = 2)
+a + b
+// END_INDENT
+
+// START_INDENT
+// Method chains and union types
+hidden versions: List<String> =
+(foo as reflect.UnionType).members
+.filterIsInstance(reflect.StringLiteralType)
+.map((it) -> it.value)
+
+typealias Weekday =
+"MO"
+|"TU"
+|"WE"
+
+lambda = (it) ->
+it * 2
+// END_INDENT
+
+// START_INDENT
+// The contents of multiline strings keep their indentation
+text = """
+  hello
+    world
+  """
+after = 1
+// END_INDENT

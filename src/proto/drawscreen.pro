@@ -17,7 +17,7 @@ void redraw_all_later(int type);
 void set_must_redraw(int type);
 void redraw_curbuf_later(int type);
 void redraw_buf_later(buf_T *buf, int type);
-void redraw_buf_line_later(buf_T *buf, linenr_T lnum);
+void redraw_buf_range_later(buf_T *buf, linenr_T first, linenr_T last);
 void redraw_buf_and_status_later(buf_T *buf, int type);
 void status_redraw_all(void);
 void status_redraw_curbuf(void);

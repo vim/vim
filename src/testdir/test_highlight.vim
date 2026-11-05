@@ -923,6 +923,25 @@ func Test_highlight_ctermul()
   highlight Normal ctermul=NONE
 endfunc
 
+" The underline color from 'ctermul' adds no other attribute in a terminal
+" that does not take it, such as the Vim terminal.
+func Test_highlight_ctermul_other_attributes()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, 'text')
+    highlight Underlined cterm=underline ctermul=9
+    call matchadd('Underlined', 'text')
+  END
+  call writefile(lines, 'Xtest_ctermul', 'D')
+  let buf = RunVimInTerminal('-S Xtest_ctermul', {'rows': 5})
+  call WaitForAssert({-> assert_equal(1,
+        \ term_getattr(term_scrape(buf, 1)[0].attr, 'underline'))})
+  call assert_equal(0, term_getattr(term_scrape(buf, 1)[0].attr, 'strike'))
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " Test for 'ctermfont' in a highlight group
 func Test_highlight_ctermfont()
   CheckNotGui

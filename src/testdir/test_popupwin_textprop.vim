@@ -171,4 +171,27 @@ func Test_textprop_popup_offsets()
 endfunc
 
 
+" A popup that follows a text property is hidden when prop_remove() or
+" prop_clear() removes the property.
+func Test_textprop_popup_hidden_when_removed()
+  new
+  call setline(1, range(1, 20))
+  call prop_type_add('popupMarker', {})
+  for Remove in [{-> prop_remove({'type': 'popupMarker'})}, {-> prop_clear(5)}]
+    call prop_add(5, 1, {'type': 'popupMarker', 'length': 1})
+    let winid = popup_create('follows', {'textprop': 'popupMarker',
+          \ 'line': -1, 'col': 1, 'pos': 'botleft'})
+    redraw
+    call assert_equal(1, popup_getpos(winid).visible)
+
+    call Remove()
+    redraw
+    call assert_equal(0, popup_getpos(winid).visible)
+    call popup_close(winid)
+  endfor
+  call prop_type_delete('popupMarker')
+  bwipe!
+endfunc
+
+
 " vim: shiftwidth=2 sts=2

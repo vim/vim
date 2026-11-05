@@ -1505,7 +1505,8 @@ dict_filter_map(
 		if (var_check_fixed(di->di_flags, arg_errmsg, TRUE)
 			|| var_check_ro(di->di_flags, arg_errmsg, TRUE))
 		    break;
-		dictitem_remove(d, di, "filter");
+		hash_remove(ht, hi, "filter");
+		dictitem_free(di);
 	    }
 	}
     }

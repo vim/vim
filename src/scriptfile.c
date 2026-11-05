@@ -1663,6 +1663,7 @@ do_source_ext(
     int			    sid = -1;
     scriptitem_T	    *si = NULL;
     int			    save_estack_compiling = estack_compiling;
+    int			    save_is_export = is_export;
     ESTACK_CHECK_DECLARATION;
 #endif
 
@@ -1690,6 +1691,10 @@ do_source_ext(
     }
 #ifdef FEAT_EVAL
     estack_compiling = FALSE;
+    // An ":export" command may source the script, e.g. for an autoload
+    // import used in its value.  That does not export what the script
+    // defines.
+    is_export = FALSE;
 
     // See if we loaded this script before.
     sid = find_script_by_name(fname_exp);
@@ -2089,6 +2094,7 @@ theend:
     sticky_cmdmod_flags = save_sticky_cmdmod_flags;
 #ifdef FEAT_EVAL
     estack_compiling = save_estack_compiling;
+    is_export = save_is_export;
 #endif
     return retval;
 }

@@ -331,6 +331,7 @@ tuple_concat(tuple_T *t1, tuple_T *t2, typval_T *tv)
 
 	if (tuple_append_tv(tuple, &new_tv) == FAIL)
 	{
+	    clear_tv(&new_tv);
 	    tuple_free(tuple);
 	    return FAIL;
 	}
@@ -360,6 +361,7 @@ tuple_slice(tuple_T *tuple, long n1, long n2)
 
 	if (tuple_append_tv(new_tuple, &new_tv) == FAIL)
 	{
+	    clear_tv(&new_tv);
 	    tuple_free(new_tuple);
 	    return NULL;
 	}
@@ -511,13 +513,19 @@ eval_tuple(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
     {
 	tuple = tuple_alloc();
 	if (tuple == NULL)
+	{
+	    clear_tv(rettv);
 	    return FAIL;
+	}
 
 	if (rettv->v_type != VAR_UNKNOWN)
 	{
 	    // Add the first item to the tuple from "rettv"
 	    if (tuple_append_tv(tuple, rettv) == FAIL)
+	    {
+		clear_tv(rettv);
 		goto failret;
+	    }
 	    // The first item in "rettv" is added to the tuple.  Set the rettv
 	    // type to unknown, so that the caller doesn't free it.
 	    rettv->v_type = VAR_UNKNOWN;
@@ -669,7 +677,11 @@ tuple_join_inner(
 	s.length = STRLEN(s.string);
 	sumlen += (int)s.length;
 
-	(void)ga_grow(join_gap, 1);
+	if (ga_grow(join_gap, 1) == FAIL)
+	{
+	    vim_free(tofree);
+	    return FAIL;
+	}
 	p = ((join_T *)join_gap->ga_data) + (join_gap->ga_len++);
 	if (tofree != NULL || s.string != numbuf)
 	{

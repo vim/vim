@@ -713,6 +713,45 @@ def Test_expr2_fails()
 enddef
 
 " test &&
+" Using a member of a dict in an expression that is skipped because of a
+" constant "||" or "&&" operand: a function call, a method call, an index or
+" another member.  The expression is not evaluated.
+def Test_expr2_skipped_member_call()
+  var lines =<< trim END
+      var d = {Fn: () => g:Record(1), l: [1], sub: {x: 1}}
+      g:vals = []
+      assert_true(true || d.Fn())
+      assert_true(true || d.l->len() > 0)
+      assert_true(true || d.l[0] == 1)
+      assert_true(true || d.sub.x == 1)
+      assert_false(false && d.Fn())
+      assert_equal([], g:vals)
+      assert_true(false || d.Fn())
+      assert_equal([1], g:vals)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Calling an object method in a skipped expression
+  lines =<< trim END
+      vim9script
+      class A
+        def True(): bool
+          g:vals->add('called')
+          return true
+        enddef
+      endclass
+      def F(): list<bool>
+        var o = A.new()
+        return [has('eval') || o.True(), !has('eval') && o.True()]
+      enddef
+      g:vals = []
+      assert_equal([true, false], F())
+      assert_equal([], g:vals)
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:vals
+enddef
+
 def Test_expr3()
   var lines =<< trim END
       assert_equal(false, 1 && 0)
@@ -2342,6 +2381,9 @@ def Test_expr8()
   v9.CheckDefAndScriptFailure(["var x = <nr>123"], 'E1010:', 1)
   v9.CheckDefFailure(["var x = <number>"], 'E1097:', 3)
   v9.CheckDefFailure(["var x = <number>string(1)"], 'E1012:', 1)
+  # A failed type check must free the value, a leak is only detected with
+  # valgrind or ASAN
+  v9.CheckScriptFailure(['vim9script', "var x = <number>'a'"], 'E1012: Type mismatch; expected number but got string', 2)
   v9.CheckScriptFailure(['vim9script', "var x = <number>"], 'E15:', 2)
   v9.CheckDefAndScriptFailure(["var x = <number >123"], 'E1068:', 1)
   v9.CheckDefAndScriptFailure(["var x = <number 123"], 'E1104:', 1)
@@ -3143,6 +3185,13 @@ def Test_expr9_dict()
       var n = 123
       var dictnr = {[n]: 1}
 
+      # a key that is not a constant, the expression ends in a constant
+      var c = true
+      assert_equal({1: 'x'}, {[c ? 1 : 2]: 'x'})
+      c = false
+      assert_equal({2: 'x'}, {[c ? 1 : 2]: 'x'})
+      assert_equal({a: 1, b: 2}, {[c ? 'b' : 'a']: 1, b: 2})
+
       # comment to start fold is OK
       var x1: number #{{ fold
       var x2 = 9 #{{ fold
@@ -3177,6 +3226,7 @@ def Test_expr9_dict()
   g:key = 'x'
   v9.CheckDefExecAndScriptFailure(["var x = {[g:key]: 'text', [g:key]: 'text'}"], 'E721:', 1)
   unlet g:key
+  v9.CheckDefExecAndScriptFailure(["var c = false", "var x = {[c ? 'a' : 'b']: 1, b: 2}"], 'E721: Duplicate key in Dictionary: "b"', 2)
   v9.CheckDefExecAndScriptFailure(["var x = {[notexists]: 'text'}"], ['E1001:', 'E121: Undefined variable: notexists'], 1)
   v9.CheckDefExecAndScriptFailure(["var x = g:anint.member"], ['E715:', 'E488:'], 1)
   v9.CheckDefExecAndScriptFailure(["var x = g:dict_empty.member"], 'E716:', 1)
@@ -3599,6 +3649,23 @@ def Test_expr_member_vim9script()
 				2
 				:
 				])
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # also after an expression that is not evaluated
+  lines =<< trim END
+      var d1 = {key: 'one'}
+      var d2 = {key: 'two'}
+      var r1 = true ? d1 : d2
+                            .key
+      assert_equal({key: 'one'}, r1)
+      var b = {key: true}
+      var r2 = false && b
+                            .key
+      assert_equal(false, r2)
+      var F = (d) => d
+                            .key
+      assert_equal('two', F(d2))
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef
@@ -4534,5 +4601,17 @@ func Test_expr_fails()
   call v9.CheckDefAndScriptFailure(["echo Func01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789()"], ['E1011:', 'E117:'], 1)
   call v9.CheckDefAndScriptFailure(["echo doesnotexist()"], 'E117:', 1)
 endfunc
+
+" Deeply nested parentheses must not run out of stack when compiling
+def Test_expr_deeply_nested_parens()
+  var lines = [
+    'vim9script',
+    'def F()',
+    '  var x = ' .. repeat('(', 10000) .. '1' .. repeat(')', 10000),
+    'enddef',
+    'defcompile F',
+  ]
+  v9.CheckSourceFailure(lines, 'E1169:')
+enddef
 
 " vim: shiftwidth=2 sts=2 expandtab

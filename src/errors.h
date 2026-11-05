@@ -269,6 +269,8 @@ EXTERN char e_missing_colon_after_questionmark[]
 	INIT(= N_("E109: Missing ':' after '?'"));
 EXTERN char e_missing_closing_paren[]
 	INIT(= N_("E110: Missing ')'"));
+EXTERN char e_missing_closing_paren_str[]
+	INIT(= N_("E110: Missing ')': %s"));
 EXTERN char e_missing_closing_square_brace[]
 	INIT(= N_("E111: Missing ']'"));
 EXTERN char e_option_name_missing_str[]
@@ -3845,4 +3847,8 @@ EXTERN char e_changing_image_backend_failed[]
 	INIT(= N_("E1586: Failed changing image backends"));
 EXTERN char e_image_id_nr_does_not_exist[]
 	INIT(= N_("E1587: Image ID %d does not exist"));
+#endif
+#ifdef FEAT_EVAL
+EXTERN char e_comparison_operators_cannot_be_chained_str[]
+	INIT(= N_("E1588: Comparison operators cannot be chained, use parentheses: %s"));
 #endif

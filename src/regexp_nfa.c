@@ -3454,7 +3454,7 @@ post2nfa(int *postfix, int *end, int nfa_calc_size)
 	    s = alloc_state(NFA_SPLIT, e.start, NULL);
 	    if (s == NULL)
 		goto theend;
-	    PUSH(frag(s, append(e.out, list1(&s->out1))));
+	    PUSH(frag(s, append(list1(&s->out1), e.out)));
 	    break;
 
 	case NFA_QUEST_NONGREEDY:
@@ -3468,7 +3468,7 @@ post2nfa(int *postfix, int *end, int nfa_calc_size)
 	    s = alloc_state(NFA_SPLIT, NULL, e.start);
 	    if (s == NULL)
 		goto theend;
-	    PUSH(frag(s, append(e.out, list1(&s->out))));
+	    PUSH(frag(s, append(list1(&s->out), e.out)));
 	    break;
 
 	case NFA_END_COLL:
@@ -3554,7 +3554,7 @@ post2nfa(int *postfix, int *end, int nfa_calc_size)
 		if (e1.out == NULL)
 		    e1 = e;
 		patch(e.out, s1);
-		append(e1.out, list1(&s->out1));
+		e1.out = append(list1(&s->out1), e1.out);
 		s1 = s;
 	    }
 	    PUSH(frag(s, e1.out));
@@ -6558,13 +6558,13 @@ nfa_regmatch(
 		break;
 
 	    case NFA_KWORD:	//  \k
-		result = vim_iswordp_buf(rex.input, rex.reg_buf);
+		result = vim_iswordc_buf(curc, rex.reg_buf);
 		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_SKWORD:	//  \K
 		result = !VIM_ISDIGIT(curc)
-				     && vim_iswordp_buf(rex.input, rex.reg_buf);
+				     && vim_iswordc_buf(curc, rex.reg_buf);
 		ADD_STATE_IF_MATCH(t->state);
 		break;
 
@@ -6579,12 +6579,12 @@ nfa_regmatch(
 		break;
 
 	    case NFA_PRINT:	//  \p
-		result = vim_isprintc(PTR2CHAR(rex.input));
+		result = vim_isprintc(curc);
 		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_SPRINT:	//  \P
-		result = !VIM_ISDIGIT(curc) && vim_isprintc(PTR2CHAR(rex.input));
+		result = !VIM_ISDIGIT(curc) && vim_isprintc(curc);
 		ADD_STATE_IF_MATCH(t->state);
 		break;
 

@@ -2095,7 +2095,10 @@ cs_print_tags_priv(char **matches, char **cntxts, int num_matches)
 	    vim_free(tbuf);
 	    continue;
 	}
-	extra = strtok(NULL, (const char *)"\t");
+	extra = strtok(NULL, "");
+	// Skip leading Tabs, but keep a Tab inside the line.
+	while (extra != NULL && *extra == TAB)
+	    ++extra;
 
 	lno[strlen(lno)-2] = '\0';  // ignore ;" at the end
 

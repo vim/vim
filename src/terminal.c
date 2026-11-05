@@ -1876,11 +1876,14 @@ term_convert_key(term_T *term, int c, int modmask, char *buf)
     if (modmask & (MOD_MASK_ALT | MOD_MASK_META))
 	mod |= VTERM_MOD_ALT;
 
-    // Ctrl-Shift-i may have the key "I" instead of "i", but for the kitty
-    // keyboard protocol should use "i".  Applies to all ascii letters.
-    if (ASCII_ISUPPER(c)
-	    && vterm_is_kitty_keyboard(vterm)
-	    && mod == (VTERM_MOD_CTRL | VTERM_MOD_SHIFT))
+    // A key with Ctrl may have the key "I" instead of "i", since that is used
+    // for mappings.  The kitty keyboard protocol should use "i", also with
+    // Shift.  With modifyOtherKeys xterm uses "i" for Ctrl-i and "I" for
+    // Ctrl-Shift-i.  Applies to all ascii letters.
+    if (ASCII_ISUPPER(c) && (mod & VTERM_MOD_CTRL)
+	    && (vterm_is_kitty_keyboard(vterm)
+		|| (vterm_is_modify_other_keys(vterm)
+						&& !(mod & VTERM_MOD_SHIFT))))
 	c = TOLOWER_ASC(c);
 
     /*
@@ -2515,19 +2518,21 @@ term_enter_job_mode(void)
 }
 
 /*
- * When "modify_other_keys" is set then vgetc() should not reduce a key with
- * modifiers into a basic key.  However, we may only find out after calling
- * vgetc().  Therefore vgetorpeek() will call check_no_reduce_keys() to update
- * "no_reduce_keys" before using it.
+ * When "modify_other_keys" or the kitty keyboard protocol is set then vgetc()
+ * should not merge the Ctrl or Alt modifier into a basic key.  However, we may
+ * only find out after calling vgetc().  Therefore vgetorpeek() will call
+ * check_no_simplify_keys() to update "no_simplify_keys" before using it.
+ * Note that "no_reduce_keys" is not used, the key is still adjusted for
+ * mappings, e.g. CTRL-e becomes CTRL-E, term_convert_key() undoes that.
  */
 typedef enum {
-    NRKS_NONE,	    // initial value
-    NRKS_CHECK,	    // modify_other_keys was off before calling vgetc()
-    NRKS_SET,	    // no_reduce_keys was incremented in term_vgetc() or
-		    // check_no_reduce_keys(), must be decremented.
-} reduce_key_state_T;
+    NSKS_NONE,	    // initial value
+    NSKS_CHECK,	    // the key protocol was off before calling vgetc()
+    NSKS_SET,	    // no_simplify_keys was incremented in term_vgetc() or
+		    // check_no_simplify_keys(), must be decremented.
+} simplify_key_state_T;
 
-static reduce_key_state_T  no_reduce_key_state = NRKS_NONE;
+static simplify_key_state_T  no_simplify_key_state = NSKS_NONE;
 
 /*
  * Return TRUE if the term is using modifyOtherKeys level 2 or the kitty
@@ -2543,10 +2548,10 @@ vterm_using_key_protocol(void)
 }
 
     void
-check_no_reduce_keys(void)
+check_no_simplify_keys(void)
 {
-    if (no_reduce_key_state != NRKS_CHECK
-	    || no_reduce_keys >= 1
+    if (no_simplify_key_state != NSKS_CHECK
+	    || no_simplify_keys >= 1
 	    || curbuf->b_term == NULL
 	    || curbuf->b_term->tl_vterm == NULL)
 	return;
@@ -2555,8 +2560,8 @@ check_no_reduce_keys(void)
     {
 	// "modify_other_keys" or kitty keyboard protocol was enabled while
 	// waiting.
-	no_reduce_key_state = NRKS_SET;
-	++no_reduce_keys;
+	no_simplify_key_state = NSKS_SET;
+	++no_simplify_keys;
     }
 }
 
@@ -2579,21 +2584,21 @@ term_vgetc(void)
 
     if (vterm_using_key_protocol())
     {
-	++no_reduce_keys;
-	no_reduce_key_state = NRKS_SET;
+	++no_simplify_keys;
+	no_simplify_key_state = NSKS_SET;
     }
     else
     {
-	no_reduce_key_state = NRKS_CHECK;
+	no_simplify_key_state = NSKS_CHECK;
     }
 
     c = vgetc();
     got_int = FALSE;
     State = save_State;
 
-    if (no_reduce_key_state == NRKS_SET)
-	--no_reduce_keys;
-    no_reduce_key_state = NRKS_NONE;
+    if (no_simplify_key_state == NSKS_SET)
+	--no_simplify_keys;
+    no_simplify_key_state = NSKS_NONE;
 
     return c;
 }

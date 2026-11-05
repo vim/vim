@@ -2104,7 +2104,7 @@ ex_class(exarg_T *eap)
 	    if (extends == NULL)
 		goto early_ret;
 
-	    arg = skipwhite(end + 1);
+	    arg = skipwhite(end);
 	}
 	else if (STRNCMP(arg, "implements", 10) == 0
 						   && IS_WHITE_OR_NUL(arg[10]))

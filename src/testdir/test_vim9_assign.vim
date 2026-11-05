@@ -313,6 +313,23 @@ def Test_assign_concat()
       ls[-1] ..= 'foo'
   END
   v9.CheckDefExecAndScriptFailure(lines, 'E684: List index out of range: -1', 2)
+
+  # a target of type any that holds a number is converted too
+  lines =<< trim END
+      var d: dict<any> = {a: 1}
+      d.a ..= 'z'
+      assert_equal({a: '1z'}, d)
+      var n: any = 0
+      n ..= 'zero'
+      assert_equal('0zero', n)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      var l: any = [1]
+      l ..= 'x'
+  END
+  v9.CheckDefExecAndScriptFailure(lines, ['E1105:', 'E734:'], 2)
 enddef
 
 def Test_assign_register()
@@ -620,6 +637,19 @@ def Test_assign_unpack()
       [v1, v2; _] = [1]
   END
   v9.CheckDefFailure(lines, 'E1093: Expected 2 items but got 1', 3)
+
+  # null_list and null_tuple have no items
+  for null_value in ['null_list', 'null_tuple']
+    lines =<< trim eval END
+        var [v1, v2] = {null_value}
+    END
+    v9.CheckDefFailure(lines, 'E1093: Expected 2 items but got 0', 1)
+
+    lines =<< trim eval END
+        var [v1; v2] = {null_value}
+    END
+    v9.CheckDefFailure(lines, 'E1093: Expected 1 items but got 0', 1)
+  endfor
 
   lines =<< trim END
       var v1: number
@@ -1802,6 +1832,23 @@ def Test_assign_list()
       assert_equal([1, 2, 3], ul)
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  # A slice of a list or blob that is an item or member of another value
+  lines =<< trim END
+      var ll = [[1, 2]]
+      ll[0][0 : 0] = [9]
+      assert_equal([[9, 2]], ll)
+
+      var d = {a: [1, 2]}
+      d.a[1 : 1] = [8]
+      assert_equal({a: [1, 8]}, d)
+
+      var lb = [0z0000]
+      lb[0][1 : 1] = 0z01
+      assert_equal([0z0001], lb)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+  v9.CheckDefFailure(['var ll = [[1, 2]]', 'll[0][0 : 0] = 7'], 'E1012: Type mismatch; expected list<number> but got number', 2)
 
   lines =<< trim END
       var l = [1, 2]

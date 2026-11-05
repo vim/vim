@@ -1113,7 +1113,8 @@ nb_do_cmd(
 	    {
 		len = get_buf_size(buf->bufp);
 		nlines = buf->bufp->b_ml.ml_line_count;
-		text = alloc((len > 0) ? ((len + nlines) * 2) : 4);
+		// worst case: escaped text + 2 quotes + NUL
+		text = alloc((len > 0) ? ((len + nlines) * 2 + 3) : 4);
 		if (text == NULL)
 		{
 		    nbdebug(("    nb_do_cmd: getText has null text field\n"));

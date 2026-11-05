@@ -1193,13 +1193,26 @@ check_tuple_type_maybe(
     type_T	*actual,
     where_T	where)
 {
-    if (expected->tt_argcount == -1 || actual->tt_argcount == -1
-		|| expected->tt_args == NULL || actual->tt_args == NULL)
+    if (expected->tt_argcount == -1 || expected->tt_args == NULL)
+	return OK;
+
+    // When the number of items is not known, a runtime check is needed.
+    if (actual->tt_argcount == -1)
+	return MAYBE;
+
+    if (actual->tt_args == NULL)
 	return OK;
 
     // For a non-variadic tuple, the number of items must match
     if (!(expected->tt_flags & TTFLAG_VARARGS)
 	    && expected->tt_argcount != actual->tt_argcount)
+	return FAIL;
+
+    // For a variadic tuple, a non-variadic tuple must have at least the
+    // items before the variadic type.
+    if ((expected->tt_flags & TTFLAG_VARARGS)
+	    && !(actual->tt_flags & TTFLAG_VARARGS)
+	    && actual->tt_argcount < expected->tt_argcount - 1)
 	return FAIL;
 
     // compare the type of each tuple item

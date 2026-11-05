@@ -4,7 +4,7 @@ vim9script
 # Invoked from "scripts.vim" in 'runtimepath'
 #
 # Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2026 Apr 09
+# Last Change:	2026 Oct 12
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 export def DetectFiletype()
@@ -83,6 +83,10 @@ export def Exe2filetype(name: string, line1: string): string
     # Z shell scripts
   elseif name =~ '^zsh\>'
     return 'zsh'
+
+    # Bats (Bash Automated Testing System)
+  elseif name =~ '^bats\>'
+    return 'bats'
 
     # TCL scripts
   elseif name =~ '^\(tclsh\|wish\|expectk\|itclsh\|itkwish\)\>'

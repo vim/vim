@@ -85,8 +85,13 @@ compile_tuple_member(
 	if (typep->type_decl->tt_type == VAR_TUPLE)
 	    typep->type_decl = &t_tuple_any;
 
+	// Except for a variadic tuple with one item type, the number of items
+	// in the slice and their types are not known.
+	if (!((typep->type_curr->tt_flags & TTFLAG_VARARGS)
+				    && typep->type_curr->tt_argcount == 1))
+	    typep->type_curr = &t_tuple_any;
 	// a copy is made, the composite is no longer "const"
-	if (typep->type_curr->tt_flags & TTFLAG_CONST)
+	else if (typep->type_curr->tt_flags & TTFLAG_CONST)
 	{
 	    type_T *type = copy_type(typep->type_curr, cctx->ctx_type_list);
 
@@ -122,7 +127,7 @@ compile_tuple_member(
 			typep->type_decl = typep->type_decl->tt_args[0];
 		}
 		else
-		    typep->type_curr = &t_any;
+		    typep->type_decl = &t_any;
 	    }
 	    else
 		typep->type_decl = typep->type_curr;
@@ -2057,10 +2062,14 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
 	    // {[expr]: value} uses an evaluated key.
 	    *arg = skipwhite(*arg + 1);
-	    if (compile_expr0(arg, cctx) == FAIL)
+	    if (compile_expr0_ext(arg, cctx, &is_const) == FAIL)
 		goto failret;
+	    // Only when the key is a constant the last instruction pushes
+	    // it, e.g. for "c ? 1 : 2" it only pushes the second value.
 	    isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
-	    if (isn->isn_type == ISN_PUSHNR)
+	    if (!is_const)
+		isn = NULL;
+	    if (isn != NULL && isn->isn_type == ISN_PUSHNR)
 	    {
 		char buf[NUMBUFLEN];
 
@@ -2069,7 +2078,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 		isn->isn_type = ISN_PUSHS;
 		isn->isn_arg.string = vim_strsave((char_u *)buf);
 	    }
-	    if (isn->isn_type == ISN_PUSHS)
+	    if (isn != NULL && isn->isn_type == ISN_PUSHS)
 		key = isn->isn_arg.string;
 	    else if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 		goto failret;
@@ -2587,15 +2596,34 @@ compile_leader(cctx_T *cctx, int numeric_only, char_u *start, char_u **end)
     static int
 compile_parenthesis(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
-    int	    ret;
-    char_u  *p = *arg + 1;
+    int		ret = FAIL;
+    static int	recurse = 0;
+    char_u	*p = *arg + 1;
+
+    // Limit recursion to 1000 levels.  At least at 10000 we run out of stack
+    // and crash.  With MSVC the stack is smaller.
+    if (recurse ==
+#ifdef _MSC_VER
+		    300
+#else
+		    1000
+#endif
+		    )
+    {
+	semsg(_(e_expression_too_recursive_str), *arg);
+	return ret;
+    }
+    ++recurse;
 
     if (may_get_next_line_error(p, arg, cctx) == FAIL)
-	return FAIL;
+	goto done;
 
     if (**arg == ')')
+    {
 	// empty tuple
-	return compile_tuple(arg, cctx, ppconst, FALSE);
+	ret = compile_tuple(arg, cctx, ppconst, FALSE);
+	goto done;
+    }
 
     if (ppconst->pp_used <= PPSIZE - 10)
     {
@@ -2605,27 +2633,39 @@ compile_parenthesis(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     {
 	// Not enough space in ppconst, flush constants.
 	if (generate_ppconst(cctx, ppconst) == FAIL)
-	    return FAIL;
+	    goto done;
 	ret = compile_expr0(arg, cctx);
     }
     if (may_get_next_line_error(*arg, arg, cctx) == FAIL)
-	return FAIL;
+    {
+	ret = FAIL;
+	goto done;
+    }
     if (ret == OK && **arg == ',')
     {
 	// tuple
 	int is_const = ppconst->pp_used > 0 || ppconst->pp_is_const;
 	if (generate_ppconst(cctx, ppconst) == FAIL)
-	    return FAIL;
-	return compile_tuple(arg, cctx, ppconst, is_const);
+	{
+	    ret = FAIL;
+	    goto done;
+	}
+	ret = compile_tuple(arg, cctx, ppconst, is_const);
+	goto done;
     }
 
     if (**arg == ')')
 	++*arg;
     else if (ret == OK)
     {
-	emsg(_(e_missing_closing_paren));
+	// Show where the expression stopped.  It is not at the end of the
+	// line, may_get_next_line_error() went to the next line or failed.
+	semsg(_(e_missing_closing_paren_str), *arg);
 	ret = FAIL;
     }
+
+done:
+    --recurse;
     return ret;
 }
 
@@ -2694,7 +2734,8 @@ compile_subscript(
 	    if (keeping_dict)
 	    {
 		keeping_dict = FALSE;
-		if (generate_instr(cctx, ISN_CLEARDICT) == NULL)
+		if (cctx->ctx_skip != SKIP_YES
+			&& generate_instr(cctx, ISN_CLEARDICT) == NULL)
 		    return FAIL;
 	    }
 	}
@@ -2876,7 +2917,8 @@ compile_subscript(
 	    if (keeping_dict)
 	    {
 		keeping_dict = FALSE;
-		if (generate_instr(cctx, ISN_CLEARDICT) == NULL)
+		if (cctx->ctx_skip != SKIP_YES
+			&& generate_instr(cctx, ISN_CLEARDICT) == NULL)
 		    return FAIL;
 	    }
 	}
@@ -2950,7 +2992,8 @@ compile_subscript(
 	    if (keeping_dict)
 	    {
 		keeping_dict = FALSE;
-		if (generate_instr(cctx, ISN_CLEARDICT) == NULL)
+		if (cctx->ctx_skip != SKIP_YES
+			&& generate_instr(cctx, ISN_CLEARDICT) == NULL)
 		    return FAIL;
 	    }
 	    if (cctx->ctx_skip != SKIP_YES
@@ -2995,7 +3038,8 @@ compile_subscript(
 		    semsg(_(e_syntax_error_at_str), *arg);
 		    return FAIL;
 		}
-		if (keeping_dict && generate_instr(cctx, ISN_CLEARDICT) == NULL)
+		if (keeping_dict && cctx->ctx_skip != SKIP_YES
+			&& generate_instr(cctx, ISN_CLEARDICT) == NULL)
 		    return FAIL;
 		if (generate_STRINGMEMBER(cctx, *arg, p - *arg) == FAIL)
 		    return FAIL;
@@ -3738,6 +3782,14 @@ compile_expr4(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
 	if (compile_expr5(arg, cctx, ppconst) == FAIL)
 	    return FAIL;
+
+	// Another comparison operator cannot follow: "a < b < c".
+	p = may_peek_next_line(cctx, *arg, &next);
+	if (get_compare_type(p, &len, &type_is) != EXPR_UNKNOWN)
+	{
+	    semsg(_(e_comparison_operators_cannot_be_chained_str), p);
+	    return FAIL;
+	}
 
 	if (ppconst->pp_used == ppconst_used + 2)
 	{

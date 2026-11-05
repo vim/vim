@@ -518,9 +518,11 @@ use_typecheck(type_T *actual, type_T *expected)
 	return TRUE;
     if (actual->tt_type == VAR_OBJECT && expected->tt_type == VAR_OBJECT)
 	return TRUE;
-    if ((actual->tt_type == VAR_LIST
-		|| actual->tt_type == VAR_TUPLE
-		|| actual->tt_type == VAR_DICT)
+    if (actual->tt_type == VAR_TUPLE && expected->tt_type == VAR_TUPLE)
+	// A tuple type doesn't have a member type.  The number of items of
+	// "actual" is not known.
+	return TRUE;
+    if ((actual->tt_type == VAR_LIST || actual->tt_type == VAR_DICT)
 	    && actual->tt_type == expected->tt_type)
 	// This takes care of a nested list or dict.
 	return use_typecheck(actual->tt_member, expected->tt_member);
@@ -2514,12 +2516,14 @@ compile_assign_index(
 
 /*
  * For a LHS with an index, load the variable to be indexed.
+ * "range" is TRUE for "var[a : b]".
  */
     static int
 compile_load_lhs(
 	lhs_T	*lhs,
 	char_u	*var_start,
 	type_T	*rhs_type,
+	int	range,
 	cctx_T	*cctx)
 {
     if (lhs->lhs_dest == dest_expr)
@@ -2562,13 +2566,21 @@ compile_load_lhs(
 	// type yet, it depends on what member is used.
 	// The top item in the stack is the Dict, followed by the key and then
 	// the type of the value.
+	// For "var[a : b]" the value is a List or Blob, below two indexes.
 	vartype_T vartype = lhs->lhs_type->tt_type;
-	type_T *member_type = lhs->lhs_type->tt_member;
-	if (rhs_type != NULL && member_type != NULL
+	type_T *expected = lhs->lhs_type->tt_member;
+	int offset = -3;
+	if (range)
+	{
+	    expected = vartype == VAR_LIST || vartype == VAR_BLOB
+						       ? lhs->lhs_type : NULL;
+	    offset = -4;
+	}
+	if (rhs_type != NULL && expected != NULL
 		&& vartype != VAR_OBJECT && vartype != VAR_CLASS
 		&& rhs_type != &t_void
-		&& need_type(rhs_type, member_type, 0,
-					    -3, 0, cctx, FALSE, FALSE) == FAIL)
+		&& need_type(rhs_type, expected, 0, offset, 0, cctx, FALSE,
+								FALSE) == FAIL)
 	    return FAIL;
 
 	return OK;
@@ -2621,7 +2633,8 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 	else
 	{
 	    // load object variable or argument
-	    if (compile_load_lhs(lhs, var_start, lhs->lhs_type, cctx) == FAIL)
+	    if (compile_load_lhs(lhs, var_start, lhs->lhs_type, FALSE, cctx)
+								       == FAIL)
 		return FAIL;
 	}
 	if (IS_INTERFACE(cl))
@@ -2648,7 +2661,7 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 	return generate_CLASSMEMBER(cctx, TRUE, cl, lhs->lhs_member_idx);
     }
 
-    if (compile_load_lhs(lhs, var_start, NULL, cctx) == FAIL)
+    if (compile_load_lhs(lhs, var_start, NULL, FALSE, cctx) == FAIL)
 	return FAIL;
 
     if (lhs->lhs_has_index)
@@ -2759,7 +2772,7 @@ compile_assign_unlet(
     // - index
     // - for [a : b] second index
     // - variable
-    if (compile_load_lhs(lhs, var_start, rhs_type, cctx) == FAIL)
+    if (compile_load_lhs(lhs, var_start, rhs_type, range, cctx) == FAIL)
 	return FAIL;
 
     if (dest_type == VAR_LIST
@@ -2814,7 +2827,7 @@ compile_assign_unlet(
     else
     {
 	if (dest_type == VAR_TUPLE)
-	    emsg(_(e_tuple_is_immutable));
+	    emsg(range ? _(e_cannot_slice_tuple) : _(e_tuple_is_immutable));
 	else
 	    emsg(_(e_indexable_type_required));
 	return FAIL;
@@ -3146,13 +3159,18 @@ compile_assign_list_check_length(cctx_T *cctx, cac_T *cac)
 
 	if (isn->isn_type == ISN_NEWLIST || isn->isn_type == ISN_NEWTUPLE)
 	{
+	    // a size of -1 is used for null_list and null_tuple, they have no
+	    // items
+	    int	    list_len = isn->isn_arg.number < 0
+					    ? 0 : (int)isn->isn_arg.number;
+
 	    did_check = TRUE;
 	    if (cac->cac_semicolon ?
-			isn->isn_arg.number < needed_list_len
-			: isn->isn_arg.number != needed_list_len)
+			list_len < needed_list_len
+			: list_len != needed_list_len)
 	    {
 		semsg(_(e_expected_nr_items_but_got_nr),
-			needed_list_len, (int)isn->isn_arg.number);
+			needed_list_len, list_len);
 		return FAIL;
 	    }
 	}
@@ -3297,11 +3315,13 @@ compile_assign_set_lhs_type_from_rhs(
     type_T *type;
 
     // An empty list or dict has a &t_unknown member, for a variable that
-    // implies &t_any.
+    // implies &t_any.  Similarly for an empty tuple.
     if (rhs_type == &t_list_empty)
 	type = &t_list_any;
     else if (rhs_type == &t_dict_empty)
 	type = &t_dict_any;
+    else if (rhs_type == &t_tuple_empty)
+	type = &t_tuple_any;
     else if (rhs_type == &t_unknown)
 	type = &t_any;
     else
@@ -3339,9 +3359,10 @@ compile_assign_valid_rhs_type(
     }
 
     // If assigning to a list or dict member, use the member type.
-    // Not for "list[:] =".
-    if (lhs->lhs_has_index &&
-	    !has_list_index(cac->cac_var_start + lhs->lhs_varlen, cctx))
+    // Not for "list[:] =", unless the list is an item or a member,
+    // "ll[0][:] =": its type is checked once it has been compiled.
+    if (lhs->lhs_has_index && (lhs->lhs_dest == dest_expr
+	    || !has_list_index(cac->cac_var_start + lhs->lhs_varlen, cctx)))
 	use_type = lhs->lhs_member_type;
 
     if (need_type_where(rhs_type, use_type, 0, -1, where, cctx, FALSE,
@@ -3560,7 +3581,10 @@ compile_assign_compound_op(cctx_T *cctx, cac_T *cac)
 		&& need_type(stacktype, expected, 0, -1, 0, cctx,
 					FALSE, FALSE) == FAIL)
 	    return FAIL;
-	else if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
+	// As with "a .. b", convert both operands: when the target type is
+	// any, its current value can be a number.
+	else if (may_generate_2STRING(-2, TOSTRING_NONE, cctx) == FAIL
+		|| may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 	    return FAIL;
     }
     else

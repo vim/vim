@@ -1,4 +1,4 @@
-*autocmd.txt*	For Vim version 9.2.  Last change: 2026 Sep 01
+*autocmd.txt*	For Vim version 9.2.  Last change: 2026 Nov 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -535,11 +535,10 @@ BufRead or BufReadPost		When starting to edit a new buffer, after
 				for when you need to do something after
 				processing the modelines.
 				Also triggered:
-				- when writing an unnamed buffer in a way that
-				  the buffer gets a name
 				- after successfully recovering a file
 				- for the filetypedetect group when executing
-				  ":filetype detect"
+				  ":filetype detect" or when writing an
+				  unnamed buffer in a way that it gets a name
 				Not triggered:
 				- for the `:read file` command
 				- when the file doesn't exist

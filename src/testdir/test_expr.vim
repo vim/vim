@@ -238,6 +238,39 @@ func Test_compare_with_null()
   unlet s:value
 endfunc
 
+" A comparison cannot be followed by another one, with or without parentheses.
+func Test_compare_chained()
+  call v9.CheckLegacyAndVim9Failure(['echo (1 != 2 > 3)'], 'E1588: Comparison operators cannot be chained, use parentheses: > 3)')
+  call v9.CheckLegacyAndVim9Failure(['echo 1 != 2 > 3'], 'E1588:')
+  call v9.CheckLegacyAndVim9Failure(['echo 1 == 1 == 1'], 'E1588:')
+  call v9.CheckLegacyAndVim9Failure(['echo 1 < 2 <= 3'], 'E1588:')
+  call v9.CheckLegacyAndVim9Failure(['echo "a" =~ "a" !~ "b"'], 'E1588:')
+  call v9.CheckLegacyAndVim9Failure(['echo [] is [] isnot []'], 'E1588:')
+  call v9.CheckLegacyAndVim9Failure(['VAR x = 1 ==# 1 ==? 1'], 'E1588:')
+
+  " also when it is not evaluated
+  call v9.CheckLegacyAndVim9Failure(['echo 0 && (1 < 2 < 3)'], 'E1588:')
+
+  " a comparison on its own and with parentheses is fine
+  let lines =<< trim END
+      call assert_equal(TRUE, TRUE != (2 > 3))
+      call assert_equal(TRUE, (1 != 2) == (3 < 4))
+      call assert_equal(TRUE, 1 < 2 && 2 < 3)
+      call assert_equal(FALSE, 1 == 1 ? 2 > 3 : 3 > 2)
+      VAR is_ok = 1
+      call assert_equal(TRUE, is_ok == 1)
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+
+  " a continuation line does not hide it
+  let lines =<< trim END
+      vim9script
+      var x = 1 < 2
+            < 3
+  END
+  call v9.CheckScriptFailure(lines, 'E1588:', 2)
+endfunc
+
 func Test_setreg_null_list()
   let lines =<< trim END
       call setreg('x', test_null_list())
@@ -248,6 +281,23 @@ endfunc
 func Test_special_char()
   " The failure is only visible using valgrind.
   call v9.CheckLegacyAndVim9Failure(['echo "\<C-">'], ['E15:', 'E1004:', 'E1004:'])
+endfunc
+
+" When something else than ")" follows a nested expression, E110 shows where
+" the expression ended; when nothing follows, the ")" is really missing.
+func Test_missing_closing_paren()
+  call v9.CheckLegacyAndVim9Failure(['echo (0!)'], "E110: Missing ')': !)")
+  call v9.CheckLegacyAndVim9Failure(['echo (1 2)'], "E110: Missing ')': 2)")
+  call v9.CheckLegacyAndVim9Failure(['echo (1 + 2 ]'], "E110: Missing ')': ]")
+  call v9.CheckLegacyAndVim9Failure(['echo ("a" "b")'], "E110: Missing ')': \"b\")")
+  " in a :def function the expression may continue on the next line
+  call v9.CheckLegacyAndVim9Failure(['VAR x = ((1)'], ["E110: Missing ')'", 'E1097:', "E110: Missing ')'"])
+  try
+    echo ((1)
+    call assert_report('should not get here')
+  catch
+    call assert_equal("Vim(echo):E110: Missing ')'", v:exception)
+  endtry
 endfunc
 
 func Test_method_with_prefix()

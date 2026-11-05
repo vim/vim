@@ -2,6 +2,7 @@
 # Edit the src/po/vim.desktop.in file instead.
 [Desktop Entry]
 # Translators: This is the Application Name used in the Vim desktop file
+Name[af]=Vim
 Name[ca]=Vim
 Name[de]=Vim
 Name[eo]=Vim
@@ -21,6 +22,7 @@ Name[uk]=Vim
 Name[zh_CN]=Vim
 Name=Vim
 # Translators: This is the Generic Application Name used in the Vim desktop file
+GenericName[af]=Teksverwerker
 GenericName[ca]=Editor de text
 GenericName[de]=Texteditor
 GenericName[eo]=Tekstoredaktilo
@@ -40,6 +42,7 @@ GenericName[uk]=Редактор Тексту
 GenericName[zh_CN]=文本编辑器
 GenericName=Text Editor
 # Translators: This is the comment used in the Vim desktop file
+Comment[af]=Bewerk tekslêers
 Comment[ca]=Edita fitxers de text
 Comment[de]=Textdateien bearbeiten
 Comment[eo]=Redakti tekstajn dosierojn
@@ -63,7 +66,6 @@ Comment=Edit text files
 GenericName[da]=Teksteditor
 GenericName[pl]=Edytor tekstu
 GenericName[is]=Ritvinnsluforrit
-Comment[af]=Redigeer tekslêers
 Comment[ar]=حرّر ملفات نصية
 Comment[az]=Mətn fayllarını redaktə edin
 Comment[be]=Рэдагаваньне тэкставых файлаў
@@ -120,6 +122,7 @@ Exec=vim %F
 Terminal=true
 Type=Application
 # Translators: Search terms to find this application. Do NOT change the semicolons! The list MUST also end with a semicolon!
+Keywords[af]=Teks;verwerker;redigeerder;
 Keywords[ca]=Text;editor;
 Keywords[de]=Text;Editor;
 Keywords[eo]=Teksto;redaktilo;

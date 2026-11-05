@@ -2483,6 +2483,16 @@ def Test_class_extends()
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1315: White space required after name: A"', 4)
+
+  # this was reading past end of the string
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    execute "class B extends A"
+    endclass
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 def Test_using_base_class()
@@ -10197,6 +10207,37 @@ def Test_class_object_index()
   v9.CheckScriptFailure(lines, 'E689: Index not allowed after a object: a[10] = 1', 5)
 enddef
 
+" Calling a method of a class variable in a skipped part of an expression in
+" a constructor
+def Test_method_call_in_skipped_expr()
+  var lines =<< trim END
+    vim9script
+
+    class A
+      def True(): bool
+        return true
+      enddef
+    endclass
+
+    class B
+      static var AO: A
+      static var result = ''
+
+      def new()
+        AO = A.new()
+
+        if has('eval') || AO.True()
+          result = 'works'
+        endif
+      enddef
+    endclass
+
+    var BO: B = B.new()
+    assert_equal('works', B.result)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 def Test_class_member_init_typecheck()
   # Ensure the class member is assigned its declared type.
   var lines =<< trim END
@@ -12158,6 +12199,45 @@ def Test_index_object()
     assert_equal(1, inner_obj.value)
   END
   v9.CheckSourceSuccess(lines)
+enddef
+
+" Assigning to a slice of a List or Blob object variable
+def Test_object_variable_slice_assign()
+  var lines =<< trim END
+    vim9script
+    class C
+      public var b: blob = 0z000000
+      public var l: list<number> = [1, 2, 3]
+      def Set()
+        this.b[0 : 1] = 0z0102
+        this.l[1 : 2] = [8, 9]
+      enddef
+    endclass
+    def Works()
+      var o = C.new()
+      o.Set()
+      assert_equal(0z010200, o.b)
+      assert_equal([1, 8, 9], o.l)
+      o.b[2 : 2] = 0z03
+      o.l[0 : 0] = [7]
+      assert_equal(0z010203, o.b)
+      assert_equal([7, 8, 9], o.l)
+    enddef
+    Works()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class C
+      var l: list<number> = [1, 2, 3]
+      def Set()
+        this.l[0 : 0] = ['x']
+      enddef
+    endclass
+    C.new().Set()
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected list<number> but got list<string>', 1)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

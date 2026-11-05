@@ -60,14 +60,14 @@ jobs:
       matrix:
         include:
           - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: no,  arch: x64, python3: stable }
-          - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: yes, arch: x86, python3: stable, coverage: yes }
+          - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: yes, arch: x64, python3: stable, coverage: yes }
           - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: yes, arch: x86 }
           - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: no,  arch: x64, coverage: yes }
           - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: no,  arch: x64, ttytype: conpty }
           - { features: NORMAL, toolchain: msvc,  VIMDLL: yes, GUI: no,  arch: x86 }
           - { features: NORMAL, toolchain: mingw, VIMDLL: no,  GUI: yes, arch: x64 }
           - { features: TINY,   toolchain: msvc,  VIMDLL: yes, GUI: yes, arch: x64 }
-          - { features: TINY,   toolchain: mingw, VIMDLL: no,  GUI: no,  arch: x86 }
+          - { features: TINY,   toolchain: mingw, VIMDLL: no,  GUI: no,  arch: x64 }
 
     steps:
       - name: Initialize
@@ -90,7 +90,6 @@ jobs:
             echo "VCARCH=x86" >> $GITHUB_ENV
             echo "WARCH=ia32" >> $GITHUB_ENV
             echo "BITS=32" >> $GITHUB_ENV
-            echo "MSYSTEM=MINGW32" >> $GITHUB_ENV
           fi
 
           echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV

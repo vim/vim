@@ -143,6 +143,7 @@ typedef struct {
     long	vcol_sbr;	    // virtual column after showbreak
     int		need_showbreak;	    // overlong line, skipping first x chars
     int		dont_use_showbreak; // do not use 'showbreak'
+    int		breakindent;	    // cached breakindent width
 #endif
 #ifdef FEAT_PROP_POPUP
     int		text_prop_above_count;
@@ -533,8 +534,10 @@ handle_breakindent(win_T *wp, winlinevars_T *wlv)
 	    wlv->p_extra = NULL;
 	    wlv->c_extra = ' ';
 	    wlv->c_final = NUL;
-	    wlv->n_extra = get_breakindent_win(wp,
+	    if (wlv->breakindent < 0)
+		wlv->breakindent = get_breakindent_win(wp,
 				   ml_get_buf(wp->w_buffer, wlv->lnum, FALSE));
+	    wlv->n_extra = wlv->breakindent;
 	    if (wlv->row == wlv->startrow)
 	    {
 		wlv->n_extra -= win_col_off2(wp);
@@ -1331,6 +1334,7 @@ win_line(
     wlv.tocol = MAXCOL;
 #ifdef FEAT_LINEBREAK
     wlv.vcol_sbr = -1;
+    wlv.breakindent = -1;
 #endif
 
     if (number_only == 0)

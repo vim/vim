@@ -1526,7 +1526,11 @@ generate_NEWTUPLE(cctx_T *cctx, int count, int use_null)
 	return FAIL;
     }
 
-    type = get_tuple_type(&tuple_types_ga, cctx->ctx_type_list);
+    // An empty tuple can be used for any tuple type.
+    if (count == 0)
+	type = &t_tuple_empty;
+    else
+	type = get_tuple_type(&tuple_types_ga, cctx->ctx_type_list);
     decl_type = &t_tuple_any;
 
     ga_clear(&tuple_types_ga);

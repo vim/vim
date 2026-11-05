@@ -1504,6 +1504,8 @@ EXTERN int allow_keys INIT(= FALSE);	// allow key codes when no_mapping
 					// is set
 EXTERN int no_reduce_keys INIT(= FALSE);  // do not apply Ctrl, Shift and Alt
 					  // to the key
+EXTERN int no_simplify_keys INIT(= 0);	// do not merge Ctrl and Alt into the
+					// key, but do apply Shift
 EXTERN int no_u_sync INIT(= 0);		// Don't call u_sync()
 #ifdef FEAT_EVAL
 EXTERN int u_sync_once INIT(= 0);	// Call u_sync() once when evaluating

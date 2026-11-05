@@ -1797,6 +1797,7 @@ do_one_cmd(
 #endif
     int		sourcing = flags & DOCMD_VERBOSE;
     int		did_append_cmd = FALSE;
+    char_u	*newline_cut = NULL;	// where the argument ends at a newline
 
     CLEAR_FIELD(ea);
     ea.line1 = 1;
@@ -2357,6 +2358,7 @@ do_one_cmd(
 	    {
 		ea.nextcmd = p + 1;
 		*p = NUL;
+		newline_cut = p;
 		break;
 	    }
 	}
@@ -2643,6 +2645,14 @@ do_one_cmd(
 	if (ea.errmsg != NULL)
 	    errormsg = ea.errmsg;
     }
+
+    // A command such as ":autocmd" may continue after a '|' in its argument.
+    // Then the lines after the newline must follow that command.  Not for a
+    // command that expands file names, it may reallocate the command line.
+    if (newline_cut != NULL && !(ea.argt & EX_XFILE) && ea.nextcmd != NULL
+	    && ea.nextcmd >= ea.arg && ea.nextcmd <= newline_cut
+	    && *newline_cut == NUL)
+	*newline_cut = '\n';
 
 #ifdef FEAT_EVAL
     // A command will reset "is_export" when exporting an item.  If it is still
@@ -3129,6 +3139,7 @@ parse_command_modifiers(
 				break;
 			    if (!skip_only)
 			    {
+				vim_regfree(cmod->cmod_filter_regmatch.regprog);
 				cmod->cmod_filter_regmatch.regprog =
 						vim_regcomp(reg_pat, RE_MAGIC);
 				if (cmod->cmod_filter_regmatch.regprog == NULL)
@@ -4256,6 +4267,9 @@ ex_command_attrs(dict_T *d, long_u argt, cmd_addr_T addr_type, long def)
 	"none"
     };
     char	*nargs;
+    char	*range;
+    char	numbuf[NUMBUFLEN];
+    long	count = -1;
 
     if (!(argt & EX_EXTRA))
 	nargs = "0";
@@ -4268,17 +4282,22 @@ ex_command_attrs(dict_T *d, long_u argt, cmd_addr_T addr_type, long def)
     dict_add_string(d, "nargs", (char_u *)nargs);
 
     if (!(argt & EX_RANGE))
-	dict_add_bool(d, "range", FALSE);
+	range = "";
     else if (argt & EX_DFLALL)
-	dict_add_string(d, "range", (char_u *)"%");
+	range = "%";
     else if (def >= 0 && !(argt & EX_COUNT))
-	dict_add_number(d, "range", def);
+    {
+	// "-range=N": the default count in the place of the range, as listed
+	// by ":command".
+	vim_snprintf(numbuf, sizeof(numbuf), "%ld", def);
+	range = numbuf;
+    }
     else
-	dict_add_string(d, "range", (char_u *)".");
-    if (!(argt & EX_COUNT))
-	dict_add_bool(d, "count", FALSE);
-    else
-	dict_add_number(d, "count", def < 0 ? 0 : def);
+	range = ".";
+    if (argt & EX_COUNT)
+	count = def < 0 ? 0 : def;
+    dict_add_string(d, "range", (char_u *)range);
+    dict_add_number(d, "count", count);
     dict_add_bool(d, "bang", (argt & EX_BANG) != 0);
     dict_add_bool(d, "bar", (argt & EX_TRLBAR) != 0);
     dict_add_bool(d, "register", (argt & EX_REGSTR) != 0);

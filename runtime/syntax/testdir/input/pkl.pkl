@@ -1,0 +1,68 @@
+#!/usr/bin/env pkl eval
+/// Doc comments describe the module
+@ModuleInfo { minPklVersion = "0.25.0" }
+module com.example.Test
+
+amends "pkl:Project"
+import "pkl:json" as json
+import* "glob/*.pkl" as modules
+
+// Types: built-in, user-defined and nested type arguments
+abstract class Base<in A, out B> extends Other {
+  hidden name: String(length > 3, this != "base")?
+  values: Listing<Mapping<String, Listing<HttpSdConfig>>>
+  callback: (A, Int) -> B
+  `when`: (*LogicStatement|Boolean|String)?
+  /* Block comment */ local fixed const count: UInt8 = 1
+}
+
+typealias Weekday = "MO"|"TU"|Weekend
+typealias Multiline =
+  "a"
+  |Thing
+  |nothing
+
+@Deprecated { message = "Use bar" }
+function map<R>(f: (Base) -> R): List<R> = Foo.of(f.apply(this))
+
+// Numbers
+int = 1_000_000 + 0x1F_FF + 0b1010_1010 + 0o7_7 + 42
+float = 1.5 + .5 + 1_0.0_1 + 2e-3 + 1.5E+10 + 3e1_0
+invalid = 1__000 + 1_ + 0xG + 0b2 + 0o8
+constants = NaN + Infinity + null + true + false
+
+// Strings, escapes and interpolation
+string = "tab\t newline\n quote\" unicode\u{1F600} \(name)"
+invalidEscape = "\q \b \0"
+raw = #"no escape \t but \#t and \#(interpolated)"#
+rawest = ######"only \######n and \######(x)"######
+multiline = """
+  Line one \(value.name)
+  Continued \
+  line
+  """
+rawMultiline = #"""
+  "quotes" and \#(x)
+  """#
+
+// Operators and expressions
+ops = a ?? b |> c && !d || e ** 2 ~/ 3 % 4 <= 5 >= 6 != 7 == 8
+access = foo?.bar!!.baz is Base as Other
+lambda = (x, y) -> x + y
+object = new Listing<String> { "a"; ...others; ...?maybe }
+cond = if (x > 0) let (y = x * 2) y else throw("negative")
+debug = trace(read?("env:HOME") ?? import("other.pkl"))
+
+// Objects and generators
+config {
+  ["key"] = value
+  [[name == "x"]] { enabled = true }
+  for (k, v in mapping) {
+    [k] = v
+  }
+  when (outer.enabled) { on = true } else { on = super.on }
+  default { _ -> unknown }
+}
+
+// Reserved words
+case delete override protected record switch vararg

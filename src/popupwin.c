@@ -5608,6 +5608,34 @@ popup_need_position_adjust(win_T *wp)
     return wp->w_cursor.lnum != wp->w_popup_last_curline;
 }
 
+/*
+ * Make popup_need_position_adjust() return TRUE for popup "wp" when it follows
+ * a text property in buffer "buf".
+ */
+    static void
+popup_textprop_removed_win(win_T *wp, buf_T *buf)
+{
+    if (wp->w_popup_prop_type > 0 && win_valid(wp->w_popup_prop_win)
+				    && wp->w_popup_prop_win->w_buffer == buf)
+	wp->w_popup_prop_changedtick = -1;
+}
+
+/*
+ * Text properties were removed from buffer "buf": a popup that follows a
+ * text property may have to be hidden, recompute its position when
+ * redrawing.  Removing a text property does not change b:changedtick.
+ */
+    void
+popup_textprop_removed(buf_T *buf)
+{
+    win_T	*wp;
+
+    FOR_ALL_POPUPWINS(wp)
+	popup_textprop_removed_win(wp, buf);
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
+	popup_textprop_removed_win(wp, buf);
+}
+
 // Cached array with max zindex of opacity popups covering each cell.
 // Allocated in may_update_popup_mask() when opacity popups exist.
 static short *opacity_zindex = NULL;

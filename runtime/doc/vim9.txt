@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.2.  Last change: 2026 Oct 25
+*vim9.txt*	For Vim version 9.2.  Last change: 2026 Nov 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -235,11 +235,13 @@ Vim script and Vim9 script, including `:def` functions:
 - Many commands cannot be shortened.  Trying to use a shortened command will
   give E1065.  Specifically, these commands' full names must be used:
 
-  - Flow control commands: `:break`, `:catch`, `:continue`, `:else`, `:elseif`, `:endfor`,
-    `:endif`, `:endtry`, `:endwhile`, `:finally`, `:finish`, `:return`, `:throw`, `:while`
-  - Declaration keywords: `:abstract`, `:class`, `:const`, `:def`, `:endclass`, `:enddef`,
-    `:endenum`, `:endinterface`, `:enum`, `:export`, `:final`, `:import`, `:interface`,
-    `:public`, `:static`, `:this`, `:type`, `:var`
+  - Flow control commands: `:break`, `:catch`, `:continue`, `:else`,
+    `:elseif`, `:endfor`, `:endif`, `:endtry`, `:endwhile`, `:finally`,
+    `:finish`, `:return`, `:throw`, `:while`
+  - Declaration keywords: `:abstract`, `:class`, `:const`, `:def`,
+    `:endclass`, `:enddef`, `:endenum`, `:endinterface`, `:enum`, `:export`,
+    `:final`, `:import`, `:interface`, `:public`, `:static`, `:this`, `:type`,
+    `:var`
 
 - `:final` cannot be used as a shortened form of `:finally`.  That is because
   it means |:final| in Vim9 script.  By itself, `:final` lists all variables,
@@ -320,18 +322,20 @@ A |fold-marker| (i.e., `#{{{`) used to start a fold, is still okay.
 When reading a script, Vim doesn't know whether it is |Vim9| script before
 finding the `vim9script` command.  Before it, comments must use legacy
 syntax, so a quotation mark:
->vim9
+>vim9mix
 	" legacy Vim script comment before vim9script
 	vim9script
 	# Vim9 script comment
 <
-That looks ugly (especially with the syntax highlighting not treating the
-initial Vim script comment in Comment highlight group as a command).
-It is better having the `vim9script` command as the first line:
+You may think that looks peculiar.  Placing all comments after the `vim9script`
+is tidier.
 >vim9
 	vim9script
-	# Vim9 script comment
+	# All comments here
 <
+	Note that in the |vim9-mix| scenario, legacy Vim script comments cannot
+	be avoided.
+
 In legacy Vim script, # is also used for the alternate file name.  In Vim9
 script you must use %% instead.  Instead of ##, use %%%, which stands for
 all arguments.  See |c_%%| and |c_%%%#|.
@@ -666,8 +670,8 @@ autoload script, `:export` needs to be used for those to be used elsewhere.
 <
 							*E1075*
 Using "s:" (like in a legacy Vim script function), is not allowed.  If used in
-a script level `:def` function, |E1268| is given, and, if used in a nested `:def`
-function, E1075.  For example:
+a script level `:def` function, |E1268| is given, and, if used in a nested
+`:def` function, E1075.  For example:
 >vim9
 	vim9script
 	def F1075(): void
@@ -758,7 +762,7 @@ script examples.
 	  call Cos()	" E117: Unknown function: Cos
 	endfunction
 	Call_Cos()
-<							*vim9-s-namespace* *E1268*
+<						*vim9-s-namespace* *E1268*
 Within a Vim9 script's `:def` function, "s:" cannot be used.  Compare these
 two scripts: first, legacy Vim script where "s:" may be used in a `:def` then,
 second, Vim9 script where E1268 is given:
@@ -978,7 +982,7 @@ means there is one argument too few and E1190 is given:
 <
 
 Variable declarations with :var, :final, and :const ~
-							*vim9-declaration* *:var*
+						*vim9-declaration* *:var*
 Local variables need to be declared with `:var`.  Local constants need to be
 declared with either `:final` or `:const`.  Collectively they are referred to
 as "variables" in this section.  Shortening `:var`, `:final`, or `:const` is not
@@ -1489,7 +1493,7 @@ level, is given in a `:def` function if ";" is used more than once:
 <
 
 Constants ~
-							*vim9-const* *vim9-final*
+						*vim9-const* *vim9-final*
 How constants work varies between languages.  Some consider a variable that
 can't be assigned another value a constant.  JavaScript is an example.  Others
 also make the value immutable, thus when a constant uses a list, the list
@@ -1829,7 +1833,8 @@ reports on three "local to buffer" options:
 	}
 	echowindow Get_bv('modifiable', 'tabstop', 'textwidth')
 <
-This is also useful for a |Channel|, |Job|, or |timer|.  This is a timer example:
+This is also useful for a |Channel|, |Job|, or |timer|.  This is a timer
+example:
 >vim9
 	vim9script
 	echowindow "Handler calling..."
@@ -2452,9 +2457,9 @@ Similarly, adding modifiers to any of |:try|, |:endtry|, |:for|, |:endfor|,
 |:while|, |:endwhile|, |:catch|, or |:finally| may result in an E1176 error,
 though it depends on the redundant modifier used.  For example, adding the
 |:silent| modifier to |:for| is ignored whereas adding |:keepmarks| to
-|:endfor| is an error.  (Note the behavior of `:silent` is intentional.  It works
-like that so that error messages are suppressed when Vim does not support
-the |+eval| feature.)
+|:endfor| is an error.  (Note the behavior of `:silent` is intentional.  It
+works like that so that error messages are suppressed when Vim does not
+support the |+eval| feature.)
 							*E1082*
 Also, using a command modifier without a following command gives E1082:
 >vim9
@@ -2846,11 +2851,11 @@ The falsy (|??|) and logical NOT (|expr-!|) operators use truthiness rules.
 
 – Strict Boolean Expressions ~
 							*vim9-boolean*
-In Vim9 script, the conditionals |:if|, |ternary|, |:while|, `||` (|expr-barbar|),
-and `&&` (|expr-&&|), require strict boolean types.  This is different to
-legacy Vim script, which treats any non-zero number as 1 and implicitly infers
-a string or |Special| as a number equivalent.  To illustrate, in legacy Vim
-script, all these conditional expressions work:
+In Vim9 script, the conditionals |:if|, |ternary|, |:while|, `||`
+(|expr-barbar|), and `&&` (|expr-&&|), require strict boolean types.  This is
+different to legacy Vim script, which treats any non-zero number as 1 and
+implicitly infers a string or |Special| as a number equivalent.  To
+illustrate, in legacy Vim script, all these conditional expressions work:
 >vim
 	" legacy Vim script
 	" These evaluate to 1:
@@ -3021,9 +3026,9 @@ because "t" has already been evaluated to `true`:
 <
 
 Predefined values ~
-				*false* *true* *null* *null_blob* *null_channel*
-				*null_class* *null_dict* *null_function* *null_job*
-				*null_list* *null_object* *null_partial* *null_string*
+			*false* *true* *null* *null_blob* *null_channel*
+			*null_class* *null_dict* *null_function* *null_job*
+			*null_list* *null_object* *null_partial* *null_string*
 Vim9 script has predefined values representing true, false, and null states.
 The following table lists those predefined values, along with their
 |type()|, |typename()|, and |string()| representations:
@@ -4568,12 +4573,10 @@ Similarly for a permissive dictionary:
 	echo de->extend(da)->string()
 <
 And, although tuples themselves are immutable, permissive tuple concatenation
-can be achieved with either "any" or an empty tuple:
+can be achieved with an empty tuple (a variadic tuple can only be concatenated
+with a tuple of the same type, see |E1540|):
 >vim9
 	vim9script
-	var t_any: tuple<...list<any>> = (3, '2')
-	t_any = t_any + (true, )
-	echo t_any
 	var t_dec_empty = ()
 	t_dec_empty = t_dec_empty + (3, '2', true)
 	echo t_dec_empty
@@ -5499,7 +5502,7 @@ In the |vimrc| file sourced on startup this does not happen.
 
 							*vim9-mix*
 There is one way to use both legacy and Vim9 syntax in one script file:
->vim9
+>vim9mix
 	" _legacy Vim script_ comments are placed here
 	if !has('vim9script')
 	  " _legacy Vim script_ comments and commands are placed here
@@ -5520,7 +5523,7 @@ To prevent these, a safer check may be |v:version| >= 900 instead (because
 Sometimes it is prudent to cut off even later.  Vim9 script's feature set
 continues to grow so, for example, if tuples are used (introduced in Vim 9.1
 patch 1232), a better condition is:
->vim9
+>vim9mix
 	if !has('patch-9.1.1232')
 	  echowindow $"Fail: Vim does not have patch 9.1.1232"
 	  finish
@@ -5808,8 +5811,8 @@ script.  The imported namespace still becomes script-local, even when the
 	call s:myfile.MyFunc()
 
 When using the "as name" form, the namespace cannot be resolved on its own
-(see also |E1060|).  This example demonstrates using `:imp` with `as` successfully,
-then the error:
+(see also |E1060|).  This example demonstrates using `:imp` with `as`
+successfully, then the error:
 >vim
 	let s:tmp = $'{tempname()}.vim'->substitute('\\', '/', 'g')
 	call writefile(['vim9script',
@@ -5838,7 +5841,7 @@ defined.  This does not apply to autoload imports, see the next section.
 
 
 Importing an autoload script ~
-						*vim9-autoload* *import-autoload*
+					*vim9-autoload* *import-autoload*
 For optimal startup speed, loading scripts should be postponed until they are
 actually needed.  Using the autoload mechanism is recommended:
 							*E1264*

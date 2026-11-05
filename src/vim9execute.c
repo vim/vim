@@ -2812,6 +2812,11 @@ execute_unletindex(isn_T *iptr, ectx_T *ectx)
 	    }
 	}
     }
+    else if (tv_dest->v_type == VAR_TUPLE)
+    {
+	status = FAIL;
+	emsg(_(e_tuple_is_immutable));
+    }
     else
     {
 	status = FAIL;
@@ -2894,6 +2899,12 @@ execute_unletrange(isn_T *iptr, ectx_T *ectx)
 					   tv_idx2->v_type != VAR_SPECIAL, n2);
 	    }
 	}
+    }
+    else if (tv_dest->v_type == VAR_TUPLE)
+    {
+	status = FAIL;
+	SOURCING_LNUM = iptr->isn_lnum;
+	emsg(_(e_cannot_slice_tuple));
     }
     else
     {
@@ -6733,6 +6744,7 @@ call_def_function(
     int		defcount = ufunc->uf_args.ga_len - total_argc;
     sctx_T	save_current_sctx = current_sctx;
     int		did_emsg_before = did_emsg_cumul + did_emsg;
+    int		did_emsg_silent_before = did_emsg_silent;
     int		save_suppress_errthrow = suppress_errthrow;
     msglist_T	**saved_msg_list = NULL;
     msglist_T	*private_msg_list = NULL;
@@ -7102,8 +7114,10 @@ failed_early:
     // Not sure if this is necessary.
     suppress_errthrow = save_suppress_errthrow;
 
+    // Give a generic error only when no error was given, also not when
+    // ":silent!" was used.
     if (ret != OK && did_emsg_cumul + did_emsg == did_emsg_before
-							      && !need_rethrow)
+		    && did_emsg_silent == did_emsg_silent_before && !need_rethrow)
 	semsg(_(e_unknown_error_while_executing_str),
 						   printable_func_name(ufunc));
     funcdepth_restore(orig_funcdepth);

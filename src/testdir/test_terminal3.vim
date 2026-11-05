@@ -1467,4 +1467,140 @@ func Test_terminal_csi_resize()
   exe 'bwipe! ' .. buf
 endfunc
 
+" Run Vim in a terminal, where the outer terminal ("host") uses a key protocol
+" and a job in a terminal window also enables a key protocol.  A terminal-mode
+" mapping must still work and unmapped keys must be passed to the job.
+" The job enables the key protocol only after receiving a character, thus
+" while Vim is waiting for the next key.
+func s:Run_tmap_with_key_protocol(host_resp, job_enable, keys, expected)
+  CheckRunVimInTerminal
+  CheckUnix
+  CheckExecutable sh
+  CheckExecutable stty
+  CheckExecutable dd
+  CheckExecutable printf
+
+  let job_lines =<< trim eval END
+    # pass the typed bytes as-is
+    stty raw -echo
+    printf 'start'
+    # wait for a character before enabling the key protocol
+    dd bs=1 count=1 >/dev/null 2>&1
+    printf '{a:job_enable}ready'
+    # write the received bytes to a file
+    dd bs=1 count={len(a:expected)} 2>/dev/null >XtmapOut
+  END
+  call writefile(job_lines, 'XtmapJob.sh', 'D')
+
+  let lines =<< trim END
+    set nocompatible
+    tnoremap <C-E> <Cmd>call writefile(['hit'], 'XtmapHit', 'a')<CR>
+    call term_start(['sh', 'XtmapJob.sh'], #{curwin: 1})
+  END
+  call writefile(lines, 'XtmapKeyProtocol', 'D')
+  call delete('XtmapHit')
+  call delete('XtmapOut')
+  let buf = RunVimInTerminal('-S XtmapKeyProtocol', #{rows: 10})
+  call WaitForAssert({-> assert_match('start', term_getline(buf, 1))})
+
+  " simulate the response of the host terminal enabling the key protocol
+  call term_sendkeys(buf, a:host_resp)
+  call TermWait(buf)
+
+  " let the job enable the key protocol while Vim is waiting for a key
+  call term_sendkeys(buf, 'x')
+  call WaitForAssert({-> assert_match('ready', term_getline(buf, 1))})
+
+  for key in a:keys
+    call term_sendkeys(buf, key)
+    call TermWait(buf)
+  endfor
+
+  call WaitForAssert({-> assert_equal(['hit'],
+        \ filereadable('XtmapHit') ? readfile('XtmapHit') : [])})
+  call WaitForAssert({-> assert_equal(a:expected,
+        \ filereadable('XtmapOut') ? readfile('XtmapOut', 'b')->join("\n") : '')})
+
+  call StopVimInTerminal(buf)
+  call delete('XtmapHit')
+  call delete('XtmapOut')
+endfunc
+
+func Test_terminal_tmap_with_kitty_keyboard()
+  " response to the kitty keyboard protocol status request: enabled
+  let host_kitty_enabled = "\<Esc>[?1u"
+  " printf format to enable the kitty keyboard protocol
+  let job_enable_kitty = '\033[>1u'
+  " keys in the kitty keyboard protocol: CSI {key} ; {modifiers + 1} u
+  let ctrl_e = "\<Esc>[101;5u"
+  let ctrl_f = "\<Esc>[102;5u"
+  let ctrl_shift_f = "\<Esc>[102;6u"
+
+  " CTRL-E is mapped, CTRL-F and CTRL-SHIFT-F are passed to the job.
+  " The first key after enabling the protocol is not mapped.
+  call s:Run_tmap_with_key_protocol(host_kitty_enabled, job_enable_kitty,
+        \ [ctrl_f, ctrl_e, ctrl_shift_f, 'a'],
+        \ ctrl_f .. ctrl_shift_f .. 'a')
+endfunc
+
+func Test_terminal_tmap_with_modify_other_keys()
+  " response to the XTQMODKEYS request: modifyOtherKeys level 2
+  let host_mok_enabled = "\<Esc>[>4;2m"
+  " printf format to enable modifyOtherKeys level 2
+  let job_enable_mok = '\033[>4;2m'
+  " keys in modifyOtherKeys: CSI 27 ; {modifiers + 1} ; {key} ~
+  let ctrl_e = "\<Esc>[27;5;101~"
+  let ctrl_f = "\<Esc>[27;5;102~"
+  " xterm uses "F" instead of "f" with Shift
+  let ctrl_shift_f = "\<Esc>[27;6;70~"
+
+  " CTRL-E is mapped, CTRL-F and CTRL-SHIFT-F are passed to the job.
+  " The first key after enabling the protocol is not mapped.
+  call s:Run_tmap_with_key_protocol(host_mok_enabled, job_enable_mok,
+        \ [ctrl_f, ctrl_e, ctrl_shift_f, 'a'],
+        \ ctrl_f .. ctrl_shift_f .. 'a')
+endfunc
+
+" In the MS-Windows console with 'termguicolors' an SGR sequence set by the
+" user, such as "t_Cs" for undercurl, must reach the terminal and must not
+" drop the text that follows it.  Uses a plain underline, the console behind
+" ConPTY may not understand "\e[4:3m".
+func Test_terminal_mswin_vtp_sgr_passthrough()
+  CheckMSWindows
+  CheckFeature termguicolors
+
+  let lines =<< trim END
+    set termguicolors
+    let &t_Cs = "\e[4m"
+    let &t_Ce = "\e[24m"
+    hi Curl cterm=undercurl gui=undercurl
+    call setline(1, 'foo bar')
+    call matchadd('Curl', 'foo')
+  END
+  call writefile(lines, 'XsgrScript', 'D')
+  " With a DLL build, -v does not make gvim run in the console.
+  let prog = fnamemodify(v:progpath, ':h') .. '/'
+        \ .. substitute(fnamemodify(v:progpath, ':t'), '\c^g\zevim', '', '')
+  let cmd = [prog, '--clean', '--cmd', 'set enc=utf8', '-S', 'XsgrScript']
+  " WinPTY drops underline attributes when scraping the console.
+  try
+    let buf = term_start(cmd,
+          \ #{term_rows: 5, term_cols: 40, tty_type: 'conpty'})
+  catch /E982:/
+    throw 'Skipped: ConPTY is not available'
+  endtry
+  call WaitForAssert({-> assert_equal('foo bar', trim(term_getline(buf, 1)))})
+
+  " "foo" is underlined, "bar" is not
+  call WaitForAssert({-> assert_equal(1,
+        \ term_getattr(term_scrape(buf, 1)[0].attr, 'underline'))})
+  let cells = term_scrape(buf, 1)
+  call assert_equal(1, term_getattr(cells[2].attr, 'underline'))
+  call assert_equal(0, term_getattr(cells[4].attr, 'underline'))
+
+  call term_sendkeys(buf, ":qa!\<CR>")
+  call WaitForAssert({-> assert_equal('dead', job_status(term_getjob(buf)))})
+  exe buf .. 'bwipe!'
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

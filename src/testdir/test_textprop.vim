@@ -5435,4 +5435,100 @@ func Test_prop_add_over_uint16_max()
   bwipe!
 endfunc
 
+" Adding or removing a text property that only highlights must not compute the
+" syntax highlighting again, which is slow when the property is far above the
+" displayed lines.
+func Test_prop_highlight_keeps_syntax_state()
+  CheckFeature profile
+  new
+  call setline(1, range(1, 1000)->map({_, v -> 'word ' .. v}))
+  syntax match TestNumber /\d\+/
+  syntax sync minlines=50
+  normal! G
+  redraw!
+  call prop_type_add('highlight_only', {'highlight': 'Search'})
+  syntime on
+  redraw
+
+  syntime clear
+  call prop_add(10, 1, {'type': 'highlight_only', 'length': 3})
+  redraw
+  call assert_notmatch('TestNumber', execute('syntime report'))
+
+  syntime clear
+  call prop_remove({'type': 'highlight_only'})
+  redraw
+  call assert_notmatch('TestNumber', execute('syntime report'))
+
+  call prop_add(10, 1, {'type': 'highlight_only', 'length': 3})
+  redraw
+  syntime clear
+  call prop_clear(10)
+  redraw
+  call assert_notmatch('TestNumber', execute('syntime report'))
+  syntime off
+
+  call prop_type_delete('highlight_only')
+  bwipe!
+endfunc
+
+" A highlight property added or removed in a buffer that is only shown in a
+" global and a tab-local popup window updates the popups, also without
+" ":redraw".
+func Test_prop_highlight_in_global_popup()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    let g:bufnr = bufadd('')
+    call bufload(g:bufnr)
+    call setbufline(g:bufnr, 1, 'one two')
+    call prop_type_add('popup_hl', {'bufnr': g:bufnr, 'highlight': 'Search'})
+    call popup_create(g:bufnr, {'tabpage': -1, 'line': 2, 'col': 2})
+    call popup_create(g:bufnr, {'line': 4, 'col': 2})
+    func AddProp(timer)
+      call prop_add(1, 1, {'bufnr': g:bufnr, 'type': 'popup_hl', 'length': 3})
+    endfunc
+    func RemoveProp(timer)
+      call prop_remove({'bufnr': g:bufnr, 'type': 'popup_hl'})
+    endfunc
+    " <Cmd> does not redraw the command line, only the property changes
+    nnoremap <F3> <Cmd>call timer_start(0, 'AddProp')<CR>
+    nnoremap <F4> <Cmd>call timer_start(0, 'RemoveProp')<CR>
+  END
+  call writefile(lines, 'XtestPopupProp', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupProp', {'rows': 8})
+  let IsHighlighted = {row -> term_scrape(buf, row)->slice(1, 4)
+        \ ->filter({_, v -> v.bg == '#ffff40'})->len() == 3}
+  call WaitForAssert({-> assert_match('^\~one two', term_getline(buf, 2))})
+  call WaitForAssert({-> assert_match('^\~one two', term_getline(buf, 4))})
+  call assert_false(IsHighlighted(2))
+  call assert_false(IsHighlighted(4))
+
+  call term_sendkeys(buf, "\<F3>")
+  call WaitForAssert({-> assert_true(IsHighlighted(2) && IsHighlighted(4))})
+
+  call term_sendkeys(buf, "\<F4>")
+  call WaitForAssert({-> assert_false(IsHighlighted(2) || IsHighlighted(4))})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" The cursor moves up when prop_clear() removes virtual text above it.
+func Test_prop_clear_virtual_text_cursor()
+  new
+  call setline(1, ['one', 'two', 'three'])
+  call prop_type_add('above', {})
+  call prop_add(2, 0, {'type': 'above', 'text': 'virtual text', 'text_align': 'above'})
+  normal! 2G
+  redraw
+  call assert_equal(3, winline())
+
+  call prop_clear(2)
+  redraw
+  call assert_equal(2, winline())
+
+  call prop_type_delete('above')
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
