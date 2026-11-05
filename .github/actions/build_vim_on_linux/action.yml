@@ -94,6 +94,21 @@ runs:
         echo '::group::Install packages'
         # This is added by default, and it is often broken, but we don't need anything from it
         sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+        # Avoid stalled downloads from the hosted runner's Azure mirror.
+        for apt_sources in /etc/apt/sources.list \
+                           /etc/apt/apt-mirrors.txt \
+                           /etc/apt/apt-security-mirrors.txt \
+                           /etc/apt/sources.list.d/*.list \
+                           /etc/apt/sources.list.d/*.sources; do
+          if [ -f "$apt_sources" ]; then
+            sudo sed -i 's#https\?://azure\.archive\.ubuntu\.com/ubuntu\(/\|[[:space:]]\|$\)#https://archive.ubuntu.com/ubuntu\1#g' "$apt_sources"
+          fi
+        done
+        printf '%s\n' \
+          'Acquire::Retries "3";' \
+          'Acquire::http::Timeout "30";' \
+          'Acquire::https::Timeout "30";' \
+          | sudo tee /etc/apt/apt.conf.d/99-vim-ci-network > /dev/null
         PKGS=( \
           gettext \
           x11-utils \
@@ -155,7 +170,7 @@ runs:
         if ${{ contains(fromJSON(inputs.extra), 'proto') }}; then
           PKGS+=( python3-clang )
         fi
-        sudo apt-get update && sudo apt-get upgrade -y --allow-downgrades && sudo apt-get install -y --allow-downgrades "${PKGS[@]}"
+        sudo sh ci/apt-update.sh && sudo apt-get upgrade -y --allow-downgrades && sudo apt-get install -y --allow-downgrades "${PKGS[@]}"
 
     - name: Install gcc-${{ env.GCC_VER }}
       if: inputs.compiler == 'gcc'
@@ -165,7 +180,7 @@ runs:
         # ubuntu-toolchain-r/test PPA for gcc-13 compiler
         # disabled because the installation failed, causing test failures
         # sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-        sudo apt-get update -y
+        sudo sh ci/apt-update.sh
         sudo apt-get install -y gcc-${{ env.GCC_VER }}:${{ inputs.architecture }}
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
         sudo update-alternatives --set gcc /usr/bin/gcc-${{ env.GCC_VER }}
@@ -183,7 +198,7 @@ runs:
         Suites: llvm-toolchain-${DISTRIB_CODENAME}-${{ env.CLANG_VER }}
         Components: main
         Signed-By: /usr/share/keyrings/llvm-archive-keyring.gpg" | sudo tee /etc/apt/sources.list.d/llvm-toolchain.sources > /dev/null
-        sudo apt-get update -y
+        sudo sh ci/apt-update.sh
         sudo apt-get install -y clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }}
         sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${{ env.CLANG_VER }} 100
         sudo update-alternatives --set clang /usr/bin/clang-${{ env.CLANG_VER }}

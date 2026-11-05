@@ -27,6 +27,7 @@ SRC_ALL =	\
 		.codecov.yml \
 		.editorconfig \
 		CODE_OF_CONDUCT.md \
+		ci/apt-update.sh \
 		ci/config.mk*.sed \
 		ci/ddebs.list \
 		ci/gen_testset.py \
