@@ -310,12 +310,6 @@ wl_registry_listener_event_global(
 	seat->proxy = seat_proxy;
 	wl_seat_add_listener(seat_proxy, &wl_seat_listener, seat);
 
-	if (vwl_connection_roundtrip(ct) == FAIL || seat->label == NULL)
-	{
-	    vwl_seat_destroy(seat);
-	    return;
-	}
-
 	((vwl_seat_T **)ct->gobjects.seats.ga_data)[ct->gobjects.seats.ga_len++]
 	    = seat;
     }
@@ -411,7 +405,8 @@ vwl_connection_new(const char *display)
 
     wl_registry_add_listener(ct->registry.proxy, &wl_registry_listener, ct);
 
-    if (vwl_connection_roundtrip(ct) == FAIL)
+    // Must roundtrip twice to process seat events as well.
+    if (vwl_connection_roundtrip(ct) == FAIL || vwl_connection_roundtrip(ct) == FAIL)
     {
 	vwl_connection_destroy(ct);
 	return NULL;
@@ -480,14 +475,18 @@ vwl_connection_destroy(vwl_connection_T *self)
     vwl_seat_T *
 vwl_connection_get_seat(vwl_connection_T *self, const char *label)
 {
+    bool find_first = false;
+
     if ((STRCMP(label, "") == 0 || label == NULL)
 	    && self->gobjects.seats.ga_len > 0)
-	return ((vwl_seat_T **)self->gobjects.seats.ga_data)[0];
+	find_first = true;
 
     for (int i = 0; i < self->gobjects.seats.ga_len; i++)
     {
 	vwl_seat_T *seat = ((vwl_seat_T **)self->gobjects.seats.ga_data)[i];
-	if (STRCMP(seat->label, label) == 0)
+	if (seat->label == NULL)
+	    continue;
+	if (find_first || STRCMP(seat->label, label) == 0)
 	    return seat;
     }
     return NULL;
