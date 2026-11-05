@@ -1090,18 +1090,24 @@ luaV_dict_len(lua_State *L)
 luaV_dict_iter(lua_State *L UNUSED)
 {
 # ifdef FEAT_EVAL
-    hashitem_T *hi = (hashitem_T *) lua_touserdata(L, lua_upvalueindex(1));
-    int n = lua_tointeger(L, lua_upvalueindex(2));
+    dict_T *d = luaV_unbox(L, luaV_Dict, lua_upvalueindex(1));
+    hashitem_T *hi = (hashitem_T *) lua_touserdata(L, lua_upvalueindex(2));
+    int n = lua_tointeger(L, lua_upvalueindex(3));
+    int changed = lua_tointeger(L, lua_upvalueindex(4));
     dictitem_T *di;
     if (n <= 0) return 0;
+    // When an item was added or removed the hashtab may have been
+    // reallocated, "hi" cannot be used.
+    if (d->dv_hashtab.ht_changed != changed)
+	luaL_error(L, "dict changed during iteration");
     while (HASHITEM_EMPTY(hi)) hi++;
     di = dict_lookup(hi);
     lua_pushstring(L, (char *) hi->hi_key);
     luaV_pushtypval(L, &di->di_tv);
     lua_pushlightuserdata(L, (void *) (hi + 1));
-    lua_replace(L, lua_upvalueindex(1));
-    lua_pushinteger(L, n - 1);
     lua_replace(L, lua_upvalueindex(2));
+    lua_pushinteger(L, n - 1);
+    lua_replace(L, lua_upvalueindex(3));
     return 2;
 # else
     return 0;
@@ -1113,9 +1119,11 @@ luaV_dict_call(lua_State *L)
 {
     dict_T *d = luaV_unbox(L, luaV_Dict, 1);
     hashtab_T *ht = &d->dv_hashtab;
+    lua_pushvalue(L, 1); // the dict, keeps it alive while iterating
     lua_pushlightuserdata(L, (void *) ht->ht_array);
     lua_pushinteger(L, ht->ht_used); // # remaining items
-    lua_pushcclosure(L, luaV_dict_iter, 2);
+    lua_pushinteger(L, ht->ht_changed);
+    lua_pushcclosure(L, luaV_dict_iter, 4);
     return 1;
 }
 
