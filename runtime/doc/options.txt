@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Oct 25
+*options.txt*	For Vim version 9.2.  Last change: 2026 Nov 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -685,7 +685,8 @@ normally not have any).
 The 'modelinestrict' option restricts which options can be set via a
 modeline to a fixed whitelist.  This is enabled by default, for security
 reasons: it avoids unexpected or harmful side effects when opening files
-from unknown or untrustworthy locations.
+from unknown or untrustworthy locations.  When 'verbose' is non-zero a message
+is given for each option that is ignored.
 
 							*modeline-local*
 The options are set like with ":setlocal": The new value only applies to the
@@ -6263,6 +6264,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The following options are allowed:
 		'autoindent'
 		'cindent'
+		'colorcolumn'
 		'commentstring'
 		'expandtab'
 		'filetype'
