@@ -654,8 +654,12 @@ func StartupBackgroundHandoffOutput(state, channel, msg)
   let a:state.output ..= a:msg
   if !a:state.queried && a:state.output =~ "\e]11;?"
     let a:state.queried = 1
+  endif
+  " Startup may take longer than the background wait, so start the timers
+  " only when the child is about to hand over the terminal.
+  if empty(a:state.timers) && a:state.output =~ 'HANDOFF-START'
     if a:state.interrupt
-      call add(a:state.timers, timer_start(70,
+      call add(a:state.timers, timer_start(20,
             \ {-> ch_sendraw(a:channel, "\<C-C>")}))
     endif
     call add(a:state.timers, timer_start(a:state.delay,
@@ -696,18 +700,22 @@ func Test_startup_background_handoff()
     if kind != 'exit'
       call add(lines, 'set termbackgroundwait=50')
     endif
-    if kind == 'colors'
+    if kind == 'interrupt'
+      " Simulate slow startup after the background query.
+      call add(lines, 'autocmd BufEnter * ++once sleep 100m')
+    elseif kind == 'colors'
       call add(lines, 'set t_ti= t_te=')
     endif
     call writefile(lines, 'Xbghandoffvimrc', 'D')
     call delete('Xbghandoffinput')
     let cmd = GetVimCommandCleanTerm() .. ' -u Xbghandoffvimrc'
+          \ .. ' -c "call echoraw(''HANDOFF-START'')"'
     if kind != 'exit'
       let cmd ..= ' -c "!python3 Xbghandoff.py"'
     endif
     let state = #{output: '', queried: 0, quit: 0, timers: [],
           \ interrupt: kind == 'interrupt',
-          \ delay: kind == 'exit' ? 20 : kind == 'interrupt' ? 110 : 80}
+          \ delay: kind == 'exit' ? 20 : kind == 'interrupt' ? 60 : 30}
     let job = job_start(cmd .. ' -c "qall!"', #{pty: 1, out_mode: 'raw',
           \ env: #{TERM: 'xterm', COLORFGBG: ''},
           \ out_cb: function('StartupBackgroundHandoffOutput', [state])})
