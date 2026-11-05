@@ -3319,4 +3319,39 @@ func Test_includeexpr_insecure_copied_to_new_buffer()
   bwipe!
 endfunc
 
+func Test_set_option_termguicolors_side_effects()
+  CheckOption termguicolors
+
+  if has('vtp') && !has('vcon') && !has('gui_running')
+    " Win32: 'guicolors' doesn't work without virtual console.
+    throw 'Skipped: E954: termguicolors is not supported on this terminal'
+  endif
+
+  " Restore current values afterwards
+  let cmd = ["set"]
+  let cmd += [&termguicolors ? 'termguicolors' : 'notermguicolors']
+  let cmd += ["t_SI=" . &t_SI->escape(' \|')]
+  let cmd += ["t_EI=" . &t_EI->escape(' \|')]
+  defer execute(join(cmd, ' '))
+
+  " Enable termguicolors and specify some keycodes
+  const t_SI = "\e[5 q"
+  const t_EI = "\e[1 q"
+
+  set termguicolors
+  let &t_SI = t_SI
+  let &t_EI = t_EI
+  " Change mode to enforce the changes
+  exe "normal :\e"
+
+  call assert_equal(t_SI, &t_SI)
+  call assert_equal(t_EI, &t_EI)
+
+  " Check termguicolors does not reset keycodes
+  set termguicolors " NOOP
+
+  call assert_equal(t_SI, &t_SI)
+  call assert_equal(t_EI, &t_EI)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

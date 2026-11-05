@@ -93,7 +93,7 @@ char_u *replace_termcodes(char_u *from, char_u **bufp, scid_T sid_arg, int flags
 void show_termcodes(int flags);
 int show_one_termcode(char_u *name, char_u *code, int printit);
 void update_tcap(int attr);
-void swap_tcap(void);
+bool swap_tcap(void);
 void ansi_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx);
 void cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx);
 int term_replace_keycodes(char_u *ta_buf, int ta_len, int len_arg);
