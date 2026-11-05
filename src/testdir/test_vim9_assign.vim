@@ -1978,6 +1978,17 @@ def Test_assign_dict_with_op()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
+" A null List in a slice assignment in a compiled function gives an error.
+" This used to crash.
+def Test_assign_list_slice_null()
+  v9.CheckDefExecFailure(['var l: list<number> = [1, 2]',
+                          'l[0 : 1] = null_list'], 'E709:', 2)
+  v9.CheckDefExecFailure(['var l: list<number> = null_list',
+                          'l[0 : 0] = [1]'], 'E1147:', 2)
+  v9.CheckDefExecFailure(['var l: list<number> = null_list',
+                          'l[0 :] = null_list'], 'E1147:', 2)
+enddef
+
 def Test_assign_list_with_op()
   var lines =<< trim END
     var ls: list<string> = ['x']
