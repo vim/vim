@@ -544,6 +544,21 @@ func Test_font()
   call delete('Xtest_font')
 endfunc
 
+func Test_gui_size_in_vimrc()
+  CheckCanRunGui
+
+  call writefile(['set lines=30 columns=100'], 'Xgui_size_vimrc', 'D')
+  let after =<< trim END
+    sleep 200ms
+    call writefile([&lines, &columns], 'Xtest_gui_size')
+    qall
+  END
+  if RunVim([], after, '-f -g -u Xgui_size_vimrc')
+    call assert_equal(['30', '100'], readfile('Xtest_gui_size'))
+  endif
+  call delete('Xtest_gui_size')
+endfunc
+
 " Test the -geometry argument (for GUI only).
 func Test_geometry()
   CheckCanRunGui

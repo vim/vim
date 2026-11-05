@@ -19,6 +19,13 @@ call test_ignore_error('E285:')
 " Start the GUI now, in the foreground.
 gui -f
 
+func Test_set_lines_columns()
+  " Sizes set in gvimrc must survive creation of the GUI window (#21773).
+  sleep 200ms
+  call assert_equal(50, &lines)
+  call assert_equal(100, &columns)
+endfunc
+
 func Test_set_guiheadroom()
   CheckX11BasedGui
   CheckNotFeature gui_gtk4
