@@ -970,6 +970,31 @@ def Test_enum_comments()
   END
   v9.CheckSourceSuccess(lines)
 
+  # comment after the last of several enum values in a line, followed by an
+  # object variable
+  lines =<< trim END
+    vim9script
+    enum Car
+      Honda, Ford  # cars
+      var wheels: number
+    endenum
+    assert_equal([Car.Honda, Car.Ford], Car.values)
+    assert_equal(1, Car.Ford.ordinal)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # comment after the last of several enum values with arguments
+  lines =<< trim END
+    vim9script
+    enum Car
+      Honda(4), Ford(3)  # cars
+      var wheels: number
+    endenum
+    assert_equal(3, Car.Ford.wheels)
+    assert_equal(1, Car.Ford.ordinal)
+  END
+  v9.CheckSourceSuccess(lines)
+
   # Test for using an unsupported comment
   lines =<< trim END
     vim9script
