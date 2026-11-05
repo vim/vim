@@ -1,4 +1,4 @@
-*todo.txt*	For Vim version 9.2.  Last change: 2026 Oct 25
+*todo.txt*	For Vim version 9.2.  Last change: 2026 Nov 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -360,8 +360,6 @@ When scheme can't be found by configure there is no clear "not found" message:
     configure:5781: result:
 
 Can "CSI nr X" be used instead of outputting spaces?  Is it faster?  #8002
-
-Typed keys invisible after calling interrupt() from a timer. #10631
 
 With a window height of 6 and 'scrolloff' set to 3, using "j" does not scroll
 evenly. (#10545)  Need to handle this in scroll_cursor_bot().

@@ -3762,6 +3762,9 @@ exec_instructions(ectx_T *ectx)
 		    goto done;
 		}
 
+		// Jumping to the calling function skips the ISN_CMDMOD_REV of
+		// the current function, undo its command modifier.
+		may_restore_cmdmod(&ectx->ec_funclocal);
 		if (func_return(ectx) == FAIL)
 		    goto theend;
 	    }
