@@ -1922,6 +1922,16 @@ get_lval_subscript(
 		ch_log(NULL, "LKVAR:    ... loop: vim9 assign type: %s",
 			vartype_name(lp->ll_valtype->tt_type));
 #endif
+		// If a NULL list was just turned into an empty list above,
+		// it does not have its member type set yet.  Do that now,
+		// using the declared type, so that later operations such as
+		// add() still enforce it.
+		if (v_type == VAR_LIST
+			&& lp->ll_tv->vval.v_list != NULL
+			&& lp->ll_tv->vval.v_list->lv_type == NULL
+			&& sv->sv_type != NULL
+			&& sv->sv_type->tt_type == VAR_LIST)
+		    lp->ll_tv->vval.v_list->lv_type = alloc_type(sv->sv_type);
 	    }
 	}
 
