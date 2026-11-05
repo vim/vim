@@ -88,9 +88,6 @@ au BufNewFile,BufRead .asoundrc,*/usr/share/alsa/alsa.conf,*/etc/asound.conf set
 au BufNewFile,BufRead */.aptitude/config       setf aptconf
 " more generic pattern far down
 
-" Arch Inventory file
-au BufNewFile,BufRead .arch-inventory,=tagging-method	setf arch
-
 " atlas or kawasaki_as
 au BufNewFile,BufRead *.as call dist#ft#FTas()
 
@@ -114,13 +111,6 @@ au BufNewFile,BufRead *.asp
 
 " Grub (must be before pattern *.lst)
 au BufNewFile,BufRead */boot/grub/menu.lst,*/boot/grub/grub.conf,*/etc/grub.conf setf grub
-
-" Maxima, see:
-" https://maxima.sourceforge.io/docs/manual/maxima_71.html#file_005ftype_005fmaxima
-" Must be before the pattern *.mac.
-" *.dem omitted - also used by gnuplot demos
-" *.mc omitted - used by dist#ft#McSetf()
-au BufNewFile,BufRead *.demo,*.dm{1,2,3,t},*.wxm,maxima-init.mac setf maxima
 
 " ObjectScript routine or assembly
 au BufNewFile,BufRead *.mac			call dist#ft#FTmac()
@@ -191,9 +181,8 @@ au BufNewFile,BufRead */tools/bazel.rc			setf bazelrc
 " Bundle config
 au BufNewFile,BufRead */.bundle/config			setf yaml
 
-" C or lpc
+" C or LPC
 au BufNewFile,BufRead *.c			call dist#ft#FTlpc()
-au BufNewFile,BufRead *.lpc,*.ulpc		setf lpc
 
 " m17n database files. */m17n/* matches installed files, */.m17n.d/* matches
 " per-user config files, */m17n-db/* matches the git repo. (must be before
@@ -251,15 +240,6 @@ au BufNewFile,BufRead *..ch			setf chill
 " Changes for WEB and CWEB or CHILL
 au BufNewFile,BufRead *.ch			call dist#ft#FTchange()
 
-" Clang-format
-au BufNewFile,BufRead .clang-format		setf yaml
-
-" Clang-tidy
-au BufNewFile,BufRead .clang-tidy		setf yaml
-
-" Matplotlib
-au BufNewFile,BufRead *.mplstyle,matplotlibrc	setf yaml
-
 " Clever or dtd
 au BufNewFile,BufRead *.ent			call dist#ft#FTent()
 
@@ -298,10 +278,6 @@ au BufNewFile,BufRead *Eterm/*.cfg		setf eterm
 " Elixir or Euphoria
 au BufNewFile,BufRead *.ex call dist#ft#ExCheck()
 
-" Elixir
-au BufNewFile,BufRead mix.lock,*.exs setf elixir
-au BufNewFile,BufRead *.eex,*.leex setf eelixir
-
 " Euphoria 3 or 4
 au BufNewFile,BufRead *.eu,*.ew,*.exu,*.exw  call dist#ft#EuphoriaCheck()
 if has("fname_case")
@@ -316,10 +292,6 @@ au BufNewFile,BufRead *s6*/\(up\|down\|run\|finish\)    setf execline
 
 " Faust
 au BufNewFile,BufRead *.dsp				call dist#ft#FTdsp()
-
-" Modula-3 configuration language (must be before *.cfg and *makefile)
-au BufNewFile,BufRead *.quake,cm3.cfg		setf m3quake
-au BufNewFile,BufRead m3makefile,m3overrides	setf m3build
 
 " Many tools written in Python use dosini as their config
 " like setuptools, pudb, coverage, pypi, gitlint, oelint-adv, pylint, bpython, mypy
@@ -409,9 +381,6 @@ au BufNewFile,BufRead *.rul
 " DCL (Digital Command Language - vms) or DNS zone file
 au BufNewFile,BufRead *.com			call dist#ft#BindzoneCheck('dcl')
 
-" Dune
-au BufNewFile,BufRead jbuild,dune,dune-project,dune-workspace,dune-file setf dune
-
 " Microsoft Module Definition or Modula-2
 au BufNewFile,BufRead *.def			call dist#ft#FTdef()
 
@@ -439,18 +408,12 @@ au BufNewFile,BufRead *.edn
 " Eiffel or Specman or Euphoria
 au BufNewFile,BufRead *.e,*.E			call dist#ft#FTe()
 
-" Elm Filter Rules file
-au BufNewFile,BufRead filter-rules		setf elmfilt
-
 " Erlang Application Resource Files
 au BufNewFile,BufRead *.app.src			setf erlang
 au BufNewFile,BufRead *.app			call dist#ft#FTapp()
 
 " ESMTP rc file
 au BufNewFile,BufRead *esmtprc			setf esmtprc
-
-" Fennel
-au BufNewFile,BufRead {,.}fennelrc	setf fennel
 
 " Flatpak config
 au BufNewFile,BufRead */flatpak/repo/config	setf dosini
@@ -469,9 +432,6 @@ au BufNewFile,BufRead *.fs			call dist#ft#FTfs()
 
 " GDB command files
 au BufNewFile,BufRead .gdbinit,gdbinit,.cuda-gdbinit,cuda-gdbinit,.gdbearlyinit,gdbearlyinit,*.gdb		setf gdb
-
-" Gedcom
-au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
 
 " Git
 au BufNewFile,BufRead *.git/config,.gitconfig,*/etc/gitconfig	setf gitconfig
@@ -502,9 +462,6 @@ au BufNewFile,BufRead *.git/*
 " Gkrellmrc
 au BufNewFile,BufRead gkrellmrc,gkrellmrc_?	setf gkrellmrc
 
-" GP scripts (2.0 and onward)
-au BufNewFile,BufRead *.gp,.gprc		setf gp
-
 " GPG
 au BufNewFile,BufRead */.gnupg/options		setf gpg
 au BufNewFile,BufRead */.gnupg/gpg.conf		setf gpg
@@ -517,9 +474,6 @@ endif
 " Gitolite
 au BufNewFile,BufRead {,.}gitolite.rc,example.gitolite.rc	setf perl
 
-" Gnuplot scripts
-au BufNewFile,BufRead *.gpi,*.gnuplot,.gnuplot_history	setf gnuplot
-
 " GNU Radio Companion files
 au BufNewFile,BufRead *.grc
 	\ if getline(1) =~# '<?xml' |
@@ -527,9 +481,6 @@ au BufNewFile,BufRead *.grc
 	\ else |
 	\   setf yaml |
 	\ endif
-
-" Groovy
-au BufNewFile,BufRead *.gradle,*.groovy,Jenkinsfile		setf groovy
 
 " Group file
 au BufNewFile,BufRead */etc/group,*/etc/group-,*/etc/group.edit,*/etc/gshadow,*/etc/gshadow-,*/etc/gshadow.edit,*/var/backups/group.bak,*/var/backups/gshadow.bak  setf group
@@ -556,9 +507,6 @@ au BufNewFile,BufRead */etc/host.conf		setf hostconf
 
 " Hosts access
 au BufNewFile,BufRead */etc/hosts.allow,*/etc/hosts.deny  setf hostsaccess
-
-" Hy
-au BufNewFile,BufRead *.hy,.hy-history		setf hy
 
 " Hyprland Configuration language
 au BufNewFile,BufRead */hypr/*.conf,hypr\(land\|paper\|idle\|lock\).conf setf hyprlang
@@ -746,9 +694,6 @@ if has("fname_case")
    au BufNewFile,BufRead *.modX,*.Modx,*.ModX,*.MODX,*.MODx	setf rapid
 endif
 
-" Modula-3 (.m3, .i3, .mg, .ig)
-au BufNewFile,BufRead *.[mi][3g]		setf modula3
-
 " Modconf
 au BufNewFile,BufRead */etc/modules.conf,*/etc/modules,*/etc/conf.modules setf modconf
 
@@ -770,10 +715,6 @@ au BufNewFile,BufRead *.rc,*.rch
 	\   setf rc |
 	\ endif
 
-" Mojo
-" Mojo files use either .mojo or .🔥 as extension
-au BufNewFile,BufRead *.mojo,*.🔥		setf mojo
-
 " Mutt setup file (also for Muttng)
 au BufNewFile,BufRead Mutt{ng,}rc		setf muttrc
 
@@ -785,9 +726,6 @@ au BufNewFile,BufRead */etc/nanorc,*.nanorc	setf nanorc
 
 " Nastran input/DMAP
 "au BufNewFile,BufRead *.dat			setf nastran
-
-" Natural
-au BufNewFile,BufRead *.NS[ACGLMNPS]		setf natural
 
 " Neofetch
 au BufNewFile,BufRead */neofetch/config.conf	setf sh
@@ -815,7 +753,7 @@ if exists('$XDG_CONFIG_HOME')
 endif
 
 " OCaml
-au BufNewFile,BufRead *.ml,*.mli,*.mll,*.mly,.ocamlinit,*.mlt,*.mlp,*.mlip,*.mli.cppo,*.ml.cppo setf ocaml
+au BufNewFile,BufRead *.mli.cppo,*.ml.cppo		setf ocaml
 
 " Octave
 au BufNewFile,BufRead octave.conf,.octaverc,octaverc,*/octave/history	setf octave
@@ -825,9 +763,6 @@ au BufNewFile,BufRead opam,*.opam,*.opam.template,opam.locked,*.opam.locked setf
 
 " OpenFOAM
 au BufNewFile,BufRead fvSchemes,fvSolution,fvConstrains,fvModels,*/constant/g	call dist#ft#FTfoam()
-
-" OPL
-au BufNewFile,BufRead *.[Oo][Pp][Ll]			setf opl
 
 " ini style config files, using # comments
 au BufNewFile,BufRead */.aws/config,*/.aws/credentials,*/.aws/cli/alias	setf confini
@@ -958,9 +893,6 @@ au BufNewFile,BufRead *\,v			setf rcs
 au BufNewFile,BufRead *.reg
 	\ if getline(1) =~? '^REGEDIT[0-9]*\s*$\|^Windows Registry Editor Version \d*\.\d*\s*$' | setf registry | endif
 
-" Ripgrep rc
-au BufNewFile,BufRead {.,}ripgreprc			setf conf
-
 " R Help file
 if has("fname_case")
   au BufNewFile,BufRead *.rd,*.Rd		setf rhelp
@@ -994,9 +926,6 @@ au BufNewFile,BufRead *.r,*.R				call dist#ft#FTr()
 
 " Remind
 au BufNewFile,BufRead .reminders,*.remind,*.rem		setf remind
-
-" Rantfile and Rakefile is like Ruby
-au BufNewFile,BufRead [rR]antfile,*.rant,[rR]akefile,*.rake	setf ruby
 
 " Rust
 au BufNewFile,BufRead Cargo.lock,*/.cargo/config,*/.cargo/credentials	setf toml
@@ -1208,9 +1137,6 @@ au BufNewFile,BufRead *.tf			call dist#ft#FTtf()
 " tmux configuration
 au BufNewFile,BufRead {.,}tmux*.conf		setf tmux
 
-" TOML
-au BufNewFile,BufRead *.toml,uv.lock		setf toml
-
 " TypeScript or Qt translation file (which is XML)
 au BufNewFile,BufRead *.ts
 	\ if getline(1) =~ '<?xml' |
@@ -1243,9 +1169,6 @@ au BufNewFile,BufRead */.config/upstart/*.override	       setf upstart
 " Verilog HDL, V or Coq
 au BufNewFile,BufRead *.v			call dist#ft#FTv()
 
-" Vim script
-au BufNewFile,BufRead *.vim,.exrc,_exrc,.netrwhist	setf vim
-
 " Virata Config Script File or Drupal module
 au BufNewFile,BufRead *.hw,*.module,*.pkg
 	\ if getline(1) =~ '<?php' |
@@ -1276,12 +1199,6 @@ au BufNewFile,BufRead *.web
 	\ else |
 	\   setf winbatch |
 	\ endif
-
-" Windows Scripting Host and Windows Script Component
-au BufNewFile,BufRead *.ws[fc]			setf wsh
-
-" Xdg-user-dirs
-au BufNewFile,BufRead user-dirs.dirs,user-dirs.defaults		setf sh
 
 " X Pixmap (dynamically sets colors, this used to trigger on BufEnter to make
 " it work better, but that breaks setting 'filetype' manually)
