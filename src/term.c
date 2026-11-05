@@ -7819,20 +7819,21 @@ check_for_codes_from_term(void)
     // Keep calling vpeekc() until we don't get any responses.
     ++no_mapping;
     ++allow_keys;
+    ++allow_osc_key;
     for (;;)
     {
 	c = vpeekc();
 	if (c == NUL)	    // nothing available
 	    break;
 
-	// If a response is recognized it's replaced with K_IGNORE, must read
-	// it from the input stream.  If there is no K_IGNORE we can't do
+	// If a response is recognized it's replaced with K_IGNORE or K_OSC,
+	// which must be read from the input stream.  Otherwise we can't do
 	// anything, break here (there might be some responses further on, but
 	// we don't want to throw away any typed chars).
 	if (c != K_SPECIAL && c != K_IGNORE)
 	    break;
 	c = vgetc();
-	if (c != K_IGNORE)
+	if (c != K_IGNORE && c != K_OSC)
 	{
 	    vungetc(c);
 	    break;
@@ -7840,6 +7841,7 @@ check_for_codes_from_term(void)
     }
     --no_mapping;
     --allow_keys;
+    --allow_osc_key;
 }
 #endif
 
