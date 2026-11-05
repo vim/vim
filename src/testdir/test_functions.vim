@@ -1312,6 +1312,33 @@ func Test_join_list_changed_while_stringified()
   unlet g:jlist g:removed
 endfunc
 
+" Same, but the string() method unlocks the list first.
+func Test_join_list_unlocked_while_stringified()
+  let lines =<< trim END
+    vim9script
+    class C
+      def string(): string
+        if !g:removed
+          g:removed = true
+          unlockvar g:jlist
+          remove(g:jlist, 0)
+        endif
+        return 'nostring'
+      enddef
+    endclass
+    g:jlist = [C.new(), C.new(), C.new()]
+  END
+  call writefile(lines, 'Xjoinunlock.vim', 'D')
+  source Xjoinunlock.vim
+  let g:removed = v:false
+  call assert_fails('call join(g:jlist, ",")', 'E742:')
+  call assert_equal(3, len(g:jlist))
+  let g:removed = v:false
+  call assert_fails('call string(g:jlist)', 'E742:')
+  call assert_equal(3, len(g:jlist))
+  unlet g:jlist g:removed
+endfunc
+
 " Same for a dict, where the item can also be added and reallocate the
 " hash table.
 func Test_dict_changed_while_stringified()
