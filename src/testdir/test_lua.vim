@@ -625,6 +625,30 @@ func Test_lua_dict_iter()
   call assert_equal('a:1,b:2,', luaeval('str'))
 
   lua str, d = nil
+
+  " Adding or removing items while iterating gives an error.  This used to
+  " read freed memory, which is only detected with valgrind or ASAN.
+  let g:ld = {}
+  for i in range(20)
+    let g:ld['k' .. i] = i
+  endfor
+  call assert_fails("lua for k, v in vim.eval('g:ld')() do vim.eval('g:ld')['x' .. k] = 1 end",
+        \ 'dict changed during iteration')
+  call assert_fails("lua for k, v in vim.eval('g:ld')() do vim.eval('g:ld')[k] = nil end",
+        \ 'dict changed during iteration')
+
+  " Changing a value is fine
+  let g:ld = {'a': 1, 'b': 2}
+  lua for k, v in vim.eval('g:ld')() do vim.eval('g:ld')[k] = v * 10 end
+  call assert_equal({'a': 10, 'b': 20}, g:ld)
+
+  " The dict stays valid when the variable is deleted while iterating
+  let g:ld = {'a': 1, 'b': 2}
+  lua str = ''
+  lua for k, v in vim.eval('g:ld')() do vim.command('unlet! g:ld'); collectgarbage(); str = str .. v end
+  call assert_equal(3, str2nr(luaeval('str')[0]) + str2nr(luaeval('str')[1]))
+  lua str = nil
+  unlet! g:ld
 endfunc
 
 func Test_lua_blob()
