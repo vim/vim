@@ -2599,7 +2599,11 @@ tv_op_list(typval_T *tv1, typval_T *tv2, char_u *op)
 	tv1->vval.v_list = tv2->vval.v_list;
 	++tv1->vval.v_list->lv_refcount;
     }
-    else
+    // Check the type of all the items first, the List must not be changed
+    // when one of them has the wrong type.  The error has been given then.
+    else if (tv1->vval.v_list->lv_type == NULL
+	    || check_typval_arg_type(tv1->vval.v_list->lv_type, tv2,
+							      NULL, 0) == OK)
 	list_extend(tv1->vval.v_list, tv2->vval.v_list, NULL);
 
     return OK;
