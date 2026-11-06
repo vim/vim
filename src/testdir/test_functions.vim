@@ -1338,6 +1338,68 @@ func Test_dict_changed_while_stringified()
   unlet g:d g:removed
 endfunc
 
+" The string() method of an object item replaces the Dict, List or Tuple that
+" is being converted to a string, or the variable holding it.  This used
+" freed memory, which is only reliably detected with valgrind or ASan.
+func Test_container_replaced_while_stringified()
+  let lines =<< trim END
+    vim9script
+    class A
+      def string(): string
+        g:d.a = 0
+        return 'A'
+      enddef
+    endclass
+    g:d = {a: {o: A.new()}}
+    for i in range(20)
+      g:d.a['k' .. i] = [i]
+    endfor
+    var s = string(g:d)
+    assert_match("^{'a': {", s)
+    assert_match("'o': A", s)
+    assert_equal({a: 0}, g:d)
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " ":let" lists the variable while the method replaces it
+  let lines =<< trim END
+    vim9script
+    class A
+      def string(): string
+        g:d = 0
+        return 'A'
+      enddef
+    endclass
+    g:d = {o: A.new()}
+    for i in range(20)
+      g:d['k' .. i] = [i]
+    endfor
+    var listing = execute('legacy let g:')
+    assert_match("'o': A", listing)
+    assert_equal(0, g:d)
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " a List and a Tuple in a List
+  let lines =<< trim END
+    vim9script
+    class A
+      def string(): string
+        g:l[0] = 0
+        return 'A'
+      enddef
+    endclass
+    g:l = [[A.new()] + range(20)]
+    assert_match('^\[\[A, 0, 1, 2', string(g:l))
+    assert_equal([0], g:l)
+    g:l = [(A.new(), 1, 2, 3)]
+    assert_equal('[(A, 1, 2, 3)]', string(g:l))
+    assert_equal([0], g:l)
+  END
+  call v9.CheckSourceSuccess(lines)
+  unlet g:d g:l
+endfunc
+
 " Test for matchstrlist()
 func Test_matchstrlist()
   let lines =<< trim END
