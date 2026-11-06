@@ -2875,6 +2875,9 @@ path_with_url(char_u *fname)
 }
 
 #if defined(FEAT_EVAL)
+// v:event items saved by get_v_event(), latest first
+static save_v_event_T *saved_v_events = NULL;
+
 /*
  * Return the dictionary of v:event.
  * Save and clear the value in case it already has items.
@@ -2889,7 +2892,14 @@ get_v_event(save_v_event_T *sve)
 	// recursive use of v:event, save, make empty and restore later
 	sve->sve_did_save = TRUE;
 	sve->sve_hashtab = v_event->dv_hashtab;
+	// A small hashtab uses the array inside the struct, use the copy.
+	if (sve->sve_hashtab.ht_array == v_event->dv_hashtab.ht_smallarray)
+	    sve->sve_hashtab.ht_array = sve->sve_hashtab.ht_smallarray;
 	hash_init(&v_event->dv_hashtab);
+
+	// Remember the saved items for garbage collection.
+	sve->sve_next = saved_v_events;
+	saved_v_events = sve;
     }
     else
 	sve->sve_did_save = FALSE;
@@ -2901,9 +2911,29 @@ restore_v_event(dict_T *v_event, save_v_event_T *sve)
 {
     dict_free_contents(v_event);
     if (sve->sve_did_save)
+    {
 	v_event->dv_hashtab = sve->sve_hashtab;
+	if (v_event->dv_hashtab.ht_array == sve->sve_hashtab.ht_smallarray)
+	    v_event->dv_hashtab.ht_array = v_event->dv_hashtab.ht_smallarray;
+	saved_v_events = sve->sve_next;
+    }
     else
 	hash_init(&v_event->dv_hashtab);
+}
+
+/*
+ * Mark the items of v:event that were saved for a nested autocommand.
+ * Returns TRUE if setting references failed somehow.
+ */
+    int
+set_ref_in_saved_v_event(int copyID)
+{
+    save_v_event_T  *sve;
+    int		    abort = FALSE;
+
+    for (sve = saved_v_events; sve != NULL && !abort; sve = sve->sve_next)
+	abort = set_ref_in_ht(&sve->sve_hashtab, copyID, NULL, NULL);
+    return abort;
 }
 #endif
 

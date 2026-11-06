@@ -53,6 +53,7 @@ int path_is_url(char_u *p);
 int path_with_url(char_u *fname);
 dict_T *get_v_event(save_v_event_T *sve);
 void restore_v_event(dict_T *v_event, save_v_event_T *sve);
+int set_ref_in_saved_v_event(int copyID);
 void may_trigger_modechanged(void);
 int vim_append_digit_long(long *value, int digit);
 int trim_to_int(vimlong_T x);
