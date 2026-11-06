@@ -603,7 +603,7 @@ au BufNewFile,BufRead *.properties,*.properties_??,*.properties_??_??	setf jprop
 au BufNewFile,BufRead org.eclipse.*.prefs	setf jproperties
 
 " JSONC (JSON with comments)
-au BufNewFile,BufRead *.jsonc,.babelrc,.eslintrc,.jsfmtrc,bun.lock	setf jsonc
+au BufNewFile,BufRead *.jsonc,*.hujson,.babelrc,.eslintrc,.jsfmtrc,bun.lock	setf jsonc
 au BufNewFile,BufRead .jshintrc,.jscsrc,.vsconfig,.hintrc,.swrc,[jt]sconfig*.json	setf jsonc
 " Visual Studio Code settings
 au BufNewFile,BufRead ~/*/{Code,VSCodium}/User/*.json setf jsonc
