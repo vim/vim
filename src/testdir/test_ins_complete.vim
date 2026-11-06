@@ -2129,6 +2129,49 @@ func Test_complete_refresh_selected()
   unlet g:Items
 endfunc
 
+" complete_refresh() must update (or remove) the 'preinsert' text.
+func Test_complete_refresh_preinsert()
+  let g:Items = ['fooone']
+  func! OmniPreinsert(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: copy(g:Items), refresh: 'always'}
+  endfunc
+
+  new
+  inoremap <buffer> <F2> <Cmd>let b:before = getline('.')
+        \ <Bar> let g:Items = ['foonew']
+        \ <Bar> let b:ok = complete_refresh()
+        \ <Bar> let b:after = getline('.')
+        \ <Bar> let b:after_pre = preinserted()
+        \ <Bar> let b:after_sel = complete_info(['selected']).selected<CR>
+  inoremap <buffer> <F3> <Cmd>let g:Items = []
+        \ <Bar> let b:ok2 = complete_refresh()
+        \ <Bar> let b:after2 = getline('.')
+        \ <Bar> let b:pre2 = preinserted()<CR>
+  set completeopt=menuone,preinsert
+  set complete=Ffunction('OmniPreinsert')
+  call setline(1, 'foozz')
+
+  call feedkeys("Gof\<C-N>\<F2>\<F3>\<Esc>", 'tx!')
+  " the old pre-inserted text is replaced by the new first match
+  call assert_equal('fooone', b:before)
+  call assert_equal(1, b:ok)
+  call assert_equal('foonew', b:after)
+  call assert_equal(1, b:after_pre)
+  call assert_equal(0, b:after_sel)
+  " an empty match list removes the pre-inserted text
+  call assert_equal(1, b:ok2)
+  call assert_equal('f', b:after2)
+  call assert_equal(0, b:pre2)
+
+  bw!
+  set complete& completeopt&
+  delfunc OmniPreinsert
+  unlet g:Items
+endfunc
+
 " Select items before they are removed by refresh:always
 func Test_cpt_select_item_refresh_always()
 

@@ -2084,7 +2084,9 @@ complete_refresh()					*complete_refresh()*
 		Returns |TRUE| when the matches were refreshed, |FALSE|
 		otherwise.
 		The text in the buffer is not changed, except that a
-		selected match is replaced with the text that was typed.
+		selected match is replaced with the text that was typed,
+		and text pre-inserted with 'completeopt' "preinsert" is
+		updated for the new matches.
 		Requires the |+eval| feature.
 
 		Return type: |Number|
