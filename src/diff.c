@@ -4038,20 +4038,17 @@ diff_find_change(
  * Return FALSE if there are no diff blocks at all in this window.
  */
     int
-diff_infold(win_T *wp, linenr_T lnum)
+diff_infold(win_T *wp, tabpage_T *tp, linenr_T lnum)
 {
     int		i;
     int		idx = -1;
     int		other = FALSE;
-    tabpage_T	*tp;
     diff_T	*dp;
 
     // Return if 'diff' isn't set.
     if (!wp->w_p_diff)
 	return FALSE;
 
-    // "wp" may be in another tab page.
-    tp = win_valid(wp) ? curtab : win_find_tabpage(wp);
     if (tp == NULL)
 	tp = curtab;
 
