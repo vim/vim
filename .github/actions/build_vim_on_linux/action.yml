@@ -305,7 +305,11 @@ runs:
         sed -i -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
         if [[ ${CC} = clang ]]; then
           # Suppress some warnings produced by clang 12 and later.
-          sed -i -f ci/config.mk.clang-12.sed ${SRCDIR}/auto/config.mk
+          sed -i.bak -f ci/config.mk.clang-12.sed ${SRCDIR}/auto/config.mk
+          if [[ ${CLANG_VER} -ge 23 ]]; then
+            # Suppress -Wunused-but-set-global, new in clang 23.
+            sed -i.bak -f ci/config.mk.clang-23.sed ${SRCDIR}/auto/config.mk
+          fi
         fi
         echo '::endgroup::'
 
