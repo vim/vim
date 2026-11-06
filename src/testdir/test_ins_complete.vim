@@ -1989,6 +1989,189 @@ func Test_cpt_func_refresh_always_fail()
   delfunc CompleteFailIntermittent
 endfunc
 
+" complete_refresh() asks the function based sources with refresh:always again
+" while a completion is running, without a keystroke.  This is how the result
+" of an asynchronous request is shown after the user stopped typing.
+func Test_complete_refresh()
+  func! OmniRefresh(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: g:Items, refresh: 'always'}
+  endfunc
+
+  new
+  inoremap <buffer> <F2> <Cmd>let g:Items = ['foonew']
+        \ <Bar> let b:ok = complete_refresh()
+        \ <Bar> let b:mode = complete_info(['mode']).mode
+        \ <Bar> let b:items = complete_info(['items']).items->mapnew('v:val.word')<CR>
+  set completeopt=menuone,noselect
+  set complete=.,Ffunction('OmniRefresh')
+  call setline(1, 'foozz')
+  let g:Items = ['fooone']
+
+  " Nothing to refresh when no completion is running.
+  call assert_equal(0, complete_refresh())
+
+  call feedkeys("Gof\<C-N>\<F2>\<Esc>", 'tx!')
+  call assert_true(b:ok)
+  " The completion mode must not change.
+  call assert_equal('keyword', b:mode)
+  " The match from the buffer must survive, the new function result is shown.
+  call assert_true(index(b:items, 'foozz') >= 0)
+  call assert_true(index(b:items, 'foonew') >= 0)
+
+  bw!
+  set complete& completeopt&
+  delfunc OmniRefresh
+  unlet g:Items
+endfunc
+
+" complete_refresh() can be called from a timer when an asynchronous
+" completion source is ready with its matches.
+func Test_complete_refresh_async()
+  let g:Items = []
+  let g:Replied = 0
+  let g:Refreshed = 0
+  func! OmniAsync(findstart, base)
+    if a:findstart
+      if !g:Replied
+        call timer_start(50, 'g:AsyncReply')
+      endif
+      return col('.') - 1
+    endif
+    return #{words: copy(g:Items), refresh: 'always'}
+  endfunc
+  func! g:AsyncReply(_timer)
+    let g:Replied = 1
+    let g:Items = ['foonew']
+    let g:Refreshed = complete_refresh()
+  endfunc
+
+  new
+  inoremap <buffer> <F2> <Cmd>let b:mode = complete_info(['mode']).mode
+        \ <Bar> let b:items = complete_info(['items']).items->mapnew('v:val.word')<CR>
+  set completeopt=menuone,noselect
+  set complete=.,Ffunction('OmniAsync')
+  call setline(1, 'foozz')
+
+  " Feed these keys from timers while feedkeys() is still processing, so the
+  " completion stays active until the reply has been handled.
+  call timer_start(150, {-> feedkeys("\<F2>", 't')})
+  call timer_start(300, {-> feedkeys("\<Esc>", 't')})
+  call feedkeys("Gof\<C-N>", 'tx!')
+
+  call assert_equal(1, g:Refreshed)
+  call assert_equal('keyword', b:mode)
+  call assert_true(index(b:items, 'foonew') >= 0)
+
+  bw!
+  set complete& completeopt&
+  delfunc OmniAsync
+  unlet g:Items
+endfunc
+
+" complete_refresh() does nothing when no source returned "refresh: always".
+func Test_complete_refresh_no_refresh()
+  func! OmniPlain(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return ['foonew']
+  endfunc
+
+  new
+  inoremap <buffer> <F2> <Cmd>let b:ok = complete_refresh()<CR>
+  set completeopt=menuone,noselect
+  set complete=.,Ffunction('OmniPlain')
+  call setline(1, 'foozz')
+
+  call feedkeys("Gof\<C-N>\<F2>\<Esc>", 'tx!')
+  call assert_equal(0, b:ok)
+
+  bw!
+  set complete& completeopt&
+  delfunc OmniPlain
+endfunc
+
+" complete_refresh() restores the typed text when a match was selected.
+func Test_complete_refresh_selected()
+  let g:Items = ['fooone']
+  func! OmniSel(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: copy(g:Items), refresh: 'always'}
+  endfunc
+
+  new
+  inoremap <buffer> <F2> <Cmd>let b:before = getline('.')
+        \ <Bar> let g:Items = ['foonew']
+        \ <Bar> let b:ok = complete_refresh()
+        \ <Bar> let b:after = getline('.')
+        \ <Bar> let b:items = complete_info(['items']).items->mapnew('v:val.word')<CR>
+  set completeopt=menuone,noselect
+  set complete=.,Ffunction('OmniSel')
+  call setline(1, 'foozz')
+
+  " first CTRL-N starts completion, second one selects the first match
+  call feedkeys("Gof\<C-N>\<C-N>\<F2>\<Esc>", 'tx!')
+  call assert_equal(1, b:ok)
+  " the selected match was inserted before the refresh ...
+  call assert_match('^foo', b:before)
+  " ... and the typed leader is back after it
+  call assert_equal('f', b:after)
+  call assert_true(index(b:items, 'foonew') >= 0)
+
+  bw!
+  set complete& completeopt&
+  delfunc OmniSel
+  unlet g:Items
+endfunc
+
+" complete_refresh() must update (or remove) the 'preinsert' text.
+func Test_complete_refresh_preinsert()
+  let g:Items = ['fooone']
+  func! OmniPreinsert(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: copy(g:Items), refresh: 'always'}
+  endfunc
+
+  new
+  inoremap <buffer> <F2> <Cmd>let b:before = getline('.')
+        \ <Bar> let g:Items = ['foonew']
+        \ <Bar> let b:ok = complete_refresh()
+        \ <Bar> let b:after = getline('.')
+        \ <Bar> let b:after_pre = preinserted()
+        \ <Bar> let b:after_sel = complete_info(['selected']).selected<CR>
+  inoremap <buffer> <F3> <Cmd>let g:Items = []
+        \ <Bar> let b:ok2 = complete_refresh()
+        \ <Bar> let b:after2 = getline('.')
+        \ <Bar> let b:pre2 = preinserted()<CR>
+  set completeopt=menuone,preinsert
+  set complete=Ffunction('OmniPreinsert')
+  call setline(1, 'foozz')
+
+  call feedkeys("Gof\<C-N>\<F2>\<F3>\<Esc>", 'tx!')
+  " the old pre-inserted text is replaced by the new first match
+  call assert_equal('fooone', b:before)
+  call assert_equal(1, b:ok)
+  call assert_equal('foonew', b:after)
+  call assert_equal(1, b:after_pre)
+  call assert_equal(0, b:after_sel)
+  " an empty match list removes the pre-inserted text
+  call assert_equal(1, b:ok2)
+  call assert_equal('f', b:after2)
+  call assert_equal(0, b:pre2)
+
+  bw!
+  set complete& completeopt&
+  delfunc OmniPreinsert
+  unlet g:Items
+endfunc
+
 " Select items before they are removed by refresh:always
 func Test_cpt_select_item_refresh_always()
 

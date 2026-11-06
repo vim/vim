@@ -4157,6 +4157,74 @@ f_complete_check(typval_T *argvars UNUSED, typval_T *rettv)
 }
 
 /*
+ * "complete_refresh()" function
+ */
+    void
+f_complete_refresh(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    static int in_refresh = FALSE;  // guard against recursive calls
+
+    rettv->vval.v_number = FALSE;
+
+    if ((State & MODE_INSERT) == 0 || !compl_started || in_refresh)
+	return;
+
+# ifdef FEAT_COMPL_FUNC
+    if (!is_cpt_func_refresh_always())
+	return;
+
+    int	    save_w_wrow = curwin->w_wrow;
+    int	    save_w_leftcol = curwin->w_leftcol;
+    int	    had_preinsert = ins_compl_preinsert_effect();
+
+    in_refresh = TRUE;
+
+    // Only the popup menu is rebuilt: the function sources with
+    // 'refresh:always' are asked again.  When a match was inserted in the
+    // buffer, or when its text was pre-inserted with 'completeopt'
+    // "preinsert", first put the text the user typed back, so that the new
+    // matches are for that text (like when a character is typed, see
+    // ins_compl_new_leader()).
+    ins_compl_del_pum();
+    if (compl_used_match || had_preinsert)
+    {
+	ins_compl_delete();
+	ins_compl_insert_bytes(ins_compl_leader() + get_compl_len(), -1);
+	compl_used_match = FALSE;
+    }
+
+    cpt_compl_refresh();
+    if (cot_fuzzy())
+	ins_compl_fuzzy_sort();
+
+    // With 'completeopt' "preinsert" the old pre-inserted text was removed
+    // above.  Select the first match again, so that its text can be
+    // pre-inserted below (like a new completion does).
+    if (ins_compl_has_preinsert() && compl_first_match != NULL
+	    && compl_first_match->cp_next != NULL
+	    && !match_at_original_text(compl_first_match->cp_next))
+	compl_shown_match = compl_first_match->cp_next;
+
+    compl_enter_selects = compl_selected_item != -1;
+    if (!compl_interrupted)
+	show_pum(save_w_wrow, save_w_leftcol);
+
+    // Update the pre-inserted text for the new match list, like
+    // ins_compl_new_leader() does when a character is typed.
+    if (compl_match_array == NULL)
+	compl_enter_selects = FALSE;
+    else if (ins_compl_has_preinsert() && ins_compl_leader_len() > 0)
+	ins_compl_insert(TRUE, FALSE);
+    else if (compl_started && ins_compl_preinsert_longest()
+	    && ins_compl_leader_len() > 0 && !ins_compl_preinsert_effect())
+	ins_compl_insert(TRUE, TRUE);
+
+    in_refresh = FALSE;
+    rettv->vval.v_number = TRUE;
+# endif
+}
+
+/*
  * Return Insert completion mode name string
  */
     static void

@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Nov 02
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Nov 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52730,6 +52730,7 @@ Various syntax, indent and other plugins were added.
 Functions: ~
 
 |ch_listen()|		listen on {address}
+|complete_refresh()|	refresh completion after an async result arrives
 |getbgcolor()|		return background color as RGB value
 |getinfo()|		get definition of argument
 |image_add()|		add an image and return a handle
