@@ -3065,6 +3065,88 @@ func Test_lsp_incomplete_message_while_blocked()
   call job_stop(job)
 endfunc
 
+" Messages that arrive together are handled without a wait in between, also
+" when handling them takes longer than one round of parsing is allowed.
+func Test_stdio_channel_queued_messages()
+  if has('win32') && has('gui_running')
+    throw 'Skipped: gvim.exe cannot run without the GUI'
+  endif
+  let lines =<< trim END
+    func OnMessage(ch, msg)
+      if a:msg.method == 'slow'
+        " Not :sleep, which handles the next message meanwhile.
+        let start = reltime()
+        while reltimefloat(reltime(start)) < 0.06
+        endwhile
+      elseif a:msg.method == 'ping'
+        call ch_sendexpr(a:ch, #{id: a:msg.id, result: 'pong'})
+      endif
+    endfunc
+    call ch_open('stdio', #{mode: 'lsp', callback: 'OnMessage'})
+  END
+  call writefile(lines, 'Xstdio_queued.vim', 'D')
+  let g:stdio_answer = ''
+  func! StdioAnswer(ch, msg)
+    let g:stdio_answer = a:msg->get('result', '')
+  endfunc
+  let job = job_start([GetVimProg(), '--clean', '--stdio-channel',
+        \ '-S', 'Xstdio_queued.vim'], #{in_mode: 'lsp', out_mode: 'lsp',
+        \ callback: 'StdioAnswer'})
+  call assert_equal('run', job_status(job))
+
+  let msgs = repeat([#{jsonrpc: '2.0', method: 'slow'}], 10)
+        \ + [#{jsonrpc: '2.0', id: 1, method: 'ping'}]
+  let raw = msgs->mapnew({_, m -> json_encode(m)})
+        \ ->map({_, b -> 'Content-Length: ' .. strlen(b) .. "\r\n\r\n" .. b})
+        \ ->join('')
+  let start = reltime()
+  call ch_sendraw(job, raw)
+  call WaitForAssert({-> assert_equal('pong', g:stdio_answer)}, 10000)
+  " Ten messages take 0.6 seconds, waiting a second after each round of two
+  " of them took about five seconds.
+  call assert_inrange(0, 3.5, reltimefloat(reltime(start)), 'elapsed seconds')
+
+  call ch_close(job)
+  call WaitForAssert({-> assert_equal('dead', job_status(job))})
+  call job_stop(job)
+  delfunc StdioAnswer
+  unlet g:stdio_answer
+endfunc
+
+" A line in NL mode that arrives in parts is handled once it is complete.
+func Test_stdio_channel_incomplete_nl_message()
+  if has('win32') && has('gui_running')
+    throw 'Skipped: gvim.exe cannot run without the GUI'
+  endif
+  let lines =<< trim END
+    func OnMessage(ch, msg)
+      call ch_sendraw(a:ch, 'got ' .. a:msg .. "\n")
+    endfunc
+    call ch_open('stdio', #{mode: 'nl', callback: 'OnMessage'})
+  END
+  call writefile(lines, 'Xstdio_incomplete.vim', 'D')
+  let g:stdio_answer = []
+  func! StdioAnswer(ch, msg)
+    call add(g:stdio_answer, a:msg)
+  endfunc
+  let job = job_start([GetVimProg(), '--clean', '--stdio-channel',
+        \ '-S', 'Xstdio_incomplete.vim'], #{mode: 'nl',
+        \ callback: 'StdioAnswer'})
+  call assert_equal('run', job_status(job))
+
+  call ch_sendraw(job, 'hel')
+  sleep 200m
+  call assert_equal([], g:stdio_answer)
+  call ch_sendraw(job, "lo\n")
+  call WaitForAssert({-> assert_equal(['got hello'], g:stdio_answer)})
+
+  call ch_close(job)
+  call WaitForAssert({-> assert_equal('dead', job_status(job))})
+  call job_stop(job)
+  delfunc StdioAnswer
+  unlet g:stdio_answer
+endfunc
+
 func Test_channel_lsp_mode()
   " The channel lsp mode test is flaky and gives the same error.
   let g:giveup_same_error = 0
