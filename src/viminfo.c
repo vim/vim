@@ -1351,11 +1351,17 @@ write_viminfo_varlist(FILE *fp)
     char_u	*p;
     char_u	*tofree;
     char_u	numbuf[NUMBUFLEN];
+    int		save_ht_flags;
 
     if (find_viminfo_parameter('!') == NULL)
 	return;
 
     fputs(_("\n# global variables:\n"), fp);
+
+    // The string() method of an object in a variable could add or remove
+    // global variables while we iterate over them, don't allow that.
+    save_ht_flags = gvht->ht_flags;
+    gvht->ht_flags |= HTFLAGS_FROZEN;
 
     todo = (int)gvht->ht_used;
     FOR_ALL_HASHTAB_ITEMS(gvht, hi, todo)
@@ -1448,6 +1454,8 @@ write_viminfo_varlist(FILE *fp)
 	    }
 	}
     }
+
+    gvht->ht_flags = save_ht_flags;
 }
 #endif // FEAT_EVAL
 
