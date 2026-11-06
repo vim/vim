@@ -195,6 +195,10 @@ fill_assert_error(
 		got_tv->vval.v_dict = NULL;
 		return;
 	    }
+	    // The typvals own a reference, tv2string() below takes and drops
+	    // another one.
+	    ++exp_tv->vval.v_dict->dv_refcount;
+	    ++got_tv->vval.v_dict->dv_refcount;
 
 	    todo = (int)exp_d->dv_hashtab.ht_used;
 	    FOR_ALL_HASHTAB_ITEMS(&exp_d->dv_hashtab, hi, todo)
