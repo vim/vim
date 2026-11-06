@@ -4303,7 +4303,7 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    ic = FALSE;
 	    ++len;
 	}
-	// nothing appended: use 'ignorecase' if not in Vim script
+	// nothing appended: use 'ignorecase' if not in Vim9 script
 	else
 	    ic = vim9script ? FALSE : p_ic;
 
