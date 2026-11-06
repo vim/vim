@@ -4157,6 +4157,54 @@ f_complete_check(typval_T *argvars UNUSED, typval_T *rettv)
 }
 
 /*
+ * "complete_refresh()" function
+ */
+    void
+f_complete_refresh(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    static int in_refresh = FALSE;  // guard against recursive calls
+
+    rettv->vval.v_number = FALSE;
+
+    if ((State & MODE_INSERT) == 0 || !compl_started || in_refresh)
+	return;
+
+# ifdef FEAT_COMPL_FUNC
+    if (!is_cpt_func_refresh_always())
+	return;
+
+    int	    save_w_wrow = curwin->w_wrow;
+    int	    save_w_leftcol = curwin->w_leftcol;
+
+    in_refresh = TRUE;
+
+    // Only the popup menu is rebuilt: the function sources with
+    // 'refresh:always' are asked again.  When a match was inserted in the
+    // buffer, first put the text the user typed back, so that the new
+    // matches are for that text (like when a character is typed, see
+    // ins_compl_new_leader()).
+    ins_compl_del_pum();
+    if (compl_used_match)
+    {
+	ins_compl_delete();
+	ins_compl_insert_bytes(ins_compl_leader() + get_compl_len(), -1);
+	compl_used_match = FALSE;
+    }
+
+    cpt_compl_refresh();
+    if (cot_fuzzy())
+	ins_compl_fuzzy_sort();
+
+    compl_enter_selects = compl_selected_item != -1;
+    if (!compl_interrupted)
+	show_pum(save_w_wrow, save_w_leftcol);
+
+    in_refresh = FALSE;
+    rettv->vval.v_number = TRUE;
+# endif
+}
+
+/*
  * Return Insert completion mode name string
  */
     static void

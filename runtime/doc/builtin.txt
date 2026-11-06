@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Nov 02
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Nov 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -143,6 +143,7 @@ complete({startcol}, {matches}) none	set Insert mode completion
 complete_add({expr})		Number	add completion match
 complete_check()		Number	check for key typed during completion
 complete_info([{what}])		Dict	get current completion information
+complete_refresh()		Number	refresh function source completion matches
 confirm({msg} [, {choices} [, {default} [, {type}]]])
 				Number	number of choice picked by user
 copy({expr})			any	make a shallow copy of {expr}
@@ -2067,6 +2068,24 @@ complete_check()					*complete_check()*
 		zero otherwise.
 		Only to be used by the function specified with the
 		'completefunc' option.
+
+		Return type: |Number|
+
+
+complete_refresh()					*complete_refresh()*
+		Refresh the Insert mode completion popup with new matches
+		from the function sources in 'complete' that returned
+		"refresh: always".  See |complete-functions|.
+		This is useful when such a source produces matches
+		asynchronously, for example from a timer or a channel
+		callback.
+		Only works in Insert mode while a completion is active and
+		at least one function source returned "refresh: always".
+		Returns |TRUE| when the matches were refreshed, |FALSE|
+		otherwise.
+		The text in the buffer is not changed, except that a
+		selected match is replaced with the text that was typed.
+		Requires the |+eval| feature.
 
 		Return type: |Number|
 
