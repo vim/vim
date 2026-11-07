@@ -2394,6 +2394,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     linenr_T	last_changed = 0;
     bool	removed_text = false;
     dict_T	*dict;
+    dictitem_T	*di;
     buf_T	*buf = curbuf;
     int		do_all;
     int		id = -MAXCOL;
@@ -2449,17 +2450,19 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 	    return;
 	type_id = type->pt_id;
     }
-    if (dict_has_key(dict, "types"))
+    di = dict_find(dict, (char_u *)"types", -1);
+    if (di != NULL && di->di_tv.v_type == VAR_LIST)
     {
-	typval_T types;
-	listitem_T *li = NULL;
+	list_T	    *types = di->di_tv.vval.v_list;
+	listitem_T  *li = NULL;
 
-	dict_get_tv(dict, "types", &types);
-	if (types.v_type == VAR_LIST && types.vval.v_list->lv_len > 0)
+	if (types != NULL && types->lv_len > 0)
 	{
-	    type_ids = alloc( sizeof(int) * types.vval.v_list->lv_len );
+	    type_ids = ALLOC_MULT(int, types->lv_len);
+	    if (type_ids == NULL)
+		return;
 
-	    FOR_ALL_LIST_ITEMS(types.vval.v_list, li)
+	    FOR_ALL_LIST_ITEMS(types, li)
 	    {
 		proptype_T *prop_type;
 
