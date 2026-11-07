@@ -2909,6 +2909,44 @@ def Test_map_item_type()
   v9.CheckSourceDefAndScriptFailure(lines, ['E1013: Argument 2: type mismatch, expected func(?string, ?number): number but got func(any, any): list<any>', 'E1012: Type mismatch; expected number but got list<any>'], 2)
 enddef
 
+" A typed dict changed in a legacy function keeps its item type.
+" Without the check compiled code crashes, only detected with ASAN.
+def Test_typed_dict_changed_in_legacy()
+  var lines =<< trim END
+    vim9script
+    var td: dict<number> = {a: 1}
+    g:td = td
+    legacy func g:LegacyLet()
+      let g:td.a = 'str'
+    endfunc
+    legacy func g:LegacyNewKey()
+      let g:td['b'] = 'str'
+    endfunc
+    legacy func g:LegacyMap()
+      call map(g:td, {k, v -> 'str'})
+    endfunc
+    assert_fails('g:LegacyLet()', 'E1012: Type mismatch; expected number but got string')
+    assert_fails('g:LegacyNewKey()', 'E1012: Type mismatch; expected number but got string')
+    assert_fails('g:LegacyMap()', 'E1012: Type mismatch; expected number but got string')
+    assert_equal({a: 1}, td)
+
+    # a value of the right type is fine
+    legacy func g:LegacyOk()
+      let g:td.a = 5
+      call map(g:td, {k, v -> v + 1})
+    endfunc
+    g:LegacyOk()
+    assert_equal({a: 6}, td)
+
+    def UseIt(): number
+      return td.a + 1
+    enddef
+    assert_equal(7, UseIt())
+    unlet g:td
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_maparg()
   var lnum = str2nr(expand('<sflnum>'))
   map foo bar

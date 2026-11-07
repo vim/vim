@@ -2860,13 +2860,14 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 	return;
     }
 
-    if (filtermap == FILTERMAP_MAP && in_vim9script())
+    if (filtermap == FILTERMAP_MAP)
     {
 	// Check that map() does not change the declared type of the list or
-	// dict.
+	// dict.  For a dict also in legacy script, a dict<number> created in
+	// Vim9 script may be passed to a legacy function.
 	if (argvars[0].v_type == VAR_DICT && argvars[0].vval.v_dict != NULL)
 	    type = argvars[0].vval.v_dict->dv_type;
-	else if (argvars[0].v_type == VAR_LIST
+	else if (in_vim9script() && argvars[0].v_type == VAR_LIST
 					     && argvars[0].vval.v_list != NULL)
 	    type = argvars[0].vval.v_list->lv_type;
     }
