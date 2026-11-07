@@ -1118,9 +1118,9 @@ def Test_assignment_list()
   assert_equal(['sdf', 'asdf', 'end'], list3)
 
   v9.CheckDefExecFailure(['var ll = [1, 2, 3]', 'll[-4] = 6'], 'E684:')
-  v9.CheckDefExecFailure(['var ll = [1, 2, 3]', 'unlet ll[8 : 9]'], 'E684:')
-  v9.CheckDefExecFailure(['var ll = [1, 2, 3]', 'unlet ll[1 : -9]'], 'E684:')
-  v9.CheckDefExecFailure(['var ll = [1, 2, 3]', 'unlet ll[2 : 1]'], 'E684:')
+  v9.CheckDefExecAndScriptFailure(['var ll = [1, 2, 3]', 'unlet ll[8 : 9]'], 'E684:')
+  v9.CheckDefExecAndScriptFailure(['var ll = [1, 2, 3]', 'unlet ll[1 : -9]'], 'E684:')
+  v9.CheckDefExecAndScriptFailure(['var ll = [1, 2, 3]', 'unlet ll[2 : 1]'], 'E684:')
 
   # type becomes list<any>
   var somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
@@ -1974,6 +1974,25 @@ def Test_assign_dict_with_op()
     var dab = {a: ['b']}
     dab.a[0] ..= 'c'
     assert_equal({a: ['bc']}, dab)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+enddef
+
+" A type error in a slice assignment leaves the list unchanged
+def Test_assign_list_slice_type_error()
+  var lines =<< trim END
+    var l: list<number> = [1, 2, 3]
+    var bad: list<any> = [7, 'x']
+    try
+      l[0 : 1] = bad
+    catch /E1012:/
+    endtry
+    assert_equal([1, 2, 3], l)
+    try
+      l[1 :] = bad
+    catch /E1012:/
+    endtry
+    assert_equal([1, 2, 3], l)
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef
