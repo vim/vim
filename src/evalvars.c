@@ -1245,9 +1245,11 @@ ex_let_vars(
     int		i;
     int		var_idx = 0;
     listitem_T	*item = NULL;
+    list_T	*copy_l = NULL;
     typval_T	ltv;
     int		is_list = tv->v_type == VAR_LIST;
     int		idx;
+    int		ret = FAIL;
 
     if (tv->v_type == VAR_VOID)
     {
@@ -1306,8 +1308,11 @@ ex_let_vars(
 
     if (is_list)
     {
-	CHECK_LIST_MATERIALIZE(l);
-	item = l->lv_first;
+	// Evaluating a target may change the List, use a copy.
+	copy_l = list_copy(l, FALSE, TRUE, 0);
+	if (copy_l == NULL)
+	    return FAIL;
+	item = copy_l->lv_first;
     }
     else
 	idx = 0;
@@ -1324,7 +1329,7 @@ ex_let_vars(
 	else
 	    idx++;
 	if (arg == NULL)
-	    return FAIL;
+	    goto theend;
 
 	arg = skipwhite(arg);
 	if (*arg == ';')
@@ -1337,7 +1342,7 @@ ex_let_vars(
 		// after ';'.  Create a new list for this.
 		l = list_alloc();
 		if (l == NULL)
-		    return FAIL;
+		    goto theend;
 
 		// list
 		while (item != NULL)
@@ -1355,7 +1360,7 @@ ex_let_vars(
 	    {
 		tuple_T	*new_tuple = tuple_alloc();
 		if (new_tuple == NULL)
-		    return FAIL;
+		    goto theend;
 
 		// Put the rest of the tuple (may be empty) in the var
 		// after ';'.  Create a new tuple for this.
@@ -1368,7 +1373,7 @@ ex_let_vars(
 		    {
 			clear_tv(&new_tv);
 			tuple_unref(new_tuple);
-			return FAIL;
+			goto theend;
 		    }
 		    idx++;
 		}
@@ -1384,17 +1389,20 @@ ex_let_vars(
 			flags | ASSIGN_UNPACK, (char_u *)"]", op, var_idx);
 	    clear_tv(&ltv);
 	    if (arg == NULL)
-		return FAIL;
+		goto theend;
 	    break;
 	}
 	else if (*arg != ',' && *arg != ']')
 	{
 	    internal_error("ex_let_vars()");
-	    return FAIL;
+	    goto theend;
 	}
     }
+    ret = OK;
 
-    return OK;
+theend:
+    list_unref(copy_l);
+    return ret;
 }
 
 /*

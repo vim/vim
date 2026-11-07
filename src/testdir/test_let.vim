@@ -93,6 +93,20 @@ func Test_let()
   let [l[0], l[1]] = [10, 20]
   call assert_equal([10, 20, 3], l)
 
+  " The index of a target changes the List: the values are taken from the List
+  " as it was.  This used freed memory.
+  func s:RemoveItems()
+    call remove(g:unpack_src, 1, 2)
+    return 0
+  endfunc
+  let g:unpack_src = ['one', 'two', 'three']
+  let x = [0]
+  let [a, x[s:RemoveItems()], c] = g:unpack_src
+  call assert_equal(['one', ['two'], 'three'], [a, x, c])
+  call assert_equal(['one'], g:unpack_src)
+  unlet g:unpack_src
+  delfunc s:RemoveItems
+
   " Test for using curly brace name in the LHS of an assignment
   let listvar = [1, 2]
   let s = 'listvar'
