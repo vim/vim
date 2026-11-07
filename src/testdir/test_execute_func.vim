@@ -48,6 +48,12 @@ func Test_execute_list()
   call assert_equal("\n0\n1\n2\n3", execute(l))
 
   call assert_equal("", execute([]))
+
+  " A command that changes the List: the next command is the one at the next
+  " index.  This used freed memory.
+  let g:cmds = ['call remove(g:cmds, 1)', 'echo "skipped"', 'echo "next"', 'call add(g:cmds, "echo \"added\"")', 'echo "last"']
+  call assert_equal("\nnext\nlast\nadded", execute(g:cmds))
+  unlet g:cmds
 endfunc
 
 func Test_execute_does_not_change_col()
