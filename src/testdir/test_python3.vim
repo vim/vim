@@ -1068,6 +1068,42 @@ func Test_python3_dict_key_error()
   unlet messages
 endfunc
 
+" A variable cannot be removed while ":let" lists the variables.  This used
+" to free the variable while it was still in g:, which is only detected with
+" valgrind or ASAN.
+func Test_python3_del_var_while_listing()
+  let lines =<< trim END
+    vim9script
+    class A
+      def string(): string
+        for cmd in ["del vim.vars['victim']", "vim.vars.pop('victim')",
+            "vim.vars.popitem()"]
+          try
+            execute 'py3 ' .. cmd
+            g:results->add(cmd .. ': no error')
+          catch
+            g:results->add(cmd .. ': ' .. matchstr(v:exception, 'dictionary is locked'))
+          endtry
+        endfor
+        return 'A'
+      enddef
+    endclass
+    g:results = []
+    g:obj = A.new()
+    g:victim = 'x'
+    execute('legacy let g:')
+  END
+  call writefile(lines, 'XPy3DelVar', 'D')
+  py3 import vim
+  source XPy3DelVar
+  call assert_equal([
+        \ "del vim.vars['victim']: dictionary is locked",
+        \ "vim.vars.pop('victim'): dictionary is locked",
+        \ "vim.vars.popitem(): dictionary is locked"], g:results)
+  call assert_equal('x', g:victim)
+  unlet g:obj g:victim g:results
+endfunc
+
 " Test for locked and scope attributes
 func Test_python3_lock_scope_attr()
   let d = {} | let dl = {} | lockvar dl

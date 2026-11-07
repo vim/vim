@@ -2082,7 +2082,8 @@ _DictionaryItem(DictionaryObject *self, PyObject *args, int flags)
 
     if (flags & DICT_FLAG_POP)
     {
-	if (dict->dv_lock)
+	// While ":let" lists the variables items cannot be removed
+	if (dict->dv_lock || (dict->dv_hashtab.ht_flags & HTFLAGS_FROZEN))
 	{
 	    RAISE_LOCKED_DICTIONARY;
 	    Py_DECREF(ret);
@@ -2213,6 +2214,13 @@ DictionaryAssItem(
 	{
 	    Py_XDECREF(todecref);
 	    PyErr_SetObject(PyExc_KeyError, keyObject);
+	    return -1;
+	}
+	// While ":let" lists the variables items cannot be removed
+	if (dict->dv_hashtab.ht_flags & HTFLAGS_FROZEN)
+	{
+	    Py_XDECREF(todecref);
+	    RAISE_LOCKED_DICTIONARY;
 	    return -1;
 	}
 	hi = hash_find(&dict->dv_hashtab, di->di_key);
@@ -2517,6 +2525,13 @@ DictionaryPopItem(DictionaryObject *self, PyObject *args UNUSED)
 	return NULL;
     }
 
+    // While ":let" lists the variables items cannot be removed
+    if (self->dict->dv_hashtab.ht_flags & HTFLAGS_FROZEN)
+    {
+	Py_DECREF(ret);
+	RAISE_LOCKED_DICTIONARY;
+	return NULL;
+    }
     hash_remove(&self->dict->dv_hashtab, hi, "Python pop item");
     dictitem_free(di);
 
