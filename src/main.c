@@ -762,6 +762,13 @@ vim_main2(void)
 	set_must_redraw(UPD_CLEAR);
     else
     {
+# ifdef FEAT_TERMRESPONSE
+	// When 'termbackgroundwait' is positive, detect the background before
+	// clearing, also when a -c command redraws during startup.
+	// Do not read redirected input before executing startup commands.
+	if (stdout_isatty && mch_input_isatty())
+	    may_req_bg_color();
+# endif
 	screenclear();			// clear screen
 	TIME_MSG("clearing screen");
     }
@@ -871,7 +878,7 @@ vim_main2(void)
 	x_restore_state();
 # endif
 
-    // Must come before the may_req_ calls.
+    // Other terminal queries must wait until startup commands have run.
     starting = 0;
 
 # if defined(FEAT_TERMRESPONSE)

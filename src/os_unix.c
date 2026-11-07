@@ -3663,7 +3663,6 @@ mch_exit(int r)
     if (!gui.in_use)
 #endif
     {
-	settmode(TMODE_COOK);
 	if (!is_not_a_term())
 	{
 	    // restore xterm title and icon name
@@ -3680,9 +3679,10 @@ mch_exit(int r)
 	if (swapping_screen() && !newline_on_exit)
 	    exit_scroll();
 
-	// Stop termcap: May need to check for T_CRV response, which
-	// requires RAW mode.
+	// Handle pending terminal responses before restoring cooked mode,
+	// otherwise they may be echoed as typed text.
 	stoptermcap();
+	settmode(TMODE_COOK);
 
 	/*
 	 * A newline is only required after a message in the alternate screen.
