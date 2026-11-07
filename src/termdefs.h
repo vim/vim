@@ -118,10 +118,13 @@ enum SpecialKey
     KS_CF,	// set terminal alternate font
     KS_XON,	// terminal uses xon/xoff handshaking
     KS_BSU,	// begin synchronized update
-    KS_ESU	// end synchronized update
+    KS_ESU,	// end synchronized update
+    KS_CSQ,	// query terminal color scheme
+    KS_CSE,	// enable terminal color scheme tracking
+    KS_CSD	// disable terminal color scheme tracking
 };
 
-#define KS_LAST	    KS_ESU
+#define KS_LAST	    KS_CSD
 
 /*
  * the terminal capabilities are stored in this array
@@ -230,6 +233,9 @@ extern char_u *(term_strings[]);    // current terminal strings
 #define T_XON	(TERM_STR(KS_XON))	// terminal uses xon/xoff handshaking
 #define T_BSU	(TERM_STR(KS_BSU))	// begin synchronized update
 #define T_ESU	(TERM_STR(KS_ESU))	// end synchronized update
+#define T_CSQ	(TERM_STR(KS_CSQ))	// query terminal color scheme
+#define T_CSE	(TERM_STR(KS_CSE))	// enable color scheme tracking
+#define T_CSD	(TERM_STR(KS_CSD))	// disable color scheme tracking
 
 typedef enum {
     TMODE_COOK,	    // terminal mode for external cmds and Ex mode
