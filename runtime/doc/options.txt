@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Oct 31
+*options.txt*	For Vim version 9.2.  Last change: 2026 Nov 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -9352,8 +9352,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	Maximum time in milliseconds to wait for the terminal background color
 	response during interactive startup, before the first screen clear.
-	Zero (the default) disables waiting.  The value must not be negative.
-	See |background-flash| for an example.
+	Zero (the default) defers the query until after startup commands and
+	disables waiting.  A positive value sends the query before the first
+	screen clear.  The value must not be negative.  See |background-flash|
+	for an example.
 
 	Vim only waits when 'background' has not been explicitly set, |t_RB| is
 	not empty, and both input and output are terminals.  Waiting ends early

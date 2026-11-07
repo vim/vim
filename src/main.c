@@ -763,8 +763,8 @@ vim_main2(void)
     else
     {
 # ifdef FEAT_TERMRESPONSE
-	// Detect the background before clearing with the Normal colors, also
-	// when a -c command redraws the screen before startup is finished.
+	// When 'termbackgroundwait' is positive, detect the background before
+	// clearing, also when a -c command redraws during startup.
 	// Do not read redirected input before executing startup commands.
 	if (stdout_isatty && mch_input_isatty())
 	    may_req_bg_color();

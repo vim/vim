@@ -584,19 +584,20 @@ func Test_startup_background_wait()
   CheckFeature reltime
   CheckUnix
 
-  " By default the query is still sent, but no startup delay is imposed.
+  " By default the query is deferred until after startup commands.
   let result = RunStartupBackgroundWait([])
-  call assert_true(result.queried)
+  call assert_false(result.queried)
   call assert_equal([], result.delays)
 
   " Zero disables waiting; a positive value bounds the total delay, including
   " values smaller than or not divisible by the polling interval.
   for wait in [0, 1, 25, 100]
     let result = RunStartupBackgroundWait(['set termbackgroundwait=' .. wait])
-    call assert_true(result.queried)
     if wait == 0
+      call assert_false(result.queried)
       call assert_equal([], result.delays)
     else
+      call assert_true(result.queried)
       " Allow for the millisecond resolution of the elapsed-time check.
       call assert_inrange(wait - 1, 5000, result.elapsed, 'wait=' .. wait)
       for delay in result.delays
@@ -657,7 +658,8 @@ func StartupBackgroundHandoffOutput(state, channel, msg)
   endif
   " Startup may take longer than the background wait, so start the timers
   " only when the child is about to hand over the terminal.
-  if empty(a:state.timers) && a:state.output =~ 'HANDOFF-START'
+  if a:state.queried && empty(a:state.timers)
+        \ && a:state.output =~ 'HANDOFF-START'
     if a:state.interrupt
       call add(a:state.timers, timer_start(20,
             \ {-> ch_sendraw(a:channel, "\<C-C>")}))
@@ -694,10 +696,10 @@ func Test_startup_background_handoff()
 
   " Immediate exit, interrupted wait before :!, and :! without an alternate
   " screen exercise distinct ways a late response can escape to the caller.
-  for kind in ['exit', 'interrupt', 'colors']
+  for kind in ['default', 'exit', 'interrupt', 'colors']
     let lines = ['set nocompatible termguicolors t_RV= t_RF= t_u7=',
           \ 'colorscheme lunaperche']
-    if kind != 'exit'
+    if kind != 'default'
       call add(lines, 'set termbackgroundwait=50')
     endif
     if kind == 'interrupt'
@@ -710,7 +712,7 @@ func Test_startup_background_handoff()
     call delete('Xbghandoffinput')
     let cmd = GetVimCommandCleanTerm() .. ' -u Xbghandoffvimrc'
           \ .. ' -c "call echoraw(''HANDOFF-START'')"'
-    if kind != 'exit'
+    if kind == 'interrupt' || kind == 'colors'
       let cmd ..= ' -c "!python3 Xbghandoff.py"'
     endif
     let state = #{output: '', queried: 0, quit: 0, timers: [],
@@ -722,11 +724,16 @@ func Test_startup_background_handoff()
     try
       call WaitForAssert({-> assert_equal('dead', job_status(job))})
       call assert_equal(0, job_info(job).exitval, kind)
-      call assert_true(state.queried, kind)
-      " The reply timer must have fired, not been cancelled by an early exit.
-      call assert_equal([], timer_info(state.timers[-1]), kind)
+      if kind == 'default'
+        call assert_false(state.queried, kind)
+        call assert_equal([], state.timers, kind)
+      else
+        call assert_true(state.queried, kind)
+        " The reply timer must have fired, not been cancelled by an early exit.
+        call assert_equal([], timer_info(state.timers[-1]), kind)
+      endif
       call assert_notmatch(']11;rgb:', state.output, kind)
-      if kind != 'exit'
+      if kind == 'interrupt' || kind == 'colors'
         call assert_match('CHILD-START', state.output, kind)
         call assert_equal([], readfile('Xbghandoffinput'), kind)
       endif

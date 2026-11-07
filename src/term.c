@@ -4346,7 +4346,7 @@ check_terminal_behavior(void)
 may_req_bg_color(void)
 {
     if (can_get_termresponse()
-			      && (starting == 0 || starting == NO_BUFFERS))
+	    && (starting == 0 || (starting == NO_BUFFERS && p_tbw > 0)))
     {
 	int didit = FALSE;
 

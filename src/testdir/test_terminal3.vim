@@ -1247,11 +1247,9 @@ func Test_term_getpos()
   defer delete('XTest_getpos_result')
 
   let lines =<< trim EOL
-     source util/term_util.vim
-     set shell=sh
-     " Disable the shell line editor to avoid echoing the command twice.
-     call Run_shell_in_terminal({'curwin': 1,
-           \ 'env': {'PS1': '', 'HOME': '/nonexisting'}})
+     let $PS1=''
+     let $HOME='/nonexisting'
+     term ++curwin sh
   EOL
   call writefile(lines, 'XTest_getpos', 'D')
   let buf = RunVimInTerminal('-S XTest_getpos', {'rows': 15})
@@ -1578,17 +1576,8 @@ func Test_terminal_mswin_vtp_sgr_passthrough()
     call matchadd('Curl', 'foo')
   END
   call writefile(lines, 'XsgrScript', 'D')
-  " With a DLL build, -v does not make gvim run in the console.
-  let prog = fnamemodify(v:progpath, ':h') .. '/'
-        \ .. substitute(fnamemodify(v:progpath, ':t'), '\c^g\zevim', '', '')
-  let cmd = [prog, '--clean', '--cmd', 'set enc=utf8', '-S', 'XsgrScript']
-  " WinPTY drops underline attributes when scraping the console.
-  try
-    let buf = term_start(cmd,
-          \ #{term_rows: 5, term_cols: 40, tty_type: 'conpty'})
-  catch /E982:/
-    throw 'Skipped: ConPTY is not available'
-  endtry
+  let buf = term_start(GetVimCommandCleanTerm() .. '-S XsgrScript',
+        \ #{term_rows: 5, term_cols: 40})
   call WaitForAssert({-> assert_equal('foo bar', trim(term_getline(buf, 1)))})
 
   " "foo" is underlined, "bar" is not
