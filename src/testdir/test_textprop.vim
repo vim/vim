@@ -463,12 +463,16 @@ func Test_prop_remove()
   unlet props[1] " [three]
   call assert_equal(props, prop_list(1))
 
-  " remove none by types
-  call assert_equal(0, prop_remove({'types': ['three', 'whole'], 'all': 1}, 1))
+  " remove none by types; the List does not get an extra reference
+  let types = ['three', 'whole']
+  let refcount = test_refcount(types)
+  call assert_equal(0, prop_remove({'types': types, 'all': 1}, 1))
   call assert_equal(props, prop_list(1))
+  call assert_equal(refcount, test_refcount(types))
 
   " no types
   call assert_fails("call prop_remove({'types': []}, 1)", 'E968:')
+  call assert_fails("call prop_remove({'types': test_null_list()}, 1)", 'E968:')
   call assert_fails("call prop_remove({'types': ['not_a_real_type']}, 1)", 'E971:')
 
   " only one of types and type can be supplied
