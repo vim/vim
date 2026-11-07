@@ -2496,6 +2496,12 @@ DictionaryPopItem(DictionaryObject *self, PyObject *args UNUSED)
     PyObject	*valObject;
     dictitem_T	*di;
 
+    if (self->dict->dv_lock)
+    {
+	RAISE_LOCKED_DICTIONARY;
+	return NULL;
+    }
+
     if (self->dict->dv_hashtab.ht_used == 0)
     {
 	PyErr_SetNone(PyExc_KeyError);
