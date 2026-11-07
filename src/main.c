@@ -1982,6 +1982,11 @@ early_arg_scan(mparm_T *parmp UNUSED)
 		mainerr(ME_UNKNOWN_OPTION, arg);
 	}
 #  endif
+#  ifdef FEAT_JOB_CHANNEL
+	// No client-server stuff is done for it.
+	else if (STRICMP(argv[i], "--stdio-channel") == 0)
+	    use_stdio_channel = TRUE;
+#  endif
 # endif
 
 # if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)
