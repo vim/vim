@@ -1187,8 +1187,14 @@ image_done:
 	}
 	if (ok)
 	{
-	    wp->w_popup_mask = di->di_tv.vval.v_list;
-	    ++wp->w_popup_mask->lv_refcount;
+	    // Use a copy, the List may be changed later.
+	    list_T *mask = list_copy(di->di_tv.vval.v_list, TRUE, TRUE,
+								 get_copyID());
+
+	    if (mask == NULL)
+		return FAIL;
+	    list_unref(wp->w_popup_mask);
+	    wp->w_popup_mask = mask;
 	    VIM_CLEAR(wp->w_popup_mask_cells);
 	}
 	else
