@@ -4348,7 +4348,7 @@ displays the line number in the script or function where it has been used:
 	    echo $"Error on line {TLN()}"
 	  endtry
 	}
-	# Echoes "In Thrower()" then "Error on line 2":
+	# Echoes "In Thrower()" then "Error on line 2":
 	LineNumber
 <							*try-nested*
 An exception that is not caught by a try conditional can be caught by
