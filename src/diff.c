@@ -4038,7 +4038,7 @@ diff_find_change(
  * Return FALSE if there are no diff blocks at all in this window.
  */
     int
-diff_infold(win_T *wp, linenr_T lnum)
+diff_infold(win_T *wp, tabpage_T *tp, linenr_T lnum)
 {
     int		i;
     int		idx = -1;
@@ -4049,11 +4049,14 @@ diff_infold(win_T *wp, linenr_T lnum)
     if (!wp->w_p_diff)
 	return FALSE;
 
+    if (tp == NULL)
+	tp = curtab;
+
     for (i = 0; i < DB_COUNT; ++i)
     {
-	if (curtab->tp_diffbuf[i] == wp->w_buffer)
+	if (tp->tp_diffbuf[i] == wp->w_buffer)
 	    idx = i;
-	else if (curtab->tp_diffbuf[i] != NULL)
+	else if (tp->tp_diffbuf[i] != NULL)
 	    other = TRUE;
     }
 
@@ -4061,17 +4064,17 @@ diff_infold(win_T *wp, linenr_T lnum)
     if (idx == -1 || !other)
 	return FALSE;
 
-    if (curtab->tp_diff_invalid)
+    if (tp == curtab && tp->tp_diff_invalid)
 	ex_diffupdate(NULL);		// update after a big change
 
     // Return if there are no diff blocks.  All lines will be folded.
-    if (curtab->tp_first_diff == NULL)
+    if (tp->tp_first_diff == NULL)
 	return TRUE;
 
     // Resume from the scan finger to avoid restarting at the first block.
     diff_T	*le = NULL;		// last block with df_lnum[idx] <= lnum
     int		result = TRUE;
-    for (dp = diff_scan_start(curtab, idx, lnum); dp != NULL; dp = dp->df_next)
+    for (dp = diff_scan_start(tp, idx, lnum); dp != NULL; dp = dp->df_next)
     {
 	if (dp->df_lnum[idx] <= lnum)
 	    le = dp;
@@ -4085,7 +4088,7 @@ diff_infold(win_T *wp, linenr_T lnum)
 	    break;
 	}
     }
-    diff_scan_remember(curtab, idx, lnum, le);
+    diff_scan_remember(tp, idx, lnum, le);
     return result;
 }
 # endif
