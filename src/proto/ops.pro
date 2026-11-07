@@ -11,7 +11,7 @@ int swapchar(int op_type, pos_T *pos);
 void op_insert(oparg_T *oap, long count1);
 int op_change(oparg_T *oap);
 void adjust_cursor_eol(void);
-char_u *skip_comment(char_u *line, int process, int include_space, int *is_comment);
+char_u *skip_comment(char_u *line, int process, int include_space, int skip_first, int *is_comment);
 int do_join(long count, int insert_space, int save_undo, int use_formatoptions, int setmark);
 int reset_lbr(void);
 void restore_lbr(int lbr_saved);
