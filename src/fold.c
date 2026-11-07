@@ -1783,7 +1783,7 @@ foldAddMarker(linenr_T lnum, char_u *marker, int markerlen)
 	return;
 
     // Check if the line ends with an unclosed comment
-    (void)skip_comment(line, FALSE, FALSE, &line_is_comment);
+    (void)skip_comment(line, FALSE, FALSE, FALSE, &line_is_comment);
     newline = alloc(line_len + markerlen + STRLEN(cms) + 1);
     if (newline == NULL)
 	return;
