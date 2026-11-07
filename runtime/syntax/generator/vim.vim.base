@@ -798,7 +798,7 @@ syn region	vimCatchPattern	contained	matchgroup=Delimiter start="\z([!#$%&'()*+,
 " =======
 if s:vim9script
   syn keyword	vim9Export	export	contained
-        \ skipwhite nextgroup=vim9Abstract,vim9ClassBody,vim9Const,vimDef,vimDefFold,vim9EnumBody,vim9Final,vim9InterfaceBody,vim9Type,vim9Var
+        \ skipwhite nextgroup=vim9Abstract,vim9ClassBody,vim9Const,vimDef,vimDefFold,vim9EnumBody,vim9Final,vimFunction,vimFunctionFold,vim9InterfaceBody,vim9Type,vim9Var
 endif
 
 " :filetype {{{3
