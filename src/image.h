@@ -112,7 +112,15 @@ struct image_placement_S
 
     int_u flags;
 
-    pixman_box32_t crop_box; // In cells
+    // Offset in cells within the image to use as top left.
+    int x_off;
+    int y_off;
+
+    // Region that represent cells where parts of the image placement should be
+    // shown. Similar to the mask feature of popup windows, but does the exact
+    // opposite. This is initially empty on creation.
+    pixman_region32_t mask; // In cells (absolute coordinates)
+    pixman_region32_t cur_mask; // Current mask placement is rendered with
 
     // The bounding box represents a region that images (including their
     // bounding boxes) under it with lower zindexes will have their overlapping

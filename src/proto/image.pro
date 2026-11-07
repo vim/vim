@@ -12,7 +12,9 @@ image_placement_T *image_placement_new(image_T *img, int_u gen, image_placement_
 void image_placement_free(image_placement_T *place);
 void image_placement_set_zindex(image_placement_T *place, int zindex);
 void image_placement_set_position(image_placement_T *place, int row, int col);
-void image_placement_set_crop(image_placement_T *place, int x, int y, int w, int h);
+void image_placement_add_mask(image_placement_T *place, int x, int y, int w, int h);
+void image_placement_reset_mask(image_placement_T *place);
+void image_placement_set_offset(image_placement_T *place, int off_y, int off_x);
 void image_placement_set_bounding_box(image_placement_T *place, int row, int col, int row_height, int col_width);
 void image_placement_set_enable(image_placement_T *place, bool enable);
 void image_placement_subrect(image_placement_T *place, pixman_box32_t rect, int *row, int *col, int *x, int *y, int *w, int *h, bool physical);
