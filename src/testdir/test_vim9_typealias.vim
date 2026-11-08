@@ -35,7 +35,6 @@ def Test_typealias()
       assert_equal('typealias<list<string>>', typename(ListOfStrings))
       assert_equal(v:t_typealias, type(ListOfStrings))
       assert_equal('ListOfStrings', string(ListOfStrings))
-      #assert_equal(false, null == ListOfStrings)
     enddef
     Bar()
   END
@@ -573,7 +572,8 @@ def Test_typealias_redeclare()
     vim9script
     try
       type A = NoSuchType
-    catch /E1010:/
+      assert_report('No exception thrown')
+    catch /E1010: Type not recognized: NoSuchType/
     endtry
     type A = number
     assert_equal('typealias<number>', typename(A))
@@ -586,7 +586,8 @@ def Test_typealias_redeclare()
     type A = number
     try
       type A = string
-    catch /E1396:/
+      assert_report('No exception thrown')
+    catch /E1396: Type alias "A" already exists/
     endtry
     assert_equal('typealias<number>', typename(A))
     var x: A = 1
@@ -603,6 +604,7 @@ def Test_typealias_redeclare()
       add(names, typename(LoopType))
     endfor
     assert_equal(['typealias<list<number>>', 'typealias<list<number>>'], names)
+    assert_false(exists('LoopType'))
   END
   v9.CheckSourceSuccess(lines)
 
@@ -751,6 +753,131 @@ def Test_typealias_null_const_final()
     l = ['a']
   END
   v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected list<number> but got list<string>', 4)
+enddef
+
+" An uninitialized or null variable with a type alias type behaves like one
+" with the aliased type, at script level and in a def function
+def Test_typealias_null_and_uninit()
+  var lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type D = dict<string>
+    type T = tuple<number, ...list<string>>
+    type B = blob
+    type S = string
+    type F = func(number): string
+    type O = object<any>
+    type CA = C
+
+    var d: D
+    var t: T
+    var b: B
+    var s: S
+    var Fr: F
+    var o: O
+    var c: CA
+    assert_equal([false, false, false, true, true, true, true],
+          [d == null, t == null, b == null, s == null, Fr == null, o == null, c == null])
+    assert_equal(['dict<string>', 'tuple<number, ...list<string>>', 'blob'],
+          [typename(d), typename(t), typename(b)])
+    d = null_dict
+    t = null_tuple
+    b = null_blob
+    assert_equal([true, true, true], [d == null, t == null, b == null])
+
+    def Fn()
+      var dl: D
+      var tl: T
+      var bl: B
+      var sl: S
+      var Fl: F
+      var ol: O
+      var cl: CA
+      assert_equal([false, false, false, true, true, true, true],
+            [dl == null, tl == null, bl == null, sl == null, Fl == null, ol == null, cl == null])
+      assert_equal(['dict<string>', 'tuple<number, ...list<string>>', 'blob'],
+            [typename(dl), typename(tl), typename(bl)])
+      dl = null_dict
+      tl = null_tuple
+      bl = null_blob
+      assert_equal([true, true, true], [dl == null, tl == null, bl == null])
+    enddef
+    Fn()
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" A type alias for void can only be used where void can be used
+def Test_typealias_void()
+  var lines =<< trim END
+    vim9script
+    type V = void
+    def Fn(): V
+    enddef
+    var Ref: func(): V = Fn
+    assert_equal('func()', typename(Ref))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    type V = void
+    var x: V
+  END
+  v9.CheckSourceFailure(lines, 'E1330: Invalid type used in variable declaration: void', 3)
+
+  lines =<< trim END
+    vim9script
+    type V = void
+    var l: list<V> = []
+  END
+  v9.CheckSourceFailure(lines, 'E1330: Invalid type used in variable declaration: void', 3)
+
+  lines =<< trim END
+    vim9script
+    type V = void
+    def Fn(x: V)
+    enddef
+  END
+  v9.CheckSourceFailure(lines, 'E1330: Invalid type used in variable declaration: void', 3)
+enddef
+
+" A :type command that fails or is skipped does not change or define a type
+" alias
+def Test_typealias_failed_definition()
+  var lines =<< trim END
+    vim9script
+    type A = number
+    silent! type A = string
+    assert_equal('typealias<number>', typename(A))
+    silent! type B = list<Unknown>
+    assert_false(exists('B'))
+    if false
+      type C = number
+    endif
+    assert_false(exists('C'))
+    if true
+    elseif true
+      type D = number
+    endif
+    assert_false(exists('D'))
+    for x in []
+      type E = number
+    endfor
+    assert_false(exists('E'))
+    while false
+      type F = number
+    endwhile
+    assert_false(exists('F'))
+    # a skipped :type does not check the type or the name
+    if false
+      type G = NoSuchType
+      type h = number
+    endif
+    assert_false(exists('G'))
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " Test for using a type alias in a class or an interface
@@ -1139,6 +1266,155 @@ def Test_typealias_errors()
     type B = list<A>
   END
   v9.CheckSourceFailure(lines, 'E1010: Type not recognized: B', 2)
+enddef
+
+" Test for type aliases that refer to themselves or to each other
+def Test_typealias_self_reference()
+  # An alias cannot be used in its own definition
+  var lines =<< trim END
+    vim9script
+    type A = A
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: A', 2)
+
+  lines =<< trim END
+    vim9script
+    type A = func(A)
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: A', 2)
+
+  # Two aliases that refer to each other
+  lines =<< trim END
+    vim9script
+    type A = B
+    type B = A
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: B', 2)
+enddef
+
+" Test for text after the type of a type alias
+def Test_typealias_trailing_type_text()
+  # Type arguments after a class name
+  var lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C<number>
+  END
+  v9.CheckSourceFailure(lines, 'E488: Trailing characters: <number>', 4)
+
+  # Type arguments after a type alias name
+  lines =<< trim END
+    vim9script
+    type B = number
+    type A = B<string>
+  END
+  v9.CheckSourceFailure(lines, 'E488: Trailing characters: <string>', 3)
+
+  # An extra ">"
+  lines =<< trim END
+    vim9script
+    type A = list<number>>
+  END
+  v9.CheckSourceFailure(lines, 'E488: Trailing characters: >', 2)
+
+  # A command after "|" is executed
+  lines =<< trim END
+    vim9script
+    var s = ''
+    type A = dict<list<number>> | s = 'bar'
+    var d: A = {a: [1]}
+    assert_equal('bar', s)
+    assert_equal('dict<list<number>>', typename(d))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for redefining a type alias for a class
+def Test_typealias_class_alias_redefine()
+  var lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C
+    type A = number
+  END
+  v9.CheckSourceFailure(lines, 'E1041: Redefining script item: "A"', 5)
+enddef
+
+" Test for the nesting depth of a type that uses a type alias
+def Test_typealias_nested_depth()
+  # A list nested 500 times in an alias, nested in 500 more lists, is as deep
+  # as the limit
+  var lines =<< trim eval END
+    vim9script
+    type A = {repeat('list<', 500)}number{repeat('>', 500)}
+    var x: {repeat('list<', 500)}A{repeat('>', 500)} = []
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # One more level is too deep
+  lines =<< trim eval END
+    vim9script
+    type A = {repeat('list<', 500)}number{repeat('>', 500)}
+    var x: {repeat('list<', 501)}A{repeat('>', 501)} = []
+  END
+  v9.CheckSourceFailure(lines, 'E1439: Type nested too deep', 3)
+
+  # A type alias for a class counts as one level
+  lines =<< trim eval END
+    vim9script
+    class C
+    endclass
+    type A = C
+    var x: {repeat('list<', 1000)}A{repeat('>', 1000)} = []
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim eval END
+    vim9script
+    class C
+    endclass
+    type A = C
+    var x: {repeat('list<', 1001)}A{repeat('>', 1001)} = []
+  END
+  v9.CheckSourceFailure(lines, 'E1439: Type nested too deep', 5)
+enddef
+
+" Test for "type" used as a name at the start of a line, which is not the
+" :type command
+def Test_typealias_type_as_name()
+  var lines =<< trim END
+    vim9script
+    var type = [1]
+    type[0] = 2
+    assert_equal([2], type)
+    type = [3]
+    assert_equal([3], type)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Calling the type() function at the start of a line
+  lines =<< trim END
+    vim9script
+    type(1)
+    def G()
+      type(1)
+    enddef
+    G()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def F(): number
+      var type = 1
+      type = 2
+      return type
+    enddef
+    assert_equal(2, F())
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " Test for garbage collection with type aliases
@@ -1632,7 +1908,7 @@ def Test_typealias_func_types()
   v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(): list<number> but got func(): list<string>', 4)
 enddef
 
-" Test for type aliases for "any", "blob", "job" and "channel"
+" Test for type aliases for "any" and "blob"
 def Test_typealias_other_types()
   var lines =<< trim END
     vim9script
@@ -1657,6 +1933,7 @@ def Test_typealias_other_types()
   v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected blob but got string', 3)
 enddef
 
+" Test for type aliases for "job" and "channel"
 def Test_typealias_job_channel()
   CheckFeature channel
   var lines =<< trim END
@@ -1795,6 +2072,22 @@ def Test_typealias_declaration_syntax()
     assert_equal('typealias<list<string>>', typename(ListOfStr))
   END
   v9.CheckSourceSuccess(lines)
+
+  # A type split over lines with a backslash
+  lines =<< trim END
+    vim9script
+    type ListOfNum =
+          \ list<number>
+    assert_equal('typealias<list<number>>', typename(ListOfNum))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # No white space before a comment
+  lines =<< trim END
+    vim9script
+    type ListOfNum = list<number># comment
+  END
+  v9.CheckSourceFailure(lines, 'E488: Trailing characters: # comment', 2)
 enddef
 
 " Test for type aliases for type aliases at several levels of a compound type.
@@ -2588,6 +2881,8 @@ func Test_typealias_noclear_reload_garbagecollect()
   unlet g:TypeAliasNcGcFn
 endfunc
 
+" Test for passing a type alias to a builtin function, only type(),
+" typename(), string() and instanceof() accept one
 def Test_passing_typealias_to_builtin()
   # type, typename, string, instanceof are allowed type argument
   var lines =<< trim END
@@ -2610,7 +2905,7 @@ def Test_passing_typealias_to_builtin()
     type T = number
     add([], T)
   END
-  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value')
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value', 3)
 
   # check argument to add in :def
   lines =<< trim END
@@ -2621,7 +2916,7 @@ def Test_passing_typealias_to_builtin()
     enddef
     F()
   END
-  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value')
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
 
   # check member call argument to add at script level
   lines =<< trim END
@@ -2629,7 +2924,7 @@ def Test_passing_typealias_to_builtin()
     type T = number
     []->add(T)
   END
-  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value')
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value', 3)
 
   # check member call argument to add in :def
   lines =<< trim END
@@ -2640,7 +2935,7 @@ def Test_passing_typealias_to_builtin()
     enddef
     F()
   END
-  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value')
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
 
   # Try "empty()" builtin
   # check argument to empty at script level
@@ -2649,7 +2944,7 @@ def Test_passing_typealias_to_builtin()
     type T = number
     empty(T)
   END
-  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value')
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value', 3)
 
   # check argument to empty in :def
   lines =<< trim END
@@ -2660,7 +2955,7 @@ def Test_passing_typealias_to_builtin()
     enddef
     F()
   END
-  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value')
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
 
   # check member call argument to empty at script level
   lines =<< trim END
@@ -2668,7 +2963,7 @@ def Test_passing_typealias_to_builtin()
     type T = number
     T->empty()
   END
-  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value')
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value', 3)
 
   # check member call argument to empty in :def
   lines =<< trim END
@@ -2679,7 +2974,7 @@ def Test_passing_typealias_to_builtin()
     enddef
     F()
   END
-  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value')
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
 
   # Try "abs()" builtin
   # check argument to abs at script level
@@ -2688,7 +2983,7 @@ def Test_passing_typealias_to_builtin()
     type T = number
     abs(T)
   END
-  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value')
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value', 3)
 
   # check argument to abs in :def
   lines =<< trim END
@@ -2699,7 +2994,7 @@ def Test_passing_typealias_to_builtin()
     enddef
     F()
   END
-  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value')
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
 
   # check member call argument to abs at script level
   lines =<< trim END
@@ -2707,7 +3002,7 @@ def Test_passing_typealias_to_builtin()
     type T = number
     T->abs()
   END
-  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value')
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "T" cannot be used as a value', 3)
 
   # check member call argument to abs in :def
   lines =<< trim END
@@ -2718,7 +3013,7 @@ def Test_passing_typealias_to_builtin()
     enddef
     F()
   END
-  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value')
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
