@@ -766,6 +766,16 @@ def Test_class_member_initializer()
           instr)
   END
   v9.CheckSourceSuccess(lines)
+
+  # using a class variable in the initializer of an earlier one
+  lines =<< trim END
+    vim9script
+    class Foo
+      static var a: number = Foo.b
+      static var b: number = 1
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1440: Class variable "b" used before it is initialized', 5)
 enddef
 
 def Test_member_any_used_as_object()
