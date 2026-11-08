@@ -1215,6 +1215,13 @@ check_tuple_type_maybe(
 	    && actual->tt_argcount < expected->tt_argcount - 1)
 	return FAIL;
 
+    // The number of items of a variadic tuple is only known at runtime.
+    int ret = OK;
+    if ((actual->tt_flags & TTFLAG_VARARGS)
+	    && (!(expected->tt_flags & TTFLAG_VARARGS)
+		|| actual->tt_argcount < expected->tt_argcount))
+	ret = MAYBE;
+
     // compare the type of each tuple item
     for (int i = 0; i < actual->tt_argcount; ++i)
     {
@@ -1245,13 +1252,15 @@ check_tuple_type_maybe(
 	else
 	    actual_type = actual->tt_args[i];
 
-	// Allow for using "any" type for a tuple item
-	if (actual->tt_args[i] != &t_any && check_type(exp_type, actual_type,
-						FALSE, where) == FAIL)
+	// An item with type "any" is checked at runtime
+	int r = check_type_maybe(exp_type, actual_type, FALSE, where);
+	if (r == FAIL)
 	    return FAIL;
+	if (r == MAYBE)
+	    ret = MAYBE;
     }
 
-    return OK;
+    return ret;
 }
 
 /*
