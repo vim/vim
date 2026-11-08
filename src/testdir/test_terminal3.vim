@@ -1562,7 +1562,8 @@ endfunc
 " In the MS-Windows console with 'termguicolors' an SGR sequence set by the
 " user, such as "t_Cs" for undercurl, must reach the terminal and must not
 " drop the text that follows it.  Uses a plain underline, the console behind
-" ConPTY may not understand "\e[4:3m".
+" ConPTY may not understand "\e[4:3m".  Requires ConPTY, winpty does not pass
+" on the underline attribute.
 func Test_terminal_mswin_vtp_sgr_passthrough()
   CheckMSWindows
   CheckFeature termguicolors
@@ -1576,8 +1577,12 @@ func Test_terminal_mswin_vtp_sgr_passthrough()
     call matchadd('Curl', 'foo')
   END
   call writefile(lines, 'XsgrScript', 'D')
-  let buf = term_start(GetVimCommandCleanTerm() .. '-S XsgrScript',
-        \ #{term_rows: 5, term_cols: 40})
+  try
+    let buf = term_start(GetVimCommandCleanTerm() .. '-S XsgrScript',
+          \ #{term_rows: 5, term_cols: 40, tty_type: 'conpty'})
+  catch /E982:/
+    throw 'Skipped: ConPTY is not available'
+  endtry
   call WaitForAssert({-> assert_equal('foo bar', trim(term_getline(buf, 1)))})
 
   " "foo" is underlined, "bar" is not
