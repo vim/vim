@@ -1,4 +1,4 @@
-*remote.txt*	For Vim version 9.2.  Last change: 2026 Jun 05
+*remote.txt*	For Vim version 9.2.  Last change: 2026 Nov 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -237,9 +237,13 @@ When using the traditional/generic clientserver naming (only available on
 Unix), sockets are placed in these directories in the following order of
 availability:
     1. "$XDG_RUNTIME_DIR/vim" if $XDG_RUNTIME_DIR is set in the environment.
-    2. "$TMPDIR/vim-[uid]", where "[uid]" is the uid of the user.  This
-       directory will have the access permissions set to 700 so only the user
-       can read or write from/to it.  If $TMPDIR is not set, "/tmp" is used.
+    2. "$TMPDIR/vim-[uid]", where "[uid]" is the uid of the user.  If $TMPDIR
++       is not set, "/tmp" is used.
+						        *E1589*
+The directory is created with permissions 700.  If it already exists, it must
+be a directory (not a symlink), owned by the user and not accessible by group
+or others, otherwise E1589 is given and no socket is created or used there.
+The socket itself is created with permissions 700.
 
 						    *socketserver-name*
 When specifying the server id/name, it can be taken as a generic name or an

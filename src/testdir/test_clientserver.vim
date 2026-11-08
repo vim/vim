@@ -375,6 +375,47 @@ func Test_client_server_socketserver_custom_path()
   endfor
 endfunc
 
+" A socket directory that is a symlink or owned by another user must not be
+" used, one accessible by others is fixed.  The socket itself must not be
+" accessible by others.
+func Test_client_server_socketserver_unsafe_dir()
+  CheckFeature socketserver
+  CheckNotMSWindows
+
+  let save_tmpdir = $TMPDIR
+  let save_xdg = $XDG_RUNTIME_DIR
+  unlet $XDG_RUNTIME_DIR
+  let $TMPDIR = getcwd() .. '/Xsockdir'
+  let dir = $TMPDIR .. '/vim-' .. system('id -u')->trim()
+  call mkdir(dir, 'pR', 0700)
+
+  let cmd = GetVimCommand() .. ' --clientserver socket --servername XSOCK'
+  let server = cmd .. ' -es -c "call writefile([v:servername,'
+        \ .. ' getfperm(v:servername)], \"Xsockout\")" -c qa'
+
+  " symlink to a safe directory
+  call delete(dir, 'd')
+  call mkdir('Xsockreal', 'R', 0700)
+  call system('ln -s ' .. getcwd() .. '/Xsockreal ' .. dir)
+  call assert_match('E1589:', system(cmd .. ' --remote-expr 1'))
+  call system(server)
+  call assert_equal(['', ''], readfile('Xsockout'))
+  call assert_equal([], glob('Xsockreal/*', 0, 1))
+  call delete(dir)
+
+  " directory accessible by others is fixed, the socket is only accessible by
+  " the user
+  call mkdir(dir, '', 0700)
+  call setfperm(dir, 'rwxrwxrwx')
+  call system(server)
+  call assert_equal('rwx------', getfperm(dir))
+  call assert_equal([dir .. '/XSOCK', 'rwx------'], readfile('Xsockout'))
+
+  call delete('Xsockout')
+  let $TMPDIR = save_tmpdir
+  let $XDG_RUNTIME_DIR = save_xdg
+endfunc
+
 " Test if "channel:" prefix works correctly to use channel address for
 " socketserver.
 func Test_client_server_socketserver_address()

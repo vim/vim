@@ -1756,6 +1756,10 @@ channel_listen_unix(
     channel_T		*channel;
     size_t		path_len;
     size_t		server_len;
+    int			ret;
+#ifndef MSWIN
+    mode_t		old_umask;
+#endif
 
     if (path == NULL || *path == NUL)
     {
@@ -1799,9 +1803,16 @@ channel_listen_unix(
 	// Unlink the socket in case it already exists
 	unlink(server.sun_path);
 
-    // Bind the socket to the path
+    // Bind the socket to the path.  Do not let other users connect to it.
     server_len = offsetof(struct sockaddr_un, sun_path) + path_len + 1;
-    if (bind(sd, (struct sockaddr *)&server, (int)server_len) < 0)
+#ifndef MSWIN
+    old_umask = umask(077);
+#endif
+    ret = bind(sd, (struct sockaddr *)&server, (int)server_len);
+#ifndef MSWIN
+    umask(old_umask);
+#endif
+    if (ret < 0)
     {
 	SOCK_ERRNO;
 	ch_error(channel, "in bind() in channel_listen_unix().");
