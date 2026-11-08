@@ -4524,4 +4524,31 @@ func Test_python3_hidden_buf_mod_does_not_mess_up_display()
   exe bufnr . 'bwipe!'
 endfunc
 
+" Test for an enum value and the enum values List in Python
+func Test_python3_enum()
+  let lines =<< trim END
+    vim9script
+    enum Color
+      Red, Green
+    endenum
+    g:Xenum_red = Color.Red
+    g:Xenum_values = Color.values
+  END
+  call writefile(lines, 'Xenum.vim', 'D')
+  source Xenum.vim
+  " an enum value cannot be converted, it becomes None
+  call assert_equal('None', py3eval('repr(vim.eval("g:Xenum_red"))'))
+  call assert_equal(['NoneType', 'NoneType'],
+        \ py3eval('[type(x).__name__ for x in vim.bindeval("g:Xenum_values")]'))
+  " the List of enum values is locked
+  py3 l = vim.bindeval('g:Xenum_values')
+  call AssertException(['py3 l.extend([1])'], 'Vim(py3):vim.error: list is locked')
+  call AssertException(['py3 l[0] = 1'], 'Vim(py3):vim.error: list is locked')
+  call AssertException(['py3 del l[0]'], 'Vim(py3):vim.error: list is locked')
+  call assert_equal(2, len(g:Xenum_values))
+  call assert_true(g:Xenum_values[0] is g:Xenum_red)
+  py3 del l
+  unlet g:Xenum_red g:Xenum_values
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
