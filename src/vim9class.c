@@ -1936,26 +1936,39 @@ enum_clear_constructors(class_T *en)
 }
 
 /*
+ * Returns the index of the enum value of enum "en" that is being created:
+ * the first one that is not set yet.  Returns -1 when all the enum values
+ * exist, then no more enum value objects can be created.
+ */
+    int
+enum_next_value_idx(class_T *en)
+{
+    if (en->class_members_tv == NULL)
+	return -1;
+    for (int i = 0; i < en->class_class_member_count; ++i)
+    {
+	// the enum values are followed by the "values" class variable
+	if (STRCMP(en->class_class_members[i].ocm_name.string, "values") == 0)
+	    break;
+	if (en->class_members_tv[i].v_type == VAR_UNKNOWN)
+	    return i;
+    }
+    return -1;
+}
+
+/*
  * Initialize the name and ordinal object variable in the enum value "enval" in
  * the enum "en".  These values are set during the enum value object creation.
  */
     void
 enum_set_internal_obj_vars(class_T *en, object_T *enval)
 {
-    int	i;
+    int	i = enum_next_value_idx(en);
 
-    for (i = 0; i < en->class_class_member_count; ++i)
-    {
-	typval_T *en_tv = en->class_members_tv + i;
-	if (en_tv != NULL && en_tv->v_type == VAR_UNKNOWN)
-	    break;
-    }
-
-    if (i >= en->class_class_member_count)
-	// When adding enum values to an enum, the index value should be less
-	// than the member count.  It will be greater only when appending a
-	// new item to a list of enums.  In this case, skip setting the enum
-	// name and ordinal (as this is a dummy enum object)
+    if (i < 0)
+	// Not creating an enum value, e.g. when appending a new item to a
+	// list of enums.  Skip setting the enum name and ordinal (as this is
+	// a dummy enum object).
 	return;
 
     // First object variable is the name
