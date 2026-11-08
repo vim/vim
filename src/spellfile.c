@@ -353,6 +353,7 @@ spell_load_file(
     int		c = 0;
     int		res;
     int		did_estack_push = FALSE;
+    bool	had_soundfold = false;
     ESTACK_CHECK_DECLARATION;
 
     fd = mch_fopen((char *)fname, "r");
@@ -470,11 +471,15 @@ spell_load_file(
 		break;
 
 	    case SN_SAL:
-		res = read_sal_section(fd, lp);
-		break;
-
 	    case SN_SOFO:
-		res = read_sofo_section(fd, lp);
+		// there should either be a SN_SAL or SN_SOFO section
+		if (had_soundfold)
+		    res = SP_FORMERROR;
+		else if (n == SN_SAL)
+		    res = read_sal_section(fd, lp);
+		else
+		    res = read_sofo_section(fd, lp);
+		had_soundfold = true;
 		break;
 
 	    case SN_MAP:
