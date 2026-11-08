@@ -1648,14 +1648,14 @@ is_decl_command(cmdidx_T cmdidx)
 
 /*
  * Returns TRUE if variable "idx" of enum "cl" cannot be changed outside the
- * enum: an enum value (a class variable before the "values" class variable)
- * or the "name" or "ordinal" object variable (the first two object variables).
+ * enum: an enum value (a class variable before the "values" class variable).
+ * The "name" and "ordinal" object variables are checked separately.
  */
     static int
 is_enum_readonly_member(class_T *cl, int is_object, int idx)
 {
     if (is_object)
-	return idx < 2;
+	return FALSE;
 
     for (int i = 0; i < cl->class_class_member_count && i <= idx; ++i)
 	if (STRCMP(cl->class_class_members[i].ocm_name.string, "values") == 0)
@@ -1687,6 +1687,13 @@ lhs_class_member_modifiable(lhs_T *lhs, char_u	*var_start, cctx_T *cctx)
 	return FALSE;
     }
 
+    if (IS_ENUM(cl) && is_object && m_idx < 2)
+    {
+	semsg(_(m_idx == 0 ? e_enum_str_name_cannot_be_modified
+				: e_enum_str_ordinal_cannot_be_modified),
+							cl->class_name.string);
+	return FALSE;
+    }
     if (IS_ENUM(cl) && is_enum_readonly_member(cl, is_object, m_idx))
     {
 	semsg(_(e_enumvalue_str_cannot_be_modified), cl->class_name.string,
@@ -2116,17 +2123,6 @@ compile_lhs_set_oc_member_type(
 
     if (IS_ENUM(cl))
     {
-	// Outside of the enum the enum values and the "name" and "ordinal"
-	// object variables cannot be changed.  Other variables are checked
-	// below like for a class.
-	if (!inside_class(cctx, cl)
-		&& is_enum_readonly_member(cl, is_object,
-							lhs->lhs_member_idx))
-	{
-	    semsg(_(e_enumvalue_str_cannot_be_modified),
-		    cl->class_name.string, m->ocm_name.string);
-	    return FAIL;
-	}
 	if (lhs->lhs_type->tt_type == VAR_OBJECT &&
 		lhs->lhs_member_idx < 2)
 	{
@@ -2134,6 +2130,16 @@ compile_lhs_set_oc_member_type(
 		e_enum_str_name_cannot_be_modified :
 		e_enum_str_ordinal_cannot_be_modified;
 	    semsg(_(msg), cl->class_name.string);
+	    return FAIL;
+	}
+	// Outside of the enum the enum values cannot be changed.  Other
+	// variables are checked below like for a class.
+	if (!inside_class(cctx, cl)
+		&& is_enum_readonly_member(cl, is_object,
+							lhs->lhs_member_idx))
+	{
+	    semsg(_(e_enumvalue_str_cannot_be_modified),
+		    cl->class_name.string, m->ocm_name.string);
 	    return FAIL;
 	}
     }
