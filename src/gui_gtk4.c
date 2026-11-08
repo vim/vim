@@ -954,25 +954,18 @@ gui_gtk_init_decor_height(void)
     static void
 set_form_size(int width, int height)
 {
-    // Nothing to do when the form widget already has this size: no allocation
-    // would follow and the size request below would never be dropped.
-    if (gtk_widget_get_width(gui.formwin) == width
-	    && gtk_widget_get_height(gui.formwin) == height)
-	return;
-
-    // Remember the size the form widget is supposed to get. An allocation
-    // that arrives before the compositor has answered this request still has
-    // the previous size and must not be used.
-    gui.pending_form_w = width;
-    gui.pending_form_h = height;
-    gui.pending_form_skip = 1;
-
     // GtkWindow default size also includes client side decorations, so must
     // include it also.  It also keeps the natural width of the toolbar from
     // deciding the width.
     gtk_window_set_default_size(GTK_WINDOW(gui.mainwin),
 	    width + get_menu_tool_width(),
 	    height + get_menu_tool_height() + gui.decor_height);
+
+    // Nothing to do when the form widget already has this size: no allocation
+    // would follow and the size request below would never be dropped.
+    if (gtk_widget_get_width(gui.formwin) == width
+	    && gtk_widget_get_height(gui.formwin) == height)
+	return;
 
     // The window drops a request made while it is being presented, and
     // "gui.decor_height" is not known before that.  A size request on the form
