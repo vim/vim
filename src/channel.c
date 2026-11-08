@@ -5716,6 +5716,10 @@ channel_stdio_loop(void)
 	if (due_time > 0 && due_time < msec)
 	    msec = due_time;
 #endif
+	// Handle leftover messages soon, but do not busy-loop on an
+	// incomplete message in NL mode, which is also readahead.
+	if (channel_any_readahead() && msec > 10)
+	    msec = 10;
 	channel_wait_any(msec);
 	parse_queued_messages();
     }
