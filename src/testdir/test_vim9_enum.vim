@@ -292,6 +292,15 @@ def Test_enum_parse()
   END
   v9.CheckSourceFailure(lines, 'E1418: Invalid enum value declaration: $%@', 4)
 
+  # enum value name starting with an underscore
+  lines =<< trim END
+    vim9script
+    enum Fruit
+      _Apple, Orange
+    endenum
+  END
+  v9.CheckSourceFailure(lines, 'E1418: Invalid enum value declaration: _Apple, Orange', 3)
+
   # Additional command after "enumvalue"
   lines =<< trim END
     vim9script
