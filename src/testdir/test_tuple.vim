@@ -1147,6 +1147,62 @@ func Test_tuple_type_check()
   call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected tuple<number, ...list<string>> but got tuple<number, ...list<bool>>')
 endfunc
 
+" Test for checking the type of a tuple at runtime, when an item has type
+" "any" or the number of items is not known when compiling
+def Test_tuple_runtime_type_check()
+  var lines =<< trim END
+    var a: any = 'x'
+    var t: tuple<number, number> = (1, a)
+  END
+  v9.CheckSourceDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected tuple<number, number> but got tuple<number, string>', 2)
+
+  lines =<< trim END
+    vim9script
+    def Fn(): tuple<number, number>
+      var a: any = 'x'
+      var t: tuple<number, any> = (1, a)
+      return t
+    enddef
+    Fn()
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected tuple<number, number> but got tuple<number, string>', 3)
+
+  lines =<< trim END
+    vim9script
+    def Fn(t: tuple<list<number>>)
+    enddef
+    def Foo()
+      var l: list<any> = [1, 'a']
+      var t: tuple<list<any>> = (l,)
+      Fn(t)
+    enddef
+    Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected tuple<list<number>> but got tuple<list<any>>', 3)
+
+  lines =<< trim END
+    var v: tuple<...list<number>> = (1, 2, 3)
+    var t: tuple<number> = v
+  END
+  v9.CheckSourceDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected tuple<number> but got tuple<number, number, number>', 2)
+
+  lines =<< trim END
+    var v: tuple<...list<number>> = (1,)
+    var t: tuple<number, number, ...list<number>> = v
+  END
+  v9.CheckSourceDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected tuple<number, number, ...list<number>> but got tuple<number>', 2)
+
+  # a value that matches the type is accepted
+  lines =<< trim END
+    var a: any = 2
+    var t: tuple<number, number> = (1, a)
+    var v: tuple<...list<number>> = (3,)
+    var u: tuple<number> = v
+    assert_equal(((1, 2), (3,)), (t, u))
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+enddef
+
 " Test for using a tuple with fewer items than required by a variadic tuple
 " type
 def Test_tuple_variadic_min_items()
