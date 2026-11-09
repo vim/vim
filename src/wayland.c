@@ -478,7 +478,7 @@ vwl_connection_get_seat(vwl_connection_T *self, const char *label)
 {
     bool find_first = false;
 
-    if (label == NULL || (STRCMP(label, "") == 0)
+    if ((label == NULL || STRCMP(label, "") == 0)
 	    && self->gobjects.seats.ga_len > 0)
 	find_first = true;
 
