@@ -2091,6 +2091,10 @@ const ft_from_ext = {
   "ecd": "ecd",
   # ed(1)
   "ed": "ed",
+  # Elixir
+  "exs": "elixir",
+  "eex": "eelixir",
+  "leex": "eelixir",
   # ERicsson LANGuage; Yaws is erlang too
   "erl": "erlang",
   "hrl": "erlang",
@@ -2161,6 +2165,8 @@ const ft_from_ext = {
   # Godot shader
   "gdshader": "gdshader",
   "shader": "gdshader",
+  # Gedcom
+  "ged": "gedcom",
   # Gemtext
   "gmi": "gemtext",
   "gemini": "gemtext",
@@ -2187,11 +2193,16 @@ const ft_from_ext = {
   # GN (generate ninja) files
   "gn": "gn",
   "gni": "gn",
+  # Gnuplot scripts
+  "gpi": "gnuplot",
+  "gnuplot": "gnuplot",
   # Glimmer-flavored TypeScript and JavaScript
   "gts": "typescript.glimmer",
   "gjs": "javascript.glimmer",
   # Go (Google)
   "go": "go",
+  # GP scripts (2.0 and onward)
+  "gp": "gp",
   # GrADS scripts
   "gs": "grads",
   # GraphQL
@@ -2200,6 +2211,9 @@ const ft_from_ext = {
   "gql": "graphql",
   # Gretl
   "gretl": "gretl",
+  # Groovy
+  "gradle": "groovy",
+  "groovy": "groovy",
   # GNU Server Pages
   "gsp": "gsp",
   # GYP
@@ -2278,6 +2292,8 @@ const ft_from_ext = {
   # Httest
   "htt": "httest",
   "htb": "httest",
+  # Hy
+  "hy": "hy",
   # ICalendar
   "ics": "icalendar",
   # Icon
@@ -2450,6 +2466,9 @@ const ft_from_ext = {
   # Lout (also: *.lt)
   "lou": "lout",
   "lout": "lout",
+  # LPC
+  "lpc": "lpc",
+  "ulpc": "lpc",
   # Luau
   "luau": "luau",
   # Lynx style file (or LotusScript!)
@@ -2475,6 +2494,18 @@ const ft_from_ext = {
   # Mathematica notebook and package files
   "nb": "mma",
   "wl": "mma",
+  # Matplotlib
+  "mplstyle": "yaml",
+  # Maxima, see:
+  # https://maxima.sourceforge.io/docs/manual/maxima_71.html#file_005ftype_005fmaxima
+  # *.dem omitted - also used by gnuplot demos
+  # *.mc omitted - used by dist#ft#McSetf()
+  "demo": "maxima",
+  "dm1": "maxima",
+  "dm2": "maxima",
+  "dm3": "maxima",
+  "dmt": "maxima",
+  "wxm": "maxima",
   # Maya Extension Language
   "mel": "mel",
   # mcmeta
@@ -2499,8 +2530,18 @@ const ft_from_ext = {
   "mixal": "mix",
   # Symbian meta-makefile definition (MMP)
   "mmp": "mmp",
+  # Modula-3
+  "m3": "modula3",
+  "i3": "modula3",
+  "mg": "modula3",
+  "ig": "modula3",
+  # Modula-3 configuration language
+  "quake": "m3quake",
   # Larch/Modula-3
   "lm3": "modula3",
+  # Mojo - files use either .mojo or .🔥 as extension
+  "mojo": "mojo",
+  "\xf0\x9f\x94\xa5": "mojo",
   # Monk
   "isc": "monk",
   "monk": "monk",
@@ -2531,6 +2572,15 @@ const ft_from_ext = {
   # N1QL
   "n1ql": "n1ql",
   "nql": "n1ql",
+  # Natural
+  "NSA": "natural",
+  "NSC": "natural",
+  "NSG": "natural",
+  "NSL": "natural",
+  "NSM": "natural",
+  "NSN": "natural",
+  "NSP": "natural",
+  "NSS": "natural",
   # Neon
   "neon": "neon",
   # NetLinx
@@ -2575,6 +2625,14 @@ const ft_from_ext = {
   # Objdump
   "objdump": "objdump",
   "cppobjdump": "objdump",
+  # OCaml
+  "ml": "ocaml",
+  "mli": "ocaml",
+  "mll": "ocaml",
+  "mly": "ocaml",
+  "mlt": "ocaml",
+  "mlp": "ocaml",
+  "mlip": "ocaml",
   # Occam
   "occ": "occam",
   # Odin
@@ -2586,6 +2644,15 @@ const ft_from_ext = {
   "or": "openroad",
   # OpenSCAD
   "scad": "openscad",
+  # OPL
+  "opl": "opl",
+  "opL": "opl",
+  "oPl": "opl",
+  "oPL": "opl",
+  "Opl": "opl",
+  "OpL": "opl",
+  "OPl": "opl",
+  "OPL": "opl",
   # Oracle config file
   "ora": "ora",
   # Org (Emacs' org-mode)
@@ -2726,6 +2793,9 @@ const ft_from_ext = {
   "rakumod": "raku",
   "rakudoc": "raku",
   "rakutest": "raku",
+  # Rantfile and Rakefile (like Ruby)
+  "rake": "ruby",
+  "rant": "ruby",
   # Razor
   "cshtml": "razor",
   "razor": "razor",
@@ -3007,6 +3077,8 @@ const ft_from_ext = {
   "tig": "tiger",
   # TLA+
   "tla": "tla",
+  # TOML
+  "toml": "toml",
   # TPP - Text Presentation Program
   "tpp": "tpp",
   # TRACE32 Script Language
@@ -3114,6 +3186,9 @@ const ft_from_ext = {
   "wml": "wml",
   # Winbatch
   "wbt": "winbatch",
+  # Windows Scripting Host and Windows Script Component
+  "wsf": "wsh",
+  "wsc": "wsh",
   # WSML
   "wsml": "wsml",
   # WPL
@@ -3195,6 +3270,8 @@ const ft_from_ext = {
   # Universal Scene Description
   "usda": "usd",
   "usd": "usd",
+  # Vim script
+  "vim": "vim",
   # Rofi stylesheet
   "rasi": "rasi",
   "rasinc": "rasi",
@@ -3225,6 +3302,9 @@ const ft_from_ext = {
 const ft_from_name = {
   # Ant
   "build.xml": "ant",
+  # Arch Inventory file
+  ".arch-inventory": "arch",
+  "=tagging-method": "arch",
   # Ash of busybox
   ".ash_history": "sh",
   # Automake (must be before the *.am pattern)
@@ -3253,6 +3333,10 @@ const ft_from_name = {
   "CODEOWNERS": "codeowners",
   # Clangd
   ".clangd": "yaml",
+  # Clang-format
+  ".clang-format": "yaml",
+  # Clang-tidy
+  ".clang-tidy": "yaml",
   # Conda configuration file
   ".condarc": "yaml",
   "condarc": "yaml",
@@ -3266,6 +3350,16 @@ const ft_from_name = {
   # Debian devscripts
   "devscripts.conf": "sh",
   ".devscripts": "sh",
+  # Dune
+  "jbuild": "dune",
+  "dune": "dune",
+  "dune-project": "dune",
+  "dune-workspace": "dune",
+  "dune-file": "dune",
+  # Elm Filter Rules file
+  "filter-rules": "elmfilt",
+  # Elixir
+  "mix.lock": "elixir",
   # Fontconfig config files
   "fonts.conf": "xml",
   # Libreoffice config files
@@ -3276,6 +3370,10 @@ const ft_from_name = {
   # Mamba configuration file
   ".mambarc": "yaml",
   "mambarc": "yaml",
+  # Modula-3 configuration language (must be before *.cfg and *makefile)
+  "cm3.cfg": "m3quake",
+  "m3makefile": "m3build",
+  "m3overrides": "m3build",
   # XDG mimeapps.list
   "mimeapps.list": "dosini",
   # Many tools written in Python use dosini as their config
@@ -3311,6 +3409,9 @@ const ft_from_name = {
   "exim.conf": "exim",
   # Exports
   "exports": "exports",
+  # Fennel
+  "fennelrc": "fennel",
+  ".fennelrc": "fennel",
   # Fetchmail RC file
   ".fetchmailrc": "fetchmail",
   # Focus Master file (but not for auto.master)
@@ -3318,6 +3419,8 @@ const ft_from_name = {
   # FStab
   "fstab": "fstab",
   "mtab": "fstab",
+  # Gedcom
+  "lltxxxxx.txt": "gedcom",
   # Git
   "COMMIT_EDITMSG": "gitcommit",
   "MERGE_MSG": "gitcommit",
@@ -3326,6 +3429,8 @@ const ft_from_name = {
   "EDIT_DESCRIPTION": "gitcommit",
   # Git revision list
   ".git-blame-ignore-revs": "gitrevlist",
+  # Gnuplot scripts
+  ".gnuplot_history": "gnuplot",
   # gnash(1) configuration files
   "gnashrc": "gnash",
   ".gnashrc": "gnash",
@@ -3338,6 +3443,10 @@ const ft_from_name = {
   "go.work": "gowork",
   # GoAccess configuration
   "goaccess.conf": "goaccess",
+  # GP scripts (2.0 and onward)
+  ".gprc": "gp",
+  # Groovy
+  "Jenkinsfile": "groovy",
   # GTK RC
   ".gtkrc": "gtkrc",
   "gtkrc": "gtkrc",
@@ -3346,6 +3455,8 @@ const ft_from_name = {
   # Go checksum file (must be before *.sum Hercules)
   "go.sum": "gosum",
   "go.work.sum": "gosum",
+  # Hy
+  ".hy-history": "hy",
   # Indent profile (must come before IDL *.pro!)
   ".indent.pro": "indent",
   # Indent RC
@@ -3397,6 +3508,11 @@ const ft_from_name = {
   # Mailcap configuration file
   ".mailcap": "mailcap",
   "mailcap": "mailcap",
+  # Matplotlib
+  "matplotlibrc": "yaml",
+  # Maxima, see:
+  # https://maxima.sourceforge.io/docs/manual/maxima_71.html#file_005ftype_005fmaxima
+  "maxima-init.mac": "maxima",
   # Meson Build system config
   "meson.build": "meson",
   "meson.options": "meson",
@@ -3414,6 +3530,8 @@ const ft_from_name = {
   # NPM RC file
   "npmrc": "dosini",
   ".npmrc": "dosini",
+  # OCaml
+  ".ocamlinit": "ocaml",
   # ondir
   ".ondirrc": "ondir",
   # OpenAL Soft config files
@@ -3459,6 +3577,11 @@ const ft_from_name = {
   "qmldir": "qmldir",
   # radvd(8) configuration
   "radvd.conf": "radvd",
+  # Rantfile and Rakefile (like Ruby)
+  "rakefile": "ruby",
+  "Rakefile": "ruby",
+  "rantfile": "ruby",
+  "Rantfile": "ruby",
   # Ratpoison config/command files
   ".ratpoisonrc": "ratpoison",
   "ratpoisonrc": "ratpoison",
@@ -3472,6 +3595,9 @@ const ft_from_name = {
   "Rprofile.site": "r",
   # Resolv.conf
   "resolv.conf": "resolv",
+  # Ripgrep rc
+  ".ripgreprc":	"conf",
+  "ripgreprc": "conf",
   # Robots.txt
   "robots.txt": "robots",
   # Interactive Ruby shell
@@ -3512,6 +3638,8 @@ const ft_from_name = {
   ".tidyrc": "tidy",
   "tidyrc": "tidy",
   "tidy.conf": "tidy",
+  # TOML
+  "uv.lock": "toml",
   # TF (TinyFugue) mud client
   ".tfrc": "tf",
   "tfrc": "tf",
@@ -3540,6 +3668,9 @@ const ft_from_name = {
   ".cvsrc": "cvsrc",
   # X11vnc
   ".x11vncrc": "conf",
+  # Xdg-user-dirs
+  "user-dirs.dirs": "sh",
+  "user-dirs.defaults": "sh",
   # Xprofile
   ".xprofile": "sh",
   # X compose file
@@ -3554,6 +3685,10 @@ const ft_from_name = {
   # Nfs
   "nfs.conf": "dosini",
   "nfsmount.conf": "dosini",
+  # Vim script
+  ".exrc": "vim",
+  "_exrc": "vim",
+  ".netrwhist": "vim",
   # Yarn lock
   "yarn.lock": "yaml",
   # Zathurarc
