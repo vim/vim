@@ -804,9 +804,12 @@ eval_expr_ext(char_u *arg, exarg_T *eap, int use_simple_function)
 {
     typval_T	*tv;
     evalarg_T	evalarg;
+    int		skip = eap != NULL && eap->skip;
 
-    fill_evalarg_from_eap(&evalarg, eap, eap != NULL && eap->skip);
+    fill_evalarg_from_eap(&evalarg, eap, skip);
 
+    if (skip)
+	++emsg_skip;
     tv = ALLOC_ONE(typval_T);
     if (tv != NULL)
     {
@@ -820,6 +823,8 @@ eval_expr_ext(char_u *arg, exarg_T *eap, int use_simple_function)
 	if (r == FAIL)
 	    VIM_CLEAR(tv);
     }
+    if (skip)
+	--emsg_skip;
 
     clear_evalarg(&evalarg, eap);
     return tv;

@@ -6653,6 +6653,31 @@ func Test_skip()
 
 endfunc
 
+func Test_cexpr_skip()
+  let cmds =<< trim END
+    cexpr
+    caddexpr
+    cgetexpr
+    lexpr
+    laddexpr
+    lgetexpr
+  END
+  for cmd in cmds
+    let lines =<< eval trim END
+      autocmd QuickfixCmdPre {cmd} Xpath '[pre]'
+      autocmd QuickfixCmdPost {cmd} Xpath '[post]'
+      if 0 | {cmd} execute("Xpath 'a'") | endif
+      Xpath 'b'
+      autocmd! QuickfixCmdPre
+      autocmd! QuickfixCmdPost
+    END
+    XpathINIT
+    call writefile(lines, 'Xscript', 'D')
+    source Xscript
+    call assert_equal('b', g:Xpath, cmd)
+  endfor
+endfunc
+
 "-------------------------------------------------------------------------------
 " Test 93:  :echo and string()					    {{{1
 "-------------------------------------------------------------------------------
