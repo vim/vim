@@ -4797,7 +4797,7 @@ expand_set_tagcase(optexpand_T *args, int *numMatches, char_u ***matches)
  * The 'term' option is changed.
  */
     char *
-did_set_term(optset_T *args UNUSED)
+did_set_term(optset_T *args)
 {
     if (T_NAME[0] == NUL)
 	return e_cannot_set_term_to_empty_string;
@@ -4807,7 +4807,11 @@ did_set_term(optset_T *args UNUSED)
     if (term_is_gui(T_NAME))
 	return e_use_gui_to_start_GUI;
 #endif
-    if (set_termname(T_NAME) == FAIL)
+    // Only clear options for different terminals
+    if (set_termname(
+	    T_NAME,
+	    STRCMP(args->os_newval.string, args->os_oldval.string) == 0
+	    ) == FAIL)
 	return e_not_found_in_termcap;
 
     // Screen colors may have changed.
@@ -5711,7 +5715,8 @@ did_set_string_option(
 #if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
     if (args.os_did_swaptcap)
     {
-	set_termname((char_u *)"win32");
+	// swap_tcap() changed the terminal type.
+	set_termname((char_u *)"win32", false);
 	init_highlight(TRUE, FALSE);
     }
 #endif

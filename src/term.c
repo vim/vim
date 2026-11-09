@@ -2092,7 +2092,7 @@ theend:
  * While doing this, until ttest(), some options may be NULL, be careful.
  */
     int
-set_termname(char_u *term)
+set_termname(char_u *term, bool keep_termcaps UNUSED)
 {
 #ifdef HAVE_TGETENT
     int		builtin_first = p_tbi;
@@ -2201,15 +2201,18 @@ set_termname(char_u *term)
 		display_errors();
 	    }
 	    out_flush();
+
 #ifdef HAVE_TGETENT
 	    if (!termcap_cleared)
-	    {
+#else
+	    if (!keep_termcaps)
 #endif
-		clear_termoptions();	    // clear old options
+	    {
+		clear_termoptions();        // clear old options
 #ifdef HAVE_TGETENT
 		termcap_cleared = TRUE;
-	    }
 #endif
+	    }
 	    parse_builtin_tcap(term);
 
 #ifdef FEAT_GUI
@@ -2847,7 +2850,8 @@ termcapinit(char_u *name)
     set_string_default("ttytype", term);
 
     // Avoid using "term" here, because the next mch_getenv() may overwrite it.
-    set_termname(T_NAME != NULL ? T_NAME : term);
+    // Initialize the terminal options.
+    set_termname(T_NAME != NULL ? T_NAME : term, false);
 }
 
 /*

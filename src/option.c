@@ -4808,7 +4808,8 @@ did_set_termguicolors(optset_T *args UNUSED)
     if (is_term_win32())
     {
 	control_console_color_rgb();
-	set_termname(T_NAME);
+	// same terminal, don't reset the options
+	set_termname(T_NAME, true);
 	init_highlight(TRUE, FALSE);
     }
 # endif
