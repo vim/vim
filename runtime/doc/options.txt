@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Oct 25
+*options.txt*	For Vim version 9.2.  Last change: 2026 Nov 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -10509,12 +10509,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 			line.  If both "noinsert" and "noselect" are present,
 			"noselect" takes precedence.
 	If only one match exists, it is completed fully, unless "noselect" or
-	"noinsert" is specified.
+	"noinsert" is specified without "longest".
 
 	Some useful combinations of colon-separated values:
 	"longest:full"		Start with the longest common string and show
 				'wildmenu' (if enabled).  Does not cycle
 				through full matches.
+	"longest:noselect"	Same as "longest:full".
 	"list:full"		List all matches and complete first match.
 	"list:longest"		List all matches and complete till the longest
 				common prefix.

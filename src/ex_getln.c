@@ -1037,7 +1037,7 @@ cmdline_wildchar_complete(
 	    if (wim_longest)
 	    {
 		int found_longest_prefix = (ccline.cmdpos != cmdpos_before);
-		int show_menu = p_wmnu && wim_full;
+		int show_menu = p_wmnu && (wim_full || wim_noselect);
 
 		if (wim_list || show_menu)
 		    (void)showmatches(xp, show_menu, wim_list, WIM_NOSELECT);
