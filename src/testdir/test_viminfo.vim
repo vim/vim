@@ -177,6 +177,48 @@ func Test_global_vars_with_circular_reference()
   set viminfo-=!
 endfunc
 
+" The string() method of an object in a global variable cannot add global
+" variables while they are written.  This used freed memory, which is only
+" reliably detected with valgrind or ASan.
+func Test_global_vars_string_method_adds_vars()
+  let lines =<< trim END
+    vim9script
+    g:Xerrors = []
+    class A
+      def string(): string
+        try
+          for i in range(500)
+            execute $'g:Xadded{i} = {i}'
+          endfor
+        catch
+          g:Xerrors->add(matchstr(v:exception, 'E\d\+'))
+        endtry
+        return 'A'
+      enddef
+    endclass
+    g:MY_GLOBAL_OBJ_DICT = {o: A.new()}
+  END
+  call writefile(lines, 'Xstrmethod.vim', 'D')
+  source Xstrmethod.vim
+  for i in range(40)
+    let g:['Xpre' .. i] = i
+  endfor
+
+  set viminfo='100,<50,s10,h,!,nviminfo
+  wv! Xviminfo
+  call assert_equal(['E1313'], g:Xerrors)
+  call assert_false(exists('g:Xadded0'))
+  call assert_equal(["!MY_GLOBAL_OBJ_DICT\tDIC\t{'o': A}"],
+        \ readfile('Xviminfo')->filter('v:val =~ "^!MY_GLOBAL_OBJ_DICT"'))
+
+  call delete('Xviminfo')
+  set viminfo-=!
+  unlet g:MY_GLOBAL_OBJ_DICT g:Xerrors
+  for i in range(40)
+    exe 'unlet g:Xpre' .. i
+  endfor
+endfunc
+
 func Test_cmdline_history()
   call histdel(':')
   call test_settime(11)
