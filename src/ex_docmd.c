@@ -8264,9 +8264,10 @@ get_prevdir(cdscope_T scope)
  * Deal with the side effects of changing the current directory.
  * When 'scope' is CDSCOPE_TABPAGE then this was after an ":tcd" command.
  * When 'scope' is CDSCOPE_WINDOW then this was after an ":lcd" command.
+ * "old_dir" is the directory before the change, NULL if unknown.
  */
     void
-post_chdir(cdscope_T scope)
+post_chdir(cdscope_T scope, char_u *old_dir)
 {
     if (scope != CDSCOPE_WINDOW)
 	// Clear tab local directory for both :cd and :tcd
@@ -8297,7 +8298,10 @@ post_chdir(cdscope_T scope)
     }
 
     last_chdir_reason = NULL;
-    shorten_fnames(vim_strchr(p_cpo, CPO_NOSYMLINKS) == NULL);
+    if (vim_strchr(p_cpo, CPO_NOSYMLINKS) == NULL || old_dir == NULL)
+	shorten_fnames(TRUE);
+    else
+	shorten_fnames_keep_symlinks(old_dir);
 }
 
 /*
@@ -8418,7 +8422,7 @@ changedir_func(
     tofree = *pp;  // new_dir may use this
     *pp = pdir;
 
-    post_chdir(scope);
+    post_chdir(scope, pdir);
 
     if (dir_differs)
 	apply_autocmds(EVENT_DIRCHANGED, acmd_fname, new_dir, FALSE, curbuf);

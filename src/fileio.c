@@ -3580,10 +3580,91 @@ shorten_buf_fname(buf_T *buf, char_u *dirname, int force)
 }
 
 /*
- * Shorten filenames for all buffers.
+ * Update the short file name of "buf" after the current directory changed
+ * from "old_dir" to "new_dir", without resolving symbolic links.  Used when
+ * 'cpoptions' contains '~'.
+ *
+ * A relative b_sfname is relative to "old_dir".  It is made relative to
+ * "new_dir", or absolute when the file is not below "new_dir", so that it
+ * keeps referring to the same file.  An absolute b_sfname is made relative to
+ * "new_dir" when possible.
+ *
+ * The new name is built from b_sfname and not from b_ffname, because
+ * b_ffname has symbolic links resolved, while b_sfname is the name as the
+ * user typed it.
  */
-    void
-shorten_fnames(int force)
+    static void
+rebase_buf_sfname(buf_T *buf, char_u *old_dir, char_u *new_dir)
+{
+    string_T	full;
+    char_u	*p;
+
+    // Buffers without a file name, and names that are not file paths, are
+    // not changed, like in shorten_buf_fname().
+    if (buf->b_fname == NULL
+	    || bt_nofilename(buf)
+	    || path_with_url(buf->b_fname))
+	return;
+
+    // When b_sfname is NULL, or points to the same string as b_ffname, there
+    // is no separately typed name with symbolic links to preserve.  Deriving
+    // the short name from b_ffname is then correct.
+    if (buf->b_sfname == NULL || buf->b_sfname == buf->b_ffname)
+    {
+	shorten_buf_fname(buf, new_dir, FALSE);
+	return;
+    }
+
+    // Get the absolute name of the file.  A relative name is relative to
+    // "old_dir".  Don't use fix_fname(), it would resolve symbolic links.
+    if (mch_isFullName(buf->b_sfname))
+	full.string = vim_strsave(buf->b_sfname);
+    else
+	concat_fnames(old_dir, STRLEN(old_dir),
+			buf->b_sfname, STRLEN(buf->b_sfname), TRUE, &full);
+    if (full.string == NULL)
+    {
+	// Out of memory: fall back to the name derived from b_ffname, a
+	// relative b_sfname would be wrong now.
+	shorten_buf_fname(buf, new_dir, TRUE);
+	return;
+    }
+#ifdef BACKSLASH_IN_FILENAME
+    // "old_dir" comes from mch_dirname(), which uses backslashes, while the
+    // separator added above and b_sfname follow 'shellslash'.  Avoid mixed
+    // slashes and backslashes, like for other buffer names.
+    slash_adjust(full.string);
+#endif
+    // Remove "./" and "dir/../" that joining the names may produce.
+    // "dir/.." is only removed when "dir" is not a symbolic link.
+    simplify_filename(full.string);
+
+    // b_sfname is not the same string as b_ffname (checked above), it can be
+    // freed.  shorten_fname() returns a pointer into "full" after "new_dir/",
+    // or NULL when "full" is not below "new_dir".
+    // On MS-Windows it may also return "full" without the drive letter, e.g.
+    // "\dir\file".  Don't use that, it would not match a directory with a
+    // drive letter when the directory is changed again.
+    vim_free(buf->b_sfname);
+    p = shorten_fname(full.string, new_dir);
+    if (p != NULL && *p != NUL && !mch_isFullName(p))
+    {
+	buf->b_sfname = vim_strsave(p);
+	vim_free(full.string);
+    }
+    else
+	buf->b_sfname = full.string;
+    buf->b_fname = buf->b_sfname != NULL ? buf->b_sfname : buf->b_ffname;
+}
+
+/*
+ * Shorten filenames for all buffers.
+ * When "old_dir" is not NULL the current directory was changed from
+ * "old_dir" and relative file names are kept relative to the new directory
+ * without resolving symbolic links ('cpoptions' contains '~').
+ */
+    static void
+shorten_fnames_ex(int force, char_u *old_dir)
 {
     char_u	dirname[MAXPATHL];
     buf_T	*buf;
@@ -3591,7 +3672,10 @@ shorten_fnames(int force)
     mch_dirname(dirname, MAXPATHL);
     FOR_ALL_BUFFERS(buf)
     {
-	shorten_buf_fname(buf, dirname, force);
+	if (old_dir != NULL)
+	    rebase_buf_sfname(buf, old_dir, dirname);
+	else
+	    shorten_buf_fname(buf, dirname, force);
 
 	// Always make the swap file name a full path, a "nofile" buffer may
 	// also have a swap file.
@@ -3605,6 +3689,26 @@ shorten_fnames(int force)
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
     popup_update_preview_title();
 #endif
+}
+
+/*
+ * Shorten filenames for all buffers.
+ */
+    void
+shorten_fnames(int force)
+{
+    shorten_fnames_ex(force, NULL);
+}
+
+/*
+ * Shorten filenames for all buffers after the current directory was changed
+ * from "old_dir" with 'cpoptions' including '~': symbolic links in relative
+ * file names are not resolved.
+ */
+    void
+shorten_fnames_keep_symlinks(char_u *old_dir)
+{
+    shorten_fnames_ex(FALSE, old_dir);
 }
 
 #if (defined(FEAT_DND) && defined(FEAT_GUI_GTK)) \
