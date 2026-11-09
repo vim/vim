@@ -1003,7 +1003,8 @@ ex_pyxfile(exarg_T *eap)
 ex_pyx(exarg_T *eap)
 {
 # if defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)
-    init_pyxversion();
+    if (!eap->skip)
+	init_pyxversion();
     if (p_pyx == 2)
 	ex_python(eap);
     else
