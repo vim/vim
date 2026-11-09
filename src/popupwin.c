@@ -985,12 +985,10 @@ apply_general_options(win_T *wp, dict_T *dict)
 image_done:
 	;
     }
-    else
+    else if (wp->w_popup_imagep == NULL)
     {
 	// Create a image placement with no backing images. This is so that it
 	// will affect the calculations of other popup images.
-	if (wp->w_popup_imagep != NULL)
-	    image_placement_free(wp->w_popup_imagep);
 	wp->w_popup_imagep = image_placement_new(NULL, wp->w_id,
 		iplace_use, true);
 
