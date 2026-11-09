@@ -546,6 +546,15 @@ included in the generated HTML (unless it is folded): >
    :let g:html_ignore_conceal = 1
    :setl conceallevel=0
 <
+						      *g:html_ignore_textprop*
+Default: 0.
+When 0, the highlighting of |text-properties| is applied to the generated
+HTML, combined with the syntax highlighting in the same way as in Vim.
+|virtual-text| is included as well.  It is normal text, unless "v" is in
+|g:html_prevent_copy|.  With |g:html_no_pre| virtual text aligned "right" is
+displayed like "after".
+When 1, text properties are not used.
+
 						       *g:html_ignore_folding*
 Default: 0.
 When 0, text in a closed fold is replaced by the text shown for the fold in
@@ -594,12 +603,14 @@ be affected in this way as follows:
 	n:	line numbers (also within fold text)
 	t:	fold text
 	d:	diff filler
+	v:	|virtual-text|, only when a style sheet is included
 
 Example, to make the fold column and line numbers uncopyable: >
 	:let g:html_prevent_copy = "fn"
 <
 The method used to prevent copying in the generated page depends on the value
-of |g:html_use_input_for_pc|.
+of |g:html_use_input_for_pc|, except for virtual text, which always uses
+generated content.
 
 						    *g:html_use_input_for_pc*
 Default: "none"
