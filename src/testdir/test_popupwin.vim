@@ -918,6 +918,18 @@ func Test_popup_with_mask()
   set wrap&
 endfunc
 
+" Changing the mask List afterwards does not matter.  This crashed.
+func Test_popup_mask_list_changed()
+  let mask = [[1, 2, 1, 1]]
+  let id = popup_create(['abc', 'def'], #{line: 2, col: 2, mask: mask})
+  redraw
+  let mask[0] = 5
+  call add(mask, [1])
+  call popup_move(id, #{line: 3})
+  redraw
+  call popup_close(id)
+endfunc
+
 func Test_popup_select()
   CheckScreendump
   CheckFeature clipboard_working
