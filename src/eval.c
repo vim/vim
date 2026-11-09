@@ -6657,14 +6657,20 @@ list_tv2string(
     }
     else
     {
-	int old_copyID;
-	if (restore_copyID)
-	    old_copyID = tv->vval.v_list->lv_copyID;
+	list_T	*l = tv->vval.v_list;
+	int	old_copyID;
 
-	tv->vval.v_list->lv_copyID = copyID;
+	if (restore_copyID)
+	    old_copyID = l->lv_copyID;
+
+	// Keep a reference, the string() method of an object item could
+	// remove the last reference to the list.
+	++l->lv_refcount;
+	l->lv_copyID = copyID;
 	*tofree = list2string(tv, copyID, restore_copyID);
 	if (restore_copyID)
-	    tv->vval.v_list->lv_copyID = old_copyID;
+	    l->lv_copyID = old_copyID;
+	list_unref(l);
 	r = *tofree;
     }
 
@@ -6706,10 +6712,14 @@ tuple_tv2string(
 	if (restore_copyID)
 	    old_copyID = tuple->tv_copyID;
 
+	// Keep a reference, the string() method of an object item could
+	// remove the last reference to the tuple.
+	++tuple->tv_refcount;
 	tuple->tv_copyID = copyID;
 	*tofree = tuple2string(tv, copyID, restore_copyID);
 	if (restore_copyID)
 	    tuple->tv_copyID = old_copyID;
+	tuple_unref(tuple);
 	r = *tofree;
     }
 
@@ -6746,14 +6756,20 @@ dict_tv2string(
     }
     else
     {
-	int old_copyID;
-	if (restore_copyID)
-	    old_copyID = tv->vval.v_dict->dv_copyID;
+	dict_T	*d = tv->vval.v_dict;
+	int	old_copyID;
 
-	tv->vval.v_dict->dv_copyID = copyID;
+	if (restore_copyID)
+	    old_copyID = d->dv_copyID;
+
+	// Keep a reference, the string() method of an object item could
+	// remove the last reference to the dict.
+	++d->dv_refcount;
+	d->dv_copyID = copyID;
 	*tofree = dict2string(tv, copyID, restore_copyID);
 	if (restore_copyID)
-	    tv->vval.v_dict->dv_copyID = old_copyID;
+	    d->dv_copyID = old_copyID;
+	dict_unref(d);
 	r = *tofree;
     }
 
@@ -6868,11 +6884,15 @@ object_tv2string(
 	if (restore_copyID)
 	    old_copyID = obj->obj_copyID;
 
+	// Keep a reference, the string() method could remove the last
+	// reference to the object.
+	++obj->obj_refcount;
 	obj->obj_copyID = copyID;
 	*tofree = object2string(obj, numbuf, copyID, echo_style,
 				restore_copyID, composite_val);
 	if (restore_copyID)
 	    obj->obj_copyID = old_copyID;
+	object_unref(obj);
 	r = *tofree;
     }
 
