@@ -2486,6 +2486,18 @@ set_var_lval(
 	    return;
 	}
 
+	// The dict can have a type that is not the declared type of the
+	// variable, e.g. a dict<number> created in Vim9 script and changed
+	// in a legacy function or through g:.
+	if (lp->ll_dict != NULL && lp->ll_dict->dv_type != NULL
+		&& lp->ll_dict->dv_type->tt_member != NULL
+		&& check_typval_arg_type(lp->ll_dict->dv_type->tt_member,
+						      rettv, NULL, 0) == FAIL)
+	{
+	    lp->ll_name_end = NULL;
+	    return;
+	}
+
 	// If the lval is a List and the type of the list is not yet set,
 	// then set the item type from the declared type of the variable.
 	if (in_vim9script() && rettv->v_type == VAR_LIST
