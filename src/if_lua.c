@@ -1153,6 +1153,9 @@ luaV_dict_newindex(lua_State *L)
 
     if (d->dv_lock)
 	luaL_error(L, "dict is locked");
+    // While ":let" lists the variables items cannot be removed
+    if (lua_isnil(L, 3) && (d->dv_hashtab.ht_flags & HTFLAGS_FROZEN))
+	luaL_error(L, "dict is locked");
     if (key == NULL)
 	return 0;
     if (*key == NUL)
