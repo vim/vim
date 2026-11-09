@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.2.  Last change: 2026 Nov 01
+*vim9.txt*	For Vim version 9.2.  Last change: 2026 Nov 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5264,6 +5264,18 @@ Type parameter names must not clash with other identifiers:
 	def My1041<E>(): E
 	enddef
 	# E1041: Redefining script item: "E"
+<
+An item with the same name as a type parameter that is defined after the
+generic function, such as a type alias or a class, does not change the
+meaning of the type parameter in the function:
+>vim9
+	vim9script
+	def Id<T>(x: T): T
+	  var y: T = x
+	  return y
+	enddef
+	type T = string
+	echo Id<number>(3)	# 3
 <
 
 Calling a generic function~
