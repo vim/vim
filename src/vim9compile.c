@@ -3581,6 +3581,16 @@ compile_assign_compound_op(cctx_T *cctx, cac_T *cac)
 		&& need_type(stacktype, expected, 0, -1, 0, cctx,
 					FALSE, FALSE) == FAIL)
 	    return FAIL;
+	// The result is a string, a list or dict item of another type, e.g.
+	// a number, cannot hold it.
+	if (lhs->lhs_has_index && expected != NULL
+		&& expected->tt_type != VAR_STRING
+		&& expected->tt_type != VAR_ANY
+		&& expected->tt_type != VAR_UNKNOWN)
+	{
+	    emsg(_(e_can_only_concatenate_to_string));
+	    return FAIL;
+	}
 	// As with "a .. b", convert both operands: when the target type is
 	// any, its current value can be a number.
 	else if (may_generate_2STRING(-2, TOSTRING_NONE, cctx) == FAIL

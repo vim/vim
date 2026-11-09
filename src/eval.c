@@ -2522,6 +2522,16 @@ set_var_lval(
 	}
 	else if (op != NULL && *op != '=')
 	{
+	    // The result of ".." is a string, an item of another type, e.g.
+	    // a number in a dict<number>, cannot hold it.
+	    if (*op == '.' && lp->ll_valtype != NULL
+		    && lp->ll_valtype->tt_type != VAR_STRING
+		    && lp->ll_valtype->tt_type != VAR_ANY
+		    && lp->ll_valtype->tt_type != VAR_UNKNOWN)
+	    {
+		emsg(_(e_can_only_concatenate_to_string));
+		return;
+	    }
 	    tv_op(lp->ll_tv, rettv, op);
 	    return;
 	}
