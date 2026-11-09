@@ -260,8 +260,9 @@ dictitem_copy(dictitem_T *org)
 /*
  * Remove item "item" from Dictionary "dict" and free it.
  * "command" is used for the error message when the hashtab if frozen.
+ * Returns FAIL when the hashtab is frozen, then the item is not removed.
  */
-    void
+    int
 dictitem_remove(dict_T *dict, dictitem_T *item, char *command)
 {
     hashitem_T	*hi;
@@ -269,9 +270,11 @@ dictitem_remove(dict_T *dict, dictitem_T *item, char *command)
     hi = hash_find(&dict->dv_hashtab, item->di_key);
     if (HASHITEM_EMPTY(hi))
 	internal_error("dictitem_remove()");
-    else
-	hash_remove(&dict->dv_hashtab, hi, command);
+    else if (hash_remove(&dict->dv_hashtab, hi, command) == FAIL)
+	// The item is still in the hashtab, don't free it.
+	return FAIL;
     dictitem_free(item);
+    return OK;
 }
 
 /*
@@ -1505,7 +1508,9 @@ dict_filter_map(
 		if (var_check_fixed(di->di_flags, arg_errmsg, TRUE)
 			|| var_check_ro(di->di_flags, arg_errmsg, TRUE))
 		    break;
-		hash_remove(ht, hi, "filter");
+		// Not removed when the hashtab is frozen, then don't free it.
+		if (hash_remove(ht, hi, "filter") == FAIL)
+		    break;
 		dictitem_free(di);
 	    }
 	}
@@ -1549,6 +1554,11 @@ dict_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
 
     if (var_check_fixed(di->di_flags, arg_errmsg, TRUE)
 	    || var_check_ro(di->di_flags, arg_errmsg, TRUE))
+	return;
+
+    // Check before moving the value, the item is not removed when the
+    // hashtab is frozen.
+    if (check_hashtab_frozen(&d->dv_hashtab, "remove()"))
 	return;
 
     *rettv = di->di_tv;
