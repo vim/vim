@@ -1311,9 +1311,12 @@ _VimChdir(PyObject *_chdir, PyObject *args, PyObject *kwargs)
     PyObject	*newwd;
     PyObject	*todecref;
     char_u	*new_dir;
+    char_u	old_dir[MAXPATHL];
+    int		have_old_dir;
 
     if (_chdir == NULL)
 	return NULL;
+    have_old_dir = mch_dirname(old_dir, MAXPATHL) == OK;
     if (!(ret = PyObject_Call(_chdir, args, kwargs)))
 	return NULL;
 
@@ -1348,7 +1351,7 @@ _VimChdir(PyObject *_chdir, PyObject *args, PyObject *kwargs)
     Py_DECREF(newwd);
     Py_XDECREF(todecref);
 
-    post_chdir(CDSCOPE_GLOBAL);
+    post_chdir(CDSCOPE_GLOBAL, have_old_dir ? old_dir : NULL);
 
     if (VimTryEnd())
     {

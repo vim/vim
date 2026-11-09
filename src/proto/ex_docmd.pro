@@ -58,7 +58,7 @@ void ex_splitview(exarg_T *eap);
 void tabpage_new(void);
 void do_exedit(exarg_T *eap, win_T *old_curwin);
 void free_cd_dir(void);
-void post_chdir(cdscope_T scope);
+void post_chdir(cdscope_T scope, char_u *old_dir);
 void trigger_DirChangedPre(char_u *acmd_fname, char_u *new_dir);
 int changedir_func(char_u *new_dir, int forceit, cdscope_T scope);
 void ex_cd(exarg_T *eap);
