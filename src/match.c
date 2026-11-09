@@ -338,6 +338,7 @@ init_search_hl(win_T *wp, match_T *search_hl)
  */
     static int
 next_search_hl_pos(
+    buf_T	    *buf,	// buffer for the match
     match_T	    *shl,	// points to a match
     linenr_T	    lnum,
     matchitem_T	    *match,	// match item with positions
@@ -374,16 +375,24 @@ next_search_hl_pos(
     match->mit_pos_cur = 0;
     if (found >= 0)
     {
-	colnr_T	start = match->mit_pos_array[found].col == 0
-				     ? 0 : match->mit_pos_array[found].col - 1;
-	colnr_T	end = match->mit_pos_array[found].col == 0
-			    ? MAXCOL : start + match->mit_pos_array[found].len;
+	llpos_T	    *pos = &match->mit_pos_array[found];
+	varnumber_T start = pos->col == 0 ? 0 : (varnumber_T)pos->col - 1;
+	varnumber_T end = pos->col == 0 ? MAXCOL : start + pos->len;
+
+	// The column and length are given by the user.  A position after the
+	// end of the line, or one that ends before the start of the line, does
+	// not match.  Otherwise clamp the columns, so that they can be used to
+	// index the line and don't overflow.
+	if (start > ml_get_buf_len(buf, lnum) || (start < 0 && end <= 0))
+	    return 0;
+	start = MAX(start, 0);
+	end   = MIN(end, MAXCOL);
 
 	shl->lnum = lnum;
 	shl->rm.startpos[0].lnum = 0;
-	shl->rm.startpos[0].col = start;
+	shl->rm.startpos[0].col = (colnr_T)start;
 	shl->rm.endpos[0].lnum = 0;
-	shl->rm.endpos[0].col = end;
+	shl->rm.endpos[0].col = (colnr_T)end;
 	shl->is_addpos = TRUE;
 	shl->has_cursor = FALSE;
 	match->mit_pos_cur = found + 1;
@@ -499,7 +508,8 @@ next_search_hl(
 	    }
 	}
 	else if (cur != NULL)
-	    nmatched = next_search_hl_pos(shl, lnum, cur, matchcol);
+	    nmatched = next_search_hl_pos(win->w_buffer, shl, lnum, cur,
+								matchcol);
 	else
 	    nmatched = 0;
 	if (nmatched == 0)
