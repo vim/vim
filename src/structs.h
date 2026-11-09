@@ -5294,10 +5294,12 @@ typedef struct {
 #define WHERE_INIT {NULL, 0, WT_UNKNOWN}
 
 // Struct passed to get_v_event() and restore_v_event().
-typedef struct {
-    int		sve_did_save;
-    hashtab_T	sve_hashtab;
-} save_v_event_T;
+typedef struct save_v_event_S save_v_event_T;
+struct save_v_event_S {
+    int		    sve_did_save;
+    hashtab_T	    sve_hashtab;
+    save_v_event_T  *sve_next;	    // next saved v:event, for GC
+};
 
 // Enum used by filter(), map(), mapnew() and foreach()
 typedef enum {
