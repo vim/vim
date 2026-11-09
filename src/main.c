@@ -471,6 +471,11 @@ x_restore_state(void)
     exmode_active = 0;
     skip_redraw = FALSE;
     RedrawingDisabled = 0;
+    // The longjmp() may have happened while updating the screen or inside
+    // ui_breakcheck(), reset that state, otherwise redrawing never happens
+    // again.
+    updating_screen = FALSE;
+    ui_breakcheck_reset();
     no_wait_return = 0;
     vgetc_busy = 0;
 # ifdef FEAT_EVAL
