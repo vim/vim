@@ -1183,8 +1183,10 @@ get_gui_dialog_file(void)
 }
 #endif
 
+#if defined(FEAT_EVAL) || defined(MESSAGE_QUEUE)
 // When TRUE in a safe state when starting to wait for a character.
 static int	was_safe = FALSE;
+#endif
 static oparg_T	*current_oap = NULL;
 
 /*
@@ -1236,7 +1238,9 @@ may_trigger_safestate(int safe)
 #endif
     if (is_safe)
 	apply_autocmds(EVENT_SAFESTATE, NULL, NULL, FALSE, curbuf);
+#if defined(FEAT_EVAL) || defined(MESSAGE_QUEUE)
     was_safe = is_safe;
+#endif
 }
 
 /*
@@ -1251,7 +1255,9 @@ state_no_longer_safe(char *reason UNUSED)
     if (was_safe)
 	ch_log(NULL, "SafeState: reset: %s", reason);
 #endif
+#if defined(FEAT_EVAL) || defined(MESSAGE_QUEUE)
     was_safe = FALSE;
+#endif
 }
 
 #if defined(FEAT_EVAL) || defined(MESSAGE_QUEUE)
@@ -1491,7 +1497,9 @@ main_loop(
 	quit_more = FALSE;
 
 	// it's not safe unless may_trigger_safestate_main() is called
+#if defined(FEAT_EVAL) || defined(MESSAGE_QUEUE)
 	was_safe = FALSE;
+#endif
 
 	/*
 	 * If skip redraw is set (for ":" in wait_return()), don't redraw now.
