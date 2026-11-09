@@ -4134,4 +4134,61 @@ def Test_nested_type_check()
   v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected list<number> but got list<dict<number>>', 6)
 enddef
 
+" Test for doing a type check at runtime for a dict member type
+def Test_nested_dict_type_check()
+  var lines =<< trim END
+    var d: dict<number> = {a: 1}
+    var x: any = d
+    x['b'] = 'str'
+  END
+  v9.CheckSourceDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got string', 3)
+
+  # replacing an existing item
+  lines =<< trim END
+    var d: dict<string> = {a: 'x'}
+    var x: any = d
+    x['a'] = 42
+  END
+  v9.CheckSourceDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected string but got number', 3)
+
+  # a nested dict
+  lines =<< trim END
+    var d: dict<dict<number>> = {a: {b: 1}}
+    var x: any = d
+    x['a']['c'] = 'str'
+  END
+  v9.CheckSourceDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got string', 3)
+
+  # the dict is not changed and a value of the right type can be stored
+  lines =<< trim END
+    vim9script
+    def Foo()
+      var d: dict<number> = {a: 1}
+      var x: any = d
+      try
+        x['b'] = 'str'
+      catch /E1012:/
+      endtry
+      x['c'] = 3
+      assert_equal({a: 1, c: 3}, d)
+    enddef
+    Foo()
+
+    var sd: dict<number> = {a: 1}
+    var sx: any = sd
+    try
+      sx['b'] = 'str'
+    catch /E1012:/
+    endtry
+    sx['c'] = 3
+    assert_equal({a: 1, c: 3}, sd)
+
+    # a dict without a type accepts any value
+    var ud: any = {a: 1}
+    ud['b'] = 'str'
+    assert_equal({a: 1, b: 'str'}, ud)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
