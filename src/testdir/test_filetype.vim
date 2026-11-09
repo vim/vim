@@ -1007,6 +1007,7 @@ def s:GetFilenameChecks(): dict<list<string>>
           'any/etc/xdg/menus/file.menu', 'file.atom', 'file.rss', 'file.cdxml', 'file.psc1', 'file.mpd', 'fonts.conf', 'file.xcu', 'file.xlb', 'file.xlc', 'file.xba', 'file.xpr',
           'file.xpfm', 'file.spfm', 'file.bxml', 'file.mmi', 'file.slnx', 'Directory.Packages.props', 'Directory.Build.targets', 'Directory.Build.props', 'file.reanim'],
     xmodmap: ['anyXmodmap', 'Xmodmap', 'some-Xmodmap', 'some-xmodmap', 'some-xmodmap-file', 'xmodmap', 'xmodmap-file'],
+    xo: ['file.xo'],
     xpm: ['file.xpm'],
     xpm2: ['file.xpm2'],
     xquery: ['file.xq', 'file.xql', 'file.xqm', 'file.xquery', 'file.xqy'],

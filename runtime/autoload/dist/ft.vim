@@ -3155,6 +3155,8 @@ const ft_from_ext = {
   "xliff": "xml",
   # XML User Interface Language
   "xul": "xml",
+  # Xo
+  "xo": "xo",
   # Xquery
   "xq": "xquery",
   "xql": "xquery",
