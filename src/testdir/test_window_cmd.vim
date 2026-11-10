@@ -1449,6 +1449,69 @@ func Test_window_width_adjust()
   new | only
 endfunc
 
+" Windows must fit in the screen after making it narrower with nested frames
+" with 'winfixwidth' set.
+func Test_window_width_adjust_nested_winfixwidth()
+  CheckNotGui
+  CheckNotMSWindows
+  let save_columns = &columns
+  let save_lines = &lines
+  set columns=233 lines=58
+  only!
+  belowright 9split
+  wincmd k
+  belowright 9split
+  wincmd k
+  leftabove 92vsplit
+  setlocal winfixwidth
+  topleft 19vsplit
+  setlocal winfixwidth
+
+  set columns=25 lines=16
+  redraw!
+  for info in getwininfo()
+    call assert_true(info.wincol + info.width - 1 <= &columns,
+          \ printf('window %d ends at column %d, &columns is %d',
+          \ info.winid, info.wincol + info.width - 1, &columns))
+  endfor
+
+  only!
+  setlocal nowinfixwidth
+  let &columns = save_columns
+  let &lines = save_lines
+endfunc
+
+" Same for the height with nested frames with 'winfixheight' set.
+func Test_window_height_adjust_nested_winfixheight()
+  CheckNotGui
+  CheckNotMSWindows
+  let save_columns = &columns
+  let save_lines = &lines
+  set columns=233 lines=58
+  only!
+  rightbelow 9vsplit
+  wincmd h
+  rightbelow 9vsplit
+  wincmd h
+  aboveleft 30split
+  setlocal winfixheight
+  topleft 15split
+  setlocal winfixheight
+
+  set lines=10
+  redraw!
+  for info in getwininfo()
+    call assert_true(info.winrow + info.height - 1 <= &lines - &cmdheight,
+          \ printf('window %d ends at row %d, &lines is %d',
+          \ info.winid, info.winrow + info.height - 1, &lines))
+  endfor
+
+  only!
+  setlocal nowinfixheight
+  let &columns = save_columns
+  let &lines = save_lines
+endfunc
+
 " Test for jumping to a vertical/horizontal neighbor window based on the
 " current cursor position
 func Test_window_goto_neighbor()
