@@ -2,7 +2,7 @@
 " Language:		Vim help file
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:		2026 Oct 20
+" Last Change:		2026 Nov 10
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -30,6 +30,8 @@ if has("conceal")
          \ start="\%(^\| \)>[a-z0-9]*$" end="^[^ \t]"me=e-1 end="^<"
 endif
 
+let b:vimsyn_force_no_comment_strings = v:true
+
 for [s:lang, s:syntax] in g:help_example_languages->items()
   unlet! b:current_syntax
 
@@ -52,7 +54,8 @@ for [s:lang, s:syntax] in g:help_example_languages->items()
         \ (has("conceal") ? 'concealends' : '')
         \ $'contains=@helpExampleHighlight_{s:lang} keepend'
 endfor
-unlet! s:lang s:syntax
+
+unlet! s:lang s:syntax b:vimsyn_force_no_comment_strings
 
 if has_key(g:help_example_languages, "vim9mix")
   " for examples at :help vim9-mix and :help vim9-comments
