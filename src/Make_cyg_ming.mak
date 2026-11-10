@@ -322,7 +322,7 @@ LUA_LIB = -L$(LUA_LIBDIR) -llua
 
 endif
 
-#	MzScheme interface:
+#	MzScheme interface (deprecated, will be removed):
 #	  MZSCHEME=[Path to MzScheme directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_MZSCHEME=yes (to load the MzScheme DLL dynamically)
 #	  MZSCHEME_VER=[MzScheme version] (default is 3m_a0solc (6.6))
@@ -330,6 +330,7 @@ endif
 #	  	C:\Program Files (x86)\Racket\lib\libracket3m_XXXXXX.dll
 #	  MZSCHEME_DEBUG=no
 ifdef MZSCHEME
+$(warning The MzScheme interface is deprecated and will be removed after the next Vim release, see https://github.com/vim/vim/issues/21851)
  ifndef DYNAMIC_MZSCHEME
 DYNAMIC_MZSCHEME=yes
  endif
@@ -380,11 +381,12 @@ MZSCHEME_LIBDIR=-L$(MZSCHEME_DLLS) -L$(MZSCHEME_DLLS)\lib
 
 endif
 
-#	Python interface:
+#	Python 2 interface (deprecated, will be removed):
 #	  PYTHON=[Path to Python directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_PYTHON=yes (to load the Python DLL dynamically)
 #	  PYTHON_VER=[Python version, eg 22, 23, ..., 27] (default is 27)
 ifdef PYTHON
+$(warning The Python 2 interface is deprecated and will be removed after the next Vim release, use PYTHON3 instead, see https://github.com/vim/vim/issues/21851)
  ifndef DYNAMIC_PYTHON
 DYNAMIC_PYTHON=yes
  endif
@@ -458,7 +460,7 @@ PYTHON3INC += -DPy_LIMITED_API=0x3080000
  endif
 endif
 
-#	TCL interface:
+#	TCL interface (deprecated, will be removed):
 #	  TCL=[Path to TCL directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_TCL=yes (to load the TCL DLL dynamically)
 #	  TCL_VER=[TCL version, eg 83, 84] (default is 86)
@@ -466,6 +468,7 @@ endif
 #	    You must set TCL_VER_LONG when you set TCL_VER.
 #	  TCL_DLL=[TCL dll name, eg tcl86.dll] (default is tcl86.dll)
 ifdef TCL
+$(warning The Tcl interface is deprecated and will be removed after the next Vim release, see https://github.com/vim/vim/issues/21851)
  ifndef DYNAMIC_TCL
 DYNAMIC_TCL=yes
  endif
