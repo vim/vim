@@ -5073,14 +5073,10 @@ parse_csi(
 	return 0; // not handled
 
     if (args[0] == 14)
-    {
-	len = vim_snprintf(buf, 100, "\x1b[4;%ld;%ldt",
-		cell_height * Rows, cell_width * Columns);
-    }
+	len = vim_snprintf(buf, 100, "\x1b[4;%d;%dt",
+		cell_height * term->tl_rows, cell_width * term->tl_cols);
     else if (args[0] == 16)
-    {
 	len = vim_snprintf(buf, 100, "\x1b[6;%d;%dt", cell_height, cell_width);
-    }
     else if (args[0] == 13)
     {
 	int	x = 0;

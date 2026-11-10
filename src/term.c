@@ -3771,10 +3771,7 @@ update_cell_size(void)
 {
 # ifdef FEAT_GUI
     if (gui.in_use)
-    {
-	cell_width = gui.char_width;
-	cell_height = gui.char_height;
-    }
+	set_cell_size(gui.char_width, gui.char_height);
     else
 # endif
     {
@@ -5969,7 +5966,7 @@ handle_csi(
 	key_name[1] = (int)KE_IGNORE;
 
 # if defined(FEAT_IMAGE) || defined(FEAT_EVAL)
-	if (px_w > 0 && px_h > 0)
+	if (px_w > 0 && px_h > 0 && height > 0 && width > 0)
 	    set_cell_size(px_w / width, px_h / height);
 # endif
 
