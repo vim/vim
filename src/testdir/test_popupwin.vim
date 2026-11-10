@@ -6147,6 +6147,25 @@ func Test_popup_image_clear_with_empty_dict()
   set imageprotocol&
 endfunc
 
+func Test_popup_image_kept_when_setting_other_options()
+  CheckFeature image_popup
+  set imageprotocol=.*:sixel
+
+  let blob = repeat([0xff, 0x00, 0x00], 2 * 2)->list2blob()
+  let winid = popup_create('', #{line: 1, col: 1, title: 'foo'})
+  call popup_setoptions(winid, #{image: #{data: blob, width: 2, height: 2}})
+  call assert_true(has_key(popup_getoptions(winid), 'image'))
+
+  call popup_setoptions(winid, #{zindex: 100})
+  call assert_true(has_key(popup_getoptions(winid), 'image'))
+  call assert_equal(blob, popup_getoptions(winid).image.data)
+  call assert_equal('foo', popup_getoptions(winid).title)
+
+  call popup_close(winid)
+
+  set imageprotocol&
+endfunc
+
 " A popup image is emitted as a DCS (sixel) escape sequence.  On the Windows
 " console it has to go through the VT path, otherwise the escape sequence ends
 " up on the screen as raw text when 'termguicolors' is off.  Send the sequence
