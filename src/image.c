@@ -528,32 +528,18 @@ image_placement_set_position(image_placement_T *place, int row, int col)
 }
 
 /*
- * Add a rectangular region to the placement mask.
+ * Overwrite the mask region to cover the given rectangle.
  */
     void
-image_placement_add_mask(image_placement_T *place, int x, int y, int w, int h)
-{
-    if (place->flags & IMAGEPF_HIDDEN)
-	place->flags |= IMAGEPF_DIRTY;
-    place->flags &= ~IMAGEPF_HIDDEN;
-
-    // Only dirty placement if mask region actually changed
-    pixman_region32_union_rect(&place->mask, &place->mask, x, y, w, h);
-    if (!pixman_region32_equal(&place->mask, &place->cur_mask))
-	place->flags |= IMAGEPF_DIRTY;
-}
-
-/*
- * Reset the mask region to empty
- */
-    void
-image_placement_reset_mask(image_placement_T *place)
+image_placement_set_mask(image_placement_T *place, int x, int y, int w, int h)
 {
     if (place->flags & IMAGEPF_HIDDEN)
 	place->flags |= IMAGEPF_DIRTY;
     place->flags &= ~IMAGEPF_HIDDEN;
 
     pixman_region32_clear(&place->mask);
+    pixman_region32_init_rect(&place->mask, x, y, w, h);
+
     if (!pixman_region32_equal(&place->mask, &place->cur_mask))
 	place->flags |= IMAGEPF_DIRTY;
 }
@@ -841,38 +827,12 @@ draw_image_placements(void)
 	    pixman_region32_init(&visible_region);
 	    pixman_region32_init(&visible_abs);
 
-<<<<<<< HEAD
 	    // Only use parts of the image region within the actual screen.
 	    if (!pixman_region32_intersect_rect(&image_region, &image_region,
 			0, 0, Columns, Rows)
 		    || !pixman_region32_subtract(&visible_region,
 			&image_region, &subtract_region)
 		    || !pixman_region32_copy(&visible_abs, &visible_region))
-||||||| parent of e6ab11a10 (refactor image crop handling)
-	    // Only use parts of the image region within the actual screen.
-	    // "row_off" may offset the image slightly/completely off screen.
-	    if (!pixman_region32_intersect_rect(&image_region, &image_region,
-			0, 0, Columns, Rows)
-		    || !pixman_region32_subtract(&visible_region,
-			&image_region, &subtract_region)
-		    || !pixman_region32_copy(&visible_abs, &visible_region))
-=======
-	    // Must intersect image mask with region before applying row_off,
-	    // because the image mask does not know about it.
-	    if (!pixman_region32_intersect(&image_region,
-			&image_region, &place->mask)
-		    || (pixman_region32_translate(&image_region,
-			    0, place->row_off),
-
-			// Only use parts of the image region within the actual
-			// screen. "row_off" may offset the image
-			// slightly/completely off screen.
-			(!pixman_region32_intersect_rect(&image_region,
-							 &image_region, 0, 0, Columns, Rows)
-			 || !pixman_region32_subtract(&visible_region,
-			     &image_region, &subtract_region)
-			 || !pixman_region32_copy(&visible_abs, &visible_region))))
->>>>>>> e6ab11a10 (refactor image crop handling)
 	    {
 		pixman_region32_fini(&image_region);
 		pixman_region32_fini(&visible_region);

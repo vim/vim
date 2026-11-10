@@ -1904,8 +1904,7 @@ popup_position_image(win_T *wp)
 
     image_placement_set_offset(wp->w_popup_imagep,
 	    clip.clip_top_content, clip.clip_left_content);
-    image_placement_reset_mask(wp->w_popup_imagep);
-    image_placement_add_mask(wp->w_popup_imagep, col, row,
+    image_placement_set_mask(wp->w_popup_imagep, col, row,
 	    visible_width, visible_height);
 exit:
     // Add after the last placement with the same zindex (if any), to match
