@@ -77,17 +77,6 @@ runs:
         sudo bash ci/remove_snap.sh
         echo '::endgroup::'
 
-    - name: Enable debug packages
-      shell: bash
-      run: |
-        echo '::group::Enable debug packages'
-        # Some of the ASAN suppressions are in libraries linked with dlopen
-        # and symbolization of them requires these debug packages.
-        sudo apt install ubuntu-dbgsym-keyring
-        sudo cp ci/ddebs.list /etc/apt/sources.list.d/ddebs.list
-        sudo cp ci/pinned-pkgs /etc/apt/preferences.d/pinned-pkgs
-        echo '::endgroup::'
-
     - name: Install packages
       shell: bash
       run: |
@@ -119,20 +108,6 @@ runs:
           locales-all \
           software-properties-common \
         )
-        if ${{ contains(fromJSON(inputs.extra), 'asan') }} && ${{ contains(inputs.architecture, 'native') }}; then
-        PKGS+=( \
-          libepoxy0-dbgsym:${{ inputs.architecture }} \
-          libxdamage1-dbgsym:${{ inputs.architecture }} \
-          libxcb1-dbgsym:${{ inputs.architecture }} \
-          libgtk-3-bin-dbgsym:${{ inputs.architecture }} \
-          libgtk-3-0t64-dbgsym:${{ inputs.architecture }} \
-          libgtk-4-bin-dbgsym:${{ inputs.architecture }} \
-          libgtk-4-0t64-dbgsym:${{ inputs.architecture }} \
-          libglib2.0-0t64-dbgsym:${{ inputs.architecture }} \
-          libglib2.0-bin-dbgsym:${{ inputs.architecture }} \
-          libglib2.0-dev-bin-dbgsym:${{ inputs.architecture }} \
-        )
-        fi
         if ${{ inputs.features == 'huge' }}; then
           LUA_VER=${{ inputs.lua_ver || '5.4' }}
           PKGS+=( \
