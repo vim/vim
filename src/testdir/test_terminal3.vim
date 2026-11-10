@@ -1595,4 +1595,25 @@ func Test_terminal_mswin_vtp_sgr_passthrough()
   exe buf .. 'bwipe!'
 endfunc
 
+" Restoring a cursor position that was saved before the terminal was made
+" smaller used to access lines beyond the end of the terminal.
+func Test_terminal_restore_cursor_after_resize()
+  CheckUnix
+  call writefile([
+        \ "printf '\\033[12;1H\\0337'",
+        \ 'while ! test -f Xrestore_go; do sleep 0.1; done',
+        \ "printf '\\0338\\033#6AAAA'"], 'Xrestore.sh', 'D')
+  defer delete('Xrestore_go')
+  let buf = term_start(['sh', 'Xrestore.sh'], #{term_rows: 20, term_cols: 40})
+  call WaitForAssert({-> assert_equal(12, term_getcursor(buf)[0])})
+  call term_setsize(buf, 5, 40)
+  call writefile([], 'Xrestore_go')
+  call WaitForAssert({-> assert_equal('AAAA', term_getline(buf, 5))})
+  call assert_equal(5, term_getcursor(buf)[0])
+
+  call WaitForAssert({-> assert_equal('dead', job_status(term_getjob(buf)))})
+  exe buf .. 'bwipe!'
+endfunc
+ " vim: shiftwidth=2 sts=2 expandtab
+
 " vim: shiftwidth=2 sts=2 expandtab
