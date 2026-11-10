@@ -1390,4 +1390,43 @@ func Test_clipboard_provider_paste_null_value()
   endtry
 endfunc
 
+func s:ProviderPasteCount(reg)
+  let g:provider_paste_calls += 1
+  return g:provider_paste_ret
+endfunc
+
+" CTRL-R + and CTRL-R * on the command line must ask the clipboard provider
+" for the register contents, like all the other ways of reading the register.
+func Test_clipboard_provider_cmdline_ctrl_r()
+  CheckFeature clipboard_provider
+
+  let v:clipproviders['Xcmdline'] = {
+        \ 'paste': {'+': function('s:ProviderPasteCount'),
+        \           '*': function('s:ProviderPasteCount')}}
+  set clipmethod=Xcmdline
+
+  try
+    for reg in ['+', '*']
+      let g:provider_paste_calls = 0
+      let g:provider_paste_ret = ['v', ['first']]
+      call feedkeys(":\"\<C-R>" .. reg .. "\<CR>", 'xt')
+      call assert_equal('"first', @:)
+      call assert_equal(1, g:provider_paste_calls)
+
+      " The contents must not be stale when the provider returns new text.
+      let g:provider_paste_ret = ['v', ['second']]
+      call feedkeys(":\"\<C-R>" .. reg .. "\<CR>", 'xt')
+      call assert_equal('"second', @:)
+      call assert_equal(2, g:provider_paste_calls)
+    endfor
+  finally
+    call remove(v:clipproviders, 'Xcmdline')
+    unlet! g:provider_paste_ret g:provider_paste_calls
+    call setreg('"', [])
+    call setreg('+', [])
+    call setreg('*', [])
+    set clipmethod&
+  endtry
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
