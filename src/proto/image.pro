@@ -16,6 +16,7 @@ void image_placement_set_crop(image_placement_T *place, int x, int y, int w, int
 void image_placement_set_bounding_box(image_placement_T *place, int row, int col, int row_height, int col_width);
 void image_placement_set_enable(image_placement_T *place, bool enable);
 void image_placement_subrect(image_placement_T *place, pixman_box32_t rect, int *row, int *col, int *x, int *y, int *w, int *h, bool physical);
+void free_marked_image_placements(void);
 void draw_image_placements(void);
 void mark_dirty_region_for_images(int row, int col, int row_height, int col_width);
 void clear_all_image_placements(void);

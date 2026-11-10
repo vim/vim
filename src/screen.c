@@ -4655,6 +4655,9 @@ screen_del_lines(
      * - redrawing for a callback and there is a modeless selection
      */
     if (!screen_valid(TRUE)
+#ifdef FEAT_IMAGE
+	    || visible_image_placements()
+#endif
 	    || line_count <= 0
 	    || (!force && line_count > p_ttyscroll)
 	    || end > Rows

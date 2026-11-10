@@ -698,6 +698,21 @@ redraw_region(pixman_region32_t *region, bool now, bool restore)
 	windgoto(cur_row, cur_col);
 }
 
+    void
+free_marked_image_placements(void)
+{
+    image_placement_T *place = freed_placements;
+
+    while (place != NULL)
+    {
+	image_placement_T *next = place->next;
+
+	image_placement_free_int(place, false);
+	place = next;
+    }
+    freed_placements = NULL;
+}
+
 /*
  * Draw all image placements to the screen. This should be done after all text
  * have been drawn to the screen, and image placements positioned correctly.
@@ -715,15 +730,7 @@ draw_image_placements(void)
     int			cur_col = screen_cur_col;
 
     // Free any images marked to be freed
-    place = freed_placements;
-    while (place != NULL)
-    {
-	image_placement_T *next = place->next;
-
-	image_placement_free_int(place, false);
-	place = next;
-    }
-    freed_placements = NULL;
+    free_marked_image_placements();
 
     // Check if all placements have no backing image. If so, then do nothing
     FOR_ALL_PLACEMENTS(place)
@@ -1052,7 +1059,7 @@ visible_image_placements(void)
     image_placement_T *place;
 
     FOR_ALL_PLACEMENTS(place)
-	if (!(place->flags & IMAGEPF_HIDDEN))
+	if (place->img != NULL && !(place->flags & IMAGEPF_HIDDEN))
 	    return true;
     return false;
 }
