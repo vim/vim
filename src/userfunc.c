@@ -1279,20 +1279,18 @@ get_function_body(
 		}
 	    }
 
-	    // Check for ":append", ":change", ":insert".  Not for :def.
 	    // In Vim9 script a range comes after a colon; without one a
 	    // leading "'" starts a string, not a mark.
 	    if (!vim9_function || colon)
 		p = skip_range(p, FALSE, NULL);
-	    char_u *tp = p;
+
+	    // Check for ":append", ":change", ":insert".  Not for :def.
+	    arg = p;
 	    if (!vim9_function
-		&& (checkforcmd(&p, "append", 1)
-		    || checkforcmd(&p, "change", 1)
-		    || checkforcmd(&p, "insert", 1))
-		    && (*p == '!' || *p == '|' || IS_WHITE_NL_OR_NUL(*p)))
+		&& (checkforcmd(&arg, "append", 1)
+		    || checkforcmd(&arg, "change", 1)
+		    || checkforcmd(&arg, "insert", 1)))
 		skip_until = vim_strnsave((char_u *)".", 1);
-	    else
-		p = tp;
 
 	    // Check for ":python <<EOF", ":tcl <<EOF", etc.
 	    arg = skipwhite(skiptowhite(p));
