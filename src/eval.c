@@ -2596,8 +2596,10 @@ tv_op_list(typval_T *tv1, typval_T *tv2, char_u *op)
 
     if (tv1->vval.v_list == NULL)
     {
-	tv1->vval.v_list = tv2->vval.v_list;
-	++tv1->vval.v_list->lv_refcount;
+	// Make a copy, "tv1" must not become the same List as "tv2".
+	tv1->vval.v_list = list_copy(tv2->vval.v_list, FALSE, FALSE, 0);
+	if (tv1->vval.v_list == NULL)
+	    return FAIL;
     }
     // Check the type of all the items first, the List must not be changed
     // when one of them has the wrong type.  The error has been given then.

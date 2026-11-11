@@ -2141,6 +2141,28 @@ func Test_null_list()
   unlockvar l
 endfunc
 
+" Using "+=" on a null List must create a new List.
+func Test_null_list_add_assign()
+  let g:null_l = test_null_list()
+  let g:other_l = [1]
+  let g:null_l += g:other_l
+  call add(g:null_l, 2)
+  call assert_equal([1, 2], g:null_l)
+  call assert_equal([1], g:other_l)
+  unlet g:null_l g:other_l
+
+  let lines =<< trim END
+    vim9script
+    var a = test_null_list()
+    var b = [1]
+    a += b
+    a->add(2)
+    assert_equal([1, 2], a)
+    assert_equal([1], b)
+  END
+  call v9.CheckScriptSuccess(lines)
+endfunc
+
 " The key/value pairs can be edited and retain references to their values.
 func Test_dict_items_edit_result()
   let shared = [1, 2]
