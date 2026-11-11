@@ -5800,8 +5800,16 @@ exec_instructions(ectx_T *ectx)
 		    {
 			if (iptr->isn_arg.op.op_type == EXPR_APPEND
 						   && tv1->vval.v_list != NULL)
+			{
+			    // The list is changed in place, check it is not
+			    // locked.
+			    SOURCING_LNUM = iptr->isn_lnum;
+			    if (value_check_lock(tv1->vval.v_list->lv_lock,
+								 NULL, FALSE))
+				goto on_error;
 			    list_extend(tv1->vval.v_list, tv2->vval.v_list,
 									 NULL);
+			}
 			else
 			    eval_addlist(tv1, tv2);
 		    }
