@@ -237,6 +237,13 @@ call module#foo(42)
 let foo = g:module#foo(42)
 call g:module#foo(42)
 
+" empty name works in legacy script
+let foo = module#(42)
+call module#(42)
+
+let foo = g:module#(42)
+call g:module#(42)
+
 
 " Not builtin functions
 
@@ -285,4 +292,8 @@ echo module.foo().42life()
 
 call module[0].foo()
 call module[0].substitute()
+
+" empty name works in legacy script
+call foo#()
+call foo#bar#()
 

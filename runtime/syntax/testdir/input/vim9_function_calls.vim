@@ -256,6 +256,15 @@ var foo = g:module#foo(42)
 call g:module#foo(42)
 g:module#foo(42)
 
+# FIXME: empty name does not work in Vim9 script
+var foo = module#(42)
+call module#(42)
+module#(42)
+
+var foo = g:module#(42)
+call g:module#(42)
+g:module#(42)
+
 
 # User, not builtin, functions
 
