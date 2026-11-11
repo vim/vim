@@ -1092,15 +1092,16 @@ flatten_common(typval_T *argvars, typval_T *rettv, int make_copy)
     }
 
     l = argvars[0].vval.v_list;
-    rettv->v_type = VAR_LIST;
-    rettv->vval.v_list = l;
     if (l == NULL)
+    {
+	rettv->v_type = VAR_LIST;
+	rettv->vval.v_list = NULL;
 	return;
+    }
 
     if (make_copy)
     {
 	l = list_copy(l, FALSE, TRUE, get_copyID());
-	rettv->vval.v_list = l;
 	if (l == NULL)
 	    return;
 	// The type will change.
@@ -1109,11 +1110,18 @@ flatten_common(typval_T *argvars, typval_T *rettv, int make_copy)
     }
     else
     {
+	// Do not touch "rettv" before the lock check: on failure "rettv"
+	// must stay VAR_UNKNOWN, since the caller unconditionally calls
+	// clear_tv() on it, which must not drop a reference to "l" that
+	// was never taken.
 	if (value_check_lock(l->lv_lock,
 				     (char_u *)N_("flatten() argument"), TRUE))
 	    return;
 	++l->lv_refcount;
     }
+
+    rettv->v_type = VAR_LIST;
+    rettv->vval.v_list = l;
 
     list_flatten(l, NULL, l->lv_len, maxdepth);
 }
