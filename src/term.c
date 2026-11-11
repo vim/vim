@@ -224,7 +224,7 @@ static int  detected_8bit = FALSE;	// detected 8-bit terminal
 static int focus_state = MAYBE; // TRUE if the Vim window has focus
 #endif
 
-#ifdef FEAT_TERMRESPONSE
+#if defined(FEAT_TERMRESPONSE) && defined(CURSOR_SHAPE)
 // When the cursor shape was detected these values are used:
 // 1: block, 2: underline, 3: vertical bar
 static int initial_cursor_shape = 0;
@@ -3201,11 +3201,11 @@ termrequest_any_pending(void)
     return FALSE;
 }
 
+#  if defined(FEAT_EVAL) || defined(FEAT_TERMINAL)
 static int winpos_x = -1;
 static int winpos_y = -1;
 static int did_request_winpos = 0;
 
-#  if defined(FEAT_EVAL) || defined(FEAT_TERMINAL)
 /*
  * Try getting the Vim window position from the terminal.
  * Returns OK or FAIL.
@@ -5999,7 +5999,9 @@ handle_csi(
 	    && ap[-1] == '$'
 	    && trail == 'y')
     {
+# ifdef CURSOR_SHAPE
 	initial_cursor_blink = (arg[1] == '1');
+# endif
 	rbm_status.tr_progress = STATUS_GOT;
 	LOG_TRN("Received cursor blinking mode response: %s", tp);
 	key_name[0] = (int)KS_EXTRA;
@@ -6039,7 +6041,7 @@ handle_csi(
 	*slen = csi_len;
     }
 
-#ifdef FEAT_TERMRESPONSE
+#if defined(FEAT_TERMRESPONSE) && (defined(FEAT_EVAL) || defined(FEAT_TERMINAL))
     // Check for a window position response from the terminal:
     //       {lead}3;{x};{y}t
     else if (did_request_winpos && argc == 3 && arg[0] == 3
@@ -6422,6 +6424,7 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 		    || (i - j == 7 && tp[i] == '\\'))
 	    {
 #ifdef FEAT_TERMRESPONSE
+# ifdef CURSOR_SHAPE
 		int number = argp[3] - '0';
 
 		// 0, 1 = block blink, 2 = block
@@ -6433,6 +6436,7 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 		// the value set with T_SH.
 		initial_cursor_shape_blink =
 				       (number & 1) ? FALSE : TRUE;
+# endif
 		rcs_status.tr_progress = STATUS_GOT;
 #endif
 		LOG_TRN("Received cursor shape response: %s", tp);
