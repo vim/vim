@@ -1596,7 +1596,12 @@ list_join_inner(
 	s.length = STRLEN(s.string);
 	sumlen += (long)s.length;
 
-	(void)ga_grow(join_gap, 1);
+	if (ga_grow(join_gap, 1) == FAIL)
+	{
+	    vim_free(tofree);
+	    l->lv_lock = prev_lock;
+	    return FAIL;
+	}
 	p = ((join_T *)join_gap->ga_data) + (join_gap->ga_len++);
 	if (tofree != NULL || s.string != numbuf)
 	{
