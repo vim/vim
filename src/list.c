@@ -1039,7 +1039,8 @@ list_flatten(list_T *list, listitem_T *first, long maxitems, long maxdepth)
 	    vimlist_remove(list, item, item);
 	    if (list_extend(list, itemlist, next) == FAIL)
 	    {
-		list_free_item(list, item);
+		// put the item back
+		list_insert(list, item, next);
 		return;
 	    }
 
