@@ -1629,6 +1629,35 @@ def Test_tuple_typecast()
   v9.CheckSourceDefAndScriptFailure(lines, [
         \ 'E1012: Type mismatch; expected tuple<number> but got tuple<string, string>',
         \ 'E1012: Type mismatch; expected tuple<number> but got tuple<string, string>'])
+
+  # a variadic tuple type is different from a tuple type with a List item
+  lines =<< trim END
+    var b: tuple<number, list<number>> = (1, [2])
+    var x = <tuple<number, ...list<number>>>b
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, 'E1012: Type mismatch; expected tuple<number, ...list<number>> but got tuple<number, list<number>>', 2)
+
+  lines =<< trim END
+    var b: tuple<number, list<number>> = (1, [2])
+    var x = <tuple<number, list<number>>>b
+    assert_equal((1, [2]), x)
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+enddef
+
+" Test for the common type of a variadic tuple and a tuple with a List item
+def Test_tuple_variadic_common_type()
+  var lines =<< trim END
+    vim9script
+    def Fn(c: bool): tuple<number, list<number>>
+      var a: tuple<number, ...list<number>> = (1, 2, 3)
+      var b: tuple<number, list<number>> = (1, [2])
+      var x = c ? a : b
+      return x
+    enddef
+    assert_equal((1, [2]), Fn(false))
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " Test for using a tuple in string interpolation
