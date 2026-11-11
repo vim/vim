@@ -574,6 +574,9 @@ free_all_mem(void)
     vim_tcl_finalize();
 # endif
     clear_hl_tables();
+# ifdef FEAT_IMAGE
+    free_marked_image_placements();
+# endif
 
     vim_free(IObuff);
     vim_free(NameBuff);
