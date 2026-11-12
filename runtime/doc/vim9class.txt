@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.2.  Last change: 2026 May 21
+*vim9class.txt*	For Vim version 9.2.  Last change: 2026 Oct 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1040,7 +1040,8 @@ an enum is changed, then their ordinal values will also change.
 
 						*enum-values*
 All the values in an enum can be accessed using the "values" class variable
-which is a List of the enum objects.  This is a readonly variable.
+which is a List of the enum objects.  This is a readonly variable.  An enum
+value cannot be named "values".
 
 Example: >
     enum Planet
