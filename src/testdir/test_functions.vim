@@ -3593,6 +3593,65 @@ func Test_readdirex()
   call assert_fails('call readdirex("doesnotexist")', 'E484:')
 endfunc
 
+func Test_readdirex_owner()
+  CheckUnix
+  CheckExecutable id
+  CheckExecutable ls
+  call mkdir('Xownerdir', 'R')
+  for i in range(5)
+    call writefile([], 'Xownerdir/file' .. i)
+  endfor
+  let owner = [trim(system('id -un 2>/dev/null')), trim(system('id -gn 2>/dev/null'))]
+  if owner[0] == '' || owner[1] == ''
+	\ || owner[0] =~ '^\d\+$' || owner[1] =~ '^\d\+$'
+    throw 'Skipped: user or group name is not resolvable'
+  endif
+  " A setgid parent directory or a default ACL gives the new files a group
+  " other than the primary group.  "ls -l" pads the columns with a variable
+  " number of spaces, depending on the implementation.
+  if system('ls -l Xownerdir/file0') !~ ' ' .. escape(owner[1], '\.*$^~[]') .. '\s\+\d'
+    throw 'Skipped: new files do not get the primary group'
+  endif
+
+  let entries = readdirex('Xownerdir')
+  call assert_equal(5, len(entries))
+  for e in entries
+    call assert_equal(owner, [e.user, e.group], e.name)
+  endfor
+
+  " Give two entries another group, so that the group name resolved by the
+  " nested readdirex() below differs from the one cached for these entries,
+  " and that a cached name other than the first one is used.
+  " A gid that is not in the group database is listed as a number, and
+  " readdirex() then returns an empty name for it.
+  let groups = filter(uniq(sort(split(trim(system('id -Gn'))))),
+	\ {_, g -> g !~ '^\d\+$'})
+  let other_group = ''
+  if len(groups) > 1 && executable('chgrp')
+    let candidate = groups[0] ==# owner[1] ? groups[1] : groups[0]
+    call system('chgrp ' .. shellescape(candidate)
+	  \ .. ' Xownerdir/file0 Xownerdir/file3')
+    if system('ls -l Xownerdir/file0') =~ ' ' .. escape(candidate, '\.*$^~[]') .. '\s\+\d'
+      let other_group = candidate
+    endif
+  endif
+
+  " A nested readdirex() must not disturb the names already collected: the
+  " names are copied because getpwuid() and getgrgid() reuse one buffer.
+  call mkdir('Xownerdir/other', 'R')
+  call writefile([], 'Xownerdir/other/inner')
+  if other_group != ''
+    call system('chgrp ' .. shellescape(other_group) .. ' Xownerdir/other/inner')
+  endif
+  let entries = readdirex('Xownerdir', {e -> readdirex('Xownerdir/other', {_ -> -1}) == []})
+  call assert_equal(6, len(entries))
+  let other_owner = other_group == '' ? owner : [owner[0], other_group]
+  for e in entries
+    call assert_equal(e.name =~# '^file[03]$' ? other_owner : owner,
+	  \ [e.user, e.group], e.name)
+  endfor
+endfunc
+
 func Test_readdirex_sort()
   CheckUnix
   " Skip tests on Mac OS X and Cygwin (does not allow several files with different casing)

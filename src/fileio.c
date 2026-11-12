@@ -4912,8 +4912,108 @@ theend:
     return NULL;
 }
 # else
+typedef struct
+{
+    long	id;
+    string_T	name;
+} id_name_entry_T;
+
+// Only kept for one readdir_core() call: a longer lived cache would hide
+// changes to the user and group databases.
+typedef struct
+{
+    garray_T	users;
+    garray_T	groups;
+} id_name_cache_T;
+
+    static void
+id_name_cache_init(id_name_cache_T *cache)
+{
+    ga_init2(&cache->users, sizeof(id_name_entry_T), 4);
+    ga_init2(&cache->groups, sizeof(id_name_entry_T), 4);
+}
+
+    static void
+id_name_entries_clear(garray_T *gap)
+{
+    for (int i = 0; i < gap->ga_len; ++i)
+	vim_free(((id_name_entry_T *)gap->ga_data)[i].name.string);
+    ga_clear(gap);
+}
+
+    static void
+id_name_cache_clear(id_name_cache_T *cache)
+{
+    id_name_entries_clear(&cache->users);
+    id_name_entries_clear(&cache->groups);
+}
+
+    static char_u *
+lookup_user_name(long id)
+{
+    struct passwd *pw = getpwuid((uid_t)id);
+
+    return pw == NULL ? (char_u *)"" : (char_u *)pw->pw_name;
+}
+
+#  if !defined(VMS) || (defined(VMS) && defined(HAVE_XOS_R_H))
+    static char_u *
+lookup_group_name(long id)
+{
+    struct group *gr = getgrgid((gid_t)id);
+
+    return gr == NULL ? (char_u *)"" : (char_u *)gr->gr_name;
+}
+#  endif
+
+/*
+ * Look up the name for "id" unless it was seen before.
+ * The name is copied because the result of getpwuid() and getgrgid() is
+ * overwritten by the next call.
+ * Returns FAIL when out of memory.
+ */
+    static int
+get_cached_id_name(
+    garray_T	*gap,
+    long	id,
+    char_u	*(*lookup)(long id),
+    string_T	*ret)
+{
+    id_name_entry_T	*entry;
+    char_u		*name;
+
+    for (int i = 0; i < gap->ga_len; ++i)
+    {
+	entry = (id_name_entry_T *)gap->ga_data + i;
+	if (entry->id == id)
+	{
+	    *ret = entry->name;
+	    return OK;
+	}
+    }
+
+    // Keep the linear search above short when there are many different ids.
+    if (gap->ga_len >= 1000)
+	id_name_entries_clear(gap);
+    if (ga_grow(gap, 1) == FAIL)
+	return FAIL;
+    entry = (id_name_entry_T *)gap->ga_data + gap->ga_len;
+    name = lookup(id);
+    entry->id = id;
+    entry->name.length = STRLEN(name);
+    entry->name.string = vim_strnsave(name, entry->name.length);
+    if (entry->name.string == NULL)
+	return FAIL;
+    ++gap->ga_len;
+    *ret = entry->name;
+    return OK;
+}
+
     static dict_T *
-create_readdirex_item(char_u *path, char_u *name)
+create_readdirex_item(
+    char_u		*path,
+    char_u		*name,
+    id_name_cache_T	*id_name_cache)
 {
     dict_T	*item;
     char	*p;
@@ -4924,8 +5024,6 @@ create_readdirex_item(char_u *path, char_u *name)
     varnumber_T	size;
     char_u	permbuf[] = "---------";
     string_T	q = {NULL, 0};
-    struct passwd *pw;
-    struct group  *gr;
 
     item = dict_alloc();
     if (item == NULL)
@@ -4985,25 +5083,15 @@ create_readdirex_item(char_u *path, char_u *name)
 	if (dict_add_string(item, "perm", getfpermst(&st, permbuf)) == FAIL)
 	    goto theend;
 
-	pw = getpwuid(st.st_uid);
-	if (pw == NULL)
-	    STR_LITERAL_SET(q, "");
-	else
-	{
-	    q.string = (char_u *)pw->pw_name;
-	    q.length = STRLEN(q.string);
-	}
+	if (get_cached_id_name(&id_name_cache->users, (long)st.st_uid,
+					    lookup_user_name, &q) == FAIL)
+	    goto theend;
 	if (dict_add_string_len(item, "user", q.string, (int)q.length) == FAIL)
 	    goto theend;
 #  if !defined(VMS) || (defined(VMS) && defined(HAVE_XOS_R_H))
-	gr = getgrgid(st.st_gid);
-	if (gr == NULL)
-	    STR_LITERAL_SET(q, "");
-	else
-	{
-	    q.string = (char_u *)gr->gr_name;
-	    q.length = STRLEN(q.string);
-	}
+	if (get_cached_id_name(&id_name_cache->groups, (long)st.st_gid,
+					    lookup_group_name, &q) == FAIL)
+	    goto theend;
 #  endif
 	if (dict_add_string_len(item, "group", q.string, (int)q.length) == FAIL)
 	    goto theend;
@@ -5204,6 +5292,11 @@ readdir_core(
     }
     else
     {
+#  ifdef FEAT_EVAL
+	id_name_cache_T	id_name_cache;
+
+	id_name_cache_init(&id_name_cache);
+#  endif
 	for (;;)
 	{
 	    int	    ignore;
@@ -5221,7 +5314,7 @@ readdir_core(
 		continue;
 #  ifdef FEAT_EVAL
 	    if (withattr)
-		item = (void*)create_readdirex_item(path, p);
+		item = (void*)create_readdirex_item(path, p, &id_name_cache);
 	    else
 #  endif
 		item = (void*)vim_strsave(p);
@@ -5258,6 +5351,9 @@ readdir_core(
 	    else
 		FREE_ITEM(item);
 	}
+#  ifdef FEAT_EVAL
+	id_name_cache_clear(&id_name_cache);
+#  endif
 
 	closedir(dirp);
     }
