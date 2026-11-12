@@ -176,13 +176,13 @@ u_check_tree(u_header_T *uhp,
 	if (uhp->uh_next.ptr != exp_uh_next)
 	{
 	    emsg("uh_next wrong");
-	    smsg("expected: 0x%x, actual: 0x%x",
+	    smsg("expected: %p, actual: %p",
 					       exp_uh_next, uhp->uh_next.ptr);
 	}
 	if (uhp->uh_alt_prev.ptr != exp_uh_alt_prev)
 	{
 	    emsg("uh_alt_prev wrong");
-	    smsg("expected: 0x%x, actual: 0x%x",
+	    smsg("expected: %p, actual: %p",
 				       exp_uh_alt_prev, uhp->uh_alt_prev.ptr);
 	}
 
@@ -215,9 +215,9 @@ u_check(int newhead_may_be_NULL)
 
     if (seen_b_u_newhead == 0 && curbuf->b_u_oldhead != NULL
 	    && !(newhead_may_be_NULL && curbuf->b_u_newhead == NULL))
-	semsg("b_u_newhead invalid: 0x%x", curbuf->b_u_newhead);
+	semsg("b_u_newhead invalid: %p", curbuf->b_u_newhead);
     if (curbuf->b_u_curhead != NULL && seen_b_u_curhead == 0)
-	semsg("b_u_curhead invalid: 0x%x", curbuf->b_u_curhead);
+	semsg("b_u_curhead invalid: %p", curbuf->b_u_curhead);
     if (header_count != curbuf->b_u_numhead)
     {
 	emsg("b_u_numhead invalid");
@@ -1767,8 +1767,8 @@ u_write_undo(
 # ifdef U_DEBUG
     if (headers_written != buf->b_u_numhead)
     {
-	semsg("Written %ld headers, ...", headers_written);
-	semsg("... but numhead is %ld", buf->b_u_numhead);
+	semsg("Written %d headers, ...", headers_written);
+	semsg("... but numhead is %d", buf->b_u_numhead);
     }
 # endif
 
@@ -1854,6 +1854,74 @@ uhp_table_find(u_header_T **uhp_table, long num_head, long seq)
 }
 
 /*
+ * Return true if the "num_head" headers in "uhp_table" form a tree that
+ * u_blockfree() can free: from "oldhead" every header is reached exactly once
+ * through uh_prev or uh_alt_next, and the uh_alt_next and uh_alt_prev links
+ * match.
+ */
+    static bool
+undo_tree_valid(
+    u_header_T	**uhp_table,
+    long	num_head,
+    u_header_T	*oldhead,
+    u_header_T	*newhead)
+{
+    u_header_T	**stack;
+    u_header_T	*uhp;
+    long	sp = 0;
+    long	count = 0;
+    long	i;
+    bool	ok = true;
+
+    if (oldhead == NULL || newhead == NULL
+	    || oldhead->uh_next.ptr != NULL
+	    || oldhead->uh_alt_prev.ptr != NULL
+	    || newhead->uh_prev.ptr != NULL)
+	return false;
+
+    stack = ALLOC_MULT(u_header_T *, num_head);
+    if (stack == NULL)
+	return false;
+
+    // uh_walk is zero for all headers, use it to mark visited headers.
+    oldhead->uh_walk = 1;
+    stack[sp++] = oldhead;
+    while (ok && sp > 0)
+    {
+	u_header_T *next[2];
+
+	uhp = stack[--sp];
+	++count;
+	if ((uhp->uh_alt_next.ptr != NULL
+		    && uhp->uh_alt_next.ptr->uh_alt_prev.ptr != uhp)
+		|| (uhp->uh_alt_prev.ptr != NULL
+		    && uhp->uh_alt_prev.ptr->uh_alt_next.ptr != uhp))
+	    ok = false;
+
+	next[0] = uhp->uh_prev.ptr;
+	next[1] = uhp->uh_alt_next.ptr;
+	for (i = 0; ok && i < 2; ++i)
+	{
+	    if (next[i] == NULL)
+		continue;
+	    if (next[i]->uh_walk != 0)
+		ok = false;  // reached twice
+	    else
+	    {
+		next[i]->uh_walk = 1;
+		stack[sp++] = next[i];
+	    }
+	}
+    }
+    vim_free(stack);
+
+    for (i = 0; i < num_head; ++i)
+	uhp_table[i]->uh_walk = 0;
+
+    return ok && count == num_head;
+}
+
+/*
  * Load the undo tree from an undo file.
  * If "name" is not NULL use it as the undo file name.  This also means being
  * a bit more verbose.
@@ -1884,7 +1952,7 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
     char_u	read_hash[UNDO_HASH_SIZE];
     char_u	magic_buf[UF_START_MAGIC_LEN];
 # ifdef U_DEBUG
-    int		*uhp_table_used;
+    int		*uhp_table_used = NULL;
 # endif
 # ifdef UNIX
     stat_T	st_orig;
@@ -2163,6 +2231,14 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
     }
 # undef SWIZZLE_SEQ
 
+    if (num_head > 0 && !undo_tree_valid(uhp_table, num_head,
+		old_idx < 0 ? NULL : uhp_table[old_idx],
+		new_idx < 0 ? NULL : uhp_table[new_idx]))
+    {
+	corruption_error("header links", file_name);
+	goto error;
+    }
+
     // Now that we have read the undo info successfully, free the current undo
     // info and use the info from the file.
     u_blockfree(curbuf);
@@ -2203,6 +2279,9 @@ error:
 		u_free_uhp(uhp_table[i]);
 	vim_free(uhp_table);
     }
+# ifdef U_DEBUG
+    vim_free(uhp_table_used);
+# endif
 
 theend:
 # ifdef FEAT_CRYPT
