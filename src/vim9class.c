@@ -2813,18 +2813,15 @@ early_ret:
 
 	// Allocate a typval for each class member and initialize it.
 	if ((is_class || is_enum) && cl->class_class_member_count > 0)
-	    if (add_class_members(cl, eap, &type_list) == FAIL)
-	    {
-		cl->class_type_list = type_list;
-		return;
-	    }
+	    // On failure the class is still defined, continue below.
+	    (void)add_class_members(cl, eap, &type_list);
 
 	cl->class_type_list = type_list;
 
 	if (is_enum)
 	{
 	    // clear the constructor method names, so that an enum class cannot
-	    // be instantiated
+	    // be instantiated, also when initializing the enum values failed
 	    enum_clear_constructors(cl);
 	}
 
