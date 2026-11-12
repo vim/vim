@@ -2745,8 +2745,11 @@ list_filter_map(
     // set_vim_var_nr() doesn't set the type
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
+    // Lock the list.  Also set VAR_FIXED, ":unlockvar" in the expression
+    // only resets VAR_LOCKED and must not allow removing items.
     if (l->lv_lock == 0)
 	l->lv_lock = VAR_LOCKED;
+    l->lv_lock |= VAR_FIXED;
 
     // Create one funccall_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, &newtv);
