@@ -117,7 +117,7 @@ struct image_placement_S
     // The bounding box represents a region that images (including their
     // bounding boxes) under it with lower zindexes will have their overlapping
     // region not be rendered at all. This is used to render text (e.g. borders)
-    // ontop of images.
+    // on top of images.
     pixman_box32_t bounding_box; // In cells
 
     // Cached region that represents the parts of the image that have been drawn
