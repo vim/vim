@@ -3763,7 +3763,10 @@ set_cell_size(int new_cw, int new_ch)
     cell_width = new_cw;
     cell_height = new_ch;
 
-    update_screen(UPD_VALID);
+#ifdef FEAT_TERMINAL
+    term_update_cell_size();
+#endif
+    redraw_all_later(UPD_VALID);
 }
 
     void

@@ -5298,6 +5298,16 @@ term_update_colors_all(void)
     }
 }
 
+    void
+term_update_cell_size(void)
+{
+    term_T *term;
+
+    FOR_ALL_TERMS(term)
+	if (term_job_running_not_none(term))
+	    term_report_winsize(term, term->tl_rows, term->tl_cols);
+}
+
 /*
  * Return the text to show for the buffer name and status.
  */
