@@ -1,4 +1,4 @@
-*if_mzsch.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*if_mzsch.txt*	For Vim version 9.2.  Last change: 2026 Nov 10
 
 
 		  VIM REFERENCE MANUAL	  by Sergey Khorev
@@ -16,6 +16,9 @@ The MzScheme Interface to Vim				*mzscheme* *MzScheme*
 8. MzScheme setup			|mzscheme-setup|
 
 {only available when Vim was compiled with the |+mzscheme| feature}
+
+NOTE: The MzScheme interface is deprecated and will be removed after the next
+Vim release, see https://github.com/vim/vim/issues/21851.
 
 Based on the work of Brent Fulgham.
 Dynamic loading added by Sergey Khorev

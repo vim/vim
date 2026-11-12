@@ -856,9 +856,12 @@ fi
 dnl Check for MzScheme feature.
 AC_MSG_CHECKING(--enable-mzschemeinterp argument)
 AC_ARG_ENABLE(mzschemeinterp,
-	[  --enable-mzschemeinterp      Include MzScheme interpreter.], ,
+	[  --enable-mzschemeinterp      Include MzScheme interpreter (deprecated).], ,
 	[enable_mzschemeinterp="no"])
 AC_MSG_RESULT($enable_mzschemeinterp)
+
+dnl Interfaces scheduled for removal, reported at the end of configure.
+deprecated_interp=""
 
 if test "$enable_mzschemeinterp" = "yes"; then
   dnl -- find the mzscheme executable
@@ -1106,6 +1109,7 @@ if test "$enable_mzschemeinterp" = "yes"; then
       MZSCHEME_SRC="if_mzsch.c"
       MZSCHEME_OBJ="objects/if_mzsch.o"
       AC_DEFINE(FEAT_MZSCHEME)
+      deprecated_interp="$deprecated_interp MzScheme"
     else
       MZSCHEME_CFLAGS=
       MZSCHEME_LIBS=
@@ -1301,7 +1305,7 @@ AC_SUBST(PERL_LIBS)
 
 AC_MSG_CHECKING(--enable-pythoninterp argument)
 AC_ARG_ENABLE(pythoninterp,
-	[  --enable-pythoninterp[=OPTS]   Include Python interpreter. [default=no] [OPTS=no/yes/dynamic]], ,
+	[  --enable-pythoninterp[=OPTS]   Include Python 2 interpreter (deprecated). [default=no] [OPTS=no/yes/dynamic]], ,
 	[enable_pythoninterp="no"])
 AC_MSG_RESULT($enable_pythoninterp)
 if test "$enable_pythoninterp" = "yes" -o "$enable_pythoninterp" = "dynamic"; then
@@ -1509,6 +1513,7 @@ eof
 	LIBS=$libs_save
 	if test $python_ok = yes; then
 	  AC_DEFINE(FEAT_PYTHON)
+	  deprecated_interp="$deprecated_interp Python2"
 	else
 	  LIBS=$libs_save_old
 	  PYTHON_SRC=
@@ -1951,7 +1956,7 @@ fi
 
 AC_MSG_CHECKING(--enable-tclinterp argument)
 AC_ARG_ENABLE(tclinterp,
-	[  --enable-tclinterp[=OPTS]      Include Tcl interpreter. [default=no] [OPTS=no/yes/dynamic]], ,
+	[  --enable-tclinterp[=OPTS]      Include Tcl interpreter (deprecated). [default=no] [OPTS=no/yes/dynamic]], ,
 	[enable_tclinterp="no"])
 AC_MSG_RESULT($enable_tclinterp)
 
@@ -2068,6 +2073,7 @@ if test "$enable_tclinterp" = "yes" -o "$enable_tclinterp" = "dynamic"; then
 	fi
 	if test -z "$SKIP_TCL"; then
 	  AC_DEFINE(FEAT_TCL)
+	  deprecated_interp="$deprecated_interp Tcl"
 	  TCL_SRC=if_tcl.c
 	  TCL_OBJ=objects/if_tcl.o
 	  TCL_CFLAGS="-I$TCL_INC $TCL_DEFS"
@@ -5002,5 +5008,13 @@ fi
 dnl write output files
 AC_CONFIG_FILES(auto/config.mk:config.mk.in)
 AC_OUTPUT
+
+if test -n "$deprecated_interp"; then
+  echo
+  for interp in $deprecated_interp; do
+    AC_MSG_WARN([the $interp interface is deprecated and will be removed after the next Vim release])
+  done
+  AC_MSG_WARN([if you still need it, please comment on https://github.com/vim/vim/issues/21851])
+fi
 
 dnl vim: set sw=2 sts=2 tw=78 fo+=l:
