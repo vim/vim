@@ -1684,6 +1684,18 @@ get_lval_oc_variable(
     if (om == NULL)
 	return OK;
 
+    // The name and ordinal of an enum value are the first two object
+    // variables and cannot be changed.
+    if (IS_ENUM(cl) && v_type == VAR_OBJECT && m_idx < 2
+	    && (flags & GLV_READ_ONLY) == 0
+	    && (*key_end != '.' && *key_end != '['))
+    {
+	semsg(_(m_idx == 0 ? e_enum_str_name_cannot_be_modified
+				: e_enum_str_ordinal_cannot_be_modified),
+							cl->class_name.string);
+	return FAIL;
+    }
+
     // Check variable is accessible
     if (get_lval_check_access(cl_exec, cl, om, key_end, flags) == FAIL)
 	return FAIL;
