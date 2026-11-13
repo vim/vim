@@ -182,9 +182,11 @@ get_leader_len(
  *
  * When "flags" is not null, it is set to point to the flags describing the
  * recognized comment leader.
+ * When "skip_first" is TRUE, ignore a leader with the 'f' flag, unless it is
+ * part of a three-piece comment.
  */
     int
-get_last_leader_offset(char_u *line, char_u **flags)
+get_last_leader_offset(char_u *line, char_u **flags, int skip_first)
 {
     int		result = -1;
     int		i, j;
@@ -221,6 +223,10 @@ get_last_leader_offset(char_u *line, char_u **flags)
 		continue;
 	    *string++ = NUL;	// Isolate flags from string.
 	    com_leader = string;
+
+	    if (skip_first && vim_strchr(part_buf, COM_FIRST) != NULL
+			    && vim_strpbrk(part_buf, (char_u *)"sme") == NULL)
+		continue;
 
 	    /*
 	     * Line contents and string must match.

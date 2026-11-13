@@ -2078,6 +2078,8 @@ adjust_cursor_eol(void)
  * process - if FALSE, will only check whether the line ends with an unclosed
  *	     comment,
  * include_space - whether to also skip space following the comment leader,
+ * skip_first - whether to ignore a leader with the 'f' flag when checking
+ *		for an unclosed comment,
  * is_comment - will indicate whether the current line ends with an unclosed
  *		comment.
  */
@@ -2086,11 +2088,15 @@ skip_comment(
     char_u   *line,
     int      process,
     int	     include_space,
+    int	     skip_first,
     int      *is_comment)
 {
     char_u *comment_flags = NULL;
     int    lead_len;
-    int    leader_offset = get_last_leader_offset(line, &comment_flags);
+    int    leader_offset = get_last_leader_offset(line, &comment_flags,
+								  skip_first);
+    int    first = FALSE;
+    int    three_piece = FALSE;
 
     *is_comment = FALSE;
     if (leader_offset != -1)
@@ -2125,13 +2131,20 @@ skip_comment(
 	if (*comment_flags == COM_END
 		|| *comment_flags == ':')
 	    break;
+	if (*comment_flags == COM_FIRST)
+	    first = TRUE;
+	else if (*comment_flags == COM_START || *comment_flags == COM_MIDDLE)
+	    three_piece = TRUE;
 	++comment_flags;
     }
 
     // If we found a colon, it means that we are not processing a line
     // starting with a closing part of a three-part comment. That's good,
     // because we don't want to remove those as this would be annoying.
-    if (*comment_flags == ':' || *comment_flags == NUL)
+    // A leader with the 'f' flag starts a new item, don't remove it either,
+    // unless it is part of a three-piece comment.
+    if ((*comment_flags == ':' || *comment_flags == NUL)
+						 && (!first || three_piece))
 	line += lead_len;
 
     return line;
@@ -2215,13 +2228,13 @@ do_join(
 	    {
 
 		char_u *new_curr = skip_comment(curr, TRUE, insert_space,
-							   &prev_was_comment);
+						     TRUE, &prev_was_comment);
 		comments[t] = (int)(new_curr - curr);
 		curr = new_curr;
 	    }
 	    else
 		curr = skip_comment(curr, FALSE, insert_space,
-							   &prev_was_comment);
+						     TRUE, &prev_was_comment);
 	}
 
 	if (insert_space && t > 0)

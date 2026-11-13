@@ -1,6 +1,6 @@
 // misc1.c
 int get_leader_len(char_u *line, char_u **flags, int backward, int include_space);
-int get_last_leader_offset(char_u *line, char_u **flags);
+int get_last_leader_offset(char_u *line, char_u **flags, int skip_first);
 int plines(linenr_T lnum);
 int plines_win(win_T *wp, linenr_T lnum, int limit_winheight);
 int plines_nofill(linenr_T lnum);
