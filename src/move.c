@@ -1350,6 +1350,7 @@ curs_columns(
 	    // each "above" text prop shifts the text one row down
 	    curwin->w_wrow += rows;
 	    curwin->w_wcol -= rows * cols;
+	    startcol -= rows * cols;
 	    endcol -= rows * cols;
 	    curwin->w_cline_height = rows + 1;
 	}
@@ -1588,6 +1589,17 @@ textpos2screenpos(
 	    col = scol;
 	    col += off;
 	    width = wp->w_width - off + win_col_off2(wp);
+
+# ifdef FEAT_PROP_POPUP
+	    if (!wp->w_p_wrap && wp->w_buffer->b_has_textprop
+						    && wp->w_width > off)
+	    {
+		colnr_T	scol_no_above;
+		getvcol(wp, pos, &scol_no_above, NULL, NULL, GETVCOL_NO_ABOVE);
+		row += (scol - scol_no_above) / (wp->w_width - off);
+		col -= scol - scol_no_above;
+	    }
+# endif
 
 	    // long line wrapping, adjust row
 	    if (wp->w_p_wrap
