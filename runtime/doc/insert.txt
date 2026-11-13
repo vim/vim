@@ -1,4 +1,4 @@
-*insert.txt*	For Vim version 9.2.  Last change: 2026 Oct 25
+*insert.txt*	For Vim version 9.2.  Last change: 2026 Nov 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1222,11 +1222,22 @@ that contains the List.  The Dict can have these items:
 			(optional).
 			The only value currently recognized is "always", the
 			effect is that the function is called whenever the
-			leading text is changed.
+			leading text is changed.  For a function source in
+			'complete' it is also called when
+			|complete_refresh()| is used.
+			The item must be present in the returned Dict for
+			every call, also when there are no matches.  When it
+			is missing, or when a List or |v:none| is returned,
+			the function is no longer called for this completion.
+
+When a function source in 'complete' produces matches asynchronously,
+call |complete_refresh()| when the matches are available to update the
+popup without waiting for the user to type another character.
 
 If you want to suppress the warning message for an empty result, return
 |v:none|.  This is useful to implement asynchronous completion with
-|complete()|.
+|complete()|.  Note that returning |v:none| means the function is not
+called again for this completion, see the "refresh" item above.
 
 Other items are ignored.
 
