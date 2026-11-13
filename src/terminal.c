@@ -5524,17 +5524,19 @@ set_ref_in_term(int copyID)
     typval_T	tv;
 
     for (term = first_term; !abort && term != NULL; term = term->tl_next)
+    {
 	if (term->tl_job != NULL)
 	{
 	    tv.v_type = VAR_JOB;
 	    tv.vval.v_job = term->tl_job;
 	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL, NULL);
-
-	    for (size_t i = 0; i < ARRAY_LENGTH(term->tl_states); i++)
-		for (term_state_cb_T *cb = term->tl_states[i].callbacks;
-			cb != NULL; cb = cb->next)
-		    abort = abort || set_ref_in_callback(&cb->callback, copyID);
 	}
+
+	for (size_t i = 0; i < ARRAY_LENGTH(term->tl_states); i++)
+	    for (term_state_cb_T *cb = term->tl_states[i].callbacks;
+		    cb != NULL; cb = cb->next)
+		abort = abort || set_ref_in_callback(&cb->callback, copyID);
+    }
     return abort;
 }
 
