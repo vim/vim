@@ -3117,6 +3117,13 @@ get_member_tv(
     }
     else
     {
+	if (cl->class_members_tv[m_idx].v_type == VAR_UNKNOWN)
+	{
+	    // used by the initializer of an earlier class variable
+	    semsg(_(e_class_variable_str_used_before_initialized),
+							   m->ocm_name.string);
+	    return FAIL;
+	}
 	copy_tv(&cl->class_members_tv[m_idx], rettv);
 	set_tv_type(rettv, m->ocm_type);
 	class_unref(cl);

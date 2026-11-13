@@ -3634,8 +3634,10 @@ EXTERN char e_type_var_count_of_method_str_differs_from_interface_str[]
 	INIT(= N_("E1438: Number of type variables of method \"%s\" differs from interface \"%s\""));
 EXTERN char e_type_nested_too_deep[]
 	INIT(= N_("E1439: Type nested too deep"));
+EXTERN char e_class_variable_str_used_before_initialized[]
+	INIT(= N_("E1440: Class variable \"%s\" used before it is initialized"));
 #endif
-// E1440 - E1499 unused (reserved for Vim9 class support)
+// E1441 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1500: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]

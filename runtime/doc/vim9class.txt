@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.2.  Last change: 2026 May 21
+*vim9class.txt*	For Vim version 9.2.  Last change: 2026 Nov 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -350,6 +350,10 @@ of class variable initializers and of lambda expressions and nested functions:
 	enddef
     endclass
 <
+							*E1440*
+The class variables are initialized in the order they are declared.  Using a
+class variable in the initializer of an earlier one, or an enum value in the
+constructor of an earlier enum value, is an error.
 
 Just like object methods the access can be made protected by using an
 underscore as the first character in the method name: >
