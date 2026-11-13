@@ -2588,7 +2588,7 @@ func Test_terminal_callbacks()
   call term_sendkeys(buf, "printf '\\033]52;c;aGVsbG8=\\033\\'\<CR>")
   call TermWait(buf)
   call assert_equal({'str': 'c;aGVsbG8=', 'command': 52}, s:term_info)
-  
+
   let s:term_info = {}
 
   call term_sendkeys(buf, "printf '\\033]52;c;aGVsbG8=\\033\\'\<CR>")

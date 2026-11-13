@@ -749,7 +749,7 @@ term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
 term_setansicolors({buf}, {colors})
 				none	set ANSI palette in GUI color mode
 term_setapi({buf}, {expr})	none	set |terminal-api| function name prefix
-term_setcallback({buf}, {type}, {func})	
+term_setcallback({buf}, {type}, {func})
 				Number	set callback for terminal escape sequence
 term_setkill({buf}, {how})	none	set signal to stop job in terminal
 term_setrestore({buf}, {command})
