@@ -882,7 +882,9 @@ term_setapi({buf}, {expr})				*term_setapi()*
 
 term_setcallback({buf}, {type}, {func})			*term_setcallback()*
 		Add a handler callback for the given terminal escape sequence
-		type.
+		type. Note that only unhandled escape sequences are handled,
+		for example OSC 2 is handled internally and can not be handled
+		by a custom callback.
 
 		{type} may be of the following values:
 			"osc"	Operating system command
