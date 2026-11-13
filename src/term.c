@@ -3353,6 +3353,7 @@ term_ul_color(int n)
  * rxvt and derivatives. This variable contains either two or three
  * values separated by semicolons; we want the last value in either
  * case. If this value is 0-6 or 8, our background is dark.
+ * When an OSC 11 response has been received, use that color to decide.
  */
     char_u *
 term_bg_default(void)
@@ -3362,6 +3363,17 @@ term_bg_default(void)
     return (char_u *)"dark";
 #else
     char_u	*p;
+
+# ifdef FEAT_TERMRESPONSE
+    {
+	char_u r, g, b;
+
+	// If the terminal responded to an OSC 11 background-color query, use
+	// that value - it is more reliable than the heuristics below.
+	if (term_get_bg_color(&r, &g, &b) == OK)
+	    return (3 * '6' < r + g + b) ? (char_u *)"light" : (char_u *)"dark";
+    }
+# endif
 
     if (STRCMP(T_NAME, "linux") == 0
 	    || STRCMP(T_NAME, "screen.linux") == 0
