@@ -4,7 +4,7 @@ vim9script
 
 # Author: Bram Moolenaar
 # Copyright: Vim license applies, see ":help license"
-# Last Change: 2026 Sep 25
+# Last Change: 2026 Nov 11
 # Converted to Vim9: Ubaldo Tiberi <ubaldo.tiberi@gmail.com>
 
 # WORK IN PROGRESS - The basics works stable, more to come
@@ -95,6 +95,8 @@ var ptybufnr: number
 var ptybufname: string
 var commbufnr: number
 var commbufname: string
+# Incomplete line received on the communication pty
+var comm_partial: string
 
 var gdbjob: job
 var gdb_channel: channel
@@ -179,6 +181,7 @@ def InitScriptVariables()
   ptybufnr = 0
   commbufname = "gdb-communication"
   commbufnr = 0
+  comm_partial = ''
 
   gdbjob = null_job
   gdb_channel = null_channel
@@ -541,7 +544,7 @@ enddef
 
 def CreateCommunicationPty(cmd: list<string> = null_list): string
   # Create a hidden terminal window to communicate with gdb
-  var options: dict<any> = { term_name: commbufname, out_cb: CommOutput, hidden: 1 }
+  var options: dict<any> = { term_name: commbufname, out_cb: CommPtyOutput, hidden: 1 }
 
   if !cmd
     commbufnr = term_start('NONE', options)
@@ -1337,6 +1340,21 @@ def HandleVariablesMsg(msg: string)
   win_gotoid(curwinid)
 enddef
 
+
+# Handle output received from gdb on the communication pty.  The terminal
+# delivers it in arbitrary chunks, gdb may write a single MI record with
+# several writes, e.g. "^done" and ",bkpt={...}" separately.  Only pass
+# complete lines to CommOutput() and keep the rest until more output arrives.
+def CommPtyOutput(chan: channel, message: string)
+  var text = comm_partial .. message
+  var idx = strridx(text, "\n")
+  if idx < 0
+    comm_partial = text
+    return
+  endif
+  comm_partial = strpart(text, idx + 1)
+  CommOutput(chan, strpart(text, 0, idx + 1))
+enddef
 
 # Handle a message received from gdb on the GDB/MI interface.
 def CommOutput(chan: channel, message: string)

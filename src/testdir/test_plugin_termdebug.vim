@@ -366,6 +366,49 @@ func Test_termdebug_tbreak()
   %bw!
 endfunc
 
+" gdb writes "^done" and the ",bkpt={...}" part of a reply with separate
+" write() calls, so the terminal may deliver them in separate chunks.  The
+" breakpoint must still be handled.
+func Test_termdebug_split_mi_output()
+  let bin_name = 'XTD_split'
+  let src_name = bin_name .. '.c'
+  let CommPtyOutput = s:GetTermdebugFunction('CommPtyOutput')
+  eval s:generate_files(bin_name)
+
+  execute 'edit ' .. src_name
+  execute 'Termdebug ./' .. bin_name
+
+  call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
+  call WaitForAssert({-> assert_equal(3, winnr('$'))})
+  let gdb_buf = winbufnr(1)
+  wincmd b
+  call term_wait(gdb_buf)
+
+  let fullname = fnamemodify(src_name, ':p')
+  call CommPtyOutput(test_null_channel(), "-break-insert 10\r\n^done")
+  call assert_equal([], sign_getplaced('', #{group: 'TermDebug'})[0].signs)
+  call CommPtyOutput(test_null_channel(),
+        \ ',bkpt={number="9",type="breakpoint",disp="keep",enabled="y",'
+        \ .. 'addr="0x0000000000001149",func="isprime",'
+        \ .. $'file="{src_name}",fullname="{fullname}",'
+        \ .. 'line="10",thread-groups=["i1"],times="0",'
+        \ .. $'original-location="{src_name}:10"'
+        \ .. "}\r\n(gdb) \r\n")
+  call assert_equal([
+        \ {'lnum': 10, 'id': 9014, 'name': 'debugBreakpoint9.0',
+        \  'priority': 110, 'group': 'TermDebug'}],
+        \ sign_getplaced('', #{group: 'TermDebug'})[0].signs)
+
+  wincmd t
+  quit!
+  redraw!
+  call WaitForAssert({-> assert_equal(1, winnr('$'))})
+  call assert_equal([], sign_getplaced('', #{group: 'TermDebug'})[0].signs)
+
+  eval s:cleanup_files(bin_name)
+  %bw!
+endfunc
+
 func Test_termdebug_evaluate()
   let bin_name = 'XTD_evaluate'
   let src_name = bin_name .. '.c'
