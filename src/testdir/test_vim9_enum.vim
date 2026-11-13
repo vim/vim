@@ -1197,6 +1197,24 @@ def Test_enum_enhanced()
     assert_equal(16.0, Vehicle.bus.CarbonFootprint())
   END
   v9.CheckSourceSuccess(lines)
+
+  # enum value constructor arguments longer than 1024 bytes
+  lines =<< trim END
+    vim9script
+    enum Msg
+      Short('abc'),
+      Long('LONGSTR', [LONGLIST])
+      var text: string
+      var nums: list<number> = []
+    endenum
+    assert_equal(3000, len(Msg.Long.text))
+    assert_equal(600, len(Msg.Long.nums))
+    assert_equal(1, Msg.Long.ordinal)
+  END
+  lines[3] = substitute(lines[3], 'LONGSTR', repeat('x', 3000), '')
+  lines[3] = substitute(lines[3], 'LONGLIST',
+                        range(600)->map((_, v) => '1')->join(', '), '')
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " Test for the enum value 'name' variable {{{1
