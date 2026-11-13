@@ -5604,10 +5604,9 @@ f_term_setcallback(typval_T *argvars, typval_T *rettv)
     if (check_restricted() || check_secure())
 	return;
 
-    if (in_vim9script()
-	    && (check_for_buffer_arg(argvars, 0) == FAIL
-		|| check_for_string_arg(argvars, 1) == FAIL
-		|| check_for_string_or_func_arg(argvars, 2) == FAIL))
+    if (check_for_buffer_arg(argvars, 0) == FAIL
+	    || check_for_string_arg(argvars, 1) == FAIL
+	    || check_for_string_or_func_arg(argvars, 2) == FAIL)
 	return;
 
     buf = term_get_buf(argvars, "term_setcallback()");
@@ -5669,7 +5668,7 @@ f_term_unsetcallback(typval_T *argvars, typval_T *rettv UNUSED)
     if (check_restricted() || check_secure())
 	return;
 
-    if ((in_vim9script() && check_for_buffer_arg(argvars, 0) == FAIL)
+    if (check_for_buffer_arg(argvars, 0) == FAIL
 	    || check_for_number_arg(argvars, 1) == FAIL)
 	return;
 
