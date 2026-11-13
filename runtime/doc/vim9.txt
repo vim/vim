@@ -519,7 +519,7 @@ with legacy functions, and allows the type to change.  For example:
 	var n1: any
 	echo n1->typename()	# number
 	n1 ..= 'zero'
-	echo n1			# 0zero (that is, the default 0 and "zero")
+	echo n1			# 0zero (that is, the default 0 and "zero")
 	echo n1->typename()	# string
 	n1 = true
 	echo n1->typename()	# bool
@@ -1311,7 +1311,7 @@ The following are examples of errors given when trying to shadow:
 	vim9script
 	def X(): void
 	enddef
-	var X: number	# E1041: Redefining script item: "X"
+	var X: number	# E1041: Redefining script item: "X"
 <
 							*E1167*  >vim9
 	vim9script
@@ -1340,7 +1340,7 @@ E1213 is given because "Imp" is the {name} of the imported script:
 	lines->writefile(TMP)
 	import TMP as Imp
 	echo Imp.y		# Success!
-	var Imp: string		# E1213: Redefining imported item "Imp"
+	var Imp: string		# E1213: Redefining imported item "Imp"
 <
 Global variables and global functions must be prefixed with "g:", including at
 the script level.  That is because a variable or function is script-local when
@@ -1578,7 +1578,7 @@ would be mandatory.  In Vim9 script, it is unnecessary:
 	{a: 1, b: 2}->string()->Pop()		# {'a': 1, 'b': 2}
 	(8, 9)->typename()->Pop()		# tuple<number, number>
 	'single quoted ''string'''->Pop()	# single quoted 'string'
-	"double quoted \"string\""->Pop()	# double quoted "string"
+	"double quoted \"string\""->Pop()	# double quoted "string"
 	(85 >> 1 == 42)->string()->Pop()	# true
 	# The following gives E260: Missing name after ->
 	b:list->add('3')->
@@ -2182,7 +2182,7 @@ For example:
 >vim9
 	vim9script
 	exit_abc
-	# E1144: Command "exit" is not followed by white space: exit_abc
+	# E1144: Command "exit" is not followed by white space: exit_abc
 <
 However, the argument of a command that is a command itself won't be
 recognized consistently.  For example, after "windo echo {expr}" a line break
@@ -2285,7 +2285,7 @@ White space is required:
 	echo mylist[1 : 2] # [8, 9]
 	echo mylist[: 1]   # [7, 8]
 	echo mylist[2 :]   # [9]
-	echo mylist[1:2]   # E1004: White space required before and after ":"…
+	echo mylist[1:2]   # E1004: White space required before and after ":"…
 <
 							*E1069*
 - After a variable name and its ":" (preceding a type declaration):
@@ -2297,7 +2297,7 @@ White space is required:
 - Before the '#' starting a comment.  If it isn't present, errors such as
   |E121| or |E488| are given:
 >vim9
-	vim9cmd echo 'No'# E121: Undefined variable: #
+	vim9cmd echo 'No'# E121: Undefined variable: #
 	vim9cmd var f: number = 99# E488: Trailing characters: …
 <
 White space is not allowed:
@@ -2420,7 +2420,7 @@ script scopes:
 	  echo 'A curly-braces-function-name: okay in legacy Vim script scope'
 	endfunction
 	legacy call s:F{s:low_line}curly()
-	F{low_line}curly()	# E1144: Command "F" is not followed by white…
+	F{low_line}curly()	# E1144: Command "F" is not followed by white…
 <
 
 Command modifiers may not always be ignored and give an error ~
@@ -2528,8 +2528,8 @@ Expression evaluation means any leading zeros are omitted.  For example:
 >vim9
 	vim9script
 	var dict = {09: '09 is literal "09"', [09]: '[09] becomes "9"'}
-	echo dict['09']		# '09 is literal "09"'
-	echo dict['9']		# '[09] becomes "9"'
+	echo dict['09']		# '09 is literal "09"'
+	echo dict['9']		# '[09] becomes "9"'
 <							*E1139*
 If the key within [] is invalid, errors such as E1139 may be given, for
 example:
@@ -2645,9 +2645,9 @@ with a float, "is" will give either |E1037| or |E1072|.  For example:
 	legacy echo s:boo is 9		| " 0
 	legacy echo s:boo is 9.2	| " 0
 	legacy echo s:num is 9.2	| " 0
-	vim9cmd echo boo is true  # E1037: Cannot use "is" with bool
-	vim9cmd echo num is 9     # E1037: Cannot use "is" with number
-	vim9cmd echo flo is 9.2   # E1037: Cannot use "is" with float
+	vim9cmd echo boo is true  # E1037: Cannot use "is" with bool
+	vim9cmd echo num is 9     # E1037: Cannot use "is" with number
+	vim9cmd echo flo is 9.2   # E1037: Cannot use "is" with float
 	vim9cmd echo boo is 9     # E1072: Cannot compare bool with number
 	vim9cmd echo boo is 9.2   # E1072: Cannot compare bool with float
 	vim9cmd echo num is 9.2   # false
@@ -2709,7 +2709,7 @@ In Vim9 script, comparing class objects behaves similarly:
 	vim9script
 	class C
 	endclass
-	echo C is null_class	# E1401: Class "C" cannot be used as a value
+	echo C is null_class	# E1401: Class "C" cannot be used as a value
 <
 Comparison of enum objects differs from class objects.  Each enumvalue
 is a singleton, so variables assigned the same enumvalue always reference
@@ -2773,7 +2773,7 @@ The loop variable must not be declared yet:
 >vim9
 	vim9script
 	var it: list<number>
-	for it in [1, 2, 3]	# E1041: Redefining script item: "it"
+	for it in [1, 2, 3]	# E1041: Redefining script item: "it"
 <
 But it is possible to use a prefixed variable, e.g., a buffer local variable:
 >vim9
@@ -2837,7 +2837,7 @@ changed.  For example:
 	endfor
 	echo lst  # [[9, 2], [9, 4], [9, 6]]
 	for subl in lst
-	  subl = [9, subl[1]] # E46: Cannot change read-only variable "subl"
+	  subl = [9, subl[1]] # E46: Cannot change read-only variable "subl"
 	endfor
 <							*E1306*
 The depth of |:for| and |:while| loops added together, cannot exceed 10.
@@ -2885,8 +2885,8 @@ In Vim9 script, conditional expressions (excluding `??` and `!`) have stricter
 	vim9cmd echo 0 || v:none	# false
 	vim9cmd echo 0 && v:true	# false
 	vim9cmd echo 9 ? 1 : 0		# E1023: Using a Number as a Bool: 9
-	vim9cmd echo "9" ? 1 : 0	# E1135: Using a String as a Bool: "9"
-	vim9cmd echo "x" ? 1 : 0	# E1135: Using a String as a Bool: "x"
+	vim9cmd echo "9" ? 1 : 0	# E1135: Using a String as a Bool: "9"
+	vim9cmd echo "x" ? 1 : 0	# E1135: Using a String as a Bool: "x"
 <
 – Falsiness Operator ~
 							*vim9-falsy*
@@ -2932,7 +2932,7 @@ To illustrate, a script showing falsiness of all except error-giving types:
 	echo "Object: \tnull_object\t"		null_object ?? 'is falsy'
 	enum Enum
 	endenum
-	var null_enumval: Enum  # NB: There is no inherent "null_enumvalue"
+	var null_enumval: Enum  # NB: There is no inherent "null_enumvalue"
 	echo "EnumValue:\t'null_enumval'\t"	null_enumval ?? 'is falsy'
 	echo "Tuple:  \t()\t\t"			() ?? 'is falsy'
 	echo "void:   \t\t\t"			test_void() ?? 'is falsy'
@@ -3022,7 +3022,7 @@ because "t" has already been evaluated to `true`:
 	vim9script
 	var t: bool = true
 	echo t || null_class ? true : false  # true
-	echo null_class || t ? true : false  # E1405: Class "" cannot be used…
+	echo null_class || t ? true : false  # E1405: Class "" cannot be used…
 <
 
 Predefined values ~
@@ -3436,7 +3436,7 @@ Other differences ~
 >vim9
 	vim9script
 	var num: number = 43
-	# The following line gives E15: Invalid expression: "--num"
+	# The following line gives E15: Invalid expression: "--num"
 	echo --num
 <
 
@@ -3530,7 +3530,7 @@ Other differences ~
 			  # E1056: Expected a type:
 			  enddef
 			  def F_1059() : bool
-			  # E1059: No white space allowed before colon: ... 
+			  # E1059: No white space allowed before colon: ...
 			  enddef
 <
 			The function will be compiled into instructions when
@@ -3624,7 +3624,7 @@ or within a `:function`.  The three rules are:
 
 The following three scripts demonstrate these rules:
 >vim
-	" 1. In a :function, "s:" is always mandatory.  It is also mandatory
+	" 1. In a :function, "s:" is always mandatory.  It is also mandatory
 	" in a legacy Vim script's script-local scope
 	let s:MyVar = v:true
 	echo s:MyVar		| " v:true
@@ -3638,7 +3638,7 @@ The following three scripts demonstrate these rules:
 	call MyFunc()
 < >vim9
 	vim9script
-	# 2. In a Vim9 script, "s:" gives E1268 when used in any :def function
+	# 2. In a Vim9 script, "s:" gives E1268 when used in any :def function
 	# and in the script-local scope
 	var MyVar: bool = true
 	echo MyVar		  # true
@@ -3651,7 +3651,7 @@ The following three scripts demonstrate these rules:
 	enddef
 	MyFunc()
 < >vim
-	" 3. In a legacy Vim script, "s:" is optional in a :def function
+	" 3. In a legacy Vim script, "s:" is optional in a :def function
 	let s:MyVar = v:true
 	function! Outer()
 	  def! MyFunc()
@@ -5263,7 +5263,7 @@ Type parameter names must not clash with other identifiers:
 	endenum
 	def My1041<E>(): E
 	enddef
-	# E1041: Redefining script item: "E"
+	# E1041: Redefining script item: "E"
 <
 An item with the same name as a type parameter that is defined after the
 generic function, such as a type alias or a class, does not change the
@@ -5615,7 +5615,7 @@ elsewhere gives E1094; for example, from a `:function` or `:def` scope:
 							*E1053* *E1071*
 Errors are given when either the {filename} is not found or it is invalid:
 >vim9
-	vim9cmd import 'e1053.vim'  # E1053: Could not import "e1053.vim"
+	vim9cmd import 'e1053.vim'  # E1053: Could not import "e1053.vim"
 	vim9cmd import false  # E1071: Invalid string for :import: false
 <
 							*:import-as*
@@ -5736,7 +5736,7 @@ So there can be neither white space nor a line break:
 	vim9script
 	const TMP: string = tempname()
 	['vim9script']->writefile(TMP)
-	import TMP  # E1257: Imported script must use "as" or end in .vim: ...
+	import TMP  # E1257: Imported script must use "as" or end in .vim: ...
 <
 							*E1258*
 - Omitting the '.' after an imported name:
@@ -5778,7 +5778,7 @@ So there can be neither white space nor a line break:
 	  ->substitute('/[^/]\+$', '/', '')	# Remove the filename
 	['vim9script']->writefile($'{TMPDIR}.vim')
 	echo $"Temporary import file name is: {TMPDIR}.vim"
-	import $'{TMPDIR}.vim'	# E1261: Cannot import .vim without using "as"
+	import $'{TMPDIR}.vim'	# E1261: Cannot import .vim without using "as"
 <
 							*E1262*
 - Trying to import the same script multiple times (including using different
