@@ -749,12 +749,15 @@ term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
 term_setansicolors({buf}, {colors})
 				none	set ANSI palette in GUI color mode
 term_setapi({buf}, {expr})	none	set |terminal-api| function name prefix
+term_setcallback({buf}, {type}, {func})	
+				Number	set callback for terminal escape sequence
 term_setkill({buf}, {how})	none	set signal to stop job in terminal
 term_setrestore({buf}, {command})
 				none	set command to restore terminal
 term_setsize({buf}, {rows}, {cols})
 				none	set the size of a terminal
 term_start({cmd} [, {options}])	Number	open a terminal window and run a job
+term_unsetcallback({buf}, {id})	none	unset callback for terminal escape sequence
 term_wait({buf} [, {time}])	none    wait for screen to be updated
 terminalprops()			Dict	properties of the terminal
 test_alloc_fail({id}, {countdown}, {repeat})
