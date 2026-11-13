@@ -2540,8 +2540,6 @@ func s:UnsetSeqInfo(id, buf, info)
   call term_unsetcallback(a:buf, a:id)
 endfunc
 
-let $TEST_NO_RETRY = 'yes'
-
 func Test_terminal_callbacks()
   CheckRunVimInTerminal
   CheckUnix
@@ -2551,6 +2549,7 @@ func Test_terminal_callbacks()
   let s:term_info = {}
 
   let id1 = term_setcallback(buf, "osc", function("s:SetSeqInfo", ["osc"]))
+  let id1b = term_setcallback(buf, "osc", function("s:SetSeqInfo", ["osc"]))
   let id2 = term_setcallback(buf, "dcs", function("s:SetSeqInfo", ["dcs"]))
   let id3 = term_setcallback(buf, "apc", function("s:SetSeqInfo", ["apc"]))
 
@@ -2575,6 +2574,7 @@ func Test_terminal_callbacks()
   let s:term_info = {}
 
   call term_unsetcallback(buf, id1)
+  call term_unsetcallback(buf, id1b)
   call term_unsetcallback(buf, id2)
   call term_unsetcallback(buf, id3)
 
