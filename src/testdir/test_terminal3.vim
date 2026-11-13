@@ -618,6 +618,8 @@ func Test_term_func_invalid_arg()
   call assert_fails('let s = term_scrape([], 1)', 'E745:')
   call assert_fails('call term_sendkeys([], "a")', 'E745:')
   call assert_fails('call term_setapi([], "")', 'E745:')
+  call assert_fails('call term_setcallback([], "", "")', 'E745:')
+  call assert_fails('call term_unsetcallback([], 1)', 'E745:')
   call assert_fails('call term_setrestore([], "")', 'E745:')
   call assert_fails('call term_setkill([], "")', 'E745:')
   if has('gui') || has('termguicolors')
@@ -628,6 +630,8 @@ func Test_term_func_invalid_arg()
   call assert_fails('call term_setapi(' .. buf .. ', {})', 'E731:')
   call assert_fails('call term_setkill(' .. buf .. ', {})', 'E731:')
   call assert_fails('call term_setrestore(' .. buf .. ', {})', 'E731:')
+  call assert_fails('call term_setcallback(' .. buf .. ', {}, 0)', 'E474:')
+  call assert_fails('call term_unsetcallback(' .. buf .. ', "test")', 'E1210:')
   exe buf . "bwipe!"
 endfunc
 
