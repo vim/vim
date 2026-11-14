@@ -67,7 +67,6 @@ static int	getargopt(exarg_T *eap);
 
 static linenr_T default_address(exarg_T *eap);
 static void address_default_all(exarg_T *eap);
-static void	get_flags(exarg_T *eap);
 #if !defined(FEAT_PERL) \
 	|| !defined(FEAT_PYTHON) || !defined(FEAT_PYTHON3) \
 	|| !defined(FEAT_TCL) \
@@ -5026,7 +5025,7 @@ address_default_all(exarg_T *eap)
 /*
  * Get flags from an Ex command argument.
  */
-    static void
+    void
 get_flags(exarg_T *eap)
 {
     while (vim_strchr((char_u *)"lp#", *eap->arg) != NULL)

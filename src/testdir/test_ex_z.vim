@@ -16,11 +16,8 @@ func Test_z()
   call assert_equal(23, line('.'))
 
   let a = execute('20z+3')
-  " FIXME: I would expect the same result as '20z3' since 'help z'
-  " says: Specifying no mark at all is the same as "+".
-  " However it " gives "\n21\n22\n23" instead. Bug in Vim or in ":help :z"?
-  "call assert_equal("\n20\n21\n22", a)
-  "call assert_equal(22, line('.'))
+  call assert_equal("\n21\n22\n23", a)
+  call assert_equal(23, line('.'))
 
   let a = execute('20z-3')
   call assert_equal("\n18\n19\n20", a)
@@ -38,6 +35,20 @@ func Test_z()
   call assert_equal("\n19\n20\n21", a)
   call assert_equal(21, line('.'))
 
+  " flags
+  let a = execute('20z3#')
+  call assert_equal("\n 20 20\n 21 21\n 22 22", a)
+  call assert_equal(22, line('.'))
+
+  let a = execute('20z-3#')
+  call assert_equal("\n 18 18\n 19 19\n 20 20", a)
+  call assert_equal(20, line('.'))
+
+  let a = execute('20z=3#')
+  call assert_match("^\n 18 18\n 19 19\n-\\+\n 20 20\n-\\+\n 21 21\n 22 22$", a)
+  call assert_equal(20, line('.'))
+
+  " flags not at end - backwards compatibility
   let a = execute('20z#3')
   call assert_equal("\n 20 20\n 21 21\n 22 22", a)
   call assert_equal(22, line('.'))
@@ -75,7 +86,7 @@ func Test_z()
   call assert_equal("\n20", a)
   call assert_equal(20, line('.'))
 
-  call assert_fails('20z=a', 'E144:')
+  call assert_fails('20z=a', 'E488:')
 
   set window& scroll&
   bw!
