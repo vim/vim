@@ -2,6 +2,7 @@
 tuple_T *tuple_alloc(void);
 tuple_T *tuple_alloc_with_items(int count);
 void tuple_set_item(tuple_T *tuple, int idx, typval_T *tv);
+void tuple_set_number(tuple_T *tuple, int idx, varnumber_T nr);
 int rettv_tuple_alloc(typval_T *rettv);
 void rettv_tuple_set(typval_T *rettv, tuple_T *tuple);
 int rettv_tuple_set_with_items(typval_T *rettv, int count);

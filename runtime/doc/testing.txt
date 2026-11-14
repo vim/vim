@@ -482,6 +482,16 @@ test_srand_seed([{seed}])				*test_srand_seed()*
 
 		Return type: void
 
+test_terminal_damage({buf}, {func})			*test_terminal_damage()*
+		Set the damage callback of {buf} to {func}. The callback will
+		be called with two arguments whenever any terminal cells have
+		been redrawn. The first argument is the terminal buffer
+		number, and the second is a tuple in the format of:
+		(start_row, start_col, end_row, end_col).
+		{only available when compiled with the +terminal feature}
+
+		Return type: void
+
 test_unknown()						*test_unknown()*
 		Return a value with unknown type.  Only useful for testing.
 
