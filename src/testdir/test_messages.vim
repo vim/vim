@@ -145,6 +145,46 @@ func Test_mode_message_at_leaving_insert_with_esc_mapped()
   exe buf . 'bwipe!'
 endfunc
 
+func Test_spacing_between_mode_and_recording_mode()
+  CheckRunVimInTerminal
+
+  " Ensure Visual mode does not show the character/line count.
+  " Ensure we have a dedicated line for cmdline.
+  let lines =<< trim END
+    set noshowcmd
+    set laststatus=2
+  END
+  call writefile(lines, 'XspacingBetweenModes', 'D')
+  let rows = 10
+  let buf = RunVimInTerminal('-S XspacingBetweenModes', {'rows': rows})
+
+  let reg = 'q'
+  let modes = [
+        \{ 'key': 'i', 'name': 'INSERT' },
+        \{ 'key': 'v', 'name': 'VISUAL' },
+        \{ 'key': 'V', 'name': 'VISUAL LINE' },
+        \{ 'key': 'R', 'name': 'REPLACE' }
+        \]
+
+  for mode in modes
+    let expected = '-- ' .. mode.name .. ' -- recording @' .. reg
+    "                                        ^ Here we have an additional space.
+    " Start recording into `reg` and enter `mode.name` mode.
+    call term_sendkeys(buf, 'q' .. reg .. mode.key)
+    call WaitForAssert({-> assert_match('^' .. expected .. '\s*$', term_getline(buf, rows))})
+
+    " Ensure no space-prefix is present after leaving `mode.name` mode.
+    let expected = 'recording @' .. reg
+    call term_sendkeys(buf, "\<Esc>")
+    call WaitForAssert({-> assert_match('^' .. expected .. '\s*$', term_getline(buf, rows))})
+
+    " Stop recording.
+    call term_sendkeys(buf, reg)
+  endfor
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_echospace()
   set noruler noshowcmd laststatus=1
   call assert_equal(&columns - 1, v:echospace)
