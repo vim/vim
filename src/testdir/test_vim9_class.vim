@@ -529,6 +529,54 @@ def Test_class_defined_twice()
   writefile(lines, 'XclassTwice.vim', 'D')
   source XclassTwice.vim
   source XclassTwice.vim
+
+  # When a class, enum or interface cannot be defined, the body must not be
+  # executed as commands.
+  lines =<< trim END
+    vim9script
+    g:body_executed = 0
+    class There
+    endclass
+    enum Color
+      Red
+    endenum
+    interface Shape
+    endinterface
+
+    # already defined
+    silent! class There
+      g:body_executed = 1
+    endclass
+    assert_match('E1041:', v:errmsg)
+    silent! enum Color
+      g:body_executed = 2
+    endenum
+    assert_match('E1041:', v:errmsg)
+    silent! interface Shape
+      g:body_executed = 3
+    endinterface
+    assert_match('E1041:', v:errmsg)
+
+    # invalid name
+    silent! class there
+      g:body_executed = 4
+    endclass
+    assert_match('E1314:', v:errmsg)
+    silent! enum color
+      g:body_executed = 5
+    endenum
+    assert_match('E1415:', v:errmsg)
+
+    # trailing characters
+    silent! class Here xyz
+      g:body_executed = 6
+    endclass
+    assert_match('E488:', v:errmsg)
+
+    assert_equal(0, g:body_executed)
+  END
+  v9.CheckSourceSuccess(lines)
+  unlet g:body_executed
 enddef
 
 def Test_returning_null_object()
