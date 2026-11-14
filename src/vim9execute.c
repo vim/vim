@@ -924,10 +924,21 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 							- closure_count + idx];
 	    if (pt->pt_refcount > 1)
 	    {
+		int depth;
+
 		++funcstack->fs_refcount;
 		pt->pt_funcstack = funcstack;
 		pt->pt_outer.out_stack = &funcstack->fs_ga;
 		pt->pt_outer.out_frame_idx = ectx->ec_frame_idx - top;
+
+		// Loop variables not moved by ISN_ENDLOOP, because the loop was
+		// left by an exception, are now in the funcstack.
+		for (depth = 0; depth < pt->pt_outer.out_loop_size; ++depth)
+		    if (pt->pt_outer.out_loop[depth].stack == &ectx->ec_stack)
+		    {
+			pt->pt_outer.out_loop[depth].stack = &funcstack->fs_ga;
+			pt->pt_outer.out_loop[depth].var_idx -= top;
+		    }
 	    }
 	}
     }

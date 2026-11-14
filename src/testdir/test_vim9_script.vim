@@ -3728,6 +3728,46 @@ def Test_for_loop_list_of_lists()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
+" A closure created in a loop that is left by an exception keeps the variables
+" of its iteration.  Using freed memory was only detected with ASan.
+def Test_for_loop_closure_after_exception()
+  var lines =<< trim END
+    vim9script
+    def F()
+      for i in range(3)
+        var v = 'v' .. i
+        g:Clo = () => v
+        if i == 1
+          throw 'out'
+        endif
+      endfor
+    enddef
+    try
+      F()
+    catch /out/
+    endtry
+    assert_equal('v1', g:Clo())
+
+    def G(): list<func>
+      var fl: list<func>
+      try
+        for i in range(4)
+          var v = 'v' .. i
+          fl->add(() => v)
+          if i == 2
+            throw 'x'
+          endif
+        endfor
+      catch
+      endtry
+      return fl
+    enddef
+    assert_equal(['v0', 'v1', 'v2'], G()->mapnew((_, Fn) => Fn()))
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:Clo
+enddef
+
 def Test_for_loop_with_closure()
   # using the loop variable in a closure results in the last used value
   var lines =<< trim END
