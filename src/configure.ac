@@ -2534,15 +2534,12 @@ if test "$enable_pixman" != "no"; then
   fi
 fi
 
-dnl GTK4 does not use X11 APIs directly, so skip X11 detection entirely.
-dnl This avoids pulling libICE/libSM/libX11/libXt into build dependencies
-dnl for GTK4-only builds, even when --with-x=yes is passed (e.g. by a
-dnl distro's default packaging script).
-if test "x$enable_gui" = "xgtk4"; then
-  with_x=no
-fi
 test -z "$with_x" && with_x=yes
-test "${enable_gui-yes}" != no -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" -a "x$enable_gui" != "xgtk4" && with_x=yes
+test "${enable_gui-yes}" != no -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && with_x=yes
+
+dnl Disable x11 support by default for gtk4
+test "x$with_x_arg" != "xyes" -a "x$enable_gui" = "xgtk4" && with_x=no
+
 if test "$with_x" = no; then
   AC_MSG_RESULT(defaulting to: don't HAVE_X11)
 else
@@ -2656,13 +2653,7 @@ else
   fi
 fi
 
-dnl Check if --with-x was given but it doesn't work.
-dnl GTK4 always forces with_x=no above, so don't treat that as a failure.
-if test "x$with_x" = xno -a "x$with_x_arg" = xyes -a "x$enable_gui" != "xgtk4"; then
-    AC_MSG_ERROR([could not configure X])
-fi
-
-test "x$with_x" = xno -a "x$HAIKU" != "xyes" -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" -a "x$enable_gui" != xgtk4 && enable_gui=no
+test "x$with_x" = xno -a "x$HAIKU" != "xyes" -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" -a "x$enable_gui" != "xgtk4" && enable_gui=no
 
 AC_MSG_CHECKING(--enable-gui argument)
 AC_ARG_ENABLE(gui,
@@ -3059,17 +3050,6 @@ if test -z "$SKIP_GTK4"; then
       GUITYPE=GTK4
       AC_SUBST(GTK_LIBNAME)
       AC_DEFINE(USE_GTK4)
-      dnl GTK4 does not use any X11 APIs directly.
-      dnl GTK4 itself links against X11 for its backend, so the
-      dnl dynamic linker resolves X11 symbols via GTK4's dependency.
-      X_LIBS=
-      X_PRE_LIBS=
-      X_EXTRA_LIBS=
-      X_LIB=
-      dnl automatically enable XIM for GTK4
-      if test "$enable_xim" = "auto"; then
-        enable_xim="yes"
-      fi
     fi
   fi
 fi

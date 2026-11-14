@@ -1922,7 +1922,7 @@ get_x11_windis(void)
 	did_set_error_handler = TRUE;
     }
 
-# if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
+# if (defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)) && !defined(USE_GTK4)
     if (gui.in_use)
     {
 	/*

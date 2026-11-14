@@ -15,7 +15,7 @@
 # ifdef VMS
 #  include "gui_gtk_vms.h"
 # endif
-# ifndef USE_GTK4
+# if defined(FEAT_X11) || !defined(USE_GTK4)
 #  include <X11/Intrinsic.h>
 # endif
 # pragma GCC diagnostic push
@@ -27,12 +27,14 @@
 # pragma GCC diagnostic pop
 # ifdef USE_GTK4
 // Types used in proto files but not available without X11 headers
+#  ifndef FEAT_X11
 typedef void *Widget;
 typedef void *XtAppContext;
 typedef void  Display;
 typedef unsigned long Window;
 typedef unsigned long Atom;
-typedef GdkEvent GdkEventKey;	// GTK4: GdkEventKey merged into GdkEvent
+#  endif
+typedef GdkEvent GdkEventKey;
 # endif
 #endif
 
