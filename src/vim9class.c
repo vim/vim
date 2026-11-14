@@ -3890,14 +3890,30 @@ class_get_selfrefs(class_T *cl)
 {
     int		self_refs = 0;
     typval_T	*tv;
+    int		values_idx = -1;
+
+    // The enum values before the "values" class variable are also
+    // referenced from that List, but only when it was created.
+    if (IS_ENUM(cl))
+    {
+	for (int i = 0; i < cl->class_class_member_count; ++i)
+	{
+	    if (cl->class_members_tv[i].v_type == VAR_LIST
+		    && STRCMP(cl->class_class_members[i].ocm_name.string,
+							      "values") == 0)
+	    {
+		values_idx = i;
+		break;
+	    }
+	}
+    }
 
     for (int i = 0; i < cl->class_class_member_count; ++i)
     {
 	tv = &cl->class_members_tv[i];
 	if (tv->v_type == VAR_OBJECT && tv->vval.v_object != NULL
 		&& tv->vval.v_object->obj_class == cl
-		&& (tv->vval.v_object->obj_refcount == 1
-		    || (IS_ENUM(cl) && tv->vval.v_object->obj_refcount == 2)))
+		&& tv->vval.v_object->obj_refcount == (i < values_idx ? 2 : 1))
 	    self_refs++;
     }
 
