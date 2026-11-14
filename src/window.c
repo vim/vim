@@ -7626,7 +7626,7 @@ command_height(void)
     redraw_cmdline = TRUE;
 
     // Clear the cmdheight area.
-    if (msg_scrolled == 0 && full_screen)
+    if (msg_scrolled == 0 && full_screen && starting != NO_SCREEN)
     {
 	screen_fill(cmdline_row, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
 	msg_row = cmdline_row;
