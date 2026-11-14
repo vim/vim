@@ -38,9 +38,7 @@ syn cluster vimCommentGroup	contains=vimTodo,@Spell
 " GEN_SYN_VIM: vimCommand normal, START_STR='syn keyword vimCommand contained', END_STR='nextgroup=vimBang'
 
 " lower priority :syn-match to allow for :command/function() distinction
-" :chdir and :delete is handled specially elsewhere
-syn match vimCommand  contained "\<co\%[py]\>"     nextgroup=vimBang
-syn match vimCommand_ contained   "co\%[py]\>"     nextgroup=vimBang
+" :chdir, :copy and :delete are handled specially elsewhere
 syn match vimCommand  contained "\<j\%[oin]\>"     nextgroup=vimBang
 syn match vimCommand_ contained   "j\%[oin]\>"     nextgroup=vimBang
 syn match vimCommand  contained "\<sp\%[lit]\>"    nextgroup=vimBang
@@ -299,13 +297,14 @@ syn cluster vimExprList	contains=@vimSpecialVar,@vimFunc,vimNumber,vimOper,vimOp
 syn cluster vim9ExprList	contains=vim9Boolean,vim9LambdaParams,vim9Null
 
 " Commands {{{2
-syn cluster vimCmdList	contains=@vim9CmdList,@vimExUserCmdList,vimAbb,vimAt,vimAugroup,vimAutocmd,vimBehave,vimBreakadd,vimBreakdel,vimBreaklist,vimBuffer,vimCall,vimCatch,vimCd,vimCommand,vimCommandModifier,vimConst,vimCopy,vimDebug,vimDebuggreedy,vimDef,vimDefcompile,vimDisassemble,vimDefFold,vimDefer,vimDelcommand,vimDelete,vimDelfunction,vimDoCommand,vimDoautocmd,vimTextInputFold,@vimEcho,vimElse,vimElseif,vimEnddef,vimEndfunction,vimEndif,vimEquals,vimEval,vimExFilter,vimExecute,vimExtCmd,vimFiletype,vimFor,vimFunction,vimFunctionFold,vimGlobal,vimGrep,vimGrepadd,vimHelp,vimHelpgrep,vimHighlight,vimHistory,vimIf,vimImport,vimLanguage,vimLet,vimLoadkeymap,vimLockvar,vimLua,vimMake,vimMap,vimMark,vimMatch,vimMenu,vimMenutranslate,vimMzScheme,vimNormal,vimPackadd,vimPerl,vimPound,vimProfdel,vimProfile,vimPrompt,vimPython,vimPython3,vimPythonX,vimRedir,vimReturn,vimRuby,vimRuntime,vimSet,vimShiftLeft,vimShiftRight,vimSleep,vimSort,vimSubst,vimSynColor,vimSynLink,vimSyntax,vimSyntime,vimTcl,vimTerminal,vimThrow,vimUniq,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimUsrCmd,vimVimgrep,vimVimgrepadd,vimWhile,vimWincmd,vimWrite
+syn cluster vimCmdList	contains=@vim9CmdList,@vimExUserCmdList,vimAbb,vimAt,vimAugroup,vimAutocmd,vimBehave,vimBreakadd,vimBreakdel,vimBreaklist,vimBuffer,vimCall,vimCatch,vimCd,vimCommand,vimCommandModifier,vimConst,vimCopy,vimDebug,vimDebuggreedy,vimDef,vimDefcompile,vimDisassemble,vimDefFold,vimDefer,vimDelcommand,vimDelete,vimDelfunction,vimDoCommand,vimDoautocmd,vimTextInputFold,@vimEcho,vimElse,vimElseif,vimEnddef,vimEndfunction,vimEndif,vimEquals,vimEval,vimExFilter,vimExecute,vimExtCmd,vimFiletype,vimFor,vimFunction,vimFunctionFold,vimGlobal,vimGrep,vimGrepadd,vimHelp,vimHelpgrep,vimHighlight,vimHistory,vimIf,vimImport,vimLanguage,vimLet,vimLoadkeymap,vimLockvar,vimLua,vimMake,vimMap,vimMark,vimMatch,vimMenu,vimMenutranslate,vimMove,vimMzScheme,vimNormal,vimPackadd,vimPerl,vimPound,vimProfdel,vimProfile,vimPrompt,vimPython,vimPython3,vimPythonX,vimRedir,vimReturn,vimRuby,vimRuntime,vimSet,vimShiftLeft,vimShiftRight,vimSleep,vimSort,vimSubst,vimSynColor,vimSynLink,vimSyntax,vimSyntime,vimTcl,vimTerminal,vimThrow,vimUniq,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimUsrCmd,vimVimgrep,vimVimgrepadd,vimWhile,vimWincmd,vimWrite
 syn cluster vim9CmdList	contains=vim9Abstract,vim9ClassBody,vim9Const,vim9EnumBody,vim9Export,vim9Final,vim9For,vim9InterfaceBody,vim9Type,vim9Var,vim9Wincmd
 
 syn match	vimCmdStart	contained	":\+"	skipwhite nextgroup=vimCmdStart,@vimRange,@vimCmdList,vimComment
 syn match	vimCount	contained	"\d\+"
 syn match	vimBang	contained	"!"
-syn match	vimPrintFlag	contained	"[lp#]"	skipwhite nextgroup=vimPrintFlag,vimComment,vimCmdSep
+syn match	vimPrintFlag	contained	"[lp#]"	skipwhite nextgroup=@vimPrintFlag,vimComment,vimCmdSep
+syn cluster vimPrintFlag contains=vimPrintFlag,vim9Comment_PrintFlag
 
 syn match	vimWhitespace	   contained	"\s\+"
 syn match	vimLeadingWhitespace contained	"^\s\+"
@@ -360,28 +359,28 @@ syn match         vimAt             contained	+@\ze\s*\%($\||\|\s["#]\)+        
 " ===========
 " TODO: needs to be limited to after a ':' in Vim9, otherwise a comment
 if s:vim9script
-  syn match	vimPound	contained	":\@1<=#"	skipwhite nextgroup=vimPoundCount,vimPrintFlag
+  syn match	vimPound	contained	":\@1<=#"	skipwhite nextgroup=vimPoundCount,@vimPrintFlag
 else
-  syn match	vimPound	contained	"#"	skipwhite nextgroup=vimPoundCount,vimPrintFlag
+  syn match	vimPound	contained	"#"	skipwhite nextgroup=vimPoundCount,@vimPrintFlag
 endif
-syn keyword	vimPound	contained	nu[mber]	skipwhite nextgroup=vimPoundCount,vimPrintFlag
-syn match	vimPound_	contained	"nu\%[mber]\>"	skipwhite nextgroup=vimPoundCount,vimPrintFlag
-syn match	vimPoundCount	contained	"\d\+"	skipwhite nextgroup=vimPrintFlag
+syn keyword	vimPound	contained	nu[mber]	skipwhite nextgroup=vimPoundCount,@vimPrintFlag
+syn match	vimPound_	contained	"nu\%[mber]\>"	skipwhite nextgroup=vimPoundCount,@vimPrintFlag
+syn match	vimPoundCount	contained	"\d\+"	skipwhite nextgroup=@vimPrintFlag
 
 " := {{{3
 " ==
-syn match	vimEquals	contained	"="	skipwhite nextgroup=vimPrintFlag
+syn match	vimEquals	contained	"="	skipwhite nextgroup=@vimPrintFlag
 
 " :>, :< {{{3
 " ======
 
-syn match	vimShiftLeft	 contained	"<\%(line\)\@!"	skipwhite nextgroup=vimShiftLeftPlus,vimShiftLeftCount,vimPrintFlag
-syn match	vimShiftLeftPlus	 contained	"<"	skipwhite nextgroup=vimShiftLeftPlus,vimShiftLeftCount,vimPrintFlag
-syn match	vimShiftLeftCount	 contained	"\d\+"	skipwhite nextgroup=vimPrintFlag
+syn match	vimShiftLeft	 contained	"<\%(line\)\@!"	skipwhite nextgroup=vimShiftLeftPlus,vimShiftLeftCount,@vimPrintFlag
+syn match	vimShiftLeftPlus	 contained	"<"	skipwhite nextgroup=vimShiftLeftPlus,vimShiftLeftCount,@vimPrintFlag
+syn match	vimShiftLeftCount	 contained	"\d\+"	skipwhite nextgroup=@vimPrintFlag
 
-syn match	vimShiftRight	 contained	">"	skipwhite nextgroup=vimShiftRightPlus,vimShiftRightCount,vimPrintFlag
-syn match	vimShiftRightPlus	 contained	">"	skipwhite nextgroup=vimShiftRightPlus,vimShiftRightCount,vimPrintFlag
-syn match	vimShiftRightCount contained	"\d\+"	skipwhite nextgroup=vimPrintFlag
+syn match	vimShiftRight	 contained	">"	skipwhite nextgroup=vimShiftRightPlus,vimShiftRightCount,@vimPrintFlag
+syn match	vimShiftRightPlus	 contained	">"	skipwhite nextgroup=vimShiftRightPlus,vimShiftRightCount,@vimPrintFlag
+syn match	vimShiftRightCount contained	"\d\+"	skipwhite nextgroup=@vimPrintFlag
 
 " :abbreviate {{{3
 " ===========
@@ -673,9 +672,38 @@ syn match	vimDelcommandName	contained	"\<\u[[:alnum:]]*\>"
 
 " :copy (special handling for :t only) {{{3
 " =====
-" lower priority than [wtb]: Vim9 scoped variables at SOL
-syn match	vimCopy	contained	"\<t\>"	nextgroup=vimBang
-syn match	vimCopy_	contained	"t\>"	nextgroup=vimBang
+" lower priority than [wtb]: Vim9 scoped variables at SOL and copy()
+syn match	vimCopy	contained	"\<\%(co\%[py]\|t\)\>"	skipwhite nextgroup=vimCopyBang,@vimCopyMoveAddress,@vimPrintFlag
+syn match	vimCopy_	contained	"\%(co\%[py]\|t\)\>"	skipwhite nextgroup=vimCopyBang,@vimCopyMoveAddress,@vimPrintFlag
+syn match	vimCopyBang	contained	"\a\@1<=!"		skipwhite nextgroup=@vimCopyMoveAddress,@vimPrintFlag
+
+syn region	vimCopyMoveAddressPattern	contained
+      \ matchgroup=Delimiter
+      \ start="/"
+      \ skip=+\\/\|\n\s*\%(\\\|["#]\\ \)+
+      \ end="$"
+      \ end="/"
+      \ skipwhite nextgroup=vimCopyMoveAddressOffset,@vimPrintFlag,@vimComment
+      \ contains=vimCopyMoveAddressSlashEscape,@vimContinue,@vimSubstList
+syn match	vimCopyMoveAddressSlashEscape	contained	"\\/"
+syn region	vimCopyMoveAddressPattern	contained
+      \ matchgroup=Delimiter
+      \ start="?"
+      \ skip=+\\?\|\n\s*\%(\\\|["#]\\ \)+
+      \ end="$"
+      \ end="?"
+      \ skipwhite nextgroup=vimCopyMoveAddressOffset,@vimPrintFlag,@vimComment
+      \ contains=vimCopyMoveAddressQuestionEscape,@vimContinue,@vimSubstList
+syn match	vimCopyMoveAddressQuestionEscape	contained	"\\?"
+
+syn match	vimCopyMoveAddressOffset	contained	"[+-]\%(\d\+\)\=\|\d\+"	skipwhite nextgroup=vimCopyMoveAddressOffset,@vimPrintFlag,@vimComment
+syn match	vimCopyMoveAddress	contained	"\%#=1\d\+"		skipwhite nextgroup=vimCopyMoveAddressOffset,@vimPrintFlag,@vimComment
+syn match	vimCopyMoveAddress	contained	"\%#=1[.$]"		skipwhite nextgroup=vimCopyMoveAddressOffset,@vimPrintFlag,@vimComment
+syn match	vimCopyMoveAddress	contained	"\%#=1'[[\]<>'`"^.(){}]"	skipwhite nextgroup=vimCopyMoveAddressOffset,@vimPrintFlag,@vimComment
+syn match	vimCopyMoveAddress	contained	"\%#=1'[a-zA-Z0-9]"	skipwhite nextgroup=vimCopyMoveAddressOffset,@vimPrintFlag,@vimComment
+syn match	vimCopyMoveAddress	contained	"\%#=1\\[/?&]"		skipwhite nextgroup=vimCopyMoveAddressOffset,@vimPrintFlag,@vimComment
+
+syn cluster	vimCopyMoveAddress	contains=vimCopyMoveAddressPattern,vimCopyMoveAddress,vimCopyMoveAddressOffset
 
 " :debug {{{3
 " ======
@@ -699,11 +727,11 @@ syn keyword	vimDefcompileArg	contained	profile	skipwhite nextgroup=vimVar,vim9Us
 " :delete {{{3
 " =======
 " TODO: handle Vim9
-syn keyword	vimDelete	contained	d[elete]	skipwhite nextgroup=vimDeleteRegister,vimDeleteCount,vimPrintFlag
-syn match	vimDelete_	contained	"d\%[elete]\>"	skipwhite nextgroup=vimDeleteRegister,vimDeleteCount,vimPrintFlag
+syn keyword	vimDelete	contained	d[elete]	skipwhite nextgroup=vimDeleteRegister,vimDeleteCount,@vimPrintFlag
+syn match	vimDelete_	contained	"d\%[elete]\>"	skipwhite nextgroup=vimDeleteRegister,vimDeleteCount,@vimPrintFlag
 
-syn match	vimDelete	contained	"\<d\%[elete]\ze\%([lp]\+\>\|#\)"	nextgroup=vimPrintFlag
-syn match	vimDelete_	contained	  "d\%[elete]\ze\%([lp]\+\>\|#\)"	nextgroup=vimPrintFlag
+syn match	vimDelete	contained	"\<d\%[elete]\ze\%([lp]\+\>\|#\)"	nextgroup=@vimPrintFlag
+syn match	vimDelete_	contained	  "d\%[elete]\ze\%([lp]\+\>\|#\)"	nextgroup=@vimPrintFlag
 " :del is :delete only, not :delete | :list
 syn match	vimDelete	contained	"\<del\>"
 syn match	vimDelete_	contained	  "del\>"
@@ -711,10 +739,10 @@ syn match	vimDelete_	contained	  "del\>"
 syn match	vimDelete	contained	"\<d\%[elete]\ze\%(_\|\d\+\>\)"	nextgroup=vimDeleteRegister,vimDeleteCount
 syn match	vimDelete_	contained	  "d\%[elete]\ze\%(_\|\d\+\>\)"	nextgroup=vimDeleteRegister,vimDeleteCount
 
-syn match	vimDeleteRegister	contained	+[-*+_]\|\\"+	skipwhite nextgroup=vimDeleteCount,vimPrintFlag
-syn match	vimDeleteRegister	contained	+\<\a+	skipwhite nextgroup=vimDeleteCount,vimPrintFlag
+syn match	vimDeleteRegister	contained	+[-*+_]\|\\"+	skipwhite nextgroup=vimDeleteCount,@vimPrintFlag
+syn match	vimDeleteRegister	contained	+\<\a+	skipwhite nextgroup=vimDeleteCount,@vimPrintFlag
 
-syn match	vimDeleteCount	contained	"\d\+"	skipwhite nextgroup=vimPrintFlag
+syn match	vimDeleteCount	contained	"\d\+"	skipwhite nextgroup=@vimPrintFlag
 
 " :disassemble {{{3
 " ============
@@ -1175,6 +1203,12 @@ syn region	vimMenutranslate	contained
 " oneline is sufficient to match the current formatting in runtime/lang/*.vim
 syn match	vimMenutranslateName "\%(\\\s\|\S\)\+" contained contains=vimMenuNotation,vimNotation
 syn match	vimMenutranslateComment +".*+ contained containedin=vimMenutranslate
+
+" :move {{{3
+" =====
+syn keyword	vimMove	contained	m[ove]	skipwhite nextgroup=vimMoveBang,@vimCopyMoveAddress,@vimPrintFlag
+syn match	vimMove_	contained	"m\%[ove]\>"	skipwhite nextgroup=vimMoveBang,@vimCopyMoveAddress,@vimPrintFlag
+syn match	vimMoveBang	contained	"\a\@1<=!"	skipwhite nextgroup=@vimCopyMoveAddress,@vimPrintFlag
 
 " :normal {{{3
 " =======
@@ -2144,6 +2178,10 @@ VimExtend Vim9 syn region	vim9Comment
       \ end="$"
       \ contains=@vimCommentGroup,vimCommentString
 
+" FIXME: remove after legacy/Vim9 syntax split
+syn match	vim9Comment_PrintFlag	contained
+      \ "\s\@1<=# #\@!\S.*"	contains=@vimCommentGroup,vimCommentString
+
 syn match	vim9CommentError	contained	"#.*"
 syn match	vimCommentError	contained	+".*+
 
@@ -2998,6 +3036,11 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimContinueString	vimString
  hi def link vimCopy	vimCommand
  hi def link vimCopy_	vimCopy
+ hi def link vimCopyMoveAddress		vimAddress
+ hi def link vimCopyMoveAddressPattern	vimAddressPattern
+ hi def link vimCopyMoveAddressOffset	vimAddressOffset
+ hi def link vimCopyMoveAddressSlashEscape	vimAddressSlashEscape
+ hi def link vimCopyMoveAddressQuestionEscape	vimAddressQuestionEscape
  hi def link vimCount	Number
  hi def link vimCtrlChar	SpecialChar
  hi def link vimDebug	vimCommand
@@ -3156,6 +3199,8 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimMenuStatus	Special
  hi def link vimMenutranslateComment	vimComment
  hi def link vim9MethodName	vimFuncName
+ hi def link vimMove	vimCommand
+ hi def link vimMove_	vimMove
  hi def link vimMtchComment	vimComment
  hi def link vimMzScheme	vimCommand
  hi def link vimMzScheme_	vimMzScheme
@@ -3372,6 +3417,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vim9Class	vimCommand
  hi def link vim9Comment	Comment
  hi def link vim9CommentError	vimError
+ hi def link vim9Comment_PrintFlag	vim9Comment
  hi def link vim9CommentTitle	PreProc
  hi def link vim9ConstructorDefParam	vimVar
  hi def link vim9Const	vimCommand
