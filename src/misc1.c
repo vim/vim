@@ -856,7 +856,7 @@ f_state(typval_T *argvars, typval_T *rettv)
 /*
  * Get a key stroke directly from the user.
  * Ignores mouse clicks and scrollbar events, except a click for the left
- * button (used at the more prompt).
+ * button (used at the more prompt).  Also ignores OSC notifications.
  * Doesn't use vgetc(), because it syncs undo and eats mapped characters.
  * Disadvantage: typeahead is ignored.
  * Translates the interrupt character for unix to ESC.
@@ -944,6 +944,7 @@ get_keystroke(void)
 	    n = TO_SPECIAL(buf[1], buf[2]);
 	    if (buf[1] == KS_MODIFIER
 		    || n == K_IGNORE
+		    || n == K_OSC
 		    || (is_mouse_key(n) && n != K_LEFTMOUSE)
 #ifdef FEAT_GUI
 		    || n == K_VER_SCROLLBAR

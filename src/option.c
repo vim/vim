@@ -5456,6 +5456,13 @@ check_num_option_bounds(
 	    p_window = Rows - 1;
     }
 
+#ifdef FEAT_TERMRESPONSE
+    if (p_tbw < 0)
+    {
+	errmsg = e_argument_must_be_positive;
+	p_tbw = old_value;
+    }
+#endif
     if (p_tm < 0)
     {
 	errmsg = e_argument_must_be_positive;
