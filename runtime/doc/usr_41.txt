@@ -1381,6 +1381,8 @@ Terminal window:				*terminal-functions*
 	term_setrestore()	set command to restore a terminal
 	term_setsize()		set the size of a terminal
 	term_setapi()		set terminal JSON API function name prefix
+	term_setcallback()	set callback for terminal escape sequence
+	term_unsetcallback()	remove callback for terminal escape sequence
 
 Popup window:					*popup-window-functions*
 	popup_create()		create popup centered in the screen

@@ -1765,6 +1765,7 @@ static char base64_one(uint8_t b)
   return 0;
 }
 
+#if 0
 static uint8_t unbase64one(char c)
 {
   if(c >= 'A' && c <= 'Z')
@@ -1942,6 +1943,7 @@ static void osc_selection(VTermState *state, VTermStringFragment frag)
       state->tmp.selection.recvpartial = (n << 24) | x;
   }
 }
+#endif
 
 static int on_osc(int command, VTermStringFragment frag, void *user)
 {
@@ -1984,11 +1986,14 @@ static int on_osc(int command, VTermStringFragment frag, void *user)
       settermprop_string(state, VTERM_PROP_CURSORCOLOR, frag);
       return 1;
 
+      // Let the term_setcallback() callbacks handle OSC 52
+#if 0
     case 52:
       if(state->selection.callbacks)
         osc_selection(state, frag);
 
       return 1;
+#endif
 
     default:
       if(state->fallbacks && state->fallbacks->osc)

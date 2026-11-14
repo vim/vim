@@ -85,6 +85,28 @@ typedef struct _DYN_STARTUPINFOEXW
 } DYN_STARTUPINFOEXW, *PDYN_STARTUPINFOEXW;
 #endif
 
+typedef enum
+{
+    TERM_STATE_OSC = 0,
+    TERM_STATE_DCS = 1,
+    TERM_STATE_APC = 2,
+    N_TERM_STATES
+} term_statebuf_T;
+
+typedef struct term_state_cb_S term_state_cb_T;
+struct term_state_cb_S
+{
+    int		    id;
+    callback_T	    callback;
+    term_state_cb_T *next;
+};
+
+typedef struct
+{
+    term_state_cb_T *callbacks;
+    garray_T	    buf; // Holds incomplete sequences
+} term_state_T;
+
 // typedef term_T in structs.h
 struct terminal_S {
     term_T	*tl_next;
@@ -169,7 +191,9 @@ struct terminal_S {
     long_u	*tl_palette; // array of 16 colors specified by term_start, can
 			     // be NULL
     int		tl_using_altscreen;
-    garray_T	tl_osc_buf;	    // incomplete OSC string
+
+    // Incomplete strings for supported escape sequences
+    term_state_T tl_states[N_TERM_STATES];
 };
 
 #define TMODE_ONCE 1	    // CTRL-\ CTRL-N used
@@ -486,7 +510,11 @@ term_start(
 #endif
     ga_init2(&term->tl_scrollback, sizeof(sb_line_T), 300);
     ga_init2(&term->tl_scrollback_postponed, sizeof(sb_line_T), 300);
-    ga_init2(&term->tl_osc_buf, sizeof(char), 300);
+    for (size_t i = 0; i < ARRAY_LENGTH(term->tl_states); i++)
+    {
+	ga_init2(&term->tl_states[i].buf, sizeof(char), 512);
+	term->tl_states[i].callbacks = NULL;
+    }
 
     setpcmark();
     CLEAR_FIELD(split_ea);
@@ -1232,6 +1260,43 @@ free_terminal(buf_T *buf)
 	in_terminal_loop = NULL;
 }
 
+    static void
+free_term_state_cb(term_state_cb_T *cb)
+{
+    free_callback(&cb->callback);
+    vim_free(cb);
+}
+
+/*
+ * Get state callback with the given id, else NULL if not found. If "id" is -1
+ * and "unlink" is true, then get the first state callback and unlink it, return
+ * it.
+ */
+    static term_state_cb_T *
+term_state_get_id(term_state_T *ts, int id, bool unlink)
+{
+    term_state_cb_T *cb = ts->callbacks;
+    term_state_cb_T *prev = NULL;
+
+    while (cb != NULL)
+    {
+	if (id == -1 || cb->id == id)
+	{
+	    if (unlink)
+	    {
+		if (prev == NULL)
+		    ts->callbacks = cb->next;
+		else
+		    prev->next = cb->next;
+	    }
+	    return cb;
+	}
+	prev = cb;
+	cb = cb->next;
+    }
+    return NULL;
+}
+
     void
 free_unused_terminals(void)
 {
@@ -1242,7 +1307,16 @@ free_unused_terminals(void)
 	terminals_to_free = term->tl_next;
 
 	free_scrollback(term);
-	ga_clear(&term->tl_osc_buf);
+	for (size_t i = 0; i < ARRAY_LENGTH(term->tl_states); i++)
+	{
+	    term_state_cb_T *cb;
+
+	    while ((cb = term_state_get_id(&term->tl_states[i], -1, true))
+		    != NULL)
+		free_term_state_cb(cb);
+
+	    ga_clear(&term->tl_states[i].buf);
+	}
 
 	term_free_vterm(term);
 	vim_free(term->tl_api);
@@ -4975,6 +5049,100 @@ sync_shell_dir(garray_T *gap)
 }
 
 /*
+ * Add string fragment "frag" to the associated buffer for "state" if not NULL.
+ * Returns OK if fully completed, otherwise FAIL.
+ */
+    static int
+handle_sequence(
+	term_T			    *term,
+	const VTermStringFragment   *frag,
+	term_statebuf_T		    state,
+	const char		    *command,
+	int			    commandlen,
+	int			    commandnr) // Only set if "command" is NULL
+					       // and "commandlen" is > 0.
+{
+    term_state_T *ts = &term->tl_states[state];
+
+    if (frag != NULL)
+    {
+	if (frag->initial)
+	    ga_clear(&ts->buf);
+
+	if (ga_grow(&ts->buf, (int)frag->len + 1) == FAIL)
+	{
+	    ga_clear(&ts->buf);
+	    return FAIL;
+	}
+
+	mch_memmove((char *)ts->buf.ga_data + ts->buf.ga_len,
+		frag->str, frag->len);
+	ts->buf.ga_len += (int)frag->len;
+    }
+
+    if (frag == NULL || frag->final)
+    {
+	dict_T *dict;
+	typval_T argvars[4];
+
+	if (frag != NULL)
+	    ((char *)ts->buf.ga_data)[ts->buf.ga_len] = NUL;
+
+	if (ts->callbacks == NULL)
+	    // No callback to call
+	    goto exit;
+
+	dict = dict_alloc_lock(VAR_FIXED);
+	if (dict == NULL)
+	    goto exit;
+
+	dict->dv_refcount = 1;
+
+	if (command != NULL)
+	    dict_add_string_len(dict, "command",
+		    (char_u *)command, commandlen);
+	else if (commandlen > 0)
+	    dict_add_number(dict, "command", (varnumber_T)commandnr);
+
+	if (frag != NULL)
+	    dict_add_string_len(dict, "str", (char_u *)ts->buf.ga_data,
+		    ts->buf.ga_len);
+
+	init_tv(&argvars[0]);
+	init_tv(&argvars[1]);
+	init_tv(&argvars[2]);
+	argvars[1].v_type = VAR_NUMBER;
+	argvars[1].vval.v_number = term->tl_buffer->b_fnum;
+	argvars[2].v_type = VAR_DICT;
+	argvars[2].vval.v_dict = dict;
+
+	// Call callbacks
+	for (term_state_cb_T *cb = ts->callbacks; cb != NULL;)
+	{
+	    // Must save next callback, because current callback may call
+	    // term_unsetcallback().
+	    term_state_cb_T *next = cb->next;
+	    typval_T	    rettv;
+
+	    argvars[0].v_type = VAR_NUMBER;
+	    argvars[0].vval.v_number = cb->id;
+
+	    init_tv(&rettv);
+
+	    if (call_callback(&cb->callback, -1, &rettv, 3, argvars) == OK)
+		clear_tv(&rettv);
+
+	    cb = next;
+	}
+
+	dict_unref(dict);
+    }
+
+exit:
+    return frag == NULL || frag->final ? OK : FAIL;
+}
+
+/*
  * Called by libvterm when it cannot recognize an OSC sequence.
  * We recognize a terminal API command.
  */
@@ -4986,33 +5154,23 @@ parse_osc(int command, VTermStringFragment frag, void *user)
     typval_T	tv;
     channel_T	*channel = term->tl_job == NULL ? NULL
 						    : term->tl_job->jv_channel;
-    garray_T	*gap = &term->tl_osc_buf;
+
+    if (handle_sequence(term, &frag, TERM_STATE_OSC, NULL,
+		1, command)
+	    == FAIL)
+	return 1;
 
     // We recognize only OSC 5 1 ; {command} and OSC 7 ; {command}
     if (command != 51 && (command != 7 || !p_asd))
 	return 0;
 
-    // Concatenate what was received until the final piece is found.
-    if (ga_grow(gap, (int)frag.len + 1) == FAIL)
-    {
-	ga_clear(gap);
-	return 1;
-    }
-    mch_memmove((char *)gap->ga_data + gap->ga_len, frag.str, frag.len);
-    gap->ga_len += (int)frag.len;
-    if (!frag.final)
-	return 1;
-
-    ((char *)gap->ga_data)[gap->ga_len] = 0;
-
     if (command == 7)
     {
-	sync_shell_dir(gap);
-	ga_clear(gap);
+	sync_shell_dir(&term->tl_states[TERM_STATE_OSC].buf);
 	return 1;
     }
 
-    reader.js_buf = gap->ga_data;
+    reader.js_buf = term->tl_states[TERM_STATE_OSC].buf.ga_data;
     reader.js_fill = NULL;
     reader.js_used = 0;
     if (json_decode(&reader, &tv, 0) == OK
@@ -5046,7 +5204,6 @@ parse_osc(int command, VTermStringFragment frag, void *user)
     else
 	ch_log(channel, "Invalid JSON received");
 
-    ga_clear(gap);
     clear_tv(&tv);
     return 1;
 }
@@ -5117,6 +5274,29 @@ parse_csi(
 	return 0;
     channel_send(term->tl_job->jv_channel, get_tty_part(term),
 						     (char_u *)buf, len, NULL);
+
+    return 1;
+}
+
+    static int
+parse_dcs(
+	const char	    *command,
+	size_t		    commandlen,
+	VTermStringFragment frag,
+	void		    *user)
+{
+    term_T *term = (term_T *)user;
+
+    (void)handle_sequence(term, &frag, TERM_STATE_DCS, command, commandlen, 0);
+    return 1;
+}
+
+    static int
+parse_apc(VTermStringFragment frag, void *user)
+{
+    term_T *term = (term_T *)user;
+
+    (void)handle_sequence(term, &frag, TERM_STATE_APC, NULL, 0, 0);
     return 1;
 }
 
@@ -5124,8 +5304,8 @@ static VTermStateFallbacks state_fallbacks = {
     NULL,		// control
     parse_csi,		// csi
     parse_osc,		// osc
-    NULL,		// dcs
-    NULL,		// apc
+    parse_dcs,		// dcs
+    parse_apc,		// apc
     NULL,		// pm
     NULL		// sos
 };
@@ -5364,35 +5544,20 @@ set_ref_in_term(int copyID)
     typval_T	tv;
 
     for (term = first_term; !abort && term != NULL; term = term->tl_next)
+    {
 	if (term->tl_job != NULL)
 	{
 	    tv.v_type = VAR_JOB;
 	    tv.vval.v_job = term->tl_job;
 	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL, NULL);
 	}
-    return abort;
-}
 
-/*
- * Get the buffer from the first argument in "argvars".
- * Returns NULL when the buffer is not for a terminal window and logs a message
- * with "where".
- */
-    static buf_T *
-term_get_buf(typval_T *argvars, char *where)
-{
-    buf_T *buf;
-
-    ++emsg_off;
-    buf = tv_get_buf(&argvars[0], FALSE);
-    --emsg_off;
-    if (buf == NULL || buf->b_term == NULL)
-    {
-	(void)tv_get_number(&argvars[0]);    // issue errmsg if type error
-	ch_log(NULL, "%s: invalid buffer argument", where);
-	return NULL;
+	for (size_t i = 0; i < ARRAY_LENGTH(term->tl_states); i++)
+	    for (term_state_cb_T *cb = term->tl_states[i].callbacks;
+		    cb != NULL; cb = cb->next)
+		abort = abort || set_ref_in_callback(&cb->callback, copyID);
     }
-    return buf;
+    return abort;
 }
 
     static void
@@ -5419,6 +5584,132 @@ dump_term_color(FILE *fd, VTermColor *color)
     fprintf(fd, "%02x%02x%02x%d",
 	    (int)color->red, (int)color->green, (int)color->blue,
 	    index);
+}
+
+/*
+ * Get the buffer from the first argument in "argvars".
+ * Returns NULL when the buffer is not for a terminal window and logs a message
+ * with "where".
+ */
+    static buf_T *
+term_get_buf(typval_T *argvars, char *where)
+{
+    buf_T *buf;
+
+    ++emsg_off;
+    buf = tv_get_buf(&argvars[0], FALSE);
+    --emsg_off;
+    if (buf == NULL || buf->b_term == NULL)
+    {
+	(void)tv_get_number(&argvars[0]);    // issue errmsg if type error
+	ch_log(NULL, "%s: invalid buffer argument", where);
+	return NULL;
+    }
+    return buf;
+}
+
+/*
+ * "term_setcallback(buf, state, callback)" function
+ */
+    void
+f_term_setcallback(typval_T *argvars, typval_T *rettv)
+{
+    static int id = 0;
+
+    buf_T	    *buf;
+    term_T	    *term;
+    callback_T	    callback;
+    char_u	    *state;
+    term_state_T    *ts = NULL;
+    term_state_cb_T *cb;
+
+    if (check_restricted() || check_secure())
+	return;
+
+    if (check_for_buffer_arg(argvars, 0) == FAIL
+	    || check_for_string_arg(argvars, 1) == FAIL
+	    || check_for_string_or_func_arg(argvars, 2) == FAIL)
+	return;
+
+    buf = term_get_buf(argvars, "term_setcallback()");
+    if (buf == NULL)
+	return;
+    term = buf->b_term;
+
+    callback = get_callback(&argvars[2]);
+    if (callback.cb_name == NULL)
+	return;
+
+    state = argvars[1].vval.v_string;
+
+    if (state != NULL)
+    {
+	if (STRCMP(state, "osc") == 0)
+	    ts = term->tl_states + TERM_STATE_OSC;
+	else if (STRCMP(state, "dcs") == 0)
+	    ts = term->tl_states + TERM_STATE_DCS;
+	else if (STRCMP(state, "apc") == 0)
+	    ts = term->tl_states + TERM_STATE_APC;
+    }
+
+    if (ts == NULL)
+    {
+	emsg(_(e_invalid_argument));
+	goto fail;
+    }
+
+    cb = ALLOC_ONE(term_state_cb_T);
+    if (cb == NULL)
+	goto fail;
+
+    cb->id = id++;
+    set_callback(&cb->callback, &callback);
+
+    cb->next = ts->callbacks;
+    ts->callbacks = cb;
+
+    rettv->v_type = VAR_NUMBER;
+    rettv->vval.v_number = cb->id;
+
+    return;
+fail:
+    free_callback(&callback);
+}
+
+/*
+ * "term_unsetcallback(buf, id)" function
+ */
+    void
+f_term_unsetcallback(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    buf_T	    *buf;
+    term_T	    *term;
+    int		    id;
+    term_state_cb_T *cb;
+
+    if (check_restricted() || check_secure())
+	return;
+
+    if (check_for_buffer_arg(argvars, 0) == FAIL
+	    || check_for_number_arg(argvars, 1) == FAIL)
+	return;
+
+    buf = term_get_buf(argvars, "term_unsetcallback()");
+    if (buf == NULL)
+	return;
+    term = buf->b_term;
+
+    id = (int)argvars[1].vval.v_number;
+
+    for (size_t i = 0; i < ARRAY_LENGTH(term->tl_states); i++)
+    {
+	cb = term_state_get_id(term->tl_states + i, id, true);
+	if (cb != NULL)
+	{
+	    free_term_state_cb(cb);
+	    break;
+	}
+    }
 }
 
 /*
