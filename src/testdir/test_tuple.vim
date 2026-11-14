@@ -2804,12 +2804,13 @@ func Test_tuple_typename()
   END
   call v9.CheckSourceLegacyAndVim9Success(lines)
 
-  " When a tuple item is used in a "for" loop, the type is tuple<any>
+  " When a tuple item is used in a "for" loop, it keeps its type, as in a def
+  " function
   let lines =<< trim END
     vim9script
     var l = [(1, 2)]
     for t in l
-      assert_equal('tuple<any>', typename(t))
+      assert_equal('tuple<number, number>', typename(t))
     endfor
   END
   call v9.CheckSourceScriptSuccess(lines)
