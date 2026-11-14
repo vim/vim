@@ -3260,4 +3260,21 @@ func Test_term_win_resize()
   call StopVimInTerminal(buf)
 endfunc
 
+" A cell size response must not clear the intro message.
+func Test_cell_size_response_keeps_intro()
+  CheckRunVimInTerminal
+
+  call writefile(['call timer_start(10, {-> 0}, #{repeat: -1})'],
+        \ 'XCellSizeIntro', 'D')
+  let buf = RunVimInTerminal('-S XCellSizeIntro', #{rows: 24, cols: 80})
+  call WaitForAssert({-> assert_match('VIM - Vi IMproved',
+        \ term_getline(buf, 7))})
+
+  call term_sendkeys(buf, "\<Esc>[6;37;17t")
+  call TermWait(buf, 200)
+  call assert_match('VIM - Vi IMproved', term_getline(buf, 7))
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
