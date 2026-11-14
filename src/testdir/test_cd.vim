@@ -423,4 +423,67 @@ func Test_cd_shorten_bufname_with_duplicate_slashes()
   bwipe!
 endfunc
 
+" Relative buffer names must keep pointing to the same file after changing
+" directory when 'cpoptions' contains "~".
+func Test_cd_preserve_symlinks_relative_bufname()
+  set cpoptions+=~
+  let savedir = getcwd()
+  call mkdir('Xcdrel/a', 'pR')
+  call mkdir('Xcdrel/b', 'p')
+  call writefile(['abc'], 'Xcdrel/a/foo.txt')
+  let fullname = fnamemodify('Xcdrel/a/foo.txt', ':p')
+
+  cd Xcdrel/b
+  exe 'edit ' .. fnameescape(fullname)
+  cd ../a
+  call assert_equal('foo.txt', bufname())
+  cd ../b
+  call assert_true(isabsolutepath(bufname()))
+  call assert_equal(fullname, expand('%:p'))
+  write
+  call assert_false(filereadable('foo.txt'))
+  cd ..
+  call assert_match('^a[/\\]foo\.txt$', bufname())
+  cd -
+  call assert_true(isabsolutepath(bufname()))
+  call assert_equal(fullname, expand('%:p'))
+
+  bwipe!
+  set cpoptions&
+  call chdir(savedir)
+endfunc
+
+" A symlink in a relative buffer name is kept when changing to another
+" directory with 'cpoptions' containing "~".
+func Test_cd_preserve_symlinks_other_dir()
+  set cpoptions+=~
+  let savedir = getcwd()
+  call mkdir('Xcdsym/Xsource', 'pR')
+  call mkdir('Xcdsym/other', 'p')
+  call writefile(['abc'], 'Xcdsym/Xsource/foo.txt')
+
+  cd Xcdsym
+  if has("win32")
+    silent !mklink /D Xdest Xsource
+  else
+    silent !ln -s Xsource Xdest
+  endif
+  if v:shell_error
+    call chdir(savedir)
+    set cpoptions&
+    throw 'Skipped: cannot create symlinks'
+  endif
+
+  edit Xdest/foo.txt
+  cd other
+  call assert_true(isabsolutepath(bufname()))
+  call assert_match('[/\\]Xcdsym[/\\]Xdest[/\\]foo\.txt$', bufname())
+  cd ..
+  call assert_match('^Xdest[/\\]foo\.txt$', bufname())
+
+  bwipe!
+  set cpoptions&
+  call chdir(savedir)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
