@@ -4060,6 +4060,7 @@ gui_mch_menu_set_tip(vimmenu_T *menu)
     void
 gui_mch_destroy_menu(vimmenu_T *menu)
 {
+# ifdef FEAT_TOOLBAR
     // For toolbar buttons and separators, remove from the toolbar box.
     if (menu->parent != NULL && menu_is_toolbar(menu->parent->name))
     {
@@ -4070,6 +4071,7 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 	}
 	return;
     }
+# endif
 
     // For popup menus, unparent the menu as well
     if (menu->name[0] == ']' || menu_is_popup(menu->name))
