@@ -2658,7 +2658,7 @@ execute_storerange(isn_T *iptr, ectx_T *ectx)
     {
 	long	    n1;
 	long	    n2;
-	listitem_T  *li1;
+	listitem_T  *li1 = NULL;
 
 	n1 = (long)tv_get_number_chk(tv_idx1, NULL);
 	if (tv_idx2->v_type == VAR_SPECIAL
@@ -2667,7 +2667,13 @@ execute_storerange(isn_T *iptr, ectx_T *ectx)
 	else
 	    n2 = (long)tv_get_number_chk(tv_idx2, NULL);
 
-	li1 = check_range_index_one(tv_dest->vval.v_list, &n1, TRUE, FALSE);
+	if (tv_dest->vval.v_list == NULL)
+	    emsg(_(e_list_not_set));
+	else if (tv->v_type != VAR_LIST || tv->vval.v_list == NULL)
+	    emsg(_(e_slice_requires_list_or_blob_value));
+	else
+	    li1 = check_range_index_one(tv_dest->vval.v_list, &n1, TRUE,
+									FALSE);
 	if (li1 == NULL)
 	    status = FAIL;
 	else
