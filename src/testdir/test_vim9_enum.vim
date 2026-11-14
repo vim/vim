@@ -1723,6 +1723,283 @@ func Test_enum_selfref_gc()
   call v9.CheckSourceSuccess(lines)
 endfunc
 
+" Test for garbage collecting enum values stored in containers {{{1
+func Test_enum_gc_containers()
+  let lines =<< trim END
+    vim9script
+    enum Color
+      Red, Green, Blue
+    endenum
+
+    var l: list<Color> = [Color.Red, Color.Blue]
+    var d: dict<Color> = {a: Color.Green, b: Color.Red}
+    var t: tuple<Color, string> = (Color.Blue, 'x')
+    var nested: list<any> = [{c: [Color.Green]}, (Color.Red,)]
+    var all: list<Color> = copy(Color.values)
+    var ref_before = test_refcount(Color.Red)
+
+    test_garbagecollect_now()
+
+    assert_true(l[0] is Color.Red)
+    assert_true(l[1] is Color.Blue)
+    assert_true(d.a is Color.Green)
+    assert_true(d.b is Color.Red)
+    assert_true(t[0] is Color.Blue)
+    assert_true(nested[0].c[0] is Color.Green)
+    assert_true(nested[1][0] is Color.Red)
+    assert_equal(Color.values, all)
+    assert_equal(['Red', 'Blue'], l->mapnew((_, v) => v.name))
+    assert_equal([0, 2], l->mapnew((_, v) => v.ordinal))
+    assert_equal(ref_before, test_refcount(Color.Red))
+
+    # dropping the containers releases the references
+    l = []
+    d = {}
+    nested = []
+    test_garbagecollect_now()
+    assert_equal(ref_before - 3, test_refcount(Color.Red))
+    assert_equal(['Red', 'Green', 'Blue'],
+                 Color.values->mapnew((_, v) => v.name))
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Test for garbage collecting an enum with class variables referring to the
+" enum values and to the List of enum values {{{1
+func Test_enum_gc_class_var_self_ref()
+  let lines =<< trim END
+    vim9script
+    enum Color
+      Red, Green
+      static var first: Color = Color.Red
+      static var all: list<Color> = Color.values
+      static var names: dict<Color> = {red: Color.Red, green: Color.Green}
+    endenum
+
+    test_garbagecollect_now()
+    assert_true(Color.first is Color.Red)
+    assert_true(Color.all is Color.values)
+    assert_true(Color.names.green is Color.Green)
+    assert_equal(['Red', 'Green'], Color.all->mapnew((_, v) => v.name))
+    test_garbagecollect_now()
+    assert_equal(1, Color.names.green.ordinal)
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Test for garbage collecting enum values with object variables {{{1
+func Test_enum_gc_object_vars()
+  let lines =<< trim END
+    vim9script
+    class Data
+      var items: list<number>
+    endclass
+
+    enum Shape
+      Circle([1], {r: 2}, Data.new([10])),
+      Square([4, 4], {side: 3}, Data.new([20]))
+
+      public var l: list<number>
+      public var d: dict<number>
+      public var data: Data
+      public var F: func(): number = () => 42
+    endenum
+
+    test_garbagecollect_now()
+    assert_equal([1], Shape.Circle.l)
+    assert_equal({side: 3}, Shape.Square.d)
+    assert_equal([20], Shape.Square.data.items)
+    assert_equal(42, Shape.Circle.F())
+
+    # replace the object variable values, the old values are garbage
+    Shape.Circle.l = [5, 6]
+    Shape.Circle.d = {r: 7}
+    Shape.Circle.data = Data.new([30])
+    Shape.Circle.F = () => 43
+    test_garbagecollect_now()
+    assert_equal([5, 6], Shape.Circle.l)
+    assert_equal({r: 7}, Shape.Circle.d)
+    assert_equal([30], Shape.Circle.data.items)
+    assert_equal(43, Shape.Circle.F())
+    assert_equal([4, 4], Shape.Square.l)
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Test for garbage collecting reference cycles between enum values and objects
+" {{{1
+func Test_enum_gc_cycle()
+  let lines =<< trim END
+    vim9script
+    enum Node
+      A, B, C
+      public var next: any
+    endenum
+
+    # cycle between enum values and an enum value referring to itself
+    Node.A.next = Node.B
+    Node.B.next = Node.A
+    Node.C.next = Node.C
+    test_garbagecollect_now()
+    assert_true(Node.A.next is Node.B)
+    assert_true(Node.B.next.next is Node.B)
+    assert_true(Node.C.next is Node.C)
+
+    # cycle between an enum value and a class object
+    class Holder
+      var node: Node
+      var extra: list<any> = []
+    endclass
+    var h = Holder.new(Node.A)
+    Node.A.next = h
+    h.extra->add(Node.A)
+    test_garbagecollect_now()
+    assert_true(Node.A.next is h)
+    assert_true(h.node is Node.A)
+
+    # break the cycle; the class object is now garbage
+    Node.A.next = null
+    h = null_object
+    test_garbagecollect_now()
+    assert_equal(null, Node.A.next)
+    assert_equal('A', Node.A.name)
+    assert_true(Node.B.next is Node.A)
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Test for garbage collecting enum values used in closures and partials {{{1
+func Test_enum_gc_closure()
+  let lines =<< trim END
+    vim9script
+    enum Color
+      Red, Green
+      def Name(): string
+        return this.name
+      enddef
+    endenum
+
+    def MakeClosure(): func(): Color
+      var c = Color.Green
+      return () => c
+    enddef
+
+    var Closure = MakeClosure()
+    var Lambda = () => Color.Red
+    var Partial = Color.Green.Name
+    var l = [Color.Red]
+    var Loop = () => l[0]
+
+    test_garbagecollect_now()
+    assert_true(Closure() is Color.Green)
+    assert_true(Lambda() is Color.Red)
+    assert_equal('Green', Partial())
+    assert_true(Loop() is Color.Red)
+
+    Closure = null_function
+    Partial = null_function
+    test_garbagecollect_now()
+    assert_equal('Green', Color.Green.Name())
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Test for garbage collecting enum values referenced from classes and
+" interfaces {{{1
+func Test_enum_gc_class_and_interface()
+  let lines =<< trim END
+    vim9script
+    interface HasName
+      def GetName(): string
+    endinterface
+
+    enum Color implements HasName
+      Red, Green
+      def GetName(): string
+        return this.name
+      enddef
+    endenum
+
+    class Palette
+      static var default: Color = Color.Green
+      var colors: list<Color>
+      var named: list<HasName>
+    endclass
+
+    var p = Palette.new([Color.Red], [Color.Green, Color.Red])
+    test_garbagecollect_now()
+    assert_true(Palette.default is Color.Green)
+    assert_true(p.colors[0] is Color.Red)
+    assert_equal(['Green', 'Red'], p.named->mapnew((_, v) => v.GetName()))
+
+    p = null_object
+    test_garbagecollect_now()
+    assert_equal('Green', Palette.default.GetName())
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Test for garbage collecting values of an imported enum {{{1
+func Test_enum_gc_import()
+  let lines =<< trim END
+    vim9script
+    export enum Color
+      Red, Green
+      var rgb: list<number> = []
+    endenum
+  END
+  call writefile(lines, 'Xenumgcimport.vim', 'D')
+
+  let lines =<< trim END
+    vim9script
+    import './Xenumgcimport.vim' as m
+    var c = m.Color.Green
+    var l = [m.Color.Red]
+    test_garbagecollect_now()
+    assert_true(c is m.Color.Green)
+    assert_true(l[0] is m.Color.Red)
+    assert_equal(['Red', 'Green'], m.Color.values->mapnew((_, v) => v.name))
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Test for garbage collecting enum values that are still used after the script
+" defining the enum is sourced again {{{1
+func Test_enum_gc_after_resource()
+  let lines =<< trim END
+    vim9script
+    export enum Color
+      Red, Green
+      var tags: list<string> = ['x']
+    endenum
+  END
+  call writefile(lines, 'Xenumgcresource.vim', 'D')
+
+  let lines =<< trim END
+    vim9script
+    import './Xenumgcresource.vim' as m
+    var old_green = m.Color.Green
+    var old_values = m.Color.values
+
+    # sourcing the script again creates a new enum
+    source Xenumgcresource.vim
+    test_garbagecollect_now()
+
+    assert_equal('Green', old_green.name)
+    assert_equal(1, old_green.ordinal)
+    assert_equal(['x'], old_green.tags)
+    assert_equal(['Red', 'Green'], old_values->mapnew((_, v) => v.name))
+    assert_false(old_green is m.Color.Green)
+    assert_equal('Green', m.Color.Green.name)
+
+    old_green = null_object
+    old_values = []
+    test_garbagecollect_now()
+    assert_equal(['Red', 'Green'], m.Color.values->mapnew((_, v) => v.name))
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
 " Test for defining an enum in a function {{{1
 def Test_enum_defined_in_function()
   var lines =<< trim END
