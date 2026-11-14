@@ -3030,12 +3030,20 @@ ex_type(exarg_T *eap)
     tv.v_type = VAR_UNKNOWN;
     if (eval_variable_import(name_start, &tv) == OK)
     {
-	if (tv.v_type == VAR_TYPEALIAS)
-	    semsg(_(e_typealias_already_exists_for_str), name_start);
-	else
-	    semsg(_(e_redefining_script_item_str), name_start);
+	dictitem_T  *di = find_var(name_start, NULL, TRUE);
+	int	    is_typealias = tv.v_type == VAR_TYPEALIAS;
+
 	clear_tv(&tv);
-	goto done;
+	// When sourcing a "noclear" script again the item can be redefined,
+	// set_var_const() takes care of that.
+	if (di == NULL || (di->di_flags & DI_FLAGS_RELOAD) == 0)
+	{
+	    if (is_typealias)
+		semsg(_(e_typealias_already_exists_for_str), name_start);
+	    else
+		semsg(_(e_redefining_script_item_str), name_start);
+	    goto done;
+	}
     }
 
     // Create a script-local variable for the type alias.  "object<any>" has
