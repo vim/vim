@@ -1383,9 +1383,10 @@ find_generic_type(
 }
 
 /*
- * Frees all concrete function instances stored in the generic function table
- * of "fp". This includes freeing each instantiated function and its
- * associated gfitem_T structure, and clearing the hash table.
+ * Drops the reference of the generic function table of "fp" to the concrete
+ * function instances and frees the gfitem_T structures and the hash table.
+ * An instance that is still referenced, e.g. by a funcref, is freed when the
+ * last reference is gone.
  *
  * Arguments:
  *   fp - the generic function whose function table should be freed
@@ -1404,7 +1405,7 @@ free_generic_functab(ufunc_T *fp)
 	{
 	    gfitem_T    *gfitem = HI2GFITEM(hi);
 
-	    func_clear_free(gfitem->gfi_ufunc, FALSE);
+	    func_ptr_unref(gfitem->gfi_ufunc);
 	    vim_free(gfitem);
 	    --todo;
 	}

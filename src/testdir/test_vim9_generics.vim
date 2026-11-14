@@ -1163,6 +1163,31 @@ def Test_generic_funcref_string_from_another_function()
   v9.CheckSourceFailure(lines, 'E1559: Type arguments missing for generic function', 2)
 enddef
 
+" A funcref to a generic function instance stays valid when the generic
+" function is deleted.  Using freed memory is only detected with ASan.
+def Test_generic_funcref_after_delete()
+  var lines =<< trim END
+    vim9script
+    def g:GenDel<T>(x: T): T
+      return x
+    enddef
+    var F = funcref('g:GenDel<number>')
+    delfunction g:GenDel
+    assert_equal(3, F(3))
+
+    def g:OuterDel(): func
+      def Inner<T>(x: T): T
+        return x
+      enddef
+      return Inner<string>
+    enddef
+    var G = g:OuterDel()
+    delfunction g:OuterDel
+    assert_equal('a', G('a'))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 def Test_generic_obj_method()
   var lines =<< trim END
     vim9script
