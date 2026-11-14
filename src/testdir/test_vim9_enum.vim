@@ -682,6 +682,12 @@ def Test_enum_modify()
     defcompile
   END
   v9.CheckSourceFailure(lines, 'E1423: Enum value "Foo.Apple" cannot be modified', 1)
+
+  # an enum value cannot be removed or locked
+  for cmd in ['unlet Foo.Apple', 'lockvar Foo.Apple']
+    lines = ['vim9script', 'enum Foo', '  Apple', 'endenum', cmd]
+    v9.CheckSourceFailure(lines, 'E1423: Enum value "Foo.Apple" cannot be modified', 5)
+  endfor
 enddef
 
 " Test for using enum in an expression {{{1
@@ -2087,6 +2093,21 @@ def Test_enum_values_list_locked()
     Color.values = []
   END
   v9.CheckSourceFailure(lines, 'E1335: Variable "values" in class "Color" is not writable', 5)
+
+  # the other functions that change a List also fail
+  var header = ['vim9script', 'enum Color', '  Red, Green', 'endenum']
+  for cmd in ['remove(Color.values, 0)', 'insert(Color.values, Color.Red)',
+      'extend(Color.values, [Color.Red])', 'sort(Color.values)',
+      'reverse(Color.values)', 'map(Color.values, (_, v) => v)',
+      'filter(Color.values, (_, v) => false)', 'unlet Color.values[0]']
+    v9.CheckSourceFailure(header + [cmd], 'E741: Value is locked', 5)
+    v9.CheckSourceFailure(header + ['def Fn()', $'  {cmd}', 'enddef', 'Fn()'],
+          'E741: Value is locked', 1)
+  endfor
+
+  # the lock cannot be removed
+  v9.CheckSourceFailure(header + ['unlockvar Color.values'],
+        'E1335: Variable "values" in class "Color" is not writable', 5)
 enddef
 
 " Test for using builtin functions with enum values {{{1
@@ -2324,6 +2345,8 @@ def Test_enum_in_legacy_script()
     call assert_equal('enum<Color>', typename(s:c))
     call assert_fails('let s:m.Color.Red = s:m.Color.Green',
           \ 'E1423: Enum value "Color.Red" cannot be modified')
+    call assert_fails('let x = !s:c', 'E1424: Using an Enum "Color" as a Number')
+    call assert_fails('let x = s:c . "x"', 'E1425: Using an Enum "Color" as a String')
   END
   v9.CheckSourceScriptSuccess(lines)
 enddef
@@ -2935,6 +2958,24 @@ def Test_enum_runtime_type_check()
     'assert_true(Gn(null_object))',
   ]
   v9.CheckSourceSuccess(lines)
+
+  # a value of another enum stored through "any" in a def function
+  for [body, lnum, err] in [
+      [['var [a: Color, b: Color] = [Color.Red, v]'], 1,
+        'E1163: Variable 2: type mismatch, expected enum<Color> but got enum<Light>'],
+      [['for c: Color in [v]', 'endfor'], 1,
+        'E1012: Type mismatch; expected enum<Color> but got enum<Light>'],
+      [['var l: list<Color> = [Color.Red]', 'l[0] = v'], 2,
+        'E1012: Type mismatch; expected enum<Color> but got enum<Light>'],
+      [['var l: list<Color> = []', 'add(l, v)'], 2,
+        'E1012: Type mismatch; expected enum<Color> but got enum<Light>'],
+      [['var l: list<Color> = []', 'insert(l, v)'], 2,
+        'E1013: Argument 2: type mismatch, expected enum<Color> but got enum<Light>'],
+      [['var F = (c: Color) => c', 'F(v)'], 2,
+        'E1013: Argument 1: type mismatch, expected enum<Color> but got enum<Light>']]
+    v9.CheckSourceFailure(header + ['def Fn(v: any)'] + body
+                                 + ['enddef', 'Fn(Light.Red)'], err, lnum)
+  endfor
 enddef
 
 " Test assigning an enum value to an interface the enum doesn't implement {{{1
