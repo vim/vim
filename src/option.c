@@ -1602,6 +1602,7 @@ static char *modeline_whitelist[] =
 {
     "autoindent",
     "cindent",
+    "colorcolumn",
     "commentstring",
     "expandtab",
     "filetype",
@@ -1681,7 +1682,16 @@ validate_opt_idx(
 	    if (options[opt_idx].indir == PV_ML && prefix == PREFIX_NO)
 		return OK;
 	    else if (!is_modeline_whitelisted(options[opt_idx].fullname))
+	    {
+		if (p_verbose > 0)
+		{
+		    verbose_enter();
+		    smsg(_("'modelinestrict' in effect, ignoring %s"),
+					options[opt_idx].fullname);
+		    verbose_leave();
+		}
 		return FAIL;
+	    }
 	}
 #ifdef FEAT_DIFF
 	// In diff mode some options are overruled.  This avoids that
