@@ -3766,7 +3766,10 @@ set_cell_size(int new_cw, int new_ch)
 # ifdef FEAT_TERMINAL
     term_update_cell_size();
 # endif
-    redraw_all_later(UPD_VALID);
+# ifdef FEAT_IMAGE
+    if (visible_image_placements())
+	redraw_all_later(UPD_VALID);
+# endif
 }
 
     void
