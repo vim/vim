@@ -5185,4 +5185,324 @@ def Test_disassemble_loop_with_closure_after_loop()
     '30 RETURN void', g:instr)
 enddef
 
+" Disassemble instructions for accessing enum values, the "values" class
+" variable and the "name", "ordinal" and other object variables of an enum
+" value
+def Test_disassemble_enum_value()
+  var lines =<< trim END
+    vim9script
+    enum Color
+      Red(1), Green(2)
+      var val: number
+    endenum
+    def Foo(c: Color)
+      var r = Color.Red
+      var l = Color.values
+      var n = c.name
+      var o = c.ordinal
+      var v = c.val
+      var g = [Color.Green.name, Color.Green.ordinal]
+    enddef
+    g:instr = execute('disassemble Foo')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d*_Foo\_s*' ..
+    'var r = Color.Red\_s*' ..
+    '0 LOAD CLASSMEMBER Color.Red\_s*' ..
+    '1 STORE $0\_s*' ..
+    'var l = Color.values\_s*' ..
+    '2 LOAD CLASSMEMBER Color.values\_s*' ..
+    '3 SETTYPE list<enum<Color>>\_s*' ..
+    '4 STORE $1\_s*' ..
+    'var n = c.name\_s*' ..
+    '5 LOAD arg\[-1\]\_s*' ..
+    '6 OBJ_MEMBER 0\_s*' ..
+    '7 STORE $2\_s*' ..
+    'var o = c.ordinal\_s*' ..
+    '8 LOAD arg\[-1\]\_s*' ..
+    '9 OBJ_MEMBER 1\_s*' ..
+    '10 STORE $3\_s*' ..
+    'var v = c.val\_s*' ..
+    '11 LOAD arg\[-1\]\_s*' ..
+    '12 OBJ_MEMBER 2\_s*' ..
+    '13 STORE $4\_s*' ..
+    'var g = \[Color.Green.name, Color.Green.ordinal\]\_s*' ..
+    '14 LOAD CLASSMEMBER Color.Green\_s*' ..
+    '15 OBJ_MEMBER 0\_s*' ..
+    '16 LOAD CLASSMEMBER Color.Green\_s*' ..
+    '17 OBJ_MEMBER 1\_s*' ..
+    '18 NEWLIST size 2\_s*' ..
+    '19 STORE $5\_s*' ..
+    '20 RETURN void', g:instr)
+
+  unlet g:instr
+enddef
+
+" Disassemble instructions for comparing enum values
+def Test_disassemble_enum_compare()
+  var lines =<< trim END
+    vim9script
+    enum Color
+      Red, Green
+    endenum
+    def Foo(a: Color, b: Color): list<bool>
+      return [a == b, a != b, a is b, a isnot b, a == Color.Red]
+    enddef
+    g:instr = execute('disassemble Foo')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d*_Foo\_s*' ..
+    'return \[a == b, a != b, a is b, a isnot b, a == Color.Red\]\_s*' ..
+    '0 LOAD arg\[-2\]\_s*' ..
+    '1 LOAD arg\[-1\]\_s*' ..
+    '2 COMPAREOBJECT ==\_s*' ..
+    '3 LOAD arg\[-2\]\_s*' ..
+    '4 LOAD arg\[-1\]\_s*' ..
+    '5 COMPAREOBJECT !=\_s*' ..
+    '6 LOAD arg\[-2\]\_s*' ..
+    '7 LOAD arg\[-1\]\_s*' ..
+    '8 COMPAREOBJECT is\_s*' ..
+    '9 LOAD arg\[-2\]\_s*' ..
+    '10 LOAD arg\[-1\]\_s*' ..
+    '11 COMPAREOBJECT isnot\_s*' ..
+    '12 LOAD arg\[-2\]\_s*' ..
+    '13 LOAD CLASSMEMBER Color.Red\_s*' ..
+    '14 COMPAREOBJECT ==\_s*' ..
+    '15 NEWLIST size 5\_s*' ..
+    '16 RETURN', g:instr)
+
+  unlet g:instr
+enddef
+
+" Disassemble instructions for an enum constructor.  The "name" and "ordinal"
+" object variables (index 0 and 1) are set when the object is created, the
+" constructor only initializes the other object variables.  The constructor can
+" only be used while the enum values are initialized, so it is disassembled in
+" a class variable initializer.
+def Test_disassemble_enum_constructor()
+  # default constructor
+  var lines =<< trim END
+    vim9script
+    enum Shape
+      Circle, Square
+      var sides: number = 4
+      static var instr = execute('disassemble Shape.new')
+    endenum
+    g:instr = Shape.instr
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('new\_s*' ..
+    '0 NEW Shape size \d\+\_s*' ..
+    '1 PUSHNR 4\_s*' ..
+    '2 STORE_THIS 2\_s*' ..
+    'ifargisset 0 this.sides = sides\_s*' ..
+    '3 JUMP_IF_ARG_NOT_SET arg\[-1\] -> 8\_s*' ..
+    '4 LOAD arg\[-1\]\_s*' ..
+    '5 PUSHNR 2\_s*' ..
+    '6 LOAD $0\_s*' ..
+    '7 STOREINDEX object\_s*' ..
+    '8 RETURN object', g:instr)
+
+  # custom constructor
+  lines =<< trim END
+    vim9script
+    enum Color
+      Red(1, 'r'), Green(2, 'g')
+      var val: number
+      var tag: string
+      def new(this.val, t: string)
+        this.tag = t .. '!'
+      enddef
+      static var instr = execute('disassemble Color.new')
+    endenum
+    g:instr = Color.instr
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('new\_s*' ..
+    '0 NEW Color size \d\+\_s*' ..
+    '1 PUSHNR 0\_s*' ..
+    '2 STORE_THIS 2\_s*' ..
+    '3 PUSHS "\[NULL\]"\_s*' ..
+    '4 STORE_THIS 3\_s*' ..
+    'this.val = val\_s*' ..
+    '5 LOAD arg\[-2\]\_s*' ..
+    '6 PUSHNR 2\_s*' ..
+    '7 LOAD $0\_s*' ..
+    '8 STOREINDEX object\_s*' ..
+    'this.tag = t .. ''!''\_s*' ..
+    '9 LOAD arg\[-1\]\_s*' ..
+    '10 PUSHS "!"\_s*' ..
+    '11 CONCAT size 2\_s*' ..
+    '12 PUSHNR 3\_s*' ..
+    '13 LOAD $0\_s*' ..
+    '14 STOREINDEX object\_s*' ..
+    '15 RETURN object', g:instr)
+
+  unlet g:instr
+enddef
+
+" Disassemble instructions for enum object methods and class methods, and for
+" calling them
+def Test_disassemble_enum_method()
+  var lines =<< trim END
+    vim9script
+    enum Color
+      Red(1), Green(2)
+      var val: number
+      static var count: number = 0
+      def Get(): number
+        return this.val + this.ordinal
+      enddef
+      def Name(): string
+        return this.name
+      enddef
+      static def Inc(): number
+        count += 1
+        return count
+      enddef
+    endenum
+    def Foo(c: Color): number
+      return c.Get() + Color.Inc()
+    enddef
+    g:instr1 = execute('disassemble Color.Get')
+    g:instr2 = execute('disassemble Color.Name')
+    g:instr3 = execute('disassemble Color.Inc')
+    g:instr4 = execute('disassemble Foo')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('Get\_s*' ..
+    'return this.val + this.ordinal\_s*' ..
+    '0 LOAD $0\_s*' ..
+    '1 OBJ_MEMBER 2\_s*' ..
+    '2 LOAD $0\_s*' ..
+    '3 OBJ_MEMBER 1\_s*' ..
+    '4 OPNR +\_s*' ..
+    '5 RETURN', g:instr1)
+  assert_match('Name\_s*' ..
+    'return this.name\_s*' ..
+    '0 LOAD $0\_s*' ..
+    '1 OBJ_MEMBER 0\_s*' ..
+    '2 RETURN', g:instr2)
+  assert_match('Inc\_s*' ..
+    'count += 1\_s*' ..
+    '0 LOAD CLASSMEMBER Color.count\_s*' ..
+    '1 PUSHNR 1\_s*' ..
+    '2 OPNR +\_s*' ..
+    '3 STORE CLASSMEMBER Color.count\_s*' ..
+    'return count\_s*' ..
+    '4 LOAD CLASSMEMBER Color.count\_s*' ..
+    '5 RETURN', g:instr3)
+  assert_match('<SNR>\d*_Foo\_s*' ..
+    'return c.Get() + Color.Inc()\_s*' ..
+    '0 LOAD arg\[-1\]\_s*' ..
+    '1 DCALL Get(argc 0)\_s*' ..
+    '2 DCALL Inc(argc 0)\_s*' ..
+    '3 OPNR +\_s*' ..
+    '4 RETURN', g:instr4)
+
+  unlet g:instr1 g:instr2 g:instr3 g:instr4
+enddef
+
+" Disassemble instructions for using an interface implemented by an enum
+def Test_disassemble_enum_interface()
+  var lines =<< trim END
+    vim9script
+    interface I
+      var val: number
+      def Get(): number
+    endinterface
+    enum Color implements I
+      Red(1), Green(2)
+      var val: number
+      def Get(): number
+        return this.val
+      enddef
+    endenum
+    def Foo(i: I): number
+      return i.val + i.Get()
+    enddef
+    g:instr = execute('disassemble Foo')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d*_Foo\_s*' ..
+    'return i.val + i.Get()\_s*' ..
+    '0 LOAD arg\[-1\]\_s*' ..
+    '1 ITF_MEMBER 0 on I\_s*' ..
+    '2 LOAD arg\[-1\]\_s*' ..
+    '3 METHODCALL I.Get(argc 0)\_s*' ..
+    '4 OPNR +\_s*' ..
+    '5 RETURN', g:instr)
+
+  unlet g:instr
+enddef
+
+" Disassemble instructions for an enum type check and an enum default argument
+def Test_disassemble_enum_type()
+  var lines =<< trim END
+    vim9script
+    enum Color
+      Red, Green
+    endenum
+    def Foo(a: any): Color
+      var c: Color = a
+      return c
+    enddef
+    def Bar(c: Color = Color.Green): Color
+      return c
+    enddef
+    g:instr1 = execute('disassemble Foo')
+    g:instr2 = execute('disassemble Bar')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d*_Foo\_s*' ..
+    'var c: Color = a\_s*' ..
+    '0 LOAD arg\[-1\]\_s*' ..
+    '1 CHECKTYPE enum<Color> stack\[-1\]\_s*' ..
+    '2 STORE $0\_s*' ..
+    'return c\_s*' ..
+    '3 LOAD $0\_s*' ..
+    '4 RETURN', g:instr1)
+  assert_match('<SNR>\d*_Bar\_s*' ..
+    'c = Color.Green\_s*' ..
+    '0 JUMP_IF_ARG_SET arg\[-1\] -> 3\_s*' ..
+    '1 LOAD CLASSMEMBER Color.Green\_s*' ..
+    '2 STORE arg\[-1\]\_s*' ..
+    'return c\_s*' ..
+    '3 LOAD arg\[-1\]\_s*' ..
+    '4 RETURN', g:instr2)
+
+  unlet g:instr1 g:instr2
+enddef
+
+" Disassemble instructions for using an imported enum
+def Test_disassemble_enum_import()
+  var lines =<< trim END
+    vim9script
+    export enum Color
+      Red, Green
+    endenum
+  END
+  writefile(lines, 'Xdisassemble_enum.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './Xdisassemble_enum.vim' as m
+    def Foo(): list<m.Color>
+      var c: m.Color = m.Color.Green
+      return m.Color.values
+    enddef
+    g:instr = execute('disassemble Foo')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d*_Foo\_s*' ..
+    'var c: m.Color = m.Color.Green\_s*' ..
+    '0 LOAD CLASSMEMBER Color.Green\_s*' ..
+    '1 STORE $0\_s*' ..
+    'return m.Color.values\_s*' ..
+    '2 LOAD CLASSMEMBER Color.values\_s*' ..
+    '3 RETURN', g:instr)
+
+  unlet g:instr
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
