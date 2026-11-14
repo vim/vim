@@ -669,8 +669,9 @@ vim_main2(void)
 # endif
 
 # ifdef FEAT_XCLIPBOARD
-    // Start using the X clipboard, unless the GUI was started.
-#  ifdef FEAT_GUI
+    // Start using the X clipboard, unless the GUI was started. If using GTK4
+    // GUI, then we need to create our own display (for x11 clientserver).
+#  if defined(FEAT_GUI) && !defined(USE_GTK4)
     if (!gui.in_use)
 #  endif
     {
