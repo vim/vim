@@ -827,8 +827,9 @@ draw_image_placements(void)
 	    pixman_region32_init(&visible_region);
 	    pixman_region32_init(&visible_abs);
 
-	    // Only use parts of the image region within the actual screen.
-	    if (!pixman_region32_intersect_rect(&image_region, &image_region,
+	    if (!pixman_region32_intersect(&image_region, &image_region, &place->mask)
+		    // Only use parts of the image region within the actual screen.
+		    || !pixman_region32_intersect_rect(&image_region, &image_region,
 			0, 0, Columns, Rows)
 		    || !pixman_region32_subtract(&visible_region,
 			&image_region, &subtract_region)
