@@ -1435,6 +1435,15 @@ def Test_enum_this_in_constructor()
     defcompile
   END
   v9.CheckSourceSuccess(lines)
+
+  # using an enum value or "values" in the constructor of an earlier value
+  for expr in ['Color.Green', 'Color.values']
+    lines = ['vim9script', 'enum Color', '  Red(1), Green(2)',
+          '  def new(n: number)', '    if n == 1', $'      var x = {expr}',
+          '    endif', '  enddef', 'endenum']
+    v9.CheckSourceFailure(lines, 'E1440: Class variable "' ..
+          expr->matchstr('\.\zs.*') .. '" used before it is initialized', 2)
+  endfor
 enddef
 
 " Test for using member variables in an enum object {{{1
