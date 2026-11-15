@@ -5691,6 +5691,25 @@ def Test_white_space_after_command()
     e#
   END
   v9.CheckDefAndScriptFailure(lines, 'E1144:', 1)
+
+  lines =<< trim END
+    vimgrep<pat< %
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1144:', 1)
+  lines =<< trim END
+    python3<<EOF
+    EOF
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1144:', 1)
+  lines =<< trim END
+    :Next<
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1144:', 1)
+
+  lines =<< trim END
+    Next<
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1554:', 1)
 enddef
 
 def Test_script_var_gone_when_sourced_twice()

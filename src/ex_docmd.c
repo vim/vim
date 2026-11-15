@@ -3809,8 +3809,15 @@ find_ex_command(
 
 	    if (vim9 && *p == '<')
 	    {
+		char_u *cmdp = eap->cmd;
+
+		// "s<foo<bar<" is an Ex command
+		if (ASCII_ISLOWER(*cmdp))
+		    while (ASCII_ISALNUM(*cmdp))
+			++cmdp;
+
 		// generic function type args
-		if (skip_generic_func_type_args(&p) == FAIL)
+		if (cmdp != p && skip_generic_func_type_args(&p) == FAIL)
 		{
 		    eap->cmdidx = CMD_SIZE;
 		    return p;
