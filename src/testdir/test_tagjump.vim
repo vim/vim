@@ -1716,24 +1716,28 @@ func Test_tag_backtick_filename_not_expanded()
 endfunc
 
 func Test_tagjump_refuse_url()
-  call writefile([
-        \ "XTagURL\thttp://127.0.0.1:1/$XTAG_SECRET/file.c\t/^int main"
-        \ ], 'Xtags', 'D')
+  let content = [
+        \ "XTagURL\thttp://127.0.0.1:1/$XTAG_SECRET/file.c\t/^int main",
+        \ "XTagURL\thttp:\\/\\/127.0.0.1:1/$HOME/file.c\t/^int main"
+        \ ]
   let save_tagsecure = &tagsecure
   let save_tags = &tags
   set tags=Xtags
+  for line in content
+    call writefile([line], 'Xtags', filereadable('Xtags') ? '' : 'D')
 
-  " E1576: Tag file entry must not be a URL
-  set tagsecure
-  call assert_fails('tag XTagURL', 'E1576:')
-  set tsc
-  call assert_fails('tag XTagURL', 'E1576:')
+    " E1576: Tag file entry must not be a URL
+    set tagsecure
+    call assert_fails('tag XTagURL', 'E1576:')
+    set tsc
+    call assert_fails('tag XTagURL', 'E1576:')
 
-  " E429: File does not exist
-  set notagsecure
-  call assert_fails('tag XTagURL', 'E429:')
-  set notsc
-  call assert_fails('tag XTagURL', 'E429:')
+    " E429: File does not exist
+    set notagsecure
+    call assert_fails('tag XTagURL', 'E429:')
+    set notsc
+    call assert_fails('tag XTagURL', 'E429:')
+  endfor
 
   let &tagsecure = save_tagsecure
   let &tags = save_tags
