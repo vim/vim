@@ -2473,6 +2473,11 @@ win_line(
 			// If this is an "above" text prop and 'nowrap' then we
 			// must wrap anyway.
 			text_prop_above = above;
+			// Another virtual text in the line of the text means an
+			// empty line is not displayed separately for "below".
+			if ((tp->tp_flags
+				 & (TP_FLAG_ALIGN_ABOVE | TP_FLAG_ALIGN_BELOW)) == 0)
+			    did_line = TRUE;
 			text_prop_follows |= other_tpi != -1
 					&& (wp->w_p_wrap
 					     || (text_props[other_tpi].tp_flags

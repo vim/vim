@@ -1410,8 +1410,7 @@ win_lbr_chartabsize(
 		    if (tp->tp_col == MAXCOL)
 		    {
 			int n_extra = (int)STRLEN(p);
-
-			cells = text_prop_position(wp, tp, vcol,
+			cells = text_prop_position(wp, tp, vcol + size,
 			     (vcol + size) % (wp->w_width - col_off) + col_off,
 					      &n_extra, &p, NULL, NULL, FALSE);
 #  ifdef FEAT_LINEBREAK
