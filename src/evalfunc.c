@@ -9806,7 +9806,7 @@ fix_variable_reference_lval_root(lval_root_T *root, char_u *name)
     int found_member = FALSE;
     if (root->lr_tv->v_type == VAR_OBJECT)
     {
-	if (STRNCMP("this.", name, 5) == 0 ||STRCMP("this", name) == 0)
+	if (STRNCMP("this.", name, 5) == 0 || STRCMP("this", name) == 0)
 	    found_member = TRUE;
     }
     if (!found_member)	// not object member, try class member
