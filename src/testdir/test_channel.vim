@@ -2977,6 +2977,35 @@ func Test_stdio_channel()
   call job_stop(job)
 endfunc
 
+" A Vim started with --stdio-channel is not a client-server server, not even
+" with --servername.
+func Test_stdio_channel_no_server()
+  CheckFeature clientserver
+  if has('win32') && has('gui_running')
+    throw 'Skipped: gvim.exe cannot run without the GUI'
+  endif
+  let lines =<< trim END
+    func OnMessage(ch, msg)
+      call ch_sendexpr(a:ch, #{id: a:msg.id, result: v:servername})
+    endfunc
+    call ch_open('stdio', #{mode: 'lsp', callback: 'OnMessage'})
+  END
+  call writefile(lines, 'Xstdio_noserver.vim', 'D')
+
+  let job = job_start([GetVimProg(), '--clean', '--stdio-channel',
+        \ '--servername', 'XSTDIO', '-S', 'Xstdio_noserver.vim'],
+        \ #{in_mode: 'lsp', out_mode: 'lsp'})
+  call assert_equal('run', job_status(job))
+
+  let resp = ch_evalexpr(job, #{method: 'servername'}, #{timeout: 5000})
+  call assert_equal('', resp->get('result', resp))
+  call assert_notmatch('XSTDIO', serverlist())
+
+  call ch_close(job)
+  call WaitForAssert({-> assert_equal('dead', job_status(job))})
+  call job_stop(job)
+endfunc
+
 " A message that is only partly read when Vim gets busy with blocking reads
 " on another channel is not dropped: the rest of it was there to be read.
 func Test_lsp_incomplete_message_while_blocked()
