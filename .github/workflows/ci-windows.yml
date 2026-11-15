@@ -340,6 +340,8 @@ jobs:
             call "%VCVARSALL%" %VCARCH%
 
             echo %COL_GREEN%Test Vim:%COL_RESET%
+            @rem The gvim tests run in parallel: use separate .gcda files.
+            if "${{ matrix.coverage }}"=="yes" set GCOV_PREFIX=%GITHUB_WORKSPACE%\gcov-vim
             cd src2\testdir
             if "${{ matrix.features }}"=="TINY" (
               @rem Run only tiny tests.
@@ -357,6 +359,13 @@ jobs:
         shell: msys2 {0}
         run: |
           cd src
+          if [ -d ../gcov-vim ]; then
+            # Merge the .gcda files of the vim tests into those in src.
+            gcda_dir=$(dirname "$(find ../gcov-vim -name '*.gcda' | head -1)")
+            obj_dir=$(basename "$gcda_dir")
+            gcov-tool merge -o ../gcov-merged "$obj_dir" "$gcda_dir"
+            cp ../gcov-merged/*.gcda "$obj_dir"/
+          fi
           find . -type f -name '*.gcno' -exec gcov -pb {} + || true
 
       - name: Codecov
