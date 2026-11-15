@@ -3777,6 +3777,46 @@ func Test_prop_with_text_above_nowrap_scroll()
   bwipe!
 endfunc
 
+func Test_prop_with_text_after_nowrap_scrolled()
+  call NewWindow(10, 40)
+  setlocal nowrap
+  call setline(1, ['line 1' .. repeat('y', 60), repeat('a', 20), 'line 3'])
+  call prop_type_add('test', #{highlight: 'Normal'})
+  call prop_add(2, 0, #{type: 'test', text: 'After1'})
+  call prop_add(2, 0, #{type: 'test', text: 'After2'})
+  call prop_add(2, 0, #{type: 'test', text: 'Right', text_align: 'right'})
+  call prop_add(2, 0, #{type: 'test', text: 'Below', text_align: 'below'})
+
+  for opt in ['virtualedit=', 'virtualedit=all', 'cursorcolumn',
+        \ 'colorcolumn=50']
+    setlocal virtualedit= nocursorcolumn colorcolumn=
+    exe 'setlocal ' .. opt
+
+    call cursor(1, 1)
+    redraw
+    call cursor(1, 60)
+    redraw
+    call assert_equal(39, winsaveview().leftcol, opt)
+    call assert_equal([repeat('y', 27), repeat(' ', 35) .. 'Right', 'Below',
+          \ ''],
+          \ ScreenLines([1, 4], 40)->map({_, v -> substitute(v, '\s*$', '', '')}),
+          \ opt)
+
+    call cursor(1, 1)
+    redraw
+    call cursor(1, 44)
+    redraw
+    call assert_equal(23, winsaveview().leftcol, opt)
+    call assert_equal([repeat('y', 40), 'er1After2' .. repeat(' ', 26) .. 'Right',
+          \ 'Below', ''],
+          \ ScreenLines([1, 4], 40)->map({_, v -> substitute(v, '\s*$', '', '')}),
+          \ opt)
+  endfor
+
+  call prop_type_delete('test')
+  bwipe!
+endfunc
+
 func Test_prop_with_text_below_after_match()
   CheckScreendump
   CheckRunVimInTerminal
