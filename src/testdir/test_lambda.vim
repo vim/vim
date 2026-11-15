@@ -9,11 +9,13 @@ endfunc
 func Test_lambda_with_filter()
   let s:x = 2
   call assert_equal([2, 3], filter([1, 2, 3], {i, v -> v >= s:x}))
+  unlet s:x
 endfunc
 
 func Test_lambda_with_map()
   let s:x = 1
   call assert_equal([2, 3, 4], map([1, 2, 3], {i, v -> v + s:x}))
+  unlet s:x
 endfunc
 
 func Test_lambda_with_sort()
@@ -31,33 +33,23 @@ func Test_lambda_with_timer()
 
   call s:Foo()
   " check timer works
-  for i in range(0, 10)
-    if s:n > 0
-      break
-    endif
-    sleep 10m
-  endfor
+  call WaitForAssert({-> assert_true(s:n > 0)})
 
   " do not collect lambda
   call test_garbagecollect_now()
 
   " check timer still works
   let m = s:n
-  for i in range(0, 10)
-    if s:n > m
-      break
-    endif
-    sleep 10m
-  endfor
+  call WaitForAssert({-> assert_true(s:n > m)})
 
   call timer_stop(s:timer_id)
-  call assert_true(s:n > m)
+  unlet s:n s:timer_id
+  delfunc s:Foo
 endfunc
 
 func Test_lambda_vim9cmd_linebreak()
   CheckFeature timers
 
-  let g:test_is_flaky = 1
   let lines =<< trim END
       vim9cmd call timer_start(10, (x) => {
           # comment
@@ -65,9 +57,7 @@ func Test_lambda_vim9cmd_linebreak()
          })
   END
   call v9.CheckScriptSuccess(lines)
-  " sleep longer on a retry
-  exe 'sleep ' .. [20, 100, 500, 500, 500][g:run_nr] .. 'm'
-  call assert_equal('done', g:result)
+  call WaitForAssert({-> assert_equal('done', get(g:, 'result', ''))})
   unlet g:result
 
   let lines =<< trim END
@@ -105,15 +95,15 @@ endfunc
 
 function Test_lambda_fails()
   call assert_equal(3, {a, b -> a + b}(1, 2))
-  call assert_fails('echo {a, a -> a + a}(1, 2)', 'E853:')
-  call assert_fails('echo {a, b -> a + b)}(1, 2)', 'E451:')
-  echo assert_fails('echo 10->{a -> a + 2}', 'E107:')
+  call assert_fails('echo {a, a -> a + a}(1, 2)', 'E853: Duplicate argument name: a')
+  call assert_fails('echo {a, b -> a + b)}(1, 2)', 'E451: Expected }: )}(1, 2)')
+  call assert_fails('echo 10->{a -> a + 2}', 'E107: Missing parentheses: lambda')
 
   call assert_fails('eval 0->(', "E110: Missing ')'")
-  call assert_fails('eval 0->(3)()', "E1275:")
-  call assert_fails('eval 0->([3])()', "E1275:")
-  call assert_fails('eval 0->({"a": 3})()', "E1275:")
-  call assert_fails('eval 0->(xxx)()', "E121:")
+  call assert_fails('eval 0->(3)()', "E1275: String or function required for ->(expr)")
+  call assert_fails('eval 0->([3])()', "E1275: String or function required for ->(expr)")
+  call assert_fails('eval 0->({"a": 3})()', "E1275: String or function required for ->(expr)")
+  call assert_fails('eval 0->(xxx)()', "E121: Undefined variable: xxx")
 endfunc
 
 func Test_not_lamda()
@@ -123,9 +113,9 @@ endfunc
 
 func Test_lambda_capture_by_reference()
   let v = 1
-  let l:F = {x -> x + v}
+  let F = {x -> x + v}
   let v = 2
-  call assert_equal(12, l:F(10))
+  call assert_equal(12, F(10))
 endfunc
 
 func Test_lambda_side_effect()
@@ -157,16 +147,16 @@ endfunc
 
 func Test_lambda_do_not_share_local_variable()
   func! s:define_funcs()
-    let l:One = {-> split(execute("let a = 'abc' | echo a"))[0]}
-    let l:Two = {-> exists("a") ? a : "no"}
-    return [l:One, l:Two]
+    let One = {-> split(execute("let a = 'abc' | echo a"))[0]}
+    let Two = {-> exists("a") ? a : "no"}
+    return [One, Two]
   endfunc
 
-  let l:F = s:define_funcs()
+  let F = s:define_funcs()
 
-  call assert_equal('no', l:F[1]())
-  call assert_equal('abc', l:F[0]())
-  call assert_equal('no', l:F[1]())
+  call assert_equal('no', F[1]())
+  call assert_equal('abc', F[0]())
+  call assert_equal('no', F[1]())
 endfunc
 
 func Test_lambda_closure_counter()
@@ -175,12 +165,12 @@ func Test_lambda_closure_counter()
     return {-> [execute("let x += 1"), x][-1]}
   endfunc
 
-  let l:F = s:foo()
+  let F = s:foo()
   call test_garbagecollect_now()
-  call assert_equal(1, l:F())
-  call assert_equal(2, l:F())
-  call assert_equal(3, l:F())
-  call assert_equal(4, l:F())
+  call assert_equal(1, F())
+  call assert_equal(2, F())
+  call assert_equal(3, F())
+  call assert_equal(4, F())
 endfunc
 
 func Test_lambda_with_a_var()
@@ -197,12 +187,12 @@ endfunc
 
 func Test_lambda_call_lambda_from_lambda()
   func! s:foo(x)
-    let l:F1 = {-> {-> a:x}}
-    return {-> l:F1()}
+    let F1 = {-> {-> a:x}}
+    return {-> F1()}
   endfunc
 
-  let l:F = s:foo(1)
-  call assert_equal(1, l:F()())
+  let F = s:foo(1)
+  call assert_equal(1, F()())
 endfunc
 
 func Test_lambda_delfunc()
@@ -215,7 +205,7 @@ func Test_lambda_delfunc()
   endfunc
 
   let l:F = s:gen()
-  call assert_fails(':call l:F()', 'E933:')
+  call assert_fails(':call l:F()', 'E933: Function was deleted: <lambda>')
 endfunc
 
 func Test_lambda_scope()
@@ -228,27 +218,27 @@ func Test_lambda_scope()
     return {-> [execute('let c += 100'), c][-1]}
   endfunc
 
-  let l:C = s:NewCounter()
-  let l:D = s:NewCounter2()
+  let C = s:NewCounter()
+  let D = s:NewCounter2()
 
-  call assert_equal(1, l:C())
-  call assert_fails(':call l:D()', 'E121:')
-  call assert_equal(2, l:C())
+  call assert_equal(1, C())
+  call assert_fails(':call D()', 'E121: Undefined variable: c')
+  call assert_equal(2, C())
 endfunc
 
 func Test_lambda_share_scope()
   func! s:New()
     let c = 0
-    let l:Inc0 = {-> [execute('let c += 1'), c][-1]}
-    let l:Dec0 = {-> [execute('let c -= 1'), c][-1]}
-    return [l:Inc0, l:Dec0]
+    let Inc0 = {-> [execute('let c += 1'), c][-1]}
+    let Dec0 = {-> [execute('let c -= 1'), c][-1]}
+    return [Inc0, Dec0]
   endfunc
 
-  let [l:Inc, l:Dec] = s:New()
+  let [Inc, Dec] = s:New()
 
-  call assert_equal(1, l:Inc())
-  call assert_equal(2, l:Inc())
-  call assert_equal(1, l:Dec())
+  call assert_equal(1, Inc())
+  call assert_equal(2, Inc())
+  call assert_equal(1, Dec())
 endfunc
 
 func Test_lambda_circular_reference()
@@ -258,8 +248,12 @@ func Test_lambda_circular_reference()
     return d.f
   endfunc
 
-  call s:Foo()
+  " the lambda keeps the context alive, the dict refers to the lambda
+  let F = s:Foo()
   call test_garbagecollect_now()
+  let d = F()
+  call assert_true(d.f is F)
+  call assert_true(d.f() is d)
   let i = 0 | while i < 10000 | call s:Foo() | let i+= 1 | endwhile
   call test_garbagecollect_now()
 endfunc
@@ -289,12 +283,12 @@ func Test_closure_counter()
     return function('s:bar')
   endfunc
 
-  let l:F = s:foo()
+  let F = s:foo()
   call test_garbagecollect_now()
-  call assert_equal(1, l:F())
-  call assert_equal(2, l:F())
-  call assert_equal(3, l:F())
-  call assert_equal(4, l:F())
+  call assert_equal(1, F())
+  call assert_equal(2, F())
+  call assert_equal(3, F())
+  call assert_equal(4, F())
 
   call assert_match("^\n   function <SNR>\\d\\+_bar() closure"
   \              .. "\n1        let x += 1"
@@ -351,6 +345,46 @@ func Test_named_function_closure()
   call assert_equal(14, s:Abar())
   call test_garbagecollect_now()
   call assert_equal(14, s:Abar())
+  delfunc Afoo
+  delfunc s:Abar
+endfunc
+
+func Test_closure_outer_locked_or_deleted()
+  " a closure cannot change a locked or const variable of the outer scope
+  func! s:LockedOuter()
+    let x = 1
+    lockvar x
+    const y = 2
+    func! s:SetX() closure
+      let x = 3
+    endfunc
+    func! s:SetY() closure
+      let y = 4
+    endfunc
+    call assert_fails('call s:SetX()', 'E741: Value is locked: x')
+    call assert_fails('call s:SetY()', 'E741: Value is locked: y')
+    return [x, y]
+  endfunc
+  call assert_equal([1, 2], s:LockedOuter())
+
+  " the context stays valid after the outer function is deleted or redefined
+  func! s:DelOuter()
+    let s = 'outer'
+    return {-> s}
+  endfunc
+  let F = s:DelOuter()
+  delfunc s:DelOuter
+  call test_garbagecollect_now()
+  call assert_equal('outer', F())
+  func! s:DelOuter()
+    return {-> 'new'}
+  endfunc
+  call assert_equal('outer', F())
+
+  delfunc s:LockedOuter
+  delfunc s:SetX
+  delfunc s:SetY
+  delfunc s:DelOuter
 endfunc
 
 func Test_lambda_with_index()
@@ -361,7 +395,7 @@ endfunc
 
 func Test_lambda_error()
   " This was causing a crash
-  call assert_fails('ec{@{->{d->()()', 'E451:')
+  call assert_fails('ec{@{->{d->()()', 'E451: Expected }: ')
 endfunc
 
 func Test_closure_error()
@@ -371,13 +405,7 @@ func Test_closure_error()
     endfunc
   END
   call writefile(l, 'Xscript', 'D')
-  let caught_932 = 0
-  try
-    source Xscript
-  catch /E932:/
-    let caught_932 = 1
-  endtry
-  call assert_equal(1, caught_932)
+  call assert_fails('source Xscript', 'E932: Closure function should not be at top level: F1')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
