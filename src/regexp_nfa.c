@@ -5624,6 +5624,247 @@ skip_to_start(int c, colnr_T *colp)
     return OK;
 }
 
+#define FIRSTSET_BUDGET 512
+
+    static int
+firstset_has(char_u *set, int b)
+{
+    return (set[b >> 3] >> (b & 7)) & 1;
+}
+
+    static void
+firstset_add_byte(char_u *set, int b)
+{
+    set[b >> 3] |= (char_u)(1 << (b & 7));
+}
+
+    static void
+firstset_add_non_ascii(char_u *set)
+{
+    vim_memset(set + 0x80 / 8, 0xff, 0x80 / 8);
+}
+
+    static void
+firstset_add_char(char_u *set, int c, int ic)
+{
+    char_u	buf[MB_MAXBYTES + 1];
+
+    (*mb_char2bytes)(c, buf);
+    firstset_add_byte(set, buf[0]);
+    if (ic)
+    {
+	(*mb_char2bytes)(MB_CASEFOLD(c), buf);
+	firstset_add_byte(set, buf[0]);
+    }
+}
+
+    static int
+firstset_class(int cls, int c)
+{
+    switch (cls)
+    {
+	case NFA_WHITE:
+	    return VIM_ISWHITE(c);
+	case NFA_DIGIT:
+	    return ri_digit(c);
+	case NFA_HEX:
+	    return ri_hex(c);
+	case NFA_OCTAL:
+	    return ri_octal(c);
+	case NFA_WORD:
+	    return ri_word(c);
+	case NFA_HEAD:
+	    return ri_head(c);
+	case NFA_ALPHA:
+	    return ri_alpha(c);
+	case NFA_LOWER:
+	case NFA_LOWER_IC:
+	    return ri_lower(c);
+	case NFA_UPPER:
+	case NFA_UPPER_IC:
+	    return ri_upper(c);
+    }
+    return TRUE;
+}
+
+    static int
+nfa_get_firstset(nfa_state_T *p, char_u *set, int ic, int *budget)
+{
+    nfa_state_T	*s;
+    int		c;
+
+    while (p != NULL)
+    {
+	if (--*budget < 0)
+	    return FALSE;
+	switch (p->c)
+	{
+	    case NFA_BOL:
+	    case NFA_BOF:
+	    case NFA_BOW:
+	    case NFA_EOW:
+	    case NFA_ZSTART:
+	    case NFA_ZEND:
+	    case NFA_CURSOR:
+	    case NFA_VISUAL:
+	    case NFA_LNUM:
+	    case NFA_LNUM_GT:
+	    case NFA_LNUM_LT:
+	    case NFA_COL:
+	    case NFA_COL_GT:
+	    case NFA_COL_LT:
+	    case NFA_VCOL:
+	    case NFA_VCOL_GT:
+	    case NFA_VCOL_LT:
+	    case NFA_MARK:
+	    case NFA_MARK_GT:
+	    case NFA_MARK_LT:
+	    case NFA_MOPEN:
+	    case NFA_MOPEN1:
+	    case NFA_MOPEN2:
+	    case NFA_MOPEN3:
+	    case NFA_MOPEN4:
+	    case NFA_MOPEN5:
+	    case NFA_MOPEN6:
+	    case NFA_MOPEN7:
+	    case NFA_MOPEN8:
+	    case NFA_MOPEN9:
+	    case NFA_NOPEN:
+#ifdef FEAT_SYN_HL
+	    case NFA_ZOPEN:
+	    case NFA_ZOPEN1:
+	    case NFA_ZOPEN2:
+	    case NFA_ZOPEN3:
+	    case NFA_ZOPEN4:
+	    case NFA_ZOPEN5:
+	    case NFA_ZOPEN6:
+	    case NFA_ZOPEN7:
+	    case NFA_ZOPEN8:
+	    case NFA_ZOPEN9:
+#endif
+		p = p->out;
+		break;
+
+	    case NFA_SPLIT:
+		return nfa_get_firstset(p->out, set, ic, budget)
+			&& nfa_get_firstset(p->out1, set, ic, budget);
+
+	    case NFA_START_COLL:
+		for (s = p->out; s->c != NFA_END_COLL; s = s->out)
+		{
+		    if (--*budget < 0)
+			return FALSE;
+		    if (s->c == NFA_RANGE_MIN)
+		    {
+			int c1 = s->val;
+			int c2;
+
+			s = s->out;
+			c2 = s->val;
+			for (c = MAX(c1, 1); c <= MIN(c2, 0x7f); ++c)
+			    firstset_add_byte(set, c);
+			if (c2 >= 0x80)
+			{
+			    if (ic)
+				return FALSE;
+			    firstset_add_non_ascii(set);
+			}
+		    }
+		    else if (s->c == NFA_CLASS_IDENT
+			    || s->c == NFA_CLASS_KEYWORD
+			    || s->c == NFA_CLASS_FNAME
+			    || s->c == NFA_CLASS_PRINT
+			    || s->c == NFA_COMPOSING)
+			return FALSE;
+		    else if (s->c < 0)
+		    {
+			for (c = 1; c < 0x80; ++c)
+			    if (check_char_class(s->c, c) == OK)
+				firstset_add_byte(set, c);
+			firstset_add_non_ascii(set);
+		    }
+		    else
+			firstset_add_char(set, s->c, ic);
+		}
+		return TRUE;
+
+	    case NFA_WHITE:
+	    case NFA_DIGIT:
+	    case NFA_HEX:
+	    case NFA_OCTAL:
+	    case NFA_WORD:
+	    case NFA_HEAD:
+	    case NFA_ALPHA:
+	    case NFA_LOWER:
+	    case NFA_UPPER:
+	    case NFA_LOWER_IC:
+	    case NFA_UPPER_IC:
+		for (c = 1; c < 0x80; ++c)
+		    if (firstset_class(p->c, c))
+			firstset_add_byte(set, c);
+		return TRUE;
+
+	    default:
+		if (p->c > 0)
+		{
+		    firstset_add_char(set, p->c, ic);
+		    return TRUE;
+		}
+		return FALSE;
+	}
+    }
+    return FALSE;
+}
+
+    static void
+nfa_set_firstset(nfa_regprog_T *prog)
+{
+    int		ic;
+    int		c;
+
+    prog->has_firstset = FALSE;
+    if (prog->regstart != NUL || prog->reganch || (has_mbyte && !enc_utf8))
+	return;
+    vim_memset(prog->firstset, 0, sizeof(prog->firstset));
+    for (ic = 0; ic < 2; ++ic)
+    {
+	char_u	*set = prog->firstset[ic];
+	int	budget = FIRSTSET_BUDGET;
+
+	if (!nfa_get_firstset(prog->start, set, ic, &budget))
+	    return;
+	if (ic)
+	{
+	    for (c = 'A'; c <= 'Z'; ++c)
+		if (firstset_has(set, c) || firstset_has(set, TOLOWER_ASC(c)))
+		{
+		    firstset_add_byte(set, c);
+		    firstset_add_byte(set, TOLOWER_ASC(c));
+		}
+	    firstset_add_non_ascii(set);
+	}
+    }
+    prog->has_firstset = TRUE;
+}
+
+    static int
+skip_to_firstset(char_u *set, colnr_T *colp)
+{
+    char_u	*s = rex.line + *colp;
+
+    while (!firstset_has(set, *s))
+    {
+	if (*s == NUL)
+	    return FAIL;
+	if (s[1] < 0x80)
+	    ++s;
+	else
+	    s += (*mb_ptr2len)(s);
+    }
+    *colp = (colnr_T)(s - rex.line);
+    return OK;
+}
+
 /*
  * Check for a match with match_text.
  * Called after skip_to_start() has found regstart.
@@ -7134,6 +7375,21 @@ nfa_regmatch(
 			}
 		    }
 		}
+		else if (prog->has_firstset && clen != 0)
+		{
+		    char_u *set = prog->firstset[rex.reg_ic ? 1 : 0];
+
+		    if (nextlist->n == 0)
+		    {
+			colnr_T col = (colnr_T)(rex.input - rex.line) + clen;
+
+			if (skip_to_firstset(set, &col) == FAIL)
+			    break;
+			rex.input = rex.line + col - clen;
+		    }
+		    else if (!firstset_has(set, rex.input[clen]))
+			add = FALSE;
+		}
 
 		if (add)
 		{
@@ -7485,6 +7741,10 @@ nfa_regexec_both(
 	}
     }
 
+    if (prog->has_firstset && skip_to_firstset(
+			     prog->firstset[rex.reg_ic ? 1 : 0], &col) == FAIL)
+	return 0L;
+
     // If the start column is past the maximum column: no need to try.
     if (rex.reg_maxcol > 0 && col >= rex.reg_maxcol)
 	goto theend;
@@ -7616,6 +7876,7 @@ nfa_regcomp(char_u *expr, int re_flags)
     prog->reganch = nfa_get_reganch(prog->start, 0);
     prog->regstart = nfa_get_regstart(prog->start, 0);
     prog->match_text = nfa_get_match_text(prog->start);
+    nfa_set_firstset(prog);
 
 #ifdef ENABLE_LOG
     nfa_postfix_dump(expr, OK);
