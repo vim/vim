@@ -1608,6 +1608,54 @@ def Test_class_object_compare()
   endfor
 enddef
 
+" Test that objects cannot be compared with an ordering operator by max(),
+" min() and in a legacy script
+def Test_object_ordering_compare()
+  var lines =<< trim END
+    vim9script
+    class A
+    endclass
+    enum Color
+      Red, Green, Blue
+    endenum
+    assert_fails('max(Color.values)', 'E1153: Invalid operation for object')
+    assert_fails('min(Color.values)', 'E1153: Invalid operation for object')
+    assert_fails('max({a: Color.Red, b: Color.Blue})', 'E1153: Invalid operation for object')
+    assert_fails('min((Color.Red, Color.Blue))', 'E1153: Invalid operation for object')
+    assert_fails('max([A.new(), A.new()])', 'E1153: Invalid operation for object')
+    # with a single item there is nothing to compare
+    assert_true(max([Color.Green]) is Color.Green)
+
+    def Fn(): any
+      return max(Color.values)
+    enddef
+    assert_fails('Fn()', 'E1153: Invalid operation for object')
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    export class A
+    endclass
+    export enum Color
+      Red, Green
+    endenum
+  END
+  writefile(lines, 'Xobjectcompare.vim', 'D')
+
+  lines =<< trim END
+    import './Xobjectcompare.vim' as m
+    call assert_fails('echo s:m.Color.Red < s:m.Color.Green', 'E1153: Invalid operation for object')
+    call assert_fails('echo s:m.Color.Green >= s:m.Color.Red', 'E1153: Invalid operation for object')
+    call assert_fails('echo s:m.A.new() <= s:m.A.new()', 'E1153: Invalid operation for object')
+    call assert_true(s:m.Color.Red == s:m.Color.Red)
+    call assert_true(s:m.Color.Red != s:m.Color.Green)
+    call assert_true(s:m.Color.Red is s:m.Color.Red)
+    call assert_true(s:m.A.new() isnot s:m.A.new())
+  END
+  v9.CheckSourceScriptSuccess(lines)
+enddef
+
 def Test_object_type()
   var lines =<< trim END
     vim9script
