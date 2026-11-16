@@ -1656,6 +1656,13 @@ call_partial(
     int		res = FAIL;
     dict_T	*selfdict = NULL;
 
+    if ((tv->v_type == VAR_PARTIAL && tv->vval.v_partial == NULL)
+	    || (tv->v_type == VAR_FUNC && tv->vval.v_string == NULL))
+    {
+	emsg(_(e_empty_function_name));
+	return FAIL;
+    }
+
     if (tv->v_type == VAR_PARTIAL)
     {
 	partial_T   *pt = tv->vval.v_partial;
