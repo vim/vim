@@ -8840,6 +8840,11 @@ ex_copymove(exarg_T *eap)
 	return;
     }
     get_flags(eap);
+    if (*eap->arg)
+    {
+	semsg(_(e_trailing_characters_str), eap->arg);
+	return;
+    }
 
     /*
      * move or copy lines from 'eap->line1'-'eap->line2' to below line 'n'

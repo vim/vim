@@ -74,6 +74,11 @@ func Test_copy()
   exe "normal! gg4:yank\<CR>"
   call assert_equal("L1\nL2\nL1\nL2\n", @")
 
+  call assert_fails("copy 1 trailing", 'E488:')
+  call assert_fails("copy 1trailing", 'E488:')
+  call assert_fails("copy 1 lp# trailing", 'E488:')
+  call assert_fails("copy 1 lp#trailing", 'E488:')
+
   bw!
 endfunc
 
