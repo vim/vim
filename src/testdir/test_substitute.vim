@@ -494,7 +494,8 @@ func Test_substitute_partial()
 
   " 20 arguments plus one is too many
   let Replacer = function('SubReplacer20', repeat(['foo'], 20))
-  call assert_fails("call substitute('123', '2', Replacer, 'g')", 'E118:')
+  call assert_fails("call substitute('123', '2', Replacer, 'g')",
+        \ 'E118: Too many arguments for function: SubReplacer20')
 endfunc
 
 func Test_substitute_float()

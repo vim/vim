@@ -829,11 +829,10 @@ func Test_function_with_funcref()
       let s:F = function('type')
       let s:Fref = function(s:F)
       call assert_equal(v:t_string, s:Fref('x'))
-      call assert_fails("call function('s:F')", 'E700:')
+      call assert_fails("call function('s:F')", 'E700: Unknown function: s:F')
 
-      call assert_fails("call function('foo()')", 'E475:')
-      call assert_fails("call function('foo()')", 'foo()')
-      call assert_fails("function('')", 'E129:')
+      call assert_fails("call function('foo()')", 'E475: Invalid argument: foo()')
+      call assert_fails("call function('')", 'E129: Function name required')
 
       let s:Len = {s -> strlen(s)}
       call assert_equal(6, s:Len('foobar'))
@@ -849,11 +848,10 @@ func Test_function_with_funcref()
       var F = function('type')
       var Fref = function(F)
       call assert_equal(v:t_string, Fref('x'))
-      call assert_fails("call function('F')", 'E700:')
+      call assert_fails("call function('F')", 'E700: Unknown function: F')
 
-      call assert_fails("call function('foo()')", 'E475:')
-      call assert_fails("call function('foo()')", 'foo()')
-      call assert_fails("function('')", 'E129:')
+      call assert_fails("call function('foo()')", 'E475: Invalid argument: foo()')
+      call assert_fails("call function('')", 'E129: Function name required')
 
       var Len = (s) => strlen(s)
       call assert_equal(6, Len('foobar'))
@@ -878,10 +876,12 @@ func Test_funcref()
   call assert_equal(1, OneByRef())
   let OneByRef = 'One'->funcref()
   call assert_equal(2, OneByRef())
-  call assert_fails('echo funcref("{")', 'E475:')
+  call assert_fails('echo funcref("{")', 'E475: Invalid argument: {')
   let OneByRef = funcref("One", repeat(["foo"], 20))
-  call assert_fails('let OneByRef = funcref("One", repeat(["foo"], 21))', 'E118:')
-  call assert_fails('echo function("min") =~ function("min")', 'E694:')
+  call assert_fails('let OneByRef = funcref("One", repeat(["foo"], 21))',
+        \ 'E118: Too many arguments for function: One')
+  call assert_fails('echo function("min") =~ function("min")',
+        \ 'E694: Invalid operation for Funcrefs')
   call assert_fails('echo test_null_function()->funcref()', 'E475: Invalid argument: NULL')
 endfunc
 

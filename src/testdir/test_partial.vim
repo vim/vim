@@ -1,5 +1,5 @@
 " Test binding arguments to a Funcref.
- 
+
 func MyFunc(arg1, arg2, arg3)
   return a:arg1 . '/' . a:arg2 . '/' . a:arg3
 endfunc
@@ -65,19 +65,19 @@ func Test_partial_dict()
   let Cb = function('MyDictFunc', ["foo", "bar"], dict)
   call test_garbagecollect_now()
   call assert_equal("hello/foo/bar", Cb())
-  call assert_fails('Cb("xxx")', 'E492:')
+  call assert_fails('call Cb("xxx")', 'E118: Too many arguments for function: MyDictFunc')
 
   let Cb = function('MyDictFunc', ["foo"], dict)
   call assert_equal("hello/foo/xxx", Cb("xxx"))
-  call assert_fails('Cb()', 'E492:')
+  call assert_fails('call Cb()', 'E119: Not enough arguments for function: MyDictFunc')
 
   let Cb = function('MyDictFunc', [], dict)
   call assert_equal("hello/ttt/xxx", Cb("ttt", "xxx"))
-  call assert_fails('Cb("yyy")', 'E492:')
+  call assert_fails('call Cb("yyy")', 'E119: Not enough arguments for function: MyDictFunc')
 
   let Cb = function('MyDictFunc', dict)
   call assert_equal("hello/xxx/yyy", Cb("xxx", "yyy"))
-  call assert_fails('Cb("fff")', 'E492:')
+  call assert_fails('call Cb("fff")', 'E119: Not enough arguments for function: MyDictFunc')
 
   let Cb = function('MyDictFunc', dict)
   call assert_equal({"foo": "hello/foo/1", "bar": "hello/bar/2"}, map({"foo": 1, "bar": 2}, Cb))
@@ -85,8 +85,8 @@ func Test_partial_dict()
   let dict = {"tr": function('tr', ['hello', 'h', 'H'])}
   call assert_equal("Hello", dict.tr())
 
-  call assert_fails("let F=function('setloclist', 10)", "E923:")
-  call assert_fails("let F=function('setloclist', [], [])", "E1206:")
+  call assert_fails("let F=function('setloclist', 10)", "E923: Second argument of function() must be a list or a dict")
+  call assert_fails("let F=function('setloclist', [], [])", "E1206: Dictionary required for argument 3")
 endfunc
 
 func Test_partial_implicit()
@@ -97,7 +97,7 @@ func Test_partial_implicit()
 
   call assert_equal('foo/bar',  dict.MyFunc('bar'))
 
-  call assert_fails('let func = dict.MyFunc', 'E704:')
+  call assert_fails('let func = dict.MyFunc', 'E704: Funcref variable name must start with a capital: func')
   let Func = dict.MyFunc
   call assert_equal('foo/aaa', Func('aaa'))
 
@@ -111,11 +111,12 @@ endfu
 
 fun OuterCall()
   let opt = { 'func' : function('max') }
-  call InnerCall(opt.func)
+  return InnerCall(opt.func)
 endfu
 
+" Passing a Funcref from a Dict to a function used to crash Vim.
 func Test_function_in_dict()
-  call OuterCall()
+  call assert_equal(function('max'), OuterCall())
 endfunc
 
 func s:cache_clear() dict
@@ -138,6 +139,7 @@ func Test_script_function_in_dict()
   call assert_equal('bar', s:obj2.clear())
   let B = s:obj2.clear
   call assert_equal('bar', B())
+  unlet s:obj s:obj2
 endfunc
 
 func s:cache_arg(arg) dict
@@ -168,6 +170,7 @@ func Test_script_function_in_dict_arg()
   call assert_equal('foo/bar', s:result)
 
   call assert_equal('foo/bar', call(s:obj.clear, [], s:obj))
+  unlet s:obj s:result
 endfunc
 
 func Test_partial_exists()
@@ -214,24 +217,20 @@ func Test_tostring()
   function d.test3()
     echo 42
   endfunction
-  try
-    call string(d.test3)
-  catch
-    call assert_true(v:false, v:exception)
-  endtry
+  call assert_match("^function('\\d\\+', {'d': {...}, 'test3': function('\\d\\+')})$",
+        \ string(d.test3))
 endfunc
 
+" A dict function bound to its Dict can be redefined.
 func Test_redefine_dict_func()
   let d = {}
   function d.test4()
   endfunction
   let d.test4 = d.test4
-  try
-    function! d.test4(name)
-    endfunction
-  catch
-    call assert_true(v:errmsg, v:exception)
-  endtry
+  function! d.test4(name)
+    return a:name
+  endfunction
+  call assert_equal('x', d.test4('x'))
 endfunc
 
 func Test_bind_in_python()
@@ -240,11 +239,18 @@ func Test_bind_in_python()
   function g:d.test2()
   endfunction
   python import vim
-  try
-    call assert_equal(pyeval('vim.bindeval("g:d.test2")'), g:d.test2)
-  catch
-    call assert_true(v:false, v:exception)
-  endtry
+  call assert_equal(g:d.test2, pyeval('vim.bindeval("g:d.test2")'))
+  unlet g:d
+endfunc
+
+func Test_bind_in_python3()
+  CheckFeature python3
+  let g:d = {}
+  function g:d.test2()
+  endfunction
+  py3 import vim
+  call assert_equal(g:d.test2, py3eval('vim.bindeval("g:d.test2")'))
+  unlet g:d
 endfunc
 
 " This caused double free on exit if EXITFREE is defined.
@@ -284,6 +290,8 @@ func Test_ref_job_partial_dict()
   let d = {'a': 'b'}
   call job_setoptions(g:ref_job, {'exit_cb': function('Ignored2', [], d)})
   call test_garbagecollect_now()
+  call WaitForAssert({-> assert_equal('dead', job_status(g:ref_job))})
+  unlet g:ref_job
 endfunc
 
 func Test_auto_partial_rebind()
@@ -323,17 +331,17 @@ func Test_get_partial_items()
   call assert_equal('MyDictFunc', get(Cb, 'name'))
   call assert_equal(args, get(Cb, 'args'))
   call assert_equal(dict, get(Cb, 'dict'))
-  call assert_fails('call get(Cb, "xxx")', 'E475:')
+  call assert_fails('call get(Cb, "xxx")', 'E475: Invalid argument: xxx')
 
   call assert_equal(Func, get(Func, 'func'))
   call assert_equal('MyDictFunc', get(Func, 'name'))
   call assert_equal([], get(Func, 'args'))
-  call assert_true(empty( get(Func, 'dict')))
+  call assert_equal(0, get(Func, 'dict'))
 
   let P = function('substitute', ['hello there', 'there'])
   let dict = {'partial has': 'no dict'}
   call assert_equal(dict, get(P, 'dict', dict))
-  call assert_equal(0, get(l:P, 'dict'))
+  call assert_equal(0, get(P, 'dict'))
 
   call assert_equal({'required': 2, 'optional': 2, 'varargs': v:true},
       \ get(funcref('s:Qux', []), 'arity'))
@@ -367,7 +375,7 @@ func Test_compare_partials()
   let F2 = get(d1, 'f2')
 
   let F1d1 = function(F1, d1)
-  let F2d1 = function(F2, d2)
+  let F2d2 = function(F2, d2)
   let F1d1a1 = function(F1d1, [1])
   let F1d1a12 = function(F1d1, [1, 2])
   let F1a1 = function(F1, [1])
@@ -381,7 +389,7 @@ func Test_compare_partials()
   call assert_match('^function(''\d\+'')$', string(F1))  " Not a partial
   call assert_match('^function(''\d\+'')$', string(F2))  " Not a partial
   call assert_match('^function(''\d\+'', {.*})$', string(F1d1))  " A partial
-  call assert_match('^function(''\d\+'', {.*})$', string(F2d1))  " A partial
+  call assert_match('^function(''\d\+'', {.*})$', string(F2d2))  " A partial
   call assert_match('^function(''\d\+'', \[.*\])$', string(F1a1))  " No dict
 
   " !=
@@ -407,7 +415,7 @@ func Test_compare_partials()
   call assert_true(F1 isnot# F1d1)  " Partial /= non-partial
   call assert_true(F1d1 isnot# F1d3)  " d1 isnot d3, even though d1 == d3
   call assert_true(F1a1 isnot# F1d1a12)  " One has no dict
-  call assert_true(F1a1 isnot# F1a2)  " Different number of arguments
+  call assert_true(F1a1 isnot# F1a2)  " Different arguments
   call assert_true(F1ad1 isnot# F1ad3)  " In arguments d1 isnot d3
 
   " isnot, option 2
@@ -428,7 +436,7 @@ endfunc
 
 func Test_partial_method()
   func Foo(x, y, z)
-    return x + y + z
+    return a:x + a:y + a:z
   endfunc
   let d = {"Fn": function('Foo', [10, 20])}
   call assert_fails('echo 30->d.Fn()', 'E1265: Cannot use a partial here')
@@ -438,6 +446,21 @@ endfunc
 func Test_non_callable_type_as_method()
   let d = {"Fn": 10}
   call assert_fails('echo 30->d.Fn()', 'E1085: Not a callable type: d.Fn')
+endfunc
+
+" The bound arguments and Dict stay valid when the called function removes the
+" only reference to the partial.  A problem is only detected with ASan or
+" valgrind.
+func s:UnletsPartial(a, b) dict
+  unlet g:HeldPartial
+  let junk = repeat(['x'], 100)
+  return [a:a, a:b, self.k]
+endfunc
+
+func Test_partial_holder_cleared_during_call()
+  let g:HeldPartial = function('s:UnletsPartial', ['bound'], {'k': 'self'})
+  call assert_equal(['bound', 'arg', 'self'], g:HeldPartial('arg'))
+  call assert_false(exists('g:HeldPartial'))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
