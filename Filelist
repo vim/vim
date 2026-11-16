@@ -207,6 +207,8 @@ SRC_ALL =	\
 		src/xxd/xxd.c \
 		src/testdir/*.in \
 		src/testdir/*.py \
+		src/testdir/AGENTS.md \
+		src/testdir/AGENTS_AREAS.md \
 		src/testdir/Make_all.mak \
 		src/testdir/README.txt \
 		src/testdir/commondumps.vim \
