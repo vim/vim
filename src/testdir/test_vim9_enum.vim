@@ -323,6 +323,24 @@ def Test_enum_parse()
   END
   v9.CheckSourceFailure(lines, 'E1428: Duplicate enum value: Foo', 3)
 
+  # Enum value with the same name as the "values" class variable
+  lines =<< trim END
+    vim9script
+    enum A
+      Foo, values, Bar
+    endenum
+  END
+  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: values', 3)
+
+  lines =<< trim END
+    vim9script
+    enum A
+      Foo,
+      values
+    endenum
+  END
+  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: values', 4)
+
   # Try extending a class when defining an enum
   lines =<< trim END
     vim9script

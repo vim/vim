@@ -1784,6 +1784,14 @@ enum_parse_values(
 	if (is_duplicate_enum(gap, eni_name_start, eni_name_end))
 	    break;
 
+	// "values" is the class variable with the List of enum values
+	if (eni_name_end - eni_name_start == 6
+		&& STRNCMP(eni_name_start, "values", 6) == 0)
+	{
+	    semsg(_(e_duplicate_variable_str), "values");
+	    break;
+	}
+
 	p = skipwhite(eni_name_end);
 
 	char_u	*init_expr = NULL;
