@@ -2305,7 +2305,14 @@ vim_regsub_both(
 		CLEAR_FIELD(funcexe);
 		funcexe.fe_argv_func = fill_submatch_list;
 		funcexe.fe_evaluate = TRUE;
-		if (expr->v_type == VAR_FUNC)
+		if ((expr->v_type == VAR_FUNC && expr->vval.v_string == NULL)
+			|| (expr->v_type == VAR_PARTIAL
+					       && expr->vval.v_partial == NULL))
+		{
+		    emsg(_(e_empty_function_name));
+		    rettv.v_type = VAR_UNKNOWN;
+		}
+		else if (expr->v_type == VAR_FUNC)
 		{
 		    s = expr->vval.v_string;
 		    call_func(s, -1, &rettv, 1, argv, &funcexe);
