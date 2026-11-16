@@ -161,6 +161,100 @@ func Test_find_complete()
   set path&
 endfunc
 
+" Completion with the depth limiter "**N" in 'path' and 'cdpath'
+func Test_find_complete_path_limiter()
+  " Xlimit/**/f{0,1,2,...}.txt
+  call mkdir('Xlimit/a/b/c/d', 'pR')
+  let files = ['f0.txt', 'f1.txt', 'f2.txt', 'f3.txt', 'f4.txt']
+  let dir = 'Xlimit'
+  for i in range(5)
+    call writefile([], dir .. '/' .. files[i])
+    " don't append anything for the final loop iter
+    let dir ..= '/' .. 'abcd'[i]
+  endfor
+  let cwd = getcwd()
+
+  let tests = [
+        "\ [<path to complete>, <depths to find a file>, <whether it matches findfile()>]
+        \ ['Xlimit/**0', [0], 1],
+        \ ['Xlimit/**1', [0, 1], 1],
+        \ ['Xlimit/**2', [0, 1, 2], 1],
+        \ ['Xlimit/**3', [0, 1, 2, 3], 1],
+        \ ['Xlimit/**4', [0, 1, 2, 3, 4], 1],
+        \ ['Xlimit/**99', [0, 1, 2, 3, 4], 1],
+        \ [cwd .. '/Xlimit/**2', [0, 1, 2], 1],
+        \ ['Xlimit/a/**1', [1, 2], 1],
+        \ ['Xlimit/**0/a', [1], 1],
+        \ ['Xlimit/**0/**0/a/**0', [1], 1],
+        \ ['Xlimit/**1/b', [2], 1],
+        \ ['Xlimit/**3/c', [3], 1],
+        \ ['Xlimit/*/**1/c', [3], 1],
+        \ ['Xlimit/**1/b/**1', [2, 3], 1],
+        \ ['Xlimit/**1/**1', [0, 1, 2], 1],
+        \ ['Xlimit/**1,Xlimit/a/b/**1', [0, 1, 2, 3], 1],
+        "\ no limit is used when the number is out of range
+        \ ['Xlimit/**100', [0, 1, 2, 3, 4], 1],
+        \ ['Xlimit/**-1', [0, 1, 2, 3, 4], 1],
+        \ ['Xlimit/**1000', [0, 1, 2, 3, 4], 1],
+        "\ no limit is used when there would be too many paths, this may find
+        "\ more files than findfile() does
+        \ ['Xlimit/**9/**9', [0, 1, 2, 3, 4], 1],
+        \ ['Xlimit/**10/**10', [0, 1, 2, 3, 4], 1],
+        \ ['Xlimit/**60/b/**1', [2, 3, 4], 0],
+        "\ not a valid limit
+        \ ['Xlimit/**2x', [], 0],
+        \ ['Xlimit/a**2', [], 0],
+        \ ]
+
+  for [path, depths, check_findfile] in tests
+    let &path = path
+    let expected = mapnew(depths, {_, v -> files[v]})
+    call assert_equal(expected, getcompletion('f', 'file_in_path'), path)
+    if check_findfile
+      let found = filter(copy(files), {_, v -> findfile(v, path) != ''})
+      call assert_equal(expected, found, path)
+    endif
+  endfor
+
+  " relative to the directory of the current file
+  new Xlimit/a/f1.txt
+  set path=./**1
+  call assert_equal(['f1.txt', 'f2.txt'], getcompletion('f', 'file_in_path'))
+  set path=./**0/b/**1
+  call assert_equal(['f2.txt', 'f3.txt'], getcompletion('f', 'file_in_path'))
+
+  " relative to the current directory
+  cd Xlimit/a
+  set path=**1
+  call assert_equal(['f1.txt', 'f2.txt'], getcompletion('f', 'file_in_path'))
+  set path=**1/c
+  call assert_equal(['f3.txt'], getcompletion('f', 'file_in_path'))
+  call feedkeys(":find f\<Tab>\<CR>", "xt")
+  call assert_equal('f3.txt', expand('%:t'))
+  call chdir(cwd)
+  %bwipe!
+
+  " directories in 'cdpath'
+  let dirs = ['a', 'b', 'c', 'd']
+  for [cdpath, depths] in [
+        \ ['Xlimit/**0', [0]],
+        \ ['Xlimit/**1', [0, 1]],
+        \ ['Xlimit/**2', [0, 1, 2]],
+        \ ['Xlimit/**1/b', [2]],
+        \ ['Xlimit/**1/b/**1', [2, 3]],
+        \ ['Xlimit/**100', [0, 1, 2, 3]],
+        \ ]
+
+    let &cdpath = cdpath
+    let expected = mapnew(depths, {_, v -> dirs[v] .. '/'})
+    let found = getcompletion('', 'dir_in_path')
+    call map(found, {_, v -> substitute(v, '\\', '/', 'g')})
+    call assert_equal(expected, found, cdpath)
+  endfor
+
+  set path& cdpath&
+endfunc
+
 " Verify that backticks in 'path' are not executed
 func Test_find_completion_backtick_in_path()
   CheckUnix
