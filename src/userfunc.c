@@ -6710,8 +6710,10 @@ ex_defer_inner(
 	}
     }
     int is_builtin = builtin_function(name, -1);
-    r = get_func_arguments(arg, evalarg, FALSE,
+    r = get_func_arguments(arg, evalarg, partial_argc,
 				argvars + partial_argc, &argcount, is_builtin);
+    if (r == FAIL && argcount == MAX_FUNC_ARGS - partial_argc && !aborting())
+	emsg_funcname(e_too_many_arguments_for_function_str_2, name);
     argcount += partial_argc;
 
     if (r == OK)

@@ -938,6 +938,28 @@ func Test_defer_wrong_arguments()
   call v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected string but got number')
 endfunc
 
+" The arguments bound in a partial count for the maximum number of arguments
+" of a deferred function.  Without the check the arguments were stored past
+" the end of an array (only detected with ASan or valgrind).
+func Test_defer_partial_too_many_args()
+  func s:DeferTarget(...)
+    let g:defer_argc = a:0
+  endfunc
+  func s:DeferPartial(bound)
+    let P = function('s:DeferTarget', range(a:bound))
+    defer P(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+  endfunc
+  call s:DeferPartial(0)
+  call assert_equal(20, g:defer_argc)
+  call assert_fails('call s:DeferPartial(1)', 'E740:')
+  call assert_fails('call s:DeferPartial(5)', 'E740:')
+  call assert_fails('call s:DeferPartial(20)', 'E740:')
+  call assert_fails('defer s:DeferTarget(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21)', 'E740:')
+  unlet g:defer_argc
+  delfunc s:DeferTarget
+  delfunc s:DeferPartial
+endfunc
+
 " Test for calling a deferred function after an exception
 func Test_defer_after_exception()
   let g:callTrace = []
