@@ -2976,6 +2976,15 @@ func Test_set_keyprotocol()
   " reset 'term'
   set keyprotocol+=ansi:kitty
   call assert_equal("\<Esc>[=1;1u", &t_TI)
+
+  " Setting t_TI, then 'keyprotocol', then t_TI again used to crash
+  let &t_TI = "\<Esc>[>4;2m"
+  set keyprotocol&
+  set keyprotocol+=ansi:kitty
+  let &t_TI = "\<Esc>[>4;2m"
+  call assert_equal("\<Esc>[>4;2m", &t_TI)
+
+  set keyprotocol&
   let &term = term
 endfunc
 
