@@ -880,6 +880,55 @@ term_setapi({buf}, {expr})				*term_setapi()*
 		Return type: void
 
 
+term_setcallback({buf}, {type}, {func})			*term_setcallback()*
+		Add a handler callback for the given terminal escape sequence
+		type. Note that only unhandled escape sequences are handled,
+		for example OSC 2 is handled internally and can not be handled
+		by a custom callback.
+
+		{type} may be of the following values:
+			"osc"	Operating system command
+			"dcs"	Device control string
+			"apc"	Application program command
+
+		{func} is called with three arguments, the first one being the
+		id of the callback, the second being the buffer number of the
+		terminal, and the third argument being a |Dictionary|
+		describing the escape sequence.
+
+		The dictionary argument contains the following fields:
+			"str"	    The payload of the escape sequence, not
+				    including the string terminator (ST). This
+				    always exists.
+			"command"    If {type} is "osc", then it is a number,
+				    otherwise a string for "dcs". For "apc",
+				    this field does not exist.
+
+		The returned number identifies the added callback, which may
+		be removed using |term_unsetcallback()|.
+
+		For example, the following script implements the OSC 52
+		command for the builtin terminal: >vim
+			vim9script
+
+			def Callback(id: number, bufnr: number, info: dict<any>): void
+			    if info.command != 52
+				return
+			    endif
+
+			    var data: blob = base64_decode(info.str[stridx(info.str, ";") + 1 : ])
+
+			    @+ = join(blob2str(data), "\n")
+			enddef
+
+			autocmd TerminalOpen * term_setcallback(expand("<abuf>") "osc", Callback)
+<
+		Can also be used as a |method|: >
+			GetBufnr()->term_setcallback(type, func)
+<
+		Return type: |Number|
+
+
 term_setkill({buf}, {how})				*term_setkill()*
 		When exiting Vim or trying to close the terminal window in
 		another way, {how} defines whether the job in the terminal can
@@ -1038,6 +1087,17 @@ term_start({cmd} [, {options}])			*term_start()*
 			GetCommand()->term_start()
 <
 		Return type: |Number|
+
+
+term_unsetcallback({buf}, {id})				*term_unsetcallback()*
+		Remove a handler callback from the given terminal buffer. If
+		callback with {id} does not exist, nothing is done. See
+		|term_setcallback()| for what a handler callback is.
+
+		Can also be used as a |method|: >
+			GetBufnr()->term_unsetcallback(id)
+<
+		Return type: void
 
 
 term_wait({buf} [, {time}])					*term_wait()*

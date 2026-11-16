@@ -2530,4 +2530,75 @@ func Test_terminal_unwraps()
   bwipe!
 endfunc
 
+func s:SetSeqInfo(type, id, buf, info)
+  let s:term_info = a:info
+  let s:term_seq = a:type
+endfunc
+
+func s:UnsetSeqInfo(id, buf, info)
+  let s:term_info = a:info
+  call term_unsetcallback(a:buf, a:id)
+endfunc
+
+func Test_terminal_callbacks()
+  CheckRunVimInTerminal
+  CheckUnix
+
+  let buf = Run_shell_in_terminal({})
+
+  let s:term_info = {}
+
+  let id1 = term_setcallback(buf, "osc", function("s:SetSeqInfo", ["osc"]))
+  let id1b = term_setcallback(buf, "osc", function("s:SetSeqInfo", ["osc"]))
+  let id2 = term_setcallback(buf, "dcs", function("s:SetSeqInfo", ["dcs"]))
+  let id3 = term_setcallback(buf, "apc", function("s:SetSeqInfo", ["apc"]))
+
+  " OSC sequence
+  call term_sendkeys(buf, "printf '\\033]52;c;aGVsbG8=\\033\\'\<CR>")
+  call TermWait(buf)
+  call assert_equal("osc", s:term_seq)
+  call assert_equal({'str': 'c;aGVsbG8=', 'command': 52}, s:term_info)
+
+  " DCS sequence
+  call term_sendkeys(buf, "printf '\\033P1;2qhello\\033\\'\<CR>")
+  call TermWait(buf)
+  call assert_equal("dcs", s:term_seq)
+  call assert_equal({'str': 'hello', 'command': '1;2q'}, s:term_info)
+
+  " APC sequence
+  call term_sendkeys(buf, "printf '\\033_PAYLOAD\\033\\'\<CR>")
+  call TermWait(buf)
+  call assert_equal("apc", s:term_seq)
+  call assert_equal({'str': 'PAYLOAD'}, s:term_info)
+
+  let s:term_info = {}
+
+  call term_unsetcallback(buf, id1)
+  call term_unsetcallback(buf, id1b)
+  call term_unsetcallback(buf, id2)
+  call term_unsetcallback(buf, id3)
+
+  " Callback should be removed
+  call term_sendkeys(buf, "printf '\\033]52;c;aGVsbG8=\\033\\'\<CR>")
+  call TermWait(buf)
+  call assert_equal({}, s:term_info)
+
+  let id4 = term_setcallback(buf, "osc", function("s:UnsetSeqInfo"))
+
+  call term_sendkeys(buf, "printf '\\033]52;c;aGVsbG8=\\033\\'\<CR>")
+  call TermWait(buf)
+  call assert_equal({'str': 'c;aGVsbG8=', 'command': 52}, s:term_info)
+
+  let s:term_info = {}
+
+  call term_sendkeys(buf, "printf '\\033]52;c;aGVsbG8=\\033\\'\<CR>")
+  call TermWait(buf)
+  call assert_equal({}, s:term_info)
+
+  let s:term_info = {}
+
+  call StopShellInTerminal(buf)
+  exe buf . 'bwipe'
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

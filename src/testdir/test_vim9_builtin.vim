@@ -4981,6 +4981,12 @@ def Test_term_setapi()
   v9.CheckSourceDefAndScriptFailure(['term_setapi(1, [])'], ['E1013: Argument 2: type mismatch, expected string but got list<any>', 'E1174: String required for argument 2'])
 enddef
 
+def Test_term_setcallback()
+  CheckRunVimInTerminal
+  v9.CheckSourceDefAndScriptFailure(['term_setcallback([], 1, "")'], ['E1013: Argument 1: type mismatch, expected string but got list<any>', 'E1220: String or Number required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['term_setcallback(1, 2, "")'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
+enddef
+
 def Test_term_setkill()
   CheckRunVimInTerminal
   v9.CheckSourceDefAndScriptFailure(['term_setkill([], "p")'], ['E1013: Argument 1: type mismatch, expected string but got list<any>', 'E1220: String or Number required for argument 1'])
@@ -5014,6 +5020,12 @@ def Test_term_start()
   v9.CheckSourceDefAndScriptFailure(['term_start([], [])'], ['E1013: Argument 2: type mismatch, expected dict<any> but got list<any>', 'E1206: Dictionary required for argument 2'])
   v9.CheckSourceDefAndScriptFailure(['term_start("", "")'], ['E1013: Argument 2: type mismatch, expected dict<any> but got string', 'E1206: Dictionary required for argument 2'])
   v9.CheckSourceDefExecAndScriptFailure(['term_start("")'], 'E474: Invalid argument')
+enddef
+
+def Test_term_unsetcallback()
+  CheckRunVimInTerminal
+  v9.CheckSourceDefAndScriptFailure(['term_unsetcallback([], "")'], ['E1013: Argument 1: type mismatch, expected string but got list<any>', 'E1220: String or Number required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['term_unsetcallback(1, "")'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2'])
 enddef
 
 def Test_term_wait()

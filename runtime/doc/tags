@@ -11074,10 +11074,12 @@ term_scrape()	terminal.txt	/*term_scrape()*
 term_sendkeys()	terminal.txt	/*term_sendkeys()*
 term_setansicolors()	terminal.txt	/*term_setansicolors()*
 term_setapi()	terminal.txt	/*term_setapi()*
+term_setcallback()	terminal.txt	/*term_setcallback()*
 term_setkill()	terminal.txt	/*term_setkill()*
 term_setrestore()	terminal.txt	/*term_setrestore()*
 term_setsize()	terminal.txt	/*term_setsize()*
 term_start()	terminal.txt	/*term_start()*
+term_unsetcallback()	terminal.txt	/*term_unsetcallback()*
 term_wait()	terminal.txt	/*term_wait()*
 termblinkresp-variable	eval.txt	/*termblinkresp-variable*
 termcap	term.txt	/*termcap*
