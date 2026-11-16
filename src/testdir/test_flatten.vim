@@ -144,4 +144,11 @@ func Test_flatten_typed_list()
   unlet g:inner g:typed
 endfunc
 
+" flatten() of a List containing a null List must not crash.
+func Test_flatten_null_list()
+  call assert_equal([1, 2], flatten([1, test_null_list(), 2]))
+  call assert_equal([1, 2], flatten([1, [test_null_list()], 2]))
+  call assert_equal([1, 2], flattennew([1, test_null_list(), 2]))
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
