@@ -6378,6 +6378,25 @@ def Test_defer_lambda_funcref()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Using defer with a partial made by function(), which has no function
+" pointer, crashed.
+def Test_defer_function_partial()
+  var lines =<< trim END
+      vim9script
+      def Target(...a: list<any>)
+        g:deferred_args = a
+      enddef
+      def Run()
+        var P = function(Target, [1])
+        defer P(2)
+      enddef
+      Run()
+      assert_equal([1, 2], g:deferred_args)
+      unlet g:deferred_args
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for using defer with a lambda and a command block
 def Test_defer_lambda_func()
   var lines =<< trim END

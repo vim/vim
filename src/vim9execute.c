@@ -1228,7 +1228,7 @@ invoke_defer_funcs(ectx_T *ectx)
 	    pt = functv->vval.v_partial;
 	    functv->vval.v_partial = NULL;
 
-	    name = pt->pt_func->uf_name;
+	    name = partial_name(pt);
 	    funcexe.fe_partial = pt;
 	    funcexe.fe_object = pt->pt_obj;
 	    if (funcexe.fe_object != NULL)
