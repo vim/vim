@@ -1,4 +1,4 @@
-*change.txt*	For Vim version 9.2.  Last change: 2026 Sep 25
+*change.txt*	For Vim version 9.2.  Last change: 2026 Nov 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1426,9 +1426,10 @@ labelled '"').
 
 The next three commands always work on whole lines.
 
-:[range]co[py] {address}				*:co* *:copy*
+:[range]co[py] {address} [flags]			*:co* *:copy*
 			Copy the lines given by [range] to below the line
 			given by {address}.
+			See |ex-flags| for [flags].
 
 							*:t*
 :t			Synonym for copy.
@@ -1436,11 +1437,12 @@ The next three commands always work on whole lines.
 			because it is too easily confused with a variable
 			name.
 
-:[range]m[ove] {address}			*:m* *:mo* *:move* *E134*
+:[range]m[ove] {address} [flags]		*:m* *:mo* *:move* *E134*
 			Move the lines given by [range] to below the line
 			given by {address}.
 			Any text properties in [range] are cleared.  See
 			|text-prop-cleared|.
+			See |ex-flags| for [flags].
 
 ==============================================================================
 6. Formatting text					*formatting*

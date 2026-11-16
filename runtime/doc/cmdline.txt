@@ -1,4 +1,4 @@
-*cmdline.txt*	For Vim version 9.2.  Last change: 2026 Oct 25
+*cmdline.txt*	For Vim version 9.2.  Last change: 2026 Nov 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -972,9 +972,9 @@ Visual Mode and Range
 These flags are supported by a selection of Ex commands.  They print the line
 that the cursor ends up after executing the command:
 
-	l	output like for |:list|
-	#	add line number
-	p	output like for |:print|
+	l	output like for `:list`
+	#	output like for `:number`
+	p	output like for `:print`
 
 The flags can be combined, thus "l#" uses both a line number and |:list| style
 output.
