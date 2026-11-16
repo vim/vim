@@ -34,13 +34,17 @@ then it is up to the terminal to handle what selection to use.
 
 The osc52.vim package relies on Vim's clipboard provider functionality, see
 |clipboard-providers|.  To enable it, add the following to your |vimrc|: >vim
-        packadd osc52
-        set clipmethod+=osc52
+        packadd! osc52
+        autocmd VimEnter * ++once set clipmethod+=osc52
 <
 This appends "osc52" to |clipmethod|, causing Vim to try it only after any
 earlier clipboard methods.  This allows Vim to use the system clipboard
 directly when available, and automatically fall back to OSC 52 method when it
 is not (for example, when running over SSH).
+
+The "osc52" provider is defined when the plugin is loaded, after the
+|vimrc| has been read.  Setting 'clipmethod' to a provider that is not
+defined yet gives |E474|, therefore it is done on |VimEnter|.
 
 Note: that this fallback behavior applies only on platforms that use
 |clipmethod| for accessing the clipboard.  On macOS and Windows, Vim does not

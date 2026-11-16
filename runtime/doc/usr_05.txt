@@ -525,9 +525,13 @@ The following configuration variables can be used are "g:hlput_hlgroup" and
 Adding the osc52 package		*osc52-install* *package-osc52*
 ------------------------------------------------------------------------------
 
-To start using this plugin, add one line to your vimrc file: >
+To start using this plugin, add these lines to your vimrc file: >
 	packadd! osc52
+	autocmd VimEnter * ++once set clipmethod+=osc52
 <
+The "osc52" clipboard provider is defined when the plugin is loaded,
+therefore 'clipmethod' is set on |VimEnter|.
+
 The osc52.vim package provides support for the OSC 52 terminal command, which
 allows an application to access the clipboard by communicating directly with
 your terminal.
