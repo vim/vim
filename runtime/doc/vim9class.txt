@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.2.  Last change: 2026 May 21
+*vim9class.txt*	For Vim version 9.2.  Last change: 2026 Oct 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -968,8 +968,17 @@ An enum is a type that can have one of a list of values.  Example: >
 <
 						*enumvalue* *E1422* *E1428*
 The enum values are separated by commas.  More than one enum value can be
-listed in a single line.  The final enum value should not be followed by a
-comma.  Duplicate enum values are not allowed.
+listed in a single line.  A comment can follow an enum value.  The final enum
+value should not be followed by a comma, unless `endenum` directly follows it.
+Duplicate enum values are not allowed.
+
+The enum values must be listed first, before the variables and methods of the
+enum.  An enum without values is allowed, then the "values" List is empty
+(see |enum-values|): >
+
+    enum Empty
+    endenum
+<
 
 An enum value is accessed using the enum name followed by the value name: >
 
@@ -977,7 +986,7 @@ An enum value is accessed using the enum name followed by the value name: >
 <
 Enums are treated as classes, where each enum value is essentially an instance
 of that class.  Unlike typical object instantiation with the |new()| method,
-enum instances cannot be created this way.
+enum instances cannot be created this way, using "Color.new()" gives |E1325|.
 
 An enum can only be defined in a |Vim9| script file.	*E1414*
 An enum cannot be defined inside a function.		*E1435*
@@ -987,7 +996,8 @@ An enum name must start with an uppercase letter.  The name of an enum value
 in an enum can start with an upper or lowercase letter.
 
 							*E1416*
-An enum can implement an interface but cannot extend a class: >
+An enum can implement an interface but cannot extend a class or another
+enum: >
 
     enum MyEnum implements MyIntf
 	Value1,
@@ -997,11 +1007,34 @@ An enum can implement an interface but cannot extend a class: >
 	enddef
     endenum
 <
+The enum values can then be used where the interface type is expected.  A
+class cannot extend an enum, this gives |E1354|.
+
 							*enum-constructor*
 The enum value objects in an enum are constructed like any other objects using
 the |new()| method.  Arguments can be passed to the enum constructor by
 specifying them after the enum value name, just like calling a function.  The
-default constructor doesn't have any arguments.
+default constructor doesn't have any arguments.  The "name" and "ordinal"
+object variables (see |enum-name| and |enum-ordinal|) are already set when the
+constructor is invoked.
+
+The constructor of an enum can be a generic function, see
+|generic-functions|.  Then the type arguments are specified after the enum
+value name: >
+
+    enum Pair
+	Words<string, string>('hello', 'world'),
+	Flags<bool, bool>(true, false)
+
+	const first: any
+	const second: any
+
+	def new<T, U>(f: T, s: U)
+	    this.first = f
+	    this.second = s
+	enddef
+    endenum
+<
 
 							*E1417*
 An enum can contain class variables, class methods, object variables and
@@ -1025,8 +1058,11 @@ The following example shows an enum with object variables and methods: >
     echo Planet.Earth.has_rings
 <
 						*E1421* *E1423* *E1424* *E1425*
-Enums and their values are immutable.  They cannot be utilized as numerical or
-string types.  Enum values can declare mutable instance variables.
+Enums and their values are immutable.  An enum value cannot be changed
+|E1423|.  An enum cannot be used as a value, e.g. it cannot be assigned to a
+variable |E1421|.  An enum value cannot be used as a Number |E1424| or as a
+String |E1425|.  Enum values can declare mutable instance variables, e.g. with
+"public var", see |public-variable|.
 
 						*enum-name* *E1427*
 Each enum value object has a "name" instance variable which contains the name
@@ -1067,16 +1103,18 @@ variables for the enum value name and the enum value ordinal: >
 The above enum definition is equivalent to the following class definition: >
 
     class Planet
-      public static final Mercury: Planet = Planet.new('Mercury', 0)
-      public static final Venus: Planet = Planet.new('Venus', 1)
+      static const Mercury: Planet = Planet.new('Mercury', 0)
+      static const Venus: Planet = Planet.new('Venus', 1)
 
-      public static const values: list<Planet> = [Planet.Mercury, Planet.Venus]
+      static const values: list<Planet> = [Planet.Mercury, Planet.Venus]
 
-      public const name: string
-      public const ordinal: number
+      const name: string
+      const ordinal: number
     endclass
 <
-A enum can contain object variables and methods just like a regular class: >
+The difference is that new() cannot be used to create more enum values.
+
+An enum can contain object variables and methods just like a regular class: >
 
     enum Color
 	Cyan([0, 255, 255]),
@@ -1090,6 +1128,40 @@ A enum can contain object variables and methods just like a regular class: >
 	enddef
     endenum
     echo Color.Magenta.Get_RGB()
+<
+							*enum-type*
+The enum name is used as the type of its enum values, e.g. for a variable, a
+function argument or a List item.  A value of another enum cannot be used
+where an enum type is expected, this gives |E1012|: >
+
+    def Paint(c: Color): list<Color>
+	return [c, Color.Gray]
+    enddef
+<
+|type()| returns |v:t_enum| for an enum and |v:t_enumvalue| for an enum
+value.  |typename()| returns "enum<Color>" for both.  |string()| returns
+"enum Color" for an enum and "enum Color.Gray {name: 'Gray', ordinal: 2, ...}"
+for an enum value, including the other object variables.
+
+Enum values can be compared using "==", "!=", "is" and "isnot".  Each enum
+value is a single object, see |vim9-comparators|.  Other comparison operators
+cannot be used with enum values.
+
+							*enum-export*
+An enum can be exported from a script and imported in another script, like a
+class (see |vim9-export| and |vim9-import|).  For example, in the file
+"colors.vim": >
+
+    vim9script
+    export enum Color
+	Red, Green
+    endenum
+<
+And in another script: >
+
+    vim9script
+    import './colors.vim'
+    var c: colors.Color = colors.Color.Green
 <
 ==============================================================================
 
