@@ -3779,6 +3779,17 @@ exec_instructions(ectx_T *ectx)
 	{
 	    // Constructor, first instruction in a new() method.
 	    case ISN_CONSTRUCT:
+		// An enum can only be instantiated to create its enum values,
+		// also when new() is reached through a funcref or a compiled
+		// call.
+		if (IS_ENUM(iptr->isn_arg.construct.construct_class)
+			&& enum_next_value_idx(
+				iptr->isn_arg.construct.construct_class) < 0)
+		{
+		    semsg(_(e_method_not_found_on_class_str_str), "new",
+		      iptr->isn_arg.construct.construct_class->class_name.string);
+		    goto on_error;
+		}
 		// "this" is always the local variable at index zero
 		tv = STACK_TV_VAR(0);
 		tv->v_type = VAR_OBJECT;

@@ -1613,6 +1613,42 @@ def Test_enum_custom_constructor()
     assert_equal([40, 'qux'], [Fruit.Mango.n, Fruit.Mango.s])
   END
   v9.CheckSourceSuccess(lines)
+  # new() reached from inside the enum: from a class variable initializer,
+  # from a function compiled while the enum is defined and through a funcref
+  lines =<< trim END
+    vim9script
+    enum Color
+      Red, Green
+      static var extra: Color = Color.new()
+    endenum
+  END
+  v9.CheckSourceFailure(lines, 'E1325: Method "new" not found in class "Color"', 1)
+
+  lines =<< trim END
+    vim9script
+    enum Color
+      Red, Green
+      static var unused: Color = Color.Make(false)
+      static def Make(create: bool): Color
+        if create
+          return Color.new()
+        endif
+        return null_object
+      enddef
+    endenum
+    Color.Make(true)
+  END
+  v9.CheckSourceFailure(lines, 'E1325: Method "new" not found in class "Color"', 1)
+
+  lines =<< trim END
+    vim9script
+    enum Color
+      Red, Green
+      static var Mk: func = Color.new
+    endenum
+    Color.Mk()
+  END
+  v9.CheckSourceFailure(lines, 'E1325: Method "new" not found in class "Color"', 1)
 enddef
 
 " Test for using class variables in an enum class {{{1
