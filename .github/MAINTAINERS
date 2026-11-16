@@ -347,6 +347,7 @@ runtime/ftplugin/sshdconfig.vim				@jiangyinzuo
 runtime/ftplugin/svelte.vim				@igorlfs
 runtime/ftplugin/sway.vim				@ribru17
 runtime/ftplugin/swayconfig.vim				@jamespeapen
+runtime/ftplugin/swift.vim				@bitigchi
 runtime/ftplugin/sysml.vim				@daumantas-kavolis-sensmetry
 runtime/ftplugin/systemverilog.vim			@Kocha
 runtime/ftplugin/swig.vim				@jmarrec
@@ -739,6 +740,7 @@ runtime/syntax/sudoers.vim				@e-kwsm
 runtime/syntax/svelte.vim				@231tr0n
 runtime/syntax/svn.vim					@hdima
 runtime/syntax/swayconfig.vim				@jamespeapen
+runtime/syntax/swift.vim				@bitigchi
 runtime/syntax/swig.vim					@jmarrec
 runtime/syntax/systemverilog.vim			@Kocha
 runtime/syntax/tap.vim					@petdance
