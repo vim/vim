@@ -18,6 +18,12 @@ func Test_no_clipmethod_sets_v_clipmethod_none()
   set clipmethod&
 endfunc
 
+" Choose the clipboard method again and return it.
+func s:Clipreset()
+  clipreset
+  return v:clipmethod
+endfunc
+
 " Test if method chosen is in line with clipmethod order
 func Test_clipmethod_order()
   CheckFeature xterm_clipboard
@@ -57,7 +63,9 @@ func Test_clipmethod_order()
   if exists("$DISPLAY")
     set cpm=x11
 
-    call assert_equal("x11", v:clipmethod)
+    " Opening the X display by :xrestore may fail now and then; it is opened
+    " again while waiting.
+    call WaitForAssert({-> assert_equal("x11", s:Clipreset())})
   endif
 
   set cpm=wayland
