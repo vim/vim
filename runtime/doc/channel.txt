@@ -1557,8 +1557,8 @@ payload encoded in JSON-RPC format.  This is described in:
 
     https://www.jsonrpc.org/specification
 
-To encode and send a LSP request/notification message in a Vim |Dict| into a
-LSP JSON-RPC message and to receive and decode a LSP JSON-RPC
+To encode and send an LSP request/notification message in a Vim |Dict| into an
+LSP JSON-RPC message and to receive and decode an LSP JSON-RPC
 response/notification message into a Vim |Dict|, connect to the LSP server
 with the |channel-mode| set to "lsp".
 
@@ -1671,8 +1671,8 @@ The JSON-RPC notification messages from the server are delivered through the
 Depending on the use case, you can use the ch_evalexpr(), ch_sendexpr() and
 ch_sendraw() functions on the same channel.
 
-A LSP request message has the following format (expressed as a Vim Dict).  The
-"params" field is optional: >
+An LSP request message has the following format (expressed as a Vim Dict).
+The "params" field is optional: >
 
     {
 	"jsonrpc": "2.0",
@@ -1681,7 +1681,7 @@ A LSP request message has the following format (expressed as a Vim Dict).  The
 	"params": <list|dict>
     }
 
-A LSP response message has the following format (expressed as a Vim Dict).
+An LSP response message has the following format (expressed as a Vim Dict).
 The "result" and "error" fields are optional: >
 
     {
@@ -1691,8 +1691,8 @@ The "result" and "error" fields are optional: >
 	"error": <dict>
     }
 
-A LSP notification message has the following format (expressed as a Vim Dict).
-The "params" field is optional: >
+An LSP notification message has the following format (expressed as a Vim
+Dict).  The "params" field is optional: >
 
     {
 	"jsonrpc": "2.0",
