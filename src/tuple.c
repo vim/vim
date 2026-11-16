@@ -87,6 +87,21 @@ tuple_set_item(tuple_T *tuple, int idx, typval_T *tv)
 }
 
 /*
+ * Set item "idx" to a number for a tuple previously allocated with
+ * tuple_alloc_with_items().
+ * Each item must be set exactly once.
+ */
+    void
+tuple_set_number(tuple_T *tuple, int idx, varnumber_T nr)
+{
+    typval_T *tv = TUPLE_ITEM(tuple, idx);
+
+    tv->v_type = VAR_NUMBER;
+    tv->vval.v_number = nr;
+    tuple->tv_items.ga_len++;
+}
+
+/*
  * Allocate an empty tuple for a return value, with reference count set.
  * Returns OK or FAIL.
  */

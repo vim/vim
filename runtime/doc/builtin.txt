@@ -783,6 +783,8 @@ test_refcount({expr})		Number	get the reference count of {expr}
 test_setmouse({row}, {col})	none	set the mouse position for testing
 test_settime({expr})		none	set current time for testing
 test_srand_seed([{seed}])	none	set seed for testing srand()
+test_terminal_damage({buf}, {func})
+				none	set damage callback for terminal buffer
 test_unknown()			any	unknown value for testing
 test_void()			none	void value for testing
 timer_info([{id}])		List	information about timers

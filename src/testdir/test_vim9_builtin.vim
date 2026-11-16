@@ -5071,6 +5071,12 @@ def Test_test_srand_seed()
   v9.CheckSourceDefAndScriptFailure(['test_srand_seed("10")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
 enddef
 
+def Test_test_terminal_damage()
+  CheckRunVimInTerminal
+  v9.CheckSourceDefAndScriptFailure(['test_terminal_damage([], "")'], ['E1013: Argument 1: type mismatch, expected string but got list<any>', 'E1220: String or Number required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['test_terminal_damage(1, [])'], ['E1013: Argument 2: type mismatch, expected func(...): any but got list<any>', 'E1256: String or function required for argument 2'])
+enddef
+
 def Test_timer_info()
   v9.CheckSourceDefAndScriptFailure(['timer_info("id")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
   assert_equal([], timer_info(100))

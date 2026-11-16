@@ -11190,6 +11190,7 @@ test_refcount()	testing.txt	/*test_refcount()*
 test_setmouse()	testing.txt	/*test_setmouse()*
 test_settime()	testing.txt	/*test_settime()*
 test_srand_seed()	testing.txt	/*test_srand_seed()*
+test_terminal_damage()	testing.txt	/*test_terminal_damage()*
 test_unknown()	testing.txt	/*test_unknown()*
 test_void()	testing.txt	/*test_void()*
 testing	testing.txt	/*testing*

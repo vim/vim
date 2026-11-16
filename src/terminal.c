@@ -170,6 +170,7 @@ struct terminal_S {
 			     // be NULL
     int		tl_using_altscreen;
     garray_T	tl_osc_buf;	    // incomplete OSC string
+    callback_T	damage_callback;    // Used by builtin test_terminal_damage()
 };
 
 #define TMODE_ONCE 1	    // CTRL-\ CTRL-N used
@@ -1243,6 +1244,8 @@ free_unused_terminals(void)
 
 	free_scrollback(term);
 	ga_clear(&term->tl_osc_buf);
+
+	free_callback(&term->damage_callback);
 
 	term_free_vterm(term);
 	vim_free(term->tl_api);
@@ -3440,6 +3443,40 @@ handle_damage(VTermRect rect, void *user)
     term->tl_dirty_row_end = MAX(term->tl_dirty_row_end, rect.end_row);
     set_dirty_snapshot(term);
     redraw_buf_later(term->tl_buffer, UPD_SOME_VALID);
+
+    if (term->damage_callback.cb_name != NULL)
+    {
+	typval_T	argvars[3] = {0};
+	typval_T	rettv;
+	tuple_T	*tup = tuple_alloc_with_items(4);
+
+	if (tup != NULL)
+	{
+	    tup->tv_refcount = 1;
+
+	    tuple_set_number(tup, 0, rect.start_row);
+	    tuple_set_number(tup, 1, rect.start_col);
+	    tuple_set_number(tup, 2, rect.end_row);
+	    tuple_set_number(tup, 3, rect.end_col);
+
+	    init_tv(argvars + 0);
+	    init_tv(argvars + 1);
+
+	    argvars[0].v_type = VAR_NUMBER;
+	    argvars[0].vval.v_number = term->tl_buffer->b_fnum;
+	    argvars[1].v_type = VAR_TUPLE;
+	    argvars[1].vval.v_tuple = tup;
+
+	    init_tv(&rettv);
+
+	    if (call_callback(&term->damage_callback, -1,
+			&rettv, 2, argvars) == OK)
+		clear_tv(&rettv);
+
+	    tuple_unref(tup);
+	}
+    }
+
     return 1;
 }
 
@@ -5364,12 +5401,15 @@ set_ref_in_term(int copyID)
     typval_T	tv;
 
     for (term = first_term; !abort && term != NULL; term = term->tl_next)
+    {
 	if (term->tl_job != NULL)
 	{
 	    tv.v_type = VAR_JOB;
 	    tv.vval.v_job = term->tl_job;
 	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL, NULL);
 	}
+	abort = abort || set_ref_in_callback(&term->damage_callback, copyID);
+    }
     return abort;
 }
 
@@ -7222,6 +7262,33 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
 	term_flush_messages();
     }
 }
+
+/*
+ * "test_terminal_damage" function (used for testing)
+ */
+    void
+f_test_terminal_damage(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    buf_T	*buf;
+    term_T	*term;
+    callback_T	callback;
+
+    if (check_for_buffer_arg(argvars, 0) == FAIL
+	    || check_for_string_or_func_arg(argvars, 1) == FAIL)
+	return;
+
+    buf = term_get_buf(argvars, "test_terminal_damage()");
+    if (buf == NULL)
+	return;
+    term = buf->b_term;
+
+    callback = get_callback(&argvars[1]);
+    if (callback.cb_name == NULL)
+	return;
+
+    set_callback(&term->damage_callback, &callback);
+}
+
 
 /*
  * Called when a channel has sent all the lines to a terminal.
