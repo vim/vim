@@ -11660,6 +11660,98 @@ def Test_dict_of_objects()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test that the items of a List or Dict with objects of different classes are
+" type checked when assigned to a variable with a List or Dict type
+def Test_mixed_objects_in_typed_container()
+  var header =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    enum Color
+      Red
+    endenum
+    enum Fruit
+      Apple
+    endenum
+  END
+
+  # in a script
+  v9.CheckSourceFailure(header + ['var l: list<A> = [A.new(), B.new()]'],
+        'E1012: Type mismatch; expected object<A> but got object<B>', 12)
+  v9.CheckSourceFailure(header + ['var l: list<Color> = [Color.Red, Fruit.Apple]'],
+        'E1012: Type mismatch; expected enum<Color> but got enum<Fruit>', 12)
+  v9.CheckSourceFailure(header + ['var d: dict<Color> = {a: Color.Red, b: Fruit.Apple}'],
+        'E1012: Type mismatch; expected enum<Color> but got enum<Fruit>', 12)
+  v9.CheckSourceFailure(header + ['var d: dict<list<Color>> = {a: [Color.Red, Fruit.Apple]}'],
+        'E1012: Type mismatch; expected enum<Color> but got enum<Fruit>', 12)
+  v9.CheckSourceFailure(header + ['def Fn(l: list<Color>)', 'enddef',
+                                  'Fn([Color.Red, Fruit.Apple])'],
+        'E1013: Argument 1: type mismatch, expected enum<Color> but got enum<Fruit>', 14)
+
+  # in a def function
+  v9.CheckSourceFailure(header + ['def Fn()',
+                                  '  var l: list<A> = [A.new(), B.new()]',
+                                  'enddef', 'Fn()'],
+        'E1012: Type mismatch; expected object<A> but got object<B>', 1)
+  v9.CheckSourceFailure(header + ['def Fn()',
+                                  '  var l: list<list<Color>> = [[Color.Red], [Fruit.Apple]]',
+                                  'enddef', 'Fn()'],
+        'E1012: Type mismatch; expected list<enum<Color>> but got list<enum<Fruit>>', 1)
+  v9.CheckSourceFailure(header + ['def Fn(l: list<Color>)', 'enddef',
+                                  'def Gn()', '  Fn([Color.Red, Fruit.Apple])',
+                                  'enddef', 'Gn()'],
+        'E1013: Argument 1: type mismatch, expected enum<Color> but got enum<Fruit>', 1)
+
+  # objects of different classes with a common interface or base class and
+  # null objects can still be used
+  var lines =<< trim END
+    vim9script
+    interface I
+      def Name(): string
+    endinterface
+    class A implements I
+      def Name(): string
+        return 'A'
+      enddef
+    endclass
+    class B implements I
+      def Name(): string
+        return 'B'
+      enddef
+    endclass
+    class C extends A
+    endclass
+    enum Color
+      Red
+    endenum
+
+    var l: list<I> = [A.new(), B.new()]
+    assert_equal(['A', 'B'], l->mapnew((_, v) => v.Name()))
+    var l2: list<A> = [A.new(), C.new()]
+    assert_equal(2, len(l2))
+    var l3: list<Color> = [Color.Red, null_object]
+    assert_true(l3[1] == null_object)
+    var l4: list<object<any>> = [A.new(), B.new()]
+    assert_equal('list<object<any>>', typename([A.new(), B.new()]))
+
+    def Fn(): list<string>
+      var m: list<I> = [A.new(), B.new()]
+      var m2: list<A> = [C.new(), A.new()]
+      var m3: list<Color> = [null_object, Color.Red]
+      var names: list<string> = []
+      for o in [A.new(), B.new()]
+        names->add(o.Name())
+      endfor
+      return m->mapnew((_, v) => v.Name()) + names
+                + [string(len(m2)), string(m3[1] is Color.Red)]
+    enddef
+    assert_equal(['A', 'B', 'A', 'B', '2', 'true'], Fn())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for using the type() and typename() functions with a variable of type
 " object
 def Test_type_typename_funcs_with_object_variable()

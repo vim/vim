@@ -1071,6 +1071,61 @@ matches_listdict_any(type_T *expected, typval_T *actual_tv)
 }
 
 /*
+ * Return TRUE if "actual" is an object type without a class where "expected"
+ * is an object type with a class, possibly as the member type of a List or a
+ * Dict.  The common type of objects of different classes is "object<any>", in
+ * that case each item needs to be checked.
+ */
+    static int
+need_object_items_check(type_T *expected, type_T *actual)
+{
+    if (expected == NULL || actual == NULL)
+	return FALSE;
+    if (expected->tt_type == VAR_OBJECT && actual->tt_type == VAR_OBJECT)
+	return expected->tt_class != NULL && actual->tt_class == NULL;
+    if ((expected->tt_type == VAR_LIST || expected->tt_type == VAR_DICT)
+	    && actual->tt_type == expected->tt_type)
+	return need_object_items_check(expected->tt_member, actual->tt_member);
+    return FALSE;
+}
+
+/*
+ * Check the type of each item in the List or Dict "tv" against the member
+ * type of "expected".
+ */
+    static int
+check_typval_items_type(type_T *expected, typval_T *tv, where_T where)
+{
+    if (tv->v_type == VAR_LIST && tv->vval.v_list != NULL)
+    {
+	listitem_T	*li;
+
+	CHECK_LIST_MATERIALIZE(tv->vval.v_list);
+	FOR_ALL_LIST_ITEMS(tv->vval.v_list, li)
+	    if (check_typval_type(expected->tt_member, &li->li_tv, where)
+								      == FAIL)
+		return FAIL;
+    }
+    else if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
+    {
+	hashtab_T	*ht = &tv->vval.v_dict->dv_hashtab;
+	hashitem_T	*hi;
+	int		todo = (int)ht->ht_used;
+
+	FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
+	{
+	    if (HASHITEM_EMPTY(hi))
+		continue;
+	    --todo;
+	    if (check_typval_type(expected->tt_member, &HI2DI(hi)->di_tv,
+								where) == FAIL)
+		return FAIL;
+	}
+    }
+    return OK;
+}
+
+/*
  * Return FAIL if "expected" and "actual" don't match.
  * When "argidx" > 0 it is included in the error message.
  */
@@ -1116,6 +1171,8 @@ check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
 	    type_mismatch_where(expected, actual_type, where);
 	    res = FAIL;
 	}
+	else if (res == OK && need_object_items_check(expected, actual_type))
+	    res = check_typval_items_type(expected, actual_tv, where);
     }
     clear_type_list(&type_list);
     return res;
@@ -2617,6 +2674,22 @@ get_decl_type_on_stack(cctx_T *cctx, int offset)
 }
 
 /*
+ * Return TRUE if "type" is "object<any>", possibly as the member type of a
+ * List or a Dict.
+ */
+    static int
+type_has_object_any(type_T *type)
+{
+    if (type == NULL)
+	return FALSE;
+    if (type->tt_type == VAR_OBJECT)
+	return type->tt_class == NULL;
+    if (type->tt_type == VAR_LIST || type->tt_type == VAR_DICT)
+	return type_has_object_any(type->tt_member);
+    return FALSE;
+}
+
+/*
  * Get the member type of a dict or list from the items on the stack of "cctx".
  * The declared type is stored in "decl_type".
  * For a list "skip" is 1, for a dict "skip" is 2, keys are skipped.
@@ -2649,6 +2722,19 @@ get_member_type_from_stack(
 	    return NULL;
 	if (result != &t_any)
 	    common_type(type, result, &result, type_gap);
+    }
+
+    // The common type of objects of different classes is "object<any>",
+    // which would match any object type without checking the items.  Use
+    // "any" so that the items are checked at runtime.
+    if (result != &t_any && type_has_object_any(result))
+    {
+	for (i = 0; i < count; ++i)
+	{
+	    type = (typep -((count - i) * skip) + skip - 1)->type_curr;
+	    if (!equal_type(type, result, 0))
+		return &t_any;
+	}
     }
 
     return result;
