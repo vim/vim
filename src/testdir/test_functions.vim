@@ -1092,24 +1092,32 @@ func Test_append()
   " Using $ instead of '$' must give an error
   call assert_fails("call append($, 'foobar')", 'E116:')
 
-  call assert_fails("call append({}, '')", ['E728:', 'E728:'])
+  let ret = 0
+  call assert_fails("let ret = append({}, '')", ['E728:', 'E728:'])
+  call assert_equal(1, ret)
 endfunc
 
 " Test for setline()
 func Test_setline()
   new
-  call setline(0, ["foo"])
-  call setline(0, [])
-  call setline(0, test_null_list())
-  call setline(1, ["bar"])
-  call setline(1, [])
-  call setline(1, test_null_list())
-  call setline(2, [])
-  call setline(2, test_null_list())
-  call setline(3, [])
-  call setline(3, test_null_list())
-  call setline(2, ["baz"])
+  " 0 is not a valid line number, so setline() returns 1
+  call assert_equal(1, setline(0, ["foo"]))
+  call assert_equal(1, setline(0, []))
+  call assert_equal(1, setline(0, test_null_list()))
+
+  call assert_equal(0, setline(1, ["bar"]))
+  call assert_equal(0, setline(1, []))
+  call assert_equal(0, setline(1, test_null_list()))
+  call assert_equal(0, setline(2, []))
+  call assert_equal(0, setline(2, test_null_list()))
+  call assert_equal(0, setline(3, []))
+  call assert_equal(0, setline(3, test_null_list()))
+  call assert_equal(0, setline(2, ["baz"]))
   call assert_equal(['bar', 'baz'], getline(1, '$'))
+
+  let ret = 0
+  call assert_fails("let ret = setline({}, '')", ['E728:', 'E728:'])
+  call assert_equal(1, ret)
   bw!
 endfunc
 

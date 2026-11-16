@@ -337,6 +337,8 @@ f_append(typval_T *argvars, typval_T *rettv)
     lnum = tv_get_lnum(&argvars[0]);
     if (did_emsg == did_emsg_before)
 	set_buffer_lines(curbuf, lnum, TRUE, &argvars[1], rettv);
+    else
+	rettv->vval.v_number = 1; // FAIL
 }
 
 /*
@@ -363,6 +365,8 @@ buf_set_append_line(typval_T *argvars, typval_T *rettv, int append)
 	lnum = tv_get_lnum_buf(&argvars[1], buf);
 	if (did_emsg == did_emsg_before)
 	    set_buffer_lines(buf, lnum, append, &argvars[2], rettv);
+	else
+	    rettv->vval.v_number = 1; // FAIL
     }
 }
 
@@ -944,6 +948,8 @@ f_setline(typval_T *argvars, typval_T *rettv)
     lnum = tv_get_lnum(&argvars[0]);
     if (did_emsg == did_emsg_before)
 	set_buffer_lines(curbuf, lnum, FALSE, &argvars[1], rettv);
+    else
+	rettv->vval.v_number = 1; // FAIL
 }
 #endif  // FEAT_EVAL
 
