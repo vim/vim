@@ -3539,6 +3539,11 @@ qf_jump_edit_buffer(
 	    return FAIL;
 	}
 
+	// Set the previous context mark when going to another buffer, like
+	// buflist_getfile() does for a normal file.
+	if (qf_ptr->qf_fnum != curbuf->b_fnum)
+	    setpcmark();
+
 	retval = do_ecmd(qf_ptr->qf_fnum, NULL, NULL, NULL, (linenr_T)1,
 		ECMD_HIDE + ECMD_SET_HELP,
 		prev_winid == curwin->w_id ? curwin : NULL);
