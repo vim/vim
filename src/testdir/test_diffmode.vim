@@ -2706,8 +2706,9 @@ endfunc
 " Text appended at the end of a line is not an added line when ignoring white
 " space.
 func Test_diff_inline_iwhite_append_at_eol()
-  for opt in ['iwhite', 'iwhiteeol']
-    exe 'set diffopt=internal,filler,inline:char,' .. opt
+  for opt in ['inline:char,iwhite', 'inline:char,iwhiteeol',
+        \ 'inline:char,iwhiteall', 'inline:word,iwhite']
+    exe 'set diffopt=internal,filler,' .. opt
     enew!
     call setline(1, 'foo bar baz')
     diffthis
@@ -2716,8 +2717,8 @@ func Test_diff_inline_iwhite_append_at_eol()
     diffthis
     redraw
 
-    call assert_equal('DiffChange', diff_hlID(1, 1)->synIDattr('name'))
-    call assert_equal('DiffTextAdd', diff_hlID(1, 13)->synIDattr('name'))
+    call assert_equal('DiffChange', diff_hlID(1, 1)->synIDattr('name'), opt)
+    call assert_equal('DiffTextAdd', diff_hlID(1, 13)->synIDattr('name'), opt)
 
     diffoff!
     bwipe!

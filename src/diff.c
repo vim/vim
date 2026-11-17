@@ -3808,10 +3808,6 @@ diff_find_change_inline_diff(
 		// original file. This helps diff newline differences among
 		// files, which will be visualized when using 'list' as the eol
 		// listchar will be highlighted.
-		// Make the token non-empty when ignoring white space, otherwise
-		// xdiff considers it equal to a token with white space.
-		if (diff_flags & (DIFF_IWHITE | DIFF_IWHITEEOL))
-		    ga_append(curstr, NUL);
 		ga_append(curstr, NL);
 		numlines++;
 
@@ -4031,6 +4027,13 @@ diff_find_change(
 		break;
 	    }
 	}
+	// Text appended to a line is not an added line.  Leading white space
+	// may not be a token when ignoring white space.
+	if (added && diffline->changes->dc_start_lnum_off[idx] == off
+		&& diffline->changes->dc_start[idx]
+		    > skipwhite(ml_get_buf(wp->w_buffer, lnum, FALSE))
+				    - ml_get_buf(wp->w_buffer, lnum, FALSE))
+	    added = FALSE;
     }
     return added;
 }
