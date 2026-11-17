@@ -1191,8 +1191,15 @@ image_done:
 	}
 	if (ok)
 	{
-	    wp->w_popup_mask = di->di_tv.vval.v_list;
-	    ++wp->w_popup_mask->lv_refcount;
+	    // Make a copy of the List, the user may change the List or its
+	    // items after creating the popup.
+	    list_T	*mask_l = list_copy(di->di_tv.vval.v_list, TRUE,
+						       FALSE, get_copyID());
+
+	    if (mask_l == NULL)
+		return FAIL;
+	    list_unref(wp->w_popup_mask);
+	    wp->w_popup_mask = mask_l;
 	    VIM_CLEAR(wp->w_popup_mask_cells);
 	}
 	else
@@ -4064,6 +4071,11 @@ popup_free(win_T *wp)
     int			was_visible = (wp->w_popup_flags & POPF_HIDDEN) == 0;
 
     popup_save_area(wp, &old_area);
+
+    list_unref(wp->w_popup_mask);
+    wp->w_popup_mask = NULL;
+    vim_free(wp->w_popup_mask_cells);
+    wp->w_popup_mask_cells = NULL;
 
 #ifdef FEAT_IMAGE_POPUP
     if (wp->w_popup_imagep != NULL)
