@@ -2728,9 +2728,14 @@ in_vim9script(void)
 
 #if defined(FEAT_GUI) && defined(FEAT_XCLIPBOARD)
 # ifdef FEAT_GUI_GTK
-   // Avoid using a global variable for the X display.  It's ugly
-   // and is likely to cause trouble in multihead environments.
-#  define X_DISPLAY	((gui.in_use) ? gui_mch_get_display() : xterm_dpy)
+#  ifdef USE_GTK4
+// Create our own display for GTK4 GUI
+#   define X_DISPLAY	(xterm_dpy)
+#  else
+// Avoid using a global variable for the X display.  It's ugly
+// and is likely to cause trouble in multihead environments.
+#   define X_DISPLAY	((gui.in_use) ? gui_mch_get_display() : xterm_dpy)
+#  endif
 # else
 #  define X_DISPLAY	(gui.in_use ? gui.dpy : xterm_dpy)
 # endif

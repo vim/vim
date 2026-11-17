@@ -1903,8 +1903,9 @@ clip_x11_set_selection(Clipboard_T *cbd UNUSED)
 
 # endif
 
-# if (defined(FEAT_XCLIPBOARD) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)) \
-	&& !defined(USE_GTK4)
+// Must also check FEAT_X11, because GTK4 GUI with X11 support has FEAT_GUI_GTK
+# if (defined(FEAT_XCLIPBOARD) || defined(FEAT_GUI_X11) || \
+	defined(FEAT_GUI_GTK)) && (defined(FEAT_X11) || !defined(USE_GTK4))
 /*
  * Get the contents of the X CUT_BUFFER0 and put it in "cbd".
  */
