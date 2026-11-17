@@ -2195,10 +2195,10 @@ regpiece(int *flagp)
 
 	case Magic('@'):
 	    {
-		int	lop = END;
-		long	nr;
+		int		lop = END;
+		vimlong_T	nr;
 
-		nr = (long)getdecchrs();
+		nr = getdecchrs();
 		switch (no_Magic(getchr()))
 		{
 		    case '=': lop = MATCH; break;		  // \@=
@@ -2224,7 +2224,11 @@ regpiece(int *flagp)
 		{
 		    if (nr < 0)
 			nr = 0; // no limit is same as zero limit
-		    reginsert_nr(lop, nr, ret);
+		    else if (nr > MAXCOL)
+			// The limit is stored in 32 bits.  A line cannot be
+			// longer than MAXCOL, thus a larger limit is the same.
+			nr = MAXCOL;
+		    reginsert_nr(lop, (long)nr, ret);
 		}
 		else
 		    reginsert(lop, ret);

@@ -2116,6 +2116,7 @@ nfa_regpiece(void)
     parse_state_T old_state;
     parse_state_T new_state;
     long	c2;
+    vimlong_T	limit;
     int		old_post_pos;
     int		my_post_start;
     int		quest;
@@ -2164,7 +2165,7 @@ nfa_regpiece(void)
 	    break;
 
 	case Magic('@'):
-	    c2 = (long)getdecchrs();
+	    limit = getdecchrs();
 	    op = no_Magic(getchr());
 	    i = 0;
 	    switch(op)
@@ -2199,7 +2200,13 @@ nfa_regpiece(void)
 	    EMIT(i);
 	    if (i == NFA_PREV_ATOM_JUST_BEFORE
 					|| i == NFA_PREV_ATOM_JUST_BEFORE_NEG)
-		EMIT(c2);
+	    {
+		// The limit is stored in an int.  A line cannot be longer than
+		// MAXCOL, thus a larger limit is the same.
+		if (limit > MAXCOL)
+		    limit = MAXCOL;
+		EMIT((int)limit);
+	    }
 	    break;
 
 	case Magic('?'):

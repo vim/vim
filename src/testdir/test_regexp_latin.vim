@@ -597,6 +597,9 @@ func Test_regexp_single_line_pat()
   call add(tl, [2, '\(<<\)\@1<=span.', 'xxspanxxxx<spanxx<<spanyyy'])
   call add(tl, [2, '\(<<\)\@2<=span.', 'xxspanxxxx<spanxx<<spanyyy', 'spany', '<<'])
   call add(tl, [2, '\(foo\)\@<!bar.', 'xx foobar1 xbar2 xx', 'bar2'])
+  " a limit that does not fit in 32 bits was truncated
+  call add(tl, [2, '\(ab\)\@4294967297<=c', 'abc', 'c', 'ab'])
+  call add(tl, [2, '\(ab\)\@4294967297<!c', 'abc'])
 
   " look-behind match in front of a zero-width item
   call add(tl, [2, '\v\C%(<Last Changed:\s+)@<=.*$', '" test header'])
@@ -891,6 +894,11 @@ func Test_lookbehind_across_line()
   call assert_equal(2, search('\%#=1\(bc\n\)\@2<=X', 'cnW'))
   call assert_equal(2, search('\%#=1\(bc\n\)\@1<!X', 'cnW'))
   call assert_equal(0, search('\%#=1\(bc\n\)\@2<!X', 'cnW'))
+  " a limit that does not fit in 32 bits was truncated
+  call assert_equal(2, search('\%#=1\(bc\n\)\@4294967297<=X', 'cnW'))
+  call assert_equal(2, search('\%#=2\(bc\n\)\@4294967297<=X', 'cnW'))
+  call assert_equal(0, search('\%#=1\(bc\n\)\@4294967297<!X', 'cnW'))
+  call assert_equal(0, search('\%#=2\(bc\n\)\@4294967297<!X', 'cnW'))
   bwipe!
 endfunc
 
