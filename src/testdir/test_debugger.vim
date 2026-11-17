@@ -1610,4 +1610,14 @@ func Test_breakpt_scriptlocal_func()
   exe "delfunc " .. funcname
 endfunc
 
+" Test for deleting an expression breakpoint.  The memory leak is only
+" detected with valgrind or ASan.
+func Test_breakdel_expr()
+  for i in range(10)
+    breakadd expr 'leakwatch'
+    breakdel expr 'leakwatch'
+  endfor
+  call assert_fails("breakdel expr 'leakwatch'", 'E161:')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
