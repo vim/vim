@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2026 Oct 12
+" Last Change:		2026 Nov 17
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If the filetype can be detected from extension or file name(the final path component),
@@ -603,7 +603,7 @@ au BufNewFile,BufRead *.properties,*.properties_??,*.properties_??_??	setf jprop
 au BufNewFile,BufRead org.eclipse.*.prefs	setf jproperties
 
 " JSONC (JSON with comments)
-au BufNewFile,BufRead *.jsonc,.babelrc,.eslintrc,.jsfmtrc,bun.lock	setf jsonc
+au BufNewFile,BufRead .babelrc,.eslintrc,.jsfmtrc,bun.lock	setf jsonc
 au BufNewFile,BufRead .jshintrc,.jscsrc,.vsconfig,.hintrc,.swrc,[jt]sconfig*.json	setf jsonc
 " Visual Studio Code settings
 au BufNewFile,BufRead ~/*/{Code,VSCodium}/User/*.json setf jsonc
