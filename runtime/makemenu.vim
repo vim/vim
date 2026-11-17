@@ -2,7 +2,7 @@ vim9script
 
 # Script to define the syntax menu in synmenu.vim
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2026 Nov 5
+# Last Change:		2026 Nov 17
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # This is used by "make menu" in the src directory.
@@ -551,7 +551,6 @@ SynMenu PQ.Pbtxt:pbtxt
 SynMenu PQ.PCCTS:pccts
 SynMenu PQ.PDF:pdf
 SynMenu PQ.Perl.Perl:perl
-SynMenu PQ.Perl.Perl\ 6:perl6
 SynMenu PQ.Perl.Perl\ POD:pod
 SynMenu PQ.Perl.Perl\ XS:xs
 SynMenu PQ.Perl.Template\ toolkit:tt2
@@ -610,6 +609,7 @@ SynMenu R.Racc\ input:racc
 SynMenu R.Racket:racket
 SynMenu R.Radiance:radiance
 SynMenu R.Radvd\ config:radvd
+SynMenu R.Raku:raku
 SynMenu R.Raml:raml
 SynMenu R.Rapid:rapid
 SynMenu R.Rasi:rasi
