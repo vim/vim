@@ -2703,6 +2703,29 @@ func Test_diff_inline_word_empty_block()
   bwipe!
 endfunc
 
+" Text appended at the end of a line is not an added line when ignoring white
+" space.
+func Test_diff_inline_iwhite_append_at_eol()
+  for opt in ['iwhite', 'iwhiteeol']
+    exe 'set diffopt=internal,filler,inline:char,' .. opt
+    enew!
+    call setline(1, 'foo bar baz')
+    diffthis
+    vnew
+    call setline(1, 'foo bar baz qux')
+    diffthis
+    redraw
+
+    call assert_equal('DiffChange', diff_hlID(1, 1)->synIDattr('name'))
+    call assert_equal('DiffTextAdd', diff_hlID(1, 13)->synIDattr('name'))
+
+    diffoff!
+    bwipe!
+    bwipe!
+  endfor
+  set diffopt&
+endfunc
+
 func Test_diffget_diffput_linematch()
   CheckScreendump
   call delete('.Xdifile1.swp')

@@ -3808,6 +3808,10 @@ diff_find_change_inline_diff(
 		// original file. This helps diff newline differences among
 		// files, which will be visualized when using 'list' as the eol
 		// listchar will be highlighted.
+		// Make the token non-empty when ignoring white space, otherwise
+		// xdiff considers it equal to a token with white space.
+		if (diff_flags & (DIFF_IWHITE | DIFF_IWHITEEOL))
+		    ga_append(curstr, NUL);
 		ga_append(curstr, NL);
 		numlines++;
 
