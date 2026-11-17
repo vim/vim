@@ -5058,6 +5058,7 @@ exec_instructions(ectx_T *ectx)
 
 	    // :defer func(arg)
 	    case ISN_DEFER:
+		SOURCING_LNUM = iptr->isn_lnum;
 		if (defer_command(iptr->isn_arg.defer.defer_var_idx,
 			     iptr->isn_arg.defer.defer_argcount, ectx) == FAIL)
 		    goto on_error;

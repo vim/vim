@@ -2878,6 +2878,59 @@ def Test_import_autoload_func_as_value()
   v9.CheckScriptFailure(lines, 'E121: Undefined variable: NoSuchFunc', 1)
 enddef
 
+" Test for using :defer with an imported function
+def Test_defer_imported_func()
+  mkdir('Xdeferdir/import/probe', 'pR')
+  mkdir('Xdeferdir/autoload/probe', 'p')
+  var lines =<< trim END
+      vim9script
+      export def Clean(s: string = 'x')
+        g:defer_result ..= s
+      enddef
+  END
+  writefile(lines, 'Xdeferdir/import/probe/lib.vim')
+  writefile(lines, 'Xdeferdir/autoload/probe/alib.vim')
+  writefile(lines, 'XdeferRel.vim', 'D')
+  writefile(lines, 'XdeferRelAuto.vim', 'D')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdeferdir'
+
+  lines =<< trim END
+      vim9script
+      import 'probe/lib.vim' as L
+      import autoload 'probe/alib.vim' as A
+      import './XdeferRel.vim' as R
+      import autoload './XdeferRelAuto.vim' as RA
+
+      def Imported()
+        defer L.Clean('1')
+        defer A.Clean('2')
+        defer R.Clean('3')
+        defer RA.Clean('4')
+        var F = L.Clean
+        defer F()
+        g:defer_result = 'start-'
+      enddef
+      Imported()
+      assert_equal('start-x4321', g:defer_result)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # A value of type "any" that is not a function fails at runtime
+  lines =<< trim END
+      vim9script
+      def NotAFunc()
+        var x: any = 10
+        defer x()
+      enddef
+      NotAFunc()
+  END
+  v9.CheckScriptFailure(lines, 'E1029: Expected function or partial but got number', 2)
+
+  &rtp = save_rtp
+  unlet g:defer_result
+enddef
+
 def Test_import_autoload_override()
   mkdir('Xoverdir/autoload', 'pR')
   var save_rtp = &rtp
