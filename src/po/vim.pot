@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-11-08 19:52+0000\n"
+"POT-Creation-Date: 2026-11-17 20:21+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2355,6 +2355,10 @@ msgstr ""
 
 #, c-format
 msgid "(+%lld for BOM)"
+msgstr ""
+
+#, c-format
+msgid "'modelinestrict' in effect, ignoring %s"
 msgstr ""
 
 msgid "W17: Arabic requires UTF-8, do ':set encoding=utf-8'"
