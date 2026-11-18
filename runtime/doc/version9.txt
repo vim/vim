@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Nov 02
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Nov 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52685,6 +52685,9 @@ Add "-t" option to append a terminating NUL byte to C include output (-i).
 Changed ~
 -------
 - Support for NeXTStep was dropped with patch v9.2.0122
+- The Python 2 |if_pyth.txt|, Tcl |if_tcl.txt| and MzScheme |if_mzsch.txt|
+  interfaces are deprecated and will be removed after the next Vim release,
+  see https://github.com/vim/vim/issues/21851
 - |json_decode()| is stricter: keywords must be lowercase, lone surrogates are
   now invalid
 - |js_decode()| rejects lone surrogates

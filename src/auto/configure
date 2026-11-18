@@ -1532,11 +1532,11 @@ Optional Features:
   --disable-xsmp          Disable XSMP session management
   --disable-xsmp-interact Disable XSMP interaction
   --enable-luainterp=OPTS      Include Lua interpreter.  default=no OPTS=no/yes/dynamic
-  --enable-mzschemeinterp      Include MzScheme interpreter.
+  --enable-mzschemeinterp      Include MzScheme interpreter (deprecated).
   --enable-perlinterp=OPTS     Include Perl interpreter.  default=no OPTS=no/yes/dynamic
-  --enable-pythoninterp=OPTS   Include Python interpreter. default=no OPTS=no/yes/dynamic
+  --enable-pythoninterp=OPTS   Include Python 2 interpreter (deprecated). default=no OPTS=no/yes/dynamic
   --enable-python3interp=OPTS  Include Python3 interpreter. default=no OPTS=no/yes/dynamic
-  --enable-tclinterp=OPTS      Include Tcl interpreter. default=no OPTS=no/yes/dynamic
+  --enable-tclinterp=OPTS      Include Tcl interpreter (deprecated). default=no OPTS=no/yes/dynamic
   --enable-rubyinterp=OPTS     Include Ruby interpreter.  default=no OPTS=no/yes/dynamic
   --enable-cscope         Include cscope interface.
   --disable-netbeans      Disable NetBeans integration support.
@@ -6361,6 +6361,8 @@ fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enable_mzschemeinterp" >&5
 printf "%s\n" "$enable_mzschemeinterp" >&6; }
 
+deprecated_interp=""
+
 if test "$enable_mzschemeinterp" = "yes"; then
 
 
@@ -6759,6 +6761,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
       MZSCHEME_OBJ="objects/if_mzsch.o"
       printf "%s\n" "#define FEAT_MZSCHEME 1" >>confdefs.h
 
+      deprecated_interp="$deprecated_interp MzScheme"
     else
       MZSCHEME_CFLAGS=
       MZSCHEME_LIBS=
@@ -7378,6 +7381,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
 	if test $python_ok = yes; then
 	  printf "%s\n" "#define FEAT_PYTHON 1" >>confdefs.h
 
+	  deprecated_interp="$deprecated_interp Python2"
 	else
 	  LIBS=$libs_save_old
 	  PYTHON_SRC=
@@ -8461,6 +8465,7 @@ printf "%s\n" "<not found>" >&6; }
 	if test -z "$SKIP_TCL"; then
 	  printf "%s\n" "#define FEAT_TCL 1" >>confdefs.h
 
+	  deprecated_interp="$deprecated_interp Tcl"
 	  TCL_SRC=if_tcl.c
 	  TCL_OBJ=objects/if_tcl.o
 	  TCL_CFLAGS="-I$TCL_INC $TCL_DEFS"
@@ -18778,5 +18783,15 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
 printf "%s\n" "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
+
+if test -n "$deprecated_interp"; then
+  echo
+  for interp in $deprecated_interp; do
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: the $interp interface is deprecated and will be removed after the next Vim release" >&5
+printf "%s\n" "$as_me: WARNING: the $interp interface is deprecated and will be removed after the next Vim release" >&2;}
+  done
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: if you still need it, please comment on https://github.com/vim/vim/issues/21851" >&5
+printf "%s\n" "$as_me: WARNING: if you still need it, please comment on https://github.com/vim/vim/issues/21851" >&2;}
+fi
 
 

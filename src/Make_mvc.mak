@@ -57,7 +57,7 @@
 #	  DYNAMIC_LUA=yes (to load the Lua DLL dynamically)
 #	  LUA_VER=[Lua version]  (default is 53)
 #
-#	MzScheme interface:
+#	MzScheme interface (deprecated, will be removed):
 #	  MZSCHEME=[Path to MzScheme directory]
 #	  DYNAMIC_MZSCHEME=yes (to load the MzScheme DLLs dynamically)
 #	  MZSCHEME_VER=[MzScheme version] (default is 3m_a0solc (6.6))
@@ -72,7 +72,7 @@
 #		    510 (5.10.x), etc]
 #	  (default is 524)
 #
-#	Python interface:
+#	Python 2 interface (deprecated, will be removed):
 #	  PYTHON=[Path to Python directory]
 #	  DYNAMIC_PYTHON=yes (to load the Python DLL dynamically)
 #	  PYTHON_VER=[Python version, eg 22, 23, ..., 27]  (default is 27)
@@ -93,7 +93,7 @@
 #	      RUBY_VER=19
 #	      RUBY_API_VER_LONG=1.9.1 (not 1.9.3, because the API version is 1.9.1.)
 #
-#	Tcl interface:
+#	Tcl interface (deprecated, will be removed):
 #	  TCL=[Path to Tcl directory]
 #	  DYNAMIC_TCL=yes (to load the Tcl DLL dynamically)
 #	  TCL_VER=[Tcl version, e.g. 80, 83]  (default is 86)
@@ -955,6 +955,9 @@ TCL_VER = 86
 TCL_VER_LONG = 8.6
 ! ENDIF
 ! MESSAGE Tcl requested (version $(TCL_VER)) - root dir is "$(TCL)"
+! MESSAGE WARNING: the Tcl interface is deprecated and will be removed
+! MESSAGE          after the next Vim release, see
+! MESSAGE          https://github.com/vim/vim/issues/21851
 ! IF "$(DYNAMIC_TCL)" == "yes"
 !  MESSAGE Tcl DLL will be loaded dynamically
 !  IFNDEF TCL_DLL
@@ -1005,6 +1008,9 @@ DYNAMIC_PYTHON3 = yes
 PYTHON_VER = 27
 ! ENDIF
 ! MESSAGE Python requested (version $(PYTHON_VER)) - root dir is "$(PYTHON)"
+! MESSAGE WARNING: the Python 2 interface is deprecated and will be removed
+! MESSAGE          after the next Vim release, use PYTHON3 instead, see
+! MESSAGE          https://github.com/vim/vim/issues/21851
 ! IF "$(DYNAMIC_PYTHON)" == "yes"
 !  MESSAGE Python DLL will be loaded dynamically
 ! ENDIF
@@ -1062,6 +1068,9 @@ PYTHON3_LIB = "$(PYTHON3)\libs\$(PYTHON3_NAME).lib"
 # MzScheme interface
 !IFDEF MZSCHEME
 ! MESSAGE MzScheme requested - root dir is "$(MZSCHEME)"
+! MESSAGE WARNING: the MzScheme interface is deprecated and will be removed
+! MESSAGE          after the next Vim release, see
+! MESSAGE          https://github.com/vim/vim/issues/21851
 ! IFNDEF MZSCHEME_VER
 MZSCHEME_VER = 3m_a0solc
 ! ENDIF
