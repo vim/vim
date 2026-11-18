@@ -4027,6 +4027,13 @@ diff_find_change(
 		break;
 	    }
 	}
+	// Text appended to a line is not an added line.  Leading white space
+	// may not be a token when ignoring white space.
+	if (added && diffline->changes->dc_start_lnum_off[idx] == off
+		&& diffline->changes->dc_start[idx]
+		    > skipwhite(ml_get_buf(wp->w_buffer, lnum, FALSE))
+				    - ml_get_buf(wp->w_buffer, lnum, FALSE))
+	    added = FALSE;
     }
     return added;
 }
