@@ -2784,8 +2784,8 @@ execute_unletindex(isn_T *iptr, ectx_T *ectx)
 			|| var_check_ro(di->di_flags,
 						  NULL, FALSE))
 		    status = FAIL;
-		else
-		    dictitem_remove(d, di, "unlet");
+		else if (dictitem_remove(d, di, "unlet") == FAIL)
+		    status = FAIL;
 	    }
 	}
     }
