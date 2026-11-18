@@ -508,8 +508,8 @@ func Test_listener_undo_delete_all()
   undo
   call listener_flush()
   call assert_equal(2, s:changes->len())
-  " delete removes four lines, empty line remains
-  call assert_equal({'lnum': 1, 'end': 5, 'col': 1, 'added': -4}, s:changes[0])
+  " delete replaces four lines with the empty line that remains
+  call assert_equal({'lnum': 1, 'end': 5, 'col': 1, 'added': -3}, s:changes[0])
   " undo replaces empty line and adds 3 lines
   call assert_equal({'lnum': 1, 'end': 2, 'col': 1, 'added': 3}, s:changes[1])
 
@@ -886,11 +886,11 @@ func Test_listener_text_whole_buffer()
       \ bufnr(), #{text: v:true})
   let &undolevels = &undolevels
 
-  " Nothing is left, so no text is copied.
+  " Only the empty line that remains is copied.
   %delete _
   call listener_flush()
   call assert_equal([[
-      \ {'lnum': 1, 'end': 3001, 'col': 1, 'added': -3000, 'text': []}]],
+      \ {'lnum': 1, 'end': 3001, 'col': 1, 'added': -2999, 'text': ['']}]],
       \ s:changes)
 
   " The undo restores all the lines, so they are all copied.
@@ -908,6 +908,42 @@ func Test_listener_text_whole_buffer()
   call assert_equal('line 3000', change.text[-1])
 
   call listener_remove(id)
+  bwipe!
+endfunc
+
+func s:ApplyChanges(changes)
+  for c in a:changes
+    if c.end - 1 > len(s:doc)
+      call add(s:out_of_range, c)
+      continue
+    endif
+    let s:doc = (c.lnum > 1 ? s:doc[: c.lnum - 2] : []) + c.text
+	  \ + s:doc[c.end - 1 :]
+  endfor
+endfunc
+
+" Applying the changes in turn gives the text of the buffer, also when every
+" line is deleted and the empty line that remains is changed later.
+func Test_listener_text_delete_all_lines()
+  new
+  for unbuffered in [v:false, v:true]
+    for cmds in [['%yank', 'normal! ggVGp'], ['%delete', 'normal! p'],
+	  \ ['%delete', 'normal! P'], ['%delete', 'normal! ix']]
+      %delete _
+      call setline(1, ['one', 'two', 'three'])
+      let s:doc = getline(1, '$')
+      let s:out_of_range = []
+      let id = listener_add({b, s, e, a, l -> s:ApplyChanges(l)}, bufnr(),
+	    \ #{text: v:true, unbuffered: unbuffered})
+      for cmd in cmds
+	exe cmd
+      endfor
+      call listener_flush()
+      call assert_equal([], s:out_of_range, string(cmds))
+      call assert_equal(getline(1, '$'), s:doc, string(cmds))
+      call listener_remove(id)
+    endfor
+  endfor
   bwipe!
 endfunc
 
