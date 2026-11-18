@@ -1,4 +1,4 @@
-*remote.txt*	For Vim version 9.2.  Last change: 2026 Jun 05
+*remote.txt*	For Vim version 9.2.  Last change: 2026 Nov 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -237,9 +237,13 @@ When using the traditional/generic clientserver naming (only available on
 Unix), sockets are placed in these directories in the following order of
 availability:
     1. "$XDG_RUNTIME_DIR/vim" if $XDG_RUNTIME_DIR is set in the environment.
-    2. "$TMPDIR/vim-[uid]", where "[uid]" is the uid of the user.  This
-       directory will have the access permissions set to 700 so only the user
-       can read or write from/to it.  If $TMPDIR is not set, "/tmp" is used.
+    2. "$TMPDIR/vim-$UID", where "$UID" is the uid of the user.  If $TMPDIR
+       is not set, "/tmp" is used.
+						        *E1589*
+The directory is created with permissions 700.  If it already exists, it must
+be a directory (not a symlink), owned by the user and not accessible by group
+or others, otherwise E1589 is given and no socket is created or used there.
+The socket itself is created with permissions 700.
 
 						    *socketserver-name*
 When specifying the server id/name, it can be taken as a generic name or an
@@ -253,22 +257,31 @@ be invalid.  This feature is only available on Unix.
 						    *socketserver-address*
 In addition, the socketserver can also be created as a |channel-address|. To
 do this, prefix the address with "channel:" (which will be ignored).  This is
-available on both Unix and MS-Windows, and is the only available naming for the
-socketserver backend on Windows.  However, note that |ch_listen()|
+available on both Unix and MS-Windows, and is the only available naming for
+the socketserver backend on MS-Windows.  However, note that |ch_listen()|
 restrictions apply, meaning only port numbers can be used for TCP sockets.
+The server will then only listen on the loopback interface (localhost).
 
 If the name is prefixed with "name:", then the legacy servername behaviour is
 used, so "name:VIM" is the same as "VIM".
 
 Unless Vim is compiled with |+autoservername| feature, the socket server will
-have to started explicitly, similar to X11. This is unless a X11 GUI Vim is
-being used.
+have to be started explicitly, similar to X11, unless an X11 GUI Vim is being
+used.
 
 If Vim crashes or does not exit cleanly, the socket server will not remove the
 socket file and it will be left around.  This is generally not a problem,
 because if a socket name is taken, Vim checks if the socket in its place is
 dead (not attached to any process), and can replace it instead of finding a
 new name.  This is only relevant for Unix.
+
+						    *socketserver-security*
+WARNING: A TCP socketserver has no access control.  Any process on the same
+machine, including those of other users, can connect to the port and send
+keys or expressions, which allows executing arbitrary commands as the user
+running the Vim server.  Only use a TCP address in a trusted, single-user
+environment.  On Unix, prefer a socket path or name (see |socketserver-name|),
+which is protected by file permissions.
 
 						    *socketserver-differences*
 Most of the functionality is the same as the other clientserver backends.
@@ -278,24 +291,25 @@ MS-Windows (shown in hex representation), instead it is the absolute path to
 the socket.  This can be seen via the |v:servername| variable.  If the name is
 a channel address, then it will be the address with the "a/" prefix as well.
 
-Note when using |--remote-wait|, the client id will look like "t/<some
-number>". This naming is specifically for this command, and attempting to use
-it as an address will fail.
+Note when using |--remote-wait|, the client id will look like
+"t/<some number>".  This naming is specifically for this command, and
+attempting to use it as an address will fail.
 
 If on Unix, the |--serverlist| argument will act just like X11, however it
 only checks the given common directories above.  If a custom path is used for
 a socket, it will not be detected, such as a path either not in
-$XDG_RUNTIME_DIR or <$TMPDIR or /tmp>/vim of the |--serverlist| Vim process.
-If on MS-Windows, then the |--serverlist| argument will output nothing.
+$XDG_RUNTIME_DIR/vim or $TMPDIR/vim-$UID (with a fallback of /tmp/vim-$UID if
+$TMPDIR is not set) of the |--serverlist| Vim process.  If on MS-Windows, then
+the |--serverlist| argument will output nothing.
 
-The |+socketserver| feature is automatically enabled when on Unix or
-MS-Windows, and the |+channel| feature is enabled
+The |+socketserver| feature is automatically enabled on Unix and MS-Windows
+when the |+channel| feature is available.
 
 						    *socketserver-x11*
 If Vim is compiled with |+socketserver| and another clientserver backend, then
 deciding which backend to use is done at startup time, via the
 |--clientserver| argument.  By default if it is not specified, then the native
-backend (X11 or MS-Window messages) will be used, if available.  A Vim
+backend (X11 or MS-Windows messages) will be used, if available.  A Vim
 instance using a socket server cannot communicate with one using another
 clientserver backend.
 

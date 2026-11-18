@@ -246,6 +246,7 @@ NEW_TESTS = \
 	test_perl \
 	test_plugin_ccomplete \
 	test_plugin_comment \
+	test_plugin_csscomplete \
 	test_plugin_glvs \
 	test_plugin_gnat \
 	test_plugin_helpcurwin \
@@ -531,6 +532,7 @@ NEW_TESTS_RES = \
 	test_perl.res \
 	test_plugin_ccomplete.res \
 	test_plugin_comment.res \
+	test_plugin_csscomplete.res \
 	test_plugin_glvs.res \
 	test_plugin_gnat.res \
 	test_plugin_helpcurwin.res \

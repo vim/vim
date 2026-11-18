@@ -1389,8 +1389,14 @@ get_lval_dict_item(
     }
 
     if (lp->ll_valtype != NULL)
+    {
 	// use the type of the member
 	lp->ll_valtype = lp->ll_valtype->tt_member;
+	// If the LHS member type is not known (VAR_ANY), then get it from
+	// the type of the dict
+	if (lp->ll_valtype == NULL && lp->ll_dict->dv_type != NULL)
+	    lp->ll_valtype = lp->ll_dict->dv_type->tt_member;
+    }
 
     if (lp->ll_di == NULL)
     {
@@ -1922,6 +1928,16 @@ get_lval_subscript(
 		ch_log(NULL, "LKVAR:    ... loop: vim9 assign type: %s",
 			vartype_name(lp->ll_valtype->tt_type));
 #endif
+		// If a NULL list was just turned into an empty list above,
+		// it does not have its member type set yet.  Do that now,
+		// using the declared type, so that later operations such as
+		// add() still enforce it.
+		if (v_type == VAR_LIST
+			&& lp->ll_tv->vval.v_list != NULL
+			&& lp->ll_tv->vval.v_list->lv_type == NULL
+			&& sv->sv_type != NULL
+			&& sv->sv_type->tt_type == VAR_LIST)
+		    lp->ll_tv->vval.v_list->lv_type = alloc_type(sv->sv_type);
 	    }
 	}
 
@@ -2596,10 +2612,16 @@ tv_op_list(typval_T *tv1, typval_T *tv2, char_u *op)
 
     if (tv1->vval.v_list == NULL)
     {
-	tv1->vval.v_list = tv2->vval.v_list;
-	++tv1->vval.v_list->lv_refcount;
+	// Make a copy, "tv1" must not become the same List as "tv2".
+	tv1->vval.v_list = list_copy(tv2->vval.v_list, FALSE, FALSE, 0);
+	if (tv1->vval.v_list == NULL)
+	    return FAIL;
     }
-    else
+    // Check the type of all the items first, the List must not be changed
+    // when one of them has the wrong type.  The error has been given then.
+    else if (tv1->vval.v_list->lv_type == NULL
+	    || check_typval_arg_type(tv1->vval.v_list->lv_type, tv2,
+							      NULL, 0) == OK)
 	list_extend(tv1->vval.v_list, tv2->vval.v_list, NULL);
 
     return OK;
@@ -4303,7 +4325,7 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    ic = FALSE;
 	    ++len;
 	}
-	// nothing appended: use 'ignorecase' if not in Vim script
+	// nothing appended: use 'ignorecase' if not in Vim9 script
 	else
 	    ic = vim9script ? FALSE : p_ic;
 

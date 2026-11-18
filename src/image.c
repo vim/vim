@@ -109,11 +109,8 @@ static image_backend_T image_backend = IMAGE_BACKEND_NONE;
 static image_T *images = NULL;
 // Sorted from highest zindex to lowest zindex
 static image_placement_T    *placements = NULL;
+static image_placement_T    *freed_placements = NULL;
 static int		    n_placements = 0;
-
-static int shift_top = 0;
-static int shift_bot = 0;
-static int shift = 0;
 
 // If > 0, then mark_dirty_region_for_images() will be a no-op
 static int freeze_mark_dirty = 0;
@@ -284,7 +281,7 @@ image_get_dimensions(image_T *img, int *w, int *h)
  * Replace the current image contents with "data". "data" should be the exact
  * same format, width, and height. Return OK on success and FAIL on failure.
  */
-    int
+    static int
 image_update(image_T *img, uint8_t *data)
 {
     int w, h;
@@ -318,6 +315,7 @@ image_placement_unlink(image_placement_T *place)
 	place->next->prev = place->prev;
     if (placements == place)
 	placements = place->next;
+    place->prev = place->next = NULL;
     n_placements--;
 }
 
@@ -410,8 +408,9 @@ image_placement_new(
 	// Bounding box is in cells
 	image_get_cell_dimensions(img,
 		&place->bounding_box.x2, &place->bounding_box.y2);
-	place->crop_box.x2 = place->bounding_box.x2;
-	place->crop_box.y2 = place->bounding_box.y2;
+
+	pixman_region32_init(&place->mask);
+	pixman_region32_init(&place->cur_mask);
 
 	if (PLACEMENT_FUNC(image_backend, init)(place) == FAIL)
 	{
@@ -449,8 +448,8 @@ image_placement_clear(image_placement_T *place)
     image_placement_clear_int(place, updating_screen);
 }
 
-    void
-image_placement_free(image_placement_T *place)
+    static void
+image_placement_free_int(image_placement_T *place, bool unlink)
 {
     if (backend_available(false) && place->backend_data != NULL)
     {
@@ -463,11 +462,33 @@ image_placement_free(image_placement_T *place)
 	pixman_region32_fini(&place->visible);
 	pixman_region32_fini(&place->visible_abs);
     }
-    image_placement_unlink(place);
+    pixman_region32_fini(&place->mask);
+    pixman_region32_fini(&place->cur_mask);
+    if (unlink)
+	image_placement_unlink(place);
 
     if (place->img != NULL)
 	image_unref(place->img);
     vim_free(place);
+}
+
+    void
+image_placement_free(image_placement_T *place)
+{
+    image_placement_free_int(place, true);
+}
+
+/*
+ * Mark the image placement to be freed (and have the image on screen cleared)
+ * on the next redraw.
+ */
+    void
+image_placement_mark_free(image_placement_T *place)
+{
+    image_placement_unlink(place);
+
+    place->next = freed_placements;
+    freed_placements = place;
 }
 
     void
@@ -500,27 +521,41 @@ image_placement_set_position(image_placement_T *place, int row, int col)
 
     if (place->row == row && place->col == col)
 	return;
+
     place->row = row;
     place->col = col;
     place->flags |= IMAGEPF_DIRTY;
 }
 
+/*
+ * Overwrite the mask region to cover the given rectangle.
+ */
     void
-image_placement_set_crop(image_placement_T *place, int x, int y, int w, int h)
+image_placement_set_mask(image_placement_T *place, int x, int y, int w, int h)
 {
     if (place->flags & IMAGEPF_HIDDEN)
 	place->flags |= IMAGEPF_DIRTY;
     place->flags &= ~IMAGEPF_HIDDEN;
 
-    if (place->crop_box.x1 == x && place->crop_box.y1 == y
-	    && place->crop_box.x2 == x + w && place->crop_box.y2 == y + h)
+    pixman_region32_clear(&place->mask);
+    pixman_region32_init_rect(&place->mask, x, y, w, h);
+
+    if (!pixman_region32_equal(&place->mask, &place->cur_mask))
+	place->flags |= IMAGEPF_DIRTY;
+}
+
+    void
+image_placement_set_offset(image_placement_T *place, int off_y, int off_x)
+{
+    if (place->flags & IMAGEPF_HIDDEN)
+	place->flags |= IMAGEPF_DIRTY;
+    place->flags &= ~IMAGEPF_HIDDEN;
+
+    if (place->x_off == off_x && place->y_off == off_y)
 	return;
 
-    place->crop_box.x1 = x;
-    place->crop_box.y1 = y;
-
-    place->crop_box.x2 = x + w;
-    place->crop_box.y2 = y + h;
+    place->x_off = off_x;
+    place->y_off = off_y;
     place->flags |= IMAGEPF_DIRTY;
 }
 
@@ -591,11 +626,11 @@ image_placement_subrect(
 
     image_get_dimensions(place->img, &iw, &ih);
 
-    *row = place->row + rect.y1 + place->row_off;
+    *row = place->row + rect.y1;
     *col = place->col + rect.x1;
 
-    *x = (rect.x1 + place->crop_box.x1) * cell_width;
-    *y = (rect.y1 + place->crop_box.y1) * cell_height;
+    *x = (rect.x1 + place->x_off) * cell_width;
+    *y = (rect.y1 + place->y_off) * cell_height;
     *w = (rect.x2 - rect.x1) * cell_width;
     *h = (rect.y2 - rect.y1) * cell_height;
 
@@ -680,6 +715,21 @@ redraw_region(pixman_region32_t *region, bool now, bool restore)
 	windgoto(cur_row, cur_col);
 }
 
+    void
+free_marked_image_placements(void)
+{
+    image_placement_T *place = freed_placements;
+
+    while (place != NULL)
+    {
+	image_placement_T *next = place->next;
+
+	image_placement_free_int(place, false);
+	place = next;
+    }
+    freed_placements = NULL;
+}
+
 /*
  * Draw all image placements to the screen. This should be done after all text
  * have been drawn to the screen, and image placements positioned correctly.
@@ -695,6 +745,9 @@ draw_image_placements(void)
     // Save current cursor position
     int			cur_row = screen_cur_row;
     int			cur_col = screen_cur_col;
+
+    // Free any images marked to be freed
+    free_marked_image_placements();
 
     // Check if all placements have no backing image. If so, then do nothing
     FOR_ALL_PLACEMENTS(place)
@@ -751,9 +804,11 @@ draw_image_placements(void)
 	if (img != NULL)
 	{
 	    pixman_region32_t	visible_abs;
-	    int			crop_w, crop_h;
+	    int			img_w, img_h;
 	    bool		cs_changed;
 	    bool		need_redraw;
+
+	    pixman_region32_copy(&place->cur_mask, &place->mask);
 
 	    // Processing changed image data failed, skip this image
 	    if (place->img->data == NULL)
@@ -762,30 +817,17 @@ draw_image_placements(void)
 		continue;
 	    }
 
-	    // Only apply row shift if image is within the shifted region.
-	    if ((place->bounding_box.y1 >= shift_top
-			&& place->bounding_box.y2 <= shift_bot)
-		    && place->row_off != shift)
-	    {
-		place->row_off = shift;
-		place->flags |= IMAGEPF_DIRTY;
-	    }
-
 	    x = place->col;
-	    y = place->row + place->row_off;
+	    y = place->row;
 
-	    crop_w = place->crop_box.x2 - place->crop_box.x1;
-	    crop_h = place->crop_box.y2 - place->crop_box.y1;
-
-	    // Don't add "crop_box" x1 and y1, because "row" and "col" use the
-	    // top left of the final cropped image.
-	    pixman_region32_init_rect(&image_region, x, y, crop_w, crop_h);
+	    image_get_cell_dimensions(place->img, &img_w, &img_h);
+	    pixman_region32_init_rect(&image_region, place->col, place->row,
+		    img_w, img_h);
 
 	    pixman_region32_init(&visible_region);
 	    pixman_region32_init(&visible_abs);
 
 	    // Only use parts of the image region within the actual screen.
-	    // "row_off" may offset the image slightly/completely off screen.
 	    if (!pixman_region32_intersect_rect(&image_region, &image_region,
 			0, 0, Columns, Rows)
 		    || !pixman_region32_subtract(&visible_region,
@@ -891,8 +933,8 @@ draw_image_placements(void)
 
 			// Ensure "min_region" only covers the fully covered
 			// cells of the cropped region.
-			rect_w = min_w - place->crop_box.x1;
-			rect_h = min_h - place->crop_box.y1;
+			rect_w = min_w - place->x_off;
+			rect_h = min_h - place->y_off;
 
 			if (rect_w > 0 && rect_h > 0)
 			    // pixman_region32_init_rect() expects a non zero
@@ -946,7 +988,7 @@ draw_image_placements(void)
 
 	pixman_region32_union_rect(&subtract_region, &subtract_region,
 		place->bounding_box.x1,
-		place->bounding_box.y1 + place->row_off,
+		place->bounding_box.y1,
 		place->bounding_box.x2 - place->bounding_box.x1,
 		place->bounding_box.y2 - place->bounding_box.y1);
     }
@@ -1027,26 +1069,15 @@ clear_all_image_placements(void)
 	redraw_all_later(UPD_VALID);
 }
 
-/*
- * Used for screen_ins_lines() and screen_del_lines(), because they directly
- * shift rows. Note that this does not queue a screen redraw.
- */
-    void
-shift_image_placements(int top, int bot, int amount)
+    bool
+visible_image_placements(void)
 {
-    shift_top = top;
-    shift_bot = bot;
-    shift += amount;
-}
+    image_placement_T *place;
 
-/*
- * Called when screen is cleared, as update_screen() may go to clearing the
- * screen instead of inserting lines using screen_ins_lines().
- */
-    void
-shift_reset_image_placements(void)
-{
-    shift = 0;
+    FOR_ALL_PLACEMENTS(place)
+	if (place->img != NULL && !(place->flags & IMAGEPF_HIDDEN))
+	    return true;
+    return false;
 }
 
     static image_T *

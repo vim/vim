@@ -1824,8 +1824,10 @@ enum_parse_values(
 
 	++*num_enum_values;
 
-	if (*p != '#')
-	    last_char = *p;
+	// Remember the character after the enum value.  When it is a comment
+	// the enum value list ends here, even when an earlier enum value in
+	// the same line was followed by a comma.
+	last_char = *p;
 
 	if (*p != NUL && *p != ',')
 	    break;
@@ -2366,7 +2368,6 @@ early_ret:
 		break;
 	    }
 	    has_public = TRUE;
-	    p = skipwhite(line + 6);
 
 	    if (STRNCMP(p, "def", 3) == 0)
 	    {
@@ -2412,7 +2413,6 @@ early_ret:
 		break;
 	    }
 
-	    p = skipwhite(pa + 8);
 	    if (STRNCMP(p, "def", 3) != 0)
 	    {
 		emsg(_(e_abstract_must_be_followed_by_def));
@@ -2438,7 +2438,6 @@ early_ret:
 		break;
 	    }
 	    has_static = TRUE;
-	    p = skipwhite(ps + 6);
 
 	    if (STRNCMP(p, "var", 3) != 0 && STRNCMP(p, "def", 3) != 0
 		&& STRNCMP(p, "final", 5) != 0 && STRNCMP(p, "const", 5) != 0)
@@ -2471,7 +2470,6 @@ early_ret:
 	    }
 	    has_const = TRUE;
 	}
-	p = skipwhite(p);
 
 	// object members (public, read access, private):
 	//	"var _varname"
@@ -3032,12 +3030,20 @@ ex_type(exarg_T *eap)
     tv.v_type = VAR_UNKNOWN;
     if (eval_variable_import(name_start, &tv) == OK)
     {
-	if (tv.v_type == VAR_TYPEALIAS)
-	    semsg(_(e_typealias_already_exists_for_str), name_start);
-	else
-	    semsg(_(e_redefining_script_item_str), name_start);
+	dictitem_T  *di = find_var(name_start, NULL, TRUE);
+	int	    is_typealias = tv.v_type == VAR_TYPEALIAS;
+
 	clear_tv(&tv);
-	goto done;
+	// When sourcing a "noclear" script again the item can be redefined,
+	// set_var_const() takes care of that.
+	if (di == NULL || (di->di_flags & DI_FLAGS_RELOAD) == 0)
+	{
+	    if (is_typealias)
+		semsg(_(e_typealias_already_exists_for_str), name_start);
+	    else
+		semsg(_(e_redefining_script_item_str), name_start);
+	    goto done;
+	}
     }
 
     // Create a script-local variable for the type alias.  "object<any>" has

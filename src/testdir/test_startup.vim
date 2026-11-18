@@ -544,6 +544,32 @@ func Test_font()
   call delete('Xtest_font')
 endfunc
 
+func Test_gui_startup_size()
+  CheckCanRunGui
+
+  " Exceed GTK4's 24x80 default, but fit on the 1024x768 CI display.  Use a
+  " smaller font so that the 90 columns are not reduced to the screen width.
+  " Use a child process: runtest.vim resets an already running GUI to 25x80.
+  let lines =<< trim END
+    if has('gui_gtk')
+      set guifont=Monospace\ 8
+    endif
+    set lines=30 columns=90
+  END
+  call writefile(lines, 'Xgui_size_rc', 'D')
+  let after =<< trim END
+    sleep 200ms
+    call writefile([&lines, &columns], 'Xtest_gui_size')
+    qall
+  END
+  for option in ['-u', '-U']
+    if RunVim([], after, '-f -g ' .. option .. ' Xgui_size_rc')
+      call assert_equal(['30', '90'], readfile('Xtest_gui_size'), option)
+    endif
+  endfor
+  call delete('Xtest_gui_size')
+endfunc
+
 " Test the -geometry argument (for GUI only).
 func Test_geometry()
   CheckCanRunGui

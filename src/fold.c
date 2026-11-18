@@ -1783,7 +1783,7 @@ foldAddMarker(linenr_T lnum, char_u *marker, int markerlen)
 	return;
 
     // Check if the line ends with an unclosed comment
-    (void)skip_comment(line, FALSE, FALSE, &line_is_comment);
+    (void)skip_comment(line, FALSE, FALSE, false, &line_is_comment);
     newline = alloc(line_len + markerlen + STRLEN(cms) + 1);
     if (newline == NULL)
 	return;
@@ -2098,6 +2098,7 @@ foldtext_cleanup(char_u *str)
 typedef struct
 {
     win_T	*wp;		// window
+    tabpage_T	*tp;		// tab page of "wp" for diff_infold()
     linenr_T	lnum;		// current line number
     linenr_T	off;		// offset between lnum and real line number
     linenr_T	lnum_save;	// line nr used by foldUpdateIEMSRecurse()
@@ -2177,6 +2178,7 @@ foldUpdateIEMS(win_T *wp, linenr_T top, linenr_T bot)
 
     fold_changed = FALSE;
     fline.wp = wp;
+    fline.tp = NULL;
     fline.off = 0;
     fline.lvl = 0;
     fline.lvl_next = -1;
@@ -2232,7 +2234,10 @@ foldUpdateIEMS(win_T *wp, linenr_T top, linenr_T bot)
 	    getlevel = foldlevelSyntax;
 # ifdef FEAT_DIFF
 	else if (foldmethodIsDiff(wp))
+	{
 	    getlevel = foldlevelDiff;
+	    fline.tp = win_find_tabpage(wp);
+	}
 # endif
 	else
 	{
@@ -3263,7 +3268,7 @@ foldlevelIndent(fline_T *flp)
     static void
 foldlevelDiff(fline_T *flp)
 {
-    if (diff_infold(flp->wp, flp->lnum + flp->off))
+    if (diff_infold(flp->wp, flp->tp, flp->lnum + flp->off))
 	flp->lvl = 1;
     else
 	flp->lvl = 0;

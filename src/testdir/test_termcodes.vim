@@ -3084,6 +3084,39 @@ func Test_term_response_osc()
   call assert_equal("\<Esc>]15;hello world!\x07", v:termosc)
 endfunc
 
+func Test_term_response_osc_startup_timer()
+  CheckRunVimInTerminal
+  CheckFeature timers
+  CheckFeature termresponse
+
+  let lines =<< trim END
+    set t_RV=x t_RF=x t_RB=y
+    func Startup(timer)
+      call system(':')
+      " Queue VTE's version and color responses while starting a shell.
+      " The version response starts XTGETTCAP requests (#21493).
+      call feedkeys("\<Esc>[>65;8200;1c\<Esc>]10;rgb:1111/2222/3333\x07"
+            \ .. "\<Esc>]11;rgb:4444/5555/6666\x07", 'L')
+      call system(':')
+      call writefile(['done'], 'XoscStartupDone')
+    endfunc
+    call timer_start(0, 'Startup')
+  END
+  call writefile(lines, 'XoscStartup', 'D')
+  defer delete('XoscStartupDone')
+
+  let buf = RunVimInTerminal('-S XoscStartup',
+        \ {'rows': 10, 'wait_for_ruler': 0})
+  try
+    " The timer must finish without waiting for a typed key.
+    call WaitForAssert({-> assert_true(filereadable('XoscStartupDone'))})
+    call term_sendkeys(buf, ':')
+    call WaitForAssert({-> assert_match('^:', term_getline(buf, 10))})
+  finally
+    call StopVimInTerminal(buf)
+  endtry
+endfunc
+
 " Test if xOSC key is emitted.
 func Test_term_response_xosc_key()
   CheckRunVimInTerminal
@@ -3256,6 +3289,23 @@ func Test_term_win_resize()
   call TermWait(buf)
 
   call WaitForAssert({-> assert_equal(["5 20"], readfile("XTestWinResizeResult"))})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" A cell size response must not clear the intro message.
+func Test_cell_size_response_keeps_intro()
+  CheckRunVimInTerminal
+
+  call writefile(['call timer_start(10, {-> 0}, #{repeat: -1})'],
+        \ 'XCellSizeIntro', 'D')
+  let buf = RunVimInTerminal('-S XCellSizeIntro', #{rows: 24, cols: 80})
+  call WaitForAssert({-> assert_match('VIM - Vi IMproved',
+        \ term_getline(buf, 7))})
+
+  call term_sendkeys(buf, "\<Esc>[6;37;17t")
+  call TermWait(buf, 200)
+  call assert_match('VIM - Vi IMproved', term_getline(buf, 7))
 
   call StopVimInTerminal(buf)
 endfunc

@@ -471,6 +471,11 @@ x_restore_state(void)
     exmode_active = 0;
     skip_redraw = FALSE;
     RedrawingDisabled = 0;
+    // The longjmp() may have happened while updating the screen or inside
+    // ui_breakcheck(), reset that state, otherwise redrawing never happens
+    // again.
+    updating_screen = FALSE;
+    ui_breakcheck_reset();
     no_wait_return = 0;
     vgetc_busy = 0;
 # ifdef FEAT_EVAL
@@ -479,6 +484,7 @@ x_restore_state(void)
     emsg_off = 0;
     setmouse();
     settmode(TMODE_RAW);
+    term_set_sync_output(TERM_SYNC_OUTPUT_OFF);
     starttermcap();
     scroll_start();
     redraw_later_clear();
@@ -1183,8 +1189,10 @@ get_gui_dialog_file(void)
 }
 #endif
 
+#if defined(FEAT_EVAL) || defined(MESSAGE_QUEUE)
 // When TRUE in a safe state when starting to wait for a character.
 static int	was_safe = FALSE;
+#endif
 static oparg_T	*current_oap = NULL;
 
 /*
@@ -1236,7 +1244,9 @@ may_trigger_safestate(int safe)
 #endif
     if (is_safe)
 	apply_autocmds(EVENT_SAFESTATE, NULL, NULL, FALSE, curbuf);
+#if defined(FEAT_EVAL) || defined(MESSAGE_QUEUE)
     was_safe = is_safe;
+#endif
 }
 
 /*
@@ -1251,7 +1261,9 @@ state_no_longer_safe(char *reason UNUSED)
     if (was_safe)
 	ch_log(NULL, "SafeState: reset: %s", reason);
 #endif
+#if defined(FEAT_EVAL) || defined(MESSAGE_QUEUE)
     was_safe = FALSE;
+#endif
 }
 
 #if defined(FEAT_EVAL) || defined(MESSAGE_QUEUE)
@@ -1491,7 +1503,9 @@ main_loop(
 	quit_more = FALSE;
 
 	// it's not safe unless may_trigger_safestate_main() is called
+#if defined(FEAT_EVAL) || defined(MESSAGE_QUEUE)
 	was_safe = FALSE;
+#endif
 
 	/*
 	 * If skip redraw is set (for ":" in wait_return()), don't redraw now.
@@ -1981,6 +1995,11 @@ early_arg_scan(mparm_T *parmp UNUSED)
 	    else
 		mainerr(ME_UNKNOWN_OPTION, arg);
 	}
+#  endif
+#  ifdef FEAT_JOB_CHANNEL
+	// No client-server stuff is done for it.
+	else if (STRICMP(argv[i], "--stdio-channel") == 0)
+	    use_stdio_channel = TRUE;
 #  endif
 # endif
 

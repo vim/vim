@@ -48,6 +48,8 @@ static gboolean vim_content_provider_write_mime_type_finish(GdkContentProvider *
 vim_content_provider_class_init(VimContentProviderClass *class)
 {
     GdkContentProviderClass *cp_class = GDK_CONTENT_PROVIDER_CLASS(class);
+    // Only to avoid a warning, G_DEFINE_TYPE() defines it.
+    (void)vim_content_provider_parent_class;
 
     cp_class->ref_formats = vim_content_provider_ref_formats;
     cp_class->write_mime_type_async = vim_content_provider_write_mime_type_async;

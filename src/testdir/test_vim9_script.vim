@@ -344,7 +344,7 @@ def Test_const_bang()
       ll[3] = 99
   END
   v9.CheckDefExecFailure(lines, 'E1118:', 2)
-  v9.CheckScriptFailure(['vim9script'] + lines, 'E684:', 3)
+  v9.CheckScriptFailure(['vim9script'] + lines, 'E1118:', 3)
 
   lines =<< trim END
       const dd = {one: 1, two: 2}
@@ -7109,6 +7109,32 @@ def Test_string_reduce_error_funccal()
 enddef
 
 " Keep this last, it messes up highlighting.
+" :silent! ignores List errors in a :def function and continues with the next
+" command
+def Test_silent_list_errors()
+  var lines =<< trim END
+      vim9script
+      var log: list<string>
+      def F()
+        var l = [1]
+        silent! var x = l[9]
+        log->add('index')
+        silent! l[9] = 1
+        log->add('store')
+        silent! unlet l[9]
+        log->add('unlet')
+        silent! remove(l, 9)
+        log->add('remove')
+        silent! var [a, b] = l
+        log->add('unpack')
+        log->add(string(l))
+      enddef
+      F()
+      assert_equal(['index', 'store', 'unlet', 'remove', 'unpack', '[1]'], log)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_substitute_cmd()
   new
   setline(1, 'something')

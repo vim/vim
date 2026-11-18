@@ -2373,6 +2373,25 @@ storeindex_check_list_member_type(
 }
 
 /*
+ * Do a runtime check of the RHS value against the LHS Dict member type.
+ * This is used by the STOREINDEX instruction to perform a type check
+ * at runtime if compile time type check cannot be performed (VAR_ANY).
+ * Returns FAIL if there is a type mismatch.
+ */
+    static int
+storeindex_check_dict_member_type(
+    dict_T	*lhs_dict,
+    typval_T	*rhs_tv,
+    ectx_T	*ectx)
+{
+    if (lhs_dict->dv_type == NULL || lhs_dict->dv_type->tt_member == NULL)
+	return OK;
+
+    return check_typval_type(lhs_dict->dv_type->tt_member, rhs_tv,
+			     ectx->ec_where);
+}
+
+/*
  * Store a value in a list, dict, blob or object variable.
  * Returns OK, FAIL or NOTDONE (uncatchable error).
  */
@@ -2532,6 +2551,12 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    }
 	    if (key == NULL)
 		key = (char_u *)"";
+
+	    // Do a runtime type check for VAR_ANY
+	    if (check_rhs_type &&
+		    storeindex_check_dict_member_type(dict, tv, ectx) == FAIL)
+		return FAIL;
+
 	    di = dict_find(dict, key, -1);
 	    if (di != NULL)
 	    {
@@ -2658,7 +2683,7 @@ execute_storerange(isn_T *iptr, ectx_T *ectx)
     {
 	long	    n1;
 	long	    n2;
-	listitem_T  *li1;
+	listitem_T  *li1 = NULL;
 
 	n1 = (long)tv_get_number_chk(tv_idx1, NULL);
 	if (tv_idx2->v_type == VAR_SPECIAL
@@ -2667,7 +2692,13 @@ execute_storerange(isn_T *iptr, ectx_T *ectx)
 	else
 	    n2 = (long)tv_get_number_chk(tv_idx2, NULL);
 
-	li1 = check_range_index_one(tv_dest->vval.v_list, &n1, TRUE, FALSE);
+	if (tv_dest->vval.v_list == NULL)
+	    emsg(_(e_list_not_set));
+	else if (tv->v_type != VAR_LIST || tv->vval.v_list == NULL)
+	    emsg(_(e_slice_requires_list_or_blob_value));
+	else
+	    li1 = check_range_index_one(tv_dest->vval.v_list, &n1, TRUE,
+									FALSE);
 	if (li1 == NULL)
 	    status = FAIL;
 	else
@@ -2778,8 +2809,8 @@ execute_unletindex(isn_T *iptr, ectx_T *ectx)
 			|| var_check_ro(di->di_flags,
 						  NULL, FALSE))
 		    status = FAIL;
-		else
-		    dictitem_remove(d, di, "unlet");
+		else if (dictitem_remove(d, di, "unlet") == FAIL)
+		    status = FAIL;
 	    }
 	}
     }
@@ -5058,6 +5089,7 @@ exec_instructions(ectx_T *ectx)
 
 	    // :defer func(arg)
 	    case ISN_DEFER:
+		SOURCING_LNUM = iptr->isn_lnum;
 		if (defer_command(iptr->isn_arg.defer.defer_var_idx,
 			     iptr->isn_arg.defer.defer_argcount, ectx) == FAIL)
 		    goto on_error;
@@ -5800,8 +5832,16 @@ exec_instructions(ectx_T *ectx)
 		    {
 			if (iptr->isn_arg.op.op_type == EXPR_APPEND
 						   && tv1->vval.v_list != NULL)
+			{
+			    // The list is changed in place, check it is not
+			    // locked.
+			    SOURCING_LNUM = iptr->isn_lnum;
+			    if (value_check_lock(tv1->vval.v_list->lv_lock,
+								 NULL, FALSE))
+				goto on_error;
 			    list_extend(tv1->vval.v_list, tv2->vval.v_list,
 									 NULL);
+			}
 			else
 			    eval_addlist(tv1, tv2);
 		    }

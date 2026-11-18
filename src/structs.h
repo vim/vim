@@ -2123,22 +2123,22 @@ struct ufunc_S
 // flags used in uf_flags
 # define FC_ABORT    0x01	// abort function on error
 # define FC_RANGE    0x02	// function accepts range
-# define FC_DICT	    0x04	// Dict function, uses "self"
+# define FC_DICT     0x04	// Dict function, uses "self"
 # define FC_CLOSURE  0x08	// closure, uses outer scope variables
 # define FC_DELETED  0x10	// :delfunction used while uf_refcount > 0
 # define FC_REMOVED  0x20	// function redefined while uf_refcount > 0
 # define FC_SANDBOX  0x40	// function defined in the sandbox
-# define FC_DEAD	    0x80	// function kept only for reference to dfunc
+# define FC_DEAD     0x80	// function kept only for reference to dfunc
 # define FC_EXPORT   0x100	// "export def Func()"
 # define FC_NOARGS   0x200	// no a: variables in lambda
-# define FC_VIM9	    0x400	// defined in Vim9 script file
+# define FC_VIM9     0x400	// defined in Vim9 script file
 # define FC_CFUNC    0x800	// defined as Lua C func
-# define FC_COPY	    0x1000	// copy of another function by
+# define FC_COPY     0x1000	// copy of another function by
 				// copy_lambda_to_global_func()
 # define FC_LAMBDA   0x2000	// one line "return {expr}"
 
 # define FC_OBJECT   0x4000	// object method
-# define FC_NEW	    0x8000	// constructor
+# define FC_NEW	     0x8000	// constructor
 # define FC_ABSTRACT 0x10000	// abstract method
 # define FC_GENERIC  0x20000	// generic function
 

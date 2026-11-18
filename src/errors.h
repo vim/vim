@@ -3852,3 +3852,7 @@ EXTERN char e_image_id_nr_does_not_exist[]
 EXTERN char e_comparison_operators_cannot_be_chained_str[]
 	INIT(= N_("E1588: Comparison operators cannot be chained, use parentheses: %s"));
 #endif
+#if defined(FEAT_SOCKETSERVER) && !defined(MSWIN)
+EXTERN char e_unsafe_socket_directory_str[]
+	INIT(= N_("E1589: Socket directory is not safe to use: %s"));
+#endif

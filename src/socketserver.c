@@ -223,6 +223,29 @@ socketserver_cleanup(void)
     ga_clear(&server_replies);
 }
 
+# ifndef MSWIN
+/*
+ * Check that the socket directory "dir" is a real directory owned by the
+ * user.  Otherwise another user could have created it beforehand and control
+ * the sockets inside it.  Remove access for others if needed.
+ * Returns OK or FAIL.
+ */
+    static int
+socketserver_check_dir(char_u *dir, bool quiet)
+{
+    stat_T st;
+
+    if (mch_lstat((char *)dir, &st) == 0
+	    && S_ISDIR(st.st_mode)
+	    && st.st_uid == getuid()
+	    && ((st.st_mode & 077) == 0 || mch_setperm(dir, 0700) == OK))
+	return OK;
+    if (!quiet)
+	semsg(_(e_unsafe_socket_directory_str), dir);
+    return FAIL;
+}
+# endif
+
 /*
  * List available sockets that can be connected to, only in common directories
  * that Vim knows about. Vim instances with custom socket paths will not be
@@ -279,6 +302,11 @@ socketserver_list(void)
 	dirp = opendir((char *)path.string);
 	if (dirp == NULL)
 	    continue;
+	if (socketserver_check_dir(path.string, true) == FAIL)
+	{
+	    closedir(dirp);
+	    break;
+	}
 
 	// Loop through directory
 	while ((dp = readdir(dirp)) != NULL)
@@ -468,6 +496,8 @@ socketserver_get_path(
 		    (unsigned long int)getuid());
 	    if (vim_mkdir(buf, 0700) == -1 && errno != EEXIST)
 		continue;
+	    if (socketserver_check_dir(buf, quiet) == FAIL)
+		goto unsafe;
 
 	    vim_snprintf((char *)buf, MAXPATHL, "%s/vim-%lu/%s", dir,
 		    (unsigned long int)getuid(), name);
@@ -477,6 +507,8 @@ socketserver_get_path(
 	    vim_snprintf((char *)buf, MAXPATHL, "%s/vim", dir);
 	    if (vim_mkdir(buf, 0700) == -1 && errno != EEXIST)
 		continue;
+	    if (socketserver_check_dir(buf, quiet) == FAIL)
+		goto unsafe;
 
 	    vim_snprintf((char *)buf, MAXPATHL, "%s/vim/%s", dir, name);
 	}
@@ -524,6 +556,12 @@ socketserver_get_path(
     if (!res && fatal != NULL)
 	*fatal = true;
 
+    vim_free(buf);
+    return NULL;
+
+unsafe:
+    if (fatal != NULL)
+	*fatal = true;
     vim_free(buf);
     return NULL;
 # endif

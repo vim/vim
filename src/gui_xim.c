@@ -188,11 +188,11 @@ static int preedit_is_active   = FALSE;
 static int im_preedit_cursor   = 0;	// cursor offset in characters
 static int im_preedit_trailing = 0;	// number of characters after cursor
 
-static unsigned long im_commit_handler_id  = 0;
 #  ifndef USE_GTK4
 #   ifndef GDK_KEY_VoidSymbol
 #    define GDK_KEY_VoidSymbol GDK_VoidSymbol
 #   endif
+static unsigned long im_commit_handler_id  = 0;
 static unsigned int  im_activatekey_keyval = GDK_KEY_VoidSymbol;
 static unsigned int  im_activatekey_state  = 0;
 #  endif
@@ -706,8 +706,10 @@ im_correct_cursor(int num_move_back)
 	add_to_input_buf(backkey, (int)sizeof(backkey));
 }
 
+#  ifndef USE_GTK4
 static int xim_expected_char = NUL;
 static int xim_ignored_char = FALSE;
+#  endif
 
 /*
  * Update the mode and cursor while in an IM callback.
@@ -787,6 +789,7 @@ im_commit_cb(GtkIMContext *context UNUSED,
     // been pressed?  If so, we don't want it to be entered as such - let
     // us carry on processing the raw keycode so that it may be used in
     // mappings as <kSomething>.
+#  ifndef USE_GTK4
     if (xim_expected_char != NUL)
     {
 	// We're currently processing a keypad or other special key
@@ -802,6 +805,7 @@ im_commit_cb(GtkIMContext *context UNUSED,
 	    xim_ignored_char = FALSE;
 	}
     }
+#  endif
 
     if (add_to_input)
 	im_add_to_input((char_u *)str, slen);
@@ -1115,8 +1119,14 @@ xim_init(void)
 
     xic = gtk_im_multicontext_new();
 
+#  ifndef USE_GTK4
     im_commit_handler_id = g_signal_connect(G_OBJECT(xic), "commit",
 					    G_CALLBACK(&im_commit_cb), NULL);
+#  else
+    g_signal_connect(G_OBJECT(xic), "commit",
+					    G_CALLBACK(&im_commit_cb), NULL);
+#  endif
+
     g_signal_connect(G_OBJECT(xic), "preedit_changed",
 		     G_CALLBACK(&im_preedit_changed_cb), NULL);
     g_signal_connect(G_OBJECT(xic), "preedit_start",
@@ -1173,7 +1183,9 @@ im_shutdown(void)
     }
 #  endif
     im_is_active = FALSE;
+#  ifndef USE_GTK4
     im_commit_handler_id = 0;
+#  endif
     if (p_imst == IM_ON_THE_SPOT)
 	preedit_start_col = MAXCOL;
     xim_has_preediting = FALSE;

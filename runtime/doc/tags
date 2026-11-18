@@ -4799,6 +4799,7 @@ E1585	options.txt	/*E1585*
 E1586	options.txt	/*E1586*
 E1587	builtin.txt	/*E1587*
 E1588	eval.txt	/*E1588*
+E1589	remote.txt	/*E1589*
 E159	sign.txt	/*E159*
 E16	cmdline.txt	/*E16*
 E160	sign.txt	/*E160*
@@ -10434,6 +10435,7 @@ socketserver-address	remote.txt	/*socketserver-address*
 socketserver-clientserver	remote.txt	/*socketserver-clientserver*
 socketserver-differences	remote.txt	/*socketserver-differences*
 socketserver-name	remote.txt	/*socketserver-name*
+socketserver-security	remote.txt	/*socketserver-security*
 socketserver-x11	remote.txt	/*socketserver-x11*
 sort()	builtin.txt	/*sort()*
 sorting	change.txt	/*sorting*

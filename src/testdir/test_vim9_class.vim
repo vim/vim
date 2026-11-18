@@ -11950,6 +11950,25 @@ func Test_class_selfref_gc()
   call v9.CheckSourceSuccess(lines)
 endfunc
 
+" Adding an object to a List using the List length as the index should not
+" leave an extra reference to the class.
+def Test_list_append_object_refcount()
+  var lines =<< trim END
+    vim9script
+    class A
+    endclass
+    assert_equal(1, test_refcount(A))
+    var l: list<A> = []
+    for i in range(3)
+      l[i] = A.new()
+    endfor
+    assert_equal(4, test_refcount(A))
+    l = []
+    assert_equal(1, test_refcount(A))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test if class members can be accessed via a lambda inside a object/class
 " method.
 func Test_class_member_lambda()

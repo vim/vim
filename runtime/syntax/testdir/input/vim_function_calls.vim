@@ -281,6 +281,15 @@ echo module[0].42life()
 echo module.foo().42life()
 
 
+" Method calls
+
+" :42- :> with invalid trailing type(), not a number arg
+42->type()
+eval 42->type()
+" 'a,'b- :> with invalid trailing type(), not a string arg
+'a,'b->type()
+
+
 " Issue #17766 (valid function call highlighted as error)
 
 call module[0].foo()
