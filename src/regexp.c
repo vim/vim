@@ -1048,14 +1048,12 @@ getdecchrs(void)
 
 /*
  * Read a \@ byte limit, saturating at INT_MAX to fit both regexp engines.
- * getdigits() also handles numbers too large for a long without wrapping.
  */
     static int
 get_at_limit(void)
 {
-    long	nr = vim_isdigit(*regparse) ? getdigits(&regparse) : -1;
+    vimlong_T nr = getdecchrs();
 
-    curchr = -1;
     return nr > INT_MAX ? INT_MAX : (int)nr;
 }
 
