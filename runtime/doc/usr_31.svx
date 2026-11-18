@@ -1,0 +1,271 @@
+*usr_31.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+			 VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Utforska det grafiska gränssnittet
+
+
+Vim fungerar bra i en terminal, men det grafiska gränssnittet har några extra
+funktioner.  Du kan använda en filbläddrare för kommandon som hanterar filer
+och dialogrutor för att välja mellan alternativ.  Menykommandon kan även nås
+snabbt med tangentbordet.
+
+|31.1|	Filbläddraren
+|31.2|	Bekräftelser
+|31.3|	Menytangenter
+|31.4|	Vim-fönstrets position och storlek
+|31.5|	Övrigt
+
+	Nästa kapitel: |usr_32.txt|  Ångringsträdet
+	Föregående kapitel: |usr_30.txt|  Redigera program
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*31.1*	Filbläddraren
+
+När du väljer menyn Arkiv/Öppna... öppnas en filbläddrare.  Där blir det lättare
+att hitta filen du vill redigera.  Men om du vill dela fönstret och redigera
+en annan fil kan du välja Arkiv/Öppna i delad vy... direkt.
+   Eftersom du skriver de flesta kommandon i Vim kan du även öppna
+filbläddraren med ett kommando.  Lägg till "browse" före split-kommandot: >
+
+	:browse split
+
+Välj en fil.  Därefter körs kommandot ":split" med den filen.  Om du avbryter
+fildialogrutan händer inget och fönstret delas inte.
+   Du kan också ange ett filnamnsargument.  Det används för att tala om var
+filbläddraren ska börja.  Exempel: >
+
+	:browse split /etc
+
+Filbläddraren öppnas då i katalogen "/etc".
+
+Kommandot ":browse" kan läggas före nästan alla kommandon som öppnar en fil.
+   Om du inte anger någon katalog avgör Vim var filbläddraren ska börja.
+Som standard används samma katalog som förra gången.  Om du exempelvis körde
+":browse split" och valde en fil i "/usr/local/share" börjar nästa
+":browse"-filbläddring där också.
+   Detta kan ändras med alternativet 'browsedir'.  Det kan ha ett av tre
+värden:
+
+	last		använd den senast besökta katalogen (standard)
+	buffer		använd samma katalog som den aktuella bufferten
+	current	använd den aktuella katalogen
+
+Om du till exempel står i katalogen "/usr" och redigerar filen
+"/usr/local/share/readme" startar följande kommandon bläddraren i
+"/usr/local/share": >
+
+	:set browsedir=buffer
+	:browse edit
+
+Alternativt startar följande kommandon bläddraren i "/usr": >
+
+	:set browsedir=current
+	:browse edit
+
+	Observera:
+	De flesta filbläddrare har tangentbordsstyrning så att du slipper
+	använda musen.  Hur den fungerar varierar mellan systemen och beskrivs
+	inte här.  Vim använder om möjligt systemets vanliga filbläddrare.
+	Information om tangentbordsgenvägar finns i systemdokumentationen.
+
+När du inte använder den grafiska Vim-versionen kan du välja filer i ett
+filutforskarfönster.  Det fungerar dock inte med kommandot ":browse".  Se
+|netrw-browse|.
+
+==============================================================================
+*31.2*	Bekräftelser
+
+Vim skyddar dig från att råka skriva över en fil och från andra sätt att
+förlora ändringar.  Om du försöker göra något som kan vara olämpligt visar Vim
+ett felmeddelande och föreslår att du lägger till ! om du verkligen vill
+fortsätta.
+   Du slipper skriva om kommandot med ! om du låter Vim visa en dialogruta.
+Där kan du välja "Ok" eller "Avbryt".
+   Anta till exempel att du har ändrat en fil och börjar redigera en annan med:
+>
+
+	:confirm edit foo.txt
+
+Vim visar då en dialogruta som kan se ut så här:
+
+	+-----------------------------------+
+	|                                   |
+	|   ?   Spara ändringar till "bar.txt"? |
+	|                                   |
+	|   JA    NEJ            AVBRYT       |
+	+-----------------------------------+
+
+Gör nu ditt val.  Välj "JA" om du vill spara ändringarna.  Välj "NEJ" om du
+inte vill spara dem.  Om du har glömt vad du gjorde och vill kontrollera vad
+som ändrats väljer du "AVBRYT".  Då kommer du tillbaka till samma fil med
+ändringarna kvar.
+
+Precis som ":browse" kan kommandot ":confirm" läggas före de flesta kommandon
+som redigerar en annan fil.  Du kan också kombinera dem: >
+
+	:confirm browse edit
+
+Då visas först en dialogruta om den aktuella bufferten har ändrats.  Sedan
+öppnas en filbläddrare där du väljer filen som ska redigeras.
+
+	Observera:
+	Du kan använda tangentbordet för att välja ett alternativ i dialogrutan.
+	Vanligen byter <Tab> och piltangenterna valt alternativ.  Tryck på
+	<Enter> för att välja det.  Det här beror dock på systemet.
+
+Kommandot ":confirm" fungerar även när du inte använder det grafiska
+gränssnittet.  I stället för att visa en dialogruta skriver Vim meddelandet
+längst ned i fönstret och ber dig trycka på en tangent: >
+
+	:confirm edit main.c
+<	Spara ändringar till "Namnlös"? ~
+<[J]a, (N)ej, (A)vbryt:  ~
+
+Tryck på tangenten för det alternativ du vill välja.  Du behöver inte trycka
+på <Enter>, till skillnad från när du skriver kommandon på kommandoraden.
+
+==============================================================================
+*31.3*	Menytangenter
+
+Du använder tangentbordet för alla Vim-kommandon.  Med menyerna kan du välja
+kommandon utan att veta vad de heter.  Men då måste du flytta handen från
+tangentbordet och använda musen.
+   Ofta går det även att välja menyer med tangenter.  Det beror på systemet,
+men vanligtvis fungerar det så här: håll ned <Alt> och tryck på den
+understrukna bokstaven i menynamnet.  Till exempel öppnar <A-f> (<Alt> och f)
+menyn Fönster.
+   I menyn Fönster är d understruket i menyvalet "Dela".  Släpp <Alt> och
+tryck på d för att välja det.
+
+När du först har öppnat en meny med <Alt> kan du använda piltangenterna för
+att gå igenom menyerna.  <Right> öppnar en undermeny och <Left> stänger den.
+<Esc> stänger också menyn.  <Enter> väljer ett menyval.
+
+Det kan uppstå en konflikt mellan att använda <Alt> för att välja menyobjekt
+och att använda tangentkombinationer med <Alt> i mappningar.  Alternativet
+'winaltkeys' anger hur Vim ska hantera <Alt>.
+   Standardvärdet "menu" är ett smart val: om tangentkombinationen är en
+genväg i en meny kan den inte mappas.  Alla andra tangenter kan mappas.
+   Värdet "no" innebär att <Alt>-tangenter inte används för menyerna.  Då måste
+du använda musen till menyerna, och alla <Alt>-tangenter kan mappas.
+   Med värdet "yes" hanterar fönstersystemet <Alt>-kombinationerna, så de
+går inte att mappa i Vim.
+
+==============================================================================
+*31.4*	Vim-fönstrets position och storlek
+
+Visa Vim-fönstrets aktuella position på skärmen med: >
+
+	:winpos
+
+Det fungerar bara i det grafiska gränssnittet.  Utskriften kan se ut så här:
+
+	Fönsterposition: X 272, Y 103 ~
+
+Positionen anges i skärmpixlar.  Använd dessa värden för att flytta Vim någon
+annanstans.  Flytta till exempel fönstret 100 pixlar åt vänster med: >
+
+	:winpos 172 103
+<
+	Observera:
+	Den rapporterade positionen och den nya positionen kan skilja sig lite
+	åt.  Det beror på kanten runt fönstret, som läggs till av
+	fönsterhanteraren.
+
+Du kan använda kommandot i startskriptet för att placera fönstret på en viss
+plats.
+
+Vim-fönstrets storlek beräknas i tecken och beror därför på teckenstorleken.
+Visa den aktuella storleken med: >
+
+	:set lines columns
+
+Ändra storleken genom att ange ett nytt värde för 'lines' och/eller 'columns':
+>
+
+	:set lines=50
+	:set columns=80
+
+I en terminal fungerar det att hämta storleken på samma sätt som i det
+grafiska gränssnittet.  Det går däremot inte att ändra storleken i de flesta
+terminaler.
+
+Du kan starta X Window-versionen av gvim med ett argument som anger fönstrets
+storlek och position: >
+
+	gvim -geometry {width}x{height}+{x-offset}+{y-offset}
+
+{width} och {height} anges i antal tecken.  {x-offset} och {y-offset} anges i
+pixlar.  Exempel: >
+
+	gvim -geometry 80x25+100+300
+
+==============================================================================
+*31.5*	Övrigt
+
+Du kan använda gvim för att redigera ett e-postmeddelande.  I e-postprogrammet
+måste du välja gvim som redigerare.  Då märker du att det inte fungerar som du
+vill: e-postprogrammet tror att redigeringen är klar medan gvim fortfarande
+körs.
+   Det beror på att gvim kopplar från skalet som startade det.  Det är bra när
+du startar gvim i en terminal och vill fortsätta arbeta i samma terminal.
+Men om e-postprogrammet ska vänta tills du har avslutat gvim måste du förhindra
+att programmet kopplar från.  Argumentet "-f" gör det: >
+
+	gvim -f file.txt
+
+"-f" står för foreground (förgrund).  Nu väntar skalet tills du har redigerat
+klart och avslutat Vim.
+
+
+FÖRDRÖJD START AV DET GRAFISKA GRÄNSSNITTET
+
+I Unix kan du först starta Vim i en terminal.  Det är användbart om du vill
+göra flera saker i samma skal.  Om du redigerar en fil och sedan vill byta
+till det grafiska gränssnittet startar du det med: >
+
+	:gui
+
+Vim öppnar ett fönster med det grafiska gränssnittet och använder inte längre
+terminalen.  Du kan fortsätta använda terminalen till något annat.  Argumentet
+"-f" gör att det grafiska gränssnittet körs i förgrunden.  Du kan också skriva
+":gui -f".
+
+
+GVIM:S STARTFIL
+
+När gvim startar läser det in filen gvimrc.  Den motsvarar vimrc-filen som
+används när Vim startar.  I gvimrc-filen kan du lägga inställningar och
+kommandon som bara ska användas när det grafiska gränssnittet startas.  Du kan
+till exempel ange en annan fönsterstorlek med alternativet 'lines': >
+
+	:set lines=55
+
+Gör inte detta i en terminal, eftersom dess storlek är fast.  Undantaget är
+en xterm som stöder storleksändring.
+   Vim letar efter gvimrc-filen på samma platser som vimrc-filen.  I Unix heter
+den vanligtvis "~/.gvimrc" och i MS-Windows "$VIM/_gvimrc".  Miljövariabeln
+$MYGVIMRC pekar på filen.  Om du har en sådan fil kan du redigera den med: >
+
+	:edit $MYGVIMRC
+<
+   Om du av någon anledning inte vill använda den vanliga gvimrc-filen kan du
+ange en annan med argumentet "-U": >
+
+	gvim -U thisrc ...
+
+Då kan du starta gvim med olika inställningar för olika slags redigering.  Du
+kan till exempel använda en annan teckenstorlek.
+   Hoppa över inläsningen av gvimrc-filen helt med: >
+
+	gvim -U NONE ...
+
+==============================================================================
+
+Nästa kapitel: |usr_32.txt|  Ångringsträdet
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

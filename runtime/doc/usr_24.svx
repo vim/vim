@@ -1,0 +1,580 @@
+*usr_24.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Infoga text snabbt
+
+
+När du skriver text har Vim flera sätt att minska antalet tangenttryckningar
+och undvika skrivfel.  Använd komplettering i infogningsläge för att återanvända
+ord du redan har skrivit.  Förkorta långa ord och skriv tecken som saknas på
+tangentbordet.
+
+|24.1|	Rätta text
+|24.2|	Visa matchande parenteser
+|24.3|	Komplettering
+|24.4|	Upprepa en infogning
+|24.5|	Kopiera från en annan rad
+|24.6|	Infoga ett register
+|24.7|	Förkortningar
+|24.8|	Skriva specialtecken
+|24.9|	Digrafer
+|24.10|	Normallägeskommandon
+
+	Nästa kapitel: |usr_25.txt|  Redigera formaterad text
+	Föregående kapitel: |usr_23.txt|  Redigera andra filer
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*24.1*	Rätta text
+
+Tangenten <BS> har nämnts tidigare.  Den tar bort tecknet före markören.
+Tangenten <Del> tar bort tecknet under (efter) markören.
+   Om du skrivit ett helt ord fel kan du använda CTRL-W:
+
+	The horse had fallen to the sky ~
+				       CTRL-W
+	The horse had fallen to the ~
+
+Om en rad blivit helt fel kan du börja om med CTRL-U.  Texten efter markören
+och indraget behålls.  Bara text från det första tecknet som inte är ett
+blanksteg fram till markören tas bort.  Om markören står på "f" i nästa rad
+gör CTRL-U så här:
+
+	The horse had fallen to the ~
+	      CTRL-U
+	fallen to the ~
+
+Om du upptäcker ett fel några ord bakåt måste du flytta markören dit för att
+rätta det.  Anta att du skrev:
+
+	The horse had follen to the ground ~
+
+Du vill ändra "follen" till "fallen".  Om markören står sist på raden kan du
+rätta det så här: >
+
+					<Esc>4blraA
+
+<	lämna infogningsläget		<Esc>
+	flytta fyra ord bakåt			  4b
+	flytta till tecknet "o"		    l
+	ersätt med "a"				ra
+	återgå till infogningsläget		  A
+
+Ett annat sätt är: >
+
+	<C-Left><C-Left><C-Left><C-Left><Right><Del>a<End>
+
+<	fyra ord bakåt		     <C-Left><C-Left><C-Left><C-Left>
+	ställ markören på "o"			<Right>
+	ta bort "o"			       <Del>
+	skriv "a"				    a
+	gå till radens slut			     <End>
+
+Här används specialtangenter för att flytta markören utan att lämna
+infogningsläget.  Det liknar arbetssättet i en redigerare utan separata lägen.
+Det kan vara enklare att komma ihåg, men tar längre tid eftersom handen måste
+flyttas från bokstäverna till piltangenterna.  <End> kan också vara svår att
+hitta utan att titta på tangentbordet.
+   Specialtangenterna är särskilt användbara när du skriver en mappning som
+inte ska lämna infogningsläget.  Då spelar de extra tangenttryckningarna
+mindre roll.
+   Här är en översikt över tangenter du kan använda i infogningsläget:
+
+	<C-Home>	till filens början
+	<PageUp>	upp en hel skärmsida
+	<Home>		till radens början
+	<S-Left>	ett ord åt vänster
+	<C-Left>	ett ord åt vänster
+	<S-Right>	ett ord åt höger
+	<C-Right>	ett ord åt höger
+	<End>		till radens slut
+	<PageDown>	ned en hel skärmsida
+	<C-End>		till filens slut
+
+Det finns fler tangenter; se |ins-special-special|.
+
+==============================================================================
+*24.2*	Visa matchande parenteser
+
+När du skriver en ) kan det vara praktiskt att se vilken ( den hör ihop med.
+Aktivera funktionen med: >
+
+	:set showmatch
+
+När du nu skriver exempelvis "(exempel)" flyttar Vim markören till den
+matchande ( så snart du skriver ).  Markören stannar där en halv sekund och
+återgår sedan till platsen där du skrev.
+   Om ingen matchande ( finns piper Vim.  Då kanske du har glömt en ( eller
+skrivit en ) för mycket.
+   Matchningen visas även för paren [] och {}.  Du behöver inte vänta med att
+skriva nästa tecken.  Så snart Vim ser det flyttas markören tillbaka och
+skrivandet fortsätter.
+   Ändra väntetiden med alternativet 'matchtime'.  Vänta till exempel en och
+en halv sekund med: >
+
+	:set matchtime=15
+
+Tiden anges i tiondels sekunder.
+
+==============================================================================
+*24.3*	Komplettering
+
+Vim kan komplettera ord medan du skriver.  Skriv början av ett ord och tryck
+på CTRL-P, så försöker Vim fylla i resten.
+   Anta att du skriver ett C-program och vill få följande rad:
+
+	total = ch_array[0] + ch_array[1] + ch_array[2]; ~
+
+Börja så här:
+
+	total = ch_array[0] + ch_array[1] + ch_ ~
+
+Tryck nu på CTRL-P.  Vim söker efter ett ord som börjar med texten före
+markören.  Här är det "ch_", som matchar "ch_array".  Resultatet blir:
+
+	total = ch_array[0] + ch_array[1] + ch_array ~
+
+Skriv lite till så att raden slutar med ett blanksteg:
+
+	total = ch_array[0] + ch_array[1] +  ~
+
+Om du nu trycker på CTRL-P söker Vim efter ett ord som kompletterar texten
+före markören.  Eftersom den är tom hittas det första ordet bakåt, "ch_array".
+Tryck på CTRL-P igen för nästa match, i det här fallet "total".  En tredje
+CTRL-P söker vidare bakåt.  Om inga fler ord hittas återgår Vim till den
+ursprungliga texten, alltså ingenting.  En fjärde CTRL-P börjar om med
+"ch_array".
+
+Använd CTRL-N för att söka framåt.  Sökningen går runt vid filens slut, så
+CTRL-N och CTRL-P hittar samma ord i olika ordning.  Minnesregel: N står för
+nästa träff och P för föregående.
+
+Vim anstränger sig för att hitta ord att komplettera med.  Som standard söker
+det på följande ställen:
+
+	1. Den aktuella filen
+	2. Filer i andra fönster
+	3. Andra inlästa filer (dolda buffertar)
+	4. Filer som inte är inlästa (inaktiva buffertar)
+	5. Taggfiler
+	6. Alla filer som inkluderas med #include i den aktuella filen
+
+
+ALTERNATIV
+
+Ändra sökordningen med alternativet 'complete'.
+
+Alternativet 'ignorecase' används.  När det är aktiverat ignoreras skillnader
+mellan stora och små bokstäver vid sökningen.
+
+Alternativet 'infercase' är särskilt avsett för komplettering.  Det är
+användbart när träffar söks utan hänsyn till skiftläge ('ignorecase' måste då
+vara aktiverat), samtidigt som skiftläget i det du skrivit hittills bevaras.
+Om du skriver "For" och Vim hittar "fortunately" blir resultatet alltså
+"Fortunately".
+
+
+KOMPLETTERA SÄRSKILDA TYPER AV TEXT
+
+Om du vet vilken sorts text du söker kan du använda följande tangentsekvenser:
+
+	CTRL-X CTRL-F	filnamn
+	CTRL-X CTRL-L	hela rader
+	CTRL-X CTRL-D	makrodefinitioner (även i inkluderade filer)
+	CTRL-X CTRL-I	den aktuella filen och inkluderade filer
+	CTRL-X CTRL-K	ord från en ordlista
+	CTRL-X CTRL-R	innehåll från register
+	CTRL-X CTRL-T	ord från en synonymordbok
+	CTRL-X CTRL-]	taggar
+	CTRL-X CTRL-V	Vims kommandorad
+
+Tryck på CTRL-N för nästa träff och CTRL-P för föregående träff efter vart och
+ett av dessa kommandon.
+   Mer information finns för varje kommando i |ins-completion|.
+
+
+KOMPLETTERA FILNAMN
+
+Vi tar CTRL-X CTRL-F som exempel.  Det kompletterar filnamn.  Vim söker i den
+aktuella katalogen och visar varje fil som matchar ordet före markören.
+   Anta att följande filer finns i katalogen:
+
+	main.c  sub_count.c  sub_done.c  sub_exit.c
+
+Gå till infogningsläget och börja skriva:
+
+	The exit code is in the file sub ~
+
+Tryck sedan på CTRL-X CTRL-F.  Vim kompletterar ordet "sub" genom att söka i
+katalogens filer.  Den första träffen är sub_count.c, men det var inte den du
+ville ha.  Tryck på CTRL-N för nästa, sub_done.c, och sedan CTRL-N igen för
+sub_exit.c.  Resultatet blir:
+
+	The exit code is in the file sub_exit.c ~
+
+Om filnamnet börjar med / (Unix) eller C:\ (MS-Windows) kan Vim söka igenom
+hela filsystemet.  Skriv till exempel "/u" och tryck på CTRL-X CTRL-F.  I Unix
+matchar det "/usr":
+
+	the file is found in /usr/ ~
+
+Tryck på CTRL-N för att gå tillbaka till "/u".  Om du i stället vill godta
+"/usr/" och gå en nivå djupare använder du CTRL-X CTRL-F igen:
+
+	the file is found in /usr/X11R6/ ~
+
+Resultaten beror förstås på vilka filer som finns i ditt filsystem.
+Matchningarna sorteras alfabetiskt.
+
+
+KOMPLETTERA KÄLLKOD
+
+Källkodsfiler har en tydlig struktur, så Vim kan komplettera dem på ett
+intelligent sätt.  Funktionen kallas Omni-completion.  I vissa andra
+redigerare kallas den intellisense, men det är ett varumärke.
+
+CTRL-X CTRL-O startar Omni-completion.  O står här för Omni, vilket kan vara
+en minnesregel.  Exempel med C-källkod:
+
+	{ ~
+	    struct foo *p; ~
+	    p-> ~
+
+Markören står efter "p->".  Tryck på CTRL-X CTRL-O.  Vim visar möjliga
+alternativ, alltså medlemmarna i "struct foo".  Det skiljer sig från CTRL-P,
+som kan komplettera vilket ord som helst, medan bara medlemmarna i "struct
+foo" är giltiga här.
+
+Du kan behöva göra inställningar för att Omni-completion ska fungera.  Se
+först till att insticksprogram för filtyper är aktiverade.  Vimrc-filen bör
+innehålla något av följande: >
+	filetype plugin on
+<eller: >
+	filetype plugin indent on
+
+För C-kod behöver du skapa en taggfil och ställa in alternativet 'tags'.  Det
+beskrivs i |ft-c-omni|.  Andra filtyper kan kräva liknande inställningar; se
+|compl-omni-filetypes|.  Funktionen stöder bara vissa filtyper.  Kontrollera
+värdet på 'omnifunc' för att se om den kan användas.
+
+==============================================================================
+*24.4*	Upprepa en infogning
+
+Tryck på CTRL-A för att infoga texten du skrev senast i infogningsläget.
+   Anta att en fil börjar med följande rader:
+
+	"file.h" ~
+	/* Main program begins */ ~
+
+Du infogar "#include " i början av den första raden:
+
+	#include "file.h" ~
+	/* Main program begins */ ~
+
+Gå till början av nästa rad med "j^".  Börja infoga en ny #include-rad med: >
+
+	i CTRL-A
+
+Resultatet blir:
+
+	#include "file.h" ~
+	#include /* Main program begins */ ~
+
+"#include " infogades eftersom CTRL-A återanvänder den senaste infogningen.
+Skriv nu "main.h"<Enter> för att färdigställa raden:
+
+	#include "file.h" ~
+	#include "main.h" ~
+	/* Main program begins */ ~
+
+Kommandot CTRL-@ gör en CTRL-A och lämnar sedan infogningsläget.  Det är ett
+snabbt sätt att upprepa samma infogning.
+
+==============================================================================
+*24.5*	Kopiera från en annan rad
+
+CTRL-Y infogar tecknet ovanför markören.  Det är användbart när du skriver om
+en tidigare rad.  Anta att du har den här C-raden:
+
+	b_array[i]->s_next = a_array[i]->s_next; ~
+
+Du behöver samma rad men med "s_prev" i stället för "s_next".  Börja på en ny
+rad och tryck på CTRL-Y 14 gånger tills markören är vid "n" i "next":
+
+	b_array[i]->s_next = a_array[i]->s_next; ~
+	b_array[i]->s_ ~
+
+Skriv "prev":
+
+	b_array[i]->s_next = a_array[i]->s_next; ~
+	b_array[i]->s_prev ~
+
+Fortsätt trycka på CTRL-Y fram till nästa "next":
+
+	b_array[i]->s_next = a_array[i]->s_next; ~
+	b_array[i]->s_prev = a_array[i]->s_ ~
+
+Skriv "prev;" för att avsluta.
+
+CTRL-E infogar tecknet på raden nedanför markören.
+
+==============================================================================
+*24.6*	Infoga ett register
+
+Kommandot CTRL-R {register} infogar registrets innehåll.  Det är användbart
+när du annars skulle behöva skriva ett långt ord.  Anta att du ska skriva:
+
+	r = VeryLongFunction(a) + VeryLongFunction(b) + VeryLongFunction(c) ~
+
+Funktionsnamnet finns i en annan fil.  Öppna den, flytta markören till namnet
+och kopiera det till register v: >
+
+	"vyiw
+
+"v" anger registret och "yiw" betyder att det inre ordet kopieras.  Öppna
+filen där du ska skriva raden och börja så här:
+
+	r = ~
+
+Tryck på CTRL-R v för att infoga funktionsnamnet:
+
+	r = VeryLongFunction ~
+
+Skriv tecknen mellan funktionsnamnen och använd CTRL-R v två gånger till.
+   Du hade kunnat använda komplettering.  Register är praktiska när många ord
+börjar med samma tecken.
+
+Om registret innehåller tecken som <BS> eller andra specialtecken tolkas de
+som om de hade skrivits från tangentbordet.  Använd CTRL-R CTRL-R {register}
+om du vill infoga själva tecknen, till exempel <BS>, som text.
+
+==============================================================================
+*24.7*	Förkortningar
+
+En förkortning är ett kort ord som ersätter ett längre.  Exempelvis kan "ad"
+stå för "advertisement".  Vim kan automatiskt expandera förkortningen när du
+skriver den.
+   Ange att "ad" ska bli "advertisement" med: >
+
+	:iabbrev ad advertisement
+
+När du skriver "ad" infogas hela ordet när du sedan skriver ett tecken som
+inte kan ingå i ett ord, till exempel ett blanksteg:
+
+	Det du skriver			Resultatet
+	I saw the a			I saw the a ~
+	I saw the ad			I saw the ad ~
+	I saw the ad<Space>		I saw the advertisement<Space> ~
+
+Expansionen sker inte när du bara skrivit "ad".  Därför kan du skriva "add"
+utan att det expanderas.  Bara hela ord kontrolleras mot förkortningarna.
+
+
+FÖRKORTA FLERA ORD
+
+Du kan definiera en förkortning som ger flera ord.  Definiera exempelvis "JB"
+som "Jack Benny" så här: >
+
+	:iabbrev JB Jack Benny
+
+Som programmerare använder jag två ganska ovanliga förkortningar: >
+
+	:iabbrev #b /****************************************
+	:iabbrev #e <Space>****************************************/
+
+De används för att skapa inramade kommentarer.  Kommentaren börjar med #b,
+som ritar den övre raden.  Jag skriver kommentaren och använder sedan #e för
+att rita den nedre raden.
+   Observera att förkortningen #e börjar med ett blanksteg.  De två första
+tecknen är alltså blanksteg och asterisk.  Vim brukar ignorera blanksteg
+mellan förkortningen och expansionen.  För att undvika det skrivs blanksteg
+som de sju tecknen <, S, p, a, c, e, >.
+
+	Observera:
+	":iabbrev" är långt att skriva.  ":iab" fungerar också.
+	Det är alltså kommandot för att förkorta som förkortas!
+
+
+RÄTTA VANLIGA SKRIVFEL
+
+Det är vanligt att skriva samma ord fel varje gång, till exempel "teh" i
+stället för "the".  Rätta det med en förkortning: >
+
+	:abbreviate teh the
+
+Lägg till fler sådana förkortningar när du upptäcker återkommande skrivfel.
+
+
+VISA FÖRKORTNINGAR
+
+Kommandot ":abbreviate" listar förkortningarna:
+
+	:abbreviate
+	i  #e		  ****************************************/
+	i  #b		 /****************************************
+	i  JB		 Jack Benny
+	i  ad		 advertisement
+	!  teh		 the
+
+Tecknet "i" i första kolumnen betyder att förkortningen gäller i
+infogningsläget.  Andra möjliga tecken är:
+
+	c	kommandoradsläge		:cabbrev
+	!	både infognings- och kommandoradsläge	:abbreviate
+
+Förkortningar är sällan användbara i kommandoradsläget.  Därför använder du
+vanligen ":iabbrev".  Då expanderas till exempel inte "ad" när du skriver: >
+
+	:edit ad
+
+
+TA BORT FÖRKORTNINGAR
+
+Ta bort en förkortning med kommandot ":unabbreviate".  Anta att du har: >
+
+	:abbreviate @f fresh
+
+Ta bort den så här: >
+
+	:unabbreviate @f
+
+När du skriver kommandot märker du att @f expanderas till "fresh".  Det gör
+inget; Vim förstår ändå vad du menar.  Undantaget är om du har definierat en
+förkortning för "fresh", vilket är osannolikt.
+   Ta bort alla förkortningar med: >
+
+	:abclear
+
+Det finns även varianter för infogningsläget (":iunabbreviate" och
+":iabclear") och kommandoradsläget (":cunabbreviate" och ":cabclear").
+
+
+MAPPNINGAR OCH FÖRKORTNINGAR
+
+Se upp när du definierar en förkortning: den resulterande strängen bör inte
+vara mappad.  Exempel: >
+
+	:abbreviate @a adder
+	:imap dd disk-door
+
+Om du nu skriver @a får du "adisk-doorer".  Det var nog inte avsikten.
+Använd kommandot ":noreabbrev" för att undvika att resultatet används för
+mappningar.  Det gör samma sak som ":abbreviate" men utan att mappa den
+resulterande strängen: >
+
+	:noreabbrev @a adder
+
+Det är lyckligtvis ovanligt att resultatet av en förkortning är mappat.
+
+==============================================================================
+*24.8*	Skriva specialtecken
+
+Kommandot CTRL-V infogar nästa tecken bokstavligt, utan att tolka dess
+specialbetydelse.  Exempel: >
+
+	CTRL-V <Esc>
+
+Det infogar ett Esc-tecken, så du lämnar inte infogningsläget.  (Skriv inte
+blanksteget efter CTRL-V; det finns bara där för att göra exemplet lättare att
+läsa.)
+
+	Observera:
+	I MS-Windows används CTRL-V för att klistra in text.  Använd CTRL-Q i
+	stället.  I vissa Unix-terminaler fungerar inte CTRL-Q eftersom tecknet
+	har en särskild funktion.
+
+Du kan även skriva CTRL-V {siffror} för att infoga ett tecken med det angivna
+decimala värdet.  Tecken nummer 127 är till exempel <Del> (men inte
+nödvändigtvis tangenten <Del>!).  Infoga det med: >
+
+	CTRL-V 127
+
+På detta sätt kan du skriva tecken upp till 255.  Om du skriver färre än tre
+siffror avslutar nästa tecken som inte är en siffra talet.  Lägg till en
+eller två inledande nollor för att alltid skriva tre siffror.
+   Alla följande kommandon infogar en <Tab> och därefter en punkt:
+
+	CTRL-V 9.
+	CTRL-V 09.
+	CTRL-V 009.
+
+Skriv ett tecken med hexadecimalvärde genom att sätta "x" efter CTRL-V: >
+
+	CTRL-V x7f
+
+Det fungerar också upp till 255 (CTRL-V xff).  Använd "o" för oktala tal.
+Med "u" och "U" kan du skriva tal med upp till 16 respektive 32 bitar,
+exempelvis ett Unicode-tecken: >
+
+	CTRL-V o123
+	CTRL-V u1234
+	CTRL-V U0001f642
+
+==============================================================================
+*24.9*	Digrafer
+
+Vissa tecken finns inte på tangentbordet, till exempel copyrighttecknet (©).
+I Vim kan du skriva dem med digrafer, där två tecken motsvarar ett.  Skriv
+exempelvis © med tre tangenttryckningar: >
+
+	CTRL-K Co
+
+Visa tillgängliga digrafer med: >
+
+	:digraphs
+
+Vim visar digraftabellen.  Här är tre rader ur den:
+
+  AC ~_ 159  NS |  160  !I ¡  161  Ct ¢  162  Pd £  163  Cu ¤  164  Ye ¥  165 ~
+  BB ¦  166  SE §  167  ': ¨  168  Co ©  169  -a ª  170  << «  171  NO ¬  172 ~
+  -- ­  173  Rg ®  174  'm ¯  175  DG °  176  +- ±  177  2S ²  178  3S ³  179 ~
+
+Exemplet visar att CTRL-K Pd infogar tecknet (£), med decimalt värde 163.
+   Pd är en förkortning av "Pound".  De flesta digrafer är valda så att de
+påminner om tecknet de skapar.  Du förstår ofta sambandet när du tittar på
+listan.
+   Du kan byta plats på de två tecknen om det inte finns en digraf för den
+kombinationen.  CTRL-K dP fungerar alltså också.  Eftersom digrafen "dP" inte
+finns söker Vim efter "Pd".
+
+	Observera:
+	Digraferna beror på teckenuppsättningen som Vim använder.  Kör alltid
+	":digraphs" för att se vilka som är tillgängliga just nu.
+
+Definiera egna digrafer genom att ange tecknets decimala värde.  Exempel: >
+
+	:digraph a\" 228
+
+Det gör att CTRL-K a" infogar ä.  Citationstecknet måste föregås av ett
+omvänt snedstreck, annars tolkas det som början på en kommentar.
+
+Mer information finns i |digraphs|.
+   Ett annat sätt att infoga specialtecken är att använda en tangentmappning.
+Se |45.5|.
+
+==============================================================================
+*24.10*	Normallägeskommandon
+
+Infogningsläget har ett begränsat antal kommandon.  Normalläget har många fler.
+Vanligen lämnar du infogningsläget med <Esc>, kör normallägeskommandot och går
+tillbaka till infogningsläget med "i" eller "a".
+   Det går snabbare med CTRL-O {kommando}.  Då körs ett normallägeskommando
+från infogningsläget.  Ta bort text från markören till radslutet så här: >
+
+	CTRL-O D
+
+På detta sätt kan du köra ett normallägeskommando åt gången.  Du kan dock ange
+ett register eller ett antal.  Ett mer komplicerat exempel: >
+
+	CTRL-O "g3dw
+
+Det tar bort fram till det tredje ordet och sparar texten i register g.
+
+==============================================================================
+
+Nästa kapitel: |usr_25.txt|  Redigera formaterad text
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

@@ -1,0 +1,668 @@
+*usr_05.txt*	För Vim version 9.2.  Senast ändrad: 18 nov 2026
+
+
+		     VIMS ANVÄNDARMANUAL	av Bram Moolenaar
+
+
+				Anpassa inställningarna
+
+
+Du kan anpassa Vim efter dina behov. I det här kapitlet får du lära dig hur Vim startar med olika inställningar. Du kan utöka Vim med insticksprogram eller definiera egna makron.
+
+|05.1|	Filen vimrc
+|05.2|	Exempel-filen vimrc förklarad
+|05.3|	Filen defaults.vim förklarad
+|05.4|	Enkla tangentmappningar
+|05.5|	Lägga till ett paket
+|05.6|	Lägga till ett insticksprogram
+|05.7|	Lägga till en hjälpsida
+|05.8|	Alternativfönstret
+|05.9|	Vanliga alternativ
+
+     Nästa kapitel: |usr_06.txt|  Använda syntaxmarkering
+ Föregående kapitel: |usr_04.txt|  Göra mindre ändringar
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*05.1*	Filen vimrc					*vimrc-intro*
+
+Du har kanske tröttnat på att skriva samma kommandon om och om igen. Om Vim ska starta med dina favoritinställningar och tangentmappningar skriver du in dem i filen vimrc. Vim kör kommandona i den filen när programmet startar.
+
+Om du redan har en vimrc-fil, till exempel om systemadministratören har skapat en åt dig, kan du redigera den så här: >
+	:edit $MYVIMRC
+
+Om du inte har någon vimrc-fil kan du läsa |vimrc| om var den ska skapas. Kommandot ":version" visar också namnet på den "vimrc-fil för användaren" som Vim letar efter.
+
+På Unix och Macintosh används alltid den här filen och den rekommenderas:
+
+	~/.vimrc ~
+
+I MS-Windows kan du använda någon av dessa:
+
+	$HOME/_vimrc ~
+	$VIM/_vimrc ~
+
+Om du skapar vimrc-filen för första gången rekommenderas att du lägger den här raden högst upp: >
+	source $VIMRUNTIME/defaults.vim
+
+Detta initierar Vim för nya användare, till skillnad från användare av traditionella Vi. Läs |defaults.vim| om detaljerna.
+
+Filen vimrc kan innehålla alla kommandon som du skriver efter ett kolon. De enklaste kommandona ställer in alternativ. Om Vim alltid ska starta med alternativet 'incsearch' aktiverat lägger du till den här raden i vimrc-filen: >
+	set incsearch
+
+För att den nya raden ska börja gälla måste du avsluta Vim och starta det igen. Senare får du lära dig hur du gör detta utan att avsluta Vim.
+
+Det här kapitlet tar bara upp grunderna. Mer information om Vim-skript finns i |usr_41.txt|.
+
+==============================================================================
+*05.2*	Exempel-filen vimrc förklarad		*vimrc_example.vim*
+
+I det första kapitlet förklaras hur exempel-filen vimrc (som ingår i Vim-distributionen) kan användas för att starta Vim i läget nocompatible (se |not-compatible|). Filen finns här:
+
+	$VIMRUNTIME/vimrc_example.vim ~
+
+I det här avsnittet går vi igenom kommandona i filen. Det ger dig idéer om hur du kan ställa in Vim efter dina önskemål. Allt förklaras inte; använd kommandot ":help" för mer information.
+
+>
+	" Get the defaults that most users want.
+	source $VIMRUNTIME/defaults.vim
+
+Detta läser in filen "defaults.vim" från katalogen $VIMRUNTIME. Den ställer in Vim så som de flesta vill ha det. Om du inte vill ha dessa inställningar kan du kommentera bort raden. Kommandona förklaras nedan:
+|defaults.vim-explained|
+
+>
+	if has("vms")
+	  set nobackup
+	else
+	  set backup
+	  if has('persistent_undo')
+	    set undofile
+	  endif
+	endif
+
+Detta gör att Vim sparar en säkerhetskopia när en fil skrivs över, men inte på VMS eftersom det systemet redan sparar äldre filversioner. Säkerhetskopian får samma namn som originalfilen med ett tilde (~) sist. Se |07.4|
+
+Detta aktiverar också alternativet 'undofile', om det finns. Informationen om flera ångernivåer sparas då i en fil. Om du ändrar en fil, avslutar Vim och senare öppnar filen igen kan du ångra de tidigare ändringarna. Det är en användbar funktion, men den kräver att en fil sparas. Mer information finns i |undo-persistence|.
+
+Kommandot "if" är användbart när ett alternativ bara ska ställas in om ett villkor är uppfyllt. Läs mer i |usr_41.txt|.
+
+>
+	if &t_Co > 2 || has("gui_running")
+	  set hlsearch
+	endif
+
+Detta aktiverar alternativet 'hlsearch', så att Vim markerar träffar från det senast använda sökmönstret.
+
+>
+	augroup vimrcEx
+	  au!
+	  autocmd FileType text setlocal textwidth=78
+	augroup END
+
+Detta får Vim att radbryta text som skrivs in vid en bredd på 78 tecken. Det gäller bara filer som identifieras som vanlig text. Här ingår två delar. "autocmd FileType text" är ett autokommando: när filtypen blir "text" körs kommandot automatiskt. "setlocal textwidth=78" ställer in alternativet 'textwidth' till 78, men bara lokalt för en fil.
+
+Ramen med "augroup vimrcEx" och "augroup END" gör det möjligt att ta bort autokommandot med kommandot "au!". Se |:augroup|.
+
+>
+	if has('syntax') && has('eval')
+	  packadd! matchit
+	endif
+
+Detta läser in insticksprogrammet "matchit" om nödvändiga funktioner finns. Det gör kommandot |%| mer kraftfullt. Mer information finns i |matchit-install|.
+
+==============================================================================
+*05.3*	Filen defaults.vim förklarad		*defaults.vim-explained*
+
+Filen |defaults.vim| läses in när användaren inte har någon vimrc-fil. När du skapar en vimrc-fil lägger du till den här raden nära toppen för att fortsätta använda standardinställningarna: >
+	source $VIMRUNTIME/defaults.vim
+
+Du kan också använda filen vimrc_example.vim som förklaras ovan.
+
+Här följer en förklaring av vad defaults.vim gör.
+
+>
+	if exists('skip_defaults_vim')
+	  finish
+	endif
+
+Du kan hindra defaults.vim från att läsas in med kommandot: >
+	let skip_defaults_vim = 1
+Det måste göras i systemets vimrc-fil. Se |system-vimrc|. Om du har en egen vimrc-fil behövs det inte, eftersom defaults.vim då inte läses in automatiskt.
+
+>
+	set nocompatible
+
+Som nämndes i det första kapitlet beskriver manualerna Vim i det förbättrade läget, som inte är helt kompatibelt med Vi. Kommandot "set nocompatible" stänger av alternativet 'compatible' och väljer detta läge.
+
+>
+	set backspace=indent,eol,start
+
+Detta anger när <BS> i infogningsläge får ta bort tecknet före markören. De tre värdena, åtskilda med kommatecken, gör att Vim får ta bort indrag i början av raden, en radbrytning och tecknet före den position där infogningsläget startade. Se 'backspace'.
+
+>
+	set history=200
+
+Spara 200 kommandon och 200 sökmönster i historiken. Välj ett annat tal om du vill spara färre eller fler. Se 'history'.
+
+>
+	set ruler
+
+Visa alltid markörens position längst ned till höger i Vim-fönstret. Se 'ruler'.
+
+>
+	set showcmd
+
+Visa ett ofullständigt kommando längst ned till höger i Vim-fönstret, till vänster om positionsvisaren. När du till exempel skriver "2f" väntar Vim på tecknet som ska sökas efter och visar "2f". När du sedan trycker på "w" körs kommandot "2fw" och det ofullständiga "2f" tas bort från visningen.
+
+	+-------------------------------------------------+
+	|text in the Vim window				  |
+	|~						  |
+	|~						  |
+	|-- VISUAL --			2f     43,8   17% |
+	+-------------------------------------------------+
+	 ^^^^^^^^^^^		      ^^^^^^^^ ^^^^^^^^^^
+	  'showmode'		     'showcmd'  'ruler'
+
+>
+	set wildmenu
+
+Visa kompletteringsförslag i statusraden när du trycker på <Tab> och det finns fler än en träff. Se 'wildmenu'.
+
+>
+	set ttimeout
+	set ttimeoutlen=100
+
+Detta gör att <Esc> får effekt snabbare. Normalt väntar Vim en sekund för att se om <Esc> är början på en escape-sekvens. Om fjärranslutningen är mycket långsam kan du öka värdet. Se 'ttimeout'.
+
+>
+	set display=truncate
+
+Visa @@@ på den nedersta raden i Vim-fönstret om texten är avklippt, i stället för att dölja hela raden. Se 'display'.
+
+>
+	set incsearch
+
+Visa träffar för ett sökmönster medan du skriver det. Se 'incsearch'.
+
+>
+	set nrformats-=octal
+
+Tolka inte tal som börjar med noll som oktala. Se 'nrformats'.
+
+>
+	map Q gq
+
+Detta definierar en tangentmappning. Mer om det finns i nästa avsnitt. Kommandot "Q" utför nu formatering med operatorn "gq". Så fungerade det före Vim 5.0. Annars startar "Q" Ex-läget, som du troligen inte behöver.
+
+>
+	inoremap <C-U> <C-G>u<C-U>
+
+CTRL-U i infogningsläge tar bort all text du har skrivit på den aktuella raden. CTRL-G u börjar med en ny ångergrupp, så att du kan ångra CTRL-U efter att ha infogat en radbrytning. Återställ beteendet med ":iunmap <C-U>".
+
+>
+	if has('mouse')
+	  set mouse=a
+	endif
+
+Aktivera musen om den finns. Se 'mouse'.
+
+>
+	vnoremap _g y:exe "grep /" .. escape(@", '\\/') .. "/ *.c *.h"<CR>
+
+Den här mappningen kopierar den visuellt markerade texten och söker efter den i C-filer. En mappning kan alltså utföra ganska komplicerade saker, men är fortfarande bara en följd av kommandon som körs som om du hade skrivit dem.
+
+>
+	syntax on
+
+Aktivera färgmarkering av filer. Se |syntax|.
+
+							*vimrc-filetype*  >
+	filetype plugin indent on
+
+Detta aktiverar tre funktioner:
+
+1. Identifiering av filtyp.
+   När du börjar redigera en fil försöker Vim avgöra vilken typ det är. Om du redigerar "main.c" känner Vim igen filtypen "c" från filändelsen ".c". Om filen börjar med "#!/bin/sh" identifieras den som en "sh"-filtyp.
+   Filtypsidentifieringen används för syntaxmarkering och de två funktionerna nedan. Se |filetypes|.
+
+2. Filtypsinsticksprogram
+   Olika filtyper behöver olika inställningar. När du redigerar en C-fil är det till exempel användbart att alternativet 'cindent' automatiskt drar in rader. Vim innehåller vanliga inställningar i filtypsinsticksprogram. Du kan även lägga till egna, se |write-filetype-plugin|.
+
+3. Indragsfiler
+   Vid redigering av program kan indragningen ofta beräknas automatiskt. Vim innehåller indragsregler för många filtyper. Se |:filetype-indent-on| och 'indentexpr'.
+
+
+				*restore-cursor* *last-position-jump*  >vim
+
+	augroup RestoreCursor
+	  autocmd!
+	  autocmd BufReadPost *
+	    \ let line = line("'\"")
+	    \ | if line >= 1 && line <= line("$") && &filetype !~# 'commit'
+	    \      && index(['xxd', 'gitrebase'], &filetype) == -1
+	    \      && !&diff
+	    \ |   execute "normal! g`\""
+	    \ | endif
+	augroup END
+
+Det här är ännu ett autokommando. Det körs efter att en fil har lästs in. Den komplicerade delen kontrollerar om märket '" pekar på en rad i
+bufferten och flyttar i så fall markören dit. Det görs inte när:
+ - du redigerar ett inchecknings- eller ombaseringsmeddelande, som sannolikt skiljer sig från det förra,
+ - Vim använder xxd(1) för att omvandla binära filer fram och tillbaka (se även |using-xxd|), eller
+ - Vim är i diff-läge.
+
+Omvänt snedstreck i början av en rad fortsätter kommandot från föregående rad och undviker en mycket lång rad. Se |line-continuation|. Det fungerar bara i en Vim-skriptfil, inte när du skriver kommandon på kommandoraden.
+
+>
+	command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_
+	  \ | diffthis | wincmd p | diffthis
+
+Detta lägger till kommandot ":DiffOrig". Använd det i en ändrad buffert för att jämföra innehållet med filen som lästes in. Se |diff| och |:DiffOrig|.
+
+>
+	set nolangremap
+
+Detta hindrar 'langmap' från att påverka tecken som kommer från en
+mappning. 'langremap' är normalt aktiverat av kompatibilitetsskäl, men
+stängs av i defaults.vim eftersom det annars kan störa mappningar. Se
+'langremap'.
+
+==============================================================================
+*05.4*	Enkla tangentmappningar
+
+En tangentmappning kopplar en följd av Vim-kommandon till en enda tangent. Anta till exempel att du vill sätta klammerparenteser runt vissa ord. Du vill alltså ändra ett ord som "amount" till "{amount}". Med kommandot :map kan du ange att F5 ska göra detta: >
+	:map <F5> i{<Esc>ea}<Esc>
+<
+	Obs:
+	När du skriver kommandot ska du mata in <F5> som fyra tecken. På
+	liknande sätt matar du in <Esc> som fem tecken; du trycker alltså
+	inte på själva <Esc>-tangenten. Tänk på skillnaden när du läser
+	manualen!
+
+Så här fungerar delarna:
+    <F5>	Funktionstangenten F5. Det är utlösartangenten som kör kommandot.
+
+    i{<Esc>	Infoga tecknet {. Tangenten <Esc> avslutar infogningsläget.
+
+    e		Flytta markören till slutet av ordet.
+
+    a}<Esc>	Lägg till } efter ordet.
+
+Efter att du har kört ":map" behöver du bara ställa markören på ordets första tecken och trycka på F5 för att sätta {} runt det.
+
+I det här exemplet är utlösaren en tangent, men den kan vara en hel sträng. Om du mappar ett befintligt Vim-kommando går det inte längre att använda det. Undvik helst det.
+   Omvänt snedstreck kan användas i mappningar. Om du vill definiera flera mappningar kan du lägga till en bokstav: mappa till exempel "\p" för att lägga parenteser runt ett ord och "\c" för att lägga till klammerparenteser: >
+	:map \p i(<Esc>ea)<Esc>
+	:map \c i{<Esc>ea}<Esc>
+
+Skriv \ och p snabbt efter varandra så att Vim förstår att de hör ihop.
+
+Kommandot ":map" utan argument visar de aktuella mappningarna, åtminstone för normalt läge. Mer information finns i avsnitt |40.1|.
+
+==============================================================================
+*05.5*	Lägga till ett paket	*add-package*
+
+Ett paket är en samling filer som du kan lägga till i Vim. Det finns två typer: valfria paket och paket som läses in automatiskt vid start.
+
+Vim-distributionen innehåller några paket som du kan välja att använda.
+
+Använd kommandot ":packadd!" i |vimrc| om paketet bara ska läggas till i 'runtimepath' och läsas in vid normal uppstart. Utan "!" läses paketet in direkt, vilket passar när du provar det. Se |:packadd|.
+
+------------------------------------------------------------------------------
+Lägga till paketet matchit		*matchit-install* *package-matchit*
+------------------------------------------------------------------------------
+Paketet matchit gör att kommandot "%" kan hoppa mellan matchande HTML-taggar, if/else/endif i Vim-skript med mera. Det är användbart, men inte bakåtkompatibelt och aktiveras därför inte som standard.
+
+Lägg till en rad i vimrc-filen för att börja använda insticksprogrammet: >
+	packadd! matchit
+
+Det var allt! När Vim startats om hittar du hjälpen för insticksprogrammet här: >
+	:help matchit
+
+Det fungerar eftersom ":packadd!" lade till paketets katalog i 'runtimepath', så att hjälpfilerna hittas.
+
+Du hittar paket på flera ställen på internet. De distribueras oftast som arkiv eller kodförråd. Så här installerar du ett arkiv:
+	1. Skapa paketkatalogen: >
+		mkdir -p ~/.vim/pack/fancy
+<	   "fancy" kan ersättas med ett namn som beskriver paketet.
+	2. Packa upp arkivet i katalogen. Här förutsätter vi att arkivets översta katalog heter "start": >
+		cd ~/.vim/pack/fancy
+		unzip /tmp/fancy.zip
+<	   Om arkivet har en annan struktur ska slutresultatet få en sökväg som den här:
+		~/.vim/pack/fancy/start/fancytext/plugin/fancy.vim ~
+	   Här är "fancytext" paketnamnet, men det kan heta något annat.
+
+------------------------------------------------------------------------------
+Lägga till paketet editorconfig	*editorconfig-install* *package-editorconfig*
+------------------------------------------------------------------------------
+
+Lägg till en rad i vimrc-filen för att börja använda paketet: >
+	packadd! editorconfig
+
+När Vim startats om är paketet aktivt. Läs mer med: >
+	:h editorconfig.txt
+
+------------------------------------------------------------------------------
+Lägga till paketet comment		*comment-install* *package-comment*
+------------------------------------------------------------------------------
+
+Lägg till en rad i vimrc-filen för att börja använda paketet: >
+	packadd! comment
+<
+Då kan du använda standardmappningarna "gc" och liknande för att kommentera text. De är etablerade i Vim-gemenskapen.
+
+När Vim startats om är paketet aktivt. Läs mer med: >
+	:h comment.txt
+
+------------------------------------------------------------------------------
+Lägga till paketet nohlsearch	*nohlsearch-install* *package-nohlsearch*
+------------------------------------------------------------------------------
+
+Lägg till en rad i vimrc-filen för att börja använda paketet: >
+	packadd! nohlsearch
+<
+Paketet kör |:nohlsearch| automatiskt efter 'updatetime' eller när du går över till |Insert|-läge. Med standardvärdet för updatetime stängs markeringen av efter fyra sekunders inaktivitet.
+
+Inaktivera effekten efter att paketet har lästs in så här: >
+	au! nohlsearch
+<
+
+------------------------------------------------------------------------------
+Lägga till paketet highlight-yank	*hlyank-install* *package-hlyank*
+------------------------------------------------------------------------------
+
+Lägg till en rad i vimrc-filen för att börja använda paketet: >
+	packadd! hlyank
+<
+Paketet markerar kort det område som påverkades av det senaste kommandot |yank|. Se |52.6| för en enklare lösning med funktionen |getregionpos()|.
+
+Du kan ändra inställningarna nedan. Värdena som visas är standardvärden.
+
+Ange en annan markeringsgrupp så här: >
+	:let g:hlyank_hlgroup = 'IncSearch'
+<
+Ange hur länge markeringen ska visas så här: >
+	:let g:hlyank_duration = 300
+<
+Värdet anges i millisekunder och får vara högst 3000. Högre värden begränsas till 3000 millisekunder.
+
+Markera även i visuellt läge så här: >
+	:let g:hlyank_invisual = v:true
+
+Inaktivera effekten efter att paketet har lästs in: >
+	au! hlyank
+
+Paketet kan även markera områden som klistras in med autokommandot |TextPutPost|. Det är avstängt som standard. Aktivera det så här: >
+	:let g:hlput_enable = v:true
+<
+Inställningarna "g:hlput_hlgroup" och "g:hlput_duration" fungerar på samma sätt som motsvarande inställningar för yank: >
+	:let g:hlput_hlgroup = 'IncSearch'
+	:let g:hlput_duration = 300
+
+------------------------------------------------------------------------------
+Lägga till paketet osc52		*osc52-install* *package-osc52*
+------------------------------------------------------------------------------
+
+Lägg till en rad i vimrc-filen för att börja använda paketet: >
+	packadd! osc52
+<
+Paketet osc52.vim stöder terminalkommandot OSC 52. Det gör att ett program kan komma åt urklippet genom att kommunicera direkt med terminalen.
+
+När paketet har lästs in kan du läsa hjälpen med: >
+	:h osc52.txt
+
+Mer information om paket finns här: |packages|.
+
+==============================================================================
+*05.6*	Lägga till ett insticksprogram		*add-plugin* *plugin*
+
+Du kan utöka Vim genom att lägga till insticksprogram. Ett insticksprogram är en Vim-skriptfil som läses in automatiskt när Vim startar. Lägg filen i insticksprogramkatalogen.
+{finns inte om Vim kompilerades utan funktionen |+eval|}
+
+Det finns två typer av insticksprogram:
+
+    globala insticksprogram: används för alla filtyper
+  filtypsinsticksprogram: används för en viss filtyp
+
+Först går vi igenom globala insticksprogram och sedan filtypsinsticksprogram |add-filetype-plugin|.
+
+
+GLOBALA INSTICKSPROGRAM			*standard-plugin* *distributed-plugins*
+
+Vim läser automatiskt in flera globala insticksprogram vid start. Du behöver inte göra något. De lägger till funktioner som många vill ha, men som har skrivits som Vim-skript i stället för att byggas in i programmet. De listas i hjälpsidan |standard-plugin-list|.
+
+En liknande lista över lokalt installerade insticksprogram och paket med egna hjälpfiler finns i |local-additions|.
+
+Se även |load-plugins|.
+
+							*add-global-plugin*
+Du kan lägga till ett globalt insticksprogram så att funktionen alltid finns i Vim. Det finns två steg:
+1. Hämta en kopia av insticksprogrammet.
+2. Lägg det i rätt katalog.
+
+
+HÄMTA ETT GLOBALT INSTICKSPROGRAM
+
+Var hittar du insticksprogram?
+- Vissa läses alltid in och finns i katalogen $VIMRUNTIME/plugin.
+- Några följer med Vim i $VIMRUNTIME/macros och underkataloger samt under $VIM/vimfiles/pack/dist/opt/.
+- Du kan hämta dem från internet. En stor samling finns på http://www.vim.org.
+- Ibland publiceras de i en Vim |maillist|.
+- Du kan skriva ett själv, se |write-plugin|.
+
+Vissa insticksprogram distribueras som vimball-arkiv, se |vimball|. Andra kan uppdateras automatiskt, se |getscript|.
+
+
+ANVÄNDA ETT GLOBALT INSTICKSPROGRAM
+
+Läs först insticksprogrammets textfil och kontrollera om det har särskilda villkor. Kopiera sedan filen till insticksprogramkatalogen:
+
+	system		insticksprogramkatalog ~
+	Unix		~/.vim/plugin/
+	PC		$HOME/vimfiles/plugin eller $VIM/vimfiles/plugin
+	Amiga		s:vimfiles/plugin
+	Macintosh	$VIM:vimfiles:plugin
+	Mac OS X	~/.vim/plugin/
+
+Exempel för Unix, om du inte redan har en insticksprogramkatalog: >
+	mkdir ~/.vim
+	mkdir ~/.vim/plugin
+	cp /tmp/yourplugin.vim ~/.vim/plugin
+
+Klart! Nu kan du använda kommandona som insticksprogrammet definierar.
+
+Du kan organisera insticksprogrammen i underkataloger i stället för att lägga dem direkt i plugin/. Du kan till exempel samla Perl-insticksprogram i "~/.vim/plugin/perl/*.vim".
+
+
+FILTYPSSPECIFIKA INSTICKSPROGRAM		*add-filetype-plugin* *ftplugins*
+
+Vim-distributionen innehåller insticksprogram för olika filtyper. Aktivera dem med: >
+	:filetype plugin on
+
+Klart! Se |vimrc-filetype|.
+
+Om det saknas ett insticksprogram för en filtyp du använder, eller om du hittat ett bättre, kan du lägga till det. Det finns två steg:
+1. Hämta insticksprogrammet.
+2. Lägg det i rätt katalog.
+
+
+HÄMTA ETT FILTYPSINSTICKSPROGRAM
+
+Du hittar dem på samma ställen som globala insticksprogram. Om filtypen nämns vet du om det är globalt eller filtypsspecifikt. Skripten i $VIMRUNTIME/macros är globala; filtypsinsticksprogrammen finns i $VIMRUNTIME/ftplugin.
+
+
+ANVÄNDA ETT FILTYPSINSTICKSPROGRAM			*ftplugin-name*
+
+Lägg filen i rätt katalog. Katalognamnet följer samma struktur som för globala insticksprogram, men den sista delen är "ftplugin". Om du hittat ett insticksprogram för filtypen "stuff" på Unix kan du flytta filen så här: >
+	mv thefile ~/.vim/ftplugin/stuff.vim
+
+Om filen redan finns har du ett insticksprogram för "stuff". Kontrollera att det nya inte står i konflikt med det befintliga. Om det fungerar kan du ge den nya filen ett annat namn: >
+	mv thefile ~/.vim/ftplugin/stuff_too.vim
+
+Understreck skiljer filtypen från resten av namnet, som kan vara vad som helst. Namnet "otherstuff.vim" fungerar inte för filtypen "stuff", eftersom det i stället skulle läsas in för filtypen "otherstuff".
+
+På filsystem som MS-DOS, där långa filnamn inte stöds, kan ett andra insticksprogram bli problematiskt om filtypen har mer än sex tecken. Använd då en underkatalog: >
+	mkdir $VIM/vimfiles/ftplugin/fortran
+	copy thefile $VIM/vimfiles/ftplugin/fortran/too.vim
+
+Allmänna namn för filtypsinsticksprogram är: >
+	ftplugin/<filetype>.vim
+	ftplugin/<filetype>_<name>.vim
+	ftplugin/<filetype>/<name>.vim
+
+Här kan <name> vara valfritt.
+Exempel på namn för filtypen "stuff" på Unix: >
+	~/.vim/ftplugin/stuff.vim
+	~/.vim/ftplugin/stuff_def.vim
+	~/.vim/ftplugin/stuff/header.vim
+
+Delen <filetype> är filtypen som insticksprogrammet gäller för. Bara filer av den typen använder inställningarna. Delen <name> spelar ingen roll och kan skilja flera insticksprogram för samma filtyp åt. Filnamnet måste sluta på ".vim".
+
+
+Läs vidare:
+|filetype-plugins|	Dokumentation om filtypsinsticksprogram och hur du undviker problem med tangentmappningar.
+|load-plugins|		När globala insticksprogram läses in vid start.
+|ftplugin-overrule|	Åsidosätta inställningar från ett globalt insticksprogram.
+|write-plugin|		Skriva ett Vim-insticksprogram.
+|plugin-details|	Mer information eller hjälp om ett insticksprogram inte fungerar.
+|new-filetype|		Identifiera en ny filtyp.
+
+==============================================================================
+*05.7*	Lägga till en hjälpsida			*add-local-help*
+
+Om du har tur följer en hjälpsida med insticksprogrammet. Här får du lära dig hur du installerar den så att du enkelt hittar informationen.
+   Vi använder insticksprogrammet "doit.vim" som exempel. Det levereras med dokumentationen "doit.txt". Börja med att kopiera insticksprogrammet till rätt katalog. Vi gör det inifrån Vim. Du kan hoppa över några "mkdir"-kommandon om katalogen redan finns: >
+	:!mkdir ~/.vim
+	:!mkdir ~/.vim/plugin
+	:!cp /tmp/doit.vim ~/.vim/plugin
+
+Kommandot "cp" används på Unix. I MS-Windows använder du "copy".
+
+Skapa nu en katalog "doc" i någon katalog i 'runtimepath': >
+	:!mkdir ~/.vim/doc
+
+Kopiera hjälpsidan till katalogen "doc": >
+	:!cp /tmp/doit.txt ~/.vim/doc
+
+Generera sedan den lokala taggfilen med kommandot |:helptags|. Då kan du hoppa till ämnena i den nya hjälpen: >
+	:helptags ~/.vim/doc
+
+Nu kan du använda kommandot >
+	:help doit
+för att hitta hjälp om "doit". En post för den lokala hjälpsidan visas även här: >
+	:help local-additions
+
+Rubrikraderna från lokala hjälpfiler läggs automatiskt till i det avsnittet. Där kan du se de lokala hjälpfilerna och hoppa till dem via taggen.
+
+Information om att skriva en lokal hjälpsida finns i |write-local-help|.
+
+==============================================================================
+*05.8*	Alternativfönstret
+
+Om du letar efter ett alternativ kan du söka i hjälpfilerna här: |options|. Du kan också använda kommandot: >
+	:options
+
+Ett nytt fönster öppnas med en lista över alternativ och en förklaring på en rad. Alternativen är grupperade efter ämne. Ställ markören på ett ämne och tryck på <Enter> för att hoppa dit. Tryck på <Enter> igen för att hoppa tillbaka, eller använd CTRL-O.
+
+Du kan ändra värdet på ett alternativ. Gå till exempel till ämnet "visning av text" och flytta markören till den här raden:
+
+	set wrap	nowrap ~
+
+När du trycker på <Enter> ändras raden till:
+
+	set nowrap	wrap ~
+
+Alternativet är nu avstängt.
+
+Ovanför raden finns en kort beskrivning av alternativet 'wrap'. Flytta markören en rad upp och tryck på <Enter> för att öppna den fullständiga hjälpen.
+
+Alternativ som tar ett tal eller en sträng kan redigeras. Tryck på <Enter> för att använda det nya värdet. Flytta några rader upp till raden:
+
+	set so=0 ~
+
+Placera markören på nollan med "$". Ändra den till fem med "r5" och tryck på <Enter>. När du sedan flyttar markören ser du att texten börjar rulla innan den når fönsterkanten. Det är alternativet 'scrolloff': det anger avståndet från fönsterkanten där rullningen börjar.
+
+==============================================================================
+*05.9*	Vanliga alternativ
+
+Det finns väldigt många alternativ, men de flesta använder du sällan. Här följer några användbara. Du kan läsa mer om dem med kommandot ":help" och alternativets namn inom enkla citationstecken. Exempel: >
+	:help 'wrap'
+
+Om du har råkat ändra ett alternativ kan du återställa standardvärdet genom att lägga till ett et-tecken (&) efter namnet. Exempel: >
+	:set iskeyword&
+
+
+INTE RADBRYTA LÅNGA RADER
+
+Vim radbryter normalt långa rader så att all text syns. Ibland är det bättre att låta texten fortsätta utanför fönstret. Då kan du rulla i sidled för att se hela raden. Stäng av radbrytningen så här: >
+	:set nowrap
+
+Vim rullar automatiskt texten när du flyttar markören till en del som
+inte visas. Rulla minst tio kolumner i taget så här: >
+	:set sidescroll=10
+
+Detta ändrar inte texten i filen, bara hur den visas.
+
+
+RADBRYTNING I RÖRELSEKOMMANDON
+
+De flesta rörelsekommandon stannar vid radens början och slut. Du kan ändra detta med alternativet 'whichwrap'. Standardvärdet anges så här: >
+	:set whichwrap=b,s
+
+Då kan <BS> i början av en rad flytta markören till slutet av föregående rad. Tangenten <Space> flyttar från slutet av en rad till början av nästa.
+
+Om även <Left> och <Right> ska gå mellan rader använder du: >
+	:set whichwrap=b,s,<,>
+
+Detta gäller bara normalt läge. Om piltangenterna även ska göra det i infogningsläge använder du: >
+	:set whichwrap=b,s,<,>,[,]
+
+Det finns fler flaggor som du kan lägga till. Se 'whichwrap'.
+
+
+VISA TABBAR
+
+Tabbar i en fil syns inte som standard. Gör dem synliga så här: >
+	:set list
+
+Varje tabulator visas nu som ^I. Ett $ visas i slutet av varje rad så att avslutande blanksteg inte går obemärkt förbi.
+   Det kan se fult ut om filen innehåller många tabbar. I en färgterminal eller i det grafiska gränssnittet kan Vim visa blanksteg och tabbar med markerade tecken. Använd alternativet 'listchars': >
+	:set listchars=tab:>-,trail:-
+
+Varje tabulator visas nu som ">---" (med fler eller färre bindestreck) och avslutande blanksteg som "-". Det ser bättre ut, eller hur?
+
+
+ORDTECKEN
+
+Alternativet 'iskeyword' anger vilka tecken som får ingå i ett ord: >
+	:set iskeyword
+<	  iskeyword=@,48-57,_,192-255 ~
+
+"@" står för alla alfabetiska tecken. "48-57" står för ASCII-tecken 48 till 57, alltså siffrorna 0 till 9. "192-255" är utskrivbara latinska tecken i 8-bitars kodning.
+   Ibland vill du räkna bindestreck som en del av ord, så att exempelvis kommandot "w" behandlar "upper-case" som ett enda ord. Gör så här: >
+	:set iskeyword+=-
+	:set iskeyword
+<	  iskeyword=@,48-57,_,192-255,- ~
+
+I det nya värdet ser du att Vim har lagt till ett kommatecken.
+   Ta bort ett tecken med "-=". Ta till exempel bort understrecket: >
+	:set iskeyword-=_
+	:set iskeyword
+<	  iskeyword=@,48-57,192-255,- ~
+
+Den här gången tas kommatecknet bort automatiskt.
+
+
+PLATS FÖR MEDDELANDEN
+
+När Vim startar används en rad längst ned för meddelanden. Om ett meddelande är långt kapas det, så att bara en del syns, eller så rullar texten och du måste trycka på <Enter> för att fortsätta.
+   Med alternativet 'cmdheight' anger du hur många rader som används för meddelanden. Exempel: >
+	:set cmdheight=3
+
+Då blir det mindre plats för att redigera text; du får väga det ena mot det andra.
+
+==============================================================================
+
+Nästa kapitel: |usr_06.txt|  Använda syntaxmarkering
+
+Upphovsrätt: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

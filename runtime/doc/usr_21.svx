@@ -1,0 +1,486 @@
+*usr_21.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Gå iväg och kom tillbaka
+
+
+Det här kapitlet handlar om hur Vim kan användas tillsammans med andra
+program.  Du kan köra program inifrån Vim eller lämna Vim och komma tillbaka
+senare.  Det handlar också om hur du sparar Vims tillstånd och återställer det
+senare.
+
+|21.1|	Pausa och återuppta
+|21.2|	Köra skalkommandon
+|21.3|	Spara information med viminfo
+|21.4|	Sessioner
+|21.5|	Vyer
+|21.6|	Lägesrader
+
+	Nästa kapitel: |usr_22.txt|  Hitta filen som ska redigeras
+	Föregående kapitel: |usr_20.txt|  Skriva kommandoradskommandon snabbt
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*21.1*	Pausa och återuppta
+
+Precis som de flesta Unix-program kan Vim pausas med CTRL-Z.  Vim stoppas
+tillfälligt och du återgår till skalet som startade det.  Där kan du köra
+andra kommandon.  När du är klar återupptar du Vim med kommandot "fg": >
+
+	CTRL-Z
+	{valfria skalkommandon}
+	fg
+
+Du är tillbaka där du lämnade Vim, och ingenting har ändrats.
+   Om CTRL-Z inte fungerar kan du också använda ":suspend".  Glöm inte att
+återuppta Vim i förgrunden, annars kan ändringar gå förlorade!
+
+Det är bara Unix som stöder detta.  På andra system startar Vim ett skal åt
+dig.  Det ger också möjlighet att köra skalkommandon, men det är ett nytt skal
+och inte det du startade Vim från.
+   I det grafiska gränssnittet kan du inte återgå till skalet som startade
+Vim.  CTRL-Z minimerar i stället Vim-fönstret.
+
+==============================================================================
+*21.2*	Köra skalkommandon
+
+Använd ":!{kommando}" för att köra ett enstaka skalkommando från Vim.  Så här
+visar du till exempel en kataloglista: >
+
+	:!ls
+	:!dir
+
+Det första kommandot gäller Unix och det andra MS-Windows.
+   Vim kör programmet.  När det avslutas får du en uppmaning att trycka på
+<Enter>.  Då kan du titta på kommandots utdata innan du återgår till texten du
+redigerade.
+   Tecknet "!" används också på andra ställen där program körs:
+
+	:!{program}		kör {program}
+	:r !{program}		kör {program} och läs in dess utdata
+	:w !{program}		kör {program} och skicka text till dess indata
+	:[intervall]!{program}	filtrera text genom {program}
+
+Ett intervall före "!{program}" gör stor skillnad.  Utan intervall körs
+programmet som vanligt.  Med ett intervall filtreras ett antal textrader
+genom programmet.
+
+Du kan köra en hel rad program på det här sättet, men ett skal är bättre på
+det.  Starta ett nytt skal med: >
+
+	:shell
+
+Det liknar att pausa Vim med CTRL-Z, men här startas ett nytt skal.
+
+I det grafiska gränssnittet använder skalet Vim-fönstret för in- och utdata.
+Eftersom Vim inte är en terminalemulator fungerar detta inte perfekt.  Om du
+får problem kan du växla alternativet 'guipty'.  Om det fortfarande inte
+fungerar tillräckligt bra kan du öppna en ny terminal och köra skalet där,
+till exempel: >
+
+	:!xterm&
+
+==============================================================================
+*21.3*	Spara information med viminfo
+
+Efter en tids redigering har du text i register, markeringar i olika filer
+och en kommandoradshistorik full av användbara kommandon.  När du avslutar Vim
+försvinner allt detta, men du kan spara det och få tillbaka det.
+
+Filen viminfo är avsedd att lagra:
+
+	Historik över kommandorader och sökmönster
+	Text i register
+	Markeringar i olika filer
+	Buffertlistan
+	Globala variabler
+
+Varje gång du avslutar Vim sparas informationen i viminfo-filen.  När Vim
+startas igen läses filen in och informationen återställs.
+
+Alternativet 'viminfo' är som standard inställt så att ett begränsat antal
+poster återställs.  Du kan vilja spara fler.  Ange det med: >
+
+	:set viminfo=sträng
+
+Strängen anger vad som ska sparas.  Syntaxen består av ett alternativtecken
+följt av ett argument.  Paren alternativ och argument skiljs åt med kommatecken.
+   Först används alternativet ' för att ange hur många filer som markeringar
+(a–z) ska sparas för.  Välj exempelvis 1000.  Kommandot blir: >
+
+	:set viminfo='1000
+
+Alternativet f styr om globala markeringar (A–Z och 0–9) sparas.  Värdet 0
+betyder att inga sparas.  Värdet 1, eller att inte ange f alls, betyder att
+de sparas.  Vi vill ha funktionen: >
+
+	:set viminfo='1000,f1
+
+Alternativet < styr hur många rader som sparas för varje register.  Som
+standard sparas alla rader och värdet 0 betyder att inget sparas.  Begränsa
+antalet till 500 så att viminfo-filen inte växer med oanvända rader och gör
+Vim långsammare att starta: >
+
+	:set viminfo='1000,f1,<500
+<
+Andra alternativ som kan vara användbara:
+	:	antal rader från kommandoradshistoriken
+	@	antal rader från inmatningshistoriken
+	/	antal rader från sökhistoriken
+	r	flyttbara medier som markeringar inte sparas för (kan upprepas)
+	!	globala variabler vars namn börjar med versal och saknar gemener
+	h	stäng av markering med 'hlsearch' vid start
+	%	buffertlistan (återställs bara om Vim startas utan filargument)
+	c	konvertera texten med 'encoding'
+	n	namnet på viminfo-filen (måste anges sist)
+
+Se alternativet 'viminfo' och |viminfo-file| för mer information.
+
+När en Vim-instans avslutas slås dess information normalt ihop med den
+befintliga viminfo-filen. Om flera instanser har ändrat samma post kan en
+version gå förlorad. För bland annat historikposterna används tidsstämplar
+för att behålla de nyaste posterna. Se |viminfo-timestamp|.
+
+
+ÅTERGÅ TILL PLATSEN DÄR DU SLUTADE
+
+Du har kommit halvvägs genom en fil och ska resa bort.  Du avslutar Vim och
+glömer arbetet under några veckor.  När du startar Vim igen skriver du: >
+
+	'0
+
+Du hamnar då där du lämnade Vim och kan fortsätta.
+   Vim skapar en markering varje gång det avslutas.  Den senaste är '0.  Den
+position som '0 pekade på flyttas till '1, '1 flyttas till '2 och så vidare.
+Markering '9 försvinner.
+   Kommandot |:marks| visar vart '0 till '9 tar dig.
+
+
+ÅTERGÅ TILL EN FIL
+
+Om du vill öppna en fil som du redigerade nyligen, men inte vid den senaste
+Vim-avslutningen, kan du visa fillistan med: >
+
+	:oldfiles
+<	1: ~/.viminfo ~
+	2: ~/text/resume.txt ~
+	3: /tmp/draft ~
+
+Anta att du vill redigera den andra filen, som har numret "2:".  Skriv: >
+
+	:e #<2
+
+I stället för ":e" kan du använda vilket kommando som helst som tar ett
+filnamn.  "#<2" fungerar på samma plats som "%" (det aktuella filnamnet) och
+"#" (det alternativa filnamnet).  Dela fönstret och öppna den tredje filen
+med: >
+
+	:split #<3
+
+Syntaxen "#<123" är lite krånglig om du bara vill öppna en fil.  Det finns ett
+enklare sätt: >
+
+	:browse oldfiles
+<	1: ~/.viminfo ~
+	2: ~/text/resume.txt ~
+	3: /tmp/draft ~
+	-- More --
+
+Du får samma fillista som med |:oldfiles|.  Tryck först på "q" för att
+avsluta listningen om du vill redigera "resume.txt".  Då visas frågan:
+
+	Skriv in nummer och <Enter> (q eller tomt avbryter): ~
+
+Skriv "2" och tryck på <Enter> för att öppna den andra filen.
+
+Om filnamnet innehåller ett visst mönster kan du även |:filter| listan: >
+
+	:filter /resume/ :browse oldfiles
+<
+Eftersom bara ett filnamn matchar öppnar Vim filen direkt utan att fråga.  Om
+flera filer matchar får du välja bland dem: >
+
+	:filter! /resume/ browse oldfiles
+<	1: ~/.viminfo ~
+	3: /tmp/draft ~
+	Skriv in nummer och <Enter> (q eller tomt avbryter): ~
+
+Observera att vi här filtrerade bort filer som matchar "resume" med ":filter!".
+
+Mer information finns i |:oldfiles|, |v:oldfiles| och |c_#<|.
+
+
+FLYTTA INFORMATION MELLAN VIM-INSTANSER
+
+Kommandona ":wviminfo" och ":rviminfo" kan spara och återställa information
+medan Vim fortfarande körs.  Det är användbart för att exempelvis utbyta
+registerinnehåll mellan två Vim-instanser.  Skriv i den första instansen: >
+
+	:wviminfo! ~/tmp/viminfo
+
+Skriv i den andra: >
+
+	:rviminfo! ~/tmp/viminfo
+
+"w" står för write (skriva) och "r" för read (läsa).
+   Tecknet ! gör att ":wviminfo" skriver över en befintlig fil.  Utan !,
+om filen redan finns, sammanfogas informationen med den.
+   För ":rviminfo" betyder ! att all information används, vilket kan skriva
+över befintlig information.  Utan ! används bara information som ännu inte
+har angetts.
+   Kommandona kan också spara information som du vill använda senare.  Du kan
+skapa en katalog med viminfo-filer för olika ändamål.
+
+==============================================================================
+*21.4*	Sessioner
+
+När arbetsdagen är slut kanske du vill fortsätta nästa dag där du slutade.
+Spara redigeringssessionen och återställ den nästa dag.
+   En Vim-session innehåller information om det du arbetar med, till exempel
+fillista, fönsterlayout, globala variabler och alternativ.  Vad som sparas
+styrs av alternativet 'sessionoptions'.
+   Skapa en sessionsfil med: >
+
+	:mksession vimbook.vim
+
+Återställ sessionen med: >
+
+	:source vimbook.vim
+
+Starta Vim och återställ en viss session med: >
+
+	vim -S vimbook.vim
+
+Vim läser då in den angivna filen vid starten.  'S' står för session, men
+alternativet -S kan läsa in vilket Vim-skript som helst och skulle alltså även
+kunna stå för "source".
+
+Öppna fönster återställs med samma position och storlek som tidigare.
+Mappningar och alternativvärden återställs också.
+   Exakt vad som återställs beror på 'sessionoptions'.  Standardvärdet är:
+"blank,buffers,curdir,folds,help,options,tabpages,winsize,terminal".
+
+	blank		behåll tomma fönster
+	buffers		alla buffertar, även de som inte visas i ett fönster
+	curdir		aktuell katalog
+	folds		vikningar, även sådana som skapats manuellt
+	help		hjälpfönstret
+	options		alla alternativ och mappningar
+	tabpages	alla fliksidor
+	winsize		fönsterstorlekar
+	terminal	inkludera terminalfönster
+
+Ändra värdet efter behov.  Lägg exempelvis till detta för att även återställa
+Vim-fönstrets storlek: >
+
+	:set sessionoptions+=resize
+
+
+SESSIONER FÖR OLIKA PROJEKT
+
+Sessioner är användbara när du arbetar med olika projekt.  Anta att du sparar
+sessionsfiler i katalogen "~/.vim" och vill byta från projektet "secret" till
+"boring": >
+
+	:wall
+	:mksession! ~/.vim/secret.vim
+	:source ~/.vim/boring.vim
+
+Först skriver ":wall" alla ändrade filer.  Sedan sparas den aktuella sessionen
+med ":mksession!", vilket skriver över den tidigare.  Nästa gång du läser in
+sessionen "secret" kan du fortsätta där du är nu.  Till sist läses sessionen
+"boring" in.
+
+Om du öppnar hjälpfönster, delar och stänger fönster och ändrar layouten kan
+du återgå till den senast sparade sessionen med: >
+
+	:source ~/.vim/boring.vim
+
+Du väljer om du vill spara den aktuella inställningen för att fortsätta där
+nästa gång eller behålla sessionsfilen som startpunkt.
+   Du kan också skapa en fönsterlayout som du tycker om och spara den i en
+session, så att du kan återgå till den senare.  Här är ett exempel:
+
+	+----------------------------------------+
+	|          VIM - huvudhjälpfilen         |
+	|                                        |
+	|Flytta runt: använd piltangenterna ...  |
+	|help.txt================================|
+	|utforskare |                            |
+	|katalog    |~                           |
+	|katalog    |~                           |
+	|fil        |~                           |
+	|fil        |~                           |
+	|fil        |~                           |
+	|fil        |~                           |
+	|~/=========|[Ingen fil]==================|
+	|                                        |
+	+----------------------------------------+
+
+Hjälpfönstret ligger högst upp så att du kan läsa texten.  Det smala fönstret
+till vänster innehåller en filutforskare, ett Vim-insticksprogram som listar
+en katalogs innehåll.  Där kan du välja filer att redigera.  Mer om detta
+finns i nästa kapitel.
+   Skapa layouten i en nystartad Vim med: >
+
+	:help
+	CTRL-W w
+	:vertical split ~/
+
+Ändra fönsterstorlekarna efter smak och spara sessionen med: >
+
+	:mksession ~/.vim/mine.vim
+
+Starta Vim med layouten så här: >
+
+	vim -S ~/.vim/mine.vim
+
+Tips: Om du vill öppna en fil från utforskarfönstret i det tomma fönstret
+flyttar du markören till filnamnet och trycker på "P". Då öppnas
+filen i det senast använda fönstret.
+
+
+UNIX OCH MS-WINDOWS
+
+Om du arbetar med MS-Windows vissa dagar och Unix andra dagar kan du lägga
+till "slash" och "unix" i 'sessionoptions'.  Sessionsfilerna skrivs då i ett
+format som fungerar i båda systemen.  Lägg till detta i vimrc-filen: >
+
+	:set sessionoptions+=unix,slash
+
+Vim använder då Unix-formatet.  MS-Windows-versionen av Vim kan läsa och
+skriva Unix-filer, men Unix-versionen kan inte läsa sessionsfiler i
+MS-Windows-format.  MS-Windows-versionen förstår filnamn med / som avgränsare,
+medan Unix-versionen inte förstår \.
+
+
+SESSIONER OCH VIMINFO
+
+Sessioner sparar mycket, men inte markeringarnas positioner, registerinnehåll
+eller kommandoradshistoriken.  För detta behöver du funktionen viminfo.
+   Oftast är det bäst att använda sessioner och viminfo separat.  Då kan du
+byta session men behålla kommandoradshistoriken, eller kopiera text till
+register i en session och klistra in den i en annan.
+   Du kanske hellre vill spara viminfo tillsammans med sessionen.  Då får du
+göra det själv, till exempel så här: >
+
+	:mksession! ~/.vim/secret.vim
+	:wviminfo! ~/.vim/secret.viminfo
+
+Återställ båda med: >
+
+	:source ~/.vim/secret.vim
+	:rviminfo! ~/.vim/secret.viminfo
+
+==============================================================================
+*21.5*	Vyer
+
+En session sparar hur hela Vim ser ut.  Använd en vy om du bara vill spara
+egenskaperna för ett fönster.
+   Vyer är användbara när du vill redigera en fil på ett visst sätt.  Du kan
+till exempel ha radnummer aktiverade med alternativet 'number' och ha skapat
+några vikningar.  Precis som med sessioner kan du spara vyn för filen och
+återställa den senare.  När en session sparas lagras även vyn för varje
+fönster.
+   Ett sätt att använda vyer är att låta Vim välja ett namn på vyfilen.  Du
+kan senare återställa vyn när du redigerar samma fil.  Spara vyn för det
+aktuella fönstret med: >
+
+	:mkview
+
+Vim väljer var vyn ska sparas.  När du senare redigerar samma fil återställer
+du vyn med: >
+
+	:loadview
+
+Om du vill visa filen utan alternativet 'number' eller med alla vikningar
+öppna ändrar du alternativen så att fönstret ser ut som du vill.  Spara sedan
+den vyn med: >
+
+	:mkview 1
+
+Återställ den med: >
+
+	:loadview 1
+
+Du kan växla mellan de två vyerna genom att använda ":loadview" med eller
+utan argumentet "1".  Du kan spara upp till tio vyer för samma fil: en utan
+nummer och nio med numren 1 till 9.
+
+
+EN VY MED ETT EGET NAMN
+
+Ett annat sätt är att spara vyn i en fil med ett namn som du väljer.  Den kan
+läsas in medan du redigerar en annan fil.  Vim byter då till filen som anges i
+vyn.  På så sätt kan du snabbt växla till en annan fil med alla dess sparade
+alternativ.
+   Spara till exempel vyn för den aktuella filen med: >
+
+	:mkview ~/.vim/main.vim
+
+Återställ den med: >
+
+	:source ~/.vim/main.vim
+
+==============================================================================
+*21.6*	Lägesrader
+
+När du redigerar en viss fil kanske du vill använda särskilda alternativ för
+den filen.  Det är tråkigt att skriva kommandona varje gång, och en session
+eller vy fungerar inte när filen delas mellan flera personer.
+   Lägg i stället till en lägesrad i filen.  Den är en textrad som anger
+alternativvärden som Vim ska använda bara i den filen.
+   I ett C-program kanske indrag ska göras med multiplar av fyra blanksteg.
+Då ska alternativet 'shiftwidth' vara 4.  Lägesraden ställer in det:
+
+	/* vim:set shiftwidth=4: */ ~
+
+Placera raden bland de fem första eller fem sista raderna.  När du redigerar
+filen får 'shiftwidth' värdet fyra.  I en annan fil återgår värdet till
+standardvärdet åtta.
+   I vissa filer passar lägesraden i sidhuvudet och kan placeras överst.  I
+textfiler och andra filer där den stör innehållet kan den stå sist.
+
+Alternativet 'modelines' anger hur många rader i början och slutet av filen
+som kontrolleras efter en lägesrad.  Kontrollera tio rader med: >
+
+	:set modelines=10
+
+Stäng av funktionen med alternativet 'modeline'.  Gör detta om du arbetar som
+root i Unix eller administratör i MS-Windows, eller om du inte litar på
+filerna du redigerar: >
+
+	:set nomodeline
+
+Lägesraden har följande format:
+
+	valfri text vim:set {alternativ}={värde} ... : valfri text ~
+
+Texten "valfri text" visar att du kan skriva vad som helst före och efter
+delen Vim använder.  Raden kan därmed se ut som en kommentar, som i exemplet
+ovan med /* och */.
+   Delen " vim:" gör att Vim känner igen raden.  Det måste finnas blanksteg
+före "vim", eller så måste "vim" stå först på raden.  Därför fungerar inte
+till exempel "gvim:".
+   Delen mellan kolonen är ett ":set"-kommando.  Det fungerar som när du
+skriver kommandot själv, men du måste sätta ett omvänt snedstreck före ett
+kolon i värdet.  Annars uppfattas det som slutet på lägesraden.
+
+Ett annat exempel:
+
+	// vim:set textwidth=72 commentstring=//\:\ %s:  använd en kommentarsmall ~
+
+Det omvända snedstrecket före kolonet gör att det ingår i värdet för
+'commentstring'. Blanksteget före %s skyddas på samma sätt för :set.
+Texten efter det avslutande kolonet ignoreras.
+
+Mer information finns i |modeline|.
+
+==============================================================================
+
+Nästa kapitel: |usr_22.txt|  Hitta filen som ska redigeras
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

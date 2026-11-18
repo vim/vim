@@ -1,0 +1,382 @@
+*usr_toc.txt*	För Vim version 9.2.  Senaste ändring: 18 nov 2026
+
+
+		     VIMS ANVÄNDARMANUAL	av Bram Moolenaar
+
+
+			      Innehållsförteckning		*user-manual* *usr*
+
+==============================================================================
+Översikt ~
+
+Komma igång ~
+|usr_01.txt|  Om manualerna
+|usr_02.txt|  De första stegen i Vim
+|usr_03.txt|  Förflyttning
+|usr_04.txt|  Göra mindre ändringar
+|usr_05.txt|  Anpassa inställningarna
+|usr_06.txt|  Använda syntaxmarkering
+|usr_07.txt|  Redigera flera filer
+|usr_08.txt|  Dela fönster
+|usr_09.txt|  Använda det grafiska gränssnittet
+|usr_10.txt|  Göra större ändringar
+|usr_11.txt|  Återställa efter en krasch
+|usr_12.txt|  Smarta knep
+
+Effektivare redigering ~
+|usr_20.txt|  Skriva kommandoradskommandon snabbt
+|usr_21.txt|  Gå iväg och kom tillbaka
+|usr_22.txt|  Hitta filen som ska redigeras
+|usr_23.txt|  Redigera andra filer
+|usr_24.txt|  Infoga text snabbt
+|usr_25.txt|  Redigera formaterad text
+|usr_26.txt|  Upprepning
+|usr_27.txt|  Sökkommandon och mönster
+|usr_28.txt|  Vikning
+|usr_29.txt|  Förflyttning i program
+|usr_30.txt|  Redigera program
+|usr_31.txt|  Utforska det grafiska gränssnittet
+|usr_32.txt|  Ångringsträdet
+
+Finjustera Vim ~
+|usr_40.txt|  Skapa nya kommandon
+|usr_41.txt|  Skriva ett Vim-skript
+|usr_42.txt|  Lägga till menyer
+|usr_43.txt|  Använda filtyper
+|usr_44.txt|  Egen syntaxmarkering
+|usr_45.txt|  Välja språk och lokalinställningar
+
+Skriva Vim-skript ~
+|usr_50.txt|  Avancerad Vim-skriptskrivning
+|usr_51.txt|  Skriva insticksprogram
+|usr_52.txt|  Skriva större insticksprogram
+
+Köra Vim ~
+|usr_90.txt|  Installera Vim
+
+
+Referensmanual ~
+|reference_toc|     Mer detaljerad information om alla kommandon
+
+En äldre version av användarmanualen finns i utskriftsvänligt HTML- och
+PDF-format här:
+
+	http://vimdoc.sf.net
+
+==============================================================================
+Komma igång ~
+
+Läs manualen från början till slut för att lära dig de viktigaste kommandona.
+
+|usr_01.txt|  Om manualerna
+		|01.1|	Två manualer
+		|01.2|	Vim installerat
+		|01.3|	Använda Vim-handledningen
+		|01.4|	Upphovsrätt
+
+|usr_02.txt|  De första stegen i Vim
+		|02.1|	Starta Vim för första gången
+		|02.2|	Infoga text
+		|02.3|	Förflyttning
+		|02.4|	Ta bort tecken
+		|02.5|	Ångra och göra om
+		|02.6|	Andra redigeringskommandon
+		|02.7|	Avsluta Vim
+		|02.8|	Hitta hjälp
+
+|usr_03.txt|  Förflyttning
+		|03.1|	Flytta mellan ord
+		|03.2|	Flytta till början eller slutet av en rad
+		|03.3|	Flytta till ett tecken
+		|03.4|	Hitta matchande parentes
+		|03.5|	Flytta till en viss rad
+		|03.6|	Se var du befinner dig
+		|03.7|	Rulla texten
+		|03.8|	Enkla sökningar
+		|03.9|	Enkla sökmönster
+		|03.10|	Använda markeringar
+
+|usr_04.txt|  Göra mindre ändringar
+		|04.1|	Operatorer och rörelser
+		|04.2|	Ändra text
+		|04.3|	Upprepa en ändring
+		|04.4|	Visuellt läge
+		|04.5|	Flytta text
+		|04.6|	Kopiera text
+		|04.7|	Använda urklippet
+		|04.8|	Textobjekt
+		|04.9|	Ersättningsläge
+		|04.10|	Avslutning
+
+|usr_05.txt|  Anpassa inställningarna
+		|05.1|	Filen vimrc
+		|05.2|	Exempel-filen vimrc förklarad
+		|05.3|	Filen defaults.vim förklarad
+		|05.4|	Enkla tangentmappningar
+		|05.5|	Lägga till ett paket
+		|05.6|	Lägga till ett insticksprogram
+		|05.7|	Lägga till en hjälpsida
+		|05.8|	Alternativfönstret
+		|05.9|	Vanliga alternativ
+
+|usr_06.txt|  Använda syntaxmarkering
+		|06.1|	Aktivera syntaxmarkering
+		|06.2|	Inga eller fel färger?
+		|06.3|	Välja andra färger
+		|06.4|	Med eller utan färger
+		|06.5|	Skriva ut med färger
+		|06.6|	Läs vidare
+
+|usr_07.txt|  Redigera flera filer
+		|07.1|	Redigera en annan fil
+		|07.2|	En fillista
+		|07.3|	Hoppa mellan filer
+		|07.4|	Säkerhetskopior
+		|07.5|	Kopiera text mellan filer
+		|07.6|	Visa en fil
+		|07.7|	Byta filnamn
+
+|usr_08.txt|  Dela fönster
+		|08.1|	Dela ett fönster
+		|08.2|	Dela fönster med en annan fil
+		|08.3|	Fönsterstorlek
+		|08.4|	Dela fönster lodrätt
+		|08.5|	Flytta fönster
+		|08.6|	Kommandon för alla fönster
+		|08.7|	Visa skillnader med vimdiff
+		|08.8|	Övrigt
+
+|usr_09.txt|  Använda det grafiska gränssnittet
+		|09.1|	Delar av det grafiska gränssnittet
+		|09.2|	Använda musen
+		|09.3|	Urklippet
+		|09.4|	Markeringsläge
+
+|usr_10.txt|  Göra större ändringar
+		|10.1|	Spela in och köra kommandon
+		|10.2|	Ersättning
+		|10.3|	Kommandointervall
+		|10.4|	Det globala kommandot
+		|10.5|	Visuellt blockläge
+		|10.6|	Läsa och skriva en del av en fil
+		|10.7|	Formatera text
+		|10.8|	Ändra skiftläge
+		|10.9|	Använda ett externt program
+
+|usr_11.txt|  Återställa efter en krasch
+		|11.1|	Grundläggande återställning
+		|11.2|	Var finns växlingsfilen?
+		|11.3|	Har Vim kraschat?
+		|11.4|	Läs vidare
+
+|usr_12.txt|  Smarta knep
+		|12.1|	Ersätta ett ord
+		|12.2|	Ändra ”Efternamn, förnamn” till ”Förnamn Efternamn”
+		|12.3|	Sortera en lista
+		|12.4|	Vända radordningen
+		|12.5|	Räkna ord
+		|12.6|	Hitta en manualsida
+		|12.7|	Ta bort onödiga blanksteg
+		|12.8|	Hitta var ett ord används
+
+==============================================================================
+Effektivare redigering ~
+
+Kapitlen i det här avsnittet kan läsas i valfri ordning.
+
+|usr_20.txt|  Skriva kommandoradskommandon snabbt
+		|20.1|	Redigera kommandoraden
+		|20.2|	Förkortningar på kommandoraden
+		|20.3|	Komplettera kommandoraden
+		|20.4|	Kommandoradshistorik
+		|20.5|	Kommandoradsfönstret
+
+|usr_21.txt|  Gå iväg och kom tillbaka
+		|21.1|	Pausa och återuppta
+		|21.2|	Köra skalkommandon
+		|21.3|	Spara information med viminfo
+		|21.4|	Sessioner
+		|21.5|	Vyer
+		|21.6|	Lägesrader
+
+|usr_22.txt|  Hitta filen som ska redigeras
+		|22.1|	Filbläddraren
+		|22.2|	Den aktuella katalogen
+		|22.3|	Hitta en fil
+		|22.4|	Buffertlistan
+
+|usr_23.txt|  Redigera andra filer
+		|23.1|	DOS-, Mac- och Unix-filer
+		|23.2|	Filer på internet
+		|23.3|	Kryptering
+		|23.4|	Binärfiler
+		|23.5|	Komprimerade filer
+
+|usr_24.txt|  Infoga text snabbt
+		|24.1|	Rätta text
+		|24.2|	Visa matchande parenteser
+		|24.3|	Komplettering
+		|24.4|	Upprepa en infogning
+		|24.5|	Kopiera från en annan rad
+		|24.6|	Infoga ett register
+		|24.7|	Förkortningar
+		|24.8|	Skriva specialtecken
+		|24.9|	Digrafer
+		|24.10|	Normallägeskommandon
+
+|usr_25.txt|  Redigera formaterad text
+		|25.1|	Radbrytning
+		|25.2|	Justera text
+		|25.3|	Indrag och tabbar
+		|25.4|	Hantera långa rader
+		|25.5|	Redigera tabeller
+
+|usr_26.txt|  Upprepning
+		|26.1|	Upprepa med visuellt läge
+		|26.2|	Lägga till och dra ifrån
+		|26.3|	Ändra i många filer
+		|26.4|	Använda Vim från ett skalskript
+
+|usr_27.txt|  Sökkommandon och mönster
+		|27.1|	Ignorera skiftläge
+		|27.2|	Fortsätta sökningen från början av filen
+		|27.3|	Förskjutningar
+		|27.4|	Matcha flera gånger
+		|27.5|	Alternativ
+		|27.6|	Teckenintervall
+		|27.7|	Teckenklasser
+		|27.8|	Matcha en radbrytning
+		|27.9|	Exempel
+
+|usr_28.txt|  Vikning
+		|28.1|	Vad är vikning?
+		|28.2|	Manuell vikning
+		|28.3|	Arbeta med vikningar
+		|28.4|	Spara och återställa vikningar
+		|28.5|	Vika efter indrag
+		|28.6|	Vika med markörer
+		|28.7|	Vika efter syntax
+		|28.8|	Vika med uttryck
+		|28.9|	Vika oförändrade rader
+		|28.10|	Vilken vikningsmetod ska jag välja?
+
+|usr_29.txt|  Förflyttning i program
+		|29.1|	Använda taggar
+		|29.2|	Förhandsvisningsfönstret
+		|29.3|	Förflytta sig i ett program
+		|29.4|	Hitta globala identifierare
+		|29.5|	Hitta lokala identifierare
+
+|usr_30.txt|  Redigera program
+		|30.1|	Kompilera
+		|30.2|	Indrag i C-filer
+		|30.3|	Automatiska indrag
+		|30.4|	Andra indragsmetoder
+		|30.5|	Tabbar och blanksteg
+		|30.6|	Formatera kommentarer
+
+|usr_31.txt|  Utforska det grafiska gränssnittet
+		|31.1|	Filbläddraren
+		|31.2|	Bekräftelser
+		|31.3|	Menytangenter
+		|31.4|	Vim-fönstrets position och storlek
+		|31.5|	Övrigt
+
+|usr_32.txt|  Ångringsträdet
+		|32.1|	Ångra fram till en filsparning
+		|32.2|	Numrera ändringar
+		|32.3|	Hoppa i trädet
+		|32.4|	Förflytta sig i tiden
+
+==============================================================================
+Finjustera Vim ~
+
+Anpassa Vim efter dina behov.
+
+|usr_40.txt|  Skapa nya kommandon
+		|40.1|	Tangentmappningar
+		|40.2|	Definiera kommandoradskommandon
+		|40.3|	Autokommandon
+
+|usr_41.txt|  Skriva ett Vim-skript
+		|41.1|	Introduktion
+		|41.2|	Variabler
+		|41.3|	Uttryck
+		|41.4|	Villkor
+		|41.5|	Köra ett uttryck
+		|41.6|	Använda funktioner
+		|41.7|	Definiera en funktion
+		|41.8|	Listor och dictionary-objekt
+		|41.9|	Blanksteg
+		|41.10|	Radfortsättning
+		|41.11|	Kommentarer
+		|41.12|	Filformat
+
+|usr_42.txt|  Lägga till menyer
+		|42.1|	Introduktion
+		|42.2|	Menykommandon
+		|42.3|	Övrigt
+		|42.4|	Verktygsfält och popupmenyer
+
+|usr_43.txt|  Använda filtyper
+		|43.1|	Insticksprogram för filtyper
+		|43.2|	Lägga till en filtyp
+
+|usr_44.txt|  Egen syntaxmarkering
+		|44.1|	Grundläggande syntaxkommandon
+		|44.2|	Nyckelord
+		|44.3|	Matchningar
+		|44.4|	Regioner
+		|44.5|	Nästlade delar
+		|44.6|	Följande grupper
+		|44.7|	Övriga argument
+		|44.8|	Kluster
+		|44.9|	Inkludera en annan syntaxfil
+		|44.10|	Synkronisering
+		|44.11|	Installera en syntaxfil
+		|44.12|	Portabel struktur för syntaxfiler
+
+|usr_45.txt|  Välja språk och lokalinställningar
+		|45.1|	Språk för meddelanden
+		|45.2|	Språk för menyer
+		|45.3|	Använda en annan teckenkodning
+		|45.4|	Redigera filer med en annan teckenkodning
+		|45.5|	Skriva text på ett annat språk
+
+==============================================================================
+Skriva Vim-skript ~
+
+|usr_50.txt|  Avancerad Vim-skriptskrivning
+		|50.1|	Undantag
+		|50.2|	Funktioner med varierande antal argument
+		|50.3|	Återställa vyn
+
+|usr_51.txt|  Skriva insticksprogram
+		|51.1|	Skriva ett generiskt insticksprogram
+		|51.2|	Skriva ett filtypsinsticksprogram
+		|51.3|	Skriva ett kompilatorinsticksprogram
+		|51.4|	Distribuera Vim-skript
+
+|usr_52.txt|  Skriva större insticksprogram
+		|52.1|	Export och import
+		|52.2|	Automatisk inläsning
+		|52.3|	Automatisk inläsning utan export och import
+		|52.4|	Andra mekanismer
+		|52.5|	Använda Vim9-skript från äldre skript
+		|52.6|	Vim9-exempel: insticksprogram för kommentarer och kopieringsmarkering
+
+==============================================================================
+Köra Vim ~
+
+Innan du kan börja använda Vim.
+
+|usr_90.txt|  Installera Vim
+		|90.1|	Unix
+		|90.2|	MS-Windows
+		|90.3|	Uppgradera Vim
+		|90.4|	Vanliga installationsproblem
+		|90.5|	Avinstallera Vim
+
+==============================================================================
+
+Upphovsrätt: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

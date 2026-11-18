@@ -1,0 +1,419 @@
+*usr_28.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Vikning
+
+
+Strukturerad text kan delas in i avsnitt och underavsnitt.  Med vikning kan du
+visa ett avsnitt som en enda rad och på så sätt få en överblick.  Det här
+kapitlet beskriver olika sätt att göra det.
+
+|28.1|	Vad är vikning?
+|28.2|	Manuell vikning
+|28.3|	Arbeta med vikningar
+|28.4|	Spara och återställa vikningar
+|28.5|	Vikning efter indrag
+|28.6|	Vikning med markörer
+|28.7|	Vikning efter syntax
+|28.8|	Vikning med uttryck
+|28.9|	Vika oförändrade rader
+|28.10|	Vilken vikningsmetod ska jag välja?
+
+	Nästa kapitel: |usr_29.txt|  Förflyttning i program
+	Föregående kapitel: |usr_27.txt|  Sökkommandon och mönster
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*28.1*	Vad är vikning?
+
+Med vikning visas ett radintervall i bufferten som en enda rad på skärmen.
+Det liknar ett pappersark som viks ihop:
+
+	+------------------------+
+	| rad 1			 |
+	| rad 2			 |
+	| rad 3			 |
+	|_______________________ |
+	\			 \
+	 \________________________\
+	 / vikta rader		  /
+	/________________________/
+	| rad 12		 |
+	| rad 13		 |
+	| rad 14		 |
+	+------------------------+
+
+Texten finns kvar oförändrad i bufferten.  Vikningen påverkar bara hur raderna
+visas.
+
+Med vikning får du en bättre överblick över textens struktur.  Du kan vika
+raderna i ett avsnitt och ersätta dem med en rad som visar att avsnittet finns.
+
+==============================================================================
+*28.2*	Manuell vikning
+
+Prova själv: placera markören i ett stycke och skriv: >
+
+	zfap
+
+Stycket ersätts nu av en markerad rad.  Du har skapat en vikning.  |zf| är en
+operator och |ap| ett textobjekt.  Du kan använda operatorn |zf| med valfritt
+förflyttningskommando för att skapa en vikning över texten som kommandot
+flyttar över.  |zf| fungerar även i visuellt läge.
+
+Visa texten igen genom att öppna vikningen med: >
+
+	zo
+
+Stäng den sedan igen med: >
+
+	zc
+
+Alla vikningskommandon börjar med "z".  Om du tänker dig pappret från sidan
+kan det likna en vikt kant.  Bokstaven efter "z" är vald som en minnesregel:
+
+	zf	skapa en vikning (Fold)
+	zo	öppna en vikning (Open)
+	zc	stäng en vikning (Close)
+
+Vikningar kan nästlas.  Ett textområde som innehåller vikningar kan självt
+vikas.  Du kan till exempel vika varje stycke i avsnittet och sedan vika alla
+avsnitt i kapitlet.  Prova själv.  När du öppnar vikningen för hela kapitlet
+återställs de inre vikningarna som de var; några kan vara öppna och andra
+stängda.
+
+Anta att du har skapat flera vikningar och nu vill visa all text.  Du kan gå
+till varje vikning och skriva "zo", men det går snabbare med: >
+
+	zr
+
+Det höjer 'foldlevel' så att färre vikningar är stängda (Reduce).  Motsatsen är: >
+
+	zm
+
+Det sänker 'foldlevel' så att fler vikningar stängs (More).  Upprepa "zr" och "zm" för att öppna eller stänga
+nästlade vikningar på flera nivåer.
+
+Öppna alla nivåer på en gång med: >
+
+	zR
+
+Det höjer 'foldlevel' tills alla vikningar är öppna.  Stäng alla vikningar med: >
+
+	zM
+
+Det sätter 'foldlevel' till noll (More).
+
+Stäng tillfälligt av vikningarna med |zn|.  |zN| aktiverar dem igen som de
+var.  |zi| växlar mellan lägena.  Du kan till exempel arbeta så här:
+- skapa vikningar för att få överblick över filen
+- flytta till platsen där du vill arbeta
+- kör |zi| för att visa texten och redigera den
+- kör |zi| igen för att återgå till överblicken
+
+Mer om manuell vikning finns i referenshandboken: |fold-manual|
+
+==============================================================================
+*28.3*	Arbeta med vikningar
+
+När några vikningar är stängda flyttar kommandon som "j" och "k" över en
+vikning som om den vore en enda rad.  Det gör att du snabbt kan förflytta
+dig över vikt text.
+
+Du kan kopiera, ta bort och klistra in vikningar som om varje vikning vore en
+rad.  Det är användbart om du vill ändra ordningen på funktioner i ett program.
+Välj först 'foldmethod' så att varje vikning innehåller en hel funktion (eller
+lite mindre).  Ta sedan bort funktionen med "dd", flytta markören och klistra
+in den med "p".  Om några rader i funktionen ligger utanför vikningen kan du
+göra ett visuellt urval:
+- placera markören på den första raden som ska flyttas
+- tryck på "V" för att börja visuellt läge
+- placera markören på den sista raden som ska flyttas
+- tryck på "d" för att ta bort de markerade raderna
+- flytta markören till den nya platsen och klistra in raderna med "p"
+
+Ibland är det svårt att se eller komma ihåg var en vikning finns och var
+kommandot |zo| fungerar.  Visa de definierade vikningarna med: >
+
+	:set foldcolumn=4
+
+Då visas en smal kolumn till vänster om fönstret som visar vikningarna.  Ett
+plustecken anger en stängd vikning.  Ett minustecken visas vid början av en
+öppen vikning och "|" på de följande raderna i den.
+
+Du kan öppna en vikning genom att klicka på "+" i vikningskolumnen.  Klicka
+på "-" eller på ett "|" under det för att stänga en öppen vikning.
+
+Öppna alla vikningar vid markörraden med |zO|.
+Stäng alla vikningar vid markörraden med |zC|.
+Ta bort en vikning vid markörraden med |zd|.
+Ta bort alla vikningar vid markörraden med |zD|.
+
+I infogningsläget är vikningen vid markörraden alltid öppen, så att du ser vad
+du skriver.
+
+Vikningar öppnas automatiskt när du hoppar eller flyttar markören åt vänster
+eller höger.  Kommandot "0" öppnar till exempel vikningen under markören om
+'foldopen' innehåller "hor", vilket är standard.  Ändra 'foldopen' om du vill
+att vissa kommandon ska öppna vikningar.  Öppna alltid raden under markören
+med: >
+
+	:set foldopen=all
+
+Varning: då kan du inte längre flytta markören till en stängd vikning.  Du kan
+använda inställningen tillfälligt och återställa standardvärdet med: >
+
+	:set foldopen&
+
+Du kan låta vikningar stängas automatiskt när du flyttar markören ut ur dem: >
+
+	:set foldclose=all
+
+Då tillämpas 'foldlevel' igen på alla vikningar som inte innehåller markören.
+Prova och se om det passar dig.  Använd |zm| för att vika mer och |zr| för att
+vika mindre.
+
+Vikningar gäller ett fönster i taget.  Du kan visa samma buffert i två fönster,
+ett med vikningar och ett utan.  Du kan också ha alla vikningar stängda i det ena och öppna i det andra.
+
+==============================================================================
+*28.4*	Spara och återställa vikningar
+
+När du lämnar en fil och börjar redigera en annan försvinner vikningarnas
+tillstånd.  Om du senare öppnar filen igen återgår manuellt öppnade och stängda
+vikningar till standardläget.  Manuellt skapade vikningar försvinner helt.
+Spara dem med kommandot |:mkview|: >
+
+	:mkview
+
+Det sparar inställningar och annat som påverkar hur filen visas.  Ändra vad
+som sparas med alternativet 'viewoptions'.
+   Läs in vyn igen när du öppnar filen senare: >
+
+	:loadview
+
+Du kan spara upp till tio vyer för samma fil.  Spara den aktuella vyn som den
+tredje och läs in den andra så här: >
+
+	:mkview 3
+	:loadview 2
+
+Om du infogar eller tar bort rader kan vyerna bli ogiltiga.  Läs också om
+alternativet 'viewdir', som anger var vyerna sparas.  Du kan behöva ta bort
+gamla vyer ibland.
+
+==============================================================================
+*28.5*	Vika efter indrag
+
+Det tar lång tid att definiera vikningar med |zf|.  Om textens struktur visas
+med större indrag för lägre nivåer kan du använda indrag som vikningsmetod.
+Då skapas vikningar för varje följd av rader med samma indrag.  Rader med
+större indrag blir nästlade vikningar.  Det fungerar bra med många
+programspråk.
+
+Prova genom att ställa in 'foldmethod': >
+
+	:set foldmethod=indent
+
+Använd sedan |zm| och |zr| för att vika mer eller minska vikningen.  Det blir
+tydligt med följande exempel:
+
+Den här raden har inget indrag
+	Den här raden har ett indrag
+		Den här raden har två indrag
+		Den här raden har två indrag
+	Den här raden har ett indrag
+Den här raden har inget indrag
+	Den här raden har ett indrag
+	Den här raden har ett indrag
+
+Sambandet mellan indragets storlek och vikningsdjupet beror på 'shiftwidth'.
+Varje 'shiftwidth' med indrag ökar djupet med en nivå.  Det kallas
+vikningsnivå.
+
+När du använder |zr| och |zm| ändrar du egentligen alternativet 'foldlevel'.
+Du kan också ange värdet direkt: >
+
+	:set foldlevel=3
+
+Då stängs vikningar vars nivå är högre än tre. Vikningar på nivå tre
+förblir öppna.  Ju
+lägre 'foldlevel', desto fler vikningar stängs.  Värdet noll stänger alla
+vikningar.  |zM| sätter 'foldlevel' till noll.  Motsatsen, |zR|, sätter
+'foldlevel' till den djupaste vikningsnivån i filen.
+
+Du kan alltså öppna och stänga vikningar på två sätt:
+(A) Ange vikningsnivån.
+    Då kan du snabbt zooma ut för att se textens struktur, flytta markören och
+    zooma in på texten igen.
+
+(B) Använd |zo| och |zc| för att öppna eller stänga särskilda vikningar.
+    Då kan du öppna de vikningar du vill se medan övriga förblir stängda.
+
+Du kan kombinera metoderna.  Stäng först de flesta vikningarna med |zm| några
+gånger och öppna sedan en viss vikning med |zo|.  Eller öppna alla med |zR|
+och stäng enskilda med |zc|.
+
+Du kan däremot inte skapa manuella vikningar när 'foldmethod' är "indent",
+eftersom det skulle krocka med sambandet mellan indrag och vikningsnivå.
+
+Mer om indrag som vikningsmetod finns i referenshandboken: |fold-indent|
+
+==============================================================================
+*28.6*	Vika med markörer
+
+Markörer i texten anger var ett vikningsområde börjar och slutar.  Det ger
+precis kontroll över vilka rader som ingår.  Nackdelen är att filens text
+måste ändras.
+
+Prova: >
+
+	:set foldmethod=marker
+
+Exempel på text i ett C-program:
+
+	/* funktion foobar() {{{ */
+	int foobar()
+	{
+		/* returnera ett värde {{{ */
+		return 42;
+		/* }}} */
+	}
+	/* }}} */
+
+Den vikta raden visar texten före markören.  Det är användbart eftersom du då
+ser vad vikningen innehåller.
+
+Det är besvärligt om markörerna inte längre passar ihop efter att du flyttat
+rader.  Numrerade markörer förebygger detta.  Exempel:
+
+	/* globala variabler {{{1 */
+	int varA, varB;
+
+	/* funktioner {{{1 */
+	/* funcA() {{{2 */
+	void funcA() {}
+
+	/* funcB() {{{2 */
+	void funcB() {}
+	/* }}}1 */
+
+Varje numrerad startmarkör börjar en vikning på den angivna nivån.  Då avslutas
+en vikning på högre nivå här.  Du kan definiera alla vikningar enbart med
+numrerade startmarkörer.  Lägg bara till en slutmarkör om du uttryckligen vill
+avsluta en vikning innan nästa börjar.
+
+Mer om markörbaserad vikning finns i referenshandboken: |fold-marker|
+
+==============================================================================
+*28.7*	Vika efter syntax
+
+Vim använder olika syntaxfiler för olika språk.  De anger färger för olika
+delar av filen.  Om du läser detta i Vim i en färgkapabel terminal kommer
+färgerna från syntaxfilen "help".
+   I syntaxfilerna kan du lägga till syntaxelement med argumentet "fold".  De
+definierar ett vikningsområde.  För detta behöver du skriva en syntaxfil och
+lägga till elementen.  Det är inte helt enkelt, men när det väl är gjort
+skapas alla vikningar automatiskt.
+   Här antar vi att du redan använder en syntaxfil.  Då behöver du inte göra
+något mer än att öppna och stänga vikningar som beskrivits ovan.  Vikningar
+skapas och tas bort automatiskt när du redigerar filen.
+
+Mer om syntaxbaserad vikning finns i referenshandboken: |fold-syntax|
+
+==============================================================================
+*28.8*	Vika med uttryck
+
+Det liknar vikning efter indrag. Vim beräknar vikningsnivån genom att
+utvärdera 'foldexpr' för varje rad.  Det passar text där något
+innehåll visar vilka rader som hör ihop.  I ett e-postmeddelande kan citerad
+text till exempel markeras med ">" i början av raden.  Vik sådana citat så här:
+>
+
+	:set foldmethod=expr
+	:set foldexpr=strlen(substitute(substitute(getline(v:lnum),'\\s','',\"g\"),'[^>].*','',''))
+
+Prova med följande text:
+
+> citerad text som någon skrev
+> citerad text som någon skrev
+> > dubbelt citerad text som jag skrev
+> > dubbelt citerad text som jag skrev
+
+Uttrycket 'foldexpr' fungerar inifrån och ut:
+	getline(v:lnum) hämtar den aktuella raden.
+	substitute(...,'\s','','g') tar bort alla blanktecken på raden.
+	substitute(...,'[^>].*','','') tar bort allt efter de inledande >-tecknen.
+	strlen(...) räknar strängens längd, alltså antalet >-tecken.
+
+Observera att ett omvänt snedstreck måste sättas före varje blanksteg,
+citationstecken och omvänt snedstreck i kommandot ":set".  Kontrollera det
+faktiska värdet om det verkar förvirrande: >
+
+	:set foldexpr
+
+Om ett komplicerat uttryck behöver rättas kan du använda komplettering på
+kommandoraden: >
+
+	:set foldexpr=<Tab>
+
+Där <Tab> ska vara en riktig tabb.  Vim fyller i det tidigare värdet så att du
+kan redigera det.
+
+Om uttrycket blir mer komplicerat bör du lägga det i en funktion och sätta
+'foldexpr' så att funktionen anropas.
+
+Mer om uttrycksbaserad vikning finns i referenshandboken: |fold-expr|
+
+==============================================================================
+*28.9*	Vika oförändrade rader
+
+Detta är användbart när du aktiverar alternativet 'diff' i samma fönster.
+Kommandot |vimdiff| gör detta åt dig.  Exempel: >
+
+	:setlocal diff foldmethod=diff scrollbind nowrap foldlevel=1
+
+Kör kommandot i varje fönster som visar en annan version av samma fil.  Då ser
+du skillnaderna tydligt, medan oförändrad text viks undan.
+
+Mer information finns i |fold-diff|.
+
+==============================================================================
+*28.10* Vilken vikningsmetod ska jag välja?
+
+Det finns flera möjligheter.  Vilken metod ska du välja?  Det finns tyvärr
+ingen regel som passar alla.  Här är några råd.
+
+Om det finns en syntaxfil med vikningar för språket du redigerar är den
+förmodligen bäst.  Om den saknas kan du försöka skriva en själv.  Det kräver
+goda kunskaper om sökmönster och är inte enkelt, men när det väl fungerar
+behöver du inte definiera vikningar manuellt.
+
+Manuell vikning passar ostrukturerad text.  Använd kommandot |:mkview| för att
+spara och återställa vikningarna.
+
+Markörmetoden kräver att du ändrar filen.  Om du delar filerna med andra eller
+måste följa företagets standarder kanske du inte får lägga till markörer.
+   Fördelen är att du kan placera dem exakt där du vill.  Då riskerar du inte
+att missa några rader när du klipper ut och klistrar in vikningar.  Du kan
+också lägga till en kommentar om vad vikningen innehåller.
+
+Vikning efter indrag fungerar i många filer men inte alltid så bra.  Använd
+den när ingen annan metod passar.  Den är däremot mycket användbar för
+översikter där varje indrag med 'shiftwidth' motsvarar en nästlingsnivå.
+
+Uttrycksbaserad vikning kan användas för nästan all strukturerad text.  Den är
+ganska enkel att ange, särskilt när det är lätt att känna igen var vikningen
+börjar och slutar.
+   Om vikningar med metoden "expr" inte blir precis som du vill kan du byta
+till metoden "manual".  De definierade vikningarna tas inte bort.  Sedan kan
+du lägga till eller ta bort vikningar manuellt.
+
+==============================================================================
+
+Nästa kapitel: |usr_29.txt|  Förflyttning i program
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

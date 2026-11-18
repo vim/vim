@@ -1,0 +1,220 @@
+*usr_06.txt*	För Vim version 9.2.  Senast ändrad: 14 feb 2026
+
+
+		     VIMS ANVÄNDARMANUAL	av Bram Moolenaar
+
+
+				Använda syntaxmarkering
+
+
+Svartvit text är tråkig. Med färger får filen liv. Färger ser inte bara trevliga ut, de kan också göra arbetet snabbare. Ändra färgerna för olika slags text. Du kan även skriva ut texten med färgerna som visas på skärmen.
+
+|06.1|	Aktivera syntaxmarkering
+|06.2|	Inga eller fel färger?
+|06.3|	Välja andra färger
+|06.4|	Med eller utan färger
+|06.5|	Skriva ut med färger
+|06.6|	Läs vidare
+
+     Nästa kapitel: |usr_07.txt|  Redigera flera filer
+ Föregående kapitel: |usr_05.txt|  Anpassa inställningarna
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*06.1*	Aktivera syntaxmarkering
+
+Allt börjar med ett enkelt kommando: >
+	:syntax enable
+
+Det fungerar i de flesta situationer och aktiverar färger i filerna. Vim känner automatiskt av filtypen och läser in rätt syntaxmarkering. Plötsligt visas kommentarer i blått, nyckelord i brunt och strängar i rött. Då blir filen lättare att överblicka. Efter ett tag märker du kanske att svartvit text gör arbetet långsammare.
+
+Om du alltid vill använda syntaxmarkering lägger du kommandot ":syntax enable" i |vimrc|.
+
+Om du bara vill använda syntaxmarkering när terminalen stöder färger kan du lägga till detta i |vimrc|: >
+	if &t_Co > 1
+	   syntax enable
+	endif
+
+Om du bara vill aktivera syntaxmarkering i den grafiska Vim-versionen lägger du kommandot ":syntax enable" i filen |gvimrc|.
+
+==============================================================================
+*06.2*	Inga eller fel färger?
+
+Det kan finnas flera orsaker till att färgerna inte visas:
+
+- Terminalen stöder inte färger.
+	Vim använder då fet, kursiv och understruken text, men resultatet
+	blir inte särskilt bra. Försök om möjligt använda en färgterminal.
+	På Unix rekommenderas xterm från XFree86-projektet: |xfree-xterm|.
+
+- Terminalen stöder färger, men Vim känner inte till det.
+	Kontrollera att värdet på $TERM är rätt. Om du till exempel använder
+	en färgkapabel xterm kan du ange: >
+		setenv TERM xterm-color
+<	eller (beroende på skal): >
+		TERM=xterm-color; export TERM
+<	Terminalnamnet måste motsvara terminalen du använder. Om det ändå
+	inte fungerar kan du läsa |xterm-color|, där det finns flera sätt
+	att få Vim att visa färger, även i andra terminaler.
+
+- Filtypen känns inte igen.
+	Vim känner inte igen alla filtyper och ibland går det knappast att
+	avgöra vilket språk filen använder. Prova kommandot: >
+		:set filetype
+<	Om resultatet är "filetype=" känner Vim inte till filtypen. Du kan
+	ställa in den manuellt: >
+		:set filetype=fortran
+<	Tillgängliga typer finns i katalogen $VIMRUNTIME/syntax. I det
+	grafiska gränssnittet kan du använda Syntax-menyn. Filtypen kan också
+	anges med en |modeline|, så att markering aktiveras varje gång du
+	redigerar filen. Lägg till exempel den här raden nära början eller
+	slutet av en Makefile: >
+		# vim: syntax=make
+<	Du kanske kan avgöra filtypen själv. Ofta kan filnamnstillägget
+	efter punkten användas. Läs |new-filetype| om hur du lär Vim att
+	känna igen filtypen.
+
+- Det finns ingen syntaxmarkering för filtypen.
+	Prova att ange en liknande filtyp manuellt, som ovan. Om det inte
+	räcker kan du skriva en egen syntaxfil. Se |mysyntaxfile|.
+
+Det kan också vara färgerna som är fel:
+
+- Den färgade texten är svår att läsa.
+	Vim försöker gissa bakgrundsfärgen. Om den är svart eller mörk
+	används ljusa textfärger. Om den är vit eller ljus används mörka
+	färger. Om Vim gissar fel blir texten svår att läsa. Ange då
+	alternativet 'background'. För mörk bakgrund: >
+		:set background=dark
+<	För ljus bakgrund: >
+		:set background=light
+<	Gör detta före kommandot ":syntax enable", annars är färgerna redan
+	inställda. Du kan också köra ":syntax reset" efter att du ställt in
+	'background' för att återställa standardfärgerna.
+
+- Färgerna blir fel när du rullar från slutet till början.
+	Vim läser inte in hela filen för att tolka texten, utan börjar där du
+	visar filen. Det sparar tid men kan ibland ge fel färger. En enkel
+	lösning är att trycka CTRL-L eller rulla lite bakåt och sedan framåt.
+	Se |:syn-sync| för en mer fullständig lösning. Vissa syntaxfiler kan
+	leta längre bakåt. Se hjälpen för syntaxfilen, till exempel |tex.vim|
+	för TeX.
+
+==============================================================================
+*06.3*	Välja andra färger				*:syn-default-override*
+
+Om du inte gillar standardfärgerna kan du välja ett annat färgschema. I det grafiska gränssnittet använder du menyn Redigera/Färgschema. Du kan också skriva kommandot: >
+	:colorscheme evening
+
+"evening" är färgschemats namn. Det finns flera andra att prova i katalogen $VIMRUNTIME/colors.
+
+När du hittat ett färgschema du gillar lägger du kommandot ":colorscheme" i |vimrc|.
+
+Du kan också skriva ett eget färgschema:
+
+1. Välj ett schema som liknar det du vill ha. Kopiera filen till din egen Vim-katalog. På Unix bör detta fungera: >
+	:!mkdir ~/.vim/colors
+	:!cp $VIMRUNTIME/colors/morning.vim ~/.vim/colors/mine.vim
+<	Kommandona körs från Vim, som känner till värdet på $VIMRUNTIME.
+
+2. Redigera färgschemats fil. Följande poster är användbara:
+
+	term		attribut i en svartvit terminal
+	cterm		attribut i en färgterminal
+	ctermfg		förgrundsfärg i en färgterminal
+	ctermbg		bakgrundsfärg i en färgterminal
+	gui		attribut i det grafiska gränssnittet
+	guifg		förgrundsfärg i det grafiska gränssnittet
+	guibg		bakgrundsfärg i det grafiska gränssnittet
+
+   Gör kommentarer gröna så här: >
+	:highlight Comment ctermfg=green guifg=green
+<	För "cterm" och "gui" kan du använda attributen "bold" och
+	"underline". Om du vill ha båda skriver du "bold,underline". Se
+	kommandot |:highlight| för detaljer.
+
+3. Ange att Vim alltid ska använda ditt schema genom att lägga till den här raden i |vimrc|: >
+	colorscheme mine
+
+Visa exempel på de vanligaste färgkombinationerna med: >
+	:runtime syntax/colortest.vim
+
+Text visas då med olika färgkombinationer. Kontrollera vilka som är läsbara och ser bra ut. Du kan även ange hexadecimala färger av typen #rrggbb och definiera egna namn i |v:colornames|: >
+	let v:colornames['mine_red'] = '#aa0000'
+
+Om du skriver ett färgschema för andra är det viktigt att bara definiera färgerna när de saknas: >
+	call extend(v:colornames, {'mine_red': '#aa0000'}, 'keep')
+<
+Då kan användaren ange en annan exakt färg innan schemat läses in. Exempel i en |.vimrc|-fil: >
+	runtime colors/lists/css_colors.vim
+	let v:colornames['your_red'] = v:colornames['css_red']
+	colorscheme yourscheme
+
+Som författare av ett färgschema kan du räkna med vissa färgnamn för det grafiska gränssnittet. De definieras i `colors/lists/default.vim`. Alla sådana filer på 'runtimepath' läses in varje gång kommandot colorscheme körs. Vim-distributionen innehåller en kanonisk lista med bland annat alla X11-färger, som tidigare definierades i rgb.txt.
+
+==============================================================================
+*06.4*	Med eller utan färger
+
+Färgvisning kräver mycket arbete. Om visningen går för långsamt kan du tillfälligt stänga av syntaxmarkeringen: >
+	:syntax clear
+
+När du redigerar en annan fil, eller samma fil igen, kommer färgerna tillbaka.
+
+Stäng av syntaxmarkeringen helt med: >
+	:syntax off
+
+Detta stänger av syntaxmarkeringen omedelbart i alla buffertar. Mer information finns i |:syntax-off|.
+
+							*:syn-manual*
+Om du bara vill använda syntaxmarkering för vissa filer skriver du: >
+	:syntax manual
+
+Syntaxmarkering aktiveras då, men startar inte automatiskt när du börjar redigera en buffert. Aktivera den för den aktuella bufferten genom att ställa in alternativet 'syntax': >
+	:set syntax=ON
+<
+
+==============================================================================
+*06.5*	Skriva ut med färger				*syntax-printing*
+
+I MS-Windows-versionen kan du skriva ut den aktuella filen med kommandot: >
+	:hardcopy
+
+Den vanliga skrivardialogrutan öppnas, där du kan välja skrivare och några inställningar. Om skrivaren kan skriva ut färg ska utskriften likna det du ser i Vim. Med mörk bakgrund anpassas färgerna för att se bra ut på vitt papper.
+
+Flera alternativ påverkar utskriften:
+	'printdevice'
+	'printheader'
+	'printfont'
+	'printoptions'
+
+Skriv ut ett visst radintervall genom att markera raderna i visuellt läge och skriva: >
+	v100j:hardcopy
+
+"v" startar visuellt läge. "100j" flyttar markören hundra rader ned och markerar raderna. Kommandot ":hardcopy" skriver sedan ut dem. Du kan förstås använda andra rörelsekommandon i visuellt läge.
+
+Detta fungerar också på Unix om du har en PostScript-skrivare. Annars behöver du först konvertera texten till HTML och sedan skriva ut från en webbläsare.
+
+Konvertera den aktuella filen till HTML med: >
+	:TOhtml
+
+Om det inte fungerar kan du använda: >
+	:source $VIMRUNTIME/syntax/2html.vim
+
+Vim bearbetar filen, vilket kan ta en stund om den är stor. Därefter visas HTML-koden i ett nytt fönster. Skriv den till en fil (platsen spelar ingen roll, eftersom filen tas bort senare): >
+	:write main.c.html
+
+Öppna filen i en webbläsare och skriv ut den. Om allt fungerar ska utskriften se ut som i Vim. Se |2html.vim| för detaljer. Ta bort HTML-filen när du är klar.
+
+I stället för att skriva ut HTML-filen kan du lägga den på en webbserver och låta andra se texten med färger.
+
+==============================================================================
+*06.6*	Läs vidare
+
+|usr_44.txt|  Skapa egen syntaxmarkering.
+|syntax|      Alla detaljer.
+
+==============================================================================
+
+Nästa kapitel: |usr_07.txt|  Redigera flera filer
+
+Upphovsrätt: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

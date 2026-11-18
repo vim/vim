@@ -1,0 +1,311 @@
+*usr_11.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Återställa efter en krasch
+
+
+Har datorn kraschat?  Och du har just lagt flera timmar på att redigera?
+Ingen panik!  Vim sparar tillräckligt med information för att kunna
+återställa det mesta av arbetet.  Det här kapitlet visar hur du får tillbaka
+arbetet och förklarar hur växlingsfilen används.
+
+|11.1|	Grundläggande återställning
+|11.2|	Var finns växlingsfilen?
+|11.3|	Har Vim kraschat?
+|11.4|	Läs vidare
+
+	Nästa kapitel: |usr_12.txt|  Smarta knep
+	Föregående kapitel: |usr_10.txt|  Göra större ändringar
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*11.1*	Grundläggande återställning
+
+I de flesta fall är det enkelt att återställa en fil, förutsatt att du vet
+vilken fil du redigerade och att hårddisken fortfarande fungerar.  Starta Vim
+med filen och lägg till argumentet "-r": >
+
+	vim -r help.txt
+
+Vim läser växlingsfilen (som användes för att lagra texten du redigerade) och
+kan även läsa delar av originalfilen.  Om Vim återställde ändringarna visas
+följande meddelanden (med andra filnamn, förstås):
+
+	Använder växlingsfil ".help.txt.swp" ~
+	Originalfil "~/vim/runtime/doc/help.txt" ~
+	Återskapning klar. Du borde kontrollera om allting är OK. ~
+	(Du kanske vill spara den här filen under ett annat namn ~
+	och kör diff med originalfilen för att kontrollera om det finns ändringar) ~
+	Du kanske vill ta bort .swp-filen nu. ~
+
+För säkerhets skull bör du skriva filen under ett annat namn: >
+
+	:write help.txt.recovered
+
+Jämför filen med originalet och kontrollera att resultatet stämmer.  Vimdiff
+är användbart för detta |08.7|.  Exempel: >
+
+	:write help.txt.recovered
+	:edit #
+	:diffsp help.txt
+
+Var uppmärksam på att originalfilen kan innehålla en nyare version (du kanske
+sparade filen precis före datorkraschen).  Kontrollera också att inga rader
+saknas, alltså att inget gick fel som Vim inte kunde återställa.
+   Om Vim visar varningar under återställningen ska du läsa dem noggrant.  Det
+är dock ovanligt.
+
+Om den återställda texten är exakt densamma som filens innehåll visas följande
+meddelande:
+
+	Använder växlingsfil ".help.txt.swp" ~
+	Originalfil "~/vim/runtime/doc/help.txt" ~
+	Återställning är klar. Buffertinnehåll motsvarar filens innehåll. ~
+	Du kanske vill ta bort .swp-filen nu. ~
+
+Det händer vanligen om du redan har återställt ändringarna eller skrev filen
+efter att du gjort ändringarna.  Då är det säkert att ta bort växlingsfilen.
+
+Det är normalt att de allra senaste ändringarna inte kan återställas.  Vim
+skriver ändringarna till disk när du inte har skrivit något på ungefär fyra
+sekunder eller när du har skrivit ungefär tvåhundra tecken.  Detta styrs av
+alternativen 'updatetime' och 'updatecount'.  Om Vim inte hann spara när
+systemet stängdes av går ändringarna efter den senaste skrivningen förlorade.
+
+Om du redigerade utan filnamn anger du en tom sträng som argument: >
+
+	vim -r ""
+
+Du måste stå i rätt katalog, annars hittar Vim inte växlingsfilen.
+
+==============================================================================
+*11.2*	Var finns växlingsfilen?
+
+Vim kan lagra växlingsfilen på flera platser.  Vanligen ligger den i samma
+katalog som originalfilen.  Gå till filens katalog och kör: >
+
+	vim -r
+
+Vim listar växlingsfilerna som det hittar.  Det söker även i andra kataloger
+där växlingsfiler för filer i den aktuella katalogen kan finnas.  Det hittar
+däremot inte växlingsfiler i några andra kataloger och söker inte igenom hela
+katalogträdet.
+   Utskriften kan se ut så här:
+
+	Swap files found: ~
+	   In current directory: ~
+	1.    .main.c.swp ~
+	      owned by: mool   dated: Tue May 29 21:00:25 2001 ~
+	     file name: ~mool/vim/vim6/src/main.c ~
+	      modified: YES ~
+	     user name: mool   host name: masaka.moolenaar.net ~
+	    process ID: 12525 ~
+	   In directory ~/tmp: ~
+	      -- none -- ~
+	   In directory /var/tmp: ~
+	      -- none -- ~
+	   In directory /tmp: ~
+	      -- none -- ~
+
+Om det finns flera växlingsfiler som kan vara den du vill använda visas en
+lista, och du får ange numret på filen.  Titta noga på datumen när du väljer.
+   Om du inte vet vilken fil du ska använda kan du prova dem en i taget och
+kontrollera om resultatet blev det du väntade dig.
+
+
+ANVÄNDA EN SPECIFIK VÄXLINGSFIL
+
+Om du vet vilken växlingsfil som ska användas kan du ange dess namn.  Vim tar
+reda på originalfilens namn från växlingsfilen.
+
+Exempel: >
+	vim -r .help.txt.swo
+
+Det här är också praktiskt när växlingsfilen ligger i en annan katalog än
+väntat.  Vim känner igen filer som följer mönstret "*.s[uvw][a-z]" som
+växlingsfiler.
+
+Om detta ändå inte fungerar kan du titta på filnamnen som Vim rapporterar och
+byta namn på filerna efter behov.  Kontrollera alternativet 'directory' för
+att se var Vim kan ha placerat växlingsfilen.
+
+	Observera:
+	Vim försöker hitta växlingsfilen genom att söka i katalogerna i
+	alternativet 'dir' efter filer som matchar "filnamn.sw?".  Om
+	jokertecken inte kan expanderas (till exempel om alternativet 'shell'
+	är ogiltigt) gör Vim ett sista försök att hitta filen "filnamn.swp".
+	Om inte heller det fungerar måste du ange själva växlingsfilens namn
+	för att återställa filen.
+
+==============================================================================
+*11.3*	Har Vim kraschat?				*ATTENTION* *E325*
+
+Vim försöker hindra dig från att råka ut för problem.  Anta att du öppnar en
+fil för redigering och väntar dig att innehållet ska visas.  I stället visar
+Vim ett mycket långt meddelande:
+
+		E325: ATTENTION ~
+	Found a swap file by the name ".main.c.swp" ~
+	      owned by: mool   dated: Tue May 29 21:09:28 2001 ~
+	     file name: ~mool/vim/vim6/src/main.c ~
+	      modified: no ~
+	     user name: mool   host name: masaka.moolenaar.net ~
+	    process ID: 12559 (still running) ~
+	While opening file "main.c" ~
+	           dated: Tue May 29 19:46:12 2001 ~
+	 ~
+	(1) Another program may be editing the same file. ~
+	    If this is the case, be careful not to end up with two ~
+	    different instances of the same file when making changes. ~
+	    Quit, or continue with caution. ~
+	 ~
+	(2) An edit session for this file crashed. ~
+	    If this is the case, use ":recover" or "vim -r main.c" ~
+	    to recover the changes (see ":help recovery"). ~
+	    If you did this already, delete the swap file ".main.c.swp" ~
+	    to avoid this message. ~
+
+Du får det här meddelandet eftersom Vim kontrollerar om det redan finns en
+växlingsfil när du börjar redigera en fil.  Om en sådan finns måste något vara
+fel.  Det kan röra sig om en av två situationer.
+
+1. En annan redigeringssession använder filen.  Leta efter raden med
+   "process ID" i meddelandet.  Den kan se ut så här:
+
+	process ID: 12559 (still running) ~
+
+   Texten "(still running)" betyder att processen som redigerar filen körs på
+   samma dator.  På system som inte är Unix visas inte den extra upplysningen.
+   Om du redigerar en fil över nätverket kanske upplysningen inte visas,
+   eftersom processen kan köras på en annan dator.  I båda fallen måste du
+   själv ta reda på vad som pågår.
+      Om en annan Vim-instans redigerar samma fil och du fortsätter får du två
+   versioner.  Den som skrivs sist skriver över den andra, och ändringar går
+   förlorade.  Avsluta därför den här Vim-instansen.
+
+2. Växlingsfilen kan vara kvar efter att Vim eller datorn kraschat.  Kontrollera
+   datumen i meddelandet.  Om växlingsfilen är nyare än filen du redigerar och
+   raden nedan visas:
+
+	modified: YES ~
+
+   har en redigeringssession troligen kraschat och är värd att återställa.
+      Om filen är nyare än växlingsfilen ändrades den antingen efter kraschen
+   (kanske återställde du den tidigare men tog inte bort växlingsfilen), eller
+   så sparades den efter den senaste skrivningen av växlingsfilen men före
+   kraschen.  I så fall har du tur och behöver inte den gamla växlingsfilen.
+   Vim varnar då med den extra raden:
+
+	NEWER than swap file! ~
+
+OBSERVERA att Vim känner igen följande situation och tar då automatiskt bort
+växlingsfilen:
+- Filen är en giltig växlingsfil (rätt signaturvärde).
+- Flaggan som anger om filen ändrats är inte satt.
+- Processen körs inte.
+
+När Vim behöver fråga vad det ska göra med en befintlig växlingsfil kan
+du välja åtgärd programmatiskt med autokommandohändelsen |SwapExists|.
+
+
+OLÄSBAR VÄXLINGSFIL ~
+
+Ibland visas raden
+
+	[cannot be read] ~
+
+under växlingsfilens namn.  Det kan vara bra eller dåligt beroende på
+omständigheterna.
+
+Det är bra om en tidigare redigeringssession kraschade utan att filen hann
+ändras.  Då visar en kataloglistning att växlingsfilen är noll byte stor.  Du
+kan ta bort den och fortsätta.
+
+Det är mindre bra om du saknar läsbehörighet till växlingsfilen.  Du kan öppna
+filen skrivskyddad eller avsluta.  På system med flera användare kan ett
+"läsfel" försvinna om du loggar ut och sedan loggar in med det andra
+användarnamnet, ifall du själv gjorde de senaste ändringarna under det namnet.
+Du kan också ta reda på vem som senast redigerade filen och prata med den
+personen.
+
+Det är mycket dåligt om meddelandet betyder att det finns ett fysiskt läsfel
+på disken där växlingsfilen ligger.  Lyckligtvis händer det nästan aldrig.
+Öppna gärna filen skrivskyddad först (om det går) för att se hur mycket av
+ändringarna som har gått "förlorade".  Om du ansvarar för filen bör du vara
+beredd på att göra om de senaste ändringarna.
+
+
+VAD SKA JAG GÖRA?					*swap-exists-choices*
+
+Om dialogrutor stöds får du välja mellan följande alternativ. Exemplet
+visar det engelska gränssnittet. I det svenska gränssnittet ska du följa
+tangentmarkeringarna i dialogrutan.
+
+	Swap file ".main.c.swp" already exists! ~
+	[O]pen Read-Only, (E)dit anyway, (R)ecover, (Q)uit, (A)bort, (D)elete it: ~
+
+O  Öppna filen skrivskyddad.  Använd detta när du bara vill visa filen och
+   inte behöver återställa den.  Det passar till exempel om någon annan
+   redigerar filen men du bara vill titta på den.
+
+E  Redigera filen ändå.  Var försiktig!  Om filen redigeras i en annan Vim
+   kan det sluta med två versioner.  Vim försöker varna dig, men det är bättre
+   att vara försiktig.
+
+R  Återställ filen från växlingsfilen.  Använd detta om du vet att
+   växlingsfilen innehåller ändringar som du vill återställa.
+
+Q  Avsluta utan att börja redigera filen.  Använd detta om en annan Vim
+   redigerar samma fil.
+      Om du just startade Vim avslutas programmet.  Om du startade Vim med
+   filer i flera fönster avslutas det bara om det finns en växlingsfil för den
+   första filen.  Om du använde ett redigeringskommando läses filen inte in,
+   och du återgår till den tidigare filen.
+
+A  Avbryt.  Fungerar som Avsluta men avbryter även efterföljande kommandon.
+   Det är användbart när du läser in ett skript som redigerar flera filer,
+   till exempel en session med flera fönster.
+
+D  Ta bort växlingsfilen.  Gör detta bara om du är säker på att du inte längre
+   behöver den, till exempel om den inte innehåller ändringar eller om själva
+   filen är nyare än växlingsfilen.
+      I Unix visas alternativet bara om processen som skapade växlingsfilen
+   inte verkar köras.
+
+Om dialogrutan inte visas (till exempel i en Vim-version som saknar stöd för
+den) måste du göra det manuellt.  Återställ filen med kommandot: >
+
+	:recover
+
+Vim kan inte alltid upptäcka att det redan finns en växlingsfil för en fil.
+Det gäller om den andra redigeringssessionen placerar växlingsfiler i en annan
+katalog eller om filsökvägen skiljer sig mellan datorer.  Räkna därför inte
+med att Vim alltid varnar dig.
+
+Om du verkligen inte vill se det här meddelandet kan du lägga till flaggan A
+i alternativet 'shortmess'.  Det är dock mycket ovanligt att det behövs.
+
+Läs om kryptering och växlingsfilen i |:recover-crypt|.  Programmatisk
+åtkomst till växlingsfilen beskrivs i |swapinfo()|.
+
+==============================================================================
+*11.4*	Läs vidare
+
+|swap-file|	Förklaring av var växlingsfilen skapas och vilket namn den får.
+|:preserve|	Skriva växlingsfilen till disk manuellt.
+|:swapname|	Visa den aktuella filens växlingsfilnamn.
+'updatecount'	Antal tangenttryckningar innan växlingsfilen skrivs till disk.
+'updatetime'	Tidsgräns innan växlingsfilen skrivs till disk.
+'swapsync'		Om disken synkroniseras när växlingsfilen skrivs.
+'directory'	Lista över kataloger där växlingsfilen lagras.
+'maxmem'		Minnesgräns innan text skrivs till växlingsfilen.
+'maxmemtot'	Samma gräns, men för alla filer sammanlagt.
+
+==============================================================================
+
+Nästa kapitel: |usr_12.txt|  Smarta knep
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

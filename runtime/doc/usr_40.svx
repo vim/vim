@@ -1,0 +1,660 @@
+*usr_40.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+			 VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Skapa nya kommandon
+
+
+Vim är en utbyggbar redigerare.  Du kan göra en sekvens av kommandon som du
+använder ofta till ett nytt kommando eller omdefiniera ett befintligt.  Med
+autokommandon kan kommandon köras automatiskt.
+
+|40.1|	Tangentmappningar
+|40.2|	Definiera kommandoradskommandon
+|40.3|	Autokommandon
+
+	Nästa kapitel: |usr_41.txt|  Skriva ett Vim-skript
+	Föregående kapitel: |usr_32.txt|  Ångringsträdet
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*40.1*	Tangentmappningar
+
+En enkel mappning förklarades i avsnitt |05.4|.  Principen är att en
+sekvens av tangenttryckningar översätts till en annan sekvens.  Det är enkelt,
+men samtidigt kraftfullt.
+   Den enklaste formen mappar en tangent till en sekvens av tangenter.
+Funktionstangenterna, utom <F1>, har ingen fördefinierad betydelse i Vim och
+är därför bra att mappa.  Exempel: >
+
+	:map <F2> GoDatum: <Esc>:read !date<CR>kJ
+
+Här används tre lägen.  Först går "G" till den sista raden.  Kommandot "o"
+öppnar en ny rad och börjar infoga text.  Texten "Datum: " skrivs in och
+<Esc> avslutar infogningsläget.
+   Lägg märke till specialtangenterna inom <>.  Det kallas vinkelparentesnotering.
+Du skriver tecknen var för sig, inte genom att trycka på själva tangenten.  Då
+blir mappningarna lättare att läsa och du kan kopiera och klistra in texten
+utan problem.
+   Tecknet ":" öppnar Vims kommandorad.  Kommandot ":read !date" läser utdata
+från kommandot "date" och lägger till den efter den aktuella raden.  <CR>
+behövs för att köra kommandot ":read".
+   Nu ser texten ut så här:
+
+	Datum:  ~
+	Fri Jun 15 12:54:34 CEST 2001 ~
+
+Sedan flyttar "kJ" markören uppåt och sammanfogar raderna.
+   Information om vilka tangenter du bör välja för mappningar finns i
+|map-which-keys|.
+
+
+MAPPNINGAR OCH LÄGEN
+
+Kommandot ":map" definierar mappningar i normalt och visuellt läge,
+markeringsläge och operatorvänteläge.  Du kan
+även definiera mappningar för andra lägen.  Exempelvis gäller ":imap" i
+infogningsläge.  Med det kan du infoga ett datum på raden under markören: >
+
+	:imap <F2> <CR>Datum: <Esc>:read !date<CR>kJ
+
+Det liknar mappningen för <F2> i normalt läge, men inledningen är annorlunda.
+Mappningen för <F2> i normalt läge finns kvar.  Du kan alltså mappa samma
+tangent på olika sätt i olika lägen.
+   Lägg märke till att den här mappningen börjar i infogningsläge men slutar i
+normalt läge.  Lägg till ett "a" i slutet av mappningen om du vill fortsätta i
+infogningsläge.
+
+Här följer en översikt över mappningskommandona och vilka lägen de gäller i:
+
+	:map		Normalt, visuellt, markerings- och operatorvänteläge
+	:vmap		Visuellt läge och markeringsläge
+	:nmap		Normalt läge
+	:omap		Operatorvänteläge
+	:map!		Infognings- och kommandoradsläge
+	:imap		Infogningsläge
+	:cmap		Kommandoradsläge
+
+Operatorvänteläge är när du har skrivit en operator, till exempel "d" eller
+"y", och ska skriva ett rörelsekommando eller välja ett textobjekt.  När du
+till exempel skriver "dw" anges "w" i operatorvänteläge.
+
+Anta att du vill definiera <F7> så att kommandot d<F7> tar bort ett C-kodblock
+(text som står inom klammerparenteser {}).  På samma sätt ska y<F7> kopiera
+kodblocket till det namnlösa registret.  Då behöver du mappa <F7> så att den
+väljer det aktuella kodblocket.  Gör det med: >
+
+	:omap <F7> a{
+
+I operatorvänteläge väljer <F7> då blocket "a{", precis som om du hade skrivit
+det.  Mappningen är användbar om det är svårt att skriva { på tangentbordet.
+
+
+VISA MAPPNINGAR
+
+Visa de mappningar som är definierade just nu med ":map" utan argument.  Du
+kan också använda en variant som anger läget.  Utskriften kan se ut så här:
+
+	   _g		 :call MyGrep(1)<CR> ~
+	v  <F2>		 :s/^/> /<CR>:noh<CR>`` ~
+	n  <F2>		 :.,$s/^/> /<CR>:noh<CR>`` ~
+	   <xHome>	 <Home>
+	   <xEnd>	 <End>
+
+Den första kolumnen visar vilket läge mappningen gäller i.  "n" står för
+normalt läge, "i" för infogningsläge och så vidare.  En tom plats används för
+en mappning som gäller i normalt och visuellt läge, markeringsläge och
+operatorvänteläge.
+   En användbar anledning att visa mappningarna är att kontrollera om
+specialtangenter inom <> har känts igen.  Det fungerar bara när färg stöds.
+När <Esc> visas i en annan färg står den för escape-tecknet.  Om den visas i
+samma färg som övrig text består den av fem tecken.
+
+
+OMMAPPNING
+
+Resultatet av en mappning kontrolleras också mot andra mappningar.  Mappningarna
+för <F2> ovan kan till exempel förkortas så här: >
+
+	:map <F2> G<F3>
+	:imap <F2> <Esc><F3>
+	:map <F3>  oDatum: <Esc>:read !date<CR>kJ
+
+I normalt läge mappas <F2> till att gå till sista raden och sedan utföra det
+som om du hade tryckt på <F3>.  I infogningsläge avslutar <F2> infogningsläget
+med <Esc> och använder sedan också <F3>.  <F3> gör själva arbetet.
+
+Anta att du nästan aldrig använder Ex-läget och vill använda kommandot "Q" för
+att formatera text (så fungerade äldre Vim-versioner).  Den här mappningen gör
+det: >
+
+	:map Q gq
+
+I sällsynta fall kanske du ändå behöver Ex-läget.  Mappa då "gQ" till Q: >
+
+	:map gQ Q
+
+Nu mappas "gQ" till "Q".  Men eftersom "Q" i sin tur mappas till "gq" blir
+resultatet av "gQ" också "gq".  Du kommer alltså inte till Ex-läget.
+   Använd kommandot ":noremap" för att förhindra att tangenter mappas igen: >
+
+	:noremap gQ Q
+
+Då kontrollerar Vim inte om "Q" har någon mappning.  Det finns ett motsvarande
+kommando för varje läge:
+
+	:noremap	Normalt, visuellt, markerings- och operatorvänteläge
+	:vnoremap	Visuellt läge och markeringsläge
+	:nnoremap	Normalt läge
+	:onoremap	Operatorvänteläge
+	:noremap!	Infognings- och kommandoradsläge
+	:inoremap	Infogningsläge
+	:cnoremap	Kommandoradsläge
+
+
+REKURSIVA MAPPNINGAR
+
+Om en mappning utlöser sig själv körs den för alltid.  Det kan användas för att
+upprepa en åtgärd obegränsat många gånger.
+   Anta till exempel att du har en lista med filer där den första raden
+innehåller ett versionsnummer.  Du redigerar filerna med "vim *.txt" och
+redigerar nu den första filen.  Definiera mappningen: >
+
+	:map ,, :1s/5\.1/5.2/<CR>:wnext<CR>,,
+
+Skriv nu ",,".  Mappningen körs.  Den ersätter "5.1" med "5.2" på den första
+raden.  Sedan kör den ":wnext" för att spara filen och redigera nästa.  Mappningen
+slutar med ",," och utlöser därmed sig själv igen.  Då upprepas ersättningen
+för nästa fil, och så vidare.
+   Detta fortsätter tills ett fel uppstår.  Det kan till exempel vara en fil
+där ersättningskommandot inte hittar "5.1".  Då kan du lägga till "5.1" och
+fortsätta genom att skriva ",," igen.  Eller så misslyckas ":wnext" eftersom
+du har nått den sista filen.
+   Om ett fel uppstår mitt i en mappning kastas resten av den.  Avbryt en
+mappning med CTRL-C (CTRL-Break i MS-Windows).
+
+
+TA BORT EN MAPPNING
+
+Ta bort en mappning med kommandot ":unmap".  Vilka lägen som påverkas beror
+på vilket kommando du använder:
+
+	:unmap		Normalt, visuellt, markerings- och operatorvänteläge
+	:vunmap		Visuellt läge och markeringsläge
+	:nunmap		Normalt läge
+	:ounmap		Operatorvänteläge
+	:unmap!		Infognings- och kommandoradsläge
+	:iunmap		Infogningsläge
+	:cunmap		Kommandoradsläge
+
+Det finns ett knep för att definiera en mappning som gäller i normalt läge och
+operatorvänteläge, men varken i visuellt läge eller markeringsläge.
+Definiera den först för alla fyra lägen och ta sedan bort den i de två
+sistnämnda: >
+
+	:map <C-A> /---><CR>
+	:vunmap <C-A>
+
+Observera att de fem tecknen "<C-A>" står för tangenten CTRL-A.
+
+Ta bort alla mappningar med kommandot |:mapclear|.  Nu kan du gissa varianterna
+för andra lägen.  Var försiktig: åtgärden kan inte ångras.
+
+
+SPECIALTECKEN
+
+Kommandot ":map" kan följas av ett annat kommando.  Tecknet | skiljer
+kommandona åt.  Det innebär också att | inte kan användas i själva mappningen.
+Skriv <Bar> (fem tecken) för att ta med ett sådant tecken.  Exempel: >
+
+	:map <F8> :write <Bar> !checkin %:S<CR>
+
+Samma problem gäller kommandot ":unmap".  Var också uppmärksam på avslutande
+blanksteg.  De här kommandona är olika: >
+
+	:unmap a | unmap b
+	:unmap a| unmap b
+
+Det första kommandot försöker ta bort mappningen "a " med ett avslutande
+blanksteg.
+
+Använd <Space> (sju tecken) för att skriva ett blanksteg i en mappning: >
+
+	:map <Space> W
+
+Då flyttar blankstegstangenten markören framåt över ett ord som skiljs från
+nästa med blanksteg.
+
+Du kan inte skriva en kommentar direkt efter en mappning, eftersom tecknet "
+tolkas som en del av mappningen.  Skriv |" för att börja ett nytt, tomt
+kommando med en kommentar.  Exempel: >
+
+	:map <Space> W|     " Använd blankstegstangenten för att gå till nästa ord
+
+
+MAPPNINGAR OCH FÖRKORTNINGAR
+
+Förkortningar liknar mappningar i infogningsläge.  Argumenten hanteras på
+samma sätt.  Skillnaden är hur de utlöses.  En förkortning utlöses när du
+skriver ett tecken som inte ingår i ett ord efter ordet.  En mappning utlöses
+när du skriver det sista tecknet.
+   En annan skillnad är att tecknen du skriver för en förkortning läggs in i
+texten medan du skriver.  När förkortningen utlöses tas tecknen bort och
+ersätts med resultatet.  När du skriver tecknen för en mappning läggs inget in
+förrän det sista tecknet utlöser den.  Om alternativet 'showcmd' är aktiverat
+visas de skrivna tecknen på den nedersta raden i Vim-fönstret.
+   Ett undantag är en tvetydig mappning.  Anta att du har definierat två
+mappningar: >
+
+	:imap aa foo
+	:imap aaa bar
+
+När du skriver "aa" vet Vim inte om den ska använda den första eller den andra
+mappningen.  Den väntar därför på ytterligare ett tecken.  Om det är ett "a"
+används den andra mappningen och resultatet blir "bar".  Om det till exempel
+är ett blanksteg används den första mappningen, resultatet blir "foo" och
+blanksteget infogas sedan.
+
+
+DESSUTOM ...
+
+Med <script> används bara skriptlokala mappningar som börjar med <SID>
+vid ommappning av högerledet.
+Se |:map-<script>|.
+
+Nyckelordet <buffer> kan användas för att begränsa en mappning till en viss
+buffert.  Se |:map-<buffer>|.
+
+Nyckelordet <unique> gör att en ny mappning inte definieras om den redan
+finns.  Annars ersätter en ny mappning den gamla.  Se |:map-<unique>|.
+
+Mappa en tangent till <Nop> (fem tecken) om den inte ska göra något.  Då gör
+<F7> ingenting: >
+
+	:map <F7> <Nop>| map! <F7> <Nop>
+
+Det får inte finnas något blanksteg efter <Nop>.
+
+==============================================================================
+*40.2*	Definiera kommandoradskommandon
+
+Vim-redigeraren låter dig definiera egna kommandon.  Du kör dem på samma sätt
+som andra kommandon i kommandoradsläget.
+   Definiera ett kommando med kommandot ":command": >
+
+	:command DeleteFirst 1delete
+
+När du nu kör kommandot ":DeleteFirst" kör Vim ":1delete", som tar bort den
+första raden.
+
+	Observera:
+	Användarkommandon måste börja med en stor bokstav.  Du kan inte använda
+	":X", ":Next" eller ":Print".  Understreck får inte användas!  Siffror
+	är tillåtna, men bör undvikas.
+
+Visa användarkommandon som är definierade med: >
+
+	:command
+
+Precis som inbyggda kommandon kan användarkommandon förkortas.  Du behöver
+bara skriva så många tecken att kommandot kan skiljas från andra kommandon.
+Komplettering på kommandoraden kan visa hela namnet.
+
+
+ANTAL ARGUMENT
+
+Användarkommandon kan ta en sekvens av argument.  Ange antalet med alternativet
+-nargs.  Kommandot :DeleteFirst tar till exempel inga argument och kunde ha
+definierats så här: >
+
+	:command -nargs=0 DeleteFirst 1delete
+
+Eftersom noll argument är standardvärdet behöver du dock inte lägga till
+"-nargs=0".  De giltiga värdena för -nargs är:
+
+	-nargs=0	Inga argument
+	-nargs=1	Ett argument
+	-nargs=_	Exakt ett argument, där blanksteg räknas som en del
+			av argumentet vid komplettering
+	-nargs=*	Valfritt antal argument
+	-nargs=?	Noll eller ett argument
+	-nargs=+	Ett eller flera argument
+
+
+ANVÄNDA ARGUMENTEN
+
+I kommandodefinitionen anges argumenten med nyckelordet <args>.  Exempel: >
+
+	:command -nargs=+ Say :echo "<args>"
+
+Skriv nu: >
+
+	:Say Hello World
+
+Vim skriver ut "Hello World".  Om du lägger till ett dubbelt citattecken
+fungerar det däremot inte.  Till exempel: >
+
+	:Say he said "hello"
+
+Använd "<q-args>" för att omvandla specialtecken till en sträng som är korrekt
+citerad för användning som uttryck: >
+
+	:command! -nargs=+ Say :echo <q-args>
+
+Kommandot ":Say" ovan kör då: >
+
+	:echo "he said \"hello\""
+
+Nyckelordet <f-args> innehåller samma information som <args>, men i ett format
+som passar som argument i ett funktionsanrop.  Exempel: >
+
+	:command -nargs=* DoIt :call AFunction(<f-args>)
+	:DoIt a b c
+
+Det kör följande kommando: >
+
+	:call AFunction("a", "b", "c")
+
+
+RADINTERVALL
+
+Vissa kommandon kan ta ett radintervall.  Ange alternativet -range när du
+själv definierar ett sådant kommando.  Alternativet kan ha följande värden:
+
+	-range		Intervall tillåts; standard är den aktuella raden.
+	-range=%	Intervall tillåts; standard är hela filen.
+	-range={antal}	Intervall tillåts; det sista talet används som ett
+			enskilt tal och {antal} är standardvärdet.
+
+När ett intervall anges får nyckelorden <line1> och <line2> värdet för den
+första respektive sista raden i intervallet.  Följande kommando definierar
+SaveIt, som skriver det angivna intervallet till filen "save_file": >
+
+	:command -range=% SaveIt :<line1>,<line2>write! save_file
+
+
+ANDRA ALTERNATIV
+
+Några andra alternativ och nyckelord:
+
+	-count={antal}	Kommandot kan ta ett antal.  Standardvärdet är
+			{antal}.  Antalet kan användas med <count>.
+	-bang		Kommandot kan följas av !.  Om det anges ger <bang>
+			värdet !.
+	-register	Du kan ange ett register.  Standard är det namnlösa
+			registret.  Registerspecificeringen finns i <reg>
+			(även kallat <register>).
+	-complete={typ}	Typ av komplettering på kommandoraden.  Se
+			|:command-completion| för möjliga värden.
+	-bar		Kommandot kan följas av | och ett annat kommando,
+			eller av " och en kommentar.
+	-buffer		Kommandot är bara tillgängligt i den aktuella
+			bufferten.
+
+Slutligen finns nyckelordet <lt>, som står för tecknet <.  Använd det för att
+undvika den särskilda betydelsen hos objekten inom <> som nämnts ovan.
+
+
+OMDEFINIERA OCH TA BORT
+
+Använd argumentet ! för att definiera om samma kommando: >
+
+	:command -nargs=+ Say :echo "<args>"
+	:command! -nargs=+ Say :echo <q-args>
+
+Ta bort ett användarkommando med ":delcommand".  Kommandot tar ett argument:
+namnet på kommandot.  Exempel: >
+
+	:delcommand SaveIt
+
+Ta bort alla användarkommandon med: >
+
+	:comclear
+
+Var försiktig, detta kan inte ångras!
+
+Läs mer om detta i referensmanualen: |user-commands|.
+
+==============================================================================
+*40.3*	Autokommandon
+
+Ett autokommando körs automatiskt när en viss händelse inträffar, till exempel
+när en fil läses in eller skrivs, eller när du byter buffert.  Med autokommandon
+kan du till exempel lära Vim att redigera komprimerade filer.  Det används i
+insticksprogrammet |gzip|.
+   Autokommandon är mycket kraftfulla.  Använd dem försiktigt så hjälper de
+dig att slippa skriva många kommandon.  Använder du dem vårdslöst kan de
+ställa till stora problem.
+
+Anta att du vill byta ut en tidsstämpel i slutet av en fil varje gång filen
+skrivs.  Börja med att definiera en funktion: >
+
+	:function DateInsert()
+	:  $delete
+	:  read !date
+	:endfunction
+
+Funktionen ska anropas varje gång precis innan en buffert skrivs till en fil.
+Gör så här: >
+
+	:autocmd BufWritePre *  call DateInsert()
+
+"BufWritePre" är händelsen som utlöser autokommandot: precis innan (pre) en
+buffert skrivs till en fil.  "*" är ett mönster som matchar filnamnet.  Här
+matchar det alla filer.
+   När du kör ":write" kontrollerar Vim om det finns autokommandon som matchar
+BufWritePre.  De körs innan ":write" utförs.
+   Den allmänna formen för kommandot :autocmd är: >
+
+	:autocmd [grupp] {händelser} {filnamnsmönster} [++nested] {kommando}
+
+Namnet på [grupp] är valfritt.  Det används för att hantera och anropa
+kommandona; mer om det senare.  Parametern {händelser} är en kommaseparerad
+lista över händelser som utlöser kommandot.
+   {filnamnsmönster} är ett filnamn, vanligen med jokertecken.  Om du till
+exempel skriver "*.txt" används autokommandot för alla filer vars namn slutar
+på ".txt".  Den valfria flaggan [++nested] tillåter nästlade autokommandon
+(se nedan).  Sist kommer {kommando}, som ska köras.
+
+När du lägger till ett autokommando finns de tidigare definierade kvar.  För
+att undvika att lägga till samma autokommando flera gånger bör du använda den
+här formen: >
+
+	:augroup updateDate
+	:  autocmd!
+	:  autocmd BufWritePre *  call DateInsert()
+	:augroup END
+
+Då tas tidigare definierade autokommandon bort med `:autocmd!` innan det nya
+definieras.  Grupper förklaras längre fram.
+
+
+HÄNDELSER
+
+En av de mest användbara händelserna är BufReadPost.  Den utlöses när en ny
+fil har lästs in och används ofta för att ställa in alternativ.  Anta att du
+vet att filer av typen "*.gsm" innehåller GNU-assemblerkod.  Ställ in rätt
+syntaxfil med autokommandot: >
+
+	:autocmd BufReadPost *.gsm  set filetype=asm
+
+Om Vim kan identifiera filtypen ställer det in alternativet 'filetype'.  Då
+utlöses händelsen FileType.  Använd den om du vill göra något när en fil av en
+viss typ redigeras.  Ladda till exempel en lista med förkortningar för
+textfiler: >
+
+	:autocmd FileType text  source ~/.vim/abbrevs.vim
+
+När du börjar redigera en ny fil kan du låta Vim infoga en mall: >
+
+	:autocmd BufNewFile *.[ch]  0read ~/skeletons/skel.c
+
+Se |autocmd-events| för en fullständig lista över händelser.
+
+
+MÖNSTER
+
+Argumentet {filnamnsmönster} kan egentligen vara en kommaseparerad lista med
+filnamnsmönster.  Till exempel matchar "*.c,*.h" filer som slutar på ".c"
+eller ".h".
+   Du kan använda vanliga jokertecken för filer.  Här är några av de
+vanligaste:
+
+	*		Matchar valfritt antal tecken
+	?		Matchar ett valfritt tecken
+	[abc]		Matchar tecknet a, b eller c
+	.		Matchar en punkt
+	a{b,c}		Matchar "ab" och "ac"
+
+Om mönstret innehåller ett snedstreck (/) jämför Vim katalognamn.  Utan
+snedstreck används bara den sista delen av filnamnet.  Till exempel matchar
+"*.txt" sökvägen "/home/biep/readme.txt".  Mönstret "/home/biep/*" matchar
+också den.  Men "home/foo/*.txt" gör det inte.
+   När ett snedstreck ingår jämför Vim mönstret både med filens fullständiga
+sökväg ("/home/biep/readme.txt") och med dess relativa sökväg (till exempel
+"biep/readme.txt").
+
+	Observera:
+	På system som använder omvänt snedstreck som katalogavskiljare, till
+	exempel MS-Windows, använder du ändå vanliga snedstreck i
+	autokommandon.  Det gör mönstren enklare att skriva eftersom omvänt
+	snedstreck har en särskild betydelse.  Det gör också autokommandona
+	portabla.
+
+
+TA BORT AUTOKOMMANDON
+
+Ta bort ett autokommando med samma kommando som användes för att definiera
+det, men utelämna {kommando} i slutet och lägg till !.  Exempel: >
+
+	:autocmd! FileWritePre *
+
+Det tar bort alla autokommandon för händelsen "FileWritePre" som använder
+mönstret "*".
+
+
+VISA AUTOKOMMANDON
+
+Visa alla autokommandon som är definierade just nu med: >
+
+	:autocmd
+
+Listan kan bli mycket lång, särskilt när filtypsidentifiering används.  Ange
+grupp, händelse och/eller mönster för att bara visa en del.  Visa till exempel
+alla autokommandon för BufNewFile med: >
+
+	:autocmd BufNewFile
+
+Visa alla autokommandon för mönstret "*.c" med: >
+
+	:autocmd * *.c
+
+Använd "*" för händelsen om du vill visa alla händelser.  Visa alla
+autokommandon i gruppen cprograms med: >
+
+	:autocmd cprograms
+
+
+GRUPPER
+
+Elementet {grupp} samlar relaterade autokommandon.  Det kan till exempel
+användas för att ta bort alla autokommandon i en viss grupp.
+   Använd kommandot ":augroup" när du definierar flera autokommandon i en
+viss grupp.  Här definierar vi autokommandon för C-program: >
+
+	:augroup cprograms
+	:  autocmd BufReadPost *.c,*.h :set sw=4 sts=4
+	:  autocmd BufReadPost *.cpp   :set sw=3 sts=3
+	:augroup END
+
+Detta gör samma sak som: >
+
+	:autocmd cprograms BufReadPost *.c,*.h :set sw=4 sts=4
+	:autocmd cprograms BufReadPost *.cpp   :set sw=3 sts=3
+
+Ta bort alla autokommandon i gruppen "cprograms" med: >
+
+	:autocmd! cprograms
+
+
+NÄSTLING
+
+Kommandon som körs som resultat av ett autokommando utlöser i allmänhet inga
+nya händelser.  Om du läser in en fil som svar på händelsen FileChangedShell
+utlöses till exempel inte autokommandon som ställer in syntaxen.  Lägg till
+flaggan "++nested" för att låta de nya händelserna utlösas: >
+
+	:autocmd FileChangedShell * ++nested  edit
+
+
+KÖRA AUTOKOMMANDON
+
+Du kan utlösa ett autokommando genom att låtsas att en händelse har inträffat.
+Det kan användas för att låta ett autokommando utlösa ett annat.  Exempel: >
+
+	:autocmd BufReadPost *.new  execute "doautocmd BufReadPost " .. expand("<afile>:r")
+
+Detta definierar ett autokommando som körs när en ny fil har redigerats.
+Filnamnet måste sluta på ".new".  Kommandot ":execute" skapar ett nytt
+kommando genom att utvärdera uttrycket och kör det sedan.  Om du redigerar
+filen "tryout.c.new" körs följande kommando: >
+
+	:doautocmd BufReadPost tryout.c
+
+Kommandot ":doautocmd" körs för den aktuella bufferten.  Kommandot
+":doautoall" fungerar på samma sätt, men körs för alla inlästa buffertar.
+
+
+ANVÄNDA KOMMANDON I NORMALT LÄGE
+
+Kommandona som körs av ett autokommando är kommandoradskommandon.  Använd
+kommandot ":normal" om du vill köra ett kommando i normalt läge.  Exempel: >
+
+	:autocmd BufReadPost *.log normal G
+
+Då flyttas markören till den sista raden i *.log-filer när du börjar redigera
+dem.
+   Kommandot ":normal" kräver viss försiktighet.  Se till att argumentet är
+ett fullständigt kommando, inklusive alla argument.  Om du använder "i" för
+att börja infoga text måste du även ange <Esc> för att avsluta
+infogningsläget.  Om du använder "/" för att starta en sökning måste du ange
+<CR> för att utföra den.
+   Kommandot ":normal" använder all text efter kommandot som tangenttryckningar.
+Därför kan du inte lägga till | och ett annat kommando efteråt.  Lös det genom
+att lägga ":normal" i ett ":execute"-kommando.  Då kan du även skicka
+kontrolltecken på ett smidigt sätt.  Exempel: >
+
+	:autocmd BufReadPost *.chg execute "normal ONew entry:\<Esc>" |
+		\ 1read !date
+
+Det visar också hur ett omvänt snedstreck delar upp ett långt kommando på flera
+rader.  Det kan användas i Vim-skript, men inte direkt på kommandoraden.
+
+Om du vill att autokommandot ska göra något komplicerat, till exempel flytta
+runt i filen och sedan återgå till den ursprungliga positionen, kan du behöva
+återställa vyn.  Se exemplet i |restore-position|.
+
+
+IGNORERA HÄNDELSER
+
+Ibland vill du inte utlösa ett autokommando.  Alternativet 'eventignore'
+innehåller en lista över händelser som ska ignoreras helt.  Följande kommando
+ignorerar till exempel händelserna för att gå in i och lämna ett fönster: >
+
+	:set eventignore=WinEnter,WinLeave
+
+Ignorera alla händelser med: >
+
+	:set eventignore=all
+
+Återställ det normala beteendet genom att tömma 'eventignore': >
+
+	:set eventignore=
+
+==============================================================================
+
+Nästa kapitel: |usr_41.txt|  Skriva ett Vim-skript
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

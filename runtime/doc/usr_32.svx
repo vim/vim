@@ -1,0 +1,188 @@
+*usr_32.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+			 VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Ångringsträdet
+
+
+Vim har flera nivåer av ångring.  Om du ångrar några ändringar och sedan gör
+en ny ändring skapar du en ny gren i ångringsträdet.  Det här kapitlet handlar
+om att förflytta sig mellan grenarna.
+
+|32.1|	Ångra fram till en filsparning
+|32.2|	Numrera ändringar
+|32.3|	Hoppa i trädet
+|32.4|	Förflytta sig i tiden
+
+	Nästa kapitel: |usr_40.txt|  Skapa nya kommandon
+	Föregående kapitel: |usr_31.txt|  Utforska det grafiska gränssnittet
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*32.1*	Ångra fram till en filsparning
+
+Ibland gör du flera ändringar och upptäcker sedan att du vill gå tillbaka till
+den senaste gången du sparade filen.  Gör det med kommandot: >
+
+	:earlier 1f
+
+"f" står här för "file" (fil).
+
+Upprepa kommandot för att gå längre tillbaka i tiden.  Du kan också ange ett
+annat antal än 1 för att gå tillbaka snabbare.
+
+Om du går för långt tillbaka kan du gå framåt igen med: >
+
+	:later 1f
+
+Observera att de här kommandona följer tidsordningen.  Det spelar roll om du
+gjorde ändringar efter att ha ångrat andra ändringar.  Det förklaras i nästa
+avsnitt.
+
+Här handlar det om att skriva text till en fil.  Information om hur du sparar
+ångringsinformationen i en fil finns i |undo-persistence|.
+
+==============================================================================
+*32.2*	Numrera ändringar
+
+I avsnitt |02.5| gick vi bara igenom en rad ångringar och upprepningar.  Men
+det går också att skapa grenar.  Det händer om du ångrar några ändringar och
+sedan gör en ny ändring.  De nya ändringarna bildar en gren i ångringsträdet.
+
+Vi börjar med texten "one".  Först lägger du till " too".  Sedan flyttar du
+till det första 'o' i "too" och ändrar det till 'w'.  Då har du gjort två ändringar,
+med nummer 1 och 2, och texten har tre tillstånd:
+
+		one ~
+		 |
+	     ändring 1
+		 |
+		one too ~
+		 |
+	     ändring 2
+		 |
+		one two ~
+
+Om du nu ångrar en ändring, så att texten blir "one too", och ändrar "one"
+till "me" skapar du en gren i ångringsträdet:
+
+		one ~
+		 |
+	     ändring 1
+		 |
+		one too ~
+	      /     \\
+	 ändring 2  ändring 3
+	    |          |
+	 one two     me too ~
+
+Nu kan du använda kommandot |u| för att ångra.  Om du gör det två gånger
+kommer du till "one".  Använd |CTRL-R| för att göra om.  Då kommer du till
+"one too".  Tryck på |CTRL-R| en gång till för att komma till "me too".  När
+du ångrar och gör om går du alltså uppåt och nedåt i trädet längs den gren som
+användes senast.
+
+Det viktiga är i vilken ordning ändringarna görs.  Ångringar och upprepningar
+räknas inte som ändringar i det här sammanhanget.  Efter varje ändring får du
+ett nytt texttillstånd.
+
+Observera att det bara är ändringarna som numreras.  Texttillstånden i trädet
+ovan har inga egna nummer.  De hänvisas oftast till med numret på ändringen
+ovanför dem.  Ibland hänvisar man till numret på en ändring nedanför, särskilt
+när man går uppåt i trädet, för att ange vilken ändring som just ångrades.
+
+==============================================================================
+*32.3*	Hoppa i trädet
+
+Hur kommer du då till "one two"?  Använd kommandot: >
+
+	:undo 2
+
+Texten blir nu "one two" och du befinner dig efter ändring 2.  Med kommandot
+|:undo| kan du hoppa till tillståndet efter en viss ändring i trädet.
+
+Gör nu en till ändring: ändra "one" till "not":
+
+		one ~
+		 |
+	     ändring 1
+		 |
+		one too ~
+	      /     \\
+	 ändring 2  ändring 3
+	    |          |
+	 one two     me too ~
+	    |
+	 ändring 4
+	    |
+	 not two ~
+
+Nu ångrar du dig och vill gå tillbaka till "me too".  Använd kommandot |g-|.
+Det flyttar dig bakåt i tiden.  Det går alltså inte uppåt eller nedåt i trädet,
+utan till den ändring som gjordes tidigare.
+
+Upprepa |g-| för att se hur texten ändras:
+
+	me too ~
+	one two ~
+	one too ~
+	one ~
+
+Använd |g+| för att gå framåt i tiden:
+
+	one ~
+	one too ~
+	one two ~
+	me too ~
+	not two ~
+
+|:undo| är användbart när du vet vilken ändring du vill hoppa till.  |g-| och
+|g+| är användbara när du inte vet numret på ändringen.
+
+Du kan ange ett antal före |g-| och |g+| för att upprepa kommandot så många
+gånger.
+
+==============================================================================
+*32.4*	Förflytta sig i tiden
+
+När du har arbetat med texten ett tag kan ångringsträdet bli stort.  Då kanske
+du vill gå tillbaka till texten som den såg ut för några minuter sedan.
+
+Visa grenarna i ångringsträdet med kommandot: >
+
+	:undolist
+<	number changes  time ~
+<	     3       2  16 seconds ago
+<	     4       3  5 seconds ago
+
+Här visas numret på den senaste ändringen i varje gren och när ändringen
+gjordes.  Anta att du befinner dig efter ändring 4, vid texten "not two".  Gå
+tillbaka tio sekunder med: >
+
+	:earlier 10s
+
+Beroende på hur lång tid ändringarna tog hamnar du vid ett visst tillstånd i
+trädet.  Argumentet till kommandot |:earlier| kan även vara "m" för minuter,
+"h" för timmar och "d" för dagar.  Gå hela vägen tillbaka genom att ange ett
+stort antal: >
+
+	:earlier 100d
+
+Gå framåt i tiden igen med kommandot |:later|: >
+
+	:later 1m
+
+Tidsenheterna är "s", "m", "h" och "d", precis som för |:earlier|.
+
+Om du vill se fler detaljer eller hantera informationen kan du använda
+funktionen |undotree()|.  Se vad den returnerar med: >
+
+	:echo undotree()
+
+==============================================================================
+
+Nästa kapitel: |usr_40.txt|  Skapa nya kommandon
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

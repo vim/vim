@@ -1,0 +1,592 @@
+*usr_29.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Förflyttning i program
+
+
+Vims skapare är programmerare.  Det är därför ingen överraskning att Vim har
+många funktioner som underlättar programmering.  Hoppa mellan platser där
+identifierare definieras och används.  Förhandsvisa deklarationer i ett annat
+fönster.  Nästa kapitel innehåller mer.
+
+|29.1|	Använda taggar
+|29.2|	Förhandsvisningsfönstret
+|29.3|	Förflytta sig i ett program
+|29.4|	Hitta globala identifierare
+|29.5|	Hitta lokala identifierare
+
+	Nästa kapitel: |usr_30.txt|  Redigera program
+	Föregående kapitel: |usr_28.txt|  Vikning
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*29.1*	Använda taggar
+
+En tagg anger en plats där en identifierare definieras, till exempel en
+funktionsdefinition i ett C- eller C++-program.  Taggar samlas i en taggfil.
+Då kan Vim hoppa direkt från valfri plats till den plats där en identifierare
+definieras.
+   Skapa en taggfil för alla C-filer i den aktuella katalogen med: >
+
+	ctags *.c
+
+"ctags" är ett separat program.  Det finns redan i de flesta Unix-system.
+Om du saknar det kan du hitta Universal Ctags eller Exuberant Ctags här:
+	http://ctags.io
+	http://ctags.sf.net
+
+Universal Ctags rekommenderas.  Exuberant Ctags utvecklas inte längre.
+
+När du står i Vim och vill gå till en funktionsdefinition kan du använda: >
+
+	:tag startlist
+
+Kommandot hittar funktionen "startlist" även om den finns i en annan fil.
+   CTRL-] hoppar till taggen för ordet under markören.  Det gör det enkelt att
+utforska C-kod.  Anta att du står i funktionen "write_block" och ser att den
+anropar "write_line".  Vad gör "write_line"?  Ställ markören på anropet och
+tryck på CTRL-] för att gå till funktionsdefinitionen.
+   Funktionen "write_line" anropar i sin tur "write_char".  För att se vad
+den gör ställer du markören på anropet till "write_char" och trycker på
+CTRL-].  Nu står du vid definitionen av "write_char".
+
+	+-------------------------------------+
+	|void write_block(char **s, int cnt)  |
+	|{				      |
+	|   int i;			      |
+	|   for (i = 0; i < cnt; ++i)	      |
+	|      write_line(s[i]);	      |
+	|}	    |			      |
+	+-----------|			      |
+		    |
+	     CTRL-] |
+		    |    +----------------------------+
+		    +--> |void write_line(char *s)    |
+			 |{			      |
+			 |   while (*s != 0)	      |
+			 |	write_char(*s++);	     |
+			 |}	  |		      |
+			 +--------|		      |
+				  |
+			   CTRL-] |
+				  |    +------------------------------------+
+				  +--> |void write_char(char c)		    |
+				       |{				    |
+				       |    putchar((int)(unsigned char)c); |
+				       |}				    |
+				       +------------------------------------+
+
+Kommandot ":tags" visar listan över taggar du har följt:
+
+	:tags
+	  # TILL tagg	   FRÅN rad  i fil/text ~
+	  1  1 write_line	   8  write_block.c ~
+	  2  1 write_char	   7  write_line.c ~
+	> ~
+>
+Hoppa tillbaka med CTRL-T.  I exemplet kommer du till funktionen "write_line"
+och anropet till "write_char".
+   Kommandot tar ett antal som anger hur många taggar du vill gå tillbaka.
+Du har gått framåt och nu bakåt.  Gå framåt till nästa nyare post i taggstacken med: >
+
+	:tag
+
+Ange ett antal före kommandot för att hoppa framåt så många taggar, till
+exempel ":3tag".  CTRL-T kan också föregås av ett antal.
+   Med CTRL-] går du alltså nedåt i anropsträdet och med CTRL-T tillbaka upp.
+Använd ":tags" för att se var du befinner dig.
+
+
+DELA FÖNSTRET
+
+Kommandot ":tag" ersätter filen i det aktuella fönstret med filen där den nya
+funktionen finns.  Om du vill se både den gamla och den nya funktionen kan du
+dela fönstret med ":split" och sedan köra ":tag".  Kortkommandot som gör båda
+delarna är: >
+
+	:stag tagname
+
+Dela det aktuella fönstret och hoppa till taggen under markören med: >
+
+	CTRL-W ]
+
+Om du anger ett antal blir det nya fönstret så många rader högt.
+
+
+FLER TAGGFILER
+
+Om filerna ligger i flera kataloger kan du skapa en taggfil i varje katalog.
+Då kan Vim bara hoppa till taggar i de katalogerna.
+   Ange alla relevanta taggfiler i alternativet 'tags'.  Exempel: >
+
+	:set tags=./tags,./../tags,./*/tags
+
+Det söker efter en taggfil i samma katalog som den aktuella filen, en nivå
+uppåt och i de direkta underkatalogerna.
+   Det kan fortfarande finnas fler taggfiler.  Om du exempelvis redigerar en
+fil i "~/proj/src" hittar Vim inte "~/proj/sub/tags".  Du kan låta Vim söka i
+ett helt katalogträd: >
+
+	:set tags=~/proj/**/tags
+
+
+EN ENDA TAGGFIL
+
+Om Vim söker på många platser efter taggfiler kan disken börja arbeta och
+sökningen bli långsam.  Då är det bättre att lägga tiden på att skapa en enda
+stor taggfil, exempelvis över natten.
+   Det kräver Universal Ctags eller Exuberant Ctags.  Programmet kan söka
+igenom ett helt katalogträd med argumentet: >
+
+	cd ~/proj
+	ctags -R .
+
+Fördelen är att Universal/Exuberant Ctags känner igen flera filtyper.  Det
+fungerar alltså inte bara med C och C++ utan även med Eiffel och Vim-skript.
+Läs dokumentationen till ctags för inställningsmöjligheter.
+   Ange sedan var den stora taggfilen finns: >
+
+	:set tags=~/proj/tags
+
+
+FLERA TRÄFFAR
+
+Om en funktion definieras flera gånger, eller en metod finns i flera klasser,
+hoppar ":tag" till den första definitionen.  Om en träff finns i den aktuella
+filen används den först.
+   Gå till nästa träff för samma tagg med: >
+
+	:tnext
+
+Upprepa för att se fler träffar.  Om listan är lång kan du välja vilken träff
+du vill gå till: >
+
+	:tselect tagname
+
+Vim visar en lista med alternativ:
+
+	  # pri kind tag	       file ~
+	  1 F	f    mch_init	       os_amiga.c ~
+		       mch_init() ~
+	  2 F	f    mch_init	       os_mac.c ~
+		       mch_init() ~
+	  3 F	f    mch_init	       os_msdos.c ~
+		       mch_init(void) ~
+	  4 F	f    mch_init	       os_riscos.c ~
+		       mch_init() ~
+	Enter nr of choice (<CR> to abort):  ~
+
+Skriv numret i första kolumnen för den träff du vill hoppa till.  Övriga
+kolumner ger en bra bild av var träffen är definierad.
+
+Använd följande kommandon för att gå mellan taggträffar:
+
+	:tfirst			gå till första träffen
+	:[antal]tprevious	gå tillbaka [antal] träffar
+	:[antal]tnext		gå framåt [antal] träffar
+	:tlast			gå till sista träffen
+
+Om [antal] utelämnas används 1.
+
+
+GISSA TAGGNAMN
+
+Komplettering på kommandoraden gör att du slipper skriva långa taggnamn.
+Skriv början av namnet och tryck på <Tab>: >
+
+	:tag write_<Tab>
+
+Vim fyller i den första träffen.  Om det inte är rätt namn trycker du på
+<Tab> tills rätt namn visas.
+   Ibland känner du bara till en del av funktionsnamnet, eller så finns många
+taggar som börjar likadant men slutar olika.  Då kan du låta Vim söka med ett
+mönster.
+   Anta att du vill hoppa till en tagg som innehåller "block".  Skriv: >
+
+	:tag /block
+
+Använd sedan komplettering på kommandoraden med <Tab>.  Vim hittar alla
+namn som innehåller "block" och väljer den första träffen.
+   Snedstrecket före taggnamnet anger att den följande texten är ett mönster,
+inte ett bokstavligt taggnamn.  Du kan använda alla sökmönsterelement här.  Om
+du exempelvis vill välja en tagg som börjar med "write_" skriver du: >
+
+	:tselect /^write_
+
+"^" anger att taggen ska börja med "write_".  Utan det skulle träffar mitt i
+namnet också hittas.  Med "$" sist anger du att mönstret ska matcha ända till
+taggnamnets slut.
+
+
+TAGGBLÄDDRARE
+
+Eftersom CTRL-] hoppar till definitionen av identifieraren under markören kan
+du använda en lista med identifierare som innehållsförteckning.  Exempel:
+   Skapa först en lista med identifierare.  Detta kräver Universal Ctags eller
+Exuberant Ctags: >
+
+	ctags --c-types=f -f functions *.c
+
+Starta sedan Vim utan fil och öppna listan i ett lodrätt delat fönster: >
+
+	vim
+	:vsplit functions
+
+Fönstret innehåller en lista med funktioner.  Det finns mer information där,
+men den kan du ignorera.  Städa upp visningen med ":setlocal ts=99".
+   Definiera en mappning i det här fönstret: >
+
+	:nnoremap <buffer> <CR> 0ye<C-W>w:tag <C-R>"<CR>
+
+Flytta markören till raden med funktionen du vill gå till och tryck på
+<Enter>.  Vim går till det andra fönstret och hoppar till den valda funktionen.
+
+
+RELATERADE ALTERNATIV OCH KOMMANDON
+
+Ignorera skillnader mellan stora och små bokstäver i taggnamn genom att
+aktivera 'ignorecase' och låta 'tagcase' vara "followic", eller sätta
+'tagcase' till "ignore".
+
+Alternativet 'tagbsearch' styr om Vim använder binär sökning i taggfiler. Det går
+snabbare när filerna är sorterade. Om en fil är osorterad men inte anger det
+kan du stänga av alternativet för att använda linjär sökning.
+
+Använd alternativet 'taglength' för att ange hur många tecken i en tagg som
+ska räknas som betydelsefulla.
+
+Cscope är ett fritt program.  Det hittar var en identifierare deklareras och
+var den används.  Se |cscope|.
+
+==============================================================================
+*29.2*	Förhandsvisningsfönstret
+
+När du redigerar kod med ett funktionsanrop behöver du ange rätt argument.
+Titta på funktionsdefinitionen för att se vilka värden som ska skickas in.
+Taggar fungerar bra för detta.  Det är smidigt om definitionen visas i ett
+annat fönster.  Använd förhandsvisningsfönstret.
+   Öppna ett förhandsvisningsfönster för funktionen "write_char" med: >
+
+	:ptag write_char
+
+Vim öppnar ett fönster och hoppar till taggen "write_char".  Sedan återgår
+Vim till den ursprungliga positionen.  Du kan fortsätta skriva utan att
+behöva använda något CTRL-W-kommando.
+   Om funktionsnamnet står i texten kan du visa definitionen i
+förhandsvisningsfönstret med: >
+
+	CTRL-W }
+
+Det finns ett skript som automatiskt visar var ordet under markören är definierat.  Se |CursorHold-example|.
+
+Stäng förhandsvisningsfönstret med: >
+
+	:pclose
+
+Redigera en viss fil i förhandsvisningsfönstret med ":pedit".  Det kan till
+exempel vara användbart för en headerfil: >
+
+	:pedit defs.h
+
+Till sist kan ":psearch" söka efter ett ord i den aktuella filen och alla
+inkluderade filer och visa träffen i förhandsvisningsfönstret.  Det är särskilt
+användbart för biblioteksfunktioner när du saknar taggfil.  Exempel: >
+
+	:psearch popen
+
+Då visas filen "stdio.h" i förhandsvisningsfönstret med funktionsprototypen
+för popen():
+
+	FILE	*popen __P((const char *, const char *)); ~
+
+Ange förhandsvisningsfönstrets höjd när det öppnas med alternativet
+'previewheight'.
+
+==============================================================================
+*29.3*	Förflytta sig i ett program
+
+Program har en tydlig struktur som Vim kan känna igen.  Det finns särskilda
+kommandon för att förflytta sig mellan strukturerna.
+   C-program innehåller ofta konstruktioner som denna:
+
+	#ifdef USE_POPEN ~
+	    fd = popen("ls", "r"); ~
+	#else ~
+	    fd = fopen("tmp", "w"); ~
+	#endif ~
+
+I verklig kod kan blocken vara mycket längre och nästlade.  Ställ markören på
+"#ifdef" och tryck på %.  Vim hoppar till "#else".  Tryck på % igen för att
+komma till "#endif".  Ytterligare ett % tar dig tillbaka till "#ifdef".
+   Vim hittar matchande element även när konstruktionen är nästlad.  Det är
+ett bra sätt att kontrollera att du inte har glömt ett "#endif".
+   Om du står någonstans mellan "#if" och "#endif" kan du hoppa till början
+med: >
+
+	[#
+
+Om Vim inte hittar ett "#if" eller "#ifdef" före markören piper det.  Hoppa
+framåt till nästa "#else" eller "#endif" med: >
+
+	]#
+
+Kommandona hoppar över hela block med "#if" och "#endif".  Exempel:
+
+	#if defined(HAS_INC_H) ~
+	    a = a + inc(); ~
+	# ifdef USE_THEME ~
+	    a += 3; ~
+	# endif ~
+	    set_width(a); ~
+
+Om markören står på den sista raden flyttar "[#" till den första.  Det inre
+blocket "#ifdef" till "#endif" hoppas över.
+
+
+FLYTTA I KODBLOCK
+
+I C-kod omges block av klamrarna {}.  De kan vara långa.  Flytta till början
+av det yttre blocket med "[[".  Använd "][" för att hitta slutet.  Detta
+förutsätter att "{" och "}" står i första kolumnen.
+   Kommandot "[{" flyttar till början av det aktuella blocket.  Det hoppar
+över par av {} på samma nivå.  "]}" flyttar till slutet.
+   Översikt:
+
+			funktion(int a)
+	   +->		{
+	   |		    if (a)
+	   |	   +->	    {
+	[[ |	   |		for (;;)	       --+
+	   |	   |	  +->	{		 |
+	   |	[{ |	  |	    foo(32);	 |     --+
+	   |	   |	[{ |	    if (bar(a)) --+   | ]}	 |
+	   +--	   |	    break;	| ]} |   |
+		   |		}		 <-+   |
+		   +--		foobar(a)	 |   |
+				}		 <-+   |
+			}				 <-+ ][
+
+I C++ och Java omsluter det yttersta {}-blocket klassen.  Nästa nivå omsluter
+en metod.  Ställ markören i en klass och använd "[m" för att hitta början av
+föregående metod.  "]m" hittar början av nästa.
+
+Kommandot "[]" flyttar bakåt till funktionsslutet och "]]" framåt till början
+av nästa funktion.  Funktionsslutet definieras som en "}" i första kolumnen.
+
+			int func1(void)
+			{
+				return 1;
+	  +----------> }
+	  |
+	  | 		int func2(void)
+	  | 	   +->	{
+	  |   [[  |		if (flag)
+	början +-- +--		return flag;
+	  |   ][  |		return 2;
+	  | 	   +->	}
+	  | 		int func3(void)
+	  +---------->	{
+				return 3;
+			}
+
+Glöm inte att du även kan använda "%" för att flytta mellan matchande (), {}
+och [].  Det fungerar också när de står långt ifrån varandra.
+
+
+FLYTTA I PARENTESER
+
+Kommandona "[(" och "])" fungerar som "[{" och "]}", men arbetar med par av
+() i stället för {}.
+>
+				  [(
+<		    <--------------------------------
+			      <-------
+		if (a == b && (c == d || (e > f)) && x > y) ~
+				  -------------->
+			  --------------------------------> >
+			       ])
+
+
+FLYTTA I KOMMENTARER
+
+Flytta bakåt till början av en kommentar med "[/".  Flytta framåt till slutet
+med "]/".  Detta fungerar bara för kommentarer av typen /* ... */.
+
+	  +->	  +-> /*
+	  |	[/ |	  * En kommentar om		--+
+	[/ |	  +--  * något intressant.		|	]/
+	  |	       */			<-+
+	  |
+	  +--	       foo = bar * 3;		--+
+						|	]/
+		       /* en kort kommentar */	<-+
+
+==============================================================================
+*29.4*	Hitta globala identifierare
+
+Du redigerar ett C-program och undrar om en variabel deklareras som "int"
+eller "unsigned".  Hitta det snabbt med kommandot "[I".
+   Anta att markören står på ordet "column".  Skriv: >
+
+	[I
+
+Vim listar matchande rader.  Sökningen omfattar inte bara den aktuella filen
+utan även alla inkluderade filer, och filer som de i sin tur inkluderar.
+Resultatet kan se ut så här:
+
+	structs.h ~
+	 1:   29     unsigned     column;    /* column number */ ~
+
+Fördelen jämfört med taggar eller förhandsvisningsfönstret är att även
+inkluderade filer söks.  Då hittas oftast rätt deklaration även om taggfilen
+är inaktuell eller om det saknas taggar för de inkluderade filerna.
+   Några saker måste dock vara rätt för att "[I" ska fungera.  Först måste
+alternativet 'include' ange hur en fil inkluderas.  Standardvärdet fungerar
+för C och C++.  För andra språk behöver du ändra det.
+
+
+HITTA INKLUDERADE FILER
+
+Vim söker efter inkluderade filer i katalogerna som anges i 'path'.  Om en
+katalog saknas kan Vim inte hitta vissa filer.  Kontrollera detta med: >
+
+	:checkpath
+
+Kommandot listar inkluderade filer som inte kunde hittas.  Det visar även
+filer som inkluderas av filer som gick att hitta.  Utskriften kan se ut så här:
+
+	--- Included files not found in path --- ~
+	<io.h> ~
+	vim.h --> ~
+	  <functions.h> ~
+	  <clib/exec_protos.h> ~
+
+Filen "io.h" inkluderas av den aktuella filen men hittas inte.  "vim.h"
+hittas, så ":checkpath" söker vidare efter dess inkluderade filer.  Filerna
+"functions.h" och "clib/exec_protos.h", som inkluderas av "vim.h", hittas
+inte.
+
+	Observera:
+	Vim är ingen kompilator och känner inte igen villkoren i "#ifdef". Alla
+	"#include"-rader används även om de står efter exempelvis "#if NEVER".
+
+Lägg till en katalog i 'path' för att hitta de saknade filerna.  Makefile-filen
+kan ge en ledtråd.  Leta efter rader med argument som börjar med "-I", till
+exempel "-I/usr/local/X11".  Lägg till katalogen så här: >
+
+	:set path+=/usr/local/X11
+
+Om det finns många underkataloger kan du använda jokertecknet "*": >
+
+	:set path+=/usr/*/include
+
+Det hittar filer i både "/usr/local/include" och "/usr/X11/include".
+
+Om projektets inkluderade filer ligger i ett nästlat katalogträd är "**"
+användbart.  Det söker igenom alla underkataloger.  Exempel: >
+
+	:set path+=/projects/invent/**/include
+
+Det hittar filer i katalogerna:
+
+	/projects/invent/include ~
+	/projects/invent/main/include ~
+	/projects/invent/main/os/include ~
+	etc. ~
+
+Det finns fler möjligheter.  Läs mer i hjälpen för alternativet 'path'.
+   Visa vilka inkluderade filer som faktiskt hittas med: >
+
+	:checkpath!
+
+En lång lista visas med inkluderade filer och deras inkluderade filer.
+Filer som redan hittats markeras med "(Already listed)" och deras innehåll
+listas inte igen.
+
+
+HOPPA TILL EN TRÄFF
+
+Kommandot "[I" visar en lista med rader.  Hoppa till den första träffen med: >
+
+	[<Tab>
+
+Du kan även skriva "[ CTRL-I", eftersom CTRL-I är samma som <Tab>.
+
+Varje rad i listan från "[I" har ett nummer i början.  Ange numret först om du
+vill hoppa till en annan träff än den första: >
+
+	3[<Tab>
+
+Då hoppar Vim till den tredje träffen.  Använd CTRL-O för att återgå till
+platsen där du började.
+
+
+RELATERADE KOMMANDON
+
+	[i		listar bara den första träffen
+	]I		listar träffar från markörens position och framåt
+	]i		visar den första träffen från markörens position
+
+
+HITTA DEFINIERADE IDENTIFIERARE
+
+Kommandot "[I" hittar alla slags identifierare.  Använd följande för att
+bara hitta makron som definierats med "#define": >
+
+	[D
+
+Även detta söker i inkluderade filer.  Alternativet 'define' anger hur en rad
+som definierar ett objekt för "[D" ser ut.  Du kan ändra värdet för andra
+språk än C och C++.
+   Kommandona som hör till "[D" är:
+
+	[d		listar bara den första träffen
+	]D		listar definitioner från markörens position och framåt
+	]d		visar den första definitionen från markörens position
+
+==============================================================================
+*29.5*	Hitta lokala identifierare
+
+Kommandot "[I" söker i inkluderade filer.  Sök bara i den aktuella filen och
+hoppa till den första plats där ordet under markören används med: >
+
+	gD
+
+Minnesregel: Go to Definition (gå till definitionen).  Kommandot är användbart
+för att hitta en variabel eller funktion som deklarerats lokalt (med "static"
+i C).  Exempel, med markören på "counter":
+
+	  +->   static int counter = 0;
+	  |
+	  |     int get_counter(void)
+	gD |     {
+	  |	     ++counter;
+	  +--	     return counter;
+		 }
+
+Begränsa sökningen ytterligare till den aktuella funktionen med: >
+
+	gd
+
+Vim går bakåt till början av funktionen och söker sedan framåt efter ordet
+under markören.  Mer exakt söker det bakåt till en tom rad ovanför en "{" i
+första kolumnen och börjar sedan söka framåt efter identifieraren.  Exempel,
+med markören på "idx":
+
+		int find_entry(char *name)
+		{
+	  +->	    int idx;
+	  |
+	gd |    for (idx = 0; idx < table_len; ++idx)
+	  |		if (strcmp(table[idx].name, name) == 0)
+	  +--		    return idx;
+		}
+
+==============================================================================
+
+Nästa kapitel: |usr_30.txt|  Redigera program
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

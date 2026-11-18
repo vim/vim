@@ -1,0 +1,682 @@
+*usr_44.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+			 VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Egen syntaxmarkering
+
+
+Vim har syntaxmarkering för flera hundra filtyper.  Om filtypen du redigerar
+inte finns med kan du läsa det här kapitlet för att lära dig hur du lägger till
+syntaxmarkering.  Se även |:syn-define| i referensmanualen.
+
+|44.1|	Grundläggande syntaxkommandon
+|44.2|	Nyckelord
+|44.3|	Matchningar
+|44.4|	Regioner
+|44.5|	Nästlade delar
+|44.6|	Följande grupper
+|44.7|	Övriga argument
+|44.8|	Kluster
+|44.9|	Inkludera en annan syntaxfil
+|44.10|	Synkronisering
+|44.11|	Installera en syntaxfil
+|44.12|	Portabel struktur för syntaxfiler
+
+	Nästa kapitel: |usr_45.txt|  Välja språk
+	Föregående kapitel: |usr_43.txt|  Använda filtyper
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*44.1*	Grundläggande syntaxkommandon
+
+Du sparar mycket tid genom att utgå från en befintlig syntaxfil.  Leta efter
+en syntaxfil i $VIMRUNTIME/syntax för ett språk som liknar ditt.  Filerna visar
+också hur en syntaxfil brukar vara uppbyggd.  Läs vidare för att förstå den.
+
+Vi börjar med grundläggande argument.  Rensa bort gamla definitioner innan du
+lägger till ny syntax: >
+
+	:syntax clear
+
+Det behövs inte i den färdiga syntaxfilen, men är användbart när du provar dig
+fram.
+
+Kapitlet innehåller fler förenklingar.  Om syntaxfilen ska användas av andra
+bör du läsa ända till slutet för att få veta detaljerna.
+
+
+VISA DEFINIERADE OBJEKT
+
+Kontrollera vilka syntaxobjekt som är definierade med: >
+
+	:syntax
+
+Det visar vilka objekt som faktiskt har definierats.  Det är användbart när du
+provar en ny syntaxfil.  Utskriften visar också färgerna för varje objekt, så
+du kan se vilket som är vilket.
+   Visa objekten i en viss syntaxgrupp med: >
+
+	:syntax list {gruppnamn}
+
+Detta kan också användas för att visa kluster (förklaras i |44.8|).  Ta då med
+tecknet @ i namnet.
+
+
+SKIFTLÄGE
+
+Vissa språk, till exempel Pascal, skiljer inte mellan stora och små bokstäver.
+Andra språk, till exempel C, gör det.  Ange vilken typ språket använder med:
+>
+	:syntax case match
+	:syntax case ignore
+
+Argumentet "match" innebär att Vim skiljer på skiftläge i syntaxelement.  Då
+är "int", "Int" och "INT" olika.  Med argumentet "ignore" behandlas
+"Procedure", "PROCEDURE" och "procedure" likadant.
+   Kommandona ":syntax case" kan stå var som helst i syntaxfilen och påverkar
+definitionerna som följer.  Vanligen finns bara ett sådant kommando i filen.
+Om ett ovanligt språk har både skiftlägeskänsliga och skiftlägesokänsliga
+element kan du däremot placera flera ":syntax case"-kommandon på olika ställen.
+
+==============================================================================
+*44.2*	Nyckelord
+
+De enklaste syntaxelementen är nyckelord.  Definiera ett nyckelord så här:
+>
+
+	:syntax keyword {grupp} {nyckelord} ...
+
+{grupp} är namnet på en syntaxgrupp.  Med kommandot ":highlight" kan du ange
+färger för gruppen.  Argumentet {nyckelord} är ett faktiskt nyckelord.  Några
+exempel: >
+
+	:syntax keyword xType int long char
+	:syntax keyword xStatement if then else endif
+
+Exemplet använder gruppnamnen "xType" och "xStatement".  Enligt konventionen
+börjar gruppnamnet med filtypen för språket som definieras.  Här definieras
+syntax för språket x (ett exempelspråk utan något intressant namn).  En
+syntaxfil för "csh"-skript skulle använda namnet "cshType".  Prefixet är
+alltså värdet på 'filetype'.
+   Kommandona markerar orden "int", "long" och "char" på ett sätt och orden
+"if", "then", "else" och "endif" på ett annat.  Koppla sedan x-grupperna
+till Vims standardnamn: >
+
+	:highlight link xType Type
+	:highlight link xStatement Statement
+
+Detta gör att Vim markerar "xType" som "Type" och "xStatement" som
+"Statement".  Se |group-name| för standardnamnen.
+
+
+OVANLIGA NYCKELORD
+
+Tecknen i ett nyckelord måste ingå i 'iskeyword' eller i den
+syntaxspecifika inställningen |:syn-iskeyword|.  Om du
+använder ett annat tecken kommer ordet aldrig att matcha.  Vim visar ingen
+varning.
+   Språket x använder tecknet '-' i nyckelord.  Gör så här: >
+
+	:setlocal iskeyword+=-
+	:syntax keyword xStatement when-not
+
+Kommandot ":setlocal" ändrar 'iskeyword' bara i den aktuella bufferten.  Det
+påverkar ändå kommandon som "w" och "*".  Med ":syntax iskeyword" kan du i
+stället ändra vilka tecken som räknas som nyckelordstecken vid
+syntaxmarkering utan att påverka dessa kommandon.
+
+Språket x tillåter förkortningar.  "next" kan till exempel förkortas till
+"n", "ne" eller "nex".  Definiera dem med: >
+
+	:syntax keyword xStatement n[ext]
+
+Detta matchar inte "nextone".  Nyckelord matchar alltid hela ord.
+
+==============================================================================
+*44.3*	Matchningar
+
+Anta att du vill definiera något mer komplicerat, till exempel vanliga
+identifierare.  Definiera ett syntaxobjekt av typen match.  Följande matchar
+ord som bara består av små bokstäver: >
+
+	:syntax match xIdentifier /\<\l\+\>/
+<
+	Observera:
+	Nyckelord har företräde framför andra syntaxobjekt.  Orden "if",
+	"then" och så vidare behandlas därför som nyckelord, enligt
+	kommandona ":syntax keyword" ovan, trots att mönstret för xIdentifier
+	också matchar dem.
+
+Delen sist i kommandot är ett mönster, som vid en sökning.  Tecknen // omsluter
+mönstret på samma sätt som i kommandot ":substitute".  Du kan använda ett
+annat tecken, till exempel ett plustecken eller ett citattecken.
+
+Definiera nu en match för en kommentar.  I språket x är allt från # till slutet
+av raden en kommentar: >
+
+	:syntax match xComment /#.*/
+
+Eftersom du kan använda vilket sökmönster som helst kan en match markera mycket
+komplexa konstruktioner.  Se |pattern| för information om sökmönster.
+
+==============================================================================
+*44.4*	Regioner
+
+I exempelspråket x omges strängar av dubbla citattecken (").  Definiera en
+region för att markera dem.  Du behöver ett startmönster (dubbelt citattecken)
+och ett slutmönster (dubbelt citattecken): >
+
+	:syntax region xString start=/"/ end=/"/
+
+Direktiven "start" och "end" anger mönstren som identifierar början och
+slutet på regionen.  Men hur fungerar det med en sträng som denna?
+
+	"En sträng med ett dubbelt citattecken (\") i sig" ~
+
+Det dubbla citattecknet mitt i strängen skulle avsluta regionen.  Tala om för
+Vim att den ska hoppa över escapade dubbla citattecken med nyckelordet "skip":
+>
+
+	:syntax region xString start=/"/ skip=/\\"/ end=/"/
+
+Det dubbla omvända snedstrecket matchar ett enda omvänt snedstreck, eftersom
+snedstrecket är ett specialtecken i sökmönster.
+
+När ska du använda en region i stället för en match?  En match är ett enda
+mönster som måste matcha i sin helhet.  En region börjar så snart
+"start"-mönstret matchar.  Det spelar ingen roll om "end"-mönstret hittas.
+Om syntaxelementet kräver att "end"-mönstret matchar kan du därför inte
+använda en region.  I andra fall är regioner ofta enklare att definiera.  Det
+är också enklare att använda nästlade element, som förklaras i nästa avsnitt.
+
+==============================================================================
+*44.5*	Nästlade delar
+
+Titta på den här kommentaren:
+
+	%Hämta indata  TODO: Hoppa över blanksteg ~
+
+Du vill markera TODO med gult, trots att resten av kommentaren markeras
+blå.  Definiera följande syntaxgrupper: >
+
+	:syntax keyword xTodo TODO contained
+	:syntax match xComment /%.*/ contains=xTodo
+
+Argumentet "contained" på första raden anger att nyckelordet bara får finnas
+inuti ett annat syntaxobjekt.  På nästa rad anger "contains=xTodo" att
+syntaxelementet xTodo finns inuti xComment.  Hela kommentarraden matchas då
+som "xComment" och markeras blå.  Ordet TODO inuti kommentaren matchas som
+xTodo och markeras gult.  Markeringen för xTodo har ställts in separat.
+
+
+REKURSIV NÄSTLING
+
+Språket x har kodblock inom klammerparenteser.  Ett kodblock kan innehålla
+andra kodblock.  Definiera det så här: >
+
+	:syntax region xBlock start=/{/ end=/}/ contains=xBlock
+
+Anta att texten ser ut så här:
+
+	while i < b { ~
+		if a { ~
+			b = c; ~
+		} ~
+	} ~
+
+Först börjar ett xBlock vid { på första raden.  På den andra raden hittas en
+till {.  Eftersom vi redan är i ett xBlock som innehåller sig självt börjar en
+nästlad xBlock-region där.  Raden "b = c" finns alltså i den andra nivån av
+xBlock-regioner.  På nästa rad hittas }, som matchar regionens slutmönster och
+avslutar den nästlade xBlock-regionen.  Eftersom } ingår i den nästlade
+regionen syns den inte för den första xBlock-regionen.  Den första regionen
+avslutas vid det sista }.
+
+
+BEHÅLLA SLUTET
+
+Betrakta de här två syntaxobjekten: >
+
+	:syntax region xComment start=/%/ end=/$/ contained
+	:syntax region xPreProc start=/#/ end=/$/ contains=xComment
+
+Du definierar en kommentar som allt från % till radens slut.  Ett
+förprocessordirektiv är allt från # till radens slut.  Eftersom en kommentar
+kan finnas på en förprocessorrad innehåller definitionen av förprocessorn
+argumentet "contains=xComment".  Titta nu på den här texten:
+
+	#define X = Y  % Kommentartext ~
+	int foo = 1; ~
+
+Den andra raden markeras också som xPreProc, trots att direktivet borde sluta
+vid radslutet.  Du har ju använt "end=/$/".  Vad går fel?
+   Problemet är den inneslutna kommentaren.  Den börjar vid % och slutar vid
+radslutet.  Efter att kommentaren har slutat fortsätter syntaxen för
+förprocessordirektivet.  Radslutet har då redan passerats, så nästa rad räknas
+också in.
+   Undvik detta genom att använda argumentet "keepend", som ser till att det
+inre och det yttre syntaxobjektets slut inte förväxlas: >
+
+	:syntax region xComment start=/%/ end=/$/ contained
+	:syntax region xPreProc start=/#/ end=/$/ contains=xComment keepend
+
+
+INNEHÅLLA MÅNGA OBJEKT
+
+Ange att allt kan finnas inuti ett syntaxobjekt med argumentet "contains".
+Följande region innehåller till exempel alla objekt: >
+
+	:syntax region xList start=/\[/ end=/\]/ contains=ALL
+
+Då kan alla syntaxobjekt finnas i regionen.  Den innehåller även sig själv, men
+inte på samma position eftersom det skulle skapa en oändlig loop.
+   Du kan utesluta vissa grupper och därmed innehålla alla utom dem som anges:
+>
+
+	:syntax region xList start=/\[/ end=/\]/ contains=ALLBUT,xString
+
+Med objektet "TOP" kan du ta med alla objekt som saknar argumentet
+"contained".  "CONTAINED" används för att bara ta med objekt som har argumentet
+"contained".  Se |:syn-contains| för detaljer.
+
+==============================================================================
+*44.6*	Följande grupper
+
+Språket x har satser av den här formen:
+
+	if (condition) then ~
+
+Du vill markera de tre delarna på olika sätt.  Men "(condition)" och "then"
+kan också förekomma på andra ställen och då få en annan markering.  Gör så här:
+>
+
+	:syntax match xIf /if/ nextgroup=xIfCondition skipwhite
+	:syntax match xIfCondition /([^)]*)/ contained nextgroup=xThen skipwhite
+	:syntax match xThen /then/ contained
+
+Argumentet "nextgroup" anger vilka syntaxobjekt som får komma härnäst.  Det
+krävs inte att de matchar.  Om inget av de angivna objekten hittas händer
+inget.  I följande text:
+
+	if not (condition) then ~
+
+matchas "if" av xIf.  "not" matchar inte det angivna nästa objektet
+xIfCondition, så bara "if" markeras.
+
+Argumentet "skipwhite" anger att det får finnas blanksteg eller tabbar mellan
+objekten.  Liknande argument är "skipnl", som tillåter en radbrytning mellan
+objekten, och "skipempty", som tillåter tomma rader.  Lägg märke till att
+"skipnl" inte hoppar över en tom rad.  Något måste matcha efter radbrytningen.
+
+==============================================================================
+*44.7*	Övriga argument
+
+MATCHGROUP
+
+När du definierar en region markeras hela regionen enligt gruppnamnet.  Använd
+till exempel följande kommando för att markera texten inom parenteser med
+gruppen xInside: >
+
+	:syntax region xInside start=/(/ end=/)/
+
+Anta att parenteserna ska markeras på ett annat sätt.  Du kan använda flera
+krångliga regiondefinitioner eller argumentet "matchgroup".  Det anger en
+annan markeringsgrupp för regionens början och slut, här gruppen xParen: >
+
+	:syntax region xInside matchgroup=xParen start=/(/ end=/)/
+
+Argumentet "matchgroup" gäller för start- eller slutmatchningen som följer
+efter det.  I exemplet ovan markeras både början och slutet med xParen.
+Markera slutet med xParenEnd så här: >
+
+	:syntax region xInside matchgroup=xParen start=/(/
+		\ matchgroup=xParenEnd end=/)/
+
+En bieffekt av "matchgroup" är att inneslutna objekt inte matchas i regionens
+start eller slut.  Exemplet med "transparent" nedan använder detta.
+
+
+TRANSPARENT
+
+I en C-fil kanske du vill markera parenteserna efter "while" på ett annat sätt
+än parenteserna efter "for".  I båda fallen kan parenteserna innehålla andra
+parenteser, som ska markeras på samma sätt.  Se till att markeringen upphör vid
+den motsvarande ).  Ett sätt är: >
+
+	:syntax region cWhile matchgroup=cWhile start=/while\s*(/ end=/)/
+		\ contains=cCondNest
+	:syntax region cFor matchgroup=cFor start=/for\s*(/ end=/)/
+		\ contains=cCondNest
+	:syntax region cCondNest start=/(/ end=/)/ contained transparent
+
+Nu kan cWhile och cFor få olika markering.  Elementet cCondNest kan finnas i
+båda, men tar över markeringen från gruppen det ingår i.  Det gör argumentet
+"transparent".
+   Lägg märke till att argumentet "matchgroup" har samma gruppnamn som
+syntaxobjektet.  Varför behövs det?  En bieffekt av "matchgroup" är att
+inneslutna objekt inte matchas i startmönstret.  Då matchar inte cCondNest
+parentesen direkt efter "while" eller "for".  Annars skulle det sträcka sig
+hela vägen till motsvarande ) och regionen skulle fortsätta efter den.  Nu
+matchas cCondNest bara efter startmönstret, alltså efter den första (.
+
+
+FÖRSKJUTNINGAR
+
+Anta att du vill definiera en region för texten mellan ( och ) efter "if", men
+inte ta med "if" eller parenteserna.  Ange förskjutningar för mönstren:
+>
+
+	:syntax region xCond start=/if\s*(/ms=e+1 end=/)/me=s-1
+
+Förskjutningen för startmönstret är "ms=e+1".  "ms" betyder Match Start
+(matchningens början).  Det anger en förskjutning av matchningens början.  I
+vanliga fall börjar matchningen där mönstret matchar.  "e+1" betyder att
+matchningen i stället börjar vid slutet av mönsterträffen plus ett tecken.
+   Förskjutningen för slutmönstret är "me=s-1".  "me" betyder Match End
+(matchningens slut).  "s-1" betyder början av mönsterträffen minus ett tecken.
+I följande text:
+
+	if (foo == bar) ~
+
+markeras bara texten "foo == bar" som xCond.
+
+Läs mer om förskjutningar i |:syn-pattern-offset|.
+
+
+ONELINE
+
+Argumentet "oneline" anger att regionen inte får fortsätta över en radbrytning.
+Exempel: >
+
+	:syntax region xIfThen start=/if/ end=/then/ oneline
+
+Regionen börjar vid "if" och slutar vid "then".  Om inget "then" finns efter
+"if" matchar regionen inte.
+
+	Observera:
+	Med "oneline" börjar regionen inte om slutmönstret saknas på samma
+	rad.  Utan "oneline" kontrollerar Vim inte om slutmönstret finns
+	senare i filen.  Regionen börjar även när slutmönstret inte matchar
+	resten av filen.
+
+
+FORTSÄTTNINGSRADER OCH HUR DE UNDVIKS
+
+Nu blir det lite mer komplicerat.  Definiera en förprocessorrad.  Den börjar
+med # i första kolumnen och fortsätter till radslutet.  Om en rad slutar med \
+fortsätter kommandot på nästa rad.  Låt syntaxobjektet innehålla ett
+fortsättningsmönster: >
+
+	:syntax region xPreProc start=/^#/ end=/$/ contains=xLineContinue
+	:syntax match xLineContinue "\\$" contained
+
+Vanligen omfattar xPreProc bara en rad.  Den inneslutna gruppen xLineContinue
+låter den fortsätta över flera rader.  Exemplet matchar då båda raderna:
+
+	#define SPAM  spam spam spam \ ~
+			bacon och spam ~
+
+Här är det avsett.  Om du inte vill att det ska ske kan du lägga till
+"excludenl" i det inneslutna mönstret, så att regionen begränsas till en rad.
+Anta att du vill markera "end" i xPreProc, men bara i slutet av raden.  Undvik
+att xPreProc fortsätter till nästa rad genom att använda "excludenl": >
+
+	:syntax region xPreProc start=/^#/ end=/$/
+		\ contains=xLineContinue,xPreProcEnd
+	:syntax match xPreProcEnd excludenl /end$/ contained
+	:syntax match xLineContinue "\\$" contained
+
+"excludenl" måste stå före mönstret.  Eftersom xLineContinue saknar
+"excludenl" fortsätter en sådan matchning xPreProc över nästa rad som tidigare.
+
+==============================================================================
+*44.8*	Kluster
+
+När du börjar skriva en syntaxfil märker du att det blir många syntaxgrupper.
+Vim låter dig skapa en samling syntaxgrupper som kallas kluster.
+   Anta att ett språk innehåller for-loopar, if-satser, while-loopar och
+funktioner.  Var och en innehåller samma syntaxelement: tal och identifierare.
+Definiera dem så här: >
+
+	:syntax match xFor /^for.*/ contains=xNumber,xIdent
+	:syntax match xIf /^if.*/ contains=xNumber,xIdent
+	:syntax match xWhile /^while.*/ contains=xNumber,xIdent
+
+Du måste upprepa samma "contains=" varje gång.  Om du vill lägga till ett
+inneslutet objekt måste du lägga till det på tre ställen.  Syntaxkluster
+förenklar detta genom att låta ett kluster stå för flera syntaxgrupper.
+   Definiera ett kluster för de två objekten som grupperna innehåller: >
+
+	:syntax cluster xState contains=xNumber,xIdent
+
+Kluster används inuti andra syntaxobjekt på samma sätt som syntaxgrupper.
+Klusternamn börjar med @.  Definiera därför de tre grupperna så här: >
+
+	:syntax match xFor /^for.*/ contains=@xState
+	:syntax match xIf /^if.*/ contains=@xState
+	:syntax match xWhile /^while.*/ contains=@xState
+
+Lägg till nya gruppnamn i klustret med argumentet "add": >
+
+	:syntax cluster xState add=xString
+
+Du kan även ta bort syntaxgrupper från listan: >
+
+	:syntax cluster xState remove=xNumber
+
+==============================================================================
+*44.9*	Inkludera en annan syntaxfil
+
+Syntaxen för C++ är en utvidgning av C.  I stället för att skriva två
+syntaxfiler kan syntaxfilen för C++ läsa in C-filen med kommandot: >
+
+	:runtime! syntax/c.vim
+
+Kommandot ":runtime!" söker igenom 'runtimepath' efter alla filer med namnet
+"syntax/c.vim".  Då definieras C-delarna av C++-syntaxen på samma sätt som i
+C-filer.  Om du har ersatt syntaxfilen c.vim eller lagt till objekt i en extra
+fil läses även de in.
+   När C-syntaxelementen har lästs in kan de specifika C++-elementen
+läggas till.  Exempelvis nyckelord som inte används i C: >
+
+	:syntax keyword cppStatement	new delete this friend using
+
+Det fungerar som i vilken annan syntaxfil som helst.
+
+Tänk nu på språket Perl.  Ett Perl-skript består av två skilda delar: en
+dokumentationsdel i POD-format och Perl-programkod.  POD-delen börjar med
+"=head" och slutar med "=cut".
+   Definiera POD-syntaxen i en egen fil och läs in den från Perl-syntaxfilen
+med kommandot ":syntax include".  Det läser in en syntaxfil och placerar dess
+definitioner i ett syntaxkluster.  För Perl blir kommandona: >
+
+	:syntax include @Pod <sfile>:p:h/pod.vim
+	:syntax region perlPOD start=/^=head/ end=/^=cut/ contains=@Pod
+
+När "=head" hittas i en Perl-fil börjar regionen perlPOD.  Där kan klustret
+@Pod finnas.  Alla objekt som definierats på toppnivå i POD-syntaxfilen
+pod.vim kan matcha.  När "=cut" hittas avslutas regionen och Vim återgår till
+objekten som definierats i Perl-filen.
+   Kommandot ":syntax include" ignorerar ett ":syntax clear" i den inkluderade
+filen.  Argumentet "contains=ALL" omfattar bara objekt i den inkluderade
+filen, inte i filen som inkluderar den.
+   Delen "<sfile>:p:h/" använder namnet på den aktuella filen (<sfile>), gör
+sökvägen fullständig med :p och tar sedan huvudkatalogen med :h.  Resultatet
+blir katalogen där filen ligger.  Då läses pod.vim in från samma katalog.
+
+==============================================================================
+*44.10*	Synkronisering
+
+Kompilatorer har det enkelt: de börjar i början av filen och tolkar texten i
+ordning.  Vim har det svårare.  Det måste börja mitt i filen, där du redigerar.
+Hur vet Vim då var i syntaxen det befinner sig?
+   Lösningen är kommandot ":syntax sync".  Det talar om för Vim hur det ska
+hitta rätt position.  Följande kommando ber Vim söka bakåt efter början eller
+slutet på en C-kommentar och börja syntaxmarkera därifrån: >
+
+	:syntax sync ccomment
+
+Du kan styra sökningen med argument.  Argumentet "minlines" anger minsta
+antalet rader Vim ska söka bakåt och "maxlines" anger det högsta antalet.
+   Följande kommando ber till exempel Vim att läsa minst tio rader före
+fönstrets överkant: >
+
+	:syntax sync ccomment minlines=10 maxlines=500
+
+Om Vim inte kan avgöra positionen inom det området fortsätter det längre bakåt
+tills det kan avgöra vad som ska göras.  Det söker dock aldrig längre bakåt än
+500 rader.  Ett högt värde för "maxlines" gör behandlingen långsammare.  Ett
+lågt värde kan göra att synkroniseringen misslyckas.
+   Snabba upp synkroniseringen genom att ange vilka syntaxobjekt som kan
+hoppas över.  Lägg till argumentet "display" för matchningar och regioner som
+bara behövs när texten faktiskt visas.
+   Som standard markeras den hittade kommentaren som Comment.  Ange en annan
+syntaxgrupp om du vill använda en annan markering: >
+
+	:syntax sync ccomment xAltComment
+
+Om programmeringsspråket saknar C-liknande kommentarer kan du prova en annan
+synkroniseringsmetod.  Det enklaste är att låta Vim gå tillbaka ett fast antal
+rader och börja tolka därifrån.  Följande kommando går tillbaka 150 rader: >
+
+	:syntax sync minlines=150
+
+Ett högt värde för "minlines" kan göra Vim långsammare, särskilt när du
+rullar bakåt i filen.
+   Slutligen kan du ange ett syntaxobjekt att leta efter med: >
+
+	:syntax sync match {synkgrupp}
+		\ grouphere {grupp} {mönster}
+
+När Vim ser {mönster} börjar syntaxgruppen {grupp} direkt efter mönstret.
+{synkgrupp} är namnet på den här synkroniseringsdefinitionen.  Exempelvis
+börjar ett if-block i skalspråket sh med "if" och slutar med "fi":
+
+	if [ -f file.txt ]; then ~
+		echo "File exists" ~
+	fi ~
+
+Definiera direktivet "grouphere" för syntaxen med: >
+
+	:syntax sync match shIfSync grouphere shIf "\<if\>"
+
+Argumentet "groupthere" anger vilken syntaxgrupp som gäller i början av raden
+där sökningen efter synkroniseringspunkten började.  Om Vim söker bakåt och
+hittar "fi" först kan du ange att ingen region gäller där: >
+
+	:syntax sync match shIfSync groupthere NONE "\<fi\>"
+
+NONE anger att du inte befinner dig i någon särskild syntaxregion, särskilt
+inte i ett if-block.
+
+Du kan också definiera matchningar och regioner utan argumenten "grouphere"
+eller "groupthere".  De används för syntaxgrupper som hoppas över under
+synkroniseringen.  Följande kommando hoppar till exempel över allt inom {},
+även om en annan synkroniseringsmetod normalt skulle matcha det: >
+
+	:syntax sync match xSpecial /{.*}/
+
+Läs mer om synkronisering i referensmanualen: |:syn-sync|.
+
+==============================================================================
+*44.11*	Installera en syntaxfil
+
+När syntaxfilen är färdig lägger du den i en katalog som heter "syntax" i
+'runtimepath'.  I Unix är det "~/.vim/syntax".
+  Syntaxfilens namn ska vara filtypen med tillägget ".vim".  Filen för språket
+x ska alltså ha sökvägen:
+
+	~/.vim/syntax/x.vim ~
+
+Du måste också se till att Vim känner igen filtypen.  Se |43.2|.
+
+Om syntaxfilen fungerar bra kanske du vill dela den med andra Vim-användare.
+Kontrollera först i nästa avsnitt att filen fungerar bra för andra.  Skicka
+sedan filen till Vims underhållsansvarige på <maintainer@vim.org>.  Förklara
+också hur filtypen kan identifieras.  Med lite tur följer filen med i nästa
+Vim-version!
+
+
+UTÖKA EN BEFINTLIG SYNTAXFIL
+
+Hittills har vi utgått från att du skapar en helt ny syntaxfil.  Om en
+befintlig syntaxfil fungerar men saknar vissa objekt kan du lägga till dem i en
+separat fil.  Då ändrar du inte den distribuerade syntaxfilen, som annars
+skulle skrivas över när en ny Vim-version installeras.
+   Skriv syntaxkommandon i filen.  Du kan använda gruppnamn från den befintliga
+syntaxen.  Lägg till exempel till nya variabeltyper i C-syntaxen så här: >
+
+	:syntax keyword cType off_t uint
+
+Ge filen samma namn som den ursprungliga syntaxfilen, i detta fall "c.vim".
+Placera den i en katalog sent i 'runtimepath', så läses den in efter den
+ursprungliga filen.  I Unix blir sökvägen:
+
+	~/.vim/after/syntax/c.vim ~
+
+==============================================================================
+*44.12*	Portabel struktur för syntaxfiler
+
+Vore det inte bra om Vim-användare kunde dela syntaxfiler?  Följ de här
+riktlinjerna så blir filen användbar för andra.
+
+Börja med en kommentar som anger vad syntaxfilen används till, vem som
+underhåller den och när den senast uppdaterades.  Ta inte med för mycket
+ändringshistorik; få läser den.  Exempel: >
+
+	" Vim syntax file
+	" Language:	C
+	" Maintainer:	Bram Moolenaar <Bram@vim.org>
+	" Last Change:	2001 Jun 18
+	" Remark:	Included by the C++ syntax.
+
+Använd samma struktur som i andra syntaxfiler.  Du sparar tid genom att utgå
+från en befintlig fil.
+
+Välj ett tydligt och beskrivande namn på syntaxfilen.  Använd små bokstäver
+och siffror.  Gör inte namnet för långt, eftersom det används på flera ställen:
+i syntaxfilens namn "name.vim", i 'filetype', b:current_syntax och i början av
+varje syntaxgrupp (nameType, nameStatement, nameString och så vidare).
+
+Börja med en kontroll av b:current_syntax.  Om variabeln är definierad har en
+annan syntaxfil tidigare i 'runtimepath' redan lästs in: >
+
+	if exists("b:current_syntax")
+	  finish
+	endif
+
+Ange b:current_syntax som syntaxens namn i slutet av filen.  Glöm inte att
+inkluderade filer också gör detta.  Du kan behöva återställa b:current_syntax
+om du inkluderar flera filer.
+
+Ta inte med inställningar som användaren själv bör bestämma.  Ange inte
+alternativ som 'tabstop' eller 'expandtab'.  De hör hemma i ett
+insticksprogram för filtypen.
+
+Ta inte med mappningar eller förkortningar.  Använd ":syntax iskeyword" om syntaxen
+kräver en egen uppsättning nyckelordstecken.
+
+Låt användarna välja färger genom att skapa olika gruppnamn för varje sorts
+markerat element.  Länka sedan varje grupp till en av standardgrupperna för
+syntaxmarkering.  Då fungerar filen med alla färgscheman.  Om du anger egna
+färger kan syntaxen se dålig ut med vissa färgscheman.  Tänk också på att en
+del använder en annan bakgrundsfärg eller bara har åtta färger.
+
+Använd "hi def link" när du länkar grupperna.  Då kan användaren välja en
+annan markering innan syntaxfilen läses in.  Exempel: >
+
+	  hi def link nameString	String
+	  hi def link nameNumber	Number
+	  hi def link nameCommand	Statement
+	  ... osv ...
+
+Lägg till argumentet "display" för objekt som inte används vid
+synkronisering.  Det gör bakåtrullning och CTRL-L snabbare.
+
+==============================================================================
+
+Nästa kapitel: |usr_45.txt|  Välja språk
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

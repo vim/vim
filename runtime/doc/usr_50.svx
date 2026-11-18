@@ -1,0 +1,137 @@
+*usr_50.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Avancerad Vim-skriptskrivning
+
+
+|50.1|	Undantag
+|50.2|	Funktioner med varierande antal argument
+|50.3|	Återställa vyn
+
+	Nästa kapitel: |usr_51.txt|  Skriva insticksprogram
+	Föregående kapitel: |usr_45.txt|  Välja språk och lokalinställningar
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*50.1*	Undantag
+
+Vi börjar med ett exempel:
+>
+	try
+	   read ~/templates/pascal.tmpl
+	catch /E484:/
+	   echo "Tyvärr hittades inte Pascal-mallfilen."
+	endtry
+
+Kommandot `read` misslyckas om filen inte finns. I stället för att visa ett
+felmeddelande fångar koden felet och ger användaren mer information.
+
+Fel i kommandona mellan `try` och `endtry` omvandlas till undantag. Ett
+undantag är en sträng. Vid ett fel innehåller strängen felmeddelandet, och
+varje felmeddelande har ett nummer. I exemplet innehåller felet vi fångar
+"E484:". Numret ändras inte, även om själva texten kan ändras, till exempel
+genom översättning.
+
+Förutom att kunna visa ett tydligare felmeddelande kan Vim fortsätta köra
+kommandon efter `:endtry`. Utan detta avbryts skriptet, funktionen eller
+mappningen när ett fel som inte fångas uppstår.
+
+Om `read` orsakar ett annat fel matchar det inte mönstret "E484:". Undantaget
+fångas då inte, så Vim visar det vanliga felmeddelandet och avbryter körningen.
+
+Det kan verka lockande att skriva så här:
+>
+	try
+	   read ~/templates/pascal.tmpl
+	catch
+	   echo "Tyvärr hittades inte Pascal-mallfilen."
+	endtry
+
+Då fångas alla fel. Du får alltså inte se fel som visar på ett helt annat
+problem, till exempel "E21: Cannot make changes, 'modifiable' is off". Tänk
+efter innan du fångar alla fel!
+
+Kommandot `finally` är en annan användbar mekanism:
+>
+	var tmp = tempname()
+	try
+	   exe ':.,$write ' .. fnameescape(tmp)
+	   exe '!filter ' .. shellescape(tmp, true)
+	   if v:shell_error != 0
+	      throw 'Filtreringen misslyckades'
+	   endif
+	   :.,$delete _
+	   exe ':$read ' .. fnameescape(tmp)
+	finally
+	   delete(tmp)
+	endtry
+
+Det här skickar raderna från markören till filslutet genom kommandot
+"filter", som tar ett filnamn som argument och ändrar filen direkt. Vim
+ersätter raderna först när kommandot har lyckats.
+Anropet `delete(tmp)` körs alltid,
+oavsett om filtreringen lyckas, om något går fel mellan `try` och `finally`
+eller om användaren avbryter med CTRL-C. Därmed lämnas inte den tillfälliga
+filen kvar.
+
+`finally` fångar inte undantaget. Felet avbryter fortfarande den fortsatta
+körningen.
+
+Mer information om undantagshantering finns i referensmanualen:
+|exception-handling|.
+
+==============================================================================
+*50.2*	Funktioner med varierande antal argument
+
+I Vim kan du definiera funktioner som tar ett varierande antal argument.
+Funktioner kan ta högst 20 argument totalt. Följande kommando definierar en
+funktion som måste få ett argument (`inledning`) och kan få ytterligare argument
+i listan `argument`:
+>
+	def Visa(inledning: string, ...argument: list<string>)
+
+Variabeln `argument` blir en lista i funktionen och innehåller de extra
+argumenten. Du kan använda den som vilken lista som helst:
+>
+	def Visa(inledning: string, ...argument: list<string>)
+	  echohl Title
+	  echo "inledning är " .. inledning
+	  echohl None
+	  for index in range(len(argument))
+	    echon $"  Argument {index} är {argument[index]}"
+	  endfor
+	  echo
+	enddef
+
+Anropa funktionen så här:
+>
+	Visa('Rubrik', 'ett', 'två', 'tre')
+<	inledning är Rubrik  Argument 0 är ett  Argument 1 är två  Argument 2 är tre ~
+
+Kommandot `echohl` anger markeringen för efterföljande `echo` och `echon`.
+`echohl None` återställer markeringen. Kommandot `echon` fungerar som `echo`
+men gör ingen radbrytning.
+
+Om du anropar funktionen med ett argument är listan `argument` tom.
+`range(len(argument))` ger en lista med index som `for`-loopen går igenom. Det
+beskrivs i |range()| och |:for|.
+
+==============================================================================
+*50.3*	Återställa vyn
+
+Ibland vill du flytta dig i filen, göra en ändring och sedan återvända till
+samma position och vy, till exempel när du ska ändra något i filhuvudet. Det
+kan göras med två funktioner:
+>
+	var view = winsaveview()
+	# Flytta markören och gör ändringar
+	winrestview(view)
+
+==============================================================================
+
+Nästa kapitel: |usr_51.txt|  Skriva insticksprogram
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

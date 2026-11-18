@@ -1,0 +1,317 @@
+*usr_07.txt*	För Vim version 9.2.  Senast ändrad: 18 nov 2026
+
+
+		     VIMS ANVÄNDARMANUAL	av Bram Moolenaar
+
+
+			Redigera flera filer
+
+
+Oavsett hur många filer du har kan du redigera dem utan att lämna Vim. Skapa en lista över filerna och hoppa mellan dem. Du kan även kopiera text från en fil och klistra in den i en annan.
+
+|07.1|	Redigera en annan fil
+|07.2|	En fillista
+|07.3|	Hoppa mellan filer
+|07.4|	Säkerhetskopior
+|07.5|	Kopiera text mellan filer
+|07.6|	Visa en fil
+|07.7|	Byta filnamn
+
+     Nästa kapitel: |usr_08.txt|  Dela fönster
+ Föregående kapitel: |usr_06.txt|  Använda syntaxmarkering
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*07.1*	Redigera en annan fil
+
+Hittills har du behövt starta Vim för varje fil. Det finns ett enklare sätt. Använd följande kommando för att börja redigera en annan fil: >
+	:edit foo.txt
+
+Du kan använda vilket filnamn som helst i stället för "foo.txt". Vim stänger den aktuella filen och öppnar den nya. Om den aktuella filen har osparade ändringar visar Vim ett felmeddelande och öppnar inte den nya filen:
+
+	E37: Ändringarna har inte sparats (lägg till ! för att fortsätta ändå) ~
+
+	Obs:
+	Vim placerar ett fel-ID i början av varje felmeddelande. Om du inte
+	förstår meddelandet eller orsaken kan du söka efter ID:t i hjälpen.
+	I det här fallet: >
+		:help E37
+
+Nu har du flera alternativ. Du kan skriva filen med kommandot: >
+	:write
+
+Eller tvinga Vim att kasta ändringarna och redigera den nya filen med utropstecknet (!): >
+	:edit! foo.txt
+
+Om du vill redigera en annan fil utan att skriva den aktuella filens ändringar kan du dölja den: >
+	:hide edit foo.txt
+
+Texten med ändringarna finns kvar, men du ser den inte. Detta förklaras mer i avsnitt |22.4| om buffertlistan.
+
+==============================================================================
+*07.2*	En fillista
+
+Du kan starta Vim med en följd av filer. Exempel: >
+	vim one.c two.c three.c
+
+Kommandot startar Vim med tre filer att redigera. Vim visar den första filen. När du är klar med den öppnar du nästa med: >
+	:next
+
+Om den aktuella filen har osparade ändringar visas ett felmeddelande och ":next" fungerar inte. Det är samma situation som med ":edit" i föregående avsnitt. Kasta ändringarna så här: >
+	:next!
+
+Oftast vill du dock spara ändringarna och fortsätta. Då använder du: >
+	:wnext
+
+Det motsvarar två separata kommandon: >
+	:write
+	:next
+
+
+VILKEN FIL ÄR ÖPPEN?
+
+Titta på fönstrets namnlist för att se vilken fil i argumentlistan du redigerar. Den kan visa till exempel "(2 of 3)", vilket betyder att du arbetar med den andra av tre filer.
+   Visa fillistan med: >
+	:args
+
+Det är en förkortning av "arguments" (argument). Utdata kan se ut så här:
+
+	one.c [two.c] three.c ~
+
+Det här är filerna du startade Vim med. Filen du redigerar, "two.c", står inom hakparenteser.
+
+
+GÅ TILL ANDRA ARGUMENT
+
+Gå tillbaka en fil med: >
+	:previous
+
+Det fungerar som kommandot ":next", men går åt andra hållet. Det finns också ett kortkommando som först sparar filen: >
+	:wprevious
+
+Gå till den sista filen i listan med: >
+	:last
+
+Gå tillbaka till den första med: >
+	:first
+
+Det finns däremot inga kommandon ":wlast" eller ":wfirst".
+
+Du kan ange ett tal med ":next" och ":previous". Hoppa framåt två filer så här: >
+	:2next
+
+
+SPARA AUTOMATISKT
+
+När du växlar mellan filer och gör ändringar måste du komma ihåg att skriva ":write". Annars får du ett felmeddelande. Om du alltid vill spara ändrade filer automatiskt kan du ange: >
+	:set autowrite
+
+Stäng av det igen när du redigerar en fil som du kanske inte vill spara: >
+	:set noautowrite
+
+
+REDIGERA EN ANNAN FILLISTA
+
+Du kan ändra fillistan utan att avsluta och starta Vim igen. Redigera tre andra filer med: >
+	:args five.c six.c seven.h
+
+Du kan också använda jokertecken som i skalet: >
+	:args *.txt
+
+Vim går till den första filen i listan. Om den aktuella filen har ändringar kan du först spara den eller använda ":args!" (med tillagt utropstecken) för att kasta ändringarna.
+
+
+HAR DU REDIGERAT DEN SISTA FILEN?
+							*arglist-quit*
+När du använder en fillista antar Vim att du vill redigera alla filer. För att förhindra att du avslutar för tidigt visas detta fel om det finns filer kvar i listan:
+
+	E173: 46 fler filer att redigera ~
+
+Om du verkligen vill avsluta kör du avslutningskommandot en gång till. Då fungerar det, så länge du inte kör andra kommandon emellan.
+
+==============================================================================
+*07.3*	Hoppa mellan filer
+
+Hoppa snabbt mellan två filer med CTRL-^ (på ett amerikanskt tangentbord sitter ^ ovanför tangenten 6). Exempel: >
+	:args one.c two.c three.c
+
+Nu är du i one.c. >
+	:next
+
+Nu är du i two.c. Tryck på CTRL-^ för att gå tillbaka till one.c. Tryck igen för att återvända till two.c och en gång till för att gå till one.c. Kör sedan: >
+	:next
+
+Nu är du i three.c. Observera att CTRL-^ inte ändrar Vim:s position i fillistan. Det gör endast kommandon som ":next" och ":previous".
+
+Filen du redigerade senast kallas alternativfilen. Direkt när Vim startat fungerar inte CTRL-^ eftersom det ännu inte finns någon tidigare fil.
+
+
+FÖRDEFINIERADE MARKERINGAR
+
+När du har hoppat till en annan fil kan du använda två fördefinierade markeringar: >
+	`"
+
+Detta flyttar markören till positionen där den stod när du lämnade filen. En annan markering kommer ihåg var du gjorde den senaste ändringen: >
+	`.
+
+Anta att du redigerar filen "one.txt" och använder "x" för att ta bort ett tecken ungefär mitt i filen. Gå sedan till sista raden med "G" och skriv filen med ":w". Redigera några andra filer och öppna sedan "one.txt" igen med ":edit one.txt". Om du nu använder `" hoppar Vim till den sista raden. Med `. hoppar du till positionen där du tog bort tecknet. Även om du flyttar runt i filen kommer `" och `. tillbaka till de sparade positionerna, åtminstone tills du ändrar filen igen eller lämnar den.
+
+
+FILMARKERINGAR
+
+I avsnitt |03.10| förklarades hur du skapar en markering i en fil med "mx" och hoppar dit med "`x". Det fungerar inom en fil. Om du redigerar en annan fil och skapar markeringar där hör de till den filen. Varje fil har alltså sina egna lokala markeringar.
+   Hittills har vi använt små bokstäver för markeringar. Det finns även markeringar med stor bokstav. De är globala och kan användas från vilken fil som helst. Anta att du redigerar "foo.txt". Gå till mitten av filen med "50%" och skapa markeringen F (F för foo): >
+	50%mF
+
+Öppna sedan "bar.txt" och placera markeringen B (B för bar) på sista raden: >
+	GmB
+
+Nu kan du använda kommandot 'F för att gå till mitten av foo.txt. Om du redigerar en annan fil kan du skriva 'B för att återvända till slutet av bar.txt.
+
+Filmarkeringarna kommer ihåg sina positioner tills de flyttas. Du kan skapa en markering, redigera i flera timmar och ändå hoppa tillbaka till den.
+   Det kan vara användbart att koppla markeringens bokstav till filen. Använd till exempel H i en headerfil, M i en Makefile och C i en C-källkodsfil.
+
+Visa en viss markering genom att ange ett argument till kommandot ":marks": >
+	:marks M
+
+Du kan ange flera argument: >
+	:marks MCP
+
+Kom ihåg att du även kan använda CTRL-O och CTRL-I för att hoppa till äldre respektive nyare positioner utan att skapa markeringar.
+
+==============================================================================
+*07.4*	Säkerhetskopior
+
+Normalt skapar Vim ingen säkerhetskopia. Om du vill ha en aktiverar du den så här: >
+	:set backup
+
+Säkerhetskopians namn är originalfilens namn med ett tilde (~) i slutet. Om filen heter data.txt blir säkerhetskopian alltså data.txt~.
+   Om du inte vill att säkerhetskopian ska sluta med ~ kan du ändra filändelsen: >
+	:set backupext=.bak
+
+Då används data.txt.bak i stället för data.txt~.
+   Alternativet 'backupdir' anger var säkerhetskopian sparas. Standardinställningen sparar den i samma katalog som originalfilen, vilket oftast är lämpligt.
+
+	Obs:
+	Om alternativet 'backup' inte är aktiverat men 'writebackup' är det,
+	skapar Vim ändå en säkerhetskopia. Den tas dock bort när filen har
+	skrivits utan fel. Det skyddar originalfilen om skrivningen misslyckas,
+	till exempel om disken är full. Blixtnedslag kan också orsaka fel, men
+	är mindre vanliga.
+
+
+BEHÅLLA ORIGINALFILEN
+
+Om du redigerar källkod kanske du vill spara filen som den var innan du ändrade den. Säkerhetskopian skrivs dock över varje gång du sparar filen. Därför innehåller den bara den närmast föregående versionen, inte originalet.
+   Om Vim ska behålla originalfilen ställer du in alternativet 'patchmode'. Det anger filändelsen för den första säkerhetskopian av en ändrad fil. Ofta används: >
+	:set patchmode=.orig
+
+När du nu redigerar data.txt första gången, ändrar den och sparar, behåller Vim en kopia av den oförändrade filen med namnet "data.txt.orig".
+   Om du gör fler ändringar ser Vim att "data.txt.orig" redan finns och låter den vara. Ytterligare säkerhetskopior får namnet "data.txt~" (eller den ändelse du angett med 'backupext').
+   Om 'patchmode' är tomt, vilket är standard, sparas inte originalfilen.
+
+==============================================================================
+*07.5*	Kopiera text mellan filer
+
+Här förklaras hur du kopierar text från en fil till en annan. Börja med filen som innehåller texten du vill kopiera. Flytta markören till textens början och tryck på "v" för att starta visuellt läge. Flytta markören till textens slut och tryck på "y". Den markerade texten kopieras.
+   Så här kopierar du från ordet "Här" till radens sista synliga tecken: >
+	:edit thisfile
+	/Här
+	vg_y
+
+Öppna sedan filen där texten ska klistras in. Flytta markören till tecknet efter vilket texten ska placeras och använd "p": >
+	:edit otherfile
+	/There
+	p
+
+Du kan förstås använda andra kommandon för att kopiera texten. Starta till exempel visuellt läge med "V" för att markera hela rader, eller använd CTRL-V för att markera ett rektangulärt block. Du kan också använda "Y" för att kopiera en rad eller "yaw" för att kopiera ett ord.
+   Kommandot "p" klistrar in text efter markören. Använd "P" för att klistra in före markören. Vim kommer ihåg om du kopierade en hel rad eller ett block och klistrar in texten på samma sätt.
+
+
+ANVÄNDA REGISTER
+
+Om du vill kopiera flera textstycken från en fil till en annan tar det tid att växla mellan filerna och skriva målfilen varje gång. Kopiera i stället varje stycke till ett eget register.
+   Ett register är en plats där Vim lagrar text. Här använder vi registren a till z; senare får du lära dig att det finns fler. Kopiera en mening till registret f (f för First, först): >
+	"fyas
+
+Kommandot "yas" kopierar en mening som tidigare. Tecknen "f anger att texten ska sparas i registret f. Registerangivelsen måste stå precis före kopieringskommandot.
+   Kopiera nu tre hela rader till registret l (l för line, rad): >
+	"l3Y
+
+Talet kan lika gärna stå före "l. Kopiera ett textblock till registret b (b för block) så här: >
+	CTRL-Vjjww"by
+
+Registerangivelsen "b måste stå precis före kommandot "y". Om den stod före "w" skulle det inte fungera.
+   Nu finns tre textstycken i registren f, l och b. Öppna en annan fil, flytta markören och klistra in texten där du vill ha den: >
+	"fp
+
+Även registerangivelsen "f står före kommandot "p".
+   Du kan klistra in registren i valfri ordning. Texten ligger kvar i registret tills du kopierar något annat dit, så du kan klistra in den så många gånger du vill.
+
+När du tar bort text kan du också ange ett register. Använd det för att flytta flera textstycken. Ta till exempel bort ett ord och spara det i registret w: >
+	"wdaw
+
+Registerangivelsen står före borttagningskommandot "d".
+
+
+LÄGGA TILL I EN FIL
+
+Samla rader i en fil med kommandot: >
+	:write >> logfile
+
+Detta lägger till texten från den aktuella filen i slutet av "logfile". Då slipper du kopiera raderna, öppna loggfilen och klistra in dem; två steg sparas. Du kan bara lägga till text sist i filen.
+   Om du bara vill lägga till några rader markerar du dem i visuellt läge innan du skriver ":write". I kapitel 10 får du lära dig andra sätt att välja ett radintervall.
+
+==============================================================================
+*07.6*	Visa en fil
+
+Ibland vill du bara läsa en fil och aldrig spara ändringar i den. Du kan råka skriva ":w" utan att tänka dig för och skriva över originalet. Undvik det genom att öppna filen skrivskyddad.
+   Starta Vim i skrivskyddat läge med: >
+	vim -R file
+
+På Unix kan du också använda: >
+	view file
+
+Nu redigerar du "file" i skrivskyddat läge. Om du försöker använda ":w" får du ett felmeddelande och filen skrivs inte.
+   Om du försöker ändra filen visar Vim en varning:
+
+	W10: Varning: Ändrar en skrivskyddad fil ~
+
+Ändringen genomförs ändå. Det gör att du till exempel kan formatera filen så att den blir lättare att läsa.
+   Om du glömmer att filen är skrivskyddad kan du ändå skriva den genom att lägga till ! i skrivkommandot.
+
+Om du verkligen vill förhindra ändringar gör du så här: >
+	vim -M file
+
+Nu misslyckas alla försök att ändra text. Hjälpfilerna fungerar till exempel så. Om du försöker ändra en sådan fil får du felmeddelandet:
+
+	E21: Kan inte göra ändringar, 'modifiable' är av ~
+
+Du kan använda argumentet -M för att starta Vim som en visare. Det skyddar dock inte helt, eftersom du själv kan aktivera dessa alternativ: >
+	:set modifiable
+	:set write
+
+==============================================================================
+*07.7*	Byta filnamn
+
+Ett smart sätt att börja redigera en ny fil är att utgå från en befintlig fil som innehåller det mesta du behöver. Anta till exempel att du ska skriva ett nytt program för att flytta en fil och redan har ett program som kopierar en fil. Börja då med: >
+	:edit copy.c
+
+Ta bort det du inte behöver. Spara sedan filen med ett nytt namn med kommandot ":saveas": >
+	:saveas move.c
+
+Vim skriver filen med det angivna namnet och börjar redigera den. Nästa gång du kör ":write" sparas alltså "move.c". Filen "copy.c" ändras inte.
+   Om du vill byta namn på filen du redigerar utan att skriva den använder du: >
+	:file move.c
+
+Vim markerar då filen som "inte redigerad", vilket betyder att Vim vet att det inte är filen du började redigera. När du försöker skriva filen kan du få meddelandet:
+
+	E13: Filen finns redan (lägg till ! för att skriva över) ~
+
+Detta skyddar dig från att av misstag skriva över en annan fil.
+
+==============================================================================
+
+Nästa kapitel: |usr_08.txt|  Dela fönster
+
+Upphovsrätt: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

@@ -1,0 +1,97 @@
+*howto.txt* För Vim version 9.2.  Senast ändrad: 14 feb 2026
+
+
+		  VIMS REFERENSMANUAL	av Bram Moolenaar
+
+
+Så här gör du ...				*howdoi* *how-do-i* *howto* *how-to*
+
+|tutor|			komma igång
+|:quit|			avsluta? Jag har fastnat, hjälp!
+|initialization|	initiera Vim
+|vimrc-intro|		skriva en Vim-skriptfil (vimrc)
+|suspend|		pausa Vim
+|usr_11.txt|		återställa efter en krasch
+|07.4|			behålla en säkerhetskopia när filen skrivs över
+
+|usr_07.txt|		redigera filer
+|23.4|			redigera binärfiler
+|usr_24.txt|		infoga text
+|deleting|		ta bort text
+|usr_04.txt|		ändra text
+|04.5|			kopiera och flytta text
+|usr_25.txt|		formatera text
+|30.6|			formatera kommentarer
+|30.2|			ställa in indrag i C-program
+|25.3|			ställa in indrag automatiskt
+
+|usr_26.txt|		upprepa kommandon
+|02.5|			ångra och göra om
+
+|usr_03.txt|		förflytta markören
+|word-motions|		förflytta sig mellan ord
+|left-right-motions|	förflytta sig i sidled
+|up-down-motions|	gå uppåt och nedåt
+|object-motions|		förflytta sig mellan textobjekt
+|various-motions|		andra förflyttningskommandon
+|object-select|		markera textobjekt
+'whichwrap'		flytta markören över radbrytningar
+'virtualedit'		flytta markören till en plats utan text
+|usr_27.txt|		ange sökmönster
+|tags-and-searches|	använda taggar och särskilda sökningar
+|29.4|			söka i inkluderade filer efter variabler,
+			funktioner eller makron
+|K|			söka efter hjälp för ordet under markören
+
+|03.7|			rulla genom texten
+'sidescroll'		rulla i sidled
+'scrolloff'		ställa in synliga rader runt markören
+
+|mode-switching|		byta läge
+|04.4|			använda visuellt läge
+'insertmode'		starta Vim i infogningsläge
+
+|40.1|			mappa tangenter
+|24.7|		skapa förkortningar
+
+|ins-expandtab|		ersätta tabbar med blanksteg i infogningsläge
+|i_CTRL-R|		infoga innehållet i ett register i infogningsläge
+|24.3|			komplettera ord
+|25.1|			bryta en rad innan den blir för lång
+
+|20.1|			redigera kommandoraden
+|20.3|			komplettera kommandoraden
+'cmdheight'		öka kommandoradens höjd
+|10.3|			ange kommandoradsintervall
+|40.3|			köra kommandon automatiskt före eller efter att en
+			fil läses eller skrivs, eller ett buffert- eller
+			fönsterbyte sker
+
+'autowrite'		spara automatiskt
+|30.1|			snabba upp redigera-kompilera-redigera-cykeln eller
+			kompilera och rätta fel i Vim
+
+|options|		ställa in alternativ
+|auto-setting|		ställa in alternativ automatiskt
+|term-dependent-settings|	ställa in alternativ beroende på terminalnamn
+|save-settings|		spara inställningar
+|:quote|		kommentera Vim-skriptfiler
+'helpheight'		ändra standardhöjden på hjälpfönstret
+'highlight'		ställa in olika markeringslägen
+'title'			ställa in fönstertiteln
+'icon'			ställa in fönstrets ikontitel
+'report'			undvika ändringsmeddelanden för varje rad
+'shortmess'		slippa |hit-enter|-frågor
+
+|mouse-using|		använda musen i Vim
+|usr_08.txt|		hantera flera fönster och buffertar
+|gui.txt|		använda det grafiska gränssnittet
+
+Det går (ännu) inte att diska med Vim
+
+|usr_06.txt|		aktivera syntaxmarkering
+|2html.vim|		konvertera en färgmarkerad fil till HTML
+|less|			använda Vim som less eller more med syntaxmarkering
+
+
+ vim:tw=78:ts=8:noet:ft=help:norl:
