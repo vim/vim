@@ -109,6 +109,8 @@ static garray_T profile_info_ga = {0, 0, sizeof(profinfo_T), 20, NULL};
 #define EXEC_OK		1
 #define EXEC_DONE	2
 
+static void may_restore_cmdmod(funclocal_T *funclocal);
+
     void
 to_string_error(vartype_T vartype)
 {
@@ -1290,6 +1292,10 @@ func_return(ectx_T *ectx)
 	}
     }
 #endif
+
+    // A command modifier of this function may still be active, e.g. when
+    // leaving it because of an exception. Undo it first.
+    may_restore_cmdmod(&ectx->ec_funclocal);
 
     if (dfunc->df_defer_var_idx > 0)
 	invoke_defer_funcs(ectx);
@@ -3762,9 +3768,6 @@ exec_instructions(ectx_T *ectx)
 		    goto done;
 		}
 
-		// Jumping to the calling function skips the ISN_CMDMOD_REV of
-		// the current function, undo its command modifier.
-		may_restore_cmdmod(&ectx->ec_funclocal);
 		if (func_return(ectx) == FAIL)
 		    goto theend;
 	    }

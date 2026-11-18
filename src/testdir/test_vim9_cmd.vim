@@ -1119,6 +1119,47 @@ def Test_bar_line_continuation()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
+def Test_modifier_silent_return()
+  var lines =<< trim END
+    vim9script
+    def Inner()
+      for i in [1]
+        silent return
+      endfor
+    enddef
+    def Outer()
+      Inner()
+      echomsg 'visible'
+    enddef
+    echomsg 'before Outer'
+    Outer()
+    assert_equal("\nvisible", execute(':1messages'))
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_modifier_noautocmd_error()
+  var lines =<< trim END
+    vim9script
+    def Inner()
+      noautocmd eval [][0]
+    enddef
+    def Outer()
+      Inner()
+    enddef
+    var save_ei = &eventignore
+    set eventignore=
+    try
+      noautocmd Outer()
+    catch /E684:/
+    finally
+      assert_equal('', &eventignore)
+      &eventignore = save_ei
+    endtry
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_command_modifier_other()
   new Xsomefile
   setline(1, 'changed')
