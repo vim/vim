@@ -87,4 +87,23 @@ patch 1232), a better condition is:
 <
 Whichever vim-mix condition is used, it only works in one of two ways:
 
+
+Builtin function highlighting~
+							*vim9-ignored-argument*
+The argument "_" (an underscore) can be used to ignore the argument.  This is
+most useful in callbacks where you don't need it, but do need to give an
+argument to match the call.  For example, when using |map()| with a list, two
+arguments are passed, the index and the value.  The following script
+first demonstrates ignoring the indexes, then ignoring the values:
+>vim9
+	vim9script
+	final nl: list<number> = [1, 2, 4, 8]
+	map(nl, (_, val) => val * 2)	# '_' ignores the indexes
+	echo nl				# [2, 4, 8, 16]
+	map(nl, (idx, _) => idx * 2)	# '_' ignores the values
+	echo nl				# [0, 2, 4, 6]
+<
+The "_" argument can be used multiple times, and no type is needed.
+
+
  vim:tw=78:ts=8:noet:ft=help:norl:
