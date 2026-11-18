@@ -1450,9 +1450,12 @@ dict_filter_map(
     // Create one funccall_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, &newtv);
 
+    // Lock the dict.  Also set VAR_FIXED, ":unlockvar" in the expression
+    // only resets VAR_LOCKED and must not allow removing items.
     int prev_lock = d->dv_lock;
     if (d->dv_lock == 0)
 	d->dv_lock = VAR_LOCKED;
+    d->dv_lock |= VAR_FIXED;
     ht = &d->dv_hashtab;
     hash_lock(ht);
     todo = (int)ht->ht_used;
