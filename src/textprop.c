@@ -2451,15 +2451,17 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     }
     if (dict_has_key(dict, "types"))
     {
-	typval_T types;
-	listitem_T *li = NULL;
+	dictitem_T	*di = dict_find(dict, (char_u *)"types", -1);
+	listitem_T	*li = NULL;
 
-	dict_get_tv(dict, "types", &types);
-	if (types.v_type == VAR_LIST && types.vval.v_list->lv_len > 0)
+	// Use the value in the Dict directly, a copy would leak a reference.
+	if (di != NULL && di->di_tv.v_type == VAR_LIST
+		&& di->di_tv.vval.v_list != NULL
+		&& di->di_tv.vval.v_list->lv_len > 0)
 	{
-	    type_ids = alloc( sizeof(int) * types.vval.v_list->lv_len );
+	    type_ids = alloc( sizeof(int) * di->di_tv.vval.v_list->lv_len );
 
-	    FOR_ALL_LIST_ITEMS(types.vval.v_list, li)
+	    FOR_ALL_LIST_ITEMS(di->di_tv.vval.v_list, li)
 	    {
 		proptype_T *prop_type;
 

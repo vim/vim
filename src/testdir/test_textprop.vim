@@ -471,10 +471,28 @@ func Test_prop_remove()
   call assert_fails("call prop_remove({'types': []}, 1)", 'E968:')
   call assert_fails("call prop_remove({'types': ['not_a_real_type']}, 1)", 'E971:')
 
+  " null List does not crash
+  call assert_fails("call prop_remove({'types': test_null_list()}, 1)", 'E968:')
+
   " only one of types and type can be supplied
   call assert_fails("call prop_remove({'type': 'one', 'types': ['three'], 'all': 1}, 1)", 'E1295:')
 
   call DeletePropTypes()
+  bwipe!
+endfunc
+
+" prop_remove() with "types" must not change the reference count of the List.
+" Only detects the leaked reference with ASan/valgrind.
+func Test_prop_remove_types_refcount()
+  new
+  call setline(1, 'some text')
+  call prop_type_add('one', {})
+  call prop_add(1, 1, {'type': 'one', 'length': 2})
+  let t = ['one']
+  let refcount = test_refcount(t)
+  call prop_remove({'types': t, 'all': 1})
+  call assert_equal(refcount, test_refcount(t))
+  call prop_type_delete('one')
   bwipe!
 endfunc
 
