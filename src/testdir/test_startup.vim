@@ -1213,12 +1213,16 @@ func Test_EXINIT()
   [CODE]
   call writefile(after, 'Xafter', 'D')
   let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "set enc=utf8"'
+  let save_home = $HOME
+  let save_xdg = $XDG_CONFIG_HOME
   call setenv('HOME', '/non-existing')
   call setenv('XDG_CONFIG_HOME', '/non-existing')
   call setenv('EXINIT', 'let exinit_found="yes"')
   exe "silent !" . cmd
   call assert_equal([], readfile('Xtestout'))
 
+  let $HOME = save_home
+  let $XDG_CONFIG_HOME = save_xdg
   call delete('Xtestout')
 endfunc
 
