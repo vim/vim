@@ -280,6 +280,7 @@ func Test_undolist()
     setl undofile
     w Xundolist.txt
     defer delete('Xundolist.txt')
+    defer delete('.Xundolist.txt.un~')
     let lastline = execute('undolist')->split("\n")[-1]
     call assert_match('seconds\? ago         \?1', lastline)
 
