@@ -3300,12 +3300,12 @@ func Test_cell_size_response_keeps_intro()
   call writefile(['call timer_start(10, {-> 0}, #{repeat: -1})'],
         \ 'XCellSizeIntro', 'D')
   let buf = RunVimInTerminal('-S XCellSizeIntro', #{rows: 24, cols: 80})
-  call WaitForAssert({-> assert_match('VIM - Vi IMproved',
-        \ term_getline(buf, 7))})
+  let Term_line67 = {-> [6, 7]->map({_, l -> term_getline(buf, l)})->join()}
+  call WaitForAssert({-> assert_match('VIM - Vi IMproved', Term_line67())})
 
   call term_sendkeys(buf, "\<Esc>[6;37;17t")
   call TermWait(buf, 200)
-  call assert_match('VIM - Vi IMproved', term_getline(buf, 7))
+  call assert_match('VIM - Vi IMproved', Term_line67())
 
   call StopVimInTerminal(buf)
 endfunc
