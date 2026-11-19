@@ -271,6 +271,115 @@ func Test_compare_chained()
   call v9.CheckScriptFailure(lines, 'E1588:', 2)
 endfunc
 
+" The pi spigot of issue #17590 / #17602.  Its line
+"	if !(k != j > 2)
+" chains two comparisons, which gives E1588 (it used to be a misleading
+" "E110: Missing ')'").  The comparison inside must get its own parentheses:
+"	legacy script:	if !(k != (j > 2))
+"	Vim9 script:	if !(k != (j > 2 ? 1 : 0))
+" (in Vim9 script a number cannot be compared with the bool "j > 2").
+" For n digits (a multiple of 3) j runs up to n / 3 + 3 and k starts at
+" n * 10 / 3 - 1 (403 and 3999 for 1200 digits in the issue).
+"
+" Performance, before and after:
+" - Before: the script of the issue did "call add(a, 0)" on every step of the
+"   inner loop, so the list kept growing: for 1200 digits it reached about
+"   1.6 million items, although only the first 404 are ever used.
+" - After: the list is made once with all the items it needs,
+"	let a = [2] + repeat([0], n / 3 + 3)
+"   and the add() is gone.  The digits are the same.
+" Measured with 1200 digits (Vim 9.2.1293, MS-Windows, one run):
+"	legacy script:	12.5 s before, 10.9 s after
+"	Vim9 script:	 0.87 s before, 0.52 s after
+" Vim9 script is 15 to 20 times faster than legacy script here.  The time
+" grows about with the square of n (3000 digits: 130 s legacy, 3.2 s Vim9),
+" so this test computes only 60 digits (300 in Vim9 script).
+func Test_compare_chained_pi_spigot()
+  " the line as it was written
+  let lines =<< trim END
+      vim9script
+      def Pi(): string
+        var k = 199
+        var j = 3
+        if !(k != j > 2)
+          return 'never'
+        endif
+        return ''
+      enddef
+      defcompile
+  END
+  call v9.CheckScriptFailure(lines, 'E1588: Comparison operators cannot be chained, use parentheses: > 2)')
+
+  let pi60 = '141592653589793238462643383279502884197169399375105820974944'
+
+  " legacy script: the comparison in parentheses
+  func s:PiLegacy(n)
+    let jmax = a:n / 3 + 3
+    let k = a:n * 10 / 3 - 1
+    let x = ''
+    let q = 0
+    let t = 1000
+    let j = 0
+    let a = [2] + repeat([0], jmax)
+    while a[j] != 0 && k != 0
+      let p = 1 + 2 * k
+      while j < jmax
+        if !(k != (j > 2))
+          let x ..= printf('%.3d', a[j - 2] % t + q / p / t)
+        endif
+        let q = a[j] * k + q % p * t
+        let a[j] = q / p
+        let j += 1
+      endwhile
+      let j = 0
+      let q = 0
+      let a[j] += 2
+      let k -= 1
+    endwhile
+    return x
+  endfunc
+  call assert_equal(pi60, s:PiLegacy(60))
+  delfunc s:PiLegacy
+
+  " Vim9 script: the bool made a number
+  let lines =<< trim END
+      vim9script
+      def Pi(n: number): string
+        var jmax = n / 3 + 3
+        var k = n * 10 / 3 - 1
+        var x = ''
+        var q = 0
+        var t = 1000
+        var j = 0
+        var a = [2] + repeat([0], jmax)
+        while a[j] != 0 && k != 0
+          var p = 1 + 2 * k
+          while j < jmax
+            if !(k != (j > 2 ? 1 : 0))
+              x ..= printf('%.3d', a[j - 2] % t + q / p / t)
+            endif
+            q = a[j] * k + q % p * t
+            a[j] = q / p
+            ++j
+          endwhile
+          j = 0
+          q = 0
+          a[j] += 2
+          k -= 1
+        endwhile
+        return x
+      enddef
+      const PI60 = '141592653589793238462643383279502884197169399375105820974944'
+      assert_equal(PI60, Pi(60))
+      # more digits: the same start, then the next ones up to the 300th
+      var pi300 = Pi(300)
+      assert_equal(300, len(pi300))
+      assert_equal(PI60, pi300[: 59])
+      assert_equal('4428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141273', pi300[200 :])
+  END
+  call v9.CheckScriptSuccess(lines)
+endfunc
+
 func Test_setreg_null_list()
   let lines =<< trim END
       call setreg('x', test_null_list())

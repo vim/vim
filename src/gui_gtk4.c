@@ -757,10 +757,10 @@ gui_mch_open(void)
     }
     else
     {
-	// Use 80x24 as the default GUI size, unless geometry was specified.
-	if (Columns > 80)
+	// Use 80x24 as the default GUI size, unless the user set the options.
+	if (Columns > 80 && !option_was_set((char_u *)"columns"))
 	    Columns = 80;
-	if (Rows > 24)
+	if (Rows > 24 && !option_was_set((char_u *)"lines"))
 	    Rows = 24;
     }
 
@@ -804,8 +804,8 @@ gui_mch_open(void)
 
     gtk_window_present(GTK_WINDOW(gui.mainwin));
 
-    // Undo the 80x24 clamp above, gui_init() asks for this size next.  Drain
-    // the pending allocation before that, or gui_resize_shell() overwrites it.
+    // Drain the pending allocation before gui_init() asks for this size next,
+    // or gui_resize_shell() overwrites it.
     gui_mch_update();
 
     // Make sure the drawing area gets keyboard focus.

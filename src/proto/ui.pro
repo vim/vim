@@ -13,6 +13,7 @@ void ui_set_shellsize(int mustset);
 void ui_new_shellsize(void);
 int ui_get_winpos(int *x, int *y, varnumber_T timeout);
 void ui_breakcheck(void);
+void ui_breakcheck_reset(void);
 void ui_breakcheck_force(int force);
 int vim_is_input_buf_full(void);
 int vim_is_input_buf_empty(void);

@@ -989,6 +989,45 @@ func Test_python3_slice_assignment()
         \ "Vim(py3):ValueError: slice step cannot be zero")
 endfunc
 
+" popitem() cannot remove an item from a locked Dict.  In a map() callback
+" this used to free the item that map() was using, which is only detected
+" with valgrind or ASAN.
+func Test_python3_dict_popitem_locked()
+  let d = {'a': 1, 'b': 2}
+  lockvar d
+  try
+    py3 vim.bindeval('d').popitem()
+    call assert_report('popitem() did not fail')
+  catch
+    call assert_match('vim.error: dictionary is locked', v:exception)
+  endtry
+  call assert_equal({'a': 1, 'b': 2}, d)
+  unlockvar d
+
+  let g:pd = {}
+  for i in range(20)
+    let g:pd['k' .. i] = [i]
+  endfor
+  func g:PopItemCb(k, v)
+    py3 vim.bindeval('g:pd').popitem()
+    return a:v
+  endfunc
+  try
+    call map(g:pd, function('g:PopItemCb'))
+    call assert_report('map() did not fail')
+  catch
+    call assert_match('vim.error: dictionary is locked', v:exception)
+  endtry
+  call assert_equal(20, len(g:pd))
+  unlet g:pd
+  delfunc g:PopItemCb
+
+  " popitem() on a Dict that is not locked works
+  let d = {'a': 1}
+  py3 vim.bindeval('d').popitem()
+  call assert_equal({}, d)
+endfunc
+
 " Locked variables
 func Test_python3_lockedvar()
   new
@@ -1081,6 +1120,42 @@ func Test_python3_dict_key_error()
   call assert_equal(['KeyError', 'TypeError', 'TypeError', 'ValueError',
         \ 'TypeError', 'TypeError', 'KeyError', 'KeyError'], messages)
   unlet messages
+endfunc
+
+" A variable cannot be removed while ":let" lists the variables.  This used
+" to free the variable while it was still in g:, which is only detected with
+" valgrind or ASAN.
+func Test_python3_del_var_while_listing()
+  let lines =<< trim END
+    vim9script
+    class A
+      def string(): string
+        for cmd in ["del vim.vars['victim']", "vim.vars.pop('victim')",
+            "vim.vars.popitem()"]
+          try
+            execute 'py3 ' .. cmd
+            g:results->add(cmd .. ': no error')
+          catch
+            g:results->add(cmd .. ': ' .. matchstr(v:exception, 'dictionary is locked'))
+          endtry
+        endfor
+        return 'A'
+      enddef
+    endclass
+    g:results = []
+    g:obj = A.new()
+    g:victim = 'x'
+    execute('legacy let g:')
+  END
+  call writefile(lines, 'XPy3DelVar', 'D')
+  py3 import vim
+  source XPy3DelVar
+  call assert_equal([
+        \ "del vim.vars['victim']: dictionary is locked",
+        \ "vim.vars.pop('victim'): dictionary is locked",
+        \ "vim.vars.popitem(): dictionary is locked"], g:results)
+  call assert_equal('x', g:victim)
+  unlet g:obj g:victim g:results
 endfunc
 
 " Test for locked and scope attributes

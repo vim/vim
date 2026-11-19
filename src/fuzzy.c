@@ -232,6 +232,7 @@ fuzzy_match_in_list(
     listitem_T	    *li;
     long	    match_count = 0;
     int_u	    matches[FUZZY_MATCH_MAX_LEN];
+    int		    prev_lock;
 
     len = list_len(l);
     if (len == 0)
@@ -242,6 +243,11 @@ fuzzy_match_in_list(
     items = ALLOC_CLEAR_MULT(fuzzyItem_T, len);
     if (items == NULL)
 	return;
+
+    // The "text_cb" callback must not change the List, it could free the
+    // current item.  VAR_FIXED, so that :unlockvar can't undo it.
+    prev_lock = l->lv_lock;
+    l->lv_lock = VAR_FIXED;
 
     // For all the string items in items, get the fuzzy matching score
     FOR_ALL_LIST_ITEMS(l, li)
@@ -361,6 +367,8 @@ fuzzy_match_in_list(
 	}
 	clear_tv(&rettv);
     }
+
+    l->lv_lock = prev_lock;
 
     if (match_count > 0)
     {
