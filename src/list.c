@@ -2471,6 +2471,8 @@ do_uniq(list_T *l, sortinfo_T *info)
 	    listitem_free(l, li);
 	    l->lv_len--;
 	}
+	// The cached index may be for an item that was removed.
+	l->lv_u.mat.lv_idx_item = NULL;
     }
 
     vim_free(ptrs);

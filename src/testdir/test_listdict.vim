@@ -1288,6 +1288,22 @@ func Test_reverse_sort_uniq()
   call v9.CheckDefAndScriptFailure(lines, 'E1256: String or function required for argument 2')
 endfunc
 
+" uniq() removes items, the cached index must be reset.
+" Only detects reading freed memory with ASan/valgrind.
+func Test_uniq_resets_index()
+  let l = [1, 1, 2]
+  call assert_equal(1, l[1])
+  call uniq(l)
+  call assert_equal([1, 2], l)
+  call assert_equal(2, l[1])
+
+  let l = [1, 1, 2, 3, 4]
+  call assert_equal(4, l[4])
+  call uniq(l)
+  call assert_equal([1, 2, 3, 4], l)
+  call assert_equal(4, l[3])
+endfunc
+
 " reduce a list, blob or string
 func Test_reduce()
   let lines =<< trim END
