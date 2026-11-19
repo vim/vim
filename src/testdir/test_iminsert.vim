@@ -61,6 +61,33 @@ func Test_getimstatus()
   set imstatusfunc=
 endfunc
 
+func Test_imactivatefunc_return_value_ignored() " (issue #21908)
+  CheckNotMSWindows
+  let save_iminsert = &iminsert
+  try
+    let lines =<< trim END
+      vim9script
+      var called = false
+      &imactivatefunc = (active: bool) => {
+        called = true
+        return ''
+      }
+      &iminsert = 0
+      v:errmsg = ''
+      feedkeys("\<C-^>\r", 't')
+      input('Type <C-^>')
+      assert_true(called)
+      assert_equal('', v:errmsg)
+      &imactivatefunc = ''
+    END
+    call v9.CheckScriptSuccess(lines)
+  finally
+    let &iminsert = save_iminsert
+    set imactivatefunc&
+    set imstatusfunc&
+  endtry
+endfunc
+
 func Test_imactivatefunc_imstatusfunc_callback_no_breaks_foldopen()
   CheckScreendump
 
