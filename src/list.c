@@ -2468,6 +2468,8 @@ do_uniq(list_T *l, sortinfo_T *info)
 	    else
 		l->lv_u.mat.lv_last = ptrs[i].item;
 	    list_fix_watch(l, li);
+	    // The cached index item may be freed or have moved.
+	    l->lv_u.mat.lv_idx_item = NULL;
 	    listitem_free(l, li);
 	    l->lv_len--;
 	}
