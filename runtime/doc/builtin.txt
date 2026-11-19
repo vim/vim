@@ -7221,6 +7221,9 @@ listener_add({callback} [, {buf} [, {options}]])	*listener_add()*
 				the deletion was done
 		    added	negative, number of lines deleted
 		    col		1
+		When every line is deleted one empty line remains and is
+		reported as changed, thus deleting all four lines gives
+		"added" -3.
 		When lines are changed:
 		    lnum	the first changed line
 		    end		the line below the last changed line
