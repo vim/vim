@@ -4063,13 +4063,19 @@ frame_new_height(
 		h = frame_minheight(frp, NULL);
 		if (frp->fr_height + extra_lines < h)
 		{
-		    extra_lines += frp->fr_height - h;
+		    int old_height = frp->fr_height;
+
 		    frame_new_height(frp, h, topfirst, wfh, set_ch);
+		    extra_lines += old_height - frp->fr_height;
 		}
 		else
 		{
-		    frame_new_height(frp, frp->fr_height + extra_lines,
-							topfirst, wfh, set_ch);
+		    int new_height = frp->fr_height + extra_lines;
+
+		    frame_new_height(frp, new_height, topfirst, wfh, set_ch);
+		    // With 'winfixheight' a nested frame may not get the
+		    // requested height.
+		    height += frp->fr_height - new_height;
 		    break;
 		}
 		if (topfirst)
@@ -4266,13 +4272,19 @@ frame_new_width(
 		w = frame_minwidth(frp, NULL);
 		if (frp->fr_width + extra_cols < w)
 		{
-		    extra_cols += frp->fr_width - w;
+		    int old_width = frp->fr_width;
+
 		    frame_new_width(frp, w, leftfirst, wfw);
+		    extra_cols += old_width - frp->fr_width;
 		}
 		else
 		{
-		    frame_new_width(frp, frp->fr_width + extra_cols,
-							      leftfirst, wfw);
+		    int new_width = frp->fr_width + extra_cols;
+
+		    frame_new_width(frp, new_width, leftfirst, wfw);
+		    // With 'winfixwidth' a nested frame may not get the
+		    // requested width.
+		    width += frp->fr_width - new_width;
 		    break;
 		}
 		if (leftfirst)
