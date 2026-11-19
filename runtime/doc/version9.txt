@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Nov 02
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Nov 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52721,6 +52721,8 @@ Changed ~
 - Virtual text above a line is now counted by |screenpos()| and |virtcol()|.
 - The default values of |t_AU| and |t_8u| use colons to separate the
   parameters of the color for |underline| and |undercurl|.
+- Joining lines with |fo-j| keeps a comment string with the 'f' flag in
+  'comments'.
 
 							*added-9.3*
 Added ~

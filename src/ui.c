@@ -72,6 +72,7 @@ ui_write(char_u *s, int len, int console UNUSED)
 static char_u *ta_str = NULL;
 static int ta_off;	// offset for next char to use when ta_str != NULL
 static int ta_len;	// length of ta_str when it's not NULL
+static bool breakcheck_recursive = false;	// true while inside ui_breakcheck_force()
 
     void
 ui_inchar_undo(char_u *s, int len)
@@ -729,21 +730,30 @@ ui_breakcheck(void)
 }
 
 /*
+ * Reset the state of ui_breakcheck_force() after it was left with a longjmp(),
+ * e.g. on an X11 IO error.
+ */
+    void
+ui_breakcheck_reset(void)
+{
+    breakcheck_recursive = false;
+}
+
+/*
  * When "force" is true also check when the terminal is not in raw mode.
  * This is useful to read input on channels.
  */
     void
 ui_breakcheck_force(int force)
 {
-    static int	recursive = FALSE;
     int		save_updating_screen = updating_screen;
 
     // We could be called recursively if stderr is redirected, calling
     // fill_input_buf() calls settmode() when stdin isn't a tty.  settmode()
     // calls vgetorpeek() which calls ui_breakcheck() again.
-    if (recursive)
+    if (breakcheck_recursive)
 	return;
-    recursive = TRUE;
+    breakcheck_recursive = true;
 
     // We do not want gui_resize_shell() to redraw the screen here.
     ++updating_screen;
@@ -760,7 +770,7 @@ ui_breakcheck_force(int force)
     else
 	after_updating_screen(FALSE);
 
-    recursive = FALSE;
+    breakcheck_recursive = false;
 }
 
 //////////////////////////////////////////////////////////////////////////////

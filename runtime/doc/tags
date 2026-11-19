@@ -10434,6 +10434,7 @@ socketserver-address	remote.txt	/*socketserver-address*
 socketserver-clientserver	remote.txt	/*socketserver-clientserver*
 socketserver-differences	remote.txt	/*socketserver-differences*
 socketserver-name	remote.txt	/*socketserver-name*
+socketserver-security	remote.txt	/*socketserver-security*
 socketserver-x11	remote.txt	/*socketserver-x11*
 sort()	builtin.txt	/*sort()*
 sorting	change.txt	/*sorting*

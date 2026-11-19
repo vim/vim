@@ -2105,11 +2105,12 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
 	*paren = '(';
     }
 
-    // check for function type
+    // check for function type, "any" (e.g. an imported function) is checked
+    // at runtime
     if (cctx->ctx_skip != SKIP_YES)
     {
 	type = get_type_on_stack(cctx, 0);
-	if (type->tt_type != VAR_FUNC)
+	if (type->tt_type != VAR_FUNC && type->tt_type != VAR_ANY)
 	{
 	    emsg(_(e_function_name_required));
 	    return NULL;
@@ -2132,8 +2133,9 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
 			&argtypes, shuffled_argtypes) == FAIL)
 		return NULL;
 	}
-	else if (check_func_args_from_type(cctx, type, argcount, TRUE,
-		    arg_start) == FAIL)
+	else if (type->tt_type == VAR_FUNC
+		&& check_func_args_from_type(cctx, type, argcount, TRUE,
+							    arg_start) == FAIL)
 	    return NULL;
 
 	defer_var_idx = get_defer_var_idx(cctx);
