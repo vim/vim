@@ -2378,7 +2378,9 @@ equal_type(type_T *type1, type_T *type2, int flags)
 	case VAR_DICT:
 	    return equal_type(type1->tt_member, type2->tt_member, flags);
 	case VAR_TUPLE:
-	    if (type1->tt_argcount != type2->tt_argcount)
+	    if (type1->tt_argcount != type2->tt_argcount
+		    || (type1->tt_flags & TTFLAG_VARARGS)
+					!= (type2->tt_flags & TTFLAG_VARARGS))
 		return FALSE;
 	    if (type1->tt_argcount < 0
 			   || type1->tt_args == NULL || type2->tt_args == NULL)
