@@ -825,7 +825,22 @@ func Test_popup_menu_wrap()
   call StopVimInTerminal(buf)
 endfunction
 
-func Test_popup_with_mask()
+" Changing the List used for the "mask" option after creating the popup
+" must not cause errors.  Only detects the crash with ASan/valgrind.
+func Test_popup_mask_changed_list()
+  let m = [[1, 2, 1, 1]]
+  let winid = popup_create(['abc', 'def'], {'line': 2, 'col': 2, 'mask': m})
+  redraw
+  let m[0] = 5
+  call popup_move(winid, {'line': 3})
+  redraw
+  call add(m, [1])
+  redraw
+  call popup_close(winid)
+  unlet m
+endfunc
+
+ func Test_popup_with_mask()
   CheckScreendump
 
   let lines =<< trim END
