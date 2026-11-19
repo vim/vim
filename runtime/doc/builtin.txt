@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Nov 06
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Nov 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2075,19 +2075,24 @@ complete_check()					*complete_check()*
 complete_refresh()					*complete_refresh()*
 		Refresh the Insert mode completion popup with new matches
 		from the function sources in 'complete' that returned
-		"refresh: always".  See |complete-functions|.
+		"refresh": "always".  See |complete-functions|.
 		This is useful when such a source produces matches
 		asynchronously, for example from a timer or a channel
 		callback.
 		Only works in Insert mode while a completion is active and
-		at least one function source returned "refresh: always".
+		at least one function source returned "refresh": "always".
 		Returns |TRUE| when the matches were refreshed, |FALSE|
-		otherwise.
-		The text in the buffer is not changed, except that a
-		selected match is replaced with the text that was typed,
-		and text pre-inserted with 'completeopt' "preinsert" is
-		updated for the new matches.
-		Requires the |+eval| feature.
+		otherwise.  Also returns |FALSE| when the completion was
+		started in another window or buffer, when the cursor is
+		no longer in the text that is being completed (for example
+		when the callback runs after the user moved the cursor),
+		when the text cannot be changed, or when the matches are
+		still being collected.
+		The text in the buffer is not changed, except that the
+		text pre-inserted with 'completeopt' "preinsert" is
+		updated for the new matches.  A match that was selected
+		stays selected and inserted when it is still in the new
+		list, otherwise the text that was typed is restored.
 
 		Return type: |Number|
 

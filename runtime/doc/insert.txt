@@ -1,4 +1,4 @@
-*insert.txt*	For Vim version 9.2.  Last change: 2026 Nov 06
+*insert.txt*	For Vim version 9.2.  Last change: 2026 Nov 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1232,7 +1232,9 @@ that contains the List.  The Dict can have these items:
 
 When a function source in 'complete' produces matches asynchronously,
 call |complete_refresh()| when the matches are available to update the
-popup without waiting for the user to type another character.
+popup without waiting for the user to type another character.  A match
+that was selected stays selected and inserted when it is still in the
+new list, otherwise the text that was typed is restored.
 
 If you want to suppress the warning message for an empty result, return
 |v:none|.  This is useful to implement asynchronous completion with

@@ -210,6 +210,13 @@ static int	  compl_was_interrupted = FALSE;
 // stop looking for matches.
 static int	  compl_interrupted = FALSE;
 
+// Non-zero while ins_complete() is running, so collecting matches.  Used to
+// refuse complete_refresh() from a timer or channel callback, which can run
+// in the middle of collecting.
+#ifdef FEAT_COMPL_FUNC
+static int	  compl_collecting = 0;
+#endif
+
 static int	  compl_restarting = FALSE;	// don't insert match
 
 // When the first completion is done "compl_started" is set.  When it's
@@ -235,6 +242,11 @@ static linenr_T	  compl_lnum = 0;           // lnum where the completion start
 static colnr_T	  compl_col = 0;	    // column where the text starts
 					    // that is being completed
 static colnr_T	  compl_ins_end_col = 0;
+// Number of newlines actually inserted with the current match.  Used to check
+// that the cursor is still in the inserted text when refreshing.
+#ifdef FEAT_COMPL_FUNC
+static int	  compl_inserted_lines = 0;
+#endif
 static colnr_T	  compl_longest_end_col = 0;  // end of 'longest' inserted text
 static string_T	  compl_orig_text = {NULL, 0};  // text as it was before
 					    // completion started
@@ -2469,6 +2481,9 @@ ins_compl_clear(void)
     compl_matches = 0;
     compl_selected_item = -1;
     compl_ins_end_col = 0;
+#ifdef FEAT_COMPL_FUNC
+    compl_inserted_lines = 0;
+#endif
     compl_longest_end_col = 0;
     compl_curr_win = NULL;
     compl_curr_buf = NULL;
@@ -2700,6 +2715,34 @@ ins_compl_fuzzy_sort(void)
 }
 
 /*
+ * Delete the inserted match and put the text the user typed back.
+ * "leader" is supplied by the caller: ins_compl_new_leader() knows the leader
+ * is set, complete_refresh() may need the original-text fallback.
+ */
+    static void
+ins_compl_restore_typed_text(char_u *leader)
+{
+    ins_compl_delete();
+    ins_compl_insert_bytes(leader + get_compl_len(), -1);
+    compl_used_match = FALSE;
+}
+
+/*
+ * Update (or remove) the pre-inserted text for the new match list.
+ */
+    static void
+ins_compl_update_preinsert(size_t leader_len)
+{
+    if (compl_match_array == NULL)
+	compl_enter_selects = FALSE;
+    else if (ins_compl_has_preinsert() && leader_len > 0)
+	ins_compl_insert(TRUE, FALSE);
+    else if (compl_started && ins_compl_preinsert_longest()
+	    && leader_len > 0 && !ins_compl_preinsert_effect())
+	ins_compl_insert(TRUE, TRUE);
+}
+
+/*
  * Called after changing "compl_leader".
  * Show the popup menu with a different set of matches.
  * May also search for matches again if the previous search was interrupted.
@@ -2711,9 +2754,7 @@ ins_compl_new_leader(void)
     int	    save_w_leftcol = curwin->w_leftcol;
 
     ins_compl_del_pum();
-    ins_compl_delete();
-    ins_compl_insert_bytes(compl_leader.string + get_compl_len(), -1);
-    compl_used_match = FALSE;
+    ins_compl_restore_typed_text(compl_leader.string);
 
     if (compl_started)
     {
@@ -2761,13 +2802,7 @@ ins_compl_new_leader(void)
 	show_pum(save_w_wrow, save_w_leftcol);
 
     // Don't let Enter select the original text when there is no popup menu.
-    if (compl_match_array == NULL)
-	compl_enter_selects = FALSE;
-    else if (ins_compl_has_preinsert() && compl_leader.length > 0)
-	ins_compl_insert(TRUE, FALSE);
-    else if (compl_started && ins_compl_preinsert_longest()
-	    && compl_leader.length > 0 && !ins_compl_preinsert_effect())
-	ins_compl_insert(TRUE, TRUE);
+    ins_compl_update_preinsert(compl_leader.length);
 }
 
 /*
@@ -3216,6 +3251,9 @@ ins_compl_stop(int c, int prev_mode, int retval)
 #endif
     compl_num_bests = 0;
     compl_ins_end_col = 0;
+#ifdef FEAT_COMPL_FUNC
+    compl_inserted_lines = 0;
+#endif
 
     if (c == Ctrl_C && cmdwin_type != 0)
 	// Avoid the popup menu remains displayed when leaving the
@@ -4170,7 +4208,7 @@ f_complete_check(typval_T *argvars UNUSED, typval_T *rettv)
     void
 f_complete_refresh(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    static int in_refresh = FALSE;  // guard against recursive calls
+    static bool in_refresh = FALSE;  // guard against recursive calls
 
     rettv->vval.v_number = FALSE;
 
@@ -4181,9 +4219,69 @@ f_complete_refresh(typval_T *argvars UNUSED, typval_T *rettv)
     if (!is_cpt_func_refresh_always())
 	return;
 
+    // The completion may have been started in another window or buffer, or
+    // the state may have changed while waiting for an asynchronous result.
+    if (!ins_compl_win_active(curwin))
+	return;
+
+    // Refreshing replaces the text of the completion, so the cursor must
+    // still be in that text.  Otherwise text elsewhere would be changed or
+    // deleted.  A multi-line match moves the cursor down by one line for
+    // each newline that was inserted with it, so allow exactly those lines
+    // and no more.  Use the number recorded when inserting the text: counting
+    // newlines in compl_shown_match->cp_str would be wrong for "longest"
+    // (where it holds the original text) and for the common prefix inserted
+    // by 'completeopt' "preinsert".
+    colnr_T  compl_end = compl_ins_end_col > 0 ? compl_ins_end_col
+			     : compl_col + (colnr_T)ins_compl_leader_len();
+    if (curwin->w_cursor.lnum < compl_lnum)
+	return;
+    if (curwin->w_cursor.lnum > compl_lnum)
+    {
+	if (curwin->w_cursor.lnum > compl_lnum + compl_inserted_lines
+		|| (curwin->w_cursor.lnum == compl_lnum + compl_inserted_lines
+		    && curwin->w_cursor.col > compl_end))
+	    return;
+    }
+    else if (curwin->w_cursor.col < compl_col
+	    || curwin->w_cursor.col > compl_end)
+	return;
+
+    // Refreshing changes the text, which is not allowed when the text is
+    // locked, in a sandbox or in a buffer that cannot be changed.
+    if (text_locked() || !curbuf->b_p_ma)
+	return;
+#  ifdef HAVE_SANDBOX
+    if (sandbox != 0)
+	return;
+#  endif
+
+    // Do not interfere with a completion that is still collecting matches.
+    // "compl_collecting" covers the whole of ins_complete(), including the
+    // first collection, where "cpt_sources_index" is still -1.
+    // Also do not refresh an interrupted completion: the user already typed a
+    // key to stop it, changing the text under it would be wrong.
+    if (compl_collecting > 0 || cpt_sources_index != -1 || compl_interrupted)
+	return;
+
     int	    save_w_wrow = curwin->w_wrow;
     int	    save_w_leftcol = curwin->w_leftcol;
     int	    had_preinsert = ins_compl_preinsert_effect();
+    char_u  *sel_word = NULL;
+    int	    sel_source = -1;
+    int	    selection_kept = FALSE;
+    // With 'completeopt' "preinsert" the match is pre-inserted, but
+    // "compl_used_match" is not set for it, so check that as well.
+    int	    keep_selection = (compl_used_match || had_preinsert)
+			    && compl_curr_match != NULL
+			    && !match_at_original_text(compl_curr_match);
+
+    // Remember the match the user selected, it may be in the new list too.
+    if (keep_selection)
+    {
+	sel_word = vim_strsave(compl_curr_match->cp_str.string);
+	sel_source = compl_curr_match->cp_cpt_source_idx;
+    }
 
     in_refresh = TRUE;
 
@@ -4195,38 +4293,73 @@ f_complete_refresh(typval_T *argvars UNUSED, typval_T *rettv)
     // ins_compl_new_leader()).
     ins_compl_del_pum();
     if (compl_used_match || had_preinsert)
-    {
-	ins_compl_delete();
-	ins_compl_insert_bytes(ins_compl_leader() + get_compl_len(), -1);
-	compl_used_match = FALSE;
-    }
+	ins_compl_restore_typed_text(ins_compl_leader());
 
     cpt_compl_refresh();
     if (cot_fuzzy())
 	ins_compl_fuzzy_sort();
 
-    // With 'completeopt' "preinsert" the old pre-inserted text was removed
-    // above.  Select the first match again, so that its text can be
-    // pre-inserted below (like a new completion does).
-    if (ins_compl_has_preinsert() && compl_first_match != NULL
+    if (sel_word != NULL && compl_first_match != NULL)
+    {
+	compl_T *match = compl_first_match;
+
+	// Select the same match again when it survived the refresh.
+	do
+	{
+	    if (!match_at_original_text(match)
+		    && match->cp_str.string != NULL
+		    && match->cp_cpt_source_idx == sel_source
+		    && match->cp_str.length == STRLEN(sel_word)
+		    && STRNCMP(match->cp_str.string, sel_word,
+				(int)match->cp_str.length) == 0)
+	    {
+		compl_shown_match = match;
+		selection_kept = TRUE;
+		break;
+	    }
+	    match = match->cp_next;
+	}
+	while (match != NULL && !is_first_match(match));
+    }
+
+    if (compl_shown_match == NULL)
+	compl_shown_match = compl_first_match;
+    else if (!selection_kept && ins_compl_has_preinsert()
+	    && compl_first_match != NULL
 	    && compl_first_match->cp_next != NULL
 	    && !match_at_original_text(compl_first_match->cp_next))
+	// With 'completeopt' "preinsert" the old pre-inserted text was
+	// removed above.  Select the first match again, so that its text can
+	// be pre-inserted below (like a new completion does).
 	compl_shown_match = compl_first_match->cp_next;
 
-    compl_enter_selects = compl_selected_item != -1;
+    compl_enter_selects = selection_kept || compl_selected_item != -1;
     if (!compl_interrupted)
 	show_pum(save_w_wrow, save_w_leftcol);
 
-    // Update the pre-inserted text for the new match list, like
-    // ins_compl_new_leader() does when a character is typed.
-    if (compl_match_array == NULL)
-	compl_enter_selects = FALSE;
-    else if (ins_compl_has_preinsert() && ins_compl_leader_len() > 0)
-	ins_compl_insert(TRUE, FALSE);
-    else if (compl_started && ins_compl_preinsert_longest()
-	    && ins_compl_leader_len() > 0 && !ins_compl_preinsert_effect())
-	ins_compl_insert(TRUE, TRUE);
+    if (selection_kept)
+    {
+	// Put the text of the selected match back in the buffer, also when
+	// there is no popup menu, so that the buffer and |complete_info()|
+	// agree on what is selected.
+	ins_compl_insert(ins_compl_has_preinsert(), FALSE);
+	// Express the intent that no match is accepted when there is no popup
+	// menu, like ins_compl_new_leader() does.  Enter already requires
+	// "pum_visible()", so this is belt and braces rather than the
+	// mechanism that prevents it.
+	compl_enter_selects = compl_match_array != NULL;
+    }
+    else
+	ins_compl_update_preinsert(ins_compl_leader_len());
 
+    // Adding matches set "compl_curr_match" to the last one added.
+    // "ins_compl_show_pum()" normally points it at the shown match, but it
+    // is not called when there is no popup menu, so do it here to keep
+    // |complete_info()| consistent with the text in the buffer.
+    if (compl_started && compl_curr_match != compl_shown_match)
+	compl_curr_match = compl_shown_match;
+
+    vim_free(sel_word);
     in_refresh = FALSE;
     rettv->vval.v_number = TRUE;
 # endif
@@ -5972,6 +6105,12 @@ ins_compl_update_shown_match(void)
     void
 ins_compl_delete(void)
 {
+    // No inserted line is left after deleting the match, even when an early
+    // return leaves some of the text in the buffer.
+#ifdef FEAT_COMPL_FUNC
+    compl_inserted_lines = 0;
+#endif
+
     // In insert mode: Delete the typed part.
     // In replace mode: Put the old characters back, if any.
     int col = compl_col + (compl_status_adding() ? compl_length : 0);
@@ -6184,6 +6323,22 @@ find_common_prefix(size_t *prefix_len, int curbuf_only)
     return NULL;
 }
 
+#ifdef FEAT_COMPL_FUNC
+/*
+ * Count the newlines in the first "len" bytes of "str".
+ */
+    static int
+ins_compl_count_newlines(char_u *str, size_t len)
+{
+    int count = 0;
+
+    for (size_t i = 0; i < len; ++i)
+	if (str[i] == '\n')
+	    ++count;
+    return count;
+}
+#endif
+
 /*
  * Insert the new text being completed.
  * "move_cursor" is used when 'completeopt' includes "preinsert" and when TRUE
@@ -6235,10 +6390,23 @@ ins_compl_insert(int move_cursor, int insert_prefix)
 	}
     }
 
+#ifdef FEAT_COMPL_FUNC
+    // Remember how many lines the inserted text adds, so that a refresh can
+    // check that the cursor is still in the inserted text.  Count the text
+    // that is really inserted: with "longest" shown match may be the original
+    // text, and with "preinsert" only a common prefix may be inserted.
+    compl_inserted_lines = 0;
+#endif
     // Make sure we don't go over the end of the string, this can happen with
     // illegal bytes.
     if (compl_len < (int)cp_str_len)
     {
+#ifdef FEAT_COMPL_FUNC
+	size_t insert_len = cp_str_len - (size_t)compl_len;
+
+	compl_inserted_lines = ins_compl_count_newlines(cp_str + compl_len,
+							 insert_len);
+#endif
 	if (has_multiple)
 	    ins_compl_expand_multiple(cp_str + compl_len);
 	else
@@ -7550,6 +7718,9 @@ ins_complete(int c, int enable_pum)
     compl_direction = ins_compl_key2dir(c);
     insert_match = ins_compl_use_match(c);
 
+#ifdef FEAT_COMPL_FUNC
+    ++compl_collecting;
+#endif
     if (!compl_started)
     {
 	// Only what the automatic trigger armed counts as started by Vim.
@@ -7558,10 +7729,20 @@ ins_complete(int c, int enable_pum)
 	compl_autostart_pending = false;
 #endif
 	if (ins_compl_start() == FAIL)
+	{
+#ifdef FEAT_COMPL_FUNC
+	    --compl_collecting;
+#endif
 	    return FAIL;
+	}
     }
     else if (insert_match && stop_arrow() == FAIL)
+    {
+#ifdef FEAT_COMPL_FUNC
+	--compl_collecting;
+#endif
 	return FAIL;
+    }
 
     compl_curr_win = curwin;
     compl_curr_buf = curwin->w_buffer;
@@ -7625,6 +7806,9 @@ ins_complete(int c, int enable_pum)
     compl_was_interrupted = compl_interrupted;
     compl_interrupted = FALSE;
 
+#ifdef FEAT_COMPL_FUNC
+    --compl_collecting;
+#endif
     return OK;
 }
 

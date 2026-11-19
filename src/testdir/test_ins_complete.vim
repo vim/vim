@@ -2068,7 +2068,8 @@ func Test_complete_refresh_async()
   bw!
   set complete& completeopt&
   delfunc OmniAsync
-  unlet g:Items
+  delfunc g:AsyncReply
+  unlet! g:Items g:Replied g:Refreshed
 endfunc
 
 " complete_refresh() does nothing when no source returned "refresh: always".
@@ -2094,7 +2095,8 @@ func Test_complete_refresh_no_refresh()
   delfunc OmniPlain
 endfunc
 
-" complete_refresh() restores the typed text when a match was selected.
+" complete_refresh() restores the typed text when a match was selected and
+" it is no longer in the new match list.
 func Test_complete_refresh_selected()
   let g:Items = ['fooone']
   func! OmniSel(findstart, base)
@@ -2111,15 +2113,15 @@ func Test_complete_refresh_selected()
         \ <Bar> let b:after = getline('.')
         \ <Bar> let b:items = complete_info(['items']).items->mapnew('v:val.word')<CR>
   set completeopt=menuone,noselect
-  set complete=.,Ffunction('OmniSel')
+  set complete=Ffunction('OmniSel')
   call setline(1, 'foozz')
 
   " first CTRL-N starts completion, second one selects the first match
   call feedkeys("Gof\<C-N>\<C-N>\<F2>\<Esc>", 'tx!')
   call assert_equal(1, b:ok)
   " the selected match was inserted before the refresh ...
-  call assert_match('^foo', b:before)
-  " ... and the typed leader is back after it
+  call assert_equal('fooone', b:before)
+  " ... the selected match is gone, so the typed leader is back
   call assert_equal('f', b:after)
   call assert_true(index(b:items, 'foonew') >= 0)
 
@@ -2170,6 +2172,638 @@ func Test_complete_refresh_preinsert()
   set complete& completeopt&
   delfunc OmniPreinsert
   unlet g:Items
+endfunc
+
+" complete_refresh() keeps the match the user selected when it is still
+" in the new match list.
+func Test_complete_refresh_selection_kept()
+  let g:Items = ['fooone', 'footwo']
+  func! OmniSelKeep(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: copy(g:Items), refresh: 'always'}
+  endfunc
+
+  new
+  inoremap <buffer> <F2> <Cmd>let b:ok = complete_refresh()
+        \ <Bar> let b:line = getline('.')
+        \ <Bar> let b:sel = complete_info(['selected', 'items'])
+        \ <Bar> let b:word = b:sel.selected >= 0
+        \       ? b:sel.items[b:sel.selected].word : 'none'<CR>
+  set completeopt=menuone,noselect
+  set complete=Ffunction('OmniSelKeep')
+  call setline(1, 'foozz')
+
+  " the second CTRL-N selects the first match
+  call feedkeys("Gof\<C-N>\<C-N>\<F2>\<Esc>", 'tx!')
+  call assert_equal(1, b:ok)
+  " the selected match stays selected and inserted
+  call assert_equal('fooone', b:line)
+  call assert_equal('fooone', b:word)
+
+  bw!
+  set complete& completeopt&
+  delfunc OmniSelKeep
+  unlet g:Items
+endfunc
+
+" complete_refresh() keeps the pre-inserted match selected when it is still
+" in the new match list, even when the list is reordered.
+func Test_complete_refresh_selection_kept_preinsert()
+  let g:Items = ['fooone', 'footwo']
+  func! OmniKeepPre(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: copy(g:Items), refresh: 'always'}
+  endfunc
+
+  new
+  inoremap <buffer> <F2> <Cmd>let g:Items = ['footwo', 'fooone']
+        \ <Bar> let b:ok = complete_refresh()
+        \ <Bar> let b:line = getline('.')
+        \ <Bar> let b:sel = complete_info(['selected', 'items'])
+        \ <Bar> let b:word = b:sel.selected >= 0
+        \       ? b:sel.items[b:sel.selected].word : 'none'<CR>
+  set completeopt=menuone,preinsert
+  set complete=Ffunction('OmniKeepPre')
+  call setline(1, 'foozz')
+
+  " CTRL-N pre-inserts the first match
+  call feedkeys("Gof\<C-N>\<F2>\<Esc>", 'tx!')
+  call assert_equal(1, b:ok)
+  " the pre-inserted match stays selected even though the list is reordered
+  call assert_equal('fooone', b:line)
+  call assert_equal('fooone', b:word)
+
+  bw!
+  set complete& completeopt&
+  delfunc OmniKeepPre
+  unlet g:Items
+endfunc
+
+" complete_refresh() keeps the selection when there is no popup menu, and
+" complete_info() reports the same match as the text in the buffer.
+func Test_complete_refresh_selection_kept_no_pum()
+  let g:Items = ['fooone', 'footwo']
+  func! OmniKeepNoPum(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: copy(g:Items), refresh: 'always'}
+  endfunc
+
+  new
+  " no "menu" or "menuone": there is no popup menu
+  inoremap <buffer> <F2> <Cmd>let b:ok = complete_refresh()
+        \ <Bar> let b:pum = complete_info(['pum_visible']).pum_visible
+        \ <Bar> let b:line = getline('.')
+        \ <Bar> let b:sel = complete_info(['selected', 'items'])
+        \ <Bar> let b:word = b:sel.selected >= 0
+        \       ? b:sel.items[b:sel.selected].word : 'none'<CR>
+  inoremap <buffer> <F3> <Cmd>let g:Items = ['foonew']
+        \ <Bar> let b:ok2 = complete_refresh()
+        \ <Bar> let b:line2 = getline('.')
+        \ <Bar> let b:sel2 = complete_info(['selected'])<CR>
+  set completeopt=noselect
+  set complete=Ffunction('OmniKeepNoPum')
+  call setline(1, 'foozz')
+
+  " the second CTRL-N inserts the first match
+  call feedkeys("Gof\<C-N>\<C-N>\<F2>\<Esc>", 'tx!')
+  call assert_equal(1, b:ok)
+  call assert_equal(0, b:pum)
+  " the match stays inserted and complete_info() agrees
+  call assert_equal('fooone', b:line)
+  call assert_equal('fooone', b:word)
+
+  " when the match is gone, nothing is selected and the typed text is back
+  call feedkeys("Gof\<C-N>\<C-N>\<F3>\<Esc>", 'tx!')
+  call assert_equal(1, b:ok2)
+  call assert_equal('f', b:line2)
+  call assert_equal(-1, b:sel2.selected)
+
+  bw!
+  set complete& completeopt&
+  delfunc OmniKeepNoPum
+  unlet g:Items
+endfunc
+
+" complete_refresh() also works when the popup menu is wanted but not shown
+" because there is only one match and 'completeopt' has no "menuone".
+func Test_complete_refresh_no_pum_single_menu()
+  let g:Items = ['fooone']
+  func! OmniSingleMenu(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: copy(g:Items), refresh: 'always'}
+  endfunc
+
+  new
+  inoremap <buffer> <F2> <Cmd>let b:ok = complete_refresh()
+        \ <Bar> let b:pum = complete_info(['pum_visible']).pum_visible
+        \ <Bar> let b:line = getline('.')
+        \ <Bar> let b:sel = complete_info(['selected', 'items'])
+        \ <Bar> let b:word = b:sel.selected >= 0
+        \       ? b:sel.items[b:sel.selected].word : 'none'<CR>
+  " "menu" without "menuone": a single match does not open the popup menu
+  set completeopt=menu,noselect
+  set complete=Ffunction('OmniSingleMenu')
+  call setline(1, 'foozz')
+
+  call feedkeys("Gof\<C-N>\<C-N>\<F2>\<Esc>", 'tx!')
+  call assert_equal(1, b:ok)
+  " the menu was wanted but not shown
+  call assert_equal(0, b:pum)
+  " the match stays inserted and complete_info() agrees
+  call assert_equal('fooone', b:line)
+  call assert_equal('fooone', b:word)
+
+  bw!
+  set complete& completeopt&
+  delfunc OmniSingleMenu
+  unlet g:Items
+endfunc
+
+" complete_refresh() does nothing when the cursor moved to another line.
+func Test_complete_refresh_cursor_moved()
+  func! OmniMoved(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: ['fooone'], refresh: 'always'}
+  endfunc
+
+  new
+  inoremap <buffer> <F2> <Cmd>let b:pre = getline(2)
+        \ <Bar> call cursor(1, 1)
+        \ <Bar> let b:ok = complete_refresh()
+        \ <Bar> let b:lines = getline(1, '$')<CR>
+  set completeopt=menuone,preinsert
+  set complete=Ffunction('OmniMoved')
+  call setline(1, 'foozz')
+
+  " CTRL-N pre-inserts the match on the second line
+  call feedkeys("Gof\<C-N>\<F2>\<Esc>", 'tx!')
+  call assert_equal('fooone', b:pre)
+  " the cursor is on another line, so nothing is refreshed or changed
+  call assert_equal(0, b:ok)
+  call assert_equal(['foozz', 'fooone'], b:lines)
+
+  bw!
+  set complete& completeopt&
+  delfunc OmniMoved
+endfunc
+
+" complete_refresh() works for a multi-line match: the cursor is then on a
+" later line than where the completion started.
+func Test_complete_refresh_multiline()
+  let g:Items = ["fooone\nfootwo"]
+  func! OmniMulti(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: copy(g:Items), refresh: 'always'}
+  endfunc
+
+  new
+  inoremap <buffer> <F2> <Cmd>let b:pre = getline(1, '$')
+        \ <Bar> let b:ok = complete_refresh()
+        \ <Bar> let b:lines = getline(1, '$')
+        \ <Bar> let b:lnum = line('.')
+        \ <Bar> let b:sel = complete_info(['selected', 'items'])
+        \ <Bar> let b:word = b:sel.selected >= 0
+        \       ? b:sel.items[b:sel.selected].word : 'none'<CR>
+  " the second CTRL-N inserts the multi-line match, which puts the cursor
+  " on the line after the one where the completion started
+  inoremap <buffer> <F3> <Cmd>let g:Items = ["foonew\nfoothree"]
+        \ <Bar> let b:ok2 = complete_refresh()
+        \ <Bar> let b:lines2 = getline(1, '$')
+        \ <Bar> let b:sel2 = complete_info(['selected'])<CR>
+  set completeopt=menuone,noselect
+  set complete=Ffunction('OmniMulti')
+  call setline(1, 'zz')
+
+  " the match is still in the new list: it stays inserted and selected
+  call feedkeys("Gof\<C-N>\<C-N>\<F2>\<Esc>", 'tx!')
+  call assert_equal(['zz', 'fooone', 'footwo'], b:pre)
+  call assert_equal(1, b:ok)
+  call assert_equal(['zz', 'fooone', 'footwo'], b:lines)
+  call assert_equal(3, b:lnum)
+  call assert_equal("fooone\nfootwo", b:word)
+
+  " the match is gone: the typed text comes back on the first line
+  %delete _
+  call setline(1, 'zz')
+  call feedkeys("Gof\<C-N>\<C-N>\<F3>\<Esc>", 'tx!')
+  call assert_equal(1, b:ok2)
+  call assert_equal(['zz', 'f'], b:lines2)
+  call assert_equal(-1, b:sel2.selected)
+
+  bw!
+  set complete& completeopt&
+  delfunc OmniMulti
+  unlet g:Items
+endfunc
+
+" complete_refresh() refuses a cursor that moved past the lines a multi-line
+" match inserted: those lines belong to the user.
+func Test_complete_refresh_multiline_cursor_far()
+  let g:Items = ["fooone\nfootwo"]
+  func! OmniMultiFar(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: copy(g:Items), refresh: 'always'}
+  endfunc
+
+  new
+  call setline(1, map(range(1, 12), '"user" .. v:val'))
+  inoremap <buffer> <F2> <Cmd>let b:pre = getline(1, '$')
+        \ <Bar> call cursor(11, 1)
+        \ <Bar> let b:cur = line('.')
+        \ <Bar> let b:ok = complete_refresh()
+        \ <Bar> let b:lines = getline(1, '$')<CR>
+  set completeopt=menuone,noselect
+  set complete=Ffunction('OmniMultiFar')
+
+  " the 2-line match goes in after line 5, user lines 6..12 stay below
+  call feedkeys("5Gof\<C-N>\<C-N>\<F2>\<Esc>", 'tx!')
+  call assert_equal(['user1', 'user2', 'user3', 'user4', 'user5',
+        \ 'fooone', 'footwo', 'user6', 'user7', 'user8',
+        \ 'user9', 'user10', 'user11', 'user12'], b:pre)
+  " line 11 is far below the two inserted lines, so nothing may happen
+  call assert_equal(11, b:cur)
+  call assert_equal(0, b:ok)
+  call assert_equal(b:pre, b:lines)
+
+  bw!
+  set complete& completeopt&
+  delfunc OmniMultiFar
+  unlet g:Items
+endfunc
+
+" With 'autocomplete' and "longest", only the common prefix is inserted.  A
+" match may contain more newlines than that prefix, so counting newlines in
+" the match would allow a cursor on a user line to be deleted.
+func Test_complete_refresh_preinsert_longest_multiline_far()
+  let g:Items = ["fooone\nfootwo", "foooneXfootwo"]
+  func! OmniLongestFar(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: copy(g:Items), refresh: 'always'}
+  endfunc
+
+  new
+  inoremap <buffer> <F2> <Cmd>let b:mode = complete_info(['mode']).mode
+        \ <Bar> let b:pre = getline(1, '$')
+        \ <Bar> call cursor(4, 1)
+        \ <Bar> let b:ok = complete_refresh()
+        \ <Bar> let b:lines = getline(1, '$')<CR>
+  set completeopt=longest
+  set complete=Ffunction('OmniLongestFar')
+  call setline(1, ['zz', '', 'user4'])
+
+  " autocomplete inserts "fooone" on line 3, "user4" moves to line 4
+  call test_override('char_avail', 1)
+  set autocomplete
+  execute "normal 2Gof\<F2>\<Esc>"
+  set noautocomplete
+  call test_override('char_avail', 0)
+
+  call assert_equal('keyword', b:mode)
+  call assert_equal(['zz', '', 'fooone', 'user4'], b:pre)
+  " the cursor is below the inserted prefix: nothing may be refreshed
+  call assert_equal(0, b:ok)
+  call assert_equal(b:pre, b:lines)
+
+  bw!
+  set complete& completeopt&
+  delfunc OmniLongestFar
+  unlet g:Items
+endfunc
+
+" complete_refresh() does nothing in a buffer that cannot be changed and
+" does not give an error message.
+func Test_complete_refresh_nomodifiable()
+  func! OmniNoMod(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: ['foonew'], refresh: 'always'}
+  endfunc
+
+  new
+  inoremap <buffer> <F2> <Cmd>setlocal nomodifiable
+        \ <Bar> let v:errmsg = ''
+        \ <Bar> let b:ok = complete_refresh()
+        \ <Bar> let b:err = v:errmsg<CR>
+  set completeopt=menuone,noselect
+  set complete=Ffunction('OmniNoMod')
+  call setline(1, 'foozz')
+
+  call feedkeys("Gof\<C-N>\<F2>\<Esc>", 'tx!')
+  call assert_equal(0, b:ok)
+  call assert_equal('', b:err)
+
+  setlocal modifiable
+  bw!
+  set complete& completeopt&
+  delfunc OmniNoMod
+endfunc
+
+" complete_refresh() does nothing in the sandbox: no text is changed and no
+" error message is given.
+func Test_complete_refresh_sandbox()
+  func! OmniSandbox(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: ['foonew'], refresh: 'always'}
+  endfunc
+
+  new
+  inoremap <buffer> <F2> <Cmd>let v:errmsg = ''
+        \ <Bar> let g:ok = 'unset'
+        \ <Bar> sandbox let g:ok = complete_refresh()
+        \ <Bar> let g:err = v:errmsg<CR>
+  set completeopt=menuone,noselect
+  set complete=Ffunction('OmniSandbox')
+  call setline(1, 'foozz')
+
+  call feedkeys("Gof\<C-N>\<F2>\<Esc>", 'tx!')
+  call assert_equal(0, g:ok)
+  call assert_equal('', g:err)
+
+  bw!
+  set complete& completeopt&
+  delfunc OmniSandbox
+  unlet! g:ok g:err
+endfunc
+
+" complete_refresh() only works in the window where the completion started.
+func Test_complete_refresh_other_window()
+  func! OmniWin(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: ['foonew'], refresh: 'always'}
+  endfunc
+
+  new
+  inoremap <buffer> <F2> <Cmd>wincmd w
+        \ <Bar> let g:mode2 = complete_info(['mode']).mode
+        \ <Bar> let g:ok2 = complete_refresh()<CR>
+  set completeopt=menuone,noselect
+  set complete=Ffunction('OmniWin')
+  call setline(1, 'foozz')
+  split
+  wincmd p
+
+  call feedkeys("Gof\<C-N>\<F2>\<Esc>", 'tx!')
+  " the completion is still running, but in another window
+  call assert_equal('keyword', g:mode2)
+  call assert_equal(0, g:ok2)
+
+  only!
+  bw!
+  set complete& completeopt&
+  delfunc OmniWin
+  unlet! g:mode2 g:ok2
+endfunc
+
+" complete_refresh() does nothing while the text is locked, also when no
+" completion function is running: a CompleteChanged autocommand is called
+" with "textlock" incremented.
+func Test_complete_refresh_textlock_autocmd()
+  let g:Oks = []
+  let g:Errs = []
+  let g:Pums = []
+
+  func! OnCompleteChanged()
+    let v:errmsg = ''
+    call add(g:Pums, pumvisible())
+    call add(g:Oks, complete_refresh())
+    call add(g:Errs, v:errmsg)
+  endfunc
+
+  func! OmniTextlock(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: ['fooone', 'footwo'], refresh: 'always'}
+  endfunc
+
+  augroup TestRefreshTextlock
+    au!
+    autocmd CompleteChanged * call OnCompleteChanged()
+  augroup END
+
+  new
+  " "menuone" is needed: without a popup menu CompleteChanged is not fired
+  set completeopt=menuone,noselect
+  set complete=Ffunction('OmniTextlock')
+  call setline(1, 'foozz')
+
+  call feedkeys("Gof\<C-N>\<C-N>\<Esc>", 'tx!')
+  call assert_true(len(g:Oks) >= 1)
+  " the popup menu was visible and the completion was active
+  call assert_equal(1, g:Pums[0])
+  " refreshing is refused while 'textlock' is set, without an error message
+  call assert_equal([0], uniq(copy(g:Oks)))
+  call assert_equal([''], uniq(copy(g:Errs)))
+
+  augroup TestRefreshTextlock
+    au!
+  augroup END
+  bw!
+  set complete& completeopt&
+  delfunc OnCompleteChanged
+  delfunc OmniTextlock
+  unlet! g:Oks g:Errs g:Pums
+endfunc
+
+" complete_refresh() does nothing while a completion function is still
+" running: the text is locked and the matches may still be collected.
+func Test_complete_refresh_in_func()
+  let g:Calls = 0
+  let g:InFunc = []
+  let g:Errs = []
+  func! OmniLocked(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    let g:Calls += 1
+    let v:errmsg = ''
+    call add(g:InFunc, complete_refresh())
+    call add(g:Errs, v:errmsg)
+    return #{words: ['fooone'], refresh: 'always'}
+  endfunc
+
+  new
+  set completeopt=menuone,noselect
+  set complete=Ffunction('OmniLocked')
+  call setline(1, 'foozz')
+
+  " typing a character calls the function again while it is still running
+  call feedkeys("Gof\<C-N>a\<Esc>", 'tx!')
+  call assert_true(g:Calls >= 2)
+  " nothing is refreshed from inside the function and no error is given
+  call assert_equal(repeat([0], len(g:InFunc)), g:InFunc)
+  call assert_equal(repeat([''], len(g:Errs)), g:Errs)
+
+  bw!
+  set complete& completeopt&
+  delfunc OmniLocked
+  unlet! g:Calls g:InFunc g:Errs
+endfunc
+
+" complete_refresh() must behave consistently for every 'completeopt'
+" combination.  Two matches are offered, one CTRL-N is typed, then the list
+" is refreshed unchanged; the table gives the expected popup visibility, the
+" text in the buffer and the match reported by complete_info(['selected']).
+" The combinations cover all thirteen flags of the option.
+func Test_complete_refresh_completeopt_table()
+  func! OmniTable(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: ['fooone', 'footwo'], refresh: 'always'}
+  endfunc
+
+  " [completeopt, pum_visible, text on the completed line, selected word]
+  let cases = [
+        \ ['menu',                        1, 'fooone', 'fooone'],
+        \ ['menuone',                     1, 'fooone', 'fooone'],
+        \ ['menu,menuone',                1, 'fooone', 'fooone'],
+        \ ['longest',                     0, 'foo',    'none'],
+        \ ['longest,menu',                1, 'foo',    'none'],
+        \ ['longest,menuone',             1, 'foo',    'none'],
+        \ ['noinsert',                    0, 'f',      'none'],
+        \ ['noinsert,menu',               1, 'f',      'none'],
+        \ ['noinsert,menuone',            1, 'f',      'none'],
+        \ ['noselect',                    0, 'f',      'none'],
+        \ ['noselect,menu',               1, 'f',      'none'],
+        \ ['noselect,menuone',            1, 'f',      'none'],
+        \ ['preinsert,menuone',           1, 'fooone', 'fooone'],
+        \ ['preinsert,menuone,noselect',  1, 'fooone', 'fooone'],
+        \ ['fuzzy,menuone',               1, 'fooone', 'fooone'],
+        \ ['fuzzy,menuone,preinsert',     1, 'fooone', 'fooone'],
+        \ ['menuone,nosort,fuzzy',        1, 'fooone', 'fooone'],
+        \ ['nearest,menuone',             1, 'fooone', 'fooone'],
+        \ ['pathopt,menuone',             1, 'fooone', 'fooone'],
+        \ ['popup,menuone',               1, 'fooone', 'fooone'],
+        \ ['popuphidden,menuone',         1, 'fooone', 'fooone'],
+        \ ['preview,menuone',             1, 'fooone', 'fooone'],
+        \ ]
+
+  for [opts, want_pum, want_text, want_sel] in cases
+    new
+    inoremap <buffer> <F2> <Cmd>let g:t_ok = complete_refresh()
+          \ <Bar> let g:t_pum = complete_info(['pum_visible']).pum_visible
+          \ <Bar> let g:t_line = getline('.')
+          \ <Bar> let g:t_sel = complete_info(['selected', 'items'])<CR>
+    execute 'set completeopt=' . opts
+    set complete=Ffunction('OmniTable')
+    call setline(1, 'foozz')
+
+    " ":normal" applies the <F2> mapping and is much faster than
+    " feedkeys(..., 'tx!') here, which costs about a second per case.
+    execute "normal Gof\<C-N>\<F2>\<Esc>"
+    call assert_equal(1, g:t_ok, opts)
+    call assert_equal(want_pum, g:t_pum, opts)
+    call assert_equal(want_text, g:t_line, opts)
+    let got_sel = g:t_sel.selected >= 0
+          \ ? g:t_sel.items[g:t_sel.selected].word : 'none'
+    call assert_equal(want_sel, got_sel, opts)
+    " the popup state must match what complete_info() reports
+    if want_pum == 1
+      call assert_true(g:t_sel.selected >= 0 || want_sel ==# 'none', opts)
+    endif
+
+    bw!
+    unlet! g:t_ok g:t_pum g:t_line g:t_sel
+  endfor
+
+  set complete& completeopt&
+  delfunc OmniTable
+endfunc
+
+" The same table with 'autocomplete' set.  Autocomplete starts the completion
+" by itself, and changes two things: pum_wanted() and pum_enough_matches()
+" are true regardless of the "menu" flags, and ins_compl_has_preinsert()
+" ignores "preinsert" when "fuzzy" is also present.
+func Test_complete_refresh_completeopt_autocomplete_table()
+  func! OmniTableAc(findstart, base)
+    if a:findstart
+      return col('.') - 1
+    endif
+    return #{words: ['fooone', 'footwo'], refresh: 'always'}
+  endfunc
+
+  " [completeopt, pum_visible, text on the completed line, selected word]
+  let cases = [
+        \ ['menu',                        1, 'f',      'none'],
+        \ ['menuone',                     1, 'f',      'none'],
+        \ ['menu,menuone',                1, 'f',      'none'],
+        \ ['longest',                     1, 'foo',    'none'],
+        \ ['longest,menu',                1, 'foo',    'none'],
+        \ ['longest,menuone',             1, 'foo',    'none'],
+        \ ['noinsert',                    1, 'f',      'none'],
+        \ ['noinsert,menu',               1, 'f',      'none'],
+        \ ['noinsert,menuone',            1, 'f',      'none'],
+        \ ['noselect',                    1, 'f',      'none'],
+        \ ['noselect,menu',               1, 'f',      'none'],
+        \ ['noselect,menuone',            1, 'f',      'none'],
+        \ ['preinsert,menuone',           1, 'fooone', 'fooone'],
+        \ ['preinsert,menuone,noselect',  1, 'fooone', 'fooone'],
+        \ ['fuzzy,menuone',               1, 'f',      'none'],
+        \ ['fuzzy,menuone,preinsert',     1, 'f',      'none'],
+        \ ['menuone,nosort,fuzzy',        1, 'f',      'none'],
+        \ ['nearest,menuone',             1, 'f',      'none'],
+        \ ['pathopt,menuone',             1, 'f',      'none'],
+        \ ['popup,menuone',               1, 'f',      'none'],
+        \ ['popuphidden,menuone',         1, 'f',      'none'],
+        \ ['preview,menuone',             1, 'f',      'none'],
+        \ ]
+
+  " autocomplete only fires while characters are waiting to be checked
+  call test_override("char_avail", 1)
+  set autocomplete
+
+  for [opts, want_pum, want_text, want_sel] in cases
+    new
+    inoremap <buffer> <F2> <Cmd>let g:a_ok = complete_refresh()
+          \ <Bar> let g:a_pum = complete_info(['pum_visible']).pum_visible
+          \ <Bar> let g:a_mode = complete_info(['mode']).mode
+          \ <Bar> let g:a_line = getline('.')
+          \ <Bar> let g:a_sel = complete_info(['selected', 'items'])<CR>
+    execute 'set completeopt=' . opts
+    set complete=Ffunction('OmniTableAc')
+    call setline(1, 'zz')
+
+    " typing "f" starts the completion, no CTRL-N needed
+    execute "normal Gof\<F2>\<Esc>"
+    " autocomplete really started the completion
+    call assert_equal('keyword', g:a_mode, opts)
+    call assert_equal(1, g:a_ok, opts)
+    call assert_equal(want_pum, g:a_pum, opts)
+    call assert_equal(want_text, g:a_line, opts)
+    let got_sel = g:a_sel.selected >= 0
+          \ ? g:a_sel.items[g:a_sel.selected].word : 'none'
+    call assert_equal(want_sel, got_sel, opts)
+
+    bw!
+    unlet! g:a_ok g:a_pum g:a_mode g:a_line g:a_sel
+  endfor
+
+  set noautocomplete
+  call test_override("char_avail", 0)
+  set complete& completeopt&
+  delfunc OmniTableAc
 endfunc
 
 " Select items before they are removed by refresh:always
