@@ -734,6 +734,7 @@ export def GetUserSettings(): dict<any> #{{{
     GetOption(user_settings,          'pre_wrap', &wrap )
     GetOption(user_settings,           'use_css', 1 )
     GetOption(user_settings,    'ignore_conceal', 0 )
+    GetOption(user_settings,   'ignore_textprop', 0 )
     GetOption(user_settings,    'ignore_folding', 0 )
     GetOption(user_settings,     'dynamic_folds', 0 )
     GetOption(user_settings,     'no_foldcolumn', user_settings.ignore_folding)
@@ -850,6 +851,7 @@ export def GetUserSettings(): dict<any> #{{{
     #	  n - line numbers (also within fold text)
     #	  t - fold text
     #	  d - diff filler
+    #	  v - virtual text
     #	  c - concealed text (reserved future)
     #	  l - listchars (reserved possible future)
     #	  s - signs (reserved possible future)
@@ -869,6 +871,9 @@ export def GetUserSettings(): dict<any> #{{{
 	endif
 	if !user_settings.ignore_folding && g:html_prevent_copy =~# 't'
 	  user_settings.prevent_copy ..= 't'
+	endif
+	if !user_settings.ignore_textprop && g:html_prevent_copy =~# 'v'
+	  user_settings.prevent_copy ..= 'v'
 	endif
       else
 	user_settings.prevent_copy = ""

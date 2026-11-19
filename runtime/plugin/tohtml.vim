@@ -15,6 +15,9 @@ g:loaded_2html_plugin = 'vim9.2_v1'
 # Changelog: {{{
 #   9.2_v1  (this version): - mao-yining: Convert main script to vim9script
 #                             (SourceForge issue #28/Vim Github PR #19915).
+#                           - Include text property highlighting and virtual
+#                             text, new option g:html_ignore_textprop and new
+#                             "v" flag in g:html_prevent_copy.
 #
 #   Unspecified version:    - Inherit links colors from colorscheme styles for
 #                             auto-generated links in HTML output (Vim Github
