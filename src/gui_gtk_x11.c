@@ -6859,6 +6859,7 @@ channel_poll_cb(gpointer data UNUSED)
 gui_mch_wait_for_chars(long wtime)
 {
     int		focus;
+    short_u	clip_state;
     guint	timer;
     static int	timed_out;
     int		retval = FAIL;
@@ -6916,11 +6917,16 @@ gui_mch_wait_for_chars(long wtime)
 	 */
 	if (!input_available())
 	{
+	    clip_state = clip_star.state;
 	    g_main_context_iteration(NULL, TRUE);
-#ifdef GDK_WINDOWING_WAYLAND
-    if (gui.is_wayland && clip_star.state == SELECT_IN_PROGRESS)
-	gui_may_flush();
-#endif
+	    // Mouse handlers may draw to create, update or remove area of
+	    // modeless selection and to hide cursor.  But they do not flush to
+	    // the GUI right away.  That must be done here at the latest.  The
+	    // need is most visible with cursor blinking turned off.
+	    // Do it both for GTK and Wayland.  It's only relevant after
+	    // selection change.  Or finish - for the cursor.
+	    if (clip_star.state == SELECT_IN_PROGRESS || clip_star.state != clip_state)
+		gui_may_flush();
 	}
 
 	// Got char, return immediately
