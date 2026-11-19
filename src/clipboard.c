@@ -51,6 +51,8 @@ typedef struct {
 					// else NULL if we don't.
     vwl_data_offer_T	*offer;		// Current offer for the selection
 
+    bool		new_offer;	// Set to true every time there is a new
+					// data offer.
     bool		own_success;	// Used by clip_wl_own_selection()
     bool		available;	// If selection is ready to serve/use
 
@@ -2388,6 +2390,7 @@ vwl_data_device_listener_event_selection(
     // Save offer. When we want to request data, then we'll actually call the
     // receive method.
     sel->offer = offer;
+    sel->new_offer = true;
 
 }
 
@@ -2676,8 +2679,12 @@ clip_wl_request_selection(Clipboard_T *cbd)
     if (vwl_connection_roundtrip(wayland_ct) == FAIL)
 	goto clear;
 
-    if (sel->offer == NULL)
+    // If "new_offer" is false, then we already received the data, don't do it
+    // again.
+    if (sel->offer == NULL || !sel->new_offer)
 	goto clear;
+
+    sel->new_offer = false;
 
     mime_types_len = sel->offer->mime_types.ga_len;
     mime_types = sel->offer->mime_types.ga_data;
