@@ -383,8 +383,11 @@ func Test_client_server_socketserver_unsafe_dir()
   CheckNotMSWindows
 
   let save_tmpdir = $TMPDIR
-  let save_xdg = $XDG_RUNTIME_DIR
-  unlet $XDG_RUNTIME_DIR
+  let xdg_exists = exists('$XDG_RUNTIME_DIR')
+  if xdg_exists
+    let save_xdg = $XDG_RUNTIME_DIR
+    unlet $XDG_RUNTIME_DIR
+  endif
   let $TMPDIR = getcwd() .. '/Xsockdir'
   let dir = $TMPDIR .. '/vim-' .. system('id -u')->trim()
   call mkdir(dir, 'pR', 0700)
@@ -413,7 +416,9 @@ func Test_client_server_socketserver_unsafe_dir()
 
   call delete('Xsockout')
   let $TMPDIR = save_tmpdir
-  let $XDG_RUNTIME_DIR = save_xdg
+  if xdg_exists
+    let $XDG_RUNTIME_DIR = save_xdg
+  endif
 endfunc
 
 " Test if "channel:" prefix works correctly to use channel address for
