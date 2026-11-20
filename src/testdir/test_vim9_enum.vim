@@ -1158,6 +1158,32 @@ def Test_enum_refcount()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for an enum value that is not in "values" keeping the enum alive {{{1
+" The problem is only detected with valgrind or ASAN.
+func Test_enum_value_not_in_values()
+  " initializing Green fails after Red was stored in g:held
+  let lines =<< trim END
+    vim9script
+    def Keep(o: any)
+      if !exists('g:held')
+        g:held = o
+      endif
+    enddef
+    enum Color
+      Red, Green(g:arg)
+      def new(arg = 0)
+        Keep(this)
+      enddef
+    endenum
+  END
+  call writefile(lines, 'Xenumheld.vim', 'D')
+  call assert_fails('source Xenumheld.vim', 'E121: Undefined variable: g:arg')
+  let g:arg = 1
+  source Xenumheld.vim
+  call assert_equal('Red', g:held.name)
+  unlet g:held g:arg
+endfunc
+
 " Test for defining an enum with additional object variables and methods {{{1
 def Test_enum_enhanced()
   var lines =<< trim END
