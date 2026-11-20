@@ -5185,4 +5185,8 @@ def Test_disassemble_loop_with_closure_after_loop()
     '30 RETURN void', g:instr)
 enddef
 
+def Test_disassemble_bang()
+  assert_fails(":disassemble!", "E477:")
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
