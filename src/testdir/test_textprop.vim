@@ -3777,6 +3777,125 @@ func Test_prop_with_text_above_nowrap_scroll()
   bwipe!
 endfunc
 
+func Test_prop_with_text_right_nowrap_scroll()
+  call NewWindow(10, 40)
+  setlocal nowrap
+  call setline(1, ['line 1', 'line 2', 'line 3', 'line 4', 'line 5'])
+  call prop_type_add('test', #{highlight: 'Normal'})
+
+  let winid = win_getid()
+  let msg2 = repeat(' ', 31) .. 'message 2'
+  let msg3 = repeat(' ', 31) .. 'message 3'
+
+  call setline(1,'line 1' .. repeat('x', 33))
+  call prop_add(1, 0, #{type: 'test', text: 'message 1', text_align: 'right'})
+  call prop_add(1, 0, #{type: 'test', text: 'message 2', text_align: 'right'})
+  call prop_add(1, 0, #{type: 'test', text: 'message 3', text_align: 'right'})
+  call cursor(1, 1)
+  redraw
+  call assert_equal(0, winsaveview().leftcol)
+  call assert_equal(#{row: 4, col: 1, endcol: 1, curscol: 1},
+        \ screenpos(winid, 2, 1))
+  call assert_equal(['line 1' .. repeat('x', 33) .. 'm', msg2, msg3, 'line 2'],
+        \ ScreenLines([1, 4], 40)->map({_, v -> substitute(v, '\s*$', '', '')}))
+
+  call prop_remove(#{type: 'test', all: v:true})
+  call setline(1, 'line 1' .. repeat('x', 34))
+  call prop_add(1, 0, #{type: 'test', text: 'message 1', text_align: 'right'})
+  call prop_add(1, 0, #{type: 'test', text: 'message 2', text_align: 'right'})
+  call prop_add(1, 0, #{type: 'test', text: 'message 3', text_align: 'right'})
+  call cursor(1, 1)
+  redraw
+  call assert_equal(0, winsaveview().leftcol)
+  call assert_equal(#{row: 4, col: 1, endcol: 1, curscol: 1},
+        \ screenpos(winid, 2, 1))
+  call assert_equal(['line 1' .. repeat('x', 34), msg2, msg3, 'line 2'],
+        \ ScreenLines([1, 4], 40)->map({_, v -> substitute(v, '\s*$', '', '')}))
+
+  call prop_remove(#{type: 'test', all: v:true})
+  call setline(1, 'line 1' .. repeat('x', 54))
+  call prop_add(1, 0, #{type: 'test', text: 'message 1', text_align: 'right'})
+  call prop_add(1, 0, #{type: 'test', text: 'message 2', text_align: 'right'})
+  call prop_add(1, 0, #{type: 'test', text: 'message 3', text_align: 'right'})
+  call cursor(1, 1)
+  redraw
+  call assert_equal(0, winsaveview().leftcol)
+  call assert_equal(#{row: 4, col: 1, endcol: 1, curscol: 1},
+        \ screenpos(winid, 2, 1))
+  call assert_equal(['line 1' .. repeat('x', 34), msg2, msg3, 'line 2'],
+        \ ScreenLines([1, 4], 40)->map({_, v -> substitute(v, '\s*$', '', '')}))
+
+  normal! j
+  redraw
+  call assert_equal([4, 1], [winline(), wincol()])
+  normal! k
+  redraw
+  call assert_equal([1, 1], [winline(), wincol()])
+
+  call cursor(1, 60)
+  redraw
+  call assert_equal(39, winsaveview().leftcol)
+  call assert_equal([1, 21], [winline(), wincol()])
+  call assert_equal([repeat('x', 21) .. repeat(' ', 10) .. 'message 1',
+        \ msg2, msg3, ''],
+        \ ScreenLines([1, 4], 40)->map({_, v -> substitute(v, '\s*$', '', '')}))
+
+  call cursor(1, 1)
+  redraw
+  call assert_equal(0, winsaveview().leftcol)
+  call assert_equal([1, 1], [winline(), wincol()])
+  call assert_equal(['line 1' .. repeat('x', 34), msg2, msg3, 'line 2'],
+        \ ScreenLines([1, 4], 40)->map({_, v -> substitute(v, '\s*$', '', '')}))
+
+  call prop_remove(#{type: 'test', all: v:true})
+  call setline(1, ['line 1', 'line 2' .. repeat('y', 54), 'line 3',
+        \ 'line 4' .. repeat('z', 54), 'line 5'])
+  call prop_add(3, 0, #{type: 'test', text: 'message 1', text_align: 'right'})
+  call prop_add(3, 0, #{type: 'test', text: 'message 2', text_align: 'right'})
+  call prop_add(3, 0, #{type: 'test', text: 'message 3', text_align: 'right'})
+  let msg1 = repeat(' ', 31) .. 'message 1'
+
+  call cursor(2, 1)
+  redraw
+  call assert_equal(0, winsaveview().leftcol)
+  call assert_equal(#{row: 6, col: 1, endcol: 1, curscol: 1},
+        \ screenpos(winid, 4, 1))
+  call assert_equal(['line 1', 'line 2' .. repeat('y', 34), 'line 3' .. msg1[6 :],
+        \ msg2, msg3, 'line 4' .. repeat('z', 34), 'line 5'],
+        \ ScreenLines([1, 7], 40)->map({_, v -> substitute(v, '\s*$', '', '')}))
+
+  call cursor(2, 60)
+  redraw
+  call assert_equal(39, winsaveview().leftcol)
+  call assert_equal([2, 21], [winline(), wincol()])
+  call assert_equal(#{row: 6, col: 21, endcol: 21, curscol: 21},
+        \ screenpos(winid, 4, 60))
+  call assert_equal(['', repeat('y', 21), msg1, msg2, msg3, repeat('z', 21),
+        \ ''],
+        \ ScreenLines([1, 7], 40)->map({_, v -> substitute(v, '\s*$', '', '')}))
+
+  call cursor(4, 60)
+  redraw
+  call assert_equal(39, winsaveview().leftcol)
+  call assert_equal([6, 21], [winline(), wincol()])
+  call assert_equal(#{row: 2, col: 21, endcol: 21, curscol: 21},
+        \ screenpos(winid, 2, 60))
+  call assert_equal(['', repeat('y', 21), msg1, msg2, msg3, repeat('z', 21),
+        \ ''],
+        \ ScreenLines([1, 7], 40)->map({_, v -> substitute(v, '\s*$', '', '')}))
+
+  call cursor(4, 1)
+  redraw
+  call assert_equal(0, winsaveview().leftcol)
+  call assert_equal([6, 1], [winline(), wincol()])
+  call assert_equal(['line 1', 'line 2' .. repeat('y', 34), 'line 3' .. msg1[6 :],
+        \ msg2, msg3, 'line 4' .. repeat('z', 34), 'line 5'],
+        \ ScreenLines([1, 7], 40)->map({_, v -> substitute(v, '\s*$', '', '')}))
+
+  call prop_type_delete('test')
+  bwipe!
+endfunc
+
 func Test_prop_with_text_below_after_match()
   CheckScreendump
   CheckRunVimInTerminal
