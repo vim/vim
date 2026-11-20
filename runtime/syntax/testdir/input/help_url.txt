@@ -1,0 +1,16 @@
+*help_url.txt*	Test for URLs in help files
+
+A URL ends before punctuation:
+See https://example.com/path/file.html, and also (see https://example.com/).
+
+A URL ends before a non-ASCII character:
+https://docs.raku.org/language/unicode_ascii)、Unicode 演算子
+詳細はhttp://www.example.com/を参照。
+及びhttp://ctags.sourceforge.net/ctags.htmlにある
+www.example.com/path、Unicode
+https://example.com/a😀b c
+
+A URL does not include braces:
+https://example.com/{path}
+
+ vim:tw=78:ts=8:noet:ft=help:norl:
