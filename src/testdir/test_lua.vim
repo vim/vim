@@ -493,6 +493,30 @@ func Test_lua_list_table()
   call assert_fails('lua vim.list(true)', '[string "vim chunk"]:1: table expected, got boolean')
 endfunc
 
+" Test for an enum value and the enum values List in Lua
+func Test_lua_enum()
+  let lines =<< trim END
+    vim9script
+    enum Color
+      Red, Green
+    endenum
+    g:Xenum_red = Color.Red
+    g:Xenum_values = Color.values
+  END
+  call writefile(lines, 'Xenum.vim', 'D')
+  source Xenum.vim
+  " an enum value cannot be converted, it becomes nil
+  call assert_equal('nil', luaeval('tostring(vim.eval("g:Xenum_red"))'))
+  call assert_equal('nil', luaeval('tostring(vim.eval("g:Xenum_values")[0])'))
+  " the List of enum values is locked
+  call assert_fails('lua vim.eval("g:Xenum_values"):add(1)', 'list is locked')
+  call assert_fails('lua vim.eval("g:Xenum_values"):insert(1)', 'list is locked')
+  call assert_fails('lua vim.eval("g:Xenum_values")[0] = nil', 'list is locked')
+  call assert_equal(2, len(g:Xenum_values))
+  call assert_true(g:Xenum_values[0] is g:Xenum_red)
+  unlet g:Xenum_red g:Xenum_values
+endfunc
+
 func Test_lua_list_table_insert_remove()
   if !s:lua_53_or_later
     throw 'Skipped: Lua version < 5.3'
