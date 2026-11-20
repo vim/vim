@@ -1329,4 +1329,20 @@ func Test_lua_funcref_with_params()
   call assert_true(v:true)
 endfunc
 
+" Test for calling a Vim9 generic function from Lua in Vim9 script
+def Test_lua_generic_function()
+  var lines =<< trim END
+    vim9script
+    def g:LuaGen<T>(x: T): T
+      return x
+    enddef
+  END
+  writefile(lines, 'XluaGeneric.vim', 'D')
+  source XluaGeneric.vim
+  assert_equal(5, luaeval('vim.funcref("g:LuaGen<number>")(5)'))
+  assert_equal('a', luaeval('vim.call("g:LuaGen<string>", "a")'))
+  assert_equal(7, luaeval('vim.eval("g:LuaGen<number>(7)")'))
+  delfunction g:LuaGen
+enddef
+
 " vim: shiftwidth=2 sts=2 expandtab
