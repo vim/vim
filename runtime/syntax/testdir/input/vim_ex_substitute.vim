@@ -5,6 +5,30 @@ substitute/foo
 substitute/foo/bar
 substitute/foo/bar/
 
+substitute/foo/bar/l
+substitute/foo/bar/p
+substitute/foo/bar/lp#
+
+substitute/foo/bar/ l
+substitute/foo/bar/ p
+substitute/foo/bar/ lp#
+
+substitute/foo/bar/42l
+substitute/foo/bar/42p
+substitute/foo/bar/42lp#
+
+substitute/foo/bar/ 42l
+substitute/foo/bar/ 42p
+substitute/foo/bar/ 42lp#
+
+substitute/foo/bar/42 l
+substitute/foo/bar/42 p
+substitute/foo/bar/42 lp#
+
+substitute/foo/bar/ 42 l
+substitute/foo/bar/ 42 p
+substitute/foo/bar/ 42 lp#
+
 substitute/foo/bar/&
 substitute/foo/bar/cegiInp#lr
 
@@ -171,6 +195,36 @@ sgi42
 ~  42
 ~& 42
 
+&42
+&&42
+~42
+~&42
+
+&  lp#
+&& lp#
+~  lp#
+~& lp#
+
+&lp#
+&&lp#
+~lp#
+~&lp#
+
+&  42 lp#
+&& 42 lp#
+~  42 lp#
+~& 42 lp#
+
+&42 lp#
+&&42 lp#
+~42 lp#
+~&42 lp#
+
+&  42lp#
+&& 42lp#
+~  42lp#
+~& 42lp#
+
 &cegiInp#lr
 &&cegiInp#lr
 ~cegiInp#lr
@@ -180,6 +234,31 @@ sgi42
 &&cegiInp#lr 42
 ~cegiInp#lr  42
 ~&cegiInp#lr 42
+
+&cegiInp#lr42
+&&cegiInp#lr42
+~cegiInp#lr42
+~&cegiInp#lr42
+
+&cegiInp#lr  lp#
+&&cegiInp#lr lp#
+~cegiInp#lr  lp#
+~&cegiInp#lr lp#
+
+&cegiInp#lrlp#
+&&cegiInp#lrlp#
+~cegiInp#lrlp#
+~&cegiInp#lrlp#
+
+&cegiInp#lr  42 lp#
+&&cegiInp#lr 42 lp#
+~cegiInp#lr  42 lp#
+~&cegiInp#lr 42 lp#
+
+&cegiInp#lr42lp#
+&&cegiInp#lr42lp#
+~cegiInp#lr42lp#
+~&cegiInp#lr42lp#
 
 
 " 2 and 3 letter repeat-previous variants

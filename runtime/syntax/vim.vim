@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2026 Nov 17
+" Last Change:	   2026 Nov 20
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -1461,16 +1461,16 @@ syn cluster vimSortOptions contains=vimSortOptions,vimSortOptionsError
 syn cluster	vimSubstList	contains=vimPatSep,vimPatRegion,vimPatSepErr,vimSubstTwoBS,vimSubstRange,vimNotation
 syn cluster	vimSubstRepList	contains=vimSubstSubstr,vimSubstTwoBS,vimNotation
 syn cluster	vimSubstList	add=vimCollection
-syn match	vimSubst	contained	"\<\%(s\%[ubstitute]\|sm\%[agic]\|sno\%[magic]\)\>"		skipwhite nextgroup=vimSubstPat,vimSubstFlags,vimSubstCount
+syn match	vimSubst	contained	"\<\%(s\%[ubstitute]\|sm\%[agic]\|sno\%[magic]\)\>"		skipwhite nextgroup=vimSubstPat,vimSubstFlags,vimSubstCount,vimPrintFlag
 syn match	vimSubst	contained	"\<\%(s\%[ubstitute]\|sm\%[agic]\|sno\%[magic]\)[_#]\@="	skipwhite nextgroup=vimSubstPat
-syn match	vimSubst	contained	"\<\%(s\%[ubstitute]\|sm\%[agic]\|sno\%[magic]\)\%(\d\+\)\@="	skipwhite nextgroup=vimSubstCount
-syn match	vimSubst_	contained	"\%(s\%[ubstitute]\|sm\%[agic]\|sno\%[magic]\)\>"		skipwhite nextgroup=vimSubstPat,vimSubstFlags,vimSubstCount
+syn match	vimSubst	contained	"\<\%(s\%[ubstitute]\|sm\%[agic]\|sno\%[magic]\)\%(\d\+\)\@="	skipwhite nextgroup=vimSubstCount,vimPrintFlag
+syn match	vimSubst_	contained	"\%(s\%[ubstitute]\|sm\%[agic]\|sno\%[magic]\)\>"		skipwhite nextgroup=vimSubstPat,vimSubstFlags,vimSubstCount,vimPrintFlag
 syn match	vimSubst_	contained	"\%(s\%[ubstitute]\|sm\%[agic]\|sno\%[magic]\)[_#]\@="	skipwhite nextgroup=vimSubstPat
-syn match	vimSubst_	contained	"\%(s\%[ubstitute]\|sm\%[agic]\|sno\%[magic]\)\%(\d\+\)\@="	skipwhite nextgroup=vimSubstCount
+syn match	vimSubst_	contained	"\%(s\%[ubstitute]\|sm\%[agic]\|sno\%[magic]\)\%(\d\+\)\@="	skipwhite nextgroup=vimSubstCount,vimPrintFlag
 syn match	vimSubstFlagErr	contained	"[^< \t\r|]\+" contains=vimSubstFlags
 " & and # after :s are always pattern delimiters not flags
-syn match	vimSubstFlags	contained	"[&cegiIlnpr#]\+"	skipwhite nextgroup=vimSubstCount
-syn match	vimSubstCount	contained	"\d\+\>"
+syn match	vimSubstFlags	contained	"[&cegiIlnpr#]\+"	skipwhite nextgroup=vimSubstCount,vimPrintFlag
+syn match	vimSubstCount	contained	"\d\+"	skipwhite nextgroup=vimPrintFlag
 " TODO: Vim9 illegal separators for abbreviated :s form are [-.:], :su\%[...] required
 "     : # is allowed but "not recommended" (see :h pattern-delimiter)
 syn region	vimSubstPat	contained
@@ -1492,7 +1492,8 @@ syn region	vimSubstRep4	contained
       \ excludenl
       \ end="$"
       \ contains=@vimSubstRepList
-      \ nextgroup=vimSubstFlagErr
+      \ skipwhite
+      \ nextgroup=vimSubstFlagErr,vimSubstCount,vimPrintFlag,vimComment
 syn region	vimCollection	contained 	transparent	start="\\\@<!\[" skip="\\\[" end="\]"	contains=vimCollClass
 syn match	vimCollClassErr	contained	"\[:.\{-\}:\]"
 syn match	vimCollClass	contained 	transparent	"\%#=1\[:\(alnum\|alpha\|blank\|cntrl\|digit\|graph\|lower\|print\|punct\|space\|upper\|xdigit\|retu\%[rn]\|tab\|escape\|backspace\):\]"
@@ -1500,20 +1501,20 @@ syn match	vimSubstSubstr	contained	"\\z\=\d"
 syn match	vimSubstTwoBS	contained	"\\\\"
 
 " TODO: flags, unlike count, must follow immediately
-syn match	vimSubst	contained	"&&\="	skipwhite nextgroup=vimSubstFlags,vimSubstCount
-syn match	vimSubst	contained	"\~&\="	skipwhite nextgroup=vimSubstFlags,vimSubstCount
+syn match	vimSubst	contained	"&&\="	skipwhite nextgroup=vimSubstFlags,vimSubstCount,vimPrintFlag
+syn match	vimSubst	contained	"\~&\="	skipwhite nextgroup=vimSubstFlags,vimSubstCount,vimPrintFlag
 
 " two and three letter variants (matched as :s + flags, count may follow immediately)
-syn match	vimSubst	contained	"\<sc[egiIlnp]\=\a\@!"	skipwhite nextgroup=vimSubstCount	contains=vimSubstFlags
-syn match	vimSubst	contained	"\<sg[ceiIlnpr]\=\a\@!"	skipwhite nextgroup=vimSubstCount	contains=vimSubstFlags
-syn match	vimSubst	contained	"\<si[ceInpr]\=\a\@!"	skipwhite nextgroup=vimSubstCount	contains=vimSubstFlags
-syn match	vimSubst	contained	"\<sI[ceginplr]\=\a\@!"	skipwhite nextgroup=vimSubstCount	contains=vimSubstFlags
-syn match	vimSubst	contained	"\<sr[cgiInplr]\=\a\@!"	skipwhite nextgroup=vimSubstCount	contains=vimSubstFlags
-syn match	vimSubst_	contained	"sc[egiIlnp]\=\a\@!"	skipwhite nextgroup=vimSubstCount	contains=vimSubstFlags
-syn match	vimSubst_	contained	"sg[ceiIlnpr]\=\a\@!"	skipwhite nextgroup=vimSubstCount	contains=vimSubstFlags
-syn match	vimSubst_	contained	"si[ceInpr]\=\a\@!"	skipwhite nextgroup=vimSubstCount	contains=vimSubstFlags
-syn match	vimSubst_	contained	"sI[ceginplr]\=\a\@!"	skipwhite nextgroup=vimSubstCount	contains=vimSubstFlags
-syn match	vimSubst_	contained	"sr[cgiInplr]\=\a\@!"	skipwhite nextgroup=vimSubstCount	contains=vimSubstFlags
+syn match	vimSubst	contained	"\<sc[egiIlnp]\=\a\@!"	skipwhite nextgroup=vimSubstCount,vimPrintFlag	contains=vimSubstFlags
+syn match	vimSubst	contained	"\<sg[ceiIlnpr]\=\a\@!"	skipwhite nextgroup=vimSubstCount,vimPrintFlag	contains=vimSubstFlags
+syn match	vimSubst	contained	"\<si[ceInpr]\=\a\@!"	skipwhite nextgroup=vimSubstCount,vimPrintFlag	contains=vimSubstFlags
+syn match	vimSubst	contained	"\<sI[ceginplr]\=\a\@!"	skipwhite nextgroup=vimSubstCount,vimPrintFlag	contains=vimSubstFlags
+syn match	vimSubst	contained	"\<sr[cgiInplr]\=\a\@!"	skipwhite nextgroup=vimSubstCount,vimPrintFlag	contains=vimSubstFlags
+syn match	vimSubst_	contained	"sc[egiIlnp]\=\a\@!"	skipwhite nextgroup=vimSubstCount,vimPrintFlag	contains=vimSubstFlags
+syn match	vimSubst_	contained	"sg[ceiIlnpr]\=\a\@!"	skipwhite nextgroup=vimSubstCount,vimPrintFlag	contains=vimSubstFlags
+syn match	vimSubst_	contained	"si[ceInpr]\=\a\@!"	skipwhite nextgroup=vimSubstCount,vimPrintFlag	contains=vimSubstFlags
+syn match	vimSubst_	contained	"sI[ceginplr]\=\a\@!"	skipwhite nextgroup=vimSubstCount,vimPrintFlag	contains=vimSubstFlags
+syn match	vimSubst_	contained	"sr[cgiInplr]\=\a\@!"	skipwhite nextgroup=vimSubstCount,vimPrintFlag	contains=vimSubstFlags
 
 " Vi compatibility
 syn match	vimSubstDelim	contained	"\\"
