@@ -212,7 +212,7 @@ syn match helpBoldItalic	"\t[* ]BoldItalic\t\+[a-z].*"
 syn match helpError		"\t[* ]Error\t\+[a-z].*"
 syn match helpTodo		"\t[* ]Todo\t\+[a-z].*"
 
-syn match helpURL `\v<(((https?|ftp|gopher)://|(mailto|file|news):)[^'" \t<>{}]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^'" \t<>{}]+)[a-zA-Z0-9/]`
+syn match helpURL `\v<(((https?|ftp|gopher)://|(mailto|file|news):)[^'" \t<>{}\u0080-\U0010ffff]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^'" \t<>{}\u0080-\U0010ffff]+)[a-zA-Z0-9/]`
 
 syn match helpDiffAdded		"\t[* ]Added\t\+[a-z].*"
 syn match helpDiffChanged	"\t[* ]Changed\t\+[a-z].*"
