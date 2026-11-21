@@ -1,0 +1,735 @@
+*usr_51.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Skriva insticksprogram
+
+
+Med insticksprogram kan du ange inställningar för en viss filtyp, lägga till
+syntaxmarkering och mycket annat. I det här kapitlet förklaras hur du skriver
+de vanligaste typerna av Vim-insticksprogram.
+
+|51.1|	Skriva ett generiskt insticksprogram
+|51.2|	Skriva ett filtypsinsticksprogram
+|51.3|	Skriva ett kompilatorinsticksprogram
+|51.4|	Distribuera Vim-skript
+
+	Nästa kapitel: |usr_52.txt|  Skriva större insticksprogram
+	Föregående kapitel: |usr_50.txt|  Avancerad Vim-skriptskrivning
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*51.1*	Skriva ett generiskt insticksprogram		*write-plugin*
+
+Du kan skriva ett Vim-skript så att många kan använda det. Det kallas ett
+insticksprogram. Vim-användare kan lägga skriptet i insticksprogramskatalogen
+och använda funktionerna direkt |add-plugin|.
+
+Det finns två typer av insticksprogram:
+
+  globala insticksprogram: gäller alla filtyper
+  filtypsinsticksprogram: gäller filer av en viss typ
+
+Det här avsnittet handlar om den första typen. Det mesta gäller också
+filtypsinsticksprogram. Särskilda anvisningar för dem finns i nästa avsnitt
+|write-filetype-plugin|.
+
+Vi använder syntaxen |Vim9|, som rekommenderas för nya insticksprogram. Börja
+filen med kommandot `vim9script`.
+
+
+NAMN
+
+Välj först ett namn för insticksprogrammet. Namnet bör beskriva vad det gör,
+och det bör vara osannolikt att någon annan skriver ett insticksprogram med
+samma namn för en annan funktion.
+
+Ett skript som rättar stavfel vid inskrivning kan till exempel heta
+"typecorrect.vim". Vi använder det som exempel.
+
+För att insticksprogrammet ska fungera för alla bör du följa några riktlinjer.
+De förklaras steg för steg. Ett fullständigt exempel finns i slutet.
+
+
+INNEHÅLL
+
+Vi börjar med raderna som utför själva arbetet:
+>
+ 12	iabbrev jga jag
+ 13	iabbrev ocksaa också
+ 14	iabbrev mste måste
+ 15	iabbrev annolunda
+ 16		\ annorlunda
+
+Den riktiga listan bör förstås vara mycket längre.
+
+Radnumren finns bara med för att förklara några saker. Ta inte med dem i
+insticksprogramfilen!
+
+
+FÖRSTA RADEN
+>
+  1	vim9script noclear
+
+Använd `vim9script` som det allra första kommandot, helst på filens första
+rad.
+
+Skriptet vi skriver ska innehålla kommandot `finish` för att avslutas om det
+läses in en andra gång. Argumentet "noclear" gör att objekten som skriptet
+definierat inte tas bort när det läses in igen. Mer information finns i
+|vim9-reload|.
+
+
+HUVUD
+
+Du kommer antagligen att lägga till fler rättelser och snart ha flera
+versioner av filen. När den distribueras vill användarna veta vem som har
+skrivit den och vart de kan skicka synpunkter. Lägg därför till en
+huvudkommentar:
+>
+  2	# Globalt Vim-insticksprogram som rättar stavfel vid inskrivning
+  3	# Senast ändrad:	2021-12-30
+  4	# Underhållare:	Bram Moolenaar <Bram@vim.org>
+
+Om upphovsrätt och licens: Eftersom insticksprogram är användbara och det
+sällan finns skäl att begränsa spridningen kan du överväga att släppa ditt
+insticksprogram som public domain eller använda Vims |license|. En kort notis
+om detta högst upp i filen räcker ofta. Exempel:
+>
+  5	# Licens:	Public domain (fritt tillgänglig)
+
+
+HINDRA INLÄSNING
+
+Användaren vill kanske inte alltid läsa in insticksprogrammet. Det kan också
+ha installerats systemomfattande, medan användaren hellre vill använda ett
+eget insticksprogram. Ge därför användaren möjlighet att inaktivera just
+detta insticksprogram:
+>
+  7	if exists("g:loaded_typecorrect")
+  8	  finish
+  9	endif
+ 10	g:loaded_typecorrect = 1
+
+Detta förhindrar också att ett skript som läses in två gånger definierar om
+funktioner i onödan eller lägger till autokommandon flera gånger.
+
+Variabelnamnet bör börja med "g:loaded_" följt av insticksprogrammets
+filnamn. Prefixet "g:" gör variabeln global, så att andra delar av Vim kan
+kontrollera om funktionen är tillgänglig. Utan "g:" skulle variabeln vara
+lokal för skriptet.
+
+Kommandot `finish` avbryter inläsningen av resten av filen. Det går snabbare
+än att omge hela filen med if och endif, eftersom Vim annars ändå måste läsa
+in kommandona för att hitta `endif`.
+
+
+TANGENTMAPPNING
+
+Nu gör vi insticksprogrammet mer användbart genom att lägga till en
+tangentmappning som skapar en rättelse för ordet under markören. Vi skulle
+kunna välja en tangentsekvens, men användaren kanske redan använder den till
+något annat. Med objektet <Leader> kan användaren välja vilka tangenter
+insticksprogrammets mappning ska använda:
+>
+ 20	  map <unique> <Leader>a  <Plug>(TypecorrAdd)
+
+Mappningen "<Plug>(TypecorrAdd)" utför arbetet. Den definieras längre fram.
+
+Användaren kan sätta variabeln "g:mapleader" till den tangentsekvens som
+insticksprogrammets mappningar ska börja med. I en vimrc-fil som använder
+Vim9-syntax kan användaren skriva:
+>
+	g:mapleader = "_"
+
+definieras mappningen som "_a". Om variabeln inte anges används
+standardvärdet, ett omvänt snedstreck. Då definieras mappningen "\a". I en
+vimrc-fil med äldre syntax skrivs inställningen som `let g:mapleader = "_"`.
+
+Lägg märke till att `<unique>` används. Det ger ett felmeddelande om
+mappningen redan finns |:map-<unique>|.
+
+Men om användaren vill välja en egen tangentsekvens? Det kan tillåtas så här:
+>
+ 19	if !hasmapto('<Plug>(TypecorrAdd)')
+ 20	  map <unique> <Leader>a  <Plug>(TypecorrAdd)
+ 21	endif
+
+Detta kontrollerar om en mappning till "<Plug>(TypecorrAdd)" redan finns.
+Mappningen från "<Leader>a" definieras bara om ingen sådan mappning finns.
+Användaren kan då lägga till följande i vimrc-filen:
+>
+	map ,c  <Plug>(TypecorrAdd)
+
+Då blir tangentsekvensen ",c" i stället för "_a" eller "\a".
+
+
+DELA UPP ARBETET
+
+När ett skript växer kan du dela upp arbetet i mindre delar, till exempel med
+funktioner eller mappningar. De får inte störa funktioner och mappningar i
+andra skript. Om du exempelvis definierar funktionen Add() kan ett annat
+skript försöka definiera en funktion med samma namn. Undvik det genom att
+göra funktionen lokal för skriptet. I |Vim9|-skript är det standard. I äldre
+skript måste namnet inledas med "s:".
+
+Vi definierar en funktion som lägger till en rättelse:
+>
+ 28	def Add(from: string, correct: bool)
+ 29	  var to = input($"Skriv rättelsen för {from}: ")
+ 30	  exe $":iabbrev {from} {to}"
+ ...
+ 34	enddef
+
+Nu kan funktionen Add() anropas inifrån skriptet. Om ett annat skript också
+definierar Add() blir den funktionen lokal för det skriptet och kan bara
+anropas därifrån. En eventuell global funktion g:Add() är en separat
+funktion.
+
+Med mappningar kan du använda <SID>. Det skapar ett skript-ID som identifierar
+det aktuella skriptet. I vårt insticksprogram används det så här:
+>
+ 22	noremap <unique> <script> <Plug>(TypecorrAdd)  <SID>Add
+ ...
+ 26	noremap <SID>Add  :call <SID>Add(expand("<cword>"), v:true)<CR>
+
+När användaren trycker på "\a" anropas följande sekvens:
+>
+	\a  ->  <Plug>(TypecorrAdd)  ->  <SID>Add  ->  :call <SID>Add(...)
+
+Om ett annat skript också mappar <SID>Add får det ett annat skript-ID och
+definierar därmed en annan mappning.
+
+Lägg märke till att vi använder <SID>Add() i mappningen i stället för Add().
+Användaren trycker på tangenterna utanför skriptets kontext. <SID> översätts
+då till skriptets ID, så att Vim vet var funktionen Add() finns.
+
+Det här är lite omständligt, men behövs för att insticksprogrammet ska fungera
+tillsammans med andra. Grundregeln är att använda <SID>Add() i mappningar och
+Add() på andra ställen, till exempel i skriptet, autokommandon och
+användarkommandon.
+
+Du kan också lägga till ett menyobjekt som gör samma sak som mappningen:
+>
+ 24	noremenu <script> Plugin.Add\ Correction      <SID>Add
+
+Menyn "Plugin" rekommenderas för insticksprogram. Om du lägger till fler
+objekt bör du skapa en undermeny. Ett insticksprogram för CVS kan exempelvis
+ha menyn "Plugin.CVS" med objekten "Plugin.CVS.checkin",
+"Plugin.CVS.checkout" och så vidare.
+
+På rad 26 används `:noremap` för att undvika problem om någon har mappat om
+ett annat kommando, exempelvis `:call`. På rad 22 används också `:noremap`,
+men där vill vi att <SID>Add ska mappas om. Därför används `<script>`, som
+bara tillåter mappningar från det här skriptet |:map-<script>|. Samma sak
+gäller `:noremenu` på rad 24 |:menu-<script>|.
+
+
+<SID> OCH <Plug>						*using-<Plug>*
+
+Både <SID> och <Plug> förhindrar att mappningar av tangenter som användaren
+trycker på stör mappningar som bara ska användas av andra mappningar. De
+fungerar dock olika:
+
+<Plug>		Är synligt utanför skriptet. Det används för mappningar som
+		användaren själv kan koppla en tangentsekvens till. <Plug> är en
+		specialkod som inte kan komma från en tangenttryckning.
+		För att minska risken att andra insticksprogram använder samma
+		teckensekvens kan du följa mönstret <Plug> skriptnamn mappningsnamn.
+		I exemplet är skriptnamnet "Typecorr" och mappningsnamnet "Add".
+		Vi omger namnen med parenteser och får "<Plug>(TypecorrAdd)".
+		PascalCase gör det lättare att skilja skript- och mappningsnamnet åt.
+
+		Obs: texten efter "<Plug>" väljs av den som skriver insticksprogrammet
+		och är helt godtycklig. Parenteser, PascalCase och ett avslutande
+		semikolon, till exempel "<Plug>TypecorrAdd;", är bara konventioner
+		som gör namnet lättläst och minskar risken för namnkonflikter. Inget
+		av detta krävs. Det enda kravet är att sekvensen börjar med "<Plug>"
+		och är unik. En mappning vars {lhs} börjar med <Plug> tillämpas alltid
+		på {rhs} i en annan mappning, även om ommappning uttryckligen
+		inaktiverats |:nore|.
+
+<SID>		Är skriptets unika ID. Internt översätter Vim <SID> till
+		"<SNR>123_", där "123" kan vara vilket nummer som helst. Funktionen
+		"<SID>Add()" kan därför heta "<SNR>11_Add()" i ett skript och
+		"<SNR>22_Add()" i ett annat. Du ser detta om du använder kommandot
+		":function" för att visa en lista över funktioner. <SID> översätts
+		på samma sätt i mappningar, vilket gör att de kan anropa en
+		skriptlokal funktion.
+		Obs: Om <SID> förekommer i {rhs} i en mappning kan du behöva använda
+		`<script>` |:map-<script>|.
+
+
+ANVÄNDARKOMMANDO
+
+Nu lägger vi till ett användarkommando för att skapa en rättelse:
+>
+ 36	if !exists(":Correct")
+ 37	  command -nargs=1  Correct  call Add(<q-args>, false)
+ 38	endif
+
+Kommandot definieras bara om ett kommando med samma namn inte redan finns.
+Utan kontrollen kan definitionen ge ett fel om kommandot redan finns.
+`:command!` skulle skriva över det befintliga kommandot |:command|. Du kan
+kontrollera vilken definition som gäller med:
+>
+	verbose command Correct
+
+
+SKRIPTVARIABLER
+
+En variabel vars namn börjar med "s:" är en skriptvariabel. Den kan bara
+användas inifrån skriptet och är inte synlig utanför det. Därmed kan olika
+skript använda samma variabelnamn utan att störa varandra. Variablerna finns
+kvar så länge Vim körs, och samma variabler används när samma skript läses in
+igen |s:var|.
+
+I |Vim9|-skript är variabler som standard lokala för skriptet. Du kan lägga
+till "s:" om du vill, men behöver inte. Funktioner i skriptet kan också
+använda skriptvariabler utan prefix. Variabeln måste då deklareras före
+funktionen.
+
+Skriptlokala variabler kan användas i funktioner, autokommandon och
+användarkommandon som definieras i skriptet. De passar alltså bra för att dela
+information mellan delar av insticksprogrammet utan att göra den synlig
+utanför. I exemplet kan vi lägga till rader som räknar antalet rättelser:
+>
+ 17	var count = 4
+ ...
+ 28	def Add(from: string, correct: bool)
+ ...
+ 32	  count += 1
+ 33	  echo "Du har nu " .. count .. " rättelser"
+ 34	enddef
+
+Variabeln "count" deklareras och får värdet 4 i själva skriptet. När
+funktionen Add() anropas ökas värdet. Det spelar ingen roll varifrån
+funktionen anropas: eftersom den definierades i skriptet använder den dess
+lokala variabler.
+
+
+RESULTATET
+
+Här är det fullständiga exemplet:
+>
+  1	vim9script noclear
+  2	# Globalt Vim-insticksprogram som rättar stavfel vid inskrivning
+  3	# Senast ändrad:	2021-12-30
+  4	# Underhållare:	Bram Moolenaar <Bram@vim.org>
+  5	# Licens:	Public domain (fritt tillgänglig)
+  6
+  7	if exists("g:loaded_typecorrect")
+  8	  finish
+  9	endif
+ 10	g:loaded_typecorrect = 1
+ 11
+ 12	iabbrev jga jag
+ 13	iabbrev ocksaa också
+ 14	iabbrev mste måste
+ 15	iabbrev annolunda
+ 16		\ annorlunda
+ 17	var count = 4
+ 18
+ 19	if !hasmapto('<Plug>(TypecorrAdd)')
+ 20	  map <unique> <Leader>a  <Plug>(TypecorrAdd)
+ 21	endif
+ 22	noremap <unique> <script> <Plug>(TypecorrAdd)  <SID>Add
+ 23
+ 24	noremenu <script> Plugin.Add\ Correction      <SID>Add
+ 25
+ 26	noremap <SID>Add  :call <SID>Add(expand("<cword>"), v:true)<CR>
+ 27
+ 28	def Add(from: string, correct: bool)
+ 29	  var to = input($"Skriv rättelsen för {from}: ")
+ 30	  exe $":iabbrev {from} {to}"
+ 31	  if correct | exe "normal viws\<C-R>\" \b\e" | endif
+ 32	  count += 1
+ 33	  echo "Du har nu " .. count .. " rättelser"
+ 34	enddef
+ 35
+ 36	if !exists(":Correct")
+ 37	  command -nargs=1  Correct  call Add(<q-args>, false)
+ 38	endif
+
+Rad 31 tillämpar den nya rättelsen på ordet under markören. Kommandot
+|:normal| används för att använda den nya förkortningen. Mappningar och
+förkortningar expanderas här, även om funktionen anropades från en mappning
+som definierats med `:noremap`.
+
+
+DOKUMENTATION						*write-local-help*
+
+Skriv gärna dokumentation för insticksprogrammet, särskilt om användaren kan
+ändra hur det fungerar. Se |help-writing| för syntaxen i hjälpfiler och
+|add-local-help| för hur en lokal hjälpfilsida installeras.
+
+Här är en enkel hjälpfilsövning för insticksprogrammet "typecorrect.vim":
+>
+  1	*typecorrect.txt* Insticksprogram som rättar stavfel
+  2
+  3	Om du gör stavfel när du skriver rättar insticksprogrammet dem
+  4	automatiskt.
+  5
+  6	Det finns bara några få rättelser. Lägg gärna till egna.
+  7
+  8	Mappningar:
+  9	<Leader>a   eller   <Plug>(TypecorrAdd)
+ 10		Skapar en rättelse för ordet under markören.
+ 11
+ 12	Kommandon:
+ 13	:Correct {word}
+ 14		Skapar en rättelse för {word}.
+ 15
+ 16							*typecorrect-settings*
+ 17	Insticksprogrammet har inga inställningar.
+
+Det är bara viktigt att den första raden har rätt format. Den hämtas från
+hjälpfilen och placeras i avsnittet "LOKALA TILLÄGG:" i den svenska hjälpen
+|local-additions|. Den första asterisken måste stå i första kolumnen på den
+första raden. Kör |:helptags| för katalogen där hjälpfilerna ligger. Kör
+sedan ":help" och kontrollera att posterna visas.
+
+Du kan lägga till fler taggar mellan ** i hjälpfilerna. Använd inte taggar som
+redan finns. Det är vanligt att ta med insticksprogrammets namn, som
+"typecorrect-settings" i exemplet.
+
+Använd gärna länkar till andra delar av hjälpen i ||. Då blir det enkelt att
+hitta relaterad information.
+
+
+SAMMANFATTNING						*plugin-special*
+
+Särskilda saker att använda i ett insticksprogram:
+
+var namn		Variabel som är lokal för skriptet.
+
+<SID>			Skript-ID, används för mappningar och funktioner som är
+			lokala för skriptet.
+
+hasmapto()		Funktion som kontrollerar om användaren redan har
+			definierat en mappning för funktionen.
+
+<Leader>		Värdet i "mapleader", som användaren anger som
+			tangenterna insticksprogrammets mappningar ska börja med.
+
+map <unique>		Ger ett fel om mappningen redan finns.
+
+noremap <script>	Tillåter bara ommappning av mappningar som definierats
+			i det här skriptet och börjar med <SID>.
+
+exists(":Cmd")	Kontrollerar om ett användarkommando redan finns.
+
+==============================================================================
+*51.2*	Skriva ett filtypsinsticksprogram		*write-filetype-plugin* *ftplugin*
+
+Ett filtypsinsticksprogram liknar ett globalt insticksprogram, men ställer
+in alternativ och definierar mappningar bara för den aktuella bufferten. Se
+|add-filetype-plugin| för hur den här typen av insticksprogram används.
+
+Läs först avsnittet om globala insticksprogram ovan |51.1|. Det som står där
+gäller också filtypsinsticksprogram. Här förklaras några tillägg. Det viktiga
+är att filtypsinsticksprogrammet bara påverkar den aktuella bufferten.
+
+
+INAKTIVERA
+
+Om många ska använda filtypsinsticksprogrammet måste de kunna inaktivera det.
+Lägg detta högst upp i filen:
+>
+	# Kör bara om det inte redan har gjorts för den här bufferten
+	if exists("b:did_ftplugin")
+	  finish
+	endif
+	b:did_ftplugin = 1
+
+Detta förhindrar också att samma insticksprogram körs två gånger för samma
+buffert, vilket kan inträffa om kommandot ":edit" körs utan argument.
+
+Användaren kan nu inaktivera standardinsticksprogrammet helt genom att skapa
+ett filtypsinsticksprogram som bara innehåller:
+>
+	vim9script
+	b:did_ftplugin = 1
+
+Katalogen för filtypsinsticksprogram måste då ligga före $VIMRUNTIME i
+'runtimepath'.
+
+Om du vill använda standardinsticksprogrammet men ändra en av inställningarna
+kan du skriva den nya inställningen i ett skript:
+>
+	setlocal textwidth=70
+
+Lägg skriptet i katalogen "after", så att det läses in efter det
+medföljande Vim-insticksprogrammet |after-directory|. På Unix kan sökvägen
+exempelvis vara "~/.vim/after/ftplugin/vim.vim". Standardinsticksprogrammet
+har redan satt "b:did_ftplugin", men den variabeln ignoreras här.
+
+
+ALTERNATIV
+
+Använd kommandot:
+>
+	setlocal
+
+för att se till att filtypsinsticksprogrammet bara påverkar den aktuella
+bufferten. Ställ bara in alternativ som är lokala för en buffert; kontrollera
+alternativets hjälpsida. Om `:setlocal` används för globala alternativ eller
+fönsterlokala alternativ kan värdet ändras för flera buffertar, vilket inte
+är avsikten.
+
+Om ett alternativ innehåller en lista med flaggor eller objekt kan du använda
+"+=" och "-=" för att behålla befintliga värden. Tänk på att användaren kan
+ha ändrat värdet. Ofta är det bäst att först återställa standardvärdet och
+sedan göra ändringen. Exempel:
+>
+	setlocal formatoptions& formatoptions+=ro
+
+
+TANGENTMAPPNINGAR
+
+Använd kommandot:
+>
+	map <buffer>
+
+för att mappningarna bara ska gälla den aktuella bufferten. Kombinera det med
+mappningen i två steg som beskrevs ovan. Så här kan en filtypsmappning se ut:
+>
+	if !hasmapto('<Plug>JavaImport;')
+	  map <buffer> <unique> <LocalLeader>i <Plug>JavaImport;
+	endif
+	noremap <buffer> <unique> <Plug>JavaImport; oimport ""<Left><Esc>
+
+|hasmapto()| kontrollerar om användaren redan har kopplat en mappning till
+<Plug>JavaImport;. Om inte definierar filtypsinsticksprogrammet
+standardmappningen. Den börjar med |<LocalLeader>|, som låter användaren
+välja vilka tangenter filtypsmappningarna ska inledas med. Standardvärdet är
+ett omvänt snedstreck.
+
+`<unique>` visar ett felmeddelande om mappningen redan finns eller överlappar
+en befintlig mappning. `:noremap` förhindrar att användarens andra mappningar
+stör. Du kan använda `:noremap <script>` om du vill tillåta ommappning av
+mappningar som börjar med <SID> och definierats i det här skriptet.
+
+Användaren bör kunna stänga av mappningarna utan att inaktivera allt annat.
+Här är ett exempel för filtypen e-post:
+>
+	# Lägg till mappningarna om användaren inte har stängt av dem
+	if !exists("g:no_plugin_maps") && !exists("g:no_mail_maps")
+	  # Citera text genom att infoga "> "
+	  if !hasmapto('<Plug>MailQuote;')
+	    vmap <buffer> <LocalLeader>q <Plug>MailQuote;
+	    nmap <buffer> <LocalLeader>q <Plug>MailQuote;
+	  endif
+	  vnoremap <buffer> <Plug>MailQuote; :s/^/> /<CR>
+	  nnoremap <buffer> <Plug>MailQuote; :.,$s/^/> /<CR>
+	endif
+
+Två globala variabler används:
+|g:no_plugin_maps|	Stänger av mappningar i alla filtypsinsticksprogram.
+|g:no_mail_maps|	Stänger av mappningar för filtypen "mail".
+
+
+ANVÄNDARKOMMANDON
+
+Använd argumentet "-buffer" till |:command| om kommandot bara ska gälla i
+en buffert med en viss filtyp. Exempel:
+>
+	command -buffer  Make  make %:r.s
+
+
+VARIABLER
+
+Ett filtypsinsticksprogram läses in för varje buffert av den aktuella typen.
+Lokala skriptvariabler delas mellan alla inläsningar. Använd lokala
+buffertvariabler |b:var| om variabeln ska höra till en viss buffert.
+
+
+FUNKTIONER
+
+En funktion behöver bara definieras en gång, men filtypsinsticksprogrammet
+läses in varje gång en fil av typen öppnas. Så här definierar du funktionen
+bara en gång:
+>
+	if !exists("*Func")
+	  def Func(arg)
+	    ...
+	  enddef
+	endif
+<
+Glöm inte argumentet "noclear" till kommandot `vim9script`. Annars tas
+funktionen bort när skriptet läses in igen.
+
+
+ÅNGRA ÄNDRINGAR					*undo_indent* *undo_ftplugin*
+
+När användaren byter filtyp med ":setlocal filetype=xyz" ska effekten av den
+föregående filtypen återställas. Sätt b:undo_ftplugin till de kommandon som
+återställer filtypsinsticksprogrammets ändringar. Exempel:
+>
+	b:undo_ftplugin = "setlocal fo< com< tw< commentstring<"
+		\ .. "| unlet b:match_ignorecase b:match_words b:match_skip"
+
+Med ":setlocal" följt av "<" efter alternativnamnet återställs alternativet
+till det globala värdet. Det är oftast det bästa sättet.
+
+Om du vill ångra ändringar från ett indenteringsskript ska variabeln
+b:undo_indent sättas på motsvarande sätt.
+
+Båda variablerna använder äldre skriptsyntax, inte |Vim9|-syntax.
+
+REKOMMENDERAD STIL					*ft_recommended_style*
+
+Ett filtypsinsticksprogram eller indenteringsskript kan ange en rekommenderad
+eller vanlig kodstil för filtypen. Det är inte nödvändigtvis ett krav i
+språket. Eftersom alla användare kanske inte vill ha sådana stilinställningar
+bör de kunna stängas av.
+
+Kontrollera först variabeln för den aktuella filtypen och sedan den allmänna
+variabeln. Om ingen av dem finns ska värdet vara 1:
+>
+	if get(g:, '<filetype>_recommended_style',
+		\ get(g:, 'filetype_recommended_style', 1))
+	  # Ange rekommenderade stilalternativ här
+	endif
+
+Byt ut <filetype> mot filtypens namn. För filtypen "python" blir variabeln
+exempelvis g:python_recommended_style.
+
+Användaren kan stänga av rekommenderad stil för alla filtyper:
+>
+	let g:filetype_recommended_style = 0
+
+eller bara för en filtyp, medan övriga fortsätter att använda den:
+>
+	let g:python_recommended_style = 0
+
+Den filtypsspecifika variabeln har företräde framför den allmänna. Användaren
+kan alltså stänga av stilinställningar överallt med
+g:filetype_recommended_style och aktivera dem igen för en viss filtyp genom
+att sätta g:<filetype>_recommended_style till 1, eller tvärtom.
+
+Inställningar som krävs för att språket ska fungera korrekt, och inte bara
+styr stilen, ska inte ligga bakom det här villkoret.
+
+
+FILNAMN
+
+Filtypen ska ingå i filnamnet |ftplugin-name|. Använd någon av dessa former:
+
+	.../ftplugin/stuff.vim
+	.../ftplugin/stuff_foo.vim
+	.../ftplugin/stuff/bar.vim
+
+"stuff" är filtypen. "foo" och "bar" är valfria namn.
+
+
+IDENTIFIERA FILTYPEN					*plugin-filetype*
+
+Om Vim inte redan identifierar filtypen bör du skapa en separat fil med kod
+för identifieringen. Vanligen är det ett autokommando som anger filtypen när
+filnamnet matchar ett mönster. Exempel:
+>
+	au BufNewFile,BufRead *.foo		setlocal filetype=foofoo
+
+Spara en sådan enradsfil som "ftdetect/foofoo.vim" i den första katalogen i
+'runtimepath'. På Unix kan den exempelvis ligga i "~/.vim/ftdetect/foofoo.vim".
+Skriptfilen brukar ha samma namn som filtypen.
+
+Du kan göra mer avancerade kontroller, till exempel undersöka filens innehåll
+för att identifiera språket. Se även |new-filetype|.
+
+
+SAMMANFATTNING					*ftplugin-special*
+
+Särskilda saker att använda i ett filtypsinsticksprogram:
+
+<LocalLeader>		Värdet i "maplocalleader", som användaren anger som
+			tangenterna filtypsmappningarna ska börja med.
+
+map <buffer>		Definierar en mappning som bara gäller den aktuella
+			bufferten.
+
+noremap <script>	Tillåter bara ommappning av mappningar som definierats
+			i det här skriptet och börjar med <SID>.
+
+setlocal		Ställer in ett alternativ bara för den aktuella bufferten.
+
+command -buffer	Definierar ett användarkommando som bara gäller den
+			aktuella bufferten.
+
+exists("*s:Func")	Kontrollerar om en funktion redan har definierats.
+
+Se även |plugin-special| för särskilda saker som gäller alla insticksprogram.
+
+==============================================================================
+*51.3*	Skriva ett kompilatorinsticksprogram		*write-compiler-plugin*
+
+Ett kompilatorinsticksprogram ställer in alternativ för en viss kompilator.
+Användaren kan läsa in det med kommandot |:compiler|. Framför allt används
+det för att ställa in alternativen 'errorformat' och 'makeprg'.
+
+Det enklaste är att titta på befintliga exempel. Med följande kommando öppnar
+du alla standardinsticksprogram för kompilatorer:
+>
+	next $VIMRUNTIME/compiler/*.vim
+
+Skriv `:next` för att gå till nästa fil.
+
+De här filerna har två särskilda funktioner. Den första gör att användaren
+kan ersätta eller komplettera standardfilen. Standardfilerna börjar med:
+>
+	vim9script
+	if exists("g:current_compiler")
+	  finish
+	endif
+	g:current_compiler = "mine"
+
+Om du skapar en egen kompilatorfil i din runtime-katalog, till exempel
+"~/.vim/compiler" på Unix, sätter du variabeln "current_compiler" så att
+standardfilen hoppar över sina inställningar.
+							*:CompilerSet*
+Den andra funktionen är att använda `:set` för `:compiler!` och `:setlocal`
+för `:compiler`. Vim definierar användarkommandot `:CompilerSet` för detta.
+Exempel:
+>
+  CompilerSet errorformat&		# använd standardvärdet för 'errorformat'
+  CompilerSet makeprg=nmake
+
+Obs: Argument måste citeras enligt |option-backslash|.
+
+Om du skriver ett kompilatorinsticksprogram för Vim-distributionen eller en
+systemomfattande runtime-katalog ska du använda mekanismen ovan. Om ett
+användarinsticksprogram redan har satt "current_compiler" görs ingenting.
+
+Om du skriver ett insticksprogram som ska ersätta inställningar från ett
+standardinsticksprogram ska du inte kontrollera "current_compiler". Ditt
+insticksprogram ska läsas in sist och bör därför ligga i slutet av
+'runtimepath'. På Unix kan det till exempel ligga i "~/.vim/after/compiler".
+
+==============================================================================
+*51.4*	Distribuera Vim-skript				*distribute-script*
+
+Vim-användare letar ofta efter skript på Vims webbplats: http://www.vim.org.
+Dela gärna sådant som kan vara användbart för andra!
+
+GitHub är ett annat alternativ, men användarna måste veta var de ska leta.
+Fördelen är att de flesta insticksprogramshanterare hämtar insticksprogram
+därifrån. Använd din favoritsökmotor för att hjälpa användarna att hitta det.
+
+Vim-skript kan användas på alla system. Däremot kanske det inte finns något
+kommando för tar eller gzip. Om du vill samla flera filer i ett arkiv eller
+komprimera dem rekommenderas verktyget "zip".
+
+För bästa portabilitet kan du använda Vim för att samla skript i ett arkiv.
+Det görs med verktyget Vimball. Se |vimball|.
+
+Det är bra att lägga till en rad som gör automatisk uppdatering möjlig. Se
+|glvs-plugins|.
+
+==============================================================================
+
+Nästa kapitel: |usr_52.txt|  Skriva större insticksprogram
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

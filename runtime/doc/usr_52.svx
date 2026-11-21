@@ -1,0 +1,418 @@
+*usr_52.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+			Skriva större insticksprogram
+
+
+När ett insticksprogram gör mer än enkla saker brukar det växa. Här förklaras
+hur du ser till att det ändå läses in snabbt och hur du delar upp det i mindre
+delar.
+
+|52.1|	Export och import
+|52.2|	Automatisk inläsning
+|52.3|	Automatisk inläsning utan export och import
+|52.4|	Andra mekanismer
+|52.5|	Använda Vim9-skript från äldre skript
+|52.6|	Vim9-exempel: insticksprogram för kommentarer och kopieringsmarkering
+
+	Nästa kapitel: |usr_90.txt|  Installera Vim
+	Föregående kapitel: |usr_51.txt|  Skriva insticksprogram
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*52.1*	Export och import
+
+Vim9-skript utformades för att göra det enklare att skriva stora Vim-skript.
+Syntaxen liknar andra skriptspråk, särskilt TypeScript. Funktioner kompileras
+dessutom till instruktioner som kan köras snabbt. Det kan göra Vim9-skript
+upp till hundra gånger snabbare.
+
+Grundtanken är att ett skript kan innehålla privata objekt som bara används i
+filen och exporterade objekt som kan användas av skript som importerar dem.
+Det blir tydligt var varje objekt definieras.
+
+Här är ett exempel på ett skript som exporterar en funktion och har en privat
+funktion:
+>
+	vim9script
+
+	export def GetMessage(count: string): string
+	   var nr = str2nr(count)
+	   var result = $'Till {nr} säger vi '
+	   result ..= GetReply(nr)
+	   return result
+	enddef
+
+	def GetReply(nr: number): string
+	  if nr == 42
+	     return 'ja'
+	  elseif nr == 22
+	     return 'kanske'
+	  else
+	     return 'nej'
+	  endif
+	enddef
+
+Kommandot `vim9script` krävs. `export` fungerar bara i ett |Vim9|-skript.
+
+Raden `export def GetMessage(...` börjar med `export`, vilket betyder att
+andra skript kan anropa funktionen. Raden `def GetReply(...` saknar `export`. Funktionen är lokal för skriptet.
+
+Det importerande skriptet kan exempelvis ligga i följande katalogstruktur,
+vilken fungerar bra för insticksprogram under katalogen "pack":
+
+	.../plugin/theplugin.vim
+	.../lib/getmessage.vim
+
+Om katalogen "..." finns i 'runtimepath' letar Vim efter insticksprogram i
+katalogen "plugin" och läser in "theplugin.vim". Vim känner inte till
+katalogen "lib". Där kan du lägga skript som du själv importerar.
+
+Skriptet som exporterar GetMessage() sparas i lib/getmessage.vim. Funktionen
+GetMessage() används sedan i plugin/theplugin.vim:
+>
+	vim9script
+
+	import "../lib/getmessage.vim"
+	command -nargs=1 ShowMessage echomsg getmessage.GetMessage(<f-args>)
+
+Kommandot `import` använder en relativ sökväg. Den börjar med "../", vilket
+betyder att Vim utgår från katalogen där det importerande skriptet ligger
+och går upp en nivå. Se |:import| för andra slags sökvägar.
+
+Prova insticksprogrammets kommando så här:
+>
+	ShowMessage 1
+<	Till 1 säger vi nej ~
+>
+	ShowMessage 22
+<	Till 22 säger vi kanske ~
+
+Funktionen GetMessage() föregås av det importerade skriptets namn
+"getmessage". Då framgår det vilket skript varje importerad funktion kommer
+från. Om du importerar flera skript kan vart och ett definiera en funktion
+med namnet GetMessage():
+>
+	vim9script
+
+	import "../lib/getmessage.vim"
+	import "../lib/getother.vim"
+	command -nargs=1 ShowMessage echomsg getmessage.GetMessage(<f-args>)
+	command -nargs=1 ShowOther echomsg getother.GetMessage(<f-args>)
+
+Om skriptnamnet är långt eller används på många ställen kan du korta det med
+argumentet `as`:
+>
+	import "../lib/getmessage.vim" as msg
+	command -nargs=1 ShowMessage echomsg msg.GetMessage(<f-args>)
+
+
+LÄSA IN PÅ NYTT
+
+Det importerade skriptet lib/getmessage.vim läses bara in en gång. Om det
+importeras igen hoppas inläsningen över, eftersom objekten redan har skapats.
+Det gäller även om importkommandot finns i ett annat skript eller i samma
+skript när det läses in på nytt.
+
+Detta är effektivt för insticksprogram. Under utveckling betyder det däremot
+att ändringar i lib/getmessage.vim inte får någon effekt efter att skriptet
+har importerats. Avsluta Vim och starta det igen. (Objekten som definieras i
+skriptet kan användas i kompilerade funktioner; om skriptet läses in på nytt
+kan dessa funktioner sluta fungera.)
+
+
+ANVÄNDA GLOBALA VARIABLER
+
+Ibland vill du använda globala variabler eller funktioner som ska vara
+tillgängliga överallt. Ett exempel är en global variabel som anger en
+inställning för ett insticksprogram. Minska risken för namnkonflikter genom
+att använda ett prefix som sannolikt inte används av andra. För ett
+insticksprogram som heter "mytags" kan du till exempel skriva:
+>
+	g:mytags_location = '$HOME/project'
+	g:mytags_style = 'snabb'
+
+==============================================================================
+*52.2*	Automatisk inläsning
+
+När ett stort skript har delats upp läses ett importerat skript in och körs
+så fort det importerande skriptet läses in. Varje |:import| läser in skriptet
+för att hitta objekten som definieras där. Ett stort skript kan därför göra
+uppstarten märkbart långsammare. Fördelen är att eventuella fel upptäcks vid
+importen.
+
+Du kan skjuta upp inläsningen tills skriptet faktiskt behövs genom att lägga
+till nyckelordet `autoload`. Med exemplet ovan behöver bara en rad i
+plugin/theplugin.vim ändras:
+>
+	import autoload "../lib/getmessage.vim"
+<
+Resten av skriptet behöver inte ändras. Typerna kontrolleras dock inte, och
+"../lib/getmessage.vim" läses inte in vid importen. Vim kontrollerar bara att
+filen finns och går att läsa. Inte ens att funktionen GetMessage() finns
+kontrolleras förrän den används. Därför upptäcks fel i "getmessage.vim" först
+när skriptet körs.
+
+Du får väga snabb uppstart mot att fel upptäcks tidigt.
+
+En praktisk strategi är att utelämna `autoload` under utveckling och
+felsökning, så att fel rapporteras direkt, och lägga till det igen innan du
+distribuerar insticksprogrammet för att förbättra uppstartstiden.
+
+
+KATALOGER FÖR AUTOMATISK INLÄSNING
+
+Ett annat sätt att läsa in skript först när de behövs är att använda
+`import autoload` utan relativ eller absolut sökväg:
+>
+	import autoload "monthlib.vim"
+<
+Vim söker då efter skriptet i katalogerna "autoload" under 'runtimepath'.
+Skriptet måste alltså ligga i en katalog med namnet "autoload". I Unix finns
+en sådan katalog ofta i "~/.vim/autoload". Vim söker även under 'packpath',
+i katalogen "start".
+
+När ett skript importeras på det här sättet nås dess exporterade symboler via
+ett globalt namnrum för automatisk inläsning i stället för att förbli lokala
+för det importerande skriptet.
+
+Eftersom Vim söker i alla kataloger för automatisk inläsning i 'runtimepath'
+bör du välja ett unikt skriptnamn. Insticksprogramshanterare lägger ofta till
+flera kataloger i 'runtimepath', och var och en kan innehålla en sådan
+autoload-katalog.
+
+De två formerna av `import autoload` fungerar så här:
+
+- `import autoload "foo.vim"`
+  Vim söker efter skriptet i 'runtimepath'. Eftersom filen måste ligga under
+  en katalog med namnet "autoload" blir exporterade symboler tillgängliga via
+  den globala namnrymden för automatisk inläsning.
+
+- `import autoload "/some/path/foo.vim"`
+  Om den upplösta sökvägen ligger under en katalog med namnet "autoload" blir
+  exporterade symboler på samma sätt tillgängliga via den globala namnrymden.
+  Annars förblir de lokala för det importerande skriptet.
+
+Den främsta fördelen med den globala namnrymden är att andra skript enkelt
+kan importera och använda symbolerna. Det finns dock nackdelar när ett skript
+läses in på nytt. Se |vim9-reload|.
+
+När symbolerna är skriptlokala är det mer omständligt att dela dem mellan
+skript. Vilken form som passar beror på insticksprogrammets struktur.
+
+Om ett skript importeras utan `autoload` och utan sökväg, till exempel:
+>
+	import "monthlib.vim"
+<
+söker Vim efter "monthlib.vim" i importkatalogerna i 'runtimepath'.
+
+I det här fallet ändrar du sökplats genom att lägga till eller ta bort
+nyckelordet `autoload`. Om en relativ eller absolut sökväg används ändras
+däremot inte filens plats.
+
+==============================================================================
+*52.3*	Automatisk inläsning utan export och import
+
+						*write-library-script*
+En mekanism från tiden före export och import är fortfarande användbar, och
+en del tycker att den är enklare. Grundidén är att anropa en funktion med ett
+särskilt namn. Funktionen finns då i ett biblioteksskript som läses in
+automatiskt.
+
+Den automatiska inläsningen bygger på att funktionsnamnet innehåller
+tecknet "#":
+>
+	mylib#myfunction(arg)
+
+Vim känner igen "#" i funktionsnamnet. Om funktionen inte redan är definierad
+söker Vim efter skriptet "autoload/mylib.vim" i 'runtimepath'. Skriptet ska
+definiera funktionen "mylib#myfunction()". Namndelen "mylib" före "#" anger
+vilket skript som ska läsas in. Filnamnet får ändelsen ".vim".
+
+Du kan lägga fler funktioner i mylib.vim och själv organisera dem i
+biblioteksskript. Funktionsnamnen måste dock börja med samma del som
+skriptnamnet före "#". Det skiljer sig från mekanismen med export och import.
+
+Om du skapar många biblioteksskript kan du vilja lägga dem i underkataloger.
+Exempel:
+>
+	netlib#ftp#read('somefile')
+
+Skriptnamnet består då av funktionsnamnet fram till det sista "#". De tidigare
+"#" ersätts med snedstreck och det sista med ".vim". Resultatet blir alltså
+"netlib/ftp.vim". På Unix kan biblioteksskriptet ligga här:
+
+	~/.vim/autoload/netlib/ftp.vim
+
+Funktionen definieras så här:
+>
+	def netlib#ftp#read(fname: string)
+		# Läs filen fname via ftp
+	enddef
+
+Lägg märke till att funktionsnamnet är exakt detsamma när det definieras som
+när det anropas. Delen före det sista "#" motsvarar exakt underkatalogen och
+skriptfilens namn.
+
+Samma mekanism fungerar för variabler:
+>
+	var weekdays = dutch#weekdays
+
+Detta läser in skriptet "autoload/dutch.vim", som exempelvis kan innehålla:
+>
+	let dutch#weekdays = ['zondag', 'maandag', 'dinsdag', 'woensdag',
+		\ 'donderdag', 'vrijdag', 'zaterdag']
+
+Mer information finns i |autoload|.
+
+==============================================================================
+*52.4*	Andra mekanismer
+
+En del tycker att flera filer är omständligt och vill behålla allt i ett
+skript. För att undvika långsam uppstart går det att definiera en liten del
+först och skjuta upp resten tills den faktiskt behövs. *write-plugin-quickload*
+
+Grundidén är att skriptet läses in två gånger. Första gången definieras
+användarkommandon och mappningar som gör funktionerna tillgängliga. Andra
+gången definieras funktionerna som utför arbetet.
+
+Det kan låta märkligt att snabb inläsning innebär att skriptet läses in två
+gånger. Poängen är att det läses in snabbt första gången, medan större delen
+av arbetet skjuts upp tills funktionen används. Om du alltid använder den blir
+det faktiskt långsammare!
+
+Detta använder ett autokommando för händelsen FuncUndefined. Det fungerar
+annorlunda än mekanismen |autoload| som beskrivits ovan.
+
+Exemplet visar hur det går till:
+>
+	" Globalt Vim-insticksprogram som demonstrerar snabb inläsning
+	" Senast ändrad:	2005-02-25
+	" Underhållare:	Bram Moolenaar <Bram@vim.org>
+	" Licens:	Denna fil är fri att använda
+
+	if !exists("s:did_load")
+		command -nargs=* BNRead  call BufNetRead(<f-args>)
+		map <F19> :call BufNetWrite('något')<CR>
+
+		let s:did_load = 1
+		exe 'au FuncUndefined BufNet* source ' .. fnameescape(expand('<sfile>:p'))
+		finish
+	endif
+
+	function BufNetRead(...)
+		echo 'BufNetRead(' .. string(a:000) .. ')'
+		" Läsfunktionen placeras här
+	endfunction
+
+	function BufNetWrite(...)
+		echo 'BufNetWrite(' .. string(a:000) .. ')'
+		" Skrivfunktionen placeras här
+	endfunction
+
+När skriptet läses in första gången finns "s:did_load" inte. Kommandona mellan
+"if" och "endif" körs. Där avslutas körningen med |:finish|, så resten av
+skriptet körs inte.
+
+Andra gången skriptet läses in finns "s:did_load" och kommandona efter
+"endif" körs. Då definieras funktionerna BufNetRead() och BufNetWrite().
+
+Om du lägger skriptet i insticksprogramskatalogen läser Vim in det vid
+uppstart. Följande händer:
+
+1. Kommandot BNRead definieras och tangenten <F19> mappas när skriptet läses
+   in vid uppstart. Ett autokommando för |FuncUndefined| definieras.
+   Kommandot ":finish" avslutar skriptet i förtid.
+
+2. Användaren skriver kommandot BNRead eller trycker på <F19>. Då anropas
+   funktionen BufNetRead() eller BufNetWrite().
+
+3. Vim hittar inte funktionen och utlöser autokommandohändelsen
+   |FuncUndefined|. Eftersom mönstret "BufNet*" matchar det anropade
+   funktionsnamnet läser autokommandot in skriptet igen. Uttrycket
+   `expand('<sfile>:p')` anger skriptets fullständiga sökväg, och
+   `fnameescape()` skyddar exempelvis blanksteg i sökvägen.
+
+4. Skriptet läses in igen. Nu finns variabeln "s:did_load" och funktionerna
+   definieras.
+
+Lägg märke till att de funktioner som läses in senare matchar mönstret i
+autokommandot |FuncUndefined|. Se till att inget annat insticksprogram
+definierar funktioner som matchar samma mönster.
+
+==============================================================================
+*52.5*	Använda Vim9-skript från äldre skript		*source-vim9-script*
+
+Ibland vill du använda objekt från ett Vim9-skript i ett äldre Vim-skript,
+till exempel för att initiera ett insticksprogram i .vimrc. Det bästa sättet
+är att använda `:import`. Exempel:
+>
+	import 'myNicePlugin.vim'
+	call myNicePlugin.NiceInit('idag')
+
+Detta hittar den exporterade funktionen "NiceInit" i Vim9-skriptfilen och gör
+den tillgänglig som det skriptlokala objektet "myNicePlugin.NiceInit".
+Kommandot `:import` använder alltid skriptnamnrymden, även när "s:" inte
+anges. Om "myNicePlugin.vim" redan har lästs in läses den inte in igen.
+
+På så sätt hamnar inga objekt i den globala namnrymden, där namnkonflikter kan
+orsaka oväntade fel. Skriptet läses också bara in en gång, oavsett hur många
+gånger dess objekt importeras.
+
+I vissa fall, till exempel vid testning, kanske du bara vill läsa in
+Vim9-skriptet. Det går bra, men då blir bara globala objekt tillgängliga.
+Vim9-skriptet måste använda unika namn för dessa globala objekt. Exempel:
+>
+	source ~/.vim/extra/myNicePlugin.vim
+	call g:NicePluginTest()
+
+==============================================================================
+*52.6*	Vim9-exempel: insticksprogram för kommentarer och kopieringsmarkering
+
+KOMMENTARPAKET
+
+Vim innehåller ett insticksprogram för kommentarer, skrivet i Vim9-skript.
+Se |comment-install|. Paketet finns i
+$VIMRUNTIME/pack/dist/opt/comment/.
+
+
+MARKERA KOPIERAD TEXT
+
+Vim innehåller också insticksprogrammet highlight-yank, skrivet i Vim9-skript.
+Se |hlyank-install|. Här är en förenklad version:
+>vim9
+	vim9script
+
+	def HighlightedYank(hlgroup = 'IncSearch', duration = 300, in_visual = true)
+	  if v:event.operator ==? 'y'
+	    if !in_visual && visualmode() != null_string
+	      visualmode(1)
+	      return
+	    endif
+	    var [beg, end] = [getpos("'["), getpos("']")]
+	    var type = v:event.regtype ?? 'v'
+	    var pos = getregionpos(beg, end, {type: type, exclusive: false})
+	    var m = matchaddpos(hlgroup, pos->mapnew((_, v) => {
+	      var col_beg = v[0][2] + v[0][3]
+	      var col_end = v[1][2] + v[1][3] + 1
+	      return [v[0][1], col_beg, col_end - col_beg]
+	    }))
+	    var winid = win_getid()
+	    timer_start(duration, (_) => m->matchdelete(winid))
+	  endif
+	enddef
+
+	autocmd TextYankPost * HighlightedYank()
+<
+Hela exemplet finns i paketet
+$VIMRUNTIME/pack/dist/opt/hlyank/.
+
+==============================================================================
+
+Nästa kapitel: |usr_90.txt|  Installera Vim
+
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

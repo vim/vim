@@ -1,0 +1,730 @@
+*usr_30.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+			 VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Redigera program
+
+
+Vim har flera kommandon som underlättar programmering.  Kompilera ett program
+och hoppa direkt till rapporterade fel.  Ställ automatiskt in indragningen för
+många språk och formatera kommentarer.
+
+|30.1|	Kompilera
+|30.2|	Indrag i C-filer
+|30.3|	Automatiska indrag
+|30.4|	Andra indragsmetoder
+|30.5|	Tabbar och blanksteg
+|30.6|	Formatera kommentarer
+
+	Nästa kapitel: |usr_31.txt|  Utforska det grafiska gränssnittet
+	Föregående kapitel: |usr_29.txt|  Förflyttning i program
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*30.1*	Kompilera
+
+Vim har en uppsättning så kallade quickfix-kommandon.  De låter dig kompilera
+ett program inifrån Vim, gå igenom felen som uppstod och förhoppningsvis rätta
+dem.  Sedan kan du kompilera igen och åtgärda eventuella nya fel tills
+programmet kompileras utan fel.
+
+Följande kommando kör programmet "make" (med eventuella argument du anger) och
+fångar resultatet: >
+
+	:make {arguments}
+
+Om kompileringen ger fel fångas de upp, och redigeraren placerar dig där det
+första felet inträffade.
+   Här är ett exempel på en ":make"-körning.  (En vanlig ":make"-körning ger
+betydligt fler fel och färre dumma fel.)  När du har skrivit ":make" ser
+skärmen ut så här:
+
+	:!make 2>&1| tee /tmp/vim215953.err ~
+	gcc -g -Wall -o prog main.c sub.c ~
+	main.c: In function 'main': ~
+	main.c:6: too many arguments to function 'do_sub' ~
+	main.c: At top level: ~
+	main.c:10: parse error before '}' ~
+	make: *** [prog] Error 1 ~
+
+	2 returned ~
+	"main.c" 11L, 111C ~
+	(3 of 6): too many arguments to function 'do_sub' ~
+	Press ENTER or type command to continue ~
+
+Här ser du att det finns fel i filen "main.c".  När du trycker på <Enter>
+visar Vim filen "main.c" med markören på rad 6, där det första felet finns.
+Du behövde inte ange filnamn eller radnummer; Vim hittade dem i felmeddelandena.
+
+		+---------------------------------------------------+
+		|int main()					    |
+		|{						    |
+		|	int i=3;				    |
+      markör -> |	do_sub("foo");				    |
+		|	++i;					    |
+		|	return (0);				    |
+		|}						    |
+		|}						    |
+		| ~						    |
+		|(3 of 6): too many arguments to function 'do_sub' |
+		+---------------------------------------------------+
+
+Nästa kommando går till nästa fel: >
+
+	:cnext
+
+Vim hoppar till rad 10, den sista raden i filen, där det finns en extra '}'.
+   Om det inte finns tillräckligt med plats för hela felmeddelandet kortar Vim
+ned det.  Visa hela meddelandet med: >
+
+	:cc
+
+Du kan få en översikt över alla felmeddelanden med kommandot ":clist".  Så här
+kan utskriften se ut: >
+
+	:clist
+<	3 main.c: 6:too many arguments to function 'do_sub' ~
+	5 main.c: 10:parse error before '}' ~
+
+Här visas bara de rader där Vim kunde känna igen ett filnamn och ett radnummer.
+Vim antar att dessa rader är intressanta och att resten bara är ointressant
+utdata.  Ibland innehåller rader som inte känns igen ändå information som du
+vill se, till exempel länkarens meddelande om en odefinierad funktion.  Lägg
+till "!" i kommandot för att se alla meddelanden: >
+
+	:clist!
+<	1 gcc -g -Wall -o prog main.c sub.c ~
+	2 main.c: In function 'main': ~
+	3 main.c:6: too many arguments to function 'do_sub' ~
+	4 main.c: At top level: ~
+	5 main.c:10: parse error before '}' ~
+	6 make: *** [prog] Error 1 ~
+
+Vim markerar det aktuella felet.  Gå tillbaka till föregående fel med: >
+
+	:cprevious
+
+Andra kommandon för att flytta sig i fellistan:
+
+	:cfirst			gå till första felet
+	:clast			gå till sista felet
+	:cc 3			gå till fel nummer 3
+
+
+ANVÄNDA EN ANNAN KOMPILATOR
+
+Namnet på programmet som körs med kommandot ":make" anges av alternativet
+'makeprg'.  Vanligen är det satt till "make", men användare av Visual C++ kan
+sätta det till "nmake" med följande kommando: >
+
+	:set makeprg=nmake
+
+Du kan även ange argument i alternativet.  Specialtecken måste föregås av ett
+omvänt snedstreck.  Exempel: >
+
+	:set makeprg=nmake\ -f\ project.mak
+
+Du kan ta med särskilda Vim-nyckelord i kommandospecifikationen.  Tecknet %
+utökas till namnet på den aktuella filen.  Om du kör: >
+
+	:set makeprg=make\ %:S
+
+Kör ":make" kommandot nedan när du redigerar main.c: >
+
+	make main.c
+
+Det är inte särskilt användbart, så du kan förbättra kommandot med :r-
+modifieraren (rot): >
+
+	:set makeprg=make\ %:r:S.o
+
+Då körs följande kommando: >
+
+	make main.o
+
+Läs mer om modifierare här: |filename-modifiers|.
+
+
+ÄLDRE FELLISTOR
+
+Anta att du kompilerar ett program med ":make".  Det finns ett varningsmeddelande
+i en fil och ett felmeddelande i en annan.  Du rättar felet och kör ":make"
+igen för att kontrollera att det verkligen är löst.  Nu vill du titta på
+varningen.  Den finns inte i den senaste fellistan, eftersom filen med
+varningen inte kompilerades igen.  Gå tillbaka till föregående fellista med: >
+
+	:colder
+
+Använd sedan ":clist" och ":cc {nr}" för att hoppa till platsen med varningen.
+   Gå framåt till nästa fellista med: >
+
+	:cnewer
+
+Vim sparar som standard upp till tio snabbfixlistor. Ändra antalet med
+alternativet 'chistory'.
+
+
+BYTA KOMPILATOR
+
+Du måste tala om för Vim vilket format felmeddelandena från kompilatorn har.
+Det görs med alternativet 'errorformat'.  Syntaxen för alternativet är
+komplicerad och kan anpassas till nästan vilken kompilator som helst.  Läs mer
+här: |errorformat|.
+
+Du kanske använder olika kompilatorer.  Det är besvärligt att ställa in
+'makeprg' och särskilt 'errorformat' varje gång.  Vim erbjuder ett enklare sätt.
+Så här byter du till Microsoft Visual C++-kompilatorn: >
+
+	:compiler msvc
+
+Då hittar Vim skriptet för kompilatorn "msvc" och ställer in lämpliga
+alternativ.
+   Du kan skriva egna kompilatorfiler.  Se |write-compiler-plugin|.
+
+
+OMDIRIGERA UT
+
+Kommandot ":make" omdirigerar programmets utdata till en felfil.  Hur det går
+till beror på flera saker, till exempel alternativet 'shell'.  Om kommandot
+":make" inte fångar utdata bör du kontrollera alternativen 'makeef' och
+'shellpipe'.  Även alternativen 'shellquote' och 'shellxquote' kan påverka.
+
+Om du inte kan få ":make" att omdirigera utdata åt dig kan du kompilera
+programmet i ett annat fönster och omdirigera utdata till en fil.  Läs sedan
+in filen i Vim med: >
+
+	:cfile {filnamn}
+
+Då fungerar felhoppen på samma sätt som med kommandot ":make".
+
+==============================================================================
+*30.2*	Indrag i C-filer
+
+Program är mycket lättare att förstå när raderna har rätt indragning.  Vim
+erbjuder flera sätt att minska arbetet med detta.  För C och C-liknande språk,
+som Java och C++, kan du ställa in alternativet 'cindent'.  Vim känner till
+mycket om C-program och försöker ställa in indragningen automatiskt.  Ange
+alternativet 'shiftwidth' för att bestämma hur många blanksteg varje nivå ska
+öka med.  Fyra blanksteg fungerar bra.  Ett enda ":set"-kommando räcker: >
+
+	:set cindent shiftwidth=4
+
+När alternativet är aktiverat får nästa rad automatiskt ett extra indrag när
+du skriver något i stil med "if (x)".
+
+				    if (flag)
+	Automatisk indragning --->	do_the_work();
+	Automatiskt minskat indrag <---	if (other_flag) {
+	Automatisk indragning --->	do_file();
+	Behåll indraget		do_some_more();
+	Automatiskt minskat indrag <---	}
+
+När du skriver innanför klammerparenteser ({}), läggs indrag till i början och
+tas bort i slutet.  Det minskade indraget kommer först när du skriver '}',
+efter att Vim har fått veta vad du tänker skriva.
+
+En bieffekt av automatisk indragning är att den kan hjälpa dig upptäcka fel i
+koden tidigt.  Om du skriver } för att avsluta en funktion och den automatiska
+indragningen ger klammerparentesen större indrag än väntat, saknas det kanske
+en }.  Använd kommandot "%" för att se vilken { som motsvarar den } du skrev.
+   En saknad ) eller ; ger också för stort indrag.  Om du får mer blanksteg än
+väntat bör du alltså kontrollera raderna före.
+
+Om koden är dåligt formaterad eller om du har lagt till eller tagit bort rader
+behöver du justera indragningen.  Det gör operatorn "=".  Den enklaste formen
+är: >
+
+	==
+
+Detta justerar indragningen på den aktuella raden.  Som med alla operatorer kan
+du använda den på tre sätt.  I visuellt läge justerar "=" indragningen på de
+markerade raderna.  Ett användbart textobjekt är "a{".  Det väljer det
+omslutande {}-blocket.  Justera då indragningen i kodblocket där markören står
+med: >
+
+	=a{
+
+Om koden har mycket felaktig indragning kan du justera indragningen i hela
+filen med: >
+
+	gg=G
+
+Gör inte detta i filer där indragningen har ställts in noggrant för hand.  Den
+automatiska indragningen fungerar bra, men i vissa situationer kan du behöva
+åsidosätta den.
+
+
+STÄLLA IN INDRAGSSTIL
+
+Olika personer har olika stil för indragning.  Som standard gör Vim ett bra
+jobb och följer den stil som de flesta programmerare använder.  Det finns dock
+olika stilar.  Du kan anpassa indragningen med alternativet 'cinoptions'.
+   Som standard är 'cinoptions' tomt och Vim använder sin standardstil.  Du kan
+lägga till olika värden för att ändra beteendet.  Om du till exempel vill att
+klammerparenteser ska placeras så här:
+
+	if (flag) ~
+	  { ~
+	    i = 8; ~
+	    j = 0; ~
+	  } ~
+
+Använd kommandot: >
+
+	:set cinoptions+={2
+
+Det finns många sådana värden.  Se |cinoptions-values|.
+
+==============================================================================
+*30.3*	Automatiska indrag
+
+Du vill inte behöva aktivera alternativet 'cindent' manuellt varje gång du
+redigerar en C-fil.  Så här gör du för att aktivera indragning automatiskt: >
+
+	:filetype indent on
+
+Detta gör faktiskt mycket mer än att aktivera 'cindent' för C-filer.  Först
+aktiveras identifiering av filtyp.  Samma identifiering används för
+syntaxmarkering.
+   När Vim känner till filtypen söker det efter en indragsfil för den typen.
+Vim-distributionen innehåller ett antal sådana filer för olika
+programmeringsspråk.  Indragsfilen ställer sedan in automatisk indragning som
+är anpassad för filtypen.
+
+Om du inte tycker om den automatiska indragningen kan du stänga av den igen:
+>
+
+	:filetype indent off
+
+Om du vill stänga av indragningen för en viss filtyp skapar du en fil med bara
+den här raden: >
+
+	:let b:did_indent = 1
+
+Spara raden i en fil med det här namnet:
+
+	{katalog}/indent/{filtyp}.vim
+
+{filtyp} är namnet på filtypen, till exempel "cpp" eller "java".  Se exakt
+vilket namn Vim har identifierat med kommandot: >
+
+	:set filetype
+
+Utskriften kan då se ut så här:
+
+	filetype=help ~
+
+I så fall använder du "help" som {filtyp}.
+   För {katalog} använder du din runtime-katalog.  Se resultatet av kommandot:
+>
+
+	:set runtimepath
+
+Använd det första värdet, alltså namnet före det första kommatecknet.  Om
+utskriften till exempel ser ut så här:
+
+	runtimepath=~/.vim,/usr/local/share/vim/vim60/runtime,~/.vim/after ~
+
+använder du "~/.vim" som {katalog}.  Då blir det fullständiga filnamnet:
+
+	~/.vim/indent/help.vim ~
+
+I stället för att stänga av indragningen kan du skriva en egen indragsfil.  Läs
+mer här: |indent-expression|.
+
+==============================================================================
+*30.4*	Andra indragsmetoder
+
+Den enklaste formen av automatisk indragning använder alternativet
+'autoindent'.  Det återanvänder indraget från föregående rad.  Alternativet
+'smartindent' är lite smartare och är användbart för språk som saknar en
+indragsfil.  Det är inte lika smart som 'cindent', men smartare än
+'autoindent'.
+   När 'smartindent' är aktiverat ökas indraget en nivå för varje { och minskas
+för varje }.  Indraget ökas också för ord som står i alternativet 'cinwords'.
+Rader som börjar med # behandlas särskilt: allt indrag tas bort så att
+förprocessordirektiv börjar i kolumn 1.  Indraget återställs på nästa rad.
+
+
+KORRIGERA INDRAG
+
+När du använder 'autoindent' eller 'smartindent' för att återanvända föregående
+rads indrag behöver du ofta lägga till eller ta bort ett indrag motsvarande ett
+'shiftwidth'.  Gör det snabbt med kommandona CTRL-D och CTRL-T i infogningsläge.
+   Du skriver till exempel ett skalskript som ska se ut så här:
+
+	if test -n a; then ~
+	   echo a ~
+	   echo "-------" ~
+	fi ~
+
+Börja med att ställa in alternativen: >
+
+	:set autoindent shiftwidth=3
+
+Skriv den första raden, tryck på <Enter> och börja på den andra:
+
+	if test -n a; then ~
+	echo ~
+
+Nu ser du att indraget behöver ökas.  Tryck på CTRL-T.  Resultatet blir:
+
+	if test -n a; then ~
+	   echo ~
+
+I infogningsläge ökar CTRL-T indraget med ett 'shiftwidth', oavsett var på
+raden markören står.
+   Fortsätt skriva den andra raden, tryck på <Enter> och skriv den tredje.
+Indraget är nu rätt.  Tryck sedan på <Enter> och skriv den sista raden.  Nu ser
+det ut så här:
+
+	if test -n a; then ~
+	   echo a ~
+	   echo "-------" ~
+	   fi ~
+
+Ta bort det överflödiga indraget på den sista raden genom att trycka på CTRL-D.
+Det tar bort ett 'shiftwidth' indrag, oavsett var på raden markören står.
+   I normalt läge kan du använda kommandona ">>" och "<<" för att flytta rader
+i sidled.  ">" och "<" är operatorer, så du kan ange vilka rader som ska
+flyttas på de vanliga tre sätten.  En användbar kombination är: >
+
+	>i{
+
+Det lägger till ett indrag för raderna inuti det aktuella {}-blocket, men
+lämnar raderna med { och } oförändrade.  ">a{" inkluderar även dessa rader.  I
+exemplet står markören på "printf":
+
+	originaltext			efter ">i{"		efter ">a{"
+
+	if (flag)		if (flag)		if (flag) ~
+	{			{			    { ~
+	printf("yes");		    printf("yes");	    printf("yes"); ~
+	flag = 0;		    flag = 0;	    flag = 0;  ~
+	}			}			    } ~
+
+==============================================================================
+*30.5*	Tabbar och blanksteg
+
+EN KORT HISTORIK OM VARFÖR TABBAR FINNS
+
+vi, Vims föregångare, skapades av Bill Joy.  Då använde han en PDP-11 med
+begränsat minne och begränsade möjligheter till in- och utmatning.  På den tiden var
+det vanligt att minska storleken på källkod med följande knep.
+  ASCII-tabellen utformades ursprungligen för att fjärrstyra fjärrskrivare.
+När kontrolltecken 9 (horisontell tabb, skrivet ^I) skickades till en
+fjärrskrivare flyttades skrivhuvudet till nästa tabbstopp.  Om tabbstoppen låg åtta
+kolumner från varandra, vilket var en vanlig standard, kunde ett enda
+kontrolltecken ge samma visuella resultat som upp till åtta blanksteg.  De här
+två raderna visas till exempel likadant: >
+
+	1234^I9
+	1234    9
+
+Det gick också snabbare att trycka på <Tab> än att skriva flera <Space>.
+Detsamma gällde <BS>.
+
+
+PROBLEMET MED TABBAR OCH INDRAG
+
+I Vim styrs avståndet i kolumner mellan två (virtuella) horisontella tabbstopp
+av alternativet 'tabstop'.  Standardvärdet är åtta.  Även om du kan ändra värdet får du
+snart problem.  Andra program vet inte vilket tabbstopp du använde.  De
+använder troligen standardvärdet åtta, och texten ser då helt annorlunda ut.
+De flesta skrivare använder också tabbstopp med åtta kolumner.  Därför är det
+bäst att låta 'tabstop' vara oförändrat.  Om du redigerar en fil som skapats
+med ett annat tabbstopp kan du läsa |25.3| om hur du rättar till det.
+   Om du använder åtta kolumners indrag i programkod når du snabbt fönstrets
+högra kant.  Ett enda blanksteg ger för liten visuell skillnad.  Många föredrar
+fyra blanksteg som en bra kompromiss.
+   Eftersom ett tabulatortecken i början av en rad visas som åtta blanksteg,
+kan du inte använda ett sådant tecken för ett indrag på fyra blanksteg.
+  För att lösa detta hade vi alternativet 'shiftwidth'.  När det är satt
+till 4 kan du trycka på <C-t> i infogningsläge på en ny rad för att lägga till
+fyra blanksteg.  Det går inte att få samma resultat med <Tab> när 'tabstop' är
+8.
+ För att spara utrymme tog vi också bort grupper av blanksteg och ersatte
+dem i tysthet med tabulatortecken.  Tabellen visar vad som händer när du
+trycker på <C-t> flera gånger.
+  En punkt står för ett blanksteg och "------->" för ett tabulatortecken.
+
+	tangent			resultat ~
+	<C-t>				....
+	<C-t><C-t>			------->
+	<C-t><C-t><C-t>		------->....
+
+På samma sätt minskar <C-d> indraget i infogningsläge.  Med 'tabstop'=8 och
+'shiftwidth'=2 får du följande:
+
+	tangent			resultat ~
+	<C-t><Tab><C-t>		..------>..
+	<C-t><Tab><C-t><C-d>	------->
+
+Ett tredje alternativ i vi var 'autoindent'.  Det kopierar föregående rads
+indrag:
+
+	tangent			resultat ~
+	<Space><Tab>hello		.------>hello
+	<Space><Tab>hello<Enter>	.------>hello
+					------->
+
+Den nya raden skapas dock genom att antalet tecken optimeras.
+
+
+ENDAST BLANKSTEG
+
+Avståndet mellan tabbstopp på åtta kolumner var inte universellt.  IBM hade en
+standard med tio kolumner, och i dag skriver vissa Go-programmerare kod med
+`tabstop=4`.  Varje gång text visas med ett annat värde för 'tabstop' riskerar
+den att hamna snett, särskilt när filen delas och öppnas på en annan dator.
+  Under tiden har datorerna blivit mycket bättre, och de få byte som sparas
+med tabbar gör ingen verklig skillnad längre.  Det blev möjligt att bara
+använda blanksteg och därmed garantera samma resultat överallt.  I vi var det
+dock omöjligt att bara använda blanksteg utan att ge upp funktioner.  Kom ihåg
+att 'autoindent' systematiskt försökte skriva ett tabulatortecken när det
+kunde.
+  Vim 4.0 gjorde det lika enkelt att arbeta med endast blanksteg som med endast
+tabbar eller en blandning av tabbar och blanksteg.  Det skedde med alternativet
+'expandtab'.  När det är aktiverat ersätter Vim varje horisontell tabb som det
+annars skulle ha skrivit med motsvarande antal blanksteg.  Den visuella effekten
+blir densamma. <BS> fortsätter att ta bort ett tecken i taget.
+
+	tangent			resultat ~
+	<Tab>				........
+	<Tab><BS>			.......
+
+
+ERSÄTTA TABBAR MED BLANKSTEG OCH TVÄRTOM
+
+Inställningen 'expandtab' påverkar inte befintliga tabulatortecken.  För att ta
+bort alla horisontella tabbar ur en fil introducerades kommandot |:retab| i Vim
+5.3. Använd: >
+
+	:set expandtab
+	:retab
+
+Det kan vara lite riskabelt eftersom det även kan ändra tabbar i en sträng.
+Kontrollera om sådana finns med: >
+
+	/"[^"\t]*\t[^"]*"
+
+Undvik helst faktiska tabulatortecken i strängar.  Ersätt dem med "\t" för
+att undvika problem.
+
+  Det motsatta fungerar också: >
+
+	:set noexpandtab
+	:retab!
+
+
+MJUKA TABBSTOPP
+
+När du bara använder blanksteg eller en blandning av blanksteg och tabbar kan
+det kännas fel att tangenterna <Tab> och <BS> inte fungerar som varandras
+motsatser, vilket de gör när du bara använder tabbar.
+  Vim 5.4 introducerade alternativet 'softtabstop'.  Utöver de (hårda)
+tabbstopp som används för att visa tabulatortecken lägger Vim till mjuka
+tabbstopp som bara gäller markörens position.  När 'softtabstop' har ett
+positivt värde flyttar <Tab> markören till nästa mjuka tabbstopp.  Vim skriver
+den kombination av tabbar och blanksteg som behövs för att uppnå detta.  På
+motsvarande sätt försöker <BS> flytta markören till föregående mjuka tabbstopp.
+Exemplet använder `:set softtabstop=4`:
+
+	tangent			resultat ~
+	<Tab>				....
+	<Tab><Tab>a			------->a
+	<Tab><Tab>a<Tab>		------->a...
+	<Tab><Tab>a<Tab><BS>		------->a
+
+  Om du vill använda samma avstånd överallt kan du köra `:set softtabstop=-1`.
+Då används värdet för 'shiftwidth' mellan de mjuka tabbstoppen.
+  Om du vill ha olika värden för 'shiftwidth' och 'softtabstop' kan du ändå
+använda <C-t> för att öka indraget med 'shiftwidth'.  Du kan också aktivera
+alternativet 'smarttab', så får <Tab> avgöra vad den ska göra i olika
+situationer.
+
+
+VARIERANDE TABBSTOPP
+
+Som vi nämnde utformades ASCII-tabellen för att fjärrstyra fjärrskrivare.  En
+fjärrskrivare kunde konfigureras med tabbstopp på olika avstånd.  Kontrolltecknet
+^I betydde bara: gå till nästa tabbstopp, oavsett var det låg.
+  Vim 7.3 introducerade 'vartabstop' för att efterlikna detta.  Om Vim har
+kompilerats med funktionen |+vartabs| och du kör `:set vartabstop=2,4` blir
+resultatet:
+
+	tecken		resultat ~
+	^I		->
+	^I^I		->--->
+	^I^I^I	->--->--->
+
+  'varsofttabstop' infördes också, för mjuka tabbstopp med varierande avstånd.
+Med `:set varsofttabstop=2,4` blir resultatet:
+
+	tangent			resultat ~
+	<Tab>				..
+	<Tab><Tab>			......
+	<Tab><Tab><Tab>		------->....
+
+
+EXEMPEL PÅ INSTÄLLNINGAR
+
+Med standardinställningarna använder Vim tabbar där det går, och
+blanksteg där det behövs: >
+
+	:set tabstop=8
+	:set shiftwidth=8
+	:set noexpandtab
+	:set softtabstop=0
+	:set nosmarttab
+<
+  Om du vill skriva C-kod som Python, med enbart blanksteg och fyra blankstegs
+indrag, kan du använda: >
+
+	:set shiftwidth=4
+	:set softtabstop=-1
+	:set expandtab
+<
+  Om du vill ha samma beteende men bättre kontroll över justering, till exempel
+när du justerar parametrar eller kommentarer i grupper om två blanksteg,
+använder du: >
+
+	:set shiftwidth=4
+	:set softtabstop=2
+	:set expandtab
+	:set smarttab
+<
+  Om du i stället vill skriva C-kod som Bram Moolenaar gjorde, med en blandning
+av tabbar och blanksteg, kan du använda: >
+
+	:set shiftwidth=4
+	:set softtabstop=-1
+<
+
+==============================================================================
+*30.6*	Formatera kommentarer
+
+En av de fina sakerna med Vim är att det förstår kommentarer.  Be Vim formatera
+en kommentar så gör det rätt.
+   Anta att du har följande kommentar:
+
+	/* ~
+	 * This is a test ~
+	 * of the text formatting. ~
+	 */ ~
+
+Formatera kommentaren genom att ställa markören i början och skriva: >
+
+	gq]/
+
+Operatorn "gq" formaterar texten.  Rörelsen "]/" flyttar markören till slutet
+av en kommentar.  Resultatet blir:
+
+	/* ~
+	 * This is a test of the text formatting. ~
+	 */ ~
+
+Observera att Vim hanterade början av varje rad korrekt.
+  Du kan också markera texten som ska formateras i visuellt läge och trycka på
+"gq".
+
+Lägg till en rad i kommentaren genom att ställa markören på mittraden och
+trycka på "o".  Resultatet blir:
+
+	/* ~
+	 * This is a test of the text formatting. ~
+	 * ~
+	 */ ~
+
+Vim har automatiskt lagt till en asterisk och ett blanksteg.  Nu kan du skriva
+kommentarstexten.  När raden blir längre än 'textwidth' delar Vim upp den.
+Även då läggs asterisken in automatiskt:
+
+	/* ~
+	 * This is a test of the text formatting. ~
+	 * Typing a lot of text here will make Vim ~
+	 * break ~
+	 */ ~
+
+För att detta ska fungera måste vissa flaggor finnas i 'formatoptions':
+
+	r	infoga asterisken när du trycker på <Enter> i infogningsläge
+	o	infoga asterisken när du använder "o" eller "O" i normalt läge
+	c	bryt kommentarstext enligt 'textwidth'
+
+Se |fo-table| för fler flaggor.
+
+
+DEFINIERA EN KOMMENTAR
+
+Alternativet 'comments' definierar hur en kommentar ser ut.  Vim skiljer mellan
+enradskommentarer och kommentarer med en början, ett slut och en mittendel.
+   Många enradskommentarer inleds med ett särskilt tecken.  C++ använder //,
+Makefile-filer använder # och Vim-skript använder ".  Gör så här för att få
+Vim att känna igen C++-kommentarer: >
+
+	:set comments=://
+
+Kolonet skiljer flaggorna från texten som identifierar kommentaren.  Det
+allmänna formatet för en post i 'comments' är:
+
+	{flaggor}:{text}
+
+Delen {flaggor} kan vara tom, som i det här fallet.
+   Du kan kombinera flera poster genom att skilja dem åt med kommatecken.  Då
+kan flera kommentartyper kännas igen samtidigt.  Anta till exempel att du
+redigerar ett e-postmeddelande.  När du svarar föregås text från andra av tecknen
+">" och "!".  Det här kommandot fungerar: >
+
+	:set comments=n:>,n:!
+
+Det finns två poster: en för kommentarer som börjar med ">" och en för dem som
+börjar med "!".  Båda använder flaggan "n", vilket betyder att kommentarerna
+kan nästlas.  En rad som börjar med ">" kan alltså ha ytterligare en kommentar
+efter tecknet.  Då kan meddelandet formateras så här:
+
+	> ! Did you see that site? ~
+	> ! It looks really great. ~
+	> I don't like it.  The ~
+	> colors are terrible. ~
+	What is the URL of that ~
+	site? ~
+
+Sätt 'textwidth' till exempelvis 80 och formatera texten genom att markera den
+i visuellt läge och skriva "gq".  Resultatet blir:
+
+	> ! Did you see that site?  It looks really great. ~
+	> I don't like it.  The colors are terrible. ~
+	What is the URL of that site? ~
+
+Du ser att Vim inte flyttade text mellan olika kommentartyper.  Ordet "I" i raden som börjar med "> I" hade fått plats i slutet av
+föregående rad. Vim håller ändå isär rader som börjar med "> !" och rader
+som börjar med ">".
+
+
+EN KOMMENTAR MED TRE DELAR
+
+En C-kommentar börjar med "/*", har "*" i mitten och slutar med "*/".  Posten
+i 'comments' ser då ut så här: >
+
+	:set comments=s1:/*,mb:*,ex:*/
+
+Början anges med "s1:/*".  "s" markerar början på en kommentar i tre delar.
+Kolonet skiljer flaggorna från texten som identifierar kommentaren: "/*".  Här
+finns en flagga, "1".  Den anger att mittendelen ska förskjutas ett blanksteg.
+   Mittendelen "mb:*" börjar med "m", som anger att den är en mittendel.
+Flaggan "b" betyder att ett blanksteg måste följa efter texten.  Annars skulle
+Vim även tolka text som "*pointer" som kommentarmitt.
+   Slutdelen "ex:*/" har flaggan "e" som anger att det är slutdelen.  Flaggan
+"x" har en särskild betydelse: när Vim har infogat en asterisk automatiskt tar
+ett snedstreck bort det extra blanksteget.
+
+Läs mer i |format-comments|.
+
+==============================================================================
+
+Nästa kapitel: |usr_31.txt|  Utforska det grafiska gränssnittet
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

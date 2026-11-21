@@ -1,0 +1,504 @@
+*usr_03.txt*	För Vim version 9.2.  Senast ändrad: 18 nov 2026
+
+
+		     VIMS ANVÄNDARMANUAL	av Bram Moolenaar
+
+
+			     Förflyttning
+
+
+Innan du kan infoga eller ta bort text måste markören flyttas till rätt plats. Vim har många kommandon för att flytta markören. Det här kapitlet visar hur du använder de viktigaste. En lista över kommandona finns under |Q_lr|.
+
+|03.1|	Flytta mellan ord
+|03.2|	Flytta till början eller slutet av en rad
+|03.3|	Flytta till ett tecken
+|03.4|	Hitta matchande parentes
+|03.5|	Flytta till en viss rad
+|03.6|	Se var du befinner dig
+|03.7|	Rulla texten
+|03.8|	Enkla sökningar
+|03.9|	Enkla sökmönster
+|03.10|	Använda markeringar
+
+     Nästa kapitel: |usr_04.txt|  Göra mindre ändringar
+ Föregående kapitel: |usr_02.txt|  De första stegen i Vim
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*03.1*	Flytta mellan ord
+
+Flytta markören ett ord framåt med kommandot "w". Som med de flesta Vim-kommandon kan du ange ett tal före kommandot för att flytta flera ord. "3w" flyttar till exempel tre ord. Bilden visar hur det fungerar (med start vid positionen som markeras med "x"):
+
+Ett ord är en rad med ord ~
+	  x-->-->->----------------->
+	   w  w  w    3w
+
+Lägg märke till att "w" flyttar till nästa ords början även om markören redan står i början av ett ord.
+   Kommandot "b" flyttar bakåt till början av föregående ord:
+
+Ett ord är en rad med ord ~
+	<----<--<-<---------<--x
+	   b   b b    2b      b
+
+Kommandot "e" flyttar framåt till ett ordslut och "ge" bakåt till föregående ordslut:
+
+Ett ord är en rad med ord ~
+	   <----<----x---->------------>
+	   2ge   ge     e       2e
+
+Om markören står vid det sista ordet på en rad flyttar "w" den till det första ordet på nästa rad. Du kan alltså använda kommandot för att gå genom ett stycke, mycket snabbare än med "l". "b" gör samma sak åt andra hållet.
+
+Ett ord slutar vid ett tecken som inte ingår i ord, till exempel ".", "-" eller ")". Läs om alternativet 'iskeyword' om du vill ändra vad Vim räknar som ett ord. Om du provar direkt i hjälpen behöver 'iskeyword' återställas för att exemplen ska fungera: >
+	:set iskeyword&
+Du kan också flytta mellan ORD som avgränsas av blanktecken. De är inte ord i vanlig mening, därför skrivs de med versaler. Kommandona för att flytta mellan ORD skrivs också med versaler, som bilden visar:
+
+	       ge      b	  w				e
+	       <-     <-	 --->			       --->
+Ett ord, en rad med ord/ord/ord (och ett till). ~
+	   <----- <-----	 -------------------->	       ----->
+	     gE      B			 W			 E
+
+Med den här blandningen av gemener och versaler kan du snabbt flytta framåt och bakåt genom ett stycke.
+
+==============================================================================
+*03.2*	Flytta till början eller slutet av en rad
+
+Kommandot "$" flyttar markören till radens slut. Om tangentbordet har en <End>-tangent gör den samma sak.
+
+Kommandot "^" flyttar till radens första tecken som inte är blanksteg. Kommandot "0" (noll) flyttar till radens allra första tecken, liksom tangenten <Home>. I bilden står "." för ett blanksteg:
+
+		  ^
+	     <-----------x
+.....Ett ord är en rad med ord ~
+	<----------------x   x-------------->
+		0		   $
+
+(de fem punkterna visar blanksteg)
+
+   Kommandot "$" kan föregås av ett tal, precis som de flesta förflyttningskommandon. Eftersom det inte är meningsfullt att flytta till samma rads slut flera gånger gör talet att redigeraren flyttar till slutet av en annan rad. "1$" flyttar till slutet av den aktuella raden, "2$" till slutet av nästa rad och så vidare.
+   Kommandot "0" kan inte föregås av ett tal, eftersom nollan då skulle räknas som en del av talet. Ett tal före "^" har däremot ingen effekt.
+
+==============================================================================
+*03.3*	Flytta till ett tecken
+
+Ett av de mest användbara förflyttningskommandona söker efter ett enskilt tecken. Kommandot "fx" söker framåt på raden efter tecknet x. Minnesregel: f står för engelskans find (hitta).
+   Anta att markören står i början av raden nedan och att du vill gå till h i human. Skriv "fh" så placeras markören på h:
+
+	To err is human.  To really foul up you need a computer. ~
+	---------->--------------->
+	    fh		 fy
+
+Bilden visar också att kommandot "fy" flyttar till slutet av ordet really.
+   Du kan ange ett tal och därmed flytta till "l" i "foul" med "3fl":
+
+	To err is human.  To really foul up you need a computer. ~
+		  --------------------->
+			   3fl
+
+Kommandot "F" söker åt vänster:
+
+	To err is human.  To really foul up you need a computer. ~
+		  <---------------------
+			    Fh
+
+Kommandot "tx" fungerar som "fx", men stannar ett tecken före det sökta tecknet. Minnesregel: t står för engelskans to (till). Den bakåtriktade varianten är "Tx".
+
+	To err is human.  To really foul up you need a computer. ~
+		   <------------  ------------->
+			Th		tn
+
+De här fyra kommandona kan upprepas med ";". Med "," upprepas sökningen i motsatt riktning. Markören flyttas aldrig till en annan rad, inte ens om meningen fortsätter där.
+
+Ibland börjar du söka och inser att du skrev fel kommando. Du kanske skrev "f" för att söka bakåt men egentligen menade "F". Avbryt sökningen med <Esc>. "f<Esc>" avbryter alltså en sökning framåt utan att göra något. <Esc> avbryter de flesta åtgärder, inte bara sökningar.
+
+==============================================================================
+*03.4*	Hitta matchande parentes
+
+När du skriver program hamnar parenteser ofta inuti varandra. Då är kommandot
+"%" praktiskt: det flyttar markören till den matchande parentesen. Står
+markören på "(" flyttas den till motsvarande ")". Står den på ")" flyttas
+den till motsvarande "(":
+
+			    %
+			 <----->
+		if (a == (b * c) / d) ~
+		   <---------------->
+			    %
+
+Det fungerar också för hakparentesparen [] och klammerparen {}. Vilka par som matchas kan anges med alternativet 'matchpairs'.
+
+Om markören inte står på ett användbart tecken söker "%" framåt efter ett. Står markören i början av raden i föregående exempel hittar kommandot alltså första "(" och flyttar sedan till dess motsvarighet:
+
+		if (a == (b * c) / d) ~
+		---+---------------->
+			   %
+
+Fler sätt att flytta runt i kod beskrivs i |usr_29.txt|.
+
+==============================================================================
+*03.5*	Flytta till en viss rad
+
+Om du programmerar i C eller C++ känner du igen felmeddelanden som det här:
+
+	prog.c:33: j   odeklarerad (första användningen i funktionen) ~
+
+Felmeddelandet visar att du kanske behöver rätta något på rad 33. Du kan skriva "9999k" för att gå till filens början och sedan "32j" för att gå ned 32 rader. Det fungerar, men är inte särskilt bra. Använd hellre kommandot "G" med ett tal: "33G" placerar markören på rad 33. (Ett bättre sätt att gå igenom kompilatorns fellista beskrivs i |usr_30.txt| under kommandot :make.)
+   Utan tal placerar "G" markören i slutet av filen. Skriv "gg" för att snabbt gå till början. "1G" gör samma sak men kräver ett extra tecken.
+
+	    |	filens första rad   ^
+	    |	textprov textprov     |
+	    |	textprov textprov     |  gg
+	7G  |	textprov textprov     |
+	    |	textprov textprov
+	    |	textprov textprov
+	    V	textprov textprov     |
+		textprov textprov     |  G
+		textprov textprov     |
+		filens sista rad    V
+
+Du kan också flytta till en rad med kommandot "%" och ett tal. "50%" flyttar till mitten av filen och "90%" nära slutet.
+
+Vi har hittills utgått från att du vill flytta till en rad i filen, även om den inte syns på skärmen. Hur flyttar du till en synlig rad? Bilden visar tre kommandon:
+
+			+---------------------------+
+		H -->	| textprov	    |
+			| textprov		    |
+			| textprov	    |
+			| textprov		    |
+		M -->	| textprov	    |
+			| textprov		    |
+			| textprov	    |
+			| textprov		    |
+		L -->	| textprov	    |
+			+---------------------------+
+
+Minnesregel: H är den översta raden, M den mittersta och L den nedersta.
+
+==============================================================================
+*03.6*	Se var du befinner dig
+
+Det finns tre sätt att se var i filen du befinner dig:
+
+1.  Använd kommandot CTRL-G. Du får då ett meddelande som detta (om alternativet 'ruler' är av):
+
+	"usr_03.txt" rad 233 av 650 --35%-- kol 45-52 ~
+
+    Här visas filnamnet, markörens radnummer, det totala radantalet, positionen
+    i filen i procent samt markörens kolumn.
+       Ibland visas ett kolumnintervall, till exempel "col 2-9". Markören står
+    då på det andra tecknet. Eftersom det första är en tabb som upptar åtta
+    kolumner blir skärmkolumnen 9.
+
+2.  Sätt alternativet 'number'. Då visas radnummer framför varje rad: >
+
+	:set number
+<
+    Stäng av det igen med: >
+
+	:set nonumber
+<
+    Eftersom 'number' är ett booleskt alternativ stänger du av det genom att
+    sätta "no" framför namnet. Ett booleskt alternativ har två värden: på eller
+    av.
+       Vim har många alternativ. Förutom booleska alternativ finns det numeriska
+    alternativ och textalternativ. Exempel på dessa visas där de används.
+
+3.  Sätt alternativet 'ruler'. Då visas markörens position längst ned till höger i Vim-fönstret: >
+
+	:set ruler
+
+Fördelen med 'ruler' är att det tar liten plats och lämnar mer utrymme för texten.
+
+==============================================================================
+*03.7*	Rulla texten
+
+Kommandot CTRL-U rullar en halv skärm text nedåt. Tänk dig att du ser texten genom ett fönster och flyttar det uppåt en halv fönsterhöjd. Då flyttas fönstret bakåt i filen. Många tycker att det är svårt att minnas vilket håll som är uppåt.
+   Kommandot CTRL-D flyttar visningsfönstret nedåt en halv skärm i filen och rullar därmed texten uppåt en halv skärm.
+
+				       +----------------+
+				       | lite text	|
+				       | lite text	|
+				       | lite text	|
+	+---------------+	       | lite text	|
+	| lite text	|  CTRL-U  --> |		|
+	|		|	       | 123456		|
+	| 123456	|	       +----------------+
+	| 7890		|
+	|		|	       +----------------+
+	| exempel	|  CTRL-D -->  | 7890		|
+	+---------------+	       |		|
+				       | exempel	|
+				       | exempel	|
+				       | exempel	|
+				       | exempel	|
+				       +----------------+
+
+Rulla en rad i taget med CTRL-E (rulla uppåt) och CTRL-Y (rulla nedåt). Minnesregel: CTRL-E ger en extra rad. (Med MS-Windows-kompatibla tangentmappningar gör CTRL-Y om en ändring i stället för att rulla.)
+
+Rulla framåt en hel skärm minus två rader med CTRL-F. Rulla bakåt med CTRL-B. Minnesregel: F tar dig framåt och B bakåt i texten.
+
+Om du flyttar ned många rader med "j" hamnar markören ofta längst ned på skärmen. Använd kommandot "zz" för att se sammanhanget runt raden med markören.
+
+	+------------------+		 +------------------+
+	| äldre text	   |		 | äldre text	    |
+	| äldre text	   |		 | äldre text	    |
+	| äldre text	   |		 | äldre text	    |
+	| äldre text	   |   zz  -->	 | markörrad        |
+	| äldre text	   |		 | nyare text	    |
+	| äldre text	   |		 | nyare text	    |
+	| markörrad       |		 | nyare text	    |
+	+------------------+		 +------------------+
+
+Kommandot "zt" placerar markörraden högst upp och "zb" längst ned. Fler rullningskommandon finns i |Q_sc|. Använd alternativet 'scrolloff' om du alltid vill behålla några rader sammanhang runt markören.
+
+==============================================================================
+*03.8*	Enkla sökningar
+
+Sök efter en textsträng med kommandot "/sträng". Sök till exempel efter ordet include med: >
+
+	/include
+
+När du skriver "/" flyttas markören till den nedersta raden i Vim-fönstret, precis som vid kolonkommandon. Där skriver du sökordet. Rätta med backstegstangenten (<BS>) och använd <Left> och <Right> vid behov. Tryck på <Enter> för att utföra kommandot.
+
+	Obs:
+	Tecknen .*[]^%/\?~$ har särskilda betydelser. Sätt ett omvänt
+	snedstreck framför dem om du vill söka efter dem. Se nedan.
+
+Hitta nästa förekomst av samma sträng med kommandot "n". Sök efter den första raden med #include efter markören så här: >
+
+	/#include
+
+Tryck sedan på "n" flera gånger för att gå till varje #include i texten. Du kan också ange ett tal för att gå till en viss träff. "3n" hittar den tredje förekomsten. Du kan även ange ett tal före söksträngen: "4/the" söker efter den fjärde förekomsten av "the".
+
+Kommandot "?" fungerar som "/" men söker bakåt: >
+
+	?word
+
+Kommandot "N" upprepar den senaste sökningen i motsatt riktning. Efter "/" söker "N" bakåt och efter "?" framåt.
+
+
+Bortse från skillnad mellan gemener och versaler
+
+Normalt måste du skriva exakt det du vill hitta. Om du vill att sökningen ska bortse från skillnaden mellan gemener och versaler sätter du alternativet 'ignorecase': >
+
+	:set ignorecase
+
+Om du nu söker efter "word" matchar även "Word" och "WORD". Återställ skiftlägeskänsligheten (standardläget) med: >
+
+	:set noignorecase
+
+
+Sökhistorik
+
+Anta att du gör tre sökningar: >
+
+	/one
+	/two
+	/three
+
+Börja nu söka genom att skriva "/" utan att trycka på <Enter>. Tryck på <Up> så visar Vim "/three" på kommandoraden. Tryck på <Enter> för att söka efter "three", eller tryck på <Up> i stället för att visa "/two" och ännu en gång för att visa "/one".
+   Använd <Down> för att gå åt andra hållet i sökhistoriken.
+
+Om du vet vilken bokstav ett tidigare sökmönster börjar med skriver du den före <Up>. I exemplet kan du skriva "/o<Up>" så visar Vim "/one" på kommandoraden.
+
+Även kommandon som börjar med ":" har en historik. Där kan du hämta och köra ett tidigare kommando igen. De två historikerna är separata.
+
+
+Sök efter ett ord i texten
+
+Anta att du ser ordet "TheLongFunctionName" i texten och vill hitta nästa förekomst. Du kan skriva "/TheLongFunctionName", men det är mycket att skriva och Vim hittar inget om du gör fel.
+   Det finns ett enklare sätt: ställ markören på ordet och använd kommandot "*". Vim använder då ordet under markören som söksträng.
+   Kommandot "#" gör samma sak i motsatt riktning. Du kan ange ett tal före kommandot: "3*" söker efter den tredje förekomsten av ordet under markören.
+
+
+Sök efter hela ord
+
+Om du söker efter "/the" matchar även "there". Begränsa sökningen till ord som slutar på "the" så här: >
+
+	/the\>
+
+"\>" matchar endast i slutet av ett ord. På motsvarande sätt matchar "\<" endast i början av ett ord. Sök enbart efter ordet "the" så här: >
+
+	/\<the\>
+
+Det här matchar inte "there" eller "soothe". Kommandona "*" och "#" använder markörer för ordgränser och hittar därför hela ord. Använd "g*" och "g#" om du vill matcha delar av ord.
+
+
+Markera sökträffar
+
+När du redigerar ett program kanske du vill se var variabeln "nr" används. Ställ markören på "nr", använd "*" och tryck sedan på "n" för att gå igenom träffarna.
+   Det finns ett annat sätt. Skriv kommandot: >
+
+	:set hlsearch
+
+Om du nu söker efter "nr" markerar Vim alla träffar. Då ser du var variabeln används utan fler kommandon.
+   Stäng av detta med: >
+
+	:set nohlsearch
+
+Slå på alternativet igen inför nästa sökning. Om du bara vill ta bort markeringen använder du kommandot: >
+
+	:nohlsearch
+
+Detta återställer inte alternativet utan tar bara bort markeringen. Nästa gång du söker används markeringen igen, även med kommandona "n" och "N".
+
+
+Anpassa sökningar
+
+Några alternativ ändrar hur sökningen fungerar. De viktigaste är:
+>
+	:set incsearch
+
+Då visar Vim en matchning medan du fortfarande skriver söksträngen. Kontrollera att rätt träff hittas och tryck på <Enter> för att flytta dit. Du kan också skriva vidare och ändra söksträngen.
+>
+	:set nowrapscan
+
+Detta stoppar sökningen vid filens slut, eller vid filens början om du söker bakåt. Alternativet 'wrapscan' är aktiverat som standard, så sökningen fortsätter annars från filens ena ände till den andra.
+
+
+Spara inställningar
+
+Om du vill använda ett av alternativen varje gång du startar Vim kan du lägga kommandot i Vims startfil.
+   Redigera filen som nämns i |not-compatible|. Ta reda på var den finns med kommandot: >
+
+	:scriptnames
+
+Redigera till exempel filen med: >
+
+	:edit ~/.vimrc
+
+Lägg till en rad med kommandot som ställer in alternativet, precis som i Vim. Exempel: >
+
+	Go:set hlsearch<Esc>
+
+"G" flyttar till slutet av filen. "o" öppnar en ny rad där du skriver kommandot ":set". Avsluta infogningsläget med <Esc> och spara och stäng sedan filen: >
+
+	ZZ
+
+Nästa gång du startar Vim är alternativet 'hlsearch' redan aktiverat.
+
+==============================================================================
+*03.9*	Enkla sökmönster
+
+Vim använder reguljära uttryck för att ange vad du vill söka efter. De är ett kraftfullt och kompakt sätt att beskriva sökmönster, men kan vara knepiga att skriva.
+   Här tar vi bara upp några grundläggande uttryck. Mer om sökmönster och kommandon finns i kapitel 27 |usr_27.txt|. Den fullständiga förklaringen finns i |pattern|.
+
+
+Början och slutet av en rad
+
+Tecknet ^ matchar början av en rad. På ett amerikanskt tangentbord sitter det ovanför 6. Mönstret "include" matchar ordet include var som helst på raden, medan "^include" bara matchar det om det står i början av raden.
+   Tecknet $ matchar slutet av en rad. Därför matchar "was$" ordet was endast när det står sist på raden.
+
+Markera med x var "/the" hittar en träff i exempelsatsen (sökningen skiljer här på gemener och versaler):
+
+	the solder holding one of the chips melted and the ~
+	xxx			  xxx		       xxx
+
+Med "/the$" hittar vi träffen i slutet av raden:
+
+	the solder holding one of the chips melted and the ~
+						       xxx
+
+Med "/^the" hittar vi träffen i början av raden:
+	the solder holding one of the chips melted and the ~
+	xxx
+
+Prova att söka med "/^the$"; det matchar bara en rad som helt består av "the". Blanksteg spelar roll, så mönstret matchar inte en rad med blanksteg efter ordet, till exempel "the ".
+
+
+Matcha ett valfritt tecken
+
+Tecknet . (punkt) matchar vilket tecken som helst. Mönstret "c.m" matchar till exempel en sträng som börjar med c, har ett valfritt tecken därefter och sedan m. Exempel:
+
+	We use a computer that became the cummin winter. ~
+		 xxx		 xxx	  xxx
+
+
+Matcha specialtecken
+
+Om du vill matcha en punkt måste du undvika dess specialbetydelse genom att sätta ett omvänt snedstreck framför den.
+   Om du söker efter "ter." hittar du dessa träffar:
+
+	We use a computer that became the cummin winter. ~
+		      xxxx			    xxxx
+
+Sökningen "ter\." hittar bara den andra träffen.
+
+==============================================================================
+*03.10*	Använda markeringar
+
+När du hoppar till en position med kommandot "G" kommer Vim ihåg var du stod före hoppet. Den positionen kallas en markering. Gå tillbaka med kommandot: >
+
+	``
+
+Tecknet ` kallas grav accent eller bakåtvänd apostrof.
+   Om du använder samma kommando igen hoppar du tillbaka en gång till. Kommandot "``" är självt ett hopp, och Vim kommer ihåg positionen före det.
+
+I allmänhet kallas ett kommando för hopp när det kan flytta markören längre än inom samma rad. Det gäller sökkommandona "/" och "n", oavsett avstånd till träffen. Teckensökningarna "fx" och "tx" samt ordförflyttningarna "w" och "e" räknas däremot inte som hopp.
+   Inte heller "j" och "k" räknas som hopp, även om ett tal flyttar markören långt.
+
+Kommandot "``" hoppar fram och tillbaka mellan två positioner. CTRL-O hoppar till äldre positioner och CTRL-I till nyare. Tänk på den här kommandosekvensen: >
+
+	33G
+	/^The
+	CTRL-O
+
+Först hoppar du till rad 33 och söker sedan efter en rad som börjar med "The". CTRL-O tar dig tillbaka till rad 33. Ytterligare ett CTRL-O återför dig till startpositionen. Använd CTRL-I för att gå tillbaka till rad 33 och en gång till för att gå till träffen på "The".
+
+
+	     |	textprov^	     |
+	33G  |	textprov|  CTRL-O     | CTRL-I
+	     |	textprov|	     |
+	     V	rad 33 text   ^	     V
+	     |	textprov|	     |
+       /^The |	textprov|  CTRL-O     | CTRL-I
+	     V	Där är du  |	     V
+		textprov
+
+	Obs:
+	CTRL-I är samma tangent som <Tab>.
+
+Kommandot ":jumps" visar positionerna du har hoppat till. Den senast använda markeras med ">".
+
+
+Namngivna markeringar							*bookmark*
+
+Du kan skapa egna markeringar i texten. Kommandot "ma" skapar markeringen a vid markörens position. Du kan placera 26 markeringar (a till z). De syns inte; Vim kommer bara ihåg positionerna.
+   Gå till en markering med kommandot `{mark}, där {mark} är markeringens bokstav. Gå till markeringen a så här:
+>
+	`a
+
+Kommandot "'mark" (apostrof) flyttar till det första tecknet på märkets rad som inte är ett blanktecken. Kommandot "`mark" flyttar också till den markerade kolumnen.
+
+Markeringar är användbara när du arbetar med två delar av samma fil. Anta att du arbetar nära slutet men behöver titta på text nära början.
+   Gå till texten i början och sätt markeringen s där: >
+
+	ms
+
+Gå sedan till texten du vill arbeta med och sätt markeringen e där: >
+
+	me
+
+Nu kan du flytta runt och använda det här kommandot för att hoppa till början när du vill titta där: >
+
+	's
+
+Använd sedan kommandot "''" för att hoppa tillbaka dit du var, eller "'e" för att gå till texten du arbetade med i slutet.
+   Det är inget särskilt med att använda s för start och e för slut; de är bara lätta att komma ihåg.
+
+Visa en lista över markeringar med kommandot: >
+
+	:marks
+
+Du ser också några särskilda markeringar:
+
+	'	Markörens position före ett hopp
+	"	Markörens position när filen senast redigerades
+	[	Den senaste ändringens början
+	]	Den senaste ändringens slut
+
+==============================================================================
+
+Nästa kapitel: |usr_04.txt|  Göra mindre ändringar
+
+Upphovsrätt: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

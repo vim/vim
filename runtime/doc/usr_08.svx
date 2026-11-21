@@ -1,0 +1,465 @@
+*usr_08.txt*	För Vim version 9.2.  Senast ändrad: 18 nov 2026
+
+
+		     VIMS ANVÄNDARMANUAL	av Bram Moolenaar
+
+
+				Dela fönster
+
+
+Visa två olika filer ovanför varandra eller två delar av samma fil samtidigt. Du kan också visa skillnader mellan två filer sida vid sida. Allt detta är möjligt med delade fönster.
+
+|08.1|	Dela ett fönster
+|08.2|	Dela fönster med en annan fil
+|08.3|	Fönsterstorlek
+|08.4|	Dela fönster lodrätt
+|08.5|	Flytta fönster
+|08.6|	Kommandon för alla fönster
+|08.7|	Visa skillnader med vimdiff
+|08.8|	Övrigt
+|08.9|	Fliksidor
+
+     Nästa kapitel: |usr_09.txt|  Använda det grafiska gränssnittet
+ Föregående kapitel: |usr_07.txt|  Redigera flera filer
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*08.1*	Dela ett fönster
+
+Det enklaste sättet att öppna ett nytt fönster är kommandot: >
+	:split
+
+Skärmen delas i två fönster och markören stannar i det övre:
+
+	+----------------------------------+
+	|/* file one.c */		   |
+	|~				   |
+	|~				   |
+	|one.c=============================|
+	|/* file one.c */		   |
+	|~				   |
+	|one.c=============================|
+	|				   |
+	+----------------------------------+
+
+Här visas två fönster med samma fil. Raden med "====" är statusraden. Den visar information om fönstret ovanför. (I praktiken visas statusraden ofta med omvänd video.)
+   Med de två fönstren kan du visa två delar av samma fil. Det övre fönstret kan till exempel visa variabeldeklarationerna i ett program och det undre koden som använder variablerna.
+
+Använd CTRL-W w för att växla mellan fönstren. Om du står i det övre fönstret flyttar CTRL-W w markören till fönstret under. Från det undre fönstret flyttar det till det första fönstret. CTRL-W CTRL-W gör samma sak, ifall du släpper CTRL-tangenten lite senare.
+
+
+STÄNGA FÖNSTRET
+
+Stäng ett fönster med: >
+	:close
+
+Alla kommandon som avslutar redigeringen av en fil fungerar, till exempel ":quit" och "ZZ". Kommandot ":close" hindrar dock att du av misstag avslutar Vim när du stänger det sista fönstret.
+
+
+STÄNGA ALLA ANDRA FÖNSTER
+
+Om du har öppnat många fönster men vill koncentrera dig på ett använder du: >
+	:only
+
+Detta stänger alla fönster utom det aktuella. Om något annat fönster har ändringar visas ett felmeddelande och det fönstret stängs inte.
+
+==============================================================================
+*08.2*	Dela fönster med en annan fil
+
+Följande kommando öppnar ett andra fönster och börjar redigera den angivna filen: >
+	:split two.c
+
+Om du redigerade one.c ser resultatet ut så här:
+
+	+----------------------------------+
+	|/* file two.c */		   |
+	|~				   |
+	|~				   |
+	|two.c=============================|
+	|/* file one.c */		   |
+	|~				   |
+	|one.c=============================|
+	|				   |
+	+----------------------------------+
+
+Öppna ett fönster med en ny, tom fil så här: >
+	:new
+
+Du kan upprepa kommandona ":split" och ":new" för att skapa så många fönster du vill.
+
+==============================================================================
+*08.3*	Fönsterstorlek
+
+Kommandot ":split" kan få ett tal som anger det nya fönstrets höjd. Följande kommando öppnar till exempel ett nytt fönster som är tre rader högt och börjar redigera filen alpha.c: >
+	:3split alpha.c
+
+Du kan ändra storleken på befintliga fönster på flera sätt. Om musen fungerar placerar du pekaren på statusraden mellan två fönster och drar den uppåt eller nedåt.
+
+Öka fönstrets höjd med: >
+	CTRL-W +
+
+Minska den med: >
+	CTRL-W -
+
+Båda kommandona kan föregås av ett tal som anger hur många rader storleken ändras. "4 CTRL-W +" gör till exempel fönstret fyra rader högre.
+
+Ange fönstrets höjd i rader så här: >
+	{height}CTRL-W _
+
+Skriv alltså ett tal {height}, CTRL-W och sedan understreck (på ett amerikanskt tangentbord trycker du Skift och bindestreck).
+   Gör fönstret så högt som möjligt genom att använda CTRL-W _ utan ett tal.
+
+
+ANVÄNDA MUSEN
+
+Många saker går snabbt att göra med tangentbordet, men kommandona för att ändra fönsterstorlek kräver en del tangenttryckningar. Här går det snabbare med musen. Placera pekaren på en statusrad, håll ned vänster musknapp och dra. Statusraden flyttas och fönstret på ena sidan blir högre medan det andra blir mindre.
+
+
+ALTERNATIV
+
+Alternativet 'winheight' anger önskad minsta fönsterhöjd och 'winminheight' anger en absolut minsta höjd.
+   På motsvarande sätt anger 'winwidth' önskad minsta bredd och 'winminwidth' absolut minsta bredd.
+   När 'equalalways' är aktiverat gör Vim fönstren lika stora när ett fönster öppnas eller stängs.
+
+==============================================================================
+*08.4*	Dela fönster lodrätt
+
+Kommandot ":split" skapar ett nytt fönster ovanför det aktuella. Om du vill placera fönstret till vänster använder du: >
+	:vsplit
+
+eller: >
+	:vsplit two.c
+
+Resultatet ser ungefär ut så här:
+
+	+--------------------------------------+
+	|/* file two.c */   |/* file one.c */  |
+	|~		    |~	       |
+	|~		    |~	       |
+	|~		    |~	       |
+	|two.c===============one.c=============|
+	|				       |
+	+--------------------------------------+
+
+De lodräta strecken i mitten visas i praktiken med omvänd video. De utgör avdelaren mellan fönstren till vänster och höger.
+
+Kommandot ":vnew" öppnar ett lodrätt delat fönster med en ny, tom fil. Du kan även skriva: >
+	:vertical new
+
+Kommandot ":vertical" kan stå före ett annat kommando som delar fönstret. Då delas det lodrätt i stället för vågrätt. Om kommandot inte delar fönstret påverkas det inte.
+
+
+VÄXLA MELLAN FÖNSTER
+
+Du kan dela fönster vågrätt och lodrätt för att skapa nästan vilken layout som helst. Använd dessa kommandon för att växla mellan fönstren:
+
+	CTRL-W h	flytta till fönstret till vänster
+	CTRL-W j	flytta till fönstret nedanför
+	CTRL-W k	flytta till fönstret ovanför
+	CTRL-W l	flytta till fönstret till höger
+
+	CTRL-W t	flytta till det översta fönstret
+	CTRL-W b	flytta till det nedersta fönstret
+
+Bokstäverna är desamma som för markörförflyttning. Du kan även använda piltangenterna.
+   Fler kommandon för att växla fönster finns i |Q_wi|.
+
+==============================================================================
+*08.5*	Flytta fönster
+
+Du har kanske delat några fönster men vill nu ändra deras ordning. Då behöver du flytta ett fönster. Anta att du har tre fönster som här:
+
+	+----------------------------------+
+	|/* file two.c */		   |
+	|~				   |
+	|~				   |
+	|two.c=============================|
+	|/* file three.c */		   |
+	|~				   |
+	|~				   |
+	|three.c===========================|
+	|/* file one.c */		   |
+	|~				   |
+	|one.c=============================|
+	|				   |
+	+----------------------------------+
+
+Det nedersta fönstret ska egentligen ligga överst. Gå till det fönstret med CTRL-W w och skriv: >
+	CTRL-W K
+
+Här används den stora bokstaven K. Fönstret flyttas längst upp. Den gemena bokstaven k flyttar markören uppåt.
+   Vid lodrät delning flyttar CTRL-W K det aktuella fönstret högst upp och gör det lika brett som Vim-fönstret. Anta att layouten ser ut så här:
+
+	+-------------------------------------------+
+	|/* two.c */  |/* three.c */  |/* one.c */  |
+	|~	      |~	      |~	    |
+	|~	      |~	      |~	    |
+	|~	      |~	      |~	    |
+	|~	      |~	      |~	    |
+	|~	      |~	      |~	    |
+	|two.c=========three.c=========one.c========|
+	|					    |
+	+-------------------------------------------+
+
+Om du kör CTRL-W K i mittfönstret (three.c) blir resultatet:
+
+	+-------------------------------------------+
+	|/* three.c */				    |
+	|~					    |
+	|~					    |
+	|three.c====================================|
+	|/* two.c */	       |/* one.c */	    |
+	|~		       |~		    |
+	|two.c==================one.c===============|
+	|					    |
+	+-------------------------------------------+
+
+De tre liknande kommandona är:
+
+	CTRL-W H	flytta fönstret längst till vänster
+	CTRL-W J	flytta fönstret längst ned
+	CTRL-W L	flytta fönstret längst till höger
+
+==============================================================================
+*08.6*	Kommandon för alla fönster
+
+Om du vill avsluta Vim när flera fönster är öppna kan du stänga dem ett i taget. Snabbare går det med: >
+	:qall
+
+Det betyder "quit all" (avsluta alla). Om något fönster innehåller ändringar avslutas inte Vim. Markören placeras automatiskt i ett fönster med ändringar. Spara dem med ":write" eller kasta dem med ":quit!".
+
+Om du vet att det finns ändrade fönster och vill spara alla ändringar använder du: >
+	:wall
+
+Det betyder "write all" (skriv alla), men Vim skriver bara filer som har ändrats. Det finns ingen anledning att skriva filer som är oförändrade.
+   Kombinationen av ":qall" och ":wall" är kommandot för att spara alla och avsluta: >
+	:wqall
+
+Detta skriver alla ändrade filer och avslutar Vim.
+   Avsluta Vim och kasta alla ändringar med: >
+	:qall!
+
+Var försiktig, det går inte att ångra detta kommando!
+
+
+ÖPPNA ETT FÖNSTER FÖR VARJE ARGUMENT
+
+Starta Vim med argumentet "-o" för att öppna ett fönster för varje fil: >
+	vim -o one.txt two.txt three.txt
+
+Resultatet blir:
+
+	+-------------------------------+
+	|file one.txt			|
+	|~				|
+	|one.txt========================|
+	|file two.txt			|
+	|~				|
+	|two.txt========================|
+	|file three.txt			|
+	|~				|
+	|three.txt======================|
+	|				|
+	+-------------------------------+
+
+Argumentet "-O" öppnar lodrätt delade fönster.
+   Om Vim redan körs öppnar kommandot ":all" ett fönster för varje fil i argumentlistan. Kommandot ":vertical all" delar fönstren lodrätt.
+
+==============================================================================
+*08.7*	Visa skillnader med vimdiff
+
+Du kan starta Vim på ett särskilt sätt för att visa skillnader mellan två filer. Anta att filen "main.c" har ändrats med några tecken på en rad. Skriv filen med alternativet 'backup' aktiverat, så att säkerhetskopian "main.c~" innehåller den tidigare versionen.
+   Skriv kommandot i ett skal, inte i Vim: >
+	vimdiff main.c~ main.c
+
+Vim startar med två fönster sida vid sida. Du ser den ändrade raden och några rader ovanför och under den.
+
+	 VV		      VV
+	+-----------------------------------------+
+	|+ +--123 lines: /* a|+ +--123 lines: /* a|  <- fold
+	|  text	     |	text		  |
+	|  text	     |	text		  |
+	|  text	     |	text		  |
+	|  text	     |	changed text	  |  <- changed line
+	|  text	     |	text		  |
+	|  text	     |	------------------|  <- deleted line
+	|  text	     |	text		  |
+	|  text	     |	text		  |
+	|  text	     |	text		  |
+	|+ +--432 lines: text|+ +--432 lines: text|  <- fold
+	|  ~	     |	~		  |
+	|  ~	     |	~		  |
+	|main.c~==============main.c==============|
+	|					  |
+	+-----------------------------------------+
+
+(Bilden visar inte färgmarkeringen; kör vimdiff för att se den.)
+
+Oändrade rader har slagits ihop till en enda rad. Det kallas en stängd vikning. De markeras i bilden med "<- fold". Vikningsraden överst representerar 123 textrader. Dessa rader är likadana i båda filerna.
+   Raden med "<- changed line" är markerad och den infogade texten visas med en annan färg. Då syns skillnaden tydligt.
+   Den borttagna raden visas med "---" i fönstret för main.c. Se markeringen "<- deleted line". Tecknen finns inte i filen; de fyller bara ut main.c så att samma antal rader visas som i det andra fönstret.
+
+
+VIKNINGSKOLUMNEN
+
+Varje fönster har en kolumn till vänster med en något annorlunda bakgrund. I bilden ovan markeras den med "VV". Ett plustecken visas framför varje stängd vikning. Placera muspekaren på plustecknet och klicka med vänsterknappen för att öppna vikningen och visa texten.
+   Ett minustecken visas framför en öppen vikning. Klicka på det för att stänga vikningen.
+   Detta fungerar förstås bara om musen fungerar. Du kan också öppna en vikning med "zo" och stänga den med "zc".
+
+
+DIFF I VIM
+
+Du kan också starta diff-läget inifrån Vim. Öppna filen "main.c", dela fönstret och visa skillnaderna: >
+	:edit main.c
+	:vertical diffsplit main.c~
+
+Kommandot ":vertical" delar fönstret lodrätt. Om du utelämnar det delas fönstret vågrätt.
+
+Om du har en ändringsfil (patch) eller en diff-fil kan du använda ett tredje sätt att starta diff-läget. Öppna först filen som ändringsfilen gäller och ange sedan dess namn: >
+	:edit main.c
+	:vertical diffpatch main.c.diff
+
+VARNING: Ändringsfilen får bara innehålla ändringar för den fil du
+redigerar. Om den även innehåller ändringar för andra filer kan Vim visa
+felmeddelanden och andra filer kan ändras oväntat.
+   Ändringen tillämpas bara på kopian av filen i Vim. Filen på hårddisken förblir oförändrad tills du själv väljer att skriva den.
+
+
+BUNDET RULLANDE
+
+Om filerna innehåller fler skillnader kan du rulla som vanligt. Vim försöker hålla början av båda fönstren på samma rad, så att det är lätt att jämföra dem sida vid sida.
+   Pausa synkroniseringen med: >
+	:set noscrollbind
+
+
+HOPPA TILL ÄNDRINGAR
+
+Om du på något sätt har stängt av vikningarna kan det vara svårt att hitta ändringarna. Hoppa framåt till nästa ändring med: >
+	]c
+
+Hoppa bakåt med: >
+	[c
+
+Ange ett tal före kommandot för att hoppa längre. "4]c" går till den fjärde följande ändringen och "3[c" till den tredje föregående.
+
+
+TA BORT SKILLNADER
+
+Du kan flytta text från det ena fönstret till det andra. Då tas skillnader bort eller skapas nya. Vim uppdaterar inte alltid färgmarkeringen automatiskt. Uppdatera den med: >
+	:diffupdate
+
+Ta bort en skillnad genom att flytta texten i ett markerat block från det ena fönstret till det andra. I exemplet med "main.c" och "main.c~" flyttar du markören till vänster fönster och till raden som togs bort i det andra fönstret. Skriv: >
+	dp
+
+Skillnaden tas bort genom att texten från det aktuella fönstret placeras i det andra. "dp" betyder diff put (lägg in diff).
+   Du kan också göra tvärtom. Flytta markören till det högra fönstret och till raden där "changed" infogades. Skriv: >
+	do
+
+Skillnaden tas då bort genom att texten hämtas från det andra fönstret. När inga skillnader återstår lägger Vim all text i en stängd vikning. "do" betyder diff obtain (hämta diff). "dg" hade varit bättre, men det har redan en annan betydelse: "dgg" tar bort text från markören till första raden.
+
+Läs |vimdiff| för detaljer om diff-läget.
+
+==============================================================================
+*08.8*	Övrigt
+
+Alternativet 'laststatus' anger när det sista fönstret får en statusrad:
+
+	0	aldrig
+	1	bara när fönstren är delade (standard)
+	2	alltid
+
+Många kommandon som öppnar en annan fil har en variant som delar fönstret. För Ex-kommandon lägger du till ett "s" före kommandot. ":tag" hoppar till en tagg; ":stag" delar fönstret och hoppar till taggen.
+   För kommandon i normalt läge lägger du till CTRL-W. CTRL-^ öppnar alternativfilen och CTRL-W CTRL-^ delar fönstret och öppnar alternativfilen.
+
+Alternativet 'splitbelow' gör att nya fönster öppnas under det aktuella. 'splitright' placerar lodrätt delade fönster till höger.
+
+När du delar ett fönster kan du lägga till ett modifierarkommando som anger var det nya fönstret ska visas:
+
+	:leftabove {cmd}	vänster om eller ovanför det aktuella fönstret
+	:aboveleft {cmd}	samma sak
+	:rightbelow {cmd}	höger om eller under det aktuella fönstret
+	:belowright {cmd}	samma sak
+	:topleft {cmd}	överst eller längst till vänster i Vim-fönstret
+	:botright {cmd}	nederst eller längst till höger i Vim-fönstret
+
+==============================================================================
+*08.9*	Fliksidor
+
+Du har kanske märkt att fönster aldrig överlappar. Därför tar skärmutrymmet snabbt slut. Lösningen kallas fliksidor.
+
+Anta att du redigerar "thisfile". Skapa en ny fliksida med: >
+	:tabedit thatfile
+
+Filen "thatfile" öppnas i ett fönster som upptar hela Vim-fönstret. Överst visas ett flikfält med de två filnamnen:
+
+	+----------------------------------+
+	| thisfile | /thatfile/ __________X|    (thatfile is bold)
+	|/* thatfile */			   |
+	|that				   |
+	|that				   |
+	|~				   |
+	|~				   |
+	|~				   |
+	|				   |
+	+----------------------------------+
+
+Nu har du två fliksidor. Den första innehåller ett fönster med "thisfile" och den andra ett fönster med "thatfile". Det liknar två sidor som ligger ovanpå varandra, med en flik som visar filnamnet.
+
+Klicka på "thisfile" i översta raden. Resultatet blir:
+
+	+----------------------------------+
+	| /thisfile/ | thatfile __________X|    (thisfile is bold)
+	|/* thisfile */			   |
+	|this				   |
+	|this				   |
+	|~				   |
+	|~				   |
+	|~				   |
+	|				   |
+	+----------------------------------+
+
+Du kan växla fliksida genom att klicka på etiketten i översta raden. Om du saknar mus eller inte vill använda den kan du använda kommandot "gt". Minnesregel: Goto Tab (gå till flik).
+
+Skapa ytterligare en fliksida med: >
+	:tab split
+
+Då skapas en ny fliksida med ett fönster som redigerar samma buffert som det föregående fönstret:
+
+	+-------------------------------------+
+	| thisfile | /thisfile/ | thatfile __X|   (thisfile is bold)
+	|/* thisfile */			      |
+	|this				      |
+	|this				      |
+	|~				      |
+	|~				      |
+	|~				      |
+	|				      |
+	+-------------------------------------+
+
+Du kan sätta ":tab" före alla Ex-kommandon som öppnar ett fönster. Fönstret öppnas då på en ny fliksida. Exempel: >
+	:tab help gt
+
+Hjälptexten om "gt" visas nu på en ny fliksida.
+
+Fler saker du kan göra med fliksidor:
+
+- klicka med musen i utrymmet efter den sista etiketten
+	Då väljs nästa fliksida, som med "gt".
+
+- klicka på "X" längst upp till höger
+	Den aktuella fliksidan stängs, om den inte har osparade ändringar.
+
+- dubbelklicka med musen på översta raden
+	En ny fliksida skapas.
+
+- använd kommandot "tabonly"
+	Alla fliksidor utom den aktuella stängs, förutsatt att inga andra
+	fliksidor har osparade ändringar.
+
+Mer information om fliksidor finns i |tab-page|.
+
+==============================================================================
+
+Nästa kapitel: |usr_09.txt|  Använda det grafiska gränssnittet
+
+Upphovsrätt: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

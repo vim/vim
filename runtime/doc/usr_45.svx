@@ -1,0 +1,367 @@
+*usr_45.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+			Välja språk och lokalinställningar
+
+
+Vims meddelanden kan visas på flera språk. I det här kapitlet förklaras hur
+du väljer språk och hur du arbetar med filer på olika språk.
+
+|45.1|	Språk för meddelanden
+|45.2|	Språk för menyer
+|45.3|	Använda en annan teckenkodning
+|45.4|	Redigera filer med en annan teckenkodning
+|45.5|	Skriva text på ett annat språk
+
+	Nästa kapitel: |usr_50.txt|  Avancerad Vim-skriptskrivning
+	Föregående kapitel: |usr_44.txt|  Egen syntaxmarkering
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*45.1*	Språk för meddelanden
+
+När Vim startar läser det av miljön för att ta reda på vilket språk du
+använder. Vanligen fungerar det bra, och du får meddelanden på ditt språk om
+översättningar finns. Visa det aktuella språket med:
+>
+	:language
+
+Om svaret är "C" används standardspråket, det vill säga engelska.
+
+	Obs:
+	Språkstöd fungerar bara om Vim har kompilerats med stöd för det. Kör
+	kommandot ":version" och kontrollera att utdata innehåller "+gettext"
+	och "+multi_lang". Om det står "-gettext" eller "-multi_lang" saknas
+	stödet i den Vim-versionen.
+
+Vill du använda ett annat språk finns det flera sätt. Vilket du bör välja
+beror på vad systemet stöder.
+   Det första sättet är att ange språket i miljön innan Vim startas. Exempel
+för Unix:
+>
+	env LANG=de_DE.ISO_8859-1 vim
+
+Det fungerar bara om språket finns på systemet. Fördelen är att även
+meddelanden i det grafiska gränssnittet och i bibliotek använder rätt språk.
+Nackdelen är att språket måste anges innan Vim startas. Om du vill byta språk
+medan Vim körs kan du använda:
+>
+	:language fr_FR.ISO_8859-1
+
+Du kan prova olika språkidentifierare. Om systemet inte stöder identifieraren
+visas ett felmeddelande. Om översatta meddelanden saknas visas däremot inget
+fel. Vim går då tyst tillbaka till engelska.
+   Ta reda på vilka språk systemet stöder genom att leta efter katalogen där
+de är installerade. På mitt system finns den i "/usr/share/locale"; på vissa
+system finns den i "/usr/lib/locale". Manualsidan för "setlocale" kan ge en
+ledning om var du ska leta.
+   Skriv språkidentifieraren exakt. Skillnaden mellan stora och små bokstäver
+spelar roll, och bindestreck och understreck är lätta att blanda ihop.
+
+Du kan också ange olika språk för meddelanden, redigerad text och tidsformat.
+Se |:language|.
+
+
+ÖVERSÄTTA MEDDELANDEN SJÄLV
+
+Om översättningar saknas för ditt språk kan du skapa dem själv. Hämta Vims
+källkod och GNU gettext. När källkoden packats upp finns instruktioner i
+katalogen src/po/README.txt.
+   Översättningsarbetet är inte särskilt svårt och kräver ingen
+programmeringskunskap. Du behöver förstås kunna både engelska och språket du
+översätter till.
+   När du är nöjd kan du göra översättningen tillgänglig för andra. Skicka in
+den enligt instruktionerna i projektet Vim eller kontakta Vims underhållare.
+
+==============================================================================
+*45.2*	Språk för menyer
+
+Standardmenyerna är på engelska. För att använda menyer på ett annat språk
+behövs en översättning. Om sådan finns väljs den vanligen automatiskt utifrån
+miljön, på samma sätt som för meddelanden.
+   Anta att du befinner dig i Tyskland och har tyska som systemspråk, men vill
+använda de engelska menytexterna. Ställ in:
+>
+	:set langmenu=none
+
+Du kan också ange ett bestämt språk:
+>
+	:set langmenu=nl_NL.ISO_8859-1
+
+Skillnader mellan stora och små bokstäver ignoreras här. Vim normaliserar
+också vissa kodningsnamn, till exempel "iso-8859-1" till "latin1".
+   Alternativet 'langmenu' måste ställas in innan menyerna läses in. När
+menyerna väl har definierats påverkar en ändring av 'langmenu' dem inte. Lägg
+därför kommandot i vimrc-filen.
+   Om du vill byta menyspråk medan Vim körs kan du göra så här:
+>
+	:source $VIMRUNTIME/delmenu.vim
+	:set langmenu=de_DE.ISO_8859-1
+	:source $VIMRUNTIME/menu.vim
+
+Egna menyer tas då bort och måste definieras på nytt.
+
+
+ÖVERSÄTTA MENYER SJÄLV
+
+Tillgängliga menyöversättningar finns i katalogen:
+
+	$VIMRUNTIME/lang ~
+
+Filerna heter menu_{språk}.vim. Om översättning saknas kan du skapa en genom
+att kopiera en befintlig språkfil och ändra den.
+   Ta reda på språkidentifieraren med kommandot ":language" och skriv den med
+gemener. Kopiera sedan filen till en egen runtime-katalog som ligger tidigt i
+'runtimepath'. Exempel för Unix:
+>
+	:!cp $VIMRUNTIME/lang/menu_ko_kr.euckr.vim ~/.vim/lang/menu_nl_be.iso_8859-1.vim
+
+I "$VIMRUNTIME/lang/README.txt" finns tips om översättningen.
+
+==============================================================================
+*45.3*	Använda en annan teckenkodning
+
+Vim utgår från att filerna du redigerar använder en teckenkodning som passar
+ditt språk. För många västeuropeiska språk är det "latin1", där varje byte
+motsvarar ett tecken. Då finns 256 möjliga teckenvärden. Det räcker inte för
+många asiatiska språk, där en teckenkodning ofta använder flera byte per
+tecken och kan representera tiotusentals tecken. Unicode är avsett att rymma
+tecken från många språk i ett gemensamt teckenuppsättningssystem. Det finns
+flera Unicode-kodningar, bland annat UTF-8, och stödet för dem är numera
+omfattande.
+   Vim stöder enkelbyteskodningar, flerbyteskodningar och Unicode. Med
+vissa begränsningar kan du använda dem även när systemets språk skiljer sig
+från textens.
+   Om du bara redigerar filer med den teckenkodning som används för ditt språk
+fungerar standardinställningarna vanligen bra. Resten av avsnittet gäller när
+du vill redigera text med andra teckenkodningar.
+
+
+UNICODE I DET GRAFISKA GRÄNSSNITTET
+
+När Vim använder Unicode internt kan det konvertera mellan Unicode och andra
+teckenkodningar. Då kan du redigera filer i många olika kodningar.
+   Börja med att låta den grafiska versionen av Vim använda Unicode:
+>
+	:set encoding=utf-8
+	:set guifont=-misc-fixed-medium-r-normal--18-120-100-100-c-90-iso10646-1
+
+Alternativet 'encoding' anger kodningen för texten inne i Vim: bland annat
+buffertar, register och Vim-skript. Det är Vims interna teckenkodning.
+   Exemplet förutsätter att teckensnittet finns på systemet. Namnet gäller
+X Window System. Om det saknas kan du välja ett annat teckensnitt som
+innehåller de tecken du behöver.
+   I MS-Windows har vissa teckensnitt ett begränsat urval Unicode-tecken.
+Prova exempelvis "Courier New". Du kan välja och prova teckensnitt via menyn
+Redigera > Välj teckensnitt. Endast teckensnitt med fast teckenbredd kan
+användas. Exempel:
+>
+	:set guifont=courier_new:h12
+
+Inmatade tecken kommer fortfarande från systemets ursprungliga kodning. Vim
+måste därför konvertera dem till Unicode. Alternativet 'termencoding' anger
+kodningen för kommunikationen med terminalen eller inmatningsmiljön. Exempel:
+>
+	:let &termencoding = &encoding
+	:set encoding=utf-8
+
+Först sparas det gamla värdet på 'encoding' i 'termencoding'. Sedan ändras
+'encoding' till utf-8. Kontrollera att detta passar din miljö. Det kan vara
+användbart med en inmatningsmetod för ett asiatiskt språk när du redigerar
+Unicode-text.
+
+
+UNICODE I EN UNICODE-TERMINAL
+
+Vissa terminaler stöder Unicode direkt. Exemplet här använder xterm.
+   xterm måste vara kompilerad med Unicode-stöd. Se |UTF8-xterm| för
+information om hur du kontrollerar detta och kompilerar xterm vid behov.
+Starta xterm med argumentet "-u8". Du kan också behöva ange ett teckensnitt.
+Exempel:
+>
+	xterm -u8 -fn -misc-fixed-medium-r-normal--18-120-100-100-c-90-iso10646-1
+
+Starta Vim i terminalen och ställ in 'encoding' på "utf-8", som ovan.
+
+
+UNICODE I EN VANLIG TERMINAL
+
+Du kan redigera Unicode-filer även i en terminal som inte stöder Unicode,
+men tecken som terminalen saknar kan inte visas. Textens radindelning
+bevaras.
+>
+	:let &termencoding = &encoding
+	:set encoding=utf-8
+
+Detta liknar exemplet för det grafiska gränssnittet, men Vim konverterar här
+texten innan den skickas till terminalen. Därmed undviks att visningen fylls
+med felaktiga tecken.
+   Konvertering mellan 'termencoding' och 'encoding' måste gå att utföra. Vim
+kan konvertera från latin1 till Unicode. För andra konverteringar behövs
+funktionen |+iconv|.
+   Prova att redigera en fil med Unicode-tecken. Där terminalen inte kan visa
+ett tecken kan Vim visa ett frågetecken, understreck eller något annat
+ersättningstecken. Ställ markören på tecknet och kör:
+>
+	ga
+
+Vim visar då tecknets kod, som du kan slå upp i en Unicode-tabell.
+
+	Obs:
+	Eftersom 'encoding' används för all text inne i Vim gör en ändring av
+	det här alternativet befintlig icke-ASCII-text ogiltig. Det märks bland
+	annat i register och viminfo-filen, till exempel för sparade
+	sökmönster. Ange 'encoding' i vimrc och ändra det inte under körning.
+
+==============================================================================
+*45.4*	Redigera filer med en annan teckenkodning
+
+Anta att Vim använder Unicode och att du vill redigera en fil med 16-bitars
+Unicode-kodning. Vim använder UTF-8 internt, så filen måste konverteras.
+Unicode är en teckenuppsättning med flera kodningar, till exempel UTF-8 och
+UTF-16.
+   Vim försöker identifiera filens kodning med hjälp av värdena i
+'fileencodings'. När Vim använder Unicode är standardvärdet
+"ucs-bom,utf-8,latin1":
+
+	ucs-bom		Filen måste börja med en byteordningsmarkör (BOM).
+			Då kan 16-bitars, 32-bitars och UTF-8-Unicode identifieras.
+	utf-8		UTF-8. Värdet väljs bort om bytesekvensen inte är giltig
+			UTF-8.
+	latin1		Den äldre 8-bitarskodningen. Den är alltid giltig.
+
+När en Unicode-fil med BOM öppnas identifierar Vim kodningen och konverterar
+texten till UTF-8. Alternativet 'fileencoding' (utan s) sätts till den
+upptäckta kodningen, exempelvis "utf-16le" för Unicode med 16 bitar och
+little-endian-byteordning. Den kodningen används ofta för filer i MS-Windows,
+till exempel registerfiler.
+   När filen skrivs jämför Vim 'fileencoding' med 'encoding'. Om värdena
+skiljer sig konverteras texten. Ett tomt värde på 'fileencoding' innebär att
+ingen konvertering görs och att texten antas ha kodningen i 'encoding'.
+
+Om standardvärdet för 'fileencodings' inte passar kan du ange vilka
+kodningar Vim ska prova. Nästa värde används först när den föregående
+kodningen inte är giltig. Sätt inte "latin1" först, eftersom den kodningen
+alltid godtas. Exempel: prova japansk kodning om filen saknar BOM och inte är
+UTF-8:
+>
+	:set fileencodings=ucs-bom,utf-8,sjis
+
+Se |encoding-values| för förslag på värden. Andra värden kan också fungera,
+beroende på vilka konverteringar som finns tillgängliga.
+
+
+ANGE KODNINGEN SJÄLV
+
+Om den automatiska identifieringen misslyckas måste du ange filens kodning.
+Exempel:
+>
+	:edit ++enc=koi8-r russian.txt
+
+Argumentet "++enc" anger vilken kodning som ska användas för just den filen.
+Vim konverterar från den angivna kodningen, i exemplet ryska, till
+'encoding'. 'fileencoding' sätts också till den angivna kodningen så att Vim
+kan konvertera tillbaka när filen skrivs.
+   Samma argument kan användas när filen skrivs. Då kan Vim konvertera
+filen. Exempel:
+>
+	:write ++enc=utf-8 russian.txt
+<
+	Obs:
+	Konvertering kan göra att tecken går förlorade. Konvertering mellan
+	Unicode och andra kodningar brukar fungera utan förlust, såvida texten
+	inte innehåller tecken som saknas i målformatet. Konvertering från
+	Unicode till en annan kodning kan ofta förlora information om filen
+	innehåller flera språk.
+
+==============================================================================
+*45.5*	Skriva text på ett annat språk
+
+Tangentbord har bara omkring hundra tangenter. Vissa språk har tusentals
+tecken och Unicode innehåller över hundra tusen. Hur skriver man då in dem?
+   Om du bara behöver ett fåtal specialtecken kan du använda digrafer. Det
+förklaras i |24.9|.
+   För språk med många fler tecken än tangentbordet har tangenter behövs ofta
+en inmatningsmetod (Input Method, IM). Då måste du lära dig hur tangenttryck
+översätts till tecken. En inmatningsmetod finns troligen redan på systemet
+och bör fungera i Vim precis som i andra program. Se |mbyte-XIM| för X Window
+System och |mbyte-IME| för MS-Windows.
+
+
+TANGENTKARTOR
+
+För vissa språk skiljer sig teckenuppsättningen från det latinska alfabetet,
+men antalet tecken är ungefär detsamma. Då kan tangenter mappas till tecken.
+Vim använder tangentkartor för detta.
+   Om du exempelvis vill skriva hebreiska läser du in tangentkartan så här:
+>
+	:set keymap=hebrew
+
+Vim försöker hitta en passande tangentkartsfil utifrån 'encoding'. Om ingen
+fil passar visas ett felmeddelande.
+
+Nu kan du skriva hebreiska i infogningsläge. I normalt läge och när du skriver
+ett ":"-kommando växlar Vim automatiskt till engelska. Växla mellan hebreiska
+och engelska med:
+>
+	CTRL-^
+
+Det fungerar bara i infogningsläge och kommandoradsläge. I normalt läge har
+CTRL-^ en annan funktion: den växlar till den alternativa filen.
+   Om alternativet 'showmode' är aktiverat visas tangentkartan i
+lägesmeddelandet. I det grafiska gränssnittet kan du ange en annan markörfärg för
+språkmappningar med gruppen |lCursor|.
+   Du kan också styra tangentkartan med alternativen 'iminsert' och
+'imsearch'.
+
+Visa tangentmappningarna med:
+>
+	:lmap
+
+Visa vilka tangentkartor som finns i runtime-sökvägen med:
+>
+	:echo globpath(&rtp, "keymap/*.vim")
+
+
+SKAPA EGNA TANGENTKARTOR
+
+Du kan skapa en egen tangentkartsfil genom att utgå från en fil för ett
+liknande språk. Kopiera den till katalogen "keymap" i din runtime-katalog.
+På Unix kan den exempelvis vara "~/.vim/keymap".
+   Filnamnet ska följa något av dessa mönster:
+
+	keymap/{namn}.vim ~
+eller
+	keymap/{namn}_{kodning}.vim ~
+
+{namn} är tangentkartans namn. Välj ett tydligt namn som inte används av en
+annan karta, såvida du inte avsiktligt vill ersätta den. Namnet får inte
+innehålla understreck. Efter ett understreck kan du ange kodningen. Exempel:
+
+	keymap/hebrew.vim ~
+	keymap/hebrew_utf-8.vim ~
+
+Filens innehåll bör vara lätt att förstå. Titta på de tangentkartor som
+distribueras med Vim. Mer information finns i |mbyte-keymap|.
+
+
+SISTA UTVÄGEN
+
+Om inget annat fungerar kan du skriva in tecken med CTRL-V:
+
+	kodning		inmatning		intervall ~
+	8-bitars	CTRL-V 123		decimalt 0–255
+	8-bitars	CTRL-V x a1		hexadecimalt 00–ff
+	16-bitars	CTRL-V u 013b		hexadecimalt 0000–ffff
+	31-bitars	CTRL-V U 001303a4	hexadecimalt 00000000–7fffffff
+
+Skriv inte mellanslagen. Se |i_CTRL-V_digit| för mer information.
+
+==============================================================================
+
+Nästa kapitel: |usr_50.txt|  Avancerad Vim-skriptskrivning
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

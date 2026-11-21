@@ -1,0 +1,375 @@
+*usr_04.txt*	För Vim version 9.2.  Senast ändrad: 18 nov 2026
+
+
+		     VIMS ANVÄNDARMANUAL	av Bram Moolenaar
+
+
+				Göra mindre ändringar
+
+
+I det här kapitlet får du lära dig flera sätt att rätta text och flytta den. Du får lära dig de tre grundläggande sätten att ändra text: operator och rörelse, visuellt läge och textobjekt.
+
+|04.1|	Operatorer och rörelser
+|04.2|	Ändra text
+|04.3|	Upprepa en ändring
+|04.4|	Visuellt läge
+|04.5|	Flytta text
+|04.6|	Kopiera text
+|04.7|	Använda urklippet
+|04.8|	Textobjekt
+|04.9|	Ersättningsläge
+|04.10|	Avslutning
+
+     Nästa kapitel: |usr_05.txt|  Anpassa inställningarna
+ Föregående kapitel: |usr_03.txt|  Förflyttning
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*04.1*	Operatorer och rörelser
+
+I kapitel 2 lärde du dig kommandot "x" för att ta bort ett tecken. Ett tal före kommandot anger hur många tecken som ska tas bort: "4x" tar bort fyra tecken.
+   Kommandot "dw" tar bort ett ord. Du känner kanske igen "w" som kommandot för att flytta ett ord framåt. Kommandot "d" kan faktiskt följas av vilket rörelsekommando som helst. Då tas texten bort från den aktuella positionen till den position där markören hamnar.
+   Kommandot "4w" flyttar till exempel markören över fyra ord. Kommandot "d4w" tar bort fyra ord.
+
+	To err is human. To really foul up you need a computer. ~
+			 ------------------>
+			      d4w
+
+To err is human. you need a computer. ~
+
+Vim tar bara bort text fram till den position dit rörelsen flyttar markören. Det beror på att Vim antar att du vanligtvis inte vill ta bort ordets första tecken. Om du använder kommandot "e" för att flytta till slutet av ett ord förstår Vim att även det sista tecknet ska ingå:
+
+	To err is human. you need a computer. ~
+			-------->
+			   d2e
+
+To err is human. a computer. ~
+
+Om tecknet dit du flyttar tas med beror på rörelsekommandot. I
+referensmanualen kallas en rörelse "exklusiv" när tecknet inte tas med och
+"inklusiv" när det tas med.
+
+Kommandot "$" flyttar till radens slut. Kommandot "d$" tar bort texten från markören till radens slut. Det är en inklusiv rörelse, så radens sista tecken tas också bort:
+
+	To err is human. a computer. ~
+		       ------------>
+		            d$
+
+To err is human ~
+
+Här ser du mönstret operator och rörelse. Först skriver du ett operatorkommando. "d" är till exempel operatorn för att ta bort text. Sedan skriver du ett rörelsekommando, till exempel "4l" eller "w". På så sätt kan du utföra en operation på all text som du kan flytta markören över.
+
+==============================================================================
+*04.2*	Ändra text
+
+En annan operator är "c", som står för ändra. Den fungerar som operatorn "d", men lämnar Vim i infogningsläge. Kommandot "cw" ändrar till exempel ett ord. Mer exakt tar det bort ett ord och går sedan över till infogningsläge.
+
+	To err is human ~
+	   ------->
+	   c2wbe<Esc>
+
+To be human ~
+
+Kommandot "c2wbe<Esc>" består av följande delar:
+
+	c	operatorn för att ändra
+	2w	flytta två ord; de tas bort och infogningsläget startar
+	be	skriv in denna text
+	<Esc>	gå tillbaka till normalt läge
+
+Du kanske har lagt märke till något märkligt: blanksteget före "human" tas inte bort. Det finns ett talesätt om att varje problem har ett svar som är enkelt, tydligt och fel. Så är det med exemplet på kommandot "cw". Operatorn "c" fungerar som "d", med ett undantag: "cw" fungerar i själva verket som "ce", alltså ändra fram till ordets slut. Därför tas blanksteget efter ordet inte bort. Undantaget går tillbaka till det äldre Vi. Eftersom många vant sig vid det har inkonsekvensen blivit kvar i Vim.
+
+
+FLER ÄNDRINGAR
+
+Precis som "dd" tar bort en hel rad ändrar "cc" en hel rad. Befintlig indragning (inledande blanksteg) behålls.
+
+Precis som "d$" tar bort text till slutet av raden ändrar "c$" text till slutet av raden. Det motsvarar att använda "d$" för att ta bort texten och sedan "a" för att starta infogningsläget och lägga till ny text.
+
+
+KORTKOMMANDON
+
+Vissa kombinationer av operator och rörelse används så ofta att de har fått ett kortkommando med en bokstav:
+
+	x	motsvarar dl (ta bort tecknet under markören)
+	X	motsvarar dh (ta bort tecknet till vänster om markören)
+	D	motsvarar d$ (ta bort till radens slut)
+	C	motsvarar c$ (ändra till radens slut)
+	s	motsvarar cl (ändra ett tecken)
+	S	motsvarar cc (ändra en hel rad)
+
+
+VAR SKA TALET STÅ?
+
+Kommandona "3dw" och "d3w" tar båda bort tre ord. Om du vill vara noggrann är skillnaden att "3dw" tar bort ett ord tre gånger, medan "d3w" tar bort tre ord en gång. I praktiken blir resultatet detsamma. Du kan också ange två tal. "3d2w" tar till exempel bort två ord tre gånger, alltså totalt sex ord.
+
+
+ERSÄTTA MED ETT TECKEN
+
+Kommandot "r" är ingen operator. Det väntar på att du skriver ett tecken och ersätter då tecknet under markören. Du kan åstadkomma samma sak med "cl" eller "s", men med "r" behöver du inte trycka på <Esc> för att lämna infogningsläget.
+
+	detta är rätg ~
+	rD          rt
+
+	Detta är rätt ~
+
+Om du använder ett tal med "r" ersätts så många tecken med samma tecken. Exempel:
+
+	Detta är svårt ~
+	         5rx
+
+	Detta är xxxxx ~
+
+Om du vill ersätta ett tecken med en radbrytning använder du "r<Enter>". Då tas ett tecken bort och en radbrytning infogas. Om du anger ett tal gäller det bara antalet tecken som tas bort: "4r<Enter>" ersätter fyra tecken med en radbrytning.
+
+==============================================================================
+*04.3*	Upprepa en ändring
+
+Kommandot "." är ett av de enklaste men ändå kraftfulla kommandona i Vim. Det upprepar den senaste ändringen. Anta till exempel att du redigerar en HTML-fil och vill ta bort alla taggarna <B>. Ställ markören på det första < och ta bort <B> med kommandot "df>". Gå sedan till < i nästa </B> och ta bort taggen med ".". Kommandot "." upprepar den senaste ändringen, i det här fallet "df>". Gör likadant för nästa tagg.
+
+		Skapa en <B>tabell</B> med <B>innehåll ~
+	f<	 hitta första <	 --->
+	df>	 ta bort till >	 -->
+	f<	 hitta nästa <	   --------->
+	.	 upprepa df>		     --->
+	f<	 hitta nästa <		  ------------->
+	.	 upprepa df>			     -->
+
+Kommandot "." fungerar för alla ändringar du gör, utom "u" (ångra), CTRL-R (gör om) och kommandon som börjar med kolon (:).
+
+Ett annat exempel: Du vill ändra ordet "fyra" till "fem". Det förekommer flera gånger i texten. Du kan snabbt göra det med den här kommandosekvensen:
+
+	/fyra<Enter>	sök efter den första strängen "fyra"
+	cwfem<Esc>	ändra ordet till "fem"
+	n		sök efter nästa "fyra"
+	.		upprepa ändringen till "fem"
+	n		sök efter nästa "fyra"
+	.		upprepa ändringen
+			osv.
+
+==============================================================================
+*04.4*	Visuellt läge
+
+Operator och rörelse fungerar bra för enkla ändringar. Ofta är det dock svårt att avgöra vilket kommando som flyttar markören över precis den text du vill ändra. Då kan du använda visuellt läge.
+
+Starta visuellt läge genom att trycka på "v". Flytta markören över texten du vill arbeta med. Texten markeras. Skriv sedan operatorn.
+   Om du till exempel vill ta bort text från mitten av ett ord till mitten av ett annat (exemplen visar engelska ord för att pilarna ska motsvara samma ordgränser):
+
+		This is an examination sample of visual mode ~
+		       ---------->
+		         velllld
+
+		This is an example of visual mode ~
+
+Du behöver inte räkna hur många gånger du ska trycka på "l" för att komma rätt. Du ser direkt vilken text som tas bort när du trycker på "d".
+
+Om du ändrar dig och inte vill göra något med den markerade texten trycker du på <Esc>. Då avslutas det visuella läget utan att något ändras.
+
+
+MARKERA RADER
+
+Om du vill arbeta med hela rader startar du visuellt läge med "V". Hela raden markeras direkt. När du flyttar markören åt vänster eller höger ändras inget. Om du flyttar den uppåt eller nedåt utökas markeringen med hela rader.
+   Markera till exempel tre rader med "Vjj":
+
+			  +------------------------+
+			  | text more text	   |
+		       >> | more text more text    | |
+	selected lines >> | text text text	   | | Vjj
+		       >> | text more	   | V
+			  | more text more	   |
+			  +------------------------+
+
+
+MARKERA BLOCK
+
+Om du vill markera ett rektangulärt teckenblock startar du visuellt läge med CTRL-V. Det är användbart när du arbetar med tabeller.
+
+		name		Q1	Q2	Q3
+		pierre		123	455	234
+		john		0	90	39
+		steve		392	63	334
+
+Om du vill ta bort kolumnen "Q2" placerar du markören på Q i Q2. Tryck på CTRL-V för att starta blockvis visuellt läge. Flytta markören tre rader ned med "3j" och till nästa ord med "w". Du ser att det första tecknet i den sista kolumnen också markeras. Tryck på "h" för att ta bort det från markeringen. Tryck sedan på "d" så tas kolumnen bort.
+
+
+FLYTTA TILL ANDRA ÄNDEN
+
+Om du har markerat text i visuellt läge och behöver ändra den andra änden av markeringen använder du kommandot "o" (minnesregel: o för andra änden). Markören flyttas till den andra änden. Flytta den för att ändra var markeringen börjar. Tryck på "o" igen för att gå tillbaka.
+
+Vid blockvis markering finns fyra hörn. "o" flyttar dig diagonalt till ett av de andra hörnen. Använd "O" för att flytta till det andra hörnet på samma rad.
+
+Observera att "o" och "O" i visuellt läge fungerar helt annorlunda än i normalt läge, där de öppnar en ny rad under respektive över markören.
+
+==============================================================================
+*04.5*	Flytta text
+
+När du tar bort något med "d", "x" eller ett annat kommando sparas texten. Du kan klistra in den igen med kommandot "p" (put, klistra in).
+   Så här fungerar det. Börja med att ta bort en hel rad: ställ markören på raden och skriv "dd". Flytta sedan markören dit raden ska placeras och använd kommandot "p". Raden infogas under markörraden.
+
+	rad ett	rad ett		rad ett
+	rad två	 dd	rad tre	 p	rad tre
+	rad tre				rad två
+
+Eftersom du tog bort en hel rad placerar "p" den under markörraden. Om du tar bort en del av en rad, till exempel ett ord, placerar "p" texten direkt efter markören.
+
+	Prova gärna att flytta ord. ~
+	      ---->
+	      dw
+
+	Prova att flytta ord. ~
+	      --------->
+	      welp
+
+	Prova att flytta gärna ord. ~
+
+
+MER OM ATT KLISTRA IN
+
+Kommandot "P" klistrar in text på samma sätt som "p", men före markören. Om du tog bort en hel rad med "dd" klistrar "P" in den ovanför markörraden. Om du tog bort ett ord med "dw" klistrar "P" in det precis före markören.
+
+Du kan upprepa inklistringen så många gånger du vill. Samma text används varje gång.
+
+Du kan ange ett tal före "p" och "P". Texten upprepas så många gånger som talet anger. Om du skriver "dd" och sedan "3p" klistras alltså tre kopior av den borttagna raden in.
+
+
+BYTA PLATS PÅ TVÅ TECKEN
+
+När du skriver hinner fingrarna ibland före hjärnan (eller tvärtom). Då kan du råka skriva "teh" i stället för "the". Det är enkelt att rätta i Vim. Ställ markören på e i den felstavade texten "teh" och kör kommandot "xp". Så här fungerar det: "x" tar bort e och placerar det i ett register. "p" klistrar in texten efter markören, alltså efter h.
+
+	teh	 th	 the ~
+	 x	 p
+
+==============================================================================
+*04.6*	Kopiera text
+
+Du skulle kunna kopiera text genom att ta bort den, ångra borttagningen med "u" och sedan klistra in den på en annan plats med "p". Det finns ett enklare sätt: yanka. Operatorn "y" kopierar text till ett register. Sedan kan du använda "p" för att klistra in den.
+   Yanka är Vims ord för att kopiera. Bokstaven "c" används redan för operatorn ändra, så "y" var ledig. Namnet "yank" gör det lättare att komma ihåg att använda tangenten "y".
+
+Eftersom "y" är en operator kan du använda "yw" för att kopiera ett ord. Du kan som vanligt ange ett tal. Skriv "y2w" för att kopiera två ord. Exempel:
+
+	let kvadrat = LångVariabel * ~
+			 ------------->
+			       y2w
+
+	let kvadrat = LångVariabel * ~
+				       p
+
+	let kvadrat = LångVariabel * LångVariabel ~
+
+Observera att "yw" även kopierar blanksteget efter ett ord. Om du inte vill ha med det använder du "ye".
+
+Kommandot "yy" kopierar en hel rad, precis som "dd" tar bort en hel rad. En oväntad skillnad är att "D" tar bort text från markören till radens slut, medan "Y" kopierar hela raden, precis som "yy". Använd "y$" för att kopiera till radens slut.
+
+	text på en rad   yy	text på en rad		text på en rad
+	rad två		 rad två	 p	 rad två
+	sista raden	 sista raden		text på en rad
+							sista raden
+
+==============================================================================
+*04.7*	Använda urklippet
+
+Om du använder den grafiska versionen av Vim (gvim) hittar du alternativet "Kopiera" i menyn "Redigera". Markera först text med visuellt läge och välj sedan "Redigera/Kopiera". Texten kopieras till urklippet och kan klistras in i andra program och även i Vim.
+
+Om du har kopierat text till urklippet i ett annat program kan du klistra in den i Vim via menyn "Redigera/Klistra in". Det fungerar i normalt läge och infogningsläge. I visuellt läge ersätts den markerade texten.
+
+Alternativet "Klipp ut" tar bort texten innan den kopieras till urklippet. "Kopiera", "Klipp ut" och "Klistra in" finns också i snabbmenyn (om en sådan finns). Om Vim har ett verktygsfält finns alternativen där också.
+
+Om du inte använder det grafiska gränssnittet, eller föredrar att inte använda menyer, kan du använda kommandona "y" (kopiera) och "p" (klistra in) med registret "*" framför: >
+	"*yy
+För att klistra in text från urklippet: >
+	"*p
+Det fungerar bara i Vim-versioner med stöd för urklipp. Mer information finns i avsnitt |09.3| och här: |clipboard|.
+
+==============================================================================
+*04.8*	Textobjekt
+
+Om markören står mitt i ett ord och du vill ta bort hela ordet måste du flytta tillbaka till början innan du använder "dw". Det finns ett enklare sätt: "daw".
+
+	Det här är enkel exempeltext. ~
+	           daw
+
+	Det här är exempeltext. ~
+
+"d" i "daw" är operatorn för att ta bort text. "aw" är ett textobjekt. Minnesregel: "aw" står för ett ord. "daw" betyder alltså ta bort ett ord. Mer exakt tas även blanksteget efter ordet bort (eller blanksteget före ordet om det står sist på raden).
+
+Textobjekt är det tredje sättet att ändra text i Vim. De två andra är operator och rörelse samt visuellt läge.
+   Det liknar operator och rörelse, men i stället för att påverka texten mellan markörens position före och efter en rörelse används hela textobjektet. Det spelar ingen roll var i objektet markören står.
+
+Använd "cis" för att ändra en hel mening. Utgå från den här texten:
+
+	Hej där.  Detta ~
+	är ett exempel.  Några ~
+	ord till. ~
+
+Gå till början av den andra raden, till "är ett". Använd sedan "cis":
+
+	Hej där.    Några ~
+	ord till. ~
+
+Markören står mellan blankstegen på den första raden. Skriv nu den nya meningen "En ny rad.":
+
+	Hej där.  En ny rad.  Några ~
+	ord till. ~
+
+"cis" består av operatorn "c" (ändra) och textobjektet "is" (inre mening). Det finns också objektet "as" (en mening). Skillnaden är att "as" även omfattar blanksteget efter meningen, men "is" gör det inte. Om du tar bort en mening vill du oftast också ta bort blanksteget och använder därför "das". Om du ska skriva in en ny mening kan blanksteget vara kvar; då använder du "cis".
+
+Du kan också använda textobjekt i visuellt läge. Textobjektet läggs då till i den visuella markeringen. Läget fortsätter, så du kan använda fler textobjekt. Starta till exempel visuellt läge med "v" och markera en mening med "as". Använd sedan "as" igen för att ta med fler meningar. Avsluta med att använda en operator på de markerade meningarna.
+
+En längre lista över textobjekt finns här: |text-objects|.
+
+==============================================================================
+*04.9*	Ersättningsläge
+
+Kommandot "R" startar ersättningsläget. I det läget ersätter varje tecken du skriver tecknet under markören. Det fortsätter tills du trycker på <Esc>.
+   I exemplet börjar du i ersättningsläget på det första t:et i "text":
+
+	Detta är text. ~
+		Rintressant.<Esc>
+
+	Detta är intressant. ~
+
+Du kanske har märkt att kommandot ersatte fem tecken i raden med tolv andra. "R" förlänger raden automatiskt om det inte finns fler tecken att ersätta. Det fortsätter inte på nästa rad.
+
+Du kan växla mellan infogningsläge och ersättningsläge med tangenten <Insert>.
+
+Om du använder <BS> (backsteg) för att rätta ett tecken återställs den gamla texten. Det fungerar alltså som ett ångra-kommando för det senast skrivna tecknet.
+
+==============================================================================
+*04.10*	Avslutning
+
+Operatorer, rörelsekommandon och textobjekt kan kombineras på många sätt. Nu när du vet hur de fungerar kan du kombinera N operatorer med M rörelsekommandon och få N * M kommandon!
+
+En lista över operatorer finns här: |operator|.
+
+Det finns många andra sätt att ta bort delar av text. Här är några vanliga:
+
+x	ta bort tecknet under markören (kortform av "dl")
+X	ta bort tecknet före markören (kortform av "dh")
+D	ta bort från markören till radens slut (kortform av "d$")
+dw	ta bort från markören till början av nästa ord
+db	ta bort från markören till början av föregående ord
+diw	ta bort ordet under markören (utan blanksteg)
+daw	ta bort ordet under markören (med blanksteg)
+dG	ta bort till slutet av filen
+dgg	ta bort till början av filen
+
+Om du använder "c" i stället för "d" blir kommandona ändringskommandon. Med "y" kopieras texten. Och så vidare.
+
+Här är några vanliga ändringskommandon som inte passade in tidigare:
+
+	~	Ändra skiftläge på tecknet under markören och flytta markören
+		till nästa tecken. Det här är inte en operator (om inte
+	alternativet 'tildeop' är aktiverat), så det går inte att använda
+	det med ett rörelsekommando. Det fungerar däremot i visuellt läge
+	med all markerad text.
+
+	I	Starta infogningsläget efter att markören flyttats till radens
+		första tecken som inte är blanksteg.
+
+	A	Starta infogningsläget efter att markören flyttats till radens slut.
+
+==============================================================================
+
+Nästa kapitel: |usr_05.txt|  Anpassa inställningarna
+
+Upphovsrätt: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

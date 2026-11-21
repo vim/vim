@@ -2,8 +2,8 @@
 
 # KAPITEL TVÅ
 
-Hic Sunt Dracones: om detta är din första kontakt med vim och du
-vill utnyttja introduktionskapitlet, skriv
+Här börjar det okända: om det här är första gången du använder Vim och du
+vill gå vidare från introduktionskapitlet, skriver du
 på kommandoraden i Vim-redigeraren
 ~~~ cmd
 :Tutor vim-01-beginner
@@ -14,75 +14,75 @@ Det tar ungefär 8–10 minuter att gå igenom detta kapitel,
 beroende på hur mycket tid du lägger på att experimentera.
 
 
-# Lektion 2.1.1: BEHÄRSKA TEXTOBJEKT
+# Lektion 2.1.1: TEXTOBJEKT I PRAKTIKEN
 
-** Arbeta med logiska textblock med precision med hjälp av textobjekt **
+** Redigera text med precision med hjälp av textobjekt **
 
 1. Öva på ordoperationer:
 - Placera markören på valfritt ord i raden nedan
-- Skriv `diw`{normal} för att radera INNER ord (ord utan omgivande mellanslag)
-- Skriv `daw`{normal} för att radera ETT ORD (inklusive efterföljande blanksteg)
-- Prova med andra operatorer: `ciw`{normal} (ändra), `yiw`{normal} (yank),
-`gqiw`{normal} (formatera)
+- Skriv `diw`{normal} för att radera det inre ordet (utan omgivande blanksteg)
+- Skriv `daw`{normal} för att radera ett helt ord (inklusive efterföljande blanksteg)
+- Prova med andra operatorer: `ciw`{normal} (ändra), `yiw`{normal} (kopiera),
+`gqiw`{normal} (formatera texten)
 
-Öva på: ”Vim's”, (text_object) och ’powerful’ här.
+Öva på: ”Vims”, (textobjekt) och ”kraftfull” här.
 
 2. Arbeta med innehåll inom parenteser:
-- Placera markören inom något av parenteserna () {} [] <> nedan
-- Skriv `di(`{normal} eller `dib`{normal} (ta bort inre parentes)
-- Skriv `da(`{normal} eller `dab`{normal} (ta bort runt parenteserna)
-- Prova samma sak med `i”`{normal}/`a”`{normal} för citattecken, `it`{normal}/`at`{normal} för HTML/XML-taggar
+- Placera markören mellan ett par avgränsare på övningsraden nedan
+- Skriv `di(`{normal}, `di{`{normal}, `di[`{normal} eller `di<`{normal} för att radera innehållet
+- Använd a i stället för i för att ta bort både innehållet och parenteserna
+- Prova samma sak med `i"`{normal}/`a"`{normal} för citattecken och `it`{normal}/`at`{normal} för HTML- och XML-taggar
 
-Testfall: {curly}, [square], <angle> och ”quoted” objekt.
+Testa med (parenteser), {klamrar}, [hakparenteser], <vinkelparenteser> och "citat".
 
 3. Manipulering av stycken och meningar:
-- Använd `dip`{normal} för att radera inre stycke (markören var som helst i stycket)
-- Använd `vap`{normal} för att visuellt markera hela stycket
-- Prova `das`{normal} för att radera en mening (fungerar mellan .!? skiljetecken)
+- Använd `dip`{normal} för att radera det inre stycket (markören kan stå var som helst i stycket)
+- Använd `vap`{normal} för att markera hela stycket i visuellt läge
+- Prova `das`{normal} för att radera en mening (fungerar vid skiljetecknen .!?)
 
 4. Avancerade kombinationer:
-- `ciwnew<ESC>`{normal} - Ändra aktuellt ord till ”new”
-- `ciw”<CTRL-R>-”<ESC>`{normal} - Sätt aktuellt ord inom citattecken
+- `ciwnytt<ESC>`{normal} - Ändra det aktuella ordet till ”nytt”
+- `ciw"<CTRL-R>-"<ESC>`{normal} - Sätt aktuellt ord inom citattecken
 - `gUit`{normal} - Skriv inre HTML-tagginnehåll med versaler
-- `va”p`{normal} - Markera text inom citattecken och klistra in över den
+- `va"p`{normal} - Markera text inom citattecken och klistra in över den
 
-Slutlig övning: (Ändra ”denna" text) genom att [tillämpa {olika} operationer]<
+Slutövning: Ändra ("den här texten") genom att [använda {olika} kommandon]<
 
 
 # Lektion 2.1.2: DE NAMNGIVNA REGISTREN
 
-** Lagra två kopierade ord samtidigt och klistra sedan in dem **
+** Spara två ord i olika register och klistra sedan in dem **
 
 1. Flytta markören till raden under märket ✓
 
-2. Navigera till valfri punkt i ordet ”Edward” och skriv `”ayiw`{normal}
+2. Navigera till valfri punkt i ordet ”Edward” och skriv `"ayiw`{normal}
 
-**MINNESREGEL**: *in i register(”) med namnet (a) (y)ank (i)nner (w)ord*
+**MINNESREGEL**: *registertecknet ("), register (a), kopiera (y), inuti (i), ord (w)*
 
-3. Navigera framåt till ordet ’cookie’ (`fk`{normal} eller `3fc`{normal}
-eller `$2b`{normal} eller `/co`{normal} `<ENTER>`{normal}) och skriv `"byiw`{normal}
+3. Sök framåt efter ”kakransonerna” med `/kakransonerna`{normal} och tryck på `<ENTER>`{normal}.
+Skriv sedan `"byiw`{normal} för att kopiera ordet till register b.
 
-4. Navigera till valfri punkt i ordet ’Vince’ och skriv `ciw<CTRL-R>a<ESC>` {normal}
+4. Navigera till valfri punkt i ordet ”Vince” och skriv `ciw<CTRL-R>a<ESC>`{normal}
 
-**MNEMONIC**: *(c)hange (i)nner (w)ord med <innehållet i (r)egister> med namnet (a)*
+**MINNESREGEL**: *ändra (c), inuti (i), ord (w), med innehållet i register (a)*
 
-5. Navigera till valfri punkt i ordet ”cake” och skriv `ciw<CTRL-R>b<ESC>`{normal}
+5. Navigera till valfri punkt i ordet ”tårtorna” och skriv `ciw<CTRL-R>b<ESC>`{normal}
 
-a) Edward kommer hädanefter att ansvara för kakorna
-b) I denna egenskap kommer Vince att ha ensamrätt att bestämma över kakorna
+a) Edward kommer hädanefter att ansvara för kakransonerna
+b) I denna egenskap kommer Vince att ha ensamrätt att bestämma över tårtorna
 
-OBS: Delete fungerar även i register, dvs. `"sdiw`{normal} raderar
-ordet under markören till register s.
+OBS: Radering kan också spara text i ett register. `"sdiw`{normal} raderar
+ordet under markören och sparar det i register s.
 
-REFERENS: [Register](register)
+REFERENS: [Register](registers)
 [Namngivna register](quotea)
-[Motion](text-objects)
+[Rörelser](text-objects)
 [CTRL-R](i_CTRL-R)
 
 
-# Lektion 2.1.3: UTTRYCKREGISTRET
+# Lektion 2.1.3: UTTRYCKSREGISTRET
 
-** Infoga resultaten av beräkningar direkt **
+** Infoga resultatet av beräkningar direkt **
 
 1. Flytta markören till raden under märket ✗
 
@@ -91,37 +91,37 @@ REFERENS: [Register](register)
 3. Skriv `ciw<CTRL-R>=`{normal}60\*60\*24 `<ENTER>`{normal}
 
 4. På nästa rad går du in i infogningsläget och lägger till dagens datum med
-`<CTRL-R>=`{normal}`system(’date’)`{vim} `<ENTER>`{normal}
+`<CTRL-R>=`{normal}`system('date')`{vim} `<ENTER>`{normal}
 
 OBS: Alla anrop till system är beroende av operativsystemet, t.ex. på Windows använder du
-`system(’date /t’)`{vim} eller `:r!date /t`{vim}
+`system('date /t')`{vim} eller `:r!date /t`{vim}
 
 Jag har glömt det exakta antalet sekunder i en dag, är det 84600?
 Dagens datum är:
 
-OBS: samma sak kan uppnås med `:pu=`{normal}`system(’date’)` {vim}
+OBS: Samma sak kan uppnås med `:pu=`{normal}`system('date')` {vim}
 eller, med färre tangenttryckningar `:r!date`{vim}
 
 REFERENS: [Uttrycksregister](quote=)
 
 
-# Lektion 2.1.4: DE NUMMERERADE REGISTRA
+# Lektion 2.1.4: DE NUMRERADE REGISTREN
 
-** Tryck på `yy`{normal} och `dd`{normal} för att se deras effekt på registren **
+** Tryck på `yy`{normal} och `dd`{normal} för att se hur de påverkar registren **
 
 1. Flytta markören till raden under den markerade ✓
 
-2. Kopiera raden som börjar med ”0.”, och inspektera sedan registren med `:reg`{vim} `<ENTER>`{normal}
+2. Kopiera raden som börjar med ”0.” och visa sedan registren med `:reg`{vim} `<ENTER>`{normal}
 
-3. Ta bort rad 0 med `"cdd`{normal}, och inspektera sedan registren
-(Var förväntar du dig att rad 0 ska vara?)
+3. Radera rad 0 med `"cdd`{normal} och visa sedan registren.
+(Var tror du att den raderade raden finns nu?)
 
-4. Fortsätt att radera varje efterföljande rad och kontrollera `:reg`{vim} medan du gör det
+4. Radera nästa rad och kontrollera `:reg`{vim}. Upprepa tills alla rader är borta.
 
 OBS: Du bör lägga märke till att gamla rader som raderats flyttas nedåt i listan
 när nya rader som raderats läggs till
 
-5. Klistra nu in följande register i ordning: c, 7, 4, 8, 2. Dvs. `"7p`{normal}
+5. Klistra nu in följande register i ordning: c, 7, 4, 8, 2. Börja med `"7p`{normal}.
 
 0. Detta
 9. vagga
@@ -135,84 +135,83 @@ när nya rader som raderats läggs till
 1. hyllning
 
 
-OBS: Radradering av hela rader (`dd`{normal}) lever mycket längre i de
-numrerade registren än radradering av hela rader eller radering som involverar
-mindre rörelser
+OBS: Raderingar av hela rader (`dd`{normal}) bevaras i de numrerade registren
+längre än raderingar av delar av rader eller kortare textstycken.
 
 REFERENS: [Numrerade register](quote0)
 
 
 # Lektion 2.1.5: SPECIALREGISTER
 
-** Använd systemets urklipp och blackhole-register för avancerad redigering **
+** Använd systemurklippet och registret för kasserad text **
 
-Obs: Användning av urklipp kräver X11/Wayland-bibliotek på Linux-system OCH
-en Vim byggd med ”+clipboard” (vanligtvis en Huge-byggnad). Kontrollera med
-`:version`{vim} och `:echo has(’clipboard_working’)`{vim}
+OBS: Urklipp kräver X11- eller Wayland-bibliotek på Linux och en Vim-version
+byggd med stöd för `+clipboard` (vanligen en fullständig Vim-byggnad). Kontrollera med
+`:version`{vim} och `:echo has('clipboard_working')`{vim}
 
-1. Urklippsregister `+`{normal} och `*`{normal} :
-- `”+y`{normal} - Kopiera till systemets urklipp (t.ex. `”+yy`{normal} för aktuell rad)
+1. Urklippsregistren `+`{normal} och `*`{normal}:
+- `"+y`{normal} - Kopiera till systemets urklipp (t.ex. `"+yy`{normal} för aktuell rad)
 - `"+p`{normal} - Klistra in från systemets urklipp
-- `”*`{normal} är primärt val på X11 (mittenklick), `”+`{normal} är urklipp
+- `"*`{normal} är X11:s primärurklipp (mittenklick), `"+`{normal} är det vanliga urklippet
 
-Prova: ”+yy och klistra sedan in i ett annat program med Ctrl-V eller Cmd+V
+Prova: `"+yy`{normal} och klistra sedan in i ett annat program med Ctrl-V eller Cmd+V
 
-2. Blackhole-registret `_`{normal} raderar text:
-- `”_daw`{normal} - Radera ord utan att spara i något register
-- Användbart när du inte vill skriva över ditt standardregister `”`{normal}
-- Observera att detta använder textobjektet ”a Word”, som introducerades i en tidigare
+2. Svarta hålets register `_`{normal} raderar text utan att spara den:
+- `"_daw`{normal} - Radera ett ord utan att spara det i något register
+- Användbart när du inte vill skriva över ditt standardregister `"`{normal}
+- Kommandot använder textobjektet `aw`{normal} (ett ord), som introducerades i en tidigare
 lektion
-- `”_dd`{normal} - Ta bort rad utan att spara
-- `”_dap`{normal} - Ta bort stycke utan att spara
-- Kombinera med antal: `3”_dw`{normal}
+- `"_dd`{normal} - Radera en rad utan att spara den
+- `"_dap`{normal} - Radera ett stycke utan att spara det
+- Kombinera med ett antal: `3"_dw`{normal}
 
-Övning: ”_diw på valfritt ord för att radera det utan att påverka yank-historiken
+Övning: `"_diw`{normal} på valfritt ord för att radera det utan att påverka kopieringshistoriken
 
-3. Kombinera med visuella markeringar:
-- Markera text med V och sedan `”+y`{normal}
+3. Kombinera med visuellt läge:
+- Markera text med `V`{normal} och skriv sedan `"+y`{normal}
 - För att klistra in från urklipp i infogningsläge: `<CTRL-R>+`{normal}
 - Försök öppna ett annat program och klistra in från urklipp
 
 4. Kom ihåg:
 - Urklippsregister fungerar mellan olika Vim-instanser
 - Urklippsregistret fungerar inte alltid
-- Blackhole förhindrar oavsiktlig överskrivning av register
-- Standardregistret `"`{normal} är fortfarande tillgängligt för normal yank/paste
+- Svarta hålets register förhindrar att innehållet i andra register skrivs över av misstag
+- Standardregistret `"`{normal} är fortfarande tillgängligt för vanlig kopiering och inklistring
 - Namngivna register (a-z) förblir privata för varje Vim-session
 
 5. Felsökning av urklipp:
-- Kontrollera stöd med `:echo has(’clipboard_working’)`{vim}
-- 1 betyder tillgängligt, 0 betyder inte kompilerat
+- Kontrollera stödet med `:echo has('clipboard_working')`{vim}
+- 1 betyder att urklippet är tillgängligt, 0 att stödet saknas
 - På Linux kan vim-gtk- eller vim-x11-paketet behövas
-(kontrollera `:version`{vim} -utdata)
+(kontrollera utdata från `:version`{vim})
 
 
-# Lektion 2.1.6: SKÖNHETEN I MARKERINGAR
+# Lektion 2.1.6: MÄRKENAS KRAFT
 
-** Undvik aritmetik för kodapor **
+** Slipp räkna ut radnummer för hand **
 
 OBS: ett vanligt problem vid kodning är att flytta runt stora kodblock.
-Följande teknik hjälper till att undvika beräkningar på talraden i samband
-med operationer som `"a147d`{normal} eller `:945,1091d a`{vim} eller ännu värre
-med `i<CTRL-R>=`{normal}1091-945 `<ENTER>` {normal} först
+Följande teknik gör att du slipper räkna ut radnummer för kommandon som
+`"a147d`{normal} eller `:945,1091d a`{vim}, eller först räkna ut skillnaden
+med `i<CTRL-R>=`{normal}1091-945 `<ENTER>`{normal}.
 
 1. Flytta markören till raden nedan markerad med ✓
 
 2. Gå till den första raden i funktionen och markera den med `ma`{normal}
 
-OBS: den exakta positionen på raden är INTE viktig!
+OBS: Den exakta kolumnen på raden spelar ingen roll.
 
 3. Navigera till slutet av raden och sedan till slutet av kodblocket
 med `$%`{normal}
 
-4. Ta bort blocket till register a med `”ad'a`{normal}
+4. Ta bort blocket till register a med `"ad'a`{normal}
 
-**MINNESREGEL**: *till register(”) med namnet (a) lägg (d)eletionen från markören till
-raden som innehåller markeringen(') (a)*
+**MINNESREGEL**: *till register (a), radera (d) från markören till raden med
+märket (') (a)*
 
-5. Klistra in blocket mellan BBB och CCC `"ap` {normal}
+5. Klistra in blocket mellan BBB och CCC med `"ap`{normal}
 
-OBS: öva på denna operation flera gånger för att bli flytande `ma$%"ad'a`{normal}
+OBS: Öva flera gånger på kommandot `ma$%"ad'a`{normal} så går det lättare.
 
 ~~~ cmd
 AAA
@@ -225,58 +224,55 @@ doIt()
 
 // föreställ dig hundratals rader med kod
 
-// naivt sett skulle du kunna navigera till början och slutet och registrera eller
-// komma ihåg varje radnummer
+// Du skulle kunna gå till början och slutet och skriva ned eller komma ihåg
+// alla radnummer, men det är onödigt.
 }
 BBB
 CCC
 ~~~
 
-OBS: märken och register delar inte samma namnområde, därför är register a
-helt oberoende av märket a. Detta gäller inte register och
-makron.
+OBS: märken och register delar inte namnrymd. Märket a är därför helt
+oberoende av register a. Makron använder däremot samma namn som register.
 
-REFERENS: [Markeringar](markeringar)
-[Markeringsrörelser](markeringsrörelser) (skillnaden mellan ' och \`)
+REFERENS: [Märken](marks)
+[Märkesrörelser](mark-motions) (skillnaden mellan ' och \`)
 
 
 # Lektion 2.1 SAMMANFATTNING
 
 1. Textobjekt möjliggör precisionsredigering:
 - `iw`{normal}/`aw`{normal} - inuti/runt ord
-- `i[`{normal}/`a[`{normal} - inuti/runt parentes
-- `i”`{normal}/`a”`{normal} - inuti/runt citattecken
-- `it`{normal}/`at`{normal} - inuti/runt tagg
+- `i[`{normal}/`a[`{normal} - inuti/runt hakparenteser
+- `i"`{normal}/`a"`{normal} - inuti/runt citattecken
+- `it`{normal}/`at`{normal} - inuti/runt en HTML- eller XML-tagg
 - `ip`{normal}/`ap`{normal} - inuti/runt stycke
 - `is`{normal}/`as`{normal} - inuti/runt mening
 
-2. För att lagra (kopiera, radera) text i och hämta (klistra in) från totalt
-26 register (a-z)
+2. Lagra text i något av de 26 registren (a–z) genom att kopiera eller radera
+den, och hämta den igen genom att klistra in.
 3. Kopiera ett helt ord från valfri plats i ett ord: `yiw`{normal}
-4. Ändra ett helt ord från valfri plats i ett ord: `ciw` {normal}
+4. Ändra ett helt ord från valfri plats i ett ord: `ciw`{normal}
 5. Infoga text direkt från register i infogningsläge: `<CTRL-R>a`{normal}
 
 6. Infoga resultaten av enkla aritmetiska operationer:
 `<CTRL-R>=`{normal}60\*60`<ENTER>`{normal} i infogningsläge
 7. Infoga resultaten av systemanrop:
-`<CTRL-R>=`{normal}`system(’ls -1’)`{vim}`<ENTER>`{normal} i infogningsläge
+`<CTRL-R>=`{normal}`system('ls -1')`{vim}`<ENTER>`{normal} i infogningsläge
 
 8. Inspektera register med `:reg`{vim}
-9. Lär dig den slutliga destinationen för raderingar av hela rader: `dd`{normal} i
-de numrerade registren, dvs. i fallande ordning från register 1 till 9. Uppskatta
-att raderingar av hela rader bevaras i de numrerade registren längre
-än någon annan operation
-10. Lär dig den slutliga destinationen för alla yanks i de numrerade registren och
-hur kortlivade de är
+9. Ta reda på hur raderingar av hela rader med `dd`{normal} sparas i de numrerade
+registren, från register 1 till 9. De ligger kvar där längre än andra raderingar.
+10. Ta reda på var kopierade rader hamnar och hur länge de finns kvar i de
+numrerade registren.
 
-11. Placera markeringar från kommandoläge `m[a-zA-Z0-9]` {normal}
-12. Flytta radvis till en markering med `'`{normal}
+11. Sätt märken i kommandoläge med `m[a-zA-Z0-9]`{normal}
+12. Flytta till raden med ett märke med `'`{normal}
 
 13. Specialregister:
-- `”+`{normal}/`”*`{normal} - Systemets urklipp (beroende på operativsystem)
-- `"_`{normal} - Blackhole (kasta bort raderad/yankad text)
-- `”=`{normal} - Uttrycksregister
-- `”-`{normal} - Litet raderingsregister
+- `"+`{normal}/`"*`{normal} - Systemets urklipp (beroende på operativsystem)
+- `"_`{normal} - Registret för kasserad text (ignorera raderad text)
+- `"=`{normal} - Uttrycksregister
+- `"-`{normal} - Litet raderingsregister
 
 
 # SLUTSATS

@@ -1,0 +1,212 @@
+*usr_26.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Upprepning
+
+
+Redigeringsarbete är sällan helt ostrukturerat.  En ändring behöver ofta göras
+flera gånger.  I det här kapitlet går vi igenom flera användbara sätt att
+upprepa en ändring.
+
+|26.1|	Upprepa med visuellt läge
+|26.2|	Lägga till och dra ifrån
+|26.3|	Ändra i många filer
+|26.4|	Använda Vim från ett skalskript
+
+	Nästa kapitel: |usr_27.txt|  Sökkommandon och mönster
+	Föregående kapitel: |usr_25.txt|  Redigera formaterad text
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*26.1*	Upprepa med visuellt läge
+
+Visuellt läge är praktiskt när du vill ändra en följd av rader.  Du ser den
+markerade texten och kan kontrollera att rätt rader påverkas.  Det tar dock
+några tangenttryckningar att göra markeringen.  Kommandot "gv" markerar samma
+område igen så att du kan göra ännu en ändring i samma text.
+   Anta att du vill ändra "2001" till "2002" och "2000" till "2001" i några
+rader:
+
+	The financial results for 2001 are better ~
+	than for 2000.  The income increased by 50%, ~
+	even though 2001 had more rain than 2000. ~
+			2000		2001 ~
+	income		45,403		66,234 ~
+
+Ändra först "2001" till "2002".  Markera raderna visuellt och använd: >
+
+	:s/2001/2002/g
+
+Markera sedan samma text igen med "gv".  Markörens plats spelar ingen roll.
+Använd därefter ":s/2000/2001/g" för den andra ändringen.
+   Du kan förstås upprepa dessa ändringar flera gånger.
+
+==============================================================================
+*26.2*	Lägga till och dra ifrån
+
+När du ändrar ett tal till ett annat är skillnaden ofta densamma varje gång.  I
+exemplet ovan ökade varje årtal med ett.  I stället för att skriva ett
+substitueringskommando för varje årtal kan du använda CTRL-A.
+   Använd samma text som ovan och sök efter ett årtal: >
+
+	/19[0-9][0-9]\|20[0-9][0-9]
+
+Tryck nu på CTRL-A.  Årtalet ökar med ett:
+
+	The financial results for 2002 are better ~
+	than for 2000.  The income increased by 50%, ~
+	even though 2001 had more rain than 2000. ~
+			2000		2001 ~
+	income		45,403		66,234 ~
+
+Använd "n" för att hitta nästa årtal och tryck på "." för att upprepa CTRL-A.
+Det går lite snabbare att skriva ".".  Upprepa "n" och "." för alla årtal.
+   Tips: aktivera alternativet 'hlsearch' för att se träffarna som kommer att
+ändras.  Då kan du titta framåt och arbeta snabbare.
+
+Du kan öka med mer än ett genom att ange ett antal före CTRL-A.  Anta att du
+har följande lista:
+
+	1.  item four ~
+	2.  item five ~
+	3.  item six ~
+
+Ställ markören på "1." och skriv: >
+
+	3 CTRL-A
+
+"1." ändras till "4.".  Använd återigen "." för att upprepa ändringen på de
+andra talen.
+
+Ett annat exempel:
+
+	006	foo bar ~
+	007	foo bar ~
+
+Om 'nrformats' innehåller "octal" ger CTRL-A på talen följande:
+
+	007	foo bar ~
+	010	foo bar ~
+
+Blev 7 plus 1 verkligen 10?  Vim tolkade "007" som ett oktalt tal eftersom
+det börjar med noll och "octal" är aktiverat.  Den skrivformen används ofta i C-program.  Stäng av
+detta för tal med inledande nollor med: >
+
+	:set nrformats-=octal
+
+Kommandot CTRL-X drar ifrån på motsvarande sätt.
+
+==============================================================================
+*26.3*	Ändra i många filer
+
+Anta att du vill ändra variabeln "x_cnt" till "x_counter".  Den används i
+flera C-filer och måste ändras i dem alla.
+   Lägg först alla berörda filer i argumentlistan: >
+
+	:args *.c
+<
+Vim hittar alla C-filer och öppnar den första.  Kör sedan ett
+substitueringskommando i samtliga filer: >
+
+	:argdo %s/\<x_cnt\>/x_counter/ge | update
+
+Kommandot ":argdo" tar ett annat kommando som argument och kör det på alla
+filer i argumentlistan.
+   Substitueringskommandot "%s" gäller alla rader.  Mönstret "\<x_cnt\>"
+matchar hela ordet och inte exempelvis "px_cnt" eller "x_cnt2".
+   Flaggan "g" ersätter alla förekomster av "x_cnt" på samma rad.  Flaggan
+"e" förhindrar felmeddelande om "x_cnt" inte förekommer i filen.  Annars
+skulle ":argdo" avbrytas vid den första filen utan träff.
+   Tecknet "|" skiljer kommandona åt.  ":update" skriver filen bara om den
+har ändrats.  Om inget "x_cnt" ändrades till "x_counter" görs alltså inget.
+
+Det finns även kommandot ":windo", som kör ett kommando i alla fönster, och
+":bufdo", som kör ett kommando i alla listade buffertar.  Var försiktig: buffertlistan
+kan innehålla fler filer än du tror.  Kontrollera listan med ":buffers" eller
+":ls".
+
+==============================================================================
+*26.4*	Använda Vim från ett skalskript
+
+Anta att du har många filer där strängen "-person-" ska ändras till "Jones"
+och sedan skrivas ut.  Du kan göra det genom att skriva många kommandon för
+hand eller låta ett skalskript sköta arbetet.
+   Vim är en utmärkt skärmredigerare när du använder normallägeskommandon.  För
+bearbetning i omgångar är normallägeskommandon däremot inte särskilt tydliga
+i en kommenterad kommandofil.  Använd Ex-läget i stället.  Det ger ett
+kommandoradsgränssnitt som passar bra i en kommandofil.  (Ett Ex-kommando är
+helt enkelt ett kommandoradskommando som börjar med :).)
+   Du behöver följande Ex-kommandon: >
+
+	%s/-person-/Jones/g
+	write tempfile
+	quit!
+
+Spara dem i filen "change.vim".  Kör sedan redigeraren i omgångsläge med det
+här skalskriptet: >
+
+	for file in *.txt; do
+	  vim -e -s -- "$file" < change.vim &&
+	    lpr -r tempfile
+	done
+
+For-done-loopen är en konstruktion i skalet som upprepar de två raderna
+mellan "do" och "done". Variabeln $file får ett nytt filnamn varje gång.
+Citattecknen gör att filnamn med blanksteg förblir ett enda argument.
+   Den andra raden startar Vim i Ex-läge (-e) med filen $file och läser
+kommandon från "change.vim".  Argumentet -s gör Vim tyst, så att det inte
+fortsätter skriva ut :-prompten eller någon annan prompt.
+   Om Vim lyckas skriver "lpr -r tempfile" ut resultatfilen "tempfile".
+Argumentet -r gör att resultatfilen sedan tas bort.
+
+
+LÄSA FRÅN STANDARDINDATA
+
+Vim kan läsa text från standardindata.  Eftersom kommandon normalt läses där
+måste du ange att Vim ska läsa text i stället.  Använd argumentet "-" i stället
+för ett filnamn.  Exempel: >
+
+	ls | vim -
+
+Nu kan du redigera utdata från kommandot "ls" utan att först spara texten i en
+fil.
+   Om standardindata används för text kan du använda argumentet "-S" för att
+läsa in ett skript: >
+
+	producer | vim -S change.vim -
+
+
+SKRIPT MED NORMALLÄGESKOMMANDON
+
+Om du vill använda normallägeskommandon i ett skript kan du göra så här: >
+
+	vim -s script file.txt ...
+<
+	Observera:
+	"-s" har en annan betydelse när det används utan "-e".  Här betyder
+	det att filen "script" ska köras som normallägeskommandon.  Med "-e"
+	betyder det tyst läge och nästa argument används inte som filnamn.
+
+Kommandona i "script" körs som om du själv hade skrivit dem.  Kom ihåg att en
+radbrytning tolkas som att du trycker på <Enter>.  I normalläget flyttar det
+markören till nästa rad.
+   Du kan skapa skriptfilen genom att skriva kommandona, men då måste du
+föreställa dig hur resultatet blir, vilket kan vara svårt.  Du kan också spela
+in kommandona medan du utför dem manuellt: >
+
+	vim -w script file.txt ...
+
+Alla tangenter du trycker på skrivs till "script".  Om du gör ett litet misstag
+kan du fortsätta och rätta skriptet senare.
+   Argumentet "-w" lägger till kommandon i en befintlig skriptfil.  Det är
+användbart om du vill spela in skriptet i delar.  Börja om från början med
+argumentet "-W", som skriver över en befintlig fil.
+
+==============================================================================
+
+Nästa kapitel: |usr_27.txt|  Sökkommandon och mönster
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

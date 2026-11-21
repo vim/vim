@@ -1,0 +1,171 @@
+*usr_43.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+			 VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Använda filtyper
+
+
+När du redigerar en fil av en viss typ, till exempel ett C-program eller ett
+skalskript, använder du ofta samma inställningar och mappningar.  Du tröttnar
+snabbt på att ställa in allt manuellt varje gång.  Det här kapitlet visar hur
+det kan göras automatiskt.
+
+|43.1|	Insticksprogram för filtyper
+|43.2|	Lägga till en filtyp
+
+	Nästa kapitel: |usr_44.txt|  Egen syntaxmarkering
+	Föregående kapitel: |usr_42.txt|  Lägga till menyer
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*43.1*	Insticksprogram för filtyper				*filetype-plugin*
+
+|add-filetype-plugin| förklarar hur du aktiverar insticksprogram för filtyper.
+Du är kanske inte nöjd med standardinställningarna, eftersom de är minimala.
+Anta att du vill sätta 'softtabstop' till 4 för C-filer och definiera en
+mappning som infogar en kommentar på tre rader.  Det gör du i två steg:
+
+							*your-runtime-dir*
+1. Skapa en egen runtime-katalog.  I Unix brukar den heta "~/.vim".  Skapa
+   underkatalogen "after/ftplugin" i den: >
+
+	mkdir -p ~/.vim/after/ftplugin
+<
+   Om du inte använder Unix kan du kontrollera värdet på alternativet
+   'runtimepath' för att se var Vim letar efter katalogen "ftplugin": >
+
+	:set runtimepath
+
+<  Vanligtvis använder du den första katalogen i listan, alltså värdet före
+   det första kommatecknet. Om du väljer en annan katalog behöver dess
+   "after"-katalog ligga efter $VIMRUNTIME i 'runtimepath'.
+
+2. Skapa filen "~/.vim/after/ftplugin/c.vim". Den läses in efter det
+   medföljande insticksprogrammet för C: >
+
+	setlocal softtabstop=4
+	nnoremap <buffer> <LocalLeader>c o/**************<CR><CR>/<Esc>
+	let b:undo_ftplugin .= " | setlocal softtabstop< | nunmap <buffer> <LocalLeader>c"
+
+Redigera en C-fil och kontrollera att 'softtabstop' är satt till 4.  Kommandot
+":setlocal" ställer bara in alternativet för den aktuella bufferten. När du
+byter till en annan buffert används det värde som gäller där. En ny buffert
+får standardvärdet eller värdet från det senaste kommandot ":set".
+
+På samma sätt försvinner mappningen för "\c" när du byter buffert.  Kommandot
+":map <buffer>" skapar en mappning som bara gäller i den aktuella bufferten.
+Det fungerar med alla mappningskommandon, till exempel ":map!" och ":vmap".
+I mappningen ersätts |<LocalLeader>| med värdet på variabeln "maplocalleader".
+
+När filtypen ändras kör Vim kommandona i b:undo_ftplugin för att återställa
+inställningarna. Raden ovan lägger till våra kommandon i den befintliga
+listan.  Var försiktig med tecken som har en särskild betydelse i en
+sträng, till exempel omvänt snedstreck.
+
+Exempel på insticksprogram för filtyper finns här: >
+
+	$VIMRUNTIME/ftplugin/
+
+Läs mer om hur du skriver ett insticksprogram för en filtyp i |write-plugin|.
+
+==============================================================================
+*43.2*	Lägga till en filtyp
+
+Om du använder en filtyp som Vim inte känner igen kan du lägga till den.  Du
+behöver en egen runtime-katalog.  Se |your-runtime-dir| ovan.
+
+Skapa filen "filetype.vim" och lägg till ett autokommando för filtypen.
+Autokommandon förklaras i avsnitt |40.3|.  Exempel: >
+
+	augroup filetypedetect
+	au BufNewFile,BufRead *.xyz	setf xyz
+	augroup END
+
+Nu identifieras alla filer som slutar på ".xyz" som filtypen "xyz".
+Kommandona ":augroup" lägger autokommandot i gruppen "filetypedetect".  Då kan
+alla autokommandon för filtypsidentifiering tas bort med ":filetype off".
+Kommandot "setf" ställer in alternativet 'filetype' på argumentet, om det
+inte redan är inställt.  Då ställs 'filetype' inte in två gånger.
+
+Du kan använda flera olika mönster för att känna igen ett filnamn.  Även
+katalognamn kan ingå.  Se |autocmd-patterns|.  Filerna under
+"/usr/share/scripts/" är till exempel Ruby-filer, men har inte den förväntade
+filändelsen.  Lägg till följande rad i exemplet ovan: >
+
+	augroup filetypedetect
+	au BufNewFile,BufRead *.xyz			setf xyz
+	au BufNewFile,BufRead /usr/share/scripts/*	setf ruby
+	augroup END
+
+Men om du nu redigerar filen /usr/share/scripts/README.txt är den inte en
+Ruby-fil.  Risken med ett mönster som slutar med "*" är att det snabbt matchar
+för många filer.  Undvik problem genom att lägga filetype.vim i en annan
+katalog, sist i 'runtimepath'.  I Unix kan du till exempel använda
+"~/.vim/after/filetype.vim".
+   Lägg nu till identifieringen av textfiler i "~/.vim/filetype.vim": >
+
+	augroup filetypedetect
+	au BufNewFile,BufRead *.txt			setf text
+	augroup END
+
+Den filen hittas först i 'runtimepath'.  Lägg sedan till följande i
+"~/.vim/after/filetype.vim", som hittas sist: >
+
+	augroup filetypedetect
+	au BufNewFile,BufRead /usr/share/scripts/*	setf ruby
+	augroup END
+
+Nu söker Vim efter "filetype.vim" i varje katalog i 'runtimepath'.  Först
+hittas "~/.vim/filetype.vim" och autokommandot för *.txt-filer definieras.
+Därefter hittas filen "$VIMRUNTIME/filetype.vim", som ligger mitt i
+'runtimepath'.  Till sist hittas "~/.vim/after/filetype.vim" och autokommandot
+för att identifiera Ruby-filer i /usr/share/scripts läggs till.
+   När du sedan redigerar /usr/share/scripts/README.txt kontrolleras
+autokommandona i den ordning de definierades.  Mönstret *.txt matchar först,
+så "setf text" körs och ställer in filtypen till "text".  Även Ruby-mönstret
+matchar, men eftersom 'filetype' redan är satt till "text" gör "setf ruby"
+ingenting.
+   När du redigerar filen /usr/share/scripts/foobar kontrolleras samma
+autokommandon.  Bara Ruby-mönstret matchar, så "setf ruby" ställer in
+filtypen till "ruby".
+
+
+IDENTIFIERA FILTYP EFTER INNEHÅLL
+
+Om filtypen inte kan identifieras från filnamnet kanske du kan identifiera den
+från innehållet.  Många skript börjar till exempel med en rad som:
+
+	#!/bin/xyz ~
+
+Skapa filen "scripts.vim" i runtime-katalogen, på samma plats som
+"filetype.vim".  Den kan se ut så här: >
+
+	if did_filetype()
+	  finish
+	endif
+	if getline(1) =~ '^#!.*[/\\]xyz\>'
+	  setf xyz
+	endif
+
+Kontrollera först did_filetype() för att undvika att undersöka innehållet i
+filer där filtypen redan identifierades från filnamnet.  Då slipper Vim göra
+ett onödigt arbete när kommandot "setf" ändå inte ändrar något.
+   Filen "scripts.vim" läses in av ett autokommando i standardfilen
+"filetype.vim".  Kontrollerna görs därför i den här ordningen:
+
+	1. filetype.vim-filer före $VIMRUNTIME i 'runtimepath'
+	2. första delen av $VIMRUNTIME/filetype.vim
+	3. alla scripts.vim-filer i 'runtimepath'
+	4. resten av $VIMRUNTIME/filetype.vim
+	5. filetype.vim-filer efter $VIMRUNTIME i 'runtimepath'
+
+Om detta inte räcker kan du lägga till ett autokommando som matchar alla filer
+och läser in ett skript eller kör en funktion som undersöker innehållet.
+
+==============================================================================
+
+Nästa kapitel: |usr_44.txt|  Egen syntaxmarkering
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

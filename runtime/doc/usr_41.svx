@@ -1,0 +1,2024 @@
+*usr_41.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Skriva ett Vim-skript
+
+
+Vim-skript används i vimrc-filen som läses in vid uppstart, i syntaxfiler och
+på många andra ställen. I det här kapitlet beskrivs vad du kan använda i ett
+Vim-skript. Det är mycket att gå igenom, så kapitlet är långt.
+
+|41.1|	Introduktion
+|41.2|	Variabler
+|41.3|	Uttryck
+|41.4|	Villkor
+|41.5|	Köra ett uttryck
+|41.6|	Använda funktioner
+|41.7|	Definiera en funktion
+|41.8|	Listor och dictionary-objekt
+|41.9|	Blanksteg
+|41.10|	Radfortsättning
+|41.11|	Kommentarer
+|41.12|	Filformat
+
+	Nästa kapitel: |usr_42.txt|  Lägga till menyer
+	Föregående kapitel: |usr_40.txt|  Skapa nya kommandon
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*41.1*	Introduktion					*vim-script-intro* *script*
+
+Vi börjar med några begrepp. Ett Vim-skript är en fil som Vim kan tolka och
+köra. Det omfattar filer skrivna i Vims skriptspråk, till exempel .vim-filer,
+och konfigurationsfiler som .vimrc och .gvimrc. Sådana skript kan definiera
+funktioner, kommandon och inställningar som Vim använder för att anpassa och
+utöka sitt beteende.
+
+						*vim-script-notation*
+Den korrekta benämningen är "Vim-skript" (eller "Vim9-skript" när det nya
+språket Vim9 avses |Vim9-script|). I den här dokumentationen använder vi
+"Vim-skript" för skriptspråket. Det gör förklaringar och diskussioner om
+skript i Vim kortare.
+
+Ett Vim-insticksprogram består av ett eller flera Vim-skript och eventuellt
+andra filer, till exempel hjälpdokumentation, konfigurationsfiler och andra
+resurser. Det tillför en eller flera funktioner till Vim. Ett insticksprogram
+kan ge nya kommandon, utöka befintliga funktioner och integrera externa verktyg
+eller tjänster i Vim.
+
+vimrc-filen är ofta den första kontakten med Vim-skript. Vim läser in filen
+vid uppstart och kör kommandona i den. Där kan du ange alternativ, definiera
+mappningar, välja insticksprogram och mycket mer. Du kan använda alla
+kolonkommandon i filen, det vill säga kommandon som börjar med ":". De kallas
+ibland Ex-kommandon eller kommandoradskommandon.
+
+Syntaxfiler är också Vim-skript, liksom filer som ställer in alternativ för
+en viss filtyp. Du kan lägga en komplicerad makrosekvens i en separat
+Vim-skriptfil. Det finns många andra användningsområden.
+
+Vim-skript finns i två varianter: äldre skript och |Vim9|. Eftersom den här
+hjälpen riktar sig till nya användare går vi igenom den nyare och smidigare
+Vim9-syntaxen. Äldre skript är särskilt utformade för Vim, medan Vim9-skript
+liknar fler språk, till exempel JavaScript och TypeScript.
+
+Det enklaste sättet att prova Vim-skript är att redigera en skriptfil och
+läsa in den:
+>
+	:edit test.vim
+	[Skriv in skriptraderna]
+	:w
+	:source %
+
+Vi börjar med ett enkelt exempel:
+>
+	vim9script
+	var i = 1
+	while i < 5
+	  echo "räknaren är" i
+	  i += 1
+	endwhile
+<
+Exemplet skriver ut:
+
+	räknaren är 1 ~
+	räknaren är 2 ~
+	räknaren är 3 ~
+	räknaren är 4 ~
+
+Kommandot `vim9script` på första raden anger att filen använder den nya
+syntaxen |Vim9|. Det påverkar hur resten av filen tolkas. Lägg helst
+kommandot allra först, före eventuella kommentarer.
+							*vim9-declarations*
+Kommandot `var i = 1` deklarerar variabeln "i" och ger den ett startvärde.
+Den allmänna formen är:
+>
+	var {namn} = {uttryck}
+
+Här är variabelnamnet "i" och uttrycket är ett enkelt värde: talet ett.
+
+Kommandot `while` inleder en slinga. Den allmänna formen är:
+>
+	while {villkor}
+	  {satser}
+	endwhile
+
+Satserna fram till motsvarande `endwhile` körs så länge villkoret är sant.
+Villkoret i exemplet är uttrycket "i < 5". Det är sant så länge värdet på
+variabeln i är mindre än fem.
+
+	Obs:
+	Om du råkar skriva en while-slinga som aldrig avslutas kan du avbryta
+	den med CTRL-C (CTRL-Break i MS-Windows).
+
+Kommandot `echo` skriver ut sina argument. I exemplet är det texten
+"räknaren är" och värdet på variabeln i. Eftersom i är ett skrivs detta ut:
+
+	räknaren är 1 ~
+
+Kommandot `i += 1` gör samma sak som "i = i + 1": det ökar i med ett och
+sparar det nya värdet i samma variabel.
+
+Exemplet förklarar kommandona, men en sådan slinga kan skrivas mycket
+kortare:
+>
+	for i in range(1, 4)
+	  echo $"räknaren är {i}"
+	endfor
+
+Vi går igenom `for`, `range()` och `$"sträng"` längre fram. Följ länkarna om du
+vill läsa om dem redan nu.
+
+
+PROVA EXEMPEL
+
+Du kan prova de flesta exemplen i hjälpfilerna utan att spara kommandona i en
+fil. Så här provar du till exempel for-slingan ovan:
+
+1. Placera markören på "for".
+2. Starta visuellt läge med "v".
+3. Flytta markören till "endfor".
+4. Tryck på kolon, skriv "so" och tryck på Retur.
+
+När du trycker på kolon visas ":'<,'>". Det är området med den visuellt
+markerade texten.
+
+Vissa kommandon måste köras som |Vim9|-skript. Kommandon du skriver direkt
+tolkas normalt som äldre skriptsyntax, som i följande exempel där felet E1004
+uppstår. Gör så här i stället:
+
+4. Tryck på kolon, skriv "vim9 so" och tryck på Retur.
+
+"vim9" är en förkortning för kommandomodifieraren `vim9cmd`, som kör följande
+kommando med |Vim9|-syntax.
+
+Det här fungerar inte för exempel som kräver en skriptkontext.
+
+
+FYRA TYPER AV TAL
+
+Tal kan anges decimalt, hexadecimalt, oktalt eller binärt.
+
+Ett hexadecimalt tal börjar med "0x" eller "0X". Exempelvis är "0x1f"
+decimalt 31 och "0x1234" decimalt 4660.
+
+Ett oktalt tal börjar med "0o" eller "0O". "0o17" är decimalt 15.
+
+Ett binärt tal börjar med "0b" eller "0B". Exempelvis är "0b101"
+decimalt 5.
+
+Ett decimalt tal består bara av siffror. Obs: I äldre skript får du inte
+skriva en inledande nolla före ett decimalt tal; då tolkas det som ett oktalt
+tal. Det är en anledning att använda |Vim9|-skript.
+
+Kommandot `echo` utvärderar argumentet och skriver alltid ut tal i decimal
+form. Exempel:
+>
+	echo 0x7f 0o36
+<	127 30 ~
+
+Skriv ett minustecken före talet för att göra det negativt. Det fungerar även
+med hexadecimala, oktala och binära tal:
+>
+	echo -0x7f
+<	-127 ~
+
+Minustecknet används också för subtraktion. Det kan ibland leda till
+förvirring. Om vi skriver ett minustecken före båda talen uppstår ett fel:
+>
+	echo -0x7f -0o36
+<	E1004: Blanksteg krävs före och efter '-' vid "-0o36" ~
+
+Obs: Om du provar kommandona genom att skriva dem direkt och inte i ett
+|Vim9|-skript körs de som äldre skript. Då tolkas det andra minustecknet i
+echo-kommandot som subtraktion. För att få felet måste du inleda kommandot
+med `vim9cmd`:
+>
+	vim9cmd echo -0x7f -0o36
+<	E1004: Blanksteg krävs före och efter '-' vid "-0o36" ~
+
+Uttryck kräver ofta blanksteg för att bli lättlästa och undvika fel. Annars
+kan du tro att "-0o36" gör talet negativt, fast det i stället tolkas som en
+subtraktion.
+
+Sätt det andra uttrycket inom parenteser för att använda minustecknet som
+negation:
+>
+	echo -0x7f (-0o36)
+<	-127 -30 ~
+
+==============================================================================
+*41.2*	Variabler
+
+Ett variabelnamn består av ASCII-bokstäver, siffror och understreck. Det får
+inte börja med en siffra. Giltiga variabelnamn är:
+
+	counter
+	_aap3
+	very_long_variable_name_with_underscores
+	CamelCaseName
+	LENGTH
+
+"foo.bar" och "6var" är ogiltiga namn.
+
+Vissa variabler är globala. Visa en lista över de globala variabler som för
+närvarande är definierade med:
+>
+	:let
+
+Globala variabler kan användas överallt. Det är dock lätt att råka använda
+samma namn i två orelaterade skript. Därför är variabler som deklareras i ett
+skript lokala för just det skriptet. Om "script1.vim" innehåller:
+>
+	vim9script
+	var counter = 5
+	echo counter
+<	5 ~
+
+och du försöker använda variabeln i "script2.vim":
+>
+	vim9script
+	echo counter
+<	E121: Odefinierad variabel: counter ~
+
+Med en skriptlokal variabel vet du att den bara ändras i det skriptet och
+inte någon annanstans.
+
+Om du vill dela variabler mellan skript använder du prefixet "g:" och
+tilldelar värdet direkt, utan `var`. Välj ett särskiljande namn så att det
+inte används av misstag. "script1.vim" kan då innehålla:
+>
+	vim9script
+	g:mash_counter = 5
+	echo g:mash_counter
+<	5 ~
+
+Och "script2.vim":
+>
+	vim9script
+	echo g:mash_counter
+<	5 ~
+
+Globala variabler kan också användas på kommandoraden. Om du skriver följande
+visas värdet:
+>
+	echo g:mash_counter
+
+Det fungerar inte för en skriptlokal variabel.
+
+Mer information om skriptlokala variabler finns här: |script-variable|.
+
+Det finns fler variabeltyper; se |internal-variables|. De vanligaste är:
+
+	b:name		variabel lokal för en buffert
+	w:name		variabel lokal för ett fönster
+	g:name		global variabel (även i en funktion)
+	v:name		variabel som Vim definierar
+
+
+TA BORT VARIABLER
+
+Variabler använder minne och visas i utdata från kommandot `let`. Ta bort en
+global variabel med kommandot `unlet`. Exempel:
+>
+	unlet g:counter
+
+Detta tar bort den globala variabeln "g:counter" och frigör minnet den
+använder. Om du inte vet om variabeln finns och vill slippa felmeddelandet när
+den saknas lägger du till !:
+>
+	unlet! g:counter
+
+I |Vim9|-skript kan du inte använda `unlet` för skriptlokala variabler, bara
+i äldre skript.
+
+När ett skript har körts till slutet tas inte dess lokala variabler bort.
+Funktioner som definierats i skriptet kan använda dem. Exempel:
+>
+	vim9script
+	var counter = 0
+	def g:GetCount(): number
+	  counter += 1
+	  return counter
+	enddef
+
+Varje gång du anropar funktionen får du nästa tal:
+>
+	:echo g:GetCount()
+<	1 ~
+>
+	:echo g:GetCount()
+<	2 ~
+
+Om en skriptlokal variabel använder för mycket minne kan du tilldela den ett
+tomt eller null-värde när den inte längre behövs. Exempel:
+>
+	var lines = readfile(...)
+	...
+	lines = []
+
+Obs: Längre fram utelämnar vi raden `vim9script` i exemplen för att fokusera
+på de relevanta kommandona. Du måste ändå ha den först i skriptfilen.
+
+
+STRÄNGVARIABLER OCH KONSTANTER
+
+Hittills har variabler bara innehållit tal. De kan också innehålla strängar.
+Tal och strängar är de grundläggande variabeltyperna i Vim. Exempel:
+>
+	var name = "Peter"
+	echo name
+<	Peter ~
+
+Varje variabel har en typ. Ofta bestäms typen, som här, av värdet du tilldelar
+variabeln. Det kallas typinferens. Om du inte vill ge variabeln ett värde än
+måste du ange typen:
+>
+	var name: string
+	var age: number
+	if male
+	   name = "Peter"
+	   age = 42
+	else
+	   name = "Elisa"
+	   age = 45
+	endif
+
+Om du av misstag försöker tilldela ett värde av fel typ får du ett
+felmeddelande:
+>
+	age = "Peter"
+<	E1012: Typkonflikt; förväntade number men fick string ~
+
+Mer om typer finns i |41.8|.
+
+Använd en strängkonstant för att tilldela en sträng till en variabel. Det
+finns två typer. Först strängar inom dubbla citationstecken, som vi redan
+använt. Sätt ett omvänt snedstreck före ett dubbelt citationstecken som ska
+ingå i strängen:
+>
+	var name = "han heter \"Peter\""
+	echo name
+<	han heter "Peter" ~
+
+Du kan undvika omvända snedstreck genom att använda enkla citationstecken:
+>
+	var name = 'han heter "Peter"'
+	echo name
+<	han heter "Peter" ~
+
+I en sträng med enkla citationstecken återges alla tecken som de är. Bara det
+enkla citationstecknet är särskilt: skriv det två gånger för att få med ett
+enda. Ett omvänt snedstreck återges bokstavligt och kan alltså inte ändra
+betydelsen av tecknet efter sig:
+>
+	var name = 'P\e''ter'''
+	echo name
+<	P\e'ter' ~
+
+I strängar med dubbla citationstecken kan du använda specialtecken. Här är
+några användbara:
+
+	\t		<Tab>
+	\n			<NL>, radbrytning
+	\r			<CR>, <Enter>
+	\e			<Esc>
+	\b			<BS>, backsteg
+	\"			"
+	\\			\, omvänt snedstreck
+	\<Esc>			<Esc>
+	\<C-W>			CTRL-W
+
+De två sista är exempel. Formen "\<namn>" kan användas för att lägga in en
+specialtangent med det angivna namnet.
+
+Se |expr-quote| för en fullständig lista över specialtecken i strängar.
+
+==============================================================================
+*41.3*	Uttryck
+
+Vim hanterar uttryck på ett ganska vanligt sätt. Definitionen finns här:
+|expression-syntax|. Här visar vi de vanligaste delarna.
+
+Tal, strängar och variablerna som nämnts ovan är uttryck i sig. Där ett
+uttryck förväntas kan du alltså använda ett tal, en sträng eller en variabel.
+Andra grundläggande delar i uttryck är:
+
+	$NAMN		miljövariabel
+	&namn		värdet på ett alternativ
+	@r		innehållet i ett register
+
+Exempel:
+>
+	echo "Värdet på 'tabstop' är" &ts
+	echo "Din hemkatalog är" $HOME
+	if @a == 'text'
+
+Formen &namn kan också användas för att ändra ett alternativ tillfälligt och
+sedan återställa det. Exempel:
+>
+	var save_ic = &ic
+	set noic
+	s/Början/Slutet/
+	&ic = save_ic
+
+Ändringen använder mönstret "Början" med alternativet 'ignorecase' avstängt,
+men återställer användarens tidigare värde efteråt. Du kan också lägga till
+"\C" i mönstret; se |/\C|.
+
+
+MATEMATIK
+
+Det blir mer intressant när vi kombinerar grunddelarna. Vi börjar med
+matematiska operationer på tal:
+
+	a + b		addition
+	a - b		subtraktion
+	a * b		multiplikation
+	a / b		division
+	a % b		modulo
+
+Den vanliga prioritetsordningen används. Exempel:
+>
+	echo 10 + 5 * 2
+<	20 ~
+
+Använd parenteser för att gruppera. Inget överraskande händer här. Exempel:
+>
+	echo (10 + 5) * 2
+<	30 ~
+
+
+ÖVRIGA UTTRYCK
+
+Strängar kan sättas ihop med ".." (se |expr6|). Exempel:
+>
+	echo "Namn: " .. name
+<	Namn: Peter ~
+
+Om `echo` får flera argument skiljs de åt med ett blanksteg. Här är
+argumentet ett enda uttryck, så inget blanksteg läggs till.
+
+Om du inte vill sätta ihop strängar med ".." kan du använda formen
+$"sträng", som tillåter ett uttryck inom klammerparenteser:
+>
+	echo $"Namn: {name}"
+
+Mer information finns i |interpolated-string|.
+
+Från programspråket C kommer det villkorliga uttrycket:
+>
+	a ? b : c
+
+Om "a" utvärderas till sant används "b", annars används "c". Exempel:
+>
+	var nr = 4
+	echo nr > 5 ? "nr är stort" : "nr är litet"
+<	nr är litet ~
+
+Först utvärderas villkoret. Sedan utvärderas bara den gren som villkoret
+väljer. Operatorn binder lösare än andra operatorer, som om delarna hade
+skrivits inom parentes:
+>
+	(a) ? (b) : (c)
+
+Det finns också operatorn för falska värden:
+>
+	echo name ?? "Inget namn angivet"
+
+Se |??|.
+
+==============================================================================
+*41.4*	Villkor
+
+Kommandot `if` kör följande satser fram till motsvarande `endif` bara om ett
+villkor är uppfyllt. Allmän form:
+
+	if {villkor}
+	   {satser}
+	endif
+
+Satserna körs bara om uttrycket {villkor} utvärderas till sant eller ett. Om
+de inte körs måste de ändå vara giltiga kommandon. Om de innehåller felaktig
+text kan Vim inte hitta motsvarande `endif`.
+
+Du kan också använda `else`. Allmän form:
+
+	if {villkor}
+	   {satser}
+	else
+	   {satser}
+	endif
+
+Det andra satsblocket körs bara om det första inte gör det.
+
+Slutligen finns `elseif`:
+
+	if {villkor}
+	   {satser}
+	elseif {villkor}
+	   {satser}
+	endif
+
+Det fungerar som `else` följt av `if`, men utan ett extra `endif`.
+
+Ett användbart exempel i vimrc-filen är att kontrollera alternativet 'term'
+och göra olika saker beroende på värdet:
+>
+	if &term == "xterm"
+	  # Gör saker för xterm
+	elseif &term == "vt100"
+	  # Gör saker för en vt100-terminal
+	else
+	  # Gör något för andra terminaler
+	endif
+
+Tecknet "#" inleder en kommentar. Mer om kommentarer längre fram.
+
+
+LOGISKA OPERATORER
+
+Vi har redan använt några av dem i exemplen. De vanligaste är:
+
+	a == b		lika med
+	a != b		inte lika med
+	a >  b		större än
+	a >= b		större än eller lika med
+	a <  b		mindre än
+	a <= b		mindre än eller lika med
+
+Resultatet är sant om villkoret uppfylls och falskt annars. Exempel:
+>
+	if v:version >= 800
+	  echo "Grattis!"
+	else
+	  echo "Du använder en äldre version. Uppgradera!"
+	endif
+
+"v:version" är en Vim-definierad variabel som innehåller versionsnumret.
+Värdet 800 motsvarar version 8.0 och version 8.1 har värdet 801. Det är
+användbart om du skriver ett skript som ska fungera i flera Vim-versioner.
+Se |v:version|. Du kan också kontrollera om en funktion finns med `has()`
+eller om en viss programfix finns; se |has-patch|.
+
+Logiska operatorer fungerar både med tal och strängar. När två strängar
+jämförs används deras skillnad i teckenvärde. Det jämför bytevärden, vilket
+inte alltid ger rätt resultat för alla språk.
+
+Om du försöker jämföra en sträng med ett tal får du ett felmeddelande.
+
+För strängar finns ytterligare två användbara operatorer:
+
+	str =~ pat	matchar
+	str !~ pat	matchar inte
+
+Vänster operand "str" behandlas som en sträng. Höger operand "pat" behandlas
+som ett mönster av samma typ som vid sökning. Exempel:
+>
+	if str =~ " "
+	  echo "str innehåller ett blanksteg"
+	endif
+	if str !~ '\.$'
+	  echo "str slutar inte med punkt"
+	endif
+
+Lägg märke till att mönstret skrivs med enkla citationstecken. Mönster
+innehåller ofta omvända snedstreck, som måste dubbleras i strängar med dubbla
+citationstecken.
+
+Matchningen är inte förankrad. Om hela strängen ska matcha börjar du mönstret
+med "^" och avslutar det med "$".
+
+Alternativet 'ignorecase' används inte vid strängjämförelser. Lägg till "?"
+om du vill ignorera skiftläget. Operatorn "==?" jämför exempelvis två
+strängar utan att skilja mellan stora och små bokstäver. Hela tabellen finns
+i |expr-==|.
+
+
+FLER SLINGOR
+
+Vi har redan nämnt kommandot `while`. Två satser till kan användas mellan
+`while` och `endwhile`:
+
+	continue		Hoppa till början av while-slingan och fortsätt.
+	break			Hoppa fram till `endwhile` och avsluta slingan.
+
+Exempel:
+>
+	var counter = 1
+	while counter < 40
+	  if SkipNumber(counter)
+	    ++counter
+	    continue
+	  endif
+	  if LastNumber(counter)
+	    break
+	  endif
+	  sleep 50m
+	  ++counter
+	endwhile
+
+Kommandot `sleep` gör en paus i Vim. "50m" betyder femtio millisekunder.
+Exempelvis gör `sleep 4` en paus på fyra sekunder.
+
+Du kan också använda `continue` och `break` mellan `for` och `endfor`. Se
+|41.8| för fler slingor med kommandot `for`.
+
+==============================================================================
+*41.5*	Köra ett uttryck
+
+Hittills har Vim själv kört kommandona i skriptet. Med kommandot `execute` kan
+du köra resultatet av ett uttryck. Det är ett kraftfullt sätt att bygga och
+köra kommandon.
+
+Här används det för att hoppa till en tagg vars namn finns i en variabel:
+>
+	execute "tag " .. tag_name
+
+Operatorn ".." sätter ihop strängen "tag " med värdet i variabeln "tag_name".
+Om "tag_name" har värdet "get_cmd" körs kommandot:
+>
+	tag get_cmd
+
+Kommandot `execute` kan bara köra Ex-kommandon. Kommandot `normal` kör
+kommandon i normalt läge, men argumentet är inte ett uttryck utan de bokstavliga
+kommandotecknen. Exempel:
+>
+	normal gg=G
+
+Detta hoppar till den första raden med "gg" och formaterar alla rader med
+operatorn "=" och rörelsen "G".
+
+Kombinera `execute` med `normal` om kommandot ska använda ett uttryck. Exempel:
+>
+	execute "normal " .. count .. "j"
+
+Detta flyttar markören nedåt "count" rader.
+
+Se till att argumentet till `normal` innehåller ett fullständigt kommando.
+Annars når Vim slutet av argumentet och avbryter kommandot utan meddelande.
+Om du till exempel börjar med raderingsoperatorn måste du också ange en
+rörelse. Detta fungerar:
+>
+	normal d$
+
+Detta gör ingenting:
+>
+	normal d
+
+Om du startar infogningsläge utan att avsluta det med Esc avslutas det ändå.
+Detta infogar "ny text":
+>
+	execute "normal iny text"
+
+Om du vill göra något efter att texten infogats måste du avsluta
+infogningsläget:
+>
+	execute "normal iny text\<Esc>b"
+
+Det infogar "ny text" och placerar markören på första bokstaven i "text".
+Lägg märke till specialtangenten "\<Esc>". Då behöver du inte lägga in ett
+verkligt <Esc>-tecken i skriptet. Det är praktiskt att kombinera `execute`
+med en sträng inom dubbla citationstecken.
+
+Använd funktionen eval() om du vill utvärdera en sträng som ett uttryck och få
+resultatet, i stället för att köra den som ett kommando:
+>
+	var optname = "path"
+	var optvalue = eval('&' .. optname)
+
+Tecknet "&" läggs framför "path", så argumentet till eval() blir "&path".
+Resultatet är värdet på alternativet 'path'.
+
+==============================================================================
+*41.6*	Använda funktioner
+
+Vim definierar många funktioner och erbjuder på så sätt en stor mängd
+funktionalitet. Här är några exempel. Hela listan finns längre ned:
+|function-list|.
+
+Anropa en funktion med argument inom parenteser, avskilda med kommatecken.
+Exempel:
+>
+	search("Datum: ", "W")
+
+Detta anropar funktionen search() med argumenten "Datum: " och "W".
+search() använder det första argumentet som sökmönster och det andra som
+flaggor. Flaggan "W" innebär att sökningen inte börjar om från början när
+den når slutet av filen.
+
+Kommandot `call` är valfritt i |Vim9|-skript. Det krävs i äldre skript och på
+kommandoraden:
+>
+	call search("Datum: ", "W")
+
+Du kan anropa en funktion i ett uttryck. Exempel:
+>
+	var line = getline(".")
+	var repl = substitute(line, '\a', "*", "g")
+	setline(".", repl)
+
+Funktionen getline() hämtar en rad från den aktuella bufferten. Argumentet
+anger radnumret. Här används ".", som står för raden där markören är.
+
+Funktionen substitute() gör ungefär samma sak som kommandot `:substitute`.
+Det första argumentet, "line", är strängen som ska ändras. Det andra,
+"\a", är mönstret. Det tredje, "*", är ersättningstexten. Det sista
+argumentet, "g", anger flaggorna.
+
+Funktionen setline() ersätter raden som anges i det första argumentet med
+strängen i det andra. Här ersätts raden under markören med resultatet från
+substitute(). De tre satserna motsvarar alltså:
+>
+	:substitute/\a/*/g
+
+Funktioner blir särskilt användbara när du gör mer före och efter anropet
+till substitute().
+
+
+FUNKTIONER						*function-list*
+
+Det finns många funktioner. Här grupperar vi dem efter användningsområde.
+En alfabetisk lista finns i |builtin-function-list|. Tryck på CTRL-] när
+markören står på ett funktionsnamn för att öppna dess detaljerade hjälp.
+
+Stränghantering:					*string-functions*
+	nr2char()		omvandla ett talvärde till ett tecken
+	list2str()		skapa en sträng av en lista med tal
+	char2nr()		hämta tecknets talvärde
+	str2list()		hämta en lista med tal från en sträng
+	str2nr()		omvandla en sträng till ett Number
+	str2float()		omvandla en sträng till ett Float
+	printf()		formatera en sträng med %-platshållare
+	escape()		escapa tecken i en sträng med ett omvänt snedstreck
+	shellescape()		escapa en sträng för användning i ett skal-kommando
+	fnameescape()		escapa ett filnamn för användning i ett Vim-kommando
+	tr()			ersätta enskilda tecken enligt två teckenlistor
+	strtrans()		göra en sträng utskrivbar
+	keytrans()		översätta interna tangentkoder till en form som
+				kan användas av |:map|
+	tolower()		göra en sträng till gemener
+	toupper()		göra en sträng till versaler
+	charclass()		ange ett teckens klass
+	match()			positionen där ett mönster matchar i en sträng
+	matchbufline()		alla träffar för ett mönster i en buffert
+	matchend()		positionen där en mönsterträff slutar i en sträng
+	matchfuzzy()		ungefärliga träffar för en sträng i en lista
+	matchfuzzypos()	ungefärliga träffar och positioner i en lista
+	matchstr()		den del av strängen som matchar ett mönster
+	matchstrlist()		alla träffar för ett mönster i en lista med strängar
+	matchstrpos()		träffen och positionen för ett mönster i en sträng
+	matchlist()		som matchstr(), men returnerar även delträffar
+	stridx()		första positionen för en kort sträng i en längre
+	strridx()		sista positionen för en kort sträng i en längre
+	strlen()		strängens längd i byte
+	strcharlen()		antal tecken utan att räkna kombinerande tecken separat
+	strchars()		antalet tecken i en sträng
+	strutf16len()		antalet UTF-16-kodenheter i en sträng
+	strwidth()		strängens visningsbredd
+	strdisplaywidth()	strängens visningsbredd, med hänsyn till tabbar
+	setcellwidths()		ange undantag för teckenbredd i celler
+	getcellwidths()		hämta undantag för teckenbredd i celler
+	getcellpixels()		hämta teckencellens storlek i bildpunkter
+	reverse()		vänd ordningen på tecknen i en sträng
+	substitute()		ersätta en mönsterträff med en sträng
+	submatch()		hämta en viss träff i `:s` och substitute()
+	strpart()		hämta en del av strängen med byteindex
+	strcharpart()		hämta en del av strängen med teckenindex
+	slice()			ta ut ett intervall ur en sträng; i Vim9-skript
+				används teckenindex
+	strgetchar()		hämta teckenkoden vid ett visst teckenindex
+	expand()		expandera särskilda nyckelord
+	expandcmd()		expandera ett kommando som `:edit`
+	iconv()			konvertera text mellan teckenkodningar
+	byteidx()		byteindex för ett tecken i en sträng
+	byteidxcomp()		som byteidx(), men räknar kombinerande tecken
+	charidx()		teckenindex för en byte i en sträng
+	utf16idx()		UTF-16-index för en byte i en sträng
+	repeat()		upprepa en sträng flera gånger
+	eval()			utvärdera ett stränguttryck
+	execute()		köra ett Ex-kommando och hämta utdata
+	win_execute()		som execute(), men i ett angivet fönster
+	trim()			ta bort tecken från början och slutet av en sträng
+	bindtextdomain()	ange sökväg till katalogen med meddelandeöversättningar
+	gettext()		hämta en översättning av ett meddelande
+	ngettext()		hämta en översättning för singular eller plural
+	str2blob()		omvandla en lista med strängar till en Blob
+	blob2str()		omvandla en Blob till en lista med strängar
+	items()			hämta en lista med par av index och tecken
+	uri_encode()		koda en sträng som en URI
+	uri_decode()		avkoda en URI till en sträng
+
+Listor:							*list-functions*
+	get()			hämta ett objekt utan fel vid ogiltigt index
+	len()			antal objekt i en lista
+	empty()			kontrollera om listan är tom
+	insert()		infoga ett objekt i listan
+	add()			lägg till ett objekt sist i listan
+	extend()		lägg till objekten från en lista i en annan
+	extendnew()		skapa en ny lista och lägga till objekt
+	remove()		ta bort ett eller flera objekt ur en lista
+	copy()			skapa en ytlig kopia av en lista
+	deepcopy()		skapa en fullständig kopia av en lista
+	filter()		ta bort valda objekt ur en lista
+	map()			ändra varje objekt i en lista
+	mapnew()		skapa en ny lista med ändrade objekt
+	foreach()		anropa en funktion för varje listobjekt
+	reduce()		reducera en lista till ett värde
+	slice()			ta ut ett intervall ur en lista
+	sort()			sortera en lista
+	reverse()		vänd ordningen på objekten i en lista
+	uniq()			ta bort upprepade objekt som står intill varandra
+	split()			dela en sträng i en lista
+	join()			sätt ihop listobjekt till en sträng
+	range()			returnera en lista med en talföljd
+	string()		strängrepresentation av en lista
+	call()			anropa en funktion med listans objekt som argument
+	index()			index för ett värde i en lista
+	indexof()		index där ett uttryck blir sant
+	max()			största värdet i en lista
+	min()			minsta värdet i en lista
+	count()			antalet gånger ett värde förekommer i en lista
+	repeat()		upprepa en lista flera gånger
+	flatten()		platta till en lista
+	flattennew()		platta till en kopia av en lista
+	items()			lista med par av index och värde
+
+Tupler:							*tuple-functions*
+	copy()			skapa en ytlig kopia av en tupel
+	count()			antalet gånger ett värde förekommer i en tupel
+	deepcopy()		skapa en fullständig kopia av en tupel
+	empty()			kontrollera om tupeln är tom
+	foreach()		anropa en funktion för varje tupelobjekt
+	get()			hämta ett objekt utan fel vid ogiltigt index
+	index()			index för ett värde i en tupel
+	indexof()		index där ett uttryck blir sant
+	items()			lista med par av index och värde från en tupel
+	join()			sätt ihop tupelobjekt till en sträng
+	len()			antal objekt i en tupel
+	list2tuple()		omvandla en lista till en tupel
+	max()			största värdet i en tupel
+	min()			minsta värdet i en tupel
+	reduce()		reducera en tupel till ett värde
+	repeat()		upprepa en tupel flera gånger
+	reverse()		vänd ordningen på tupelns objekt
+	slice()			ta ut ett intervall ur en tupel
+	string()		strängrepresentation av en tupel
+	tuple2list()		omvandla en tupel till en lista
+
+Dictionary-objekt:					*dict-functions*
+	get()			hämta ett värde utan fel vid ogiltig nyckel
+	len()			antal nyckel-värde-par
+	has_key()		kontrollera om en nyckel finns
+	empty()			kontrollera om objektet är tomt
+	remove()		ta bort ett nyckel-värde-par
+	extend()		lägg till poster från ett annat dictionary-objekt
+	extendnew()		skapa ett nytt dictionary-objekt och lägga till poster
+	filter()		ta bort valda poster
+	map()			ändra varje post
+	mapnew()		skapa ett nytt dictionary-objekt med ändrade poster
+	foreach()		anropa en funktion för varje post
+	keys()			lista med nycklar
+	values()		lista med värden
+	items()			lista med nyckel-värde-par
+	copy()			skapa en ytlig kopia
+	deepcopy()		skapa en fullständig kopia
+	string()		strängrepresentation av objektet
+	max()			största värdet
+	min()			minsta värdet
+	count()			antalet gånger ett värde förekommer
+
+Flyttalsberäkningar:					*float-functions*
+	float2nr()		omvandla ett Float till ett Number
+	abs()			absolutbelopp (fungerar även med Number)
+	round()		avrunda
+	ceil()			avrunda uppåt
+	floor()			avrunda nedåt
+	trunc()		ta bort decimaldelen
+	fmod()			rest vid division
+	exp()			exponentialfunktion
+	log()			naturlig logaritm (bas e)
+	log10()		logaritm med bas 10
+	pow()			värdet av x upphöjt till y
+	sqrt()			kvadratrot
+	sin()			sinus
+	cos()			cosinus
+	tan()			tangens
+	asin()			arcussinus
+	acos()			arcuscosinus
+	atan()			arcustangens
+	atan2()		arcustangens
+	sinh()			hyperbolisk sinus
+	cosh()			hyperbolisk cosinus
+	tanh()			hyperbolisk tangens
+	isinf()		kontrollera om värdet är oändligt
+	isnan()		kontrollera om värdet inte är ett tal
+
+Blob-objekt:						*blob-functions*
+	get()			hämta en byte utan fel vid ogiltigt index
+	len()			antal byte i ett Blob-objekt
+	empty()			kontrollera om objektet är tomt
+	insert()		infoga en byte
+	add()			lägg till en byte sist
+	extend()		lägg till byte från ett annat Blob-objekt
+	extendnew()		skapa ett nytt Blob-objekt och lägga till byte
+	remove()		ta bort en eller flera byte
+	copy()			skapa en kopia
+	filter()		ta bort valda byte
+	map()			ändra varje byte
+	mapnew()		skapa ett nytt Blob-objekt med ändrade byte
+	foreach()		anropa en funktion för varje byte
+	reduce()		reducera ett Blob-objekt till ett värde
+	slice()			ta ut ett intervall
+	blob2list()		hämta en lista med tal från ett Blob-objekt
+	list2blob()		skapa ett Blob-objekt av en lista med tal
+	blob2str()		hämta en lista med strängar från ett Blob-objekt
+	str2blob()		skapa ett Blob-objekt av en lista med strängar
+	base64_encode()	koda ett Blob-objekt till en base64-sträng
+	base64_decode()	avkoda en base64-sträng till ett Blob-objekt
+	reverse()		vänd ordningen på byte
+	string()		strängrepresentation av ett Blob-objekt
+	index()			index för ett värde
+	indexof()		index där ett uttryck blir sant
+	repeat()		upprepa ett Blob-objekt flera gånger
+	items()			lista med par av index och värde
+
+Övriga beräkningar:					*bitwise-function*
+	and()			bitvis AND
+	invert()		bitvis invertering
+	or()			bitvis OR
+	xor()			bitvis XOR
+	sha256()		SHA-256-kontrollsumma
+	rand()			hämta ett pseudoslumpmässigt tal
+	srand()		initiera slumptalsgeneratorn rand()
+
+Variabler:						*var-functions*
+	instanceof()		kontrollera om en variabel är en instans av en klass
+	type()			hämta variabelns typ som ett tal
+	typename()		hämta variabelns typ som text
+	islocked()		kontrollera om en variabel är låst
+	funcref()		hämta en Funcref för en funktionsreferens
+	function()		hämta en Funcref utifrån ett funktionsnamn
+	getbufvar()		hämta ett variabelvärde från en viss buffert
+	setbufvar()		ange en variabel i en viss buffert
+	getwinvar()		hämta en variabel från ett visst fönster
+	gettabvar()		hämta en variabel från en viss flik
+	gettabwinvar()		hämta en variabel från ett visst fönster och en flik
+	setwinvar()		ange en variabel i ett visst fönster
+	settabvar()		ange en variabel i en viss flik
+	settabwinvar()	ange en variabel i ett visst fönster och en flik
+	garbagecollect()	försöka frigöra minne
+
+Markör- och märkespositioner:		*cursor-functions* *mark-functions*
+	col()			kolumnnumret för markören eller ett märke
+	virtcol()		skärmkolumnen för markören eller ett märke
+	line()			radnumret för markören eller ett märke
+	wincol()		kolumnnumret i fönstret
+	winline()		radnumret i fönstret
+	cursor()		placera markören på en rad och kolumn
+	screencol()		hämta markörens skärmkolumn
+	screenrow()		hämta markörens skärmradsnummer
+	screenpos()		hämta skärmposition för ett texttecken
+	virtcol2col()		bytekolumn i en buffert för en given skärmkolumn
+	getcurpos()		hämta markörens position
+	getpos()		hämta positionen för markören, ett märke med mera
+	setpos()		ange position för markören, ett märke med mera
+	getmarklist()		hämta en lista med globala och lokala märken
+	byte2line()		hämta radnumret vid ett visst byteantal
+	line2byte()		hämta byteantalet vid en viss rad
+	diff_filler()		hämta antalet utfyllnadsrader ovanför en rad
+	screenattr()		hämta attribut vid en viss skärmposition
+	screenchar()		hämta teckenkod vid en viss skärmposition
+	screenchars()		hämta teckenkoder vid en viss skärmposition
+	screenstring()		hämta strängen vid en viss skärmposition
+	charcol()		teckenposition för markören eller ett märke
+	getcharpos()		hämta teckenpositionen för markör, märke med mera
+	setcharpos()		ange teckenposition för markör, märke med mera
+	getcursorcharpos()	hämta markörens teckenposition
+	setcursorcharpos()	ange markörens teckenposition
+
+Arbeta med text i den aktuella bufferten:		*text-functions*
+	getline()		hämta en eller flera rader ur bufferten
+	getregion()		hämta ett textområde ur bufferten
+	getregionpos()		hämta en lista med positioner för ett textområde
+	setline()		ersätta en rad
+	append()		lägga till rader
+	indent()		indenteringen på en viss rad
+	cindent()		indentering enligt C-regler
+	lispindent()		indentering enligt Lisp-regler
+	nextnonblank()		hitta nästa rad som innehåller något annat än blanktecken
+	prevnonblank()		hitta föregående rad som innehåller något annat än blanktecken
+	search()		söka efter en mönsterträff
+	searchpos()		söka efter en mönsterträff och dess position
+	searchcount()		antal sökträffar före och efter markören
+	searchpair()		söka efter den andra änden av ett par av mönster
+	searchpairpos()		hitta positionen för motsvarande slut
+	searchdecl()		söka efter deklarationen av ett namn
+	getcharsearch()	hämta information om teckensökning
+	setcharsearch()	ange information om teckensökning
+
+Arbeta med text i en annan buffert:
+	getbufline()		hämta rader från en viss buffert
+	getbufoneline()		hämta en rad från en viss buffert
+	setbufline()		ersätta en rad i en viss buffert
+	appendbufline()	lägga till rader i en viss buffert
+	deletebufline()	ta bort rader ur en viss buffert
+
+					*system-functions* *file-functions*
+Systemfunktioner och filhantering:
+	glob()			expandera jokertecken
+	globpath()		expandera jokertecken i flera kataloger
+	glob2regpat()		omvandla ett globmönster till ett sökmönster
+	findfile()		söka efter en fil i flera kataloger
+	finddir()		söka efter en katalog i flera kataloger
+	resolve()		ta reda på vart en länk pekar
+	fnamemodify()		ändra ett filnamn
+	pathshorten()		förkorta katalognamn i en sökväg
+	simplify()		förenkla en sökväg utan att ändra betydelsen
+	executable()		kontrollera om ett körbart program finns
+	exepath()		hämta fullständig sökväg till ett körbart program
+	filereadable()		kontrollera om en fil kan läsas
+	filewritable()		kontrollera om en fil kan skrivas
+	getfperm()		hämta en fils behörigheter
+	setfperm()		ändra en fils behörigheter
+	getftype()		hämta filtypen
+	isabsolutepath()		kontrollera om en sökväg är absolut
+	isdirectory()		kontrollera om en katalog finns
+	getfsize()		hämta en fils storlek
+	getcwd()		hämta den aktuella arbetskatalogen
+	haslocaldir()		kontrollera om fönstret använder |:lcd| eller |:tcd|
+	tempname()		hämta namnet på en tillfällig fil
+	mkdir()			skapa en katalog
+	chdir()			byta arbetskatalog
+	delete()		ta bort en fil
+	rename()			byta namn på en fil
+	system()		hämta skal-kommandots utdata som en sträng
+	systemlist()		hämta skal-kommandots utdata som en lista
+	environ()		hämta alla miljövariabler
+	getenv()		hämta en miljövariabel
+	setenv()		ange en miljövariabel
+	hostname()		hämta systemets namn
+	readfile()		läsa in en fil till en lista med rader
+	readblob()		läsa in en fil till ett Blob-objekt
+	readdir()		hämta en lista med filnamn i en katalog
+	readdirex()		hämta en lista med filinformation i en katalog
+	writefile()		skriva en lista med rader eller ett Blob-objekt till fil
+	filecopy()		kopiera en fil från {from} till {to}
+
+Datum och tid:					*date-functions* *time-functions*
+	getftime()		hämta en fils senaste ändringstid
+	localtime()		hämta aktuell tid i sekunder
+	strftime()		omvandla tid till en sträng
+	strptime()		omvandla en datum- och tidssträng till tid
+	reltime()		hämta aktuell eller förfluten tid med hög precision
+	reltimestr()		omvandla resultatet från reltime() till en sträng
+	reltimefloat()		omvandla resultatet från reltime() till ett Float
+
+Autokommandon:					*autocmd-functions*
+	autocmd_add()		lägga till en lista med autokommandon och grupper
+	autocmd_delete()	ta bort en lista med autokommandon och grupper
+	autocmd_get()		hämta en lista med autokommandon
+
+			*buffer-functions* *window-functions* *arg-functions*
+Buffertar, fönster och argumentlista:
+	argc()			antal poster i argumentlistan
+	argidx()		aktuell position i argumentlistan
+	arglistid()		hämta argumentlistans ID
+	argv()			hämta en post i argumentlistan
+	bufadd()		lägga till en fil i buffertlistan
+	bufexists()		kontrollera om en buffert finns
+	buflisted()		kontrollera om en buffert finns och är listad
+	bufload()		se till att en buffert är inläst
+	bufloaded()		kontrollera om en buffert finns och är inläst
+	bufname()		hämta namnet på en viss buffert
+	bufnr()			hämta numret på en viss buffert
+	tabpagebuflist()	lista med buffertar på en fliksida
+	tabpagenr()		hämta numret på en fliksida
+	tabpagewinnr()		som winnr(), men för en viss fliksida
+	tabpanel_getinfo()	hämta aktuell status för flikpanelen
+	tabpanel_scroll()	rulla flikpanelen
+	winnr()			hämta numret på det aktuella fönstret
+	bufwinid()		hämta fönster-ID för en viss buffert
+	bufwinnr()		hämta fönsternumret för en viss buffert
+	winbufnr()		hämta buffertnumret i ett visst fönster
+	listener_add()		lägga till en återanropsfunktion för ändringar
+	listener_flush()	köra återanropsfunktionerna för lyssnare
+	listener_remove()	ta bort en återanropsfunktion för lyssnare
+	win_findbuf()		hitta fönster som visar en buffert
+	win_getid()		hämta fönstrets ID
+	win_gettype()		hämta fönstertypen
+	win_gotoid()		gå till fönstret med ett visst ID
+	win_id2tabwin()	hämta flik- och fönsternummer från ett fönster-ID
+	win_id2win()		hämta fönsternumret från ett fönster-ID
+	win_move_separator()	flytta fönstrets lodräta avdelare
+	win_move_statusline()	flytta fönstrets statusrad
+	win_splitmove()		flytta ett fönster till en delning av ett annat
+	getbufinfo()		hämta en lista med buffertinformation
+	gettabinfo()		hämta en lista med fliksidesinformation
+	getwininfo()		hämta en lista med fönsterinformation
+	getchangelist()		hämta en lista med poster i ändringslistan
+	getjumplist()		hämta en lista med poster i hopplistan
+	swapfilelist()		lista befintliga växlingsfiler i 'directory'
+	swapinfo()		hämta information om en växlingsfil
+	swapname()		hämta sökvägen till buffertens växlingsfil
+
+Kommandorad:					*command-line-functions*
+	getcmdcomplpat()	hämta kompletteringsmönstret för kommandoraden
+	getcmdcompltype()	hämta typen av komplettering på kommandoraden
+	getcmdline()		hämta aktuell kommandoradstext
+	getcmdprompt()		hämta prompten på kommandoraden
+	getcmdpos()		hämta markörens position på kommandoraden
+	getcmdscreenpos()	hämta markörens skärmposition på kommandoraden
+	setcmdline()		ange kommandoradstexten
+	setcmdpos()		ange markörens position på kommandoraden
+	getcmdtype()		hämta typen av aktuell kommandorad
+	getcmdwintype()		hämta typen av aktuellt kommandoradsfönster
+	getcompletion()	lista träffar för kommandoradskomplettering
+	getcompletiontype()	hämta kompletteringstyp för en angiven sträng
+	fullcommand()		hämta ett kommandos fullständiga namn
+	cmdcomplete_info()	hämta information om kommandoradskomplettering
+
+Snabbfixlistor och positionslistor:				*quickfix-functions*
+	getqflist()		hämta poster i en snabbfixlista
+	setqflist()		ändra en snabbfixlista
+	getloclist()		hämta poster i en positionslista
+	setloclist()		ändra en positionslista
+
+Komplettering i infogningsläge:			*completion-functions*
+	complete()		ange hittade kompletteringsträffar
+	complete_add()		lägga till en kompletteringsträff
+	complete_check()	kontrollera om kompletteringen ska avbrytas
+	complete_info()		hämta aktuell kompletteringsinformation
+	preinserted()		kontrollera om text infogats efter markören
+	pumvisible()		kontrollera om popup-menyn visas
+	pum_getpos()		hämta popup-menyns position och storlek
+
+Vikning:						*folding-functions*
+	foldclosed()		kontrollera om en rad ligger i en stängd vikning
+	foldclosedend()		som foldclosed(), men returnerar den sista raden
+	foldlevel()		hämta vikningsnivån på en viss rad
+	foldtext()		skapa raden som visas för en stängd vikning
+	foldtextresult()	hämta texten som visas för en stängd vikning
+
+Syntax och markering:		*syntax-functions* *highlighting-functions*
+	clearmatches()		ta bort alla träffar från |matchadd()| och |:match|
+	getmatches()		hämta alla träffar från |matchadd()| och |:match|
+	hlexists()		kontrollera om en markeringsgrupp finns
+	hlget()			hämta attribut för markeringsgrupper
+	hlset()			ange attribut för markeringsgrupper
+	hlID()			hämta en markeringsgrupps ID
+	synID()			hämta syntax-ID vid en viss position
+	synIDattr()		hämta ett attribut för ett syntax-ID
+	synIDtrans()		hämta det översatta syntax-ID:t
+	synstack()		hämta syntax-ID:n vid en viss position
+	synconcealed()		hämta information om dold syntaxtext
+	diff_hlID()		hämta markerings-ID för diff-läge vid en position
+	matchadd()		definiera ett mönster att markera
+	matchaddpos()		definiera positioner att markera
+	matcharg()		hämta information om argumenten till |:match|
+	matchdelete()	ta bort en träff som definierats med |matchadd()| eller |:match|
+	setmatches()		återställa träffar som sparats med |getmatches()|
+
+Stavning:						*spell-functions*
+	spellbadword()		hitta felstavat ord vid eller efter markören
+	spellsuggest()		föreslå stavningsrättelser
+	soundfold()		returnera ett ord som låter ungefär likadant
+
+Historik:						*history-functions*
+	histadd()		lägga till en post i historiken
+	histdel()		ta bort en post ur historiken
+	histget()		hämta en post ur historiken
+	histnr()		hämta högsta index i en historiklista
+
+Interaktion:					*interactive-functions*
+	browse()		visa en fildialogruta
+	browsedir()		visa en dialogruta för att välja katalog
+	confirm()		låta användaren välja ett alternativ
+	getchar()		hämta ett tecken från användaren
+	getcharstr()		hämta ett tecken som en sträng
+	getcharmod()		hämta modifierare för senast inmatade tecken
+	getmousepos()		hämta senast kända musposition
+	getmouseshape()		hämta namnet på aktuell muspekare
+	echoraw()		skriva ut tecken utan omvandling
+	feedkeys()		lägga tecken i kön för tangenttryckningar
+	input()			hämta en textrad från användaren
+	inputlist()		låta användaren välja en post i en lista
+	inputsecret()		hämta en textrad utan att visa den
+	inputdialog()		hämta en textrad i en dialogruta
+	inputsave()		spara och tömma kön för tangenttryckningar
+	inputrestore()		återställa kön för tangenttryckningar
+
+Grafiskt gränssnitt:					*gui-functions*
+	getbgcolor()		hämta aktuell bakgrundsfärg som [r, g, b]
+	getfontname()		hämta namnet på aktuellt typsnitt
+	getwinpos()		hämta Vims fönsterposition
+	getwinposx()		hämta Vims fönsterposition på X-axeln
+	getwinposy()		hämta Vims fönsterposition på Y-axeln
+	balloon_show()		ange innehåll i en pratbubbla
+	balloon_split()		dela ett meddelande för en pratbubbla
+	balloon_gettext()	hämta texten i pratbubblan
+
+Vim-server:						*server-functions*
+	serverlist()		returnera listan med servernamn
+	remote_startserver()	starta en server
+	remote_send()		skicka kommandotecken till en Vim-server
+	remote_expr()		utvärdera ett uttryck i en Vim-server
+	server2client()		skicka ett svar till en klient
+	remote_peek()		kontrollera om det finns ett svar från en server
+	remote_read()		läsa ett svar från en server
+	foreground()		flytta Vims fönster längst fram
+	remote_foreground()	flytta serverns Vim-fönster längst fram
+
+Fönsterstorlek och position:			*window-size-functions*
+	winheight()		hämta höjden på ett visst fönster
+	winwidth()		hämta bredden på ett visst fönster
+	win_screenpos()		hämta skärmpositionen för ett fönster
+	winlayout()		hämta fönsterlayouten på en fliksida
+	winrestcmd()		returnera ett kommando som återställer fönsterstorlekar
+	winsaveview()		spara vyn i det aktuella fönstret
+	winrestview()		återställa en sparad fönstervy
+
+Mappningar och menyer:				*mapping-functions*
+	digraph_get()		hämta |digraph|
+	digraph_getlist()	lista alla |digraph|
+	digraph_set()		registrera en |digraph|
+	digraph_setlist()	registrera flera |digraph|
+	hasmapto()		kontrollera om en mappning finns
+	mapcheck()		kontrollera om en mappning överlappar
+	maparg()		hämta {rhs} för en mappning
+	maplist()		hämta alla mappningar som en lista
+	mapset()		återställa en mappning
+	menu_info()		hämta information om ett menyobjekt
+	wildmenumode()		kontrollera om kompletteringsmenyn är aktiv
+	wildtrigger()		starta jokerteckenexpansion
+
+Testning:						*test-functions*
+	assert_equal()		kontrollera att två uttryck är lika
+	assert_equalfile()	kontrollera att innehållet i två filer är lika
+	assert_notequal()	 kontrollera att två uttryck inte är lika
+	assert_inrange()	 kontrollera att ett uttryck ligger inom ett intervall
+	assert_match()		kontrollera att ett mönster matchar värdet
+	assert_notmatch()	 kontrollera att ett mönster inte matchar värdet
+	assert_false()		kontrollera att ett uttryck är falskt
+	assert_true()		kontrollera att ett uttryck är sant
+	assert_exception()	 kontrollera texten i v:exception
+	assert_beeps()		kontrollera att ett kommando ger ett pipljud
+	assert_nobeep()		kontrollera att ett kommando inte piper
+	assert_fails()		kontrollera att ett kommando misslyckas
+	assert_report()		rapportera ett testfel
+	test_alloc_fail()	orsaka ett minnesallokeringsfel
+	test_autochdir()	aktivera 'autochdir' vid uppstart
+	test_override()		testa med interna Vim-åsidosättningar
+	test_garbagecollect_now() frigöra minne direkt
+	test_garbagecollect_soon() markera att minne snart ska frigöras
+	test_getvalue()		hämta värdet på en intern variabel
+	test_gui_event()		skapa en GUI-händelse för testning
+	test_ignore_error()	ignorera ett visst felmeddelande
+	test_mswin_event()		generera en MS-Windows-händelse
+	test_null_blob()	returnera ett null-Blob-objekt
+	test_null_channel()	returnera en null-kanal
+	test_null_dict()		returnera ett null-dictionary-objekt
+	test_null_function()	returnera en null-Funcref
+	test_null_job()		returnera ett null-jobb
+	test_null_list()		returnera en null-lista
+	test_null_partial()	returnera en null-Partial-funktion
+	test_null_string()	returnera en null-sträng
+	test_null_tuple()	returnera en null-tupel
+	test_settime()		ange den tid Vim använder internt
+	test_setmouse()		ange musens position
+	test_feedinput()		lägga en tangentsekvens i inmatningsbufferten
+	test_option_not_set()	återställa flaggan som anger att ett alternativ satts
+	test_refcount()		returnera referensräkningen för ett uttryck
+	test_srand_seed()		ange startvärde för slumptalsgeneratorn
+	test_unknown()		returnera ett värde med okänd typ
+	test_void()		returnera ett värde av typen void
+
+Kommunikation mellan processer:			*channel-functions*
+	ch_canread()		kontrollera om det finns något att läsa
+	ch_close()		stänga en kanal
+	ch_close_in()		stänga kanalens indata
+	ch_evalexpr()		utvärdera ett uttryck via en kanal
+	ch_evalraw()		utvärdera en rå sträng via en kanal
+	ch_getbufnr()		hämta kanalens buffertnummer
+	ch_getjob()		hämta kanalens jobb
+	ch_info()		hämta information om en kanal
+	ch_listen()		lyssna på en kanal
+	ch_log()		skriva ett meddelande i kanalloggen
+	ch_logfile()		börja logga kanalaktivitet
+	ch_open()		öppna en kanal
+	ch_read()		läsa ett meddelande från en kanal
+	ch_readblob()		läsa ett Blob-objekt från en kanal
+	ch_readraw()		läsa rådata från en kanal
+	ch_sendexpr()		skicka ett JSON-meddelande via en kanal
+	ch_sendraw()		skicka rådata via en kanal
+	ch_setoptions()		ange kanalalternativ
+	ch_status()		hämta kanalens status
+	json_encode()		koda ett uttryck som en JSON-sträng
+	json_decode()		avkoda JSON till Vim-typer
+	js_encode()		koda ett uttryck i en variant av JSON
+	js_decode()		avkoda samma variant av JSON till Vim-typer
+	base64_encode()	koda en Blob till en base64-sträng
+	base64_decode()	avkoda en base64-sträng till en Blob
+	err_teapot()		ge fel 418 eller 503
+
+Jobb:						*job-functions*
+	job_start()		starta ett jobb
+	job_stop()		stoppa ett jobb
+	job_status()		hämta jobbets status
+	job_getchannel()		hämta kanalen som jobbet använder
+	job_info()		hämta information om ett jobb
+	job_setoptions()		ange jobbalternativ
+
+Tecken:						*sign-functions*
+	sign_define()		definiera eller uppdatera ett tecken
+	sign_getdefined()	lista definierade tecken
+	sign_getplaced()	lista utplacerade tecken
+	sign_jump()		gå till ett tecken
+	sign_place()		placera ett tecken
+	sign_placelist()		placera flera tecken
+	sign_undefine()		avdefiniera ett tecken
+	sign_unplace()		ta bort ett utplacerat tecken
+	sign_unplacelist()	ta bort flera utplacerade tecken
+
+Terminalfönster:					*terminal-functions*
+	term_start()		öppna ett terminalfönster och starta ett jobb
+	term_list()		lista terminalbuffertar
+	term_sendkeys()		skicka tangenttryckningar till en terminal
+	term_wait()		vänta tills terminalskärmen har uppdaterats
+	term_getjob()		hämta jobbet som hör till terminalen
+	term_scrape()		hämta en rad från terminalskärmen
+	term_getline()		hämta en textrad från terminalen
+	term_getattr()		hämta värdet för attributet {what}
+	term_getcursor()		hämta markörpositionen i terminalen
+	term_getscrolled()	antalet rullade rader
+	term_getaltscreen()	hämta flaggan för alternativskärmen
+	term_getsize()		hämta terminalens storlek
+	term_getstatus()		hämta terminalens status
+	term_gettitle()		hämta terminalens titel
+	term_gettty()		hämta terminalens tty-namn
+	term_setansicolors()	ange 16 ANSI-färger som används i GUI
+	term_getansicolors()	hämta de 16 ANSI-färgerna
+	term_dumpdiff()		visa skillnaden mellan två skärmdumpar
+	term_dumpload()		läsa in en terminalskärmdump i ett fönster
+	term_dumpwrite()	skriva terminalskärmen till en skärmdumpsfil
+	term_setkill()		ange signalen som stoppar terminaljobbet
+	term_setrestore()	ange kommando som återställer en terminal
+	term_setsize()		ange terminalens storlek
+	term_setapi()		ange prefix för terminalens JSON-API-funktionsnamn
+
+Popup-fönster:					*popup-window-functions*
+	popup_create()		skapa ett popup-fönster mitt på skärmen
+	popup_atcursor()	visa popup precis ovanför markören; stängs när
+				markören flyttas
+	popup_beval()		visa popup vid positionen i v:beval_-variablerna;
+				stängs när musen flyttas
+	popup_notification()	visa en avisering i tre sekunder
+	popup_dialog()		skapa en centrerad popup med utfyllnad och ram
+	popup_menu()		visa en lista där användaren väljer en post
+	popup_hide()		dölja en popup tillfälligt
+	popup_show()		visa en tidigare dold popup igen
+	popup_move()		ändra popupens position och storlek
+	popup_setoptions()	ändra popupens alternativ
+	popup_settext()		ersätta innehållet i popup-bufferten
+	popup_setbuf()		ange popup-bufferten
+	popup_close()		stänga ett popup-fönster
+	popup_clear()		stänga alla popup-fönster
+	popup_filter_menu()	välja en post i en lista
+	popup_filter_yesno()	vänta tills användaren trycker på 'y' eller 'n'
+	popup_getoptions()	hämta popupens aktuella alternativ
+	popup_getpos()		hämta popupens position och storlek
+	popup_findecho()		hämta fönster-ID för popup som används av `:echowindow`
+	popup_findinfo()		hämta fönster-ID för informationspopupen
+	popup_findpreview()	hämta fönster-ID för förhandsvisningspopupen
+	popup_list()		lista alla popup-fönsters ID:n
+	popup_locate()		hämta popup-fönstrets ID utifrån skärmposition
+
+Tidtagare:						*timer-functions*
+	timer_start()		starta en tidtagare
+	timer_pause()		pausa eller återuppta en tidtagare
+	timer_stop()		stoppa en tidtagare
+	timer_stopall()		stoppa alla tidtagare
+	timer_info()		hämta information om tidtagare
+
+Taggar:						*tag-functions*
+	taglist()		hämta en lista med matchande taggar
+	tagfiles()		hämta en lista med taggfiler
+	gettagstack()		hämta fönstrets taggstack
+	settagstack()		ändra fönstrets taggstack
+
+Promptbuffert:					*promptbuffer-functions*
+	prompt_getprompt()	 hämta den faktiska prompttexten för en buffert
+	prompt_setcallback()	ange återanropsfunktion för bufferten
+	prompt_setinterrupt()	ange avbrottsfunktion för bufferten
+	prompt_setprompt()	ange prompttexten
+
+Register:						*register-functions*
+	getreg()		hämta innehållet i ett register
+	getreginfo()		hämta information om ett register
+	getregtype()		hämta registertypen
+	setreg()		ange registerinnehåll och typ
+	reg_executing()		returnera namnet på registret som körs
+	reg_recording()		returnera namnet på registret som spelas in
+
+Textegenskaper:					*text-property-functions*
+	prop_add()		koppla en egenskap till en position
+	prop_add_list()		koppla en egenskap till flera positioner
+	prop_clear()		ta bort alla egenskaper från en eller flera rader
+	prop_find()		söka efter en egenskap
+	prop_list()		lista egenskaper på en rad
+	prop_remove()		ta bort en egenskap från en rad
+	prop_type_add()		lägga till eller definiera en egenskapstyp
+	prop_type_change()	ändra en egenskapstyp
+	prop_type_delete()	ta bort en egenskapstyp
+	prop_type_get()		hämta egenskaperna för en typ
+	prop_type_list()	lista alla egenskapstyper
+
+Ljud:						*sound-functions*
+	sound_clear()		stoppa alla ljud
+	sound_playevent()	spela upp ljudet för en händelse
+	sound_playfile()	spela upp en ljudfil
+	sound_stop()		stoppa ett ljud
+
+Bilder:						*image-functions*
+	image_add()		lägga till en bild
+	image_discard()		ta bort en bild
+	image_info()		hämta information om bilder
+
+Övriga funktioner:				*various-functions*
+	mode()			hämta aktuellt redigeringsläge
+	state()			hämta aktuell upptagenstatus
+	visualmode()		hämta senast använda visuella läge
+	exists()		kontrollera om en variabel, funktion med mera finns
+	exists_compiled()	liknar exists(), men kontrollerar vid kompilering
+	getinfo()		hämta definitionen av en funktion, ett kommando,
+				ett alternativ eller en Vim-variabel
+	has()			kontrollera om Vim stöder en funktion
+	changenr()		returnera numret på den senaste ändringen
+	cscope_connection()	 kontrollera om en cscope-anslutning finns
+	did_filetype()		kontrollera om en FileType-händelse har körts
+	diff()			jämföra två listor med strängar
+	eventhandler()		kontrollera om anropet kommer från en händelsehanterare
+	getcellpixels()		hämta en lista med cellstorlekar i bildpunkter
+	getpid()		hämta Vims process-ID
+	getscriptinfo()		hämta en lista med inlästa Vim-skript
+	getstacktrace()		hämta aktuell anropsstack för Vim-skript
+	getimstatus()		kontrollera om inmatningsmetoden är aktiv
+	interrupt()		avbryta skriptkörningen
+	windowsversion()	hämta MS-Windows-versionen
+	terminalprops()		hämta terminalens egenskaper
+
+	libcall()		anropa en funktion i ett externt bibliotek
+	libcallnr()		som libcall(), men returnerar ett tal
+
+	undofile()		hämta namnet på ångerfilen
+	undotree()		hämta ångringsträdets tillstånd för en buffert
+
+	shiftwidth()		hämta det effektiva värdet på 'shiftwidth'
+
+	wordcount()		hämta buffertens antal byte, ord och tecken
+
+	id()			hämta en unik sträng att använda som nyckel
+
+	luaeval()		utvärdera ett |Lua|-uttryck
+	mzeval()		utvärdera ett |MzScheme|-uttryck
+	perleval()		utvärdera ett Perl-uttryck
+	py3eval()		utvärdera ett Python-uttryck
+	pyeval()			utvärdera ett Python-uttryck
+	pyxeval()		utvärdera ett |python_x|-uttryck
+	rubyeval()		utvärdera ett |Ruby|-uttryck
+
+	debugbreak()		avbryta ett program som felsöks
+
+	redraw_listener_add()	 lägga till återanrop för omritning
+	redraw_listener_remove() ta bort en återanropsfunktion för omritning
+
+==============================================================================
+*41.7*	Definiera en funktion
+
+Du kan definiera egna funktioner i Vim. En grundläggande funktionsdefinition
+ser ut så här:
+>
+	def {namn}({var1}, {var2}, ...): {returtyp}
+	  {innehåll}
+	enddef
+<
+	Obs:
+	Funktionsnamn måste börja med en versal.
+
+Vi skapar en kort funktion som returnerar det minsta av två tal. Den börjar
+så här:
+>
+	def Min(num1: number, num2: number): number
+
+Det anger att funktionen heter "Min", tar två argument av typen number,
+"num1" och "num2", och returnerar ett tal.
+
+Först tar vi reda på vilket tal som är minst:
+>
+	if num1 < num2
+
+Tilldela sedan variabeln "smaller" det minsta talet:
+>
+	var smaller: number
+	if num1 < num2
+	  smaller = num1
+	else
+	  smaller = num2
+	endif
+
+Variabeln "smaller" är lokal. Den deklareras som ett tal, så att Vim kan
+varna om du gör ett misstag. Variabler i en funktion är lokala om de inte har
+ett prefix som "g:", "w:" eller "b:".
+
+	Obs:
+	Lägg till "g:" framför en global variabel när du använder den i en
+	funktion. "g:today" syftar alltså på den globala variabeln "today",
+	medan "today" utan prefix är en annan variabel, lokal för funktionen
+	eller skriptet.
+
+Använd satsen `return` för att returnera det minsta talet till anroparen.
+Avsluta sedan funktionen:
+>
+	  return smaller
+	enddef
+
+Hela funktionsdefinitionen ser ut så här:
+>
+	def Min(num1: number, num2: number): number
+	  var smaller: number
+	  if num1 < num2
+	    smaller = num1
+	  else
+	    smaller = num2
+	  endif
+	  return smaller
+	enddef
+
+Exemplet är onödigt omständligt. Du kan korta det med två return-satser:
+>
+	def Min(num1: number, num2: number): number
+	  if num1 < num2
+	    return num1
+	  endif
+	  return num2
+	enddef
+
+Om du minns det villkorliga uttrycket räcker en rad:
+>
+	def Min(num1: number, num2: number): number
+	  return num1 < num2 ? num1 : num2
+	enddef
+
+Anropa en egen funktion på samma sätt som en inbyggd funktion. Det är bara
+namnet som skiljer. Funktionen Min kan användas så här:
+>
+	echo Min(5, 8)
+
+Vid det första anropet kompilerar Vim funktionen om den inte redan är
+kompilerad. Därefter körs den. Om det finns fel, till
+exempel en odefinierad variabel eller funktion, visas ett felmeddelande. När
+funktionen definieras upptäcks sådana fel inte. Be Vim kompilera alla
+funktioner i skriptet för att hitta fel tidigare:
+>
+	defcompile
+
+Kompileringen tar en liten stund men rapporterar fel i förväg. Du kan använda
+`:defcompile` sist i skriptet medan du arbetar och kommentera bort det när
+allt fungerar.
+
+Utelämna returtypen för en funktion som inte returnerar något:
+>
+	def SayIt(text: string)
+	  echo text
+	enddef
+
+Använd returtypen "any" om funktionen ska kunna returnera vilket slags värde
+som helst:
+>
+	def GetValue(): any
+
+Detta stänger av typkontrollen av returvärdet. Använd det bara när det behövs.
+
+Du kan även definiera äldre funktioner med `function` och `endfunction`. De
+saknar typer och kompileras inte, så de körs mycket långsammare.
+
+
+ANVÄNDA ETT RADINTERVALL
+
+Du kan ange ett radintervall när du anropar en funktion. Funktionen anropas
+då en gång för varje rad i intervallet, med markören på den raden. Exempel:
+>
+	def Number()
+	  echo "rad " .. line(".") .. " innehåller: " .. getline(".")
+	enddef
+
+Anropa funktionen så här:
+>
+	:10,15call Number()
+
+Funktionen anropas sex gånger, från rad 10 till och med rad 15.
+
+
+VISA FUNKTIONER
+
+Kommandot `function` listar namn och argument för alla användardefinierade
+funktioner:
+>
+	:function
+<	def <SNR>86_Visa(inledning: string, ...argument: list<string>) ~
+	function GetVimIndent() ~
+	function SetSyn(name) ~
+
+Prefixet "<SNR>" anger att en funktion är skriptlokal. |Vim9|-funktioner
+visas med "def" och deras argument- och returtyper. Äldre funktioner visas
+med "function".
+
+Visa vad en funktion gör genom att ange dess namn som argument till
+`function`:
+>
+	:function SetSyn
+<	1     if &syntax == '' ~
+	2       let &syntax = a:name ~
+	3     endif ~
+	   endfunction ~
+
+Ta med skriptprefixet när du vill visa funktionen "Visa", eftersom flera
+skript kan definiera var sin funktion med det namnet. Du hittar det exakta
+namnet med `function`, men listan kan vara lång. Använd prefixet `filter` för
+att bara visa funktioner som matchar ett mönster:
+>
+	:filter Visa function
+<	def <SNR>86_Visa(inledning: string, ...argument: list<string>) ~
+>
+	:function <SNR>86_Visa
+<	1    echohl Title ~
+	2    echo "inledning är " .. inledning ~
+	etc.
+
+
+FELSÖKNING
+
+Radnumret är användbart när ett felmeddelande visas eller vid felsökning. Se
+|debug-scripts| för information om felsökningsläget.
+
+Du kan också sätta alternativet 'verbose' till 12 eller högre för att se alla
+funktionsanrop. Med värdet 15 eller högre visas varje körd rad.
+
+
+TA BORT EN FUNKTION
+
+Ta bort funktionen SetSyn() med:
+>
+	:delfunction SetSyn
+
+Det fungerar bara för globala funktioner och funktioner i äldre skript, inte
+för funktioner som definierats i ett |Vim9|-skript.
+
+Du får ett felmeddelande om funktionen inte finns eller inte kan tas bort.
+
+
+FUNKTIONSREFERENSER
+
+Ibland kan en variabel behöva peka på olika funktioner. Då kan du använda en
+funktionsreferens, ofta förkortad "funcref". Exempel:
+>
+	def Right(): string
+	  return 'Rätt!'
+	enddef
+	def Wrong(): string
+	  return 'Fel!'
+	enddef
+
+	var Afunc = get(g:, 'result', 0) == 1 ? Right : Wrong
+	echo Afunc()
+<	Fel! ~
+
+Exemplet visar resultatet när "g:result" saknas eller inte är ett. Se |Funcref| för mer
+information.
+
+Variabelnamn för funktionsreferenser måste börja med en versal. Annars kan
+Vim förväxla dem med en inbyggd funktions namn.
+
+
+VIDARE LÄSNING
+
+Funktioner med ett varierande antal argument introduceras i avsnitt |50.2|.
+
+Mer information om hur du definierar egna funktioner finns här:
+|user-functions|.
+
+==============================================================================
+*41.8*	Listor och dictionary-objekt
+
+Hittills har vi använt grundtyperna String och Number. Vim stöder också tre
+sammansatta typer: List, Tuple och Dictionary.
+
+En List är en ordnad följd av objekt. Objekten kan vara av vilken typ som
+helst. Du kan alltså skapa en lista med tal, en lista med listor eller en
+lista med blandade objekt. Så här skapar du en lista med tre strängar:
+>
+	var alist = ['apa', 'boll', 'cirkus']
+
+Listans objekt står inom hakparenteser och skiljs åt med kommatecken. Skapa
+en tom lista så här:
+>
+	var alist = []
+
+Lägg till objekt med funktionen add():
+>
+	var alist = []
+	add(alist, 'ett')
+	add(alist, 'två')
+	echo alist
+<	['ett', 'två'] ~
+
+Sätt ihop listor med operatorn +:
+>
+	var alist = ['ett', 'två']
+	alist = alist + ['och', 'fler']
+	echo alist
+<	['ett', 'två', 'och', 'fler'] ~
+
+Använd `extend()` om du vill utöka en lista med en funktion:
+>
+	var alist = ['ett']
+	extend(alist, ['två', 'tre'])
+	echo alist
+<	['ett', 'två', 'tre'] ~
+
+Lägg märke till att `add()` och `extend()` fungerar olika:
+>
+	var alist: list<any> = ['ett']
+	add(alist, ['två', 'tre'])
+	echo alist
+<	['ett', ['två', 'tre']] ~
+
+Det andra argumentet till add() läggs till som ett enda objekt. Resultatet
+blir en nästlad lista.
+
+
+FOR-SLINGA
+
+En fördel med listor är att du kan gå igenom objekten i dem:
+>
+	var alist = ['ett', 'två', 'tre']
+	for n in alist
+	  echo n
+	endfor
+<	ett ~
+	två ~
+	tre ~
+
+Slingan går igenom varje objekt i listan "alist" och tilldelar dess värde
+till variabeln "n". Allmän form:
+>
+	for {variabelnamn} in {listexpression}
+	  {kommandon}
+	endfor
+
+Använd funktionen range() för att skapa en lista med ett visst antal objekt:
+>
+	for a in range(3)
+	  echo a
+	endfor
+<	0 ~
+	1 ~
+	2 ~
+
+Det första objektet i listan från range() är noll. Det sista är alltså ett
+mindre än listans längd. Tekniskt sett skapar range() inte listan direkt, så
+en lång talföljd fungerar effektivt i en for-slinga. Om du använder talföljden
+på ett annat sätt omvandlas den till en riktig lista, vilket tar längre tid
+för långa listor.
+
+Du kan också ange maxvärde, stegstorlek och till och med räkna baklänges:
+>
+	for a in range(8, 4, -2)
+	  echo a
+	endfor
+<	8 ~
+	6 ~
+	4 ~
+
+Ett mer användbart exempel är att gå igenom de första 50 raderna i bufferten:
+>
+	for line in getline(1, 50)
+	  if line =~ "Datum: "
+	    echo line
+	  endif
+	endfor
+
+Detta undersöker rad 1 till och med 50 och skriver ut rader där ett datum
+hittas.
+
+Mer information finns i |Lists|.
+
+
+TUPLER
+
+En Tuple är en oföränderlig, ordnad följd av objekt. Objekten kan vara av
+vilken typ som helst och hämtas med sitt index. Så här skapar du en tupel med
+tre strängar:
+>
+	var atuple = ('ett', 'två', 'tre')
+
+Tupelns objekt står inom parenteser och skiljs åt med kommatecken. Skapa en
+tom tupel så här:
+>
+	var atuple = ()
+
+Du kan gå igenom tupelns objekt med |:for| på samma sätt som en lista.
+
+Mer information finns i |Tuples|.
+
+
+DICTIONARY-OBJEKT
+
+Ett Dictionary lagrar nyckel-värde-par. Om du känner till nyckeln kan du
+snabbt hitta motsvarande värde. Skapa ett Dictionary-objekt med klammerparenteser:
+>
+	var en2sv = {one: 'ett', two: 'två', three: 'tre'}
+
+Hämta ett värde genom att skriva nyckeln inom hakparenteser:
+>
+	echo en2sv['two']
+<	två ~
+
+Om nyckeln inte innehåller specialtecken kan du använda punktnotation:
+>
+	echo en2sv.two
+<	två ~
+
+Allmän form:
+>
+	{<nyckel> : <värde>, ...}
+
+Ett tomt Dictionary-objekt saknar nycklar:
+>
+	{}
+
+Det finns många möjligheter med Dictionary-objekt och flera funktioner för
+dem. Du kan till exempel hämta nycklarna som en lista och gå igenom dem:
+>
+	for key in keys(en2sv)
+	  echo key
+	endfor
+<	three ~
+	one ~
+	two ~
+
+Nycklarna är inte sorterade. Sortera listan om du vill ha en bestämd ordning:
+>
+	for key in sort(keys(en2sv))
+	  echo key
+	endfor
+<	one ~
+	three ~
+	two ~
+
+Du kan inte återskapa den ordning som objekten definierades i. Använd en List
+om ordningen behöver bevaras.
+
+Mer information finns i |Dictionaries|.
+
+==============================================================================
+*41.9*	Blanksteg
+
+Tomma rader är tillåtna i ett skript och ignoreras.
+
+Inledande blanksteg och tabbar ignoreras, utom med |:let-heredoc| när
+"trim" inte används.
+
+Avslutande blanksteg ignoreras ofta, men inte alltid. Kommandot `map` är ett
+exempel där de kan ingå. Det kan orsaka svårbegripliga fel. Undvik därför
+avslutande blanksteg om de inte behövs.
+
+Sätt ett omvänt snedstreck före ett blanksteg som ska ingå i värdet på
+ett alternativ. Exempel:
+>
+	:set tags=my\ nice\ file
+
+Om du i stället skriver:
+>
+	:set tags=my nice file
+
+tolkar ":set" orden "nice" och "file" som separata alternativ. Vim ger
+ett fel eftersom det inte finns något alternativ som heter "nice".
+
+|Vim9|-skript är strikta när det gäller blanksteg. Det är avsiktligt, så att
+skript blir lättare att läsa och fel undviks. Använder du blanksteg på ett
+rimligt sätt fungerar det. Annars får du ett felmeddelande som visar var
+blanksteg saknas eller bör tas bort.
+
+==============================================================================
+*41.10*	Radfortsättning
+
+I äldre Vim-skript inleder du en fortsättningsrad med ett omvänt snedstreck:
+>
+	let mylist = [
+		\ 'ett',
+		\ 'två',
+		\ ]
+
+Alternativet 'cpo' får då inte innehålla flaggan "C". Vanligen ordnas det
+genom att lägga detta i början av skriptet:
+>
+	let s:save_cpo = &cpo
+	set cpo&vim
+
+Återställ alternativet i slutet av skriptet:
+>
+	let &cpo = s:save_cpo
+	unlet s:save_cpo
+
+Fler detaljer finns här: |line-continuation|.
+
+I |Vim9|-skript kan du fortfarande använda omvänt snedstreck, men det behövs
+oftast inte:
+>
+	var mylist = [
+		'ett',
+		'två',
+		]
+
+Du behöver inte heller ändra alternativet 'cpo'. Se |vim9-line-continuation|
+för detaljer.
+
+==============================================================================
+*41.11*	Kommentarer
+
+I |Vim9|-skript inleder tecknet # en kommentar. Tecknet och allt efter det
+fram till radslutet ignoreras. Det gäller dock inte kommandon som inte
+hanterar kommentarer, vilket exemplen nedan visar. Kommentaren kan börja var
+som helst på raden, men inte inne i ett kommando, till exempel i en sträng.
+
+I äldre skript inleder det dubbla citationstecknet en kommentar. Det krävs
+extra logik för att skilja sådana kommentarer från strängar inom dubbla
+citationstecken. Det är en av anledningarna till att |Vim9|-skript föredras.
+
+Vissa kommandon har en fallgrop när det gäller kommentarer. Exempel:
+>
+	abbrev dev development	# kortform
+	map <F3> o#include	# infoga include
+	execute cmd		# kör det
+	!ls *.c			# lista C-filer
+
+- Förkortningen "dev" expanderas till "development  # kortform".
+- Mappningen av <F3> blir hela raden efter "o# ...", inklusive kommentaren.
+- Kommandot `execute` kör kommandot i variabeln cmd och ignorerar kommentaren.
+- Kommandot `!` skickar allt efter sig till skalet, som tolkar "#".
+
+För `map` och `abbreviate` kan du börja kommentaren efter "|". Lägg
+skalkommandot i en sträng som skickas till `execute` om du vill använda
+en Vim-kommentar i stället för en skalkommentar:
+>
+	abbrev dev development|# kortform
+	map <F3> o#include|# infoga include
+	execute '!ls *.c'	|# gör det
+
+Tecknet "|" avslutar kommandot och inleder ett nytt kommando som bara är en
+kommentar. Den sista raden med `execute` är en generell lösning. Den fungerar
+för alla kommandon som inte tillåter kommentarer eller "|" för att avskilja
+nästa kommando.
+
+Lägg märke till att det inte finns något blanksteg före "|" i förkortningen
+och mappningen. För de kommandona ingår alla tecken fram till radslutet eller
+"|". Två avslutande blanksteg kan skrivas som <Space><Space>: >
+	map <F4> o#include<Space><Space>
+
+Med vanliga blanksteg syns det inte alltid om de ingår i mappningen. Markera
+avslutande blanksteg för att upptäcka dem:
+>
+	match Search /\s\+$/
+
+På Unix finns ett särskilt sätt att kommentera en rad så att Vim-skriptet kan
+köras som ett program. Exemplet kräver att env stöder flaggan -S och att
+skriptfilen är körbar. Det fungerar också i äldre skript:
+>
+	#!/usr/bin/env -S vim -S
+	echo "det här är ett Vim-skript"
+	quit
+
+==============================================================================
+*41.12*	Filformat
+
+Radslutstecknet beror på systemet. Vi rekommenderar att Vim-skript alltid
+använder Unix-filformatet, där rader skiljs åt med radmatningstecknet. Det
+fungerar även på andra system. Då kan du kopiera Vim-skript från MS-Windows
+till Unix och de fungerar fortfarande. Se |:source_crnl|. Ange detta innan
+du skriver filen för att vara säker:
+>
+	:setlocal fileformat=unix
+
+Med "dos"-filformat skiljs raderna åt av CR-NL, alltså två tecken. CR-tecknet
+kan orsaka problem och bör undvikas.
+
+==============================================================================
+
+Mer avancerad information om Vim-skript finns i |usr_50.txt|.
+
+Nästa kapitel: |usr_42.txt|  Lägga till menyer
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

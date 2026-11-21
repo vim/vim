@@ -1,0 +1,382 @@
+*usr_20.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+			Skriva kommandoradskommandon snabbt
+
+
+Vim har flera funktioner som gör det enklare att skriva kommandon.  Kolon-
+kommandon kan förkortas, redigeras och upprepas.  Komplettering finns för det
+mesta.
+
+|20.1|	Redigera kommandoraden
+|20.2|	Förkortningar på kommandoraden
+|20.3|	Komplettera kommandoraden
+|20.4|	Kommandoradshistorik
+|20.5|	Kommandoradsfönstret
+
+	Nästa kapitel: |usr_21.txt|  Gå iväg och kom tillbaka
+	Föregående kapitel: |usr_12.txt|  Smarta knep
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*20.1*	Redigera kommandoraden
+
+När du skriver ett kolonkommando eller söker efter en sträng med / eller ?
+placerar Vim markören längst ned på skärmen.  Där skriver du kommandot eller
+sökmönstret.  Det kallas kommandoraden.  Den används också när du skriver ett
+sökkommando.
+
+Det enklaste sättet att redigera kommandot är att trycka på tangenten <BS>.
+Den tar bort tecknet före markören.  Om du vill ta bort ett tidigare tecken
+flyttar du först markören med piltangenterna.
+   Anta att du har skrivit: >
+
+	:s/col/pig/
+
+Innan du trycker på <Enter> ser du att "col" ska vara "cow".  Tryck på <Left>
+fem gånger.  Markören står nu efter "col".  Tryck på <BS> och skriv "w": >
+
+	:s/cow/pig/
+
+Nu kan du trycka på <Enter> direkt.  Du behöver inte flytta markören till
+radens slut innan kommandot körs.
+
+De vanligaste tangenterna för att flytta runt på kommandoraden är:
+
+	<Left>			ett tecken åt vänster
+	<Right>			ett tecken åt höger
+	<S-Left> eller <C-Left>	ett ord åt vänster
+	<S-Right> eller <C-Right>	ett ord åt höger
+	CTRL-B eller <Home>	till kommandoradens början
+	CTRL-E eller <End>	till kommandoradens slut
+
+	Observera:
+	<S-Left> (vänsterpil med Skift nedtryckt) och <C-Left> (vänsterpil
+	med Ctrl nedtryckt) fungerar inte på alla tangentbord.  Detsamma gäller
+	övriga kombinationer med Skift och Ctrl.
+
+Du kan även flytta markören med musen.
+
+
+TA BORT TEXT
+
+Som nämnts tar <BS> bort tecknet före markören.  Använd CTRL-W för att ta bort
+ett helt ord.
+
+	/the fine pig ~
+
+	     CTRL-W
+
+	/the fine ~
+
+CTRL-U tar bort all text före markören. När markören står i slutet av
+raden tas alltså hela kommandot bort.
+
+
+SKRIVA ÖVER
+
+Tangenten <Insert> växlar mellan att infoga tecken och att skriva över de
+befintliga.  Börja med följande text:
+
+	/the fine pig ~
+
+Flytta markören till början av "fine" med <S-Left> två gånger (eller <Left>
+åtta gånger om <S-Left> inte fungerar).  Tryck på <Insert> för att börja
+skriva över och skriv "great":
+
+	/the greatpig ~
+
+Oj, blanksteget försvann.  Använd inte <BS>, eftersom den då tar bort "t"
+(det skiljer sig från ersättningsläget).  Tryck i stället på <Insert> för att
+gå tillbaka till infogningsläget och skriv blanksteget:
+
+	/the great pig ~
+
+
+AVBRYTA
+
+Du tänkte köra ett :- eller /-kommando men har ändrat dig.  Tryck på CTRL-C
+eller <Esc> för att ta bort det du redan skrivit utan att köra kommandot.
+
+	Observera:
+	<Esc> är den universella tangenten för att ”komma ur” något.  I gamla
+	Vi körde <Esc> kommandot på kommandoraden, vilket kan ses som ett fel.
+	Vim använder därför <Esc> för att avbryta.  Alternativet 'cpoptions'
+	kan ändra detta så att Vim beter sig som Vi.  Även en mappning som
+	är skriven för Vi kan göra att <Esc> fungerar så.  CTRL-C fungerar
+	därför alltid för att avbryta.
+
+Om markören står i början av kommandoraden avbryter <BS> kommandot.  Det är
+som att ta bort ":" eller "/" som inleder raden.
+
+==============================================================================
+*20.2*	Förkortningar på kommandoraden
+
+Vissa :-kommandon är långa.  Vi har redan nämnt att ":substitute" kan
+förkortas till ":s".  Det är en generell funktion och de flesta :-kommandon
+kan förkortas.  I Vim9-skript kan vissa kommandon däremot inte kortas, för att
+göra skripten lättare att läsa.  Se |vim9-no-shorten|.
+
+Den inbyggda funktionen |fullcommand()| kan användas för att ta reda på ett
+förkortat kommandos fullständiga namn.  Följande kommandon skriver till
+exempel ut "edit", "echo" respektive "echowindow":
+>vim
+	:echo fullcommand('e')
+	:echo fullcommand('ec')
+	:echo fullcommand('echow')
+<
+Hur kort kan ett kommando bli?  Det finns 26 bokstäver men betydligt fler
+kommandon.  Till exempel börjar både ":set" och ":substitute" med ":s", men
+":s" betyder inte ":set".  Det kortaste som fungerar för ":set" är ":se".
+   Om en kortform skulle kunna stå för två kommandon betyder den bara ett av
+dem.  Det finns ingen särskild logik bakom vilket kommando det blir; du får
+lära dig formerna.  Hjälpfilerna visar den kortaste fungerande formen.  Till
+exempel: >
+
+	:s[ubstitute]
+
+Det betyder att ":substitute" kan förkortas till ":s".  Tecknen inom
+hakparenteser är valfria, så även ":su" och ":sub" fungerar.
+
+I handboken använder vi antingen kommandots fullständiga namn eller en
+förkortning som fortfarande är lätt att förstå.  Exempelvis kan ":function"
+förkortas till ":fu", men eftersom de flesta inte förstår den formen använder
+vi ":fun".  Vim har inget kommando ":funny", så den formen är inte tvetydig.
+
+I Vim-skript rekommenderas det att skriva ut hela kommandonamnet.  Då blir
+skriptet enklare att läsa när du senare ändrar det.  Undantag kan göras för
+vanliga kommandon som ":w" (":write") och ":r" (":read").
+   ":end" kan vara förvirrande eftersom det kan stå för ":endif",
+":endwhile" eller ":endfunction".  Använd därför alltid hela kommandot här.
+
+
+KORTA ALTERNATIVNAMN
+
+I handboken används alternativens långa namn.  Många alternativ har även ett
+kort namn.  Till skillnad från :-kommandon finns det bara ett kort namn som
+fungerar.  Det korta namnet för 'autoindent' är till exempel 'ai'.  Följande
+kommandon gör därför samma sak: >
+
+	:set autoindent
+	:set ai
+
+En fullständig lista över långa och korta namn finns här: |option-list|.
+
+==============================================================================
+*20.3*	Komplettera kommandoraden
+
+Det här är en av de Vim-funktioner som i sig kan få dig att byta från Vi till
+Vim.  När du väl har provat den vill du knappast vara utan den.
+
+Anta att en katalog innehåller följande filer:
+
+	info.txt
+	intro.txt
+	bodyofthepaper.txt
+
+Använd följande kommando för att redigera den sista filen: >
+
+	:edit bodyofthepaper.txt
+
+Det är lätt att skriva fel.  Det går snabbare så här: >
+
+	:edit b<Tab>
+
+Resultatet blir samma kommando.  Vad hände?  Tangenten <Tab> kompletterar
+ordet före markören, här "b".  Vim letar i katalogen och hittar bara en fil
+som börjar med b.  Det måste vara filen du söker, så Vim fyller i namnet.
+
+Skriv nu: >
+
+	:edit i<Tab>
+
+Vim piper och visar: >
+
+	:edit info.txt
+
+Pipet betyder att Vim hittade mer än en träff.  Då används den första träffen
+i alfabetisk ordning.  Tryck på <Tab> igen för att få nästa: >
+
+	:edit intro.txt
+
+Om den första kompletteringen inte gav rätt fil trycker du alltså på <Tab>
+igen.  Finns det fler träffar visas de en i taget.
+   Trycker du på <Tab> efter den sista träffen återgår Vim till det du skrev
+från början: >
+
+	:edit i
+
+Sedan börjar listan om.  Vim går alltså runt bland träffarna.  Använd CTRL-P
+för att gå åt andra hållet:
+
+	      <------------------- <Tab> -------------------------+
+								  |
+	      <Tab> -->		       <Tab> -->
+	:edit i		     :edit info.txt	   :edit intro.txt
+	      <-- CTRL-P		       <-- CTRL-P
+	   |
+	   +---------------------- CTRL-P ------------------------>
+
+
+SAMMANHANGET STYR
+
+Om du skriver ":set i" i stället för ":edit i" och trycker på <Tab> får du: >
+
+	:set icon
+
+Varför blev det inte ":set info.txt"?  Vim kompletterar utifrån sammanhanget.
+Vilka ord som söks beror på kommandot före markören.  Vim vet att ett filnamn
+inte kan följa direkt efter ":set", men att ett alternativnamn kan göra det.
+   Tryck på <Tab> flera gånger för att bläddra bland träffarna.  Det finns
+ganska många, så skriv gärna fler tecken först: >
+
+	:set isk<Tab>
+
+Det ger: >
+
+	:set iskeyword
+
+Skriv nu "=" och tryck på <Tab>: >
+
+	:set iskeyword=@,48-57,_,192-255
+
+Vim fyller här i alternativets gamla värde.  Sedan kan du redigera det.
+   <Tab> kompletterar det som Vim förväntar sig på den aktuella platsen.
+Prova dig fram för att se hur det fungerar.  I vissa situationer blir
+resultatet inte det du vill ha.  Antingen vet Vim inte vad du menar eller så
+finns inte komplettering där.  Då infogas en <Tab> (som visas som ^I).
+
+
+VISA TRÄFFARNA
+
+Om det finns många träffar kan du visa en översikt genom att trycka på
+CTRL-D.  Om du till exempel trycker på CTRL-D efter >
+
+	:set is
+
+visas: >
+
+	:set is
+	incsearch  isfname    isident    iskeyword  isprint
+	:set is
+
+Vim listar träffarna och återgår sedan till texten du skrev.  Leta upp det du
+vill ha.  Om det saknas kan du rätta ordet med <BS>.  Finns det många träffar
+kan du skriva fler tecken innan du trycker på <Tab>.
+   Om du tittade noga såg du att "incsearch" inte börjar med "is".  Här är
+"is" det korta namnet för "incsearch".  Många alternativ har både ett kort
+och ett långt namn.  Vim förstår att du kanske ville expandera det korta
+namnet till det långa.
+
+
+MER ATT UTFORSKA
+
+Kommandot CTRL-L kompletterar till den längsta entydiga strängen.  Om du
+skriver ":edit i" och filerna "info.txt" och "info_backup.txt" finns får du
+":edit info".
+
+Alternativet 'wildmode' ändrar hur kompletteringen fungerar.
+Alternativet 'wildmenu' visar träffarna som en meny.
+Alternativet 'suffixes' anger filer som är mindre viktiga och därför visas
+sist i listan.
+Alternativet 'wildignore' anger filer som inte visas alls.
+
+Läs mer om detta i |cmdline-completion|.
+
+==============================================================================
+*20.4*	Kommandoradshistorik
+
+I kapitel 3 nämndes historiken kort.  I grunden kan du trycka på <Up> för att
+hämta ett äldre kommando.  <Down> går sedan tillbaka till nyare kommandon.
+
+Det finns faktiskt fem historiker.  Här tar vi upp historiken för :-kommandon
+och för sökkommandona / och ?.  / och ? delar historik eftersom båda är
+sökkommandon.  De tre övriga historikerna innehåller uttryck,
+felsökningskommandon och inmatningsrader till funktionen input().
+|cmdline-history|
+
+Anta att du har kört ett ":set"-kommando, skrivit tio kolonkommandon till och
+sedan vill upprepa ":set".  Du kan trycka på ":" och sedan elva gånger på
+<Up>, men det går snabbare så här: >
+
+	:se<Up>
+
+Vim går då tillbaka till det tidigare kommandot som började med "se".  Det
+är troligen just ":set" du söker.  Du behöver åtminstone inte trycka på <Up>
+så många gånger, om du inte bara har kört ":set"-kommandon.
+
+Tangenten <Up> använder texten du redan har skrivit och jämför den med raderna
+i historiken.  Bara rader som börjar med samma text visas.
+   Om du inte hittar rätt rad trycker du på <Down> för att återgå till texten
+du skrev och rätta den.  Du kan också börja om med CTRL-U.
+
+Visa alla rader i historiken med: >
+
+	:history
+
+Det visar historiken över :-kommandon.  Visa sökhistoriken med: >
+
+	:history /
+
+CTRL-P fungerar som <Up>, men tar inte hänsyn till vad du redan har skrivit.
+På motsvarande sätt fungerar CTRL-N som <Down>.  P står för previous
+(föregående) och N för next (nästa).
+
+==============================================================================
+*20.5*	Kommandoradsfönstret
+
+Det fungerar annorlunda att skriva på kommandoraden än i infogningsläget.
+Det går inte att använda lika många kommandon för att ändra texten.  Det går
+bra för det mesta, men ibland behöver du skriva ett komplicerat kommando.  Då
+är kommandoradsfönstret användbart.
+
+Öppna kommandoradsfönstret med: >
+
+	q:
+
+Ett litet fönster öppnas längst ned.  Det innehåller kommandoradshistoriken
+och en tom rad sist:
+
+	+-------------------------------------+
+	|annat fönster			      |
+	|~				      |
+	|file.txt=============================|
+	|:e c				      |
+	|:e config.h.in			      |
+	|:set path=.,/usr/include,,	      |
+	|:set iskeyword=@,48-57,_,192-255     |
+	|:set is			      |
+	|:q				      |
+	|:				      |
+	|kommandorad==========================|
+	|				      |
+	+-------------------------------------+
+
+Du är nu i normalläge och kan använda "hjkl" för att flytta runt.  Flytta
+exempelvis uppåt med "5k" till raden ":e config.h.in".  Skriv "$h" för att gå
+till "i" i "in" och skriv "cwout".  Raden har nu ändrats till:
+
+	:e config.h.out ~
+
+Tryck på <Enter> för att köra kommandot.  Kommandoradsfönstret stängs.
+   <Enter> kör raden under markören, både i infogningsläge och normalläge.
+   Ändringar i kommandoradsfönstret sparas inte i historiken.  Det kommando
+du kör läggs dock sist i historiken, precis som andra körda kommandon.
+
+Kommandoradsfönstret är praktiskt när du vill överblicka historiken, leta upp
+ett liknande kommando, ändra det lite och köra det.  Du kan söka efter en
+sträng.
+   I föregående exempel kunde du ha använt sökkommandot "?config" för att
+hitta det tidigare kommandot som innehåller "config".  Det känns lite
+märkligt att använda en kommandorad för att söka i kommandoradsfönstret.  Du
+kan inte öppna ett nytt kommandoradsfönster medan du skriver sökkommandot,
+eftersom bara ett sådant fönster kan vara öppet.
+
+==============================================================================
+
+Nästa kapitel: |usr_21.txt|  Gå iväg och kom tillbaka
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

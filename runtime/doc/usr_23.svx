@@ -1,0 +1,337 @@
+*usr_23.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Redigera andra filer
+
+
+Det här kapitlet handlar om filer som inte är vanliga textfiler.  Med Vim kan
+du redigera komprimerade och krypterade filer.  Vissa filer behöver hämtas
+över internet.  Med vissa begränsningar går det också att redigera binärfiler.
+
+|23.1|	DOS-, Mac- och Unix-filer
+|23.2|	Filer på internet
+|23.3|	Kryptering
+|23.4|	Binärfiler
+|23.5|	Komprimerade filer
+
+	Nästa kapitel: |usr_24.txt|  Infoga text snabbt
+	Föregående kapitel: |usr_22.txt|  Hitta filen som ska redigeras
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*23.1*	DOS-, Mac- och Unix-filer
+
+Förr i tiden använde de gamla Teletypmaskinerna två tecken för att börja på
+en ny rad.  Det ena flyttade skrivarhuvudet till första positionen
+(vagnretur, <CR>), det andra matade fram papperet en rad (radmatning, <LF>).
+   När datorerna kom var lagringsutrymme dyrt.  En del ansåg att det inte
+behövdes två tecken för radslut.  Unix-användare valde bara <New Line> eller
+<NL>.  Apple standardiserade på <CR>.  Microsoft Windows behöll den äldre
+kombinationen <CR><NL> (i hjälpen använder vi <NL> för radmatning).
+   Om du flyttar en fil mellan system kan därför radsluten ställa till
+problem.  Vim känner automatiskt igen de olika filformaten och hanterar dem
+åt dig.
+   Alternativet 'fileformats' innehåller de format som provas när en ny fil
+öppnas.  Följande kommando gör att Vim först provar Unix-format och sedan
+MS-DOS-format: >
+
+	:set fileformats=unix,dos
+
+Filformatet visas i meddelandet när du öppnar filen.  Om filen använder det
+inbyggda formatet visas inget särskilt.  När du öppnar en Unix-fil i Unix får
+du alltså ingen kommentar.  Öppnar du en DOS-fil meddelar Vim det:
+
+	"/tmp/test" [dos] 3L, 71C ~
+
+För en Mac-fil visas "[mac]".
+   Det format Vim hittade lagras i alternativet 'fileformat'.  Visa formatet
+med: >
+
+	:set fileformat?
+
+Vim använder följande tre namn:
+
+	unix		<NL>
+	dos		<CR><NL>
+	mac		<CR>
+
+
+ANVÄNDA MAC-FORMATET
+
+I Unix används <NL> för att avsluta en rad.  Det är inte ovanligt att ha ett
+<CR>-tecken mitt på raden.  Detta händer för övrigt ganska ofta i Vi- och
+Vim-skript.
+   På Macintosh, där <CR> avslutar rader, kan ett <NL>-tecken förekomma mitt
+på en rad.
+   Därför går det inte att vara helt säker på om en fil med både <CR> och
+<NL> är en Mac- eller Unix-fil.  Vim antar att du antagligen inte redigerar
+Mac-filer i Unix och kontrollerar inte efter det formatet.  Lägg till "mac" i
+'fileformats' om du ändå vill kontrollera det: >
+
+	:set fileformats+=mac
+
+Vim försöker då gissa filformatet.  Var uppmärksam på att gissningen kan bli
+fel.
+
+
+ANGE ETT ANNAT FORMAT
+
+Om du använder gamla Vi för att redigera en fil med MS-DOS-format ser du att
+varje rad slutar med tecknet ^M.  (^M är <CR>.)  Automatisk identifiering
+förhindrar detta.  Om du vill redigera filen på det sättet måste du åsidosätta
+formatet: >
+
+	:edit ++ff=unix file.txt
+
+Strängen "++" anger att ett alternativnamn följer och åsidosätter standard-
+inställningen för det här kommandot.  "++ff" gäller 'fileformat'.  Du kan
+även ange "++ff=mac" eller "++ff=dos".
+   Formerna "++fileformat" och "++encoding" fungerar också. Se |++opt|
+för alla flaggor som stöds.
+
+
+KONVERTERA FILFORMAT
+
+Använd alternativet 'fileformat' för att konvertera mellan filformat.  Anta
+att du vill konvertera filen README.TXT från MS-DOS-format till Unix-format.
+Öppna först filen: >
+
+	vim README.TXT
+
+Vim känner igen DOS-formatet.  Ändra sedan filformatet till Unix och skriv
+filen: >
+
+	:set fileformat=unix
+	:write
+
+Filen skrivs nu i Unix-format.
+
+==============================================================================
+*23.2*	Filer på internet
+
+Någon skickar ett e-postmeddelande med en adress till en fil.  Till exempel:
+
+	You can find the information here: ~
+		https://ftp.nluug.nl/pub/vim/README
+
+Du kan starta ett program som hämtar filen, spara den lokalt och sedan öppna
+den i Vim.
+   Det finns ett enklare sätt.  Flytta markören till ett valfritt tecken i
+adressen och använd: >
+
+	gf
+
+Om du har tur räknar Vim ut vilket program som ska användas, hämtar filen och
+öppnar kopian.  Öppna filen i ett nytt fönster med CTRL-W f.
+   Om något går fel får du ett felmeddelande.  Adressen kan vara fel, du kan
+sakna läsbehörighet eller nätverksanslutningen kan vara nere.  Det kan vara
+svårt att avgöra orsaken.  Du kan i stället försöka hämta filen manuellt.
+
+Åtkomst till filer på internet hanteras av insticksprogrammet netrw.  För
+närvarande känner det igen följande adressformat:
+
+	`ftp://`	använder ftp
+	`rcp://`	använder rcp
+	`scp://`	använder scp
+	`http://`	använder wget (endast läsning)
+
+Vim sköter inte nätverkskommunikationen självt, utan använder programmen ovan.
+På de flesta Unix-system finns "ftp" och "rcp" redan.  Du kan behöva installera
+"scp" och "wget".
+
+Vim känner igen adresserna när ett kommando börjar redigera en ny fil, till
+exempel ":edit" och ":split".  Skrivkommandon fungerar också, utom för
+`http://`.
+
+Mer information, även om lösenord, finns i |netrw|.
+
+==============================================================================
+*23.3*	Kryptering
+
+Viss information vill du kanske hålla hemlig.  Du kanske skriver ett prov på
+en dator som även elever använder och vill hindra dem från att läsa frågorna i
+förväg.  Vim kan kryptera filen och ge ett visst skydd.
+   Starta Vim med argumentet "-x" för att redigera en ny fil med kryptering.
+Exempel: >
+
+	vim -x exam.txt
+
+Vim ber om en nyckel som används för att kryptera och dekryptera filen:
+
+	Ange krypteringsnyckel: ~
+
+Skriv den hemliga nyckeln noggrant.  Tecknen visas inte utan ersätts med
+stjärnor.  För att undvika problem om du råkar skriva fel ber Vim dig ange
+nyckeln en gång till:
+
+	Ange samma nyckel igen: ~
+
+Nu kan du redigera filen som vanligt och skriva det du vill skydda.  Texten krypteras när du skriver filen till disk.
+   Nästa gång du öppnar filen i Vim får du ange samma nyckel igen.  Du behöver
+inte använda argumentet "-x"; det går bra med det vanliga kommandot ":edit".
+Vim lägger till en särskild sträng i filen så att det känner igen krypteringen.
+   Om du visar filen med ett annat program ser du bara obegriplig text.  Det
+kan bli samma sak om du öppnar filen i Vim och anger fel nyckel. Vissa
+krypteringsmetoder kan upptäcka att nyckeln är fel. Se 'cryptmethod'.
+
+
+SLÅ PÅ OCH AV KRYPTERING
+
+Stäng av krypteringen genom att ange en tom sträng för alternativet 'key': >
+
+	:set key=
+
+Nästa gång du skriver filen sparas den okrypterad.
+   Det är olämpligt att slå på kryptering genom att ange alternativet 'key',
+eftersom lösenordet då visas i klartext.  Någon som tittar över axeln på dig
+kan läsa det.
+   Använd i stället kommandot ":X".  Det frågar efter en krypteringsnyckel,
+precis som argumentet "-x": >
+
+	:X
+	Ange krypteringsnyckel: ******
+	Ange samma nyckel igen: ******
+
+
+KRYPTERINGENS BEGRÄNSNINGAR
+
+Skyddet beror på metoden som anges i 'cryptmethod'. Äldre metoder ger
+svagare skydd.  Texten i växlingsfilen
+och ångerfilen krypteras också.  Krypteringen sker dock blockvis, vilket kan
+göra det lättare att knäcka lösenordet.  Du kan stänga av växlingsfilen, men
+då går arbetet förlorat om Vim kraschar eftersom texten bara finns i minnet.
+Du kan stänga av ångerfilen; den enda nackdelen är att du inte kan ångra när
+bufferten har tagits bort.
+   Undvik växlingsfilen genom att ange argumentet -n på kommandoraden.  Så
+här redigerar du den krypterade filen "file.txt" utan växlingsfil: >
+
+	vim -x -n file.txt
+
+Om filen redan är öppen kan du stänga av växlingsfilen med: >
+
+	:setlocal noswapfile
+
+Utan växlingsfil går det inte att återställa efter en krasch.  Spara därför
+filen oftare så minskar risken att ändringar går förlorade.
+
+Medan filen finns i minnet är texten okrypterad.  Den som har tillräckliga
+behörigheter kan läsa innehållet från redigerarens minne.
+   Om du använder en viminfo-fil ska du känna till att registerinnehåll också
+skrivs dit i klartext.
+   Om filinnehållet verkligen måste skyddas bör du bara redigera det på en
+fristående dator utan nätverksanslutning, använda säkra krypteringsverktyg och
+förvara datorn inlåst.
+
+==============================================================================
+*23.4*	Binärfiler
+
+Du kan redigera binärfiler med Vim, även om programmet inte är gjort för det
+och har vissa begränsningar.  Du kan läsa en fil, ändra ett tecken och skriva
+tillbaka den.  Då ändras bara det tecknet och filen är i övrigt oförändrad.
+   Starta Vim med argumentet "-b" så att dess vanliga finesser inte orsakar
+oönskade bieffekter: >
+
+	vim -b datafile
+
+Det aktiverar alternativet 'binary'.  Exempelvis sätts 'textwidth' till noll
+så att rader inte formateras automatiskt.  Filer läses alltid i Unix-format.
+
+Binärläge kan användas för att ändra ett meddelande i ett program.  Var
+försiktig så att du inte infogar eller tar bort tecken, eftersom programmet då
+kan sluta fungera.  Använd "R" för att gå till ersättningsläge.
+
+Många tecken i filen kan inte visas.  Visa dem i hexadecimalt format med: >
+
+	:set display=uhex
+
+Du kan också använda kommandot "ga" för att visa värdet på tecknet under
+markören.  Om markören står på <Esc> kan utdata se ut så här:
+
+	<^[>  27,  Hex 1b,  Octal 033 ~
+
+Filen kanske innehåller få radbrytningar.  Stäng av alternativet 'wrap' för
+att få bättre överblick: >
+
+	:set nowrap
+
+
+BYTEPOSITION
+
+Visa vilken byteposition markören står på med: >
+
+	g CTRL-G
+
+Utdata innehåller mycket information:
+
+    Col 9-16 of 9-16; Line 277 of 330; Word 1806 of 2058; Byte 10580 of 12206 ~
+
+De två sista talen anger bytepositionen i filen och det totala antalet byte.
+Värdet påverkas av hur 'fileformat' ändrar antalet byte som används för en
+radbrytning.
+    Flytta till en viss byte i filen med kommandot "go".  Flytta till byte
+2345 så här: >
+
+	2345go
+
+
+ANVÄNDA XXD
+
+En riktig binärredigerare visar texten både som den ser ut och i hexadecimalt
+format.  I Vim kan du göra det genom att konvertera filen med programmet
+"xxd", som följer med Vim.
+   Öppna först filen i binärläge: >
+
+	vim -b datafile
+
+Konvertera den sedan till en hexdump med xxd: >
+
+	:%!xxd
+
+Texten ser då ut så här:
+
+	0000000: 1f8b 0808 39d7 173b 0203 7474 002b 4e49  ....9..;..tt.+NI ~
+	0000010: 4b2c 8660 eb9c ecac c462 eb94 345e 2e30  K,.`.....b..4^.0 ~
+	0000020: 373b 2731 0b22 0ca6 c1a2 d669 1035 39d9  7;'1.".....i.59. ~
+
+Nu kan du visa och redigera texten.  Vim behandlar informationen som vanlig
+text.  Om du ändrar hexdelen ändras inte de utskrivbara tecknen, och tvärtom.
+   Konvertera till sist tillbaka med: >
+
+	:%!xxd -r
+
+Endast ändringar i hex-delen används.  Ändringar i den utskrivbara texten till
+höger ignoreras.
+
+Se xxd:s manualsida för mer information.
+
+==============================================================================
+*23.5*	Komprimerade filer
+
+Det är enkelt: du kan redigera en komprimerad fil precis som vilken annan fil
+som helst.  Insticksprogrammet "gzip" packar upp den när du öppnar den och
+komprimerar den igen när du skriver filen.
+   Följande komprimeringsformat stöds för närvarande:
+
+	.Z	compress
+	.br	brotli
+	.bz2	bzip2
+	.bz3	bzip3
+	.gz	gzip
+	.lz	lzip
+	.lz4	lz4
+	.lzma	lzma
+	.lzo	lzop
+	.xz	xz
+	.zst	zstd
+
+Vim använder de angivna programmen för själva komprimeringen och uppackningen.
+Du kan behöva installera programmen först.
+
+==============================================================================
+
+Nästa kapitel: |usr_24.txt|  Infoga text snabbt
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

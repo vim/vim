@@ -1,0 +1,351 @@
+*usr_42.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+			 VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Lägga till menyer
+
+
+Nu vet du att Vim är mycket flexibelt.  Det gäller även menyerna i det grafiska
+gränssnittet.  Du kan definiera egna menyval så att vissa kommandon blir lätta
+att komma åt.  Menyerna är främst till för dig som gärna använder musen.
+
+|42.1|	Introduktion
+|42.2|	Menykommandon
+|42.3|	Övrigt
+|42.4|	Verktygsfält och popupmenyer
+
+	Nästa kapitel: |usr_43.txt|  Använda filtyper
+	Föregående kapitel: |usr_41.txt|  Skriva ett Vim-skript
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*42.1*	Introduktion
+
+Menyerna som Vim använder definieras i filen "$VIMRUNTIME/menu.vim".  Läs
+gärna igenom filen om du vill skriva egna menyer.
+   Definiera ett menyval med kommandot ":menu".  Grundformen är: >
+
+	:menu {menyval} {tangenter}
+
+{menyval} anger var i menyn menyvalet ska placeras.  Ett vanligt {menyval} är
+"File.Save", som motsvarar menyvalet "Save" i menyn "File".  En punkt skiljer
+menynamnen åt.  Exempel: >
+
+	:menu File.Save  :update<CR>
+
+Kommandot ":update" skriver filen om den har ändrats.
+   Du kan lägga till fler nivåer.  "Edit.Settings.Shiftwidth" definierar till
+exempel undermenyn "Settings" under menyn "Edit", med menyvalet "Shiftwidth".
+Det går att skapa fler nivåer, men överdriv inte.  Då måste du flytta musen
+långt för att använda menyvalet.
+   Kommandot ":menu" fungerar ungefär som ":map": vänster sida anger hur
+menyvalet aktiveras och höger sida anger vilka tangenter som utförs.  {tangenter}
+är tecken som används som om du hade skrivit dem.  I infogningsläge infogas
+därför vanlig text som anges med {tangenter}.
+
+
+SNABBTANGENTER
+
+Tecknet & anger en snabbtangent.  Du kan till exempel använda <Alt>-A för att
+välja "Arkiv" och S för att välja "Spara".  (Alternativet 'winaltkeys' kan
+stänga av detta.)  Därför kan {menyval} skrivas "&File.&Save".  I den svenska
+menyn visas motsvarande snabbtangenter understrukna.
+   Se till att varje tangent bara används en gång i respektive meny.  Annars
+vet du inte vilket av två menyval som aktiveras.  Vim varnar inte för detta.
+
+
+PRIORITETER
+
+Här är en förenklad definition som använder samma prioritet som File.Save: >
+
+	:menu 10.340 &File.&Save<Tab>:w  :confirm w<CR>
+
+Talet 10.340 kallas prioritetsnummer.  Redigeraren använder det för att
+bestämma var menyvalet ska placeras.  Det första talet (10) anger positionen i
+menyraden.  Menyer med lägre tal placeras längre till vänster och menyer med
+högre tal längre till höger.
+   Standardmenyerna har följande prioriteter:
+
+	  10	20	 40	 50	 60	 70		9999
+
+	+------------------------------------------------------------+
+	| Arkiv	Redigera Verktyg Syntax Buffertar Fönster	Hjälp |
+	+------------------------------------------------------------+
+
+Hjälpmenyn har ett mycket högt tal så att den hamnar längst till höger.
+   Det andra talet (340) anger menyvalets placering i rullgardinsmenyn.  Lägre
+tal placeras högre upp och högre tal längre ned.  Här är några av prioriteterna i den engelska File-menyn:
+
+			+-----------------+
+	    10.310	|Open...          |
+	    10.320	|Split-Open...    |
+	    10.320	|Open Tab...      |
+	    10.325	|New              |
+	    10.330	|Close            |
+	    10.335	|---------------- |
+	    10.340	|Save             |
+	    10.350	|Save As...       |
+	    10.400	|---------------- |
+	    10.410	|Split Diff with  |
+	    10.420	|Split Patched By |
+	    10.500	|---------------- |
+	    10.510	|Print            |
+	    10.600	|---------------- |
+	    10.610	|Save-Exit        |
+	    10.620	|Exit             |
+			+-----------------+
+
+Det finns alltså utrymme mellan talen.  Där kan du lägga till egna menyval om
+du vill.  Ofta är det dock bättre att låta standardmenyerna vara och skapa en
+ny meny för egna menyval.
+   När du skapar en undermeny kan du lägga till ytterligare ett ".nummer" i
+prioriteten.  Varje namn i {menyval} har då ett eget prioritetsnummer.
+
+
+SPECIALTECKEN
+
+I exemplet är {menyval} "&File.&Save<Tab>:w".  Det visar en viktig sak:
+{menyval} måste vara ett enda ord.  Använd vinkelparentesnotering (<Space> och
+<Tab> till exempel) eller omvänt snedstreck (\) om namnet ska innehålla en
+punkt, ett blanksteg eller en tabb. >
+
+	:menu 10.305 &File.&Do\ It\.\.\. :exit<CR>
+
+Här innehåller menyvalets namn "Do It..." blanksteg och kommandot är
+":exit<CR>".
+
+Tecknet <Tab> i ett menynamn skiljer namnet från en ledtext.  Texten efter
+<Tab> visas högerjusterad i menyn.  I menyvalet File.Save används
+"&File.&Save<Tab>:w".  Menynamnet är alltså "File.Save" och ledtexten är ":w".
+
+
+AVSKILJARE
+
+Avskiljare som grupperar relaterade menyval definieras med ett namn som börjar
+och slutar med ett bindestreck, till exempel "-sep-".  Om du använder flera
+avskiljare måste de ha olika namn.  Namnen spelar annars ingen roll.
+   Kommandot från en avskiljare körs aldrig, men du måste ändå definiera ett.
+Det räcker med ett kolon: >
+
+	:amenu 20.510 Edit.-sep3- :
+
+==============================================================================
+*42.2*	Menykommandon
+
+Du kan definiera menyval som bara finns i vissa lägen.  Det fungerar på samma
+sätt som varianterna av kommandot ":map":
+
+	:menu		Normalt, visuellt och operatorvänteläge
+	:nmenu		Normalt läge
+	:vmenu		Visuellt läge
+	:omenu		Operatorvänteläge
+	:menu!		Infognings- och kommandoradsläge
+	:imenu		Infogningsläge
+	:cmenu		Kommandoradsläge
+	:tlmenu		Terminalläge
+	:amenu		Alla lägen utom terminalläget
+
+Använd kommandona ":noremenu", ":nnoremenu", ":anoremenu" och så vidare om
+du vill förhindra att tangenterna i ett menyval mappas.
+
+
+ANVÄNDA :AMENU
+
+Kommandot ":amenu" fungerar lite annorlunda.  Det utgår från att {tangenter}
+ska köras i normalt läge.  Om Vim är i visuellt läge eller infogningsläge när
+menyn används måste Vim först återgå till normalt läge.  ":amenu" lägger då
+till CTRL-C eller CTRL-O automatiskt.  Exempel: >
+
+	:amenu  90.100 Mine.Find\ Word  *
+
+Menykommandona blir då:
+
+	Normalt läge:		*
+	Visuellt läge:		CTRL-C *
+	Operatorvänteläge:	CTRL-C *
+	Infogningsläge:	CTRL-O *
+	Kommandoradsläge:	CTRL-C *
+
+I kommandoradsläge avbryter CTRL-C det kommando du har skrivit.  I visuellt
+läge och operatorvänteläge avslutar CTRL-C läget.  CTRL-O i infogningsläge
+kör kommandot och återgår sedan till infogningsläge.
+   CTRL-O fungerar bara för ett kommando.  Lägg flera kommandon i en funktion
+och anropa den om du behöver köra två eller fler.  Exempel: >
+
+	:amenu  Mine.Next\ File  :call <SID>NextFile()<CR>
+	:function <SID>NextFile()
+	:  next
+	:  1/^Code
+	:endfunction
+
+Menyvalet går till nästa fil i argumentlistan med ":next" och söker sedan
+efter en rad som börjar med "Code".
+   <SID> före funktionsnamnet är skriptets ID.  Det gör funktionen lokal för
+det aktuella Vim-skriptet och undviker konflikter med funktioner med samma
+namn i andra skript.  Se |<SID>|.
+
+
+TYSTA MENYER
+
+Menyvalet kör {tangenter} som om du hade skrivit dem.  För ett ":"-kommando
+innebär det att kommandot visas på kommandoraden.  Om det är långt visas
+frågan om att trycka på Enter.  Det kan vara irriterande.
+   Lägg till argumentet <silent> för att dölja kommandot.  I föregående exempel
+visas följande på kommandoraden när du använder menyvalet:
+
+	:call <SNR>34_NextFile() ~
+
+Lägg till <silent> som första argument för att dölja texten: >
+
+	:amenu <silent> Mine.Next\ File :call <SID>NextFile()<CR>
+
+Använd inte <silent> i onödan.  Det behövs inte för korta kommandon.  Om du
+skriver en meny åt någon annan kan det vara till hjälp att se kommandot som
+körs, så att användaren kan lära sig vad som går att skriva i stället för att
+använda musen.
+
+
+VISA MENYER
+
+Om ett menykommando används utan delen {tangenter} visas redan definierade
+menyer.  Du kan ange ett {menyval} eller en del av det för att bara visa vissa
+menyer.  Exempel: >
+
+	:amenu
+
+Det visar alla menyer.  Listan är lång, så ange hellre ett menynamn för att få
+en kortare lista: >
+
+	:amenu Edit
+
+Det visar bara menyvalen i menyn "Edit" för alla lägen.  Visa ett menyval för
+infogningsläge med: >
+
+	:imenu Edit.Undo
+
+Skriv namnet exakt rätt.  Skillnader mellan stora och små bokstäver spelar
+roll.  Använd de översatta namnen om menyerna är översatta, till exempel
+":amenu Redigera". Tecknet & för snabbtangenter kan utelämnas.  <Tab> och texten efter det
+kan också utelämnas.
+
+
+TA BORT MENYER
+
+Ta bort ett menyval med samma kommando som används för att visa menyer, men byt
+ut "menu" mot "unmenu".  ":menu" blir alltså ":unmenu", ":nmenu" blir
+":nunmenu" och så vidare.  Ta bort menyvalet Mine.Next File från exemplet för infogningsläget med:
+>
+
+	:iunmenu Mine.Next\ File
+
+Ta bort en hel meny och alla dess menyval genom att ange menynamnet: >
+
+	:aunmenu Syntax
+
+Det tar bort menyn Syntax och alla dess menyval.
+
+==============================================================================
+*42.3*	Övrigt
+
+Ändra hur menyerna visas med flaggor i alternativet 'guioptions'.  Standardvärdet beror på vilket grafiskt gränssnitt Vim använder.  Ta bort en flagga så här: >
+
+	:set guioptions-=m
+<
+	m	När den tas bort visas inte menyraden.
+
+	M	När den läggs till läses standardmenyerna inte in.
+
+	g	När den tas bort tonas inaktiva menyval inte ned utan tas bort helt.
+		(Det fungerar inte på alla system.)
+
+	t	När den tas bort aktiveras inte funktionen för löstagbara menyer.
+
+Den prickade linjen högst upp i en meny är inte en avskiljare.  Väljer du den
+"lossnar" menyn och visas i ett eget fönster.  Det kallas en löstagbar meny.
+Det är användbart när du ofta använder samma meny.
+
+Information om hur du översätter menyval finns i |:menutrans|.
+
+Eftersom du behöver musen för att välja ett menyval är det praktiskt att
+använda kommandot ":browse" för att välja en fil och ":confirm" för att visa
+en dialogruta i stället för ett felmeddelande, till exempel när den aktuella
+bufferten innehåller ändringar.  Du kan kombinera kommandona: >
+
+	:amenu File.Open  :browse confirm edit<CR>
+
+Kommandot ":browse" visar en filbläddrare där du kan välja filen som ska
+redigeras.  ":confirm" visar en dialogruta om den aktuella bufferten har
+ändrats.  Där kan du välja att spara ändringarna, kasta dem eller avbryta
+kommandot.
+   För mer komplicerade menyval kan funktionerna confirm() och inputdialog()
+användas.  Det finns några exempel i standardmenyerna.
+
+==============================================================================
+*42.4*	Verktygsfält och popupmenyer
+
+Det finns två särskilda menyer: ToolBar och PopUp.  Menyval som börjar med de
+namnen visas inte i den vanliga menyraden.
+
+
+VERKTYGSFÄLT
+
+Verktygsfältet visas bara när flaggan "T" ingår i alternativet 'guioptions'.
+   Verktygsfältet använder ikoner i stället för text för att visa kommandon.
+Menyobjektet "ToolBar.New" visar till exempel ikonen "New" i verktygsfältet.
+   Vim har 28 inbyggda ikoner.  En lista finns i |builtin-tools|.  De flesta
+används i standardverktygsfältet.  Du kan ändra vad menyvalen gör efter att
+standardmenyerna har lästs in.
+   Du kan lägga till en bitmapp för ett menyval i verktygsfältet eller skapa
+ett nytt menyval med en egen bitmapp.  Exempel: >
+
+	:tmenu ToolBar.Compile  Kompilera den aktuella filen
+	:amenu ToolBar.Compile  :!cc %:S -o %:r:S<CR>
+
+Skapa sedan ikonen.  I MS-Windows måste den vara en bitmapp med namnet
+"Compile.bmp".  I Unix används formatet XPM och filnamnet ska vara
+"Compile.xpm".  Storleken ska vara 18 gånger 18 bildpunkter.  I MS-Windows kan
+andra storlekar användas, men resultatet blir fult.
+   Lägg bitmappen i katalogen "bitmaps" i någon av katalogerna i 'runtimepath'.
+I Unix kan det till exempel vara "~/.vim/bitmaps/Compile.xpm".
+
+Du kan lägga till verktygstips för menyval i verktygsfältet.  Ett verktygstips
+är en kort text som förklarar vad menyvalet gör, till exempel "Öppna fil".
+Texten visas när muspekaren står stilla över menyvalet en stund.  Det är
+användbart om ikonens betydelse inte är självklar.  Exempel: >
+
+	:tmenu ToolBar.Make  Kör make i den aktuella katalogen
+<
+	Observera:
+	Var noga med skillnaden mellan stora och små bokstäver.  "Toolbar" och
+	"toolbar" är inte samma sak som "ToolBar"!
+
+Ta bort ett verktygstips med kommandot |:tunmenu|.
+
+Använd alternativet 'toolbar' för att visa text i stället för en bitmapp eller
+både text och bitmapp.  De flesta använder bara bitmappen eftersom texten tar
+mycket plats.
+
+
+POPUPMENY
+
+Popupmenyn visas där muspekaren står.  I MS-Windows öppnar du den med höger
+musknapp.  Välj sedan ett menyval med vänster musknapp.  I Unix öppnar du
+popupmenyn genom att hålla ned höger musknapp.
+   Popupmenyn visas bara när 'mousemodel' är inställt på "popup" eller
+"popup_setpos".  Skillnaden är att "popup_setpos" flyttar markören till
+muspekarens position.  Om du klickar i en markering används den oförändrad.
+Om det finns en markering men du klickar utanför den tas markeringen bort.
+   Det finns en separat popupmeny för varje läge.  Därför tonas inga menyval
+ned som i de vanliga menyerna.
+
+Vad är meningen med livet, universum och allting?  *42*
+Douglas Adams, den enda person som visste vad frågan egentligen handlade om,
+är tyvärr död.  Nu kanske du undrar vad meningen med döden är ...
+
+==============================================================================
+
+Nästa kapitel: |usr_43.txt|  Använda filtyper
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

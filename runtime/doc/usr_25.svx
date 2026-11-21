@@ -1,0 +1,564 @@
+*usr_25.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Redigera formaterad text
+
+
+Text består sällan av en mening per rad.  Det här kapitlet handlar om att
+bryta rader så att de passar på sidan och om annan formatering.  Vim har också
+användbara funktioner för att redigera enradiga stycken och tabeller.
+
+|25.1|	Radbrytning
+|25.2|	Justera text
+|25.3|	Indrag och tabbar
+|25.4|	Hantera långa rader
+|25.5|	Redigera tabeller
+
+	Nästa kapitel: |usr_26.txt|  Upprepning
+	Föregående kapitel: |usr_24.txt|  Infoga text snabbt
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*25.1*	Radbrytning
+
+Vim har flera funktioner som gör det enklare att arbeta med text.  Som
+standard infogar redigeraren inte radbrytningar automatiskt.  Du måste alltså
+själv trycka på <Enter>.  Det är användbart när du skriver program och själv
+vill bestämma var raderna slutar.  Det passar sämre när du skriver dokument
+som ska vara högst 70 tecken breda.
+   Ställ in alternativet 'textwidth' om du vill att Vim ska infoga
+radbrytningar automatiskt.  Anta att du vill ha en smal spalt på bara 30
+tecken: >
+
+	:set textwidth=30
+
+Börja skriva (linjal tillagd):
+
+		 1	   2	     3
+	12345678901234567890123456789012345
+	I taught programming for a whi ~
+
+Om du nu skriver "l" blir raden längre än gränsen på 30 tecken.  Vim märker
+det, infogar en radbrytning och resultatet blir:
+
+		 1	   2	     3
+	12345678901234567890123456789012345
+	I taught programming for a ~
+	whil ~
+
+Fortsätt skriva resten av stycket:
+
+		 1	   2	     3
+	12345678901234567890123456789012345
+	I taught programming for a ~
+	while. One time, I was stopped ~
+	by the Fort Worth police, ~
+	because my homework was too ~
+	hard. True story. ~
+
+Du behöver inte skriva radbrytningarna själv; Vim infogar dem automatiskt.
+
+	Observera:
+	Alternativet 'wrap' gör att Vim visar rader med visuell radbrytning,
+	men infogar ingen radbrytning i själva filen.
+
+
+FORMATERA OM TEXT
+
+Vim är ingen ordbehandlare.  I en ordbehandlare formateras radbrytningarna om
+när du tar bort något i början av ett stycke.  Det sker inte i Vim.  Om du tar
+bort ordet "programming" från första raden får du en kort rad:
+
+		 1	   2	     3
+	12345678901234567890123456789012345
+	I taught for a ~
+	while. One time, I was stopped ~
+	by the Fort Worth police, ~
+	because my homework was too ~
+	hard. True story. ~
+
+Det ser inte bra ut.  Använd operatorn "gq" för att formatera om stycket.
+   Börja med ett visuellt urval.  Stå på första raden och skriv: >
+
+	v4jgq
+
+"v" startar visuellt läge, "4j" flyttar till slutet av stycket och sedan
+formaterar operatorn "gq" urvalet.  Resultatet blir:
+
+		 1	   2	     3
+	12345678901234567890123456789012345
+	I taught for a while. One ~
+	time, I was stopped by the ~
+	Fort Worth police, because my ~
+	homework was too hard. True ~
+	story. ~
+
+Se |auto-format| för automatisk formatering av särskilda textlayouter.
+
+Eftersom "gq" är en operator kan du välja texten på tre sätt: med visuellt
+läge, med ett förflyttningskommando eller med ett textobjekt.
+   Exemplet ovan kan också skrivas "gq4j".  Det är kortare, men då måste du
+känna till antalet rader.  Förflyttningskommandot "}" är oftast användbarare,
+eftersom det går till slutet av ett stycke.  "gq}" formaterar alltså från
+markören till slutet av det aktuella stycket.
+   Ett praktiskt textobjekt för "gq" är stycket.  Prova: >
+
+	gqap
+
+"ap" står för ”ett stycke”.  Kommandot formaterar texten i ett stycke som
+avgränsas av tomrader.  Även texten före markören tas med.
+   Om styckena skiljs åt av tomrader kan du formatera hela filen med: >
+
+	gggqG
+
+"gg" flyttar till den första raden och "gqG" formaterar fram till den sista.
+   Varning: om styckena inte skiljs åt på rätt sätt fogas de ihop.  Ett vanligt
+misstag är att en rad ser tom ut men innehåller ett blanksteg eller en tabb.
+Den är då inte tom.
+
+Vim kan formatera mer än vanlig text.  Läs om hur du ändrar detta i |fo-table|.
+Använd alternativet 'joinspaces' för att ändra antalet blanksteg efter punkt.
+   Du kan också använda ett externt program för formatering om Vims inbyggda
+kommando inte räcker.  Se alternativet 'formatprg'.
+
+==============================================================================
+*25.2*	Justera text
+
+Centrera ett radintervall med: >
+
+	:{intervall}center [bredd]
+
+{intervall} är ett vanligt kommandoradsintervall.  [bredd] är en valfri
+radbredd att centrera texten inom.  Om du utelämnar den används värdet för
+'textwidth'.  (Om 'textwidth' är 0 används 80.)
+   Exempel: >
+
+	:1,5center 40
+
+ger följande resultat:
+
+       I taught for a while. One ~
+       time, I was stopped by the ~
+     Fort Worth police, because my ~
+      homework was too hard. True ~
+		 story. ~
+
+
+HÖGERJUSTERING
+
+Kommandot ":right" högerjusterar texten: >
+
+	:1,5right 37
+
+Resultatet blir:
+
+	    I taught for a while. One ~
+	   time, I was stopped by the ~
+	Fort Worth police, because my ~
+	  homework was too hard. True ~
+			       story. ~
+
+
+VÄNSTERJUSTERING
+
+Använd följande kommando för vänsterjustering: >
+
+	:{intervall}left [marginal]
+
+Till skillnad från ":center" och ":right" anger argumentet till ":left" inte
+radens bredd utan vänstermarginalen.  Om argumentet utelämnas placeras texten
+längst till vänster på skärmen.  Värdet noll ger samma resultat.  Värdet 5 ger
+ett indrag på fem blanksteg.  Exempel: >
+
+	:1left 5
+	:2,5left
+
+Resultatet blir:
+
+	     I taught for a while. One ~
+	time, I was stopped by the ~
+	Fort Worth police, because my ~
+	homework was too hard. True ~
+	story. ~
+
+
+JUSTERA RADERNA PÅ BÅDA SIDOR	*justify* *:Justify* *Justify()* *package-justify*
+
+Vim har inget inbyggt kommando för att marginaljustera text.  Det finns dock
+ett smidigt makropaket som gör det.  Läs in paketet med: >vim
+
+	:packadd justify
+
+<eller lägg till följande rad i |vimrc|: >vim
+
+	:packadd! justify
+
+Vim-skriptet definierar det nya visuella kommandot "_j".  Markera ett
+textblock i visuellt läge och kör "_j" för att marginaljustera det.
+   Läs filen för ytterligare förklaringar.  Gå dit genom att använda "gf" på
+sökvägen:
+$VIMRUNTIME/pack/dist/opt/justify/plugin/justify.vim.
+
+Du kan också skicka texten genom ett externt program.  Exempel: >
+
+	:%!fmt
+
+==============================================================================
+*25.3*	Indrag och tabbar
+
+Indrag kan få text att skilja sig från resten.  Exempeltexterna i den här
+handboken har till exempel åtta kolumners indrag.  Vanligen skriver du en
+<Tab> i början av varje rad.  Exempel:
+	det första exemplet ~
+	det andra exemplet ~
+
+Skriv en <Tab>, lite text, <Enter>, en <Tab> till och sedan mer text.
+   Alternativet 'autoindent' infogar indrag automatiskt: >
+
+	:set autoindent
+
+En ny rad får då samma indrag som föregående rad.  I exemplet ovan behöver du
+inte längre trycka på <Tab> efter <Enter>.
+
+
+ÖKA INDRAGET
+
+Använd operatorn ">" i normalläget för att öka indraget på en rad.  Ofta
+används den dubbelt som ">>", vilket ökar indraget på den aktuella raden.
+I infogningsläget använder du <C-t>.
+   Hur mycket indrag som läggs till styrs av 'shiftwidth'.  Standardvärdet är
+8.  Om ">>" ska lägga till fyra kolumner skriver du: >
+
+	:set shiftwidth=4
+
+Använt på den andra raden i exemplet blir resultatet:
+
+	det första exemplet ~
+	    det andra exemplet ~
+
+"4>>" ökar indraget på fyra rader.
+
+
+MJUKA TABULATORSTOPP
+
+Om indraget ska vara en multipel av fyra ställer du 'shiftwidth' på 4.  Men
+<Tab> ger fortfarande åtta kolumner.  Ändra alternativet 'softtabstop': >
+
+	:set softtabstop=4
+
+Vim skapar nu osynliga tabulatorstopp var fjärde kolumn.  När du trycker på
+<Tab> hoppar markören till nästa stopp och Vim infogar rätt kombination av
+blanksteg och tabbar.
+
+	Observera:
+	Du kan ställa in 'tabstop' på 4.  Om filen senare öppnas med standard-
+	värdet 8 ser den dock fel ut.  Indraget blir också fel i andra program
+	och vid utskrift.  Därför rekommenderas att alltid ha 'tabstop' på 8.
+	Det är standardvärdet i Unix-liknande system.
+
+==============================================================================
+*25.4*	Hantera långa rader
+
+Ibland redigerar du en fil där raderna är bredare än fönstret.  Då radbryter
+Vim dem på skärmen så att allt ryms.
+   Om du stänger av alternativet 'wrap' visas varje filrad på en skärmlinje.
+Den högra delen av långa rader försvinner då utanför skärmen.
+   När du flyttar markören till ett tecken som inte syns rullar Vim texten
+så att tecknet visas.  Det motsvarar att flytta ett visningsfönster i sidled.
+   Som standard visar Vim inget vågrätt rullningsfält i det grafiska
+gränssnittet.  Aktivera ett med: >
+
+	:set guioptions+=b
+
+Ett vågrätt rullningsfält visas längst ned i Vim-fönstret.
+
+Om du inte har något rullningsfält eller inte vill använda det kan du rulla
+texten med följande kommandon.  Markören står kvar på samma plats, men flyttas
+vid behov tillbaka till den synliga texten:
+
+	zh		rulla åt höger
+	4zh		rulla fyra tecken åt höger
+	zH		rulla en halv fönsterbredd åt höger
+	ze		rulla så att markören hamnar längst till höger
+	zl		rulla åt vänster
+	4zl		rulla fyra tecken åt vänster
+	zL		rulla en halv fönsterbredd åt vänster
+	zs		rulla så att markören hamnar längst till vänster
+
+Här visas ett exempel med en textrad.  Markören står på "w" i "which".
+”Current window” ovanför raden visar texten som syns just nu.  ”Window” under
+raden visar vad som syns efter kommandot till vänster:
+
+			      |<-- current window -->|
+		some long text, part of which is visible in the window ~
+	ze	  |<--   window     -->|
+	zH	   |<--     window     -->|
+	4zh		  |<--   window     -->|
+	zh		     |<--     window	 -->|
+	zl		       |<--	window	   -->|
+	4zl		  |<--   window     -->|
+	zL				|<--  window     -->|
+	zs		       |<--	window	   -->|
+
+
+FLYTTA MARKÖREN MED AVSTÄNGD RADBRYTNING
+
+När 'wrap' är av och texten har rullats i sidled kan du använda följande
+kommandon för att flytta markören till tecken som syns.  Text till höger och
+vänster om fönstret ignoreras.  Kommandona rullar aldrig texten:
+
+	g0	till det första synliga tecknet på skärmraden
+	g^	till det första synliga tecknet som inte är ett blanksteg
+	gm	till mitten av skärmraden
+	gM	till mitten av texten på raden
+	g$	till det sista synliga tecknet på skärmraden
+
+		|<--   window     -->|
+	some long    text, part of which is visible in one line ~
+		 g0  g^    gm	   gM g$
+
+
+BRYTA VID ORD						*edit-no-break*
+
+När text ska användas av ett annat program kanske stycken inte får innehålla
+radbrytningar.  Med 'nowrap' ser du inte hela meningen du arbetar med.  Med
+'wrap' kan ord delas mitt itu, vilket gör texten svårläst.
+   En bra lösning är alternativet 'linebreak'.  Vim bryter då skärmrader vid
+lämpliga ställen utan att ändra texten i filen.
+   Utan 'linebreak' kan texten se ut så här:
+
+	+---------------------------------+
+	|letter generation program for a b|
+	|ank.  They wanted to send out a s|
+	|pecial, personalized letter to th|
+	|eir richest 1000 customers.  Unfo|
+	|rtunately for the programmer, he |
+	+---------------------------------+
+
+Efter kommandot: >
+
+	:set linebreak
+
+ser den ut så här:
+
+	+---------------------------------+
+	|letter generation program for a  |
+	|bank.  They wanted to send out a |
+	|special, personalized letter to  |
+	|their richest 1000 customers.    |
+	|Unfortunately for the programmer,|
+	+---------------------------------+
+
+Relaterade alternativ:
+'breakat' anger tecken där en visuell radbrytning får göras.
+'showbreak' anger text som visas i början av en visuellt bruten rad.
+Ställ in 'textwidth' på noll för att undvika att ett stycke delas i filen.
+
+
+FLYTTA MARKÖREN MELLAN SKÄRMRADER
+
+Kommandona "j" och "k" flyttar till nästa respektive föregående rad.  På en
+lång rad kan det innebära att markören flyttas flera skärmrader.
+   Använd "gj" och "gk" för att flytta exakt en skärmrad.  Om raden inte bryts
+visuellt gör de samma sak som "j" och "k".  Annars flyttar de till ett tecken
+som visas en rad nedanför eller ovanför.
+   Du kan mappa dessa rörelser till piltangenterna: >
+
+	:map <Up> gk
+	:map <Down> gj
+
+
+GÖRA VARJE STYCKE TILL EN RAD			*edit-paragraph-join*
+
+Om du ska importera text till exempelvis MS-Word kan varje stycke behöva vara
+en enda rad. Om styckena skiljs åt av tomrader kan du använda kommandot
+nedan. Lägg också till en tom rad sist i filen så att kommandot hittar
+slutet på det sista stycket: >
+
+	:g/./,/^$/join
+
+Kommandot kan verka komplicerat.  Vi delar upp det:
+
+	:g/.	Ett ":global"-kommando som hittar rader med minst ett tecken.
+	,/^$/	Ett intervall från den aktuella (icke-tomma) raden till en tom rad.
+	join	Kommandot ":join" fogar ihop raderna i intervallet.
+
+Med följande text, där raderna bryts efter kolumn 30:
+
+	+----------------------------------+
+	|A letter generation program      |
+	|for a bank.  They wanted to      |
+	|send out a special,              |
+	|personalized letter.             |
+	|                                  |
+	|To their richest 1000            |
+	|customers.  Unfortunately for    |
+	|the programmer,                   |
+	+----------------------------------+
+
+får du två stycken:
+
+	+----------------------------------+
+	|A letter generation program for a|
+	|bank. They wanted to send out a s|
+	|pecial, personalized letter.     |
+	|To their richest 1000 customers. |
+	|Unfortunately for the programmer,|
+	+----------------------------------+
+
+Det fungerar inte om skiljeraden ser tom ut men innehåller blanksteg eller
+tabbar.  Följande kommando fungerar även med sådana rader: >
+
+	:g/\S/,/^\s*$/join
+
+Det kräver fortfarande en tom eller blank rad sist i filen för att foga ihop
+det sista stycket.
+
+==============================================================================
+*25.5*	Redigera tabeller
+
+Anta att du redigerar en tabell med fyra kolumner:
+
+	nice table	  test 1	test 2	    test 3 ~
+	input A		  0.534 ~
+	input B		  0.913 ~
+
+Du ska fylla i tal i kolumnen "test 3".  Du kan flytta till den andra raden,
+använda "A", skriva en massa blanksteg och sedan värdet.
+   Alternativet 'virtualedit' gör detta enklare: >
+
+	:set virtualedit=all
+
+Nu kan du flytta markören till positioner där det inte finns någon text.  Det
+kallas virtuellt utrymme och underlättar tabellredigering.
+   Sök upp rubriken för den sista kolumnen: >
+
+	/test 3
+
+Tryck på "j".  Markören står nu där värdet för "input A" ska skrivas.  Tryck på "i", skriv "0.693" och tryck på <Esc>. Vim fyller automatiskt
+mellanrummet framför texten:
+
+	nice table	  test 1     test 2	 test 3 ~
+	input A		  0.534			 0.693 ~
+	input B		  0.913 ~
+
+Gå till nästa fält i kolumnen med "Bj".  "B" går tillbaka till början av ett
+ord som skiljs från andra med blanksteg.  Sedan flyttar "j" till platsen där
+nästa värde kan skrivas.
+
+	Observera:
+	Du kan flytta markören var som helst på skärmen, även bortom radslutet.
+	Vim infogar dock inga blanksteg där förrän du skriver ett tecken.
+
+
+KOPIERA EN KOLUMN
+
+Du vill kopiera kolumnen "test 3" och lägga kopian före "test 1".  Gör så här:
+1. Flytta till det övre vänstra hörnet av kolumnen, exempelvis med "/test 3".
+2. Tryck på CTRL-V för att starta visuellt blockläge.
+3. Flytta markören två rader ned med "2j".  Du är nu i virtuellt utrymme, på
+   raden "input B" i kolumnen "test 3".
+4. Flytta markören åt höger så att hela kolumnen och mellanrummet till nästa
+   kolumn markeras.  "9l" bör räcka.
+5. Kopiera rektangeln med "y".
+6. Flytta markören till "test 1", där den nya kolumnen ska in.
+7. Tryck på "P".
+
+Resultatet bör bli:
+
+	nice table	  test 3    test 1     test 2	   test 3 ~
+	input A		  0.693     0.534		   0.693 ~
+	input B			    0.913 ~
+
+Hela kolumnen "test 1" flyttades åt höger, även på raden där kolumnen "test 3"
+saknade text.
+
+Gå tillbaka till vanliga markörrörelser med: >
+
+	:set virtualedit=
+
+
+VIRTUELLT ERSÄTTNINGSLÄGE
+
+Nackdelen med 'virtualedit' är att det ”känns” annorlunda.  När du flyttar
+markören går det inte att se vilka osynliga tecken efter radslutet som är
+mellanslag respektive tabbar.  Ett annat sätt är virtuellt ersättningsläge.
+   Anta att en tabellrad innehåller både tabbar och andra tecken.  Använd "rx"
+på den första tabben:
+
+	inp	0.693   0.534	0.693 ~
+
+	       |
+	   rx  |
+	       V
+
+	inpx0.693   0.534	0.693 ~
+
+Layouten förstörs.  Undvik det med kommandot "gr":
+
+	inp	0.693   0.534	0.693 ~
+
+	       |
+	  grx  |
+	       V
+
+	inpx	0.693   0.534	0.693 ~
+
+Kommandot "gr" ser till att det nya tecknet använder rätt mängd skärmutrymme.
+Vim infogar extra blanksteg eller tabbar för att fylla ut.  Här ersätts alltså
+en tabb med "x", och sedan läggs blanksteg till så att den efterföljande texten
+behåller sin position.  I det här fallet infogas en tabb.
+   Om du ska ersätta flera tecken använder du "R" för att gå till
+ersättningsläget (se |04.9|).  Det förstör layouten och ersätter fel tecken:
+
+	inp	0	0.534	0.693 ~
+
+		|
+	 R0.786 |
+		V
+
+	inp	0.78634	0.693 ~
+
+Kommandot "gR" startar virtuellt ersättningsläge och bevarar layouten:
+
+	inp	0	0.534	0.693 ~
+
+		|
+	gR0.786 |
+		V
+
+	inp	0.786	0.534	0.693 ~
+
+
+FORMATERA OM TABBAR I TABELLER
+
+Du redigerar en fil med tabelluppgifter där den som skapade filen använde
+tabbar för att justera kolumnerna.  Tabbstoppen stod med fyra kolumners
+mellanrum, men Vims standard är åtta.  Tabellen ser därför fel ut.
+   Ändra inställningen tillfälligt för att rätta visningen utan att ändra
+filen: >
+
+	:set tabstop=4
+
+Den visuella layouten uppdateras, men själva filen är oförändrad.
+   Du kan också formatera om filen permanent med kommandot |:retab|.  Ställ
+först in 'tabstop' på det ursprungliga värdet, som ovan, och kör sedan: >
+
+	:retab 8
+
+Kommandot ":retab" ändrar 'tabstop' till 8 och ändrar texten så att den ser
+likadan ut.  Sekvenser som innehåller tabbar ersätts med tabbar och blanksteg
+som upptar samma bredd.  Nu kan
+du skriva filen.
+   Varning: ":retab" kan ändra blanksteg inne i en strängkonstant i ett
+program.  Därför är det en god vana att skriva "\t" i stället för en faktisk
+tabb.
+
+==============================================================================
+
+Nästa kapitel: |usr_26.txt|  Upprepning
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:
