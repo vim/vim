@@ -1242,11 +1242,13 @@ $quote	eval.txt	/*$quote*
 'tbidi'	options.txt	/*'tbidi'*
 'tbis'	options.txt	/*'tbis'*
 'tbs'	options.txt	/*'tbs'*
+'tbw'	options.txt	/*'tbw'*
 'tc'	options.txt	/*'tc'*
 'tcl'	options.txt	/*'tcl'*
 'tcldll'	options.txt	/*'tcldll'*
 'tenc'	options.txt	/*'tenc'*
 'term'	options.txt	/*'term'*
+'termbackgroundwait'	options.txt	/*'termbackgroundwait'*
 'termbidi'	options.txt	/*'termbidi'*
 'termencoding'	options.txt	/*'termencoding'*
 'termguicolors'	options.txt	/*'termguicolors'*
@@ -6381,6 +6383,7 @@ b:yaml_schema	syntax.txt	/*b:yaml_schema*
 baan-folding	syntax.txt	/*baan-folding*
 baan-syntax	syntax.txt	/*baan-syntax*
 baan.vim	syntax.txt	/*baan.vim*
+background-flash	options.txt	/*background-flash*
 backslash	intro.txt	/*backslash*
 backspace	intro.txt	/*backspace*
 backspace-delete	version4.txt	/*backspace-delete*

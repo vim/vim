@@ -2,6 +2,21 @@
 
 scriptencoding utf-8
 
+func Test_termbackgroundwait()
+  CheckFeature termresponse
+  set termbackgroundwait&
+  call assert_equal(0, &termbackgroundwait)
+  set tbw=25
+  call assert_equal(25, &termbackgroundwait)
+  call assert_fails('set termbackgroundwait=-1', 'E487:')
+  call assert_equal(25, &tbw)
+  set termbackgroundwait&vi
+  call assert_equal(0, &tbw)
+  set tbw=100
+  set termbackgroundwait&vim
+  call assert_equal(0, &tbw)
+endfunc
+
 func Test_whichwrap()
   set whichwrap=b,s
   call assert_equal('b,s', &whichwrap)
@@ -2555,7 +2570,11 @@ func Test_set_completion_fuzzy()
   " Test fuzzy option completion
   set wildoptions=fuzzy
   call feedkeys(":set termg\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"set termguicolors termencoding', @:)
+  let expected = '"set termguicolors termencoding'
+  if exists('+termbackgroundwait')
+    let expected ..= ' termbackgroundwait'
+  endif
+  call assert_equal(expected, @:)
 
   call feedkeys(":set notermg\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"set notermguicolors', @:)

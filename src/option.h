@@ -1041,6 +1041,9 @@ EXTERN int	p_tgst;		// 'tagstack'
 #if defined(DYNAMIC_TCL)
 EXTERN char_u	*p_tcldll;	// 'tcldll'
 #endif
+#ifdef FEAT_TERMRESPONSE
+EXTERN long	p_tbw;		// 'termbackgroundwait'
+#endif
 #ifdef FEAT_ARABIC
 EXTERN int	p_tbidi;	// 'termbidi'
 #endif

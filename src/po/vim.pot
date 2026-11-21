@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2026-11-17 20:21+0000\n"
+"POT-Creation-Date: 2026-11-21 15:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -9565,6 +9565,9 @@ msgid "syntax, highlighting and spelling"
 msgstr ""
 
 msgid "\"dark\" or \"light\"; the background color brightness"
+msgstr ""
+
+msgid "time in msec to wait for background detection at startup"
 msgstr ""
 
 msgid "type of file; triggers the FileType event when set"

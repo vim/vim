@@ -2667,6 +2667,13 @@ static struct vimoption options[] =
     {"term",	    NULL,   P_STRING|P_EXPAND|P_NODEFAULT|P_NO_MKRC|P_VI_DEF|P_RALL,
 			    (char_u *)&T_NAME, PV_NONE, did_set_term, NULL,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
+    {"termbackgroundwait", "tbw", P_NUM|P_VI_DEF,
+#ifdef FEAT_TERMRESPONSE
+			    (char_u *)&p_tbw, PV_NONE, NULL, NULL,
+#else
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
+#endif
+			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
     {"termbidi", "tbidi",   P_BOOL|P_VI_DEF,
 #ifdef FEAT_ARABIC
 			    (char_u *)&p_tbidi, PV_NONE, NULL, NULL,
