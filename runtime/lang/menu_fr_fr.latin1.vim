@@ -3,7 +3,7 @@
 " First Version:	Francois Thunus <thunus@systran.fr>
 " Contributors:		David Blanchet <david.blanchet@free.fr>
 " 			Gabriel Dupras <gabrieldupras@gmail.com>
-" Last Change:		2021 Feb 16
+" Last Change:		2026 Nov 02
 " Original translations
 
 " Quit when menu translations have already been done.
@@ -99,7 +99,7 @@ menutrans Always						&Toujours
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!		I&nsertion\ permanente\ on/off<Tab>:set\ im!
 menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!	&Compatibilité\ Vi\ on/off<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\.				Chemin\ de\ rec&herche\ des\ fichiers\.\.\.
-menutrans Ta&g\ Files\.\.\.				Fichiers\ d'&étiquettes\.\.\.
+menutrans Ta&g\ Files\.\.\.				Fichiers\ de\ &tags\.\.\.
 " -SEP1-
 menutrans Toggle\ &Toolbar				Barre\ d'&outils\ on/off
 menutrans Toggle\ &Bottom\ Scrollbar			Ascenseur\ &horizontal\ on/off
@@ -107,7 +107,7 @@ menutrans Toggle\ &Left\ Scrollbar			Ascenseur\ à\ ga&uche\ on/off
 menutrans Toggle\ &Right\ Scrollbar			Ascenseur\ à\ &droite\ on/off
 
 let g:menutrans_path_dialog = "Entrez le chemin de recherche des fichiers.\nSéparez les répertoires par des virgules."
-let g:menutrans_tags_dialog = "Entrez les noms des fichiers d'étiquettes.\nSéparez les noms par des virgules."
+let g:menutrans_tags_dialog = "Entrez les noms des fichiers de tags.\nSéparez les noms par des virgules."
 
 menutrans F&ile\ Settings			Réglages\ fichie&r
 
@@ -139,9 +139,9 @@ menutrans Select\ Fo&nt\.\.\.			Sélectionner\ &police\.\.\.
 
 menutrans &Tools			&Outils
 
-menutrans &Jump\ to\ this\ tag<Tab>g^]		&Atteindre\ cette\ étiquette<Tab>g^]
+menutrans &Jump\ to\ this\ tag<Tab>g^]		&Atteindre\ ce\ tag<Tab>g^]
 menutrans Jump\ &back<Tab>^T			Repartir\ en\ arri&ère<Tab>^T
-menutrans Build\ &Tags\ File			&Générer\ fichier\ d'étiquettes
+menutrans Build\ &Tags\ File			&Générer\ fichier\ de\ tags
 
 " -SEP1-
 menutrans &Spelling			&Orthographe
@@ -193,8 +193,8 @@ menutrans Fold\ col&umn\ width				&Largeur\ colonne\ replis
 menutrans &Diff					&Différence
 
 menutrans &Update					&Mettre\ à\ jour
-menutrans &Get\ Block					Corriger\ &ce\ tampon
-menutrans &Put\ Block					Corriger\ l'&autre\ tampon
+menutrans &Get\ Block					Corriger\ &ce\ buffer
+menutrans &Put\ Block					Corriger\ l'&autre\ buffer
 
 " -SEP2-
 menutrans &Make<Tab>:make			Lancer\ ma&ke<Tab>:make
@@ -221,7 +221,7 @@ menutrans Se&T\ Compiler			&Type\ de\ compilateur
 menutrans Show\ Compiler\ Se&ttings\ in\ Menu	&Afficher\ les\ compilateurs
 
 
-menutrans &Buffers			&Tampons
+menutrans &Buffers			&Buffers
 
 menutrans Dummy					Factice
 menutrans &Refresh\ menu			&Mettre\ ce\ menu\ à\ jour
@@ -319,8 +319,8 @@ menutrans SaveSesn				EnregSess
 menutrans RunScript				LancScript
 " -sep6-
 menutrans Make					Make
-menutrans RunCtags				CréerEtiqu
-menutrans TagJump				AllerEtiqu
+menutrans RunCtags				CréerTags
+menutrans TagJump				AllerTag
 " -sep7-
 menutrans Help					Aide
 menutrans FindHelp				CherchAide
@@ -356,8 +356,8 @@ fun! Do_toolbar_tmenu()
   tmenu ToolBar.SaveSesn			Enregistrer session courante
   tmenu ToolBar.RunScript			Lancer un script Vim
   tmenu ToolBar.Make				Lancer make
-  tmenu ToolBar.RunCtags			Créer les étiquettes
-  tmenu ToolBar.TagJump				Atteindre cette étiquette
+  tmenu ToolBar.RunCtags			Générer les tags
+  tmenu ToolBar.TagJump				Atteindre le tag sous le curseur
   tmenu ToolBar.Help				Aide de Vim
   tmenu ToolBar.FindHelp			Rechercher dans l'aide
 endfun
