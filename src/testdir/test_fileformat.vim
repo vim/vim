@@ -287,6 +287,18 @@ func Test_fileformats()
   call delete('Xtest')
 endfunc
 
+" Test reading a line longer than one read() chunk
+func Test_fileformat_long_line()
+  let long = repeat('0123456789', 300000)
+  call writefile(["first\r", long .. "\r", "last\r"], 'XXLongLine', 'D')
+  edit XXLongLine
+  call assert_equal(['first', long, 'last'], getline(1, '$'))
+  call assert_equal('dos', &fileformat)
+  edit! ++enc=latin1 XXLongLine
+  call assert_equal(['first', long, 'last'], getline(1, '$'))
+  bwipe!
+endfunc
+
 " Test for changing the fileformat using ++read
 func Test_fileformat_plusplus_read()
   new

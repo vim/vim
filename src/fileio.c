@@ -151,6 +151,7 @@ readfile(
     linenr_T	lnum = from;
     char_u	*ptr = NULL;		// pointer into read buffer
     char_u	*buffer = NULL;		// read buffer
+    long_u	buffer_size = 0;	// allocated size of "buffer"
     char_u	*new_buffer = NULL;	// init to shut up gcc
     char_u	*line_start = NULL;	// init to shut up gcc
     int		wasempty;		// buffer was empty before reading
@@ -1164,9 +1165,8 @@ retry:
 #if defined(SSIZE_MAX) && (SSIZE_MAX < 0x10000L)
 		size = SSIZE_MAX;		    // use max I/O size, 52K
 #else
-		// Use buffer >= 64K.  Add linerest to double the size if the
-		// line gets very long, to avoid a lot of copying. But don't
-		// read more than 1 Mbyte at a time, so we can be interrupted.
+		// Read at least 64K plus the partial line length, but not more
+		// than 1 Mbyte at a time, so we can be interrupted.
 		size = 0x10000L + linerest;
 		if (size > 0x100000L)
 		    size = 0x100000L;
@@ -1189,22 +1189,37 @@ retry:
 	{
 	    if (!skip_read)
 	    {
-		for ( ; size >= 10; size = (long)((long_u)size >> 1))
+		long_u	need = (long_u)(size + linerest + 1);
+
+		if (need > buffer_size)
 		{
-		    if ((new_buffer = lalloc(size + linerest + 1,
-							      FALSE)) != NULL)
+		    long_u	alloc_size = MAX(need, buffer_size * 2);
+
+		    new_buffer = lalloc(alloc_size, FALSE);
+		    if (new_buffer == NULL)
+		    {
+			for ( ; size >= 10; size = (long)((long_u)size >> 1))
+			{
+			    alloc_size = (long_u)(size + linerest + 1);
+			    if ((new_buffer = lalloc(alloc_size, FALSE)) != NULL)
+				break;
+			}
+		    }
+		    if (new_buffer == NULL)
+		    {
+			do_outofmem_msg((long_u)(size * 2 + linerest + 1));
+			error = TRUE;
 			break;
+		    }
+		    if (linerest)	// copy characters from the previous buffer
+			mch_memmove(new_buffer, ptr - linerest,
+							    (size_t)linerest);
+		    vim_free(buffer);
+		    buffer = new_buffer;
+		    buffer_size = alloc_size;
 		}
-		if (new_buffer == NULL)
-		{
-		    do_outofmem_msg((long_u)(size * 2 + linerest + 1));
-		    error = TRUE;
-		    break;
-		}
-		if (linerest)	// copy characters from the previous buffer
-		    mch_memmove(new_buffer, ptr - linerest, (size_t)linerest);
-		vim_free(buffer);
-		buffer = new_buffer;
+		else if (linerest && ptr - linerest != buffer)
+		    mch_memmove(buffer, ptr - linerest, (size_t)linerest);
 		ptr = buffer + linerest;
 		line_start = buffer;
 
@@ -1447,6 +1462,7 @@ retry:
 			{
 			    vim_free(buffer);
 			    buffer = new_buffer;
+			    buffer_size = 0;
 			    new_buffer = NULL;
 			    line_start = buffer;
 			    ptr = buffer + linerest + conv_restlen;
