@@ -1,4 +1,4 @@
-.TH VIM 1 "2026 Sep 28"
+.TH VIM 1 "2026 Nov 11"
 .SH NAME
 vim \- Vi IMproved, a programmer's text editor
 .SH SYNOPSIS
@@ -174,7 +174,7 @@ behave mostly like Vi, even though a .vimrc file exists.
 .TP
 \-d
 Start in diff mode.
-There should between two to eight file name arguments.
+There should be between two to eight file name arguments.
 .B Vim
 will open all the files and show differences between them.
 Works like vimdiff(1).
@@ -365,7 +365,7 @@ Should be a terminal known to
 \-u {vimrc}
 Use the commands in the file {vimrc} for initializations.
 All the other initializations are skipped.
-Use this to edit a special kind of files.
+Use this to edit special kinds of files.
 It can also be used to skip all initializations by giving the name "NONE".
 See ":help initialization" within vim for more details.
 .TP
@@ -531,7 +531,7 @@ it is taken as either an absolute, relative or relative path to the socket.
 .TP
 \-\-clientserver {backend}
 Use {backend} as the backend for clientserver functionality, either "socket",
-"x11", or "mswin" respectively.  Only available when compiled with both
+"x11", or "mswin".  Only available when compiled with both
 socketserver and X11 features present, or if compiled with socketserver on
 MS-Windows. The $VIM_CLIENTSERVER environment variable may also be set which
 will be interpreted in the same way, but the --clientserver argument will always
