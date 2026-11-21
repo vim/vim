@@ -1,4 +1,4 @@
-*version9.txt*	For Vim version 9.2.  Last change: 2026 Nov 18
+*version9.txt*	For Vim version 9.2.  Last change: 2026 Nov 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52723,6 +52723,8 @@ Changed ~
   parameters of the color for |underline| and |undercurl|.
 - Joining lines with |fo-j| keeps a comment string with the 'f' flag in
   'comments'.
+- |:delete| accepts |ex-flags| after the register and count also without
+  white space.
 
 							*added-9.3*
 Added ~
