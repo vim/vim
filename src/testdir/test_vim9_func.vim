@@ -1559,8 +1559,10 @@ def Test_call_funcref_wrong_args()
   END
   v9.CheckScriptSuccess(head + ["funcMap['func']('str', 123, [1, 2, 3])"] + tail)
 
-  v9.CheckScriptFailure(head + ["funcMap['func']('str', 123)"] + tail, 'E119:')
-  v9.CheckScriptFailure(head + ["funcMap['func']('str', 123, [1], 4)"] + tail, 'E118:')
+  v9.CheckScriptFailure(head + ["funcMap['func']('str', 123)"] + tail,
+        'E119: Not enough arguments for function: <SNR>')
+  v9.CheckScriptFailure(head + ["funcMap['func']('str', 123, [1], 4)"] + tail,
+        'E118: Too many arguments for function: <SNR>')
 
   var lines =<< trim END
       vim9script
@@ -2172,8 +2174,8 @@ endfunc
 
 def Test_call_funcref()
   g:SomeFunc('abc')->assert_equal(3)
-  assert_fails('NotAFunc()', 'E117:', '', 2, 'Test_call_funcref') # comment after call
-  assert_fails('g:NotAFunc()', 'E1085:', '', 3, 'Test_call_funcref')
+  assert_fails('NotAFunc()', 'E117: Unknown function: NotAFunc', '', 2, 'Test_call_funcref') # comment after call
+  assert_fails('g:NotAFunc()', 'E1085: Not a callable type: g:NotAFunc', '', 3, 'Test_call_funcref')
 
   var lines =<< trim END
     vim9script
@@ -3821,7 +3823,7 @@ def Test_partial_call()
       var Expr: func(dict<any>): dict<any>
       const Call = Foo(Expr)
   END
-  v9.CheckScriptFailure(lines, 'E1031:')
+  v9.CheckScriptFailure(lines, 'E1031: Cannot use void value', 5)
 
   # Test for calling a partial that takes a single argument.
   # This used to produce a "E340: Internal error" message.
@@ -4486,7 +4488,7 @@ def Test_funcref_with_base()
       var Ref = TwoArguments
       123->Ref(456)
   END
-  v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected string but got number')
+  v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected string but got number', 6)
 
   lines =<< trim END
       vim9script
@@ -5167,6 +5169,70 @@ def Test_cmdmod_silent_nested_load_error()
       unlet g:out
   END
   v9.CheckScriptSuccess(lines)
+enddef
+
+" The function and the arguments of a call through a Funcref are evaluated
+" once.
+def Test_funcref_call_operands_evaluated_once()
+  var lines =<< trim END
+    g:calls = 0
+    def g:GetF(): func(number): number
+      g:calls += 1
+      return (x: number): number => x * 2
+    enddef
+    def g:GetName(): string
+      g:calls += 1
+      return 'len'
+    enddef
+    assert_equal(4, g:GetF()(2))
+    assert_equal(3, function(g:GetName(), ['abc'])())
+    assert_equal(2, g:calls)
+    delfunction g:GetF
+    delfunction g:GetName
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+enddef
+
+" An error in a call through a Funcref is caught by the try in the same
+" function.
+def Test_funcref_call_error_caught_in_def()
+  var lines =<< trim END
+    vim9script
+    def Two(a: number, b: number): number
+      return a + b
+    enddef
+    def Run(n: number): string
+      try
+        if n == 1
+          var F: func = Two
+          F(1)
+        elseif n == 2
+          var F: any = Two
+          F(1, 2, 3)
+        elseif n == 3
+          var F = funcref('NoSuchFunc')
+        else
+          var L: list<any> = [function(Two, [1])]
+          L[0]('x')
+        endif
+      catch
+        return substitute(v:exception, '<SNR>\d\+_', '', '')
+      endtry
+      return 'no error'
+    enddef
+    assert_equal(['Vim:E119: Not enough arguments for function: Two',
+                  'Vim:E118: Too many arguments for function: Two',
+                  'Vim:E700: Unknown function: NoSuchFunc',
+                  'Vim:E1013: Argument 2: type mismatch, expected number but got string'],
+                 range(1, 4)->map((_, n) => Run(n)))
+    def Silent(): string
+      var F: func = Two
+      silent! F(1)
+      return 'continued'
+    enddef
+    assert_equal('continued', Silent())
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

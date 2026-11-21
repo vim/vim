@@ -103,17 +103,21 @@ func Test_method_funcref()
   eval 'foo'->FuncRef('bar', 'tail')->assert_equal('foobartail')
 
   " not enough arguments
-  call assert_fails("eval 'foo'->FuncRef('bar')", 'E119:')
+  call assert_fails("eval 'foo'->FuncRef('bar')",
+        \ 'E119: Not enough arguments for function: Concat')
   " too many arguments
-  call assert_fails("eval 'foo'->FuncRef('bar', 'tail', 'four')", 'E118:')
+  call assert_fails("eval 'foo'->FuncRef('bar', 'tail', 'four')",
+        \ 'E118: Too many arguments for function: Concat')
 
   let Partial = function('Concat', ['two'])
   eval 'one'->Partial('three')->assert_equal('onetwothree')
 
   " not enough arguments
-  call assert_fails("eval 'one'->Partial()", 'E119:')
+  call assert_fails("eval 'one'->Partial()",
+        \ 'E119: Not enough arguments for function: Concat')
   " too many arguments
-  call assert_fails("eval 'one'->Partial('three', 'four')", 'E118:')
+  call assert_fails("eval 'one'->Partial('three', 'four')",
+        \ 'E118: Too many arguments for function: Concat')
 
   delfunc Concat
 endfunc

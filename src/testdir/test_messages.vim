@@ -616,6 +616,7 @@ func Test_echo_string_partial()
   function CountSpaces()
   endfunction
   call assert_equal("function('CountSpaces', [{'ccccccccccc': ['ab', 'cd'], 'aaaaaaaaaaa': v:false, 'bbbbbbbbbbbb': ''}])", string(function('CountSpaces', [#{aaaaaaaaaaa: v:false, bbbbbbbbbbbb: '', ccccccccccc: ['ab', 'cd']}])))
+  delfunc CountSpaces
 endfunc
 
 " Test that fileinfo is shown properly when 'cmdheight' has just decreased

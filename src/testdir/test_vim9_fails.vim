@@ -48,13 +48,8 @@ func Test_partial_call_fails()
       echo it.__next__()
   END
   call writefile(lines, 'XpartialCall', 'D')
-  let caught = 'no'
-  try
-    source XpartialCall
-  catch /E1248:/
-    let caught = 'yes'
-  endtry
-  call assert_equal('yes', caught)
+  call assert_fails('source XpartialCall',
+        \ 'E1248: Closure called from invalid context')
   delfunc g:NextItem__
 endfunc
 
