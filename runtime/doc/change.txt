@@ -645,7 +645,7 @@ For other systems the tmpnam() library function is used.
 
 4.2 Substitute						*:substitute*
 							*:s* *:su*
-:[range]s[ubstitute]/{pattern}/{string}/[flags] [count]
+:[range]s[ubstitute]/{pattern}/{string}/[options] [count] [flags]
 			For each line in [range] replace a match of {pattern}
 			with {string}.
 			For the {pattern} see |pattern|.
@@ -658,42 +658,42 @@ For other systems the tmpnam() library function is used.
 							*E939* *E1510*
 			[count] must be a positive number (max 2147483647)
 			Also see |cmdline-ranges|.
-
-			See |:s_flags| for [flags].
+			See |:s_options| for [options] and |ex-flags| for
+			[flags].
 			The delimiter doesn't need to be /, see
 			|pattern-delimiter|.
 
-:[range]s[ubstitute] [flags] [count]
-:[range]&[&][flags] [count]					*:&*
+:[range]s[ubstitute] [options] [count] [flags]
+:[range]&[&][options] [count] [flags]				*:&*
 			Repeat last :substitute with same search pattern and
-			substitute string, but without the same flags.  You
-			may add [flags], see |:s_flags|.
-			Note that after `:substitute` the '&' and '#' flags
+			substitute string, but without the same options.  You
+			may add [options], see |:s_options|.
+			Note that after `:substitute` the '&' and '#' options
 			can't be used, they're recognized as a pattern
 			separator.
 			The space between `:substitute` and the 'c', 'g',
-			'i', 'I' and 'r' flags isn't required, but in scripts
+			'i', 'I' and 'r' options isn't required, but in scripts
 			it's a good idea to keep it to avoid confusion.
 			Also see the two and three letter commands to repeat
 			:substitute below |:substitute-repeat|.
 
-:[range]~[&][flags] [count]					*:~*
+:[range]~[&][options] [count] [flags]				*:~*
 			Repeat last substitute with same substitute string
 			but with last used search pattern.  This is like
-			`:&r`.  See |:s_flags| for [flags].
+			`:&r`.  See |:s_options| for [options].
 
 								*&*
 &			Synonym for `:s` (repeat last substitute).  Note
-			that the flags are not remembered, thus it might
+			that the options are not remembered, thus it might
 			actually work differently.  You can use `:&&` to keep
-			the flags.
+			the options.
 
 								*g&*
 g&			Synonym for `:%s//~/&` (repeat last substitute with
-			last search pattern on all lines with the same flags).
+			last search pattern on all lines with the same options).
 			For example, when you first do a substitution with
-			`:s/pattern/repl/flags` and then `/search` for
-			something else, `g&` will do `:%s/search/repl/flags`.
+			`:s/pattern/repl/options` and then `/search` for
+			something else, `g&` will do `:%s/search/repl/options`.
 			Mnemonic: global substitute.
 
 						*:snomagic* *:sno*
@@ -702,15 +702,15 @@ g&			Synonym for `:%s//~/&` (repeat last substitute with
 						*:smagic* *:sm*
 :[range]sm[agic] ...	Same as `:substitute`, but always use 'magic'.
 
-							*:s_flags*
-The flags that you can use for the substitute commands:
+							*:s_options*
+The options that you can use for the substitute commands:
 
 							*:&&*
-[&]	Must be the first one: Keep the flags from the previous substitute
+[&]	Must be the first one: Keep the options from the previous substitute
 	command.  Examples: >
 		:&&
 		:s/this/that/&
-<	Note that `:s` and `:&` don't keep the flags.
+<	Note that `:s` and `:&` don't keep the options.
 
 [c]	Confirm each substitution.  Vim highlights the matching string (with
 	|hl-IncSearch|).  You can type:				*:s_c*
@@ -722,7 +722,7 @@ The flags that you can use for the substitute commands:
 	    'q'	    to quit substituting
 	    CTRL-E  to scroll the screen up
 	    CTRL-Y  to scroll the screen down
-	If the 'edcompatible' option is on, Vim remembers the [c] flag and
+	If the 'edcompatible' option is on, Vim remembers the [c] option and
 	toggles it each time you use it, but resets it when you give a new
 	search pattern.
 
@@ -740,9 +740,9 @@ The flags that you can use for the substitute commands:
 							*:s_g*
 [g]	Replace all occurrences in the line.  Without this argument,
 	replacement occurs only for the first occurrence in each line.  If
-	the 'edcompatible' option is on, Vim remembers this flag and toggles
+	the 'edcompatible' option is on, Vim remembers this option and toggles
 	it each time you use it, but resets it when you give a new search
-	pattern.  If the 'gdefault' option is on, this flag is on by default
+	pattern.  If the 'gdefault' option is on, this option is on by default
 	and the [g] argument switches it off.
 
 							*:s_i*
@@ -755,7 +755,7 @@ The flags that you can use for the substitute commands:
 
 							*:s_n*
 [n]	Report the number of matches, do not actually substitute.  The [c]
-	flag is ignored.  The matches are reported as if 'report' is zero.
+	option is ignored.  The matches are reported as if 'report' is zero.
 	Useful to |count-items|.
 	If \= |sub-replace-expression| is used, the expression will be
 	evaluated in the |sandbox| at every match.
@@ -784,14 +784,14 @@ The flags that you can use for the substitute commands:
 		:&
 <	The last command will replace "blue" with "red".
 
-Note that there is no flag to change the "magicness" of the pattern.  A
+Note that there is no option to change the "magicness" of the pattern.  A
 different command is used instead, or you can use |/\v| and friends.  The
-reason is that the flags can only be found by skipping the pattern, and in
+reason is that the options can only be found by skipping the pattern, and in
 order to skip the pattern the "magicness" must be known.  Catch 22!
 
 If the {pattern} for the substitute command is empty, the command uses the
 pattern from the last substitute or `:global` command.  If there is none, but
-there is a previous search pattern, that one is used.  With the [r] flag, the
+there is a previous search pattern, that one is used.  With the [r] option, the
 command uses the pattern from the last substitute, `:global`, or search
 command.
 
@@ -801,7 +801,7 @@ out then.  Example: >
 	:%s/TESTING
 This deletes "TESTING" from all lines, but only one per line.
 
-If [flags] are omitted the separator after {string} may also be left out.
+If [options] are omitted the separator after {string} may also be left out.
 
 								*E1270*
 For compatibility with Vi these two exceptions are allowed in legacy Vim
@@ -919,10 +919,10 @@ either the first or second pattern in parentheses did not match, so either
 		*:srn* *:srp* *:substitute-repeat*
 2-letter and 3-letter :substitute commands ~
 
-These commands repeat the previous `:substitute` command with the given flags.
-The first letter is always "s", followed by one or two of the possible flag
+These commands repeat the previous `:substitute` command with the given options.
+The first letter is always "s", followed by one or two of the possible option
 characters.  For example ":sce" works like ":s ce".  The table lists the
-possible combinations, not all flags are possible, because the command is
+possible combinations, not all options are possible, because the command is
 short for another command.
 
      List of :substitute commands
