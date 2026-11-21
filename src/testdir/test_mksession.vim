@@ -2053,4 +2053,64 @@ func Test_mksession_avoid_lambda_options()
   set sessionoptions&
 endfunc
 
+func Test_mksession_term_colors_and_codes()
+  CheckOption termguicolors
+
+  if has('vtp') && !has('vcon') && !has('gui_running')
+    " Win32: 'guicolors' doesn't work without virtual console.
+    throw 'Skipped: E954: termguicolors is not supported on this terminal'
+  endif
+
+  " Restore current values afterwards
+  let cmd = ["set"]
+  let cmd += [&termguicolors ? 'termguicolors' : 'notermguicolors']
+  let cmd += ["sessionoptions=" . &sessionoptions]
+  let cmd += ["t_SI=" . &t_SI->escape(' \|')]
+  let cmd += ["t_EI=" . &t_EI->escape(' \|')]
+  defer execute(join(cmd, ' '))
+
+  " Persist global options in session file
+  set sessionoptions+=options
+
+  " Enable termguicolors and specify some keycodes
+  const t_SI = "\e[5 q"
+  const t_EI = "\e[1 q"
+
+  set termguicolors
+  let &t_SI = t_SI
+  let &t_EI = t_EI
+  " Change mode to enforce the changes
+  exe "normal :\e"
+
+  " Check values are set
+  call assert_equal(t_SI, &t_SI)
+  call assert_equal(t_EI, &t_EI)
+
+  " Save session
+  mksession! Xtest_mks.out
+
+  " Reset keycodes to default values
+  set notermguicolors t_SI& t_EI&
+  " Change mode to enforce the changes
+  exe "normal :\e"
+
+  " Check values are reset
+  call assert_true(empty(&t_SI))
+  call assert_true(empty(&t_EI))
+
+  " Test restoring session
+  defer delete('Xtest_mks.out')
+  source Xtest_mks.out
+
+  if has('gui_running')
+    " Not restored from session file
+    call assert_true(empty(&t_SI))
+    call assert_true(empty(&t_EI))
+  else
+    " Check values are restored
+    call assert_equal(t_SI, &t_SI)
+    call assert_equal(t_EI, &t_EI)
+  endif
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

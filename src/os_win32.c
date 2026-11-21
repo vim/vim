@@ -3559,8 +3559,14 @@ mch_init_c(void)
     g_color_index_fg = g_attrDefault & 0xf;
     g_color_index_bg = (g_attrDefault >> 4) & 0xf;
 
-    // set termcap codes to current text attributes
-    update_tcap(g_attrCurrent);
+# if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
+    // New VT100 terminal emulation escape codes no longer require adjustment
+    if (!vtp_working)
+# endif
+    {
+	// set termcap codes to current text attributes
+	update_tcap(g_attrCurrent);
+    }
 
     GetConsoleCursorInfo(g_hConOut, &g_cci);
     GetConsoleMode(g_hConIn,  &g_cmodein);
