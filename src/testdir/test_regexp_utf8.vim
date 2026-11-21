@@ -876,4 +876,104 @@ func Test_composing_after_literal_ignorecase()
   endtry
 endfunc
 
+func s:AllMatches(text, pat)
+  let res = []
+  let start = 0
+  while 1
+    let m = matchstrpos(a:text, a:pat, start)
+    if m[1] < 0
+      break
+    endif
+    call add(res, m[1] .. ':' .. m[2])
+    let start = m[2] > m[1] ? m[2] : m[1] + 1
+  endwhile
+  return join(res)
+endfunc
+
+func s:AllSearches(pat)
+  let res = []
+  call cursor(1, 1)
+  let flags = 'cW'
+  while 1
+    let pos = searchpos(a:pat, flags)
+    if pos[0] == 0
+      break
+    endif
+    call add(res, pos[0] .. ':' .. pos[1])
+    let flags = 'W'
+  endwhile
+  return join(res)
+endfunc
+
+" NFA skips bytes that can't start a match, results must not change.
+" "\%(\)" in front of the pattern turns that off.
+func Test_regexp_nfa_first_bytes()
+  new
+  let lines = [
+        \ "KELVIN \u212A kelvin \u017Ftra\u00DFe STRASSE strasse Stra\u00DFe \ttab\t ",
+        \ 'foo bar baz FOO BAR BAZ fOo bAr x1 X2 ax bx cx dx AX BX',
+        \ "12px 3.5em 0x1F 0777 _ident Ident ident123 \u00C9COLE \u00E9cole \u00FCber \u00DCBER",
+        \ 'if else IF ELSE ifelse elseif ix  trailing   ',
+        \ "\u65E5\u672C\u8A9E \u30C6\u30B9\u30C8 \u6F22\u5B57abc \u03B1\u03B2\u03B3 \u0391\u0392\u0393 \u01C5\u01C6\u01C4 \uFB00 \uFB03 \u0130stanbul \u0131i",
+        \ "\t   [x] {y} <z> \"str\" 'c' /* comment */ // line",
+        \ "ae\u0301x e\u0301\u0300y a\u0300b \u0301z",
+        \ ]
+  let patterns = [
+        \ '\(foo\|bar\)',
+        \ '\%(if\|else\)\>',
+        \ '\<\(if\|else\)\>',
+        \ '[a-c]x',
+        \ '[A-C]X',
+        \ '\d\+px',
+        \ '\x\+',
+        \ '\o\+',
+        \ '\h\w*\d',
+        \ '\s\+$',
+        \ '\a\l\u',
+        \ '\l\+',
+        \ '\u\+',
+        \ '[a-z]\+',
+        \ '[A-Z]\+',
+        \ '[[:digit:][:blank:]]\+',
+        \ '[[:xdigit:]_]\+',
+        \ '[[:space:][:punct:]]\+',
+        \ '[[:print:]]',
+        \ "\\(kelvin\\|stra\u00DFe\\)",
+        \ "\\(k\\|\u212A\\)elvin",
+        \ "[\u01C5k]",
+        \ "\\(\u212Ael\\|\u017Ftr\\)",
+        \ "\\(\u0131\\|i\\)stanbul",
+        \ "\\(\uFB00\\|\uFB03\\)",
+        \ "\\%(\u00E9\\|\u00FC\\)\\+",
+        \ "[\u00E9-\u00FC]\\+",
+        \ "[\u2100-\u2200]",
+        \ "[\u0300-\u0310]",
+        \ "\\%(x\\|\u0301\\)",
+        \ "\\%(z\\|\u0300\\)b",
+        \ "\\(\u65E5\u672C\\|\u30C6\u30B9\u30C8\\)",
+        \ "[\u03B1\u03B2]\u03B3",
+        \ '\(x\|y\)\zsz',
+        \ '\(a\|\)b',
+        \ '\%(a\|b\)\@<=c',
+        \ '\%5c\(a\|b\)',
+        \ '\(\[\|{\|<\)\a',
+        \ '\("\|''\)\a\+\1',
+        \ '\(\/\*\|\/\/\)',
+        \ '\(s\|t\)\_s*\(r\|t\)',
+        \ ]
+  call setline(1, lines)
+  for pat in patterns
+    for case in ['\c', '\C']
+      for text in lines
+        call assert_equal(s:AllMatches(text, '\%#=2\%(\)' .. case .. pat),
+              \ s:AllMatches(text, '\%#=2' .. case .. pat),
+              \ case .. pat .. ' on ' .. text)
+      endfor
+      call assert_equal(s:AllSearches('\%#=2\%(\)' .. case .. pat),
+            \ s:AllSearches('\%#=2' .. case .. pat), case .. pat)
+    endfor
+  endfor
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

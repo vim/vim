@@ -108,6 +108,8 @@ typedef struct
     int			reganch;	// pattern starts with ^
     int			regstart;	// char at start of pattern
     char_u		*match_text;	// plain text to match with
+    int			has_firstset;
+    char_u		firstset[2][32];
 
     int			has_zend;	// pattern contains \ze
     int			has_backref;	// pattern contains \1 .. \9
