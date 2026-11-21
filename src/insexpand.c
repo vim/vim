@@ -253,8 +253,10 @@ static buf_T	  *compl_curr_buf = NULL;  // buf where completion is active
 // longer fixed timeout is used (COMPL_FUNC_TIMEOUT_MS or
 // COMPL_FUNC_TIMEOUT_NON_KW_MS). - girish
 static int	  compl_autocomplete = FALSE;	    // whether autocompletion is active
+#ifdef FEAT_COMPL_FUNC
 static bool	  compl_autostarted = false;	    // Vim started this completion
 static bool	  compl_autostart_pending = false;  // the trigger armed one
+#endif
 static bool	  compl_autocomplete_pending = false;
 #ifdef ELAPSED_FUNC
 static elapsed_T  compl_autocomplete_start_tv;	    // when the delay was armed
@@ -2478,7 +2480,9 @@ ins_compl_clear(void)
     cpt_sources_clear();
     compl_autocomplete = FALSE;
     compl_from_nonkeyword = FALSE;
+#ifdef FEAT_COMPL_FUNC
     compl_autostarted = false;
+#endif
     compl_num_bests = 0;
 #ifdef FEAT_EVAL
     // clear v:completed_item
@@ -2846,7 +2850,9 @@ ins_compl_restart(void)
     cpt_sources_clear();
     compl_autocomplete = FALSE;
     compl_from_nonkeyword = FALSE;
+#ifdef FEAT_COMPL_FUNC
     compl_autostarted = false;
+#endif
     compl_num_bests = 0;
 }
 
@@ -3205,7 +3211,9 @@ ins_compl_stop(int c, int prev_mode, int retval)
     }
     compl_autocomplete = FALSE;
     compl_from_nonkeyword = FALSE;
+#ifdef FEAT_COMPL_FUNC
     compl_autostarted = false;
+#endif
     compl_num_bests = 0;
     compl_ins_end_col = 0;
 
@@ -7477,8 +7485,10 @@ ins_complete(int c, int enable_pum)
     if (!compl_started)
     {
 	// Only what the automatic trigger armed counts as started by Vim.
+#ifdef FEAT_COMPL_FUNC
 	compl_autostarted = compl_autostart_pending;
 	compl_autostart_pending = false;
+#endif
 	if (ins_compl_start() == FAIL)
 	    return FAIL;
     }
@@ -7578,7 +7588,9 @@ ins_compl_disable_autocomplete(void)
     void
 ins_compl_arm_autostart(void)
 {
+#ifdef FEAT_COMPL_FUNC
     compl_autostart_pending = true;
+#endif
 }
 
 /*
@@ -7587,7 +7599,9 @@ ins_compl_arm_autostart(void)
     void
 ins_compl_disarm_autostart(void)
 {
+#ifdef FEAT_COMPL_FUNC
     compl_autostart_pending = false;
+#endif
 }
 
 /*

@@ -757,10 +757,10 @@ gui_mch_open(void)
     }
     else
     {
-	// Use 80x24 as the default GUI size, unless geometry was specified.
-	if (Columns > 80)
+	// Use 80x24 as the default GUI size, unless the user set the options.
+	if (Columns > 80 && !option_was_set((char_u *)"columns"))
 	    Columns = 80;
-	if (Rows > 24)
+	if (Rows > 24 && !option_was_set((char_u *)"lines"))
 	    Rows = 24;
     }
 
@@ -804,8 +804,8 @@ gui_mch_open(void)
 
     gtk_window_present(GTK_WINDOW(gui.mainwin));
 
-    // Undo the 80x24 clamp above, gui_init() asks for this size next.  Drain
-    // the pending allocation before that, or gui_resize_shell() overwrites it.
+    // Drain the pending allocation before gui_init() asks for this size next,
+    // or gui_resize_shell() overwrites it.
     gui_mch_update();
 
     // Make sure the drawing area gets keyboard focus.
@@ -883,6 +883,49 @@ gui_mch_set_fullscreen(int flag)
 	gtk_window_fullscreen(GTK_WINDOW(gui.mainwin));
     else
 	gtk_window_unfullscreen(GTK_WINDOW(gui.mainwin));
+}
+
+/*
+ * Add a gesture to "popover" that calls "pressed_cb" when a mouse button is
+ * pressed.  That callback must use gui_gtk_claim_window_press().
+ */
+    void
+gui_gtk_popover_add_press(GtkWidget *popover, GCallback pressed_cb)
+{
+    GtkEventController *controller;
+
+    controller = GTK_EVENT_CONTROLLER(gtk_gesture_click_new());
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(controller), 0);
+    gtk_event_controller_set_propagation_phase(controller, GTK_PHASE_CAPTURE);
+    g_signal_connect_object(controller, "pressed", pressed_cb, popover,
+							    G_CONNECT_DEFAULT);
+    gtk_widget_add_controller(popover, controller);
+}
+
+/*
+ * A mouse button was pressed while "popover" is open.  Return TRUE if the
+ * press is in the window, then the popover must be closed.
+ *
+ * Normally GTK closes a popover for a press in the window and this is not
+ * reached for it.  But when a popover inside this one was closed, like a
+ * submenu or the list of a combo row, GTK does not do that any more and it
+ * sends the press to this popover instead of the window.
+ */
+    int
+gui_gtk_claim_window_press(GtkGesture *gesture, GtkWidget *popover)
+{
+    GdkEvent	*event = gtk_event_controller_get_current_event(
+						GTK_EVENT_CONTROLLER(gesture));
+    GtkRoot	*root = gtk_widget_get_root(popover);
+
+    if (event == NULL || root == NULL || gdk_event_get_surface(event)
+				!= gtk_native_get_surface(GTK_NATIVE(root)))
+	return FALSE;
+
+    // Like when GTK closes the popover, the press is not used for anything
+    // else.
+    gtk_gesture_set_state(gesture, GTK_EVENT_SEQUENCE_CLAIMED);
+    return TRUE;
 }
 
     static void
@@ -3349,10 +3392,23 @@ gui_gtk_set_mnemonics(int enable)
     }
 }
 
+    static gboolean
+popupmenu_unparent_idle_cb(gpointer data)
+{
+    GtkWidget *popover = data;
+
+    if (gtk_widget_get_parent(popover) != NULL)
+	gtk_widget_unparent(popover);
+    g_object_unref(popover);
+    return G_SOURCE_REMOVE;
+}
+
     static void
 popupmenu_closed_cb(GtkWidget *popover, void *udata UNUSED)
 {
-    gtk_widget_unparent(popover);
+    // Unparenting destroys the popover, which GTK and the menu code still use
+    // after this signal.
+    g_idle_add(popupmenu_unparent_idle_cb, g_object_ref(popover));
     if (gui.drawarea != NULL)
 	gtk_widget_queue_draw(gui.drawarea);
 }
@@ -5387,9 +5443,8 @@ image_placement_gui_draw(image_placement_T *place)
     image_get_dimensions(img, &iw, &ih);
     texture_node = gsk_texture_node_new(ictx->texture,
 	    &GRAPHENE_RECT_INIT(
-		FILL_X(place->col) - FILL_X(place->crop_box.x1),
-		FILL_Y(place->row) - FILL_Y(place->crop_box.y1)
-		+ FILL_Y(place->row_off),
+		FILL_X(place->col - place->x_off),
+		FILL_Y(place->row - place->y_off),
 		PHY2LOG(iw), PHY2LOG(ih)));
 
     if (texture_node == NULL)

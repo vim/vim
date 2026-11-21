@@ -2764,7 +2764,7 @@ did_set_guifont(optset_T *args UNUSED)
  * specific behaviors.
  */
     int
-expand_set_guifont(optexpand_T *args, int *numMatches, char_u ***matches)
+expand_set_guifont(optexpand_T *args UNUSED, int *numMatches UNUSED, char_u ***matches UNUSED)
 {
     if (!gui.in_use)
 	return FAIL;

@@ -6056,6 +6056,39 @@ func Test_lhelpgrep_from_help_window()
   new | only!
 endfunc
 
+" Jumping to an entry in another help file should add an entry to the
+" jumplist
+func Xhelp_jumplist_tests(cchar)
+  call s:setup_commands(a:cchar)
+  call mkdir('Xjumpdir/doc', 'pR')
+  call writefile(['*Xjumpa.txt*', 'one', 'jumpword', 'three', 'four', 'five'],
+        \ 'Xjumpdir/doc/Xjumpa.txt')
+  call writefile(['*Xjumpb.txt*', 'one', 'two', 'three', 'four', 'five'],
+        \ 'Xjumpdir/doc/Xjumpb.txt')
+  helptags Xjumpdir/doc
+  let save_rtp = &rtp
+  let &rtp = 'Xjumpdir,' .. &rtp
+
+  Xhelpgrep jumpword
+  help Xjumpb.txt
+  5
+  Xfirst
+  call assert_equal(['Xjumpa.txt', 3], [expand('%:t'), line('.')])
+  exe "normal! \<C-O>"
+  call assert_equal(['Xjumpb.txt', 5], [expand('%:t'), line('.')])
+  exe "normal! 1\<C-I>"
+  call assert_equal(['Xjumpa.txt', 3], [expand('%:t'), line('.')])
+
+  let &rtp = save_rtp
+  helpclose
+  new | only!
+endfunc
+
+func Test_help_jumplist()
+  call Xhelp_jumplist_tests('c')
+  call Xhelp_jumplist_tests('l')
+endfunc
+
 " Test for the crash fixed by 7.3.715
 func Test_setloclist_crash()
   %bw!

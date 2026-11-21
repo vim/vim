@@ -17,6 +17,8 @@ void gui_mch_set_winpos(int x, int y);
 int gui_mch_maximized(void);
 void gui_mch_unmaximize(void);
 void gui_mch_set_fullscreen(int flag);
+void gui_gtk_popover_add_press(GtkWidget *popover, GCallback pressed_cb);
+int gui_gtk_claim_window_press(GtkGesture *gesture, GtkWidget *popover);
 void gui_mch_newfont(void);
 void gui_mch_settitle(char_u *title, char_u *icon);
 void gui_gtk_init_decor_height(void);

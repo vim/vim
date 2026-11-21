@@ -130,6 +130,7 @@ match_add(
 		subl = li->li_tv.vval.v_list;
 		if (subl == NULL)
 		    goto fail;
+		CHECK_LIST_MATERIALIZE(subl);
 		subli = subl->lv_first;
 		if (subli == NULL)
 		    goto fail;

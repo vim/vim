@@ -847,9 +847,14 @@ check_range_index_one(list_T *l, long *n1, int can_append, int quiet)
 	return li;
 
     // Vim9: Allow for adding an item at the end.
-    if (can_append && in_vim9script()
-	    && *n1 == l->lv_len && l->lv_lock == 0)
+    if (can_append && in_vim9script() && *n1 == l->lv_len)
     {
+	if (l->lv_lock != 0)
+	{
+	    if (!quiet)
+		emsg(_(e_cannot_change_locked_list));
+	    return NULL;
+	}
 	if (list_append_new_item(l) == FAIL)
 	    return NULL;
 	li = list_find_index(l, n1);
@@ -1034,7 +1039,8 @@ list_flatten(list_T *list, listitem_T *first, long maxitems, long maxdepth)
 	    vimlist_remove(list, item, item);
 	    if (list_extend(list, itemlist, next) == FAIL)
 	    {
-		list_free_item(list, item);
+		// put the item back
+		list_insert(list, item, next);
 		return;
 	    }
 
@@ -1087,15 +1093,16 @@ flatten_common(typval_T *argvars, typval_T *rettv, int make_copy)
     }
 
     l = argvars[0].vval.v_list;
-    rettv->v_type = VAR_LIST;
-    rettv->vval.v_list = l;
     if (l == NULL)
+    {
+	rettv->v_type = VAR_LIST;
+	rettv->vval.v_list = NULL;
 	return;
+    }
 
     if (make_copy)
     {
 	l = list_copy(l, FALSE, TRUE, get_copyID());
-	rettv->vval.v_list = l;
 	if (l == NULL)
 	    return;
 	// The type will change.
@@ -1104,11 +1111,18 @@ flatten_common(typval_T *argvars, typval_T *rettv, int make_copy)
     }
     else
     {
+	// Do not touch "rettv" before the lock check: on failure "rettv"
+	// must stay VAR_UNKNOWN, since the caller unconditionally calls
+	// clear_tv() on it, which must not drop a reference to "l" that
+	// was never taken.
 	if (value_check_lock(l->lv_lock,
 				     (char_u *)N_("flatten() argument"), TRUE))
 	    return;
 	++l->lv_refcount;
     }
+
+    rettv->v_type = VAR_LIST;
+    rettv->vval.v_list = l;
 
     list_flatten(l, NULL, l->lv_len, maxdepth);
 }
@@ -1565,10 +1579,12 @@ list_join_inner(
     // Stringify each item in the list.
     CHECK_LIST_MATERIALIZE(l);
     // Lock the list, the string() method of an object item could remove the
-    // item the loop is standing on.
+    // item the loop is standing on.  Also set VAR_FIXED, ":unlockvar" only
+    // resets VAR_LOCKED.
     prev_lock = l->lv_lock;
     if (l->lv_lock == 0)
 	l->lv_lock = VAR_LOCKED;
+    l->lv_lock |= VAR_FIXED;
     for (item = l->lv_first; item != NULL && !got_int; item = item->li_next)
     {
 	s.string = echo_string_core(&item->li_tv, &tofree, numbuf, copyID,
@@ -1582,7 +1598,12 @@ list_join_inner(
 	s.length = STRLEN(s.string);
 	sumlen += (long)s.length;
 
-	(void)ga_grow(join_gap, 1);
+	if (ga_grow(join_gap, 1) == FAIL)
+	{
+	    vim_free(tofree);
+	    l->lv_lock = prev_lock;
+	    return FAIL;
+	}
 	p = ((join_T *)join_gap->ga_data) + (join_gap->ga_len++);
 	if (tofree != NULL || s.string != numbuf)
 	{
@@ -2071,18 +2092,21 @@ list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
 
     if (l->lv_with_items > 0)
     {
-	// need to copy the list items and move the value
+	listitem_T	*next;
+
+	// Need to copy the list items and move the value.  Some items may
+	// have been allocated separately, these need to be freed.
 	while (item != NULL)
 	{
 	    li = listitem_alloc();
 	    if (li == NULL)
 		return;
+	    next = item == item2 ? NULL : item->li_next;
 	    li->li_tv = item->li_tv;
 	    init_tv(&item->li_tv);
 	    list_append(rl, li);
-	    if (item == item2)
-		break;
-	    item = item->li_next;
+	    list_free_item(l, item);
+	    item = next;
 	}
     }
     else
@@ -2556,6 +2580,7 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
     sortinfo_T	*old_sortinfo;
     sortinfo_T	info;
     long	len;
+    int		prev_lock;
 
     if (in_vim9script()
 	    && (check_for_list_arg(argvars, 0) == FAIL
@@ -2592,10 +2617,16 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
     if (parse_sort_uniq_args(argvars, &info) == FAIL)
 	goto theend;
 
+    // A user-supplied compare function could otherwise add, remove or
+    // reorder items while do_sort() or do_uniq() still hold pointers into
+    // the list, causing them to use an already freed list item.
+    prev_lock = l->lv_lock;
+    l->lv_lock = VAR_FIXED;
     if (sort)
 	do_sort(l, &info);
     else
 	do_uniq(l, &info);
+    l->lv_lock = prev_lock;
 
 theend:
     sortinfo = old_sortinfo;
@@ -2716,8 +2747,11 @@ list_filter_map(
     // set_vim_var_nr() doesn't set the type
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
+    // Lock the list.  Also set VAR_FIXED, ":unlockvar" in the expression
+    // only resets VAR_LOCKED and must not allow removing items.
     if (l->lv_lock == 0)
 	l->lv_lock = VAR_LOCKED;
+    l->lv_lock |= VAR_FIXED;
 
     // Create one funccall_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, &newtv);

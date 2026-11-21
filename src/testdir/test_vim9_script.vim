@@ -344,7 +344,7 @@ def Test_const_bang()
       ll[3] = 99
   END
   v9.CheckDefExecFailure(lines, 'E1118:', 2)
-  v9.CheckScriptFailure(['vim9script'] + lines, 'E684:', 3)
+  v9.CheckScriptFailure(['vim9script'] + lines, 'E1118:', 3)
 
   lines =<< trim END
       const dd = {one: 1, two: 2}

@@ -9516,6 +9516,13 @@ indexof_list(list_T *l, long startidx, typval_T *expr)
 
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
+    // Disallow changing the List while "expr" is evaluated, it could free
+    // the current item.  VAR_FIXED, so that :unlockvar can't undo it.
+    int		prev_lock = l->lv_lock;
+    int		ret = -1;
+
+    l->lv_lock = VAR_FIXED;
+
     int		called_emsg_start = called_emsg;
     for ( ; item != NULL; item = item->li_next, ++idx)
     {
@@ -9526,13 +9533,17 @@ indexof_list(list_T *l, long startidx, typval_T *expr)
 	clear_tv(get_vim_var_tv(VV_VAL));
 
 	if (found)
-	    return idx;
+	{
+	    ret = idx;
+	    break;
+	}
 
 	if (called_emsg != called_emsg_start)
-	    return -1;
+	    break;
     }
 
-    return -1;
+    l->lv_lock = prev_lock;
+    return ret;
 }
 
 /*
@@ -9806,7 +9817,7 @@ fix_variable_reference_lval_root(lval_root_T *root, char_u *name)
     int found_member = FALSE;
     if (root->lr_tv->v_type == VAR_OBJECT)
     {
-	if (STRNCMP("this.", name, 5) == 0 ||STRCMP("this", name) == 0)
+	if (STRNCMP("this.", name, 5) == 0 || STRCMP("this", name) == 0)
 	    found_member = TRUE;
     }
     if (!found_member)	// not object member, try class member
@@ -10338,6 +10349,8 @@ find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
 	    prev_lock = l->lv_lock;
 	    if (l->lv_lock == 0)
 		l->lv_lock = VAR_LOCKED;
+	    // ":unlockvar" only resets VAR_LOCKED
+	    l->lv_lock |= VAR_FIXED;
 	}
 
 	for (;;)

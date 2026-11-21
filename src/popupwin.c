@@ -968,7 +968,11 @@ apply_general_options(win_T *wp, dict_T *dict)
 	}
 
 	if (wp->w_popup_imagep != NULL)
-	    image_placement_free(wp->w_popup_imagep);
+	    // Do not clear the image immediately. Instead defer clearing it
+	    // until the next redraw. This is so that if the image is updated
+	    // from a timer callback while inside a hit enter prompt (where
+	    // update_screen() is not called), the image is not cleared.
+	    image_placement_mark_free(wp->w_popup_imagep);
 	wp->w_popup_imagep = place;
 
 	image_get_cell_dimensions(img, &cw, &ch);
@@ -990,7 +994,7 @@ image_done:
 	// Create a image placement with no backing images. This is so that it
 	// will affect the calculations of other popup images.
 	if (wp->w_popup_imagep != NULL)
-	    image_placement_free(wp->w_popup_imagep);
+	    image_placement_mark_free(wp->w_popup_imagep);
 	wp->w_popup_imagep = image_placement_new(NULL, wp->w_id,
 		iplace_use, true);
 
@@ -1865,9 +1869,6 @@ popup_position_image(win_T *wp)
     int	visible_width;
     int	visible_height;
 
-    // Crop dimensions of image (in pixels).
-    int	crop_x, crop_y, crop_width, crop_height;
-
     popup_clip_T clip;
 
     if (wp->w_popup_imagep == NULL || wp->w_popup_flags & POPF_HIDDEN)
@@ -1894,11 +1895,6 @@ popup_position_image(win_T *wp)
 
     image_get_cell_dimensions(wp->w_popup_imagep->img, &iw, &ih);
 
-    crop_x = clip.clip_left_content;
-    crop_y = clip.clip_top_content;
-    crop_width = iw - crop_x - clip.clip_right_content;
-    crop_height = ih - crop_y - clip.clip_bot_content;
-
     // Must account for border and padding (only cells that have been clipped).
     row -= wp->w_popup_border[0] - clip.eff_border[0];
     row -= wp->w_popup_padding[0] - clip.eff_padding[0];
@@ -1906,15 +1902,10 @@ popup_position_image(win_T *wp)
     col -= wp->w_popup_border[3] - clip.eff_border[3];
     col -= wp->w_popup_padding[3] - clip.eff_padding[3];
 
-    // Clamp to the popup's actual visible cell box in pixels, so the
-    // crop can never claim more cells than the popup has
-    if (crop_width > visible_width)
-	crop_width = visible_width;
-    if (crop_height > visible_height)
-	crop_height = visible_height;
-
-    image_placement_set_crop(wp->w_popup_imagep, crop_x, crop_y,
-	    crop_width, crop_height);
+    image_placement_set_offset(wp->w_popup_imagep,
+	    clip.clip_top_content, clip.clip_left_content);
+    image_placement_set_mask(wp->w_popup_imagep, col, row,
+	    visible_width, visible_height);
 exit:
     // Add after the last placement with the same zindex (if any), to match
     // popup window behaviour.

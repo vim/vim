@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.2.  Last change: 2026 Nov 09
+*vim9.txt*	For Vim version 9.2.  Last change: 2026 Nov 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -893,6 +893,9 @@ another 9 is added to MyList:
 	var MyList: list<number> = !exists('MyList') ? [9] : MyList->add(9)
 	echo MyList
 <
+A `:type` in such a script defines the type alias again, like the variable
+declaration does.
+
 You want to use this in scripts that use a `finish` command to bail out at
 some point when loaded again.  For example, when a buffer local option is set
 to a function, the function does not need to be defined more than once:

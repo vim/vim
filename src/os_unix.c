@@ -2850,9 +2850,9 @@ mch_FullName(
 mch_isFullName(char_u *fname)
 {
 #ifdef VMS
-    return ( fname[0] == '/'	       || fname[0] == '.'	    ||
-	     strchr((char *)fname,':') || strchr((char *)fname,'"') ||
-	    (strchr((char *)fname,'[') && strchr((char *)fname,']'))||
+    return ( fname[0] == '/'	       || fname[0] == '.'	     ||
+	     strchr((char *)fname,':') || strchr((char *)fname,'"')  ||
+	    (strchr((char *)fname,'[') && strchr((char *)fname,']')) ||
 	    (strchr((char *)fname,'<') && strchr((char *)fname,'>'))   );
 #else
     return (*fname == '/' || *fname == '~');
@@ -4465,16 +4465,8 @@ mch_report_winsize(int fd, int rows, int cols)
 
     ws.ws_col = cols;
     ws.ws_row = rows;
-    // Pixel sizes are best-effort; the child can query its own terminal
-    // when needed.  Avoid calling mch_calc_cell_size() here -- on
-    // terminals that do not report pixel sizes via TIOCGWINSZ, the
-    // CSI 14 t fallback would synchronously block term_start() for up
-    // to 200ms each time, perturbing timing-sensitive screendump tests
-    // that fork a child Vim.  Setting 0 matches the pre-image-popup
-    // behaviour and is what TIOCSWINSZ does when the kernel cannot
-    // populate the field anyway.
-    ws.ws_xpixel = 0;
-    ws.ws_ypixel = 0;
+    ws.ws_xpixel = cols * cell_width;
+    ws.ws_ypixel = rows * cell_height;
 
     retval = ioctl(tty_fd, TIOCSWINSZ, &ws);
     ch_log(NULL, "ioctl(TIOCSWINSZ) %s", retval == 0 ? "success" : "failed");

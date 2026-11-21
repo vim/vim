@@ -124,22 +124,38 @@ def Test_disassemble_exec_expr()
         res)
 enddef
 
-if has('python3')
-  def s:PyHeredoc()
-    python3 << EOF
-      print('hello')
-EOF
-  enddef
-
-  def Test_disassemble_python_heredoc()
-    var res = execute('disass s:PyHeredoc')
-    assert_match('<SNR>\d*_PyHeredoc.*' ..
-          "    python3 << EOF^@      print('hello')^@EOF\\_s*" ..
-          '\d EXEC_SPLIT     python3 << EOF^@      print(''hello'')^@EOF\_s*' ..
+def Test_disassemble_script_heredoc()
+  var cmds =<< trim END
+    lua
+    mzscheme
+    perl
+    python
+    py3
+    python3
+    pyx
+    pythonx
+    ruby
+    tcl
+  END
+  for cmd in cmds
+    var lines =<< eval trim END
+      def g:ScriptHeredoc()
+        {cmd} << trim EOF
+          text
+        EOF
+      enddef
+    END
+    writefile(lines, 'Xscript', 'D')
+    source Xscript
+    var res = execute('disass g:ScriptHeredoc')
+    assert_match("ScriptHeredoc\n" ..
+          $'  {cmd} << trim EOF^@    text^@  EOF\_s*' ..
+          $'\d EXEC_SPLIT   {cmd} << trim EOF^@    text^@  EOF\_s*' ..
           '\d RETURN void',
-          res)
-  enddef
-endif
+          res, cmd)
+    delfunc g:ScriptHeredoc
+  endfor
+enddef
 
 def s:Substitute()
   var expr = "abc"

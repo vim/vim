@@ -242,10 +242,12 @@ func Test_cscopeWithCscopeConnections()
     call assert_equal('', a)
 
     " Test: 'csprg' option invalid command
-    call assert_equal('cscope', &csprg)
-    set csprg=doesnotexist
-    call assert_fails('cscope add Xcscope2.out', 'E609:')
-    set csprg=cscope
+    if !has('gui_running')
+      call assert_equal('cscope', &csprg)
+      set csprg=doesnotexist
+      call assert_fails('cscope add Xcscope2.out', 'E609:')
+      set csprg=cscope
+    endif
 
     " Test: multiple cscope connections
     cscope add Xcscope.out

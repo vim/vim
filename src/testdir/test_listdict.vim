@@ -342,6 +342,21 @@ func Test_list_func_remove()
   call assert_equal([], r)
 endfunc
 
+" remove() of a range from a List that has items allocated together with the
+" List and items appended later.
+func Test_list_func_remove_range_mixed_items()
+  let lines =<< trim END
+    VAR l = copy([1, 2])
+    call extend(l, [3, 4, 5])
+    call assert_equal([2, 3, 4], remove(l, 1, 3))
+    call assert_equal([1, 5], l)
+    call add(l, 6)
+    call assert_equal([1, 5, 6], remove(l, 0, -1))
+    call assert_equal([], l)
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+endfunc
+
 " List add() function
 func Test_list_add()
   let lines =<< trim END
@@ -1052,6 +1067,51 @@ func Tfunc1(this_is_a_long_parameter_name)
 endfunc
 func Test_dict_scope_var_remove()
   call Tfunc1('testval')
+endfunc
+
+func s:LegacyUnletVictim()
+  unlet g:['Xvictim']
+endfunc
+
+" Removing a variable while ":let" is listing the variables must fail and
+" keep the variable.
+func Test_dict_remove_while_listing_vars()
+  let lines =<< trim END
+    vim9script
+    class A
+      def string(): string
+        try
+          if g:Xmode == 'remove'
+            remove(g:, 'Xvictim')
+          elseif g:Xmode == 'unlet'
+            g:LegacyUnlet()
+          elseif g:Xmode == 'unletindex'
+            var gd = g:
+            unlet gd['Xvictim']
+          else
+            filter(g:, (k, _) => k != 'Xvictim')
+          endif
+        catch /E1313:/
+          g:Xcaught = true
+        endtry
+        return 'A'
+      enddef
+    endclass
+    g:Xobj = A.new()
+  END
+  call writefile(lines, 'Xremovelisting.vim', 'D')
+  source Xremovelisting.vim
+  let g:LegacyUnlet = function('s:LegacyUnletVictim')
+
+  for mode in ['remove', 'unlet', 'unletindex', 'filter']
+    let g:Xmode = mode
+    let g:Xvictim = 'x'
+    let g:Xcaught = v:false
+    silent let g:
+    call assert_true(g:Xcaught, mode)
+    call assert_equal('x', g:Xvictim, mode)
+  endfor
+  unlet g:Xobj g:Xvictim g:Xcaught g:Xmode g:LegacyUnlet
 endfunc
 
 " No extend() of write-protected scope-level variable
@@ -2141,6 +2201,28 @@ func Test_null_list()
   unlockvar l
 endfunc
 
+" Using "+=" on a null List must create a new List.
+func Test_null_list_add_assign()
+  let g:null_l = test_null_list()
+  let g:other_l = [1]
+  let g:null_l += g:other_l
+  call add(g:null_l, 2)
+  call assert_equal([1, 2], g:null_l)
+  call assert_equal([1], g:other_l)
+  unlet g:null_l g:other_l
+
+  let lines =<< trim END
+    vim9script
+    var a = test_null_list()
+    var b = [1]
+    a += b
+    a->add(2)
+    assert_equal([1, 2], a)
+    assert_equal([1], b)
+  END
+  call v9.CheckScriptSuccess(lines)
+endfunc
+
 " The key/value pairs can be edited and retain references to their values.
 func Test_dict_items_edit_result()
   let shared = [1, 2]
@@ -2250,6 +2332,26 @@ func Test_indexof()
   delfunc TestIdx
 endfunc
 
+" The indexof() expression cannot change the List.  Freeing the current item
+" was only detected with valgrind or ASan.
+func Test_indexof_change_list()
+  let g:il = [10, 20, 30]
+  call assert_fails('call indexof(g:il, {i, v -> remove(g:il, i) == 99})', 'E742:')
+  call assert_equal([10, 20, 30], g:il)
+  call assert_fails('call indexof(g:il, "add(g:il, 1)")', 'E742:')
+  call assert_fails('call indexof(g:il, {i, v -> execute("unlockvar g:il") .. remove(g:il, 0)})', 'E742:')
+  call assert_equal([10, 20, 30], g:il)
+  " the List is not locked afterwards
+  call add(g:il, 40)
+  call assert_equal(1, indexof(g:il, {i, v -> v == 20}))
+  call assert_equal(0, islocked('g:il'))
+  lockvar 1 g:il
+  call assert_equal(3, indexof(g:il, 'v:val == 40'))
+  call assert_equal(1, islocked('g:il'))
+  unlockvar g:il
+  unlet g:il
+endfunc
+
 func Test_extendnew_leak()
   " This used to leak memory
   for i in range(100) | silent! call extendnew([], [], []) | endfor
@@ -2354,6 +2456,29 @@ def Test_list_length_as_index()
     l[0] = 10
   END
   v9.CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected string but got number', 2)
+
+  # Cannot add an item to a locked List
+  lines =<< trim END
+    vim9script
+    var l = [1]
+    lockvar 1 l
+    l[1] = 2
+  END
+  v9.CheckScriptFailure(lines, 'E1118: Cannot change locked list', 4)
+  lines =<< trim END
+    vim9script
+    const l = [1]
+    l[1] = 2
+  END
+  v9.CheckScriptFailure(lines, 'E1118: Cannot change locked list', 3)
+  lines =<< trim END
+    g:locked_list = [1]
+    lockvar 1 g:locked_list
+    g:locked_list[1] = 2
+  END
+  v9.CheckDefExecFailure(lines, 'E1118: Cannot change locked list', 3)
+  unlockvar g:locked_list
+  unlet g:locked_list
 
   # In legacy script, appending a new item to a list should fail.
   lines =<< trim END

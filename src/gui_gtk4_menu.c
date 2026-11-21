@@ -364,6 +364,11 @@ struct _VimMenuItem
     // menu item works properly.
     VimMenuItemFunc	func;
     void		*func_udata;
+
+    // For a copy: the item it was copied from, its callback is used.  NULL
+    // when that item was removed, its menu entry does not exist any more.
+    VimMenuItem		*source;
+    gboolean		is_copy;
 };
 
 G_DEFINE_TYPE(VimMenuItem, vim_menu_item, GTK_TYPE_BUTTON)
@@ -376,6 +381,7 @@ vim_menu_item_dispose(GObject *object)
     g_clear_pointer(&self->label, gtk_widget_unparent);
     g_clear_pointer(&self->aux_widget, gtk_widget_unparent);
     g_clear_pointer((GtkWidget **)&self->submenu, gtk_widget_unparent);
+    g_clear_weak_pointer(&self->source);
 
     G_OBJECT_CLASS(vim_menu_item_parent_class)->dispose(object);
 }
@@ -421,6 +427,20 @@ vim_menu_item_new(const char *text, VimMenuItemFunc func, void *udata)
     gtk_widget_set_parent(item->label, GTK_WIDGET(item));
 
     return GTK_WIDGET(item);
+}
+
+/*
+ * Call the callback of "self", for a copy the one of the item it was copied
+ * from.  There is none when that item was removed: the "udata" of the callback
+ * was freed then.
+ */
+    static void
+vim_menu_item_call_func(VimMenuItem *self, VimMenuItemEvent event)
+{
+    VimMenuItem *item = self->is_copy ? self->source : self;
+
+    if (item != NULL && item->func != NULL)
+	item->func(item, event, item->func_udata);
 }
 
 /*
@@ -487,8 +507,10 @@ vim_menu_item_copy(VimMenuItem *self)
     GtkWidget *copy;
 
     copy = vim_menu_item_new(
-	    gtk_label_get_text(GTK_LABEL(self->label)),
-	    self->func, self->func_udata);
+	    gtk_label_get_text(GTK_LABEL(self->label)), NULL, NULL);
+    VIM_MENU_ITEM(copy)->is_copy = TRUE;
+    g_set_weak_pointer(&VIM_MENU_ITEM(copy)->source,
+					self->is_copy ? self->source : self);
 
     if (self->submenu != NULL)
 	vim_menu_item_set_submenu(VIM_MENU_ITEM(copy),
@@ -559,8 +581,7 @@ vim_menu_select_active_item(VimMenu *self, gboolean open)
     gtk_widget_grab_focus(GTK_WIDGET(self->active_item));
 
     item = VIM_MENU_ITEM(self->active_item);
-    if (item->func != NULL)
-	item->func(item, VIM_MENU_ITEM_SELECTED, item->func_udata);
+    vim_menu_item_call_func(item, VIM_MENU_ITEM_SELECTED);
 
     if (open && VIM_MENU_ITEM(self->active_item)->submenu != NULL)
     {
@@ -674,6 +695,21 @@ vim_menu_reset_parent_prelight(VimMenu *self)
 }
 
 /*
+ * Return the menu that "self" is a submenu of, NULL if there is none.
+ */
+    static VimMenu *
+vim_menu_get_parent_menu(VimMenu *self)
+{
+    GtkWidget *parent = gtk_widget_get_parent(GTK_WIDGET(self));
+
+    // gtk_widget_get_ancestor assumes the widget itself is also an ancestor, so
+    // we must get parent of menu first.
+    if (parent == NULL)
+	return NULL;
+    return VIM_MENU(gtk_widget_get_ancestor(parent, VIM_TYPE_MENU));
+}
+
+/*
  * Close all submenus in the menubar given a menu widget
  */
     static void
@@ -685,10 +721,34 @@ vim_menu_close_all(VimMenu *self)
     if (menubar != NULL)
 	vim_menu_bar_set_active_item(menubar, NULL, TRUE);
     else
-	gtk_popover_popdown(GTK_POPOVER(self));
+    {
+	VimMenu *menu = self;
+
+	// Since the "cascade-popdown" property is FALSE, closing a submenu
+	// leaves its parent menus open.
+	while (menu != NULL)
+	{
+	    VimMenu *parent_menu = vim_menu_get_parent_menu(menu);
+
+	    gtk_popover_popdown(GTK_POPOVER(menu));
+	    menu = parent_menu;
+	}
+    }
 
     // Grab focus after popup menus without a menubar are closed
     gtk_widget_grab_focus(gui.drawarea);
+}
+
+    static void
+vim_menu_pressed_cb(
+	GtkGesture  *gesture,
+	int	    n_press UNUSED,
+	double	    x UNUSED,
+	double	    y UNUSED,
+	VimMenu	    *self)
+{
+    if (gui_gtk_claim_window_press(gesture, GTK_WIDGET(self)))
+	vim_menu_close_all(self);
 }
 
     static gboolean
@@ -877,6 +937,9 @@ vim_menu_init(VimMenu *self)
 	    G_CALLBACK(vim_menu_motion_cb), self, G_CONNECT_DEFAULT);
     gtk_widget_add_controller(GTK_WIDGET(self), controller);
 
+    gui_gtk_popover_add_press(GTK_WIDGET(self),
+					    G_CALLBACK(vim_menu_pressed_cb));
+
     g_signal_connect(self, "closed", G_CALLBACK(vim_menu_closed_cb), NULL);
 
     // Set all shortcut controllers in the window to not require a modifier for
@@ -942,8 +1005,7 @@ vim_menu_item_clicked_cb(VimMenuItem *self, VimMenu *menu)
     // Since we set the "cascade-popdown" property to FALSE, we must popdown the
     // toplevel menu/popover, so that all submenus are closed.
     vim_menu_close_all(menu);
-    if (self->func != NULL)
-	self->func(self, VIM_MENU_ITEM_CLICKED, self->func_udata);
+    vim_menu_item_call_func(self, VIM_MENU_ITEM_CLICKED);
 }
 
     static gboolean

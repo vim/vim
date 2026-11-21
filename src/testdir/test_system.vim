@@ -253,4 +253,13 @@ func Test_system_list_arg()
   call assert_fails('call systemlist([])', 'E474:')
 endfunc
 
+" A range() List as the command works like a List of Numbers.
+func Test_system_range_list_arg()
+  CheckUnix
+  let out = system([0, 1])
+  let status = v:shell_error
+  call assert_equal(out, system(range(2)))
+  call assert_equal(status, v:shell_error)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

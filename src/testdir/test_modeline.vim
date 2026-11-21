@@ -563,11 +563,12 @@ func Test_modeline_strict_allowed()
   set modeline modelinestrict
 
   " Whitelisted options should work
-  call writefile(['vim: set ts=2 sw=4 et foldmarker=[,]:'], 'Xmodeline_strict', 'D')
+  call writefile(['vim: set ts=2 sw=4 et foldmarker=[,] colorcolumn=10,20:'], 'Xmodeline_strict', 'D')
   split Xmodeline_strict
   call assert_equal(2, &ts)
   call assert_equal(4, &sw)
   call assert_equal(1, &et)
+  call assert_equal('10,20', &cc)
   call assert_equal('[,]', &foldmarker)
   bwipe!
 
@@ -603,6 +604,13 @@ func Test_modeline_strict_allowed()
   call writefile(['vim: set tw=10 :'], 'Xmodeline_strict')
   split Xmodeline_strict
   call assert_equal(10, &textwidth)
+  bwipe!
+
+  " give a verbose message
+  call writefile(['vim: set cursorcolumn:'], 'Xmodeline_strict')
+  let a = execute('verbose split Xmodeline_strict')
+  call assert_equal(0, &cuc)
+  call assert_match("'modelinestrict' in effect, ignoring cursorcolumn", a)
   bwipe!
 
   let &modeline = modeline

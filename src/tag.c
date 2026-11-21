@@ -4189,8 +4189,8 @@ expand_tag_fname(char_u *fname, char_u *tag_fname, int expand)
     // otherwise be passed to netrw and trigger a network request.
     if (p_tagsecure && path_with_url(fname))
     {
-       emsg(_(e_tag_file_entry_must_not_be_url));
-       return NULL;
+	emsg(_(e_tag_file_entry_must_not_be_url));
+	return NULL;
     }
 
     /*
@@ -4206,6 +4206,14 @@ expand_tag_fname(char_u *fname, char_u *tag_fname, int expand)
 			    WILD_LIST_NOTFOUND|WILD_SILENT, WILD_EXPAND_FREE);
 	if (expanded_fname != NULL)
 	    fname = expanded_fname;
+    }
+
+    // need to check again, ExpandOne() may have expanded http:\/\/
+    if (p_tagsecure && path_with_url(fname))
+    {
+	vim_free(expanded_fname);
+	emsg(_(e_tag_file_entry_must_not_be_url));
+	return NULL;
     }
 
     if ((p_tr || curbuf->b_help)

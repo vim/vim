@@ -444,6 +444,21 @@ def Test_null_values()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
+" Indexing a declared but not yet initialized script-level list allocates
+" an empty list for it; that list must get the declared member type, the
+" same as when the list is given an initial value.
+def Test_assign_index_sets_type_of_empty_list()
+  var lines =<< trim END
+    vim9script
+    var a: list<string>
+    a[0] = 'x'
+    assert_equal('list<string>', typename(a))
+    assert_fails('a->add(123)', 'E1012: Type mismatch; expected string but got number')
+    assert_equal(['x'], a)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_type_with_extra_white()
   var lines =<< trim END
       const x : number = 3
@@ -1997,6 +2012,17 @@ def Test_assign_list_slice_type_error()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
+" A null List in a slice assignment in a compiled function gives an error.
+" This used to crash.
+def Test_assign_list_slice_null()
+  v9.CheckDefExecFailure(['var l: list<number> = [1, 2]',
+                          'l[0 : 1] = null_list'], 'E709:', 2)
+  v9.CheckDefExecFailure(['var l: list<number> = null_list',
+                          'l[0 : 0] = [1]'], 'E1147:', 2)
+  v9.CheckDefExecFailure(['var l: list<number> = null_list',
+                          'l[0 :] = null_list'], 'E1147:', 2)
+enddef
+
 def Test_assign_list_with_op()
   var lines =<< trim END
     var ls: list<string> = ['x']
@@ -2039,6 +2065,32 @@ def Test_assign_list_add_wrong_item_type()
     assert_equal([1, 2, 3], l)
   END
   v9.CheckDefAndScriptSuccess(lines)
+enddef
+
+" "+=" changes a list in place, it must not change a locked or const list.
+def Test_assign_list_add_to_locked_list()
+  var lines =<< trim END
+    vim9script
+    def AddTo(l: list<number>)
+      var x = l
+      x += [2]
+    enddef
+
+    const c = [1]
+    assert_fails('AddTo(c)', 'E741:')
+    assert_equal([1], c)
+
+    var s = [1]
+    lockvar 1 s
+    assert_fails('AddTo(s)', 'E741:')
+    assert_equal([1], s)
+
+    # same at script level
+    var a = s
+    assert_fails('a += [2]', 'E741:')
+    assert_equal([1], s)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_assign_with_op_fails()
@@ -4233,6 +4285,63 @@ def Test_dict_compound_assign_nested_forms()
     call assert_equal({'b': 6}, d.a)
   END
   v9.CheckLegacyAndVim9Success(lines)
+enddef
+
+" Test for doing a type check at runtime for a dict member type
+def Test_nested_dict_type_check()
+  var lines =<< trim END
+    var d: dict<number> = {a: 1}
+    var x: any = d
+    x['b'] = 'str'
+  END
+  v9.CheckSourceDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got string', 3)
+
+  # replacing an existing item
+  lines =<< trim END
+    var d: dict<string> = {a: 'x'}
+    var x: any = d
+    x['a'] = 42
+  END
+  v9.CheckSourceDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected string but got number', 3)
+
+  # a nested dict
+  lines =<< trim END
+    var d: dict<dict<number>> = {a: {b: 1}}
+    var x: any = d
+    x['a']['c'] = 'str'
+  END
+  v9.CheckSourceDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got string', 3)
+
+  # the dict is not changed and a value of the right type can be stored
+  lines =<< trim END
+    vim9script
+    def Foo()
+      var d: dict<number> = {a: 1}
+      var x: any = d
+      try
+        x['b'] = 'str'
+      catch /E1012:/
+      endtry
+      x['c'] = 3
+      assert_equal({a: 1, c: 3}, d)
+    enddef
+    Foo()
+
+    var sd: dict<number> = {a: 1}
+    var sx: any = sd
+    try
+      sx['b'] = 'str'
+    catch /E1012:/
+    endtry
+    sx['c'] = 3
+    assert_equal({a: 1, c: 3}, sd)
+
+    # a dict without a type accepts any value
+    var ud: any = {a: 1}
+    ud['b'] = 'str'
+    assert_equal({a: 1, b: 'str'}, ud)
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

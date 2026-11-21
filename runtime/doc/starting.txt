@@ -1,4 +1,4 @@
-*starting.txt*	For Vim version 9.2.  Last change: 2026 Sep 08
+*starting.txt*	For Vim version 9.2.  Last change: 2026 Nov 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -446,7 +446,9 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 							*--stdio-channel*
 --stdio-channel	Use the stdin and stdout of Vim for a channel instead of for a
 		terminal.  Implies "-es": nothing is displayed, no Ex commands
-		are read and the GUI is not started.  A script opens the
+		are read and the GUI is not started.  The |--servername|
+		argument is ignored and no server is started, the
+		|--remote| arguments cannot be used.  A script opens the
 		channel with |ch_open()| and the address "stdio".
 		See |channel-stdio|.
 		After the startup commands and scripts have been executed Vim

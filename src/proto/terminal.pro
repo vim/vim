@@ -42,6 +42,7 @@ void term_update_hlfwin_all(void);
 void term_init_default_colors(term_T *term);
 void term_update_palette_all(void);
 void term_update_colors_all(void);
+void term_update_cell_size(void);
 char_u *term_get_status_text(term_T *term);
 void term_clear_status_text(term_T *term);
 int set_ref_in_term(int copyID);
