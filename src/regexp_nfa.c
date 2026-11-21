@@ -2164,7 +2164,7 @@ nfa_regpiece(void)
 	    break;
 
 	case Magic('@'):
-	    c2 = (long)getdecchrs();
+	    c2 = get_at_limit();
 	    op = no_Magic(getchr());
 	    i = 0;
 	    switch(op)

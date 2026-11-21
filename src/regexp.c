@@ -1047,6 +1047,17 @@ getdecchrs(void)
 }
 
 /*
+ * Read a \@ byte limit, saturating at INT_MAX to fit both regexp engines.
+ */
+    static int
+get_at_limit(void)
+{
+    vimlong_T	nr = getdecchrs();
+
+    return nr > INT_MAX ? INT_MAX : (int)nr;
+}
+
+/*
  * get and return the value of the octal string immediately after the current
  * position. Return -1 for invalid, or 0-255 for valid. Smart enough to handle
  * numbers > 377 correctly (for example, 400 is treated as 40) and doesn't
