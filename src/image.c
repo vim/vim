@@ -1316,6 +1316,9 @@ update_image_backend(void)
     if (image_backend == new)
 	return OK;
 
+    // Free placements marked to be freed later
+    free_marked_image_placements();
+
     // Must uninit the backends of every image/placement, then init the new
     // backend for each.
     FOR_ALL_IMAGES(img)
