@@ -632,6 +632,8 @@ tree_count_words(char_u *byts, long byts_len, idx_T *idxs)
 	    // Do one more byte at this node.
 	    n = arridx[depth] + curi[depth];
 	    ++curi[depth];
+	    if (n >= byts_len)
+		break;
 
 	    c = byts[n];
 	    if (c == 0)
