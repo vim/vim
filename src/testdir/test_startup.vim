@@ -495,7 +495,7 @@ func Test_reverse()
   call delete('Xtest_reverse')
 endfunc
 
-" Detect the terminal background before the first screen clear and -c redraw.
+" Detect the terminal background before the first screen clear and a redraw.
 func Test_startup_background()
   CheckRunVimInTerminal
   CheckFeature termresponse
@@ -506,6 +506,7 @@ func Test_startup_background()
     set nocompatible
     set termguicolors termbackgroundwait=1000
     colorscheme lunaperche
+    autocmd BufEnter * ++once redraw! | source Xbgafter
   END
   call writefile(lines, 'Xbgvimrc', 'D')
   let after =<< trim END
@@ -523,7 +524,6 @@ func Test_startup_background()
   hi StartupBackground guifg=#ffffff guibg=#000000 ctermfg=15 ctermbg=0
   let output = []
   let cmd = GetVimCommandCleanTerm() .. ' -u Xbgvimrc'
-        \ .. ' -c "redraw! | source Xbgafter"'
   let buf = term_start(cmd, #{term_rows: 10,
         \ term_highlight: 'StartupBackground',
         \ env: #{TERM: 'xterm', COLORFGBG: ''},
@@ -542,13 +542,14 @@ func Test_startup_background()
 endfunc
 
 " The custom query gets no reply from the terminal, so waiting must time out.
-" Record both the requested delays and the time spent before startup commands.
+" Record both the requested delays and the time spent before startup finishes.
 func RunStartupBackgroundWait(settings)
   let lines = [
         \ 'set nocompatible t_RV= t_RF= t_u7=',
         \ 'set t_RB=background-query',
         \ ] + a:settings + ['call ch_logfile("Xbgwaitlog", "wo")',
-        \ 'let g:bgwaitstart = reltime()']
+        \ 'let g:bgwaitstart = reltime()',
+        \ 'autocmd BufEnter * ++once source Xbgwaitafter']
   call writefile(lines, 'Xbgwaitvimrc', 'D')
   let after =<< trim END
     let elapsed = float2nr(reltimefloat(reltime(g:bgwaitstart)) * 1000)
@@ -561,8 +562,7 @@ func RunStartupBackgroundWait(settings)
   defer delete('Xbgwaitlog')
   defer delete('Xbgwaitdone')
 
-  let cmd = GetVimCommandCleanTerm()
-        \ .. ' -u Xbgwaitvimrc -S Xbgwaitafter'
+  let cmd = GetVimCommandCleanTerm() .. ' -u Xbgwaitvimrc'
   let buf = term_start(cmd, #{term_rows: 10,
         \ env: #{TERM: 'xterm', COLORFGBG: ''}})
   try
@@ -634,16 +634,18 @@ func Test_startup_background_wait_redirected()
   CheckNotGui
 
   let before = ['set termbackgroundwait=100 t_RB=background-query',
-        \ 'call ch_logfile("Xbgwaitlog", "wo")']
+        \ 'call ch_logfile("Xbgwaitlog", "wo")',
+        \ 'autocmd VimEnter * ++once source Xbgredirectafter']
   let after =<< trim END
     call ch_logfile('')
     call feedkeys("istartup input\<Esc>", 'xt')
     call writefile(getline(1, '$'), 'Xbgwaittext')
     qall!
   END
+  call writefile(after, 'Xbgredirectafter', 'D')
   defer delete('Xbgwaitlog')
   defer delete('Xbgwaittext')
-  if RunVimPiped(before, after, '-', 'echo redirected input |')
+  if RunVimPiped(before, [], '-', 'echo redirected input |')
     call assert_equal(['startup inputredirected input'], readfile('Xbgwaittext'))
     call assert_equal([], filter(readfile('Xbgwaitlog'),
           \ {_, v -> v =~ 'ui_delay(\|background-query'}))
@@ -711,19 +713,28 @@ func Test_startup_background_handoff()
     elseif kind == 'colors'
       call add(lines, 'set t_ti= t_te=')
     endif
+    let handoff = ['call echoraw("HANDOFF-START")']
+    if kind == 'interrupt' || kind == 'colors'
+      call add(handoff, '!python3 Xbghandoff.py')
+    elseif kind == 'exit'
+      call add(handoff, 'echon "EXIT-MESSAGE"')
+    endif
+    call add(handoff, 'qall!')
+    call writefile(handoff, 'Xbghandoffafter', 'D')
+    if kind == 'interrupt' || kind == 'colors'
+      " Execute :! outside an autocommand so it calls stoptermcap().
+      call add(lines, 'autocmd BufEnter * ++once '
+            \ .. 'call feedkeys(":source Xbghandoffafter\<CR>", "t")')
+    else
+      call add(lines, 'autocmd BufEnter * ++once source Xbghandoffafter')
+    endif
     call writefile(lines, 'Xbghandoffvimrc', 'D')
     call delete('Xbghandoffinput')
     let cmd = GetVimCommandCleanTerm() .. ' -u Xbghandoffvimrc'
-          \ .. ' -c "call echoraw(''HANDOFF-START'')"'
-    if kind == 'interrupt' || kind == 'colors'
-      let cmd ..= ' -c "!python3 Xbghandoff.py"'
-    elseif kind == 'exit'
-      let cmd ..= ' -c "echon ''EXIT-MESSAGE''"'
-    endif
     let state = #{output: '', queried: 0, quit: 0, timers: [],
           \ interrupt: kind == 'interrupt',
           \ delay: kind == 'exit' ? 20 : kind == 'interrupt' ? 60 : 30}
-    let job = job_start(cmd .. ' -c "qall!"', #{pty: 1, out_mode: 'raw',
+    let job = job_start(cmd, #{pty: 1, out_mode: 'raw',
           \ env: #{TERM: 'xterm', COLORFGBG: ''},
           \ out_cb: function('StartupBackgroundHandoffOutput', [state])})
     try
@@ -758,6 +769,51 @@ func Test_startup_background_handoff()
       for timer in state.timers
         call timer_stop(timer)
       endfor
+      call job_stop(job, 'kill')
+    endtry
+  endfor
+endfunc
+
+" Simulate a response arriving after the startup wait and handoff have ended.
+func StartupBackgroundCommandsOutput(state, channel, msg)
+  let a:state.output ..= a:msg
+  if !a:state.queried && a:state.output =~ "\e]11;?"
+    let a:state.queried = 1
+    let a:state.timer = timer_start(400,
+          \ {-> ch_sendraw(a:channel, "\<Esc>]11;rgb:0000/0000/0000\<Esc>\\")})
+  endif
+  if !a:state.enter && a:state.output =~ 'Press ENTER'
+    let a:state.enter = 1
+    call ch_sendraw(a:channel, "\<CR>")
+  endif
+endfunc
+
+func Test_startup_background_commands()
+  CheckUnix
+  CheckFeature job
+  CheckFeature timers
+  CheckFeature termresponse
+
+  call writefile(['qall!'], 'Xbgcommands', 'D')
+  " Defer the query for every startup command, including indirect exits.
+  " Keep the shell alive after Vim exits so a late reply can still be echoed.
+  for args in ['-c q', '-c "!sleep 1" -c q', '+q', '-S Xbgcommands',
+        \ '-c "execute ''q''"']
+    let cmd = GetVimCommandCleanTerm() .. ' -u NONE -N'
+          \ .. ' --cmd "set tbw=50 t_RV= t_RF= t_u7=" ' .. args
+          \ .. '; vim_status=$?; echo VIM-EXIT:$vim_status; sleep 1; exit $vim_status'
+    let state = #{output: '', queried: 0, timer: -1, enter: 0}
+    let job = job_start(['sh', '-c', cmd], #{pty: 1, out_mode: 'raw',
+          \ env: #{TERM: 'xterm', COLORFGBG: ''},
+          \ out_cb: function('StartupBackgroundCommandsOutput', [state])})
+    try
+      call WaitForAssert({-> assert_equal('dead', job_status(job))})
+      call assert_equal(0, job_info(job).exitval, args)
+      call assert_match('VIM-EXIT:0', state.output, args)
+      call assert_false(state.queried, args)
+      call assert_notmatch(']11;rgb:', state.output, args)
+    finally
+      call timer_stop(state.timer)
       call job_stop(job, 'kill')
     endtry
   endfor

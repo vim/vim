@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Nov 21
+*options.txt*	For Vim version 9.2.  Last change: 2026 Nov 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -9356,8 +9356,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	response during interactive startup, before the first screen clear.
 	Zero (the default) defers the query until after startup commands and
 	disables waiting.  A positive value sends the query before the first
-	screen clear.  The value must not be negative.  See |background-flash|
-	for an example.
+	screen clear when there are no |-+c|, |-c| or |-S| startup commands.
+	With these commands the query is deferred until they have finished, to
+	avoid a late response reaching the shell after Vim exits or while a
+	shell command is running.  The value must not be negative.  See
+	|background-flash| for an example.
 
 	Vim only waits when 'background' has not been explicitly set, |t_RB| is
 	not empty, and both input and output are terminals.  Waiting ends early

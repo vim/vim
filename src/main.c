@@ -770,9 +770,11 @@ vim_main2(void)
     {
 # ifdef FEAT_TERMRESPONSE
 	// When 'termbackgroundwait' is positive, detect the background before
-	// clearing, also when a -c command redraws during startup.
-	// Do not read redirected input before executing startup commands.
-	if (p_tbw > 0 && stdout_isatty && mch_input_isatty()
+	// clearing.  Startup commands may quit or run a shell command, so do
+	// not send a request whose response could arrive after the handoff.
+	// Do not read redirected input either.
+	if (p_tbw > 0 && params.n_commands == 0
+		&& stdout_isatty && mch_input_isatty()
 #  ifdef FEAT_GUI
 		&& !gui.in_use && !gui.starting
 #  endif
