@@ -1413,7 +1413,7 @@ text_prop_compare(const void *s1, const void *s2)
 
     // for a property with text the id can be used as tie breaker
     if (tp1->tp_id < 0)
-	return tp1->tp_id > tp2->tp_id ? 1 : -1;
+	return tp1->tp_id == tp2->tp_id ? 0 : tp1->tp_id > tp2->tp_id ? 1 : -1;
 
     return 0;
 }
