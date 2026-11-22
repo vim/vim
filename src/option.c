@@ -4807,19 +4807,19 @@ did_set_termguicolors(optset_T *args UNUSED)
 	p_tgc = 0;
 	return e_24_bit_colors_are_not_supported_on_this_environment;
     }
-    if (is_term_win32())
-	swap_tcap();
+    if (is_term_win32() && !swap_tcap())
+	return NULL;
 # endif
 # ifdef FEAT_GUI
     if (!gui.in_use && !gui.starting)
 # endif
 	highlight_gui_started();
 # ifdef FEAT_VTP
-    // reset t_Co
     if (is_term_win32())
     {
 	control_console_color_rgb();
-	set_termname(T_NAME);
+	// same terminal, don't reset the options
+	set_termname(T_NAME, true);
 	init_highlight(TRUE, FALSE);
     }
 # endif
