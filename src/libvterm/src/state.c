@@ -8,6 +8,8 @@
 #if defined(DEBUG) && DEBUG > 1
 # define DEBUG_GLYPH_COMBINE
 #endif
+#define LBOUND(v,min) if((v) < (min)) (v) = (min)
+#define UBOUND(v,max) if((v) > (max)) (v) = (max)
 
 static int on_resize(int rows, int cols, void *user);
 
@@ -651,6 +653,9 @@ static void savecursor(VTermState *state, int save)
     VTermPos oldpos = state->pos;
 
     state->pos = state->saved.pos;
+    // The terminal may have been resized since the cursor was saved.
+    UBOUND(state->pos.row, state->rows - 1);
+    UBOUND(state->pos.col, state->cols - 1);
 
     settermprop_bool(state, VTERM_PROP_CURSORVISIBLE, state->saved.mode.cursor_visible);
     settermprop_bool(state, VTERM_PROP_CURSORBLINK,   state->saved.mode.cursor_blink);
@@ -1047,9 +1052,6 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
   }
 
   oldpos = state->pos;
-
-#define LBOUND(v,min) if((v) < (min)) (v) = (min)
-#define UBOUND(v,max) if((v) > (max)) (v) = (max)
 
 #define LEADER(l,b) ((l << 8) | b)
 #define INTERMED(i,b) ((i << 16) | b)
