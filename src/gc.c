@@ -171,6 +171,9 @@ garbage_collect(int testing)
     // v: vars
     abort = abort || garbage_collect_vimvars(copyID);
 
+    // v:event items saved for a nested autocommand
+    abort = abort || set_ref_in_saved_v_event(copyID);
+
     // callbacks in buffers
     abort = abort || set_ref_in_buffers(copyID);
 
