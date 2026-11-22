@@ -5092,6 +5092,7 @@ readdir_core(
     WIN32_FIND_DATAW    wfd;
     WCHAR		*wn = NULL;	// UTF-16 name, NULL when not used.
     char_u		*p_end;
+    size_t		len;
 # else
     DIR			*dirp;
     struct dirent	*dp;
@@ -5113,14 +5114,18 @@ readdir_core(
 # endif
 
 # ifdef MSWIN
-    buf = alloc(MAXPATHL);
+    len = STRLEN(path);
+    buf = alloc(len + 3);	// room for "\\*" and NUL
     if (buf == NULL)
 	return FAIL;
-    STRNCPY(buf, path, MAXPATHL-5);
-    p = p_end = buf + STRLEN(buf);
-    MB_PTR_BACK(buf, p);
-    if (*p == '\\' || *p == '/')
-	p_end = p;
+    STRCPY(buf, path);
+    p = p_end = buf + len;
+    if (p > buf)
+    {
+	MB_PTR_BACK(buf, p);
+	if (*p == '\\' || *p == '/')
+	    p_end = p;
+    }
     STRCPY(p_end, "\\*");
 
     wn = enc_to_utf16(buf, NULL);

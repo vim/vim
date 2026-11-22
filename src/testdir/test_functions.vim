@@ -3736,6 +3736,22 @@ func Test_readdirex()
   call assert_fails('call readdirex("doesnotexist")', 'E484:')
 endfunc
 
+func Test_readdir_long_path()
+  " A very long path used to overflow a buffer on MS-Windows; the overflow is
+  " only detected with ASan or valgrind.
+  let longpath = repeat('a', 1100)
+  call assert_fails('call readdir(longpath)', 'E484:')
+  call assert_fails('call readdirex(longpath)', 'E484:')
+
+  " A trailing path separator still works.
+  call mkdir('Xlongpathdir', 'R')
+  call writefile([], 'Xlongpathdir/foo.txt')
+  call assert_equal(['foo.txt'], readdir('Xlongpathdir/'))
+  if has('win32')
+    call assert_equal(['foo.txt'], readdir('Xlongpathdir\'))
+  endif
+endfunc
+
 func Test_readdirex_sort()
   CheckUnix
   " Skip tests on Mac OS X and Cygwin (does not allow several files with different casing)
