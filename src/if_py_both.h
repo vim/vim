@@ -3053,9 +3053,7 @@ ListAssIndex(ListObject *self, Py_ssize_t index, PyObject *obj)
 			"list item %d"), (int) index);
 	    return -1;
 	}
-	vimlist_remove(l, li, li);
-	clear_tv(&li->li_tv);
-	vim_free(li);
+	listitem_remove(l, li);
 	return 0;
     }
 
