@@ -63,6 +63,8 @@ ui_write(char_u *s, int len, int console UNUSED)
 #endif
 }
 
+static bool breakcheck_recursive = false;	// true while inside ui_breakcheck_force()
+
 #if defined(UNIX) || defined(VMS) || defined(MSWIN)
 /*
  * When executing an external program, there may be some typed characters that
@@ -72,7 +74,6 @@ ui_write(char_u *s, int len, int console UNUSED)
 static char_u *ta_str = NULL;
 static int ta_off;	// offset for next char to use when ta_str != NULL
 static int ta_len;	// length of ta_str when it's not NULL
-static bool breakcheck_recursive = false;	// true while inside ui_breakcheck_force()
 
     void
 ui_inchar_undo(char_u *s, int len)
