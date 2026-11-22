@@ -17,7 +17,6 @@ SRC_ALL =	\
 		.github/workflows/ci.yml \
 		.github/workflows/codeql-analysis.yml \
 		.github/workflows/coverity.yml \
-		.github/workflows/link-check.yml \
 		.github/actions/build_vim_on_linux/action.yml \
 		.github/actions/test_artifacts/action.yml \
 		.github/dependabot.yml \
@@ -32,7 +31,6 @@ SRC_ALL =	\
 		ci/gen_testset.py \
 		ci/if_feat_check.vim \
 		ci/if_ver*.vim \
-		ci/lychee.toml \
 		ci/pinned-pkgs \
 		ci/remove_snap.sh \
 		ci/setup-weston.sh \
