@@ -4366,7 +4366,8 @@ func Test_popupmenu_info_hidden_does_not_clear_menu()
   END
   call writefile(lines, 'XpopupInfoHidden', 'D')
   let s:pty_out = ''
-  let job = job_start(GetVimCommandCleanTerm() .. ' -S XpopupInfoHidden', #{
+  " -n to disable swapfile
+  let job = job_start(GetVimCommandCleanTerm() .. ' -n -S XpopupInfoHidden', #{
         \ pty: 1,
         \ out_mode: 'raw',
         \ env: #{TERM: 'xterm', LINES: '24', COLUMNS: '80'},
