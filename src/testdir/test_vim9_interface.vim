@@ -674,6 +674,40 @@ def Test_call_interface_method()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for calling an interface method and an abstract method with a default
+" argument value from a def function.  This used to leak memory, which is only
+" detected with valgrind or ASan.
+def Test_call_interface_method_with_default_arg()
+  var lines =<< trim END
+    vim9script
+    interface I
+      def Join(sep: string = ','): string
+    endinterface
+    abstract class Base
+      abstract def Add(n: number, m: number = 10): number
+    endclass
+    class A extends Base implements I
+      def Join(sep: string = ','): string
+        return $'[{sep}]'
+      enddef
+      def Add(n: number, m: number = 10): number
+        return n + m
+      enddef
+    endclass
+
+    def UsingInterface(i: I): string
+      return i.Join() .. i.Join('/')
+    enddef
+    def UsingAbstract(b: Base): number
+      return b.Add(1) + b.Add(1, 2)
+    enddef
+    var a = A.new()
+    assert_equal('[,][/]', UsingInterface(a))
+    assert_equal(14, UsingAbstract(a))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for implementing an imported interface {{{1
 def Test_implement_imported_interface()
   var lines =<< trim END
@@ -1588,5 +1622,63 @@ func Test_interface_garbagecollect()
   END
   call v9.CheckSourceSuccess(lines)
 endfunc
+
+" An object of a class implementing an interface that extends another
+" interface can be used where either interface is expected.  A super-interface
+" value cannot be assigned to a sub-interface type in a compiled function.
+def Test_interface_extends_type_compatibility()
+  var lines =<< trim END
+    vim9script
+    interface HasId
+      def Id(): number
+    endinterface
+    interface Named extends HasId
+      def Name(): string
+    endinterface
+    class User implements Named
+      def Id(): number
+        return 7
+      enddef
+      def Name(): string
+        return 'u'
+      enddef
+    endclass
+
+    def GetId(h: HasId): number
+      return h.Id()
+    enddef
+    def GetName(n: Named): string
+      return n.Name()
+    enddef
+
+    var u = User.new()
+    assert_equal(7, GetId(u))
+    assert_equal('u', GetName(u))
+    assert_true(instanceof(u, HasId))
+    assert_true(instanceof(u, Named))
+
+    var n: Named = u
+    var h: HasId = n
+    assert_equal(7, h.Id())
+    assert_equal(7, GetId(n))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    interface HasId
+    endinterface
+    interface Named extends HasId
+    endinterface
+    class User implements Named
+    endclass
+    def F()
+      var h: HasId = User.new()
+      var n: Named = h
+    enddef
+    defcompile F
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected object<Named> but got object<HasId>', 2)
+enddef
 " }}}
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
