@@ -70,6 +70,7 @@ int set_ref_in_insexpand_funcs(int copyID);
 void f_complete(typval_T *argvars, typval_T *rettv);
 void f_complete_add(typval_T *argvars, typval_T *rettv);
 void f_complete_check(typval_T *argvars, typval_T *rettv);
+void f_complete_refresh(typval_T *argvars, typval_T *rettv);
 void f_complete_info(typval_T *argvars, typval_T *rettv);
 void ins_compl_delete(void);
 void ins_compl_insert(int move_cursor, int insert_prefix);

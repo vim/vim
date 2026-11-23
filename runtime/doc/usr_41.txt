@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.2.  Last change: 2026 Sep 30
+*usr_41.txt*	For Vim version 9.2.  Last change: 2026 Nov 07
 
 
 		     VIM USER MANUAL	by Bram Moolenaar
@@ -1160,6 +1160,7 @@ Insert mode completion:				*completion-functions*
 	complete_add()		add to found matches
 	complete_check()	check if completion should be aborted
 	complete_info()		get current completion information
+	complete_refresh()	refresh function source completion matches
 	preinserted()		check if text is inserted after cursor
 	pumvisible()		check if the popup menu is displayed
 	pum_getpos()		position and size of popup menu if visible
