@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 9.2.  Last change: 2026 Jul 25
+*spell.txt*	For Vim version 9.2.  Last change: 2026 Nov 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -512,7 +512,7 @@ files are zip files which contain the .aff and .dic files.  You should be able
 to find them here:
 	https://extensions.openoffice.org/en/search@f[0]=field_project_application%253A1&f[1]=field_project_tags%253A94.html
 The older, OpenOffice 2 files may be used if this doesn't work:
-	http://wiki.services.openoffice.org/wiki/Dictionaries
+	https://wiki.openoffice.org/wiki/Dictionaries
 You can also use a plain word list.  The results are the same, the choice
 depends on what word lists you can find.
 
@@ -793,7 +793,7 @@ them before the Vim word list is made.  The tools for this can be found in the
 The format for the affix and word list files is based on what Myspell uses
 (the spell checker of Mozilla and OpenOffice.org).  A description can be found
 here:
-	http://lingucomponent.openoffice.org/affix.readme
+	https://www.openoffice.org/lingucomponent/affix.readme
 Note that affixes are case sensitive, this isn't obvious from the description.
 
 Vim supports quite a few extras.  They are described below |spell-affix-vim|.

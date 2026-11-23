@@ -1,4 +1,4 @@
-*netbeans.txt*	For Vim version 9.2.  Last change: 2026 Apr 09
+*netbeans.txt*	For Vim version 9.2.  Last change: 2026 Nov 27
 
 
 		  VIM REFERENCE MANUAL	  by Gordon Prieur et al.
@@ -37,31 +37,29 @@ in such a way that any IDE can use it to integrate Vim.
 The NetBeans protocol of Vim is a text based communication protocol, over a
 classical TCP socket.  There is no dependency on Java or NetBeans.  Any
 language or environment providing a socket interface can control Vim using
-this protocol.  There are existing implementations in C, C++, Python and Java.
+this protocol.  There have been implementations in C, C++, Python and Java.
 The name NetBeans is kept today for historical reasons.
 
-Active project using the NetBeans protocol of Vim:
-- Eclim, (dead link) eclim.org/
-
-VimIntegration, description of various projects doing Vim Integration:
-	(dead link) www.freehackers.org/VimIntegration
-
-Projects using the NetBeans protocol of Vim are or were:
-- Agide, an IDE for the AAP project, written in Python (now replaced by
-  |:Termdebug|): http://www.a-a-p.org (link now dead)
+Projects using Vim's NetBeans protocol are or were:
+- Agide, an IDE for the AAP project, written in Python (replaced by
+  |:Termdebug|):
+	https://web.archive.org/web/20251129095010/http://www.a-a-p.org
 - Clewn, a gdb integration into Vim, written in C:
 	http://clewn.sourceforge.net/
+- Eclim, Eclipse integration for Vim using the NetBeans protocol (end-of-life,
+  superseded by LSP-based alternatives):
+	https://web.archive.org/web/20250618052404/http://eclim.org/
+- PIDA, IDE written in Python integrating Vim:
+	https://web.archive.org/web/20110726015010/http://pida.co.uk
 - Pyclewn, a gdb integration into Vim, written in Python:
 	http://pyclewn.sourceforge.net/
 - VimWrapper, library to easy Vim integration into IDE:
-	(dead link) freehackers.org/VimWrapper
-Outdated projects (links don't work):
+	https://web.archive.org/web/20210513032817/https://www.freehackers.org/VimWrapper
 - VimPlugin, integration of Vim inside Eclipse:
 	http://vimplugin.sourceforge.net/wiki/pmwiki.php
-- PIDA, IDE written in Python integrating Vim:
-	http://pida.co.uk/
 
-Check the specific project pages to see how to use Vim with these projects.
+An archived site that described various projects doing Vim Integration:
+	https://web.archive.org/web/20220815203427/https://www.freehackers.org/VimIntegration
 
 An alternative is to use a channel, see |channel|.
 
@@ -134,7 +132,7 @@ Without it the toolbar and signs will be disabled.
 
 The XPM library is provided by Arnaud Le Hors of the French National Institute
 for Research in Computer Science and Control.  It can be downloaded from
-https://ftp.nluug.nl/ftp/windowing/X/contrib/libraries/.  The current release,
+https://ftp.nluug.nl/windowing/X/contrib/libraries/.  The current release,
 as of this writing, is xpm-3.4k-solaris.tgz, which is a gzip'ed tar file.  If
 you create the directory /usr/local/xpm and untar the file there you can use
 the uncommented lines in the Makefile without changing them.  If you use
@@ -262,8 +260,8 @@ connection has been established.
 The communication between the Vim Controller and Vim uses plain text
 messages.  This protocol was first designed to work with the external editor
 module of NetBeans.  Later it was extended to work with Agide (A-A-P GUI IDE,
-formerly http://www.a-a-p.org, link now dead) and then with other IDE.
-The extensions are marked with "version 2.1".
+https://web.archive.org/web/20251129095010/http://www.a-a-p.org) and then with
+other IDEs.  The extensions are marked with "version 2.1".
 
 Version 2.2 of the protocol has several minor changes which should only affect
 NetBeans users (ie, not Agide users).  However, a bug was fixed which could
