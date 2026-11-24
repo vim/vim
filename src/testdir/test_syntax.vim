@@ -1115,6 +1115,7 @@ func Test_sh_comment_needs_preceding_whitespace()
 	\ ])
   filetype on
   set ft=sh
+  syntax on
   redraw!
 
   " '#' attached to the previous word must not be a comment.
