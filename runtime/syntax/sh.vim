@@ -3,7 +3,7 @@
 " Maintainer:		This runtime file is looking for a new maintainer.
 " Previous Maintainers:	Charles E. Campbell
 " 		Lennart Schultz <Lennart.Schultz@ecmwf.int>
-" Last Change:		2026 Sep 15 by Vim Project
+" Last Change:		2026 Nov 24 by bfs2021
 " Version:		208
 " Former URL:		http://www.drchip.org/astronaut/vim/index.html#SYNTAX_SH
 " For options and settings, please use:      :help ft-sh-syntax
@@ -581,8 +581,8 @@ else
 endif
 syn match	shComment		"^\s*\zs#.*$"	contains=@shCommentGroup
 syn match	shComment		"\s\zs#.*$"	contains=@shCommentGroup
-syn match	shComment	contained	"#.*$"	contains=@shCommentGroup
-syn match	shQuickComment	contained	"#.*$"          contains=@shCommentGroup
+syn match	shComment	contained	"\(^\|\s\)\@<=\#.*$"	contains=@shCommentGroup
+syn match	shQuickComment	contained	"\(^\|\s\)\@<=\#.*$"          contains=@shCommentGroup
 syn match	shBQComment	contained	"#.\{-}\ze`"	contains=@shCommentGroup
 
 " Here Documents: {{{1

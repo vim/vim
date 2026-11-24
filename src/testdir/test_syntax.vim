@@ -1097,3 +1097,37 @@ func Test_syn_sync_grouphere_shorter_next_line()
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
+
+" A '#' only starts a shell comment when it is preceded by whitespace.  See
+" https://github.com/vim/vim/issues/22001.
+func Test_sh_comment_needs_preceding_whitespace()
+  new
+  call setline(1, [
+	\ '#!/bin/sh',
+	\ 'echo hello# world',
+	\ 'printf hello# world',
+	\ 'foo hello# world',
+	\ 'if true; then',
+	\ '  foo "$@"# || uhoh',
+	\ '  foo-bar "$@"# || uhoh',
+	\ 'fi',
+	\ 'echo hello # real comment',
+	\ ])
+  filetype on
+  set ft=sh
+  redraw!
+
+  " '#' attached to the previous word must not be a comment.
+  call assert_notequal('shComment', synIDattr(synID(2, 11, 1), 'name'))
+  call assert_notequal('shQuickComment', synIDattr(synID(2, 11, 1), 'name'))
+  call assert_notequal('shComment', synIDattr(synID(3, 13, 1), 'name'))
+  call assert_notequal('shComment', synIDattr(synID(4, 10, 1), 'name'))
+  call assert_notequal('shComment', synIDattr(synID(6, 11, 1), 'name'))
+  call assert_notequal('shComment', synIDattr(synID(7, 13, 1), 'name'))
+
+  " '#' after whitespace must still be a comment.
+  call assert_match('^sh.*Comment$', synIDattr(synID(9, 12, 1), 'name'))
+  call assert_match('^sh.*Comment$', synIDattr(synID(1, 1, 1), 'name'))
+
+  bw!
+endfunc
