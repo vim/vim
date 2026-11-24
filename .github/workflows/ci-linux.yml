@@ -131,6 +131,7 @@ jobs:
           # This will exit with an error code if the generated vim tags differs from source.
           (
             cd runtime/doc
+            make vimtags VIMPROG=../../${SRCDIR}/vim
             git diff --exit-code -- tags
             make html; rm *.html tags.ref;
             test -f errors.log && exit 3;

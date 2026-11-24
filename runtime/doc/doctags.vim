@@ -8,6 +8,8 @@ try
 catch
   echo v:exception
   echo 'help tags failed update'
+  echo ''
+  cquit
 endtry
 echo ''
 qa!
