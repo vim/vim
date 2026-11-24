@@ -1758,8 +1758,6 @@ enum_parse_values(
 {
     evalarg_T	evalarg;
     char_u	*p = line;
-    char	initexpr_buf[1024];
-    size_t	initexpr_buflen;
     char_u	last_char = NUL;
     int		rc = OK;
 
@@ -1807,20 +1805,29 @@ enum_parse_values(
 		init_expr = vim_strnsave(expr_start, expr_end - expr_start);
 	}
 
+	// The initializer is "EnumName.new()" or "EnumName.new(args)".  The
+	// arguments can be of any length.
+	garray_T    initexpr_ga;
+	ga_init2(&initexpr_ga, 1, 100);
+	ga_concat_len(&initexpr_ga, en->class_name.string,
+						    en->class_name.length);
+	GA_CONCAT_LITERAL(&initexpr_ga, ".new");
 	if (init_expr == NULL)
-	    initexpr_buflen = vim_snprintf_safelen(
-		initexpr_buf, sizeof(initexpr_buf), "%s.new()", en->class_name.string);
+	    GA_CONCAT_LITERAL(&initexpr_ga, "()");
 	else
 	{
-	    initexpr_buflen = vim_snprintf_safelen(
-		initexpr_buf, sizeof(initexpr_buf), "%s.new%s", en->class_name.string,
-		init_expr);
+	    ga_concat(&initexpr_ga, init_expr);
 	    vim_free(init_expr);
 	}
-	if (add_member(gap, eni_name_start, eni_name_end, FALSE,
+	ga_append(&initexpr_ga, NUL);
+	if (initexpr_ga.ga_data == NULL
+		|| add_member(gap, eni_name_start, eni_name_end, FALSE,
 				TRUE, TRUE, TRUE, &en->class_object_type,
-				vim_strnsave((char_u *)initexpr_buf, initexpr_buflen)) == FAIL)
+				(char_u *)initexpr_ga.ga_data) == FAIL)
+	{
+	    ga_clear(&initexpr_ga);
 	    break;
+	}
 
 	++*num_enum_values;
 
