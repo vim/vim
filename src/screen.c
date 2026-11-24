@@ -5228,7 +5228,7 @@ draw_tabline(void)
 	FOR_ALL_TABPAGES(tp)
 	    ++tabcount;
 
-	tabwidth = (topframe->fr_width - 1 + tabcount / 2) / tabcount;
+	tabwidth = (topframe->fr_width - 1) / tabcount;
 	if (tabwidth < 6)
 	    tabwidth = 6;
 
