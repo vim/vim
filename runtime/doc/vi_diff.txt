@@ -1,4 +1,4 @@
-*vi_diff.txt*	For Vim version 9.2.  Last change: 2026 Jun 22
+*vi_diff.txt*	For Vim version 9.2.  Last change: 2026 Nov 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1203,8 +1203,6 @@ Only Vim is able to accept options in between and after the file names.
 		loading the edit buffer.
 		Vim: allow up to 10 "-c" arguments
 
--d {device}	Vim: Use {device} for I/O (Amiga only). {only when compiled
-		without the |+diff| feature}
 -d		Vim: start with 'diff' set. |vimdiff|
 
 -dev {device}	Vim: Use {device} for I/O (Amiga only).

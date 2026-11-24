@@ -1,4 +1,4 @@
-*quickref.txt*	For Vim version 9.2.  Last change: 2026 Oct 31
+*quickref.txt*	For Vim version 9.2.  Last change: 2026 Nov 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1248,7 +1248,7 @@ Context-sensitive completion on the command-line:
 |-w|	-w {scriptout}	    write typed chars to file {scriptout} (append)
 |-W|	-W {scriptout}	    write typed chars to file {scriptout} (overwrite)
 |-T|	-T {terminal}	    set terminal name
-|-d|	-d {device}	    Amiga: open {device} to be used as a console
+|-dev|	-dev {device}	    Amiga: open {device} to be used as a console
 |-u|	-u {vimrc}	    read inits from {vimrc} instead of other inits
 |-U|	-U {gvimrc}	    idem, for when starting the GUI
 |-i|	-i {viminfo}	    read info from {viminfo} instead of other files

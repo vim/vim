@@ -399,7 +399,7 @@ mch_check_win(int argc, char **argv)
 #endif	/* __amigaos4__ __AROS__ __MORPHOS__ */
 
     /*
-     * scan argv[] for the "-f" and "-d" arguments
+     * scan argv[] for the "-f" and "-dev" arguments
      */
     for (i = 1; i < argc; ++i)
 	if (argv[i][0] == '-')
@@ -411,21 +411,16 @@ mch_check_win(int argc, char **argv)
 		break;
 
 	    case 'd':
-		if (i < argc - 1
-#ifdef FEAT_DIFF
-			// require using "-dev", "-d" means diff mode
-			&& argv[i][2] == 'e' && argv[i][3] == 'v'
-#endif
-		   )
+		// require using "-dev", "-d" means diff mode
+		if (i < argc - 1 && argv[i][2] == 'e' && argv[i][3] == 'v')
 		    device = (char_u *)argv[i + 1];
 		break;
 	    }
 	}
 
 /*
- * If we were not started from workbench, do not have a "-d" or "-dev"
- * argument and we have been started with an interactive window, use that
- * window.
+ * If we were not started from workbench, do not have a "-dev" argument and we
+ * have been started with an interactive window, use that window.
  */
     if (argc != 0
 	    && device == NULL
@@ -516,12 +511,8 @@ mch_check_win(int argc, char **argv)
 	else
 	    av = argv[i];
 
-	// skip '-d' or "-dev" option
-	if (av[0] == '-' && av[1] == 'd'
-#ifdef FEAT_DIFF
-		&& av[2] == 'e' && av[3] == 'v'
-#endif
-		)
+	// skip "-dev" option
+	if (av[0] == '-' && av[1] == 'd' && av[2] == 'e' && av[3] == 'v')
 	{
 	    ++i;
 	    continue;
@@ -537,8 +528,8 @@ mch_check_win(int argc, char **argv)
     Close(fh);
 
 /*
- * Try to open a new cli in a window. If "-d" or "-dev" argument was given try
- * to open the specified device. Then try a 24 line 80 column window.  If that
+ * Try to open a new cli in a window. If a "-dev" argument was given try to
+ * open the specified device. Then try a 24 line 80 column window.  If that
  * fails, try two smaller ones.
  */
     for (i = -1; i < 3; ++i)
