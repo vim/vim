@@ -1686,6 +1686,9 @@ apply_builtin_tcap(char_u *term, tcap_entry_T *entries, int overwrite)
 #ifdef FEAT_EVAL
 		int opt_idx = -1;
 #endif
+		if (overwrite)
+		    free_one_termoption((char_u *)&term_strings[p->bt_entry]);
+
 		// 8bit terminal: use CSI instead of <Esc>[
 		if (term_8bit && term_7to8bit((char_u *)p->bt_string) != 0)
 		{
