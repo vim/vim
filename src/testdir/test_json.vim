@@ -399,4 +399,21 @@ func Test_json_decode_depth()
   let &maxfuncdepth = save_mfd
 endfunc
 
+func Test_json_decode_no_converter()
+  " Without a converter from UTF-8 the decoded string was not stored, which
+  " leaked memory and reused the previous item as a string pointer.  The leak
+  " is only detected with valgrind or ASan.
+  let save_enc = &encoding
+  try
+    set encoding=macroman
+  catch /E950:/
+    throw 'Skipped: cannot set encoding with this termencoding'
+  endtry
+  let x = json_decode('[4096, "abc"]')
+  call assert_equal([4096, 'abc'], x)
+  unlet x
+  call assert_equal('abc', json_decode('"abc"'))
+  let &encoding = save_enc
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
