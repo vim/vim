@@ -2925,7 +2925,7 @@ syn match	vimFunc	contained	"\<\l\w*\ze\s*("				skipwhite nextgroup=vimOperParen
 " dict-key only
 syn match	vimUserFuncKey	contained	"\%(\l\|\d\)\w*\ze\%(\s*(\|<.*>(\)"			skipwhite nextgroup=vimOperParen,vim9TypeArgs	contains=vim9MethodName
 syn match	vimUserFunc	contained	"\<[[:upper:]_]\w*\ze\%(\s*(\|<.*>(\)"		skipwhite nextgroup=vimOperParen,vim9TypeArgs	contains=vim9MethodName,vim9Super,vim9This
-syn match	vimUserFunc	contained	"\<\%(g:\)\=\%(\h\w*#\)\+\h\w*\ze\%(\s*(\|<.*>(\)"		skipwhite nextgroup=vimOperParen		contains=vimVarScope
+syn match	vimUserFunc	contained	"\<\%(g:\)\=\%(\h\w*#\)\+\%(\h\w*\)\=\ze\%(\s*(\|<.*>(\)"	skipwhite nextgroup=vimOperParen		contains=vimVarScope
 syn match	vimUserFunc	contained	"\%(\<[sgbwtlav]:\|<[sS][iI][dD]>\)\h\w*\ze\%(\s*(\|<.*>(\)"	skipwhite nextgroup=vimOperParen,vim9TypeArgs	contains=vimVarScope,vimNotation
 
 Vim9 syn match	vim9UserFunc	contained	"\s\=\%([sgbwtv]:\|<[sS][iI][dD]>\)\=\h\w*\ze[(<]"		skipwhite nextgroup=vimOperParen,vim9TypeArgs	contains=vimVarScope,vimNotation,vim9MethodName,vim9Super,vim9This,vimWhitespace
