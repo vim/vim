@@ -203,6 +203,13 @@ mch_inchar(
 		return 3;
 	    }
 	    before_blocking();
+#if defined(__AROS__) || defined(__MORPHOS__)
+	    // No window size report on AROS and MorphOS. Check size on timeout
+	    // as workaround.
+	    do
+		shell_resized_check();
+	    while (WaitForChar(raw_in, p_ut * 1000L) == 0);
+#endif
 	}
     }
 
