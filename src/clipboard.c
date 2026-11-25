@@ -2382,6 +2382,8 @@ vwl_data_device_listener_event_selection(
     // Destroy previous offer if any, it is now invalid
     vwl_data_offer_destroy(sel->offer);
 
+    sel->new_offer = true;
+
     // There are two cases when sel->offer is NULL
     // 1. No one owns the selection
     // 2. We own the selection (we'll just access the register directly)
@@ -2397,8 +2399,6 @@ vwl_data_device_listener_event_selection(
     // Save offer. When we want to request data, then we'll actually call the
     // receive method.
     sel->offer = offer;
-    sel->new_offer = true;
-
 }
 
     static void
@@ -2429,6 +2429,7 @@ vwl_data_device_listener_event_finished(
     vwl_data_source_destroy(sel->source);
     vwl_data_offer_destroy(sel->offer);
     sel->available = FALSE;
+    sel->new_offer = true;
 
     vwl_data_device_destroy(device);
 }
@@ -2452,6 +2453,9 @@ clip_init_wayland(void)
 	return FAIL;
 
     memset(&clip_wl, 0, sizeof(clip_wl));
+
+    clip_wl.regular.new_offer = true;
+    clip_wl.primary.new_offer = true;
 
     clip_wl.seat = vwl_connection_get_seat(wayland_ct, (char *)p_wse);
 
@@ -2672,6 +2676,10 @@ clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
 clip_wl_need_request(Clipboard_T *cbd)
 {
     clip_wl_selection_T *sel = clip_wl_get_selection_from_cbd(cbd);
+
+    if (wayland_ct == NULL)
+	// So that when the connection is back up, we don't ignore data requests
+	return true;
 
     if (vwl_connection_roundtrip(wayland_ct) == FAIL)
 	return true;
@@ -2926,6 +2934,7 @@ clip_wl_lose_selection(Clipboard_T *cbd)
 {
     clip_wl_selection_T *sel = clip_wl_get_selection_from_cbd(cbd);
 
+    sel->new_offer = true;
     if (!sel->available)
 	return;
 
