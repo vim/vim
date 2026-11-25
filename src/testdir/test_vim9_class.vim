@@ -731,6 +731,82 @@ def Test_null_object_assign_compare()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test that the result of a "?:" or "??" expression with objects of different
+" classes is type checked in a def function
+def Test_ternary_objects_of_different_classes()
+  var header =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    enum Color
+      Red
+    endenum
+    enum Light
+      Red
+    endenum
+  END
+
+  v9.CheckSourceFailure(header + ['def Fn(b: bool)',
+                                  '  var c: Color = b ? Light.Red : Color.Red',
+                                  'enddef', 'Fn(true)'],
+        'E1012: Type mismatch; expected enum<Color> but got enum<Light>', 1)
+  v9.CheckSourceFailure(header + ['def Fn(b: bool): Color',
+                                  '  return b ? Light.Red : Color.Red',
+                                  'enddef', 'Fn(true)'],
+        'E1012: Type mismatch; expected enum<Color> but got enum<Light>', 1)
+  v9.CheckSourceFailure(header + ['def Fn(b: bool)',
+                                  '  var a: A = b ? B.new() : A.new()',
+                                  'enddef', 'Fn(true)'],
+        'E1012: Type mismatch; expected object<A> but got object<B>', 1)
+  v9.CheckSourceFailure(header + ['def Fn()',
+                                  '  var c: Color = null_object ?? Light.Red',
+                                  'enddef', 'Fn()'],
+        'E1012: Type mismatch; expected enum<Color> but got enum<Light>', 1)
+  v9.CheckSourceFailure(header + ['def Fn(b: bool)',
+                                  '  var l: list<Color> = b ? [Light.Red] : [Color.Red]',
+                                  'enddef', 'Fn(true)'],
+        'E1012: Type mismatch; expected list<enum<Color>> but got list<enum<Light>>', 1)
+
+  # values that match the type are accepted
+  var lines =<< trim END
+    vim9script
+    interface I
+      def Name(): string
+    endinterface
+    class A implements I
+      def Name(): string
+        return 'A'
+      enddef
+    endclass
+    class B implements I
+      def Name(): string
+        return 'B'
+      enddef
+    endclass
+    class C extends A
+    endclass
+    enum Color
+      Red
+    endenum
+    enum Light
+      Red
+    endenum
+
+    def Fn(b: bool): list<string>
+      var c: Color = b ? Light.Red : Color.Red
+      var i: I = b ? A.new() : B.new()
+      var a: A = b ? C.new() : A.new()
+      var n: Color = b ? Color.Red : null_object
+      var x = b ? A.new() : B.new()
+      return [c.name, i.Name(), typename(a), string(n == null_object), x.Name()]
+    enddef
+    assert_equal(['Red', 'B', 'object<A>', 'true', 'B'], Fn(false))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for object member initialization and disassembly
 def Test_class_member_initializer()
   var lines =<< trim END

@@ -4050,6 +4050,22 @@ compile_expr2(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 }
 
 /*
+ * Return TRUE if "type" is "object<any>", possibly as the member type of a
+ * List or a Dict.
+ */
+    static int
+type_has_object_any(type_T *type)
+{
+    if (type == NULL)
+	return FALSE;
+    if (type->tt_type == VAR_OBJECT)
+	return type->tt_class == NULL;
+    if (type->tt_type == VAR_LIST || type->tt_type == VAR_DICT)
+	return type_has_object_any(type->tt_member);
+    return FALSE;
+}
+
+/*
  * Toplevel expression: expr2 ? expr1a : expr1b
  * Produces instructions:
  *	EVAL expr2		Push result of "expr2"
@@ -4216,6 +4232,7 @@ compile_expr1(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	if (!has_const_expr)
 	{
 	    type_T	**typep;
+	    type_T	*type2;
 
 	    generate_ppconst(cctx, ppconst);
 	    ppconst->pp_is_const = FALSE;
@@ -4223,7 +4240,16 @@ compile_expr1(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    // If the types differ, the result has a more generic type.
 	    typep = &((((type2_T *)stack->ga_data)
 					      + stack->ga_len - 1)->type_curr);
-	    common_type(type1, *typep, typep, cctx->ctx_type_list);
+	    type2 = *typep;
+	    common_type(type1, type2, typep, cctx->ctx_type_list);
+
+	    // The common type of objects of different classes is "object<any>",
+	    // which would match any object type without checking the value.
+	    // Use "any" so that the value is checked at runtime.
+	    if (type_has_object_any(*typep)
+		    && (!equal_type(type1, *typep, 0)
+					      || !equal_type(type2, *typep, 0)))
+		*typep = &t_any;
 
 	    // jump here from JUMP_ALWAYS or JUMP_AND_KEEP_IF_TRUE
 	    isn = ((isn_T *)instr->ga_data) + end_idx;
