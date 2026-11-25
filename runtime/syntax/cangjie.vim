@@ -2,7 +2,7 @@
 " Language: Cangjie
 " Maintainer: Wu Junkai <wu.junkai@qq.com>
 " URL: https://github.com/WuJunkai2004/cangjie.vim
-" Last Change: 2026 Jan 5
+" Last Change: 2026 Nov 26
 "
 " The Cangjie programming language is a new-generation programming
 " language oriented to full-scenario intelligence. It features
@@ -42,8 +42,9 @@ syn match	cangjieComment /\v\/\/.*/		contains=cangjieTodo,cangjieDocKeyword
 syn region	cangjieComment start=/\/\*/ end=/\*\//	contains=cangjieTodo,cangjieDocKeyword,@spell
 
 " 2. keywords
-syn keyword cangjieDeclaration	abstract extend macro foreign
-syn keyword cangjieDeclaration	interface open operator override private prop protected
+syn keyword cangjieDeclaration	abstract extend inout macro foreign
+syn keyword cangjieDeclaration	common interface internal mut open operator
+syn keyword cangjieDeclaration	override private prop protected sealed specific
 syn keyword cangjieDeclaration	public redef static type
 syn keyword cangjieStatement	as break case catch continue do else finally for in
 syn keyword cangjieStatement	if in is match quote return spawn super synchronized
@@ -51,7 +52,7 @@ syn keyword cangjieStatement	throw try unsafe where while
 syn keyword cangjieIdentlike	false init main this true
 syn keyword cangjieVariable	const let var
 syn keyword cangjieOption	Option Some None
-syn keyword cangjieDeclaration	func struct class enum import package nextgroup=cangjieTypeName skipwhite
+syn keyword cangjieDeclaration	func struct class enum import interface package nextgroup=cangjieTypeName skipwhite
 syn cluster cangjieKeywordCluster contains=
 	\ cangjieDeclaration,
 	\ cangjieStatement,
@@ -69,7 +70,7 @@ syn match cangjieTypeName /\h\w*/ contained
 syn region cangjieSpIdentifier start=/`/ end=/`/ oneline
 
 " 6. types
-syn keyword cangjieSpType	Nothing Range Unit LibC Duration DefaultHasher
+syn keyword cangjieSpType	Nothing Range Unit LibC Duration DefaultHasher This
 syn keyword cangjieArrayType	Array VArray
 syn keyword cangjieCommonType	Bool Byte Rune String
 syn keyword cangjieFloatType	Float16 Float32 Float64
@@ -86,16 +87,17 @@ syn cluster cangjieTypeCluster contains=
 	\ cangjieFFIType
 
 " 6.1. builtin function/interface/class
-syn keyword cangjieCoreFunc	acquireArrayRawData alignOf eprint eprintln ifNone ifSome max min
+syn keyword cangjieCoreFunc	acquireArrayRawData alignOf eprint eprintln exclusiveScope ifNone ifSome max min
 syn keyword cangjieCoreFunc	print println readln refEq releaseArrayRawData sizeOf sleep zeroValue
 syn keyword cangjieCoreItf	Any Hasher ThreadContext Countable Collection Less Greater
 syn keyword cangjieCoreItf	LessOrEqual GreaterOrEqual Comparable Equal NotEqual Equatable
 syn keyword cangjieCoreItf	Hashable Iterable Resource ToString CType
 syn keyword cangjieCoreClass	ArrayIterator Box Future Iterator Object RangeIterator
-syn keyword cangjieCoreClass	StackTraceElement StringBuilder Thread ThreadLocal
-syn keyword cangjieCoreError	ArithmeticException Error Exception IllegalArgumentException
+syn keyword cangjieCoreClass	StackTraceElement StringBuilder Thread ThreadLocal ThreadSnapshot
+syn keyword cangjieCoreError	ArithmeticException Error Exception
+syn keyword cangjieCoreError	ExclusiveScopeException IllegalArgumentException
 syn keyword cangjieCoreError	IllegalFormatException IllegalMemoryException IllegalStateException
-syn keyword cangjieCoreError	IncompatiblePackageException IndexOutOfBoundsException InternalError
+syn keyword cangjieCoreError	IncompatiblePackageException IndexOutOfBoundsException
 syn keyword cangjieCoreError	NegativeArraySizeException NoneValueException OutOfMemoryError
 syn keyword cangjieCoreError	OverflowException SpawnException StackOverflowError
 syn keyword cangjieCoreError	TimeoutException UnsupportedException
@@ -117,9 +119,13 @@ syn region  cangjieInterpolation contained keepend start=/\${/ end=/}/ contains=
 syn match cangjieEscape /\v\\u\{[0-9a-fA-F]{1,8}\}|\\./ contained
 syn match cangjieRuneError /\v[rb]'([^'\\]|\\.)*'/
 syn match cangjieRuneError /\v[rb]"([^"\\]|\\.)*"/
+syn match cangjieRuneError /\v[rb]'(\\.|[^'])+$/
+syn match cangjieRuneError /\v[rb]"(\\.|[^"])+$/
 syn match cangjieRune /\vr'(\\u\{[0-9a-fA-F]{1,8}\}|\\.|[^'\\])'/ contains=cangjieEscape
 syn match cangjieRune /\vr"(\\u\{[0-9a-fA-F]{1,8}\}|\\.|[^"\\])"/ contains=cangjieEscape
-syn match cangjieRune /\vb'(\\u\{[0-9a-fA-F]{1,8}\}|\\.|[^'\\])'/ contains=cangjieEscape
+syn match cangjieRune /\vb'(\\u\{[0-9a-fA-F]{1,2}\}|\\.|[\x00-\x26\x28-\x5B\x5D-\x7F])'/ contains=cangjieEscape
+syn region cangjieStringError start=/"/ end=/$/ oneline
+syn region cangjieStringError start=/'/ end=/$/ oneline
 syn region cangjieString start=/"/ skip=/\\\\\|\\"/ end=/"/ oneline contains=cangjieInterpolation,cangjieEscape
 syn region cangjieString start=/'/ skip=/\\\\\|\\'/ end=/'/ oneline contains=cangjieInterpolation,cangjieEscape
 syn region cangjieString start=/"""/ skip=/\\\\\|\\"/ end=/"""/ contains=cangjieInterpolation,cangjieEscape keepend
@@ -154,12 +160,13 @@ syn match cangjieOperator /:=\|||\|<-\|++\|--/
 syn match cangjieOperator /[~]/
 syn match cangjieOperator /[:]/
 syn match cangjieOperator /\.\./
+syn match cangjieOperator /??/
 syn match cangjieVarArgs  /\.\.\./
 
 " 10. folding
-syn region cangjieFoldBraces transparent fold start='{' end='}' contains=ALLBUT,cangjieComment
-syn region cangjieFoldParens transparent fold start='(' end=')' contains=ALLBUT,cangjieComment
-syn region cangjieFoldBrackets transparent fold start='\[' end='\]' contains=ALLBUT,cangjieComment
+syn region cangjieFoldBraces transparent fold start='{' end='}' contains=TOP
+syn region cangjieFoldParens transparent fold start='(' end=')' contains=TOP
+syn region cangjieFoldBrackets transparent fold start='\[' end='\]' contains=TOP
 
 " finally, link the syntax groups to the highlight groups
 if s:enabled('comment')
@@ -204,6 +211,7 @@ if s:enabled('string')
 	hi def link cangjieRuneError		Error
 	hi def link cangjieString		String
 	hi def link cangjieRawString		String
+	hi def link cangjieStringError		Error
 	hi def link cangjieEscape		SpecialChar
 endif
 if s:enabled('type')
@@ -216,6 +224,9 @@ if s:enabled('type')
 	hi def link cangjieUIntType		Type
 	hi def link cangjieFFIType		Type
 endif
+
+syn sync minlines=200
+syn sync maxlines=500
 
 let b:current_syntax = "cangjie"
 
