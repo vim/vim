@@ -1770,7 +1770,8 @@ enum_parse_values(
 	if (*p == '#')
 	    break;
 
-	if (!eval_isnamec1(*p))
+	// A name starting with "_" would be a protected class variable.
+	if (!eval_isnamec1(*p) || *p == '_')
 	{
 	    semsg(_(e_invalid_enum_value_declaration_str), p);
 	    break;
