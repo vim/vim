@@ -2200,7 +2200,7 @@ item_compare(const void *s1, const void *s2)
 
 	res = n1 == n2 ? 0 : n1 > n2 ? 1 : -1;
 	if (res == 0 && !sortinfo->item_compare_keep_zero)
-	    res = si1->idx > si2->idx ? 1 : -1;
+	    res = si1->idx == si2->idx ? 0 : si1->idx > si2->idx ? 1 : -1;
 	return res;
     }
 
@@ -2247,7 +2247,7 @@ item_compare(const void *s1, const void *s2)
     // When the result would be zero, compare the item indexes.  Makes the
     // sort stable.
     if (res == 0 && !sortinfo->item_compare_keep_zero)
-	res = si1->idx > si2->idx ? 1 : -1;
+	res = si1->idx == si2->idx ? 0 : si1->idx > si2->idx ? 1 : -1;
 
     vim_free(tofree1);
     vim_free(tofree2);
@@ -2308,7 +2308,7 @@ item_compare2(const void *s1, const void *s2)
     // When the result would be zero, compare the pointers themselves.  Makes
     // the sort stable.
     if (res == 0 && !sortinfo->item_compare_keep_zero)
-	res = si1->idx > si2->idx ? 1 : -1;
+	res = si1->idx == si2->idx ? 0 : si1->idx > si2->idx ? 1 : -1;
 
     return res;
 }
