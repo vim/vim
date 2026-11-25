@@ -1102,8 +1102,8 @@ common_init_2(mparm_T *paramp)
     /*
      * Check if we have an interactive window.
      * On the Amiga: If there is no window, we open one with a newcli command
-     * (needed for :! to * work). mch_check_win() will also handle the -d or
-     * -dev argument.
+     * (needed for :! to * work). mch_check_win() will also handle the -dev
+     * argument.
      */
     stdout_isatty = (mch_check_win(paramp->argc, paramp->argv) != FAIL);
     TIME_MSG("window checked");
@@ -2580,15 +2580,22 @@ command_line_scan(mparm_T *parmp)
 		parmp->use_debug_break_level = 9999;
 		break;
 # endif
-# ifdef FEAT_DIFF
+# if defined(FEAT_DIFF) || defined(AMIGA)
 	    case 'd':		// "-d"		'diff'
 #  ifdef AMIGA
 		// check for "-dev {device}"
 		if (argv[0][argv_idx] == 'e' && argv[0][argv_idx + 1] == 'v')
+		{
+		    argv_idx += 2;
 		    want_argument = TRUE;
+		}
 		else
 #  endif
+#  ifdef FEAT_DIFF
 		    parmp->diff_mode = TRUE;
+#  else
+		    mainerr(ME_UNKNOWN_OPTION, (char_u *)argv[0]);
+#  endif
 		break;
 # endif
 	    case 'V':		// "-V{N}"	Verbose level
@@ -2655,9 +2662,6 @@ command_line_scan(mparm_T *parmp)
 		// FALLTHROUGH
 	    case 'S':		// "-S {file}" execute Vim script
 	    case 'i':		// "-i {viminfo}" use for viminfo
-# ifndef FEAT_DIFF
-	    case 'd':		// "-d {device}" device (for Amiga)
-# endif
 	    case 'T':		// "-T {terminal}" terminal name
 	    case 'u':		// "-u {vimrc}" vim inits file
 	    case 'U':		// "-U {gvimrc}" gvim inits file
@@ -2747,7 +2751,7 @@ command_line_scan(mparm_T *parmp)
 		    // "--log <file>" already handled
 		    break;
 
-	    //	case 'd':   -d {device} is handled in mch_check_win() for the
+	    //	case 'd':   -dev {device} is handled in mch_check_win() for the
 	    //		    Amiga
 
 # ifdef FEAT_QUICKFIX
