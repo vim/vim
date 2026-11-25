@@ -1082,6 +1082,8 @@ mch_settmode(tmode_T tmode)
     int
 mch_get_shellsize(void)
 {
+    static int have_size = FALSE;
+
     if (!term_console)
 	return FAIL;
 
@@ -1103,9 +1105,15 @@ mch_get_shellsize(void)
 	    // Read return sequence from input.
 	    if (Read(raw_in, answ, sizeof(answ) - 1) > 0)
 	    {
+		int rows, cols;
+
 		// Parse result and set Vim globals.
-		if (sscanf(answ, scan, &Rows, &Columns) == 2)
+		if (sscanf(answ, scan, &rows, &cols) == 2)
 		{
+		    Rows = rows;
+		    Columns = cols;
+		    have_size = TRUE;
+
 		    // Restore console mode.
 		    mch_settmode(old_tmode);
 		    return OK;
@@ -1116,6 +1124,9 @@ mch_get_shellsize(void)
 	// Restore console mode.
 	mch_settmode(old_tmode);
     }
+
+    if (have_size)
+	return FAIL;
 
     // I/O error. Default size fallback.
     term_console = FALSE;
