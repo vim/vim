@@ -2393,13 +2393,6 @@ msgstr ""
 msgid "Need Amigados version 2.04 or later\n"
 msgstr ""
 
-#, c-format
-msgid "Need %s version %ld\n"
-msgstr ""
-
-msgid "Cannot open NIL:\n"
-msgstr ""
-
 msgid "Cannot create "
 msgstr ""
 

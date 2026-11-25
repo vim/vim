@@ -1,4 +1,4 @@
-*os_amiga.txt*	For Vim version 9.2.  Last change: 2026 Feb 14
+*os_amiga.txt*	For Vim version 9.2.  Last change: 2026 Nov 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -15,9 +15,7 @@ Installation on the Amiga:
   look for the file "VIM:doc/help.txt" (for the help command).
   Setting the environment variable $VIM also works.  And the other way around:
   when $VIM used and it is not defined, "VIM:" is used.
-- With DOS 1.3 or earlier: Put "arp.library" in "libs:".  Vim must have been
-  compiled with the |+ARP| feature enabled.  Make sure that newcli and run are
-  in "C:" (for executing external commands).
+- Make sure that newcli and run are in "C:" (for executing external commands).
 - Put a shell that accepts a command with "-c" (e.g. "Csh" from Fish disk
   624) in "c:" or in any other directory that is in your search path (for
   executing external commands).

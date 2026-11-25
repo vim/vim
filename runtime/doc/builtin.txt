@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Nov 23
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Nov 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -13696,7 +13696,7 @@ all_builtin_terms	Compiled with all builtin terminals enabled. (always
 amiga			Amiga version of Vim.
 android			Android version of Vim. *android*
 arabic			Compiled with Arabic support |Arabic|.
-arp			Compiled with ARP support (Amiga).
+arp			Support for ARP (Amiga) was removed.
 autocmd			Compiled with autocommand support. (always true)
 autochdir		Compiled with support for 'autochdir'
 autoservername		Automatically enable |clientserver|

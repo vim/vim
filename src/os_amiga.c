@@ -50,10 +50,6 @@
 # define	free_fib(x) vim_free(fib)
 #endif
 
-#if defined(LATTICE) && !defined(SASC) && defined(FEAT_ARP)
-# include <libraries/arp_pragmas.h>
-#endif
-
 /*
  * Set stack size on startup.  1 MiB on NG systems (OS4, AROS, MorphOS)
  * which have plenty of RAM.  256 KiB on classic OS 3 -- enough for syntax
@@ -114,16 +110,10 @@ static int		close_win = FALSE;  // set if Vim opened the window
 #if !defined(__amigaos4__) && !defined(__AROS__) && !defined(__MORPHOS__)
 struct IntuitionBase	*IntuitionBase = NULL;
 #endif
-#ifdef FEAT_ARP
-struct ArpBase		*ArpBase = NULL;
-#endif
 
 static struct Window	*wb_window;
 static char_u		*oldwindowtitle = NULL;
 
-#ifdef FEAT_ARP
-int			dos2 = FALSE;	    // Amiga DOS 2.0x or higher
-#endif
 int			size_set = FALSE;   // set to TRUE if window size was set
 
 #ifdef __GNUC__
@@ -352,7 +342,7 @@ mch_init(void)
 mch_check_win(int argc, char **argv)
 {
     int		    i;
-    BPTR	    nilfh, fh;
+    BPTR	    fh;
     char_u	    buf1[24];
     char_u	    buf2[BUF2SIZE];
     static char_u   *(constrings[3]) = {(char_u *)"con:0/0/662/210/",
@@ -378,23 +368,11 @@ mch_check_win(int argc, char **argv)
     // if (((struct Library *)DOSBase)->lib_Version >= 37)
     {
 	CloseLibrary(DosBase);
-# ifdef FEAT_ARP
-	dos2 = TRUE;
-# endif
     }
-    else	    // without arp functions we NEED 2.0
+    else
     {
-# ifndef FEAT_ARP
 	mch_errmsg(_("Need Amigados version 2.04 or later\n"));
 	exit(3);
-# else
-		    // need arp functions for dos 1.x
-	if (!(ArpBase = (struct ArpBase *) OpenLibrary((UBYTE *)ArpName, ArpVersion)))
-	{
-	    fprintf(stderr, _("Need %s version %ld\n"), ArpName, ArpVersion);
-	    exit(3);
-	}
-# endif
     }
 #endif	/* __amigaos4__ __AROS__ __MORPHOS__ */
 
@@ -462,12 +440,6 @@ mch_check_win(int argc, char **argv)
 	return OK;
     }
 
-    if ((nilfh = Open((UBYTE *)"NIL:", (long)MODE_NEWFILE)) == (BPTR)NULL)
-    {
-	mch_errmsg(_("Cannot open NIL:\n"));
-	goto exit;
-    }
-
     /*
      * Make a unique name for the temp file (which we will not delete!).
      * Use a pointer on the stack (nobody else will be using it).
@@ -503,14 +475,7 @@ mch_check_win(int argc, char **argv)
 	    argp = &(((struct WBStartup *)argv)->sm_ArgList[i]);
 	    if (argp->wa_Lock)
 		(void)lock2name(argp->wa_Lock, buf2, (long)(BUF2SIZE - 1));
-#ifdef FEAT_ARP
-	    if (dos2)	    // use 2.0 function
-#endif
-		AddPart((UBYTE *)buf2, (UBYTE *)argp->wa_Name, (long)(BUF2SIZE - 1));
-#ifdef FEAT_ARP
-	    else	    // use arp function
-		TackOn((char *)buf2, argp->wa_Name);
-#endif
+	    AddPart((UBYTE *)buf2, (UBYTE *)argp->wa_Name, (long)(BUF2SIZE - 1));
 	    av = (char *)buf2;
 	}
 	else
@@ -548,20 +513,8 @@ mch_check_win(int argc, char **argv)
 	else if (device == NULL)
 	    continue;
 	sprintf((char *)buf2, "newcli <nil: >nil: %s from %s", (char *)device, (char *)buf1);
-#ifdef FEAT_ARP
-	if (dos2)
-	{
-#endif
-	    if (!SystemTags((UBYTE *)buf2, SYS_UserShell, TRUE, TAG_DONE))
-		break;
-#ifdef FEAT_ARP
-	}
-	else
-	{
-	    if (Execute((UBYTE *)buf2, nilfh, nilfh))
-		break;
-	}
-#endif
+	if (!SystemTags((UBYTE *)buf2, SYS_UserShell, TRUE, TAG_DONE))
+	    break;
     }
     if (i == 3)	    // all three failed
     {
@@ -572,12 +525,6 @@ mch_check_win(int argc, char **argv)
     exitval = 0;    // The Execute succeeded: exit this program
 
 exit:
-    if (nilfh)
-	Close(nilfh);
-#ifdef FEAT_ARP
-    if (ArpBase)
-	CloseLibrary((struct Library *) ArpBase);
-#endif
     exit(exitval);
     // NOTREACHED
     return FAIL;
@@ -818,22 +765,14 @@ mch_isFullName(char_u *fname)
 }
 
 /*
- * Get the full file name from a lock. Use 2.0 function if possible, because
- * the arp function has more restrictions on the path length.
+ * Get the full file name from a lock.
  *
  * return FAIL for failure, OK otherwise
  */
     static int
 lock2name(BPTR lock, char_u *buf, long len)
 {
-#ifdef FEAT_ARP
-    if (dos2)		    // use 2.0 function
-#endif
-	return ((int)NameFromLock(lock, (UBYTE *)buf, len) ? OK : FAIL);
-#ifdef FEAT_ARP
-    else		// use arp function
-	return ((int)PathName(lock, (char *)buf, (long)(len/32)) ? OK : FAIL);
-#endif
+    return ((int)NameFromLock(lock, (UBYTE *)buf, len) ? OK : FAIL);
 }
 
 /*
@@ -1015,10 +954,6 @@ mch_exit(int r)
 
     ml_close_all(TRUE);		    // remove all memfiles
 
-#ifdef FEAT_ARP
-    if (ArpBase)
-	CloseLibrary((struct Library *) ArpBase);
-#endif
     if (close_win)
 	Close(raw_in);
     if (r)
@@ -1261,46 +1196,7 @@ dos_packet(
     long	    action, // packet type ... (what you want handler to do)
     long	    arg)    // single argument
 {
-# ifdef FEAT_ARP
-    struct MsgPort	    *replyport;
-    struct StandardPacket   *packet;
-    long		    res1;
-
-    if (dos2)
-# endif
-	return DoPkt(pid, action, arg, 0L, 0L, 0L, 0L);	// use 2.0 function
-# ifdef FEAT_ARP
-
-    replyport = (struct MsgPort *) CreatePort(NULL, 0);	// use arp function
-    if (!replyport)
-	return (0);
-
-    // Allocate space for a packet, make it public and clear it
-    packet = (struct StandardPacket *)
-	AllocMem((long) sizeof(struct StandardPacket), MEMF_PUBLIC | MEMF_CLEAR);
-    if (!packet)
-    {
-	DeletePort(replyport);
-	return (0);
-    }
-    packet->sp_Msg.mn_Node.ln_Name = (char *) &(packet->sp_Pkt);
-    packet->sp_Pkt.dp_Link = &(packet->sp_Msg);
-    packet->sp_Pkt.dp_Port = replyport;
-    packet->sp_Pkt.dp_Type = action;
-    packet->sp_Pkt.dp_Arg1 = arg;
-
-    PutMsg(pid, (struct Message *)packet);	// send packet
-
-    WaitPort(replyport);
-    GetMsg(replyport);
-
-    res1 = packet->sp_Pkt.dp_Res1;
-
-    FreeMem(packet, (long) sizeof(struct StandardPacket));
-    DeletePort(replyport);
-
-    return (res1);
-# endif
+    return DoPkt(pid, action, arg, 0L, 0L, 0L, 0L);
 }
 #endif // !defined(AZTEC_C) && !defined(__AROS__)
 
@@ -1341,31 +1237,13 @@ mch_call_shell(
 #if !defined(AZTEC_C)		    // not tested very much
     if (cmd == NULL)
     {
-# ifdef FEAT_ARP
-	if (dos2)
-# endif
-	    x = SystemTags(p_sh, SYS_UserShell, TRUE, TAG_DONE);
-# ifdef FEAT_ARP
-	else
-	    x = Execute(p_sh, raw_in, raw_out);
-# endif
+	x = SystemTags(p_sh, SYS_UserShell, TRUE, TAG_DONE);
     }
     else
     {
-# ifdef FEAT_ARP
-	if (dos2)
-# endif
-	    x = SystemTags((char *)cmd, SYS_UserShell, TRUE, TAG_DONE);
-# ifdef FEAT_ARP
-	else
-	    x = Execute((char *)cmd, 0L, raw_out);
-# endif
+	x = SystemTags((char *)cmd, SYS_UserShell, TRUE, TAG_DONE);
     }
-# ifdef FEAT_ARP
-    if ((dos2 && x < 0) || (!dos2 && !x))
-# else
     if (x < 0)
-# endif
     {
 	msg_puts(_("Cannot execute "));
 	if (cmd == NULL)
@@ -1378,11 +1256,7 @@ mch_call_shell(
 	msg_putchar('\n');
 	retval = -1;
     }
-# ifdef FEAT_ARP
-    else if (!dos2 || x)
-# else
     else if (x)
-# endif
     {
 	if ((x = IoErr()) != 0)
 	{
@@ -1422,28 +1296,14 @@ mch_call_shell(
     {
 	if (use_execute)
 	{
-# ifdef FEAT_ARP
-	    if (dos2)
-# endif
-		x = SystemTags((UBYTE *)p_sh, SYS_UserShell, TRUE, TAG_DONE);
-# ifdef FEAT_ARP
-	    else
-		x = !Execute((UBYTE *)p_sh, raw_in, raw_out);
-# endif
+	    x = SystemTags((UBYTE *)p_sh, SYS_UserShell, TRUE, TAG_DONE);
 	}
 	else
 	    x = fexecl((char *)shellcmd, (char *)shellcmd, (char *)shellarg, NULL);
     }
     else if (use_execute)
     {
-# ifdef FEAT_ARP
-	if (dos2)
-# endif
-	    x = SystemTags((UBYTE *)cmd, SYS_UserShell, TRUE, TAG_DONE);
-# ifdef FEAT_ARP
-	else
-	    x = !Execute((UBYTE *)cmd, 0L, raw_out);
-# endif
+	x = SystemTags((UBYTE *)cmd, SYS_UserShell, TRUE, TAG_DONE);
     }
     else if (p_st & 1)
 	x = fexecl((char *)shellcmd, (char *)shellcmd, (char *)shellarg,
@@ -1451,11 +1311,7 @@ mch_call_shell(
     else
 	x = fexecl((char *)shellcmd, (char *)shellcmd, (char *)shellarg,
 					   (char *)p_shcf, (char *)cmd, NULL);
-# ifdef FEAT_ARP
-    if ((dos2 && x < 0) || (!dos2 && x))
-# else
     if (x < 0)
-# endif
     {
 	msg_puts(_("Cannot execute "));
 	if (use_execute)
@@ -1477,11 +1333,7 @@ mch_call_shell(
     {
 	if (use_execute)
 	{
-# ifdef FEAT_ARP
-	    if (!dos2 || x)
-# else
 	    if (x)
-# endif
 		x = IoErr();
 	}
 	else
@@ -1549,8 +1401,8 @@ Chk_Abort(void)
 #endif
 
 /*
- * mch_expandpath() - this code does wild-card pattern matching using the arp
- *		      routines.
+ * mch_expandpath() - this code does wild-card pattern matching using the
+ *		      MatchFirst() and MatchNext() routines.
  *
  * "pat" has backslashes before chars that are not to be expanded.
  * Returns the number of matches found.
@@ -1607,32 +1459,23 @@ mch_expandpath(
 # endif
 #endif
 
-#ifdef FEAT_ARP
-    if (dos2)
+    // hack to replace '*' by '#?'
+    starbuf = alloc(2 * STRLEN(pat) + 1);
+    if (starbuf == NULL)
+	goto Return;
+    for (sp = pat, dp = starbuf; *sp; ++sp)
     {
-#endif
-	// hack to replace '*' by '#?'
-	starbuf = alloc(2 * STRLEN(pat) + 1);
-	if (starbuf == NULL)
-	    goto Return;
-	for (sp = pat, dp = starbuf; *sp; ++sp)
+	if (*sp == '*')
 	{
-	    if (*sp == '*')
-	    {
-		*dp++ = '#';
-		*dp++ = '?';
-	    }
-	    else
-		*dp++ = *sp;
+	    *dp++ = '#';
+	    *dp++ = '?';
 	}
-	*dp = NUL;
-	Result = MatchFirst((UBYTE *)starbuf, Anchor);
-	vim_free(starbuf);
-#ifdef FEAT_ARP
+	else
+	    *dp++ = *sp;
     }
-    else
-	Result = FindFirst((char *)pat, Anchor);
-#endif
+    *dp = NUL;
+    Result = MatchFirst((UBYTE *)starbuf, Anchor);
+    vim_free(starbuf);
 
     /*
      * Loop to get all matches.
@@ -1644,14 +1487,7 @@ mch_expandpath(
 #else
 	addfile(gap, (char_u *)Anchor->ap_Buf, flags);
 #endif
-#ifdef FEAT_ARP
-	if (dos2)
-#endif
-	    Result = MatchNext(Anchor);
-#ifdef FEAT_ARP
-	else
-	    Result = FindNext(Anchor);
-#endif
+	Result = MatchNext(Anchor);
     }
     matches = gap->ga_len - start_len;
 
@@ -1670,14 +1506,7 @@ mch_expandpath(
 				  (size_t)matches, sizeof(char_u *), sortcmp);
 
     // Free the wildcard stuff
-#ifdef FEAT_ARP
-    if (dos2)
-#endif
-	MatchEnd(Anchor);
-#ifdef FEAT_ARP
-    else
-	FreeAnchorChain(Anchor);
-#endif
+    MatchEnd(Anchor);
 
 Return:
 #ifdef __amigaos4__
@@ -1744,28 +1573,21 @@ mch_getenv(char_u *var)
     char_u	    *retval;		// return value
     static char_u   *alloced = NULL;	// allocated memory
 
-#ifdef FEAT_ARP
-    if (!dos2)
-	retval = (char_u *)getenv((char *)var);
-    else
-#endif
+    VIM_CLEAR(alloced);
+    retval = NULL;
+
+    buf = alloc(IOSIZE);
+    if (buf == NULL)
+	return NULL;
+
+    len = GetVar((UBYTE *)var, buf, (long)(IOSIZE - 1), (long)0);
+    if (len >= 0)
     {
-	VIM_CLEAR(alloced);
-	retval = NULL;
-
-	buf = alloc(IOSIZE);
-	if (buf == NULL)
-	    return NULL;
-
-	len = GetVar((UBYTE *)var, buf, (long)(IOSIZE - 1), (long)0);
-	if (len >= 0)
-	{
-	    retval = vim_strsave((char_u *)buf);
-	    alloced = retval;
-	}
-
-	vim_free(buf);
+	retval = vim_strsave((char_u *)buf);
+	alloced = retval;
     }
+
+    vim_free(buf);
 
     // if $VIM is not defined, use "vim:" instead
     if (retval == NULL && STRCMP(var, "VIM") == 0)
@@ -1781,11 +1603,6 @@ mch_getenv(char_u *var)
     int
 mch_setenv(char *var, char *value, int x UNUSED)
 {
-#ifdef FEAT_ARP
-    if (!dos2)
-	return setenv(var, value);
-#endif
-
     if (SetVar((UBYTE *)var, (UBYTE *)value, (LONG)-1, (ULONG)GVF_LOCAL_ONLY))
 	return 0;   // success
     return -1;	    // failure
