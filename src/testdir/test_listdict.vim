@@ -1296,6 +1296,27 @@ func Test_reverse_sort_uniq()
   call v9.CheckDefAndScriptFailure(lines, 'E1256: String or function required for argument 2')
 endfunc
 
+" uniq() must not leave the index cache on a removed item.  The use of freed
+" memory is only detected with valgrind or ASan.
+func Test_uniq_after_index()
+  let lines =<< trim END
+      VAR l = [1, 1, 2]
+      call assert_equal(1, l[1])
+      call uniq(l)
+      call assert_equal([1, 2], l)
+      call assert_equal(2, l[1])
+      call assert_equal(1, l[-2])
+
+      LET l = [1, 1, 2, 3, 4]
+      call assert_equal(4, l[4])
+      call uniq(l)
+      call assert_equal([1, 2, 3, 4], l)
+      call assert_equal(4, l[3])
+      call assert_equal(3, l[2])
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+endfunc
+
 " reduce a list, blob or string
 func Test_reduce()
   let lines =<< trim END
