@@ -1276,7 +1276,7 @@ def Test_enum_name()
     endenum
     Fruit.Apple.name = 'foo'
   END
-  v9.CheckSourceFailure(lines, 'E1335: Variable "name" in class "Fruit" is not writable', 5)
+  v9.CheckSourceFailure(lines, 'E1427: Enum "Fruit" name cannot be modified', 5)
 
   # Try assigning to the name of an enum in a function
   lines =<< trim END
@@ -1289,7 +1289,7 @@ def Test_enum_name()
     enddef
     defcompile
   END
-  v9.CheckSourceFailure(lines, 'E1423: Enum value "Fruit.name" cannot be modified', 1)
+  v9.CheckSourceFailure(lines, 'E1427: Enum "Fruit" name cannot be modified', 1)
 
   # Try to overwrite an enum value name in the enum constructor
   lines =<< trim END
@@ -1357,7 +1357,7 @@ def Test_enum_ordinal()
     endenum
     Fruit.Apple.ordinal = 20
   END
-  v9.CheckSourceFailure(lines, 'E1335: Variable "ordinal" in class "Fruit" is not writable', 5)
+  v9.CheckSourceFailure(lines, 'E1426: Enum "Fruit" ordinal value cannot be modified', 5)
 
   # Try assigning to the ordinal value of an enum in a function
   lines =<< trim END
@@ -1370,7 +1370,7 @@ def Test_enum_ordinal()
     enddef
     defcompile
   END
-  v9.CheckSourceFailure(lines, 'E1423: Enum value "Fruit.ordinal" cannot be modified', 1)
+  v9.CheckSourceFailure(lines, 'E1426: Enum "Fruit" ordinal value cannot be modified', 1)
 
   # Try to overwrite an enum value ordinal in the enum constructor
   lines =<< trim END
