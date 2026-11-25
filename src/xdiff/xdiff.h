@@ -43,7 +43,7 @@ extern "C" {
 
 #define XDF_PATIENCE_DIFF (1 << 14)
 #define XDF_HISTOGRAM_DIFF (1 << 15)
-#define XDF_DIFF_ALGORITHM_MASK (XDF_PATIENCE_DIFF | XDF_HISTOGRAM_DIFF)
+#define XDF_DIFF_ALGORITHM_MASK (XDF_PATIENCE_DIFF | XDF_HISTOGRAM_DIFF | XDF_NEED_MINIMAL)
 #define XDF_DIFF_ALG(x) ((x) & XDF_DIFF_ALGORITHM_MASK)
 
 #define XDF_INDENT_HEURISTIC (1 << 23)
@@ -126,8 +126,8 @@ typedef struct s_bdiffparam {
 # include "../vim.h"
 #endif
 
-#define xdl_malloc(x) lalloc((x), TRUE)
-#define xdl_calloc(n, sz) lalloc_clear(n*sz, TRUE)
+void *xdl_malloc(size_t size);
+void *xdl_calloc(size_t n, size_t sz);
 #define xdl_free(ptr) vim_free(ptr)
 #define xdl_realloc(ptr,x) vim_realloc((ptr),(x))
 
