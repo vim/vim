@@ -5837,6 +5837,7 @@ vim_tempname(
     p = tmpnam((char *)itmp);
     if (p == NULL || *p == NUL)
 	return NULL;
+    itmplen = (int)STRLEN(itmp);
 #  else
 
 #   ifdef VMS_TEMPNAM
