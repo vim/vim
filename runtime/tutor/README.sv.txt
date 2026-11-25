@@ -28,9 +28,9 @@ Kapitel två i handledningen är skrivet av Paul D. Parker.
 Översättning
 -----------
 Filerna tutor1.xx för kapitel ett och tutor2.xx för kapitel två i handledningen
-är översatta filer (där xx är språkkoden).
+är översatta versioner (där xx är språkkoden).
 Kodningen av tutor1.xx och tutor2.xx måste vara utf-8.
 
 Översättning av Daniel Nylander <vim@danielnylander.se>.
 
-[Denna fil har modifierats för Vim av Bram Moolenaar et al.
+[Den här filen har anpassats för Vim av Bram Moolenaar med flera.]

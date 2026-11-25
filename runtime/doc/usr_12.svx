@@ -1,0 +1,351 @@
+*usr_12.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Smarta knep
+
+
+Genom att kombinera flera kommandon kan du få Vim att göra nästan vad som
+helst.  I det här kapitlet visas några användbara kombinationer.  De använder
+kommandon från de föregående kapitlen och några till.
+
+|12.1|	Ersätta ett ord
+|12.2|	Ändra ”Efternamn, förnamn” till ”Förnamn Efternamn”
+|12.3|	Sortera en lista
+|12.4|	Vända radordningen
+|12.5|	Räkna ord
+|12.6|	Hitta en manualsida
+|12.7|	Ta bort onödiga blanksteg
+|12.8|	Hitta var ett ord används
+
+	Nästa kapitel: |usr_20.txt|  Skriva kommandoradskommandon snabbt
+	Föregående kapitel: |usr_11.txt|  Återställa efter en krasch
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*12.1*	Ersätta ett ord
+
+Kommandot substitute kan användas för att ersätta alla förekomster av ett
+ord med ett annat: >
+
+	:%s/four/4/g
+
+Intervallet "%" betyder att ersättningen görs på alla rader.  Flaggan "g" i
+slutet gör att alla förekomster på en rad ersätts.
+   Det fungerar inte rätt om filen också innehåller "thirtyfour".  Då blir
+det "thirty4".  Undvik det genom att använda mönsterdelen "\<" som matchar
+början av ett ord: >
+
+	:%s/\<four/4/g
+
+Det blir förstås ändå fel för "fourteen".  Använd "\>" för att matcha slutet
+av ett ord: >
+
+	:%s/\<four\>/4/g
+
+Om du programmerar kanske du vill ersätta "four" i kommentarer men inte i
+koden.  Det är svårt att ange exakt, så lägg till flaggan "c" för att låta
+substitute fråga inför varje ersättning: >
+
+	:%s/\<four\>/4/gc
+
+
+ERSÄTTA I FLERA FILER
+
+Anta att du vill ersätta ett ord i flera filer.  Du kan redigera varje fil
+och skriva kommandot för hand, men det går mycket snabbare att spela in och
+köra kommandona.
+   Anta att du har en katalog med C++-filer som alla slutar på ".cpp".  Det
+finns en funktion som heter "GetResp" och du vill byta namn på den till
+"GetAnswer".
+
+	vim *.cpp		Starta Vim och låt argumentlistan innehålla alla
+				C++-filer.  Du står nu i den första filen.
+	qq			Börja spela in i register q.
+	:%s/\<GetResp\>/GetAnswer/g
+				Gör ersättningarna i den första filen.
+	:wnext			Skriv filen och gå vidare till nästa.
+	q			Avsluta inspelningen.
+	@q			Kör register q.  Det upprepar ersättningen och
+				":wnext".  Kontrollera att inget felmeddelande visas.
+	999@q			Kör register q på de återstående filerna.
+
+Vid den sista filen visas ett felmeddelande eftersom ":wnext" inte kan gå
+vidare.  Det avbryter körningen, och arbetet är klart.
+
+	Observera:
+	Ett fel avbryter uppspelningen av en inspelad sekvens.  Kontrollera
+	alltså att du inte får något felmeddelande när du spelar in.
+
+Det finns en hake: om någon av .cpp-filerna inte innehåller ordet "GetResp"
+blir det ett fel och ersättningen avbryts.  Undvik det genom att lägga till
+flaggan "e" i substitueringskommandot: >
+
+	:%s/\<GetResp\>/GetAnswer/ge
+
+Flaggan "e" anger att det inte är ett fel om ingen träff hittas.
+
+==============================================================================
+*12.2*	Ändra ”Efternamn, förnamn” till ”Förnamn Efternamn”
+
+Du har en namnlista i följande format:
+
+	Doe, John ~
+	Smith, Peter ~
+
+Du vill ändra den till:
+
+	John Doe ~
+	Peter Smith ~
+
+Det kan göras med ett enda kommando: >
+
+	:%s/\([^,]*\), \(.*\)/\2 \1/
+
+Vi delar upp kommandot i delar.  Det börjar förstås med ett
+substitueringskommando.  "%" anger radintervallet och betyder hela filen.
+Därför görs ersättningen på varje rad.
+   Argumenten till substitueringskommandot har formen "/från/till/".
+Snedstrecken skiljer sökmönstret "från" från strängen "till".  Sökmönstret
+innehåller följande:
+
+							\([^,]*\), \(.*\) ~
+
+	Den första delen inom \( \) matchar ”Efternamn”	\(     \)
+		matcha allt utom ett kommatecken		  [^,]
+		valfritt antal gånger				      *
+		matcha ”, ” bokstavligt				 ,
+	Den andra delen inom \( \) matchar ”Förnamn”	   \(  \)
+		valfritt tecken				     .
+		valfritt antal gånger				      *
+
+I delen ”till” finns "\2" och "\1".  De kallas bakåtreferenser och hänvisar
+till texten som matchats av delarna "\( \)" i mönstret.  "\2" hänvisar till
+texten från den andra "\( \)", alltså förnamnet.  "\1" hänvisar till den
+första, alltså efternamnet.
+   Du kan använda upp till nio bakåtreferenser i delen ”till”.  "\0"
+betecknar hela det matchade mönstret.  Det finns några fler specialelement i
+ett substitueringskommando; se |sub-replace-special|.
+
+==============================================================================
+*12.3*	Sortera en lista
+
+I en Makefile finns det ofta en lista med filer.  Till exempel:
+
+	OBJS = \ ~
+		version.o \ ~
+		pch.o \ ~
+		getopt.o \ ~
+		util.o \ ~
+		getopt1.o \ ~
+		inp.o \ ~
+		patch.o \ ~
+		backup.o ~
+
+Filtrera texten genom det externa sort-kommandot för att sortera listan: >
+
+	/^OBJS
+	j
+	:.,/^$/-1!sort
+
+Det här söker upp den första raden, där "OBJS" står först.  Sedan går det en
+rad ned och filtrerar raderna fram till nästa tomma rad.  Du kan också markera
+raderna i visuellt läge och använda "!sort".  Det är enklare att skriva, men
+mer arbete om det är många rader.
+   Resultatet blir:
+
+	OBJS = \ ~
+		backup.o ~
+		getopt.o \ ~
+		getopt1.o \ ~
+		inp.o \ ~
+		patch.o \ ~
+		pch.o \ ~
+		util.o \ ~
+		version.o \ ~
+
+Observera att ett omvänt snedstreck i slutet av raden anger att raden
+fortsätter.  Efter sorteringen är detta fel: raden "backup.o" stod sist och
+saknade därför ett omvänt snedstreck.  När den nu hamnat på en annan plats
+måste den ha ett.
+   Den enklaste lösningen är att lägga till snedstrecket med "A \<Esc>".  Du
+kan låta den sista raden ha ett omvänt snedstreck om du ser till att en tom
+rad följer efter den.  Då slipper du problemet nästa gång.
+
+==============================================================================
+*12.4*	Vända radordningen
+
+Kommandot |:global| kan kombineras med |:move| för att flytta alla rader före
+den första raden och därmed vända filens ordning.  Kommandot är: >
+
+	:global/^/move 0
+
+Förkortat: >
+
+	:g/^/m 0
+
+Det reguljära uttrycket "^" matchar radens början, även om raden är tom.
+Kommandot |:move| flyttar den matchande raden efter den tänkta rad noll, så
+den aktuella raden blir filens första.  Kommandot |:global| påverkas inte av
+att radnumren ändras, utan fortsätter att matcha alla återstående rader och
+placerar var och en först.
+
+Det fungerar också med ett radintervall.  Flytta först till raden ovanför den
+första raden och markera den med "mt".  Flytta sedan markören till den sista
+raden i intervallet och skriv: >
+
+	:'t+1,.g/^/m 't
+
+==============================================================================
+*12.5*	Räkna ord
+
+Ibland behöver du skriva en text med ett högsta tillåtet antal ord.  Vim kan
+räkna orden åt dig.
+   Om du vill räkna orden i hela filen använder du kommandot: >
+
+	g CTRL-G
+
+Skriv inget blanksteg efter g.  Det visas bara här för att göra kommandot
+lättare att läsa.
+   Utskriften ser ut så här:
+
+	Kol 1 av 0; Rad 141 av 157; Ord 748 av 774; Byte 4489 av 4976 ~
+
+Du ser vilket ord markören står vid (748) och det totala antalet ord i filen
+(774).
+
+Om texten bara är en del av filen kan du flytta till textens början, skriva
+"g CTRL-G", flytta till slutet och skriva "g CTRL-G" igen.  Sedan får du
+själv räkna ut skillnaden mellan ordpositionerna.  Det är en bra övning, men
+det finns ett enklare sätt: markera texten i visuellt läge och skriv
+"g CTRL-G".  Resultatet blir:
+
+	Markerat 5 av 293 rader; 70 av 1884 ord; 359 av 10928 byte ~
+
+Se |count-items| för fler sätt att räkna ord, rader och annat.
+
+==============================================================================
+*12.6*	Hitta en manualsida				*find-manpage*
+
+När du redigerar ett skalskript eller ett C-program kanske du vill hitta
+manualsidan för ett kommando eller en funktion.  Det här exemplet gäller
+Unix.  Börja med ett enkelt sätt: flytta markören till ordet och tryck på >
+
+	K
+
+Vim kör det externa programmet "man" för ordet.  Om manualsidan hittas visas
+den.  Texten visas i den vanliga sidvisaren, oftast programmet "more".  När
+du nått slutet återgår du till Vim genom att trycka på <Enter>.
+
+En nackdel är att du inte kan se manualsidan och texten du arbetar med
+samtidigt.  Du kan visa manualsidan i ett Vim-fönster genom att först läsa in
+insticksprogrammet för filtypen man: >
+
+	:runtime! ftplugin/man.vim
+
+Lägg till kommandot i din vimrc-fil om du ofta använder funktionen.  Använd
+sedan kommandot ":Man" för att öppna ett fönster med en manualsida: >
+
+	:Man csh
+
+Du kan bläddra i den markerade texten.  Då kan du hitta den hjälp du söker.
+Använd CTRL-W w för att flytta till fönstret där du arbetade med texten.
+   Ange avsnittsnumret först för att hitta en manualsida i ett visst avsnitt.
+Skriv till exempel så här för att söka efter "echo" i avsnitt 3: >
+
+	:Man 3 echo
+
+Tryck på CTRL-] på en annan manualsida i texten, som har standardformen
+"ord(1)", för att hoppa till den.  Ytterligare ":Man"-kommandon använder
+samma fönster.
+
+Använd följande för att visa manualsidan för ordet under markören: >
+
+	\K
+
+(Om du har ändrat <Leader> använder du det tecknet i stället för omvänt
+snedstreck.)  Anta till exempel att du vill veta returvärdet för "strstr()"
+när du redigerar följande rad:
+
+	if ( strstr (input, "aap") == ) ~
+
+Flytta markören till "strstr" och skriv "\K".  Ett fönster öppnas med
+manualsidan för strstr().
+
+==============================================================================
+*12.7*	Ta bort onödiga blanksteg
+
+Vissa tycker att blanksteg och tabbar i slutet av en rad är onödiga,
+slösaktiga och fula.  Ta bort blanksteg i slutet av alla rader med följande
+kommando: >
+
+	:%s/\s\+$//
+
+Radintervallet "%" anger hela filen.  Mönstret som substitueringskommandot
+letar efter är "\s\+$".  Det matchar blankstegstecken (\s), ett eller flera
+(\+) före radslutet ($).  Senare förklaras hur du skriver sådana mönster; se
+|usr_27.txt|.
+   Delen ”till” i substitueringskommandot är tom: "//".  Den matchade texten
+ersätts alltså med ingenting, vilket tar bort blankstegen.
+
+Ett annat onödigt användande av blanksteg är att placera dem före en tabb.
+Ofta kan de tas bort utan att mängden tomrum ändras, men inte alltid!  Det är
+därför bäst att göra detta manuellt.  Använd sökkommandot: >
+
+	/ \t
+
+Skriv "/" och tryck sedan på <Space>, <Tab> och <Enter>.  Använd nu "x" för att ta bort blanksteget och
+kontrollera att mängden tomrum inte ändras.  Du kan behöva infoga en tabb om
+den ändras.  Tryck på "n" för att hitta nästa träff.  Upprepa tills inga fler
+träffar hittas.
+
+==============================================================================
+*12.8*	Hitta var ett ord används
+
+Om du använder Unix kan du kombinera Vim med kommandot grep för att redigera
+alla filer som innehåller ett visst ord.  Det är särskilt användbart när du
+arbetar med ett program och vill visa eller redigera alla filer som innehåller
+en viss variabel.
+   Anta till exempel att du vill redigera alla C-filer som innehåller ordet
+"frame_counter".  Använd kommandot: >
+
+	vim `grep -l frame_counter *.c`
+
+Vi går igenom kommandot.  grep söker efter ett angivet ord i en uppsättning
+filer.  Eftersom argumentet -l används listas bara filerna som innehåller
+ordet; de matchande raderna skrivs inte ut.  Ordet som söks är
+"frame_counter", men det kan egentligen vara ett reguljärt uttryck.  (Obs!
+grep och Vim använder inte exakt samma syntax för reguljära uttryck.)
+   Hela kommandot står inom bakåtvända apostrofer (`).  Det talar om för
+Unix-skalet att köra kommandot och låtsas att resultatet skrevs på
+kommandoraden.  grep körs alltså och lämnar en lista med filnamn, som skickas
+vidare till Vims kommandorad.  Vim redigerar sedan fillistan från grep.  Du kan
+använda kommandon som ":next" och ":first" för att bläddra bland filerna.
+
+
+HITTA VARJE RAD
+
+Kommandot ovan hittar bara filerna där ordet förekommer.  Du måste fortfarande
+hitta ordet inne i filerna.
+   Vim har ett inbyggt kommando för att söka efter en sträng i flera filer.
+Skriv till exempel följande för att hitta alla förekomster av "error_string"
+i alla C-filer: >
+
+	:grep error_string *.c
+
+Vim söker efter strängen "error_string" i alla angivna filer (*.c).  Den
+första filen med en träff öppnas och markören placeras på den första raden som
+matchar.  Använd kommandot ":cnext" för nästa träff, även om den finns i en
+annan fil.  Använd ":cprev" för föregående träff och ":clist" för att visa
+alla träffar och var de finns.
+   Kommandot ":grep" använder de externa kommandona grep (i Unix) eller
+findstr (i Windows).  Du kan ändra detta genom att ställa in alternativet
+'grepprg'.
+
+==============================================================================
+
+Nästa kapitel: |usr_20.txt|  Skriva kommandoradskommandon snabbt
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

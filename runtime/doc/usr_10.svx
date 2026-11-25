@@ -1,0 +1,812 @@
+*usr_10.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Göra större ändringar
+
+
+I kapitel 4 förklarades flera sätt att göra små ändringar.  Det här kapitlet
+handlar om ändringar som upprepas eller påverkar mycket text.  Visuellt läge
+gör det möjligt att arbeta med textblock.  För riktigt komplicerade uppgifter
+kan du använda ett externt program.
+
+|10.1|	Spela in och köra kommandon
+|10.2|	Ersättning
+|10.3|	Kommandointervall
+|10.4|	Det globala kommandot
+|10.5|	Visuellt blockläge
+|10.6|	Läsa och skriva en del av en fil
+|10.7|	Formatera text
+|10.8|	Ändra skiftläge
+|10.9|	Använda ett externt program
+
+	Nästa kapitel: |usr_11.txt|  Återställa efter en krasch
+	Föregående kapitel: |usr_09.txt|  Använda det grafiska gränssnittet
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*10.1*	Spela in och köra kommandon
+
+Kommandot "." upprepar den senaste ändringen.  Men tänk om du vill göra
+något mer komplicerat än en enda ändring?  Då kan du spela in kommandon.  Det
+görs i tre steg:
+
+1. Kommandot "q{register}" börjar spela in tangenttryckningar i registret
+   {register}.  Använd här en gemen bokstav mellan a och z som registernamn.
+2. Skriv kommandona.
+3. Tryck på q (utan något ytterligare tecken) för att avsluta inspelningen.
+
+Nu kan du köra makrot genom att skriva kommandot "@{register}".
+
+Så här kan du använda kommandona i praktiken.  Du har en lista med filnamn
+som ser ut så här:
+
+	stdio.h ~
+	fcntl.h ~
+	unistd.h ~
+	stdlib.h ~
+
+Du vill få följande resultat:
+
+	#include "stdio.h" ~
+	#include "fcntl.h" ~
+	#include "unistd.h" ~
+	#include "stdlib.h" ~
+
+Börja med att flytta till det första tecknet på den första raden.  Kör sedan
+följande kommandon:
+
+	qa			Börja spela in ett makro i register a.
+	^			Flytta till radens första tecken som inte är ett blanktecken.
+	i#include "<Esc>	Infoga strängen #include " i början av raden.
+	$			Flytta till radens slut.
+	a"<Esc>			Lägg till ett dubbelt citationstecken (")
+				i slutet av raden.
+	j			Gå till nästa rad.
+	q			Avsluta inspelningen.
+
+När du har gjort ändringen en gång kan du upprepa den genom att skriva
+kommandot "@a" tre gånger.
+   Kommandot "@a" kan föregås av ett antal.  Då körs makrot så många gånger.
+I det här fallet skriver du: >
+
+	3@a
+
+
+FLYTTA OCH KÖRA
+
+Raderna du vill ändra kan finnas på olika ställen.  Flytta bara markören till
+varje plats och använd kommandot "@a".  När du har gjort det en gång kan du
+upprepa makrot med "@@".  Det är lite enklare att skriva.  Om du sedan kör
+register b med "@b" använder nästa "@@" register b.
+   Det finns flera skillnader mellan att köra ett inspelat makro och att
+använda ".".  För det första kan "." bara upprepa en ändring.  Som exemplet
+ovan visar kan "@a" utföra flera ändringar och även flytta markören.  För det
+andra kommer "." bara ihåg den senaste ändringen.  När du kör ett register kan
+du göra andra ändringar och ändå använda "@a" för att spela upp de inspelade
+kommandona.  Slutligen kan du använda 26 olika register och därmed spara 26
+olika kommandosekvenser.
+
+
+ANVÄNDA REGISTER
+
+Registren som används för inspelning är samma register som du använder för
+yank- och delete-kommandon.  Därför kan du blanda inspelning med andra
+registerkommandon.
+   Anta att du har spelat in några kommandon i register n.  När du kör dem med
+"@n" märker du att något blev fel.  Du kan spela in igen, men då kanske du
+gör ett nytt misstag.  Prova i stället det här:
+
+	G			Gå till slutet av filen.
+	o<Esc>			Skapa en tom rad.
+	"np			Klistra in texten från register n.  Nu visas
+				kommandona du skrev som text i filen.
+	{ändringar}		Ändra de felaktiga kommandona.  Det här är
+				som att redigera vanlig text.
+	0			Gå till början av raden.
+	"ny$			Kopiera de rättade kommandona till register n.
+	dd			Ta bort den tillfälliga raden.
+
+Nu kan du köra de rättade kommandona med "@n".  (Om de inspelade kommandona
+innehåller radbrytningar behöver de två sista stegen anpassas så att de tar
+med alla rader.)
+
+
+LÄGGA TILL I ETT REGISTER
+
+Hittills har vi använt en liten bokstav som registernamn.  Använd en stor
+bokstav för att lägga till innehåll i ett register.
+   Anta att du har spelat in ett kommando som ändrar ett ord i register c.
+Det fungerar, men du vill även söka efter nästa ord som ska ändras.  Gör så
+här: >
+
+	qC/word<Enter>q
+
+Du börjar med "qC", som spelar in i register c och lägger till där.  Att
+skriva till ett register med stor bokstav betyder alltså att innehållet läggs
+till i registret med motsvarande lilla bokstav.
+
+Det fungerar både för inspelning och för yank- och delete-kommandon.  Anta
+till exempel att du vill samla flera rader i register a.  Kopiera den första
+raden med: >
+
+	"aY
+
+Flytta sedan till den andra raden och skriv: >
+
+	"AY
+
+Upprepa kommandot för alla rader.  Register a innehåller nu alla rader i den
+ordning du kopierade dem.
+
+==============================================================================
+*10.2*	Ersättning					*find-replace*
+
+Kommandot ":substitute" ersätter text inom ett angivet radintervall.  Den
+allmänna formen är: >
+
+	:[intervall]substitute/från/till/[flaggor]
+
+Kommandot ändrar strängen "från" till "till" på raderna som anges med
+[intervall].  Exempelvis kan du ändra "Professor" till "Teacher" på alla
+rader med följande kommando: >
+
+	:%substitute/Professor/Teacher/
+<
+	Observera:
+	Kommandot ":substitute" skrivs nästan aldrig ut i sin helhet.
+	Vanligen används kortformen ":s".  Vi använder den förkortningen
+	i fortsättningen.
+
+Tecknet "%" före kommandot anger att det gäller alla rader.  Utan ett
+intervall gäller ":s" bara den aktuella raden.  Intervall beskrivs i nästa
+avsnitt |10.3|.
+
+Som standard ändrar kommandot ":substitute" bara den första förekomsten på
+varje rad.  Föregående kommando ändrar till exempel raden
+
+	Professor Smith criticized Professor Johnson today. ~
+
+till:
+
+	Teacher Smith criticized Professor Johnson today. ~
+
+Lägg till flaggan g (global) för att ändra varje förekomst på raden.  Det här
+kommandot: >
+
+	:%s/Professor/Teacher/g
+
+ger, med ursprungsraden som utgångspunkt, följande resultat:
+
+	Teacher Smith criticized Teacher Johnson today. ~
+
+Andra flaggor är p (print), som skriver ut den sista ändrade raden, och c
+(confirm), som frågar innan varje ersättning utförs.  Skriv: >
+
+	:%s/Professor/Teacher/c
+
+Vim hittar den första förekomsten av "Professor" och visar texten som ska
+ändras.  Du får följande fråga: >
+
+	ersätt med Teacher (y/n/a/q/l/^E/^Y)?
+
+Svara med ett av följande:
+
+	y		Ja; gör den här ändringen.
+	n		Nej; hoppa över den här träffen.
+	a		Alla; gör den här och alla återstående ändringar utan fler frågor.
+	q		Avsluta; gör inga fler ändringar.
+	l		Sista; gör den här ändringen och avsluta sedan.
+	CTRL-E		Rulla texten en rad uppåt.
+	CTRL-Y		Rulla texten en rad nedåt.
+
+
+Delen "från" i substitueringskommandot är egentligen ett sökmönster av samma
+typ som för sökkommandot.  Det här kommandot ersätter till exempel "the" bara
+när ordet står i början av en rad: >
+
+	:s/^the/these/
+
+Om delen "från" eller "till" innehåller ett snedstreck måste du sätta ett
+omvänt snedstreck framför det.  Ett enklare sätt är att använda ett annat
+tecken i stället för snedstrecket, till exempel plustecken: >
+
+	:s+one/two+one or two+
+
+==============================================================================
+*10.3*	Kommandointervall
+
+Kommandot ":substitute" och många andra :-kommandon kan tillämpas på ett
+urval av rader.  Det kallas ett intervall.
+   Den enklaste formen av ett intervall är {nummer},{nummer}.  Exempel: >
+
+	:1,5s/this/that/g
+
+Kör substitueringskommandot på raderna 1 till 5.  Rad 5 ingår.  Intervallet
+står alltid före kommandot.
+
+Du kan ange en enskild rad med ett enda nummer: >
+
+	:54s/President/Fool/
+
+Vissa kommandon gäller hela filen när du inte anger något intervall.  För att
+begränsa dem till den aktuella raden använder du adressen ".".  Kommandot
+":write" fungerar så.  Utan intervall skriver det hela filen.  Så här skriver
+du bara den aktuella raden till en fil: >
+
+	:.write otherfile
+
+Den första raden har alltid nummer ett.  Den sista raden anges med tecknet
+"$".  Så här ersätter du text från markörens rad till filens slut: >
+
+	:.,$s/yes/no/
+
+Intervallet "%" som användes tidigare är en kortform för "1,$", det vill
+säga från den första till den sista raden.
+
+
+ANVÄNDA MÖNSTER I ETT INTERVALL
+
+Anta att du redigerar ett kapitel i en bok och vill ersätta alla förekomster
+av "grey" med "gray", men bara i det här kapitlet.  Du vet att kapitelgränser
+alltid har ordet "Chapter" i första kolumnen.  Då fungerar det här kommandot: >
+
+	:?^Chapter?,/^Chapter/s=grey=gray=g
+
+Här används ett sökmönster två gånger.  Den första sökningen, "?^Chapter?",
+hittar den föregående raden som matchar mönstret.  Intervallet ?mönster?
+söker alltså bakåt.  På motsvarande sätt söker "/^Chapter/" framåt efter
+nästa kapitels början.
+   Likhetstecknet används som avgränsare i substitueringskommandot för att
+undvika förväxling med snedstrecken.  Ett snedstreck eller något annat tecken
+hade också fungerat.
+
+
+LÄGGA TILL OCH DRA IFRÅN
+
+Det finns ett litet problem med kommandot ovan: om nästa kapitels rubrik
+innehåller "grey" ersätts det ordet också.  Kanske är det önskvärt, men om
+inte kan du ange en förskjutning.
+   Så här söker du efter ett mönster och väljer raden ovanför träffen: >
+
+	/Chapter/-1
+
+Du kan använda vilket tal som helst i stället för 1.  Så här anger du den
+andra raden efter träffen: >
+
+	/Chapter/+2
+
+Förskjutningar kan också användas med de andra delarna av ett intervall.  Se
+det här exemplet: >
+
+	:.+3,$-5
+
+Det anger ett intervall som börjar tre rader nedanför markören och slutar fem
+rader före den sista raden i filen.
+
+
+ANVÄNDA MARKERINGAR
+
+I stället för att räkna ut radnumren för vissa positioner, komma ihåg dem och
+skriva in dem i ett intervall kan du använda markeringar.
+   Placera markeringarna som beskrivs i kapitel 3.  Använd till exempel "mt"
+för att markera ett områdes början och "mb" för dess slut.  Ange sedan raderna
+mellan markeringarna (inklusive raderna med markeringarna) så här: >
+
+	:'t,'b
+
+
+VISUELLT LÄGE OCH INTERVALL
+
+Du kan markera text i visuellt läge.  När du sedan trycker på ":" för att
+starta ett kolonkommando visas: >
+
+	:'<,'>
+
+Skriv nu kommandot.  Det tillämpas på raderna du markerade visuellt.
+
+	Observera:
+	Om du markerar en del av en rad i visuellt läge, eller ett textblock
+	med CTRL-V, gäller kolonkommandona ändå hela rader.  Det kan ändras i
+	en framtida version av Vim.
+
+'< och '> är markeringar som placeras i början respektive slutet av det
+visuella urvalet.  De finns kvar tills du gör ett nytt visuellt urval.  Därför
+kan du använda kommandot "'<" för att hoppa till den första raden i det visuella
+området.  Du kan också kombinera markeringarna med andra delar av ett
+intervall: >
+
+	:'>,$
+
+Det anger raderna från slutet av det visuella området till filens slut.
+
+
+ETT VISST ANTAL RADER
+
+När du vet hur många rader du vill ändra kan du skriva antalet följt av ":".
+Om du till exempel skriver "5:" får du: >
+
+	:.,.+4
+
+Skriv sedan kommandot du vill använda.  Det tillämpas från "." (den aktuella
+raden) till ".+4" (fyra rader nedanför), alltså totalt fem rader.
+
+Se även |:range| för en översikt över alla sätt att ange ett intervall.
+
+==============================================================================
+*10.4*	Det globala kommandot
+
+Kommandot ":global" är en av Vims kraftfullaste funktioner.  Det hittar
+rader som matchar ett mönster och kör ett kommando på dem.  Den allmänna
+formen är: >
+
+	:[intervall]global/{mönster}/{kommando}
+
+Det liknar kommandot ":substitute", men i stället för att ersätta den
+matchande texten körs {kommando}.
+
+	Observera:
+	Kommandot som körs av ":global" måste vara ett Ex-kommando.
+	Normallägets kommandon kan inte användas direkt.  Kommandot |:normal| kan göra det.
+
+Anta att du vill ändra "foobar" till "barfoo", men bara i kommentarer med
+C++-stil.  Sådana kommentarer börjar med "//".  Använd det här kommandot: >
+
+	:g+//+s/foobar/barfoo/g
+
+Det börjar med ":g", en kortform för ":global", på samma sätt som ":s" är en
+kortform för ":substitute".  Mönstret omges av plustecken eftersom det
+innehåller ett snedstreck.  Därefter kommer substitueringskommandot som ändrar
+"foobar" till "barfoo".
+   Standardintervallet för det globala kommandot är hela filen.  Därför
+behövdes inget intervall i exemplet.  Det skiljer sig från ":substitute",
+som utan intervall bara gäller en rad.
+   Kommandot är inte helt perfekt, eftersom det även träffar rader där "//"
+står mitt på raden.  Ersättningen görs då också före "//".
+
+Precis som för ":substitute" kan du använda vilket sökmönster som helst.  När
+du senare lär dig mer komplicerade mönster kan du använda dem här.
+
+==============================================================================
+*10.5*	Visuellt blockläge
+
+Med CTRL-V kan du börja markera ett rektangulärt textområde.  Några kommandon
+fungerar särskilt med textblocket.
+
+Kommandot "$" har ett särskilt beteende i visuellt blockläge.  Om det senaste
+förflyttningskommandot var "$" fortsätter markeringen på alla rader till
+radslutet, även om raden där markören står är kortare.  Det gäller tills du
+använder ett förflyttningskommando som flyttar markören horisontellt.  "j"
+behåller alltså beteendet, medan "h" avslutar det.
+
+
+INFOGA TEXT
+
+Kommandot "I{sträng}<Esc>" infogar texten {sträng} på varje rad, precis till
+vänster om det visuella blocket.  Tryck på CTRL-V för att gå till visuellt
+blockläge och flytta markören så att blocket avgränsas.  Tryck sedan på I för
+att gå till infogningsläge och skriv texten.  Medan du skriver visas texten
+bara på den första raden.
+   När du trycker på <Esc> infogas texten även på de andra raderna i det
+visuella urvalet.  Exempel:
+
+	include one ~
+	include two ~
+	include three ~
+	include four ~
+
+Flytta markören till "o" i "one" och tryck på CTRL-V.  Flytta nedåt med "3j"
+till "four".  Nu omfattar blockmarkeringen fyra rader.  Skriv: >
+
+	Imain.<Esc>
+
+Resultatet blir:
+
+	include main.one ~
+	include main.two ~
+	include main.three ~
+	include main.four ~
+
+Om blocket omfattar korta rader som inte når fram till blocket infogas ingen
+text på de raderna.  Markera till exempel ordet "long" på den första och sista
+raden i följande text, men inte på den andra raden:
+
+	This is a long line ~
+	short ~
+	Any other long line ~
+
+		  ^^^^ markerat block
+
+Använd nu kommandot "Ivery <Esc>".  Resultatet blir:
+
+	This is a very long line ~
+	short ~
+	Any other very long line ~
+
+Ingen text infogades på den korta raden.
+
+Om strängen du infogar innehåller en radbrytning fungerar "I" som ett vanligt
+infogningskommando och påverkar bara blockets första rad.
+
+Kommandot "A" fungerar på samma sätt, men lägger till text efter blockets
+högra kant.  Det infogar även text på en kort rad.  Du kan alltså välja om
+text ska läggas till på korta rader eller inte.
+   Det finns ett specialfall för "A": markera ett visuellt block och använd
+sedan "$" för att låta blocket fortsätta till varje rads slut.  Om du nu
+använder "A" läggs texten till i slutet av varje rad.
+   Med samma exempel som ovan ger "$A XXX<Esc>" följande resultat:
+
+	This is a long line XXX ~
+	short XXX ~
+	Any other long line XXX ~
+
+Det kräver att du använder kommandot "$".  Vim kommer ihåg att det användes.
+Om du gör samma markering genom att flytta markören till den längsta radens
+slut med andra förflyttningskommandon blir resultatet annorlunda.
+
+
+ÄNDRA TEXT
+
+Kommandot "c" i visuellt blockläge tar bort blocket och går sedan till
+infogningsläge så att du kan skriva en sträng.  Strängen infogas på varje rad
+i blocket.
+   Markera ordet "long" på samma sätt som ovan och skriv "c_LONG_<Esc>".  Då
+blir resultatet:
+
+	This is a _LONG_ line ~
+	short ~
+	Any other _LONG_ line ~
+
+Precis som med "I" ändras inte den korta raden.  Du kan inte heller infoga en
+radbrytning i den nya texten.
+
+Kommandot "C" tar bort text från blockets vänstra kant till radens slut.
+Sedan går Vim till infogningsläge så att du kan skriva en sträng som läggs
+till i slutet av varje rad.
+   Om du utgår från samma text och skriver "Cnew text<Esc>" blir resultatet:
+
+	This is a new text ~
+	short ~
+	Any other new text ~
+
+Observera att texten efter ordet "long" också togs bort, trots att bara ordet
+var markerat.  Det är alltså bara blockets vänstra kant som spelar roll.
+   Korta rader som inte når fram till blocket lämnas återigen utanför.
+
+Andra kommandon som ändrar tecknen i blocket:
+
+	~	byt skiftläge (a -> A och A -> a)
+	U	gör till versaler (a -> A och A -> A)
+	u	gör till gemener (a -> a och A -> a)
+
+
+FYLLA MED ETT TECKEN
+
+Använd kommandot "r" för att fylla hela blocket med ett tecken.  Med samma
+exempeltext som ovan och kommandot "rx" får du:
+
+	This is a xxxx line ~
+	short ~
+	Any other xxxx line ~
+
+
+	Observera:
+	Om du vill ta med tecken efter radslutet i blocket kan du läsa om
+	funktionen 'virtualedit' i kapitel 25.
+
+
+FLYTTA IN OCH UT
+
+Kommandot ">" flyttar den markerade texten åt höger ett skiftsteg och infogar
+blanksteg.  Förskjutningen utgår från blockets vänstra kant.
+   Med samma exempel som ovan ger ">" följande resultat:
+
+	This is a	  long line ~
+	short ~
+	Any other	  long line ~
+
+Skiftstegets storlek anges med alternativet 'shiftwidth'.  Så här ställer du
+in fyra blanksteg: >
+
+	:set shiftwidth=4
+
+Kommandot "<" tar bort ett skiftsteg med blanksteg från blockets vänstra
+kant.  Hur mycket som tas bort begränsas av den text som finns där.  Om det
+finns mindre än ett skiftsteg med blanksteg tas så mycket som möjligt bort.
+
+
+FOGA IHOP RADER
+
+Kommandot "J" fogar ihop alla markerade rader till en rad och tar därmed bort
+radbrytningarna.  Radbrytningar samt inledande och avslutande blanksteg ersätts
+med ett blanksteg.  Efter en rad som avslutas med punkt används två blanksteg;
+det kan ändras med alternativet 'joinspaces'.
+   Om vi använder samma exempeltext som tidigare blir resultatet:
+
+	This is a long line short Any other long line ~
+
+Kommandot "J" kräver inte en blockmarkering.  Det fungerar på samma sätt med
+markeringarna "v" och "V".
+
+Använd kommandot "gJ" om du inte vill att blankstegen ska ändras.
+
+==============================================================================
+*10.6*	Läsa och skriva en del av en fil
+
+När du skriver ett e-postmeddelande kanske du vill infoga innehållet från en
+annan fil.  Det gör du med kommandot ":read {filnamn}".  Filens text läggs in
+under raden där markören står.
+   Utgå från följande text:
+
+	Hi John, ~
+	Here is the diff that fixes the bug: ~
+	Bye, Pierre. ~
+
+Flytta markören till den andra raden och skriv: >
+
+	:read patch
+
+Filen med namnet "patch" infogas, så att resultatet blir:
+
+	Hi John, ~
+	Here is the diff that fixes the bug: ~
+	2c2 ~
+	<	for (i = 0; i <= length; ++i) ~
+	--- ~
+	>	for (i = 0; i < length; ++i) ~
+	Bye, Pierre. ~
+
+Kommandot ":read" tar ett intervall.  Filen infogas under den sista raden i
+intervallet.  Därför lägger ":$r patch" till filen "patch" i slutet av filen.
+   Om du vill läsa in en fil före den första raden kan du använda radnummer
+noll.  Den raden finns egentligen inte, och de flesta kommandon ger ett
+felmeddelande om du använder den.  Men följande kommando är tillåtet: >
+
+	:0read patch
+
+Filen "patch" infogas före den första raden.
+
+
+SKRIVA ETT RADINTERVALL
+
+Använd kommandot ":write" för att skriva ett radintervall till en fil.  Utan
+intervall skrivs hela filen.  Med ett intervall skrivs bara de angivna
+raderna: >
+
+	:.,$write tempo
+
+Det skriver raderna från markören till filens slut i filen "tempo".  Om den
+filen redan finns får du ett felmeddelande.  Vim skyddar dig från att råka
+skriva över en befintlig fil.  Lägg till ! om du vet vad du gör och vill skriva
+över filen: >
+
+	:.,$write! tempo
+
+VAR FÖRSIKTIG: ! måste stå direkt efter kommandot ":write", utan blanksteg.
+Annars blir det ett filterkommando, som förklaras senare i kapitlet.
+
+
+LÄGGA TILL I EN FIL
+
+I det första avsnittet i kapitlet visades hur du samlar rader i ett register.
+Du kan göra samma sak i en fil.  Skriv den första raden med: >
+
+	:.write collection
+
+Flytta sedan markören till nästa rad du vill samla in och skriv: >
+
+	:.write >>collection
+
+">>" anger att filen "collection" inte ska skrivas som en ny fil, utan att
+raden ska läggas till i slutet.  Du kan upprepa detta hur många gånger du vill.
+
+==============================================================================
+*10.7*	Formatera text
+
+När du skriver vanlig text är det praktiskt om raderna automatiskt bryts så
+att de får plats i fönstret.  Ange alternativet 'textwidth' för att göra det
+medan du skriver: >
+
+	:set textwidth=72
+
+Filen vimrc_example.vim använder samma alternativ för filer av typen "text",
+men med värdet 78.  Kontrollera det aktuella värdet för 'textwidth' så här: >
+
+	:set textwidth
+
+Raderna bryts nu så att de inte blir längre än 72 tecken.  Men om du infogar
+text mitt på en rad eller tar bort några ord kan raderna bli för långa eller
+för korta.  Vim formaterar inte om texten automatiskt.
+   Så här formaterar du det aktuella stycket: >
+
+	gqap
+
+Kommandot börjar med "gq", en operator.  Därefter kommer "ap", textobjektet
+som betyder "ett stycke".  Stycken skiljs åt av en tom rad.
+
+	Observera:
+	En tom rad som innehåller blanksteg skiljer INTE stycken åt.  Det är
+	svårt att upptäcka!
+
+I stället för "ap" kan du använda valfri förflyttning eller valfritt
+textobjekt.  Om styckena skiljs åt på rätt sätt kan du formatera hela filen
+med: >
+
+	gggqG
+
+"gg" flyttar till den första raden, "gq" är formateringsoperatorn och "G"
+flyttar till den sista raden.
+
+Om styckena inte är tydligt avgränsade kan du formatera de rader du markerar
+manuellt.  Flytta markören till den första raden du vill formatera och börja
+med kommandot "gqj".  Det formaterar den aktuella raden och raden under den.
+Om den första raden är kort läggs ord från nästa rad till.  Om den är för lång
+flyttas ord till nästa rad.  Markören flyttas till den andra raden.  Använd nu
+"." för att upprepa kommandot och fortsätt tills du nått slutet av texten du
+vill formatera.
+
+==============================================================================
+*10.8*	Ändra skiftläge
+
+Du har rubriker där ordet "section" är skrivet med gemener och vill göra det
+helt versalt.  Använd operatorn "gU".  Börja med markören i första kolumnen: >
+
+			     gUw
+<	section header	    ---->      SECTION header
+
+Operatorn "gu" gör motsatsen: >
+
+			     guw
+<	SECTION header	    ---->      section header
+
+Du kan också använda "g~" för att växla mellan gemener och versaler.  Alla
+dessa kommandon är operatorer och fungerar därför med valfria
+förflyttningskommandon, textobjekt och visuella markeringar.
+   Om du vill att en operator ska gälla rader upprepar du den.  Raderings-
+operatorn är "d", så för att ta bort en hel rad skriver du "dd".  På samma
+sätt gör "gugu" en hel rad till gemener.  Det kan förkortas till "guu".
+"gUgU" förkortas till "gUU" och "g~g~" till "g~~".  Exempel: >
+
+				g~~
+<	Some GIRLS have Fun    ---->   sOME girls HAVE fUN ~
+
+==============================================================================
+*10.9*	Använda ett externt program
+
+Vim har en mycket kraftfull uppsättning kommandon som kan göra det mesta.
+Ändå kan ett externt kommando ibland göra jobbet bättre eller snabbare.
+   Kommandot "!{förflyttning}{program}" tar ett textblock och skickar det
+genom ett externt program som ett filter.  Det kör systemkommandot
+{program} med textblocket som anges av {förflyttning} som indata.  Programmets
+utdata ersätter sedan det markerade textblocket.
+   Det här är kanske inte helt begripligt om du inte känner till Unix-filter,
+så vi tar ett exempel.  Kommandot sort sorterar en fil.  Om du kör följande
+kommando sorteras filen input.txt och resultatet skrivs till output.txt.  Det
+fungerar både i Unix och Microsoft Windows: >
+
+	sort <input.txt >output.txt
+
+Gör nu samma sak i Vim.  Du vill sortera raderna 1 till 5 i en fil.  Ställ
+markören på rad 1 och kör följande kommando: >
+
+	!5G
+
+"!" anger att du utför en filteråtgärd.  Vim väntar sig ett
+förflyttningskommando som talar om vilken del av filen som ska filtreras.
+Kommandot "5G" flyttar till rad 5, så Vim vet nu att raderna 1 (den aktuella
+raden) till 5 ska filtreras.
+   Markören flyttas ned till skärmens nederkant och en !-fråga visas inför
+filtreringen.  Skriv namnet på filterprogrammet, i det här fallet "sort".
+Hela kommandot blir: >
+
+	!5Gsort<Enter>
+
+Programmet sort körs nu på de fem första raderna.  Programmets utdata ersätter
+de raderna.
+
+	rad 55				rad 11
+	rad 33				rad 22
+	rad 11		-->		rad 33
+	rad 22				rad 44
+	rad 44				rad 55
+	sista raden			sista raden
+
+Kommandot "!!" skickar den aktuella raden genom ett filter.  I Unix skriver
+kommandot "date" ut aktuellt datum och klockslag.  "!!date<Enter>" ersätter
+den aktuella raden med utdata från "date".  Det är användbart när du vill
+lägga till en tidsstämpel i en fil.
+
+Observera att det är skillnad mellan ":!kommando" (utan radintervall) och
+":{intervall}!kommando".  Det första kör bara det externa kommandot och visar
+utdata i Vim.  Det andra skickar {intervall} genom filtret och ersätter
+intervallet med filtrets utdata.  Se |:!| och |:range!| för detaljer.
+
+
+NÄR DET INTE FUNGERAR
+
+För att starta ett skal, skicka text till det och fånga dess utdata måste Vim
+veta exakt hur skalet fungerar.  Om filtreringen inte fungerar kontrollerar
+du värdena för de här alternativen:
+
+	'shell'		anger programmet som Vim använder för externa program.
+	'shellcmdflag'	argument som skickas till skalet för ett kommando.
+	'shellquote'		citeringstecken som används runt kommandot.
+	'shellxquote'		citeringstecken runt kommando och omdirigering.
+	'shelltype'		typ av skal (bara för Amiga).
+	'shellslash'		använd snedstreck i kommandon (bara för
+				MS-Windows och liknande system).
+	'shellredir'		sträng som används för att skriva kommandoutdata
+				till en fil.
+
+På Unix är detta nästan aldrig ett problem, eftersom det finns två sorters
+skal: sådana som liknar "sh" och sådana som liknar "csh".  Vim kontrollerar
+alternativet 'shell' och ställer in relaterade alternativ automatiskt,
+beroende på om "csh" förekommer i skalets namn.
+   I MS-Windows finns däremot många olika skal.  Du kan därför behöva justera
+alternativen för att filtreringen ska fungera.  Läs hjälpen för alternativen
+för mer information.
+
+
+LÄSA KOMMANDOUTDATA
+
+Använd följande kommando för att läsa in innehållet i den aktuella katalogen
+i filen:
+
+på Unix: >
+	:read !ls
+<på MS-Windows: >
+	:read !dir
+
+Utdata från kommandot "ls" eller "dir" fångas upp och infogas i texten under
+markören.  Det liknar att läsa in en fil, men tecknet "!" anger att ett
+kommando följer.
+   Kommandot kan ha argument.  Du kan använda ett intervall för att ange var
+raderna ska infogas: >
+
+	:0read !date -u
+
+Det infogar aktuellt datum och klockslag i UTC-format överst i filen.  (Det
+förutsätter förstås att ditt date-kommando stöder argumentet "-u".)  Jämför
+med "!!date": det kommandot ersätter en rad, medan ":read !date" infogar en
+rad.
+
+
+SKRIVA TEXT TILL ETT KOMMANDO
+
+Unix-kommandot "wc" räknar ord.  Räkna orden i den aktuella filen så här: >
+
+	:write !wc
+
+Det är samma skrivkommando som tidigare, men i stället för ett filnamn
+används "!" följt av namnet på ett externt kommando.  Texten skickas till
+kommandot som standardindata.  Utdata kan se ut så här:
+
+       4      47     249 ~
+
+Kommandot "wc" ger ingen närmare förklaring.  Resultatet betyder att filen
+innehåller 4 rader, 47 ord och 249 byte.
+
+Se upp för det här misstaget: >
+
+	:write! wc
+
+Det skriver med tvång filen "wc" i den aktuella katalogen.  Blankstegen
+spelar roll!
+
+
+RITA OM SKÄRMEN
+
+Om det externa kommandot gav ett felmeddelande kan skärmbilden ha blivit
+felaktig.  Vim är effektivt och ritar bara om de delar av skärmen som det vet
+behöver uppdateras.  Men Vim kan inte veta vad ett annat program har skrivit.
+Be Vim rita om skärmen med: >
+
+	CTRL-L
+
+==============================================================================
+
+Nästa kapitel: |usr_11.txt|  Återställa efter en krasch
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

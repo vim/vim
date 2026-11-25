@@ -1,0 +1,676 @@
+*usr_02.txt*	För Vim version 9.2.  Senast ändrad: 18 nov 2026
+
+
+			VIMS ANVÄNDARMANUAL	av Bram Moolenaar
+
+
+				De första stegen i Vim
+
+
+Det här kapitlet ger dig tillräckligt med kunskap för att redigera en fil i
+Vim. Du blir kanske inte särskilt skicklig eller snabb ännu, men du kommer
+igång. Öva på kommandona: de utgör grunden för resten av manualen.
+
+|02.1|	Starta Vim för första gången
+|02.2|	Infoga text
+|02.3|	Förflyttning
+|02.4|	Ta bort tecken
+|02.5|	Ångra och göra om
+|02.6|	Andra redigeringskommandon
+|02.7|	Avsluta Vim
+|02.8|	Hitta hjälp
+
+       Nästa kapitel: |usr_03.txt|  Förflyttning
+  Föregående kapitel: |usr_01.txt|  Om manualerna
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*02.1*	Starta Vim för första gången
+
+Starta Vim med det här kommandot: >
+
+	gvim file.txt
+
+I Unix kan du skriva kommandot vid valfri kommandotolk. I Microsoft Windows
+öppnar du en kommandotolk och skriver kommandot där.
+   I båda fallen öppnar Vim filen file.txt för redigering. Eftersom filen är ny
+visas ett tomt fönster. Skärmen ser då ut så här:
+
+	+---------------------------------------+
+	|#					|
+	|~					|
+	|~					|
+	|~					|
+	|~					|
+	|"file.txt" [Ny fil]			|
+	+---------------------------------------+
+		('#' visar markörens position.)
+
+Raderna med tilde (~) finns inte i filen. När filen tar slut visar Vim alltså
+tildetecken i resten av fönstret. Längst ned anger meddelanderaden att filen
+heter file.txt och att du skapar en ny fil. Meddelandet visas tillfälligt och
+ersätts av annan information.
+
+
+VIM-KOMMANDOT
+
+Kommandot gvim öppnar ett nytt fönster för redigeringen. Om du i stället
+använder det här kommandot: >
+
+	vim file.txt
+
+redigerar du i kommandofönstret. Om du till exempel kör Vim i en xterm
+används det fönstret. I en kommandotolk i MS-Windows sker redigeringen i
+det fönstret. Texten ser likadan ut i båda versionerna, men gvim har fler
+funktioner, till exempel en menyrad. Mer om det senare.
+
+==============================================================================
+*02.2*	Infoga text
+
+Vim är en redigerare med olika lägen. Det innebär att programmet fungerar
+olika beroende på vilket läge du är i. De två grundlägena heter normalläge
+och infogningsläge. I normalläget är tecknen du skriver kommandon. I
+infogningsläget infogas tecknen som text.
+   När Vim startar är du i normalläget. Tryck på kommandot "i" (i står för infoga) för att gå till infogningsläget. Texten du sedan skriver
+läggs in i filen. Oroa dig inte om du gör fel; du kan rätta till det senare.
+Skriv så här för att infoga följande limerick för programmerare: >
+
+	iA very intelligent turtle
+	Found programming UNIX a hurdle
+
+När du har skrivit "turtle" trycker du på <Enter> för att börja på en ny rad.
+Tryck till sist på <Esc> för att lämna infogningsläget och återgå till
+normalläget. Nu finns två textrader i Vim-fönstret:
+
+	+---------------------------------------+
+	|A very intelligent turtle		|
+	|Found programming UNIX a hurdle	|
+	|~					|
+	|~					|
+	|					|
+	+---------------------------------------+
+
+
+VILKET LÄGE ÄR DU I?
+
+Skriv det här kommandot om du vill se vilket läge du är i: >
+
+	:set showmode
+
+När du skriver kolon flyttar Vim markören till fönstrets sista rad. Där
+skriver du kolonkommandon, alltså kommandon som börjar med ett kolon. Avsluta
+kommandot med <Enter>. Alla kolonkommandon avslutas på det sättet.
+   Om du nu trycker på "i" visar Vim --INFOGA-- längst ned i fönstret. Det
+betyder att du är i infogningsläget.
+
+	+---------------------------------------+
+	|A very intelligent turtle		|
+	|Found programming UNIX a hurdle	|
+	|~					|
+	|~					|
+	|-- INFOGA --				|
+	+---------------------------------------+
+
+När du trycker på <Esc> för att återgå till normalläget blir den sista raden tom.
+
+
+NÄR DU KÖR FAST
+
+Nybörjare blandar ibland ihop lägena. Det kan bero på att du glömmer vilket
+läge du är i eller råkar skriva ett kommando som byter läge. Tryck på <Esc>
+för att återgå till normalläget, oavsett vilket läge du befinner dig i. Ibland
+behöver du trycka två gånger. Om Vim piper är du redan i normalläget.
+
+==============================================================================
+*02.3*	Förflyttning
+
+När du är tillbaka i normalläget kan du flytta markören med de här tangenterna:
+
+	h   vänster						*hjkl*
+	j   ned
+	k   upp
+	l   höger
+
+Först kan kommandona verka slumpmässiga. Vem har hört talas om att använda l
+för att gå åt höger? Men det finns en bra anledning: att flytta markören är
+något du gör ofta i en redigerare, och tangenterna finns på högra handens
+hemrad. Du kan alltså trycka på dem snabbt utan att flytta handen, särskilt
+om du skriver med alla fingrar.
+
+		Obs:
+	Du kan också flytta markören med piltangenterna. Då går redigeringen
+	dock betydligt långsammare, eftersom du måste flytta handen från
+	tangenternas hemrad till piltangenterna. Det kan ta mycket tid om du
+	gör det hundratals gånger i timmen.
+	   Vissa tangentbord saknar piltangenter eller har dem på ovanliga
+	platser. Då är det särskilt användbart att kunna tangenterna hjkl.
+
+Ett sätt att komma ihåg kommandona är att h sitter till vänster, l till
+höger och j pekar nedåt. Så här:
+
+		       k
+		   h     l
+		     j
+
+Det bästa sättet att lära sig kommandona är att använda dem. Tryck på "i"
+och infoga några fler textrader. Flytta sedan markören med hjkl och infoga ett
+ord någonstans. Glöm inte att trycka på <Esc> för att återgå till normalläget.
+|vimtutor| är också ett bra sätt att lära sig genom att öva.
+
+För japanska användare föreslog Hiroshi Iwatani den här minnesbilden:
+
+			Komsomolsk
+			    ^
+			    |
+	   Huan Ho	<--- --->  Los Angeles
+	(Gula floden)	    |
+			    v
+			  Java (ön, inte programmeringsspråket)
+
+==============================================================================
+*02.4*	Ta bort tecken
+
+Ta bort ett tecken genom att flytta markören dit och trycka på "x". (Det
+påminner om skrivmaskinens tid, då man strök över text genom att skriva xxxx
+ovanpå den.) Flytta till början av den första raden och skriv xxxxxxx (sju x)
+för att ta bort "A very ". Resultatet ser då ut så här:
+
+	+---------------------------------------+
+	|intelligent turtle			|
+	|Found programming UNIX a hurdle	|
+	|~					|
+	|~					|
+	|					|
+	+---------------------------------------+
+
+Nu kan du infoga ny text, till exempel så här: >
+
+	iA young <Esc>
+
+Det här startar infogningsläget (i), infogar orden "A young" och lämnar sedan
+läget (det sista <Esc>). Resultatet blir:
+
+	+---------------------------------------+
+	|A young intelligent turtle		|
+	|Found programming UNIX a hurdle	|
+	|~					|
+	|~					|
+	|					|
+	+---------------------------------------+
+
+
+TA BORT EN RAD
+
+Ta bort en hel rad med kommandot "dd". Raden under flyttas då upp och fyller
+tomrummet:
+
+	+---------------------------------------+
+	|Found programming UNIX a hurdle	|
+	|~					|
+	|~					|
+	|~					|
+	|					|
+	+---------------------------------------+
+
+
+TA BORT EN RADBRYTNING
+
+I Vim kan du slå ihop två rader genom att ta bort radbrytningen mellan dem.
+Det gör du med kommandot "J".
+   Utgå från de här raderna:
+
+	A young intelligent ~
+	turtle ~
+
+Flytta markören till den första raden och tryck på "J":
+
+	A young intelligent turtle ~
+
+==============================================================================
+*02.5*	Ångra och göra om
+
+Anta att du råkar ta bort för mycket. Du kan förstås skriva in texten igen,
+men det finns ett enklare sätt: kommandot "u" ångrar den senaste ändringen.
+Prova så här: ta bort den första raden med "dd" och tryck sedan på "u" för
+att få tillbaka den.
+   Prova också att flytta markören till A i den första raden:
+
+	A young intelligent turtle ~
+
+Skriv nu xxxxxxx för att ta bort "A young". Resultatet blir:
+
+	 intelligent turtle ~
+
+Tryck på "u" för att ångra den senaste borttagningen. Den tog bort g, så
+åtgärden återställer tecknet.
+
+	g intelligent turtle ~
+
+Nästa tryckning på "u" återställer det näst sista borttagna tecknet:
+
+	ng intelligent turtle ~
+
+Nästa tryckning på "u" återställer u, och så vidare:
+
+	ung intelligent turtle ~
+	oung intelligent turtle ~
+	young intelligent turtle ~
+	 young intelligent turtle ~
+	A young intelligent turtle ~
+
+		Obs:
+	Om du trycker på "u" två gånger och får tillbaka samma text har Vim
+	ställts in för Vi-kompatibilitet. Läs |not-compatible| om hur du ändrar
+	inställningen.
+	   Texten utgår från att du använder Vim på det vanliga sättet. Du kan
+	föredra det gamla Vi-sättet, men då behöver du tänka på att vissa
+	detaljer skiljer sig från exemplen.
+
+
+GÖRA OM
+
+Om du ångrar för många gånger trycker du på CTRL-R (gör om) för att återställa
+den föregående åtgärden. Det innebär att ångringen ångras. Prova genom att
+trycka på CTRL-R två gånger. Tecknet A och blanksteget efter det försvinner:
+
+	young intelligent turtle ~
+
+Det finns en särskild variant av ångra-kommandot: "U" (ångra rad). Det
+kommandot ångrar alla ändringar på den senast redigerade raden. Om du trycker
+på "U" igen upphävs föregående "U".
+
+	A very intelligent turtle ~
+	  xxxx				Ta bort very
+
+	A intelligent turtle ~
+		      xxxxxx		Ta bort turtle
+
+	A intelligent ~
+					Återställ raden med "U"
+	A very intelligent turtle ~
+					Ångra "U" med "u"
+	A intelligent ~
+
+Kommandot "U" räknas i sig som en ändring. Den kan ångras med "u" och göras
+om med CTRL-R. Det kan verka förvirrande, men med "u" och CTRL-R kan du gå
+tillbaka till de olika tillstånden. Läs mer i avsnitt |32.2|.
+
+==============================================================================
+*02.6*	Andra redigeringskommandon
+
+Vim har många kommandon för att ändra text. Se |Q_in| och följande avsnitt.
+Här är några vanliga kommandon.
+
+
+LÄGGA TILL TEXT
+
+Kommandot "i" infogar text före tecknet under markören. Men hur gör du om du
+vill lägga till något i slutet av raden? Då behöver du infoga text efter
+markören. Använd kommandot "a" (lägg till).
+   Så här ändrar du till exempel raden
+
+	and that's not saying much for the turtle. ~
+till
+	and that's not saying much for the turtle!!! ~
+
+flytta markören till punkten i slutet av raden. Tryck sedan på "x" för att
+ta bort punkten. Markören står nu på e i turtle, i slutet av raden. Skriv:
+
+	a!!!<Esc>
+
+för att lägga till tre utropstecken efter e i turtle:
+
+	and that's not saying much for the turtle!!! ~
+
+
+ÖPPNA EN NY RAD
+
+Kommandot "o" skapar en tom rad under markören och byter till infogningsläge.
+Då kan du skriva texten på den nya raden.
+   Anta att markören står någonstans på den första av de här raderna:
+
+	A very intelligent turtle ~
+	Found programming UNIX a hurdle ~
+
+Om du nu trycker på "o" och skriver ny text: >
+
+	oThat liked using Vim<Esc>
+
+Resultatet blir:
+
+	A very intelligent turtle ~
+	That liked using Vim ~
+	Found programming UNIX a hurdle ~
+
+Kommandot "O" (versal) öppnar en rad ovanför markören.
+
+
+ANVÄNDA ETT TAL
+
+Om du vill flytta markören nio rader upp kan du skriva "kkkkkkkkk" eller
+kommandot "9k". Många kommandon kan föregås av ett tal. Tidigare i kapitlet
+lade du till tre utropstecken i slutet av en rad med "a!!!<Esc>". Du kan
+också skriva "3a!<Esc>". Talet 3 gör att kommandot efteråt upprepas tre
+gånger. Skriv på samma sätt "3x" för att ta bort tre tecken. Talet står alltid
+före kommandot som det gäller.
+
+==============================================================================
+*02.7*	Avsluta Vim
+
+Avsluta med kommandot "ZZ". Det sparar filen och stänger Vim.
+
+		Obs:
+	Till skillnad från många andra redigerare skapar Vim ingen
+	säkerhetskopia automatiskt. När du trycker på "ZZ" sparas ändringarna
+	och går inte att ångra. Du kan ställa in Vim så att säkerhetskopior
+	skapas; se |07.4|.
+
+
+KASTA BORT ÄNDRINGAR
+
+Ibland gör du flera ändringar och inser plötsligt att det var bättre innan
+du började. Ingen fara: Vim har ett kommando som avslutar utan att spara.
+Det är: >
+
+	:q!
+
+Glöm inte att trycka på <Enter> för att avsluta kommandot.
+
+Kommandot består av tre delar: kolon (:) öppnar kommandoradsläget, q säger
+åt redigeraren att avsluta och utropstecknet (!) tvingar igenom åtgärden.
+   Utropstecknet behövs eftersom Vim inte gärna kastar bort ändringar. Om du
+bara skriver ":q" visar Vim ett felmeddelande och vägrar att avsluta:
+
+	E37: Ändringarna har inte sparats (lägg till ! för att fortsätta ändå) ~
+
+Med utropstecknet säger du i praktiken till Vim: "Jag vet att det här verkar
+dumt, men jag vill verkligen göra det."
+
+Om du vill fortsätta redigera filen läser kommandot ":e!" in originalversionen
+igen.
+
+==============================================================================
+*02.8*	Hitta hjälp
+
+I Vims hjälpfiler hittar du svar på det mesta. Tveka inte att fråga!
+
+Om du vet vad du letar efter är det oftast enklare att söka i hjälpsystemet
+än på webben. Hjälpämnena följer en enhetlig namngivning.
+
+En annan fördel är att hjälpen hör till just din Vim-version. Du ser inte hjälp
+för kommandon som har lagts till senare och som därför inte fungerar hos dig.
+
+Öppna den allmänna hjälpen med kommandot: >
+
+	:help
+
+Du kan också trycka på funktionstangenten <F1>. Om tangentbordet har en
+<Help>-tangent kan även den fungera.
+   Om du inte anger något ämne visar ":help" det allmänna hjälpfönstret.
+Vim-utvecklarna gjorde något mycket smart (eller lat) med hjälpsystemet:
+hjälpfönstret är ett vanligt redigeringsfönster. Du kan använda alla vanliga
+Vim-kommandon för att läsa hjälpen. Därför flyttar h, j, k och l markören åt
+vänster, nedåt, uppåt respektive höger.
+   Stäng hjälpfönstret med samma kommando som du använder för att avsluta
+redigeraren: "ZZ". Då stängs bara hjälpfönstret, inte Vim.
+
+När du läser hjälpen ser du att viss text står mellan lodräta streck, till
+exempel |help|. Det markerar en länk. Ställ markören mellan strecken och
+tryck på CTRL-] (hoppa till tagg) för att öppna ämnet. I Vim kallas länkmålet
+för en tagg. CTRL-] öppnar alltså taggen som ordet under markören anger.
+   När du har följt några länkar kanske du vill gå tillbaka. CTRL-T (ta bort
+översta taggen från historiken) återgår till föregående plats. Även CTRL-O
+(hoppa till en äldre position) fungerar bra här.
+   Högst upp på hjälpsidan finns texten "*help.txt*". Namnet mellan
+asteriskerna används av hjälpsystemet som tagg (länkens mål).
+   Läs |29.1| om du vill veta mer om taggar.
+
+Sök hjälp om ett ämne med kommandot: >
+
+	:help {subject}
+
+Sök till exempel efter hjälp om kommandot "x" så här: >
+
+	:help x
+
+Ta reda på hur du tar bort text med kommandot: >
+
+	:help deleting
+
+Visa ett fullständigt index över alla Vim-kommandon med: >
+
+	:help index
+
+När du söker hjälp om ett kontrollteckenkommando, till exempel CTRL-A,
+skriver du det med prefixet "CTRL-": >
+
+	:help CTRL-A
+
+Vim har flera olika lägen. Som standard visar hjälpsystemet kommandon för
+normalläget. Följande kommando visar till exempel hjälp om CTRL-H i normalläget: >
+
+	:help CTRL-H
+
+Ange ett lägesprefix för att söka i andra lägen. Använd "i_" för att hitta
+infogningslägets variant av ett kommando. För CTRL-H blir kommandot: >
+
+	:help i_CTRL-H
+
+När du startar Vim kan du ange olika kommandoradsargument. De börjar alla med
+bindestreck (-). Sök till exempel efter vad argumentet -t gör med: >
+
+	:help -t
+
+Vim har många alternativ som du kan använda för att anpassa redigeraren. Sätt
+enkla citattecken runt alternativnamnet när du söker hjälp. Ta till exempel
+reda på vad alternativet 'number' gör med kommandot: >
+
+	:help 'number'
+
+En tabell med alla lägesprefix finns här: |help-summary|.
+
+Specialtangenter skrivs inom vinkelparenteser. Sök till exempel hjälp om
+uppåtpilen i infogningsläget med kommandot: >
+
+	:help i_<Up>
+
+Om du ser ett felmeddelande som du inte förstår, till exempel:
+
+	E37: Ändringarna har inte sparats (lägg till ! för att fortsätta ändå) ~
+
+Sök hjälp med felkodens inledande ID: >
+
+	:help E37
+
+
+Sammanfattning:					*help-summary*  >
+
+1) Tryck på Ctrl-D efter att du har skrivit ett ämne så visar Vim alla
+   tillgängliga ämnen. Du kan också trycka på Tab för att komplettera: >
+	:help some<Tab>
+<   Mer information om hur du använder hjälpen: >
+	:help helphelp
+
+2) Följ länkarna mellan lodräta streck till relaterade ämnen. Du kan gå från
+   den detaljerade referensmanualen till användarmanualen, som beskriver vissa
+   kommandon ur användarens perspektiv och med färre detaljer. Exempel: >
+	:help pattern.txt
+<   Användarhandledningens ämnen |03.9| och |usr_27.txt| listas i
+   introduktionen.
+
+3) Alternativnamn står inom enkla citattecken. Gå till hjälpen om alternativet
+   list så här: >
+	:help 'list'
+<   Om du bara vet vilket alternativ du söker kan du också skriva: >
+	:help options.txt
+<   för att öppna sidan om alternativ och sedan söka med reguljära uttryck,
+   till exempel textwidth.
+   Vissa alternativ har ett eget namnutrymme, till exempel: >
+	:help cpo-<letter>
+<   för motsvarande flagga i alternativet 'cpoptions'. Ersätt <letter> med
+   en viss flagga, till exempel: >
+	:help cpo-;
+<   För flaggorna i 'guioptions' använder du: >
+	:help go-<letter>
+
+4) Normallägeskommandon har inget prefix. Öppna hjälpsidan för kommandot
+   "gt" så här: >
+	:help gt
+
+5) Infogningslägeskommandon börjar med i_. Sök hjälp om hur du tar bort ett
+   ord så här: >
+	:help i_CTRL-W
+
+6) Visuallägeskommandon börjar med v_. Sök hjälp om hur du hoppar till den
+   andra sidan av det visuella området så här: >
+	:help v_o
+
+7) Kommandoradsredigering och argument börjar med c_. Sök hjälp om argumentet
+   % så här: >
+	:help c_%
+
+8) Ex-kommandon börjar alltid med ":". Öppna hjälpen för kommandot ":s": >
+	:help :s
+
+9) Felsökningskommandon börjar med ">". Öppna hjälpen för kommandot "cont": >
+	:help >cont
+
+10) Tangentkombinationer börjar vanligen med en bokstav som anger vilket läge
+    de gäller. Till exempel: >
+	:help i_CTRL-X
+<    öppnar gruppen med CTRL-X-kommandon för komplettering i infogningsläget.
+    Vissa tangenter skrivs alltid på samma sätt; Control skrivs till exempel
+    alltid CTRL. Normallägeskommandon har inget prefix och finns under
+    :h CTRL-<bokstav>. Till exempel: >
+	:help CTRL-W
+<    Däremot >
+	:help c_CTRL-R
+<    beskriver vad CTRL-R gör när du skriver kommandon på kommandoraden, och >
+	:help v_CTRL-A
+<    handlar om att öka tal i visualläget, medan >
+	:help g_CTRL-A
+<    handlar om kommandot "g<C-A>" (du trycker alltså först på "g" och sedan
+    <CTRL-A>). Här står "g" för normallägeskommandot "g", som alltid väntar
+    på en tangent till innan det utför en åtgärd. Det liknar kommandon som
+    börjar med "z".
+
+11) Reguljära uttryck börjar alltid med /. Sök hjälp om kvantifieraren "\+"
+    i Vims reguljära uttryck så här: >
+	:help /\+
+<    Om du vill lära dig allt om reguljära uttryck börjar du läsa här: >
+	:help pattern.txt
+
+12) Register börjar alltid med ett citattecken. Sök hjälp om det särskilda
+    registret ":" så här: >
+	:help quote:
+
+13) Information om Vim-skript finns här: >
+	:help eval.txt
+<    Vissa delar av språket beskrivs under :h expr-X, där "X" är en bokstav.
+    Till exempel: >
+	:help expr-!
+<    öppnar ämnet om operatorn "!" (inte) i Vim-skript.
+    Viktigt är också: >
+	:help function-list
+<    för att hitta korta beskrivningar av alla tillgängliga funktioner.
+    Hjälpämnen om Vim-skriptfunktioner innehåller alltid "()", så: >
+	:help append()
+<    handlar om Vim-skriptfunktionen append, inte om att lägga till text i den
+    aktuella bufferten.
+
+14) Tangentmappningar beskrivs på hjälpsidan :h |map.txt|. Använd: >
+	:help mapmode-i
+<    för att läsa om kommandot |:imap|. Använd också :map-ämne för att hitta
+    särskilda delämnen om mappningar. Till exempel: >
+	:help :map-local
+<    för buffertlokala mappningar, eller >
+	:help map-bar
+<    för information om hur tecknet '|' hanteras i mappningar.
+
+15) Kommandodefinitioner beskrivs under :h command-ämne. Använd: >
+	:help command-bang
+<    för att läsa om argumentet '!' för egna kommandon.
+
+16) Fönsterkommandon börjar alltid med CTRL-W. Motsvarande hjälp finns under
+    :h CTRL-W_bokstav. Till exempel: >
+	:help CTRL-W_p
+<    för att gå till fönstret du använde senast. Du kan också öppna: >
+	:help windows.txt
+<    och läsa vidare om du letar efter fönsterkommandon.
+
+17) Använd |:helpgrep| för att söka på alla hjälpsidor och installerade
+    insticksprogram. Läs |:helpgrep| om hur det fungerar. Sök efter ett ämne så här: >
+	:helpgrep topic
+<    Då visas den första träffen. Gå till nästa med: >
+	:cnext
+<    Alla träffar visas i quickfix-fönstret, som du öppnar med: >
+	:copen
+<    Flytta till träffen du vill läsa och tryck på Enter för att öppna hjälpen.
+
+18) Användarmanualen beskriver hjälpämnen på ett nybörjarvänligt sätt. Börja
+    vid |usr_toc.txt| för att se innehållsförteckningen: >
+	:help usr_toc.txt
+<    Bläddra i innehållet för att hitta intressanta ämnen. "Digrafer" och
+    "Skriva specialtecken" finns i kapitel 24. Gå till det kapitlet med: >
+	:help usr_24.txt
+<    Du kan också gå direkt till ett visst kapitel genom att skriva dess
+    nummer så här: >
+	:help 10.1
+<    öppnar kapitel 10.1 i |usr_10.txt|, som handlar om att spela in makron.
+
+19) Markeringsgrupper börjar alltid med hl-gruppnamn. Till exempel: >
+	:help hl-WarningMsg
+<    handlar om markeringsgruppen WarningMsg.
+
+20) Syntaxmarkeringens ämnen börjar med :syn-. Till exempel: >
+	:help :syn-conceal
+<    handlar om argumentet conceal för kommandot ":syn".
+
+21) Quickfix-kommandon börjar vanligen med :c, medan platslistekommandon
+    vanligen börjar med :l.
+
+22) Sök efter autokommandohändelser med deras namn: >
+	:help BufWinLeave
+<    Visa alla tillgängliga händelser med: >
+	:help autocommand-events
+
+23) Kommandoradsflaggor börjar alltid med "-". Sök hjälp om Vims -f-flagga
+    så här: >
+	:help -f
+
+24) Tillvalsfunktioner börjar alltid med "+". Sök hjälp om funktionen
+    conceal så här: >
+	:help +conceal
+
+25) Dokumentation om filtypsspecifika funktioner följer vanligtvis mönstret
+    ft-<filtyp>-<funktion>. Till exempel: >
+	:help ft-c-syntax
+<    handlar om C-syntaxfilen och alternativet den tillhandahåller. Ibland
+    finns det också avsnitt om omni-komplettering: >
+	:help ft-php-omni
+<    eller filtypsinsticksprogram: >
+	:help ft-tex-plugin
+<    .
+
+26) Du kan slå upp fel- och varningskoder direkt i hjälpen. Till exempel: >
+	:help E297
+<    öppnar beskrivningen av växlingsfilens felmeddelande, och >
+	:help W10
+<    handlar om varningen "Ändrar en skrivskyddad fil".
+    Ibland beskrivs inte felkoden separat, utan listas under det Vim-kommando
+    som vanligtvis orsakar felet. Till exempel: >
+	:help E128
+<    öppnar kommandot |:function|.
+
+27) Dokumentation för paket som följer med Vim har formatet
+     package-<namn>. Till exempel: >
+	:help package-comment
+<    öppnar hjälpen för det medföljande comment-insticksprogrammet och visar
+    hur du aktiverar det.
+
+
+==============================================================================
+
+Nästa kapitel: |usr_03.txt|  Förflyttning
+
+Upphovsrätt: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

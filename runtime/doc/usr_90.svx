@@ -1,0 +1,436 @@
+*usr_90.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Installera Vim
+
+
+								*install*
+Innan du kan använda Vim måste du installera det. Hur enkelt det är beror på
+systemet. I kapitlet finns några tips och en beskrivning av hur du uppgraderar
+till en ny version.
+
+|90.1|	Unix
+|90.2|	MS-Windows
+|90.3|	Uppgradera Vim
+|90.4|	Vanliga installationsproblem
+|90.5|	Avinstallera Vim
+
+	Föregående kapitel: |usr_52.txt|  Skriva större insticksprogram
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*90.1*	Unix
+
+Börja med att bestämma om du vill installera Vim för hela systemet eller bara
+för en användare. Installationen går till på nästan samma sätt, men
+installationskatalogen skiljer sig.
+   För en systemomfattande installation används ofta "/usr/local" som
+basmapp. Det kan dock variera. Ta reda på var andra paket är installerade.
+   För en installation åt en enskild användare kan hemkatalogen användas som
+basmapp. Filerna placeras då i underkataloger som "bin" och "share/vim".
+
+
+FRÅN ETT PAKET
+
+Beroende på Unix- eller Linux-system kan det finnas färdigkompilerade paket.
+Du behöver själv leta efter ett lämpligt paket. Tidigare fanns en lista över
+olika Unix-system, men den togs bort eftersom den blivit inaktuell.
+
+Det är ofta en bra idé att kompilera en egen Unix-version från källkoden. Då
+kan du också styra vilka funktioner som kompileras in. Det kräver dock en
+kompilator.
+
+På Linuxdistributioner är programmet "vi" antagligen en minimal Vim-version,
+som kanske saknar syntaxmarkering. Leta efter ett annat Vim-paket i
+distributionens pakethanterare eller på dess webbplats.
+
+
+FRÅN KÄLLKOD
+
+För att kompilera och installera Vim behöver du:
+
+	- En C-kompilator, helst GCC eller clang
+	- git (valfritt, behövs bara om du klonar från GitHub)
+	- unzip (om du hämtar zip-arkivet)
+	- Vims källkodsarkiv
+
+Hämta Vims källkod genom att klona projektet på GitHub. Klonen hamnar i
+katalogen "vim":
+>
+	git clone https://github.com/vim/vim.git
+<
+Du kan också hämta arkivet direkt:
+
+	https://github.com/vim/vim/archive/refs/heads/master.zip
+
+
+KOMPILERA
+
+Om du hämtade zip-arkivet skapar du först en arbetskatalog, till exempel:
+>
+	mkdir ~/vim
+	cd ~/vim
+
+Packa sedan upp arkivet där:
+>
+	unzip vim-master.zip
+
+Gå till underkatalogen "src" i källkoden. För zip-arkivet och
+standardinställningarna kör du:
+>
+	cd vim-master/src
+	make
+
+Om du klonade projektet kör du i stället `cd vim/src` följt av `make`.
+Programmet make kör configure och kompilerar allt. Längre fram förklaras hur
+du väljer andra funktioner.
+   Om kompileringen misslyckas bör felmeddelandena ge en ledtråd om vad som
+gått fel. Förhoppningsvis kan du rätta till det. Du kan behöva inaktivera
+funktioner för att få Vim att kompilera. Makefilen innehåller särskilda tips
+för vissa system.
+
+
+TESTA
+
+Kontrollera att kompileringen lyckades:
+>
+	make test
+
+Det kör en serie testskript som kontrollerar att Vim fungerar som väntat. Vim
+startas många gånger och text och meddelanden visas snabbt. Om allt fungerar
+visas till slut:
+
+	test results: ~
+	ALL DONE ~
+
+Om "TEST FAILURE" visas har ett eller flera test misslyckats. Om bara ett
+eller två test rapporterar fel kan Vim ändå fungera, men inte helt korrekt.
+Om många felmeddelanden visas eller Vim inte kör klart är något fel. Försök
+ta reda på orsaken själv eller be någon om hjälp. Du kan söka i
+|maillist-archive|. Om inget annat hjälper kan du fråga på Vims |maillist|.
+
+
+INSTALLERA
+								*install-home*
+Om du vill installera Vim i hemkatalogen redigerar du Makefile och letar efter
+raden:
+
+	#prefix = $(HOME) ~
+
+Ta bort #-tecknet i början av raden.
+   Vid systemomfattande installation har Vim troligen redan valt en lämplig
+installationskatalog. Du kan också ange en själv, se nedan. För följande steg
+behöver du root-behörighet.
+
+Installera Vim med:
+>
+	make install
+
+Det bör kopiera alla relevanta filer till rätt plats. Prova sedan att starta
+vim för att kontrollera att det fungerar. Använd de här två enkla kommandona
+för att se om Vim hittar sina runtime-filer:
+>
+	:help
+	:syntax enable
+
+Om det inte fungerar kan du se var Vim letar efter runtime-filer med:
+>
+	:echo $VIMRUNTIME
+
+Du kan också starta Vim med argumentet "-V" för att se vad som händer under
+uppstarten:
+>
+	vim -V
+
+Kom ihåg att användarhandboken förutsätter att Vim används på ett visst sätt.
+Följ anvisningarna i |not-compatible| efter installationen för att få Vim att
+fungera som handboken beskriver.
+
+
+VÄLJA FUNKTIONER
+
+Det finns många sätt att välja vilka funktioner Vim ska ha. Ett enkelt sätt
+är att redigera Makefile. Där finns många instruktioner och exempel. Ofta kan
+du aktivera eller inaktivera en funktion genom att ta bort kommentartecknet
+från en rad.
+   Ett annat sätt är att köra "configure" separat. Då kan du ange
+konfigurationsalternativ manuellt. Nackdelen är att du själv måste ta reda på
+exakt vad du ska skriva.
+   Några användbara argument till configure följer. De kan också anges i
+Makefile:
+
+	--prefix={katalog}		Baskatalogen där Vim installeras.
+
+	--with-features=tiny		Kompilera med vissa funktioner inaktiverade.
+	--with-features=normal	Kompilera med fler funktioner aktiverade.
+	--with-features=huge		Kompilera med de flesta funktionerna aktiverade.
+					Se |+feature-list| för information om vilka
+					funktioner som ingår i respektive läge.
+
+	--enable-perlinterp		Aktivera Perl-gränssnittet. Det finns
+					liknande argument för Ruby, Python och Tcl.
+
+	--disable-gui			Kompilera utan det grafiska gränssnittet.
+	--without-x			Kompilera utan X Window-funktioner.
+					Om båda används ansluter Vim inte till
+					X-servern, vilket gör uppstarten snabbare.
+
+Visa hela listan med:
+>
+	./configure --help
+
+Du hittar korta förklaringar och länkar till mer information i
+|feature-list|.
+   Om du vill experimentera kan du redigera filen "feature.h". Du kan också
+ändra själva källkoden!
+
+==============================================================================
+*90.2*	MS-Windows
+
+Det finns flera sätt att installera Vim i Microsoft Windows:
+
+    1. Hämta en stabil version från den officiella webbplatsen ~
+
+Besök Vims officiella webbplats på https://www.vim.org och hämta den senaste
+stabila versionen. Där finns en länk till Windows-installationsprogrammet,
+som fungerar direkt för de flesta användare.
+
+    2. Använd winget (Windows pakethanterare) ~
+
+Om du föredrar kommandoraden kan du installera den stabila versionen med
+Windows inbyggda pakethanterare:
+>
+	winget install vim.vim
+
+Hämta den senaste nattliga versionen med:
+>
+	winget install vim.vim.nightly
+
+På så sätt får du en aktuell version med liten arbetsinsats.
+
+    3. Hämta installationsprogram från GitHub för olika arkitekturer ~
+
+Om du vill ha större kontroll över installationen, till exempel för en viss
+processorarkitektur som ARM, kan du besöka det officiella GitHub-arkivet:
+
+	https://github.com/vim/vim-win32-installer/
+
+Där finns dagliga installationsprogram och portabla zip-arkiv för:
+
+	- x86 (32-bitars)
+	- x64 (64-bitars)
+	- ARM64
+
+Det passar om du vill ha nattliga byggen eller särskilda inställningar.
+
+Om du inte är nöjd med funktionerna i de färdiga binärfilerna kan du försöka
+kompilera Vim själv. Hämta källkodsarkivet från samma plats som binärfilerna.
+Du behöver en kompilator med en tillhörande makefil. Microsoft Visual C,
+MinGW och Cygwin kan användas. Läs tipsen i src/INSTALLpc.txt. Källkoden finns
+på:
+
+	https://github.com/vim/vim
+
+==============================================================================
+*90.3*	Uppgradera Vim
+
+Så här gör du om du vill installera en annan version av Vim.
+
+
+UNIX
+
+När du kör "make install" kopieras runtime-filerna till en katalog som är
+specifik för huvud- och delversionen, till exempel "vim92" för Vim 9.2.
+Installationer med samma huvud- och delversion använder samma katalog.
+Du kan ha flera versioner installerade samtidigt.
+   Den körbara filen "vim" skriver över en äldre version. Om du inte behöver
+behålla den gamla räcker det att köra "make install". Du kan ta bort de gamla
+runtime-filerna manuellt. Ta i så fall bort versionskatalogen och allt under
+den, till exempel:
+>
+	rm -rf /usr/local/share/vim/vim92
+
+Vanligen finns inga ändrade filer i den katalogen. Om du till exempel har
+ändrat "filetype.vim" bör du först föra över ändringarna till den nya
+versionen.
+
+Om du vill prova den nya versionen ett tag innan du byter kan du installera
+den under ett annat namn. Ange ett argument till configure, till exempel:
+>
+	./configure --with-vim-name=vim8
+
+Innan du kör "make install" kan du använda "make -n install" för att
+kontrollera att inga befintliga filer som du vill behålla skrivs över.
+   När du har bestämt dig för att byta version behöver du bara byta namn på
+den körbara filen till "vim". Exempel:
+>
+	mv /usr/local/bin/vim8 /usr/local/bin/vim
+
+
+MS-WINDOWS
+
+En uppgradering går till ungefär som en ny installation. Packa upp filerna på
+samma plats som tidigare. En ny katalog skapas, till exempel "vim92", medan
+runtime-filer, vimrc, viminfo och liknande lämnas kvar.
+   Om du vill köra den nya versionen parallellt med den gamla krävs lite
+extra arbete. Kör inte installationsprogrammet, eftersom det skriver över
+några filer från den gamla versionen. Starta i stället de nya binärfilerna
+med den fullständiga sökvägen. Programmet bör automatiskt hitta rätt
+runtime-filer. Det fungerar dock inte om miljövariabeln $VIMRUNTIME är satt.
+   När du är nöjd med uppgraderingen kan du ta bort filerna från den gamla
+versionen. Se |90.5|.
+
+==============================================================================
+*90.4*	Vanliga installationsproblem
+
+Här beskrivs vanliga problem vid installation av Vim och möjliga lösningar.
+Avsnittet innehåller också svar på installationsfrågor.
+
+
+F: Jag har inte root-behörighet. Hur installerar jag Vim? (Unix)
+
+Använd följande configure-kommando för att installera Vim med
+hemkatalogen som installationsprefix:
+>
+	./configure --prefix="$HOME"
+
+Då får du en egen Vim-installation. Lägg till $HOME/bin i sökvägen (PATH) så
+att du kan starta redigeraren. Se även |install-home|.
+
+
+F: Färgerna på skärmen ser fel ut. (Unix)
+
+Kontrollera terminalinställningen med följande kommando i ett skal:
+>
+	echo $TERM
+
+Om terminaltypen inte stämmer ska du rätta till den. Fler tips finns i
+|06.2|. Du kan också alltid använda den grafiska Vim-versionen, gvim. Då
+behöver terminalinställningen inte vara korrekt.
+
+
+F: Backsteg och Delete fungerar inte som de ska.
+
+Det är inte självklart vilken kod tangenterna för backsteg <BS> och Delete
+<Del> skickar. Kontrollera först inställningen $TERM. Om den är rätt kan du
+prova:
+>
+	:set t_kb=^V<BS>
+	:set t_kD=^V<Del>
+
+På första raden trycker du CTRL-V och sedan backstegstangenten. På den andra
+raden trycker du CTRL-V och sedan Delete. Du kan lägga raderna i vimrc-filen. Se |05.1|. Nackdelen är att det kanske inte fungerar i en annan terminal.
+Alternativa lösningar finns i |:fixdel|.
+
+
+F: Jag använder Red Hat Linux. Kan jag använda Vim som följer med systemet?
+
+Red Hat installerar som standard en minimal Vim-version. Leta i
+RPM-paketen efter ett paket med ett namn som liknar
+"Vim-enhanced-version.rpm" och installera det.
+
+
+F: Hur aktiverar jag syntaxfärger och får insticksprogram att fungera?
+
+Använd exempelvis vimrc-skriptet. Här finns en förklaring:
+|not-compatible|.
+
+Kapitel 6 handlar om syntaxmarkering: |usr_06.txt|.
+
+
+F: Vilken vimrc-fil bör jag använda?
+
+På webbplatsen www.vim.org finns flera exempel.
+
+
+F: Var hittar jag bra Vim-insticksprogram?
+
+Se Vim-online: http://vim.sf.net. Där har många användare lagt upp användbara
+Vim-skript och insticksprogram.
+
+
+F: Var hittar jag fler tips?
+
+Se Vim-online: http://vim.sf.net. Där finns ett arkiv med tips från
+Vim-användare. Du kan också söka i |maillist-archive|.
+
+==============================================================================
+*90.5*	Avinstallera Vim
+
+Om du vill avinstallera Vim helt gör du så här.
+
+
+UNIX
+
+Om du installerade Vim som ett paket använder du pakethanteraren för att ta
+reda på hur paketet tas bort.
+   Om du kompilerade Vim från källkod kan du köra:
+>
+	make uninstall
+
+Det fungerar inte om originalfilerna har tagits bort eller om du använde ett
+arkiv som någon annan tillhandahöll. Ta då bort filerna manuellt. Om du
+exempelvis använde "/usr/local" som rotkatalog kan du köra:
+>
+	rm -rf /usr/local/share/vim/vim92
+	rm /usr/local/bin/eview
+	rm /usr/local/bin/evim
+	rm /usr/local/bin/ex
+	rm /usr/local/bin/gview
+	rm /usr/local/bin/gvim
+	rm /usr/local/bin/gvimdiff
+	rm /usr/local/bin/rgview
+	rm /usr/local/bin/rgvim
+	rm /usr/local/bin/rview
+	rm /usr/local/bin/rvim
+	rm /usr/local/bin/view
+	rm /usr/local/bin/vim
+	rm /usr/local/bin/vimdiff
+	rm /usr/local/bin/vimtutor
+	rm /usr/local/bin/xxd
+	rm /usr/local/man/man1/eview.1
+	rm /usr/local/man/man1/evim.1
+	rm /usr/local/man/man1/ex.1
+	rm /usr/local/man/man1/gview.1
+	rm /usr/local/man/man1/gvim.1
+	rm /usr/local/man/man1/gvimdiff.1
+	rm /usr/local/man/man1/rgview.1
+	rm /usr/local/man/man1/rgvim.1
+	rm /usr/local/man/man1/rview.1
+	rm /usr/local/man/man1/rvim.1
+	rm /usr/local/man/man1/view.1
+	rm /usr/local/man/man1/vim.1
+	rm /usr/local/man/man1/vimdiff.1
+	rm /usr/local/man/man1/vimtutor.1
+	rm /usr/local/man/man1/xxd.1
+
+
+MS-WINDOWS
+
+Om du installerade Vim med ett självinstallerande arkiv kan du köra
+programmet "uninstall-gui" i samma katalog som de andra Vim-programmen,
+exempelvis "c:\vim\vim92". Du kan också starta det från Start-menyn om
+installationen lade till Vim där. Programmet tar bort de flesta filer,
+menyalternativ och genvägar på skrivbordet. Vissa filer kan bli kvar eftersom
+Windows måste startas om innan de kan tas bort.
+   Du får välja om hela Vim-katalogen ska tas bort. Den kan innehålla vimrc
+och andra runtime-filer som du har skapat, så var försiktig.
+
+Om du i stället installerade från zip-arkiv är det bäst att använda
+programmet "uninstall". Det finns i samma katalog som "install", till
+exempel "c:\vim\vim92". Det kan också startas från sidan för att installera
+eller ta bort program.
+   Detta tar bara bort registerposterna för Vim. Du måste själv ta bort
+filerna. Markera katalogen "vim\vim92" och ta bort den och dess innehåll.
+Kontrollera först att det inte finns filer där som du har ändrat.
+   Katalogen "vim" innehåller kanske vimrc och andra runtime-filer som du har
+skapat. Spara dem om du vill behålla dem.
+
+==============================================================================
+
+Innehållsförteckning: |usr_toc.txt|
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

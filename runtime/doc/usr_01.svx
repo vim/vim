@@ -1,0 +1,207 @@
+*usr_01.txt*	För Vim version 9.2.  Senast ändrad: 14 feb 2026
+
+
+		     VIMS ANVÄNDARMANUAL	av Bram Moolenaar
+
+
+			      Om manualerna
+
+
+Det här kapitlet presenterar manualerna som följer med Vim. Läs det för att
+förstå vilka förutsättningar som gäller när kommandon beskrivs.
+
+|01.1|	Två manualer
+|01.2|	Vim installerat
+|01.3|	Använda Vim-handledningen
+|01.4|	Upphovsrätt
+
+     Nästa kapitel: |usr_02.txt|  De första stegen i Vim
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*01.1*	Två manualer
+
+Vims dokumentation består av två delar:
+
+1. Användarmanualen
+   Uppgiftsorienterade förklaringar, från enkla till mer avancerade. Den kan
+   läsas från början till slut som en bok.
+
+2. Referensmanualen
+   En noggrann beskrivning av hur allt i Vim fungerar.
+
+Notationerna som används i manualerna förklaras här: |notation|
+
+
+HOPPA MELLAN AVSNITT
+
+Texten innehåller länkar mellan de två delarna. Med dem kan du snabbt hoppa
+från beskrivningen av en redigeringsuppgift till en noggrann förklaring av de
+kommandon och alternativ som används. Använd de här två kommandona:
+
+	Tryck CTRL-] för att hoppa till ämnet under markören.
+	Tryck CTRL-O för att gå tillbaka. Upprepa för att gå längre tillbaka.
+
+Många länkar står mellan lodräta streck, som här: |bars|. Strecken kan vara
+dolda eller osynliga; se nedan. Även ett alternativnamn, till exempel
+'number', ett kommando inom dubbla citattecken, till exempel ":write", och
+andra ord kan användas som länkar. Prova: flytta markören till CTRL-] och
+tryck CTRL-] där.
+
+Du kan hitta andra ämnen med kommandot ":help"; se |help.txt|.
+
+Strecken och asteriskerna döljs vanligen med funktionen |conceal|. De använder
+också |hl-Ignore|, som visar texten med samma färg som bakgrunden. Du kan göra
+dem synliga med:
+>	:set conceallevel=0
+	:hi link HelpBar Normal
+	:hi link HelpStar Normal
+<
+
+==============================================================================
+*01.2*	Vim installerat
+
+De flesta manualerna förutsätter att Vim är korrekt installerat. Om du inte
+har installerat Vim än, eller om programmet inte fungerar som det ska (till
+exempel om filer inte hittas eller menyerna saknas i det grafiska
+gränssnittet), ska du först läsa kapitlet om installation: |usr_90.txt|.
+							*not-compatible*
+Manualerna utgår ofta från att Vi-kompatibiliteten är avstängd. För de flesta
+kommandon spelar det ingen roll, men ibland är det viktigt, till exempel för
+ångring i flera steg. Ett enkelt sätt att få en bra grundinställning är att
+kopiera exempelkonfigurationsfilen vimrc. Om du gör det inifrån Vim behöver
+du inte leta reda på filen. Hur du gör beror på vilket system du använder:
+
+Unix: >
+	:!cp -i $VIMRUNTIME/vimrc_example.vim ~/.vimrc
+MS-Windows: >
+	:!copy $VIMRUNTIME/vimrc_example.vim $VIM/_vimrc
+Amiga: >
+	:!copy $VIMRUNTIME/vimrc_example.vim $VIM/.vimrc
+<
+
+Om filen redan finns bör du behålla den.
+
+När du startar Vim ska alternativet 'compatible' nu vara avstängt. Kontrollera
+med det här kommandot:
+>
+	:set compatible?
+<
+
+Om svaret är "nocompatible" är allt som det ska. Om svaret är
+"compatible" är alternativet fortfarande aktiverat. Ta reda på varför.
+Det kan hända att filen du skapade ovan inte hittas. Använd det här
+kommandot för att kontrollera:
+>
+	:scriptnames
+<
+
+Om filen inte finns i listan ska du kontrollera dess sökväg och namn. Om den
+finns i listan måste det finnas något annat ställe där alternativet
+'compatible' aktiveras igen.
+
+Mer information finns i |vimrc| och |compatible-default|.
+
+	Obs:
+	Den här manualen handlar om att använda Vim på vanligt sätt. Det finns
+	också ett alternativ som heter "evim" (enklare Vim). Det är fortfarande
+	Vim, men används ungefär som en klicka-och-skriv-redigerare, till exempel
+	Notepad. Programmet stannar alltid i infogningsläge och fungerar därför
+	annorlunda. Det beskrivs inte i användarmanualen eftersom det mesta bör
+	vara självförklarande. Mer information finns i |evim-keys|.
+
+==============================================================================
+*01.3*	Använda Vim-handledningen				*tutor* *vimtutor*
+
+Den interaktiva handledningen i tutor-läget beskrivs i |vim-tutor-mode|.
+
+I stället för att läsa text (tråkigt!) kan du använda vimtutor för att lära
+dig dina första Vim-kommandon. Det är en interaktiv halvtimmeskurs i två
+kapitel som låter dig prova Vims viktigaste grundfunktioner själv.
+
+På Unix kan du starta handledningen från skalet om Vim är korrekt installerat:
+>
+	vimtutor
+<
+
+I MS-Windows hittar du handledningen i Vim-menyn under Program. Du kan också
+köra vimtutor.bat från installationskatalogen. Sökvägen dit visas i Vim med
+`:echo $VIMRUNTIME`.
+
+En kopia av handledningens första kapitel skapas så att du kan redigera den
+utan att riskera att skada originalet. Fortsätt till kapitel två med:
+>
+	vimtutor -c 2
+<
+
+Det finns översatta versioner av handledningen. Lägg till språkkoden på två
+bokstäver för att välja språk. Så här startar du den franska versionen:
+>
+	vimtutor fr
+<
+
+Om du på Unix vill använda den grafiska versionen av Vim startar du
+"gvimtutor" eller använder "vimtutor -g" i stället för "vimtutor".
+
+Om Vim är korrekt installerat på OpenVMS kan du starta handledningen från en
+VMS-prompt med:
+>
+	@VIM:vimtutor
+<
+
+Du kan också lägga till språkkoden på två bokstäver enligt ovan.
+
+På andra system behöver du göra så här:
+
+1. Kopiera handledningsfilen. Du kan göra det med Vim, som vet var filen
+   finns:
+>
+	vim --clean -c 'e $VIMRUNTIME/tutor/tutor1' -c 'w! TUTORCOPY' -c 'q'
+<
+   Filen "TUTORCOPY" sparas i den aktuella katalogen. Lägg till språkkoden
+   på två bokstäver i filnamnet om du vill kopiera en översatt version. Så
+   här kopierar du den franska versionen:
+>
+	vim --clean -c 'e $VIMRUNTIME/tutor/tutor1.fr' -c 'w! TUTORCOPY' -c 'q'
+<
+2. Öppna den kopierade filen i Vim:
+>
+	vim --clean TUTORCOPY
+<
+   Flaggan --clean startar Vim med grundinställningarna.
+
+3. Ta bort den kopierade filen när du är klar:
+>
+	del TUTORCOPY
+<
+==============================================================================
+*01.4*	Upphovsrätt					*manual-copyright*
+
+Vims användarmanual och referensmanual är upphovsrättsskyddade (© 1988) av
+Bram Moolenaar. Materialet får endast spridas enligt villkoren i Open
+Publication License, version 1.0 eller senare. Den senaste versionen finns
+för närvarande på:
+	     https://opencontent.org/openpub/
+
+Den som bidrar till manualerna måste godkänna upphovsrättstexten ovan.
+							*frombook*
+Delar av användarmanualen kommer från boken "Vi IMproved - Vim" av Steve
+Oualline (utgiven av New Riders Publishing, ISBN: 0735710015). Boken omfattas
+av Open Publication License. Endast utvalda delar ingår, och de har ändrats,
+till exempel genom att bilder tagits bort, texten uppdaterats för Vim 6.0 och
+senare samt fel rättats. Att taggen |frombook| saknas betyder inte att texten
+inte kommer från boken.
+
+Ett stort tack till Steve Oualline och New Riders för att de skapade boken och
+publicerade den under OPL! Den har varit till stor hjälp när
+användarmanualen skrevs, både genom konkreta texter och genom att ange ton och
+stil.
+
+Om du tjänar pengar på att sälja manualerna uppmuntras du starkt att skänka en
+del av vinsten för att hjälpa personer med aids i Uganda. Se |Kuwasha|.
+
+==============================================================================
+
+Nästa kapitel: |usr_02.txt|  De första stegen i Vim
+
+Upphovsrätt: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

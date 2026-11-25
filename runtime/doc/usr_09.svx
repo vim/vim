@@ -1,0 +1,203 @@
+*usr_09.txt*	För Vim version 9.2.  Senast ändrad: 18 nov 2026
+
+
+		     VIMS ANVÄNDARMANUAL	av Bram Moolenaar
+
+
+			Använda det grafiska gränssnittet
+
+
+Vim fungerar i en vanlig terminal, medan gVim har ett grafiskt användargränssnitt (GUI). Det kan göra samma saker och några till. Det grafiska gränssnittet har menyer, verktygsfält, rullningslister med mera. Det här kapitlet handlar om dessa extra funktioner.
+
+|09.1|	Delar av det grafiska gränssnittet
+|09.2|	Använda musen
+|09.3|	Urklippet
+|09.4|	Markeringsläge
+
+     Nästa kapitel: |usr_10.txt|  Göra större ändringar
+ Föregående kapitel: |usr_08.txt|  Dela fönster
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*09.1*	Delar av det grafiska gränssnittet
+
+Det kan finnas en ikon på skrivbordet som startar gVim. Annars bör något av dessa kommandon fungera: >
+	gvim file.txt
+	vim -g file.txt
+
+Om det inte fungerar har du en Vim-version utan stöd för grafiskt gränssnitt. Du behöver installera en version med sådant stöd.
+   Vim öppnar ett fönster och visar "file.txt". Utseendet beror på Vim-versionen, men det bör likna bilden nedan (så långt det går att visa med ASCII):
+
+	+----------------------------------------------------+
+	| file.txt + (~/dir) - VIM			   X |	<- window title
+	+----------------------------------------------------+
+	| File	Edit  Tools  Syntax  Buffers  Window  Help   |	<- menubar
+	+----------------------------------------------------+
+	| aaa  bbb  ccc  ddd  eee  fff	ggg  hhh  iii  jjj   |	<- toolbar
+	| aaa  bbb  ccc  ddd  eee  fff	ggg  hhh  iii  jjj   |
+	+----------------------------------------------------+
+	| file text					 | ^ |
+	| ~						 | # |
+	| ~						 | # |	<- scrollbar
+	| ~						 | # |
+	| ~						 | # |
+	| ~						 | # |
+	|						 | V |
+	+----------------------------------------------------+
+
+Den största delen av fönstret visar filtexten, på samma sätt som i en terminal, eventuellt med andra färger och ett annat teckensnitt.
+
+
+FÖNSTERTITELN
+
+Längst upp finns fönstertiteln, som ritas av fönstersystemet. Vim ställer in titeln så att den visar namnet på den aktuella filen. Först visas filnamnet och sedan vissa specialtecken och filens katalog inom parentes. Följande tecken kan förekomma:
+
+	-	Filen kan inte ändras (till exempel en hjälpsida)
+	+	Filen innehåller ändringar
+	=	Filen är skrivskyddad
+	=+	Filen är skrivskyddad men innehåller ändå ändringar
+
+Om inget tecken visas är filen vanlig och oförändrad.
+
+
+MENYRADEN
+
+Du känner säkert till hur menyer fungerar. Vim har de vanliga menyalternativen och några till. Utforska menyerna för att se vad de kan användas till. En användbar undermeny är Redigera/Globala inställningar. Där finns följande alternativ:
+
+	Växla verktygsfält		visa eller dölj verktygsfältet
+	Växla nedre rullningslist	visa eller dölj en rullningslist längst ned
+	Växla vänster rullningslist	visa eller dölj en rullningslist till vänster
+	Växla höger rullningslist	visa eller dölj en rullningslist till höger
+
+I de flesta system kan menyerna lösgöras. Välj det översta menyalternativet, som ser ut som en streckad linje. Då öppnas ett separat fönster med menyns alternativ. Det finns kvar tills du stänger fönstret.
+
+
+VERKTYGSFÄLTET
+
+Här finns ikoner för de vanligaste åtgärderna. Förhoppningsvis är de självförklarande. Du kan få en extra ledtråd genom att hålla muspekaren över en ikon utan att klicka och vänta en sekund.
+
+Dölj verktygsfältet via menyalternativet Redigera/Globala inställningar/Växla verktygsfält. Om du aldrig vill ha ett verktygsfält lägger du till detta kommando i vimrc-filen: >
+	:set guioptions-=T
+
+Detta tar bort flaggan "T" från alternativet 'guioptions'. Även andra delar av gränssnittet kan aktiveras och inaktiveras med detta alternativ. Läs hjälpen för mer information.
+
+
+RULLNINGSLISTER
+
+Som standard finns en rullningslist till höger. Den fungerar som väntat. När du delar fönstret får varje fönster sin egen rullningslist.
+   Visa en vågrät rullningslist med menyalternativet Redigera/Globala inställningar/Växla nedre rullningslist. Den är användbar i diff-läge eller om alternativet 'wrap' har stängts av (mer om det senare).
+
+Vid lodrätt delade fönster har bara fönstren till höger en rullningslist. Om du flyttar markören till ett fönster till vänster styr rullningslisten ändå det fönstret. Det tar en stund att vänja sig vid.
+   När du arbetar med lodrätt delade fönster kan du lägga till en rullningslist till vänster via en meny eller alternativet 'guioptions': >
+	:set guioptions+=l
+
+Detta lägger till flaggan "l" i 'guioptions'.
+
+==============================================================================
+*09.2*	Använda musen
+
+Standarder är bra. I Microsoft Windows kan du markera text med musen på ett vanligt sätt. X Window System har också ett standardiserat sätt att använda musen. Tyvärr är de två sätten olika.
+   Du kan anpassa Vim så att musen fungerar som i X Window System eller Microsoft Windows. Gör så här för att använda X Window-beteende: >
+	:behave xterm
+
+Använd följande kommando för Microsoft Windows-beteende: >
+	:behave mswin
+
+Standardbeteendet på Unix-system är xterm. På Microsoft Windows väljs standardbeteendet vid installationen. Läs |:behave| för detaljer om skillnaderna. Här följer en sammanfattning.
+
+
+XTERM-BETEENDE
+
+	Vänsterklick		placera markören
+	Dra med vänsterknappen	markera text i visuellt läge
+	Mittenklick		klistra in text från urklippet
+	Högerklick		utöka markeringen till muspekaren
+
+
+MS-WINDOWS-BETEENDE
+
+	Vänsterklick		placera markören
+	Dra med vänsterknappen	markera text i markeringsläge (se |09.4|)
+	Skift+vänsterklick	utöka markeringen till muspekaren
+	Mittenklick		klistra in text från urklippet
+	Högerklick		visa en snabbmeny
+
+
+Du kan anpassa musen ytterligare med dessa alternativ:
+
+	'mouse'			vilka lägen i Vim musen används i
+	'mousemodel'		vad ett musklick gör
+	'mousetime'		tid mellan klick vid dubbelklick
+	'mousehide'		dölj muspekaren medan du skriver
+	'selectmode'		om musen startar visuellt läge eller markeringsläge
+
+==============================================================================
+*09.3*	Urklippet
+
+I avsnitt |04.7| förklarades grunderna i hur urklippet används. En viktig sak gäller X Window System: det finns faktiskt två platser för att utbyta text mellan program. I MS-Windows finns inte denna skillnad.
+
+I X Window System finns "den aktuella markeringen". Det är texten som för tillfället är markerad. I Vim motsvaras den av det visuella området (med standardinställningarna). Du kan klistra in markeringen i ett annat program utan att göra något mer.
+   Markera några ord med musen i texten här. Vim går över till visuellt läge och markerar texten. Starta nu en annan gVim utan filnamn, så att ett tomt fönster visas. Klicka med musens mittknapp. Den markerade texten infogas.
+
+"Den aktuella markeringen" gäller bara tills du markerar annan text. När du har klistrat in texten i det andra gVim-fönstret kan du markera några tecken där. Då ser du att orden som tidigare var markerade i det första gVim-fönstret visas annorlunda. Det betyder att de inte längre utgör den aktuella markeringen.
+
+Du behöver inte markera text med musen. Tangentbordskommandona för visuellt läge fungerar lika bra.
+
+
+DET VANLIGA URKLIPPET
+
+Det finns även en annan plats där text kan utbytas. För tydlighetens skull kallar vi den "det vanliga urklippet". Både den aktuella markeringen och det vanliga urklippet kallas ofta bara urklipp.
+   Kopiera text till det vanliga urklippet genom att markera några andra ord i ett av de öppna gVim-fönstren och välja Redigera/Kopiera. Texten har nu kopierats till det vanliga urklippet. Du kan inte se innehållet om du inte har ett program som visar det, till exempel Klipper i KDE.
+   Byt nu till det andra gVim-fönstret, placera markören och välj Redigera/Klistra in. Texten från det vanliga urklippet infogas.
+
+
+ANVÄNDA BÅDA
+
+Det kan verka förvirrande att det finns både en aktuell markering och ett vanligt urklipp, men det är användbart. Prova detta i ett gVim-fönster med en textfil:
+
+- Markera två ord i visuellt läge.
+- Använd menyn Redigera/Kopiera för att kopiera orden till urklippet.
+- Markera ett annat ord i visuellt läge.
+- Välj Redigera/Klistra in. Det markerade ordet ersätts av de två orden från urklippet.
+- Flytta muspekaren någon annanstans och klicka med mittenknappen. Ordet som nyss ersattes med urklippets innehåll klistras in där.
+
+Om du hanterar den aktuella markeringen och det vanliga urklippet med eftertanke kan du göra många användbara redigeringar.
+
+
+ANVÄNDA TANGENTBORDET
+
+Om du inte vill använda musen kan du komma åt den aktuella markeringen och det vanliga urklippet med två register. Registret "* används för den aktuella markeringen.
+   Gör text till den aktuella markeringen genom att använda visuellt läge. Tryck till exempel på "V" för att markera en hel rad.
+   Klistra in den aktuella markeringen före markören med: >
+	"*P
+
+Observera det stora "P". Det lilla "p" klistrar in texten efter markören.
+
+Registret "+ används för det vanliga urklippet. Kopiera till exempel texten från markörens position till radens slut: >
+	"+y$
+
+Kom ihåg att "y" står för yank, Vims kommando för att kopiera text.
+   Klistra in innehållet i det vanliga urklippet före markören med: >
+	"+P
+
+Det fungerar som med den aktuella markeringen, men använder plusregistret (+) i stället för stjärnregistret (*).
+
+==============================================================================
+*09.4*	Markeringsläge
+
+Nu ska vi gå igenom en funktion som används oftare i MS-Windows än i X Window System, men som båda kan använda. Du känner redan till visuellt läge. Markeringsläge liknar det, eftersom det också används för att markera text. Den tydliga skillnaden är att när du skriver text tas markeringen bort och ersätts av det du skriver.
+
+Aktivera först markeringsläget. I MS-Windows är det antagligen redan aktiverat, men du kan ändå köra: >
+	:set selectmode+=mouse
+
+Markera sedan text med musen. Den markeras på samma sätt som i visuellt läge. Tryck på en bokstav. Den markerade texten tas bort och ersätts med bokstaven. Vim går då över till infogningsläge, så du kan fortsätta skriva.
+
+Eftersom vanliga tecken tar bort den markerade texten kan du inte använda de vanliga rörelsekommandona "hjkl", "w" och så vidare. Använd i stället Skift tillsammans med piltangenterna. <S-Left> flyttar markören åt vänster. Markeringen ändras på samma sätt som i visuellt läge. De andra Skift+piltangenterna fungerar som väntat. <S-End> och <S-Home> fungerar också.
+
+Du kan anpassa markeringsläget med alternativet 'selectmode'.
+
+==============================================================================
+
+Nästa kapitel: |usr_10.txt|  Göra större ändringar
+
+Upphovsrätt: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

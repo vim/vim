@@ -778,6 +778,7 @@ RT_ALL =	\
 		runtime/doc/*.awk \
 		runtime/doc/*.pl \
 		runtime/doc/*.txt \
+		runtime/doc/*.??x \
 		runtime/doc/Makefile \
 		runtime/doc/Make_all.mak \
 		runtime/doc/doctags.c \

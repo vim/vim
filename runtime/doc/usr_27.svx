@@ -1,0 +1,553 @@
+*usr_27.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Sökkommandon och mönster
+
+
+I kapitel 3 nämndes några enkla sökmönster |03.9|.  Vim kan söka på mycket
+mer komplicerade sätt.  Det här kapitlet beskriver de vanligaste.  En
+fullständig beskrivning finns i |pattern|.  Alternativ som påverkar sökningen
+beskrivs i |search-options|.
+
+|27.1|	Ignorera skiftläge
+|27.2|	Fortsätta sökningen från början av filen
+|27.3|	Förskjutningar
+|27.4|	Matcha flera gånger
+|27.5|	Alternativ
+|27.6|	Teckenintervall
+|27.7|	Teckenklasser
+|27.8|	Matcha en radbrytning
+|27.9|	Exempel
+
+	Nästa kapitel: |usr_28.txt|  Vikning
+	Föregående kapitel: |usr_26.txt|  Upprepning
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*27.1*	Ignorera skiftläge
+
+Som standard skiljer Vims sökningar på stora och små bokstäver.  Därför är
+"include", "INCLUDE" och "Include" olika ord, och en sökning matchar bara en
+av formerna.
+   Aktivera alternativet 'ignorecase': >
+
+	:set ignorecase
+
+Sök efter "include" igen.  Nu matchas även "Include", "INCLUDE" och
+"InClUDe".  (Aktivera 'hlsearch' om du snabbt vill se var mönstret matchar.)
+   Stäng av funktionen igen med: >
+
+	:set noignorecase
+
+Aktivera alternativet igen och sök efter "INCLUDE".  Samma text matchas
+som när du sökte efter "include".  Aktivera nu 'smartcase': >
+
+	:set ignorecase smartcase
+
+Om mönstret innehåller minst en versal blir sökningen skiftlägeskänslig.
+Tanken är att du kunde ha skrivit den bokstaven som gemen, så versalen måste
+vara avsiktlig.  Smart!
+    Med båda alternativen inställda får du följande träffar:
+
+	mönster		matchar	~
+	word		word, Word, WORD, WoRd med flera
+	Word		Word
+	WORD		WORD
+	WoRd		WoRd
+
+
+SKIFTLÄGE I ETT ENSKILT MÖNSTER
+
+Om du vill ignorera skiftläge i ett visst mönster lägger du till strängen
+"\c" någonstans i mönstret.  "\C" gör mönstret skiftlägeskänsligt.  Dessa tecken åsidosätter
+alternativen 'ignorecase' och 'smartcase'.  När "\c" eller "\C" används
+saknar alternativens värden betydelse.
+
+	mönster		matchar	~
+	\Cword		word
+	\CWord		Word
+	\cword		word, Word, WORD, WoRd med flera
+	\cWord		word, Word, WORD, WoRd med flera
+
+En stor fördel med "\c" och "\C" är att inställningen följer med mönstret.
+Om du upprepar ett mönster från sökhistoriken får du samma resultat även om
+'ignorecase' eller 'smartcase' har ändrats.
+
+	Observera:
+	Hur "\"-element i sökmönster fungerar beror på alternativet 'magic'.
+	I det här kapitlet utgår vi från att 'magic' är aktiverat, vilket är
+	standardinställningen och rekommenderas.  Om du ändrar 'magic' kan
+	många sökmönster plötsligt bli ogiltiga.
+
+	Observera:
+	Om sökningen tar mycket längre tid än väntat kan du avbryta den med
+	CTRL-C i Unix eller CTRL-Break i MS-Windows.
+
+==============================================================================
+*27.2*	Fortsätta sökningen från början av filen
+
+Som standard börjar en framåtsökning efter den angivna strängen vid markören
+och fortsätter till filens slut.  Om ingen träff hittas där fortsätter Vim
+från filens början fram till markören.
+   Tänk på att upprepade tryck på "n" till slut tar dig tillbaka till den
+första träffen.  Om du inte märker det kan du fortsätta söka hur länge som
+helst.  Vim visar följande meddelande som en ledtråd:
+
+	sökningen nådde BOTTEN och fortsätter vid TOPPEN ~
+
+Om du använder "?" för att söka åt andra hållet visas:
+
+	sökning nådde TOPPEN, fortsätter vid BOTTEN ~
+
+Det är ändå inte lätt att se när du är tillbaka vid den första träffen.  Ett
+sätt är att aktivera alternativet 'ruler': >
+
+	:set ruler
+
+Vim visar markörens position längst ned till höger i fönstret, eller på
+statusraden om den finns.  Det kan se ut så här:
+
+	101,29       84% ~
+
+Det första talet är markörens radnummer.  Kom ihåg var du började så kan du
+kontrollera om du passerat samma position igen.
+
+
+INTE FORTSÄTTA VID FILENS BÖRJAN
+
+Stäng av fortsatt sökning med: >
+
+	:set nowrapscan
+
+När sökningen når filens slut visas då ett felmeddelande:
+
+	E385: sökning nådde BOTTEN utan träff av: forever ~
+
+Nu kan du hitta alla träffar genom att gå till filens början med "gg" och
+fortsätta söka tills meddelandet visas.
+   Om du söker åt andra hållet med "?" får du:
+
+	E384: sökning nådde TOPPEN utan träff av: forever ~
+
+==============================================================================
+*27.3*	Förskjutningar
+
+Sökkommandot placerar som standard markören i början av mönstret.  Du kan ange
+en förskjutning för att placera den någon annanstans.  Vid framåtsökning med
+"/" anges förskjutningen efter ytterligare ett snedstreck: >
+
+	/default/2
+
+Kommandot söker efter mönstret "default" och flyttar sedan markören till
+början av raden två rader nedanför träffen.
+
+Om förskjutningen är ett enkelt tal placeras markören i början av raden så
+många rader från träffen.  Talet kan vara positivt eller negativt.  Ett
+positivt tal flyttar nedåt, ett negativt uppåt.
+
+
+TECKENFÖRSKJUTNINGAR
+
+Förskjutningen "e" anger en position räknad från träffens slut.  Markören
+placeras på träffens sista tecken.  Kommandot: >
+
+	/const/e
+
+placerar markören på "t" i "const".
+   Om du lägger till ett tal flyttas markören så många tecken framåt från den
+positionen.  Kommandot flyttar till tecknet direkt efter träffen: >
+
+	/const/e+1
+
+Ett positivt tal flyttar markören åt höger och ett negativt åt vänster.
+Exempel: >
+
+	/const/e-1
+
+flyttar markören till "s" i "const".
+
+Om förskjutningen börjar med "b" flyttas markören till mönstrets början.  Det
+är inte så användbart, eftersom det ger samma resultat att utelämna "b".  Det
+blir användbart när du lägger till eller drar ifrån ett tal.  Markören flyttas
+då så många tecken framåt eller bakåt.  Exempel: >
+
+	/const/b+2
+
+Markören placeras först i början av träffen och sedan två tecken åt höger, på
+"n".
+
+
+UPPREPA SÖKNINGEN
+
+Upprepa det senast använda sökmönstret med en annan förskjutning genom att
+utelämna mönstret: >
+
+	/that
+	//e
+
+Det motsvarar: >
+
+	/that/e
+
+Upprepa med samma förskjutning genom att skriva: >
+
+	/
+
+"n" gör samma sak.  Ta bort en tidigare förskjutning när du upprepar med: >
+
+	//
+
+
+SÖKA BAKÅT
+
+Kommandot "?" använder förskjutningar på samma sätt, men du måste använda "?"
+i stället för "/" mellan mönstret och förskjutningen: >
+
+	?const?e-2
+
+"b" och "e" behåller sin betydelse; sökriktningen ändrar dem inte.
+
+
+STARTPOSITION
+
+En sökning börjar normalt vid markören.  Om du anger en förskjutning i rader
+kan detta ställa till problem.  Exempel: >
+
+	/const/-2
+
+Kommandot hittar nästa "const" och flyttar sedan två rader upp.  Om du
+använder "n" för att söka igen kan Vim börja vid den aktuella positionen och
+hitta samma träff.  Förskjutningen flyttar dig då tillbaka till där du började
+och du fastnar.
+   Det kan bli värre: anta att nästa rad innehåller ännu en träff på "const".
+Nästa framåtsökning hittar den och flyttar sedan två rader upp.  Markören går
+då faktiskt bakåt.
+
+När du anger en teckenförskjutning kompenserar Vim för detta.  Sökningen
+börjar då några tecken framåt eller bakåt så att samma träff inte hittas igen.
+
+==============================================================================
+*27.4*	Matcha flera gånger
+
+Elementet "*" anger att elementet före det kan matchas valfritt antal gånger.
+Därför matchar: >
+
+	/a*
+
+"a", "aa", "aaa" och så vidare.  Det matchar även den tomma strängen "",
+eftersom noll förekomster också räknas.
+   "*" gäller bara elementet direkt före.  "ab*" matchar därför "a", "ab",
+"abb", "abbb" och så vidare.  Om en hel sträng ska upprepas måste den först
+gruppindelas till ett element.  Sätt "\(" före och "\)" efter den.  Detta
+kommando: >
+
+	/\(ab\)*
+
+matchar "ab", "abab", "ababab" och så vidare.  Även den tomma strängen
+matchas.
+
+Använd "\+" för att undvika att den tomma strängen matchas.  Då måste det
+föregående elementet förekomma minst en gång: >
+
+	/ab\+
+
+Det matchar "ab", "abb", "abbb" och så vidare.  Det matchar inte bara "a"
+när inget "b" följer.
+
+Använd "\=" om ett element får förekomma noll eller en gång.  Exempel: >
+
+	/folders\=
+
+Det matchar både "folder" och "folders".
+
+
+ANGE ETT VISST ANTAL
+
+Använd formen "\{n,m}" för att matcha ett bestämt antal element.  "n" och
+"m" är tal.  Elementet före formen matchas från "n" till "m" gånger,
+inklusive gränsvärdena |inclusive|.  Exempel: >
+
+	/ab\{3,5}
+
+matchar "abbb", "abbbb" och "abbbbb".
+   Om "n" utelämnas används noll.  Om "m" utelämnas används oändlighet.
+Om ",m" utelämnas matchas exakt "n" gånger.  Exempel:
+
+	mönster		antal träffar	~
+	\{,4}		0, 1, 2, 3 eller 4
+	\{3,}		3, 4, 5 och så vidare
+	\{0,1}		0 eller 1, samma som \=
+	\{0,}		0 eller fler, samma som *
+	\{1,}		1 eller fler, samma som \+
+	\{3}		3
+
+
+MATCHA SÅ LITE SOM MÖJLIGT
+
+Elementen hittills matchar så många tecken som möjligt.  Använd "\{-n,m}"
+för att matcha så få som möjligt.  Det fungerar som "\{n,m}", men väljer den
+minsta möjliga mängden.
+   Exempel: >
+
+	/ab\{-1,3}
+
+Det matchar "ab" i "abbb".  Det matchar aldrig mer än ett b eftersom det
+inte finns någon anledning att matcha fler.  Något annat måste tvinga
+mönstret att matcha mer än det minsta antalet.
+   Samma regler gäller om "n" eller "m" utelämnas.  Du kan utelämna båda och
+skriva "\{-}".  Då matchas föregående element noll eller fler gånger, så få
+gånger som möjligt.  Elementet ensamt matchar alltid noll gånger, men det är
+användbart tillsammans med något annat.  Exempel: >
+
+	/a.\{-}b
+
+Det matchar "axb" i "axbxb".  Om du i stället skriver: >
+
+	/a.*b
+
+försöker ".*" matcha så många tecken som möjligt och hela "axbxb" matchas.
+
+==============================================================================
+*27.5*	Alternativ
+
+”Eller”-operatorn i ett mönster är "\|".  Exempel: >
+
+	/foo\|bar
+
+Det matchar "foo" eller "bar".  Du kan lägga till fler alternativ: >
+
+	/one\|two\|three
+
+Det matchar "one", "two" och "three".
+   Om hela uttrycket ska upprepas måste det omslutas av "\(" och "\)": >
+
+	/\(foo\|bar\)\+
+
+Det matchar "foo", "foobar", "foofoo", "barfoobar" och så vidare.
+   Ett annat exempel: >
+
+	/end\(if\|while\|for\)
+
+Det matchar "endif", "endwhile" och "endfor".
+
+Ett närbesläktat element är "\&".  Det kräver att båda alternativen matchar
+på samma plats.  Träffen blir den sista matchningen.  Exempel: >
+
+	/forever\&...
+
+Det matchar "for" i "forever", men inte till exempel "fortuin".
+
+==============================================================================
+*27.6*	Teckenintervall
+
+För att matcha "a", "b" eller "c" kan du skriva "/a\|b\|c".  Om du vill
+matcha alla bokstäver från "a" till "z" blir det långt.  En kortare form är: >
+
+	/[a-z]
+
+Konstruktionen [] matchar ett tecken.  Inuti hakparenteserna anger du vilka
+tecken som kan matchas.  Du kan ange en lista: >
+
+	/[0123456789abcdef]
+
+Det matchar ett av tecknen i listan.  Ange ett intervall för tecken i följd.
+"0-3" betyder "0123" och "w-z" betyder "wxyz".  Kommandot ovan kan alltså
+förkortas till: >
+
+	/[0-9a-f]
+
+Om du vill matcha själva tecknet "-" placerar du det först eller sist i
+intervallet.
+   Följande specialtecken är tillåtna för att det ska vara enklare att skriva
+dem i ett []-intervall.  De kan även användas var som helst i sökmönstret:
+
+	\e	<Esc>
+	\t	<Tab>
+	\r	<CR>
+	\b	<BS>
+
+Det finns fler specialfall för []-intervall.  Se |/[]| för en fullständig
+beskrivning.
+
+
+NEGATIVT TECKENINTERVALL
+
+Sätt "^" först i intervallet för att utesluta vissa tecken.  []-elementet
+matchar då alla tecken utom dem som anges.  Exempel: >
+
+	/"[^"]*"
+<
+	 "		ett citationstecken
+	  [^\"]	alla tecken utom citationstecken
+	      *	valfritt antal tecken
+	       "	ytterligare ett citationstecken
+
+Detta matchar exempelvis "foo" och "3!x", inklusive citationstecknen.
+
+
+FÖRDEFINIERADE INTERVALL
+
+Vissa teckenintervall används ofta.  Vim har kortformer för dem.  Exempel: >
+
+	/\a
+
+Det hittar bokstäver och motsvarar "/[a-zA-Z]".  Här är några till:
+
+	element	matchar			motsvarar	~
+	\d	siffra			[0-9]
+	\D	inte en siffra		[^0-9]
+	\x	hexadecimalt tecken	[0-9a-fA-F]
+	\X	inte hexadecimalt tecken	[^0-9a-fA-F]
+	\s	blanksteg		[ 	] (<Tab> och <Space>)
+	\S	inte blanksteg		[^ 	] (inte <Tab> eller <Space>)
+	\l	gemen bokstav		[a-z]
+	\L	inte gemen bokstav	[^a-z]
+	\u	versal bokstav		[A-Z]
+	\U	inte versal bokstav	[^A-Z]
+
+	Observera:
+	De fördefinierade intervallen är mycket snabbare än motsvarande
+	teckenintervall.
+	De kan inte användas inuti [].  "[\d\l]" fungerar alltså INTE för att
+	matcha en siffra eller gemen bokstav.  Använd i stället
+	"\(\d\|\l\)".
+
+Se |/\s| för hela listan över dessa intervall.
+
+==============================================================================
+*27.7*	Teckenklasser
+
+Ett teckenintervall matchar en fast uppsättning tecken.  En teckenklass liknar
+det, men uppsättningen kan ändras utan att sökmönstret behöver ändras.
+   Sök exempelvis efter följande mönster: >
+
+	/\f\+
+
+Elementet "\f" står för tecken som får ingå i ett filnamn.  Mönstret matchar
+alltså en följd av tecken som kan utgöra ett filnamn.
+   Vilka tecken som får ingå beror på systemet.  I MS-Windows ingår omvänt
+snedstreck, men inte i Unix.  Detta styrs av alternativet 'isfname'.  Standard-
+värdet i Unix är: >
+
+	:set isfname
+	isfname=@,48-57,/,.,-,_,+,,,#,$,%,~,=
+
+Andra system har andra standardvärden.  Med "\f" kan du skriva ett mönster
+som matchar filnamn och som automatiskt anpassas till systemet.
+
+	Observera:
+	I Unix kan ett filnamn innehålla nästan vilket tecken som helst,	även
+	blanksteg.  Det vore teoretiskt korrekt att ta med dessa i 'isfname',
+	men då går det inte att hitta var ett filnamn slutar i en text.  Värdet
+	av 'isfname' är därför en kompromiss.
+
+Teckenklasserna är:
+
+	element	matchar				alternativ	~
+	\i	identifierartecken		'isident'
+	\I	som \i, men utan siffror
+	\k	ordtecken			'iskeyword'
+	\K	som \k, men utan siffror
+	\p	skrivbara tecken		'isprint'
+	\P	som \p, men utan siffror
+	\f	filnamnstecken			'isfname'
+	\F	som \f, men utan siffror
+
+==============================================================================
+*27.8*	Matcha en radbrytning
+
+Vim kan hitta ett mönster som innehåller en radbrytning.  Du måste ange var
+radbrytningen finns, eftersom inga av elementen vi gått igenom hittills
+matchar den.
+   Använd elementet "\n" för att söka efter en radbrytning på en viss plats: >
+
+	/one\ntwo
+
+Det matchar när en rad slutar med "one" och nästa börjar med "two".  Om även
+"one two" ska matcha måste mönstret acceptera ett blanksteg eller en
+radbrytning.  Använd "\_s": >
+
+	/one\_stwo
+
+Kräv minst ett blanktecken eller en radbrytning så här: >
+
+	/one\_s\+two
+
+Det matchar också om "one  " står sist på en rad och "   two" först på nästa.
+
+"\s" matchar blanksteg och "\_s" matchar blanksteg eller radbrytning.  På
+samma sätt matchar "\a" en bokstav medan "\_a" matchar en bokstav eller
+radbrytning.  Övriga teckenklasser och intervall kan ändras på samma sätt
+genom att lägga till "_".
+
+Många andra element kan matcha en radbrytning om du lägger till "\_" först.
+Exempelvis matchar "\_." vilket tecken som helst eller en radbrytning.
+
+	Observera:
+	"\_.*" matchar allt fram till filens slut.  Var försiktig, eftersom
+	det kan göra sökningen mycket långsam.
+
+Ett annat exempel är "\_[]", ett teckenintervall som även omfattar
+radbrytning: >
+
+	/"\_[^"]*"
+
+Det hittar text inom dubbla citationstecken även om texten sträcker sig över
+flera rader.
+
+==============================================================================
+*27.9*	Exempel
+
+Här följer några sökmönster som kan vara användbara.  Exemplen visar hur
+sökdelarna ovan kan kombineras.
+
+
+HITTA EN KALIFORNISK REGISTRERINGSSKYLT
+
+Ett exempel på registreringsnummer är "1MGU103".  Det består av en siffra,
+tre versaler och tre siffror.  Sök direkt med: >
+
+	/\d\u\u\u\d\d\d
+
+Du kan också ange antalet bokstäver och siffror: >
+
+	/\d\u\{3}\d\{3}
+
+Eller använda teckenintervall: >
+
+	/[0-9][A-Z]\{3}[0-9]\{3}
+
+Vilket ska du välja?  Det du lättast kommer ihåg.  Ett enkelt mönster du
+minns går mycket snabbare än ett avancerat som du glömmer.  Om du minns alla
+bör du undvika det sista, eftersom det både kräver fler tangenttryckningar
+och körs långsammare.
+
+
+HITTA EN IDENTIFIERARE
+
+I C och många andra programspråk börjar en identifierare med en bokstav eller ett understreck och kan
+fortsätta med bokstäver, siffror eller understreck.  Hitta en sådan med:
+>
+
+	/\<\h\w*\>
+
+"\<" och "\>" ser till att bara hela ord matchas.  "\h" motsvarar
+"[A-Za-z_]" och "\w" motsvarar "[0-9A-Za-z_]".
+
+	Observera:
+	"\<" och "\>" påverkas av alternativet 'iskeyword'.  Om det till
+	exempel innehåller "-" matchas inte "ident-".  Använd i så fall: >
+
+		/\w\@<!\h\w*\w\@!
+<
+	Det kontrollerar att "\w" inte matchar före eller efter identifieraren.
+	Se |/\@<!| och |/\@!|.
+
+==============================================================================
+
+Nästa kapitel: |usr_28.txt|  Vikning
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

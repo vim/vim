@@ -1,0 +1,390 @@
+*usr_22.txt*	För Vim version 9.2.  Senast ändrad: 2026-11-18
+
+
+				VIM-HANDBOKEN	av Bram Moolenaar
+
+
+				Hitta filen som ska redigeras
+
+
+Filer kan finnas överallt.  Hur hittar du dem?  Vim har flera sätt att
+bläddra i katalogträdet.  Det finns kommandon för att hoppa till en fil som
+nämns i en annan, och Vim kommer ihåg vilka filer du har redigerat tidigare.
+
+|22.1|	Filbläddraren
+|22.2|	Den aktuella katalogen
+|22.3|	Hitta en fil
+|22.4|	Buffertlistan
+
+	Nästa kapitel: |usr_23.txt|  Redigera andra filer
+	Föregående kapitel: |usr_21.txt|  Gå iväg och kom tillbaka
+Innehållsförteckning: |usr_toc.txt|
+
+==============================================================================
+*22.1*	Filbläddraren
+
+Vim har ett insticksprogram som gör att du kan bläddra i en katalog.  Prova: >
+
+	:edit .
+
+Med hjälp av autokommandon och Vim-skript fylls fönstret med katalogens
+innehåll.  Det kan se ut så här (något förenklat för att rymmas inom 78 tecken): >
+
+  " ==========================================================================
+  " Netrw Directory Listing                                       (netrw v184)
+  "   /path/to/vim/runtime/doc
+  "   Sorted by      name
+  "   Sort sequence: [\/]$,*,\(\.bak\|\~\|\.o\|\.h\|\.info\|\.swp\)[*@]\=$
+  "   Quick Help: <F1>:help -:go up dir D:delete R:rename s:sort-by x:special
+  " ==========================================================================
+  ../
+  ./
+  check/
+  Makefile
+  autocmd.txt
+  change.txt
+  eval.txt
+  filetype.txt
+  help.txt.info
+<
+Här ser du:
+
+1. Bläddringsverktygets namn och versionsnummer.
+2. Katalogen som visas.
+3. Sorteringsmetoden (namn, tid eller storlek).
+4. Hur namnen sorteras, exempelvis kataloger först och sedan filändelse.
+5. Hur du får hjälp (<F1>) och en förkortad lista över tillgängliga kommandon.
+6. Fillistan, som även innehåller "../" för den överordnade katalogen.
+
+Om du har aktiverat syntaxfärgning markeras de olika delarna så att de blir
+enklare att skilja åt.
+
+Du kan använda normallägets Vim-kommandon för att flytta runt i texten.
+Flytta till exempel markören till en fil och tryck på <Enter> för att redigera
+den.  Öppna bläddraren igen med ":edit ." eller ":Explore".  CTRL-O fungerar
+också.
+
+Tryck på <Enter> när markören står på ett katalognamn.  Filbläddraren går då
+in i katalogen och visar dess innehåll.  Om du trycker på <Enter> på den
+första katalogen, "../", går du en nivå upp.  Tryck på "-" för att göra samma
+sak utan att först flytta markören till "../".
+
+Tryck på <F1> för att få hjälp om vad du kan göra i netrw-filbläddraren.  Du
+får följande:
+>
+ QUICK HELP						netrw-quickhelp
+                       (Use ctrl-] to select a topic)
+	Intro to Browsing...............................netrw-intro-browse
+	  Quick Reference: Maps.........................netrw-quickmap
+	  Quick Reference: Commands.....................netrw-browse-cmds
+<
+<F1> öppnar alltså hjälpsidan om att bläddra med netrw.  Det är en vanlig
+hjälpsida; använd |CTRL-]| för att hoppa till ämnen med taggar och |CTRL-O| för
+att gå tillbaka.  Om du trycker på CTRL-] på |netrw-quickmap| kommer du till:
+>
+				netrw-quickmap  netrw-quickmaps
+ QUICK REFERENCE: MAPS			netrw-browse-maps
+
+	  ---			-----------------		----
+	  Map			Quick Explanation		Link
+	  ---			-----------------		----
+	 <F1>	Öppnar hjälpen i Netrw
+	 <cr>	Går in i katalogen eller läser filen	      netrw-cr
+	 <del>	Försöker ta bort filen eller katalogen	      netrw-del
+<	 (etc.)
+
+Markera filer för visning och redigering genom att placera markören på ett
+filnamn och använda:
+>
+	   o	Öppna filen eller katalogen i ett nytt	      netrw-o
+		bläddringsfönster (horisontell delning).
+	   O	Hämta filen som markören står på		      netrw-O
+	   p	Förhandsvisa filen			      netrw-p
+	   P	Öppna filen i det senast använda fönstret	      netrw-P
+	   v	Öppna filen eller katalogen i ett nytt	      netrw-v
+		bläddringsfönster (lodrät delning).
+<
+Följande normallägeskommandon styr hur bläddraren visas:
+>
+	   i	Växla mellan kort, lång, bred och trädformad lista netrw-i
+	   r	Vänd sorteringsordningen		      netrw-r
+	   s	Välj sortering: namn, tid eller filstorlek	      netrw-s
+<
+Några fler normallägeskommandon:
+>
+	   cd	Gör bläddrarkatalogen till aktuell katalog	      netrw-cd
+	   D	Försök ta bort markerade filer/kataloger	      netrw-D
+	   gb	Gå till föregående bokmärkta katalog	      netrw-gb
+	   mb	Bokmärk den aktuella katalogen		      netrw-mb
+	   R	Byt namn på markerade filer/kataloger	      netrw-R
+<
+Du kan även använda kommandoläget.  Här är några exempel:
+>
+     :Explore[!]  [dir] Bläddra i katalogen för den aktuella filen....netrw-explore
+     :Hexplore[!] [dir] Dela vågrätt och bläddra.....................netrw-explore
+<
+Netrw-bläddraren är inte begränsad till den lokala datorn.  Du kan använda
+adresser som: >
+
+	:Explore ftp://somehost/path/to/dir/
+	:e scp://somehost/path/to/dir/
+<
+	Observera: Det avslutande "/" är viktigt.
+
+Se |netrw-browse| för mer information.
+
+==============================================================================
+*22.2*	Den aktuella katalogen
+
+Precis som i skalet har Vim en aktuell katalog.  Anta att du står i din
+hemkatalog och vill redigera flera filer i katalogen "VeryLongFileName".  Du
+kan skriva: >
+
+	:edit VeryLongFileName/file1.txt
+	:edit VeryLongFileName/file2.txt
+	:edit VeryLongFileName/file3.txt
+
+Spara en del tangenttryckningar genom att först byta katalog: >
+
+	:cd VeryLongFileName
+	:edit file1.txt
+	:edit file2.txt
+	:edit file3.txt
+
+Kommandot ":cd" byter aktuell katalog.  Visa den med ":pwd": >
+
+	:pwd
+	/home/Bram/VeryLongFileName
+
+Vim kommer ihåg den senast använda katalogen.  Gå tillbaka till den med
+"cd -".  Exempel: >
+
+	:pwd
+	/home/Bram/VeryLongFileName
+	:cd /etc
+	:pwd
+	/etc
+	:cd -
+	:pwd
+	/home/Bram/VeryLongFileName
+	:cd -
+	:pwd
+	/etc
+
+
+KATALOG SOM GÄLLER FÖR ETT FÖNSTER
+
+När du delar ett fönster använder båda fönstren samma aktuella katalog.  Om
+du vill redigera filer från en annan katalog i det nya fönstret kan du låta
+just det fönstret använda en annan katalog utan att ändra den i det andra
+fönstret.  Det kallas en lokal katalog: >
+
+	:pwd
+	/home/Bram/VeryLongFileName
+	:split
+	:lcd /etc
+	:pwd
+	/etc
+	CTRL-W w
+	:pwd
+	/home/Bram/VeryLongFileName
+
+Så länge du inte har använt ":lcd" delar alla fönster på den aktuella
+katalogen.  Ett ":cd"-kommando i ett fönster ändrar då katalogen även i det
+andra.
+   När du använder ":lcd" för ett fönster kommer det ihåg sin egen aktuella
+katalog.  ":cd" eller ":lcd" i andra fönster ändrar inte den katalogen.
+   Om du använder ":cd" i ett fönster med en annan lokal katalog börjar det
+fönstret åter använda den globala katalogen, som ":cd" samtidigt ändrar.
+
+
+KATALOG SOM GÄLLER FÖR EN FLIK
+
+En ny fliksida använder katalogen från fönstret i den tidigare fliksidan som
+öppnade den.  Ändra katalog för den aktuella fliksidan med kommandot ":tcd".
+Alla fönster i fliksidan delar katalogen, utom fönster som har en lokal
+fönsterkatalog.  Nya fönster i fliksidan använder dess katalog som aktuell
+arbetskatalog.  ":cd" i en fliksida ändrar inte arbetskatalogen för andra
+fliksidor som har en lokal flikkatalog.  Om det globala arbetskatalogvärdet
+ändras med ":cd" i en fliksida ändras även den aktuella fliksidans katalog.
+
+==============================================================================
+*22.3*	Hitta en fil
+
+Du redigerar ett C-program som innehåller raden:
+
+	#include "inits.h" ~
+
+Du vill se innehållet i filen "inits.h".  Flytta markören till filnamnet och
+skriv: >
+
+	gf
+
+Vim hittar och redigerar filen.
+   Vad händer om filen inte finns i den aktuella katalogen?  Vim använder
+alternativet 'path' för att leta.  Det är en lista med kataloger där filen kan
+finnas.
+   Anta att dina inkluderingsfiler finns i "c:/prog/include".  Lägg till den
+katalogen i 'path' med: >
+
+	:set path+=c:/prog/include
+
+Det här är en absolut sökväg.  Den pekar på samma plats oavsett var du befinner
+dig.  Om filerna i stället ligger i en underkatalog till katalogen där filen
+finns kan du ange en relativ sökväg.  Den börjar med en punkt: >
+
+	:set path+=./proto
+
+Vim letar då i katalogen "proto" under katalogen där filen du använder "gf"
+i finns.  Om du använder "gf" på "inits.h" letar Vim alltså efter
+"proto/inits.h", med utgångspunkt från filens katalog.
+   Utan "./", alltså med "proto", letar Vim i katalogen "proto" under den
+aktuella katalogen.  Den aktuella katalogen behöver inte vara samma som
+katalogen där filen du redigerar finns.
+
+Alternativet 'path' kan ange sökkataloger på många fler sätt.  Läs hjälpen för
+alternativet 'path'.
+   Alternativet 'isfname' avgör vilka tecken som räknas till ett filnamn och
+vilka som inte gör det, till exempel citationstecknet i exemplet ovan.
+
+Om du vet filnamnet men det inte står i filen kan du skriva det direkt: >
+
+	:find inits.h
+
+Vim använder då alternativet 'path' för att hitta filen.  Det fungerar som
+kommandot ":edit", men tar även hänsyn till 'path'.
+
+Öppna den hittade filen i ett nytt fönster med CTRL-W f i stället för "gf",
+eller använd ":sfind" i stället för ":find".
+
+Starta Vim direkt med en fil som finns någonstans i 'path' så här: >
+
+	vim "+find stdio.h"
+
+Det söker efter filen "stdio.h" i katalogerna i 'path'.  Citationstecknen
+behövs för att det ska bli ett argument |-+c|.
+
+==============================================================================
+*22.4*	Buffertlistan
+
+Vim använder ordet buffert för en fil som redigeras.  En buffert är en kopia
+av filen som du arbetar med.  När du är klar skriver du buffertens innehåll
+till filen.  Bufferten innehåller även markeringar, inställningar och annat
+som hör till filen.
+
+
+DOLDA BUFFERTAR
+
+Anta att du redigerar filen one.txt och behöver redigera two.txt.  Du kan
+skriva ":edit two.txt", men det fungerar inte om du har ändringar i one.txt.
+Du vill inte heller spara one.txt än.  Använd då: >
+
+	:hide edit two.txt
+
+Bufferten "one.txt" försvinner från skärmen, men Vim kommer fortfarande ihåg
+den och behåller den ändrade texten.  Den kallas en dold buffert: den
+innehåller text men visas inte.
+   Argumentet till ":hide" är ett annat kommando.  ":hide" gör att kommandot
+fungerar som om alternativet 'hidden' vore aktiverat.  Du kan också ställa in
+alternativet själv.  Då blir en buffert dold när du lämnar den.
+   Var försiktig!  Om du har dolda buffertar med ändringar ska du kontrollera
+att alla är sparade innan du avslutar Vim.
+
+
+INAKTIVA BUFFERTAR
+
+När en buffert har använts kommer Vim ihåg viss information om den.  Om den
+inte visas i ett fönster och inte heller är dold finns den fortfarande i
+buffertlistan.  Då kallas den inaktiv.
+
+	Aktiv		visas i ett fönster och texten är inläst
+	Dold		visas inte i ett fönster men texten är inläst
+	Inaktiv	visas inte i ett fönster och texten är inte inläst
+
+Inaktiva buffertar finns kvar eftersom Vim sparar information om dem, till
+exempel markeringar.  Filnamnet är också användbart så att du kan se vilka
+filer du har redigerat och öppna dem igen.
+
+
+VISA BUFFERTLISTAN
+
+Visa buffertlistan med: >
+
+	:buffers
+
+Kommandot ":ls" gör samma sak och är kortare: >
+
+	:ls
+
+Utskriften kan se ut så här:
+
+  1 #h   "help.txt"			rad 62 ~
+  2 %a + "usr_21.txt"			rad 1 ~
+  3      "usr_toc.txt"			rad 1 ~
+
+Första kolumnen innehåller buffertnumret.  Du kan använda det för att redigera
+bufferten utan att skriva namnet, se nedan.
+   Efter numret kommer flaggorna, sedan filnamnet och sist radnumret där
+markören stod senast.
+   Följande flaggor kan förekomma, från vänster till höger:
+
+	u	Bufferten är inte listad |unlisted-buffer|.
+	 %	Aktuell buffert.
+	 #	Alternativ buffert.
+	  a	Bufferten är inläst och visas.
+	  h	Bufferten är inläst men dold.
+	   =	Bufferten är skrivskyddad.
+	   -	Bufferten kan inte ändras; alternativet 'modifiable' är av.
+	    +	Bufferten har ändrats.
+
+
+REDIGERA EN BUFFERT
+
+Redigera en buffert med dess nummer i stället för filnamnet: >
+
+	:buffer 2
+
+Du måste känna till numret från buffertlistan.  Du kan också ange hela eller
+en del av namnet: >
+
+	:buffer help
+
+Vim väljer den bästa matchningen.  Om bara en buffert matchar används den,
+i det här fallet "help.txt".
+   Öppna en buffert i ett nytt fönster med: >
+
+	:sbuffer 3
+
+Det fungerar även med ett namn.
+
+
+ANVÄNDA BUFFERTLISTAN
+
+Använd följande kommandon för att flytta runt i buffertlistan:
+
+	:bnext		gå till nästa buffert
+	:bprevious	gå till föregående buffert
+	:bfirst		gå till den första bufferten
+	:blast		gå till den sista bufferten
+
+Ta bort en buffert från listan med: >
+
+	:bdelete 3
+
+Även detta fungerar med ett namn.
+   Om du tar bort en aktiv buffert (som visas i ett fönster) stängs fönstret.
+Om du tar bort den aktuella bufferten stängs det aktuella fönstret.  Om det var
+det sista fönstret väljer Vim en annan buffert att redigera.  Vim kan inte
+redigera ingenting!
+
+	Observera: Även efter ":bdelete" kommer Vim ihåg bufferten.  Den blir
+	bara ”olistad” och visas inte längre med ":buffers".  Kommandot
+	":buffers!" visar olistade buffertar (ja, Vim kan göra det omöjliga).
+	Använd ":bwipe" om Vim verkligen ska glömma bufferten.  Se även
+	alternativet 'buflisted'.
+
+==============================================================================
+
+Nästa kapitel: |usr_23.txt|  Redigera andra filer
+
+Copyright: se |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

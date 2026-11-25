@@ -3,7 +3,7 @@
 .\" This file was generated with po4a. Translate the source file.
 .\"
 .\"*******************************************************************
-.TH VIM 1 "27 juni 2025"
+.TH VIM 1 "18 november 2026"
 .SH NAMN
 vim \- Vi IMproved, en textredigerare för programmerare
 .SH SYNOPSIS
@@ -46,22 +46,22 @@ Mer generellt startas \fBVim\fP med:
   vim [flaggor] [fillista]
 .PP
 Om filförteckningen saknas startar redigeraren med en tom buffert. Annars
-kan exakt en av följande fyra användas för att välja en eller flera filer
+kan exakt ett av följande fyra sätt användas för att välja en eller flera filer
 som ska redigeras.
 .TP  12
 fil ..
 En lista med filnamn. Den första filen är den aktuella filen och läses in i
 buffertminnet. Markören placeras på den första raden i buffertminnet. Du kan
 komma åt de andra filerna med kommandot ":next". För att redigera en fil som
-börjar med ett bindestreck, lägg till "\-\-" före filnamnslistan.
+har ett namn som börjar med ett bindestreck, lägg till "\-\-" före filnamnslistan.
 .TP
 \-
 Filen som ska redigeras läses från stdin. Kommandon läses från stderr, som
 bör vara en tty.
 .TP
 \-t {tag}
-Filen som ska redigeras och den initiala markörpositionen beror på en
-"tagg", en sorts goto\-etikett. {tag} söks upp i taggfilen, den associerade
+Filen som ska redigeras och markörens startposition bestäms av en
+"tagg", en sorts gå\-till\-etikett. {tag} söks upp i taggfilen, den associerade
 filen blir den aktuella filen och det associerade kommandot exekveras.
 Detta används främst för C\-program, där {tag} kan vara ett
 funktionsnamn. Effekten blir att filen som innehåller den funktionen blir
@@ -69,12 +69,12 @@ den aktuella filen och markören placeras i början av funktionen. Se ":help
 tag\-commands".
 .TP
 \-q [felfil]
-Starta i quickFix\-läge. Filen [errorfile] läses och det första felet
-visas. Om [errorfile] utelämnas hämtas filnamnet från flaggan 'errorfile'
+Starta i snabbfixläge. Filen [felfil] läses och det första felet
+visas. Om [felfil] utelämnas hämtas filnamnet från alternativet 'errorfile'
 (standard är "AztecC.Err" för Amiga, "errors.err" på andra system).
-Ytterligare fel kan hoppas till med kommandot ":cn". Se ":help quickfix".
+Hoppa till nästa fel med kommandot ":cn". Se ":help quickfix".
 .PP
-\fBVim\fP en fungerar olika beroende på kommandots namn (den körbara filen kan
+\fBVim\fP fungerar olika beroende på kommandots namn (den körbara filen kan
 fortfarande vara samma fil).
 .TP  10
 vim
@@ -150,6 +150,11 @@ skript.
 .TP
 \-e
 Starta \fBVim\fP i Ex\-läge, precis som om den körbara filen hette "ex".
+.TP
+\-display {display}
+Kör \fBVim\fP på {display} och anslut till den X\-servern i stället för den
+som anges av $DISPLAY. Den långa formen "--display" stöds endast av GTK+ 2-
+eller GTK+ 3-gränssnittet. Båda formerna kräver funktionen +xterm_clipboard.
 .TP
 \-E
 Starta \fBVim\fP i förbättrat Ex\-läge, precis som om den körbara filen hette
@@ -239,8 +244,8 @@ fungerar inte med alla applikationer och menyn fungerar inte.
 Lista växlingsfiler, med information om hur de används för återställning.
 .TP
 \-r {file}
-Återställningsläge. Swap\-filen används för att återställa en kraschad
-redigeringssession. Swap\-filen är en fil med samma filnamn som textfilen med
+Återställningsläge. Växlingsfilen används för att återställa en kraschad
+redigeringssession. Växlingsfilen är en fil med samma filnamn som textfilen med
 ".swp" tillagt. Se ":help recovery".
 .TP
 \-R
@@ -262,7 +267,7 @@ filen nås innan redigeraren avslutas läses ytterligare tecken från
 tangentbordet.
 .TP
 \-S {file}
-{file} hämtas efter att den första filen har lästs. Detta motsvarar \-c
+Kommandona i {file} körs efter att den första filen har lästs. Detta motsvarar \-c
 "source {file}". {file} får inte börja med '\-'. Om {file} utelämnas används
 "Session.vim" (fungerar endast när \-S är det sista argumentet).
 .TP
@@ -319,7 +324,7 @@ Anslut inte till X\-servern.  Förkortar starttiden i en terminal, men
 fönstertiteln och urklipp kommer inte att användas.
 .TP
 \-Y
-Anslut inte till Wayland Compositor
+Anslut inte till Wayland-kompositorn.
 .TP
 \-y
 Starta \fBVim\fP i enkelt läge, precis som om den körbara filen hette "evim"
@@ -329,8 +334,8 @@ eller "eview".  Gör att \fBVim\fP beter sig som en klick\-och\-skriv\-editor.
 Begränsat läge. Fungerar som om den körbara filen börjar med "r".
 .TP
 
-Anger slutet på flaggorna.  Argument efter detta kommer att behandlas som
-ett filnamn.  Detta kan användas för att redigera ett filnamn som börjar med
+\-\-
+Anger slutet på flaggorna. Argument efter detta behandlas som filnamn.  Detta kan användas för att redigera ett filnamn som börjar med
 ett '\-'.
 .TP
 \-\-clean
@@ -372,9 +377,12 @@ sig och kopplas bort från det skal det startades i.
 Hoppa över inläsning av plugins. Implicerat av \-u NONE.
 .TP
 \-\-not\-a\-term
-Meddelar \fBVim\fP en att användaren vet att in\- och/eller utgången inte är
+Meddelar \fBVim\fP att användaren vet att in\- och/eller utgången inte är
 ansluten till en terminal.  Detta förhindrar varningen och den två sekunders
 fördröjning som skulle inträffa.
+.TP
+\-\-prg\-name {name}
+Ange GTK-programnamnet. Endast för GTK4-gränssnittet.
 .TP
 \-\-remote
 Anslut till en Vim\-server och låt den redigera filerna som anges i resten av
@@ -391,6 +399,18 @@ Anslut till en Vim\-server och skicka {keys} till den.
 \-\-remote\-silent
 Som \-\-remote, men utan varningen när ingen server hittas.
 .TP
+\-\-remote\-tab
+Som \-\-remote, men öppna varje fil på en ny fliksida.
+.TP
+\-\-remote\-tab\-silent
+Som \-\-remote\-silent, men öppna varje fil på en ny fliksida.
+.TP
+\-\-remote\-tab\-wait
+Som \-\-remote\-wait, men öppna varje fil på en ny fliksida.
+.TP
+\-\-remote\-tab\-wait\-silent
+Som \-\-remote\-wait\-silent, men öppna varje fil på en ny fliksida.
+.TP
 \-\-remote\-wait
 Som \-\-remote, men Vim avslutas inte förrän filerna har redigerats.
 .TP
@@ -403,50 +423,59 @@ Lista namnen på alla Vim\-servrar som kan hittas.
 \-\-servername {name}
 Använd {name} som servernamn. Används för den aktuella Vim, såvida det inte
 används med ett \-\-remote\-argument, då är det namnet på servern som ska
-anslutas till. Om socketserver\-backend används och namnet börjar med "/",
-"./" eller "../", tolkas det som en absolut, relativ eller relativ sökväg
-till socketen.
+anslutas till. Om socketserver\-gränssnittet används och namnet börjar med "/", "./"
+eller "../" tolkas det som en absolut eller relativ sökväg till socketen.
 .TP
 \-\-clientserver {backend}
-Använd {backend} som backend för clientserver\-funktionalitet, antingen
-"socket" eller "x11".  Endast tillgängligt när det kompilerats med både
-socketserver\- och X11\-funktioner
+Använd {backend} för klient/server-funktionalitet: "socket", "x11" eller
+"mswin". Funktionen kräver stöd för socketserver och X11, eller socketserver
+på Windows. Miljövariabeln $VIM_CLIENTSERVER kan också användas, men
+argumentet --clientserver har alltid företräde.
 .TP
 \-\-socketid {id}
 Endast grafiskt GTK\-gränssnitt: Använd GtkPlug\-mekanismen för att köra gVim
 i ett annat fönster.
 .TP
 \-\-startuptime {file}
-Skriv tidsmeddelanden till filen {fname} under uppstart.
+Skriv tidsmätningar till filen {file} under uppstart.
+.TP
+\-\-stdio\-channel
+Använd Vims stdin och stdout för en kanal i stället för en terminal. Detta
+motsvarar "-es": inget visas, inga Ex-kommandon läses och det grafiska
+gränssnittet startas inte. Ett skript öppnar kanalen med ch_open() och adressen
+"stdio"; se ":help --stdio-channel". Kräver att Vim har stöd för kanaler.
 .TP
 \-\-ttyfail
 Om stdin eller stdout inte är en terminal (tty) ska programmet avslutas
 omedelbart.
 .TP
 \-\-version
-Skriv ut versioninformation och avsluta.
+Skriv ut versionsinformation och avsluta.
 .TP
 \-\-windowid {id}
 Endast Win32 GUI: Få gVim att försöka använda fönstret {id} som överordnat
 fönster, så att det körs inuti det fönstret.
 .SH ONLINEHJÄLP
-Skriv ":help" i \fBVim\fP en för att komma igång.  Skriv ":help ämne" för att
+Skriv ":help" i \fBVim\fP för att komma igång.  Skriv ":help ämne" för att
 få hjälp om ett specifikt ämne.  Till exempel: ":help ZZ" för att få hjälp
-om kommandot "ZZ".  Använd <, Tab\-> och CTRL\-D för att komplettera
+om kommandot "ZZ".  Använd <Tab> och CTRL\-D för att komplettera
 ämnen (":help cmdline\-completion").  Taggar finns för att hoppa från en
 plats till en annan (en sorts hypertextlänkar, se ":help").  Alla
 dokumentationsfiler kan visas på detta sätt, till exempel ":help
 syntax.txt".
 .SH FILER
 .TP  15
-/usr/local/share/vim/vim??/doc/*.txt
+/usr/local/share/vim/vim??/doc/*.txt och *.??x
 \fBVim\fP \-dokumentationsfilerna.  Använd ":help doc\-file\-list" för att få en
 komplett lista.
 .br
-\fIvim??\fP är ett kort versionsnummer, till exempel vim91 för \fBVim 9.1\fP
+\fIvim??\fP är ett kort versionsnummer, till exempel vim92 för \fBVim 9.2\fP
 .TP
 /usr/local/share/vim/vim??/doc/tags
 Taggfilen som används för att hitta information i dokumentationsfilerna.
+.TP
+/usr/local/share/vim/vim??/doc/tags-??
+Språkindex för taggar i översatta hjälpfiler.
 .TP
 /usr/local/share/vim/vim??/syntax/syntax.vim
 Systemomfattande syntaxinitialiseringar.
@@ -507,6 +536,7 @@ tycker att andra saker är buggar "eftersom Vi gör det annorlunda" bör du
 titta närmare på filen vi_diff.txt (eller skriva :help vi_diff.txt när du är
 i Vim).  Titta också på flaggorna 'compatible' och 'cpoptions'.
 .SH SVENSK ÖVERSÄTTNING
-Vim översattes ursprungligen av Johan Svedberg 2003-2007 och har under 2025
-uppdaterats av Daniel Nylander, speciellt manualsidor samt själva Vim.
+Översättningen gjordes ursprungligen av Johan Svedberg 2003-2007 och har
+uppdaterats av Daniel Nylander 2025 och 2026, bland annat för manualsidan och
+själva Vim.
 Om du hittar fel i översättningen, kontakta <tp-sv@listor.tp-sv.se>.
