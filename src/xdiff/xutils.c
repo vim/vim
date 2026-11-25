@@ -58,6 +58,22 @@ int xdl_emit_diffrec(char const *rec, long size, char const *pre, long psize,
 	return 0;
 }
 
+// Git/xdiff allows passing 0 to malloc/calloc, but Vim's lalloc doesn't. Guard
+// against that here and just do a tiny allocation to make sure we have a
+// non-NULL pointer.
+void *xdl_malloc(size_t size)
+{
+	return lalloc(size != 0 ? size : 1, TRUE);
+}
+
+void *xdl_calloc(size_t n, size_t sz)
+{
+	if (sz != 0 && n > SIZE_MAX / sz)
+		return NULL;
+	size_t total = n * sz;
+	return lalloc_clear(total != 0 ? total : 1, TRUE);
+}
+
 void *xdl_mmfile_first(mmfile_t *mmf, long *size)
 {
 	*size = mmf->size;

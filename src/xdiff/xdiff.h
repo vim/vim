@@ -126,8 +126,8 @@ typedef struct s_bdiffparam {
 # include "../vim.h"
 #endif
 
-#define xdl_malloc(x) lalloc((x), TRUE)
-#define xdl_calloc(n, sz) lalloc_clear(n*sz, TRUE)
+void *xdl_malloc(size_t size);
+void *xdl_calloc(size_t n, size_t sz);
 #define xdl_free(ptr) vim_free(ptr)
 #define xdl_realloc(ptr,x) vim_realloc((ptr),(x))
 
