@@ -89,6 +89,7 @@ clip_wl_T clip_wl;
 
 static void
 clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd);
+static bool clip_wl_need_request(Clipboard_T *cbd);
 static void clip_wl_request_selection(Clipboard_T *cbd);
 static int clip_wl_own_selection(Clipboard_T *cbd);
 static void clip_wl_lose_selection(Clipboard_T *cbd);
@@ -2140,6 +2141,12 @@ clip_get_selection(Clipboard_T *cbd)
     }
     else if (!is_clipboard_needs_update())
     {
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	// If current data offer has not changed, then do nothing, the clipboard
+	// register should be up to date.
+	if (clipmethod == CLIPMETHOD_WAYLAND && !clip_wl_need_request(cbd))
+	    return;
+#endif
 	clip_free_selection(cbd);
 
 	// Try to get selected text from another window
@@ -2659,6 +2666,20 @@ clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
 }
 
 /*
+ * Return true if current data offer has changed.
+ */
+    static bool
+clip_wl_need_request(Clipboard_T *cbd)
+{
+    clip_wl_selection_T *sel = clip_wl_get_selection_from_cbd(cbd);
+
+    if (vwl_connection_roundtrip(wayland_ct) == FAIL)
+	return true;
+
+    return sel->new_offer;
+}
+
+/*
  * Get the current selection and fill the respective register for cbd with the
  * data.
  */
@@ -2679,12 +2700,11 @@ clip_wl_request_selection(Clipboard_T *cbd)
     if (vwl_connection_roundtrip(wayland_ct) == FAIL)
 	goto clear;
 
-    // If "new_offer" is false, then we already received the data, don't do it
-    // again.
-    if (sel->offer == NULL || !sel->new_offer)
+    if (sel->offer == NULL)
+    {
+	sel->new_offer = false;
 	goto clear;
-
-    sel->new_offer = false;
+    }
 
     mime_types_len = sel->offer->mime_types.ga_len;
     mime_types = sel->offer->mime_types.ga_data;
@@ -2708,8 +2728,10 @@ clip_wl_request_selection(Clipboard_T *cbd)
 		   // closes their end we receive an EOF.
 
     if (vwl_connection_flush(wayland_ct) >= 0)
+    {
 	clip_wl_receive_data(cbd, chosen_mime, fds[0]);
-
+	sel->new_offer = false;
+    }
     close(fds[0]);
 
     return;
