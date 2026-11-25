@@ -411,7 +411,7 @@ def Test_enum_parse()
 enddef
 
 " Test for basic enum declaration and errors {{{1
-def Test_basic_enum()
+def Test_enum_basic()
   # Declare a simple enum
   var lines =<< trim END
     vim9script
@@ -453,6 +453,7 @@ def Test_basic_enum()
       assert_equal(a, Foo.apple)
       assert_equal(b, Foo.orange)
     enddef
+    Fn()
   END
   v9.CheckSourceSuccess(lines)
 
@@ -537,6 +538,7 @@ def Test_basic_enum()
       var l2: list<Planet> = [Planet.Mercury, Planet.Venus]
       assert_equal(Planet.Venus, l2[1])
     enddef
+    Fn()
   END
   v9.CheckSourceSuccess(lines)
 
@@ -566,6 +568,16 @@ def Test_enum_type()
     assert_equal(v:t_enumvalue, type(Fruit.Apple))
     assert_equal(15, type(Fruit))
     assert_equal(16, type(Fruit.Apple))
+
+    def Fn()
+      assert_equal('enum<Fruit>', typename(Fruit))
+      assert_equal('enum<Fruit>', typename(Fruit.Apple))
+      assert_equal(v:t_enum, type(Fruit))
+      assert_equal(v:t_enumvalue, type(Fruit.Apple))
+      var b: any = Fruit.Orange
+      assert_equal('enum<Fruit>', typename(b))
+    enddef
+    Fn()
   END
   v9.CheckSourceSuccess(lines)
 
@@ -709,6 +721,12 @@ def Test_enum_modify()
     defcompile
   END
   v9.CheckSourceFailure(lines, 'E1423: Enum value "Foo.Apple" cannot be modified', 1)
+
+  # an enum value cannot be removed or locked
+  for cmd in ['unlet Foo.Apple', 'lockvar Foo.Apple']
+    lines = ['vim9script', 'enum Foo', '  Apple', 'endenum', cmd]
+    v9.CheckSourceFailure(lines, 'E1423: Enum value "Foo.Apple" cannot be modified', 5)
+  endfor
 enddef
 
 " Test for using enum in an expression {{{1
@@ -748,6 +766,16 @@ def Test_enum_expr()
     var s: string = "abc" .. Color.Red
   END
   v9.CheckSourceFailure(lines, 'E1425: Using an Enum "Color" as a String', 5)
+
+  # the enum in a def function (for an enum value see
+  # Test_enum_invalid_operations())
+  var header = ['vim9script', 'enum Color', '  Red, Blue, Green', 'endenum']
+  for [expr, err] in [
+      ['var a: number = 1 + Color', 'E1421: Enum "Color" cannot be used as a value'],
+      ['var s: string = "abc" .. Color', 'E1105: Cannot convert class to string']]
+    v9.CheckSourceFailure(header + ['def Fn()', $'  {expr}', 'enddef', 'Fn()'],
+          err, 1)
+  endfor
 enddef
 
 " Test for using an enum in a lambda function {{{1
@@ -761,8 +789,16 @@ def Test_enum_lambda()
     endenum
     var Fn = (p: Planet): Planet => p
     for [idx, v] in items([Planet.Mercury, Planet.Venus, Planet.Earth])
-      assert_equal(idx, Fn(v).ordinal)
+      assert_equal(idx, Fn(v).ordinal, v.name)
     endfor
+
+    def Run()
+      var F = (p: Planet): Planet => p
+      for [idx, v] in items(Planet.values)
+        assert_equal(idx, F(v).ordinal, v.name)
+      endfor
+    enddef
+    Run()
   END
   v9.CheckSourceSuccess(lines)
 enddef
@@ -1123,7 +1159,7 @@ def Test_enum_import()
     enddef
     Fn()
   END
-  v9.CheckScriptSuccess(lines)
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " Test for using test_refcount() with enum {{{1
@@ -1461,7 +1497,7 @@ def Test_enum_invoke_constructor()
       enddef
     endenum
   END
-  v9.CheckSourceFailureList(lines, ['E1100:', 'E1100:'], 1)
+  v9.CheckSourceFailureList(lines, ['E1100: Command not supported in Vim9 script (missing :var?): x = 123', 'E1100: Command not supported in Vim9 script (missing :var?): x = 123'], 1)
 
   # an enum cannot be instantiated after initializing an enum value failed
   lines =<< trim END
@@ -1481,7 +1517,7 @@ def Test_enum_invoke_constructor()
   delfunc g:EnumNewAfterInitFailure
 enddef
 
-" Test for checking "this" in an enum constructor {{{1
+" Test that "this" in an enum constructor has the name and ordinal set {{{1
 def Test_enum_this_in_constructor()
   var lines =<< trim END
     vim9script
@@ -1567,7 +1603,7 @@ def Test_enum_object_variable()
       final farm: string = 'SunValley'
     endenum
     assert_equal('SunValley', Fruit.Apple.farm)
-    assert_equal('SunValley', Fruit.Apple.farm)
+    assert_equal('SunValley', Fruit.Orange.farm)
   END
   v9.CheckSourceSuccess(lines)
 
@@ -1722,14 +1758,14 @@ def Test_enum_custom_constructor()
     vim9script
     enum Fruit
       Apple(10),
-      Orange (20
+      Orange(20
 
       def new(t: number)
       enddef
     endenum
     defcompile
   END
-  v9.CheckSourceFailure(lines, "E1068: No white space allowed before '(': Orange (20", 4)
+  v9.CheckSourceFailure(lines, 'E1123: Missing comma before argument: def new(t: number)', 6)
 
   # Specify constructor arguments split across multiple lines
   lines =<< trim END
@@ -1821,11 +1857,16 @@ def Test_enum_class_variable()
       static var farm: string = 'SunValley'
     endenum
     assert_equal('SunValley', Fruit.farm)
+
+    def Fn()
+      assert_equal('SunValley', Fruit.farm)
+    enddef
+    Fn()
   END
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for converting a string to an enum value {{{1
+" Test for evaluating an enum value with eval() {{{1
 def Test_enum_eval()
   var lines =<< trim END
     vim9script
@@ -1838,12 +1879,23 @@ def Test_enum_eval()
     assert_equal(1, e.ordinal)
     assert_fails("eval('Color.Green')", 'E1422: Enum value "Green" not found in enum "Color"')
     assert_fails("var x = eval('Color')", 'E1421: Enum "Color" cannot be used as a value')
+
+    def Fn()
+      assert_true(eval('Color.Blue') is Color.Blue)
+      try
+        eval('Color.Green')
+        assert_report('No exception thrown')
+      catch
+        assert_exception('E1422: Enum value "Green" not found in enum "Color"')
+      endtry
+    enddef
+    Fn()
   END
   v9.CheckSourceSuccess(lines)
 enddef
 
 " Test for using "values" in an enum class variable {{{1
-def Test_use_enum_values_in_class_variable()
+def Test_enum_values_in_class_variable()
   var lines =<< trim END
     vim9script
     enum Dir
@@ -1856,7 +1908,7 @@ def Test_use_enum_values_in_class_variable()
 enddef
 
 " Test for using lambda block in enums {{{1
-def Test_lambda_block_in_enum()
+def Test_enum_lambda_block()
   # This used to crash Vim
   var lines =<< trim END
     vim9script
@@ -1869,7 +1921,7 @@ def Test_lambda_block_in_enum()
     endenum
     assert_equal(5, IdEnum1.ID1.Id(10))
   END
-  v9.CheckScriptSuccess(lines)
+  v9.CheckSourceSuccess(lines)
 
   # This used to crash Vim
   lines =<< trim END
@@ -1883,7 +1935,7 @@ def Test_lambda_block_in_enum()
     endenum
     assert_equal(12, IdEnum2.Id(10))
   END
-  v9.CheckScriptSuccess(lines)
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " Test for echoing an enum {{{1
@@ -1897,11 +1949,16 @@ def Test_enum_echo()
       var alias: string
     endenum
     assert_equal('enum Demo.one {name: one, ordinal: 0, alias: tahi}', execute('echo Demo.one')->split("\n")[0])
+
+    def Echo()
+      echo Demo.two
+    enddef
+    assert_equal('enum Demo.two {name: two, ordinal: 1, alias: rua}', execute('Echo()')->split("\n")[0])
   END
-  v9.CheckScriptSuccess(lines)
+  v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for garbage collecting an enum with a complex member variables {{{1
+" Test for garbage collecting an enum with Dict and List class variables {{{1
 func Test_enum_selfref_gc()
   let lines =<< trim END
     vim9script
@@ -1918,7 +1975,7 @@ func Test_enum_selfref_gc()
   call v9.CheckSourceSuccess(lines)
 endfunc
 
-" Test for defining an enum in a function {{{1
+" Test that an enum cannot be defined in a function {{{1
 def Test_enum_defined_in_function()
   var lines =<< trim END
     vim9script
@@ -1930,7 +1987,7 @@ def Test_enum_defined_in_function()
     enddef
     defcompile
   END
-  v9.CheckScriptFailure(lines, 'E1435: Enum can only be used in a script', 2)
+  v9.CheckSourceFailure(lines, 'E1435: Enum can only be used in a script', 2)
 enddef
 
 " Test for an enum implementing an interface {{{1
@@ -2260,7 +2317,7 @@ def Test_enum_values_list_locked()
     endenum
     Color.values[0] = Color.Green
   END
-  v9.CheckSourceFailure(lines, 'E741: Value is locked:', 5)
+  v9.CheckSourceFailure(lines, 'E741: Value is locked: Color.values[0] = Color.Green', 5)
 
   lines =<< trim END
     vim9script
@@ -2282,6 +2339,35 @@ def Test_enum_values_list_locked()
     Color.values = []
   END
   v9.CheckSourceFailure(lines, 'E1335: Variable "values" in class "Color" is not writable', 5)
+
+  # the other functions that change a List also fail
+  var header = ['vim9script', 'enum Color', '  Red, Green', 'endenum']
+  # [command, error at script level, error in a def function]
+  for [cmd, err, deferr] in [
+      ['remove(Color.values, 0)', 'E741: Value is locked: remove() argument',
+        'E741: Value is locked: remove() argument'],
+      ['insert(Color.values, Color.Red)', 'E741: Value is locked: insert() argument',
+        'E741: Value is locked: insert() argument'],
+      ['extend(Color.values, [Color.Red])', 'E741: Value is locked: extend() argument',
+        'E741: Value is locked: extend() argument'],
+      ['sort(Color.values)', 'E741: Value is locked: sort() argument',
+        'E741: Value is locked: sort() argument'],
+      ['reverse(Color.values)', 'E741: Value is locked: reverse() argument',
+        'E741: Value is locked: reverse() argument'],
+      ['map(Color.values, (_, v) => v)', 'E741: Value is locked: map() argument',
+        'E741: Value is locked: map() argument'],
+      ['filter(Color.values, (_, v) => false)', 'E741: Value is locked: filter() argument',
+        'E741: Value is locked: filter() argument'],
+      ['unlet Color.values[0]', 'E741: Value is locked: Color.values[0]',
+        'E741: Value is locked']]
+    v9.CheckSourceFailure(header + [cmd], err, 5)
+    v9.CheckSourceFailure(header + ['def Fn()', $'  {cmd}', 'enddef', 'Fn()'],
+          deferr, 1)
+  endfor
+
+  # the lock cannot be removed
+  v9.CheckSourceFailure(header + ['unlockvar Color.values'],
+        'E1335: Variable "values" in class "Color" is not writable', 5)
 enddef
 
 " Test for using builtin functions with enum values {{{1
@@ -2306,6 +2392,17 @@ def Test_enum_builtin_functions()
     assert_true(copy(Color.Green) is Color.Green)
     assert_true(deepcopy(Color.Green) is Color.Green)
     assert_true(deepcopy([Color.Blue])[0] is Color.Blue)
+
+    def Fn()
+      assert_true(instanceof(Color.Green, Color))
+      assert_false(instanceof(Color.Green, Paint))
+      assert_equal(2, index(Color.values, Color.Blue))
+      assert_equal(1, indexof(Color.values, (_, v) => v.name == 'Green'))
+      assert_equal(2, count([Color.Red, Color.Blue, Color.Red], Color.Red))
+      assert_true(copy(Color.Green) is Color.Green)
+      assert_true(deepcopy([Color.Blue])[0] is Color.Blue)
+    enddef
+    Fn()
   END
   v9.CheckSourceSuccess(lines)
 enddef
@@ -2519,6 +2616,8 @@ def Test_enum_in_legacy_script()
     call assert_equal('enum<Color>', typename(s:c))
     call assert_fails('let s:m.Color.Red = s:m.Color.Green',
           \ 'E1423: Enum value "Color.Red" cannot be modified')
+    call assert_fails('let x = !s:c', 'E1424: Using an Enum "Color" as a Number')
+    call assert_fails('let x = s:c . "x"', 'E1425: Using an Enum "Color" as a String')
   END
   v9.CheckSourceScriptSuccess(lines)
 enddef
@@ -2608,6 +2707,100 @@ def Test_enum_uninitialized_variable()
     Fn()
   END
   v9.CheckSourceFailure(lines, 'E1360: Using a null object', 2)
+enddef
+
+" Test for null values in the object variables of an enum value and for
+" null_object in a container of enum values {{{1
+def Test_enum_nested_null()
+  var lines =<< trim END
+    vim9script
+    enum Color
+      Red, Green
+      var l: list<number> = null_list
+      var d: dict<number> = null_dict
+      var o: Color = null_object
+    endenum
+    var nl: list<Color> = [Color.Red, null_object, Color.Green]
+
+    assert_equal("enum Color.Red {name: 'Red', ordinal: 0, l: [], d: {}, o: object of [unknown]}",
+      string(Color.Red))
+    assert_equal('[enum Color.Red {name: ''Red'', ordinal: 0, l: [], d: {}, o: object of [unknown]}, object of [unknown], enum Color.Green {name: ''Green'', ordinal: 1, l: [], d: {}, o: object of [unknown]}]',
+      string(nl))
+    assert_true(Color.Red.o == Color.Green.o)
+    assert_true(nl == [Color.Red, null_object, Color.Green])
+    assert_false(nl == [Color.Red, Color.Green, Color.Green])
+    assert_true(deepcopy(nl)[0] is Color.Red)
+    assert_true(deepcopy(nl)[1] is null_object)
+    assert_equal(1, index(nl, null_object))
+    assert_equal(2, index(nl, Color.Green))
+    assert_equal(1, count(nl, null_object))
+    assert_equal([false, true, false], nl->mapnew((_, v) => v == null))
+    assert_equal(nl, sort(copy(nl), (a, b) => 0))
+    assert_equal('list<enum<Color>>', typename(nl))
+    assert_equal('object<any>', typename(Color.Red.o))
+    assert_equal(0, len(Color.Red.l) + len(Color.Red.d))
+    assert_fails('echo nl[1].name', 'E1360: Using a null object')
+    assert_fails('echo Color.Red.o.ordinal', 'E1360: Using a null object')
+    assert_fails('Color.Red.l->add(1)', 'E1130: Cannot add to null list')
+    # the enum is unchanged
+    assert_equal([Color.Red, Color.Green], Color.values)
+    assert_true(Color.Red.o is null_object)
+
+    def Fn()
+      var l: list<Color> = [Color.Red, null_object]
+      assert_equal('[enum Color.Red {name: ''Red'', ordinal: 0, l: [], d: {}, o: object of [unknown]}, object of [unknown]]',
+        string(l))
+      assert_true(l == [Color.Red, null_object])
+      assert_true(Color.Red.o == Color.Green.o)
+      assert_true(deepcopy(l)[1] is null_object)
+      assert_equal(1, index(l, null_object))
+      try
+        var n = l[1].name
+        assert_report('no error')
+      catch
+        assert_exception('E1360: Using a null object')
+      endtry
+      try
+        Color.Red.d->extend({a: 1})
+        assert_report('no error')
+      catch
+        assert_exception('E1133: Cannot extend a null dict')
+      endtry
+    enddef
+    Fn()
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test that changing an enum under :silent! leaves it unchanged {{{1
+def Test_enum_modify_silent()
+  var lines =<< trim END
+    vim9script
+    enum Color
+      Red, Green
+      var n: number
+    endenum
+    silent! Color.Red = Color.Green
+    silent! unlet Color.Red
+    silent! Color.Red.name = 'x'
+    silent! Color.Red.ordinal += 1
+    silent! Color.values = []
+    silent! add(Color.values, Color.Red)
+    silent! unlockvar Color.values
+    silent! Color.values[0] = Color.Green
+    assert_equal([Color.Red, Color.Green], Color.values)
+    assert_equal(['Red', 0], [Color.Red.name, Color.Red.ordinal])
+    assert_true(Color.values[0] is Color.Red)
+    assert_true(islocked('Color.values'))
+
+    def Fn()
+      silent! add(Color.values, Color.Red)
+      silent! Color.values[0] = Color.Green
+    enddef
+    Fn()
+    assert_equal([Color.Red, Color.Green], Color.values)
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " Test for function types with enum arguments and return values, and for
@@ -2749,8 +2942,7 @@ def Test_enum_control_flow()
   v9.CheckSourceFailure(lines, 'E1105: Cannot convert object to string', 1)
 enddef
 
-" Test for the ignore-case and match-case variants of the comparison operators
-" {{{1
+" Test for the ignore-case and match-case variants of comparison operators {{{1
 def Test_enum_comparison_variants()
   var lines =<< trim END
     vim9script
@@ -2800,6 +2992,18 @@ def Test_enum_list_functions()
       names[c.name] = c
     endfor
     assert_true(names.Blue is Color.Blue)
+
+    def Fn()
+      assert_equal([Color.Blue, Color.Green, Color.Red],
+            copy(Color.values)->sort((a, b) => b.ordinal - a.ordinal))
+      assert_equal(['Green', 'Blue'],
+            Color.values->copy()->filter((_, v) => v.ordinal > 0)
+                        ->map((_, v) => v.name))
+      assert_equal('RedGreenBlue', reduce(Color.values, (acc, v) => acc .. v.name, ''))
+      assert_equal([Color.Red, Color.Green],
+            uniq([Color.Red, Color.Red, Color.Green]))
+    enddef
+    Fn()
   END
   v9.CheckSourceSuccess(lines)
 
@@ -2812,6 +3016,18 @@ def Test_enum_list_functions()
     var d = {[Color.Red]: 1}
   END
   v9.CheckSourceFailure(lines, 'E1425: Using an Enum "Color" as a String', 5)
+
+  lines =<< trim END
+    vim9script
+    enum Color
+      Red
+    endenum
+    def Fn()
+      var d = {[Color.Red]: 1}
+    enddef
+    Fn()
+  END
+  v9.CheckSourceFailure(lines, 'E1105: Cannot convert object to string', 1)
 enddef
 
 " Test for type checking enum values in a Tuple and in a nested container {{{1
@@ -2828,6 +3044,14 @@ def Test_enum_container_type_check()
     assert_true(t[1] is Fruit.Apple)
     var d: dict<list<Color>> = {a: [Color.Red]}
     assert_true(d.a[0] is Color.Red)
+
+    def Fn()
+      var t2: tuple<Color, Fruit> = (Color.Red, Fruit.Apple)
+      assert_true(t2[1] is Fruit.Apple)
+      var d2: dict<list<Color>> = {a: [Color.Red]}
+      assert_true(d2.a[0] is Color.Red)
+    enddef
+    Fn()
   END
   v9.CheckSourceSuccess(lines)
 
@@ -2854,6 +3078,193 @@ def Test_enum_container_type_check()
     var d: dict<list<Color>> = {a: [Fruit.Apple]}
   END
   v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected dict<list<enum<Color>>> but got dict<list<enum<Fruit>>>', 8)
+
+  # the same in a def function
+  var header = ['vim9script', 'enum Color', '  Red', 'endenum', 'enum Fruit', '  Apple', 'endenum']
+  for [decl, err] in [
+      ['var t: tuple<Color, Color> = (Color.Red, Fruit.Apple)',
+        'E1012: Type mismatch; expected tuple<enum<Color>, enum<Color>> but got tuple<enum<Color>, enum<Fruit>>'],
+      ['var d: dict<list<Color>> = {a: [Fruit.Apple]}',
+        'E1012: Type mismatch; expected dict<list<enum<Color>>> but got dict<list<enum<Fruit>>>']]
+    v9.CheckSourceFailure(header + ['def Fn()', $'  {decl}', 'enddef', 'Fn()'],
+          err, 1)
+  endfor
+enddef
+
+" Test for using enum values in object methods, class methods and lambdas
+" inside the enum {{{1
+def Test_enum_values_in_methods()
+  var lines =<< trim END
+    vim9script
+    enum Dir
+      North, East, South, West
+
+      def Next(): Dir
+        return Dir.values[(this.ordinal + 1) % len(Dir.values)]
+      enddef
+      def IsVertical(): bool
+        return this is Dir.North || this is Dir.South
+      enddef
+      def Label(): string
+        return $'{this.name}:{this.ordinal}'
+      enddef
+      static def FromName(n: string): Dir
+        for d in Dir.values
+          if d.name == n
+            return d
+          endif
+        endfor
+        return Dir.North
+      enddef
+      static def Vertical(): list<Dir>
+        return Dir.values->copy()->filter((_, d) => d.IsVertical())
+      enddef
+      # a lambda and a closure that uses "this" in a method
+      def Others(): list<string>
+        var Name = (d: Dir) => d.name
+        return Dir.values->copy()->filter((_, d) => d isnot this)
+                    ->map((_, d) => Name(d))
+      enddef
+    endenum
+
+    assert_true(Dir.North.Next() is Dir.East)
+    assert_true(Dir.West.Next() is Dir.North)
+    assert_equal('South:2', Dir.South.Label())
+    assert_true(Dir.FromName('West') is Dir.West)
+    assert_equal([Dir.North, Dir.South], Dir.Vertical())
+    assert_equal(['North', 'South', 'West'], Dir.East.Others())
+
+    def Fn()
+      assert_true(Dir.South.Next().Next() is Dir.North)
+      assert_false(Dir.FromName('East').IsVertical())
+      var d: any = Dir.East
+      assert_equal('East:1', d.Label())
+    enddef
+    Fn()
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using enum methods as funcrefs and callbacks {{{1
+def Test_enum_method_funcref()
+  var lines =<< trim END
+    vim9script
+    enum Color
+      Red, Green
+      def Label(): string
+        return this.name
+      enddef
+      static def Cmp(a: Color, b: Color): number
+        return b.ordinal - a.ordinal
+      enddef
+    endenum
+
+    # an object method is bound to the enum value
+    var F = Color.Green.Label
+    assert_equal('Green', F())
+    assert_equal('func(): string', typename(F))
+    var Fs = Color.values->mapnew((_, v) => v.Label)
+    assert_equal(['Red', 'Green'], Fs->mapnew((_, Fn) => Fn()))
+    var G = function(Color.Red.Label)
+    assert_equal('Red', G())
+
+    # a class method as a sort() callback
+    var C = Color.Cmp
+    assert_equal('func(enum<Color>, enum<Color>): number', typename(C))
+    assert_equal([Color.Green, Color.Red], sort(copy(Color.values), C))
+    assert_equal([Color.Green, Color.Red], sort(copy(Color.values), Color.Cmp))
+
+    def Fn()
+      var L = Color.Red.Label
+      assert_equal('Red', L())
+      assert_equal([Color.Green, Color.Red],
+            sort(copy(Color.values), Color.Cmp))
+    enddef
+    Fn()
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using an enum method as a timer callback {{{1
+def Test_enum_method_timer_callback()
+  CheckFeature timers
+  var lines =<< trim END
+    vim9script
+    enum Color
+      Red, Green
+      def Label(): string
+        return this.name
+      enddef
+      static def Tick(_: number)
+        g:enum_timer_result = Color.Green.Label()
+      enddef
+    endenum
+
+    g:enum_timer_result = ''
+    timer_start(0, Color.Tick)
+    g:WaitForAssert(() => assert_equal('Green', g:enum_timer_result))
+
+    g:enum_timer_result = ''
+    var L = Color.Red.Label
+    timer_start(0, (_) => {
+      g:enum_timer_result = L()
+    })
+    g:WaitForAssert(() => assert_equal('Red', g:enum_timer_result))
+  END
+  v9.CheckSourceSuccess(lines)
+  unlet g:enum_timer_result
+enddef
+
+" Test for changing an enum value, its name or ordinal or using an enum as a
+" value in an object method, a class method, a lambda and a method of another
+" class {{{1
+def Test_enum_modify_in_method()
+  var header =<< trim END
+    vim9script
+    enum Color
+      Red, Green
+  END
+  for [body, err] in [
+      # object method
+      [['def M()', '  this.name = "x"', 'enddef'],
+        'E1427: Enum "Color" name cannot be modified'],
+      [['def M()', '  this.ordinal = 3', 'enddef'],
+        'E1426: Enum "Color" ordinal value cannot be modified'],
+      [['def M()', '  Color.values->add(Color.Red)', 'enddef'],
+        'E741: Value is locked: add() argument'],
+      [['def M()', '  var x = Color', 'enddef'],
+        'E1421: Enum "Color" cannot be used as a value'],
+      [['def M()', '  var c = Color.new()', 'enddef'],
+        'E1325: Method "new" not found in class "Color"'],
+      # class method called from an object method
+      [['def M()', '  S()', 'enddef', 'static def S()',
+          '  var x = Color', 'enddef'],
+        'E1421: Enum "Color" cannot be used as a value'],
+      # lambda in an object method
+      [['def M()', '  var F = () => {', '    this.name = "x"', '  }', '  F()',
+          'enddef'],
+        'E1427: Enum "Color" name cannot be modified']]
+    v9.CheckSourceFailure(header + body->mapnew((_, s) => $'  {s}')
+                            + ['endenum', 'Color.Red.M()'], err, 1)
+  endfor
+
+  # object method and class method of another class
+  var lines = header + ['endenum'] + [
+    'class Car', '  def M()', '    Color.Red = Color.Green', '  enddef',
+    'endclass', 'Car.new().M()']
+  v9.CheckSourceFailure(lines,
+        'E1423: Enum value "Color.Red" cannot be modified', 1)
+  lines = header + ['endenum'] + [
+    'class Car', '  static def M()', '    Color.Green = Color.Red', '  enddef',
+    'endclass', 'Car.M()']
+  v9.CheckSourceFailure(lines,
+        'E1423: Enum value "Color.Green" cannot be modified', 1)
+
+  # through a variable of type any
+  lines = header + ['endenum', 'def Fn()', '  var c: any = Color.Red',
+                    '  c.name = "x"', 'enddef', 'Fn()']
+  v9.CheckSourceFailure(lines,
+        'E1335: Variable "name" in class "Color" is not writable', 2)
 enddef
 
 " Test for using an enum that is not exported {{{1
@@ -3130,6 +3541,24 @@ def Test_enum_runtime_type_check()
     'assert_true(Gn(null_object))',
   ]
   v9.CheckSourceSuccess(lines)
+
+  # a value of another enum stored through "any" in a def function
+  for [body, lnum, err] in [
+      [['var [a: Color, b: Color] = [Color.Red, v]'], 1,
+        'E1163: Variable 2: type mismatch, expected enum<Color> but got enum<Light>'],
+      [['for c: Color in [v]', 'endfor'], 1,
+        'E1012: Type mismatch; expected enum<Color> but got enum<Light>'],
+      [['var l: list<Color> = [Color.Red]', 'l[0] = v'], 2,
+        'E1012: Type mismatch; expected enum<Color> but got enum<Light>'],
+      [['var l: list<Color> = []', 'add(l, v)'], 2,
+        'E1012: Type mismatch; expected enum<Color> but got enum<Light>'],
+      [['var l: list<Color> = []', 'insert(l, v)'], 2,
+        'E1013: Argument 2: type mismatch, expected enum<Color> but got enum<Light>'],
+      [['var F = (c: Color) => c', 'F(v)'], 2,
+        'E1013: Argument 1: type mismatch, expected enum<Color> but got enum<Light>']]
+    v9.CheckSourceFailure(header + ['def Fn(v: any)'] + body
+                                 + ['enddef', 'Fn(Light.Red)'], err, lnum)
+  endfor
 enddef
 
 " Test assigning an enum value to an interface the enum doesn't implement {{{1
