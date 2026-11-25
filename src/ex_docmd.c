@@ -67,7 +67,6 @@ static int	getargopt(exarg_T *eap);
 
 static linenr_T default_address(exarg_T *eap);
 static void address_default_all(exarg_T *eap);
-static void	get_flags(exarg_T *eap);
 #if !defined(FEAT_PERL) \
 	|| !defined(FEAT_PYTHON) || !defined(FEAT_PYTHON3) \
 	|| !defined(FEAT_TCL) \
@@ -2268,9 +2267,11 @@ do_one_cmd(
 
     /*
      * Skip to start of argument.
-     * Don't do this for the ":!" command, because ":!! -l" needs the space.
+     * Don't do this for:
+     * - ":!", because ":!! -l" needs the space.
+     * - ":z", because any type must immediately follow the command.
      */
-    if (ea.cmdidx == CMD_bang)
+    if (ea.cmdidx == CMD_bang || ea.cmdidx == CMD_z)
 	ea.arg = p;
     else
 	ea.arg = skipwhite(p);
@@ -5049,7 +5050,7 @@ address_default_all(exarg_T *eap)
 /*
  * Get flags from an Ex command argument.
  */
-    static void
+    void
 get_flags(exarg_T *eap)
 {
     while (vim_strchr((char_u *)"lp#", *eap->arg) != NULL)
