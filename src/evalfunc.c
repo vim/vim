@@ -5258,6 +5258,12 @@ execute_cmds_from_string(char_u *str)
 }
 #endif
 
+// Cookie for get_list_line(): the List and the index of the next line.
+typedef struct {
+    list_T	*ll_list;
+    long	ll_idx;
+} listline_T;
+
 /*
  * Get next line from a list.
  * Called by do_cmdline() to get the next line.
@@ -5270,15 +5276,17 @@ get_list_line(
     int	    indent UNUSED,
     getline_opt_T options UNUSED)
 {
-    listitem_T **p = (listitem_T **)cookie;
-    listitem_T *item = *p;
+    listline_T	*ll = (listline_T *)cookie;
+    listitem_T	*item;
     char_u	buf[NUMBUFLEN];
     char_u	*s;
 
+    // A command may have changed the List, find the item by its index.
+    item = list_find(ll->ll_list, ll->ll_idx);
     if (item == NULL)
 	return NULL;
     s = tv_get_string_buf_chk(&item->li_tv, buf);
-    *p = item->li_next;
+    ++ll->ll_idx;
     return s == NULL ? NULL : vim_strsave(s);
 }
 
@@ -5361,11 +5369,11 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
 	do_cmdline_cmd(cmd);
     else
     {
-	listitem_T	*item;
+	listline_T	ll;
 
-	CHECK_LIST_MATERIALIZE(list);
-	item = list->lv_first;
-	do_cmdline(NULL, get_list_line, (void *)&item,
+	ll.ll_list = list;
+	ll.ll_idx = 0;
+	do_cmdline(NULL, get_list_line, (void *)&ll,
 		      DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT|DOCMD_KEYTYPED);
 	--list->lv_refcount;
     }
