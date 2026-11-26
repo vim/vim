@@ -736,13 +736,20 @@ changed_common(
     changed();
 
 #ifdef FEAT_EVAL
+    // When every line was deleted one empty line remains, which later changes
+    // count as line 1.  Report the deletion as replacing the lines with it.
+    long	listener_xtra = xtra;
+
+    if (xtra < 0 && lnum == 1 && (curbuf->b_ml.ml_flags & ML_EMPTY))
+	++listener_xtra;
+
     // Immediately send this change to any listeners that require changes not
     // to be buffered.
-    invoke_sync_listeners(curbuf, lnum, col, lnume, xtra);
+    invoke_sync_listeners(curbuf, lnum, col, lnume, listener_xtra);
 
     // If there are any listeners accepting buffered changes then add changes
     // to the current buffer's list, flushing previous changes first if necessary.
-    may_record_change(lnum, col, lnume, xtra);
+    may_record_change(lnum, col, lnume, listener_xtra);
 #endif
 #ifdef FEAT_DIFF
     if (curwin->w_p_diff && diff_internal())
