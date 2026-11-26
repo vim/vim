@@ -7202,6 +7202,8 @@ ConvertToPyObject(typval_T *tv)
 					  ? (char_u *)"" : tv->vval.v_string,
 					  0, NULL, NULL, TRUE);
 	case VAR_PARTIAL:
+	    if (tv->vval.v_partial == NULL)
+		return NEW_FUNCTION((char_u *)"", 0, NULL, NULL, TRUE);
 	    if (tv->vval.v_partial->pt_argc)
 	    {
 		argv = PyMem_New(typval_T, (size_t)tv->vval.v_partial->pt_argc);
@@ -7212,8 +7214,7 @@ ConvertToPyObject(typval_T *tv)
 		argv = NULL;
 	    if (tv->vval.v_partial->pt_dict != NULL)
 		tv->vval.v_partial->pt_dict->dv_refcount++;
-	    return NEW_FUNCTION(tv->vval.v_partial == NULL
-			     ? (char_u *)"" : partial_name(tv->vval.v_partial),
+	    return NEW_FUNCTION(partial_name(tv->vval.v_partial),
 				tv->vval.v_partial->pt_argc, argv,
 				tv->vval.v_partial->pt_dict,
 				tv->vval.v_partial->pt_auto);

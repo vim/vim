@@ -180,6 +180,24 @@ func Test_vim_function()
   delfunc s:foo
 endfunc
 
+" Converting a null partial to a Python object crashed.  It is converted like
+" a null function.
+func Test_python3_null_partial()
+  let g:NullF = test_null_function()
+  let g:NullP = test_null_partial()
+  let errors = []
+  for name in ['NullF', 'NullP']
+    try
+      call py3eval('vim.vars["' .. name .. '"]')
+      call add(errors, 'no error')
+    catch
+      call add(errors, substitute(v:exception, name, 'X', 'g'))
+    endtry
+  endfor
+  call assert_equal(errors[0], errors[1])
+  unlet g:NullF g:NullP
+endfunc
+
 func Test_skipped_python3_command_does_not_affect_pyxversion()
   set pyxversion=0
   if 0
