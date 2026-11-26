@@ -4125,6 +4125,25 @@ def Test_for_loop_script_var()
   END
 enddef
 
+" At script level the loop variable does not get the type of the first item.
+" Compiled code trusted that type, which crashed.
+def Test_for_loop_var_type_script()
+  var lines =<< trim END
+    vim9script
+    var out: list<string>
+    for y in [10, 'b']
+      var Add = (): any => y * 2
+      try
+        out->add(string(Add()))
+      catch
+        out->add(matchstr(v:exception, 'E\d\+'))
+      endtry
+    endfor
+    assert_equal(['20', 'E1030'], out)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_for_loop_unpack()
   var lines =<< trim END
       var result = []

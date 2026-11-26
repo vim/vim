@@ -4415,9 +4415,15 @@ set_var_const(
 	// A Vim9 script-local variable is also added to sn_all_vars and
 	// sn_var_vals. It may set "type" from "tv".
 	if (var_in_vim9script || var_in_autoload)
+	{
+	    // A loop variable gets other values later, without a type check,
+	    // don't use the type of the first value.
+	    if (type == NULL && (flags & ASSIGN_FOR_LOOP))
+		type = &t_any;
 	    update_vim9_script_var(TRUE, di,
 		    var_in_autoload ? name : di->di_key, flags,
 			  tv, &type, (flags & ASSIGN_NO_MEMBER_TYPE) == 0);
+	}
     }
 
     dest_tv = &di->di_tv;
