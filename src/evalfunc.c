@@ -1308,6 +1308,7 @@ static argcheck_T arg3_any_list_dict[] = {arg_any, arg_list_any, arg_dict_any};
 static argcheck_T arg3_buffer_lnum_lnum[] = {arg_buffer, arg_lnum, arg_lnum};
 static argcheck_T arg3_buffer_number_number[] = {arg_buffer, arg_number, arg_number};
 static argcheck_T arg3_buffer_string_any[] = {arg_buffer, arg_string, arg_any};
+static argcheck_T arg3_buffer_string_func[] = {arg_buffer, arg_string, arg_string_or_func};
 static argcheck_T arg3_buffer_string_dict[] = {arg_buffer, arg_string, arg_dict_any};
 static argcheck_T arg3_dict_number_number[] = {arg_dict_any, arg_number, arg_number};
 static argcheck_T arg3_diff[] = {arg_list_string, arg_list_string, arg_dict_any};
@@ -3679,6 +3680,9 @@ static const funcentry_T global_functions[] =
     {"term_setapi",	2, 2, FEARG_1,	    arg2_buffer_string,
 			"buf, expr",
 			ret_void,	    TERM_FUNC(f_term_setapi)},
+    {"term_setcallback", 3, 3, FEARG_1,	    arg3_buffer_string_func,
+			"buf, type, func",
+			ret_number,	    TERM_FUNC(f_term_setcallback)},
     {"term_setkill",	2, 2, FEARG_1,	    arg2_buffer_string,
 			"buf, how",
 			ret_void,	    TERM_FUNC(f_term_setkill)},
@@ -3691,6 +3695,9 @@ static const funcentry_T global_functions[] =
     {"term_start",	1, 2, FEARG_1,	    arg2_string_or_list_dict,
 			"cmd, options",
 			ret_number,	    TERM_FUNC(f_term_start)},
+    {"term_unsetcallback", 2, 2, FEARG_1, arg2_buffer_number,
+			"buf, id",
+			ret_void,	    TERM_FUNC(f_term_unsetcallback)},
     {"term_wait",	1, 2, FEARG_1,	    arg2_buffer_number,
 			"buf, time",
 			ret_void,	    TERM_FUNC(f_term_wait)},
