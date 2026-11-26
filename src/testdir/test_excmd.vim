@@ -103,27 +103,72 @@ endfunc
 func Test_append_cmd()
   new
   call setline(1, ['  L1'])
-  call feedkeys(":append\<CR>  L2\<CR>  L3\<CR>.\<CR>", 'xt')
-  call assert_equal(['  L1', '  L2', '  L3'], getline(1, '$'))
+  call feedkeys(":append\<CR>  AL1\<CR>  AL2\<CR>.\<CR>", 'xt')
+  call assert_equal(['  L1', '  AL1', '  AL2'], getline(1, '$'))
   %delete _
   " append after a specific line
   call setline(1, ['  L1', '  L2', '  L3'])
-  call feedkeys(":2append\<CR>  L4\<CR>  L5\<CR>.\<CR>", 'xt')
-  call assert_equal(['  L1', '  L2', '  L4', '  L5', '  L3'], getline(1, '$'))
+  call feedkeys(":2append\<CR>  AL1\<CR>  AL2\<CR>.\<CR>", 'xt')
+  call assert_equal(['  L1', '  L2', '  AL1', '  AL2', '  L3'], getline(1, '$'))
+  %delete _
+  " append after a range
+  call setline(1, ['  L1', '  L2', '  L3'])
+  call feedkeys(":1,2append\<CR>  AL1\<CR>  AL2\<CR>.\<CR>", 'xt')
+  call assert_equal(['  L1', '  L2', '  AL1', '  AL2', '  L3'], getline(1, '$'))
   %delete _
   " append with toggling 'autoindent'
   call setline(1, ['  L1'])
-  call feedkeys(":append!\<CR>  L2\<CR>  L3\<CR>.\<CR>", 'xt')
-  call assert_equal(['  L1', '    L2', '      L3'], getline(1, '$'))
+  call feedkeys(":append!\<CR>  AL1\<CR>  AL2\<CR>.\<CR>", 'xt')
+  call assert_equal(['  L1', '    AL1', '      AL2'], getline(1, '$'))
   call assert_false(&autoindent)
   %delete _
   " append with 'autoindent' set and toggling 'autoindent'
   set autoindent
   call setline(1, ['  L1'])
-  call feedkeys(":append!\<CR>  L2\<CR>  L3\<CR>.\<CR>", 'xt')
-  call assert_equal(['  L1', '  L2', '  L3'], getline(1, '$'))
+  call feedkeys(":append!\<CR>  AL1\<CR>  AL2\<CR>.\<CR>", 'xt')
+  call assert_equal(['  L1', '  AL1', '  AL2'], getline(1, '$'))
   call assert_true(&autoindent)
   set autoindent&
+  bw!
+endfunc
+
+func Test_append_cmd_trailing_bar()
+  new
+
+  call setline(1, ['  L1', '  L2', '  L3'])
+  call feedkeys(":append |\<CR>.\<CR>", 'xt')
+  call assert_equal(['  L1', '', '  L2', '  L3'], getline(1, '$'))
+  %delete _
+  call setline(1, ['  L1', '  L2', '  L3'])
+  call feedkeys(":append |A0\<CR>.\<CR>", 'xt')
+  call assert_equal(['  L1', 'A0', '  L2', '  L3'], getline(1, '$'))
+  %delete _
+  call setline(1, ['  L1', '  L2', '  L3'])
+  call feedkeys(":append |\<CR>A1\<CR>.\<CR>", 'xt')
+  call assert_equal(['  L1', '', 'A1', '  L2', '  L3'], getline(1, '$'))
+  %delete _
+  call setline(1, ['  L1', '  L2', '  L3'])
+  call feedkeys(":append |A0\<CR>A1\<CR>.\<CR>", 'xt')
+  call assert_equal(['  L1', 'A0', 'A1', '  L2', '  L3'], getline(1, '$'))
+  %delete _
+
+  " :global
+  call setline(1, ['L1', 'L2', 'L3'])
+  call feedkeys(":global/./append |\<CR>", 'xt')
+  call assert_equal(['L1', '', 'L2', '', 'L3', ''], getline(1, '$'))
+  %delete _
+  call setline(1, ['L1', 'L2', 'L3'])
+  call feedkeys(":global/./append |A0\<CR>", 'xt')
+  call assert_equal(['L1', 'A0', 'L2', 'A0', 'L3', 'A0'], getline(1, '$'))
+  %delete _
+
+  bw!
+endfunc
+
+func Test_append_cmd_comment()
+  new
+  call feedkeys(":append \" comment\<CR>L1\<CR>L2\<CR>.\<CR>", 'xt')
+  call assert_equal(['L1', 'L2'], getline(1, '$'))
   bw!
 endfunc
 
@@ -220,27 +265,72 @@ endfunc
 func Test_insert_cmd()
   new
   call setline(1, ['  L1'])
-  call feedkeys(":insert\<CR>  L2\<CR>  L3\<CR>.\<CR>", 'xt')
-  call assert_equal(['  L2', '  L3', '  L1'], getline(1, '$'))
+  call feedkeys(":insert\<CR>  IL1\<CR>  IL2\<CR>.\<CR>", 'xt')
+  call assert_equal(['  IL1', '  IL2', '  L1'], getline(1, '$'))
   %delete _
   " insert before a specific line
   call setline(1, ['  L1', '  L2', '  L3'])
-  call feedkeys(":2insert\<CR>  L4\<CR>  L5\<CR>.\<CR>", 'xt')
-  call assert_equal(['  L1', '  L4', '  L5', '  L2', '  L3'], getline(1, '$'))
+  call feedkeys(":2insert\<CR>  IL1\<CR>  IL2\<CR>.\<CR>", 'xt')
+  call assert_equal(['  L1', '  IL1', '  IL2', '  L2', '  L3'], getline(1, '$'))
+  %delete _
+  " insert at end of a range
+  call setline(1, ['  L1', '  L2', '  L3'])
+  call feedkeys(":1,2insert\<CR>  IL1\<CR>  IL2\<CR>.\<CR>", 'xt')
+  call assert_equal(['  L1', '  IL1', '  IL2', '  L2', '  L3'], getline(1, '$'))
   %delete _
   " insert with toggling 'autoindent'
   call setline(1, ['  L1'])
-  call feedkeys(":insert!\<CR>  L2\<CR>  L3\<CR>.\<CR>", 'xt')
-  call assert_equal(['    L2', '      L3', '  L1'], getline(1, '$'))
+  call feedkeys(":insert!\<CR>  IL1\<CR>  IL2\<CR>.\<CR>", 'xt')
+  call assert_equal(['    IL1', '      IL2', '  L1'], getline(1, '$'))
   call assert_false(&autoindent)
   %delete _
   " insert with 'autoindent' set and toggling 'autoindent'
   set autoindent
   call setline(1, ['  L1'])
-  call feedkeys(":insert!\<CR>  L2\<CR>  L3\<CR>.\<CR>", 'xt')
-  call assert_equal(['  L2', '  L3', '  L1'], getline(1, '$'))
+  call feedkeys(":insert!\<CR>  IL1\<CR>  IL2\<CR>.\<CR>", 'xt')
+  call assert_equal(['  IL1', '  IL2', '  L1'], getline(1, '$'))
   call assert_true(&autoindent)
   set autoindent&
+  bw!
+endfunc
+
+func Test_insert_cmd_trailing_bar()
+  new
+
+  call setline(1, ['  L1', '  L2', '  L3'])
+  call feedkeys(":insert |\<CR>.\<CR>", 'xt')
+  call assert_equal(['', '  L1', '  L2', '  L3'], getline(1, '$'))
+  %delete _
+  call setline(1, ['  L1', '  L2', '  L3'])
+  call feedkeys(":insert |I0\<CR>.\<CR>", 'xt')
+  call assert_equal(['I0', '  L1', '  L2', '  L3'], getline(1, '$'))
+  %delete _
+  call setline(1, ['  L1', '  L2', '  L3'])
+  call feedkeys(":insert |\<CR>I1\<CR>.\<CR>", 'xt')
+  call assert_equal(['', 'I1', '  L1', '  L2', '  L3'], getline(1, '$'))
+  %delete _
+  call setline(1, ['  L1', '  L2', '  L3'])
+  call feedkeys(":insert |I0\<CR>I1\<CR>.\<CR>", 'xt')
+  call assert_equal(['I0', 'I1', '  L1', '  L2', '  L3'], getline(1, '$'))
+  %delete _
+
+  " :global
+  call setline(1, ['L1', 'L2', 'L3'])
+  call feedkeys(":global/./insert |\<CR>", 'xt')
+  call assert_equal(['', 'L1', '', 'L2', '', 'L3'], getline(1, '$'))
+  %delete _
+  call setline(1, ['L1', 'L2', 'L3'])
+  call feedkeys(":global/./insert |I0\<CR>", 'xt')
+  call assert_equal(['I0', 'L1', 'I0', 'L2', 'I0', 'L3'], getline(1, '$'))
+  %delete _
+
+  bw!
+endfunc
+
+func Test_insert_cmd_comment()
+  new
+  call feedkeys(":insert \" comment\<CR>L1\<CR>L2\<CR>.\<CR>", 'xt')
+  call assert_equal(['L1', 'L2'], getline(1, '$'))
   bw!
 endfunc
 
@@ -268,27 +358,83 @@ endfunc
 func Test_change_cmd()
   new
   call setline(1, ['  L1', 'L2', 'L3'])
-  call feedkeys(":change\<CR>  L4\<CR>  L5\<CR>.\<CR>", 'xt')
-  call assert_equal(['  L4', '  L5', 'L2', 'L3'], getline(1, '$'))
+  call feedkeys(":change\<CR>  CL1\<CR>  CL2\<CR>.\<CR>", 'xt')
+  call assert_equal(['  CL1', '  CL2', 'L2', 'L3'], getline(1, '$'))
+  %delete _
+  " change multiple lines
+  call setline(1, ['  L1', 'L2', 'L3'])
+  call feedkeys(":change 2\<CR>  CL1\<CR>  CL2\<CR>.\<CR>", 'xt')
+  call assert_equal(['  CL1', '  CL2', 'L3'], getline(1, '$'))
   %delete _
   " change a specific line
   call setline(1, ['  L1', '  L2', '  L3'])
-  call feedkeys(":2change\<CR>  L4\<CR>  L5\<CR>.\<CR>", 'xt')
-  call assert_equal(['  L1', '  L4', '  L5', '  L3'], getline(1, '$'))
+  call feedkeys(":2change\<CR>  CL1\<CR>  CL2\<CR>.\<CR>", 'xt')
+  call assert_equal(['  L1', '  CL1', '  CL2', '  L3'], getline(1, '$'))
+  %delete _
+  " change multiple lines at a specific line
+  call setline(1, ['  L1', '  L2', '  L3', '  L4'])
+  call feedkeys(":2change 2\<CR>  CL1\<CR>  CL2\<CR>  CL3\<CR>.\<CR>", 'xt')
+  call assert_equal(['  L1', '  CL1', '  CL2', '  CL3', '  L4'], getline(1, '$'))
+  %delete _
+  " change a range of lines
+  call setline(1, ['  L1', 'L2', 'L3'])
+  call feedkeys(":1,2change\<CR>  CL1\<CR>  CL2\<CR>.\<CR>", 'xt')
+  call assert_equal(['  CL1', '  CL2', 'L3'], getline(1, '$'))
+  %delete _
+  " change multiple lines at end of a range
+  call setline(1, ['  L1', 'L2', 'L3', 'L4'])
+  call feedkeys(":1,2change 2\<CR>  CL1\<CR>  CL2\<CR>.\<CR>", 'xt')
+  call assert_equal(['  L1', '  CL1', '  CL2', 'L4'], getline(1, '$'))
   %delete _
   " change with toggling 'autoindent'
   call setline(1, ['  L1', 'L2', 'L3'])
-  call feedkeys(":change!\<CR>  L4\<CR>  L5\<CR>.\<CR>", 'xt')
-  call assert_equal(['    L4', '      L5', 'L2', 'L3'], getline(1, '$'))
+  call feedkeys(":change!\<CR>  CL1\<CR>  CL2\<CR>.\<CR>", 'xt')
+  call assert_equal(['    CL1', '      CL2', 'L2', 'L3'], getline(1, '$'))
   call assert_false(&autoindent)
   %delete _
   " change with 'autoindent' set and toggling 'autoindent'
   set autoindent
   call setline(1, ['  L1', 'L2', 'L3'])
-  call feedkeys(":change!\<CR>  L4\<CR>  L5\<CR>.\<CR>", 'xt')
-  call assert_equal(['  L4', '  L5', 'L2', 'L3'], getline(1, '$'))
+  call feedkeys(":change!\<CR>  CL1\<CR>  CL2\<CR>.\<CR>", 'xt')
+  call assert_equal(['  CL1', '  CL2', 'L2', 'L3'], getline(1, '$'))
   call assert_true(&autoindent)
   set autoindent&
+  bw!
+endfunc
+
+func Test_change_cmd_trailing_bar()
+  new
+
+  call feedkeys(":change |\<CR>.\<CR>", 'xt')
+  call assert_equal([''], getline(1, '$'))
+  %delete _
+  call feedkeys(":change |L0\<CR>.\<CR>", 'xt')
+  call assert_equal(['L0'], getline(1, '$'))
+  %delete _
+  call feedkeys(":change |\<CR>L1\<CR>.\<CR>", 'xt')
+  call assert_equal(['', 'L1'], getline(1, '$'))
+  %delete _
+  call feedkeys(":change |L0\<CR>L1\<CR>.\<CR>", 'xt')
+  call assert_equal(['L0', 'L1'], getline(1, '$'))
+  %delete _
+
+  " :global
+  call setline(1, ['L1', 'L2', 'L3'])
+  call feedkeys(":global/./change |\<CR>", 'xt')
+  call assert_equal(['', '', ''], getline(1, '$'))
+  %delete _
+  call setline(1, ['L1', 'L2', 'L3'])
+  call feedkeys(":global/./change |C_\<CR>", 'xt')
+  call assert_equal(['C_', 'C_', 'C_'], getline(1, '$'))
+  %delete _
+
+  bw!
+endfunc
+
+func Test_change_cmd_comment()
+  new
+  call feedkeys(":change \" comment\<CR>L1\<CR>L2\<CR>.\<CR>", 'xt')
+  call assert_equal(['L1', 'L2'], getline(1, '$'))
   bw!
 endfunc
 
