@@ -99,8 +99,8 @@ def Test_lamba_compiled_linebreak()
 enddef
 
 func Test_lambda_with_partial()
-  let l:Cb = function({... -> ['zero', a:1, a:2, a:3]}, ['one', 'two'])
-  call assert_equal(['zero', 'one', 'two', 'three'], l:Cb('three'))
+  let Cb = function({... -> ['zero', a:1, a:2, a:3]}, ['one', 'two'])
+  call assert_equal(['zero', 'one', 'two', 'three'], Cb('three'))
 endfunc
 
 function Test_lambda_fails()

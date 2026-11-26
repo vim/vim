@@ -1349,8 +1349,7 @@ endfunc
 " Test for a crash when a Lua funcref is invoked with parameters from Vim
 func Test_lua_funcref_with_params()
   let Lua_funcref = luaeval('function(d) local s = "in Lua callback" end')
-  call Lua_funcref({'a' : 'b'})
-  call assert_true(v:true)
+  call assert_equal(v:null, Lua_funcref({'a' : 'b'}))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

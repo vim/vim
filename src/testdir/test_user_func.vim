@@ -402,15 +402,9 @@ endfunc
 " Test for defining a function reference in the global scope
 func Test_add_funcref_to_global_scope()
   let x = g:
-  let caught_E862 = 0
-  try
-    func x.Xfunc()
-      return 1
-    endfunc
-  catch /E862:/
-    let caught_E862 = 1
-  endtry
-  call assert_equal(1, caught_E862)
+  call assert_fails("exe \"func x.Xfunc()\nreturn 1\nendfunc\"",
+        \ 'E862: Cannot use g: here')
+  call assert_false(has_key(g:, 'Xfunc'))
 endfunc
 
 func Test_funccall_garbage_collect()
@@ -1135,6 +1129,23 @@ func Test_defer_garbagecollect()
     call assert_equal([[8]], s:res2)
   END
   call v9.CheckSourceSuccess(lines)
+endfunc
+
+" A function called through a Funcref cannot delete or redefine itself.
+func Test_delete_redefine_running_funcref()
+  func s:SelfDelete()
+    call assert_fails('delfunc s:SelfDelete',
+          \ 'E131: Cannot delete function s:SelfDelete: It is in use')
+    call assert_fails("exe \"func! s:SelfDelete()\\nendfunc\"",
+          \ 'E127: Cannot redefine function ' .. expand('<SID>')
+          \ .. 'SelfDelete: It is in use')
+    return 'ran'
+  endfunc
+  for F in [function('s:SelfDelete'), funcref('s:SelfDelete')]
+    call assert_equal('ran', F())
+    call assert_equal('ran', F())
+  endfor
+  delfunc s:SelfDelete
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

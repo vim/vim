@@ -3231,7 +3231,7 @@ def Test_script_funcref_case()
   lines =<< trim END
       var len = (s: string): number => len(s) + 1
   END
-  v9.CheckDefAndScriptFailure(lines, 'E704:')
+  v9.CheckDefAndScriptFailure(lines, 'E704: Funcref variable name must start with a capital: len')
 
   lines =<< trim END
       vim9script
@@ -3244,7 +3244,7 @@ def Test_script_funcref_case()
       vim9script
       var len = (s: string): number => len(s) + 1
   END
-  v9.CheckScriptFailure(lines, 'E704:')
+  v9.CheckScriptFailure(lines, 'E704: Funcref variable name must start with a capital: len')
 enddef
 
 def Test_script_funcref_runtime_type_check()
