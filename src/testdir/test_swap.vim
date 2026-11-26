@@ -60,19 +60,19 @@ func Test_swap_group()
     split Xtest
     call setline(1, 'just some text')
     wq
-    if system('ls -l Xtest') !~ ' ' . groups[0] . ' \d'
+    if system('ls -l Xtest') !~ ' ' . groups[0] . '\s\+\d'
       throw 'Skipped: test file does not have the first group'
     else
       silent !chmod 640 Xtest
       call system('chgrp ' . groups[1] . ' Xtest')
-      if system('ls -l Xtest') !~ ' ' . groups[1] . ' \d'
+      if system('ls -l Xtest') !~ ' ' . groups[1] . '\s\+\d'
 	throw 'Skipped: cannot set second group on test file'
       else
 	split Xtest
 	let swapname = s:swapname()
 	call assert_match('Xtest', swapname)
 	" Group of swapfile must now match original file.
-	call assert_match(' ' . groups[1] . ' \d', system('ls -l ' . swapname))
+	call assert_match(' ' . groups[1] . '\s\+\d', system('ls -l ' . swapname))
 
 	bwipe!
       endif
