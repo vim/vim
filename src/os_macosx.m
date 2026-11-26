@@ -69,12 +69,12 @@ clip_mch_request_selection(Clipboard_T *cbd)
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     NSPasteboard *pb = [NSPasteboard generalPasteboard];
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-    NSArray *supportedTypes = [NSArray arrayWithObjects:VimPboardType,
-	    NSPasteboardTypeString, nil];
-#else
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
     NSArray *supportedTypes = [NSArray arrayWithObjects:VimPboardType,
 	    NSStringPboardType, nil];
+#else
+    NSArray *supportedTypes = [NSArray arrayWithObjects:VimPboardType,
+	    NSPasteboardTypeString, nil];
 #endif
     NSString *bestType = [pb availableTypeFromArray:supportedTypes];
     if (!bestType) goto releasepool;
@@ -105,12 +105,12 @@ clip_mch_request_selection(Clipboard_T *cbd)
     {
 	/* Use NSPasteboardTypeString.  The motion type is detected automatically.
 	 */
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-	NSMutableString *mstring =
-		[[pb stringForType:NSPasteboardTypeString] mutableCopy];
-#else
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
 	NSMutableString *mstring =
 		[[pb stringForType:NSStringPboardType] mutableCopy];
+#else
+	NSMutableString *mstring =
+		[[pb stringForType:NSPasteboardTypeString] mutableCopy];
 #endif
 	if (!mstring) goto releasepool;
 
@@ -188,12 +188,12 @@ clip_mch_set_selection(Clipboard_T *cbd)
 
 	/* See clip_mch_request_selection() for info on pasteboard types. */
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-	NSArray *supportedTypes = [NSArray arrayWithObjects:VimPboardType,
-		NSPasteboardTypeString, nil];
-#else
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
 	NSArray *supportedTypes = [NSArray arrayWithObjects:VimPboardType,
 		NSStringPboardType, nil];
+#else
+	NSArray *supportedTypes = [NSArray arrayWithObjects:VimPboardType,
+		NSPasteboardTypeString, nil];
 #endif
 	[pb declareTypes:supportedTypes owner:nil];
 
@@ -201,10 +201,10 @@ clip_mch_set_selection(Clipboard_T *cbd)
 	NSArray *plist = [NSArray arrayWithObjects:motion, string, nil];
 	[pb setPropertyList:plist forType:VimPboardType];
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-	[pb setString:string forType:NSPasteboardTypeString];
-#else
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
 	[pb setString:string forType:NSStringPboardType];
+#else
+	[pb setString:string forType:NSPasteboardTypeString];
 #endif
 
 	[string release];
