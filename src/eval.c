@@ -7983,6 +7983,7 @@ handle_subscript(
     if (selfdict != NULL
 	    && (rettv->v_type == VAR_FUNC
 		|| (rettv->v_type == VAR_PARTIAL
+		    && rettv->vval.v_partial != NULL
 		    && (rettv->vval.v_partial->pt_auto
 			|| rettv->vval.v_partial->pt_dict == NULL))))
 	selfdict = make_partial(selfdict, rettv);

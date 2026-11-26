@@ -6408,6 +6408,7 @@ exec_instructions(ectx_T *ectx)
 			    && dict_tv->vval.v_dict != NULL
 			    && (tv->v_type == VAR_FUNC
 				|| (tv->v_type == VAR_PARTIAL
+				    && tv->vval.v_partial != NULL
 				    && (tv->vval.v_partial->pt_auto
 				     || tv->vval.v_partial->pt_dict == NULL))))
 		    dict_tv->vval.v_dict =

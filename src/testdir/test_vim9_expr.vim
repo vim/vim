@@ -3450,6 +3450,18 @@ def Test_expr_member()
   v9.CheckDefExecAndScriptFailure(["var d: dict<number>", "d = g:list_empty"], 'E1012: Type mismatch; expected dict<number> but got list<any>', 2)
 enddef
 
+" Getting a null partial from a Dict crashed.
+def Test_expr_member_null_partial()
+  var lines =<< trim END
+    VAR d = {'x': test_null_partial()}
+    VAR F = d.x
+    call assert_true(F == test_null_partial())
+    LET F = d['x']
+    call assert_true(F == test_null_partial())
+  END
+  v9.CheckLegacyAndVim9Success(lines)
+enddef
+
 def Test_expr9_any_index_slice()
   var lines =<< trim END
     # getting the one member should clear the list only after getting the item
