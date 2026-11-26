@@ -99,6 +99,10 @@ jobs:
             else
               choco install python2 --no-progress
             fi
+            if [ ! -x "/c/Python27/python.exe" ]; then
+              echo "::error::python2 was not installed at C:\\Python27\\python.exe (Chocolatey repository may have returned 504; try re-running the job)"
+            exit 1
+            fi
           fi
           python3_dir=$(cat "/proc/$cygreg/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}$pyreg/InstallPath/@")
           echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
