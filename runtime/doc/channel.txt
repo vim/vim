@@ -190,8 +190,10 @@ unreachable on the network.
 	"nl"   - Use messages that end in a NL character
 	"raw"  - Use raw messages
 	"blob" - Use raw messages and pass callback data as a |Blob|
-	"lsp"  - Use language server protocol encoding
-	"dap"  - Use debug adapter protocol encoding
+	"lsp"  - Use language server protocol encoding, see
+		 |language-server-protocol|
+	"dap"  - Use debug adapter protocol encoding, see
+		 |debug-adapter-protocol|
 						*channel-callback* *E921*
 "callback"	A function that is called when a message is received that is
 		not handled otherwise (e.g. a JSON message with ID zero).  It
