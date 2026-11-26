@@ -497,6 +497,14 @@ func Test_substitute_partial()
   call assert_fails("call substitute('123', '2', Replacer, 'g')", 'E118:')
 endfunc
 
+" Using a null Funcref for the substitute expression crashed.
+func Test_substitute_null_funcref()
+  call assert_fails('call substitute("a", "a", test_null_function(), "")', 'E1192:')
+  call assert_fails('call substitute("a", "a", test_null_partial(), "")', 'E1192:')
+  call assert_fails("vim9cmd substitute('a', 'a', null_function, '')", 'E1192:')
+  call assert_fails("vim9cmd substitute('a', 'a', null_partial, '')", 'E1192:')
+endfunc
+
 func Test_substitute_float()
   call assert_equal('number 1.23', substitute('number ', '$', { -> 1.23 }, ''))
   vim9 assert_equal('number 1.23', substitute('number ', '$', () => 1.23, ''))
