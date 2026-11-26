@@ -4335,6 +4335,27 @@ def Test_while_loop()
   endwhile
 enddef
 
+" A script-level loop with a closure that is left by an error keeps the
+" variables of each round.  The leak was only detected with ASan.
+def Test_for_loop_closure_script_error()
+  var lines =<< trim END
+    vim9script
+    var fl: list<func>
+    try
+      for y in [0, 1, 10]
+        var v = 'r' .. y
+        fl->add(() => v)
+        if y == 10
+          eval [][1]
+        endif
+      endfor
+    catch /E684:/
+    endtry
+    assert_equal(['r0', 'r1', 'r10'], fl->mapnew((_, F) => F()))
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_while_loop_in_script()
   var lines =<< trim END
       vim9script

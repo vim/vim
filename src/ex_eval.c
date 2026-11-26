@@ -1053,8 +1053,10 @@ leave_block(cstack_T *cstack)
 	int		func_defined =
 			       cstack->cs_flags[cstack->cs_idx] & CSF_FUNC_DEF;
 
-	for (i = cstack->cs_script_var_len[cstack->cs_idx];
-					       i < si->sn_var_vals.ga_len; ++i)
+	// Do this backwards, so that a variable defined in a later round of
+	// a loop is found first, as in ex_while().
+	for (i = si->sn_var_vals.ga_len - 1;
+			      i >= cstack->cs_script_var_len[cstack->cs_idx]; --i)
 	{
 	    svar_T	*sv = ((svar_T *)si->sn_var_vals.ga_data) + i;
 
