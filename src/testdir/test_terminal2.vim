@@ -645,6 +645,29 @@ func Test_term_getcursor()
   call StopShellInTerminal(buf)
 endfunc
 
+" The cursor shape set with t_SH for a terminal window is restored with t_EI
+" when the job ends before a key is typed.
+func Test_term_cursor_shape_restored_after_job_ended()
+  CheckUnix
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    let &t_EI = "\e[4 q"
+    let &t_SH = "\e[6 q"
+    term true
+    " Not :sleep, it would notice that the job ended.
+    call system('sleep 0.3')
+  END
+  call writefile(lines, 'XTermCursorShape', 'D')
+  let buf = RunVimInTerminal('-S XTermCursorShape', {'wait_for_ruler': 0})
+
+  " A steady underline, not the steady vertical bar from t_SH.
+  call WaitForAssert({-> assert_equal([0, 2],
+  \ [term_getcursor(buf)[2].blink, term_getcursor(buf)[2].shape])})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func! s:TermPollAndAssertMatchTitle(term, old_name, new_pattern) abort
   let new_name = ''
   let next_part = ''

@@ -3038,6 +3038,7 @@ terminal_loop(int blocking)
     }
     position_cursor(curwin, &curbuf->b_term->tl_cursor_pos);
     may_set_cursor_props(curbuf->b_term);
+    restore_cursor = TRUE;
 
     while (blocking || vpeekc_nomap() != NUL)
     {
@@ -3054,7 +3055,6 @@ terminal_loop(int blocking)
 	    break;
 
 	update_cursor(curbuf->b_term, FALSE);
-	restore_cursor = TRUE;
 
 	raw_c = term_vgetc();
 	if (!term_use_loop_check(TRUE) || in_terminal_loop != curbuf->b_term)
