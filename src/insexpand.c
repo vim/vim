@@ -1154,6 +1154,24 @@ ins_compl_add(
 }
 
 /*
+ * Return how many bytes of "match" are already in front of compl_col.
+ */
+    static size_t
+ins_compl_skip(compl_T *match)
+{
+    int	    startcol;
+    size_t  skip;
+
+    if (cpt_sources_array == NULL || match->cp_cpt_source_idx < 0)
+	return 0;
+    startcol = cpt_sources_array[match->cp_cpt_source_idx].cs_startcol;
+    if (startcol < 0 || startcol >= (int)compl_col)
+	return 0;
+    skip = (size_t)((int)compl_col - startcol);
+    return skip <= match->cp_str.length ? skip : 0;
+}
+
+/*
  * Return TRUE if "str[len]" matches with match->cp_str, considering
  * match->cp_flags.
  */
@@ -3113,7 +3131,8 @@ ins_compl_stop(int c, int prev_mode, int retval)
 	// When using the longest match, edited the match or used
 	// CTRL-E then don't use the current match.
 	if (compl_curr_match != NULL && compl_used_match && c != Ctrl_E)
-	    ptr = compl_curr_match->cp_str.string;
+	    ptr = compl_curr_match->cp_str.string
+					   + ins_compl_skip(compl_curr_match);
 	ins_compl_fixRedoBufForLeader(ptr);
     }
 
@@ -6149,22 +6168,11 @@ ins_compl_insert(int move_cursor, int insert_prefix)
     // Since completion sources may provide matches with varying start
     // positions, insert only the portion of the match that corresponds to the
     // intended replacement range.
-    else if (cpt_sources_array != NULL)
+    else
     {
-	int	cpt_idx = compl_shown_match->cp_cpt_source_idx;
-	if (cpt_idx >= 0 && compl_col >= 0)
-	{
-	    int	startcol = cpt_sources_array[cpt_idx].cs_startcol;
-	    if (startcol >= 0 && startcol < (int)compl_col)
-	    {
-		int skip = (int)compl_col - startcol;
-		if ((size_t)skip <= cp_str_len)
-		{
-		    cp_str_len -= skip;
-		    cp_str += skip;
-		}
-	    }
-	}
+	size_t skip = ins_compl_skip(compl_shown_match);
+	cp_str_len -= skip;
+	cp_str += skip;
     }
 
     // Make sure we don't go over the end of the string, this can happen with

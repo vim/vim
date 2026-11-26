@@ -7066,4 +7066,18 @@ func Test_ins_complete_files_in_path()
   call delete('Xfilecptdir', 'rf')
 endfunc
 
+func Test_complete_func_startcol_redo()
+  func! CptFunc(findstart, base)
+    return a:findstart ? 0 : ['foo.bar']
+  endfunc
+  new
+  set complete=FCptFunc
+  call setline(1, ['foo.ba', 'foo.ba'])
+  call feedkeys("A\<C-N>\<Esc>j$.", 'tx')
+  call assert_equal(['foo.bar', 'foo.bar'], getline(1, '$'))
+  bw!
+  set complete&
+  delfunc CptFunc
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable
