@@ -6361,6 +6361,23 @@ def Test_defer_invalid_func_arg()
   v9.CheckScriptFailure(lines, 'E1001: Variable not found: a', 1)
 enddef
 
+" A deferred function cannot have more than 20 arguments.  Using a func
+" variable wrote past the end of an array (only detected with ASan or
+" valgrind).
+def Test_defer_too_many_args()
+  var lines =<< trim END
+    vim9script
+    def Target(...a: list<any>)
+    enddef
+    def Run()
+      var F: func = Target
+      defer F(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21)
+    enddef
+    Run()
+  END
+  v9.CheckScriptFailure(lines, 'E740: Too many arguments for function F', 2)
+enddef
+
 " Test for using defer with a lambda funcref
 def Test_defer_lambda_funcref()
   var lines =<< trim END

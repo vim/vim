@@ -2121,6 +2121,14 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
     arg = skipwhite(paren + 1);
     if (compile_arguments(&arg, cctx, &argcount, CA_NOT_SPECIAL) == FAIL)
 	return NULL;
+    if (argcount > MAX_FUNC_ARGS)
+    {
+	// The deferred function is called with an array of MAX_FUNC_ARGS.
+	*paren = NUL;
+	semsg(_(e_too_many_arguments_for_function_str_2), arg_start);
+	*paren = '(';
+	return NULL;
+    }
 
     if (cctx->ctx_skip != SKIP_YES)
     {
