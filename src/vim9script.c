@@ -848,6 +848,28 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 }
 
 /*
+ * Return TRUE if "type" is a function type or contains one, e.g.
+ * "list<func(any): any>".
+ */
+    static int
+type_has_func(type_T *type)
+{
+    int i;
+
+    if (type == NULL || (type->tt_flags & TTFLAG_STATIC))
+	return FALSE;
+    if (type->tt_type == VAR_FUNC || type->tt_type == VAR_PARTIAL)
+	return TRUE;
+    if (type_has_func(type->tt_member))
+	return TRUE;
+    if (type->tt_args != NULL)
+	for (i = 0; i < type->tt_argcount; ++i)
+	    if (type_has_func(type->tt_args[i]))
+		return TRUE;
+    return FALSE;
+}
+
+/*
  * Vim9 part of adding a script variable: add it to sn_all_vars (lookup by name
  * with a hashtable) and sn_var_vals (lookup by index).
  * When "create" is TRUE this is a new variable, otherwise find and update an
@@ -957,11 +979,11 @@ update_vim9_script_var(
 	}
 	if (sv->sv_flags & SVFLAG_TYPE_ALLOCATED)
 	    free_type(sv->sv_type);
-	if (*type != NULL && ((*type)->tt_type == VAR_FUNC
-					   || (*type)->tt_type == VAR_PARTIAL))
+	if (type_has_func(*type))
 	{
 	    // The type probably uses uf_type_list, which is cleared when the
 	    // function is freed, but the script variable may keep the type.
+	    // This also happens for a member type, e.g. "list<func>".
 	    // Make a copy to avoid using freed memory.
 	    sv->sv_type = alloc_type(*type);
 	    sv->sv_flags |= SVFLAG_TYPE_ALLOCATED;

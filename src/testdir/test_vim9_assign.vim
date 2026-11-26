@@ -2147,6 +2147,34 @@ def Test_assign_lambda()
   v9.CheckDefAndScriptFailure(lines, 'E1051:')
 enddef
 
+" The type of a script variable may contain the type of a lambda, which is
+" freed with the lambda.  Using freed memory is only detected with ASan or
+" valgrind.
+def Test_assign_lambda_in_container()
+  var lines =<< trim END
+    vim9script
+    var l = [(x) => x .. 'a']
+    l = []
+    l = [(x) => x .. 'b']
+    assert_equal('cb', l[0]('c'))
+    var d = {a: (x) => x .. 'a'}
+    d = {}
+    var t = ((x) => x .. 'a', 1)
+    t = ((y) => y .. 'b', 2)
+    var n = [[(x) => {
+      return x .. 'a'
+    }]]
+    n = []
+    def g:LambdaFoo(x: any): string
+      return x .. 'a'
+    enddef
+    var f = [g:LambdaFoo]
+    delfunction g:LambdaFoo
+    f = []
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 def Test_assign_funcref_args()
   # unspecified arguments match everything, including varargs
   var lines =<< trim END
