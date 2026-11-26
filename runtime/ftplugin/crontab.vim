@@ -11,6 +11,6 @@ endif
 " Don't load another plugin for this buffer
 let b:did_ftplugin = 1
 
-let b:undo_ftplugin = "setl commentstring<"
+let b:undo_ftplugin = "setl comments< commentstring<"
 
-setlocal commentstring=#\ %s
+setlocal comments=:# commentstring=#\ %s
