@@ -909,6 +909,8 @@ json_decode_string(js_read_T *reader, typval_T *res, int quote)
 				      string_convert(&conv, ga.ga_data, NULL);
 		    vim_free(ga.ga_data);
 		}
+		else
+		    res->vval.v_string = ga.ga_data;
 		convert_setup(&conv, NULL, NULL);
 	    }
 	    else
