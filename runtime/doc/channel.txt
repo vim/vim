@@ -1052,7 +1052,7 @@ job_info([{job}])					*job_info()*
 				Values are "winpty" or "conpty".
 				See 'termwintype'.
 
-		Without any arguments, returns a List with all Job objects.
+		Without any arguments, returns a |List| with all Job objects.
 
 		Can also be used as a |method|: >
 			GetJob()->job_info()
