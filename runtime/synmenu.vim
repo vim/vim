@@ -527,57 +527,56 @@ an 50.90.190 &Syntax.PQ.Pbtxt :cal SetSyn("pbtxt")<CR>
 an 50.90.200 &Syntax.PQ.PCCTS :cal SetSyn("pccts")<CR>
 an 50.90.210 &Syntax.PQ.PDF :cal SetSyn("pdf")<CR>
 an 50.90.220 &Syntax.PQ.Perl.Perl :cal SetSyn("perl")<CR>
-an 50.90.230 &Syntax.PQ.Perl.Perl\ 6 :cal SetSyn("perl6")<CR>
-an 50.90.240 &Syntax.PQ.Perl.Perl\ POD :cal SetSyn("pod")<CR>
-an 50.90.250 &Syntax.PQ.Perl.Perl\ XS :cal SetSyn("xs")<CR>
-an 50.90.260 &Syntax.PQ.Perl.Template\ toolkit :cal SetSyn("tt2")<CR>
-an 50.90.270 &Syntax.PQ.Perl.Template\ toolkit\ Html :cal SetSyn("tt2html")<CR>
-an 50.90.280 &Syntax.PQ.Perl.Template\ toolkit\ JS :cal SetSyn("tt2js")<CR>
-an 50.90.290 &Syntax.PQ.PHP.PHP\ 3-4 :cal SetSyn("php")<CR>
-an 50.90.300 &Syntax.PQ.PHP.Phtml\ (PHP\ 2) :cal SetSyn("phtml")<CR>
-an 50.90.310 &Syntax.PQ.Pike :cal SetSyn("pike")<CR>
-an 50.90.320 &Syntax.PQ.Pine\ RC :cal SetSyn("pine")<CR>
-an 50.90.330 &Syntax.PQ.Pinfo\ RC :cal SetSyn("pinfo")<CR>
-an 50.90.340 &Syntax.PQ.Pkl :cal SetSyn("pkl")<CR>
-an 50.90.350 &Syntax.PQ.PL/M :cal SetSyn("plm")<CR>
-an 50.90.360 &Syntax.PQ.PL/SQL :cal SetSyn("plsql")<CR>
-an 50.90.370 &Syntax.PQ.Pli :cal SetSyn("pli")<CR>
-an 50.90.380 &Syntax.PQ.PLP :cal SetSyn("plp")<CR>
-an 50.90.390 &Syntax.PQ.PO\ (GNU\ gettext) :cal SetSyn("po")<CR>
-an 50.90.400 &Syntax.PQ.Poefilter :cal SetSyn("poefilter")<CR>
-an 50.90.410 &Syntax.PQ.Poke :cal SetSyn("poke")<CR>
-an 50.90.420 &Syntax.PQ.Postfix\ main\ config :cal SetSyn("pfmain")<CR>
-an 50.90.430 &Syntax.PQ.PostScript.PostScript :cal SetSyn("postscr")<CR>
-an 50.90.440 &Syntax.PQ.PostScript.PostScript\ Printer\ Description :cal SetSyn("ppd")<CR>
-an 50.90.450 &Syntax.PQ.Povray.Povray\ scene\ descr :cal SetSyn("pov")<CR>
-an 50.90.460 &Syntax.PQ.Povray.Povray\ configuration :cal SetSyn("povini")<CR>
-an 50.90.470 &Syntax.PQ.Power\ Query\ M :cal SetSyn("pq")<CR>
-an 50.90.480 &Syntax.PQ.PowerShell.PowerShell :cal SetSyn("ps1")<CR>
-an 50.90.490 &Syntax.PQ.PowerShell.XML :cal SetSyn("ps1xml")<CR>
-an 50.90.500 &Syntax.PQ.PPWizard :cal SetSyn("ppwiz")<CR>
-an 50.90.510 &Syntax.PQ.Prescribe\ (Kyocera) :cal SetSyn("prescribe")<CR>
-an 50.90.520 &Syntax.PQ.Printcap :cal SetSyn("pcap")<CR>
-an 50.90.530 &Syntax.PQ.Privoxy :cal SetSyn("privoxy")<CR>
-an 50.90.540 &Syntax.PQ.Procmail :cal SetSyn("procmail")<CR>
-an 50.90.550 &Syntax.PQ.Product\ Spec\ File :cal SetSyn("psf")<CR>
-an 50.90.560 &Syntax.PQ.Progress :cal SetSyn("progress")<CR>
-an 50.90.570 &Syntax.PQ.Prolog :cal SetSyn("prolog")<CR>
-an 50.90.580 &Syntax.PQ.ProMeLa :cal SetSyn("promela")<CR>
-an 50.90.590 &Syntax.PQ.Property\ Specification\ Language :cal SetSyn("psl")<CR>
-an 50.90.600 &Syntax.PQ.Proto :cal SetSyn("proto")<CR>
-an 50.90.610 &Syntax.PQ.Protocols :cal SetSyn("protocols")<CR>
-an 50.90.620 &Syntax.PQ.Prql :cal SetSyn("prql")<CR>
-an 50.90.630 &Syntax.PQ.Ptx :cal SetSyn("ptx")<CR>
-an 50.90.640 &Syntax.PQ.Purify\ log :cal SetSyn("purifylog")<CR>
-an 50.90.650 &Syntax.PQ.Pyrex :cal SetSyn("pyrex")<CR>
-an 50.90.660 &Syntax.PQ.Python :cal SetSyn("python")<CR>
-an 50.90.670 &Syntax.PQ.Python2 :cal SetSyn("python2")<CR>
-an 50.90.680 &Syntax.PQ.Python\ Manifest :cal SetSyn("pymanifest")<CR>
-an 50.90.700 &Syntax.PQ.Qb64 :cal SetSyn("qb64")<CR>
-an 50.90.710 &Syntax.PQ.QML :cal SetSyn("qml")<CR>
-an 50.90.720 &Syntax.PQ.Quake :cal SetSyn("quake")<CR>
-an 50.90.730 &Syntax.PQ.Quarto :cal SetSyn("quarto")<CR>
-an 50.90.740 &Syntax.PQ.Quickfix\ window :cal SetSyn("qf")<CR>
+an 50.90.230 &Syntax.PQ.Perl.Perl\ POD :cal SetSyn("pod")<CR>
+an 50.90.240 &Syntax.PQ.Perl.Perl\ XS :cal SetSyn("xs")<CR>
+an 50.90.250 &Syntax.PQ.Perl.Template\ toolkit :cal SetSyn("tt2")<CR>
+an 50.90.260 &Syntax.PQ.Perl.Template\ toolkit\ Html :cal SetSyn("tt2html")<CR>
+an 50.90.270 &Syntax.PQ.Perl.Template\ toolkit\ JS :cal SetSyn("tt2js")<CR>
+an 50.90.280 &Syntax.PQ.PHP.PHP\ 3-4 :cal SetSyn("php")<CR>
+an 50.90.290 &Syntax.PQ.PHP.Phtml\ (PHP\ 2) :cal SetSyn("phtml")<CR>
+an 50.90.300 &Syntax.PQ.Pike :cal SetSyn("pike")<CR>
+an 50.90.310 &Syntax.PQ.Pine\ RC :cal SetSyn("pine")<CR>
+an 50.90.320 &Syntax.PQ.Pinfo\ RC :cal SetSyn("pinfo")<CR>
+an 50.90.330 &Syntax.PQ.Pkl :cal SetSyn("pkl")<CR>
+an 50.90.340 &Syntax.PQ.PL/M :cal SetSyn("plm")<CR>
+an 50.90.350 &Syntax.PQ.PL/SQL :cal SetSyn("plsql")<CR>
+an 50.90.360 &Syntax.PQ.Pli :cal SetSyn("pli")<CR>
+an 50.90.370 &Syntax.PQ.PLP :cal SetSyn("plp")<CR>
+an 50.90.380 &Syntax.PQ.PO\ (GNU\ gettext) :cal SetSyn("po")<CR>
+an 50.90.390 &Syntax.PQ.Poefilter :cal SetSyn("poefilter")<CR>
+an 50.90.400 &Syntax.PQ.Poke :cal SetSyn("poke")<CR>
+an 50.90.410 &Syntax.PQ.Postfix\ main\ config :cal SetSyn("pfmain")<CR>
+an 50.90.420 &Syntax.PQ.PostScript.PostScript :cal SetSyn("postscr")<CR>
+an 50.90.430 &Syntax.PQ.PostScript.PostScript\ Printer\ Description :cal SetSyn("ppd")<CR>
+an 50.90.440 &Syntax.PQ.Povray.Povray\ scene\ descr :cal SetSyn("pov")<CR>
+an 50.90.450 &Syntax.PQ.Povray.Povray\ configuration :cal SetSyn("povini")<CR>
+an 50.90.460 &Syntax.PQ.Power\ Query\ M :cal SetSyn("pq")<CR>
+an 50.90.470 &Syntax.PQ.PowerShell.PowerShell :cal SetSyn("ps1")<CR>
+an 50.90.480 &Syntax.PQ.PowerShell.XML :cal SetSyn("ps1xml")<CR>
+an 50.90.490 &Syntax.PQ.PPWizard :cal SetSyn("ppwiz")<CR>
+an 50.90.500 &Syntax.PQ.Prescribe\ (Kyocera) :cal SetSyn("prescribe")<CR>
+an 50.90.510 &Syntax.PQ.Printcap :cal SetSyn("pcap")<CR>
+an 50.90.520 &Syntax.PQ.Privoxy :cal SetSyn("privoxy")<CR>
+an 50.90.530 &Syntax.PQ.Procmail :cal SetSyn("procmail")<CR>
+an 50.90.540 &Syntax.PQ.Product\ Spec\ File :cal SetSyn("psf")<CR>
+an 50.90.550 &Syntax.PQ.Progress :cal SetSyn("progress")<CR>
+an 50.90.560 &Syntax.PQ.Prolog :cal SetSyn("prolog")<CR>
+an 50.90.570 &Syntax.PQ.ProMeLa :cal SetSyn("promela")<CR>
+an 50.90.580 &Syntax.PQ.Property\ Specification\ Language :cal SetSyn("psl")<CR>
+an 50.90.590 &Syntax.PQ.Proto :cal SetSyn("proto")<CR>
+an 50.90.600 &Syntax.PQ.Protocols :cal SetSyn("protocols")<CR>
+an 50.90.610 &Syntax.PQ.Prql :cal SetSyn("prql")<CR>
+an 50.90.620 &Syntax.PQ.Ptx :cal SetSyn("ptx")<CR>
+an 50.90.630 &Syntax.PQ.Purify\ log :cal SetSyn("purifylog")<CR>
+an 50.90.640 &Syntax.PQ.Pyrex :cal SetSyn("pyrex")<CR>
+an 50.90.650 &Syntax.PQ.Python :cal SetSyn("python")<CR>
+an 50.90.660 &Syntax.PQ.Python2 :cal SetSyn("python2")<CR>
+an 50.90.670 &Syntax.PQ.Python\ Manifest :cal SetSyn("pymanifest")<CR>
+an 50.90.690 &Syntax.PQ.Qb64 :cal SetSyn("qb64")<CR>
+an 50.90.700 &Syntax.PQ.QML :cal SetSyn("qml")<CR>
+an 50.90.710 &Syntax.PQ.Quake :cal SetSyn("quake")<CR>
+an 50.90.720 &Syntax.PQ.Quarto :cal SetSyn("quarto")<CR>
+an 50.90.730 &Syntax.PQ.Quickfix\ window :cal SetSyn("qf")<CR>
 an 50.100.100 &Syntax.R.R.R :cal SetSyn("r")<CR>
 an 50.100.110 &Syntax.R.R.R\ help :cal SetSyn("rhelp")<CR>
 an 50.100.120 &Syntax.R.R.R\ noweb :cal SetSyn("rnoweb")<CR>
@@ -585,35 +584,36 @@ an 50.100.130 &Syntax.R.Racc\ input :cal SetSyn("racc")<CR>
 an 50.100.140 &Syntax.R.Racket :cal SetSyn("racket")<CR>
 an 50.100.150 &Syntax.R.Radiance :cal SetSyn("radiance")<CR>
 an 50.100.160 &Syntax.R.Radvd\ config :cal SetSyn("radvd")<CR>
-an 50.100.170 &Syntax.R.Raml :cal SetSyn("raml")<CR>
-an 50.100.180 &Syntax.R.Rapid :cal SetSyn("rapid")<CR>
-an 50.100.190 &Syntax.R.Rasi :cal SetSyn("rasi")<CR>
-an 50.100.200 &Syntax.R.Ratpoison :cal SetSyn("ratpoison")<CR>
-an 50.100.210 &Syntax.R.RCS.RCS\ log\ output :cal SetSyn("rcslog")<CR>
-an 50.100.220 &Syntax.R.RCS.RCS\ file :cal SetSyn("rcs")<CR>
-an 50.100.230 &Syntax.R.Readline\ config :cal SetSyn("readline")<CR>
-an 50.100.240 &Syntax.R.Rebol :cal SetSyn("rebol")<CR>
-an 50.100.250 &Syntax.R.ReDIF :cal SetSyn("redif")<CR>
-an 50.100.260 &Syntax.R.Rego :cal SetSyn("rego")<CR>
-an 50.100.270 &Syntax.R.Relax\ NG :cal SetSyn("rng")<CR>
-an 50.100.280 &Syntax.R.Remind :cal SetSyn("remind")<CR>
-an 50.100.290 &Syntax.R.Relax\ NG\ compact :cal SetSyn("rnc")<CR>
-an 50.100.300 &Syntax.R.Renderman.Renderman\ Shader\ Lang :cal SetSyn("sl")<CR>
-an 50.100.310 &Syntax.R.Renderman.Renderman\ Interface\ Bytestream :cal SetSyn("rib")<CR>
-an 50.100.320 &Syntax.R.Requirements :cal SetSyn("requirements")<CR>
-an 50.100.330 &Syntax.R.Resolv\.conf :cal SetSyn("resolv")<CR>
-an 50.100.340 &Syntax.R.Reva\ Forth :cal SetSyn("reva")<CR>
-an 50.100.350 &Syntax.R.Rexx :cal SetSyn("rexx")<CR>
-an 50.100.360 &Syntax.R.Robots\.txt :cal SetSyn("robots")<CR>
-an 50.100.370 &Syntax.R.RockLinux\ package\ desc\. :cal SetSyn("desc")<CR>
-an 50.100.380 &Syntax.R.Rpcgen :cal SetSyn("rpcgen")<CR>
-an 50.100.390 &Syntax.R.RPL/2 :cal SetSyn("rpl")<CR>
-an 50.100.400 &Syntax.R.ReStructuredText :cal SetSyn("rst")<CR>
-an 50.100.410 &Syntax.R.ReStructuredText\ with\ R\ statements :cal SetSyn("rrst")<CR>
-an 50.100.420 &Syntax.R.Routeros :cal SetSyn("routeros")<CR>
-an 50.100.430 &Syntax.R.RTF :cal SetSyn("rtf")<CR>
-an 50.100.440 &Syntax.R.Ruby :cal SetSyn("ruby")<CR>
-an 50.100.450 &Syntax.R.Rust :cal SetSyn("rust")<CR>
+an 50.100.170 &Syntax.R.Raku :cal SetSyn("raku")<CR>
+an 50.100.180 &Syntax.R.Raml :cal SetSyn("raml")<CR>
+an 50.100.190 &Syntax.R.Rapid :cal SetSyn("rapid")<CR>
+an 50.100.200 &Syntax.R.Rasi :cal SetSyn("rasi")<CR>
+an 50.100.210 &Syntax.R.Ratpoison :cal SetSyn("ratpoison")<CR>
+an 50.100.220 &Syntax.R.RCS.RCS\ log\ output :cal SetSyn("rcslog")<CR>
+an 50.100.230 &Syntax.R.RCS.RCS\ file :cal SetSyn("rcs")<CR>
+an 50.100.240 &Syntax.R.Readline\ config :cal SetSyn("readline")<CR>
+an 50.100.250 &Syntax.R.Rebol :cal SetSyn("rebol")<CR>
+an 50.100.260 &Syntax.R.ReDIF :cal SetSyn("redif")<CR>
+an 50.100.270 &Syntax.R.Rego :cal SetSyn("rego")<CR>
+an 50.100.280 &Syntax.R.Relax\ NG :cal SetSyn("rng")<CR>
+an 50.100.290 &Syntax.R.Remind :cal SetSyn("remind")<CR>
+an 50.100.300 &Syntax.R.Relax\ NG\ compact :cal SetSyn("rnc")<CR>
+an 50.100.310 &Syntax.R.Renderman.Renderman\ Shader\ Lang :cal SetSyn("sl")<CR>
+an 50.100.320 &Syntax.R.Renderman.Renderman\ Interface\ Bytestream :cal SetSyn("rib")<CR>
+an 50.100.330 &Syntax.R.Requirements :cal SetSyn("requirements")<CR>
+an 50.100.340 &Syntax.R.Resolv\.conf :cal SetSyn("resolv")<CR>
+an 50.100.350 &Syntax.R.Reva\ Forth :cal SetSyn("reva")<CR>
+an 50.100.360 &Syntax.R.Rexx :cal SetSyn("rexx")<CR>
+an 50.100.370 &Syntax.R.Robots\.txt :cal SetSyn("robots")<CR>
+an 50.100.380 &Syntax.R.RockLinux\ package\ desc\. :cal SetSyn("desc")<CR>
+an 50.100.390 &Syntax.R.Rpcgen :cal SetSyn("rpcgen")<CR>
+an 50.100.400 &Syntax.R.RPL/2 :cal SetSyn("rpl")<CR>
+an 50.100.410 &Syntax.R.ReStructuredText :cal SetSyn("rst")<CR>
+an 50.100.420 &Syntax.R.ReStructuredText\ with\ R\ statements :cal SetSyn("rrst")<CR>
+an 50.100.430 &Syntax.R.Routeros :cal SetSyn("routeros")<CR>
+an 50.100.440 &Syntax.R.RTF :cal SetSyn("rtf")<CR>
+an 50.100.450 &Syntax.R.Ruby :cal SetSyn("ruby")<CR>
+an 50.100.460 &Syntax.R.Rust :cal SetSyn("rust")<CR>
 an 50.110.100 &Syntax.S-Sm.S-Lang :cal SetSyn("slang")<CR>
 an 50.110.110 &Syntax.S-Sm.Samba\ config :cal SetSyn("samba")<CR>
 an 50.110.120 &Syntax.S-Sm.SAS :cal SetSyn("sas")<CR>
