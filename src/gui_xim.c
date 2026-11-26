@@ -102,12 +102,14 @@ did_set_imstatusfunc(optset_T *args UNUSED)
 call_imactivatefunc(int active)
 {
     typval_T argv[2];
+    typval_T rettv;
     int save_KeyTyped = KeyTyped;
 
     argv[0].v_type = VAR_NUMBER;
     argv[0].vval.v_number = active ? 1 : 0;
     argv[1].v_type = VAR_UNKNOWN;
-    (void)call_callback_retnr(&imaf_cb, 1, argv);
+    if (call_callback(&imaf_cb, -1, &rettv, 1, argv) != FAIL)
+	clear_tv(&rettv);
 
     KeyTyped = save_KeyTyped;
 }
