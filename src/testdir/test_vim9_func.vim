@@ -171,7 +171,7 @@ def Test_wrong_function_name()
     enddef
     Start()
   END
-  v9.CheckScriptFailure(lines, 'E117:')
+  v9.CheckScriptFailure(lines, 'E1192: Empty function name')
 enddef
 
 " Check that in a legacy script a :def accesses the correct script variables.
@@ -3850,6 +3850,15 @@ def Test_partial_null_function()
       assert_equal('func(...): unknown', typename(Ref))
   END
   v9.CheckDefAndScriptSuccess(lines)
+enddef
+
+" Calling a null partial in a :def function crashed.
+def Test_call_null_funcref_in_def()
+  v9.CheckDefExecFailure(['var F: func = null_partial', 'F()'], 'E1192: Empty function name', 2)
+  v9.CheckDefExecFailure(['var F: any = null_partial', 'F(1)'], 'E1192: Empty function name', 2)
+  v9.CheckDefExecFailure(['var L: list<func> = [null_partial]', 'L[0]()'], 'E1192: Empty function name', 2)
+  v9.CheckDefExecFailure(['var F: func = null_partial', '[1]->F()'], 'E1192: Empty function name', 2)
+  v9.CheckDefExecFailure(['var F: func = null_function', 'F()'], 'E1192: Empty function name', 2)
 enddef
 
 def Test_cmd_modifier()
