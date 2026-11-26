@@ -847,6 +847,10 @@ ex_breakdel(exarg_T *eap)
 	    }
 	}
 	vim_free(bp->dbg_name);
+#ifdef FEAT_EVAL
+	if (bp->dbg_type == DBG_EXPR && bp->dbg_val != NULL)
+	    free_tv(bp->dbg_val);
+#endif
     }
 
     if (todel < 0)
