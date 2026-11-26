@@ -4498,6 +4498,9 @@ win_line(
 	    {
 		// do not output more of the line, only the "below" prop
 		ptr = line + (size_t)ml_get_buf_len(wp->w_buffer, lnum);
+		// also not the rest of a truncated text prop
+		wlv.n_extra = 0;
+		n_attr = 0;
 # ifdef FEAT_LINEBREAK
 		wlv.dont_use_showbreak = TRUE;
 # endif

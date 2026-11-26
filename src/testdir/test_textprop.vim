@@ -3781,6 +3781,33 @@ func Test_prop_with_text_above_nowrap_scroll()
   bwipe!
 endfunc
 
+func Test_prop_with_text_right_nowrap_list_extends()
+  call NewWindow(10, 40)
+  setlocal nowrap list listchars=extends:>
+  call setline(1, ['line 1' .. repeat('x', 30), 'line 2',
+        \ 'line 3' .. repeat('x', 30), 'line 4'])
+  call prop_type_add('test', #{highlight: 'Normal'})
+
+  call prop_add(1, 0, #{type: 'test', text: 'message 1', text_align: 'right'})
+  call prop_add(1, 0, #{type: 'test', text: 'message 2', text_align: 'right'})
+  call prop_add(3, 0, #{type: 'test', text: 'message 1', text_align: 'right'})
+  call prop_add(3, 0, #{type: 'test', text: 'below', text_align: 'below'})
+
+  let winid = win_getid()
+  redraw
+  call assert_equal(#{row: 3, col: 1, endcol: 1, curscol: 1},
+        \ screenpos(winid, 2, 1))
+  call assert_equal(#{row: 6, col: 1, endcol: 1, curscol: 1},
+        \ screenpos(winid, 4, 1))
+  call assert_equal(['line 1' .. repeat('x', 30) .. 'mes>',
+        \ repeat(' ', 31) .. 'message 2', 'line 2',
+        \ 'line 3' .. repeat('x', 30) .. 'mes>', 'below', 'line 4'],
+        \ ScreenLines([1, 6], 40)->map({_, v -> substitute(v, '\s*$', '', '')}))
+
+  call prop_type_delete('test')
+  bwipe!
+endfunc
+
 func Test_prop_with_text_below_after_match()
   CheckScreendump
   CheckRunVimInTerminal
