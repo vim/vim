@@ -1379,6 +1379,11 @@ func Test_clipboard_provider_paste_null_value()
     call assert_equal(['one', 'two'], getreg('+', 1, 1))
     let g:provider_paste_ret = test_null_list()
     call assert_equal(['one', 'two'], getreg('+', 1, 1))
+    " a null register type is used as an empty one
+    let g:provider_paste_ret = (test_null_string(), ['three'])
+    call assert_equal(['three'], getreg('+', 1, 1))
+    let g:provider_paste_ret = [test_null_string(), ['four']]
+    call assert_equal(['four'], getreg('+', 1, 1))
 
   finally
     call remove(v:clipproviders, 'Xnull')
