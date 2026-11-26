@@ -7563,6 +7563,26 @@ def Test_object_funcref_call_directly()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Getting the method of a temporary object in a :def function used the
+" object after it was freed.  Only detected with ASan or valgrind.
+def Test_object_funcref_temp_object()
+  var lines =<< trim END
+    vim9script
+    class C
+      var s = 'abc'
+      def Foo(): string
+        return this.s
+      enddef
+    endclass
+    def Get(): func(): string
+      return C.new().Foo
+    enddef
+    var F = Get()
+    assert_equal('abc', F())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for using a class method as a funcref
 def Test_class_funcref()
   # Using class method funcref in a def function

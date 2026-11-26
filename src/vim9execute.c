@@ -5215,12 +5215,12 @@ exec_instructions(ectx_T *ectx)
 			    }
 
 			    cl = obj->obj_class;
-			    // drop the value from the stack
-			    clear_tv(tv);
-			    --ectx->ec_stack.ga_len;
-
+			    // Take a reference before dropping the value from the
+			    // stack, it may be the only one.
 			    pt->pt_obj = obj;
 			    ++obj->obj_refcount;
+			    clear_tv(tv);
+			    --ectx->ec_stack.ga_len;
 			}
 			else
 			    cl = extra->fre_class;
