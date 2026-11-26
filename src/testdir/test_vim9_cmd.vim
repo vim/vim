@@ -2180,6 +2180,14 @@ def Test_no_space_after_command()
       g# pat#print
   END
   v9.CheckDefAndScriptSuccess(lines)
+  lines =<< trim END
+      g<pat<print
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+  lines =<< trim END
+      g< pat<print
+  END
+  v9.CheckDefAndScriptSuccess(lines)
   bwipe!
 
   lines =<< trim END
@@ -2196,6 +2204,18 @@ def Test_no_space_after_command()
   v9.CheckDefExecAndScriptFailure(lines, 'E486:', 1)
   lines =<< trim END
       s# pat#repl
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E486:', 1)
+  lines =<< trim END
+      s<pat<repl
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E486:', 1)
+  lines =<< trim END
+      s< pat<repl
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E486:', 1)
+  lines =<< trim END
+      s<number>() < repl
   END
   v9.CheckDefExecAndScriptFailure(lines, 'E486:', 1)
 enddef
