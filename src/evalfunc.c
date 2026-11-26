@@ -1266,6 +1266,7 @@ static argcheck_T arg2_buffer_list_any[] = {arg_buffer, arg_list_any};
 static argcheck_T arg2_buffer_lnum[] = {arg_buffer, arg_lnum};
 static argcheck_T arg2_buffer_number[] = {arg_buffer, arg_number};
 static argcheck_T arg2_buffer_string[] = {arg_buffer, arg_string};
+static argcheck_T arg2_buffer_func[] = {arg_buffer, arg_string_or_func};
 static argcheck_T arg2_chan_or_job_dict[] = {arg_chan_or_job, arg_dict_any};
 static argcheck_T arg2_chan_or_job_string[] = {arg_chan_or_job, arg_string};
 static argcheck_T arg2_dict_any_list_any[] = {arg_dict_any, arg_list_any};
@@ -3769,6 +3770,9 @@ static const funcentry_T global_functions[] =
     {"test_srand_seed",	0, 1, FEARG_1,	    arg1_number,
 			"seed",
 			ret_void,	    f_test_srand_seed},
+    {"test_terminal_damage", 2, 2, FEARG_1, arg2_buffer_func,
+			"buf, func",
+			ret_void,	    TERM_FUNC(f_test_terminal_damage)},
     {"test_unknown",	0, 0, 0,	    NULL,
 			NULL,
 			ret_any,	    f_test_unknown},
