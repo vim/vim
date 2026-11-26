@@ -6420,7 +6420,10 @@ handle_sgr_response(char_u *params, int len, bool valid)
 	if (*T_UCE == NUL && !option_was_set((char_u *)"t_Ce"))
 	    set_string_option_direct((char_u *)"t_Ce", -1,
 					(char_u *)"\033[4:0m", OPT_FREE, 0);
-	redraw_later_clear();
+	if (starting == 0) // See issue: #22039
+	    redraw_asap(UPD_CLEAR);
+	else
+	    redraw_later(UPD_CLEAR);
     }
 }
 #endif

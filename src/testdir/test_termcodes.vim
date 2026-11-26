@@ -3310,4 +3310,35 @@ func Test_cell_size_response_keeps_intro()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_term_response_preserves_message()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set t_Cs= t_RV= updatetime=20
+    call test_option_not_set('t_Cs')
+
+    let g:message_done = 0
+    autocmd CursorHold * if g:message_done
+          \ | call writefile([&t_Cs],
+          \                  'XundercurlDone')
+          \ | endif
+  END
+  call writefile(lines, 'XTermResponse', 'D')
+  defer delete('XundercurlDone')
+
+  let buf = RunVimInTerminal('-S XTermResponse', #{rows: 10, cols: 60})
+  try
+    call term_sendkeys(buf,
+      \ "\<Esc>P1$r0;4:3m\<Esc>\\"
+      \ .. ":let g:message_done = 1 | echo 'hello'\<CR>")
+    call WaitForAssert({-> assert_equal(
+          \ ["\<Esc>[4:3m"],
+          \ (filereadable('XundercurlDone') ? readfile('XundercurlDone') : []))})
+
+    call TermWait(buf)
+    call assert_match('^hello', term_getline(buf, 10))
+  finally
+    call StopVimInTerminal(buf)
+  endtry
+endfunc
 " vim: shiftwidth=2 sts=2 expandtab
