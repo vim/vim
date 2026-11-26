@@ -382,9 +382,9 @@ def Test_block()
 enddef
 
 def Test_block_failure()
-  v9.CheckDefFailure(['{', 'var inner = 1', '}', 'echo inner'], 'E1001:')
-  v9.CheckDefFailure(['}'], 'E1025:')
-  v9.CheckDefFailure(['{', 'echo 1'], 'E1026:')
+  v9.CheckDefFailure(['{', 'var inner = 1', '}', 'echo inner'], 'E1001: Variable not found: inner')
+  v9.CheckDefFailure(['}'], 'E1025: Using } outside of a block scope')
+  v9.CheckDefFailure(['{', 'echo 1'], 'E1026: Missing }')
 enddef
 
 def Test_block_local_vars()
@@ -1055,7 +1055,7 @@ def Test_try_catch_throw()
         echo 'something'
       endtry
   END
-  v9.CheckScriptFailure(lines, 'E1032:')
+  v9.CheckScriptFailure(lines, 'E1032: Missing :catch or :finally: endtry')
 
   # skipping try-finally-endtry when try-finally-endtry is used in another block
   lines =<< trim END
@@ -2013,14 +2013,17 @@ def Test_unreachable_after_if_finally()
   v9.CheckSourceScriptFailure(lines, 'E1095: Unreachable code after :return', 10)
 enddef
 
+" The following used to crash Vim
 def Test_throw_in_nested_try()
   var lines =<< trim END
       vim9script
 
+      var caught = ''
       def Try(F: func(): void)
         try
           F()
         catch
+          caught = v:exception
         endtry
       enddef
 
@@ -2043,9 +2046,11 @@ def Test_throw_in_nested_try()
       try
         Test_TryMethod()
       catch
+        caught = 'outer: ' .. v:exception
       endtry
+      assert_equal('Foobar', caught)
   END
-  v9.CheckScriptSuccess(lines)
+  v9.CheckSourceSuccess(lines)
 enddef
 
 def Test_try_var_decl()
@@ -2098,7 +2103,7 @@ def Test_try_ends_in_return()
       enddef
       assert_equal('foo', Foo())
   END
-  v9.CheckScriptFailure(lines, 'E1095:')
+  v9.CheckScriptFailure(lines, 'E1095: Unreachable code after :return')
 
   lines =<< trim END
       vim9script
@@ -2148,12 +2153,19 @@ def Test_try_in_catch()
           catch /nothing/
             seq->add('notreached')
           endtry
-          seq->add('done')
+          seq->add('notreached')
         endtry
       enddef
-      DoIt()
-      assert_equal(['throw 1', 'catch', 'throw 2', 'done'], seq)
+      # the error in the catch block is not caught by "catch /nothing/"
+      try
+        DoIt()
+      catch /E684:/
+        seq->add(v:exception)
+      endtry
+      assert_equal(['throw 1', 'catch', 'throw 2',
+            'Vim:E684: List index out of range: 0'], seq)
   END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 def Test_error_in_catch()
@@ -2164,7 +2176,7 @@ def Test_error_in_catch()
         eval [][0]
       endtry
   END
-  v9.CheckDefExecFailure(lines, 'E684:', 4)
+  v9.CheckDefExecFailure(lines, 'E684: List index out of range: 0', 4)
 enddef
 
 " Test for :while at the very start of a function that :continue jumps to
@@ -2375,6 +2387,7 @@ def Test_try_catch_nested()
     l->add('4')
   endtry
   assert_equal(['1', '2', '3', '4'], l)
+  unlet g:thrown_func g:thrown_def g:in_finally
 enddef
 
 call test_override('unreachable', 1)
@@ -2420,22 +2433,22 @@ def Test_try_catch_match()
 enddef
 
 def Test_try_catch_fails()
-  v9.CheckDefFailure(['catch'], 'E603:')
-  v9.CheckDefFailure(['try', 'echo 0', 'catch', 'catch'], 'E1033:')
-  v9.CheckDefFailure(['try', 'echo 0', 'catch /pat'], 'E1067:')
-  v9.CheckDefFailure(['finally'], 'E606:')
-  v9.CheckDefFailure(['try', 'echo 0', 'finally', 'echo 1', 'finally'], 'E607:')
-  v9.CheckDefFailure(['endtry'], 'E602:')
-  v9.CheckDefFailure(['while 1', 'endtry'], 'E170:')
-  v9.CheckDefFailure(['for i in range(5)', 'endtry'], 'E170:')
-  v9.CheckDefFailure(['if 1', 'endtry'], 'E171:')
-  v9.CheckDefFailure(['try', 'echo 1', 'endtry'], 'E1032:')
-  v9.CheckDefFailure(['try'], 'E600:')
-  v9.CheckDefFailure(['try', 'echo 0'], 'E600:')
-  v9.CheckDefFailure(['try', 'echo 0', 'catch'], 'E600:')
-  v9.CheckDefFailure(['try', 'echo 0', 'catch', 'echo 1'], 'E600:')
-  v9.CheckDefFailure(['try', 'echo 0', 'catch', 'echo 1', 'finally'], 'E600:')
-  v9.CheckDefFailure(['try', 'echo 0', 'catch', 'echo 1', 'finally', 'echo 2'], 'E600:')
+  v9.CheckDefFailure(['catch'], 'E603: :catch without :try')
+  v9.CheckDefFailure(['try', 'echo 0', 'catch', 'catch'], 'E1033: Catch unreachable after catch-all')
+  v9.CheckDefFailure(['try', 'echo 0', 'catch /pat'], 'E1067: Separator mismatch: /pat')
+  v9.CheckDefFailure(['finally'], 'E606: :finally without :try')
+  v9.CheckDefFailure(['try', 'echo 0', 'finally', 'echo 1', 'finally'], 'E607: Multiple :finally')
+  v9.CheckDefFailure(['endtry'], 'E602: :endtry without :try')
+  v9.CheckDefFailure(['while 1', 'endtry'], 'E170: Missing :endwhile')
+  v9.CheckDefFailure(['for i in range(5)', 'endtry'], 'E170: Missing :endfor')
+  v9.CheckDefFailure(['if 1', 'endtry'], 'E171: Missing :endif')
+  v9.CheckDefFailure(['try', 'echo 1', 'endtry'], 'E1032: Missing :catch or :finally')
+  v9.CheckDefFailure(['try'], 'E600: Missing :endtry')
+  v9.CheckDefFailure(['try', 'echo 0'], 'E600: Missing :endtry')
+  v9.CheckDefFailure(['try', 'echo 0', 'catch'], 'E600: Missing :endtry')
+  v9.CheckDefFailure(['try', 'echo 0', 'catch', 'echo 1'], 'E600: Missing :endtry')
+  v9.CheckDefFailure(['try', 'echo 0', 'catch', 'echo 1', 'finally'], 'E600: Missing :endtry')
+  v9.CheckDefFailure(['try', 'echo 0', 'catch', 'echo 1', 'finally', 'echo 2'], 'E600: Missing :endtry')
 
   # Missing :endtry inside a nested :try
   var outer1 =<< trim END
@@ -2449,15 +2462,15 @@ def Test_try_catch_fails()
         echo 2
       endtry
   END
-  v9.CheckDefFailure(outer1 + ['try'] + outer2, 'E600:')
-  v9.CheckDefFailure(outer1 + ['try', 'echo 10'] + outer2, 'E600:')
-  v9.CheckDefFailure(outer1 + ['try', 'echo 10', 'catch'] + outer2, 'E600:')
-  v9.CheckDefFailure(outer1 + ['try', 'echo 10', 'catch', 'echo 11'] + outer2, 'E600:')
-  v9.CheckDefFailure(outer1 + ['try', 'echo 10', 'catch', 'echo 11', 'finally'] + outer2, 'E607:')
-  v9.CheckDefFailure(outer1 + ['try', 'echo 10', 'catch', 'echo 11', 'finally', 'echo 12'] + outer2, 'E607:')
+  v9.CheckDefFailure(outer1 + ['try'] + outer2, 'E600: Missing :endtry')
+  v9.CheckDefFailure(outer1 + ['try', 'echo 10'] + outer2, 'E600: Missing :endtry')
+  v9.CheckDefFailure(outer1 + ['try', 'echo 10', 'catch'] + outer2, 'E600: Missing :endtry')
+  v9.CheckDefFailure(outer1 + ['try', 'echo 10', 'catch', 'echo 11'] + outer2, 'E600: Missing :endtry')
+  v9.CheckDefFailure(outer1 + ['try', 'echo 10', 'catch', 'echo 11', 'finally'] + outer2, 'E607: Multiple :finally')
+  v9.CheckDefFailure(outer1 + ['try', 'echo 10', 'catch', 'echo 11', 'finally', 'echo 12'] + outer2, 'E607: Multiple :finally')
 
-  v9.CheckDefFailure(['throw'], 'E1143:')
-  v9.CheckDefFailure(['throw xxx'], 'E1001:')
+  v9.CheckDefFailure(['throw'], 'E1143: Empty expression: ""')
+  v9.CheckDefFailure(['throw xxx'], 'E1001: Variable not found: xxx')
 enddef
 
 def Try_catch_skipped()
@@ -2497,11 +2510,11 @@ def Test_throw_line_number()
     try
       Func2()
     catch /exception/
-      assert_match('line 4', v:throwpoint)
+      assert_match(', line 4$', v:throwpoint)
     endtry
-    assert_match('line 3', v:throwpoint)
+    assert_match(', line 3$', v:throwpoint)
   endtry
-  assert_match('', v:throwpoint)
+  assert_equal('', v:throwpoint)
 enddef
 
 
@@ -2965,18 +2978,18 @@ def Test_if_elseif_else()
 enddef
 
 def Test_if_elseif_else_fails()
-  v9.CheckDefFailure(['elseif true'], 'E582:')
-  v9.CheckDefFailure(['else'], 'E581:')
-  v9.CheckDefFailure(['endif'], 'E580:')
-  v9.CheckDefFailure(['if g:abool', 'elseif xxx'], 'E1001:')
-  v9.CheckDefFailure(['if true', 'echo 1'], 'E171:')
+  v9.CheckDefFailure(['elseif true'], 'E582: :elseif without :if')
+  v9.CheckDefFailure(['else'], 'E581: :else without :if')
+  v9.CheckDefFailure(['endif'], 'E580: :endif without :if')
+  v9.CheckDefFailure(['if g:abool', 'elseif xxx'], 'E1001: Variable not found: xxx')
+  v9.CheckDefFailure(['if true', 'echo 1'], 'E171: Missing :endif')
 
   var lines =<< trim END
       var s = ''
       if s = ''
       endif
   END
-  v9.CheckDefFailure(lines, 'E488:')
+  v9.CheckDefFailure(lines, 'E488: Trailing characters:  = ''''')
 
   lines =<< trim END
       var s = ''
@@ -2984,7 +2997,7 @@ def Test_if_elseif_else_fails()
       elseif s = ''
       endif
   END
-  v9.CheckDefFailure(lines, 'E488:')
+  v9.CheckDefFailure(lines, 'E488: Trailing characters:  = ''''')
 
 
   lines =<< trim END
@@ -2993,7 +3006,7 @@ def Test_if_elseif_else_fails()
       else
       endif
   END
-  v9.CheckSourceDefFailure(lines, 'E583:')
+  v9.CheckSourceDefFailure(lines, 'E583: Multiple :else')
 
   lines =<< trim END
       var a = 3
@@ -3003,7 +3016,7 @@ def Test_if_elseif_else_fails()
       else
       endif
   END
-  v9.CheckSourceDefFailure(lines, 'E584:')
+  v9.CheckSourceDefFailure(lines, 'E584: :elseif after :else')
 
   lines =<< trim END
       var cond = true
@@ -3205,13 +3218,14 @@ def Test_if_const_expr()
   else
     var [a] = [10]
   endif
+  unlet g:glob
 enddef
 
 def Test_if_const_expr_fails()
-  v9.CheckDefFailure(['if "aaa" == "bbb'], 'E114:')
-  v9.CheckDefFailure(["if 'aaa' == 'bbb"], 'E115:')
-  v9.CheckDefFailure(["if has('aaa'"], 'E110:')
-  v9.CheckDefFailure(["if has('aaa') ? true false"], 'E109:')
+  v9.CheckDefFailure(['if "aaa" == "bbb'], 'E114: Missing double quote: "bbb')
+  v9.CheckDefFailure(["if 'aaa' == 'bbb"], 'E115: Missing single quote: ''bbb')
+  v9.CheckDefFailure(["if has('aaa'"], 'E110: Missing '')''')
+  v9.CheckDefFailure(["if has('aaa') ? true false"], 'E109: Missing '':'' after ''?''')
 enddef
 
 def s:RunNested(i: number): number
@@ -3955,18 +3969,18 @@ def Test_for_loop_with_closure_after_another_loop()
 enddef
 
 def Test_for_loop_fails()
-  v9.CheckDefAndScriptFailure(['for '], ['E1097:', 'E690:'])
-  v9.CheckDefAndScriptFailure(['for x'], ['E1097:', 'E690:'])
-  v9.CheckDefAndScriptFailure(['for x in'], ['E1097:', 'E15:'])
-  v9.CheckDefAndScriptFailure(['for # in range(5)'], 'E690:')
-  v9.CheckDefAndScriptFailure(['for i In range(5)'], 'E690:')
+  v9.CheckDefAndScriptFailure(['for '], ['E1097: Line incomplete', 'E690: Missing "in" after :for'])
+  v9.CheckDefAndScriptFailure(['for x'], ['E1097: Line incomplete', 'E690: Missing "in" after :for'])
+  v9.CheckDefAndScriptFailure(['for x in'], ['E1097: Line incomplete', 'E15: Invalid expression: ""'])
+  v9.CheckDefAndScriptFailure(['for # in range(5)'], 'E690: Missing "in" after :for')
+  v9.CheckDefAndScriptFailure(['for i In range(5)'], 'E690: Missing "in" after :for')
   v9.CheckDefAndScriptFailure(['var x = 5', 'for x in range(5)', 'endfor'], ['E1017:', 'E1041:'])
-  v9.CheckScriptFailure(['vim9script', 'var x = 5', 'for x in range(5)', '# comment', 'endfor'], 'E1041:', 3)
-  v9.CheckScriptFailure(['def Func(arg: any)', 'for arg in range(5)', 'enddef', 'defcompile'], 'E1006:')
+  v9.CheckScriptFailure(['vim9script', 'var x = 5', 'for x in range(5)', '# comment', 'endfor'], 'E1041: Redefining script item: "x"', 3)
+  v9.CheckScriptFailure(['def Func(arg: any)', 'for arg in range(5)', 'enddef', 'defcompile'], 'E1006: arg is used as an argument')
   delfunc! g:Func
-  v9.CheckDefFailure(['for i in xxx'], 'E1001:')
-  v9.CheckDefFailure(['endfor'], 'E588:')
-  v9.CheckDefFailure(['for i in range(3)', 'echo 3'], 'E170:')
+  v9.CheckDefFailure(['for i in xxx'], 'E1001: Variable not found: xxx')
+  v9.CheckDefFailure(['endfor'], 'E588: :endfor without :for')
+  v9.CheckDefFailure(['for i in range(3)', 'echo 3'], 'E170: Missing :endfor')
 
   # wrong type detected at compile time
   v9.CheckDefFailure(['for i in {a: 1}', 'echo 3', 'endfor'], 'E1177: For loop on dict not supported')
@@ -3982,7 +3996,7 @@ def Test_for_loop_fails()
         e = {a: 0, b: ''}
       endfor
   END
-  v9.CheckDefAndScriptFailure(lines, ['E1018:', 'E46:'], 3)
+  v9.CheckDefAndScriptFailure(lines, ['E1018: Cannot assign to a constant: e', 'E46: Cannot change read-only variable "e"'], 3)
 
   lines =<< trim END
       for nr: number in ['foo']
@@ -3995,7 +4009,7 @@ def Test_for_loop_fails()
         echo n
       endfor
   END
-  v9.CheckDefAndScriptFailure(lines, 'E1059:', 1)
+  v9.CheckDefAndScriptFailure(lines, 'E1059: No white space allowed before colon:  : number in [1, 2]', 1)
 
   lines =<< trim END
       var d: dict<number> = {a: 1, b: 2}
@@ -4070,7 +4084,7 @@ def Test_for_loop_fails()
   END
   v9.CheckDefSuccess(lines)
 
-  v9.CheckDefFailure(['for x in range(3)'] + lines + ['endfor'], 'E1306:')
+  v9.CheckDefFailure(['for x in range(3)'] + lines + ['endfor'], 'E1306: Loop nesting too deep')
 
   # Test for too many for loops
   lines =<< trim END
@@ -4106,23 +4120,26 @@ enddef
 
 def Test_for_loop_script_var()
   # cannot use s:var in a :def function
-  v9.CheckDefFailure(['for s:var in range(3)', 'echo 3'], 'E1254:')
+  v9.CheckDefFailure(['for s:var in range(3)', 'echo 3'], 'E1254: Cannot use script variable in for loop')
 
-  # can use s:var in Vim9 script, with or without s:
+  # cannot use s:var in Vim9 script either, can use it without s:
   var lines =<< trim END
     vim9script
-    var total = 0
     for s:var in [1, 2, 3]
-      total += s:var
     endfor
-    assert_equal(6, total)
+  END
+  v9.CheckSourceFailure(lines,
+      'E1268: Cannot use s: in Vim9 script: s:var in [1, 2, 3]', 2)
 
-    total = 0
+  lines =<< trim END
+    vim9script
+    var total = 0
     for var in [1, 2, 3]
       total += var
     endfor
     assert_equal(6, total)
   END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 def Test_for_loop_unpack()
@@ -4209,7 +4226,12 @@ def Test_for_loop_unpack()
       endfor
   END
   g:listlist = [1, 2, 3]
-  v9.CheckDefExecFailure(lines, 'E1140:', 1)
+  v9.CheckDefExecFailure(lines, 'E1140: :for argument must be a sequence of lists or tuples', 1)
+  unlet g:listlist
+  set ts& sw&
+  unlet $LOOPVAR
+  @r = ''
+  v:errmsg = ''
 enddef
 
 def Test_for_loop_with_try_continue()
@@ -4351,20 +4373,20 @@ def Test_while_loop_in_script()
 enddef
 
 def Test_while_loop_fails()
-  v9.CheckDefFailure(['while xxx'], 'E1001:')
-  v9.CheckDefFailure(['endwhile'], 'E588:')
-  v9.CheckDefFailure(['continue'], 'E586:')
-  v9.CheckDefFailure(['if true', 'continue'], 'E586:')
-  v9.CheckDefFailure(['break'], 'E587:')
-  v9.CheckDefFailure(['if true', 'break'], 'E587:')
-  v9.CheckDefFailure(['while 1', 'echo 3'], 'E170:')
+  v9.CheckDefFailure(['while xxx'], 'E1001: Variable not found: xxx')
+  v9.CheckDefFailure(['endwhile'], 'E588: :endwhile without :while')
+  v9.CheckDefFailure(['continue'], 'E586: :continue without :while or :for')
+  v9.CheckDefFailure(['if true', 'continue'], 'E586: :continue without :while or :for')
+  v9.CheckDefFailure(['break'], 'E587: :break without :while or :for')
+  v9.CheckDefFailure(['if true', 'break'], 'E587: :break without :while or :for')
+  v9.CheckDefFailure(['while 1', 'echo 3'], 'E170: Missing :endwhile')
 
   var lines =<< trim END
       var s = ''
       while s = ''
       endwhile
   END
-  v9.CheckDefFailure(lines, 'E488:')
+  v9.CheckDefFailure(lines, 'E488: Trailing characters:  = ''''')
 enddef
 
 def Test_interrupt_loop()
@@ -6770,7 +6792,7 @@ def Test_if_cond_shortcircuit_skip_indexing()
   lines =<< trim END
     vim9script
     def Foo(): string
-      const t = (false)
+      const t = (false,)
       if false && t[0]
         return 'failed'
       endif
@@ -7153,6 +7175,174 @@ def Test_substitute_cmd()
   END
   writefile(lines, 'Xvim9lines', 'D')
   source Xvim9lines
+enddef
+
+" Closures created in a :def loop that is left early keep the values of their
+" own iteration.
+def Test_for_loop_closure_leave_loop()
+  var lines =<< trim END
+    vim9script
+    def ReturnInLoop(): list<func>
+      var fl: list<func>
+      for i in range(4)
+        var v = 'v' .. i
+        fl->add(() => v)
+        if i == 2
+          return fl
+        endif
+      endfor
+      return fl
+    enddef
+    assert_equal(['v0', 'v1', 'v2'], ReturnInLoop()->mapnew((_, F) => F()))
+
+    def BreakNested(): list<func>
+      var fl: list<func>
+      for i in range(3)
+        var a = 'a' .. i
+        while true
+          var b = 'b' .. i
+          fl->add(() => a .. b)
+          break
+        endwhile
+        if i == 1
+          break
+        endif
+      endfor
+      return fl
+    enddef
+    assert_equal(['a0b0', 'a1b1'], BreakNested()->mapnew((_, F) => F()))
+
+    # two closures in one iteration share the variable
+    def TwoClosures(): list<string>
+      var fl: list<func>
+      for i in range(2)
+        var v = 'v' .. i
+        fl->add(() => v)
+        fl->add(() => {
+          v ..= '!'
+          return v
+        })
+      endfor
+      return [fl[1](), fl[0](), fl[3](), fl[2]()]
+    enddef
+    assert_equal(['v0!', 'v0!', 'v1!', 'v1!'], TwoClosures())
+
+    # a closure only referenced from a List declared in the loop
+    def InLoopList(): list<string>
+      var r: list<string>
+      for i in range(3)
+        var v = 'v' .. i
+        var keep = [() => v]
+        r->add(keep[0]())
+      endfor
+      return r
+    enddef
+    assert_equal(['v0', 'v1', 'v2'], InLoopList())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" :break and :continue inside a :finally clause, without a pending exception.
+def Test_break_continue_in_finally()
+  var lines =<< trim END
+      VAR r = []
+      for i in range(3)
+        try
+          call add(r, 't' .. i)
+        finally
+          call add(r, 'f' .. i)
+          if i == 1
+            break
+          endif
+        endtry
+        call add(r, 'a' .. i)
+      endfor
+      call assert_equal(['t0', 'f0', 'a0', 't1', 'f1'], r)
+
+      LET r = []
+      for i in range(2)
+        try
+          call add(r, 't' .. i)
+        finally
+          call add(r, 'f' .. i)
+          continue
+        endtry
+      endfor
+      call assert_equal(['t0', 'f0', 't1', 'f1'], r)
+
+      LET r = []
+      for i in range(2)
+        try
+          try
+            break
+          finally
+            call add(r, 'inner')
+          endtry
+        finally
+          call add(r, 'outer')
+        endtry
+      endfor
+      call assert_equal(['inner', 'outer'], r)
+  END
+  v9.CheckSourceLegacyAndVim9Success(lines)
+enddef
+
+" Loop variables with a scope prefix, a read-only and a locked variable.
+def Test_for_loop_scoped_target()
+  var lines =<< trim END
+      for g:for_g in [1, 2]
+      endfor
+      assert_equal(2, g:for_g)
+      for b:for_b in ['a', 'b']
+      endfor
+      assert_equal('b', b:for_b)
+      for w:for_w in [3, 4]
+      endfor
+      assert_equal(4, w:for_w)
+      for t:for_t in [5, 6]
+      endfor
+      assert_equal(6, t:for_t)
+      for v:errmsg in ['x', 'y']
+      endfor
+      assert_equal('y', v:errmsg)
+      v:errmsg = ''
+      unlet g:for_g b:for_b w:for_w t:for_t
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+
+  v9.CheckSourceDefExecAndScriptFailure(['for v:version in [1]', 'endfor'],
+      'E46: Cannot change read-only variable "v:version"', 1)
+
+  g:for_locked = 0
+  lockvar g:for_locked
+  v9.CheckSourceDefExecFailure(['for g:for_locked in [1]', 'endfor'],
+      'E741: Value is locked: for_locked', 1)
+  v9.CheckSourceFailure(['vim9script', 'for g:for_locked in [1]', 'endfor'],
+      'E741: Value is locked: g:for_locked', 2)
+  assert_equal(0, g:for_locked)
+  unlockvar g:for_locked
+  unlet g:for_locked
+enddef
+
+" At script level the nesting of :for and :while is limited by the condition
+" stack, not by the limit of a compiled function.
+def Test_for_loop_nesting_script_level()
+  var lines = ['vim9script', 'var n = 0']
+  for i in range(12)
+    lines += [repeat(' ', i) .. $'for v{i} in [1]']
+  endfor
+  lines += ['n += 1']
+  for i in range(11, 0, -1)
+    lines += [repeat(' ', i) .. 'endfor']
+  endfor
+  lines += ['assert_equal(1, n)']
+  v9.CheckSourceSuccess(lines)
+
+  lines = ['vim9script']
+  for i in range(51)
+    lines += [$'for v{i} in [1]']
+  endfor
+  v9.CheckSourceFailure(lines, 'E585: :while/:for nesting too deep', 52)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
