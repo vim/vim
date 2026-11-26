@@ -1192,6 +1192,11 @@ win_line(
 					// w_skipcol or concealing
     int		skipped_cells = 0;	// nr of skipped cells for virtual text
 					// to be added to wlv.vcol later
+#ifdef FEAT_PROP_POPUP
+    int		text_prop_skip_cells = 0; // nr of cells of virtual text after
+					// the line to skip when the line ends
+					// left of the window
+#endif
     int		fromcol_prev = -2;	// start of inverting after cursor
     int		noinvcur = FALSE;	// don't invert the cursor
     int		lnum_in_visual_area = FALSE;
@@ -1902,7 +1907,14 @@ win_line(
 #endif
 	     virtual_active() ||
 	     (VIsual_active && wp->w_buffer == curwin->w_buffer)))
+	{
+#ifdef FEAT_PROP_POPUP
+	    // Virtual text after the line starts at the end of the line, the
+	    // part left of the window must still be skipped.
+	    text_prop_skip_cells = v - wlv.vcol;
+#endif
 	    wlv.vcol = v;
+	}
 
 	// Handle a character that's not completely on the screen: Put ptr at
 	// that character but skip the first few screen characters.
@@ -2439,6 +2451,42 @@ win_line(
 				    win_line_start(wp, &wlv, TRUE);
 				    bail_out = TRUE;
 				}
+			    }
+			}
+
+			// With 'nowrap' "right" aligned text left of the window
+			// must not be shifted.
+			if (skip_cells > 0 && !wp->w_p_wrap
+				&& tp->tp_col == MAXCOL
+				&& (tp->tp_flags & TP_FLAG_ALIGN_RIGHT))
+			{
+			    skipped_cells += skip_cells;
+			    skip_cells = 0;
+			}
+
+			// Virtual text after a line that ends left of the
+			// window, while "wlv.vcol" is already at the first
+			// window column.
+			if (text_prop_skip_cells > 0 && tp->tp_col == MAXCOL
+				&& (tp->tp_flags & (TP_FLAG_ALIGN_RIGHT
+						    | TP_FLAG_ALIGN_ABOVE
+						    | TP_FLAG_ALIGN_BELOW)) == 0)
+			{
+			    if (wlv.n_extra > text_prop_skip_cells)
+			    {
+				wlv.n_extra -= text_prop_skip_cells;
+				wlv.p_extra += text_prop_skip_cells;
+				wlv.n_attr_skip -= text_prop_skip_cells;
+				if (wlv.n_attr_skip < 0)
+				    wlv.n_attr_skip = 0;
+				text_prop_skip_cells = 0;
+			    }
+			    else
+			    {
+				text_prop_skip_cells -= wlv.n_extra;
+				wlv.n_extra = 0;
+				wlv.n_attr_skip = 0;
+				bail_out = TRUE;
 			    }
 			}
 
