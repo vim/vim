@@ -437,12 +437,6 @@
 #ifndef FEAT_XFONTSET
 # if defined(HAVE_X11) && !defined(FEAT_GUI_GTK)
 #  define FEAT_XFONTSET
-# else
-// #  define FEAT_XFONTSET
-# endif
-#else
-# if defined(USE_GTK4)
-#  undef FEAT_XFONTSET
 # endif
 #endif
 
@@ -814,7 +808,7 @@
  * +X11			Unix only.  Include code for xterm title saving and X
  *			clipboard.  Only works if HAVE_X11 is also defined.
  */
-#if (defined(FEAT_NORMAL) || defined(FEAT_GUI_MOTIF)) && !defined(USE_GTK4)
+#if (defined(FEAT_NORMAL) || defined(FEAT_GUI_MOTIF))
 # define WANT_X11
 #endif
 
@@ -919,8 +913,7 @@
 
 #if defined(FEAT_NORMAL) \
 	&& (defined(UNIX) || defined(VMS)) \
-	&& defined(WANT_X11) && defined(HAVE_X11) \
-	&& !defined(USE_GTK4)
+	&& defined(WANT_X11) && defined(HAVE_X11)
 # define FEAT_XCLIPBOARD
 # ifndef FEAT_CLIPBOARD
 #  define FEAT_CLIPBOARD
