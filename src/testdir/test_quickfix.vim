@@ -7244,4 +7244,27 @@ func Test_qf_statusline_height()
   %bw!
 endfunc
 
+" Test for a BufNew autocommand running a quickfix command while the file
+" name for a quickfix entry is resolved.  The double free was only detected
+" with valgrind or ASan.
+func Test_bufnew_nested_cexpr()
+  call setqflist([], 'f')
+  augroup QfBufNew
+    au!
+    au BufNew Xsecond ++once cexpr 'Xthird:1:nested'
+  augroup END
+  cexpr ['Xfirst:1:one', 'Xsecond:1:two']
+  " The outer command created the first list, the nested command the second
+  call assert_equal(['one', 'two'],
+        \ map(getqflist({'nr': 1, 'items': 0}).items, 'v:val.text'))
+  call assert_equal(['nested'],
+        \ map(getqflist({'nr': 2, 'items': 0}).items, 'v:val.text'))
+  augroup QfBufNew
+    au!
+  augroup END
+  augroup! QfBufNew
+  call setqflist([], 'f')
+  %bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

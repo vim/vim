@@ -2791,8 +2791,12 @@ qf_get_fnum(qf_list_T *qfl, char_u *directory, char_u *fname)
     }
     else
     {
-	vim_free(qf_last_bufname);
+	// buflist_new() may trigger autocommands that run a quickfix command,
+	// don't leave a pointer to freed memory.
+	VIM_CLEAR(qf_last_bufname);
 	buf = buflist_new(bufname.string, NULL, (linenr_T)0, BLN_NOOPT);
+	// An autocommand may have set the cached name.
+	vim_free(qf_last_bufname);
 	if (bufname.string == ptr.string)
 	    qf_last_bufname = bufname.string;
 	else
