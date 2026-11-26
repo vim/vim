@@ -985,9 +985,12 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
 	(void)win_lbr_chartabsize(cts, &head, NULL);
 	vcol += cts->cts_cur_text_width + head;
 	// When properties are above the empty line must also be counted.  For
-	// a property below the width already includes filling up the line.
+	// a property below the width already includes filling up the line,
+	// for another property in the line its width is already counted.
 	if (cts->cts_ptr == cts->cts_line && cts->cts_prop_lines > 0
-							 && !cts->cts_has_below)
+		&& !cts->cts_has_below
+		&& cts->cts_cur_text_width
+			   == (cts->cts_no_above ? 0 : cts->cts_first_char))
 	    ++vcol;
 	cts->cts_vcol = vcol > MAXCOL ? MAXCOL : (int)vcol;
     }
