@@ -1096,4 +1096,23 @@ func Test_syn_sync_grouphere_shorter_next_line()
   bw!
 endfunc
 
+" Inside an if block, shTestOpr used to match the ">" of ">&2" before
+" shRedir did, thus the redirection was highlighted as a test operator.
+func Test_syn_sh_redir_in_if()
+  new
+  call setline(1, [
+	\ 'if ((EUID != 0)); then',
+	\ '  echo no >&2',
+	\ 'fi',
+	\ ''])
+
+  syntax on
+  set ft=sh
+  redraw!
+
+  " ">" of ">&2" is at column 11 of line 2.
+  call assert_equal('shRedir', synIDattr(synID(2, 11, 0), 'name'))
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
