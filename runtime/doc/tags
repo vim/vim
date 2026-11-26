@@ -3284,11 +3284,11 @@ $quote	eval.txt	/*$quote*
 :s_I	change.txt	/*:s_I*
 :s_c	change.txt	/*:s_c*
 :s_e	change.txt	/*:s_e*
-:s_flags	change.txt	/*:s_flags*
 :s_g	change.txt	/*:s_g*
 :s_i	change.txt	/*:s_i*
 :s_l	change.txt	/*:s_l*
 :s_n	change.txt	/*:s_n*
+:s_options	change.txt	/*:s_options*
 :s_p	change.txt	/*:s_p*
 :s_r	change.txt	/*:s_r*
 :sa	windows.txt	/*:sa*
