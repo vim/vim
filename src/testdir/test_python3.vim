@@ -1099,6 +1099,30 @@ func Test_python3_float()
   call assert_equal([0.0, 0.0], l)
 endfunc
 
+" The "locked" attribute of a vim.Dictionary cannot remove VAR_FIXED, also
+" when the dict is locked as well
+func Test_python3_dict_locked_attr_fixed()
+  lockvar v:completed_item
+  try
+    py3 vim.bindeval('v:completed_item').locked = False
+    call assert_report('setting "locked" did not fail')
+  catch
+    call assert_match('TypeError: cannot modify fixed dictionary', v:exception)
+  endtry
+  call assert_fails("let v:completed_item.word = 'x'", 'E741:')
+  call assert_equal({}, v:completed_item)
+  unlockvar v:completed_item
+
+  " a dict that is only locked can be unlocked
+  let d = {'a': 1}
+  lockvar d
+  py3 vim.bindeval('d').locked = False
+  call assert_false(py3eval("vim.bindeval('d').locked"))
+  let d.b = 2
+  py3 vim.bindeval('d').locked = True
+  call assert_true(py3eval("vim.bindeval('d').locked"))
+endfunc
+
 " Test for Dict key errors
 func Test_python3_dict_key_error()
   let messages = []
