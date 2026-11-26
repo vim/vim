@@ -7244,4 +7244,35 @@ func Test_qf_statusline_height()
   %bw!
 endfunc
 
+" Test for an autocommand moving the lists in the quickfix stack, by changing
+" 'chistory', while jumping to an entry.  The use of freed memory was only
+" detected with valgrind or ASan.
+func Xtest_resize_stack_while_jumping(cchar)
+  call s:setup_commands(a:cchar)
+
+  call writefile(['a', 'b'], 'Xjumpchi', 'D')
+  Xgetexpr ['Xjumpchi:2:one']
+  augroup QfJumpResize
+    au!
+    au BufReadPost Xjumpchi ++once silent! Xsethist 60
+  augroup END
+  Xfirst
+  call assert_equal('Xjumpchi', bufname())
+  call assert_equal(2, line('.'))
+  call assert_equal(1, g:Xgetlist({'idx': 0}).idx)
+
+  augroup QfJumpResize
+    au!
+  augroup END
+  augroup! QfJumpResize
+  Xsethistdefault
+  call g:Xsetlist([], 'f')
+  %bw!
+endfunc
+
+func Test_resize_stack_while_jumping()
+  call Xtest_resize_stack_while_jumping('c')
+  call Xtest_resize_stack_while_jumping('l')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

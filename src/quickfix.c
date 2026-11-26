@@ -3616,7 +3616,9 @@ qf_jump_edit_buffer(
     }
 
     // Check if the list was changed.  The pointers may happen to be identical,
-    // thus also check qf_changedtick.
+    // thus also check qf_changedtick.  Autocommands may have moved the lists
+    // in the stack, get the current list again.
+    qfl = qf_get_curlist(qi);
     if (old_qf_curlist != qi->qf_curlist
 	    || old_changedtick != qfl->qf_changedtick
 	    || !is_qf_entry_present(qfl, qf_ptr))
@@ -3776,6 +3778,8 @@ qf_jump_open_window(
 						      || cmdmod.cmod_tab != 0))
 	if (jump_to_help_window(qi, newwin, opened_window) == FAIL)
 	    return FAIL;
+    // Autocommands may have moved the lists in the stack.
+    qfl = qf_get_curlist(qi);
     if (old_qf_curlist != qi->qf_curlist
 	    || old_changedtick != qfl->qf_changedtick
 	    || !is_qf_entry_present(qfl, qf_ptr))
@@ -3800,6 +3804,8 @@ qf_jump_open_window(
 						opened_window) == FAIL)
 	    return FAIL;
     }
+    // Autocommands may have moved the lists in the stack.
+    qfl = qf_get_curlist(qi);
     if (old_qf_curlist != qi->qf_curlist
 	    || old_changedtick != qfl->qf_changedtick
 	    || !is_qf_entry_present(qfl, qf_ptr))
@@ -3989,6 +3995,8 @@ failed:
 theend:
     if (qi != NULL)
     {
+	// Autocommands may have moved the lists in the stack.
+	qfl = qf_get_curlist(qi);
 	qfl->qf_ptr = qf_ptr;
 	qfl->qf_index = qf_index;
     }
