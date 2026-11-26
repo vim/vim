@@ -33,7 +33,8 @@ func Test_client_server()
   endif
   call Check_X11_Connection()
 
-  let name = 'XVIMTEST'
+  " The gvim and vim tests may run in parallel.
+  let name = 'XVIMTEST' .. getpid()
   let cmd .= ' --servername ' . name
   let job = job_start(cmd, {'stoponexit': 'kill', 'out_io': 'null'})
   call WaitForAssert({-> assert_equal("run", job_status(job))})
@@ -45,7 +46,7 @@ func Test_client_server()
   if !has('win32')
     if RunVim([], [], '--serverlist >Xtest_serverlist')
       let lines = readfile('Xtest_serverlist')
-      call assert_true(index(lines, 'XVIMTEST') >= 0)
+      call assert_true(index(lines, name) >= 0)
     endif
     call delete('Xtest_serverlist')
   endif
