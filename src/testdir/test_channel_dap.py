@@ -82,6 +82,13 @@ class DAPHandler(socketserver.BaseRequestHandler):
                 "supportsConfigurationDoneRequest": True
             })
             self.send_event("initialized")
+        elif cmd == "resp-in-cb":
+            # Send an event before the response, and send the response only
+            # when the client asks for it while it handles the event
+            self.resp_in_cb_req = msg
+            self.send_event("resp-in-cb")
+        elif cmd == "resp-in-cb-send":
+            self.send_response(self.resp_in_cb_req)
         else:
             self.send_response(msg)
 

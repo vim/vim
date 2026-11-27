@@ -2991,7 +2991,21 @@ channel_get_json(
 		    tv = &di->di_tv;
 		}
 		else
+		{
 		    tv = item->jq_value;
+		    // The ID of a response is in its "id" item.  Use it, so
+		    // that the ch_block_ids check below holds back a response
+		    // that a blocking read waits for.  A request from the
+		    // server has a "method" item and an "id" chosen by the
+		    // server, don't use that one.
+		    if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL
+			    && !dict_has_key(tv->vval.v_dict, "method"))
+		    {
+			di = dict_find(tv->vval.v_dict, (char_u *)"id", -1);
+			if (di != NULL)
+			    tv = &di->di_tv;
+		    }
+		}
 	    }
 	    else
 	    {
@@ -3008,7 +3022,19 @@ channel_get_json(
 		    tv = &di->di_tv;
 		}
 		else
+		{
 		    tv = item->jq_value;
+		    // The ID of the request a response is for is in its
+		    // "request_seq" item.  Use it, as for "lsp" above.  An
+		    // event or a request from the server does not have it.
+		    if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
+		    {
+			di = dict_find(tv->vval.v_dict,
+					    (char_u *)"request_seq", -1);
+			if (di != NULL)
+			    tv = &di->di_tv;
+		    }
+		}
 	    }
 	}
 
