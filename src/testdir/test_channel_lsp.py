@@ -216,6 +216,16 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         # client request.
         self.send_lsp_resp(payload['id'], {'text': 'server-resp'})
 
+    def do_rpc_resp_in_cb(self, payload):
+        # Send a notification before replying to a request message, and send
+        # the reply only when the client asks for it while it handles the
+        # notification
+        self.rpc_resp_in_cb_id = payload['id']
+        self.send_lsp_resp(-1, 'rpc-resp-in-cb-notif')
+
+    def do_rpc_resp_in_cb_send(self, payload):
+        self.send_lsp_resp(self.rpc_resp_in_cb_id, 'rpc-resp-in-cb-resp')
+
     def process_msg(self, msg):
         try:
             decoded = json.loads(msg)
@@ -242,6 +252,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         'empty-payload': self.do_empty_payload,
                         'server-req-in-middle': self.do_server_req_in_middle,
                         'server-req-in-middle-resp': self.do_server_req_in_middle_resp,
+                        'rpc-resp-in-cb': self.do_rpc_resp_in_cb,
+                        'rpc-resp-in-cb-send': self.do_rpc_resp_in_cb_send,
                         }
                 if decoded['method'] in test_map:
                     test_map[decoded['method']](decoded)

@@ -2554,6 +2554,11 @@ func LspCb(chan, msg)
   call add(g:lspNotif, a:msg)
   if a:msg->has_key('method')
     call LspProcessServerRequests(a:chan, a:msg)
+  elseif get(a:msg, 'result') is# 'rpc-resp-in-cb-notif'
+    " Let the server send the response to the request that is waited for,
+    " and wait until it is received
+    call ch_sendexpr(a:chan, #{method: 'rpc-resp-in-cb-send'})
+    call WaitFor({-> ch_canread(a:chan)})
   endif
 endfunc
 
@@ -2819,6 +2824,16 @@ func LspTests(port)
   call assert_equal([#{jsonrpc: '2.0', result:
         \ #{method: 'echo', jsonrpc: '2.0', id: 'e8a1-4c2f',
         \ params: #{s: 'msg-with-string-id'}}}], g:lspNotif)
+
+  " Test for receiving the response to a request that ch_evalexpr() waits for
+  " while the callback for a notification is running.  The response is not
+  " passed to the callback.
+  let g:lspNotif = []
+  let resp = ch_evalexpr(ch, #{method: 'rpc-resp-in-cb', params: {}})
+  call assert_equal(#{id: 39, jsonrpc: '2.0', result: 'rpc-resp-in-cb-resp'},
+        \ resp)
+  call assert_equal([#{jsonrpc: '2.0', result: 'rpc-resp-in-cb-notif'}],
+        \ g:lspNotif)
 
   " Invalid arguments to ch_evalexpr() and ch_sendexpr()
   call assert_fails('call ch_sendexpr(ch, #{method: "cookie", id: "cookie"},'
@@ -3182,6 +3197,17 @@ func Test_channel_lsp_mode()
   call RunServer('test_channel_lsp.py', 'LspTests', [])
 endfunc
 
+" DAP channel message callback function
+func DapCb(chan, msg)
+  call add(g:dapMsgs, a:msg)
+  if get(a:msg, 'event') is# 'resp-in-cb'
+    " Let the server send the response to the request that is waited for,
+    " and wait until it is received
+    call ch_sendexpr(a:chan, #{type: 'request', command: 'resp-in-cb-send'})
+    call WaitFor({-> ch_canread(a:chan)})
+  endif
+endfunc
+
 " Test for the 'dap' channel mode. Don't need to test much since most of the
 " logic is same as 'lsp' mode.
 func DapTests(port)
@@ -3233,6 +3259,27 @@ func DapTests(port)
         \ 'body': {},
         \ 'command': 'test'
         \ }, resp)
+
+  " Test for receiving the response to a request that ch_evalexpr() waits for
+  " while the callback for an event is running.  The response is not passed
+  " to the callback.
+  let g:dapMsgs = []
+  call ch_setoptions(ch, #{callback: 'DapCb'})
+  let resp = ch_evalexpr(ch, #{type: 'request', command: 'resp-in-cb'})
+  call assert_equal({
+        \ 'seq': 5,
+        \ 'request_seq': 3,
+        \ 'type': 'response',
+        \ 'success': v:true,
+        \ 'body': {},
+        \ 'command': 'resp-in-cb'
+        \ }, resp)
+  call assert_equal([{
+        \ 'seq': 4,
+        \ 'type': 'event',
+        \ 'event': 'resp-in-cb',
+        \ 'body': {}
+        \ }], g:dapMsgs)
 endfunc
 
 func Test_channel_dap_mode()
