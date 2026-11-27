@@ -144,6 +144,12 @@ typedef struct ff_visited_list_hdr
 #define FF_MAX_STAR_STAR_EXPAND ((char_u)30)
 
 /*
+ * Maximum number of paths that one 'path' item using the path limiter (**N)
+ * notation is expanded into.
+ */
+#define FF_MAX_LIMITER_PATHS 100
+
+/*
  * The search context:
  *   ffsc_stack_ptr:	the stack for the dirs to search
  *   ffsc_visited_list: the currently active visited list
@@ -2384,13 +2390,171 @@ is_unique(char_u *maybe_unique, garray_T *gap, int i)
 }
 
 /*
+ * Add a copy of "path" with length "pathlen" to "gap".
+ * Returns FAIL when out of memory.
+ */
+    static int
+add_path_to_ga(garray_T *gap, char_u *path, size_t pathlen)
+{
+    char_u	*p;
+
+    if (ga_grow(gap, 1) == FAIL)
+	return FAIL;
+
+#if defined(MSWIN)
+    // Avoid the path ending in a backslash, it fails when a comma is
+    // appended.
+    if (path[pathlen - 1] == '\\')
+	path[pathlen - 1] = '/';
+#endif
+
+    p = vim_strnsave(path, pathlen);
+    if (p == NULL)
+	return FAIL;
+    ((char_u **)gap->ga_data)[gap->ga_len++] = p;
+
+    return OK;
+}
+
+/*
+ * Add `path[pathlen]` to gap, with the path limiter (**N) notation expanded.
+ *
+ * That notation is only understood by vim_findfile(), not completion wildcard
+ * expansion, so a path is added for every number of directory levels from 0 to N.
+ *
+ * e.g. a / **3 / b becomes
+ *      a / b
+ *      a / * / b
+ *      a / * / * / b
+ *      a / * / * / * / b
+ *
+ * (separated out to avoid closing this comment block)
+ *
+ * (up to FF_MAX_LIMITER_PATHS paths).
+ *
+ * "path" must be a buffer of MAXPATHL bytes and may be changed.
+ * "off" is the offset in "path" where to start looking for "**N".
+ * "count" is the number of paths the item has already been expanded into.
+ * Returns FAIL when out of memory.
+ */
+    static int
+add_path_expand_limiter(
+	garray_T	*gap,
+	char_u		*path,
+	size_t		pathlen,
+	size_t		off,
+	int		count)
+{
+    char_u	*p = path + off;
+    char_u	*rest;
+    char	*end;
+    long	limit;
+    char_u	*buf;
+    size_t	len;
+    size_t	restlen;
+    int		level;
+    int		retval = OK;
+
+    while (*p != NUL)
+    {
+	// "**" is only special at the start of a directory name.
+	if (p[0] != '*' || p[1] != '*' || (p > path && !after_pathsep(path, p)))
+	{
+	    MB_PTR_ADV(p);
+	    continue;
+	}
+
+	// Get the limit, like vim_findfile_init()
+	limit = strtol((char *)p + 2, &end, 10);
+	rest = (char_u *)end;
+	if (rest == p + 2 || (*rest != NUL && !vim_ispathsep(*rest)))
+	{
+	    // no limit given or not valid, ignore
+	    p += 2;
+	    continue;
+	}
+	restlen = pathlen - (size_t)(rest - path);
+
+	if (limit == 0)
+	{
+	    // "**0" matches zero directory levels, remove it together with the
+	    // path separator that follows.
+	    if (*rest != NUL)
+	    {
+		++rest;
+		--restlen;
+	    }
+	    mch_memmove(p, rest, restlen + 1);	    // +1 for NUL
+	    pathlen = (size_t)(p - path) + restlen;
+	    continue;
+	}
+
+	if (limit < 0 || limit >= 255
+			       || count * (limit + 1) > FF_MAX_LIMITER_PATHS)
+	{
+	    // Ignore
+	    p += 2;
+	    mch_memmove(p, rest, restlen + 1);	    // +1 for NUL
+	    pathlen = (size_t)(p - path) + restlen;
+	    continue;
+	}
+
+	// Add a path for every number of directory levels, "**N" in what
+	// follows is handled recursively.
+	buf = alloc(MAXPATHL);
+	if (buf == NULL)
+	    return FAIL;
+	len = (size_t)(p - path);
+	mch_memmove(buf, path, len);
+
+	count *= (int)limit + 1;
+
+	for (level = 0; level <= (int)limit && retval == OK; ++level)
+	{
+	    char_u *tail = rest;
+	    size_t taillen = restlen;
+
+	    if (level == 0)
+	    {
+		// zero directory levels: skip the path separator
+		if (*tail != NUL)
+		{
+		    ++tail;
+		    --taillen;
+		}
+	    }
+	    else
+	    {
+		if (len + 2 + restlen >= MAXPATHL)
+		    break;	// path is getting too long
+
+		// Use a slash also on MS-Windows, like globpath()
+		if (level > 1)
+		    buf[len++] = '/';
+		buf[len++] = '*';
+	    }
+	    mch_memmove(buf + len, tail, taillen + 1);	    // +1 for NUL
+
+	    retval = add_path_expand_limiter(gap, buf, len + taillen, len,
+									count);
+	}
+
+	vim_free(buf);
+	return retval;
+    }
+
+    return add_path_to_ga(gap, path, pathlen);
+}
+
+/*
  * Split the 'path' option into an array of strings in garray_T.  Relative
  * paths are expanded to their equivalent fullpath.  This includes the "."
  * (relative to current buffer directory) and empty path (relative to current
- * directory) notations.
+ * directory) notations.  The path limiter (**N) notation is expanded into the
+ * equivalent paths.
  *
- * TODO: handle upward search (;) and path limiter (**N) notations by
- * expanding each into their equivalent path(s).
+ * TODO: handle upward search (;) notation by expanding it into the equivalent
+ * path(s).
  */
     static void
 expand_path_option(
@@ -2459,20 +2623,8 @@ expand_path_option(
 	    buflen = simplify_filename(buf);
 	}
 
-	if (ga_grow(gap, 1) == FAIL)
+	if (add_path_expand_limiter(gap, buf, buflen, 0, 1) == FAIL)
 	    break;
-
-#if defined(MSWIN)
-	// Avoid the path ending in a backslash, it fails when a comma is
-	// appended.
-	if (buf[buflen - 1] == '\\')
-	    buf[buflen - 1] = '/';
-#endif
-
-	p = vim_strnsave(buf, buflen);
-	if (p == NULL)
-	    break;
-	((char_u **)gap->ga_data)[gap->ga_len++] = p;
     }
 
     vim_free(buf);
