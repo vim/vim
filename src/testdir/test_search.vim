@@ -540,6 +540,29 @@ func Test_search_cmdline3s()
   call Incsearch_cleanup()
 endfunc
 
+" A :snomagic or :smagic line that 'incsearch' did not get to highlight, as
+" when it is typed ahead, must not leave 'magic' overruled for later searches.
+func Test_incsearch_smagic_snomagic_restore_magic()
+  CheckOption incsearch
+
+  new
+  set incsearch
+  call setline(1, ['the', 'toe'])
+  call feedkeys(":sno/the/X/\<CR>", 'tx')
+  call assert_equal(['X', 'toe'], getline(1, '$'))
+  call assert_equal(2, search('t.e', 'w'))
+
+  set nomagic
+  call setline(1, ['the', 'toe'])
+  call cursor(1, 1)
+  call feedkeys(":sm/t.e/X/\<CR>", 'tx')
+  call assert_equal(['X', 'toe'], getline(1, '$'))
+  call assert_equal(0, search('t.e', 'w'))
+
+  set magic& incsearch&
+  bwipe!
+endfunc
+
 func Test_search_cmdline3g()
   CheckOption incsearch
 

@@ -389,6 +389,10 @@ finish_incsearch_highlighting(
 	incsearch_state_T *is_state,
 	int call_update_screen)
 {
+    // The command name may have overruled 'magic' also when no search was
+    // done, e.g. when typeahead caused the highlighting to be skipped.
+    magic_overruled = is_state->magic_overruled_save;
+
     if (!is_state->did_incsearch)
 	return;
 
@@ -411,8 +415,6 @@ finish_incsearch_highlighting(
     // by default search all lines
     search_first_line = 0;
     search_last_line = MAXLNUM;
-
-    magic_overruled = is_state->magic_overruled_save;
 
     validate_cursor();	// needed for TAB
     status_redraw_all();
