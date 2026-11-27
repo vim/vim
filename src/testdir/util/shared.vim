@@ -265,14 +265,23 @@ endfunc
 
 
 " Wait for up to a given milliseconds.
-" With the +timers feature this waits for key-input by getchar(), Resume()
-" feeds key-input and resumes process. Return time waited in milliseconds.
+" With the +timers feature this waits in getcharstr() for the key that a timer
+" feeds after "msec", or that Resume() feeds earlier, or for CTRL-C.  Other
+" input, such as the CTRL-D that "script" sends to the terminal when its stdin
+" is at end-of-file, is ignored.  A Resume() after Standby() returned does
+" nothing.  Return time waited in milliseconds.
 " Without +timers it uses simply :sleep.
 func Standby(msec)
   if has('timers') && exists('*reltimefloat')
     let start = reltime()
     let g:_standby_timer = timer_start(a:msec, function('s:feedkeys'))
-    call getchar()
+    while index(['x', "\<C-C>"], getcharstr()) < 0
+    endwhile
+    " What Resume() does, without feeding a key, unless Resume() already ran
+    if exists('g:_standby_timer')
+      call timer_stop(g:_standby_timer)
+      unlet g:_standby_timer
+    endif
     return float2nr(reltimefloat(reltime(start)) * 1000)
   else
     execute 'sleep ' a:msec . 'm'

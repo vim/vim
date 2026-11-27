@@ -962,8 +962,9 @@ work on, e.g. `grep -n '^## ' AGENTS_AREAS.md` and then that range.
   too.  Measure with `WaitFor()`'s return value and `assert_inrange()`
   (a timer may fire 1 ms early; wider bounds on mac/no `reltime`).  A
   repeating timer stops after three consecutive errors.
-  `Standby(msec)` waits in `getchar()` so timers run; `Resume()` ends
-  it.  Add a safety timer that feeds `CTRL-C`.
+  `Standby(msec)` waits in `getcharstr()` so timers run; `Resume()` or
+  `CTRL-C` ends it, other keys are ignored.  Add a safety timer that
+  feeds `CTRL-C`.
 - Channels: the other end is a Python script (`test_channel*.py`; add a
   command to it for new behaviour); skip without Python.  Socket tests
   run a `Ch_<what>(port)` body through `s:run_server()` (`RunServer()`),
