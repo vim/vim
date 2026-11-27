@@ -3178,8 +3178,8 @@ endfunc
 
 " Test that term_bg_default() uses a stored OSC 11 color when 'background' is
 " reset to its default (e.g. via "set bg&" or ":colorscheme default").
-func Test_term_bg_default_uses_osc11()
-  CheckNotMSWindows
+func Test_zz_term_bg_default_uses_osc11()
+  CheckFeature termresponse
   set t_RB=y
 
   " Feed a dark OSC 11 response: 0x29 + 0x4a + 0x6b = 222, which is < 384.
@@ -3187,6 +3187,18 @@ func Test_term_bg_default_uses_osc11()
   call test_option_not_set('background')
   call feedkeys(printf("\<Esc>]11;rgb:%02x00/%02x00/%02x00\x07", 0x29, 0x4a, 0x6b), 'Lx!')
   call assert_equal('dark', &background)
+
+  " Boundary: 0x80 + 0x80 + 0x80 = 384 == 3*128, NOT strictly greater, so dark.
+  set background=light
+  call test_option_not_set('background')
+  call feedkeys(printf("\<Esc>]11;rgb:%02x00/%02x00/%02x00\x07", 0x80, 0x80, 0x80), 'Lx!')
+  call assert_equal('dark', &background)
+
+  " Boundary: 0x80 + 0x80 + 0x81 = 385 > 384 = 3*128, so light.
+  set background=dark
+  call test_option_not_set('background')
+  call feedkeys(printf("\<Esc>]11;rgb:%02x00/%02x00/%02x00\x07", 0x80, 0x80, 0x81), 'Lx!')
+  call assert_equal('light', &background)
 
   " Resetting bg& after a colorscheme forced it to light must use the OSC 11
   " stored color (dark).
