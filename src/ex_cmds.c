@@ -4709,6 +4709,11 @@ ex_substitute(exarg_T *eap)
 			    // avoid calling update_screen() in vgetorpeek()
 			    p_lz = FALSE;
 
+			    // Start from the match each time: a key that is
+			    // not an answer comes back here, and the change
+			    // below must not be added to the cursor again.
+			    curwin->w_cursor.col = regmatch.startpos[0].col;
+
 			    if (new_start.string != NULL)
 			    {
 				// There already was a substitution, we would

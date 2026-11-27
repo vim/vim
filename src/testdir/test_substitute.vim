@@ -1549,4 +1549,19 @@ func Test_sub_undo_after_confirm()
   bwipe!
 endfunc
 
+" A key that is not an answer at the prompt of ":s///c", after an earlier
+" match in the line was replaced by text of another length, must not move the
+" cursor away from the match.
+func Test_sub_confirm_ignored_key_keeps_cursor()
+  new
+  for keys in ['', 'x', 'xxx', "\<C-E>\<C-Y>"]
+    call setline(1, 'a b c')
+    call cursor(1, 1)
+    call feedkeys(":s/[abc]/XYZ/gc\<CR>y" .. keys .. "q", 'xt')
+    call assert_equal('XYZ b c', getline(1))
+    call assert_equal(5, col('.'), 'keys: ' .. keys)
+  endfor
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
