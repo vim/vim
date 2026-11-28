@@ -2680,6 +2680,38 @@ func Test_winfixsize_close_non_leaf_frame()
   endfor
 endfunc
 
+" Test that closing a bottom/right window updates the position of a
+" 'winfixheight'/'winfixwidth' window in a neighbouring frame.
+func Test_winfixsize_close_updates_pos()
+  for vertical in [v:false, v:true]
+    let opt = vertical ? 'winfixwidth' : 'winfixheight'
+    let split = vertical ? 'vsplit' : 'split'
+    let other = vertical ? 'split' : 'vsplit'
+    let newcmd = vertical ? 'vnew' : 'new'
+
+    exe 'botright ' .. other
+    let b_id = win_getid()
+    exe 'belowright ' .. split
+    exe 'setlocal ' .. opt
+    let c_id = win_getid()
+    exe 'botright ' .. newcmd
+    quit
+
+    let b_nr = win_id2win(b_id)
+    let c_nr = win_id2win(c_id)
+    if vertical
+      call assert_equal(win_screenpos(b_nr)[1] + winwidth(b_nr) + 1,
+            \ win_screenpos(c_nr)[1], opt)
+    else
+      call assert_equal(win_screenpos(b_nr)[0] + winheight(b_nr) + 1,
+            \ win_screenpos(c_nr)[0], opt)
+    endif
+
+    call win_execute(c_id, 'setlocal no' .. opt)
+    only!
+  endfor
+endfunc
+
 " Test that setting 'laststatus' from 0 to 2 gives all windows in a vertical
 " split (FR_ROW) the same height and correct status line position.
 func Test_laststatus_vsplit_row_height()

@@ -3732,9 +3732,10 @@ winframe_remove(
 	*dirp = 'h';
     }
 
-    // If the altframe wasn't adjacent and left/above, resizing it will have
-    // changed window positions within the parent frame.  Recompute them.
-    if (frp2 != frp_close->fr_prev)
+    // If the altframe wasn't adjacent and left/above, or if it contains nested
+    // frames, resizing it may have changed window positions within the parent
+    // frame.  Recompute them.
+    if (frp2 != frp_close->fr_prev || frp2->fr_layout != FR_LEAF)
 	frame_comp_pos(frp_close->fr_parent, &row, &col);
 
     if (unflat_altfr == NULL)
@@ -3842,8 +3843,9 @@ winframe_restore(win_T *wp, int dir, frame_T *unflat_altfr)
     }
 
     // Recompute window positions within the parent frame to restore them.
-    // Positions were unchanged if the altframe was adjacent and left/above.
-    if (unflat_altfr != frp->fr_prev)
+    // Positions were unchanged if the altframe was a single window adjacent
+    // and left/above.
+    if (unflat_altfr != frp->fr_prev || unflat_altfr->fr_layout != FR_LEAF)
     {
 	win_T	*topleft = frame2win(frp->fr_parent);
 	int	row = topleft->w_winrow;
