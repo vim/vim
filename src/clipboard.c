@@ -51,6 +51,8 @@ typedef struct {
 					// else NULL if we don't.
     vwl_data_offer_T	*offer;		// Current offer for the selection
 
+    bool		new_offer;	// Set to true every time there is a new
+					// data offer.
     bool		own_success;	// Used by clip_wl_own_selection()
     bool		available;	// If selection is ready to serve/use
 
@@ -87,6 +89,7 @@ clip_wl_T clip_wl;
 
 static void
 clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd);
+static bool clip_wl_need_request(Clipboard_T *cbd);
 static void clip_wl_request_selection(Clipboard_T *cbd);
 static int clip_wl_own_selection(Clipboard_T *cbd);
 static void clip_wl_lose_selection(Clipboard_T *cbd);
@@ -2138,6 +2141,12 @@ clip_get_selection(Clipboard_T *cbd)
     }
     else if (!is_clipboard_needs_update())
     {
+# ifdef FEAT_WAYLAND_CLIPBOARD
+	// If current data offer has not changed, then do nothing, the clipboard
+	// register should be up to date.
+	if (clipmethod == CLIPMETHOD_WAYLAND && !clip_wl_need_request(cbd))
+	    return;
+# endif
 	clip_free_selection(cbd);
 
 	// Try to get selected text from another window
@@ -2373,6 +2382,8 @@ vwl_data_device_listener_event_selection(
     // Destroy previous offer if any, it is now invalid
     vwl_data_offer_destroy(sel->offer);
 
+    sel->new_offer = true;
+
     // There are two cases when sel->offer is NULL
     // 1. No one owns the selection
     // 2. We own the selection (we'll just access the register directly)
@@ -2388,7 +2399,6 @@ vwl_data_device_listener_event_selection(
     // Save offer. When we want to request data, then we'll actually call the
     // receive method.
     sel->offer = offer;
-
 }
 
     static void
@@ -2419,6 +2429,7 @@ vwl_data_device_listener_event_finished(
     vwl_data_source_destroy(sel->source);
     vwl_data_offer_destroy(sel->offer);
     sel->available = FALSE;
+    sel->new_offer = true;
 
     vwl_data_device_destroy(device);
 }
@@ -2442,6 +2453,9 @@ clip_init_wayland(void)
 	return FAIL;
 
     memset(&clip_wl, 0, sizeof(clip_wl));
+
+    clip_wl.regular.new_offer = true;
+    clip_wl.primary.new_offer = true;
 
     clip_wl.seat = vwl_connection_get_seat(wayland_ct, (char *)p_wse);
 
@@ -2656,6 +2670,24 @@ clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
 }
 
 /*
+ * Return true if current data offer has changed.
+ */
+    static bool
+clip_wl_need_request(Clipboard_T *cbd)
+{
+    clip_wl_selection_T *sel = clip_wl_get_selection_from_cbd(cbd);
+
+    if (wayland_ct == NULL)
+	// So that when the connection is back up, we don't ignore data requests
+	return true;
+
+    if (vwl_connection_roundtrip(wayland_ct) == FAIL)
+	return true;
+
+    return sel->new_offer;
+}
+
+/*
  * Get the current selection and fill the respective register for cbd with the
  * data.
  */
@@ -2677,7 +2709,10 @@ clip_wl_request_selection(Clipboard_T *cbd)
 	goto clear;
 
     if (sel->offer == NULL)
+    {
+	sel->new_offer = false;
 	goto clear;
+    }
 
     mime_types_len = sel->offer->mime_types.ga_len;
     mime_types = sel->offer->mime_types.ga_data;
@@ -2701,8 +2736,10 @@ clip_wl_request_selection(Clipboard_T *cbd)
 		   // closes their end we receive an EOF.
 
     if (vwl_connection_flush(wayland_ct) >= 0)
+    {
 	clip_wl_receive_data(cbd, chosen_mime, fds[0]);
-
+	sel->new_offer = false;
+    }
     close(fds[0]);
 
     return;
@@ -2897,6 +2934,7 @@ clip_wl_lose_selection(Clipboard_T *cbd)
 {
     clip_wl_selection_T *sel = clip_wl_get_selection_from_cbd(cbd);
 
+    sel->new_offer = true;
     if (!sel->available)
 	return;
 
