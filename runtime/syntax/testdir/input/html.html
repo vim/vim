@@ -151,3 +151,28 @@
 <image>
 <noembed>
 <plaintext>
+
+<!-- Custom Elements (Web Components) -->
+<my-component prop={value}></my-component>
+<foo:bar></foo:bar>
+
+<!-- HTMX Attributes -->
+<button hx-get="/api" hx-target="#result">Load</button>
+<div hx-post="/submit" hx-trigger="submit">Submit</div>
+
+<!-- Alpine.js Attributes -->
+<div x-data="{ open: false }" x-show="open">
+  <button @click="open = !open">Toggle</button>
+</div>
+<div :class="isActive ? 'active' : ''">Binding</div>
+
+<!-- Boolean Attributes -->
+<button disabled>Click</button>
+<input checked type="checkbox">
+
+<!-- data-* and aria-* Attributes -->
+<div data-testid="my-element">Data attr</div>
+<div aria-label="Close button">Aria</div>
+
+<!-- popover Attribute -->
+<div popover="auto">Popover</div>
