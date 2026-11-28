@@ -102,13 +102,6 @@ typedef long off_t;
 #include <time.h>	// for strftime() and others
 
 /*
- * arpbase.h must be included before functions.h
- */
-#ifdef FEAT_ARP
-# include <libraries/arpbase.h>
-#endif
-
-/*
  * This won't be needed if you have a version of Lattice 4.01 without broken
  * break signal handling.
  */

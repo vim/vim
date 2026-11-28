@@ -11,7 +11,6 @@ CFLAGS = -c -O3
 
 # Common compiler flags
 CFLAGS += \
-	-DNO_ARP \
 	-DUSE_TMPNAM \
 	-DHAVE_TGETENT \
 	-DHAVE_TERMCAP \

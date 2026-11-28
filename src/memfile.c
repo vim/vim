@@ -53,9 +53,6 @@
  * for Amiga Dos 2.0x we use Flush
  */
 #ifdef AMIGA
-# ifdef FEAT_ARP
-extern int dos2;			// this is in os_amiga.c
-# endif
 # ifdef SASC
 #  include <ios1.h>			// for chkufb()
 # endif
@@ -621,9 +618,6 @@ mf_sync(memfile_T *mfp, int flags)
 	 * For 1.3 it should be done with close() + open(), but then the risk
 	 * is that the open() may fail and lose the file....
 	 */
-#  ifdef FEAT_ARP
-	if (dos2)
-#  endif
 #  ifdef SASC
 	{
 	    struct UFB *fp = chkufb(mfp->mf_fd);

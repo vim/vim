@@ -102,11 +102,7 @@ static char *(features[]) =
 	"-arabic",
 #endif
 #ifdef AMIGA		// only for Amiga systems
-# ifdef FEAT_ARP
-	"+ARP",
-# else
 	"-ARP",
-# endif
 #endif
 #ifdef FEAT_AUTOCHDIR
 	"+autochdir",

@@ -7767,13 +7767,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"arp",
-#if defined(AMIGA) && defined(FEAT_ARP)
-		1
-#else
-		0
-#endif
-		},
+	{"arp", 0},
 	{"haiku",
 #ifdef __HAIKU__
 		1

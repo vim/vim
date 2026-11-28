@@ -1,4 +1,4 @@
-*various.txt*	For Vim version 9.2.  Last change: 2026 Sep 30
+*various.txt*	For Vim version 9.2.  Last change: 2026 Nov 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -362,7 +362,7 @@ g8			Print the hex values of the bytes used in the
 
 							*+feature-list*
    *+acl*		|ACL| support included
-   *+ARP*		Amiga only: ARP support included
+-  *+ARP*		Removed: Amiga ARP support
 H  *+arabic*		|Arabic| language support
 N  *+autochdir*		support 'autochdir' option
 T  *+autocmd*		|:autocmd|, automatic commands.  Always enabled since
