@@ -943,13 +943,6 @@ diff_write(buf_T *buf, diffin_T *din, linenr_T start, linenr_T end)
     if (din->din_fname == NULL)
 	return diff_write_buffer(buf, din, start, end);
 
-    // Writing the diff buffers may trigger changes in the window structure
-    // via aucmd_prepbuf()/aucmd_restbuf() commands.
-    // This may cause recursively calling winframe_remove() which is not safe and causes
-    // use after free, so let's stop it here.
-    if (frames_locked())
-	return FAIL;
-
     if (end < 0)
 	end = buf->b_ml.ml_line_count;
 
@@ -1195,6 +1188,14 @@ ex_diffupdate(exarg_T *eap)	// "eap" can be NULL
     if (diff_busy)
     {
 	diff_need_update = TRUE;
+	return;
+    }
+
+    // Updating may run autocommands and 'diffexpr', which is not safe while
+    // a window is being removed.  Keep the diff invalid and update later.
+    if (frames_locked())
+    {
+	curtab->tp_diff_invalid = TRUE;
 	return;
     }
 

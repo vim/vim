@@ -3836,4 +3836,23 @@ func Test_diff_fold_in_other_tabpage()
   %bwipe!
 endfunc
 
+func Test_diffupdated_while_closing_window()
+  call setline(1, ['a', '', 'b'])
+  diffthis
+  let g:wins = []
+  exe 'au DiffUpdated * let g:wins += [win_findbuf(' .. bufnr() .. ')]'
+  vnew
+  setlocal buftype=nofile bufhidden=wipe
+  call setline(1, ['a', 'b'])
+  diffthis
+  wincmd p
+  only
+  redraw
+  call assert_equal([[win_getid()]], g:wins)
+
+  au! DiffUpdated
+  unlet g:wins
+  %bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
